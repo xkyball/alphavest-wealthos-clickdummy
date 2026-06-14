@@ -76,11 +76,29 @@ test("evidence route uses a preview drawer overlay, not a fixed right-column det
 
   assert.match(evidenceRoute, /redirect\("\/portal"\)/);
   assert.doesNotMatch(evidenceRoute, /EvidenceScreenV2/);
-  assert.match(evidenceSource, /Evidence Preview Drawer/);
   assert.match(evidenceSource, /fixed inset-0 z-40/);
+  assert.match(evidenceSource, /Evidence Vault/);
   assert.match(evidenceSource, /Close preview/);
   assert.doesNotMatch(evidenceSource, /xl:grid-cols-\[minmax\(0,1fr\)_24rem\]/);
   assert.doesNotMatch(evidenceSource, /<Drawer title=\{selected\.title\}>/);
+});
+
+test("evidence overlay contains the actual V2-023 to V2-025 screen regions", () => {
+  const source = readFileSync(new URL("../components/phase5-client-screens.tsx", import.meta.url), "utf8");
+  const evidenceSource = source.slice(source.indexOf("export function EvidencePreviewDrawer"));
+
+  assert.match(evidenceSource, /Risk_Profile_Investor_Questionnaire\.pdf/);
+  assert.match(evidenceSource, /Audit Trail/);
+  assert.match(evidenceSource, /Version History/);
+  assert.match(evidenceSource, /Workflow status/);
+  assert.match(evidenceSource, /Quick actions/);
+  assert.match(evidenceSource, /Private Credit Investment Memo/);
+  assert.match(evidenceSource, /Preview unavailable/);
+  assert.match(evidenceSource, /Request access/);
+  assert.match(evidenceSource, /Release blocked - critical evidence missing/);
+  assert.match(evidenceSource, /Missing Evidence Checklist/);
+  assert.match(evidenceSource, /Process Status/);
+  assert.match(evidenceSource, /Client Message/);
 });
 
 test("implemented workflows do not navigate to standalone evidence page", () => {

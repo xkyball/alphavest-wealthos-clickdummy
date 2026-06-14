@@ -120,16 +120,16 @@ export const v2Routes = [
     screenSpec: "docs/v2/SCREEN_SPECS_V2.md#/decisions"
   },
   {
-    path: "/evidence",
-    label: "Evidence",
-    title: "Evidence Vault",
+    path: "overlay:evidence-preview",
+    label: "Evidence Preview",
+    title: "Evidence Vault Preview",
     domain: "Evidence and audit",
     primaryUser: "Client / Advisor / Compliance",
-    userGoal: "Inspect evidence, restrictions and audit-linked records.",
+    userGoal: "Inspect evidence, restrictions and audit-linked records without leaving the active workflow.",
     priority: "P0",
     type: "client",
     visualIds: ["V2-023", "V2-024", "V2-025"],
-    screenSpec: "docs/v2/SCREEN_SPECS_V2.md#/evidence"
+    screenSpec: "docs/v2/SCREEN_SPECS_V2.md#/evidence-preview-overlay"
   },
   {
     path: "/workbench",

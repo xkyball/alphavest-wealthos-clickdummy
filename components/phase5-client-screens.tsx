@@ -696,17 +696,38 @@ export function EvidencePreviewDrawer({
     return null;
   }
 
+  const isMissing = recordStatus === "Missing";
+  const visibilityLabel = recordVisibility.toLowerCase().includes("client") ? "Client-visible" : "Internal-only";
+  const statusTone: Tone = isMissing || !accessAllowed ? "danger" : recordStatus === "Under Review" ? "warning" : "success";
+  const workflowSteps = [
+    ["Evidence Created", "05/19/2025 09:14 AM", "Jamie Lee"],
+    ["Human Review", "05/19/2025 11:43 AM", "Jamie Lee"],
+    ["Compliance Review", "05/21/2025 10:18 AM", "Taylor Grant"],
+    ["Compliance Release", "05/21/2025 10:22 AM", "Taylor Grant"],
+    ["Client Approved", "05/20/2025 08:55 AM", "Alex Morgan"]
+  ];
+  const missingChecklist = [
+    ["Client Risk Profile Acknowledgment", "Confirms client risk tolerance aligns with proposed changes", "May 15, 2025", "Missing"],
+    ["Tax Impact Disclosure", "Required for tax-sensitive rebalancing action", "May 15, 2025", "Missing"],
+    ["Suitability Assessment Update", "Confirms suitability after material market change", "May 16, 2025", "Missing"],
+    ["Portfolio Policy Exception Approval", "Required for deviation from target allocation", "May 14, 2025", "Received"],
+    ["Client Communication Log", "Confirms discussion and client communication", "May 14, 2025", "Received"]
+  ];
+
   return (
     <div className="fixed inset-0 z-40 bg-av-midnight/72 backdrop-blur-sm">
-      <aside className="ml-auto flex h-full w-full max-w-2xl flex-col border-l border-av-line bg-av-panel shadow-panel">
+      <aside className="ml-auto flex h-full w-full max-w-5xl flex-col border-l border-av-line bg-av-panel shadow-panel">
         <div className="flex flex-wrap items-start justify-between gap-3 border-b border-av-line/60 p-4">
           <div>
+            <p className="text-xs uppercase tracking-[0.18em] text-av-muted">Evidence Vault</p>
             <p className="font-display text-2xl text-av-goldBright">
               {recordTitle}
             </p>
-            <p className="mt-1 text-sm text-av-muted">
-              Evidence Preview Drawer
-            </p>
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+              <StatusChip tone={statusTone}>{recordStatus}</StatusChip>
+              <StatusChip tone={visibilityLabel === "Client-visible" ? "success" : "warning"}>{visibilityLabel}</StatusChip>
+              <span className="text-av-muted">{evidenceUri}</span>
+            </div>
           </div>
           <button
             className="rounded-lg border border-av-line px-3 py-2 text-sm text-av-muted"
@@ -716,35 +737,222 @@ export function EvidencePreviewDrawer({
             Close preview
           </button>
         </div>
-        <div className="grid flex-1 gap-4 overflow-y-auto p-4">
-          {!accessAllowed ? (
-            <div className="rounded-lg border border-av-danger/70 bg-av-danger/10 p-4">
-              <WorkflowBadge label="BLOCKED" />
-              <p className="mt-3 text-sm text-av-ivory">
-                Restricted evidence content is hidden.
-              </p>
-              <p className="mt-2 text-xs text-av-muted">Reason: {accessReason}.</p>
+        <div className="flex flex-1 flex-col overflow-y-auto p-4">
+          {isMissing ? (
+            <div className="grid gap-4">
+              <div className="rounded-lg border border-av-danger/70 bg-av-danger/15 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <WorkflowBadge label="BLOCKED" />
+                    <p className="mt-3 text-lg font-semibold uppercase text-av-ivory">Release blocked - critical evidence missing</p>
+                    <p className="mt-2 text-sm text-av-muted">This decision or action cannot proceed until required evidence is received and reviewed.</p>
+                  </div>
+                  <StatusChip tone="danger">Blocked</StatusChip>
+                </div>
+                <p className="mt-3 rounded-lg border border-av-line/60 bg-av-midnight/50 px-3 py-2 text-sm text-av-goldBright">
+                  Core rule: no unapproved advice reaches the client.
+                </p>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-4">
+                {[
+                  ["Affected decision / action", "Q2 2025 Portfolio Rebalance"],
+                  ["Current owner", "Jamie Lee (Advisor)"],
+                  ["SLA risk", "-2d 4h overdue"],
+                  ["Escalation path", "Advisor -> Compliance"]
+                ].map(([label, value]) => (
+                  <div className="rounded-lg border border-av-line bg-av-midnight/45 p-3" key={label}>
+                    <p className="text-xs uppercase tracking-[0.16em] text-av-muted">{label}</p>
+                    <p className="mt-2 text-sm font-semibold text-av-ivory">{value}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(18rem,0.75fr)]">
+                <div className="rounded-lg border border-av-line bg-av-midnight/45 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="font-semibold text-av-ivory">Missing Evidence Checklist</p>
+                    <StatusChip tone="warning">3 of 5 required</StatusChip>
+                  </div>
+                  <DashboardTable
+                    columns={["Evidence required", "Why it's needed", "Due date", "Status"]}
+                    rows={missingChecklist.map(([required, reason, due, status]) => [
+                      required,
+                      reason,
+                      due,
+                      status
+                    ])}
+                  />
+                  <div className="mt-4 rounded-lg border border-av-warning/60 bg-av-warning/10 p-3 text-sm text-av-goldBright">
+                    Upload or request the missing items to unblock this decision.
+                  </div>
+                </div>
+
+                <div className="grid content-start gap-3">
+                  <div className="rounded-lg border border-av-line bg-av-midnight/45 p-4">
+                    <p className="font-semibold text-av-ivory">Process Status</p>
+                    <div className="mt-4 grid grid-cols-5 items-start gap-2 text-center text-xs">
+                      {["Intake", "Evidence", "Review", "Compliance", "Approved"].map((step) => (
+                        <div className={cn("rounded-lg border px-2 py-3", step === "Evidence" ? "border-av-danger bg-av-danger/10 text-av-danger" : "border-av-line text-av-muted")} key={step}>
+                          {step}
+                        </div>
+                      ))}
+                    </div>
+                    <p className="mt-3 text-xs uppercase text-av-danger">Blocked here</p>
+                  </div>
+                  <div className="rounded-lg border border-av-line bg-av-midnight/45 p-4">
+                    <p className="font-semibold text-av-ivory">Status Summary</p>
+                    <p className="mt-2 text-sm text-av-muted">Critical evidence is missing. This item is blocked from moving forward until all required evidence is received and reviewed.</p>
+                  </div>
+                  <div className="rounded-lg border border-av-line bg-av-midnight/45 p-4">
+                    <p className="font-semibold text-av-ivory">Client Message</p>
+                    <p className="mt-2 text-sm text-av-muted">We are waiting on a few required items to move forward with your request. We will notify you as soon as everything is ready.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <button className="rounded-lg border border-av-gold px-4 py-2 text-sm text-av-goldBright" type="button">Request evidence</button>
+                <button className="rounded-lg bg-av-gold px-4 py-2 text-sm font-semibold text-av-midnight" type="button">Upload evidence</button>
+              </div>
             </div>
-          ) : recordStatus === "Missing" ? (
-            <div className="rounded-lg border border-av-warning/60 bg-av-warning/10 p-4">
-              <WorkflowBadge label="REVIEW" />
-              <p className="mt-3 text-sm text-av-ivory">Missing evidence escalation is open.</p>
-              <p className="mt-2 text-xs text-av-muted">Compliance can block release or request evidence before client visibility.</p>
+          ) : !accessAllowed ? (
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,0.8fr)]">
+              <div className="rounded-lg border border-av-line bg-av-midnight/45 p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-av-ivory">Private Credit Investment Memo</p>
+                    <p className="mt-1 text-sm text-av-muted">Limited metadata is visible based on role and approval status.</p>
+                  </div>
+                  <StatusChip tone="danger">Restricted</StatusChip>
+                </div>
+                <DashboardTable
+                  columns={["Field", "Value"]}
+                  rows={[
+                    ["Created by", "********"],
+                    ["Owner", "********"],
+                    ["Related to", "********"],
+                    ["Tags", "********"]
+                  ]}
+                />
+                <div className="mt-4 grid min-h-72 place-items-center rounded-lg border border-dashed border-av-warning/70 bg-av-midnight/70 p-6 text-center">
+                  <div>
+                    <div className="mx-auto grid h-16 w-16 place-items-center rounded-full border border-av-warning text-3xl text-av-warning">!</div>
+                    <p className="mt-4 text-lg font-semibold text-av-ivory">Preview unavailable</p>
+                    <p className="mt-2 text-sm text-av-muted">This evidence record is restricted. You do not have permission to view this content.</p>
+                  </div>
+                </div>
+              </div>
+              <div className="grid content-start gap-3">
+                <div className="rounded-lg border border-av-warning/70 bg-av-warning/10 p-4">
+                  <p className="font-semibold text-av-ivory">Why is this restricted?</p>
+                  <p className="mt-2 text-sm text-av-muted">This record contains confidential information that can only be viewed by users with specific permissions and after approval.</p>
+                  <p className="mt-2 text-xs text-av-muted">Reason: {accessReason}.</p>
+                  <button className="mt-4 rounded-lg bg-av-gold px-4 py-2 text-sm font-semibold text-av-midnight" type="button">Request access</button>
+                </div>
+                <div className="rounded-lg border border-av-line bg-av-midnight/45 p-4">
+                  <p className="text-xs uppercase tracking-[0.16em] text-av-muted">Recent access event</p>
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-av-line p-3">
+                    <div>
+                      <p className="text-sm text-av-ivory">Access attempted by you</p>
+                      <p className="text-xs text-av-muted">{auditTimestamp} / {auditActorRole}</p>
+                    </div>
+                    <StatusChip tone="danger">Denied - Restricted</StatusChip>
+                  </div>
+                </div>
+              </div>
             </div>
           ) : (
-            <DashboardTable
-              columns={["Field", "Value"]}
-              rows={[
-                ["Type", recordType],
-                ["Visibility", recordVisibility],
-                ["Evidence URI", evidenceUri],
-                ["Audit action", auditAction],
-                ["Audit result", auditResult]
-              ]}
-            />
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(19rem,0.75fr)]">
+              <div className="grid gap-4">
+                <div className="flex flex-wrap gap-2 border-b border-av-line/70">
+                  {["Preview", "Details", "Audit Trail", "Version History", "Related"].map((tab, index) => (
+                    <button className={cn("border-b-2 px-3 py-2 text-sm", index === 0 ? "border-av-gold text-av-goldBright" : "border-transparent text-av-muted")} key={tab} type="button">
+                      {tab}
+                    </button>
+                  ))}
+                </div>
+                <div className="rounded-lg border border-av-line bg-av-midnight/45 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-av-line/60 pb-3">
+                    <p className="text-sm font-semibold text-av-ivory">Risk_Profile_Investor_Questionnaire.pdf</p>
+                    <StatusChip tone="neutral">1 / 6</StatusChip>
+                  </div>
+                  <div className="mt-4 rounded-lg bg-av-ivory p-6 text-av-midnight">
+                    <p className="text-center text-xs uppercase tracking-[0.18em] text-av-midnight/70">AlphaVest</p>
+                    <p className="mt-2 text-center text-lg font-semibold">Risk Profile</p>
+                    <p className="text-center text-sm">Investor Questionnaire</p>
+                    <div className="mt-5 grid gap-2 text-xs">
+                      {[
+                        ["Name", "Alex Morgan"],
+                        ["Date", "05/19/2025"],
+                        ["Household", "Morgan Family Household"],
+                        ["Overall risk tolerance", "Moderate"],
+                        ["Capacity for loss", "Moderate"],
+                        ["Investment horizon", "7 - 15 Years"],
+                        ["Liquidity needs", "Medium"]
+                      ].map(([label, value]) => (
+                        <div className="grid grid-cols-[11rem_1fr] border border-av-midnight/20" key={label}>
+                          <span className="bg-av-midnight/5 p-2 font-semibold">{label}</span>
+                          <span className="p-2">{value}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="mt-5 text-right text-xs text-av-midnight/60">Page 1 of 6</p>
+                  </div>
+                  <div className="mt-4 flex gap-3">
+                    {[1, 2, 3, 4, 6].map((page) => (
+                      <div className={cn("grid h-14 w-10 place-items-end rounded border bg-av-ivory p-1 text-[10px] text-av-midnight", page === 1 ? "border-av-gold" : "border-av-line")} key={page}>
+                        {page}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid content-start gap-3">
+                <div className="rounded-lg border border-av-line bg-av-midnight/45 p-4">
+                  <p className="font-semibold text-av-ivory">Summary</p>
+                  <DashboardTable
+                    columns={["Field", "Value"]}
+                    rows={[
+                      ["Record type", recordType],
+                      ["Status", recordStatus],
+                      ["Related to", "Morgan Family Household"],
+                      ["Created", "05/19/2025 09:14 AM"],
+                      ["Created by", auditActorRole],
+                      ["Current version", "v1.0"]
+                    ]}
+                  />
+                </div>
+                <div className="rounded-lg border border-av-line bg-av-midnight/45 p-4">
+                  <p className="font-semibold text-av-ivory">Workflow status</p>
+                  <div className="mt-3 grid gap-3">
+                    {workflowSteps.map(([step, time, actor]) => (
+                      <div className="grid grid-cols-[1rem_1fr] gap-3 text-sm" key={step}>
+                        <span className="mt-1 h-3 w-3 rounded-full bg-av-success" />
+                        <span>
+                          <span className="block text-av-ivory">{step}</span>
+                          <span className="block text-xs text-av-muted">{time} / {actor}</span>
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="rounded-lg border border-av-line bg-av-midnight/45 p-4">
+                  <p className="font-semibold text-av-ivory">Quick actions</p>
+                  <div className="mt-3 grid grid-cols-3 gap-2">
+                    {["Download", "Share", "More"].map((action) => (
+                      <button className="rounded-lg border border-av-line px-3 py-2 text-xs text-av-muted" key={action} type="button">
+                        {action}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
-          <div className="rounded-lg border border-av-line bg-av-midnight/45 p-3 text-xs text-av-muted">
-            Audit trail preview: {auditTimestamp} / {auditActorRole} / {auditEvidenceLink}
+          <div className="mt-4 rounded-lg border border-av-line bg-av-midnight/45 p-3 text-xs text-av-muted">
+            Audit event: {auditAction} / {auditResult} / {auditTimestamp} / {auditEvidenceLink}
           </div>
         </div>
       </aside>

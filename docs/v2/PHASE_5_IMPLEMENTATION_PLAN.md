@@ -16,7 +16,6 @@ Routes in scope:
 - `/wealth-map`
 - `/actions`
 - `/decisions`
-- `/evidence`
 
 Out of scope:
 
@@ -46,7 +45,7 @@ The Phase 5 implementation uses the actual app UI regions from V2-001 through V2
 - graph, drawer and restricted node become `/wealth-map`;
 - kanban and detail drawer become `/actions`;
 - decision room and submitted evidence state become `/decisions`;
-- evidence list, preview drawer, restricted and missing states become `/evidence`.
+- evidence preview drawer, restricted and missing states open contextually from active workflows. `/evidence` is a redirect fallback, not a product page.
 
 Annotations and implementation notes were translated into helpers, state controls, tests and documentation rather than rendered as UI.
 
@@ -57,12 +56,13 @@ Correction note:
 - Alternate QA states are driven by query parameters such as `?state=blocked`, `?state=low`, and `?state=pending` instead of visible state-toggle controls.
 - Desktop client visuals follow the same boundary: the global left demo sidebar, Phase/V2 page labels, page-spec headers and explanatory QA panels are not part of the actual app surface and are not rendered.
 - `/decisions` is implemented as a modal-style decision workflow surface for deep-linking, not as a documentation-style standalone page.
+- Evidence visuals V2-023 to V2-025 are implemented inside `EvidencePreviewDrawer` as contextual overlay states, not as a standalone `/evidence` route.
 
 ## Quality Target
 
 Phase 5 is complete when:
 
-- all seven routes render Phase 5 UI;
+- the Phase 5 routes render client UI and evidence opens from workflow context;
 - blocked states prevent advice-like content from being revealed;
 - upload low confidence routes to analyst review;
 - portal readiness links to focused wealth-map gaps;

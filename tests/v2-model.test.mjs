@@ -49,6 +49,16 @@ test("all primary routes map to v2 route metadata and visual ids", () => {
   }
 });
 
+test("evidence visuals are modeled as a contextual overlay, not a standalone primary route", () => {
+  const routePaths = model.v2Routes.map((route) => route.path);
+  const evidenceRoute = model.getV2Route("overlay:evidence-preview");
+
+  assert.ok(!routePaths.includes("/evidence"));
+  assert.ok(evidenceRoute);
+  assert.equal([...evidenceRoute.visualIds].join(","), "V2-023,V2-024,V2-025");
+  assert.match(evidenceRoute.title, /Evidence Vault Preview/);
+});
+
 test("advisor approval alone does not release advice to the client", () => {
   const visibility = model.evaluateClientVisibility({
     advisorApproval: true,

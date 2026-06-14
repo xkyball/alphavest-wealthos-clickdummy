@@ -67,11 +67,11 @@ Source: V2-020 to V2-022.
 
 Implement Decision Room ready/blocked/success states. Accept/Defer/Reject must create decision and audit events.
 
-### `/evidence`
+### Evidence preview overlay
 
 Source: V2-023 to V2-025.
 
-Implement list, filters, preview drawer, restricted record and missing evidence escalation. Evidence is not a visual flourish; it must be represented in data state.
+Implement the Evidence Vault preview drawer, restricted record and missing evidence escalation as contextual workflow surfaces. `/evidence` is a redirect fallback, not a standalone product page. Evidence is not a visual flourish; it must be represented in data state.
 
 ### `/workbench`, `/signals`, `/advisor-approval`, `/compliance`
 

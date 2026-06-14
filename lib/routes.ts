@@ -229,19 +229,19 @@ export const boardRoutes: BoardRoute[] = [
   },
   {
     number: "09",
-    path: "/evidence",
-    shortLabel: "Evidence",
-    title: "Evidence Vault / Decision Record",
-    subtitle: "Secure documents. Verified decisions. Immutable evidence.",
+    path: "overlay:evidence-preview",
+    shortLabel: "Evidence Preview",
+    title: "Evidence Vault Preview / Decision Record",
+    subtitle: "Secure documents, verified decisions and immutable evidence inside the active workflow.",
     referenceImage:
       "/reference/wireframes/board-09-evidence-vault-decision-record.png",
-    surface: "Evidence and audit record",
+    surface: "Contextual evidence preview drawer",
     plannedModules: [
-      "Source documents",
-      "Decision records",
-      "Advisor sign-off",
-      "Client approval",
-      "Lifecycle timeline"
+      "Source document preview",
+      "Decision and audit record metadata",
+      "Restricted-record state",
+      "Missing-evidence escalation state",
+      "Workflow lifecycle timeline"
     ],
     annotations: {
       userRole: "Client / Advisor / Compliance",

@@ -40,7 +40,7 @@ Included now:
 
 Deferred to later phases:
 
-- Full visual rebuild of P0 client routes (`/mobile` through `/evidence`).
+- Full visual rebuild of P0 client routes plus contextual evidence preview overlay.
 - Full trigger-review rebuild for `/signals`.
 - Persistence, real APIs, server-side auth, document storage and production audit log.
 - Playwright suite unless test framework is added later.

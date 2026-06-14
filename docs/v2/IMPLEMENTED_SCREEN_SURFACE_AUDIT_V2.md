@@ -16,7 +16,7 @@ This audit checks implemented routes against the v2 visual interpretation rule: 
 | `/wealth-map` | Graph plus detail drawer | OK. Detail remains drawer-like beside graph context. |
 | `/actions` | Kanban plus detail drawer | OK. Detail remains drawer-like beside workflow context. |
 | `/decisions` | Modal workflow surface | OK. Already implemented as centered decision-room modal. |
-| Evidence preview | Contextual preview drawer | Refactored again. Evidence records now open as a drawer overlay from workflow context, including workbench and decision submission. `/evidence` redirects to `/portal` and is not a standalone navigation target. |
+| Evidence preview | Contextual preview drawer | Refactored again. Evidence records now open as a drawer overlay from workflow context, including workbench and decision submission. The drawer now contains the V2-023 document preview, V2-024 restricted state and V2-025 missing-evidence escalation regions. `/evidence` redirects to `/portal` and is not a standalone navigation target. |
 | `/signals` | Internal trigger workflow | Refactored. Removed legacy `Phase3Board` usage and replaced with dedicated internal workflow surface. |
 | `/workbench` | Internal workbench | OK. Already uses runtime command surface, not visual-board shell. |
 | `/advisor-approval` | Internal advisor gate | Refactored. Removed old `V2ScreenShell` usage and replaced with dedicated internal workflow surface. |
@@ -49,9 +49,9 @@ Command results after this audit/refactor:
 
 | Command | Result |
 |---|---|
-| `npm test` | Passed: 42 tests |
+| `npm test` | Passed: 45 tests |
 | `npm run typecheck` | Passed |
 | `npm run lint` | Passed |
 | `npm run build` | Passed |
-| `npm run test:e2e` | Passed: 6 route/source smoke tests |
-| Browser smoke check | Passed for workbench evidence preview and `/evidence` redirect. Workbench has no standalone `/evidence` link, `Preview evidence` opens the drawer overlay in context, and `/evidence` redirects to `/portal`. |
+| `npm run test:e2e` | Passed: 8 route/source smoke tests |
+| Browser smoke check | Passed for workbench evidence preview and `/evidence` redirect. Workbench has no standalone `/evidence` link, `Preview evidence` opens the V2-023-style drawer overlay in context, and `/evidence` redirects to `/portal` without standalone evidence records. |

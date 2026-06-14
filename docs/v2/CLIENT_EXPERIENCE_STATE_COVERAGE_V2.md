@@ -14,7 +14,7 @@ Alternate mock states are addressable with query parameters instead of visible d
 | `/wealth-map` | Yes | Not data-loaded | n/a | Not data-loaded | Yes: restricted node | Yes: Trust X drawer / escalation notice |
 | `/actions` | Yes | Not data-loaded | Empty columns implied | n/a | Yes: missing evidence action | Detail drawer |
 | `/decisions` | Yes: ready to decide | Not data-loaded | n/a | n/a | Yes: missing permission / release gate | Yes: evidence created |
-| `/evidence` | Yes | Not data-loaded | Filter can produce empty list later | n/a | Yes: restricted record | Yes: preview drawer / missing escalation |
+| Evidence preview overlay | Yes | Not data-loaded | Filter can produce empty list later | n/a | Yes: restricted record | Yes: preview drawer / missing escalation |
 
 ## Gate Coverage
 
@@ -22,11 +22,11 @@ Alternate mock states are addressable with query parameters instead of visible d
 |---|---|
 | Advisor approval alone is insufficient | `/mobile`, `/decisions`, model tests |
 | Compliance release required | `/mobile`, `/decisions`, model tests |
-| Evidence record required | `/mobile`, `/portal`, `/actions`, `/decisions`, `/evidence` |
-| Permission check required | `/wealth-map`, `/decisions`, `/evidence` |
+| Evidence record required | `/mobile`, `/portal`, `/actions`, `/decisions`, contextual evidence preview overlay |
+| Permission check required | `/wealth-map`, `/decisions`, contextual evidence preview overlay |
 | Low confidence blocks upload | `/mobile/upload` |
 | Missing evidence blocks action progress | `/actions` |
-| Restricted evidence hides content | `/evidence` |
+| Restricted evidence hides content | Contextual evidence preview overlay |
 | Sensitive graph node hides content | `/wealth-map` |
 
 ## Evidence / Audit Coverage
@@ -37,8 +37,8 @@ Alternate mock states are addressable with query parameters instead of visible d
 | Extraction confirmed | `[AI-DRAFT]` state and analyst review route before validation |
 | Sensitive node viewed | Wealth-map drawer shows `client.viewed sensitive node` audit reference |
 | Decision submitted | `decision.submitted` audit event and `evidence://decision-record/trust-x-*` link |
-| Evidence preview opened | Evidence drawer shows audit trail preview |
-| Missing evidence | Evidence vault escalation and action board blocked state |
+| Evidence preview opened | Evidence drawer shows the V2-023 preview surface with audit trail and workflow status |
+| Missing evidence | Evidence drawer shows the V2-025 escalation surface and action board blocked state |
 
 ## Known State Gaps
 

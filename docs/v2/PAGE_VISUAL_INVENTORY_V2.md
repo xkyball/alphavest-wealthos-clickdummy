@@ -10,7 +10,7 @@
 | `/wealth-map` | Live Wealth Map | V2-013, V2-014, V2-015, V2-016 | P0 | Graph, drawer, restricted node, escalation. |
 | `/actions` | Action Board | V2-017, V2-018, V2-019 | P0 | Kanban, drawer, blocked missing evidence. |
 | `/decisions` | Digital Decision Room | V2-020, V2-021, V2-022 | P0 | Ready, permission blocked, evidence created. |
-| `/evidence` | Evidence Vault | V2-023, V2-024, V2-025 | P0 | Evidence list, preview drawer, restricted/missing states. |
+| Evidence preview overlay | Evidence Vault | V2-023, V2-024, V2-025 | P0 | Contextual preview drawer with document preview, restricted record and missing evidence escalation states. |
 | `/signals` | Signal / Trigger Review | V2-026, V2-027 | P1 | Internal trigger review and escalation. |
 | `/workbench` | Consultant Workbench | V2-028, V2-029, V2-030 | P0 | Queue overview, publish disabled, trigger detail. |
 | `/advisor-approval` | Advisor Approval | V2-031, V2-032, V2-033 | P0 | Review, escalate to call, compliance pending. |

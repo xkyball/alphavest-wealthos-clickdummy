@@ -39,7 +39,6 @@ Routes:
 - `/wealth-map`
 - `/actions`
 - `/decisions`
-- `/evidence`
 
 Focus:
 
@@ -48,7 +47,7 @@ Focus:
 - wealth map and drawers;
 - action board and blocked states;
 - decision room;
-- evidence vault.
+- contextual evidence preview overlay.
 
 ## Phase 6 — Internal Workflow Rebuild
 

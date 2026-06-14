@@ -469,9 +469,9 @@ export function RuntimeWorkbenchScreen() {
         onClose={() => setEvidencePreviewOpen(false)}
         open={evidencePreviewOpen}
         recordStatus={recommendation?.evidenceRecordExists ? "Validated" : "Missing"}
-        recordTitle="Trust X evidence preview"
-        recordType={snapshot?.evidenceRecords[0]?.objectType ?? "Recommendation Draft"}
-        recordVisibility={snapshot?.evidenceRecords[0]?.visibility ?? "Internal-only"}
+        recordTitle="Risk Profile - Investor Questionnaire"
+        recordType={snapshot?.evidenceRecords[0]?.objectType ?? "Form / Assessment"}
+        recordVisibility={snapshot?.evidenceRecords[0]?.visibility ?? "Client-visible"}
       />
     </PageFrame>
   );

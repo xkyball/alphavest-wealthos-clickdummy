@@ -10,16 +10,16 @@ Date: 2026-06-14
 | `/wealth-map` | `WealthMapScreenV2` | V2-013, V2-014, V2-015, V2-016 | Graph-like node map, filters, relationship legend, detail drawer, escalation notice | Restricted node uses central permission helper and hides sensitive fields. |
 | `/actions` | `ActionsScreenV2` | V2-017, V2-018, V2-019 | Kanban board, action cards, detail drawer | Missing evidence action is blocked and cannot advance in the mini workflow. |
 | `/decisions` | `DecisionsScreenV2` | V2-020, V2-021, V2-022 | Modal-style decision workflow surface with ready, blocked and submitted states; Accept/Defer/Reject controls | Advice-like recommendation appears only when release, evidence and permission gates pass. Submission creates visible evidence result. |
-| Evidence preview overlay | `EvidencePreviewDrawer` | V2-023, V2-024, V2-025 | Contextual preview drawer opened from workflows such as workbench and decision submission | Restricted evidence hides content; missing evidence escalates before release. `/evidence` redirects to `/portal` and is not a standalone navigation target. |
+| Evidence preview overlay | `EvidencePreviewDrawer` | V2-023, V2-024, V2-025 | Contextual preview drawer opened from workflows such as workbench and decision submission; contains document preview, restricted record and missing-evidence escalation regions | Restricted evidence hides content; missing evidence escalates before release. `/evidence` redirects to `/portal` and is not a standalone navigation target. |
 
 ## Navigation Relationships
 
-- `/mobile` links to upload, decisions, governance and evidence.
+- `/mobile` links to upload, decisions and governance; evidence is opened from workflow context instead of direct navigation.
 - `/mobile/upload` blocks low-confidence records and marks AlphaVest review as required; internal analyst routing remains logic/docs/test coverage.
 - `/portal` readiness score links to `/wealth-map?focus=gaps`.
 - `/wealth-map` highlights focused evidence / restricted nodes when opened from the dashboard gap path.
 - `/actions` links blocked evidence actions to `/mobile/upload` and ready decisions to `/decisions`.
-- `/decisions` exposes evidence links after submission.
+- `/decisions` opens the evidence preview overlay after submission.
 - Evidence preview overlay shows audit trail previews for records that can be viewed.
 
 ## Non-UI Translation
