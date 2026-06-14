@@ -28,8 +28,8 @@ test("Phase 5 client component implements the expected user-facing regions", () 
     "MobileAppSurface",
     "Structure Graph",
     "Kanban",
-    "Digital Decision Room",
-    "Evidence Vault",
+    "Family decision request",
+    "Evidence Records",
     "Drawer"
   ]) {
     assert.match(source, new RegExp(token));
@@ -44,6 +44,28 @@ test("mobile routes render only mobile screen content, not a phone frame or visu
   assert.doesNotMatch(source, /WireframePhone/);
   assert.doesNotMatch(source, new RegExp("Phase 5 / V2-"));
   assert.match(source, /useSearchParams/);
-  assert.match(appShell, /isMobileAppRoute/);
+  assert.doesNotMatch(appShell, /<aside/);
   assert.match(agents, /For mobile visuals, implement only the content that appears inside the phone screen/);
+});
+
+test("client routes do not use a global demo sidebar or page-spec headers", () => {
+  const appShell = readFileSync(new URL("../components/app-shell.tsx", import.meta.url), "utf8");
+  const source = readFileSync(new URL("../components/phase5-client-screens.tsx", import.meta.url), "utf8");
+  const agents = readFileSync(new URL("../AGENTS.md", import.meta.url), "utf8");
+
+  assert.doesNotMatch(appShell, /<aside/);
+  assert.doesNotMatch(appShell, /v2Routes/);
+  assert.doesNotMatch(appShell, /Global guardrails/);
+  assert.doesNotMatch(source, /PageHeader/);
+  assert.doesNotMatch(source, /Client portal/);
+  assert.doesNotMatch(source, /Client workflow/);
+  assert.match(agents, /Do not add a global left demo sidebar/);
+});
+
+test("decision route renders as a modal workflow surface", () => {
+  const source = readFileSync(new URL("../components/phase5-client-screens.tsx", import.meta.url), "utf8");
+
+  assert.match(source, /max-w-3xl rounded-lg border/);
+  assert.match(source, /Family decision request/);
+  assert.doesNotMatch(source, /Decision Controls/);
 });

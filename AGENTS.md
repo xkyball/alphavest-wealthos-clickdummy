@@ -71,6 +71,10 @@ Annotations, legends, dev notes, metadata, backend workflow notes, evidence/audi
 
 For mobile visuals, implement only the content that appears inside the phone screen. Do not render a decorative phone frame, phone shell, surrounding desktop board, state-toggle controls, or explanatory panels around it. If alternate mobile states are needed for QA, drive them through mock data or query parameters rather than visible demo controls.
 
+For desktop/web visuals, the same rule applies: implement only the actual dashboard, table, graph, drawer, modal, form, kanban, or workflow surface. Do not add a global left demo sidebar, route inventory, board navigation, Phase/V2 labels, page-spec headers, or explanatory QA panels unless that exact navigation/control is visibly part of the application screen region.
+
+Workflow visuals must be interpreted as workflows, not as a collection of standalone pages. If a visual shows a decision room, drawer, modal, or pop-up style interaction, implement that interaction shape. A route may exist for deep-linking in the click-dummy, but the rendered UI should still match the workflow surface, such as a modal over context rather than a full documentation-style page.
+
 Some visuals are entirely reference/information boards, especially:
 
 - V2-043 Permission Matrix Reference Board

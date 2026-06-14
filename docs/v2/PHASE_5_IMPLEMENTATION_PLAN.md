@@ -55,6 +55,8 @@ Correction note:
 - Mobile visuals must not become phone-frame mockups in the web route.
 - `/mobile` and `/mobile/upload` now bypass the global desktop shell and render only the mobile app content.
 - Alternate QA states are driven by query parameters such as `?state=blocked`, `?state=low`, and `?state=pending` instead of visible state-toggle controls.
+- Desktop client visuals follow the same boundary: the global left demo sidebar, Phase/V2 page labels, page-spec headers and explanatory QA panels are not part of the actual app surface and are not rendered.
+- `/decisions` is implemented as a modal-style decision workflow surface for deep-linking, not as a documentation-style standalone page.
 
 ## Quality Target
 

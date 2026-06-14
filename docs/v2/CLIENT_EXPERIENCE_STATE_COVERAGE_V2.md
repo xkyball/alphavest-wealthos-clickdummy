@@ -46,3 +46,5 @@ Alternate mock states are addressable with query parameters instead of visible d
 - Empty evidence filter state is not a separate visual yet.
 - Server-side policy enforcement is still future work; current Phase 5 uses central helpers and visible blocked states.
 - Mobile routes intentionally render only the mobile app content, not a phone frame or surrounding visual-board UI.
+- Client routes intentionally avoid the global demo sidebar and page-spec headers; navigation is via workflow links and controls inside the UI.
+- `/decisions` is a modal-style workflow surface, with `?state=blocked` available for the blocked variant.

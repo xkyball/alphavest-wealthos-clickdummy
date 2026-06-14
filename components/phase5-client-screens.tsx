@@ -9,7 +9,6 @@ import {
   clientActions,
   decisionPermission,
   decisionRelease,
-  decisionSubmissionAudit,
   evidenceAccess,
   evidenceLinkFor,
   evidenceRecords,
@@ -23,7 +22,6 @@ import {
   Drawer,
   GlassPanel,
   MetricCard,
-  PageHeader,
   RoleBadge,
   StatusChip,
   WorkflowBadge
@@ -37,20 +35,13 @@ const activeFilterButton =
   "border-av-gold bg-av-gold text-av-midnight hover:text-av-midnight";
 
 function ClientRouteShell({
-  kicker,
-  title,
-  subtitle,
   children
 }: {
-  kicker: string;
-  title: string;
-  subtitle: string;
   children: React.ReactNode;
 }) {
   return (
     <article className="px-4 py-6 md:px-8">
       <div className="mx-auto grid max-w-[104rem] gap-6">
-        <PageHeader kicker={kicker} title={title} subtitle={subtitle} />
         {children}
       </div>
     </article>
@@ -252,11 +243,7 @@ export function PortalScreenV2() {
   const state = queryState(searchParams.get("state"), ["default", "loading", "error", "blocked"] as const, "default");
 
   return (
-    <ClientRouteShell
-      kicker="Client portal"
-      title="Client Dashboard"
-      subtitle="Readiness, actions, triggers and evidence status without turning visibility into advice."
-    >
+    <ClientRouteShell>
       {state === "loading" ? <GlassPanel title="Loading"><p className="text-av-muted">Loading client dashboard...</p></GlassPanel> : null}
       {state === "error" ? <GlassPanel title="Error"><p className="text-av-danger">Dashboard data could not be loaded. Retry or contact the advisory team.</p></GlassPanel> : null}
       {state === "blocked" ? <GlassPanel title="Permission blocked"><p className="text-av-muted">Your current role cannot view this client dashboard.</p></GlassPanel> : null}
@@ -323,11 +310,7 @@ export function WealthMapScreenV2({ initialFocus }: { initialFocus?: string }) {
   const focused = initialFocus === "gaps";
 
   return (
-    <ClientRouteShell
-      kicker="Client structure"
-      title="Live Wealth Map"
-      subtitle="Graph-like structure with restricted nodes, evidence links and sensitive-view audit events."
-    >
+    <ClientRouteShell>
       <GlassPanel title="Filters">
         <div className="flex flex-wrap gap-2">
           {["All", "Entities", "Assets", "Documents", "Decisions", "Restricted"].map((item) => (
@@ -424,7 +407,7 @@ export function ActionsScreenV2() {
   const columns = ["Needs Review", "Blocked", "Ready", "Pending", "Completed"] as const;
 
   return (
-    <ClientRouteShell kicker="Client workflow" title="Action Board" subtitle="Client-facing action workflow with owners, due dates, evidence status and blocked states.">
+    <ClientRouteShell>
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <GlassPanel title="Kanban">
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
@@ -476,13 +459,22 @@ export function DecisionsScreenV2() {
   const [state, setState] = useState(queryState(searchParams.get("state"), ["ready", "blocked", "submitted"] as const, "ready"));
   const [choice, setChoice] = useState<"accepted" | "deferred" | "rejected">("accepted");
   const permission = decisionPermission(state === "blocked" ? "External Advisor" : "Principal");
-  const audit = decisionSubmissionAudit(choice);
   const showRecommendation = state !== "blocked" && decisionRelease.clientVisible;
 
   return (
-    <ClientRouteShell kicker="Client decision" title="Digital Decision Room" subtitle="Accept, defer or reject only after permission, approval, compliance and evidence gates pass.">
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
-        <GlassPanel title="Trust X Beneficiary Update">
+    <main className="grid min-h-screen place-items-center bg-av-midnight/80 px-4 py-8 text-av-ivory">
+      <section className="w-full max-w-3xl rounded-lg border border-av-line bg-av-panel p-5 shadow-panel">
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-av-line/50 pb-3">
+          <div>
+            <p className="font-display text-2xl text-av-goldBright">Trust X Beneficiary Update</p>
+            <p className="mt-1 text-sm text-av-muted">Family decision request</p>
+          </div>
+          <StatusChip tone={state === "blocked" ? "danger" : state === "submitted" ? "success" : "warning"}>
+            {state === "blocked" ? "Blocked" : state === "submitted" ? "Submitted" : "Ready"}
+          </StatusChip>
+        </div>
+
+        <div className="grid gap-5">
           {state === "blocked" || !permission.allowed ? (
             <div className="rounded-lg border border-av-danger/70 bg-av-danger/10 p-4">
               <WorkflowBadge label="BLOCKED" />
@@ -493,6 +485,14 @@ export function DecisionsScreenV2() {
           {showRecommendation && state !== "submitted" ? (
             <div className="grid gap-4">
               <p className="text-av-muted">Released decision pack: update Trust X beneficiary register after family approval.</p>
+              <DashboardTable
+                columns={["Field", "Value"]}
+                rows={[
+                  ["Review date", "24 Jun 2026"],
+                  ["Family approvals", "Principal + spouse pending"],
+                  ["Evidence", "Linked"]
+                ]}
+              />
               <div className="grid gap-3 md:grid-cols-3">
                 {(["accepted", "deferred", "rejected"] as const).map((item) => (
                   <button
@@ -514,32 +514,15 @@ export function DecisionsScreenV2() {
             <div className="rounded-lg border border-av-success/60 bg-av-success/10 p-4">
               <StatusChip tone="success">Evidence created</StatusChip>
               <p className="mt-3 text-av-ivory">Decision submitted: {choice}.</p>
-              <p className="mt-2 text-sm text-av-muted">Audit event: {audit.action}. Evidence: {audit.evidenceLink}.</p>
+              <p className="mt-2 text-sm text-av-muted">A decision record has been created and linked to your evidence vault.</p>
+              <Link className="mt-4 inline-flex rounded-lg border border-av-success px-4 py-2 text-sm text-av-success" href="/evidence">
+                Open evidence
+              </Link>
             </div>
           ) : null}
-        </GlassPanel>
-
-        <Drawer title="Decision Controls">
-          <DashboardTable
-            columns={["Gate", "State"]}
-            rows={[
-              ["Advisor approval", "Complete"],
-              ["Compliance release", state === "blocked" ? "Missing" : "Complete"],
-              ["Evidence record", "Linked"],
-              ["Permission", permission.allowed ? "Allowed" : permission.reason],
-              ["Family approvals", "Principal + spouse pending"],
-              ["Review date", "24 Jun 2026"]
-            ]}
-          />
-          <div className="mt-4 flex flex-wrap gap-2">
-            <WorkflowBadge label="ADVISOR" />
-            <WorkflowBadge label="COMPLIANCE" />
-            <WorkflowBadge label="EVIDENCE" />
-            <WorkflowBadge label={state === "blocked" ? "BLOCKED" : "CLIENT"} />
-          </div>
-        </Drawer>
-      </div>
-    </ClientRouteShell>
+        </div>
+      </section>
+    </main>
   );
 }
 
@@ -552,7 +535,7 @@ export function EvidenceScreenV2() {
   const visibleRecords = evidenceRecords.filter((record) => filter === "All" || record.status === filter || record.visibility === filter);
 
   return (
-    <ClientRouteShell kicker="Evidence" title="Evidence Vault" subtitle="Evidence list, preview drawer, restricted records and missing-evidence escalation.">
+    <ClientRouteShell>
       <GlassPanel title="Filters">
         <div className="flex flex-wrap gap-2">
           {["All", "Validated", "Under Review", "Missing", "Restricted", "Client Visible", "Internal Only"].map((item) => (

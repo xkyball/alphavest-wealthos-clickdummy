@@ -8,7 +8,7 @@ Run scope: Phase 5 - Client Experience Rebuild.
 
 This pass rebuilt the seven client-facing routes from the v2 client screen specs and visuals while preserving the Phase 4 route model, permission helper, no-unapproved-advice gate, evidence helper and audit helper.
 
-Follow-up correction: mobile visuals are implemented as the mobile app content only. `/mobile` and `/mobile/upload` no longer render a decorative phone frame, desktop shell, visual-board header, side panels or visible state-toggle controls.
+Follow-up correction: visuals are implemented as actual app surfaces only. `/mobile` and `/mobile/upload` no longer render a decorative phone frame, desktop shell, visual-board header, side panels or visible state-toggle controls. The global left demo sidebar and Phase/V2 page-spec headers were removed from the client experience.
 
 ## Routes Implemented
 
@@ -19,7 +19,7 @@ Follow-up correction: mobile visuals are implemented as the mobile app content o
 | `/portal` | Implemented dashboard default plus loading, error and permission blocked states. |
 | `/wealth-map` | Implemented graph-like map, filters, Trust X drawer, restricted node and escalation notice. |
 | `/actions` | Implemented kanban board, action detail drawer and blocked missing-evidence state. |
-| `/decisions` | Implemented ready, blocked and submitted/evidence-created states. |
+| `/decisions` | Implemented ready, blocked and submitted/evidence-created states as a modal-style decision workflow surface. |
 | `/evidence` | Implemented evidence list, filters, preview drawer, restricted and missing-evidence states. |
 
 ## Visuals Used
@@ -83,10 +83,10 @@ Visible outputs:
 | Command | Result |
 |---|---|
 | `npm run typecheck` | Passed |
-| `npm test` | Passed: 18 tests |
+| `npm test` | Passed: 20 tests |
 | `npm run lint` | Passed |
 | `npm run build` | Passed |
-| `npm run test:e2e` | Passed: 3 route/source smoke tests |
+| `npm run test:e2e` | Passed: 5 route/source smoke tests |
 
 Browser smoke:
 
@@ -99,8 +99,11 @@ Additional boundary checks:
 
 - Tests assert mobile routes do not import/use `WireframePhone`.
 - Tests assert Phase visual IDs are not rendered in the Phase 5 client component.
+- Tests assert the app shell has no global left demo sidebar or route inventory.
+- Tests assert the decision route renders as a modal workflow surface, not a page with a decision-controls drawer.
 - `AGENTS.md` now contains the permanent mandatory mobile interpretation rule.
 - Browser checked `/mobile`, `/mobile?state=blocked`, `/mobile/upload`, and `/mobile/upload?state=low`; all had mobile content and no desktop app shell, phone-frame text, or visual ID text.
+- Browser checked `/portal`, `/wealth-map?focus=gaps`, `/actions`, `/decisions`, and `/evidence`; all had no left demo sidebar, no global route inventory, and no Phase/V2/page-spec header text. Portal was additionally checked for the actual dashboard copy: `Overview` and `Visibility score is not advice`.
 
 ## Known Limitations
 
