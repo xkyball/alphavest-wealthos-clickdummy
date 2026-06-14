@@ -1,5 +1,0 @@
-import { Phase8ServiceBlueprintScreen } from "@/components/phase8-screens";
-
-export default function JourneyPage() {
-  return <Phase8ServiceBlueprintScreen />;
-}
