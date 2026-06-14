@@ -71,12 +71,33 @@ test("/communication uses Phase 8 communication screen and loads decision tree",
   const source = readFileSync(new URL("../components/phase8-screens.tsx", import.meta.url), "utf8");
 
   assert.match(page, /Phase8CommunicationScreen/);
+  assert.match(page, /surface === "client-preview"/);
+  assert.match(page, /initialSurface=\{initialSurface\}/);
   assert.match(source, /Communication Decision Tree/);
   assert.match(source, /Call Trigger Matrix/);
   assert.match(source, /Client-Visible Message Preview/);
   assert.match(source, /fixed inset-0 z-40/);
   assert.match(source, /Back to communication workflow/);
   assert.match(source, /Evidence and Communication Log/);
+});
+
+test("communication client preview is a focused surface, not an open-by-default route", () => {
+  const source = readFileSync(new URL("../components/phase8-screens.tsx", import.meta.url), "utf8");
+
+  assert.match(source, /initialSurface\?: "client-preview"/);
+  assert.match(source, /useState\(\s*initialSurface === "client-preview"\s*\)/);
+  assert.doesNotMatch(
+    source,
+    /const \[previewOpen, setPreviewOpen\] = useState\(true\)/
+  );
+  assert.match(source, /Communications Hub \/ Drafts \/ Message Preview/);
+  assert.match(source, /Message Preview \(client-visible\)/);
+  assert.match(source, /Market Update & Your Portfolio/);
+  assert.match(source, /Contextual Summary/);
+  assert.match(source, /Approval & Compliance Status/);
+  assert.match(source, /Important Disclosures/);
+  assert.match(source, /Linked Recommendation \/ Next Step/);
+  assert.match(source, /Send to Client is disabled/);
 });
 
 test("selecting a trigger path updates recommendation route", () => {

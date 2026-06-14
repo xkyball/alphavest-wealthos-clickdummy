@@ -53,7 +53,7 @@ Default rule: visual types like `drawer`, `state_drawer`, `modal_state`, `drawer
 | V2-041 to V2-042 | `internal_route` | `/governance` | `Phase7GovernanceScreen` | Yes |
 | V2-043 | `logic_only` | `logic:permissions` | `lib/permissions.ts` | No |
 | V2-044 to V2-045 | `internal_route` | `/communication` | `Phase8CommunicationScreen` | Yes |
-| V2-046 | `focused_surface` | `overlay:communication-client-preview` | `Phase8CommunicationScreen` | No |
+| V2-046 | `focused_surface` | `overlay:communication-client-preview` | `Phase8CommunicationScreen` | No standalone page; `/communication?surface=client-preview` renders the focused overlay state |
 | V2-047 | `internal_route` | `/communication` | `Phase8CommunicationScreen` | Yes |
 | V2-048 to V2-050 | `reference_route` | `/service-blueprint`, `/journey` | `Phase8ServiceBlueprintScreen` | Yes, internal/reference only |
 | V2-051 to V2-053 | `reference_route` | `/roadmap` | `Phase8RoadmapScreen` | Yes, planning/reference only |
@@ -72,7 +72,7 @@ Examples:
 - V2-025: `Release blocked - critical evidence missing`, `Missing Evidence Checklist`, `Process Status`, `Client Message`.
 - V2-030: `Selected Trigger Detail`, `Analyst Notes`.
 - V2-039/V2-040: `Role Detail`, `Second Confirmation Required`, `Confirm and apply change`.
-- V2-046: `Client-visible message preview`, `Back to communication workflow`, blocked send copy.
+- V2-046: `Communications Hub`, `Message Preview`, `Market Update & Your Portfolio`, `Contextual Summary`, `Approval & Compliance Status`, `Important Disclosures`, `Linked Recommendation / Next Step`, `Send to Client is disabled`, `Back to communication workflow`.
 
 ## Required Tests
 

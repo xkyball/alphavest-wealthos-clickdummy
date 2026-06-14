@@ -93,14 +93,20 @@ function workflowStepStatus(index: number, gateOpen: boolean) {
   return index < 3 ? "complete" : "blocked";
 }
 
-export function Phase8CommunicationScreen() {
+export function Phase8CommunicationScreen({
+  initialSurface
+}: {
+  initialSurface?: "client-preview";
+}) {
   const { snapshot, loading, error, transition } = useDemoSession();
   const workflow = findDemoWorkflow(snapshot, "wf-q2-communication");
   const [triggerId, setTriggerId] = useState(communicationTriggers[0].id);
   const [roleView, setRoleView] = useState<CommunicationRoleView>("advisor");
   const [advisorApproved, setAdvisorApproved] = useState(false);
   const [complianceReleased, setComplianceReleased] = useState(false);
-  const [previewOpen, setPreviewOpen] = useState(true);
+  const [previewOpen, setPreviewOpen] = useState(
+    initialSurface === "client-preview"
+  );
 
   const trigger =
     communicationTriggers.find((item) => item.id === triggerId) ??
@@ -357,55 +363,204 @@ export function Phase8CommunicationScreen() {
       </div>
 
       {previewOpen ? (
-        <div className="fixed inset-0 z-40 grid place-items-center bg-av-midnight/78 px-4 py-8 backdrop-blur-sm">
-          <section className="w-full max-w-3xl rounded-lg border border-av-line bg-av-panel p-5 shadow-panel">
-            <div className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-av-line/50 pb-3">
+        <div className="fixed inset-0 z-40 overflow-y-auto bg-av-midnight/78 px-4 py-8 backdrop-blur-sm">
+          <section className="mx-auto grid w-full max-w-6xl gap-4 rounded-lg border border-av-line bg-av-panel p-5 shadow-panel">
+            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-av-line/50 pb-4">
               <div>
-                <p className="font-display text-2xl text-av-goldBright">
-                  Steward Family Q2 Review
+                <p className="text-xs uppercase text-av-muted">
+                  Communications Hub / Drafts / Message Preview
+                </p>
+                <p className="mt-1 font-display text-3xl text-av-goldBright">
+                  Client-visible message preview
                 </p>
                 <p className="mt-1 text-sm text-av-muted">
-                  Client-visible message preview
+                  Draft ID: DFT-2025-05-14-0287 / Created: May 14, 2025
+                  10:22 AM
                 </p>
               </div>
               <WorkflowBadge label={visibility.clientVisible ? "CLIENT" : "BLOCKED"} />
             </div>
 
-            <div className="grid gap-5">
-              <div className="rounded-lg border border-av-line bg-av-midnight/55 p-4">
-                <p className="text-xs uppercase text-av-muted">
-                  Preview for Steward Family
-                </p>
-                <p className="mt-3 text-sm leading-6 text-av-ivory">
-                  Your Q2 review pack is ready. We have highlighted the next
-                  action and the supporting evidence. Please review the message
-                  and choose whether a digital response is enough or whether you
-                  would prefer a conversation with your advisor.
-                </p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <StatusChip tone="info">
-                    {communicationRouteLabels[route]}
-                  </StatusChip>
-                  <StatusChip tone={visibility.clientVisible ? "success" : "warning"}>
-                    {visibility.clientVisible ? "Released" : "Blocked until release"}
-                  </StatusChip>
+            <div className="rounded-lg border border-av-line bg-av-midnight/45 p-4">
+              <div className="grid gap-3 md:grid-cols-[repeat(4,minmax(0,1fr))_13rem]">
+                {[
+                  ["Drafted", "complete"],
+                  ["Advisor Review", releaseState.advisorApproval ? "approved" : "pending"],
+                  ["Compliance Review", releaseState.complianceRelease ? "released" : "pending"],
+                  ["Ready to Send", sendTransition.allowed ? "ready" : "blocked"]
+                ].map(([label, state]) => (
+                  <div
+                    className="rounded border border-av-line/60 bg-av-panelSoft p-3"
+                    key={label}
+                  >
+                    <p className="text-xs uppercase text-av-muted">{label}</p>
+                    <p className="mt-1 text-sm font-semibold text-av-ivory">
+                      {state}
+                    </p>
+                  </div>
+                ))}
+                <div className="rounded border border-av-success/60 bg-av-success/10 p-3">
+                  <p className="text-xs uppercase text-av-muted">
+                    Overall status
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-av-success">
+                    Ready to Send
+                  </p>
+                </div>
+              </div>
+              <p className="mt-3 text-xs text-av-muted">
+                No unapproved advice reaches the client. Send stays disabled
+                until advisor approval, compliance release, evidence and
+                permission gates are all satisfied.
+              </p>
+            </div>
+
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_28rem]">
+              <div className="grid gap-4">
+                <div className="rounded-lg border border-av-line bg-av-midnight/55 p-5">
+                  <p className="text-xs uppercase text-av-muted">
+                    Message Preview (client-visible)
+                  </p>
+                  <h2 className="mt-2 font-display text-3xl text-av-ivory">
+                    Market Update & Your Portfolio
+                  </h2>
+                  <div className="mt-4 grid gap-3 text-sm leading-6 text-av-muted">
+                    <p>Dear Jordan,</p>
+                    <p>
+                      Recent market movements have increased concentration risk
+                      in your portfolio. We recommend scheduling a portfolio
+                      review call to discuss whether your current allocation
+                      remains aligned with your long-term objectives.
+                    </p>
+                    <p>
+                      This message is based on your latest portfolio holdings,
+                      approved risk profile and the AlphaVest Q2 market
+                      assessment. No changes will be made without your explicit
+                      instruction.
+                    </p>
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <StatusChip tone="info">
+                      {communicationRouteLabels[route]}
+                    </StatusChip>
+                    <StatusChip tone={visibility.clientVisible ? "success" : "warning"}>
+                      {visibility.clientVisible ? "Released" : "Blocked until release"}
+                    </StatusChip>
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-av-line bg-av-midnight/40 p-4">
+                  <p className="text-sm font-semibold text-av-ivory">
+                    Important Disclosures
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-av-muted">
+                    Portfolio recommendations are subject to your investment
+                    objectives, risk tolerance and liquidity needs. Past
+                    performance is not a guarantee of future returns.
+                  </p>
+                </div>
+
+                <div className="rounded-lg border border-av-line bg-av-midnight/40 p-4">
+                  <p className="text-sm font-semibold text-av-ivory">
+                    Linked Recommendation / Next Step
+                  </p>
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm text-av-muted">
+                    <span>Schedule review call for concentration risk.</span>
+                    <button
+                      className="rounded-lg border border-av-line px-3 py-2 text-av-muted"
+                      type="button"
+                    >
+                      View Recommendation
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              {!visibility.clientVisible ? (
+              <div className="grid content-start gap-4">
+                <div className="rounded-lg border border-av-line bg-av-midnight/40 p-4">
+                  <p className="text-sm font-semibold text-av-ivory">
+                    Contextual Summary
+                  </p>
+                  <div className="mt-3">
+                    <DashboardTable
+                      columns={["Field", "Value"]}
+                      rows={[
+                        ["Client", "Jordan Smith"],
+                        ["Household", "Smith Household"],
+                        ["Account(s)", "3 Accounts"],
+                        ["Topic", "Portfolio concentration risk"],
+                        ["Channel", "Email"],
+                        ["Scheduled Send", "Pending approval gate"]
+                      ]}
+                    />
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-av-line bg-av-midnight/40 p-4">
+                  <p className="text-sm font-semibold text-av-ivory">
+                    Approval & Compliance Status
+                  </p>
+                  <div className="mt-3 grid gap-2">
+                    {[
+                      ["Advisor Approval", releaseState.advisorApproval ? "APPROVED" : "PENDING"],
+                      ["Compliance Review", releaseState.complianceRelease ? "RELEASED" : "PENDING"],
+                      ["Human Review Step", releaseState.advisorApproval ? "Completed" : "Required"],
+                      ["Compliance Step", releaseState.complianceRelease ? "Completed" : "Required"]
+                    ].map(([label, value]) => (
+                      <div
+                        className="flex items-center justify-between rounded border border-av-line/50 bg-av-panelSoft px-3 py-2 text-sm"
+                        key={label}
+                      >
+                        <span className="text-av-muted">{label}</span>
+                        <StatusChip
+                          tone={
+                            value === "APPROVED" ||
+                            value === "RELEASED" ||
+                            value === "Completed"
+                              ? "success"
+                              : "warning"
+                          }
+                        >
+                          {value}
+                        </StatusChip>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="rounded-lg border border-av-warning/60 bg-av-warning/10 p-4">
                   <WorkflowBadge label="BLOCKED" />
-                  <p className="mt-3 text-av-ivory">
-                    Send is blocked until advisor approval, compliance release,
-                    evidence and send permission are complete.
+                  <p className="mt-3 text-sm leading-6 text-av-ivory">
+                    Preview is blocked until both approvals are complete. Send
+                    to Client remains disabled until Advisor Approval and
+                    Compliance Release are complete.
                   </p>
                 </div>
-              ) : null}
+              </div>
+            </div>
 
-              <div className="grid gap-3 md:grid-cols-2">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-av-line/50 pt-4">
+              <div className="flex flex-wrap gap-2">
+                <button
+                  className="rounded-lg border border-av-line px-4 py-2 text-sm text-av-muted"
+                  type="button"
+                >
+                  Save Draft
+                </button>
+                <button
+                  className="rounded-lg border border-av-line px-4 py-2 text-sm text-av-muted"
+                  type="button"
+                >
+                  Return for Revision
+                </button>
+              </div>
+              <p className="max-w-md text-xs text-av-muted">
+                Send to Client is disabled. Reason: Awaiting final approvals.
+              </p>
+              <div className="flex flex-wrap gap-2">
                 <button
                   className={cn(
-                    "rounded-lg border px-4 py-3 text-sm font-semibold",
+                    "rounded-lg border px-4 py-2 text-sm font-semibold",
                     sendTransition.allowed
                       ? "border-av-gold bg-av-gold text-av-midnight"
                       : "border-av-line text-av-muted"
@@ -419,17 +574,17 @@ export function Phase8CommunicationScreen() {
                   }
                   type="button"
                 >
-                  {sendTransition.allowed ? "Send released message" : "Send disabled"}
+                  Send to Client
                 </button>
                 <button
-                  className="rounded-lg border border-av-line px-4 py-3 text-sm text-av-muted"
+                  className="rounded-lg border border-av-line px-4 py-2 text-sm text-av-muted"
                   onClick={() => setPreviewOpen(false)}
                   type="button"
                 >
                   Back to communication workflow
                 </button>
               </div>
-              {error ? <p className="text-sm text-av-danger">{error}</p> : null}
+              {error ? <p className="w-full text-sm text-av-danger">{error}</p> : null}
             </div>
           </section>
         </div>

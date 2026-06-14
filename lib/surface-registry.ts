@@ -611,9 +611,22 @@ export const surfaceRegistry = [
     surfaceKey: "overlay:communication-client-preview",
     component: "Phase8CommunicationScreen",
     directNavigationAllowed: false,
-    entryPoints: ["/communication Open client preview overlay"],
+    entryPoints: [
+      "/communication Open client preview overlay",
+      "/communication?surface=client-preview"
+    ],
     helpers: ["permission", "evidence", "audit", "releaseGate"],
-    regionTokens: ["Client-visible message preview", "Back to communication workflow", "Send is blocked until advisor approval"]
+    regionTokens: [
+      "Communications Hub",
+      "Message Preview",
+      "Market Update & Your Portfolio",
+      "Contextual Summary",
+      "Approval & Compliance Status",
+      "Important Disclosures",
+      "Linked Recommendation / Next Step",
+      "Send to Client is disabled",
+      "Back to communication workflow"
+    ]
   }),
   entry({
     visualId: "V2-047",
