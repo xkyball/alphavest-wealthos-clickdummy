@@ -1,5 +1,5 @@
-import { ComplianceV2Screen } from "@/components/phase4-v2-screens";
+import { InternalComplianceScreen } from "@/components/phase6-internal-screens";
 
 export default function CompliancePage() {
-  return <ComplianceV2Screen />;
+  return <InternalComplianceScreen />;
 }

@@ -1,5 +1,5 @@
-import { AdvisorApprovalV2Screen } from "@/components/phase4-v2-screens";
+import { InternalAdvisorApprovalScreen } from "@/components/phase6-internal-screens";
 
 export default function AdvisorApprovalPage() {
-  return <AdvisorApprovalV2Screen />;
+  return <InternalAdvisorApprovalScreen />;
 }

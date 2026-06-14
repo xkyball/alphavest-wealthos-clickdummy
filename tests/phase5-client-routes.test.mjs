@@ -69,3 +69,14 @@ test("decision route renders as a modal workflow surface", () => {
   assert.match(source, /Family decision request/);
   assert.doesNotMatch(source, /Decision Controls/);
 });
+
+test("evidence route uses a preview drawer overlay, not a fixed right-column detail page", () => {
+  const source = readFileSync(new URL("../components/phase5-client-screens.tsx", import.meta.url), "utf8");
+  const evidenceSource = source.slice(source.indexOf("export function EvidenceScreenV2"));
+
+  assert.match(evidenceSource, /Evidence Preview Drawer/);
+  assert.match(evidenceSource, /fixed inset-0 z-40/);
+  assert.match(evidenceSource, /Close preview/);
+  assert.doesNotMatch(evidenceSource, /xl:grid-cols-\[minmax\(0,1fr\)_24rem\]/);
+  assert.doesNotMatch(evidenceSource, /<Drawer title=\{selected\.title\}>/);
+});

@@ -1,5 +1,5 @@
-import { SignalsScreen } from "@/components/phase3-client-screens";
+import { InternalSignalsScreen } from "@/components/phase6-internal-screens";
 
 export default function SignalsPage() {
-  return <SignalsScreen />;
+  return <InternalSignalsScreen />;
 }

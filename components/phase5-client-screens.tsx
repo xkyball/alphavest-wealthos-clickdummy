@@ -573,6 +573,7 @@ export function DecisionsScreenV2() {
 export function EvidenceScreenV2() {
   const [selectedId, setSelectedId] = useState(evidenceRecords[0].id);
   const [filter, setFilter] = useState("All");
+  const [previewOpen, setPreviewOpen] = useState(true);
   const { snapshot } = useDemoSession();
   const selected = evidenceRecords.find((record) => record.id === selectedId) ?? evidenceRecords[0];
   const access = evidenceAccess(selected, selected.restricted ? "Next Gen" : "Principal");
@@ -590,7 +591,7 @@ export function EvidenceScreenV2() {
           ))}
         </div>
       </GlassPanel>
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
+      <div className="grid gap-5">
         <GlassPanel title="Evidence Records">
           <div className="grid gap-2">
             {snapshot?.evidenceRecords.slice(0, 6).map((record) => (
@@ -603,7 +604,15 @@ export function EvidenceScreenV2() {
               </button>
             ))}
             {visibleRecords.map((record) => (
-              <button className={cn("grid gap-2 rounded-lg border p-3 text-left text-sm", selected.id === record.id ? "border-av-gold bg-av-gold/15" : "border-av-line bg-av-midnight/45")} key={record.id} onClick={() => setSelectedId(record.id)} type="button">
+              <button
+                className={cn("grid gap-2 rounded-lg border p-3 text-left text-sm", selected.id === record.id ? "border-av-gold bg-av-gold/15" : "border-av-line bg-av-midnight/45")}
+                key={record.id}
+                onClick={() => {
+                  setSelectedId(record.id);
+                  setPreviewOpen(true);
+                }}
+                type="button"
+              >
                 <span className="flex flex-wrap items-center justify-between gap-2">
                   <span className="font-semibold text-av-ivory">{record.title}</span>
                   <StatusChip tone={record.status === "Missing" || record.status === "Restricted" ? "danger" : "success"}>{record.status}</StatusChip>
@@ -613,37 +622,62 @@ export function EvidenceScreenV2() {
             ))}
           </div>
         </GlassPanel>
-
-        <Drawer title={selected.title}>
-          {!access.allowed ? (
-            <div className="rounded-lg border border-av-danger/70 bg-av-danger/10 p-3">
-              <WorkflowBadge label="BLOCKED" />
-              <p className="mt-3 text-sm text-av-ivory">Restricted evidence content is hidden.</p>
-              <p className="mt-2 text-xs text-av-muted">Reason: {access.reason}.</p>
-            </div>
-          ) : selected.status === "Missing" ? (
-            <div className="rounded-lg border border-av-warning/60 bg-av-warning/10 p-3">
-              <WorkflowBadge label="REVIEW" />
-              <p className="mt-3 text-sm text-av-ivory">Missing evidence escalation is open.</p>
-              <p className="mt-2 text-xs text-av-muted">Compliance can block release or request evidence before client visibility.</p>
-            </div>
-          ) : (
-            <DashboardTable
-              columns={["Field", "Value"]}
-              rows={[
-                ["Type", selected.type],
-                ["Visibility", selected.visibility],
-                ["Evidence URI", evidenceLinkFor(selected)],
-                ["Audit action", audit.action],
-                ["Audit result", audit.result]
-              ]}
-            />
-          )}
-          <div className="mt-4 rounded-lg border border-av-line bg-av-midnight/45 p-3 text-xs text-av-muted">
-            Audit trail preview: {audit.timestamp} / {audit.actorRole} / {audit.evidenceLink}
-          </div>
-        </Drawer>
       </div>
+
+      {previewOpen ? (
+        <div className="fixed inset-0 z-40 bg-av-midnight/72 backdrop-blur-sm">
+          <aside className="ml-auto flex h-full w-full max-w-2xl flex-col border-l border-av-line bg-av-panel shadow-panel">
+            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-av-line/60 p-4">
+              <div>
+                <p className="font-display text-2xl text-av-goldBright">
+                  {selected.title}
+                </p>
+                <p className="mt-1 text-sm text-av-muted">
+                  Evidence Preview Drawer
+                </p>
+              </div>
+              <button
+                className="rounded-lg border border-av-line px-3 py-2 text-sm text-av-muted"
+                onClick={() => setPreviewOpen(false)}
+                type="button"
+              >
+                Close preview
+              </button>
+            </div>
+            <div className="grid flex-1 gap-4 overflow-y-auto p-4">
+              {!access.allowed ? (
+                <div className="rounded-lg border border-av-danger/70 bg-av-danger/10 p-4">
+                  <WorkflowBadge label="BLOCKED" />
+                  <p className="mt-3 text-sm text-av-ivory">
+                    Restricted evidence content is hidden.
+                  </p>
+                  <p className="mt-2 text-xs text-av-muted">Reason: {access.reason}.</p>
+                </div>
+              ) : selected.status === "Missing" ? (
+                <div className="rounded-lg border border-av-warning/60 bg-av-warning/10 p-4">
+                  <WorkflowBadge label="REVIEW" />
+                  <p className="mt-3 text-sm text-av-ivory">Missing evidence escalation is open.</p>
+                  <p className="mt-2 text-xs text-av-muted">Compliance can block release or request evidence before client visibility.</p>
+                </div>
+              ) : (
+                <DashboardTable
+                  columns={["Field", "Value"]}
+                  rows={[
+                    ["Type", selected.type],
+                    ["Visibility", selected.visibility],
+                    ["Evidence URI", evidenceLinkFor(selected)],
+                    ["Audit action", audit.action],
+                    ["Audit result", audit.result]
+                  ]}
+                />
+              )}
+              <div className="rounded-lg border border-av-line bg-av-midnight/45 p-3 text-xs text-av-muted">
+                Audit trail preview: {audit.timestamp} / {audit.actorRole} / {audit.evidenceLink}
+              </div>
+            </div>
+          </aside>
+        </div>
+      ) : null}
     </ClientRouteShell>
   );
 }

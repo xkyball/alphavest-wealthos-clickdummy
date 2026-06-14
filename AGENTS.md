@@ -75,6 +75,18 @@ For desktop/web visuals, the same rule applies: implement only the actual dashbo
 
 Workflow visuals must be interpreted as workflows, not as a collection of standalone pages. If a visual shows a decision room, drawer, modal, or pop-up style interaction, implement that interaction shape. A route may exist for deep-linking in the click-dummy, but the rendered UI should still match the workflow surface, such as a modal over context rather than a full documentation-style page.
 
+### Overlay / Drawer Screen Rule
+
+When a visual names or depicts a drawer, preview drawer, modal, pop-up, release preview, record detail panel, blocked permission panel, escalation panel or similar focused interaction, implement it as an overlay/drawer/modal surface over the route context. Do not convert it into a normal full-page implementation just because the click-dummy has a route for deep linking.
+
+Examples:
+
+- `/decisions` should behave like a decision-room modal workflow surface.
+- `/evidence` should show the evidence list/vault as route context and the record detail as a preview drawer overlay.
+- Communication client-visible message preview should open as a release/preview overlay over the internal communication workflow.
+
+If an overlay route needs loading, blocked or error states, those states belong inside the overlay surface and must still use the central permission, visibility, evidence and audit helpers.
+
 Some visuals are entirely reference/information boards, especially:
 
 - V2-043 Permission Matrix Reference Board

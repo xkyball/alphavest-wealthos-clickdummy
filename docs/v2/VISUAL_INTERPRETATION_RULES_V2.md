@@ -83,6 +83,18 @@ Client-facing UI should be clear, calm and minimally annotated. It must not show
 
 Internal workbench/admin/compliance screens may show more operational detail, but still should not show developer-only annotations unless explicitly part of an internal reference route.
 
+## Rule 6A — Drawers, modals and previews stay focused
+
+If a visual depicts a drawer, preview drawer, modal, pop-up, release preview, evidence detail, permission-blocked panel or escalation panel, implement it as that interaction shape over the route context.
+
+Do not flatten focused interactions into ordinary full-page boards. A route may exist for deep linking in the click-dummy, but the rendered surface should still behave like the visual: overlay, side drawer, centered modal or focused panel.
+
+Examples:
+
+- Evidence vault records open in a preview drawer overlay.
+- Decision-room content is a modal-style workflow surface.
+- Communication message preview opens as a client-visible preview/release overlay over the internal workflow context.
+
 ## Rule 7 — Special reference-only assets
 
 Treat these as reference-only unless an explicit internal documentation route is requested:
