@@ -63,12 +63,11 @@ function MobileAppSurface({ children }: { children: React.ReactNode }) {
 
 function MobileNav() {
   return (
-    <nav className="mt-5 grid grid-cols-4 gap-2 border-t border-av-line/60 pt-3 text-center text-[0.68rem] text-av-muted">
+    <nav className="mt-5 grid grid-cols-3 gap-2 border-t border-av-line/60 pt-3 text-center text-[0.68rem] text-av-muted">
       {[
         ["Home", "/mobile"],
         ["Upload", "/mobile/upload"],
-        ["Decide", "/decisions"],
-        ["Vault", "/evidence"]
+        ["Decide", "/decisions"]
       ].map(([label, href]) => (
         <Link className="rounded border border-av-line/45 px-1 py-2 hover:border-av-gold" href={href} key={label}>
           {label}
@@ -144,9 +143,6 @@ export function MobileScreenV2() {
       <div className="mt-4 grid gap-2 text-xs">
         <Link className="rounded border border-av-line/50 px-3 py-2 text-av-muted" href="/governance">
           Governance access
-        </Link>
-        <Link className="rounded border border-av-line/50 px-3 py-2 text-av-muted" href="/evidence">
-          Evidence vault
         </Link>
       </div>
       <MobileNav />
@@ -486,6 +482,7 @@ export function DecisionsScreenV2() {
   const searchParams = useSearchParams();
   const [state, setState] = useState(queryState(searchParams.get("state"), ["ready", "blocked", "submitted"] as const, "ready"));
   const [choice, setChoice] = useState<"accepted" | "deferred" | "rejected">("accepted");
+  const [evidencePreviewOpen, setEvidencePreviewOpen] = useState(false);
   const { snapshot, transition, error } = useDemoSession();
   const recommendation = findDemoWorkflow(snapshot, "wf-trust-x-recommendation");
   const permission = decisionPermission(state === "blocked" ? "External Advisor" : "Principal");
@@ -559,13 +556,33 @@ export function DecisionsScreenV2() {
               <StatusChip tone="success">Evidence created</StatusChip>
               <p className="mt-3 text-av-ivory">Decision submitted: {choice}.</p>
               <p className="mt-2 text-sm text-av-muted">A decision record has been created and linked to your evidence vault.</p>
-              <Link className="mt-4 inline-flex rounded-lg border border-av-success px-4 py-2 text-sm text-av-success" href="/evidence">
-                Open evidence
-              </Link>
+              <button
+                className="mt-4 inline-flex rounded-lg border border-av-success px-4 py-2 text-sm text-av-success"
+                onClick={() => setEvidencePreviewOpen(true)}
+                type="button"
+              >
+                Open evidence preview
+              </button>
             </div>
           ) : null}
         </div>
       </section>
+      <EvidencePreviewDrawer
+        accessAllowed
+        accessReason="allowed"
+        auditAction="decision.submitted"
+        auditActorRole="Principal"
+        auditEvidenceLink="evidence://decision-record/decision-trust-x-beneficiary-accepted"
+        auditResult="created"
+        auditTimestamp="2026-06-14T00:00:00.000Z"
+        evidenceUri="evidence://decision-record/decision-trust-x-beneficiary-accepted"
+        onClose={() => setEvidencePreviewOpen(false)}
+        open={evidencePreviewOpen}
+        recordStatus="Validated"
+        recordTitle="Decision evidence record"
+        recordType="Decision Record"
+        recordVisibility="Client/Internal"
+      />
     </main>
   );
 }
@@ -624,60 +641,113 @@ export function EvidenceScreenV2() {
         </GlassPanel>
       </div>
 
-      {previewOpen ? (
-        <div className="fixed inset-0 z-40 bg-av-midnight/72 backdrop-blur-sm">
-          <aside className="ml-auto flex h-full w-full max-w-2xl flex-col border-l border-av-line bg-av-panel shadow-panel">
-            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-av-line/60 p-4">
-              <div>
-                <p className="font-display text-2xl text-av-goldBright">
-                  {selected.title}
-                </p>
-                <p className="mt-1 text-sm text-av-muted">
-                  Evidence Preview Drawer
-                </p>
-              </div>
-              <button
-                className="rounded-lg border border-av-line px-3 py-2 text-sm text-av-muted"
-                onClick={() => setPreviewOpen(false)}
-                type="button"
-              >
-                Close preview
-              </button>
-            </div>
-            <div className="grid flex-1 gap-4 overflow-y-auto p-4">
-              {!access.allowed ? (
-                <div className="rounded-lg border border-av-danger/70 bg-av-danger/10 p-4">
-                  <WorkflowBadge label="BLOCKED" />
-                  <p className="mt-3 text-sm text-av-ivory">
-                    Restricted evidence content is hidden.
-                  </p>
-                  <p className="mt-2 text-xs text-av-muted">Reason: {access.reason}.</p>
-                </div>
-              ) : selected.status === "Missing" ? (
-                <div className="rounded-lg border border-av-warning/60 bg-av-warning/10 p-4">
-                  <WorkflowBadge label="REVIEW" />
-                  <p className="mt-3 text-sm text-av-ivory">Missing evidence escalation is open.</p>
-                  <p className="mt-2 text-xs text-av-muted">Compliance can block release or request evidence before client visibility.</p>
-                </div>
-              ) : (
-                <DashboardTable
-                  columns={["Field", "Value"]}
-                  rows={[
-                    ["Type", selected.type],
-                    ["Visibility", selected.visibility],
-                    ["Evidence URI", evidenceLinkFor(selected)],
-                    ["Audit action", audit.action],
-                    ["Audit result", audit.result]
-                  ]}
-                />
-              )}
-              <div className="rounded-lg border border-av-line bg-av-midnight/45 p-3 text-xs text-av-muted">
-                Audit trail preview: {audit.timestamp} / {audit.actorRole} / {audit.evidenceLink}
-              </div>
-            </div>
-          </aside>
-        </div>
-      ) : null}
+      <EvidencePreviewDrawer
+        accessAllowed={access.allowed}
+        accessReason={access.reason}
+        auditActorRole={audit.actorRole}
+        auditEvidenceLink={audit.evidenceLink}
+        auditResult={audit.result}
+        auditTimestamp={audit.timestamp}
+        auditAction={audit.action}
+        evidenceUri={evidenceLinkFor(selected)}
+        onClose={() => setPreviewOpen(false)}
+        open={previewOpen}
+        recordStatus={selected.status}
+        recordTitle={selected.title}
+        recordType={selected.type}
+        recordVisibility={selected.visibility}
+      />
     </ClientRouteShell>
+  );
+}
+
+export function EvidencePreviewDrawer({
+  accessAllowed,
+  accessReason,
+  auditAction,
+  auditActorRole,
+  auditEvidenceLink,
+  auditResult,
+  auditTimestamp,
+  evidenceUri,
+  onClose,
+  open,
+  recordStatus,
+  recordTitle,
+  recordType,
+  recordVisibility
+}: {
+  accessAllowed: boolean;
+  accessReason: string;
+  auditAction: string;
+  auditActorRole: string;
+  auditEvidenceLink: string;
+  auditResult: string;
+  auditTimestamp: string;
+  evidenceUri: string;
+  onClose: () => void;
+  open: boolean;
+  recordStatus: string;
+  recordTitle: string;
+  recordType: string;
+  recordVisibility: string;
+}) {
+  if (!open) {
+    return null;
+  }
+
+  return (
+    <div className="fixed inset-0 z-40 bg-av-midnight/72 backdrop-blur-sm">
+      <aside className="ml-auto flex h-full w-full max-w-2xl flex-col border-l border-av-line bg-av-panel shadow-panel">
+        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-av-line/60 p-4">
+          <div>
+            <p className="font-display text-2xl text-av-goldBright">
+              {recordTitle}
+            </p>
+            <p className="mt-1 text-sm text-av-muted">
+              Evidence Preview Drawer
+            </p>
+          </div>
+          <button
+            className="rounded-lg border border-av-line px-3 py-2 text-sm text-av-muted"
+            onClick={onClose}
+            type="button"
+          >
+            Close preview
+          </button>
+        </div>
+        <div className="grid flex-1 gap-4 overflow-y-auto p-4">
+          {!accessAllowed ? (
+            <div className="rounded-lg border border-av-danger/70 bg-av-danger/10 p-4">
+              <WorkflowBadge label="BLOCKED" />
+              <p className="mt-3 text-sm text-av-ivory">
+                Restricted evidence content is hidden.
+              </p>
+              <p className="mt-2 text-xs text-av-muted">Reason: {accessReason}.</p>
+            </div>
+          ) : recordStatus === "Missing" ? (
+            <div className="rounded-lg border border-av-warning/60 bg-av-warning/10 p-4">
+              <WorkflowBadge label="REVIEW" />
+              <p className="mt-3 text-sm text-av-ivory">Missing evidence escalation is open.</p>
+              <p className="mt-2 text-xs text-av-muted">Compliance can block release or request evidence before client visibility.</p>
+            </div>
+          ) : (
+            <DashboardTable
+              columns={["Field", "Value"]}
+              rows={[
+                ["Type", recordType],
+                ["Visibility", recordVisibility],
+                ["Evidence URI", evidenceUri],
+                ["Audit action", auditAction],
+                ["Audit result", auditResult]
+              ]}
+            />
+          )}
+          <div className="rounded-lg border border-av-line bg-av-midnight/45 p-3 text-xs text-av-muted">
+            Audit trail preview: {auditTimestamp} / {auditActorRole} / {auditEvidenceLink}
+          </div>
+        </div>
+      </aside>
+    </div>
   );
 }

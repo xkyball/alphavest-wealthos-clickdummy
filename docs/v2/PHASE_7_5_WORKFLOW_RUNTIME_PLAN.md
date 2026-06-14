@@ -33,7 +33,7 @@ Happy path:
 3. `/compliance` triggers `compliance.release`.
 4. `/mobile` and `/decisions` now show the client-visible decision pack.
 5. `/decisions` triggers `client.submit_decision`.
-6. `/evidence` shows runtime evidence/audit records created by the previous clicks.
+6. Evidence preview opens contextually from workflow routes and shows runtime evidence/audit records created by previous clicks; `/evidence` is not used as a standalone navigation target.
 
 Related paths:
 

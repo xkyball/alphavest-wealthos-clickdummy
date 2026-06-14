@@ -10,7 +10,7 @@ Date: 2026-06-14
 | `/wealth-map` | `WealthMapScreenV2` | V2-013, V2-014, V2-015, V2-016 | Graph-like node map, filters, relationship legend, detail drawer, escalation notice | Restricted node uses central permission helper and hides sensitive fields. |
 | `/actions` | `ActionsScreenV2` | V2-017, V2-018, V2-019 | Kanban board, action cards, detail drawer | Missing evidence action is blocked and cannot advance in the mini workflow. |
 | `/decisions` | `DecisionsScreenV2` | V2-020, V2-021, V2-022 | Modal-style decision workflow surface with ready, blocked and submitted states; Accept/Defer/Reject controls | Advice-like recommendation appears only when release, evidence and permission gates pass. Submission creates visible evidence result. |
-| `/evidence` | `EvidenceScreenV2` | V2-023, V2-024, V2-025 | Evidence list, filters, preview drawer, restricted and missing evidence states | Restricted evidence hides content; missing evidence escalates before release. |
+| Evidence preview overlay | `EvidencePreviewDrawer` | V2-023, V2-024, V2-025 | Contextual preview drawer opened from workflows such as workbench and decision submission | Restricted evidence hides content; missing evidence escalates before release. `/evidence` redirects to `/portal` and is not a standalone navigation target. |
 
 ## Navigation Relationships
 
@@ -20,7 +20,7 @@ Date: 2026-06-14
 - `/wealth-map` highlights focused evidence / restricted nodes when opened from the dashboard gap path.
 - `/actions` links blocked evidence actions to `/mobile/upload` and ready decisions to `/decisions`.
 - `/decisions` exposes evidence links after submission.
-- `/evidence` shows audit trail previews for records that can be viewed.
+- Evidence preview overlay shows audit trail previews for records that can be viewed.
 
 ## Non-UI Translation
 

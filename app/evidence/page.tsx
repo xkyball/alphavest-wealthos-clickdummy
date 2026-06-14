@@ -1,5 +1,5 @@
-import { EvidenceScreenV2 } from "@/components/phase5-client-screens";
+import { redirect } from "next/navigation";
 
 export default function EvidencePage() {
-  return <EvidenceScreenV2 />;
+  redirect("/portal");
 }

@@ -16,7 +16,7 @@ This audit checks implemented routes against the v2 visual interpretation rule: 
 | `/wealth-map` | Graph plus detail drawer | OK. Detail remains drawer-like beside graph context. |
 | `/actions` | Kanban plus detail drawer | OK. Detail remains drawer-like beside workflow context. |
 | `/decisions` | Modal workflow surface | OK. Already implemented as centered decision-room modal. |
-| `/evidence` | Evidence vault plus preview drawer | Refactored. Evidence list is the route context; record detail is now a preview drawer overlay. |
+| Evidence preview | Contextual preview drawer | Refactored again. Evidence records now open as a drawer overlay from workflow context, including workbench and decision submission. `/evidence` redirects to `/portal` and is not a standalone navigation target. |
 | `/signals` | Internal trigger workflow | Refactored. Removed legacy `Phase3Board` usage and replaced with dedicated internal workflow surface. |
 | `/workbench` | Internal workbench | OK. Already uses runtime command surface, not visual-board shell. |
 | `/advisor-approval` | Internal advisor gate | Refactored. Removed old `V2ScreenShell` usage and replaced with dedicated internal workflow surface. |
@@ -35,6 +35,7 @@ Before implementing any new screen:
 3. Translate notes, legends, metadata, workflow explanations, permission hints and audit hints into model logic, tests and docs.
 4. If the visual is a drawer/modal/popup/preview, preserve that surface shape even when a route exists for deep linking.
 5. Add or update tests that assert the route does not use legacy board shells, annotation panels or visual metadata.
+6. Do not add direct links to standalone routes for focused surfaces; open them in context.
 
 ## Guard Tests
 
@@ -53,4 +54,4 @@ Command results after this audit/refactor:
 | `npm run lint` | Passed |
 | `npm run build` | Passed |
 | `npm run test:e2e` | Passed: 6 route/source smoke tests |
-| Browser smoke check | Passed for `/evidence`, `/signals`, `/advisor-approval` and `/compliance`; no board metadata detected on those routes. |
+| Browser smoke check | Passed for workbench evidence preview and `/evidence` redirect. Workbench has no standalone `/evidence` link, `Preview evidence` opens the drawer overlay in context, and `/evidence` redirects to `/portal`. |

@@ -38,7 +38,6 @@ test("all primary routes map to v2 route metadata and visual ids", () => {
     "/wealth-map",
     "/actions",
     "/decisions",
-    "/evidence",
     "/workbench",
     "/advisor-approval",
     "/compliance",

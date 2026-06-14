@@ -31,7 +31,7 @@ This pass addresses the gap that Phase 4-7 screens had state chips, workflow lab
 | `/mobile/upload` | Confirm extraction advances the document workflow. |
 | `/actions` | Shows the shared recommendation workflow state in the action drawer. |
 | `/decisions` | Client decision submission is blocked until the shared advice gate passes; successful submission emits evidence/audit. |
-| `/evidence` | Shows runtime-created evidence records before static demo records. |
+| Evidence preview | Runtime-created evidence records are shown in contextual preview surfaces instead of a standalone `/evidence` page. |
 | `/governance` | Second confirmation advances the access request workflow and emits evidence/audit. |
 | `/communication` | Send message advances the communication workflow and emits evidence/audit. |
 
@@ -77,7 +77,7 @@ Using a local dev server on `http://localhost:3000`, the following visible path 
 2. `/advisor-approval`: clicked `Approve for compliance`; screen showed `advisor_approved`.
 3. `/compliance`: clicked `Release to client`; screen showed released runtime state.
 4. `/decisions`: verified `Released decision pack`, clicked `Accept`, and saw `Decision submitted: accepted`.
-5. `/evidence`: verified runtime `decision.submitted` evidence appears.
+5. Evidence preview: superseded by later surface refactor; evidence is now opened contextually from workflow routes rather than by navigating to `/evidence`.
 
 The temporary dev server and Compose Postgres container were stopped after verification.
 

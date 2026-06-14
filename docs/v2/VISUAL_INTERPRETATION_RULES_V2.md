@@ -89,9 +89,11 @@ If a visual depicts a drawer, preview drawer, modal, pop-up, release preview, ev
 
 Do not flatten focused interactions into ordinary full-page boards. A route may exist for deep linking in the click-dummy, but the rendered surface should still behave like the visual: overlay, side drawer, centered modal or focused panel.
 
+Workflow controls should not link directly to standalone routes for focused surfaces. Open the drawer/modal/preview in the current route context. Legacy or compatibility URLs should redirect to a safe parent context instead of becoming the primary product UI.
+
 Examples:
 
-- Evidence vault records open in a preview drawer overlay.
+- Evidence records open in a preview drawer overlay from the current workflow context; `/evidence` is not a standalone navigation target.
 - Decision-room content is a modal-style workflow surface.
 - Communication message preview opens as a client-visible preview/release overlay over the internal workflow context.
 

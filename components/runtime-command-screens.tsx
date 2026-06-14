@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { DemoWorkflowInstance, DemoSessionSnapshot } from "@/lib/demo-runtime";
 import type { StatusTone } from "@/lib/status";
+import { EvidencePreviewDrawer } from "./phase5-client-screens";
 import { cn, DashboardTable, GlassPanel, StatusChip, WorkflowBadge } from "./ui";
 import { findDemoWorkflow, useDemoSession } from "./use-demo-session";
 
@@ -302,6 +303,7 @@ export function RuntimePresentationScreen() {
 
 export function RuntimeWorkbenchScreen() {
   const { snapshot, loading, error, reset } = useDemoSession();
+  const [evidencePreviewOpen, setEvidencePreviewOpen] = useState(false);
   const recommendation = findDemoWorkflow(snapshot, "wf-trust-x-recommendation");
   const documentWorkflow = findDemoWorkflow(snapshot, "wf-trust-deed-document");
   const accessRequest = findDemoWorkflow(snapshot, "wf-external-advisor-access");
@@ -438,12 +440,13 @@ export function RuntimeWorkbenchScreen() {
                 >
                   Confirm extraction
                 </Link>
-                <Link
+                <button
                   className="rounded-lg border border-av-line px-4 py-2 text-center text-sm text-av-muted hover:border-av-gold hover:text-av-goldBright"
-                  href="/evidence"
+                  onClick={() => setEvidencePreviewOpen(true)}
+                  type="button"
                 >
-                  View evidence
-                </Link>
+                  Preview evidence
+                </button>
               </div>
             </div>
           </GlassPanel>
@@ -454,6 +457,22 @@ export function RuntimeWorkbenchScreen() {
           <EventPanel snapshot={snapshot} />
         </div>
       </div>
+      <EvidencePreviewDrawer
+        accessAllowed
+        accessReason="allowed"
+        auditAction={snapshot?.auditEvents[0]?.action ?? "recommendation.drafted"}
+        auditActorRole={snapshot?.auditEvents[0]?.actorRole ?? "AlphaVest Analyst"}
+        auditEvidenceLink={snapshot?.auditEvents[0]?.evidenceLink ?? "evidence://recommendation-draft/trust-x-beneficiary-update"}
+        auditResult={snapshot?.auditEvents[0]?.result ?? "created"}
+        auditTimestamp={snapshot?.auditEvents[0]?.timestamp ?? "2026-06-14T00:00:00.000Z"}
+        evidenceUri={snapshot?.evidenceRecords[0]?.link ?? "evidence://recommendation-draft/trust-x-beneficiary-update"}
+        onClose={() => setEvidencePreviewOpen(false)}
+        open={evidencePreviewOpen}
+        recordStatus={recommendation?.evidenceRecordExists ? "Validated" : "Missing"}
+        recordTitle="Trust X evidence preview"
+        recordType={snapshot?.evidenceRecords[0]?.objectType ?? "Recommendation Draft"}
+        recordVisibility={snapshot?.evidenceRecords[0]?.visibility ?? "Internal-only"}
+      />
     </PageFrame>
   );
 }

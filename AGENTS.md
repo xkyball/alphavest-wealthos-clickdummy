@@ -79,10 +79,12 @@ Workflow visuals must be interpreted as workflows, not as a collection of standa
 
 When a visual names or depicts a drawer, preview drawer, modal, pop-up, release preview, record detail panel, blocked permission panel, escalation panel or similar focused interaction, implement it as an overlay/drawer/modal surface over the route context. Do not convert it into a normal full-page implementation just because the click-dummy has a route for deep linking.
 
+Do not link workflow buttons directly to a standalone route for these focused surfaces. Open the overlay/drawer/modal in the current workflow context. If a legacy/deep-link URL exists, it should redirect to a safe parent context or be treated as compatibility plumbing, not as the primary implementation.
+
 Examples:
 
 - `/decisions` should behave like a decision-room modal workflow surface.
-- `/evidence` should show the evidence list/vault as route context and the record detail as a preview drawer overlay.
+- Evidence preview should open as a drawer overlay from the current workflow context, such as workbench or decision submission. `/evidence` must not be used as a standalone navigation target.
 - Communication client-visible message preview should open as a release/preview overlay over the internal communication workflow.
 
 If an overlay route needs loading, blocked or error states, those states belong inside the overlay surface and must still use the central permission, visibility, evidence and audit helpers.
