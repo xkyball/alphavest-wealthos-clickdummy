@@ -9,6 +9,11 @@ import { cn } from "./ui";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const isMobileAppRoute = pathname === "/mobile" || pathname === "/mobile/upload";
+
+  if (isMobileAppRoute) {
+    return <div className="min-h-screen bg-av-navy text-av-ivory">{children}</div>;
+  }
 
   return (
     <div className="min-h-screen bg-av-midnight text-av-ivory">

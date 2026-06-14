@@ -1,5 +1,10 @@
+import { Suspense } from "react";
 import { DecisionsScreenV2 } from "@/components/phase5-client-screens";
 
 export default function DecisionsPage() {
-  return <DecisionsScreenV2 />;
+  return (
+    <Suspense fallback={null}>
+      <DecisionsScreenV2 />
+    </Suspense>
+  );
 }

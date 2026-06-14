@@ -4,8 +4,8 @@ Date: 2026-06-14
 
 | Route | Phase 5 component | Source visuals | Primary UI region implemented | Key gate / logic |
 |---|---|---|---|---|
-| `/mobile` | `MobileScreenV2` | V2-001, V2-002, V2-003, V2-009 | Mobile home, state selector, role badge, next-step cards, bottom nav | Central client visibility gate blocks unreleased recommendation content. |
-| `/mobile/upload` | `MobileUploadScreenV2` | V2-004, V2-005, V2-006, V2-007, V2-008 | Mobile upload flow with select, extraction, low-confidence, pending and retry states | AI-DRAFT extraction cannot advance when confidence is low; analyst review route is shown. |
+| `/mobile` | `MobileScreenV2` | V2-001, V2-002, V2-003, V2-009 | Mobile home content, role badge, next-step cards, bottom nav | Central client visibility gate blocks unreleased recommendation content. Alternate states use `?state=blocked`, `?state=empty`, `?state=decision`. |
+| `/mobile/upload` | `MobileUploadScreenV2` | V2-004, V2-005, V2-006, V2-007, V2-008 | Mobile upload content with select, extraction, low-confidence, pending and retry states | AI-DRAFT extraction cannot advance when confidence is low; analyst review routing is represented in logic/docs/tests, not as client-facing internal route chrome. |
 | `/portal` | `PortalScreenV2` | V2-010, V2-011, V2-012 | Dashboard cards, loading/error/blocked states, messages, trigger feed, evidence/governance status | Readiness score routes to `/wealth-map?focus=gaps`; visibility score copy says it is not advice. |
 | `/wealth-map` | `WealthMapScreenV2` | V2-013, V2-014, V2-015, V2-016 | Graph-like node map, filters, relationship legend, detail drawer, escalation notice | Restricted node uses central permission helper and hides sensitive fields. |
 | `/actions` | `ActionsScreenV2` | V2-017, V2-018, V2-019 | Kanban board, action cards, detail drawer | Missing evidence action is blocked and cannot advance in the mini workflow. |
@@ -15,7 +15,7 @@ Date: 2026-06-14
 ## Navigation Relationships
 
 - `/mobile` links to upload, decisions, governance and evidence.
-- `/mobile/upload` routes low-confidence records to `/workbench` for analyst review.
+- `/mobile/upload` blocks low-confidence records and marks AlphaVest review as required; internal analyst routing remains logic/docs/test coverage.
 - `/portal` readiness score links to `/wealth-map?focus=gaps`.
 - `/wealth-map` highlights focused evidence / restricted nodes when opened from the dashboard gap path.
 - `/actions` links blocked evidence actions to `/mobile/upload` and ready decisions to `/decisions`.
@@ -31,3 +31,8 @@ Visual callouts, dev handoff notes and metadata from the source assets were tran
 - `tests/phase5-client-routes.test.mjs`
 - state selectors inside the click-dummy routes
 - this route map and state coverage documentation
+
+Mobile-specific boundary:
+
+- Do not render a decorative phone frame, phone shell, board title, visual ID, metadata, or demo state controls.
+- The implementation region for mobile visuals is only the content inside the phone screen.

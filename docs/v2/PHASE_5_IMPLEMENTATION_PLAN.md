@@ -41,7 +41,7 @@ Out of scope:
 
 The Phase 5 implementation uses the actual app UI regions from V2-001 through V2-025:
 
-- mobile phone frames become `/mobile` and `/mobile/upload`;
+- mobile screen contents become `/mobile` and `/mobile/upload`;
 - dashboard body becomes `/portal`;
 - graph, drawer and restricted node become `/wealth-map`;
 - kanban and detail drawer become `/actions`;
@@ -49,6 +49,12 @@ The Phase 5 implementation uses the actual app UI regions from V2-001 through V2
 - evidence list, preview drawer, restricted and missing states become `/evidence`.
 
 Annotations and implementation notes were translated into helpers, state controls, tests and documentation rather than rendered as UI.
+
+Correction note:
+
+- Mobile visuals must not become phone-frame mockups in the web route.
+- `/mobile` and `/mobile/upload` now bypass the global desktop shell and render only the mobile app content.
+- Alternate QA states are driven by query parameters such as `?state=blocked`, `?state=low`, and `?state=pending` instead of visible state-toggle controls.
 
 ## Quality Target
 

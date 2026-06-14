@@ -4,6 +4,8 @@ Date: 2026-06-14
 
 ## Route State Coverage
 
+Alternate mock states are addressable with query parameters instead of visible demo controls. Examples: `/mobile?state=blocked`, `/mobile/upload?state=low`, `/portal?state=loading`, `/decisions?state=blocked`.
+
 | Route | Default | Loading | Empty | Error | Blocked / restricted | Success / submitted |
 |---|---:|---:|---:|---:|---:|---:|
 | `/mobile` | Yes | Not data-loaded | Yes | Not data-loaded | Yes: recommendation blocked | Yes: decision notification entry |
@@ -43,3 +45,4 @@ Date: 2026-06-14
 - Loading and error are implemented explicitly on `/portal`; other click-dummy routes are static mock surfaces and do not fetch data.
 - Empty evidence filter state is not a separate visual yet.
 - Server-side policy enforcement is still future work; current Phase 5 uses central helpers and visible blocked states.
+- Mobile routes intentionally render only the mobile app content, not a phone frame or surrounding visual-board UI.

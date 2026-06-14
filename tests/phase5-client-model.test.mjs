@@ -56,7 +56,7 @@ test("/mobile/upload supports select, extraction review, verification pending, l
     "Verification pending",
     "Low confidence extraction blocked submission",
     "Upload error",
-    "Route to analyst review"
+    "AlphaVest review required"
   ]) {
     assert.match(source, new RegExp(token));
   }
@@ -67,7 +67,7 @@ test("low confidence upload blocks submission through analyst review copy and bl
 
   assert.match(source, /Confidence is 61%/);
   assert.match(source, /WorkflowBadge label="BLOCKED"/);
-  assert.match(source, /href="\/workbench"/);
+  assert.doesNotMatch(source, /href="\/workbench"/);
 });
 
 test("/portal readiness score routes to wealth map focused gaps", () => {

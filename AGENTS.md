@@ -63,6 +63,14 @@ Codex must implement the **actual application UI region** and translate the surr
 
 Do not render developer notes, source-board labels, asset IDs, dev handoff blocks, legends, QA callouts, or design-spec metadata inside the actual client/advisor application UI unless the screen is explicitly a reference/admin documentation route.
 
+### Mandatory Implementation Boundary
+
+Only the actual app screen area, drawer, modal, table, mobile screen content, kanban board, form, graph, or user-facing/internal-facing interface region may become HTML/CSS/React UI.
+
+Annotations, legends, dev notes, metadata, backend workflow notes, evidence/audit notes, state explanations, permission hints, and test hints must become implementation logic, central helpers, route state handling, tests, documentation, API/mock-data contracts, state machines, permission rules, and evidence/audit mapping.
+
+For mobile visuals, implement only the content that appears inside the phone screen. Do not render a decorative phone frame, phone shell, surrounding desktop board, state-toggle controls, or explanatory panels around it. If alternate mobile states are needed for QA, drive them through mock data or query parameters rather than visible demo controls.
+
 Some visuals are entirely reference/information boards, especially:
 
 - V2-043 Permission Matrix Reference Board

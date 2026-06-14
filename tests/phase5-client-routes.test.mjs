@@ -25,7 +25,7 @@ test("Phase 5 client component implements the expected user-facing regions", () 
   const source = readFileSync(new URL("../components/phase5-client-screens.tsx", import.meta.url), "utf8");
 
   for (const token of [
-    "WireframePhone",
+    "MobileAppSurface",
     "Structure Graph",
     "Kanban",
     "Digital Decision Room",
@@ -34,4 +34,16 @@ test("Phase 5 client component implements the expected user-facing regions", () 
   ]) {
     assert.match(source, new RegExp(token));
   }
+});
+
+test("mobile routes render only mobile screen content, not a phone frame or visual-board controls", () => {
+  const source = readFileSync(new URL("../components/phase5-client-screens.tsx", import.meta.url), "utf8");
+  const appShell = readFileSync(new URL("../components/app-shell.tsx", import.meta.url), "utf8");
+  const agents = readFileSync(new URL("../AGENTS.md", import.meta.url), "utf8");
+
+  assert.doesNotMatch(source, /WireframePhone/);
+  assert.doesNotMatch(source, new RegExp("Phase 5 / V2-"));
+  assert.match(source, /useSearchParams/);
+  assert.match(appShell, /isMobileAppRoute/);
+  assert.match(agents, /For mobile visuals, implement only the content that appears inside the phone screen/);
 });

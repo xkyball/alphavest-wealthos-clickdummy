@@ -8,12 +8,14 @@ Run scope: Phase 5 - Client Experience Rebuild.
 
 This pass rebuilt the seven client-facing routes from the v2 client screen specs and visuals while preserving the Phase 4 route model, permission helper, no-unapproved-advice gate, evidence helper and audit helper.
 
+Follow-up correction: mobile visuals are implemented as the mobile app content only. `/mobile` and `/mobile/upload` no longer render a decorative phone frame, desktop shell, visual-board header, side panels or visible state-toggle controls.
+
 ## Routes Implemented
 
 | Route | Status |
 |---|---|
-| `/mobile` | Implemented default, recommendation blocked, empty and decision notification states. |
-| `/mobile/upload` | Implemented select type, extraction review, low-confidence blocked, verification pending and retry states. |
+| `/mobile` | Implemented default, recommendation blocked, empty and decision notification states through mobile content only. |
+| `/mobile/upload` | Implemented select type, extraction review, low-confidence blocked, verification pending and retry states through mobile content only. |
 | `/portal` | Implemented dashboard default plus loading, error and permission blocked states. |
 | `/wealth-map` | Implemented graph-like map, filters, Trust X drawer, restricted node and escalation notice. |
 | `/actions` | Implemented kanban board, action detail drawer and blocked missing-evidence state. |
@@ -81,17 +83,24 @@ Visible outputs:
 | Command | Result |
 |---|---|
 | `npm run typecheck` | Passed |
-| `npm test` | Passed: 17 tests |
+| `npm test` | Passed: 18 tests |
 | `npm run lint` | Passed |
 | `npm run build` | Passed |
-| `npm run test:e2e` | Passed: 2 route/source smoke tests |
+| `npm run test:e2e` | Passed: 3 route/source smoke tests |
 
 Browser smoke:
 
-- Started local app on `http://localhost:3015`.
+- Used the existing local dev server on `http://localhost:3000`.
 - Verified `/mobile`, `/mobile/upload`, `/portal`, `/wealth-map?focus=gaps`, `/actions`, `/decisions`, `/evidence` render their expected Phase 5 headings and primary UI regions.
 - Verified `/mobile` recommendation blocked state shows the compliance-release block and does not reveal released recommendation details.
 - Verified `/evidence` restricted record hides sensitive preview fields.
+
+Additional boundary checks:
+
+- Tests assert mobile routes do not import/use `WireframePhone`.
+- Tests assert Phase visual IDs are not rendered in the Phase 5 client component.
+- `AGENTS.md` now contains the permanent mandatory mobile interpretation rule.
+- Browser checked `/mobile`, `/mobile?state=blocked`, `/mobile/upload`, and `/mobile/upload?state=low`; all had mobile content and no desktop app shell, phone-frame text, or visual ID text.
 
 ## Known Limitations
 

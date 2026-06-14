@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 import {
   auditForRecord,
-  blockedDecisionRelease,
-  blockedRecommendation,
   canShowAdviceLikeContent,
   clientActions,
   decisionPermission,
@@ -16,10 +15,8 @@ import {
   evidenceRecords,
   releasedRecommendation,
   sensitiveNodeAccess,
-  type ClientAction,
-  type EvidenceRecord
+  type ClientAction
 } from "@/lib/phase5-client-model";
-import { evaluateClientVisibility } from "@/lib/v2-model";
 import {
   cn,
   DashboardTable,
@@ -29,15 +26,14 @@ import {
   PageHeader,
   RoleBadge,
   StatusChip,
-  WireframePhone,
   WorkflowBadge
 } from "./ui";
 
 type Tone = "neutral" | "success" | "warning" | "danger" | "info" | "review";
 
-const stateButton =
+const filterButton =
   "rounded-lg border border-av-line px-3 py-2 text-xs text-av-muted transition hover:border-av-gold hover:text-av-ivory";
-const activeStateButton =
+const activeFilterButton =
   "border-av-gold bg-av-gold text-av-midnight hover:text-av-midnight";
 
 function ClientRouteShell({
@@ -61,26 +57,15 @@ function ClientRouteShell({
   );
 }
 
-function GateCard({ release = blockedRecommendation }: { release?: typeof blockedRecommendation }) {
-  const visibility = evaluateClientVisibility(release);
+function queryState<T extends string>(value: string | null, allowed: readonly T[], fallback: T) {
+  return allowed.includes(value as T) ? (value as T) : fallback;
+}
 
+function MobileAppSurface({ children }: { children: React.ReactNode }) {
   return (
-    <GlassPanel title="Client Visibility Gate">
-      <p className="font-display text-2xl text-av-goldBright">
-        No unapproved advice reaches the client.
-      </p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        <WorkflowBadge label="ADVISOR" />
-        <WorkflowBadge label="COMPLIANCE" />
-        <WorkflowBadge label="EVIDENCE" />
-        <WorkflowBadge label={visibility.clientVisible ? "CLIENT" : "BLOCKED"} />
-      </div>
-      <p className="mt-3 text-sm text-av-muted">
-        {visibility.clientVisible
-          ? "Advisor approval, compliance release, evidence and permission checks are complete."
-          : `Visibility remains blocked: ${visibility.missing.join(", ")}.`}
-      </p>
-    </GlassPanel>
+    <main className="mx-auto min-h-screen max-w-[28rem] bg-av-navy px-4 py-5 text-av-ivory md:min-h-[calc(100vh-2rem)] md:rounded-lg md:border md:border-av-line">
+      {children}
+    </main>
   );
 }
 
@@ -102,160 +87,106 @@ function MobileNav() {
 }
 
 export function MobileScreenV2() {
-  const [state, setState] = useState<"default" | "blocked" | "empty" | "decision">("default");
+  const searchParams = useSearchParams();
+  const state = queryState(searchParams.get("state"), ["default", "blocked", "empty", "decision"] as const, "default");
   const released = canShowAdviceLikeContent(releasedRecommendation);
 
   return (
-    <ClientRouteShell
-      kicker="Phase 5 / V2-001 to V2-003 and V2-009"
-      title="Mobile Home"
-      subtitle="Next Step Today shows only approved, released and evidenced client-facing content."
-    >
-      <div className="flex flex-wrap gap-2">
-        {["default", "blocked", "empty", "decision"].map((item) => (
-          <button
-            className={cn(stateButton, state === item && activeStateButton)}
-            key={item}
-            onClick={() => setState(item as typeof state)}
-            type="button"
-          >
-            {item}
-          </button>
-        ))}
+    <MobileAppSurface>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="font-display text-2xl text-av-goldBright">Good morning, Alex</p>
+          <p className="mt-1 text-xs text-av-muted">Next step today</p>
+        </div>
+        <RoleBadge role="Principal" sublabel="Full client view" tone="success" />
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-[24rem_minmax(0,1fr)_22rem]">
-        <WireframePhone className="max-w-[24rem]" title="AlphaVest">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="font-display text-2xl text-av-goldBright">Good morning, Alex</p>
-              <p className="mt-1 text-xs text-av-muted">Next step today</p>
-            </div>
-            <RoleBadge role="Principal" sublabel="Permission: full client view" tone="success" />
-          </div>
+      {state === "default" ? (
+        <div className="mt-5 grid gap-3">
+          <Link className="rounded-lg border border-av-gold bg-av-gold/12 p-4" href="/mobile/upload">
+            <span className="block text-sm font-semibold text-av-ivory">Upload updated trust deed</span>
+            <span className="mt-1 block text-xs text-av-muted">Needed before the Trust X review can close.</span>
+          </Link>
+          <Link className="rounded-lg border border-av-line bg-av-midnight/60 p-4" href="/decisions">
+            <span className="block text-sm font-semibold text-av-ivory">
+              {released ? "Decision pack ready" : "Decision pack awaiting release"}
+            </span>
+            <span className="mt-1 block text-xs text-av-muted">Ready for family review.</span>
+          </Link>
+        </div>
+      ) : null}
 
-          {state === "default" ? (
-            <div className="mt-5 grid gap-3">
-              <Link className="rounded-lg border border-av-gold bg-av-gold/12 p-4" href="/mobile/upload">
-                <span className="block text-sm font-semibold text-av-ivory">Upload updated trust deed</span>
-                <span className="mt-1 block text-xs text-av-muted">Evidence required before Trust X review can close.</span>
-              </Link>
-              <Link className="rounded-lg border border-av-line bg-av-midnight/60 p-4" href="/decisions">
-                <span className="block text-sm font-semibold text-av-ivory">
-                  {released ? "Decision pack ready" : "Decision pack awaiting release"}
-                </span>
-                <span className="mt-1 block text-xs text-av-muted">
-                  Backstage status: Advisor approved, compliance released, evidence linked.
-                </span>
-              </Link>
-            </div>
-          ) : null}
+      {state === "blocked" ? (
+        <div className="mt-5 rounded-lg border border-av-danger/70 bg-av-danger/10 p-4">
+          <StatusChip tone="danger">Recommendation blocked</StatusChip>
+          <p className="mt-3 text-sm text-av-ivory">A recommendation is in review but cannot be shown yet.</p>
+          <p className="mt-2 text-xs text-av-muted">
+            Client visibility is blocked until compliance release is complete.
+          </p>
+        </div>
+      ) : null}
 
-          {state === "blocked" ? (
-            <div className="mt-5 rounded-lg border border-av-danger/70 bg-av-danger/10 p-4">
-              <StatusChip tone="danger">Recommendation blocked</StatusChip>
-              <p className="mt-3 text-sm text-av-ivory">A recommendation is in review but cannot be shown yet.</p>
-              <p className="mt-2 text-xs text-av-muted">
-                Client visibility is blocked until compliance release is complete. Advisor approval alone is not enough.
-              </p>
-            </div>
-          ) : null}
+      {state === "empty" ? (
+        <div className="mt-5 rounded-lg border border-av-success/60 bg-av-success/10 p-5 text-center">
+          <p className="font-display text-xl text-av-goldBright">All caught up</p>
+          <p className="mt-2 text-xs text-av-muted">No open client actions right now.</p>
+        </div>
+      ) : null}
 
-          {state === "empty" ? (
-            <div className="mt-5 rounded-lg border border-av-success/60 bg-av-success/10 p-5 text-center">
-              <p className="font-display text-xl text-av-goldBright">All caught up</p>
-              <p className="mt-2 text-xs text-av-muted">No open client actions. Evidence and reviews remain monitored.</p>
-            </div>
-          ) : null}
+      {state === "decision" ? (
+        <div className="mt-5 rounded-lg border border-av-gold bg-av-gold/12 p-4">
+          <StatusChip tone="warning">Decision notification</StatusChip>
+          <p className="mt-3 text-sm text-av-ivory">Trust X beneficiary update is ready for review.</p>
+          <Link className="mt-4 inline-flex rounded-lg border border-av-gold px-3 py-2 text-xs text-av-goldBright" href="/decisions">
+            Open Decision Room
+          </Link>
+        </div>
+      ) : null}
 
-          {state === "decision" ? (
-            <div className="mt-5 rounded-lg border border-av-gold bg-av-gold/12 p-4">
-              <StatusChip tone="warning">Decision notification</StatusChip>
-              <p className="mt-3 text-sm text-av-ivory">Trust X beneficiary update is ready for review.</p>
-              <Link className="mt-4 inline-flex rounded-lg border border-av-gold px-3 py-2 text-xs text-av-goldBright" href="/decisions">
-                Open Decision Room
-              </Link>
-            </div>
-          ) : null}
-
-          <div className="mt-4 grid gap-2 text-xs">
-            <Link className="rounded border border-av-line/50 px-3 py-2 text-av-muted" href="/governance">
-              Governance access review
-            </Link>
-            <Link className="rounded border border-av-line/50 px-3 py-2 text-av-muted" href="/evidence">
-              Evidence vault
-            </Link>
-          </div>
-          <MobileNav />
-        </WireframePhone>
-
-        <GlassPanel title="Backstage Status">
-          <div className="grid gap-3 md:grid-cols-2">
-            {[
-              ["Advisor approval", "Complete", "success"],
-              ["Compliance release", state === "blocked" ? "Pending" : "Complete", state === "blocked" ? "danger" : "success"],
-              ["Evidence record", "Linked", "success"],
-              ["Permission check", "Principal allowed", "success"]
-            ].map(([label, value, tone]) => (
-              <div className="rounded-lg border border-av-line bg-av-midnight/45 p-3" key={label}>
-                <p className="text-xs text-av-muted">{label}</p>
-                <StatusChip tone={tone as Tone}>{value}</StatusChip>
-              </div>
-            ))}
-          </div>
-        </GlassPanel>
-
-        <GateCard release={state === "blocked" ? blockedRecommendation : releasedRecommendation} />
+      <div className="mt-4 grid gap-2 text-xs">
+        <Link className="rounded border border-av-line/50 px-3 py-2 text-av-muted" href="/governance">
+          Governance access
+        </Link>
+        <Link className="rounded border border-av-line/50 px-3 py-2 text-av-muted" href="/evidence">
+          Evidence vault
+        </Link>
       </div>
-    </ClientRouteShell>
+      <MobileNav />
+    </MobileAppSurface>
   );
 }
 
 export function MobileUploadScreenV2() {
-  const [step, setStep] = useState<"select" | "extract" | "low" | "pending" | "error">("select");
+  const searchParams = useSearchParams();
+  const step = queryState(searchParams.get("state"), ["select", "extract", "low", "pending", "error"] as const, "select");
   const [docType, setDocType] = useState("Trust deed");
-  const audit = useMemo(() => auditForRecord(evidenceRecords[0]), []);
 
   return (
-    <ClientRouteShell
-      kicker="Phase 5 / V2-004 to V2-008"
-      title="Mobile Document Upload"
-      subtitle="Document intake creates evidence by default and blocks low-confidence submission."
-    >
-      <div className="flex flex-wrap gap-2">
-        {["select", "extract", "low", "pending", "error"].map((item) => (
-          <button className={cn(stateButton, step === item && activeStateButton)} key={item} onClick={() => setStep(item as typeof step)} type="button">
-            {item}
-          </button>
-        ))}
-      </div>
-
-      <div className="grid gap-5 xl:grid-cols-[24rem_minmax(0,1fr)_22rem]">
-        <WireframePhone className="max-w-[24rem]" title="Secure upload">
-          {step === "select" ? (
-            <>
-              <p className="font-display text-xl text-av-goldBright">Select document type</p>
-              <div className="mt-4 grid gap-2">
-                {["Trust deed", "Passport", "Portfolio statement", "Insurance policy", "Tax residency certificate"].map((type) => (
-                  <button
-                    className={cn("rounded-lg border px-3 py-2 text-left text-sm", docType === type ? "border-av-gold bg-av-gold/15 text-av-ivory" : "border-av-line text-av-muted")}
-                    key={type}
-                    onClick={() => setDocType(type)}
-                    type="button"
-                  >
-                    {type}
-                  </button>
-                ))}
-              </div>
-              <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
-                {["Camera", "Files", "Import"].map((source) => (
-                  <button className="rounded-lg border border-av-line p-3 text-av-muted" key={source} onClick={() => setStep("extract")} type="button">
-                    {source}
-                  </button>
-                ))}
-              </div>
-            </>
-          ) : null}
+    <MobileAppSurface>
+      {step === "select" ? (
+        <>
+          <p className="font-display text-xl text-av-goldBright">Select document type</p>
+          <div className="mt-4 grid gap-2">
+            {["Trust deed", "Passport", "Portfolio statement", "Insurance policy", "Tax residency certificate"].map((type) => (
+              <button
+                className={cn("rounded-lg border px-3 py-2 text-left text-sm", docType === type ? "border-av-gold bg-av-gold/15 text-av-ivory" : "border-av-line text-av-muted")}
+                key={type}
+                onClick={() => setDocType(type)}
+                type="button"
+              >
+                {type}
+              </button>
+            ))}
+          </div>
+          <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
+            {["Camera", "Files", "Import"].map((source) => (
+              <Link className="rounded-lg border border-av-line p-3 text-av-muted" href="/mobile/upload?state=extract" key={source}>
+                {source}
+              </Link>
+            ))}
+          </div>
+        </>
+      ) : null}
 
           {step === "extract" ? (
             <>
@@ -277,9 +208,9 @@ export function MobileUploadScreenV2() {
                   </div>
                 ))}
               </div>
-              <button className="mt-4 w-full rounded-lg border border-av-gold bg-av-gold px-4 py-2 text-sm font-semibold text-av-midnight" onClick={() => setStep("pending")} type="button">
+              <Link className="mt-4 block w-full rounded-lg border border-av-gold bg-av-gold px-4 py-2 text-center text-sm font-semibold text-av-midnight" href="/mobile/upload?state=pending">
                 Confirm extraction
-              </button>
+              </Link>
             </>
           ) : null}
 
@@ -288,9 +219,9 @@ export function MobileUploadScreenV2() {
               <WorkflowBadge label="BLOCKED" />
               <p className="mt-3 text-sm text-av-ivory">Low confidence extraction blocked submission.</p>
               <p className="mt-2 text-xs text-av-muted">Confidence is 61%. Analyst review is required before this can support advice or a decision.</p>
-              <Link className="mt-4 inline-flex rounded-lg border border-av-danger px-3 py-2 text-xs text-av-danger" href="/workbench">
-                Route to analyst review
-              </Link>
+              <p className="mt-4 rounded-lg border border-av-danger px-3 py-2 text-xs text-av-danger">
+                AlphaVest review required.
+              </p>
             </div>
           ) : null}
 
@@ -298,7 +229,7 @@ export function MobileUploadScreenV2() {
             <div className="rounded-lg border border-av-warning/60 bg-av-warning/10 p-4">
               <StatusChip tone="warning">Verification pending</StatusChip>
               <p className="mt-3 text-sm text-av-ivory">The document is uploaded and queued for analyst validation.</p>
-              <p className="mt-2 text-xs text-av-muted">Evidence placeholder created: {evidenceLinkFor(evidenceRecords[0])}</p>
+              <p className="mt-2 text-xs text-av-muted">We will notify you when verification is complete.</p>
             </div>
           ) : null}
 
@@ -306,59 +237,26 @@ export function MobileUploadScreenV2() {
             <div className="rounded-lg border border-av-danger/70 bg-av-danger/10 p-4">
               <StatusChip tone="danger">Upload error</StatusChip>
               <p className="mt-3 text-sm text-av-ivory">The file could not be processed.</p>
-              <button className="mt-4 w-full rounded-lg border border-av-gold px-3 py-2 text-xs text-av-goldBright" onClick={() => setStep("select")} type="button">
+              <Link className="mt-4 block w-full rounded-lg border border-av-gold px-3 py-2 text-center text-xs text-av-goldBright" href="/mobile/upload">
                 Retry upload
-              </button>
+              </Link>
             </div>
           ) : null}
           <MobileNav />
-        </WireframePhone>
-
-        <GlassPanel title="Evidence and Audit Contract">
-          <DashboardTable
-            columns={["Object", "Value"]}
-            rows={[
-              ["Evidence", evidenceLinkFor(evidenceRecords[0])],
-              ["Audit event", audit.action],
-              ["Audit result", audit.result],
-              ["Review route", "/workbench"]
-            ]}
-          />
-        </GlassPanel>
-
-        <GlassPanel title="Submission Rule">
-          <p className="text-sm text-av-muted">
-            Extraction output stays `[AI-DRAFT]` until analyst review confirms it. Low confidence does not create client-visible advice.
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <WorkflowBadge label="AI-DRAFT" />
-            <WorkflowBadge label="ANALYST" />
-            <WorkflowBadge label="EVIDENCE" />
-            <WorkflowBadge label={step === "low" ? "BLOCKED" : "REVIEW"} />
-          </div>
-        </GlassPanel>
-      </div>
-    </ClientRouteShell>
+    </MobileAppSurface>
   );
 }
 
 export function PortalScreenV2() {
-  const [state, setState] = useState<"default" | "loading" | "error" | "blocked">("default");
+  const searchParams = useSearchParams();
+  const state = queryState(searchParams.get("state"), ["default", "loading", "error", "blocked"] as const, "default");
 
   return (
     <ClientRouteShell
-      kicker="Phase 5 / V2-010 to V2-012"
+      kicker="Client portal"
       title="Client Dashboard"
       subtitle="Readiness, actions, triggers and evidence status without turning visibility into advice."
     >
-      <div className="flex flex-wrap gap-2">
-        {["default", "loading", "error", "blocked"].map((item) => (
-          <button className={cn(stateButton, state === item && activeStateButton)} key={item} onClick={() => setState(item as typeof state)} type="button">
-            {item}
-          </button>
-        ))}
-      </div>
-
       {state === "loading" ? <GlassPanel title="Loading"><p className="text-av-muted">Loading client dashboard...</p></GlassPanel> : null}
       {state === "error" ? <GlassPanel title="Error"><p className="text-av-danger">Dashboard data could not be loaded. Retry or contact the advisory team.</p></GlassPanel> : null}
       {state === "blocked" ? <GlassPanel title="Permission blocked"><p className="text-av-muted">Your current role cannot view this client dashboard.</p></GlassPanel> : null}
@@ -426,14 +324,14 @@ export function WealthMapScreenV2({ initialFocus }: { initialFocus?: string }) {
 
   return (
     <ClientRouteShell
-      kicker="Phase 5 / V2-013 to V2-016"
+      kicker="Client structure"
       title="Live Wealth Map"
       subtitle="Graph-like structure with restricted nodes, evidence links and sensitive-view audit events."
     >
       <GlassPanel title="Filters">
         <div className="flex flex-wrap gap-2">
           {["All", "Entities", "Assets", "Documents", "Decisions", "Restricted"].map((item) => (
-            <button className={cn(stateButton, filter === item && activeStateButton)} key={item} onClick={() => setFilter(item)} type="button">
+            <button className={cn(filterButton, filter === item && activeFilterButton)} key={item} onClick={() => setFilter(item)} type="button">
               {item}
             </button>
           ))}
@@ -526,7 +424,7 @@ export function ActionsScreenV2() {
   const columns = ["Needs Review", "Blocked", "Ready", "Pending", "Completed"] as const;
 
   return (
-    <ClientRouteShell kicker="Phase 5 / V2-017 to V2-019" title="Action Board" subtitle="Client-facing action workflow with owners, due dates, evidence status and blocked states.">
+    <ClientRouteShell kicker="Client workflow" title="Action Board" subtitle="Client-facing action workflow with owners, due dates, evidence status and blocked states.">
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <GlassPanel title="Kanban">
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
@@ -574,24 +472,18 @@ export function ActionsScreenV2() {
 }
 
 export function DecisionsScreenV2() {
-  const [state, setState] = useState<"ready" | "blocked" | "submitted">("ready");
+  const searchParams = useSearchParams();
+  const [state, setState] = useState(queryState(searchParams.get("state"), ["ready", "blocked", "submitted"] as const, "ready"));
   const [choice, setChoice] = useState<"accepted" | "deferred" | "rejected">("accepted");
   const permission = decisionPermission(state === "blocked" ? "External Advisor" : "Principal");
   const audit = decisionSubmissionAudit(choice);
   const showRecommendation = state !== "blocked" && decisionRelease.clientVisible;
 
   return (
-    <ClientRouteShell kicker="Phase 5 / V2-020 to V2-022" title="Digital Decision Room" subtitle="Accept, defer or reject only after permission, approval, compliance and evidence gates pass.">
-      <div className="flex flex-wrap gap-2">
-        {["ready", "blocked", "submitted"].map((item) => (
-          <button className={cn(stateButton, state === item && activeStateButton)} key={item} onClick={() => setState(item as typeof state)} type="button">
-            {item}
-          </button>
-        ))}
-      </div>
+    <ClientRouteShell kicker="Client decision" title="Digital Decision Room" subtitle="Accept, defer or reject only after permission, approval, compliance and evidence gates pass.">
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <GlassPanel title="Trust X Beneficiary Update">
-          {state === "blocked" || !permission.allowed || !blockedDecisionRelease.clientVisible ? (
+          {state === "blocked" || !permission.allowed ? (
             <div className="rounded-lg border border-av-danger/70 bg-av-danger/10 p-4">
               <WorkflowBadge label="BLOCKED" />
               <p className="mt-3 text-av-ivory">Decision room is blocked for the current permission context.</p>
@@ -660,11 +552,11 @@ export function EvidenceScreenV2() {
   const visibleRecords = evidenceRecords.filter((record) => filter === "All" || record.status === filter || record.visibility === filter);
 
   return (
-    <ClientRouteShell kicker="Phase 5 / V2-023 to V2-025" title="Evidence Vault" subtitle="Evidence list, preview drawer, restricted records and missing-evidence escalation.">
+    <ClientRouteShell kicker="Evidence" title="Evidence Vault" subtitle="Evidence list, preview drawer, restricted records and missing-evidence escalation.">
       <GlassPanel title="Filters">
         <div className="flex flex-wrap gap-2">
           {["All", "Validated", "Under Review", "Missing", "Restricted", "Client Visible", "Internal Only"].map((item) => (
-            <button className={cn(stateButton, filter === item && activeStateButton)} key={item} onClick={() => setFilter(item)} type="button">
+            <button className={cn(filterButton, filter === item && activeFilterButton)} key={item} onClick={() => setFilter(item)} type="button">
               {item}
             </button>
           ))}
