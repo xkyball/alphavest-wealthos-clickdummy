@@ -1,5 +1,5 @@
-import { ActionsScreen } from "@/components/phase3-client-screens";
+import { ActionsScreenV2 } from "@/components/phase5-client-screens";
 
 export default function ActionsPage() {
-  return <ActionsScreen />;
+  return <ActionsScreenV2 />;
 }

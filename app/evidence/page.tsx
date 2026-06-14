@@ -1,5 +1,5 @@
-import { EvidenceScreen } from "@/components/phase3-client-screens";
+import { EvidenceScreenV2 } from "@/components/phase5-client-screens";
 
 export default function EvidencePage() {
-  return <EvidenceScreen />;
+  return <EvidenceScreenV2 />;
 }

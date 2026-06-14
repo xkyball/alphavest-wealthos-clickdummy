@@ -1,5 +1,5 @@
-import { MobileScreen } from "@/components/phase3-client-screens";
+import { MobileScreenV2 } from "@/components/phase5-client-screens";
 
 export default function MobilePage() {
-  return <MobileScreen />;
+  return <MobileScreenV2 />;
 }

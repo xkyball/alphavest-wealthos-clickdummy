@@ -1,5 +1,5 @@
-import { MobileUploadScreen } from "@/components/phase3-client-screens";
+import { MobileUploadScreenV2 } from "@/components/phase5-client-screens";
 
 export default function MobileUploadPage() {
-  return <MobileUploadScreen />;
+  return <MobileUploadScreenV2 />;
 }

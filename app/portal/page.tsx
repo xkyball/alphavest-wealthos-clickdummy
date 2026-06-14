@@ -1,5 +1,5 @@
-import { PortalScreen } from "@/components/phase3-client-screens";
+import { PortalScreenV2 } from "@/components/phase5-client-screens";
 
 export default function PortalPage() {
-  return <PortalScreen />;
+  return <PortalScreenV2 />;
 }

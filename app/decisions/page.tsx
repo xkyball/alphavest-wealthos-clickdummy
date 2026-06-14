@@ -1,5 +1,5 @@
-import { DecisionsScreen } from "@/components/phase3-client-screens";
+import { DecisionsScreenV2 } from "@/components/phase5-client-screens";
 
 export default function DecisionsPage() {
-  return <DecisionsScreen />;
+  return <DecisionsScreenV2 />;
 }
