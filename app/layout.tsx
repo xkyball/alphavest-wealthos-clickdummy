@@ -5,7 +5,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "AlphaVest WealthOS Click-Dummy",
   description:
-    "Phase 2 visual system for the AlphaVest Digital Wealth Assurance Platform browser prototype."
+    "Phase 4 v2 UX model refactor for the AlphaVest Digital Wealth Assurance Platform browser prototype."
 };
 
 export default function RootLayout({

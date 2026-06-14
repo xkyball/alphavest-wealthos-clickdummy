@@ -1,5 +1,5 @@
-import { BoardPage } from "@/components/board-page";
+import { CommunicationV2Screen } from "@/components/phase4-v2-screens";
 
 export default function CommunicationPage() {
-  return <BoardPage route="/communication" />;
+  return <CommunicationV2Screen />;
 }

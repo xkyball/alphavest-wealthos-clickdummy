@@ -574,8 +574,11 @@ export function DashboardTable({
         <tbody>
           {rows.map((row) => (
             <tr key={row.join("-")} className="odd:bg-white/[0.02]">
-              {row.map((cell) => (
-                <td key={cell} className="border-b border-av-line/50 px-3 py-2">
+              {row.map((cell, cellIndex) => (
+                <td
+                  key={`${cell}-${cellIndex}`}
+                  className="border-b border-av-line/50 px-3 py-2"
+                >
                   {cell}
                 </td>
               ))}

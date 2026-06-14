@@ -1,5 +1,5 @@
-import { BoardPage } from "@/components/board-page";
+import { JourneyV2Screen } from "@/components/phase4-v2-screens";
 
 export default function JourneyPage() {
-  return <BoardPage route="/journey" />;
+  return <JourneyV2Screen />;
 }

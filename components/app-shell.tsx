@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { boardRoutes } from "@/lib/routes";
+import { v2Routes } from "@/lib/v2-model";
 import { regulatoryDisclaimers } from "@/lib/workflows";
 import { cn } from "./ui";
 
@@ -32,12 +32,12 @@ export function AppShell({ children }: { children: ReactNode }) {
                 AlphaVest WealthOS
               </p>
               <p className="text-xs uppercase text-av-muted">
-                Wireframe click-dummy
+                v2 UX model
               </p>
             </div>
           </div>
           <nav className="mt-6 grid gap-1 text-sm" aria-label="Demo routes">
-            {boardRoutes.map((route) => {
+            {v2Routes.map((route) => {
               const active = pathname === route.path;
 
               return (
@@ -51,8 +51,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                   )}
                   href={route.path}
                 >
-                  <span>{route.shortLabel}</span>
-                  <span className="font-mono text-xs">{route.number}</span>
+                  <span>{route.label}</span>
+                  <span className="font-mono text-xs">{route.priority}</span>
                 </Link>
               );
             })}

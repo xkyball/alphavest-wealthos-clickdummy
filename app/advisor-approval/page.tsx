@@ -1,5 +1,5 @@
-import { BoardPage } from "@/components/board-page";
+import { AdvisorApprovalV2Screen } from "@/components/phase4-v2-screens";
 
 export default function AdvisorApprovalPage() {
-  return <BoardPage route="/advisor-approval" />;
+  return <AdvisorApprovalV2Screen />;
 }

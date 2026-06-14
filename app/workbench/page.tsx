@@ -1,5 +1,5 @@
-import { BoardPage } from "@/components/board-page";
+import { WorkbenchV2Screen } from "@/components/phase4-v2-screens";
 
 export default function WorkbenchPage() {
-  return <BoardPage route="/workbench" />;
+  return <WorkbenchV2Screen />;
 }

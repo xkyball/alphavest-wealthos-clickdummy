@@ -1,5 +1,5 @@
-import { BoardPage } from "@/components/board-page";
+import { RoadmapV2Screen } from "@/components/phase4-v2-screens";
 
 export default function RoadmapPage() {
-  return <BoardPage route="/roadmap" />;
+  return <RoadmapV2Screen />;
 }

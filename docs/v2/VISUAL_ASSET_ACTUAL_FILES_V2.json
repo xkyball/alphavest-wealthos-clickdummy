@@ -1,0 +1,338 @@
+[
+  {
+    "path": "public/reference/visuals_v2/client/V2-001-mobile-home-default.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/client/V2-002-mobile-home-recommendation-blocked.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/client/V2-003-mobile-home-empty.png",
+    "width": 1792,
+    "height": 1024,
+    "status": "placeholder"
+  },
+  {
+    "path": "public/reference/visuals_v2/client/V2-004-mobile-upload-select-type.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/client/V2-005-mobile-upload-extraction-review.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/client/V2-006-mobile-upload-low-confidence-blocked.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/client/V2-007-mobile-upload-verification-pending.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/client/V2-008-mobile-upload-error-retry.png",
+    "width": 1792,
+    "height": 1024,
+    "status": "placeholder"
+  },
+  {
+    "path": "public/reference/visuals_v2/client/V2-009-mobile-decision-notification.png",
+    "width": 1792,
+    "height": 1024,
+    "status": "placeholder"
+  },
+  {
+    "path": "public/reference/visuals_v2/client/V2-010-client-dashboard-default.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/client/V2-011-client-dashboard-states.png",
+    "width": 1792,
+    "height": 1024,
+    "status": "placeholder"
+  },
+  {
+    "path": "public/reference/visuals_v2/client/V2-012-dashboard-to-wealth-map-click-path.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/client/V2-013-wealth-map-default-graph.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/client/V2-014-wealth-map-trust-detail-drawer.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/client/V2-015-wealth-map-permission-restricted-node.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/client/V2-016-wealth-map-trustee-beneficiary-escalation.png",
+    "width": 1792,
+    "height": 1024,
+    "status": "placeholder"
+  },
+  {
+    "path": "public/reference/visuals_v2/client/V2-017-action-board-default-kanban.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/client/V2-018-action-board-detail-drawer.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/client/V2-019-action-board-blocked-missing-evidence.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/client/V2-020-decision-room-ready-to-decide.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/client/V2-021-decision-room-missing-permission-blocked.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/client/V2-022-decision-room-evidence-created.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/client/V2-023-evidence-vault-default-preview-drawer.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/client/V2-024-evidence-vault-permission-restricted.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/client/V2-025-evidence-vault-missing-evidence-escalation.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/communication/V2-044-communication-decision-tree.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/communication/V2-045-call-trigger-matrix.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/communication/V2-046-client-visible-message-preview.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/communication/V2-047-evidence-communication-log.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/governance/V2-038-role-permission-matrix-view.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/governance/V2-039-role-detail-drawer.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/governance/V2-040-second-confirmation-required.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/governance/V2-041-permission-blocked-state.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/governance/V2-042-audit-access-history.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/internal/V2-026-trigger-review-internal-default.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/internal/V2-027-trigger-review-low-confidence-escalated.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/internal/V2-028-workbench-default-queue-overview.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/internal/V2-029-workbench-publish-readiness-disabled.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/internal/V2-030-workbench-trigger-detail-analyst-notes.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/internal/V2-031-advisor-approval-default-review.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/internal/V2-032-advisor-approval-escalate-to-call.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/internal/V2-033-advisor-approval-compliance-pending.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/internal/V2-034-compliance-console-default-queue.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/internal/V2-035-compliance-console-release-to-client.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/internal/V2-036-compliance-console-block-release-request-evidence.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/internal/V2-037-compliance-console-audit-exception-log.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/planning/V2-051-mvp-future-roadmap-board.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/planning/V2-052-blocked-not-mvp-ready-features.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/planning/V2-053-mvp-future-dependency-flow.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/service-blueprint/V2-048-full-swimlane-view.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/service-blueprint/V2-049-evidence-chain-view.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/service-blueprint/V2-050-escalation-returns-view.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/states/V2-043-permission-matrix-reference.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/states/V2-054-global-state-chip-workflow-badge-reference.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/states/V2-055-state-machine-reference.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  },
+  {
+    "path": "public/reference/visuals_v2/states/V2-056-evidence-audit-mapping-reference.png",
+    "width": 1672,
+    "height": 941,
+    "status": "generated"
+  }
+]

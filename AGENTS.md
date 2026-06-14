@@ -1,67 +1,110 @@
-# AGENTS.md — AlphaVest WealthOS Codex Instructions
+# AlphaVest WealthOS — Agent Guidance
 
-You are building a browser-presentable click-dummy for **AlphaVest Digital Wealth Assurance Platform / AlphaVest WealthOS**.
+## Current Project Phase
 
-## Absolute Context Rule
-Before implementing anything, read these files in this order:
+Phase 1–3 are already implemented in this repository.
 
-1. `docs/ALPHAVEST_WEALTHOS_KB.md`
-2. `docs/WIREFRAME_MANIFEST.md`
-3. `docs/SCREEN_SPECS.md`
-4. `docs/FUNCTIONAL_SCOPE.md`
-5. `docs/QUALITY_GATES.md`
-6. `public/reference/wireframes/*.png`
-7. `public/reference/key-visuals/*.png`
+Current next phase:
 
-Treat these as the product source of truth. Do not invent a different product. Do not simplify away the human-backed workflow logic.
+> **Phase 4 — UX Model Refactor and Visual Alignment**
 
-## Visual Source-of-Truth Rule
-The 16 PNG wireframes in `public/reference/wireframes/` are not decoration. They are the visual source of truth. Recreate their layout language in HTML/CSS/React as closely as practical:
+This phase replaces the previously assumed continuation plan. Do not continue with the old Phase 4/5/6 logic unless explicitly instructed by the operator.
 
-- dark navy / midnight background
-- champagne-gold outlines and typography
-- ivory primary text
-- thin rounded panels
-- dense but readable wireframe boards
-- subtle world-map motif
-- workflow badges
-- right-side annotation panels
-- bottom workflow / legend strips
-- app-shell navigation where shown
-- mock phone frames where shown
-- dashboard tables, cards, matrices, timelines and gate logic
+## Source of Truth
 
-Do not replace the design with a generic SaaS template.
+Functional source of truth:
 
-## Regulatory/Product Safety Rule
-This is a product prototype only. It must not generate or imply actual financial, tax, legal, insurance, residency, citizenship or investment advice.
+- `docs/v2/*`
 
-Always preserve these messages across the demo:
+Visual source of truth:
 
-- `Demo only. Not legal, tax, investment, insurance, residency or citizenship advice.`
-- `Triggers are review points, not final advice.`
-- `No unapproved advice reaches the client.`
-- `Digital first. Human reviewed. Evidence backed.`
-- `Evidence replaces assumption.`
+- `public/reference/visuals_v2/*`
 
-## Human Workflow Rule
-Every sensitive client-facing recommendation must visibly pass through:
+Board-level concept and style context:
 
-`[AI-DRAFT] -> [ANALYST] -> [ADVISOR] -> [COMPLIANCE] -> [CLIENT] -> [EVIDENCE] -> [REVIEW]`
+- `public/reference/wireframes_v2_boards/*`
 
-Client visibility remains blocked until advisor approval and compliance review are both complete.
+Historical reference only:
 
-## Implementation Preference
-Use the simplest robust implementation that produces a credible click-dummy:
+- `public/reference/wireframes_v1/*`
 
-- Next.js App Router
-- React + TypeScript
-- Tailwind CSS
-- Prisma + Postgres if needed for seeded mock data
-- Docker Compose
-- Playwright smoke tests
+Existing implementation:
 
-If a technical choice would slow completion, implement with static seeded data first and document the tradeoff.
+- The current repo reflects Phase 1–3 state, but it is not automatically correct. It must be audited against v2 source of truth.
 
-## Acceptance Standard
-The prototype is acceptable only if it renders all 16 boards/routes, uses the supplied wireframes and KB, implements the core click flows, and passes or documents smoke tests.
+## Product Principles
+
+- Digital first.
+- Human reviewed.
+- Evidence backed.
+- No unapproved advice reaches the client.
+- Triggers are review points, not advice.
+- Advisor approval alone is not enough.
+- Compliance gate controls client visibility.
+- Evidence is created by default.
+- Sensitive actions create audit events.
+- Client visibility is a controlled state, not a visual styling decision.
+
+## Visual Interpretation Rules
+
+Visuals are **reference artefacts**, not literal screenshots to recreate end-to-end.
+
+Each visual may contain:
+
+1. actual UI to implement;
+2. annotation panels;
+3. dev handoff notes;
+4. workflow explanation;
+5. state examples;
+6. metadata such as asset ID, source board, version and audience;
+7. reference-only information.
+
+Codex must implement the **actual application UI region** and translate the surrounding annotations into logic, documentation, tests, state models and data contracts.
+
+Do not render developer notes, source-board labels, asset IDs, dev handoff blocks, legends, QA callouts, or design-spec metadata inside the actual client/advisor application UI unless the screen is explicitly a reference/admin documentation route.
+
+Some visuals are entirely reference/information boards, especially:
+
+- V2-043 Permission Matrix Reference Board
+- V2-048 End-to-End Service Blueprint — Full Swimlane View
+- V2-049 Evidence Chain View
+- V2-050 Escalation / Returns View
+- V2-051 Roadmap Board
+- V2-052 Blocked / Not MVP Ready Features
+- V2-053 Dependency Flow
+- V2-054 State Chip / Workflow Badge Reference Board
+- V2-055 State Machine Reference Board
+- V2-056 Evidence / Audit Mapping Reference Board
+
+These should inform architecture, rules, tests and docs. Do not implement them as ordinary product screens unless a dedicated internal reference route is explicitly in scope.
+
+## UX Rules
+
+- Every route must map to a v2 screen spec.
+- Every page must have default, loading, error and blocked states where relevant.
+- Every sensitive screen must show permission and visibility logic.
+- Every advice-like flow must include backstage review and compliance gate.
+- Every decision must link to evidence and audit.
+- Product-board pages are not acceptable as implementation screens.
+- Reference boards should become rules, models and test cases before they become UI.
+
+## Engineering Rules
+
+- Preserve working code unless it conflicts with v2.
+- Refactor in small commits.
+- Centralise routes, statuses, permissions, workflows and evidence logic.
+- Do not rely on client-side hiding alone for access control.
+- Add tests for permissions, gates and state transitions.
+- Run build, lint and tests where available.
+
+## Phase 4 Rule
+
+Before writing feature code:
+
+1. Audit existing Phase 1–3 implementation.
+2. Read all v2 docs and visuals.
+3. Create `docs/v2/EXISTING_PHASE_1_3_AUDIT.md`.
+4. Create `docs/v2/DELTA_ANALYSIS_V2.md`.
+5. Create `docs/v2/REFACTOR_PLAN_V2.md`.
+6. Implement only Phase 4 refactor.
+7. Do not start Phase 5 until Phase 4 QA passes.

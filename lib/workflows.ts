@@ -22,7 +22,7 @@ export const fullReviewWorkflow = [
 ] as const;
 
 export const currentPhaseBoundary = {
-  label: "Phase 2 visual system",
+  label: "Phase 4 v2 UX model",
   description:
-    "Routes, shell, design tokens, mock data structure, safety messaging and reusable AlphaVest UI components are present. Detailed board content and click interactions are reserved for later phases."
+    "Routes, shell, design tokens, mock data structure, safety messaging and reusable AlphaVest UI components are aligned to the v2 model. Client feature rebuilds remain reserved for later phases."
 };

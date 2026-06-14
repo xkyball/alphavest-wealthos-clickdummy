@@ -1,5 +1,5 @@
-import { BoardPage } from "@/components/board-page";
+import { GovernanceV2Screen } from "@/components/phase4-v2-screens";
 
 export default function GovernancePage() {
-  return <BoardPage route="/governance" />;
+  return <GovernanceV2Screen />;
 }
