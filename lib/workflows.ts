@@ -21,8 +21,8 @@ export const fullReviewWorkflow = [
   ...sensitiveRecommendationWorkflow
 ] as const;
 
-export const phaseOneBoundary = {
-  label: "Phase 1 foundation",
+export const currentPhaseBoundary = {
+  label: "Phase 2 visual system",
   description:
-    "Routes, shell, design tokens, mock data structure and safety messaging are present. Detailed board content and click interactions are reserved for later phases."
+    "Routes, shell, design tokens, mock data structure, safety messaging and reusable AlphaVest UI components are present. Detailed board content and click interactions are reserved for later phases."
 };

@@ -7,7 +7,7 @@ services:
     environment:
       DATABASE_URL: postgresql://alphavest:alphavest@postgres:5432/alphavest_wealthos
       NEXT_PUBLIC_DEMO_MODE: "true"
-      NEXT_PUBLIC_PHASE_TO_RUN: "1"
+      NEXT_PUBLIC_PHASE_TO_RUN: "2"
     ports:
       - "3000:3000"
     depends_on:

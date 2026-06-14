@@ -2,42 +2,43 @@
 
 ## Scope
 
-Run scope: **Phase 1 — Foundation & Repository Setup**
+Run scope: **Phase 2 — Visual System & Component Library**
 
-This report evaluates the Phase 1 foundation against the repository quality gates. Later-phase screen details and interactions are marked as pending rather than complete.
+This report evaluates the repository after the Phase 2 component-library pass. Full route content and stateful interactions remain pending later phases by design.
 
 ## Gate 1 — Context Ingestion
 
 Status: **Passed**
 
 - `AGENTS.md` read and followed.
+- `CODEX_TASK_MASTER.md` read before implementation.
 - Product KB, wireframe manifest, screen specs, functional scope and quality gates read.
-- All 16 wireframe PNGs are present and inspected.
-- All 3 key visuals are present and inspected.
+- All 16 wireframe PNGs were opened and inspected.
+- All 3 key visual references were opened and inspected.
 
 ## Gate 2 — Visual Fidelity
 
-Status: **Partial / Phase 1 foundation**
+Status: **Improved / Phase 2 component system**
 
 Completed:
 
-- All routes show board number and board title.
-- Dark navy, champagne-gold and ivory design tokens are present.
-- Right-side annotation panels are present.
-- Workflow badges are visible.
-- Routes are HTML/CSS/React, not static PNG backgrounds.
-- Reference PNG thumbnails are available inside the route skeletons.
+- All routes keep board number and board title.
+- Shared components now reproduce the core visual language: dark navy background, champagne-gold hairlines, ivory text, dense rounded panels and muted status colors.
+- `BoardShell` includes a visible right-side annotation panel and bottom workflow strip.
+- Workflow badges are implemented as reusable chips across the shell.
+- HTML/CSS/React components are used for the demo system; reference PNGs are shown only through `ReferenceImageViewer` for QA.
+- New component primitives cover phone frames, metrics, action cards, evidence timelines, human review gates, compliance gates, permission matrices and world-map motifs.
 
 Pending later phases:
 
-- Detailed screen-by-screen wireframe recreation.
-- Full board density, tables, matrices, phone frames, graph views and interaction states.
+- Detailed screen-by-screen wireframe recreation for each route.
+- Route-specific graph views, kanban boards, full tables, drawers and interaction states.
 
 ## Gate 3 — Route Coverage
 
 Status: **Passed**
 
-Implemented route skeletons:
+Existing route skeletons remain present:
 
 - `/presentation`
 - `/mobile`
@@ -60,52 +61,47 @@ Implemented route skeletons:
 
 Status: **Pending later phases**
 
-Phase 1 includes navigation and the `/presentation` start link. Detailed stateful interactions are intentionally deferred.
+Phase 2 intentionally did not implement full route content or local state flows. The component system now includes the UI primitives required for those flows, including blocked compliance gates and permission matrices.
 
 ## Gate 5 — Product Safety
 
-Status: **Passed for Phase 1**
+Status: **Passed for Phase 2**
 
-- Global demo disclaimer is visible.
-- Required safety messages are present across the shared shell and route skeletons.
+- Global demo disclaimer remains visible.
+- Required safety messages remain present in the shared shell.
+- `ComplianceGate` explicitly preserves `No unapproved advice reaches the client.`
+- `HumanReviewFlow` and `BottomWorkflowStrip` preserve the required human-backed workflow language.
 - No real API integrations exist.
 - No real advice is generated.
 - No secrets or real client data are used.
 
 ## Gate 6 — Technical Quality
 
-Status: **Passed for Phase 1 checks**
+Status: **Passed for available Phase 2 checks**
 
 Completed checks:
 
 - `npm run typecheck` — passed.
 - `npm run lint` — passed.
-- `npm run build` — passed.
-- `npm run start` — passed after build using the standalone server.
-- `npm audit` — passed with 0 vulnerabilities.
+- `npm run build` — passed after rerunning with approved sandbox escalation. The first sandboxed build failed with a Turbopack/PostCSS `Operation not permitted` process/port binding error.
 - `docker compose config` — passed.
-- Browser smoke check — passed for `/presentation`; the `Start Click-Dummy` link navigated to `/mobile`.
 
-Not run in Phase 1:
+Not run in Phase 2:
 
 - `docker compose up --build` was not run as a full container runtime smoke test.
-- Playwright smoke tests are not present yet and are deferred to the QA phase.
-
-Environment note:
-
-- `npm run dev` started successfully but logged `EMFILE: too many open files, watch` in this workspace. The browser smoke check used the production standalone server instead.
+- Playwright smoke tests are not present yet and remain deferred to the QA phase.
 
 ## Gate 7 — Presentation Quality
 
-Status: **Partial / Phase 1 foundation**
+Status: **Improved / Partial**
 
 Completed:
 
-- Navigation is clear.
-- Demo path is documented.
-- Visual language follows the supplied AlphaVest direction.
+- Navigation remains clear.
+- The route shell now looks materially closer to the supplied boards.
+- Component density, hairline panels, phone chrome, annotation panels and workflow strips are presentation-ready foundations.
 
 Pending later phases:
 
-- Full presentation polish at 1440px+.
-- Wireframe-level visual comparison and adjustment.
+- Full presentation polish at 1440px+ for each unique route.
+- Board-by-board visual comparison after route-specific content is implemented.

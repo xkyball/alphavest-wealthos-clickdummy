@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-**Phase 1 — Foundation & Repository Setup**
+**Phase 2 — Visual System & Component Library**
 
 Status: **Implemented**
 
@@ -38,26 +38,76 @@ Completed before implementation:
 - README setup instructions
 - QA report document
 
+## Phase 2 Deliverables
+
+- Expanded `BoardShell` with a reusable Phase 2 component showcase visible across existing route skeletons.
+- Implemented premium AlphaVest UI primitives:
+  - `PageHeader`
+  - `GlassPanel`
+  - `MetricCard`
+  - `WorkflowBadge`
+  - `StatusChip`
+  - `RoleBadge`
+  - `WireframePhone`
+  - `DashboardCard`
+  - `ActionCard`
+  - `EvidenceTimeline`
+  - `HumanReviewFlow`
+  - `ComplianceGate`
+  - `PermissionMatrix`
+  - `MiniWorldMap`
+  - `RightAnnotationPanel`
+  - `BottomWorkflowStrip`
+  - `ReferenceImageViewer`
+- Preserved the dark navy / champagne-gold / ivory wireframe language from the supplied boards.
+- Added visible reusable patterns for:
+  - mock mobile phone frames
+  - dashboard metrics
+  - action cards
+  - human review gates
+  - blocked compliance visibility
+  - evidence lifecycle
+  - permission matrix rows
+  - right-side annotation panels
+  - bottom workflow and security strips
+  - dev/QA reference image comparison
+
 ## Intentional Boundaries
 
-The following are intentionally not implemented in Phase 1:
+The following remain intentionally deferred after Phase 2:
 
-- Detailed board screens
-- Full wireframe replication
-- Click interactions and local state flows
-- Prisma schema and database persistence
-- Playwright smoke tests
-- Real integrations, advice generation, KYC/FICA checks, POPIA automation, e-signatures or document encryption
+- Full route-specific board content replication.
+- Stateful route interactions beyond the existing `/presentation` start navigation.
+- Prisma schema and database persistence.
+- Playwright smoke tests.
+- Full container runtime smoke via `docker compose up --build`.
+- Real integrations, advice generation, KYC/FICA checks, POPIA automation, e-signatures or document encryption.
 
 ## Static Data Tradeoff
 
-Phase 1 uses static mock data in `lib/demo-data.ts` and `lib/routes.ts`. Docker Compose still provisions Postgres so the repository has the expected platform foundation, but no database dependency is required for the first browser-presentable skeleton.
+Phase 2 continues to use static mock data and typed component props. This keeps the click-dummy browser-presentable and lets later phases focus on screen fidelity and interactions before adding persistence.
+
+## Checks
+
+Run during Phase 2:
+
+- `npm run typecheck` — passed.
+- `npm run lint` — passed.
+
+Additional checks are tracked in `docs/IMPLEMENTATION_QA_REPORT.md`.
 
 ## Next Recommended Phase
 
-Phase 2 should build the visual system and board shell fidelity pass:
+Phase 3 should build the client-facing experience screens with route-specific content:
 
-- tighten the 16:9 board presentation layout
-- expand reusable panels, legends, workflow strips and app-shell variants
-- add optional reference-thumbnail controls
-- prepare smoke-test scaffolding for all routes
+- `/presentation`
+- `/mobile`
+- `/mobile/upload`
+- `/portal`
+- `/wealth-map`
+- `/actions`
+- `/signals`
+- `/decisions`
+- `/evidence`
+
+It should use the Phase 2 component library rather than duplicating panel, badge, phone, matrix, timeline or annotation patterns.

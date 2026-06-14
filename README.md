@@ -1,8 +1,8 @@
 # AlphaVest WealthOS Click-Dummy
 
-Phase 1 foundation for the **AlphaVest Digital Wealth Assurance Platform / AlphaVest WealthOS** browser prototype.
+Phase 2 visual system foundation for the **AlphaVest Digital Wealth Assurance Platform / AlphaVest WealthOS** browser prototype.
 
-The current build establishes the Next.js App Router app, AlphaVest design tokens, all 16 route skeletons, global safety disclaimers, reference-board thumbnails, Docker setup and progress/QA documentation. Detailed screen content and click interactions are intentionally deferred to later phases.
+The current build establishes the Next.js App Router app, AlphaVest design tokens, all 16 route skeletons, global safety disclaimers, reusable AlphaVest UI components, reference-board QA thumbnails, Docker setup and progress/QA documentation. Detailed route-specific screen content and click interactions are intentionally deferred to later phases.
 
 ## Product Guardrails
 
@@ -45,7 +45,7 @@ The compose stack includes:
 - `web` on `http://localhost:3000`
 - `postgres` on port `5432`
 
-Postgres is provisioned for the intended platform foundation, but Phase 1 uses static mock data so database complexity does not block the browser prototype.
+Postgres is provisioned for the intended platform foundation, but Phase 2 uses static mock data so database complexity does not block the browser prototype.
 
 ## Demo Route List
 
@@ -66,7 +66,7 @@ Postgres is provisioned for the intended platform foundation, but Phase 1 uses s
 - `/journey`
 - `/roadmap`
 
-## Phase 1 Scope
+## Phase 2 Scope
 
 Implemented:
 
@@ -75,6 +75,10 @@ Implemented:
 - Shared app shell and board skeleton layout
 - Route skeletons for all 16 boards
 - Global disclaimer banner
+- Reusable component library for the AlphaVest wireframe system
+- Phone frame, metrics, dashboard cards, action cards and status chips
+- Human review flow, compliance gate, evidence timeline and permission matrix
+- Mini world-map motif, right annotation panel, bottom workflow strip and reference image viewer
 - Mock route metadata and seeded object context
 - Dockerfile and Docker Compose setup
 - `.env.example`
