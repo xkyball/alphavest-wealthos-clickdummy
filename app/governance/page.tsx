@@ -1,5 +1,5 @@
-import { GovernanceV2Screen } from "@/components/phase4-v2-screens";
+import { Phase7GovernanceScreen } from "@/components/phase7-governance-screen";
 
 export default function GovernancePage() {
-  return <GovernanceV2Screen />;
+  return <Phase7GovernanceScreen />;
 }

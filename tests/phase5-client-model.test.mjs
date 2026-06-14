@@ -30,8 +30,27 @@ function loadTsModule(relativePath, dependencies = {}) {
 }
 
 const v2Model = loadTsModule("../lib/v2-model.ts");
+const roles = loadTsModule("../lib/roles.ts");
+const evidence = loadTsModule("../lib/evidence.ts", {
+  "./roles": roles
+});
+const audit = loadTsModule("../lib/audit.ts", {
+  "./evidence": evidence,
+  "./roles": roles
+});
+const permissions = loadTsModule("../lib/permissions.ts", {
+  "./roles": roles
+});
+const visibility = loadTsModule("../lib/visibility.ts", {
+  "./permissions": permissions
+});
 const phase5 = loadTsModule("../lib/phase5-client-model.ts", {
-  "./v2-model": v2Model
+  "./v2-model": v2Model,
+  "./audit": audit,
+  "./evidence": evidence,
+  "./permissions": permissions,
+  "./roles": roles,
+  "./visibility": visibility
 });
 
 test("/mobile recommendation blocked state cannot expose advice-like content", () => {

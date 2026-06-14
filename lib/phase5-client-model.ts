@@ -1,13 +1,18 @@
 import {
   createAuditEvent,
+  type AuditEvent
+} from "./audit";
+import {
   createEvidenceLink,
+  type EvidenceObjectType
+} from "./evidence";
+import { evaluatePermission } from "./permissions";
+import type { Role } from "./roles";
+import {
+  canShowClientAdviceLikeOutput,
   evaluateClientVisibility,
-  evaluatePermission,
-  type AuditEvent,
-  type EvidenceObjectType,
-  type ReleaseState,
-  type Role
-} from "./v2-model";
+  type ReleaseState
+} from "./visibility";
 
 export type ClientRouteState = "default" | "loading" | "empty" | "error" | "blocked";
 
@@ -133,7 +138,14 @@ export const decisionRelease = evaluateClientVisibility(releasedRecommendation);
 export const blockedDecisionRelease = evaluateClientVisibility(blockedRecommendation);
 
 export function canShowAdviceLikeContent(release: ReleaseState) {
-  return evaluateClientVisibility(release).clientVisible;
+  return canShowClientAdviceLikeOutput({
+    advisorApproval: release.advisorApproval,
+    complianceRelease: release.complianceRelease,
+    evidenceRecord: release.evidenceRecordExists,
+    permissionCheck: release.permissionCheck,
+    outputClassification: "decision_pack",
+    clientVisibilityState: release.clientVisibilityState
+  }).clientVisible;
 }
 
 export function sensitiveNodeAccess(role: Role = "Next Gen") {
