@@ -1,5 +1,5 @@
-import { WorkbenchV2Screen } from "@/components/phase4-v2-screens";
+import { RuntimeWorkbenchScreen } from "@/components/runtime-command-screens";
 
 export default function WorkbenchPage() {
-  return <WorkbenchV2Screen />;
+  return <RuntimeWorkbenchScreen />;
 }

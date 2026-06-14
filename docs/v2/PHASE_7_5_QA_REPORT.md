@@ -23,6 +23,7 @@ This pass addresses the gap that Phase 4-7 screens had state chips, workflow lab
 
 | Route | Runtime behavior |
 |---|---|
+| `/presentation` | Uses the shared runtime as an app command center instead of rendering a visual-board shell. |
 | `/workbench` | Reads the shared recommendation/document workflow state and can reset the demo session. |
 | `/advisor-approval` | `Approve for compliance` advances the recommendation and decision workflows. |
 | `/compliance` | `Release to client` or `Block / request evidence` updates the shared recommendation gate and emits runtime audit/evidence. |
@@ -44,6 +45,18 @@ This pass addresses the gap that Phase 4-7 screens had state chips, workflow lab
 - decision submission before compliance release is blocked;
 - sensitive access confirmation creates access-change evidence/audit;
 - the Phase 7.5 runtime plan exists for future tasks.
+
+`tests/phase75-visual-rules.test.mjs` verifies:
+
+- `/presentation` and `/workbench` are wired to dedicated runtime app surfaces;
+- those routes no longer import the old Phase 3 or Phase 4 visual-board components;
+- the runtime command screens do not render board chrome, reference metadata, visual IDs, annotation panels or page-spec headers.
+
+## Visual Rule Correction
+
+After the first Phase 7.5 pass, `/presentation` and `/workbench` still inherited board/spec chrome from older components. This was corrected by introducing `components/runtime-command-screens.tsx` and routing both pages to app-screen surfaces that use the shared demo runtime directly.
+
+Future tasks should treat the old board shell components as legacy reference scaffolding unless a route explicitly needs an internal reference surface. Product routes should use dedicated app components and shared helpers rather than `Phase3Board`, `V2ScreenShell`, `PageHeader`, visual ID chips or annotation panels.
 
 ## Command Results
 
