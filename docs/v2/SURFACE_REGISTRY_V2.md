@@ -42,11 +42,11 @@ Default rule: visual types like `drawer`, `state_drawer`, `modal_state`, `drawer
 | V2-023 | `focused_surface` | `overlay:evidence-preview` | `EvidencePreviewDrawer` | No; `/evidence` redirects to `/portal` |
 | V2-024 | `focused_surface` | `overlay:evidence-preview-restricted` | `EvidencePreviewDrawer` | No; `/evidence` redirects to `/portal` |
 | V2-025 | `focused_surface` | `overlay:evidence-missing-escalation` | `EvidencePreviewDrawer` | No; `/evidence` redirects to `/portal` |
-| V2-026 to V2-027 | `internal_route` | `/signals` | `SignalsScreenV2` | Yes |
+| V2-026 to V2-027 | `internal_route` | `/signals` | `InternalSignalsScreen` | Yes |
 | V2-028 to V2-029 | `internal_route` | `/workbench` | `RuntimeWorkbenchScreen` | Yes |
 | V2-030 | `focused_surface` | `panel:workbench-trigger-detail` | `RuntimeWorkbenchScreen` | No |
-| V2-031 to V2-033 | `internal_route` | `/advisor-approval` | `AdvisorApprovalScreenV2` | Yes |
-| V2-034 to V2-037 | `internal_route` | `/compliance` | `ComplianceConsoleScreenV2` | Yes |
+| V2-031 to V2-033 | `internal_route` | `/advisor-approval` | `InternalAdvisorApprovalScreen` | Yes |
+| V2-034 to V2-037 | `internal_route` | `/compliance` | `InternalComplianceScreen` | Yes |
 | V2-038 | `internal_route` | `/governance` | `Phase7GovernanceScreen` | Yes |
 | V2-039 | `focused_surface` | `drawer:governance-role-detail` | `Phase7GovernanceScreen` | No |
 | V2-040 | `focused_surface` | `modal:governance-second-confirmation` | `Phase7GovernanceScreen` | No; `/governance?surface=second-confirmation` renders the focused modal state |

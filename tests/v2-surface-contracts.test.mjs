@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 import test from "node:test";
 import ts from "typescript";
 import vm from "node:vm";
@@ -30,19 +31,97 @@ const surface = loadTsModule("../lib/surface-registry.ts");
 const v2Model = loadTsModule("../lib/v2-model.ts", { "./status": {} });
 const registry = surface.surfaceRegistry;
 
+function collectPageSources(baseDir) {
+  const entries = readdirSync(baseDir, { withFileTypes: true });
+  const files = [];
+  for (const entry of entries) {
+    if (entry.name === "api") {
+      continue;
+    }
+
+    const full = join(baseDir, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...collectPageSources(full));
+      continue;
+    }
+
+    if (!entry.isFile()) {
+      continue;
+    }
+
+    if (entry.name === "page.tsx") {
+      files.push(full);
+    }
+  }
+
+  return files;
+}
+
+function collectPageSourceText() {
+  return collectPageSources("app").map((file) => readFileSync(file, "utf8")).join("\n");
+}
+
+function assertNoLegacyRouteImports(sourceText, label) {
+  const legacyImports = [
+    /phase3-client-screens/, 
+    /phase4-v2-screens/,
+    /Phase3Board/,
+    /V2ScreenShell/
+  ];
+
+  for (const pattern of legacyImports) {
+    assert.ok(
+      !pattern.test(sourceText),
+      `${label} still imports legacy board/surface scaffolding: ${pattern.toString()}`
+    );
+  }
+}
+
 function source(relativePath) {
   return readFileSync(new URL(relativePath, import.meta.url), "utf8");
 }
 
 const componentSources = {
   ActionsScreenV2: source("../components/phase5-client-screens.tsx"),
+  InternalAdvisorApprovalScreen: source("../components/phase6-internal-screens.tsx"),
+  InternalComplianceScreen: source("../components/phase6-internal-screens.tsx"),
+  InternalSignalsScreen: source("../components/phase6-internal-screens.tsx"),
+  MobileScreenV2: source("../components/phase5-client-screens.tsx"),
+  MobileUploadScreenV2: source("../components/phase5-client-screens.tsx"),
+  PortalScreenV2: source("../components/phase5-client-screens.tsx"),
   DecisionsScreenV2: source("../components/phase5-client-screens.tsx"),
+  EvidenceScreenV2: source("../components/phase5-client-screens.tsx"),
   EvidencePreviewDrawer: source("../components/phase5-client-screens.tsx"),
   WealthMapScreenV2: source("../components/phase5-client-screens.tsx"),
   RuntimeWorkbenchScreen: source("../components/runtime-command-screens.tsx"),
+  InternalSignalsScreen: source("../components/phase6-internal-screens.tsx"),
   Phase7GovernanceScreen: source("../components/phase7-governance-screen.tsx"),
-  Phase8CommunicationScreen: source("../components/phase8-screens.tsx")
+  Phase8CommunicationScreen: source("../components/phase8-screens.tsx"),
+  Phase8ServiceBlueprintScreen: source("../components/phase8-screens.tsx"),
+  Phase8RoadmapScreen: source("../components/phase8-screens.tsx")
 };
+
+function getFunctionSource(sourceText, functionName) {
+  const marker = `export function ${functionName}`;
+  const start = sourceText.indexOf(marker);
+  if (start < 0) {
+    return "";
+  }
+
+  const markers = [...sourceText.matchAll(/export function [A-Za-z0-9_]+/g)].map((match) => match.index ?? -1);
+  const next = markers.find((index) => index > start);
+  const end = next === undefined ? sourceText.length : next;
+
+  return sourceText.slice(start, end);
+}
+
+function hasComponentDefinition(sourceText, componentName) {
+  const pattern = new RegExp(
+    `export\\s+(?:const|function|class)\\s+${componentName.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&")}`,
+    "s"
+  );
+  return pattern.test(sourceText);
+}
 
 test("surface registry covers every V2 visual asset exactly once", () => {
   const manifest = source("../docs/v2/VISUAL_ASSET_MANIFEST_V2.md");
@@ -129,24 +208,46 @@ test("focused surfaces include their required visual-region tokens", () => {
   }
 });
 
-test("product and workflow route files do not import legacy board shells", () => {
-  const appRouteSources = [
-    "../app/mobile/page.tsx",
-    "../app/mobile/upload/page.tsx",
-    "../app/portal/page.tsx",
-    "../app/wealth-map/page.tsx",
-    "../app/actions/page.tsx",
-    "../app/decisions/page.tsx",
-    "../app/signals/page.tsx",
-    "../app/workbench/page.tsx",
-    "../app/advisor-approval/page.tsx",
-    "../app/compliance/page.tsx",
-    "../app/governance/page.tsx",
-    "../app/communication/page.tsx"
-  ].map(source).join("\n");
+test("focused surface overlays are not hard-opened by default", () => {
+  for (const entry of registry.filter((item) => item.surfaceType === "focused_surface")) {
+    const implementationSource = componentSources[entry.component];
 
-  assert.doesNotMatch(appRouteSources, /phase3-client-screens/);
-  assert.doesNotMatch(appRouteSources, /phase4-v2-screens/);
-  assert.doesNotMatch(appRouteSources, /Phase3Board/);
-  assert.doesNotMatch(appRouteSources, /V2ScreenShell/);
+    assert.ok(
+      implementationSource,
+      `${entry.visualId} (${entry.component}) has no mapped component source`
+    );
+
+    const componentSource = getFunctionSource(implementationSource, entry.component);
+    const openBindings = [...componentSource.matchAll(/open=\{([a-zA-Z_$][\w$]*)\}/g)];
+    for (const [, binding] of openBindings) {
+      const openStatePattern = new RegExp(
+        `const\\s*\\[\\s*${binding}\\s*,\\s*set[\\w$]*\\s*\\]\\s*=\\s*useState\\(true\\)`,
+        "s"
+      );
+
+      assert.ok(
+        !openStatePattern.test(componentSource),
+        `${entry.visualId} (${entry.component}) should not default open overlays to true`
+      );
+    }
+  }
+});
+
+test("product and workflow route files do not import legacy board shells", () => {
+  assertNoLegacyRouteImports(collectPageSourceText(), "app/page.tsx files");
+});
+
+test("surface registry component references are resolvable exports", () => {
+  for (const entry of registry) {
+    if (entry.surfaceType === "logic_only") {
+      continue;
+    }
+
+    const implementationSource = componentSources[entry.component];
+    assert.ok(implementationSource, `${entry.visualId} references unknown component ${entry.component}`);
+    assert.ok(
+      hasComponentDefinition(implementationSource, entry.component),
+      `${entry.visualId} component ${entry.component} not found in mapped source`
+    );
+  }
 });

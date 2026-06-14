@@ -28,6 +28,18 @@ The enforceable source for this classification is `lib/surface-registry.ts`, mir
 | `/service-blueprint` and `/journey` | Internal/reference route | OK. Reference-only blueprint is not client-facing. |
 | `/roadmap` | Planning/reference route | OK. Roadmap scope is not client-facing product UI. |
 
+## Workspace-Wide Overlay Validation Pass
+
+| Visual | Surface class | Previous risk | Action taken |
+|---|---|---|---|
+| V2-023 (Evidence preview surface) | Focused overlay | `EvidenceScreenV2` could render with `previewOpen = true`, which would auto-open the drawer outside an explicit trigger. | Confirmed and fixed: default is now `previewOpen = false`; drawer opens only from click or compatible context actions. |
+| V2-046 (Communication preview surface) | Focused overlay | No open-by-default risk detected; already query-driven via `surface=client-preview`. | Kept as-is; regression guard remains in place. |
+
+### Current automated checks added for this risk
+
+- `tests/phase5-client-routes.test.mjs`: explicit assertion that `EvidenceScreenV2` starts with `useState(false)`.
+- `tests/v2-surface-contracts.test.mjs`: new contract test asserts focused surfaces with `open={...}` state bindings do not initialize with `useState(true)`.
+
 ## Workspace-Wide Visual Classification
 
 | Surface group | Visuals | Classification | Enforcement |

@@ -590,7 +590,7 @@ export function DecisionsScreenV2() {
 export function EvidenceScreenV2() {
   const [selectedId, setSelectedId] = useState(evidenceRecords[0].id);
   const [filter, setFilter] = useState("All");
-  const [previewOpen, setPreviewOpen] = useState(true);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const { snapshot } = useDemoSession();
   const selected = evidenceRecords.find((record) => record.id === selectedId) ?? evidenceRecords[0];
   const access = evidenceAccess(selected, selected.restricted ? "Next Gen" : "Principal");

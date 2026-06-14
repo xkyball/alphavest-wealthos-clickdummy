@@ -84,6 +84,7 @@ When a visual names or depicts a drawer, preview drawer, modal, pop-up, release 
 Do not link workflow buttons directly to a standalone route for these focused surfaces. Open the overlay/drawer/modal in the current workflow context. If a legacy/deep-link URL exists, it should redirect to a safe parent context or be treated as compatibility plumbing, not as the primary implementation.
 
 Focused surfaces must have stable surface keys, not ordinary product-route paths, as their primary identity. Examples include `overlay:evidence-preview`, `drawer:action-detail`, `panel:workbench-trigger-detail` and `modal:governance-second-confirmation`.
+Open state for a focused surface should be query-driven or explicitly user-triggered; overlays should not default-open unless the route or action explicitly requests it.
 
 Examples:
 

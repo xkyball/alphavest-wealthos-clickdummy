@@ -76,6 +76,7 @@ test("evidence route uses a preview drawer overlay, not a fixed right-column det
 
   assert.match(evidenceRoute, /redirect\("\/portal"\)/);
   assert.doesNotMatch(evidenceRoute, /EvidenceScreenV2/);
+  assert.match(evidenceSource, /const \[previewOpen, setPreviewOpen\]\s*=\s*useState\(false\)/);
   assert.match(evidenceSource, /fixed inset-0 z-40/);
   assert.match(evidenceSource, /Evidence Vault/);
   assert.match(evidenceSource, /Close preview/);
