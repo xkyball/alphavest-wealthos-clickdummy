@@ -1,5 +1,5 @@
-import { RoadmapV2Screen } from "@/components/phase4-v2-screens";
+import { Phase8RoadmapScreen } from "@/components/phase8-screens";
 
 export default function RoadmapPage() {
-  return <RoadmapV2Screen />;
+  return <Phase8RoadmapScreen />;
 }

@@ -1,5 +1,5 @@
-import { CommunicationV2Screen } from "@/components/phase4-v2-screens";
+import { Phase8CommunicationScreen } from "@/components/phase8-screens";
 
 export default function CommunicationPage() {
-  return <CommunicationV2Screen />;
+  return <Phase8CommunicationScreen />;
 }

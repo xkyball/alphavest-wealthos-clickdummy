@@ -192,6 +192,19 @@ export const v2Routes = [
     screenSpec: "docs/v2/SCREEN_SPECS_V2.md#/communication"
   },
   {
+    path: "/service-blueprint",
+    label: "Blueprint",
+    title: "Service Blueprint",
+    domain: "Internal reference",
+    primaryUser: "AlphaVest delivery team",
+    userGoal: "Understand the service stages, evidence chain and escalation returns.",
+    priority: "P1",
+    type: "reference",
+    visualIds: ["V2-048", "V2-049", "V2-050"],
+    screenSpec: "docs/v2/SERVICE_BLUEPRINT_V2.md",
+    referenceOnly: true
+  },
+  {
     path: "/journey",
     label: "Blueprint",
     title: "Service Blueprint",
