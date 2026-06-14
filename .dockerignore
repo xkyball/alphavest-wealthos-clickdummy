@@ -1,0 +1,9 @@
+node_modules
+.next
+.git
+.env
+.env*.local
+npm-debug.log*
+README_CODEX_HANDOFF.md
+playwright-report
+test-results
