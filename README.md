@@ -1,36 +1,46 @@
 # AlphaVest WealthOS Click-Dummy
 
-Phase 7.5 workflow-runtime click-dummy for the **AlphaVest Digital Wealth Assurance Platform / AlphaVest WealthOS** browser prototype.
+AlphaVest WealthOS is a v2 browser prototype for a digital wealth assurance workflow.
 
-The current build includes the v2 route surfaces from Phases 4-7 plus a shared demo workflow runtime. Key clicks now update one canonical demo session so later screens can reflect the same recommendation, compliance, decision, evidence, audit and access state.
+The current repository is complete through **Phase 9: QA, Tests, Documentation and Demo Handoff**. It is a demo-ready click-dummy/prototype, not a production platform.
 
 ## Product Guardrails
 
-- Demo only. Not legal, tax, investment, insurance, residency or citizenship advice.
-- Triggers are review points, not final advice.
+- Digital first.
+- Human reviewed.
+- Evidence backed.
+- Triggers are review points, not advice.
+- Advisor approval alone is not enough.
+- Compliance release controls client visibility.
+- Evidence is created by default.
+- Sensitive actions create audit events.
 - No unapproved advice reaches the client.
-- Digital first. Human reviewed. Evidence backed.
-- Evidence replaces assumption.
+
+## Visual Reference Rule
+
+The v2 visuals are implementation references, not 1:1 UI screenshots. Only the actual app screen area, drawer, modal, table, mobile content, kanban board, form, graph or workflow interface region becomes product UI.
+
+Annotations, legends, dev notes, metadata, backstage workflows, audit hints, permission notes and state examples are translated into helpers, route state, tests, documentation, mock contracts, state machines, permission rules and evidence/audit mapping.
 
 ## Local Setup
 
-1. Install dependencies:
+Install dependencies:
 
-   ```bash
-   npm install
-   ```
+```bash
+npm install
+```
 
-2. Start the local app:
+Start the local app:
 
-   ```bash
-   npm run dev
-   ```
+```bash
+npm run dev
+```
 
-3. Open:
+Open:
 
-   ```text
-   http://localhost:3000
-   ```
+```text
+http://localhost:3000
+```
 
 The root route redirects to `/presentation`.
 
@@ -45,7 +55,7 @@ The compose stack includes:
 - `web` on `http://localhost:3000`
 - `postgres` on port `5432`
 
-Postgres is used by the Phase 7.5 demo runtime when `DATABASE_URL` is present. Without Postgres, the app falls back to an in-memory demo session so build and simple local dev still work.
+Postgres is used by the demo runtime when `DATABASE_URL` is present. Without Postgres, the app falls back to an in-memory demo session so local development and builds still work.
 
 Seed/reset the persistent demo session from the host:
 
@@ -53,15 +63,29 @@ Seed/reset the persistent demo session from the host:
 npm run demo:seed
 ```
 
-The canonical runtime path is:
+## Available Commands
 
-```text
-/workbench -> /advisor-approval -> /compliance -> /decisions -> /evidence
+```bash
+npm run dev
+npm run typecheck
+npm test
+npm run test:e2e
+npm run lint
+npm run build
+npm run start
 ```
 
-See `docs/v2/PHASE_7_5_WORKFLOW_RUNTIME_PLAN.md`.
+Phase 9 check status:
 
-## Demo Route List
+- `npm test`: passed, 64 tests
+- `npm run test:e2e`: passed, 17 tests
+- `npm run typecheck`: passed
+- `npm run lint`: passed
+- `npm run build`: passed
+
+## Route List
+
+Primary demo routes:
 
 - `/presentation`
 - `/mobile`
@@ -71,45 +95,90 @@ See `docs/v2/PHASE_7_5_WORKFLOW_RUNTIME_PLAN.md`.
 - `/actions`
 - `/signals`
 - `/decisions`
-- `/evidence`
 - `/workbench`
 - `/advisor-approval`
 - `/compliance`
 - `/governance`
 - `/communication`
+- `/service-blueprint`
 - `/journey`
 - `/roadmap`
 
-## Current Scope
+Compatibility route:
 
-Implemented:
+- `/evidence` redirects to `/portal`; evidence preview is a contextual overlay, not a standalone product route.
 
-- Next.js App Router and TypeScript configuration
-- Tailwind CSS and AlphaVest design tokens
-- Client, internal workflow, governance and reference route surfaces
-- Reusable component library for the AlphaVest wireframe system
-- Central roles, permissions, state machines, evidence/audit helpers and no-unapproved-advice gate
-- Phase 7.5 demo workflow runtime with API transitions
-- Optional Postgres persistence through Docker Compose
-- Seed/reset script for the persistent demo session
-- Runtime tests for advisor approval, compliance release, client decision, access changes and evidence/audit events
+Optional/reference routes not implemented as pages:
 
-Deferred to later phases:
+- `/states`
+- `/permissions/reference`
+- `/evidence/audit-map`
 
-- Real identity, KYC, CRM, document and advice APIs
-- Production authorization enforcement
-- WORM audit storage
-- Full Playwright browser automation
+Their visuals are treated as logic-only inputs for status, permission, state-machine and evidence/audit helpers.
 
-## Available Checks
+## Demo Path
 
-```bash
-npm run typecheck
-npm test
-npm run lint
-npm run build
-npm run test:e2e
-npm run start
+1. `/presentation` - operating command center and shared runtime state.
+2. `/mobile` - mobile home and next step today.
+3. `/mobile/upload` - document selection and extraction review.
+4. `/portal` - client dashboard and readiness score.
+5. `/wealth-map?focus=gaps` - wealth graph and Trust X drawer.
+6. `/actions` - action board and missing-evidence blocker.
+7. `/decisions?state=blocked` - permission blocked decision room.
+8. `/workbench` - internal queue and publish readiness gate.
+9. `/advisor-approval` - advisor review and approval.
+10. `/compliance` - release or block with evidence/audit output.
+11. `/decisions` - submit decision and open evidence preview.
+12. `/governance` - permission matrix, role drawer and second confirmation.
+13. `/communication?surface=client-preview` - gated communication preview.
+14. `/service-blueprint` - internal swimlane/evidence/escalation reference.
+15. `/roadmap` - MVP, Phase 2, Future and dependency view.
+
+See `docs/v2/V2_DEMO_SCRIPT.md` for the full talk track.
+
+## What Is Mocked
+
+- Client, family, role, workflow and evidence data.
+- Document upload and extraction.
+- Advisor approval, compliance release and communication send.
+- Audit events and evidence links.
+- Digital seal/checksum values.
+- Optional Postgres demo persistence.
+
+## Not Production Ready
+
+- No real identity provider.
+- No production authorization middleware.
+- No real advice, KYC, CRM, document, portfolio, calendar or messaging integration.
+- No immutable WORM audit storage.
+- No production evidence vault.
+- No Playwright browser suite is installed.
+
+## Safety Notes
+
+This prototype must not be used to provide legal, tax, investment, insurance, residency or citizenship advice. It demonstrates the product workflow and safety model only.
+
+Advice-like client output requires:
+
+```text
+advisor approval
+compliance release
+evidence record
+permission check
+released visibility state
 ```
 
-See `docs/IMPLEMENTATION_QA_REPORT.md` for the current check results and quality-gate status.
+If any requirement is missing, the system must keep the content blocked.
+
+## Handoff Documents
+
+- `docs/v2/PHASE_9_QA_REPORT.md`
+- `docs/v2/V2_IMPLEMENTATION_SUMMARY.md`
+- `docs/v2/V2_ROUTE_COVERAGE_REPORT.md`
+- `docs/v2/V2_STATE_COVERAGE_REPORT.md`
+- `docs/v2/V2_PERMISSION_TEST_REPORT.md`
+- `docs/v2/V2_NO_UNAPPROVED_ADVICE_TEST_REPORT.md`
+- `docs/v2/V2_EVIDENCE_AUDIT_TEST_REPORT.md`
+- `docs/v2/V2_VISUAL_REFERENCE_COVERAGE_REPORT.md`
+- `docs/v2/V2_DEMO_SCRIPT.md`
+- `docs/v2/V2_KNOWN_LIMITATIONS.md`

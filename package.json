@@ -8,7 +8,7 @@
     "start": "node .next/standalone/server.js",
     "lint": "eslint . --max-warnings=0",
     "test": "node --test tests/*.test.mjs",
-    "test:e2e": "node --test tests/phase5-client-routes.test.mjs",
+    "test:e2e": "node --test tests/phase5-client-routes.test.mjs tests/phase9-final-handoff.test.mjs",
     "typecheck": "tsc --noEmit --project tsconfig.typecheck.json",
     "demo:seed": "node scripts/seed-demo-runtime.mjs"
   },

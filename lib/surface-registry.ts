@@ -99,9 +99,9 @@ export const surfaceRegistry = [
     parentRoute: "/mobile/upload",
     component: "MobileUploadScreenV2",
     directNavigationAllowed: true,
-    entryPoints: ["/mobile/upload?state=extraction"],
+    entryPoints: ["/mobile/upload?state=extract"],
     helpers: ["evidence", "audit", "state"],
-    regionTokens: ["Extracted information"]
+    regionTokens: ["Extraction review"]
   }),
   entry({
     visualId: "V2-006",
@@ -135,7 +135,7 @@ export const surfaceRegistry = [
     parentRoute: "/mobile/upload",
     component: "MobileUploadScreenV2",
     directNavigationAllowed: true,
-    entryPoints: ["/mobile/upload?state=retry"],
+    entryPoints: ["/mobile/upload?state=error"],
     helpers: ["state"],
     regionTokens: ["Retry upload"]
   }),
