@@ -1,5 +1,5 @@
-import { BoardPage } from "@/components/board-page";
+import { ActionsScreen } from "@/components/phase3-client-screens";
 
 export default function ActionsPage() {
-  return <BoardPage route="/actions" />;
+  return <ActionsScreen />;
 }

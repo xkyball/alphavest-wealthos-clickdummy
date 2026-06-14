@@ -1,10 +1,5 @@
-import { BoardPage } from "@/components/board-page";
+import { PresentationScreen } from "@/components/phase3-client-screens";
 
 export default function PresentationPage() {
-  return (
-    <BoardPage
-      primaryAction={{ href: "/mobile", label: "Start Click-Dummy" }}
-      route="/presentation"
-    />
-  );
+  return <PresentationScreen />;
 }

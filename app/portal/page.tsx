@@ -1,5 +1,5 @@
-import { BoardPage } from "@/components/board-page";
+import { PortalScreen } from "@/components/phase3-client-screens";
 
 export default function PortalPage() {
-  return <BoardPage route="/portal" />;
+  return <PortalScreen />;
 }

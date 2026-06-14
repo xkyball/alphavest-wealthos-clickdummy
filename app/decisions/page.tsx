@@ -1,5 +1,5 @@
-import { BoardPage } from "@/components/board-page";
+import { DecisionsScreen } from "@/components/phase3-client-screens";
 
 export default function DecisionsPage() {
-  return <BoardPage route="/decisions" />;
+  return <DecisionsScreen />;
 }

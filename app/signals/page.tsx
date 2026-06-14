@@ -1,5 +1,5 @@
-import { BoardPage } from "@/components/board-page";
+import { SignalsScreen } from "@/components/phase3-client-screens";
 
 export default function SignalsPage() {
-  return <BoardPage route="/signals" />;
+  return <SignalsScreen />;
 }

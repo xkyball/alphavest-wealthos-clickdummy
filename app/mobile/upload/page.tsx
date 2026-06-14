@@ -1,5 +1,5 @@
-import { BoardPage } from "@/components/board-page";
+import { MobileUploadScreen } from "@/components/phase3-client-screens";
 
 export default function MobileUploadPage() {
-  return <BoardPage route="/mobile/upload" />;
+  return <MobileUploadScreen />;
 }

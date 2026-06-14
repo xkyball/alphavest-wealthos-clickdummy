@@ -1,5 +1,5 @@
-import { BoardPage } from "@/components/board-page";
+import { EvidenceScreen } from "@/components/phase3-client-screens";
 
 export default function EvidencePage() {
-  return <BoardPage route="/evidence" />;
+  return <EvidenceScreen />;
 }

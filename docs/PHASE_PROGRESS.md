@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-**Phase 2 — Visual System & Component Library**
+**Phase 3 — Client-Facing Screens**
 
 Status: **Implemented**
 
@@ -11,13 +11,13 @@ Status: **Implemented**
 Completed before implementation:
 
 - `AGENTS.md`
-- `CODEX_TASK_MASTER.md`
 - `docs/ALPHAVEST_WEALTHOS_KB.md`
 - `docs/WIREFRAME_MANIFEST.md`
 - `docs/SCREEN_SPECS.md`
 - `docs/FUNCTIONAL_SCOPE.md`
 - `docs/QUALITY_GATES.md`
-- 16 wireframes in `public/reference/wireframes/`
+- `CODEX_TASK_MASTER.md`
+- All 16 wireframes in `public/reference/wireframes/`
 - 3 key visuals in `public/reference/key-visuals/`
 
 ## Phase 1 Deliverables
@@ -34,80 +34,66 @@ Completed before implementation:
 - Static mock family/object context
 - Dockerfile
 - `docker-compose.yml` with web and Postgres services
-- `.env.example`
 - README setup instructions
 - QA report document
 
 ## Phase 2 Deliverables
 
-- Expanded `BoardShell` with a reusable Phase 2 component showcase visible across existing route skeletons.
-- Implemented premium AlphaVest UI primitives:
-  - `PageHeader`
-  - `GlassPanel`
-  - `MetricCard`
-  - `WorkflowBadge`
-  - `StatusChip`
-  - `RoleBadge`
-  - `WireframePhone`
-  - `DashboardCard`
-  - `ActionCard`
-  - `EvidenceTimeline`
-  - `HumanReviewFlow`
-  - `ComplianceGate`
-  - `PermissionMatrix`
-  - `MiniWorldMap`
-  - `RightAnnotationPanel`
-  - `BottomWorkflowStrip`
-  - `ReferenceImageViewer`
-- Preserved the dark navy / champagne-gold / ivory wireframe language from the supplied boards.
-- Added visible reusable patterns for:
-  - mock mobile phone frames
-  - dashboard metrics
-  - action cards
-  - human review gates
-  - blocked compliance visibility
-  - evidence lifecycle
-  - permission matrix rows
-  - right-side annotation panels
-  - bottom workflow and security strips
-  - dev/QA reference image comparison
+- Premium AlphaVest UI primitives and board shell.
+- Shared dark navy, champagne-gold and ivory visual system.
+- Reusable components for phone frames, metrics, workflow badges, gates, evidence timelines, permission matrices, annotation panels and workflow strips.
+- Route skeleton coverage for all 16 required boards.
+
+## Phase 3 Deliverables
+
+Implemented route-specific client-facing boards:
+
+- `/presentation` — product ecosystem story, four surfaces, shared services, advice boundary and `Start Click-Dummy` entry to `/mobile`.
+- `/mobile` — mobile home with six next-step action cards and routes to decisions, upload, actions and governance.
+- `/mobile/upload` — three-phone upload flow with document type selection, extracted fields, `Confirm & continue`, verification pending state and low-confidence `[BLOCKED]` toggle.
+- `/portal` — client dashboard with structure completeness, open actions, pending decisions, missing documents, upcoming reviews, messages, trigger feed, evidence and governance status.
+- `/wealth-map` — interactive graph-style map, filters, `Trust X` click drawer, highlighted gap mode from `/wealth-map?highlight=gaps`, escalation notes.
+- `/actions` — kanban-style action board with workflow columns, card detail drawer and recommendation route to `/decisions`.
+- `/signals` — selectable signal sources that highlight related trigger outputs and preserve the client-visible/internal-only boundary.
+- `/decisions` — decision room with Accept, Defer and Reject state updates plus visible audit/evidence notice.
+- `/evidence` — evidence vault with source documents, decision records, selected evidence details, sign-off, approval, audit expansion and lifecycle timeline.
 
 ## Intentional Boundaries
 
-The following remain intentionally deferred after Phase 2:
+The following remain intentionally deferred after Phase 3:
 
-- Full route-specific board content replication.
-- Stateful route interactions beyond the existing `/presentation` start navigation.
+- Full implementation of `/workbench`, `/advisor-approval`, `/compliance`, `/governance`, `/communication`, `/journey` and `/roadmap`.
+- Phase 4 internal approval, compliance, governance, communication, journey and roadmap interactions.
 - Prisma schema and database persistence.
-- Playwright smoke tests.
-- Full container runtime smoke via `docker compose up --build`.
+- Full Playwright test suite.
+- Full `docker compose up --build` runtime smoke.
 - Real integrations, advice generation, KYC/FICA checks, POPIA automation, e-signatures or document encryption.
 
 ## Static Data Tradeoff
 
-Phase 2 continues to use static mock data and typed component props. This keeps the click-dummy browser-presentable and lets later phases focus on screen fidelity and interactions before adding persistence.
+Phase 3 continues to use static mock data and lightweight React state. This keeps the click-dummy browser-presentable and avoids introducing database complexity before all routes are visually and behaviorally complete.
 
 ## Checks
 
-Run during Phase 2:
+Run during Phase 3:
 
 - `npm run typecheck` — passed.
 - `npm run lint` — passed.
+- `npm run build` — passed.
+- Local HTTP route smoke on `http://localhost:3002` for `/presentation`, `/mobile`, `/mobile/upload`, `/portal`, `/wealth-map?highlight=gaps`, `/actions`, `/signals`, `/decisions` and `/evidence` — passed.
 
 Additional checks are tracked in `docs/IMPLEMENTATION_QA_REPORT.md`.
 
 ## Next Recommended Phase
 
-Phase 3 should build the client-facing experience screens with route-specific content:
+Phase 4 should implement the human workflow and internal operating screens:
 
-- `/presentation`
-- `/mobile`
-- `/mobile/upload`
-- `/portal`
-- `/wealth-map`
-- `/actions`
-- `/signals`
-- `/decisions`
-- `/evidence`
+- `/workbench`
+- `/advisor-approval`
+- `/compliance`
+- `/governance`
+- `/communication`
+- `/journey`
+- `/roadmap`
 
-It should use the Phase 2 component library rather than duplicating panel, badge, phone, matrix, timeline or annotation patterns.
+It should preserve the same workflow rule: client visibility remains blocked until advisor approval and compliance review are both complete.
