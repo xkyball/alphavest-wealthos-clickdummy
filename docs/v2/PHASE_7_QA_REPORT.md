@@ -68,3 +68,7 @@ Required docs were read except `docs/v2/PHASE_6_QA_REPORT.md`, which is missing 
 ## Phase 8 Readiness
 
 Phase 8 can start.
+
+## Phase 7.5 Follow-up
+
+After Phase 7, a workflow-runtime gap was identified: the screens had central models but no shared runtime session connecting clicks across routes. `docs/v2/PHASE_7_5_WORKFLOW_RUNTIME_PLAN.md` and `docs/v2/PHASE_7_5_QA_REPORT.md` describe the added demo runtime layer.

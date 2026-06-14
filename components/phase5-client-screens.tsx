@@ -26,6 +26,7 @@ import {
   StatusChip,
   WorkflowBadge
 } from "./ui";
+import { findDemoWorkflow, useDemoSession } from "./use-demo-session";
 
 type Tone = "neutral" | "success" | "warning" | "danger" | "info" | "review";
 
@@ -80,7 +81,11 @@ function MobileNav() {
 export function MobileScreenV2() {
   const searchParams = useSearchParams();
   const state = queryState(searchParams.get("state"), ["default", "blocked", "empty", "decision"] as const, "default");
-  const released = canShowAdviceLikeContent(releasedRecommendation);
+  const { snapshot } = useDemoSession();
+  const recommendation = findDemoWorkflow(snapshot, "wf-trust-x-recommendation");
+  const released = recommendation
+    ? recommendation.clientVisibilityState === "released" && recommendation.advisorApproval && recommendation.complianceRelease
+    : canShowAdviceLikeContent(releasedRecommendation);
 
   return (
     <MobileAppSurface>
@@ -102,7 +107,9 @@ export function MobileScreenV2() {
             <span className="block text-sm font-semibold text-av-ivory">
               {released ? "Decision pack ready" : "Decision pack awaiting release"}
             </span>
-            <span className="mt-1 block text-xs text-av-muted">Ready for family review.</span>
+            <span className="mt-1 block text-xs text-av-muted">
+              Runtime state: {recommendation?.state ?? "seed loading"}.
+            </span>
           </Link>
         </div>
       ) : null}
@@ -151,10 +158,13 @@ export function MobileUploadScreenV2() {
   const searchParams = useSearchParams();
   const step = queryState(searchParams.get("state"), ["select", "extract", "low", "pending", "error"] as const, "select");
   const [docType, setDocType] = useState("Trust deed");
+  const [runtimeStep, setRuntimeStep] = useState(step);
+  const { snapshot, transition, error } = useDemoSession();
+  const documentWorkflow = findDemoWorkflow(snapshot, "wf-trust-deed-document");
 
   return (
     <MobileAppSurface>
-      {step === "select" ? (
+      {runtimeStep === "select" ? (
         <>
           <p className="font-display text-xl text-av-goldBright">Select document type</p>
           <div className="mt-4 grid gap-2">
@@ -179,7 +189,7 @@ export function MobileUploadScreenV2() {
         </>
       ) : null}
 
-          {step === "extract" ? (
+          {runtimeStep === "extract" ? (
             <>
               <div className="flex items-center justify-between">
                 <p className="font-display text-xl text-av-goldBright">Extraction review</p>
@@ -199,13 +209,26 @@ export function MobileUploadScreenV2() {
                   </div>
                 ))}
               </div>
-              <Link className="mt-4 block w-full rounded-lg border border-av-gold bg-av-gold px-4 py-2 text-center text-sm font-semibold text-av-midnight" href="/mobile/upload?state=pending">
+              <button
+                className="mt-4 block w-full rounded-lg border border-av-gold bg-av-gold px-4 py-2 text-center text-sm font-semibold text-av-midnight"
+                onClick={async () => {
+                  const result = await transition({
+                    action: "document.confirm_extraction",
+                    actorRole: "AlphaVest Analyst"
+                  });
+                  if (result) {
+                    setRuntimeStep("pending");
+                  }
+                }}
+                type="button"
+              >
                 Confirm extraction
-              </Link>
+              </button>
+              {error ? <p className="mt-2 text-xs text-av-danger">{error}</p> : null}
             </>
           ) : null}
 
-          {step === "low" ? (
+          {runtimeStep === "low" ? (
             <div className="rounded-lg border border-av-danger/70 bg-av-danger/10 p-4">
               <WorkflowBadge label="BLOCKED" />
               <p className="mt-3 text-sm text-av-ivory">Low confidence extraction blocked submission.</p>
@@ -216,15 +239,17 @@ export function MobileUploadScreenV2() {
             </div>
           ) : null}
 
-          {step === "pending" ? (
+          {runtimeStep === "pending" ? (
             <div className="rounded-lg border border-av-warning/60 bg-av-warning/10 p-4">
               <StatusChip tone="warning">Verification pending</StatusChip>
               <p className="mt-3 text-sm text-av-ivory">The document is uploaded and queued for analyst validation.</p>
-              <p className="mt-2 text-xs text-av-muted">We will notify you when verification is complete.</p>
+              <p className="mt-2 text-xs text-av-muted">
+                Runtime state: {documentWorkflow?.state ?? "under review"}. We will notify you when verification is complete.
+              </p>
             </div>
           ) : null}
 
-          {step === "error" ? (
+          {runtimeStep === "error" ? (
             <div className="rounded-lg border border-av-danger/70 bg-av-danger/10 p-4">
               <StatusChip tone="danger">Upload error</StatusChip>
               <p className="mt-3 text-sm text-av-ivory">The file could not be processed.</p>
@@ -403,7 +428,9 @@ function ActionCard({ action, selected, onSelect }: { action: ClientAction; sele
 
 export function ActionsScreenV2() {
   const [selectedId, setSelectedId] = useState(clientActions[0].id);
+  const { snapshot } = useDemoSession();
   const selected = clientActions.find((action) => action.id === selectedId) ?? clientActions[0];
+  const recommendation = findDemoWorkflow(snapshot, "wf-trust-x-recommendation");
   const columns = ["Needs Review", "Blocked", "Ready", "Pending", "Completed"] as const;
 
   return (
@@ -435,6 +462,7 @@ export function ActionsScreenV2() {
               ["Due", selected.due],
               ["Related object", selected.relatedObject],
               ["Evidence", selected.evidenceStatus],
+              ["Runtime workflow", recommendation ? `${recommendation.workflow} / ${recommendation.state}` : "Loading demo session"],
               ["Mini workflow", selected.status === "Blocked" ? "Evidence missing -> analyst review -> advisor review" : "Open -> review -> complete"]
             ]}
           />
@@ -458,8 +486,16 @@ export function DecisionsScreenV2() {
   const searchParams = useSearchParams();
   const [state, setState] = useState(queryState(searchParams.get("state"), ["ready", "blocked", "submitted"] as const, "ready"));
   const [choice, setChoice] = useState<"accepted" | "deferred" | "rejected">("accepted");
+  const { snapshot, transition, error } = useDemoSession();
+  const recommendation = findDemoWorkflow(snapshot, "wf-trust-x-recommendation");
   const permission = decisionPermission(state === "blocked" ? "External Advisor" : "Principal");
-  const showRecommendation = state !== "blocked" && decisionRelease.clientVisible;
+  const runtimeVisible =
+    recommendation?.advisorApproval &&
+    recommendation.complianceRelease &&
+    recommendation.evidenceRecordExists &&
+    recommendation.permissionCheck &&
+    recommendation.clientVisibilityState === "released";
+  const showRecommendation = state !== "blocked" && (runtimeVisible ?? decisionRelease.clientVisible);
 
   return (
     <main className="grid min-h-screen place-items-center bg-av-midnight/80 px-4 py-8 text-av-ivory">
@@ -498,9 +534,16 @@ export function DecisionsScreenV2() {
                   <button
                     className={cn("rounded-lg border px-4 py-3 text-sm", choice === item ? "border-av-gold bg-av-gold text-av-midnight" : "border-av-line text-av-muted")}
                     key={item}
-                    onClick={() => {
+                    onClick={async () => {
                       setChoice(item);
-                      setState("submitted");
+                      const result = await transition({
+                        action: "client.submit_decision",
+                        actorRole: "Principal",
+                        choice: item
+                      });
+                      if (result) {
+                        setState("submitted");
+                      }
                     }}
                     type="button"
                   >
@@ -508,6 +551,7 @@ export function DecisionsScreenV2() {
                   </button>
                 ))}
               </div>
+              {error ? <p className="text-sm text-av-danger">{error}</p> : null}
             </div>
           ) : null}
           {state === "submitted" ? (
@@ -529,6 +573,7 @@ export function DecisionsScreenV2() {
 export function EvidenceScreenV2() {
   const [selectedId, setSelectedId] = useState(evidenceRecords[0].id);
   const [filter, setFilter] = useState("All");
+  const { snapshot } = useDemoSession();
   const selected = evidenceRecords.find((record) => record.id === selectedId) ?? evidenceRecords[0];
   const access = evidenceAccess(selected, selected.restricted ? "Next Gen" : "Principal");
   const audit = auditForRecord(selected);
@@ -548,6 +593,15 @@ export function EvidenceScreenV2() {
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <GlassPanel title="Evidence Records">
           <div className="grid gap-2">
+            {snapshot?.evidenceRecords.slice(0, 6).map((record) => (
+              <button className="grid gap-2 rounded-lg border border-av-gold/50 bg-av-gold/10 p-3 text-left text-sm" key={record.id} type="button">
+                <span className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-semibold text-av-ivory">{record.event}</span>
+                  <StatusChip tone="success">Runtime</StatusChip>
+                </span>
+                <span className="text-xs text-av-muted">{record.objectType} / {record.link}</span>
+              </button>
+            ))}
             {visibleRecords.map((record) => (
               <button className={cn("grid gap-2 rounded-lg border p-3 text-left text-sm", selected.id === record.id ? "border-av-gold bg-av-gold/15" : "border-av-line bg-av-midnight/45")} key={record.id} onClick={() => setSelectedId(record.id)} type="button">
                 <span className="flex flex-wrap items-center justify-between gap-2">

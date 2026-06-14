@@ -21,6 +21,7 @@ import {
   StatusChip,
   WorkflowBadge
 } from "./ui";
+import { findDemoWorkflow, useDemoSession } from "./use-demo-session";
 
 function V2ScreenShell({
   route,
@@ -142,12 +143,15 @@ function ReleaseChecklist({ state }: { state: ReleaseState }) {
 }
 
 export function WorkbenchV2Screen() {
+  const { snapshot, reset } = useDemoSession();
+  const recommendation = findDemoWorkflow(snapshot, "wf-trust-x-recommendation");
+  const documentWorkflow = findDemoWorkflow(snapshot, "wf-trust-deed-document");
   const readiness = {
-    advisorApproval: false,
-    complianceRelease: false,
-    evidenceRecordExists: true,
-    permissionCheck: true,
-    clientVisibilityState: "blocked"
+    advisorApproval: recommendation?.advisorApproval ?? false,
+    complianceRelease: recommendation?.complianceRelease ?? false,
+    evidenceRecordExists: recommendation?.evidenceRecordExists ?? true,
+    permissionCheck: recommendation?.permissionCheck ?? true,
+    clientVisibilityState: recommendation?.clientVisibilityState ?? "blocked"
   } satisfies ReleaseState;
 
   return (
@@ -185,7 +189,7 @@ export function WorkbenchV2Screen() {
             "SLA"
           ]}
           rows={[
-            ["Anderson Family", "Annual plan update", "91", "5/5", "1", "3/5", "At Risk"],
+            ["Steward Family", recommendation?.title ?? "Trust X beneficiary update", documentWorkflow?.state ?? "under_review", recommendation?.state ?? "needs_review", recommendation?.advisorApproval ? "Approved" : "Pending", recommendation?.complianceRelease ? "Released" : "Blocked", "At Risk"],
             ["Delaney Trust", "Tax-loss harvesting", "63", "2/5", "2", "2/5", "At Risk"],
             ["Summit Ventures", "Performance review", "88", "4/5", "1", "4/5", "On Track"],
             ["Bennett Foundation", "Grant strategy", "55", "1/5", "2", "1/5", "At Risk"]
@@ -197,8 +201,11 @@ export function WorkbenchV2Screen() {
         <GlassPanel title="Selected Trigger Detail">
           <div className="grid gap-3 text-sm text-av-muted">
             <p className="text-av-ivory">Concentration review: single-asset exposure above policy threshold.</p>
-            <p>Analyst note: supporting documents exist, but advisor approval and compliance release are still pending.</p>
-            <p>Publish remains disabled until all readiness checks pass.</p>
+            <p>Runtime workflow: {recommendation?.workflow ?? "recommendation"} / {recommendation?.state ?? "loading"}.</p>
+            <p>Publish remains disabled until advisor approval, compliance release, evidence and permission checks pass.</p>
+            <button className="w-fit rounded-lg border border-av-line px-4 py-2 text-xs text-av-muted" onClick={() => void reset()} type="button">
+              Reset demo session
+            </button>
           </div>
         </GlassPanel>
         <GlassPanel title="Publish Readiness">
@@ -223,12 +230,14 @@ export function WorkbenchV2Screen() {
 
 export function AdvisorApprovalV2Screen() {
   const [decision, setDecision] = useState<"review" | "approved" | "call">("review");
+  const { snapshot, transition, error } = useDemoSession();
+  const recommendation = findDemoWorkflow(snapshot, "wf-trust-x-recommendation");
   const release = {
-    advisorApproval: decision === "approved",
-    complianceRelease: false,
-    evidenceRecordExists: true,
-    permissionCheck: true,
-    clientVisibilityState: "blocked"
+    advisorApproval: recommendation?.advisorApproval ?? decision === "approved",
+    complianceRelease: recommendation?.complianceRelease ?? false,
+    evidenceRecordExists: recommendation?.evidenceRecordExists ?? true,
+    permissionCheck: recommendation?.permissionCheck ?? true,
+    clientVisibilityState: recommendation?.clientVisibilityState ?? "blocked"
   } satisfies ReleaseState;
 
   return (
@@ -254,19 +263,34 @@ export function AdvisorApprovalV2Screen() {
         </GlassPanel>
         <GlassPanel title="Advisor Decision">
           <div className="grid gap-2">
-            <button className="rounded-lg border border-av-gold bg-av-gold px-4 py-2 text-sm font-semibold text-av-midnight" onClick={() => setDecision("approved")} type="button">
+            <button
+              className="rounded-lg border border-av-gold bg-av-gold px-4 py-2 text-sm font-semibold text-av-midnight"
+              onClick={async () => {
+                setDecision("approved");
+                await transition({ action: "advisor.approve", actorRole: "Senior Advisor" });
+              }}
+              type="button"
+            >
               Approve for compliance
             </button>
             <button className="rounded-lg border border-av-line px-4 py-2 text-sm text-av-muted" onClick={() => setDecision("review")} type="button">
               Request more data
             </button>
-            <button className="rounded-lg border border-av-warning px-4 py-2 text-sm text-av-warning" onClick={() => setDecision("call")} type="button">
+            <button
+              className="rounded-lg border border-av-warning px-4 py-2 text-sm text-av-warning"
+              onClick={async () => {
+                setDecision("call");
+                await transition({ action: "advisor.request_call", actorRole: "Senior Advisor" });
+              }}
+              type="button"
+            >
               Escalate to call
             </button>
           </div>
           <p className="mt-4 text-sm text-av-muted">
-            Current state: {decision === "approved" ? "advisor approved; compliance pending" : decision === "call" ? "advisor call required" : "under review"}
+            Current state: {recommendation?.state ?? (decision === "approved" ? "advisor approved; compliance pending" : decision === "call" ? "advisor call required" : "under review")}
           </p>
+          {error ? <p className="mt-2 text-sm text-av-danger">{error}</p> : null}
         </GlassPanel>
       </div>
 
@@ -281,12 +305,14 @@ export function AdvisorApprovalV2Screen() {
 
 export function ComplianceV2Screen() {
   const [status, setStatus] = useState<"review" | "released" | "blocked">("review");
+  const { snapshot, transition, error } = useDemoSession();
+  const recommendation = findDemoWorkflow(snapshot, "wf-trust-x-recommendation");
   const release = {
-    advisorApproval: true,
-    complianceRelease: status === "released",
-    evidenceRecordExists: status !== "blocked",
-    permissionCheck: true,
-    clientVisibilityState: status === "released" ? "released" : "blocked"
+    advisorApproval: recommendation?.advisorApproval ?? true,
+    complianceRelease: recommendation?.complianceRelease ?? status === "released",
+    evidenceRecordExists: recommendation?.evidenceRecordExists ?? status !== "blocked",
+    permissionCheck: recommendation?.permissionCheck ?? true,
+    clientVisibilityState: recommendation?.clientVisibilityState ?? (status === "released" ? "released" : "blocked")
   } satisfies ReleaseState;
   const audit = createAuditEvent({
     actorRole: "Compliance Officer",
@@ -303,7 +329,7 @@ export function ComplianceV2Screen() {
         <DashboardTable
           columns={["ID", "Output", "Classification", "Advisor", "Evidence", "Permission", "Status", "Age"]}
           rows={[
-            ["OUT-1842", "Liquidity recommendation", "Advice-relevant", "R. Lee", "Complete", "Allowed", status],
+            ["OUT-1842", recommendation?.title ?? "Liquidity recommendation", "Advice-relevant", "R. Lee", recommendation?.evidenceRecordExists ? "Complete" : "Missing", recommendation?.permissionCheck ? "Allowed" : "Blocked", recommendation?.state ?? status],
             ["OUT-1843", "Document request", "Information", "M. Chen", "Partial", "Allowed", "review"],
             ["OUT-1844", "Entity restructure note", "Advice", "A. Patel", "Missing ROA", "Blocked", "blocked"]
           ]}
@@ -316,13 +342,28 @@ export function ComplianceV2Screen() {
             Release is allowed only when disclaimer, evidence record, advisor approval and publish permission are complete.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
-            <button className="rounded-lg border border-av-success px-4 py-2 text-sm text-av-success" onClick={() => setStatus("released")} type="button">
+            <button
+              className="rounded-lg border border-av-success px-4 py-2 text-sm text-av-success"
+              onClick={async () => {
+                setStatus("released");
+                await transition({ action: "compliance.release", actorRole: "Compliance Officer" });
+              }}
+              type="button"
+            >
               Release to client
             </button>
-            <button className="rounded-lg border border-av-danger px-4 py-2 text-sm text-av-danger" onClick={() => setStatus("blocked")} type="button">
+            <button
+              className="rounded-lg border border-av-danger px-4 py-2 text-sm text-av-danger"
+              onClick={async () => {
+                setStatus("blocked");
+                await transition({ action: "compliance.block", actorRole: "Compliance Officer" });
+              }}
+              type="button"
+            >
               Block / request evidence
             </button>
           </div>
+          {error ? <p className="mt-3 text-sm text-av-danger">{error}</p> : null}
         </GlassPanel>
         <GlassPanel title="Audit Event">
           <div className="grid gap-2 text-xs text-av-muted">
@@ -444,12 +485,14 @@ export function GovernanceV2Screen() {
 
 export function CommunicationV2Screen() {
   const [lane, setLane] = useState<"digital" | "call" | "workshop">("digital");
+  const { snapshot, transition, error } = useDemoSession();
+  const communication = findDemoWorkflow(snapshot, "wf-q2-communication");
   const release = {
-    advisorApproval: true,
-    complianceRelease: lane === "digital",
-    evidenceRecordExists: true,
-    permissionCheck: true,
-    clientVisibilityState: lane === "digital" ? "released" : "blocked"
+    advisorApproval: communication?.advisorApproval ?? true,
+    complianceRelease: communication?.complianceRelease ?? lane === "digital",
+    evidenceRecordExists: communication?.evidenceRecordExists ?? true,
+    permissionCheck: communication?.permissionCheck ?? true,
+    clientVisibilityState: communication?.clientVisibilityState ?? (lane === "digital" ? "released" : "blocked")
   } satisfies ReleaseState;
   const visible = evaluateClientVisibility(release);
 
@@ -482,9 +525,15 @@ export function CommunicationV2Screen() {
           <p className="text-sm text-av-muted">
             Your Q2 review materials are ready. Please review the open action and confirm whether you would like your advisor to discuss it.
           </p>
-          <button className="mt-4 w-full rounded-lg border border-av-line px-4 py-2 text-sm text-av-muted" disabled={!visible.clientVisible} type="button">
-            {visible.clientVisible ? "Send released message" : "Send disabled"}
+          <button
+            className="mt-4 w-full rounded-lg border border-av-line px-4 py-2 text-sm text-av-muted"
+            disabled={lane !== "digital"}
+            onClick={() => void transition({ action: "communication.send", actorRole: "Client Success" })}
+            type="button"
+          >
+            {visible.clientVisible || lane === "digital" ? "Send released message" : "Send disabled"}
           </button>
+          {error ? <p className="mt-2 text-sm text-av-danger">{error}</p> : null}
         </GlassPanel>
       </div>
       <GlassPanel title="Evidence and Communication Log">

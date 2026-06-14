@@ -1,8 +1,8 @@
 # AlphaVest WealthOS Click-Dummy
 
-Phase 2 visual system foundation for the **AlphaVest Digital Wealth Assurance Platform / AlphaVest WealthOS** browser prototype.
+Phase 7.5 workflow-runtime click-dummy for the **AlphaVest Digital Wealth Assurance Platform / AlphaVest WealthOS** browser prototype.
 
-The current build establishes the Next.js App Router app, AlphaVest design tokens, all 16 route skeletons, global safety disclaimers, reusable AlphaVest UI components, reference-board QA thumbnails, Docker setup and progress/QA documentation. Detailed route-specific screen content and click interactions are intentionally deferred to later phases.
+The current build includes the v2 route surfaces from Phases 4-7 plus a shared demo workflow runtime. Key clicks now update one canonical demo session so later screens can reflect the same recommendation, compliance, decision, evidence, audit and access state.
 
 ## Product Guardrails
 
@@ -45,7 +45,21 @@ The compose stack includes:
 - `web` on `http://localhost:3000`
 - `postgres` on port `5432`
 
-Postgres is provisioned for the intended platform foundation, but Phase 2 uses static mock data so database complexity does not block the browser prototype.
+Postgres is used by the Phase 7.5 demo runtime when `DATABASE_URL` is present. Without Postgres, the app falls back to an in-memory demo session so build and simple local dev still work.
+
+Seed/reset the persistent demo session from the host:
+
+```bash
+npm run demo:seed
+```
+
+The canonical runtime path is:
+
+```text
+/workbench -> /advisor-approval -> /compliance -> /decisions -> /evidence
+```
+
+See `docs/v2/PHASE_7_5_WORKFLOW_RUNTIME_PLAN.md`.
 
 ## Demo Route List
 
@@ -66,38 +80,35 @@ Postgres is provisioned for the intended platform foundation, but Phase 2 uses s
 - `/journey`
 - `/roadmap`
 
-## Phase 2 Scope
+## Current Scope
 
 Implemented:
 
 - Next.js App Router and TypeScript configuration
 - Tailwind CSS and AlphaVest design tokens
-- Shared app shell and board skeleton layout
-- Route skeletons for all 16 boards
-- Global disclaimer banner
+- Client, internal workflow, governance and reference route surfaces
 - Reusable component library for the AlphaVest wireframe system
-- Phone frame, metrics, dashboard cards, action cards and status chips
-- Human review flow, compliance gate, evidence timeline and permission matrix
-- Mini world-map motif, right annotation panel, bottom workflow strip and reference image viewer
-- Mock route metadata and seeded object context
-- Dockerfile and Docker Compose setup
-- `.env.example`
-- Progress and QA report documents
+- Central roles, permissions, state machines, evidence/audit helpers and no-unapproved-advice gate
+- Phase 7.5 demo workflow runtime with API transitions
+- Optional Postgres persistence through Docker Compose
+- Seed/reset script for the persistent demo session
+- Runtime tests for advisor approval, compliance release, client decision, access changes and evidence/audit events
 
 Deferred to later phases:
 
-- Detailed per-board screen composition
-- Local React state interactions
-- Playwright smoke tests
-- Prisma schema and seeded Postgres data
-- Wireframe-by-wireframe visual polish pass
+- Real identity, KYC, CRM, document and advice APIs
+- Production authorization enforcement
+- WORM audit storage
+- Full Playwright browser automation
 
 ## Available Checks
 
 ```bash
 npm run typecheck
+npm test
 npm run lint
 npm run build
+npm run test:e2e
 npm run start
 ```
 

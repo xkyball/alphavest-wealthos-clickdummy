@@ -30,3 +30,7 @@ The helper rejects structurally invalid transitions and blocks client-visible/cl
 ## Client Visibility Rule
 
 State transitions cannot expose advice-like output through `client_visible` or `client_sent` unless all required guard fields pass.
+
+## Runtime Usage Added In Phase 7.5
+
+The state machine is now used by `lib/demo-runtime.ts` to drive the shared click-dummy session. Future screens should add typed demo transitions there rather than creating isolated local `useState` workflows for product-state changes.

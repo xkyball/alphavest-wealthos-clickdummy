@@ -18,6 +18,7 @@ import {
   StatusChip,
   WorkflowBadge
 } from "./ui";
+import { findDemoWorkflow, useDemoSession } from "./use-demo-session";
 
 const matrixActions: Array<{ action: PermissionAction; label: string }> = [
   { action: "view_entities", label: "View Entities" },
@@ -197,6 +198,8 @@ export function Phase7GovernanceScreen() {
   const [confirmed, setConfirmed] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showBlocked, setShowBlocked] = useState(true);
+  const { snapshot, transition, error } = useDemoSession();
+  const accessWorkflow = findDemoWorkflow(snapshot, "wf-external-advisor-access");
   const decision = evaluateAccessControl({
     role: selectedRole,
     objectType: "permission",
@@ -205,28 +208,28 @@ export function Phase7GovernanceScreen() {
     sensitivity: "high_risk",
     clientVisible: false,
     internalOnly: true,
-    secondConfirmation: confirmed,
-    complianceReview: selectedRole !== "External Advisor" || confirmed,
+    secondConfirmation: confirmed || accessWorkflow?.state === "access_granted",
+    complianceReview: selectedRole !== "External Advisor" || confirmed || accessWorkflow?.state === "access_granted",
     relationshipAllowed: selectedRole !== "Next Gen"
   });
   const evidence = useMemo(
     () =>
-      evidenceForEvent(decision.allowed ? "access.changed" : "access.blocked", {
+      evidenceForEvent(decision.allowed || accessWorkflow?.state === "access_granted" ? "access.changed" : "access.blocked", {
         actorRole: "Principal",
         objectId: "access-772"
       }),
-    [decision.allowed]
+    [decision.allowed, accessWorkflow?.state]
   );
   const audit = useMemo(
     () =>
       auditEventForAction({
         actorRole: "Principal",
-        action: decision.allowed ? "access.changed" : "access.blocked",
+        action: decision.allowed || accessWorkflow?.state === "access_granted" ? "access.changed" : "access.blocked",
         objectType: "Access Change Record",
         objectId: "access-772",
-        result: decision.allowed ? "updated" : "blocked"
+        result: decision.allowed || accessWorkflow?.state === "access_granted" ? "updated" : "blocked"
       }),
-    [decision.allowed]
+    [decision.allowed, accessWorkflow?.state]
   );
 
   return (
@@ -321,7 +324,8 @@ export function Phase7GovernanceScreen() {
                 {[
                   ["Role", selectedRole],
                   ["Action", selectedRole === "External Advisor" ? "release_to_client" : "manage_permissions"],
-                  ["Second confirmation", confirmed ? "Complete" : "Required"],
+                  ["Runtime workflow", accessWorkflow ? `${accessWorkflow.workflow} / ${accessWorkflow.state}` : "Loading"],
+                  ["Second confirmation", confirmed || accessWorkflow?.state === "access_granted" ? "Complete" : "Required"],
                   ["Compliance review", decision.complianceReviewRequired ? "Required" : "Satisfied"],
                   ["Result", decision.allowed ? "Allowed" : "Blocked"]
                 ].map(([label, value]) => (
@@ -338,6 +342,7 @@ export function Phase7GovernanceScreen() {
                 <p>Audit action: {audit.action}</p>
                 <p>Audit result: {audit.result}</p>
                 <p>Digital seal: {audit.digitalSeal}</p>
+                {error ? <p className="text-av-danger">{error}</p> : null}
               </div>
             </GlassPanel>
           </div>
@@ -347,8 +352,12 @@ export function Phase7GovernanceScreen() {
       {showConfirmation ? (
         <SecondConfirmationModal
           allowed={decision.allowed}
-          onConfirm={() => {
+          onConfirm={async () => {
             setConfirmed(true);
+            await transition({
+              action: "access.confirm_sensitive_change",
+              actorRole: "Principal"
+            });
             setShowConfirmation(false);
             setShowBlocked(false);
           }}
