@@ -63,6 +63,8 @@ Every visual must be classified as one of:
 4. `REFERENCE_ONLY` — architecture, service blueprint, roadmap, state-machine or mapping board.
 5. `MIXED` — contains both actual UI region and reference annotations.
 
+Before adding or changing implementation, verify or add the visual in `lib/surface-registry.ts` and mirror the human-readable mapping in `docs/v2/SURFACE_REGISTRY_V2.md`. Implementation starts from surface classification, not from route existence. A visual ID must resolve to exactly one surface class: product route, internal route, focused surface, reference route or logic-only input.
+
 ## Rule 5 — Reference-only visuals are still mandatory input
 
 Reference-only visuals should inform:
@@ -91,6 +93,8 @@ Do not flatten focused interactions into ordinary full-page boards. A route may 
 
 Workflow controls should not link directly to standalone routes for focused surfaces. Open the drawer/modal/preview in the current route context. Legacy or compatibility URLs should redirect to a safe parent context instead of becoming the primary product UI.
 
+Focused surfaces must use stable surface keys such as `overlay:evidence-preview`, `drawer:action-detail` or `modal:governance-second-confirmation`. Do not use ordinary product-route paths as the primary identity for drawers, modals, previews or escalation panels.
+
 Examples:
 
 - Evidence records open in a preview drawer overlay from the current workflow context; `/evidence` is not a standalone navigation target.
@@ -118,6 +122,10 @@ For every visual, extract:
 
 - implemented route;
 - implemented component(s);
+- surface registry entry and surface type;
+- surface key for drawers, modals, previews and escalation panels;
+- compatibility route and redirect behavior, if any;
+- stable region tokens that prove the correct visual region is implemented;
 - states represented;
 - actual UI area;
 - annotation-derived logic;

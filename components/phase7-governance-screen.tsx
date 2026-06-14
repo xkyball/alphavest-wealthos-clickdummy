@@ -193,13 +193,18 @@ function SecondConfirmationModal({ allowed, onConfirm }: { allowed: boolean; onC
   );
 }
 
-export function Phase7GovernanceScreen() {
+export function Phase7GovernanceScreen({
+  initialSurface
+}: {
+  initialSurface?: "second-confirmation";
+}) {
   const [selectedRole, setSelectedRole] = useState<Role>("External Advisor");
   const [confirmed, setConfirmed] = useState(false);
-  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(initialSurface === "second-confirmation");
   const [showBlocked, setShowBlocked] = useState(true);
   const { snapshot, transition, error } = useDemoSession();
   const accessWorkflow = findDemoWorkflow(snapshot, "wf-external-advisor-access");
+
   const decision = evaluateAccessControl({
     role: selectedRole,
     objectType: "permission",

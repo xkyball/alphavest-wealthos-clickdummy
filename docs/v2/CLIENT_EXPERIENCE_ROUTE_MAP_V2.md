@@ -26,9 +26,11 @@ Date: 2026-06-14
 
 Visual callouts, dev handoff notes and metadata from the source assets were translated into:
 
+- `lib/surface-registry.ts`
 - `lib/phase5-client-model.ts`
 - `tests/phase5-client-model.test.mjs`
 - `tests/phase5-client-routes.test.mjs`
+- `tests/v2-surface-contracts.test.mjs`
 - state selectors inside the click-dummy routes
 - this route map and state coverage documentation
 
@@ -42,3 +44,4 @@ Global client boundary:
 - Do not render the global left demo sidebar or route inventory around client screens.
 - Do not render Phase/V2 labels, source-board metadata, page-spec headers or QA panels as product UI.
 - If a workflow visual is modal/drawer-like, preserve that interaction shape even when the route exists as a deep link.
+- Surface classification is controlled by `lib/surface-registry.ts`; route existence does not override the registry.

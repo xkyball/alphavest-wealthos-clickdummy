@@ -69,6 +69,8 @@ Only the actual app screen area, drawer, modal, table, mobile screen content, ka
 
 Annotations, legends, dev notes, metadata, backend workflow notes, evidence/audit notes, state explanations, permission hints, and test hints must become implementation logic, central helpers, route state handling, tests, documentation, API/mock-data contracts, state machines, permission rules, and evidence/audit mapping.
 
+Before implementing or refactoring any screen, check `lib/surface-registry.ts` and `docs/v2/SURFACE_REGISTRY_V2.md`. Route existence is not proof that a visual should render as a standalone page. If a visual is missing from the registry, classify it there first as product route, internal route, focused surface, reference route or logic-only input.
+
 For mobile visuals, implement only the content that appears inside the phone screen. Do not render a decorative phone frame, phone shell, surrounding desktop board, state-toggle controls, or explanatory panels around it. If alternate mobile states are needed for QA, drive them through mock data or query parameters rather than visible demo controls.
 
 For desktop/web visuals, the same rule applies: implement only the actual dashboard, table, graph, drawer, modal, form, kanban, or workflow surface. Do not add a global left demo sidebar, route inventory, board navigation, Phase/V2 labels, page-spec headers, or explanatory QA panels unless that exact navigation/control is visibly part of the application screen region.
@@ -81,6 +83,8 @@ When a visual names or depicts a drawer, preview drawer, modal, pop-up, release 
 
 Do not link workflow buttons directly to a standalone route for these focused surfaces. Open the overlay/drawer/modal in the current workflow context. If a legacy/deep-link URL exists, it should redirect to a safe parent context or be treated as compatibility plumbing, not as the primary implementation.
 
+Focused surfaces must have stable surface keys, not ordinary product-route paths, as their primary identity. Examples include `overlay:evidence-preview`, `drawer:action-detail`, `panel:workbench-trigger-detail` and `modal:governance-second-confirmation`.
+
 Examples:
 
 - `/decisions` should behave like a decision-room modal workflow surface.
@@ -88,6 +92,8 @@ Examples:
 - Communication client-visible message preview should open as a release/preview overlay over the internal communication workflow.
 
 If an overlay route needs loading, blocked or error states, those states belong inside the overlay surface and must still use the central permission, visibility, evidence and audit helpers.
+
+For every focused surface, add or update source-level guard tests that assert the correct visual-region tokens are present and that workflow components do not link to standalone compatibility routes.
 
 Some visuals are entirely reference/information boards, especially:
 

@@ -6,6 +6,8 @@ Date: 2026-06-14
 
 This audit checks implemented routes against the v2 visual interpretation rule: product UI regions become UI, reference boards become internal/reference/docs/model logic, and drawer/modal/popup visuals remain overlay-style workflow surfaces.
 
+The enforceable source for this classification is `lib/surface-registry.ts`, mirrored for humans in `docs/v2/SURFACE_REGISTRY_V2.md`.
+
 ## Findings and Changes
 
 | Route | Current classification | Action |
@@ -26,6 +28,19 @@ This audit checks implemented routes against the v2 visual interpretation rule: 
 | `/service-blueprint` and `/journey` | Internal/reference route | OK. Reference-only blueprint is not client-facing. |
 | `/roadmap` | Planning/reference route | OK. Roadmap scope is not client-facing product UI. |
 
+## Workspace-Wide Visual Classification
+
+| Surface group | Visuals | Classification | Enforcement |
+|---|---|---|---|
+| Client mobile and portal | V2-001 to V2-013, V2-017, V2-019 | Product routes / route states | Route metadata and source tests. |
+| Client focused surfaces | V2-014 to V2-016, V2-018, V2-020 to V2-025 | Drawers, modal-style decision room and contextual evidence overlays | `tests/v2-surface-contracts.test.mjs` checks surface keys, no standalone links and region tokens. |
+| Internal workflows | V2-026 to V2-037 | Internal routes with panels/actions where shown | Legacy-shell tests plus route/component contracts. |
+| Governance | V2-038 to V2-042 | Internal governance route plus role drawer and confirmation modal | Surface registry tokens and governance source tests. |
+| Permission/state/evidence references | V2-043, V2-054 to V2-056 | Logic-only reference inputs | Registry marks them `logic_only`; no app route should render these boards. |
+| Communication | V2-044 to V2-047 | Internal communication workflow plus client preview overlay | Phase 8 tests and surface token guards. |
+| Service blueprint / journey | V2-048 to V2-050 | Internal/reference route | `referenceOnly` route metadata and reference-label tests. |
+| Roadmap / planning | V2-051 to V2-053 | Planning/reference route | `referenceOnly` route metadata and planning tests. |
+
 ## Future Implementation Rule
 
 Before implementing any new screen:
@@ -36,12 +51,15 @@ Before implementing any new screen:
 4. If the visual is a drawer/modal/popup/preview, preserve that surface shape even when a route exists for deep linking.
 5. Add or update tests that assert the route does not use legacy board shells, annotation panels or visual metadata.
 6. Do not add direct links to standalone routes for focused surfaces; open them in context.
+7. Add the visual to `lib/surface-registry.ts` and `docs/v2/SURFACE_REGISTRY_V2.md` before implementing route/component changes.
+8. Add region-token guards for focused surfaces so the correct part of the visual is implemented.
 
 ## Guard Tests
 
 - `tests/phase5-client-routes.test.mjs` checks the evidence preview drawer overlay.
 - `tests/phase75-visual-rules.test.mjs` checks runtime/internal workflow routes do not import legacy board shells.
 - `tests/phase8-communication-planning.test.mjs` checks reference screens and the communication preview overlay.
+- `tests/v2-surface-contracts.test.mjs` checks manifest coverage, focused-surface metadata, compatibility redirects, region tokens and legacy-shell bans.
 
 ## Verification
 
@@ -49,9 +67,9 @@ Command results after this audit/refactor:
 
 | Command | Result |
 |---|---|
-| `npm test` | Passed: 45 tests |
+| `npm test` | Passed: 52 tests |
 | `npm run typecheck` | Passed |
 | `npm run lint` | Passed |
 | `npm run build` | Passed |
 | `npm run test:e2e` | Passed: 8 route/source smoke tests |
-| Browser smoke check | Passed for workbench evidence preview and `/evidence` redirect. Workbench has no standalone `/evidence` link, `Preview evidence` opens the V2-023-style drawer overlay in context, and `/evidence` redirects to `/portal` without standalone evidence records. |
+| Browser smoke check | Passed for workbench trigger detail, evidence preview overlay, communication preview overlay, governance second-confirmation modal, roadmap reference labelling and `/evidence` redirect. |

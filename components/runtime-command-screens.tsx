@@ -415,6 +415,14 @@ export function RuntimeWorkbenchScreen() {
                   prove source evidence, advisor approval and compliance release
                   before any advice-like output can become visible to the client.
                 </p>
+                <div className="rounded-lg border border-av-line/60 bg-av-midnight/45 p-3">
+                  <p className="text-xs uppercase text-av-goldBright">Analyst Notes</p>
+                  <p className="mt-2 text-xs text-av-muted">
+                    Check trustee/beneficiary wording against the uploaded deed,
+                    then keep publish disabled until evidence, advisor approval
+                    and compliance release all pass.
+                  </p>
+                </div>
                 <div className="flex flex-wrap gap-2">
                   <StatusChip tone="info">
                     {recommendation?.workflow ?? "recommendation"}
