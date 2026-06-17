@@ -1,0 +1,1012 @@
+"use client";
+
+import {
+  AlertTriangle,
+  ArrowRight,
+  Check,
+  CheckCircle2,
+  Download,
+  Filter,
+  LockKeyhole,
+  Plus,
+  Search,
+  Send,
+  ShieldAlert,
+  ShieldCheck,
+  SlidersHorizontal,
+  Upload,
+  UserPlus,
+  XCircle
+} from "lucide-react";
+import { useState } from "react";
+import { AppShell } from "@/components/app-shell";
+import { PageHeader } from "@/components/page-header";
+import {
+  Badge,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  DataTable,
+  Drawer,
+  MetricCard,
+  Modal,
+  StatePanel,
+  StatusChip,
+  WizardStepper,
+  type BadgeTone,
+  type DataTableColumn
+} from "@/components/ui";
+import {
+  activeSessions,
+  adviceMatrix,
+  evidenceTemplates,
+  exportTemplates,
+  permissionColumns,
+  permissionRows,
+  platformSettings,
+  policyVersions,
+  redactionProfiles,
+  roleTemplates,
+  securityControls,
+  teamAssignments,
+  tenantPolicyCards,
+  tenantRows,
+  tenantSetupChecklist,
+  tenantUsers,
+  tenantWizardSteps
+} from "@/lib/admin-tenant-setup-demo-data";
+import { cn } from "@/lib/cn";
+import type { ScreenRoute } from "@/lib/route-registry";
+import { runScreencastDemoAction } from "@/lib/screencast-demo-client";
+import type { VisualState } from "@/lib/visual-contract";
+
+type AdminTenantSetupScreenProps = {
+  route: ScreenRoute;
+  visualState?: VisualState;
+};
+
+type ConfirmationKind = "platform" | "security" | null;
+
+const primaryButtonClass =
+  "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md bg-alphavest-gold px-4 text-sm font-semibold text-alphavest-navy transition hover:bg-alphavest-gold-soft";
+
+const secondaryButtonClass =
+  "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/60 px-4 text-sm font-semibold text-alphavest-ivory transition hover:border-alphavest-gold/60 hover:text-alphavest-gold-soft";
+
+function statusTone(status: string): BadgeTone {
+  const normalized = status.toLowerCase();
+
+  if (normalized.includes("active") || normalized.includes("completed") || normalized.includes("good")) {
+    return "green";
+  }
+
+  if (normalized.includes("blocked") || normalized.includes("revoked") || normalized.includes("missing")) {
+    return "red";
+  }
+
+  if (normalized.includes("draft") || normalized.includes("pending") || normalized.includes("progress") || normalized.includes("review")) {
+    return "gold";
+  }
+
+  if (normalized.includes("invited")) {
+    return "blue";
+  }
+
+  return "muted";
+}
+
+function StatusBadge({ status }: { status: string }) {
+  return <Badge tone={statusTone(status)}>{status}</Badge>;
+}
+
+function ActionBar({ children }: { children: React.ReactNode }) {
+  return <div className="flex flex-wrap items-center justify-end gap-3">{children}</div>;
+}
+
+function SearchShell({ placeholder }: { placeholder: string }) {
+  return (
+    <div className="flex h-[var(--field-height)] min-w-0 items-center gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-4 text-sm text-alphavest-muted">
+      <Search aria-hidden="true" className="size-4 shrink-0 text-alphavest-gold-soft" />
+      <span className="truncate">{placeholder}</span>
+    </div>
+  );
+}
+
+function SettingRow({ detail, enabled, label }: { detail: string; enabled?: boolean; label: string }) {
+  return (
+    <div className="flex items-center justify-between gap-4 border-b border-alphavest-border/45 py-3 last:border-0">
+      <div>
+        <p className="text-sm font-semibold text-alphavest-ivory">{label}</p>
+        <p className="mt-1 text-sm text-alphavest-muted">{detail}</p>
+      </div>
+      {typeof enabled === "boolean" ? (
+        <span
+          className={cn(
+            "relative h-6 w-11 shrink-0 rounded-full border",
+            enabled ? "border-alphavest-gold/70 bg-alphavest-gold/35" : "border-alphavest-border bg-alphavest-charcoal"
+          )}
+        >
+          <span
+            className={cn(
+              "absolute top-1 size-4 rounded-full bg-alphavest-muted transition",
+              enabled ? "left-6 bg-alphavest-gold" : "left-1"
+            )}
+          />
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+function FieldGrid({ fields }: { fields: Array<{ label: string; value: string }> }) {
+  return (
+    <dl className="grid gap-3 md:grid-cols-2">
+      {fields.map((field) => (
+        <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-4" key={field.label}>
+          <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">{field.label}</dt>
+          <dd className="mt-2 text-sm font-semibold text-alphavest-ivory">{field.value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+function AuditBanner({ action, children }: { action?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-4 rounded-md border border-alphavest-gold/45 bg-alphavest-gold/10 p-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex items-start gap-3">
+        <ShieldCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-alphavest-gold-soft" />
+        <div className="text-sm leading-6 text-alphavest-gold-soft">{children}</div>
+      </div>
+      {action}
+    </div>
+  );
+}
+
+function PlatformSettingsPage({ onConfirm }: { onConfirm: () => void }) {
+  return (
+    <div className="space-y-5">
+      <AuditBanner action={<button className={secondaryButtonClass} type="button">View audit log</button>}>
+        {platformSettings.auditBanner}. Changes require approval and are logged for compliance.
+      </AuditBanner>
+      <section className="grid gap-5 xl:grid-cols-[1fr_0.85fr]">
+        <Card>
+          <CardHeader>
+            <CardTitle>General</CardTitle>
+            <CardDescription>Global platform defaults used across demo tenants.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <FieldGrid fields={platformSettings.fields} />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Other settings</CardTitle>
+            <CardDescription>Critical toggles stay guarded by second confirmation.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {platformSettings.security.map((setting) => (
+              <SettingRow detail={setting.detail} enabled={setting.enabled} key={setting.label} label={setting.label} />
+            ))}
+          </CardContent>
+        </Card>
+      </section>
+      <ActionBar>
+        <button className={secondaryButtonClass} type="button">Discard changes</button>
+        <button
+          className={primaryButtonClass}
+          data-testid="j10-save-platform"
+          onClick={() => {
+            void runScreencastDemoAction("j10.savePlatform");
+            onConfirm();
+          }}
+          type="button"
+        >
+          <LockKeyhole aria-hidden="true" className="size-4" />
+          Save changes
+        </button>
+      </ActionBar>
+    </div>
+  );
+}
+
+function AdviceBoundaryPage() {
+  return (
+    <div className="space-y-5">
+      <div className="grid gap-5 2xl:grid-cols-[1.25fr_0.65fr]">
+        <Card>
+          <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <CardTitle>Advice Boundary Matrix</CardTitle>
+              <CardDescription>Defines what can reach a client and which outputs require review.</CardDescription>
+            </div>
+            <StatusBadge status="Draft" />
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto rounded-md border border-alphavest-border/70">
+              <table className="w-full min-w-full table-fixed border-collapse text-left text-sm md:min-w-[48rem]">
+                <thead className="bg-alphavest-panel/75 text-xs uppercase tracking-[0.12em] text-alphavest-subtle">
+                  <tr>
+                    {["Content type", "Classification", "Handling", "Approval", "Client reachable"].map((header) => (
+                      <th className="break-words border-b border-alphavest-border/70 px-4 py-3" key={header}>{header}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {adviceMatrix.map((row) => (
+                    <tr className="border-b border-alphavest-border/55 last:border-0" key={row.contentType}>
+                      <td className="break-words px-4 py-3 font-semibold text-alphavest-ivory">{row.contentType}</td>
+                      <td className="break-words px-4 py-3"><Badge tone={row.tone}>{row.classification}</Badge></td>
+                      <td className="break-words px-4 py-3 text-alphavest-muted">{row.handling}</td>
+                      <td className="break-words px-4 py-3 text-alphavest-muted">{row.requiresApproval}</td>
+                      <td className="break-words px-4 py-3 text-alphavest-muted">{row.clientReachable}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Policy Details</CardTitle>
+            <CardDescription>Owner, review date and version lineage.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <FieldGrid
+              fields={[
+                { label: "Policy owner", value: "Chief Compliance Officer" },
+                { label: "Policy ID", value: "POL-ADV-008" },
+                { label: "Next review", value: "15 Aug 2024" },
+                { label: "Applies to", value: "All users, all entities" }
+              ]}
+            />
+          </CardContent>
+        </Card>
+      </div>
+      <section className="grid gap-5 xl:grid-cols-[1fr_0.65fr]">
+        <div className="grid gap-4 md:grid-cols-3">
+          {[
+            ["Release Rules", "Content must be classified before release", "Advice requires approval review", "All releases are logged"],
+            ["Required Evidence", "Classification rationale", "Reviewer notes", "Approval timestamp"],
+            ["Gate Rules", "Dual review for advice", "Minimum compliance approval", "Conflict check"]
+          ].map(([title, ...items]) => (
+            <Card key={title}>
+              <CardHeader><CardTitle className="text-xl">{title}</CardTitle></CardHeader>
+              <CardContent className="space-y-3">
+                {items.map((item) => (
+                  <div className="flex items-center gap-2 text-sm text-alphavest-muted" key={item}>
+                    <CheckCircle2 aria-hidden="true" className="size-4 text-alphavest-gold-soft" />
+                    {item}
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <Card>
+          <CardHeader><CardTitle className="text-xl">Policy Versioning</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            {policyVersions.map((version) => (
+              <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3" key={version.version}>
+                <div>
+                  <p className="font-semibold text-alphavest-ivory">{version.version}</p>
+                  <p className="mt-1 text-xs text-alphavest-muted">{version.date} by {version.owner}</p>
+                </div>
+                <StatusBadge status={version.status} />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </section>
+      <AuditBanner action={<button className={primaryButtonClass} data-testid="j10-view-audit" onClick={() => { void runScreencastDemoAction("j10.viewAudit", "/admin/roles"); }} type="button">View audit log <ArrowRight aria-hidden="true" className="size-4" /></button>}>
+        No unapproved advice reaches the client. This policy is enforced across workflows and channels.
+      </AuditBanner>
+    </div>
+  );
+}
+
+function RolesPage({ onPermissionModal }: { onPermissionModal: () => void }) {
+  return (
+    <div className="space-y-5">
+      <ActionBar>
+        <SearchShell placeholder="Search roles, permissions..." />
+        <button className={primaryButtonClass} type="button"><Plus aria-hidden="true" className="size-4" />New role template</button>
+      </ActionBar>
+      <section className="grid gap-5 xl:grid-cols-[0.78fr_1.22fr]">
+        <Card>
+          <CardHeader>
+            <CardTitle>Role templates (6)</CardTitle>
+            <CardDescription>Default roles used across platform and tenant setup.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {roleTemplates.map((role) => (
+              <button
+                className="flex w-full items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 text-left transition hover:border-alphavest-gold/50"
+                key={role.name}
+                type="button"
+              >
+                <span>
+                  <span className="block text-sm font-semibold text-alphavest-ivory">{role.name}</span>
+                  <span className="mt-1 block text-sm text-alphavest-muted">{role.description}</span>
+                </span>
+                <StatusBadge status={role.status} />
+              </button>
+            ))}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <CardTitle>Permission Matrix</CardTitle>
+              <CardDescription>Full, limited and blocked access by role template.</CardDescription>
+            </div>
+            <button
+              className={secondaryButtonClass}
+              data-testid="j10-review-permission"
+              onClick={() => {
+                void runScreencastDemoAction("j10.reviewPermission", "/admin/security");
+                onPermissionModal();
+              }}
+              type="button"
+            >
+              <ShieldAlert aria-hidden="true" className="size-4" />
+              Review permission changes
+            </button>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto rounded-md border border-alphavest-border/70">
+              <table className="w-full min-w-full table-fixed border-collapse text-center text-sm md:min-w-[42rem]">
+                <thead className="bg-alphavest-panel/75 text-xs uppercase tracking-[0.12em] text-alphavest-subtle">
+                  <tr>
+                    <th className="border-b border-alphavest-border/70 px-4 py-3 text-left">Role</th>
+                    {permissionColumns.map((column) => <th className="border-b border-alphavest-border/70 px-4 py-3" key={column}>{column}</th>)}
+                  </tr>
+                </thead>
+                <tbody>
+                  {permissionRows.map((row) => (
+                    <tr className="border-b border-alphavest-border/55 last:border-0" key={row.role}>
+                      <td className="px-4 py-3 text-left font-semibold text-alphavest-ivory">{row.role}</td>
+                      {row.access.map((access, index) => (
+                        <td className="px-4 py-3" key={`${row.role}-${permissionColumns[index]}`}>
+                          {access === "full" ? <CheckCircle2 aria-hidden="true" className="mx-auto size-4 text-alphavest-green" /> : access === "limited" ? <AlertTriangle aria-hidden="true" className="mx-auto size-4 text-alphavest-gold" /> : <LockKeyhole aria-hidden="true" className="mx-auto size-4 text-alphavest-subtle" />}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+    </div>
+  );
+}
+
+function SecurityPage({ onConfirm }: { onConfirm: () => void }) {
+  return (
+    <div className="space-y-5">
+      <ActionBar>
+        <StatusChip label="All systems secure" status="ACTIVE" />
+        <button className={secondaryButtonClass} type="button">View audit log</button>
+        <button
+          className={primaryButtonClass}
+          data-testid="j10-save-security"
+          onClick={() => {
+            void runScreencastDemoAction("j10.saveSecurity", "/admin/evidence-templates");
+            onConfirm();
+          }}
+          type="button"
+        >
+          Save changes
+        </button>
+      </ActionBar>
+      <section className="grid gap-5 xl:grid-cols-2">
+        {["Authentication", "Device"].map((group) => (
+          <Card key={group}>
+            <CardHeader>
+              <CardTitle>{group === "Authentication" ? "Authentication and access" : "Device and session controls"}</CardTitle>
+              <CardDescription>{group === "Authentication" ? "MFA, password and session policy." : "Trusted device and session restrictions."}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {securityControls.filter((control) => control.group === group).map((control) => (
+                <SettingRow detail={control.detail} enabled={control.enabled} key={control.label} label={control.label} />
+              ))}
+            </CardContent>
+          </Card>
+        ))}
+      </section>
+      <Card>
+        <CardHeader><CardTitle>Active Sessions</CardTitle></CardHeader>
+        <CardContent>
+          <DataTable
+            columns={[
+              { key: "user", header: "User", render: (row: (typeof activeSessions)[number]) => <span className="text-alphavest-ivory">{row.user}</span> },
+              { key: "device", header: "Device", render: (row) => row.device },
+              { key: "location", header: "Location", render: (row) => row.location },
+              { key: "lastActive", header: "Last active", render: (row) => row.lastActive }
+            ]}
+            getRowId={(row) => `${row.user}-${row.device}`}
+            rows={activeSessions}
+          />
+        </CardContent>
+      </Card>
+      <AuditBanner>Security changes may impact user access. All critical changes are logged and require elevated confirmation.</AuditBanner>
+    </div>
+  );
+}
+
+function EvidenceTemplatesPage() {
+  type EvidenceTemplate = (typeof evidenceTemplates)[number];
+  const columns: Array<DataTableColumn<EvidenceTemplate>> = [
+    { key: "name", header: "Template", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}</span> },
+    { key: "category", header: "Category", render: (row) => <Badge tone="blue">{row.category}</Badge> },
+    { key: "type", header: "Evidence type", render: (row) => row.type },
+    { key: "required", header: "Items", render: (row) => row.required },
+    { key: "cycle", header: "Cycle", render: (row) => row.cycle },
+    { key: "status", header: "Status", render: (row) => <StatusBadge status={row.status} /> }
+  ];
+
+  return (
+    <div className="space-y-5">
+      <ActionBar>
+        <SearchShell placeholder="Search templates, categories, tags..." />
+        <button className={secondaryButtonClass} type="button"><Upload aria-hidden="true" className="size-4" />Import template</button>
+        <button className={primaryButtonClass} type="button"><Plus aria-hidden="true" className="size-4" />New template</button>
+      </ActionBar>
+      <AuditBanner>Templates are compliance-reviewed and version-controlled. Last audit: 15 May 2024 by Compliance.</AuditBanner>
+      <section className="grid gap-5 xl:grid-cols-[1.3fr_0.7fr]">
+        <Card>
+          <CardHeader><CardTitle>All Templates</CardTitle></CardHeader>
+          <CardContent><DataTable columns={columns} getRowId={(row) => row.id} rows={evidenceTemplates} /></CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between gap-3">
+              <CardTitle className="text-xl">Investment Suitability Review</CardTitle>
+              <StatusBadge status="Draft" />
+            </div>
+            <CardDescription>Template summary and required evidence items.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <FieldGrid
+              fields={[
+                { label: "Category", value: "Suitability" },
+                { label: "Review cycle", value: "12 months" },
+                { label: "Retention", value: "7 years" },
+                { label: "Required items", value: "7" }
+              ]}
+            />
+            {["Suitability review report", "Client risk profile", "Product recommendation rationale", "Alternative options considered", "Client acknowledgement"].map((item) => (
+              <div className="flex items-center justify-between border-b border-alphavest-border/45 pb-3 text-sm last:border-0" key={item}>
+                <span className="text-alphavest-muted">{item}</span>
+                <span className="text-alphavest-ivory">Required</span>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </section>
+    </div>
+  );
+}
+
+function ExportTemplatesPage() {
+  type ExportTemplate = (typeof exportTemplates)[number];
+  const columns: Array<DataTableColumn<ExportTemplate>> = [
+    { key: "name", header: "Template", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}</span> },
+    { key: "category", header: "Category", render: (row) => row.category },
+    { key: "profile", header: "Redaction profile", render: (row) => row.profile },
+    { key: "version", header: "Version", render: (row) => row.version },
+    { key: "status", header: "Status", render: (row) => <StatusBadge status={row.status} /> },
+    { key: "updated", header: "Updated", render: (row) => row.updated }
+  ];
+
+  return (
+    <div className="space-y-5">
+      <ActionBar>
+        <SearchShell placeholder="Search templates, profiles, fields..." />
+        <button className={primaryButtonClass} type="button">Create template</button>
+      </ActionBar>
+      <section className="grid gap-4 md:grid-cols-3">
+        <MetricCard detail="6 active, 9 draft, 3 blocked" label="Templates" value="18" />
+        <MetricCard detail="5 active, 2 draft" label="Redaction profiles" value="7" />
+        <MetricCard detail="Within 30 days" label="Expiring soon" status="PENDING" value="5" />
+      </section>
+      <section className="grid gap-5 2xl:grid-cols-[1.1fr_0.8fr]">
+        <Card>
+          <CardHeader><CardTitle>Export Templates</CardTitle></CardHeader>
+          <CardContent><DataTable columns={columns} getRowId={(row) => row.name} rows={exportTemplates} /></CardContent>
+        </Card>
+        <div className="space-y-5">
+          <Card>
+            <CardHeader><CardTitle>Redaction Profiles</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              {redactionProfiles.map((profile) => (
+                <div className="text-sm font-semibold text-alphavest-ivory" key={profile}>{profile}</div>
+              ))}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader><CardTitle>Compliance and Audit</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              {["All exports are watermark-enabled", "Templates enforce redaction and expiry", "Changes are versioned and audited"].map((item) => (
+                <div className="flex items-center gap-2 text-sm text-alphavest-gold-soft" key={item}>
+                  <Check aria-hidden="true" className="size-4" />
+                  {item}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+      <AuditBanner>Audit activity: template changes are controlled and logged.</AuditBanner>
+    </div>
+  );
+}
+
+function TenantsPage() {
+  type TenantRow = (typeof tenantRows)[number];
+  const columns: Array<DataTableColumn<TenantRow>> = [
+    { key: "name", header: "Tenant", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}</span> },
+    { key: "jurisdiction", header: "Jurisdiction", render: (row) => row.jurisdiction },
+    { key: "tier", header: "Tier", render: (row) => <Badge tone="gold">{row.tier}</Badge> },
+    { key: "owner", header: "Owner", render: (row) => row.owner },
+    { key: "onboarding", header: "Onboarding", render: (row) => <StatusBadge status={row.onboarding} /> },
+    { key: "status", header: "Status", render: (row) => <StatusBadge status={row.status} /> }
+  ];
+
+  return (
+    <div className="space-y-5">
+      <ActionBar>
+        <button className={secondaryButtonClass} type="button"><Download aria-hidden="true" className="size-4" />Export CSV</button>
+        <button className={primaryButtonClass} data-testid="j06-new-tenant" onClick={() => { void runScreencastDemoAction("j06.newTenant", "/tenants/new"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add Tenant</button>
+      </ActionBar>
+      <Card>
+        <CardContent className="grid gap-3 md:grid-cols-[1fr_0.75fr_0.75fr_0.75fr_auto]">
+          <SearchShell placeholder="Search tenants..." />
+          {["All jurisdictions", "All tiers", "All statuses"].map((filter) => (
+            <button className={secondaryButtonClass} key={filter} type="button">{filter}</button>
+          ))}
+          <button className={secondaryButtonClass} type="button"><Filter aria-hidden="true" className="size-4" />Filters</button>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Tenant Directory</CardTitle>
+          <CardDescription>Tenant data is isolated and inaccessible across tenants.</CardDescription>
+        </CardHeader>
+        <CardContent><DataTable columns={columns} getRowId={(row) => row.name} rows={tenantRows} /></CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function CreateTenantPage() {
+  return (
+    <div className="space-y-5">
+      <WizardStepper steps={tenantWizardSteps.create.map((step) => ({ ...step }))} />
+      <section className="grid gap-5 xl:grid-cols-[1fr_0.45fr]">
+        <Card>
+          <CardHeader>
+            <CardTitle>Tenant Information</CardTitle>
+            <CardDescription>Define the core details of the family office.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <FieldGrid
+              fields={[
+                { label: "Family office name", value: "Northbridge Family Office" },
+                { label: "Jurisdiction", value: "Cayman Islands" },
+                { label: "Operating tier", value: "Premier" },
+                { label: "Primary owner", value: "Alexandra Morgan" },
+                { label: "Entity type", value: "Single Family Office" },
+                { label: "Base currency", value: "USD - US Dollar" },
+                { label: "Time zone", value: "(UTC-05:00) Eastern Time" },
+                { label: "Fiscal year end", value: "December" }
+              ]}
+            />
+            <ActionBar>
+              <button className={secondaryButtonClass} type="button">Save draft</button>
+              <button className={primaryButtonClass} data-testid="j06-continue-tenant" onClick={() => { void runScreencastDemoAction("j06.continueTenant", "/tenants/demo/setup"); }} type="button">Continue to team setup <ArrowRight aria-hidden="true" className="size-4" /></button>
+            </ActionBar>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Setup Progress</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            {["Tenant details: In progress", "Team setup: Locked", "Policy assignment: Locked", "Review and confirm: Locked"].map((item) => (
+              <div className="flex items-center gap-3 text-sm text-alphavest-muted" key={item}>
+                <LockKeyhole aria-hidden="true" className="size-4 text-alphavest-gold-soft" />
+                {item}
+              </div>
+            ))}
+            <StatePanel detail="Client invitations remain disabled until team and policy setup are complete." state="restricted" title="Invitation locked" />
+          </CardContent>
+        </Card>
+      </section>
+    </div>
+  );
+}
+
+function TenantSetupPage() {
+  type ChecklistRow = (typeof tenantSetupChecklist)[number];
+  const columns: Array<DataTableColumn<ChecklistRow>> = [
+    { key: "item", header: "Item", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.item}</span> },
+    { key: "owner", header: "Owner", render: (row) => row.owner },
+    { key: "status", header: "Status", render: (row) => <StatusBadge status={row.status} /> },
+    { key: "readiness", header: "Readiness", render: (row) => <StatusBadge status={row.readiness} /> }
+  ];
+
+  return (
+    <div className="space-y-5">
+      <WizardStepper steps={tenantWizardSteps.setup.map((step) => ({ ...step }))} />
+      <section className="grid gap-5 2xl:grid-cols-[1fr_0.48fr]">
+        <Card>
+          <CardHeader>
+            <CardTitle>Setup Checklist</CardTitle>
+            <CardDescription>Resolve missing and blocked items before activation.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
+              <MetricCard detail="Checklist items" label="Total items" value="16" />
+              <MetricCard detail="Ready" label="Completed" status="ACTIVE" value="13" />
+              <MetricCard detail="Needs attention" label="Missing" status="FAILED" value="2" />
+              <MetricCard detail="Blocked dependency" label="Blocked" status="PENDING" value="1" />
+              <MetricCard detail="Nearly ready" label="Setup complete" status="PROCESSING" value="81%" />
+            </div>
+            <DataTable columns={columns} getRowId={(row) => row.item} rows={tenantSetupChecklist} />
+            <AuditBanner>All required items must be completed and unblocked to activate this tenant.</AuditBanner>
+          </CardContent>
+        </Card>
+        <div className="space-y-5">
+          <Card>
+            <CardHeader><CardTitle>Activation Gate</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              {["Required items completed: 13 / 16", "No blocked items: 1 blocked", "Policies configured: 4 / 6", "Team assignments complete", "Security enabled", "Integrations connected: 2 / 3"].map((item, index) => (
+                <div className="flex items-center justify-between gap-3 text-sm" key={item}>
+                  <span className="text-alphavest-muted">{item}</span>
+                  {index >= 3 && index !== 5 ? <CheckCircle2 className="size-4 text-alphavest-green" /> : <XCircle className="size-4 text-alphavest-red" />}
+                </div>
+              ))}
+              <button className={cn(primaryButtonClass, "w-full opacity-60")} type="button">Activate tenant</button>
+            </CardContent>
+          </Card>
+          <StatePanel detail="Policy framework and CRM integration need attention before this tenant can activate." state="blocked" title="Missing and blocked items" />
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function TenantTeamPage() {
+  type Assignment = (typeof teamAssignments)[number];
+  const columns: Array<DataTableColumn<Assignment>> = [
+    { key: "role", header: "Role", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.role}</span> },
+    { key: "assignee", header: "Assignee", render: (row) => row.assignee },
+    { key: "workload", header: "Workload", render: (row) => row.workload },
+    { key: "capacity", header: "Capacity", render: (row) => row.capacity },
+    { key: "status", header: "Status", render: (row) => <StatusBadge status={row.status} /> }
+  ];
+
+  return (
+    <div className="space-y-5">
+      <ActionBar>
+        <StatusBadge status="Draft" />
+        <button className={secondaryButtonClass} type="button">Preview assignments</button>
+        <button className={primaryButtonClass} data-testid="j06-assign-team" onClick={() => { void runScreencastDemoAction("j06.assignTeam", "/tenants/demo/policies"); }} type="button">Save changes</button>
+      </ActionBar>
+      <section className="grid gap-5 xl:grid-cols-[1fr_0.45fr]">
+        <Card>
+          <CardHeader>
+            <CardTitle>Role Assignments</CardTitle>
+            <CardDescription>Required roles must be filled before activating a pilot.</CardDescription>
+          </CardHeader>
+          <CardContent><DataTable columns={columns} getRowId={(row) => row.role} rows={teamAssignments} /></CardContent>
+        </Card>
+        <div className="space-y-5">
+          <StatePanel detail="A Compliance Owner must be assigned before a pilot can be activated." state="blocked" title="Pilot cannot proceed" />
+          <Card>
+            <CardHeader><CardTitle>Team Summary</CardTitle></CardHeader>
+            <CardContent><FieldGrid fields={[{ label: "Total team members", value: "4" }, { label: "Active assignments", value: "3" }, { label: "Unassigned roles", value: "1" }, { label: "Average workload", value: "59%" }]} /></CardContent>
+          </Card>
+        </div>
+      </section>
+      <AuditBanner>All role assignments are audit-tracked.</AuditBanner>
+    </div>
+  );
+}
+
+function TenantPoliciesPage() {
+  return (
+    <div className="space-y-5">
+      <ActionBar>
+        <StatusChip label="12 Active" status="ACTIVE" />
+        <StatusChip label="3 Draft" status="DRAFT" />
+        <StatusChip label="1 Blocked" status="FAILED" />
+        <button className={primaryButtonClass} type="button">Create Policy</button>
+      </ActionBar>
+      <Card>
+        <CardHeader>
+          <CardTitle>Policy Profile</CardTitle>
+          <CardDescription>Balanced Growth inherited from AlphaVest global defaults.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <FieldGrid fields={[{ label: "Profile", value: "Balanced Growth" }, { label: "Inherited from", value: "AlphaVest Global Default v2.4" }, { label: "Last updated", value: "15 May 2024, 10:24" }]} />
+        </CardContent>
+      </Card>
+      <section className="grid gap-4 lg:grid-cols-3">
+        {tenantPolicyCards.map((card) => (
+          <Card key={card.title}>
+            <CardHeader><CardTitle className="text-xl">{card.title}</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              {card.details.map((detail) => (
+                <div className="border-b border-alphavest-border/45 pb-3 text-sm text-alphavest-muted last:border-0" key={detail}>{detail}</div>
+              ))}
+              <button className={secondaryButtonClass} type="button">Configure <ArrowRight aria-hidden="true" className="size-4" /></button>
+            </CardContent>
+          </Card>
+        ))}
+      </section>
+      <AuditBanner action={<button className={secondaryButtonClass} type="button">Review pending overrides</button>}>
+        All policy overrides require Compliance approval and are fully audited.
+      </AuditBanner>
+    </div>
+  );
+}
+
+function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
+  type TenantUser = (typeof tenantUsers)[number];
+  const columns: Array<DataTableColumn<TenantUser>> = [
+    { key: "name", header: "User", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}</span> },
+    { key: "invite", header: "Invite", render: (row) => row.invite },
+    { key: "role", header: "Roles", render: (row) => row.role },
+    { key: "scope", header: "Scope", render: (row) => row.scope },
+    { key: "status", header: "Status", render: (row) => <StatusBadge status={row.status} /> }
+  ];
+
+  return (
+    <div className="space-y-5">
+      <ActionBar>
+        <button
+          className={primaryButtonClass}
+          data-testid="j06-invite-user"
+          onClick={() => {
+            void runScreencastDemoAction("j06.openInvitation");
+            onInvite();
+          }}
+          type="button"
+        >
+          <UserPlus aria-hidden="true" className="size-4" />Invite user
+        </button>
+      </ActionBar>
+      <section className="grid gap-4 md:grid-cols-5">
+        <MetricCard detail="Tenant members" label="Total users" value="28" />
+        <MetricCard detail="Can access workspace" label="Active" status="ACTIVE" value="19" />
+        <MetricCard detail="Invitation sent" label="Invited" status="SCHEDULED" value="4" />
+        <MetricCard detail="Awaiting confirmation" label="Pending" status="PENDING" value="3" />
+        <MetricCard detail="Access removed" label="Revoked" status="FAILED" value="2" />
+      </section>
+      <Card>
+        <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <CardTitle>User Access</CardTitle>
+            <CardDescription>Manage users, assign roles and control access across the organization.</CardDescription>
+          </div>
+          <button className={secondaryButtonClass} type="button"><SlidersHorizontal aria-hidden="true" className="size-4" />Filters</button>
+        </CardHeader>
+        <CardContent><DataTable columns={columns} getRowId={(row) => row.name} rows={tenantUsers} /></CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function CriticalChangeModal({ kind, onClose }: { kind: ConfirmationKind; onClose: () => void }) {
+  const isSecurity = kind === "security";
+  const phrase = isSecurity ? "DISABLE MFA" : "I understand the impact of this change";
+
+  return (
+    <Modal
+      className="max-w-[44rem]"
+      context={
+        <div className="grid gap-2 text-sm">
+          <p className="font-semibold text-alphavest-ivory">{isSecurity ? "Security configuration" : "Platform setting"} change</p>
+          <p className="text-alphavest-muted">Sensitive settings remain audited and require second confirmation before activation.</p>
+        </div>
+      }
+      description={isSecurity ? "This change would apply to all users and reduce account security." : "You are about to update a critical platform setting."}
+      footer={
+        <>
+          <button className={secondaryButtonClass} onClick={onClose} type="button">Cancel</button>
+          <button className={primaryButtonClass} onClick={onClose} type="button">
+            <LockKeyhole aria-hidden="true" className="size-4" />
+            Confirm change
+          </button>
+        </>
+      }
+      onClose={onClose}
+      open={kind !== null}
+      title={isSecurity ? "Confirm critical security change" : "Confirm critical change"}
+    >
+      <div className="space-y-5 text-center">
+        <div className="mx-auto grid size-20 place-items-center rounded-full border border-alphavest-gold/40 bg-alphavest-gold/10 text-alphavest-gold">
+          <AlertTriangle aria-hidden="true" className="size-9" />
+        </div>
+        <div>
+          <p className="font-display text-3xl text-alphavest-ivory">Confirm critical change</p>
+          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-alphavest-muted">
+            This change may impact system behavior, access and audit posture.
+          </p>
+        </div>
+        <StatePanel
+          className="text-left"
+          detail={isSecurity ? "Changing this security setting requires second confirmation." : "Changing this setting requires a second confirmation to proceed."}
+          state="restricted"
+          title="Second confirmation required"
+        />
+        <div className="mx-auto max-w-lg text-left">
+          <label className="block">
+            <span className="block text-center text-sm text-alphavest-muted">Type the phrase below to confirm:</span>
+            <span className="mt-2 block text-center font-display text-xl text-alphavest-gold-soft">{`"${phrase}"`}</span>
+            <input
+              className="mt-4 h-12 w-full rounded-md border border-alphavest-border bg-alphavest-navy/45 px-4 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold"
+              placeholder="Type the exact phrase above"
+              readOnly
+              value=""
+            />
+          </label>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+function PermissionChangeModal({ onClose, open }: { onClose: () => void; open: boolean }) {
+  return (
+    <Modal
+      context={
+        <div className="grid gap-2 text-sm">
+          <p className="font-semibold text-alphavest-ivory">Compliance officer role template</p>
+          <p className="text-alphavest-muted">Permission changes affect separation of duties and remain subject to administrator approval.</p>
+        </div>
+      }
+      description="You are about to update permissions for the Compliance officer role template."
+      footer={
+        <>
+          <button className={secondaryButtonClass} onClick={onClose} type="button">Cancel</button>
+          <button className={primaryButtonClass} onClick={onClose} type="button">
+            <LockKeyhole aria-hidden="true" className="size-4" />
+            Confirm changes
+          </button>
+        </>
+      }
+      onClose={onClose}
+      open={open}
+      title="Confirm Permission Changes"
+    >
+      <div className="space-y-4">
+        {["Compliance -> Manage policies: No access to full access", "Reports -> Export reports: Limited access to full access", "Users -> Manage users: No access to limited access"].map((change) => (
+          <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 text-sm text-alphavest-muted" key={change}>
+            {change}
+          </div>
+        ))}
+        <StatePanel detail="Permission changes may impact separation of duties and require administrator approval." state="restricted" title="Review carefully" />
+      </div>
+    </Modal>
+  );
+}
+
+function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolean }) {
+  return (
+    <Drawer
+      description="Send an invitation and assign access."
+      footer={
+        <div className="grid grid-cols-2 gap-3">
+          <button className={secondaryButtonClass} onClick={onClose} type="button">Cancel</button>
+          <button
+            className={primaryButtonClass}
+            data-testid="j06-send-invitation"
+            onClick={() => {
+              void runScreencastDemoAction("j06.sendInvitation", "/onboarding/invite");
+              onClose();
+            }}
+            type="button"
+          >
+            <Send aria-hidden="true" className="size-4" />Send invitation
+          </button>
+        </div>
+      }
+      onClose={onClose}
+      open={open}
+      title="Invite User"
+    >
+      <div className="space-y-4">
+        <FieldGrid
+          fields={[
+            { label: "Email address", value: "name@firm.com" },
+            { label: "Role", value: "Select a role" },
+            { label: "Scope", value: "Select scope" },
+            { label: "Expiry", value: "7 days" }
+          ]}
+        />
+        <StatePanel detail="Roles with elevated permissions require additional confirmation before activation." state="restricted" title="Sensitive roles" />
+        <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-4">
+          <p className="text-sm font-semibold text-alphavest-ivory">Message</p>
+          <p className="mt-2 text-sm text-alphavest-muted">Add a personal invitation note in the production workflow.</p>
+        </div>
+      </div>
+    </Drawer>
+  );
+}
+
+function initialConfirmationKind(route: ScreenRoute, visualState?: VisualState): ConfirmationKind {
+  if (visualState !== "confirm") {
+    return null;
+  }
+
+  if (route.pageId === "007") {
+    return "platform";
+  }
+
+  if (route.pageId === "010") {
+    return "security";
+  }
+
+  return null;
+}
+
+export function AdminTenantSetupScreen({ route, visualState }: AdminTenantSetupScreenProps) {
+  const [confirmationKind, setConfirmationKind] = useState<ConfirmationKind>(() => initialConfirmationKind(route, visualState));
+  const [permissionModalOpen, setPermissionModalOpen] = useState(() => route.pageId === "009" && visualState === "permission");
+  const [inviteDrawerOpen, setInviteDrawerOpen] = useState(() => route.pageId === "018" && visualState === "invite");
+
+  function renderPage() {
+    if (route.pageId === "007") {
+      return <PlatformSettingsPage onConfirm={() => setConfirmationKind("platform")} />;
+    }
+    if (route.pageId === "008") {
+      return <AdviceBoundaryPage />;
+    }
+    if (route.pageId === "009") {
+      return <RolesPage onPermissionModal={() => setPermissionModalOpen(true)} />;
+    }
+    if (route.pageId === "010") {
+      return <SecurityPage onConfirm={() => setConfirmationKind("security")} />;
+    }
+    if (route.pageId === "011") {
+      return <EvidenceTemplatesPage />;
+    }
+    if (route.pageId === "012") {
+      return <ExportTemplatesPage />;
+    }
+    if (route.pageId === "013") {
+      return <TenantsPage />;
+    }
+    if (route.pageId === "014") {
+      return <CreateTenantPage />;
+    }
+    if (route.pageId === "015") {
+      return <TenantSetupPage />;
+    }
+    if (route.pageId === "016") {
+      return <TenantTeamPage />;
+    }
+    if (route.pageId === "017") {
+      return <TenantPoliciesPage />;
+    }
+    return <TenantUsersPage onInvite={() => setInviteDrawerOpen(true)} />;
+  }
+
+  return (
+    <AppShell>
+      <div className="space-y-6">
+        <PageHeader description={route.purpose} title={route.title} />
+        {renderPage()}
+      </div>
+      <CriticalChangeModal kind={confirmationKind} onClose={() => setConfirmationKind(null)} />
+      <PermissionChangeModal onClose={() => setPermissionModalOpen(false)} open={permissionModalOpen} />
+      <InviteUserDrawer onClose={() => setInviteDrawerOpen(false)} open={inviteDrawerOpen} />
+    </AppShell>
+  );
+}

@@ -1,0 +1,2639 @@
+# Phase Execution Report
+
+## Phase 00 - Repository and Project Setup
+
+Date: 2026-06-14
+
+### Completed Tasks
+
+- Read the required Phase 00 source-of-truth files.
+- Inspected the repository root and recorded the baseline state.
+- Confirmed pnpm as the package manager and pinned it in `package.json`.
+- Added baseline repo hygiene files: `.gitignore`, `.env.example` and `README.md`.
+- Created scaffold directories for later implementation: `app/`, `components/`, `features/` and `lib/`.
+- Preserved the copied handoff pack, `docs/v3/`, `prisma_reference/`, prompts and visual assets.
+- Produced `docs/v3/REPO_INTAKE_REPORT.md`.
+
+### Changed Files
+
+- `.gitignore`
+- `.env.example`
+- `README.md`
+- `package.json`
+- `pnpm-lock.yaml`
+- `app/.gitkeep`
+- `components/.gitkeep`
+- `features/.gitkeep`
+- `lib/.gitkeep`
+- `docs/v3/REPO_INTAKE_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm install` - passed.
+- `pnpm phase:check` - passed.
+- `pnpm build` - not available in Phase 00 because no application has been initialized yet.
+- `pnpm lint` - not available in Phase 00 because no lint configuration or source code exists yet.
+- Test command - not available in Phase 00 because no test framework or app routes exist yet.
+
+### Known Gaps
+
+- No app build exists yet; Next.js, React, Tailwind and TypeScript setup starts in Phase 01.
+- No Prisma runtime, Docker Compose database or seed data exists yet; those begin in later phases.
+- No route smoke tests or Playwright flows exist yet because no application routes exist.
+
+### Next Phase Recommendation
+
+Proceed to Phase 01: Next.js / React / Tailwind Foundation.
+
+## Phase 01 - Next.js / React / Tailwind Foundation
+
+Date: 2026-06-14
+
+### Completed Tasks
+
+- Read the required Phase 01 source-of-truth files, including `AGENTS.md` first.
+- Re-inspected visual references for the AlphaVest shell direction: admin, client portal and workbench examples.
+- Initialized a Next.js App Router project with React and strict TypeScript.
+- Installed and configured Tailwind CSS through PostCSS.
+- Added global AlphaVest design tokens for navy, midnight, charcoal, ivory, champagne gold, semantic accents and shared layout constants.
+- Implemented reusable foundation components: `AppShell`, `Sidebar`, `TopBar` and `PageHeader`.
+- Created a demo landing page at `/` that proves the design system renders with static demo context.
+- Added static topbar tenant/role context controls for shell testability without real authentication or persisted demo session logic.
+- Preserved the product rule in visible UI: no unapproved advice reaches the client.
+- Avoided route catalogue implementation, real authentication, Prisma, Docker Compose and workflow services because they belong to later phases.
+
+### Changed Files
+
+- `package.json`
+- `pnpm-lock.yaml`
+- `.gitignore`
+- `README.md`
+- `next.config.mjs`
+- `postcss.config.mjs`
+- `eslint.config.mjs`
+- `tsconfig.json`
+- `next-env.d.ts`
+- `app/globals.css`
+- `app/layout.tsx`
+- `app/page.tsx`
+- `components/app-shell.tsx`
+- `components/page-header.tsx`
+- `components/sidebar.tsx`
+- `components/top-bar.tsx`
+- `lib/demo-data.ts`
+- `lib/navigation.ts`
+- `app/.gitkeep` removed
+- `components/.gitkeep` removed
+- `lib/.gitkeep` removed
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm install` - passed.
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `pnpm build` - passed.
+- `pnpm phase:check` - passed.
+- Browser smoke check at `http://127.0.0.1:3000/` - passed for desktop and mobile viewport checks.
+
+### Known Gaps
+
+- No Prisma runtime, Docker Compose database or seed data exists yet; those begin in Phase 02 and Phase 03.
+- Real authentication is still intentionally deferred.
+- The topbar tenant/role controls are static/local shell controls only; real demo session and switcher logic belongs to Phase 04.
+- Only `/` is implemented; the full 63-route skeleton belongs to Phase 05.
+- No test framework or route smoke suite exists yet; the testing baseline is scheduled for later phases.
+
+### Next Phase Recommendation
+
+Proceed to Phase 02: Docker Compose + PostgreSQL + Prisma.
+
+## Phase 02 - Docker Compose + PostgreSQL + Prisma
+
+Date: 2026-06-14
+
+### Completed Tasks
+
+- Read the required Phase 02 source-of-truth files, including `AGENTS.md` first.
+- Confirmed Phase 02 scope from the detailed task list and technical implementation sequence.
+- Added a local Docker Compose PostgreSQL 17 service with healthcheck and persistent volume.
+- Added Prisma 7 dependencies, PostgreSQL driver adapter dependencies and database scripts.
+- Added `prisma.config.ts` for Prisma 7 datasource and seed configuration.
+- Created the Phase 02 Prisma foundation schema with platform tenant, client tenant, audit event and shared enum baselines.
+- Generated and applied the first migration: `20260614201128_init_phase_02`.
+- Added a Phase 02 seed placeholder that verifies database connectivity without inserting Phase 03 demo data.
+- Updated `.env.example` and README database setup guidance.
+- Created a local ignored `.env` from `.env.example` for verification.
+- Verified the live PostgreSQL database contains the expected Phase 02 tables.
+
+### Changed Files
+
+- `.env.example`
+- `README.md`
+- `docker-compose.yml`
+- `package.json`
+- `pnpm-lock.yaml`
+- `prisma.config.ts`
+- `prisma/schema.prisma`
+- `prisma/seed.ts`
+- `prisma/migrations/migration_lock.toml`
+- `prisma/migrations/20260614201128_init_phase_02/migration.sql`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm install` - passed.
+- `pnpm db:validate` - passed.
+- `pnpm db:generate` - passed.
+- `docker compose up -d postgres` - passed.
+- Docker healthcheck for `alphavest-wealthos-postgres` - passed.
+- `pnpm prisma migrate dev --name init_phase_02` - passed.
+- `pnpm db:seed` - passed.
+- `pnpm phase:check` - passed.
+- `docker compose ps` - confirmed Postgres is healthy on port `5432`.
+- `docker compose exec -T postgres psql -U alphavest -d alphavest_wealthos -c '\dt public.*'` - confirmed `_prisma_migrations`, `platform_tenants`, `client_tenants` and `audit_events` tables exist.
+
+### Known Gaps
+
+- Deterministic demo data is intentionally deferred to Phase 03.
+- The full AlphaVest domain model is intentionally deferred; Phase 02 includes only the stable foundation needed to migrate and connect.
+- Real authentication remains intentionally deferred.
+- The current local Node runtime is `v25.8.2`; Prisma's current published support matrix lists Node 20.19+, 22.12+ and 24.0+ bands, so teams should prefer one of those LTS/runtime bands even though Phase 02 commands passed locally.
+- No dedicated test framework has been added yet; `phase:check` currently covers typecheck, lint, Prisma validation and production build.
+
+### Next Phase Recommendation
+
+Proceed to Phase 03: Data Model + Seed Data.
+
+## Phase 03 - Data Model and Demo Seed System
+
+Date: 2026-06-14
+
+### Completed Tasks
+
+- Read the required Phase 03 source-of-truth files, including `AGENTS.md` first.
+- Also read the Phase 03-relevant handoff files: `docs/v3/DATA_MODEL_V3.md`, `docs/v3/PAGEFLOW_USERFLOW_MAPPING_V3.md`, `docs/v3/DUMMY_DATA_AND_SEED_STRATEGY_V3.md`, `docs/v3/WORKFLOW_DEFINITIONS_V3.md` and `docs/v3/USERFLOW_DEFINITIONS_V3.md`.
+- Confirmed Phase 03 does not require screen implementation, so page images were not inspected for this phase.
+- Expanded the Prisma schema from the Phase 02 tenant/audit baseline into a focused MVP data model covering users, profiles, roles, permissions, engagements, family members, relationships, objectives, entities, assets, documents, document extraction/review/linking, triggers, action items, recommendations, approvals, compliance reviews, decisions, evidence, review schedules, secure messages, call events, exports, policies, queues, data-quality issues and audit.
+- Preserved the Phase 02 migration and added a second migration: `20260614202332_phase_03_data_model_seed`.
+- Implemented a deterministic, reset-safe seed system with stable UUIDs.
+- Seeded the required four demo tenants: Bennett Family Office, Morgan Family Office, Northbridge Family Office and Summit Ridge Capital.
+- Seeded all required major roles: Principal, Family CFO, Trustee, Next Gen, External Advisor, Analyst, Senior Wealth Advisor, Compliance Officer, Client Success, Admin and Security Officer.
+- Seeded demo records across every major page/workflow group, including platform setup, tenant setup, onboarding/consent, client profile, entity/asset structure, documents, signals, action board, advisor approval, compliance release/block, decisions, evidence, governance/access, communication, exports and ops queues.
+- Seeded state coverage for pending, approved, released, restricted, blocked, needs-evidence, error/failure, loading/uploading simulation and SLA breach states.
+- Added a seed invariant check so non-released recommendations cannot be client-visible.
+- Updated README database/seed guidance.
+
+### Changed Files
+
+- `README.md`
+- `prisma/schema.prisma`
+- `prisma/seed.ts`
+- `prisma/migrations/20260614202332_phase_03_data_model_seed/migration.sql`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm db:validate` - passed.
+- `pnpm db:generate` - passed.
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `docker compose ps` - confirmed Postgres healthy on port `5432`.
+- `pnpm prisma migrate dev --name phase_03_data_model_seed` - passed.
+- `pnpm db:seed` - passed.
+- Second `pnpm db:seed` rerun - passed with the same deterministic counts.
+- `pnpm prisma migrate status` - passed; database schema is up to date.
+- Direct PostgreSQL seed count query - passed: 4 client tenants, 27 users, 11 roles, 12 documents, 4 recommendations, 4 evidence records and 13 audit events.
+- Direct PostgreSQL recommendation visibility query - passed: only `RELEASED_TO_CLIENT` recommendations are `clientVisible = true`.
+- Direct PostgreSQL state coverage queries - passed for compliance, export and queue states.
+- `pnpm phase:check` - passed.
+
+### Known Gaps
+
+- The Prisma schema is an MVP implementation model, not a verbatim import of the planning reference. Simplifications are intentional: many cross-object links use `targetType`/`targetId`, and some owner/reviewer fields remain UUID references rather than full foreign-key relations to avoid overcomplicating Phase 03.
+- Real authentication remains intentionally deferred.
+- The demo session, role switcher, tenant switcher and permissive service stubs are intentionally deferred to Phase 04.
+- Route skeletons and page-level data loading are intentionally deferred to Phase 05 and later UI phases.
+- The current local Node runtime is `v25.8.2`; Prisma's published support matrix should still be respected by teams using supported Node 20/22/24 runtime bands.
+- No dedicated test framework has been added yet; `phase:check` currently covers typecheck, lint, Prisma validation and production build.
+
+### Next Phase Recommendation
+
+Proceed to Phase 04: Demo Session, Role/Tenant Switcher and Service Stubs.
+
+## Phase 04 - Demo Session, Role/Tenant Switcher and Service Stubs
+
+Date: 2026-06-14
+
+### Completed Tasks
+
+- Read the required Phase 04 source-of-truth files, including `AGENTS.md` first.
+- Also read Phase 04-relevant implementation references: `docs/v3/DATA_MODEL_V3.md`, `docs/v3/PAGEFLOW_USERFLOW_MAPPING_V3.md`, `docs/v3/DUMMY_DATA_AND_SEED_STRATEGY_V3.md` and `docs/v3/WORKFLOW_DEFINITIONS_V3.md`.
+- Confirmed Phase 04 does not include page catalogue screen implementation, so page images were not inspected for this phase.
+- Added a deterministic demo session model over the Phase 03 seed data, including current tenant, current role, current actor and all required seeded role/tenant options.
+- Wrapped the application shell in a client-side demo session provider.
+- Replaced the static topbar controls with working tenant and role switchers plus a reset action.
+- Added permissive Phase 04 service stubs: `permissionEngine`, `visibilityEngine`, `workflowGate`, `auditService`, `evidenceService` and `exportService`.
+- Implemented the reusable no-unapproved-advice gate: client visibility requires recommendation release, advisor approval, compliance release, releasable evidence and a positive permission decision.
+- Added a Phase 04 dashboard panel that shows the active demo actor, tenant, permission preview, visibility gate result, audit preview, evidence draft and export readiness.
+- Preserved the planned security boundary: no real authentication or production permission enforcement was implemented.
+- Updated README guidance for the demo session and service stubs.
+
+### Changed Files
+
+- `README.md`
+- `app/page.tsx`
+- `components/app-shell.tsx`
+- `components/top-bar.tsx`
+- `components/demo-session-provider.tsx`
+- `components/demo-session-panel.tsx`
+- `lib/demo-data.ts`
+- `lib/domain-types.ts`
+- `lib/demo-session.ts`
+- `lib/permission-engine.ts`
+- `lib/visibility-engine.ts`
+- `lib/workflow-gate.ts`
+- `lib/audit-service.ts`
+- `lib/evidence-service.ts`
+- `lib/export-service.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed after removing a client-effect state initialization pattern from the demo session provider.
+- `pnpm phase:check` - passed.
+- `pnpm db:seed` - passed against the local PostgreSQL database.
+- Direct `tsx` gate assertion - passed for a released recommendation and an advisor-only recommendation blocked by the compliance release gate.
+- Browser smoke check at `http://127.0.0.1:3000/` using system Google Chrome - passed for default Compliance/Bennett render and Senior Advisor/Northbridge switcher behavior.
+
+### Known Gaps
+
+- Real authentication remains intentionally deferred.
+- The Phase 04 permission engine is intentionally permissive and should not be treated as production authorization.
+- Service stubs do not persist new audit, evidence or export records yet; persistence belongs to later repository and workflow phases.
+- Route skeletons and page catalogue implementation remain deferred to Phase 05 and later screen phases.
+- No dedicated test framework has been added yet; `phase:check` currently covers typecheck, lint, Prisma validation and production build.
+
+### Next Phase Recommendation
+
+Proceed to Phase 05: Route Skeleton and Route Registry.
+
+## Phase 05 - Route Skeleton for All 63 Pages
+
+Date: 2026-06-14
+
+### Completed Tasks
+
+- Read the required Phase 05 source-of-truth files, including `AGENTS.md` first.
+- Also read Phase 05-relevant implementation references: `docs/v3/DATA_MODEL_V3.md`, `docs/v3/PAGEFLOW_USERFLOW_MAPPING_V3.md` and `docs/v3/WORKFLOW_DEFINITIONS_V3.md`.
+- Confirmed Phase 05 is route skeleton work, not page-specific screen implementation, so individual page images were not inspected for this phase.
+- Added a central route registry for all 63 screen catalogue routes, including page ID, route pattern, title, purpose, visual mode, visual asset path, role family, navigation group, pageflow, workflow, object type and permission action.
+- Added a reusable `routeSmokeList` for later Playwright route smoke tests.
+- Added a catch-all App Router route that resolves registered static and dynamic catalogue paths, renders the shared skeleton page and leaves unknown paths to Next.js not-found behavior.
+- Added reusable route skeleton and demo-context components so every placeholder renders the shared shell, page header, demo tenant/role context and client-visibility guard.
+- Replaced the old Phase 01 sidebar links with registry-derived navigation grouped by workflow area.
+- Updated the `/` page into a Phase 05 route catalogue overview.
+- Preserved the planned security boundary: no real authentication or production permission enforcement was implemented.
+- Preserved the product rule: no placeholder exposes client-visible advice, and advice-like placeholder routes show the blocked visibility guard.
+- Updated README guidance for the route registry and skeleton renderer.
+
+### Changed Files
+
+- `README.md`
+- `app/page.tsx`
+- `app/[...segments]/page.tsx`
+- `components/sidebar.tsx`
+- `components/route-demo-context-card.tsx`
+- `components/route-skeleton-page.tsx`
+- `lib/navigation.ts`
+- `lib/route-registry.ts`
+- `lib/route-smoke-list.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- Direct `tsx` registry assertion - passed: 63 registered routes, 63 smoke paths, 0 unmatched paths.
+- Dev-server route smoke check - passed: all 63 smoke paths returned HTTP 200 and included their expected heading.
+- Browser smoke with system Google Chrome - passed for the Phase 05 catalogue overview and `/compliance/demo/release` dynamic placeholder with blocked client visibility.
+- `pnpm phase:check` - passed; Next.js build prerendered 66 static pages, including `/` and all 63 registered catch-all paths.
+
+### Known Gaps
+
+- Page-specific UI, modal/drawer behavior and detailed visual implementation remain intentionally deferred to Phases 07-13.
+- Real authentication remains intentionally deferred.
+- The Phase 04 permission engine is still intentionally permissive until the planned security phase.
+- Route skeletons use registry demo paths for dynamic routes; repository-backed object loading belongs to later data/service phases.
+- No dedicated test framework has been added yet; `routeSmokeList` is ready for the Phase 15 testing baseline.
+
+### Next Phase Recommendation
+
+Proceed to Phase 06: Shared UI Component Library.
+
+## Phase 06 - Shared UI Component Library
+
+Date: 2026-06-14
+
+### Completed Tasks
+
+- Read the required Phase 06 source-of-truth files, including `AGENTS.md` first.
+- Also read Phase 06-relevant implementation references: `docs/v3/DATA_MODEL_V3.md`, `docs/v3/PAGEFLOW_USERFLOW_MAPPING_V3.md` and `docs/v3/WORKFLOW_DEFINITIONS_V3.md`.
+- Inspected representative visual references for table/card layout, wizard stepper, kanban board, modal, drawer, evidence list and state badge styling.
+- Added a shared `cn()` helper for consistent class composition.
+- Implemented normalized shared UI primitives: `Card`, `MetricCard`, `Badge`, `StatusChip`, `WorkflowBadge`, `DataTable`, `FilterBar`, `Modal`, `Drawer`, `WizardStepper`, `Kanban`, `EvidenceList`, `AuditTimeline` and `StatePanel`.
+- Added demo variants for loading, empty, error, blocked and restricted component states.
+- Added Phase 06 demo data for metrics, table rows, kanban columns, evidence records and audit timeline events.
+- Added a Phase 06 component preview on `/` that exercises all required shared primitives and state variants.
+- Updated the existing route demo context card to consume shared `Card` and `StatusChip` primitives.
+- Preserved the planned security boundary: no real authentication or production permission enforcement was implemented.
+- Preserved the product rule: no component exposes client-visible advice, and blocked/restricted states keep client visibility guarded.
+- Updated README guidance for the shared UI library.
+
+### Changed Files
+
+- `README.md`
+- `app/page.tsx`
+- `components/component-library-preview.tsx`
+- `components/route-demo-context-card.tsx`
+- `components/ui/audit-timeline.tsx`
+- `components/ui/badge.tsx`
+- `components/ui/card.tsx`
+- `components/ui/data-table.tsx`
+- `components/ui/drawer.tsx`
+- `components/ui/evidence-list.tsx`
+- `components/ui/filter-bar.tsx`
+- `components/ui/index.ts`
+- `components/ui/kanban.tsx`
+- `components/ui/metric-card.tsx`
+- `components/ui/modal.tsx`
+- `components/ui/state-panel.tsx`
+- `components/ui/status-chip.tsx`
+- `components/ui/wizard-stepper.tsx`
+- `components/ui/workflow-badge.tsx`
+- `lib/cn.ts`
+- `lib/ui-demo-data.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `pnpm phase:check` - passed; Next.js build prerendered 66 static pages, including `/` and all 63 registered catch-all paths.
+- In-app browser smoke at `http://127.0.0.1:3000/` - passed for the Phase 06 heading, data surface, state variants, kanban, evidence list and audit timeline.
+- In-app browser interaction smoke - passed for opening the second-confirmation modal and detail drawer.
+
+### Known Gaps
+
+- Page-specific UI composition remains intentionally deferred to Phases 07-13.
+- Real authentication remains intentionally deferred.
+- The Phase 04 permission engine is still intentionally permissive until the planned security phase.
+- Components use demo data and client-side preview interactions; repository-backed data binding belongs to later workflow/data phases.
+- No dedicated test framework has been added yet; formal unit and Playwright coverage belongs to Phase 15.
+
+### Next Phase Recommendation
+
+Proceed to Phase 07: Auth and Onboarding UI Pages.
+
+## Phase 07 - Auth and Onboarding UI Pages
+
+Date: 2026-06-14
+
+### Completed Tasks
+
+- Read the required Phase 07 source-of-truth files, including `AGENTS.md` first.
+- Also read Phase 07-relevant implementation references: `docs/v3/PAGEFLOW_USERFLOW_MAPPING_V3.md`, `docs/v3/DATA_MODEL_V3.md`, `docs/v3/WORKFLOW_DEFINITIONS_V3.md` and the page specifications for pages 001-006.
+- Inspected all Phase 07 visual references before coding: `PAGE-001-login.png`, `PAGE-002-mfa.png`, `PAGE-003-onboarding-invite.png`, `PAGE-004-onboarding-identity.png`, `PAGE-005-onboarding-consent.png` and `PAGE-006-onboarding-role-confirmation.png`.
+- Added centralized demo auth/onboarding data for the invited user, tenant, role, MFA/security events, consent policies, role boundaries and onboarding stepper states.
+- Implemented dedicated UI for `/login`, `/mfa`, `/onboarding/invite`, `/onboarding/identity`, `/onboarding/consent` and `/onboarding/role-confirmation`.
+- Wired the existing catch-all route to render the Phase 07 screen component for page IDs 001-006 while leaving the remaining catalogue routes on the Phase 05 skeleton.
+- Implemented the consent page's policy modal interaction with the shared `Modal` primitive.
+- Added a Phase 07 route smoke script covering all six implemented routes.
+- Preserved the planned security boundary: no real authentication, credential submission, production permission enforcement or persisted onboarding mutation was implemented.
+- Preserved the product rule: onboarding pages expose only access, consent and role-scope UI; no advice-like output is client-visible.
+- Updated README guidance for the Phase 07 routes and smoke command.
+
+### Changed Files
+
+- `README.md`
+- `app/[...segments]/page.tsx`
+- `components/auth-onboarding-screen.tsx`
+- `lib/auth-onboarding-demo-data.ts`
+- `package.json`
+- `scripts/smoke-phase-07.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed after tightening the role-scope icon typing.
+- `pnpm lint` - passed.
+- `pnpm build` - passed; Next.js prerendered `/`, `/_not-found` and all 63 registered catch-all paths.
+- Local dev server: `pnpm dev --hostname 127.0.0.1 --port 3000`.
+- `pnpm smoke:phase07` - passed after wrapping the script in an async entrypoint; all six Phase 07 routes returned HTTP 200 and included their expected headings.
+- In-app browser route verification - passed for all six Phase 07 routes at desktop width.
+- In-app browser consent modal interaction - passed; `Review policy` opens a privacy notice modal with key points and a close action.
+- In-app browser mobile-width overflow pass at 390px - passed for all six Phase 07 routes.
+- `pnpm phase:check` - passed after documentation updates.
+
+### Known Gaps
+
+- Real authentication remains intentionally deferred.
+- The Phase 07 forms are non-submitting demo surfaces and do not persist account, consent or role confirmation records.
+- The Phase 04 permission engine is still intentionally permissive until the planned security phase.
+- The onboarding demo data is centralized in code for early UI testability; repository-backed read/write flows belong to later data/service phases.
+- Formal unit and Playwright test suites remain deferred to Phase 15.
+
+### Next Phase Recommendation
+
+Proceed to Phase 08: Admin and Platform UI Pages.
+
+## Phase 08 - Admin and Platform UI Pages
+
+Date: 2026-06-14
+
+### Completed Tasks
+
+- Read the required Phase 08 source-of-truth files, including `AGENTS.md` first.
+- Also read Phase 08-relevant implementation references: `docs/v3/PAGEFLOW_USERFLOW_MAPPING_V3.md`, `docs/v3/DATA_MODEL_V3.md`, `docs/v3/WORKFLOW_DEFINITIONS_V3.md` and the page specifications for pages 007-018.
+- Inspected all Phase 08 visual references before coding: `PAGE-007-admin-platform.png` through `PAGE-018-tenants-id-users.png`.
+- Implemented dedicated UI for `/admin/platform`, `/admin/policies/advice-boundary`, `/admin/roles`, `/admin/security`, `/admin/evidence-templates`, `/admin/export-templates`, `/admin/tenants`, `/tenants/new`, `/tenants/demo/setup`, `/tenants/demo/team`, `/tenants/demo/policies` and `/tenants/demo/users`.
+- Added centralized demo data for platform settings, advice-boundary policy controls, role templates, security posture, evidence templates, export templates, tenants, tenant setup, tenant team, tenant policies and tenant users.
+- Wired the existing catch-all route to render the Phase 08 screen component for page IDs 007-018 while preserving the Phase 07 pages and Phase 05 skeleton fallback.
+- Implemented critical-change, permission-change and security-change confirmation modals for sensitive admin actions.
+- Implemented the tenant-user invitation drawer using the shared drawer primitive.
+- Tightened shared table/card/sidebar responsiveness so dense admin and tenant setup tables stay inside the viewport on narrow screens.
+- Added a Phase 08 route smoke script covering all twelve implemented routes.
+- Preserved the planned security boundary: no real authentication, production permission enforcement, settings persistence, tenant persistence or user-invite mutation was implemented.
+- Preserved the product rule: admin and tenant setup pages keep the no-unapproved-advice guard visible and no unapproved advice reaches a client-visible surface.
+- Updated README guidance for the Phase 08 routes and smoke command.
+
+### Changed Files
+
+- `README.md`
+- `app/[...segments]/page.tsx`
+- `components/admin-tenant-setup-screen.tsx`
+- `components/sidebar.tsx`
+- `components/ui/card.tsx`
+- `components/ui/data-table.tsx`
+- `lib/admin-tenant-setup-demo-data.ts`
+- `package.json`
+- `scripts/smoke-phase-08.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `pnpm build` - passed.
+- `pnpm smoke:phase08` - passed; all twelve Phase 08 routes returned HTTP 200 and included their expected headings.
+- `pnpm phase:check` - passed; TypeScript, ESLint, Prisma validation and production build completed successfully.
+- In-app browser route verification - passed for all twelve Phase 08 routes at the current narrow browser width with no Next.js error page and no horizontal overflow.
+- In-app browser guarded interaction checks - passed for the platform critical-change modal, role permission-change modal, security critical-change modal and tenant user invite drawer.
+- In-app browser desktop-width overflow pass at 1280px - passed for representative dense Phase 08 routes.
+
+### Known Gaps
+
+- Real authentication remains intentionally deferred.
+- Phase 08 forms, toggles, confirmations and tenant/user workflows are non-persisting demo UI surfaces.
+- The Phase 04 permission engine is still intentionally permissive until the planned security phase.
+- Repository-backed admin settings, security policy changes, tenant creation and invitation records belong to later data/service phases.
+- Formal unit and Playwright test suites remain deferred to Phase 15.
+
+### Next Phase Recommendation
+
+Proceed to Phase 09: Client Workspace UI Pages.
+
+## Phase 09 - Client, Family, Entity and Document Intake Pages
+
+Date: 2026-06-15
+
+### Completed Tasks
+
+- Read the required Phase 09 source-of-truth files, including `AGENTS.md` first.
+- Also read Phase 09-relevant implementation references: `docs/v3/PAGEFLOW_USERFLOW_MAPPING_V3.md`, `docs/v3/DATA_MODEL_V3.md`, `docs/v3/WORKFLOW_DEFINITIONS_V3.md` and the page specifications for pages 019-030.
+- Inspected all Phase 09 visual references before coding: `PAGE-019-portal.png` through `PAGE-030-documents-verification-pending.png`.
+- Implemented dedicated UI for `/portal`, `/mobile`, `/client/profile`, `/client/family-members`, `/relationships`, `/entities`, `/entities/new`, `/entities/demo`, `/documents`, `/documents/upload`, `/documents/extraction-review` and `/documents/verification-pending`.
+- Added centralized demo data for client readiness, mobile priority actions, family profile/member data, relationships, entity intake, entity detail, documents, upload state, extraction review and verification pending state.
+- Wired the existing catch-all route to render the Phase 09 screen component for page IDs 019-030 while preserving earlier Phase 07 and Phase 08 implementations.
+- Implemented a client/document workspace shell and a mobile-only surface so client routes do not inherit the generic placeholder chrome.
+- Added default and non-default states for the phase: blocked recommendations, draft profile, relationship conflict, restricted access, empty/loading document states, upload failure, AI draft extraction issues, SLA breach and needs clarification.
+- Added a Phase 09 route smoke script covering all twelve implemented routes.
+- Preserved the planned security boundary: no real authentication, production permission enforcement, profile/entity/document persistence or final verification mutation was implemented.
+- Preserved the product rule: recommendation and extraction surfaces show blocked/draft states; no unapproved advice reaches a client-visible surface.
+- Updated README guidance for the Phase 09 routes and smoke command.
+
+### Changed Files
+
+- `README.md`
+- `app/[...segments]/page.tsx`
+- `components/client-intake-screen.tsx`
+- `lib/client-intake-demo-data.ts`
+- `package.json`
+- `scripts/smoke-phase-09.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `pnpm smoke:phase09` - passed after starting the local dev server; all twelve Phase 09 routes returned HTTP 200 and included their expected headings.
+- `pnpm build` - passed.
+- `pnpm phase:check` - passed; TypeScript, ESLint, Prisma validation and production build completed successfully.
+- In-app browser route verification - passed for all twelve Phase 09 routes at the current narrow browser width with no Next.js error page, no visible reference metadata and no horizontal overflow.
+- In-app browser desktop-width overflow pass at 1440px - passed for representative dense Phase 09 routes.
+
+### Known Gaps
+
+- Real authentication remains intentionally deferred.
+- Phase 09 profile edits, entity creation, document upload, extraction edits and verification decisions are non-persisting demo UI surfaces.
+- The Phase 04 permission engine is still intentionally permissive until the planned security phase.
+- Repository-backed intake workflows, file storage, extraction persistence and analyst validation belong to later data/service and file/export phases.
+- Formal unit and Playwright test suites remain deferred to Phase 15.
+
+### Next Phase Recommendation
+
+Proceed to Phase 10: Wealth Map and Action Board.
+
+## Phase 10 - Wealth Map and Action Board
+
+Date: 2026-06-15
+
+### Completed Tasks
+
+- Read the required Phase 10 source-of-truth files, including `AGENTS.md` first.
+- Also read Phase 10-relevant implementation references: `docs/v3/PAGEFLOW_USERFLOW_MAPPING_V3.md`, `docs/v3/DATA_MODEL_V3.md`, `docs/v3/WORKFLOW_DEFINITIONS_V3.md` and the page specifications for pages 031-032.
+- Inspected both Phase 10 visual references before coding: `PAGE-031-wealth-map.png` and `PAGE-032-actions.png`.
+- Implemented dedicated UI for `/wealth-map` and `/actions`.
+- Added centralized demo data for wealth-map filters, graph nodes, graph relationships, restricted nodes, conflict/gap markers, selected-node detail, action-board metrics, workflow columns, action cards, selected-action detail, evidence and audit timeline.
+- Wired the existing catch-all route to render the Phase 10 screen component for page IDs 031-032 while preserving earlier Phase 07, Phase 08 and Phase 09 implementations.
+- Implemented side-drawer compositions for the wealth-map selected node and the action-board selected action.
+- Added default and non-default states for the phase: selected drawer, restricted nodes, conflict escalation, blocked missing evidence and action detail with incomplete evidence.
+- Added a Phase 10 route smoke script covering both implemented routes.
+- Preserved the planned security boundary: no real authentication, production permission enforcement, graph persistence, action persistence or evidence mutation was implemented.
+- Preserved the product rule: the action board exposes blocked missing-evidence states and keeps client release gated until advisor, compliance, evidence and permission gates pass.
+- Updated README guidance for the Phase 10 routes and smoke command.
+
+### Changed Files
+
+- `README.md`
+- `app/[...segments]/page.tsx`
+- `components/wealth-actions-screen.tsx`
+- `lib/wealth-actions-demo-data.ts`
+- `package.json`
+- `scripts/smoke-phase-10.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed after removing unused icon imports.
+- `pnpm smoke:phase10` - passed; both Phase 10 routes returned HTTP 200 and included their expected headings.
+- `pnpm build` - passed.
+- `pnpm phase:check` - passed; TypeScript, ESLint, Prisma validation and production build completed successfully.
+- In-app browser route verification - passed for both Phase 10 routes at 1440px desktop and 390px mobile widths with no Next.js error page, no visible reference metadata and no horizontal overflow.
+
+### Known Gaps
+
+- Real authentication remains intentionally deferred.
+- Phase 10 graph edits, filter changes, selected-node actions, action-card moves, evidence uploads and due-date changes are non-persisting demo UI surfaces.
+- The Phase 04 permission engine is still intentionally permissive until the planned security phase.
+- Repository-backed graph data, action workflow transitions, evidence mutation and audit persistence belong to later workflow lifecycle and data/service phases.
+- Formal unit and Playwright test suites remain deferred to Phase 15.
+
+### Next Phase Recommendation
+
+Proceed to Phase 11: Internal Workflow and Compliance Pages.
+
+## Phase 11 - Internal Workflow and Compliance Pages
+
+Date: 2026-06-15
+
+### Completed Tasks
+
+- Read the required Phase 11 source-of-truth files, including `AGENTS.md` first.
+- Also read Phase 11-relevant implementation references: `docs/v3/PAGEFLOW_USERFLOW_MAPPING_V3.md`, `docs/v3/DATA_MODEL_V3.md`, `docs/v3/WORKFLOW_DEFINITIONS_V3.md` and the page specifications for pages 033-040.
+- Inspected all Phase 11 visual references before coding: `PAGE-033-signals.png` through `PAGE-040-compliance-id-release.png`.
+- Implemented dedicated UI for `/signals`, `/workbench`, `/workbench/triggers/demo`, `/advisor-approval`, `/advisor-approval/demo`, `/compliance`, `/compliance/demo/review` and `/compliance/demo/release`.
+- Added centralized demo data for signal review, consultant workbench queues, trigger detail, advisor approval queues/details, compliance queues/details, evidence checks, policy checks and release confirmation.
+- Wired the existing catch-all route to render the Phase 11 screen component for page IDs 033-040 while preserving earlier Phase 07, Phase 08, Phase 09 and Phase 10 implementations.
+- Implemented the internal workflow shell with demo tenant and role switchers, internal navigation and visible no-unapproved-advice guardrails.
+- Implemented default and non-default states for the phase: low-confidence signals, missing data, restricted related entity access, workbench drawer, advisor approval pending state, compliance exceptions, blocked release gates and the release-to-client modal confirmation state.
+- Added a Phase 11 route smoke script covering all eight implemented routes.
+- Normalized visible demo document and audit names so reference filenames and file extensions do not appear in the UI.
+- Tightened long-value wrapping after browser QA found mobile overflow on the compliance review page.
+- Preserved the planned security boundary: no real authentication, production permission enforcement, advisor decision persistence, compliance decision persistence, workflow persistence or release mutation was implemented.
+- Preserved the product rule: advisor approval remains separate from compliance release, and client visibility remains blocked until compliance, evidence and release gates pass.
+- Updated README guidance for the Phase 11 routes and smoke command.
+
+### Changed Files
+
+- `README.md`
+- `app/[...segments]/page.tsx`
+- `components/internal-workflow-screen.tsx`
+- `lib/internal-workflow-demo-data.ts`
+- `package.json`
+- `scripts/smoke-phase-11.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm build` - passed; Next.js prerendered `/`, `/_not-found` and all 63 registered catch-all paths.
+- `pnpm smoke:phase11` - passed; all eight Phase 11 routes returned HTTP 200 and included their expected headings.
+- `pnpm phase:check` - passed; TypeScript, ESLint, Prisma validation and production build completed successfully.
+- Local dev server: `pnpm dev --hostname 127.0.0.1 --port 3000`.
+- In-app browser route verification - passed for all eight Phase 11 routes at 1440px desktop and 390px mobile widths with no Next.js error page, no visible reference metadata, no visible file extensions and no horizontal overflow.
+- In-app browser release-state verification - passed; `/compliance/demo/release` renders the release-to-client modal state.
+
+### Known Gaps
+
+- Real authentication remains intentionally deferred.
+- Phase 11 signal routing, trigger assignment, analyst notes, advisor approvals, compliance decisions, evidence requests and release confirmations are non-persisting demo UI surfaces.
+- The Phase 04 permission engine is still intentionally permissive until the planned security phase.
+- Repository-backed workflow transitions, advisor approvals, compliance release decisions, evidence mutation and audit persistence belong to later workflow lifecycle and data/service phases.
+- Formal unit and Playwright test suites remain deferred to Phase 15.
+
+### Next Phase Recommendation
+
+Proceed to Phase 12: Decisions, Evidence and Governance Pages.
+
+## Phase 12 - Decisions, Evidence and Governance Pages
+
+Date: 2026-06-15
+
+### Completed Tasks
+
+- Read the required Phase 12 source-of-truth files, including `AGENTS.md` first.
+- Also read Phase 12-relevant implementation references: `docs/v3/PAGEFLOW_USERFLOW_MAPPING_V3.md`, `docs/v3/DATA_MODEL_V3.md`, `docs/v3/WORKFLOW_DEFINITIONS_V3.md` and the page specifications for pages 041-050.
+- Inspected all Phase 12 visual references before coding: `PAGE-041-compliance-id-block.png` through `PAGE-050-governance-access-requests.png`.
+- Implemented dedicated UI for `/compliance/demo/block`, `/compliance/demo/audit`, `/decisions`, `/decisions/demo`, `/decisions/demo/success`, `/evidence`, `/evidence/demo`, `/governance/users`, `/governance/roles` and `/governance/access-requests`.
+- Added centralized demo data for compliance block/request evidence, compliance audit exceptions, decision lists, decision room options, decision success evidence, evidence vault/detail, governance users, roles and access requests.
+- Wired the existing catch-all route to render the Phase 12 screen component for page IDs 041-050 while preserving earlier Phase 07 through Phase 11 implementations.
+- Implemented required modal/drawer states: block/request-evidence modal, evidence preview drawer, invite-user drawer, role-permission drawer, sensitive-permission second-confirmation modal and access-request approval drawer.
+- Implemented required default and non-default states for the phase: blocked release, request evidence, open/resolved exceptions, decision restricted/loading/empty states, decision submitted success, evidence restricted visibility, pending/revoked/blocked users, sensitive role changes and pending/approved/denied/escalated access requests.
+- Added a Phase 12 route smoke script covering all ten implemented routes.
+- Preserved the planned security boundary: no real authentication, production permission enforcement, decision persistence, evidence persistence, governance persistence or access approval mutation was implemented.
+- Preserved the product rule: decision and compliance pages keep release/visibility guardrails visible, including the mobile Decision Room where the sidebar is hidden.
+- Updated README guidance for the Phase 12 routes and smoke command.
+
+### Changed Files
+
+- `README.md`
+- `app/[...segments]/page.tsx`
+- `components/decisions-governance-screen.tsx`
+- `lib/decisions-governance-demo-data.ts`
+- `package.json`
+- `scripts/smoke-phase-12.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed after tightening audit timeline demo result types.
+- `pnpm lint` - passed after removing unused icon imports.
+- `pnpm build` - passed; Next.js prerendered `/`, `/_not-found` and all 63 registered catch-all paths.
+- `pnpm smoke:phase12` - passed; all ten Phase 12 routes returned HTTP 200 and included their expected headings.
+- `pnpm phase:check` - passed; TypeScript, ESLint, Prisma validation and production build completed successfully.
+- Local dev server: `pnpm dev --hostname 127.0.0.1 --port 3000`.
+- In-app browser route verification - passed for all ten Phase 12 routes at 1440px desktop and 390px mobile widths with no Next.js error page, no visible reference metadata, no visible file extensions and no horizontal overflow.
+- In-app browser state verification - passed for the Phase 12 modal/drawer states and the visible no-unapproved-advice guard on compliance block and digital decision room.
+
+### Known Gaps
+
+- Real authentication remains intentionally deferred.
+- Phase 12 compliance blocks, evidence requests, decision actions, evidence downloads/shares, user invitations, role changes and access-request approvals are non-persisting demo UI surfaces.
+- The Phase 04 permission engine is still intentionally permissive until the planned security phase.
+- Repository-backed decision transitions, evidence packages, access requests, second confirmations and audit persistence belong to later workflow lifecycle and data/service phases.
+- Formal unit and Playwright test suites remain deferred to Phase 15.
+
+### Next Phase Recommendation
+
+Proceed to Phase 13: Communication, Export, Ops and Reference Pages.
+
+## Phase 13 - Communication, Export, Ops and Reference Pages
+
+Date: 2026-06-15
+
+### Completed Tasks
+
+- Read the required Phase 13 source-of-truth files, including `AGENTS.md` first.
+- Also read Phase 13-relevant implementation references: `docs/v3/PAGEFLOW_USERFLOW_MAPPING_V3.md`, `docs/v3/DATA_MODEL_V3.md`, `docs/v3/WORKFLOW_DEFINITIONS_V3.md` and the page specifications for pages 051-063.
+- Inspected all Phase 13 visual references before coding: `PAGE-051-governance-audit-history.png` through `PAGE-063-states.png`.
+- Implemented dedicated UI for `/governance/audit-history`, `/communication`, `/communication/call-trigger`, `/export/new`, `/export/demo/scope`, `/export/demo/redaction`, `/export/demo/preview`, `/export/demo/download`, `/ops/queues`, `/ops/sla`, `/service-blueprint`, `/roadmap` and `/states`.
+- Added centralized demo data for access audit history, communication routing, call-trigger rules, export setup/scope/redaction/preview/download, ops queues, SLA breaches, service blueprint, roadmap dependencies and state reference catalogue.
+- Wired the existing catch-all route to render the Phase 13 screen component for page IDs 051-063 while preserving earlier Phase 07 through Phase 12 implementations.
+- Implemented required drawer, modal, preview and wizard states: audit event detail drawer, communication preview/release gate, export permission block, redaction preview, export approval modal, download/share confirmation modal, overload/error queue states and reference-only internal pages.
+- Implemented required default and non-default states for the phase: audit empty/loading/error states, communication decision-tree/call-trigger/preview/evidence-log states, export permission-blocked/invalid-scope/redaction-pending/approval-required/generated/downloaded states, ops overload/error/SLA breached states and roadmap blocked-feature/dependency states.
+- Added a compact table variant to the shared `DataTable` so narrow panels can keep internal table density without creating horizontal page overflow.
+- Added a Phase 13 route smoke script covering all thirteen implemented routes.
+- Preserved the planned security boundary: no real authentication, production permission enforcement, communication delivery, export generation, file download, share-link creation, queue reassignment, SLA escalation persistence or reference-data mutation was implemented.
+- Preserved the product rule: communication, export and roadmap pages keep visible no-unapproved-advice or approval/redaction gates where advice-like or client-visible actions are involved.
+- Updated README guidance for the Phase 13 routes and smoke command.
+
+### Changed Files
+
+- `README.md`
+- `app/[...segments]/page.tsx`
+- `app/globals.css`
+- `components/communication-export-ops-screen.tsx`
+- `components/ui/data-table.tsx`
+- `lib/communication-export-ops-demo-data.ts`
+- `package.json`
+- `scripts/smoke-phase-13.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed after removing unused icon imports.
+- `pnpm build` - passed; Next.js prerendered `/`, `/_not-found` and all 63 registered catch-all paths.
+- `pnpm smoke:phase13` - passed; all thirteen Phase 13 routes returned HTTP 200 and included their expected headings.
+- In-app browser route verification - passed for all thirteen Phase 13 routes at 1440px desktop and 390px mobile widths with no visible reference metadata, no visible file extensions, required modal/drawer/preview states present and no horizontal overflow after compact table/layout corrections.
+- `pnpm phase:check` - passed; TypeScript, ESLint, Prisma validation and production build completed successfully.
+- Local dev server: `pnpm dev --hostname 127.0.0.1 --port 3000`.
+
+### Known Gaps
+
+- Real authentication remains intentionally deferred.
+- Phase 13 communication sends, call scheduling, export creation, redaction approval, file download, share-link creation, queue reassignment, SLA escalation and roadmap/reference updates are non-persisting demo UI surfaces.
+- The Phase 04 permission engine is still intentionally permissive until the planned security phase.
+- Repository-backed communication logs, export packages, share tokens, ops queue updates, SLA events, audit persistence and reference-data governance belong to later workflow lifecycle, data/service and security phases.
+- Formal unit and Playwright test suites remain deferred to Phase 15.
+
+### Next Phase Recommendation
+
+Proceed to Phase 14: Workflow Lifecycle Integration.
+
+## AV-VISUAL-001 Through AV-VISUAL-010 - Pixel Accuracy Implementation Pass
+
+Date: 2026-06-15
+
+### Completed Tasks
+
+- Implemented shared surface/background classes and layout constants for app, auth, client, wealth, internal, ops and mobile surfaces.
+- Removed the visible Phase 05 implementation/status card from the main app shell and replaced it with product-safe system status UI.
+- Normalized sidebar width, topbar height, page width and shell grid usage across the major screen families.
+- Added `lib/visual-contract.ts` and catch-all route support for deterministic `?state=` reference states.
+- Improved the admin critical-change modal to match the reference state more closely.
+- Kept `/mobile` content-only while widening its desktop reference region and preserving mobile behavior.
+- Reworked the wealth-map graph grid, node sizing and node coordinates; DOM overlap check now reports zero node overlaps.
+- Normalized internal/compliance/decision modal surfaces through the shared modal/backdrop contract.
+- Removed oversized export/ops sidebar policy chrome and kept the policy guard in page content where it belongs.
+- Added `scripts/visual-qa-contract.ts` and `pnpm visual:contract` to guard all 63 routes/assets and forbidden visual chrome terms.
+- Added implementation evidence docs: `docs/v3/DESIGN_IMPLEMENTATION_GAP_ANALYSIS_V3.md` and `docs/v3/PIXEL_ACCURACY_TASKS_V3_V2.md`.
+
+### Changed Files
+
+- `app/[...segments]/page.tsx`
+- `app/globals.css`
+- `app/page.tsx`
+- `components/admin-tenant-setup-screen.tsx`
+- `components/app-shell.tsx`
+- `components/auth-onboarding-screen.tsx`
+- `components/client-intake-screen.tsx`
+- `components/communication-export-ops-screen.tsx`
+- `components/decisions-governance-screen.tsx`
+- `components/internal-workflow-screen.tsx`
+- `components/page-header.tsx`
+- `components/sidebar.tsx`
+- `components/top-bar.tsx`
+- `components/ui/modal.tsx`
+- `components/wealth-actions-screen.tsx`
+- `lib/visual-contract.ts`
+- `lib/wealth-actions-demo-data.ts`
+- `package.json`
+- `scripts/visual-qa-contract.ts`
+- `docs/v3/DESIGN_IMPLEMENTATION_GAP_ANALYSIS_V3.md`
+- `docs/v3/PIXEL_ACCURACY_TASKS_V3_V2.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `pnpm build` - passed.
+- `pnpm visual:contract` - passed offline with 63 assets/routes checked.
+- `VISUAL_QA_BASE_URL=http://127.0.0.1:3000 pnpm visual:contract` - passed against the running app with 63 fetched routes.
+- Browser DOM verification - passed for `/admin/platform`, `/portal`, `/mobile`, `/wealth-map`, `/compliance/demo/block`, `/export/new` and `/ops/queues`; no forbidden chrome leaks, admin modal present, wealth graph overlap count 0.
+
+### Known Gaps
+
+- In-app browser screenshot capture timed out in `Page.captureScreenshot`; verification used DOM metrics, route contract checks and build/lint gates instead.
+- Full pixel-diff visual regression is not yet installed; the new contract is a lightweight guard until Playwright visual baselines are added.
+- Real authentication, persistence and production permission enforcement remain deferred.
+
+### Next Phase Recommendation
+
+Proceed with Phase 14 while keeping `pnpm visual:contract` in the phase gate.
+
+## Screencast Automation From Journey Playbook
+
+Date: 2026-06-15
+
+### Completed Tasks
+
+- Validated `docs/v3/journeys.screencast.v3.json` as the ten-journey machine-readable screencast contract.
+- Wired package scripts for one-journey capture, all-journey capture and optional MP4 rendering.
+- Hardened the runner to clean stale per-journey output folders before new runs.
+- Added all-journey summary output at `artifacts/screencasts/run-summary.json`.
+- Fixed MP4 journey-id parsing so `pnpm screencast:mp4 -- J01` resolves `J01` instead of the Node binary path.
+- Added screencast plan, runbook and QA report docs.
+- Ignored generated screencast artifacts under `artifacts/screencasts/`.
+- Installed the local Playwright Chromium browser cache needed for live verification.
+
+### Changed Files
+
+- `.gitignore`
+- `package.json`
+- `scripts/screencast/lib/runner.ts`
+- `scripts/screencast/run-all.ts`
+- `scripts/screencast/render-mp4.ts`
+- `docs/v3/SCREENCAST_AUTOMATION_PLAN_V3.md`
+- `docs/v3/SCREENCAST_RUNBOOK_V3.md`
+- `docs/v3/SCREENCAST_QA_REPORT_V3.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Existing Artifacts Validated
+
+- `docs/v3/journeys.screencast.v3.json`
+- `scripts/screencast/run-journey.ts`
+- `scripts/screencast/run-all.ts`
+- `scripts/screencast/lib/types.ts`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `pnpm visual:contract` - passed with 63 assets and 63 routes checked.
+- `pnpm screencast:journey -- J01 --dry-run` - passed.
+- `pnpm screencast:all --dry-run` - passed for all ten journeys.
+- `pnpm exec playwright install chromium` - completed to enable local browser capture.
+- `BASE_URL=http://127.0.0.1:3020 pnpm screencast:journey -- J01` - completed with warnings only for deliberate manual/static steps.
+- `pnpm screencast:mp4 -- J01` - passed and created `final.mp4`.
+
+### Runtime Evidence
+
+- Temporary dev server used: `pnpm dev --hostname 127.0.0.1 --port 3020`.
+- Server was stopped after the live J01 run.
+- Live J01 output: `artifacts/screencasts/J01/video.webm`, `final.mp4`, eight screenshots, `qa-result.json`, `metadata.json` and `transcript.md`.
+- J01 QA status: `completed_with_warnings`; errors `0`; click fallbacks `0`; missing expected text `0`; warnings `4` from intentional `manualOrStatic` steps.
+
+### Known Gaps
+
+- Live capture was run for J01 only; J02-J10 were dry-run verified.
+- Current app actions are still demo/static in several places; runner transcripts and QA JSON distinguish visible UI proof from unverified persisted workflow effects.
+- Real authentication, production audit persistence, evidence persistence, export generation and workflow state mutation remain deferred.
+
+### Next Phase Recommendation
+
+Run J02 and J03 live next because they are the highest-risk compliance/client-visibility proof paths, then reduce manual/static warnings after Phase 14 workflow lifecycle wiring.
+
+## Screencast Automation Full Live Run
+
+Date: 2026-06-15
+
+### Completed Tasks
+
+- Ran the live screencast automation for all ten journeys, J01-J10.
+- Hardened click execution so off-screen or modal-covered click targets become explicit QA warnings instead of aborting a journey.
+- Re-ran the full batch after hardening and confirmed all journeys completed with warnings and no errors.
+- Converted all ten WebM recordings to MP4 with `ffmpeg`.
+- Stopped the temporary dev server after the run.
+
+### Changed Files
+
+- `scripts/screencast/lib/runner.ts`
+- `docs/v3/SCREENCAST_QA_REPORT_V3.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Commands Run
+
+- `pnpm typecheck`
+- `pnpm lint`
+- `pnpm dev --hostname 127.0.0.1 --port 3020`
+- `BASE_URL=http://127.0.0.1:3020 pnpm screencast:all`
+- `pnpm screencast:mp4`
+
+### Runtime Evidence
+
+- `artifacts/screencasts/run-summary.json`
+- `artifacts/screencasts/J01/` through `artifacts/screencasts/J10/`
+- 10 WebM videos.
+- 10 MP4 videos.
+- 73 screenshots.
+- 10 `qa-result.json` files.
+- 10 transcripts.
+
+### Results
+
+- All ten journeys completed with warnings.
+- QA errors: 0.
+- Missing expected visible text: 0.
+- Click fallbacks: 11.
+- Manual/static step warnings: 25.
+- Total warnings: 38.
+
+### Known Gaps
+
+- Warnings remain expected until more demo controls become stateful click paths.
+- Some current UI controls are visually present but covered by modal state or outside the active viewport when the runner attempts a click.
+- Some playbook targets are not current accessible names, for example `New Tenant`, `Edit` and `Family Map`.
+
+### Next Phase Recommendation
+
+Use the warning list as the Phase 14 selector/statefulness backlog: replace route-only/manual steps with real stateful click paths where product logic is implemented.
+
+## PPWR-Adapted Screencast Automation With English Captions
+
+Date: 2026-06-15
+
+### Completed Tasks
+
+- Scanned the PPWR readiness project screencast implementation and transferred the relevant pattern into AlphaVest: per-step captions, structured targets, visible cursor, run-root evidence, SRT output, captioned MP4 output, traces and storyboards.
+- Reworked the screencast runner to generate `captions.srt`, render `journey.mp4` with burned-in English captions when ffmpeg supports subtitles, and fail the journey if captions are unavailable.
+- Replaced the cursor overlay with a visible gold mouse-pointer arrow plus click halo so demo recordings show where the user action is happening.
+- Upgraded all J01-J10 journey steps with stable IDs, titles, English captions and structured or null targets.
+- Ran J01-J10 live through Playwright against the local app and produced captioned MP4s for every journey.
+- Extracted a J01 proof frame from the final full run to verify both the English caption and the visible mouse pointer.
+
+### Changed Files
+
+- `package.json`
+- `docs/v3/journeys.screencast.v3.json`
+- `scripts/screencast/lib/types.ts`
+- `scripts/screencast/lib/runner.ts`
+- `scripts/screencast/run-journey.ts`
+- `scripts/screencast/run-all.ts`
+- `scripts/screencast/render-mp4.ts`
+- `docs/v3/SCREENCAST_AUTOMATION_PLAN_V3.md`
+- `docs/v3/SCREENCAST_RUNBOOK_V3.md`
+- `docs/v3/SCREENCAST_QA_REPORT_V3.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Commands Run
+
+- `pnpm typecheck`
+- `pnpm lint`
+- `pnpm build`
+- `pnpm visual:contract`
+- `pnpm screencast:dry-run -- all`
+- `pnpm dev --hostname 127.0.0.1 --port 3020`
+- `BASE_URL=http://127.0.0.1:3020 SCREENCAST_HEADLESS=false pnpm screencast:journey -- J01 --speed=human-demo --date=2026-06-15-j01-english-caption-cursor-proof`
+- `BASE_URL=http://127.0.0.1:3020 SCREENCAST_HEADLESS=false pnpm screencast:journey -- J01 --speed=qa-fast --date=2026-06-15-j01-english-arrow-cursor-proof`
+- `BASE_URL=http://127.0.0.1:3020 SCREENCAST_HEADLESS=false pnpm screencast:all -- --speed=qa-fast --date=2026-06-15-j01-j10-english-caption-cursor`
+- `ffmpeg -ss 00:00:06 -i artifacts/screencasts/runs/2026-06-15-j01-j10-english-caption-cursor/J01/journey.mp4 -frames:v 1 artifacts/screencasts/runs/2026-06-15-j01-j10-english-caption-cursor/J01/proof-frame-cursor.png`
+
+### Runtime Evidence
+
+- Final run root: `artifacts/screencasts/runs/2026-06-15-j01-j10-english-caption-cursor`.
+- J01-J10 each include `raw-video.webm`, `journey.mp4`, `captions.srt`, `run-log.json`, `qa-result.json`, `storyboard.md`, `transcript.md`, `manifest.resolved.json`, `metadata.json` and `trace.zip`.
+- Cursor and caption proof frame: `artifacts/screencasts/runs/2026-06-15-j01-j10-english-caption-cursor/J01/proof-frame-cursor.png`.
+
+### Results
+
+- Journeys captured: 10.
+- Steps captured: 73.
+- Caption mode: 10 burned-in MP4s.
+- QA errors: 0.
+- Total warnings: 38, retained as transparent static/manual and selector-fallback notes.
+
+### Known Gaps
+
+- The videos prove demo walkthrough behavior, English captions and cursor visibility; they do not prove production persistence for evidence, audit, release, export or workflow state.
+- All journeys are still `completed_with_warnings` because some flows remain static demo paths or route-driven steps.
+- The warning list remains the next statefulness and selector-hardening backlog.
+
+## Stateful Screencast Provisioning Foundation
+
+Date: 2026-06-15
+
+### Completed Tasks
+
+- Created the execution prompt `prompts/STATEFUL_SCREENCAST_PROVISIONING_ENGINE_MIX.md`.
+- Executed the prompt's foundation slice: journey fixtures, database provisioning command, runner provisioning hook, typed step interactions and journey metadata.
+- Added per-journey fixture IDs and provisioning contracts for J01-J10.
+- Added `interaction`, `navigation` and `dataRefs` to all 73 screencast steps.
+- Added `pnpm screencast:seed-journey` and runner `--provision-only` / `--skip-provisioning` support.
+- Started local Postgres, confirmed migrations are in sync, ran deterministic demo seed and validated J01 fixture records against the database.
+
+### Changed Files
+
+- `prompts/STATEFUL_SCREENCAST_PROVISIONING_ENGINE_MIX.md`
+- `package.json`
+- `docs/v3/journeys.screencast.v3.json`
+- `scripts/screencast/lib/types.ts`
+- `scripts/screencast/lib/runner.ts`
+- `scripts/screencast/lib/journey-fixtures.ts`
+- `scripts/screencast/seed-journey.ts`
+- `docs/v3/SCREENCAST_RUNBOOK_V3.md`
+- `docs/v3/SCREENCAST_QA_REPORT_V3.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Commands Run
+
+- `pnpm typecheck`
+- `pnpm lint`
+- `pnpm build`
+- `pnpm db:validate`
+- `pnpm visual:contract`
+- `pnpm screencast:dry-run -- all`
+- `pnpm screencast:seed-journey -- J01 --dry-run`
+- `docker compose up -d postgres`
+- `pnpm db:migrate --name stateful-screencast-fixture-proof`
+- `pnpm db:seed`
+- `pnpm screencast:seed-journey -- J01 --no-reset --output=artifacts/screencasts/provisioning-proof-J01.json`
+- `pnpm screencast:journey -- J01 --provision-only --date=2026-06-15-j01-provisioning-contract-proof`
+- `docker compose stop postgres`
+
+### Runtime Evidence
+
+- `artifacts/screencasts/provisioning-proof-J01.json`
+- `artifacts/screencasts/runs/2026-06-15-j01-provisioning-contract-proof/J01/provisioning.json`
+
+### Results
+
+- J01-J10 journey provisioning contract present: 10/10.
+- Step interaction metadata present: 73/73.
+- Step data references present: 73/73.
+- J01 database fixture validation: 19 refs checked, 0 missing.
+- Runner-level provision-only proof: `status: passed`, `resetExecuted: true`.
+
+### Known Gaps
+
+- The foundation now seeds and validates journey data before live capture, but the app UI still needs the next stateful pass to replace every route-hop with `navigation: "continue"` real click-through flows.
+- Existing static/no-op controls need server actions, demo-scoped route transitions or API handlers before they can prove persisted workflow mutations.
+- Real authentication remains intentionally deferred.
+
+## Stateful J01 Clickthrough And Cursor Continuity
+
+Date: 2026-06-16
+
+### Completed Tasks
+
+- Implemented the prompt sections 3-6 for the first full proof path, J01.
+- Added a demo-scoped `/api/demo-workflow` endpoint for J01 request-data, route-to-advisor, advisor approval and escalation actions.
+- Wired J01 internal UI buttons to real route transitions and demo database mutations.
+- Rewrote J01 journey steps so real click results are verified by `navigation: "continue"` where possible.
+- Extended runner QA output with generic interaction attempted/succeeded/failed/fallback fields.
+- Fixed the visible screencast cursor so it preserves its last position across steps and route changes instead of resetting to the top-left corner.
+
+### Changed Files
+
+- `app/api/demo-workflow/route.ts`
+- `components/internal-workflow-screen.tsx`
+- `docs/v3/journeys.screencast.v3.json`
+- `scripts/screencast/lib/runner.ts`
+- `scripts/screencast/lib/types.ts`
+- `docs/v3/SCREENCAST_RUNBOOK_V3.md`
+- `docs/v3/SCREENCAST_AUTOMATION_PLAN_V3.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `docs/v3/SCREENCAST_QA_REPORT_V3.md`
+
+### Commands Run
+
+- `pnpm typecheck`
+- `pnpm lint`
+- `pnpm build`
+- `pnpm db:validate`
+- `pnpm visual:contract`
+- `pnpm screencast:dry-run -- all`
+- `pnpm screencast:seed-journey -- J01 --dry-run`
+- `docker compose up -d postgres`
+- `pnpm db:seed`
+- `pnpm screencast:seed-journey -- J01 --output=artifacts/screencasts/j01-stateful-clickthrough-seed-proof.json`
+- `pnpm dev --hostname 127.0.0.1 --port 3020`
+- `BASE_URL=http://127.0.0.1:3020 SCREENCAST_HEADLESS=false pnpm screencast:journey -- J01 --speed=qa-fast --date=2026-06-15-j01-stateful-clickthrough-proof`
+- `BASE_URL=http://127.0.0.1:3020 SCREENCAST_HEADLESS=false pnpm screencast:journey -- J01 --speed=qa-fast --date=2026-06-15-j01-stateful-clickthrough-cursor-continuity-proof`
+
+### Runtime Evidence
+
+- `artifacts/screencasts/j01-stateful-clickthrough-seed-proof.json`
+- `artifacts/screencasts/runs/2026-06-15-j01-stateful-clickthrough-cursor-continuity-proof/J01/provisioning.json`
+- `artifacts/screencasts/runs/2026-06-15-j01-stateful-clickthrough-cursor-continuity-proof/J01/run-log.json`
+- `artifacts/screencasts/runs/2026-06-15-j01-stateful-clickthrough-cursor-continuity-proof/J01/journey.mp4`
+- `artifacts/screencasts/runs/2026-06-15-j01-stateful-clickthrough-cursor-continuity-proof/J01/proof-frame-cursor-start.png`
+- `artifacts/screencasts/runs/2026-06-15-j01-stateful-clickthrough-cursor-continuity-proof/J01/proof-frame-request-click.png`
+
+### Results
+
+- J01 live status: `passed`.
+- J01 provisioning status: `passed`.
+- J01 required click interactions: 4 attempted, 4 succeeded, 0 fallback.
+- J01 warnings: 0.
+- J01 errors: 0.
+- Caption mode: `burned-in`.
+
+### Known Gaps
+
+- J02-J10 still need the same stateful UI pass before they can move from route-driven demos to clean passed clickthrough journeys.
+- J01 demo actions are intentionally demo-scoped and do not introduce real authentication or production workflow authorization.
+
+## Project Definition Workflow Gap Analysis
+
+Date: 2026-06-16
+
+### Completed Tasks
+
+- Executed `prompts/PROJECT_DEFINITION_WORKFLOW_GAP_ANALYSIS_ENGINE_MIX.md` as an analysis-only mixed-engine scan.
+- Read the mandatory project definition files and scanned optional workflow, journey, screencast, visual, report and prompt sources.
+- Inspected implementation reality across catch-all routing, route registry, grouped screen components, demo session, demo workflow API, permission/visibility/workflow/evidence/audit/export helpers, Prisma schema, seed data and screencast runner/fixtures.
+- Classified every planned workflow W-01 through W-14 against current capability levels.
+- Distinguished route/asset coverage from actual click-through, persistence and governed workflow execution.
+- Identified J01 as the only narrow persisted demo workflow proof and J02-J10 as route-heavy/statefulness backlog.
+- Produced detailed input-mask requirements, field requirements, data-model reconciliation, backlog and machine-readable JSON.
+- Did not change product code, UI components, schema, seed data, workflow actions or tests.
+
+### Changed Files
+
+- `docs/v3/WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md`
+- `docs/v3/INPUT_MASK_REQUIREMENTS_V3.md`
+- `docs/v3/DATA_MODEL_IMPLEMENTATION_RECONCILIATION_V3.md`
+- `docs/v3/IMPLEMENTATION_GAP_BACKLOG_V3.md`
+- `docs/v3/PROJECT_DEFINITION_SCAN_EVIDENCE_V3.md`
+- `docs/v3/gap-analysis.v3.json`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Commands Run
+
+- `git status --short`
+- `rg --files docs/v3 prompts app components lib prisma scripts public/reference/page_ui_v3/clean_pages`
+- `rg -n ...` scans across docs, app, components, lib, prisma, scripts and prompts
+- `find public/reference/page_ui_v3/clean_pages -maxdepth 1 -type f -name 'PAGE-*.png' | wc -l`
+- Node JSON parse for `docs/v3/VISUAL_ASSET_MANIFEST_V3.json`
+- Node JSON parse for `docs/v3/journeys.screencast.v3.json`
+- Node JSON parse for `docs/v3/gap-analysis.v3.json`
+- `pnpm typecheck`
+- `pnpm lint`
+- `pnpm db:validate`
+- `pnpm visual:contract`
+- `pnpm build`
+
+### Results
+
+- `docs/v3/gap-analysis.v3.json` parsed successfully.
+- `pnpm typecheck` passed.
+- `pnpm lint` passed with two existing warnings in `app/api/demo-workflow/route.ts` for unused fixture IDs.
+- `pnpm db:validate` passed.
+- `pnpm visual:contract` passed with 63 assets, 63 routes and 0 failures.
+- `pnpm build` passed and generated 66 static pages.
+
+### Known Gaps
+
+- The analysis confirms most planned workflows are not yet governed executable workflows.
+- J01 selected signal/advisor actions are demo-persisted; J02-J10 still need stateful workflow implementation.
+- The next safest implementation slice is a shared demo mutation wrapper plus J02 compliance release/block transaction, because that path protects the strongest no-unapproved-advice rule.
+
+## Stateful J01-J10 Screencast Completion
+
+Date: 2026-06-16
+
+### Completed Tasks
+
+- Extended the stateful screencast pattern from J01 to all J01-J10 journeys.
+- Wired the remaining journey CTAs to demo-scoped workflow actions, route transitions and generic audit/proof events where domain actions are still demo-level.
+- Replaced brittle text/modal targets with stable `data-testid` targets and current visible assertions.
+- Hardened click execution to use the real mouse pointer on the target bounding box after visibility, scroll and enabled checks.
+- Preserved cursor continuity across route changes and generated English burned-in captions for every journey.
+- Ran a final full J01-J10 screencast batch with all journeys passing and zero warnings.
+
+### Changed Files
+
+- `app/api/demo-workflow/route.ts`
+- `lib/screencast-demo-client.ts`
+- `components/admin-tenant-setup-screen.tsx`
+- `components/client-intake-screen.tsx`
+- `components/communication-export-ops-screen.tsx`
+- `components/decisions-governance-screen.tsx`
+- `components/internal-workflow-screen.tsx`
+- `components/wealth-actions-screen.tsx`
+- `docs/v3/journeys.screencast.v3.json`
+- `scripts/screencast/lib/runner.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `docs/v3/SCREENCAST_QA_REPORT_V3.md`
+
+### Commands Run
+
+- `docker compose up -d postgres`
+- `pnpm dev --hostname 127.0.0.1 --port 3000`
+- `pnpm screencast:journey -- J05 --speed=qa-fast --date=2026-06-16-j05-warning-free-proof`
+- `pnpm screencast:journey -- J06 --speed=qa-fast --date=2026-06-16-j06-warning-free-proof`
+- `pnpm screencast:journey -- J07 --speed=qa-fast --date=2026-06-16-j07-fixed-proof-2`
+- `pnpm screencast:journey -- J08 --speed=qa-fast --date=2026-06-16-j08-fixed-proof`
+- `pnpm screencast:journey -- J10 --speed=qa-fast --date=2026-06-16-j10-fixed-proof-3`
+- `pnpm typecheck`
+- `node -e "const { loadDefinitions } = require('./scripts/screencast/lib/runner.ts'); ..."`
+- `pnpm screencast:all -- --speed=qa-fast --date=2026-06-16-j01-j10-stateful-clicks-final`
+
+### Runtime Evidence
+
+- `artifacts/screencasts/runs/2026-06-16-j01-j10-stateful-clicks-final/index.json`
+- `artifacts/screencasts/runs/2026-06-16-j01-j10-stateful-clicks-final/index.md`
+- `artifacts/screencasts/runs/2026-06-16-j01-j10-stateful-clicks-final/J01/journey.mp4` through `J10/journey.mp4`
+- `artifacts/screencasts/runs/2026-06-16-j01-j10-stateful-clicks-final/J01/captions.srt` through `J10/captions.srt`
+- `artifacts/screencasts/runs/2026-06-16-j01-j10-stateful-clicks-final/J01/qa-result.json` through `J10/qa-result.json`
+
+### Results
+
+- Final live journeys checked: 10.
+- Final live steps checked: 73.
+- J01-J10 final status: `passed`.
+- Warnings: 0.
+- Errors: 0.
+- Caption mode: `burned-in` for all journeys.
+- Definition validation: 10 journeys, 73 steps.
+
+### Known Gaps
+
+- Demo workflow actions remain demo-scoped and must not be treated as production authorization or complete governed workflow execution.
+- Real authentication remains intentionally deferred.
+- The videos prove deterministic demo-data clickthroughs, captions, pointer continuity and QA status, not final financial/legal/tax advice.
+
+## Phase 14 Slice 1 - J02 Compliance Release/Block Transaction
+
+Date: 2026-06-16
+
+### Completed Tasks
+
+- Implemented a shared demo mutation wrapper for governed demo workflow actions.
+- Preserved the no-real-auth demo mode by using the existing permissive demo permission engine and demo session actor resolution.
+- Replaced J02 generic audit-only behavior with scoped compliance request-evidence, block-release and release-to-client mutations.
+- Enforced `workflowGate.canBecomeClientVisible()` before setting any J02 recommendation to `clientVisible = true`.
+- Wrote audit proof for each J02 release/block action, including the related evidence record.
+- Wrote evidence proof items for compliance request, compliance block and compliance release.
+- Kept J03-J10 on their existing generic demo-audit behavior; no other workflow transaction was implemented in this slice.
+
+### Changed Files
+
+- `app/api/demo-workflow/route.ts`
+- `lib/demo-workflow-mutation.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Commands Run
+
+- `pnpm typecheck`
+- `pnpm lint`
+- `pnpm db:validate`
+- `docker compose up -d postgres`
+- `pnpm db:seed`
+- Direct `tsx` route-handler proof for `j02.requestEvidence`, `j02.blockRelease` and `j02.releaseClient`
+- `pnpm screencast:seed-journey -- J02 --dry-run`
+- `pnpm visual:contract`
+- `pnpm build`
+
+### Runtime Evidence
+
+- `j02.requestEvidence`: `clientVisible = false`, audit result `PENDING`, evidence item `compliance_request`.
+- `j02.blockRelease`: Morgan recommendation status `BLOCKED`, `clientVisible = false`, audit result `BLOCKED`, evidence item `compliance_block`.
+- `j02.releaseClient`: Summit recommendation status `RELEASED_TO_CLIENT`, `clientVisible = true`, `gatePassed = true`, `gateMissing = []`, audit result `SUCCESS`, evidence item `compliance_release`.
+- Morgan evidence record ended `RESTRICTED` and `COMPLIANCE_VISIBLE`.
+- Summit evidence record ended `RELEASED` and `CLIENT_VISIBLE`.
+
+### Known Gaps
+
+- The wrapper is still demo-scoped and intentionally permissive until real authentication and role enforcement are introduced in later phases.
+- J02 request/block/release now has governed demo persistence; J03-J10 still need dedicated domain transactions beyond generic audit events.
+- The release path uses the Summit fixture because it has advisor approval plus validated evidence; Morgan remains the missing-evidence/block fixture.
+
+## Phase 14 Slice 2 - J03 Client Decision and Evidence Package
+
+Date: 2026-06-16
+
+### Completed Tasks
+
+- Replaced J03 generic audit-only behavior with scoped client decision transactions.
+- Added persisted J03 actions for request-more-information, defer, reject and accept.
+- Guarded J03 decision actions so they only run against already released, client-visible decision content.
+- Updated the decision, principal participant, recommendation post-client status and evidence record in one transaction.
+- Created decision evidence items for request-more-information, defer, reject and accept actions.
+- Added audited evidence view/download actions for the released decision evidence package.
+- Wired the previously static Defer and Reject buttons to demo workflow actions.
+- Preserved demo/no-real-auth mode through the existing demo session and permission engine.
+
+### Changed Files
+
+- `app/api/demo-workflow/route.ts`
+- `components/decisions-governance-screen.tsx`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Commands Run
+
+- `pnpm typecheck`
+- `docker compose up -d postgres`
+- `pnpm db:seed`
+- Direct `tsx` route-handler proof for `j03.requestMoreInformation`, `j03.deferDecision`, `j03.rejectDecision`, `j03.acceptOption`, `j03.viewEvidenceRecord` and `j03.downloadEvidence`
+- `pnpm lint`
+- `pnpm db:validate`
+- `pnpm visual:contract`
+- `pnpm screencast:seed-journey -- J03 --dry-run`
+- `pnpm build`
+- `pnpm dev --hostname 127.0.0.1 --port 3020`
+- `BASE_URL=http://127.0.0.1:3020 pnpm screencast:journey -- J03 --speed=qa-fast --date=2026-06-16-j03-decision-transaction-proof`
+
+### Runtime Evidence
+
+- Direct DB proof ended with Bennett decision `ACCEPTED`, `decisionAction = accept`, and linked evidence record `5141a847-18cc-5891-8a86-d00214a53ed1`.
+- Bennett recommendation ended `CLIENT_ACCEPTED` with `clientVisible = true`.
+- Bennett evidence record ended `RELEASED` and `CLIENT_VISIBLE`.
+- J03 wrote audit rows for request-more-information, defer, reject, accept, evidence view and evidence download.
+- J03 wrote evidence items for `decision_more_information`, `decision_defer`, `decision_rejection` and `decision_acceptance`.
+- Live J03 journey proof passed at `artifacts/screencasts/runs/2026-06-16-j03-decision-transaction-proof/J03/journey.mp4`.
+
+### Known Gaps
+
+- J03 transactions remain demo-scoped and permissive until Phase 16 role-aware enforcement.
+- The visible J03 screen still uses static demo copy; this slice connected action persistence but did not build dynamic DB-backed page rendering.
+- J04 document upload/extraction review is still the next P0 lifecycle gap.
+
+## Phase 14 Slice 3 - J04 Document Upload and Extraction Review
+
+Date: 2026-06-16
+
+### Completed Tasks
+
+- Replaced J04 generic audit-only behavior with scoped document lifecycle transactions.
+- Added upload-entry and view-detail audit actions for the Morgan document fixture.
+- Added demo upload metadata persistence for the Morgan 2026 tax residency certificate without introducing real binary storage.
+- Wrote or updated the related `DocumentVersion`, `DocumentExtraction`, `DocumentReview` and `DocumentLink` rows.
+- Queued analyst verification after client extraction confirmation.
+- Linked the document to the Morgan evidence record as an evidence placeholder and wrote a document extraction evidence item.
+- Preserved Phase 18 boundaries by recording storage/checksum metadata only; no object storage or real file packaging was introduced.
+
+### Changed Files
+
+- `app/api/demo-workflow/route.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Commands Run
+
+- `pnpm typecheck`
+- `pnpm db:seed`
+- Direct `tsx` route-handler proof for `j04.openUploadDocument`, `j04.uploadDocument`, `j04.confirmFinalize` and `j04.viewDetails`
+- `pnpm lint`
+- `pnpm db:validate`
+- `pnpm visual:contract`
+- `pnpm screencast:seed-journey -- J04 --dry-run`
+- `pnpm build`
+- `BASE_URL=http://127.0.0.1:3020 pnpm screencast:journey -- J04 --speed=qa-fast --date=2026-06-16-j04-document-transaction-proof`
+
+### Runtime Evidence
+
+- Morgan tax document ended `ANALYST_REVIEW_PENDING`, `clientVisible = false`, with file metadata `morgan-tax-residency-2026.pdf`.
+- Document version `1` exists with storage key `demo/morgan/tax-residency-2026.pdf` and checksum.
+- Document extraction ended `completed`, confidence `89.4`, and `isClientVisible = false`.
+- Document review ended `IN_REVIEW` with analyst verification notes.
+- Document link to Morgan evidence record exists with relationship `evidence_placeholder`.
+- Evidence item `document_extraction_review` exists with `COMPLIANCE_VISIBLE` visibility.
+- J04 audit rows exist for open upload, uploaded, extraction confirmed and view details.
+- Live J04 journey proof passed at `artifacts/screencasts/runs/2026-06-16-j04-document-transaction-proof/J04/journey.mp4`.
+
+### Known Gaps
+
+- J04 stores demo file metadata only; real upload/object storage/export packaging remains Phase 18.
+- The visible document pages still use static demo content rather than reading the updated Prisma document state.
+- Tenant onboarding writes remain the next P0 lifecycle gap.
+
+## Phase 14 Slice 4 - J06 Tenant Onboarding Writes
+
+Date: 2026-06-16
+
+### Completed Tasks
+
+- Replaced J06 generic audit-only behavior with scoped tenant onboarding transactions.
+- Added tenant-create and continue actions for the Morgan demo tenant without introducing real authentication.
+- Persisted onboarding details, jurisdiction, service model and lifecycle status.
+- Added service-team assignment for advisor, analyst, compliance and success ownership.
+- Upserted active service-team `UserRole` rows and a tenant onboarding control policy.
+- Added invitation-open and send-invitation actions for the Morgan principal.
+- Persisted the invited principal state, pending invite role and pending privacy notice consent.
+- Wrote audit events for every tenant onboarding step while preserving the demo role-switcher model.
+
+### Changed Files
+
+- `app/api/demo-workflow/route.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Commands Run
+
+- `pnpm typecheck`
+- `pnpm db:seed`
+- Direct `tsx` route-handler proof for `j06.newTenant`, `j06.continueTenant`, `j06.assignTeam`, `j06.openInvitation` and `j06.sendInvitation`
+- `pnpm lint`
+- `pnpm db:validate`
+- `pnpm visual:contract`
+- `pnpm screencast:seed-journey -- J06 --dry-run`
+- `pnpm build`
+- `BASE_URL=http://127.0.0.1:3020 pnpm screencast:journey -- J06 --speed=qa-fast --date=2026-06-16-j06-tenant-onboarding-transaction-proof`
+
+### Runtime Evidence
+
+- Morgan tenant ended `ONBOARDING`, jurisdiction `UK`, service model `Signature`, and `onboardingCompletedAt = null`.
+- Morgan tenant ownership fields are assigned for advisor, analyst, compliance and client success.
+- Service-team roles exist as active `UserRole` rows for the advisor, analyst, compliance and success actors.
+- Tenant onboarding control policy `tenant.onboarding_controls` exists with active audit, compliance-owner, principal-invitation and service-team rules.
+- Morgan principal user ended `INVITED`, `mfaEnabled = false`, and `lastLoginAt = null`.
+- Principal pending-invite role exists and privacy notice consent is pending with source `demo_invite`.
+- J06 audit rows exist for tenant create intent, details saved, team assigned, invitation opened and invitation sent.
+- Live J06 journey proof passed at `artifacts/screencasts/runs/2026-06-16-j06-tenant-onboarding-transaction-proof/J06/journey.mp4`.
+
+### Known Gaps
+
+- J06 remains a demo onboarding transaction; it does not send real invitations or use real authentication.
+- The visible onboarding pages still use static demo content rather than reading the updated Prisma tenant state.
+- Phase 16 must still enforce role-aware denial paths for tenant administration and invitation actions.
+- J08 export lifecycle and J07 governance/access-control workflows remain P0 lifecycle gaps.
+
+## Phase 14 Slice 5 - J08 Export Lifecycle
+
+Date: 2026-06-16
+
+### Completed Tasks
+
+- Replaced J08 generic audit-only behavior with scoped export lifecycle transactions.
+- Added persisted export draft creation for the Summit data-extract fixture.
+- Added object-scope persistence that excludes restricted objects before redaction.
+- Persisted the mandatory external-limited redaction profile and approval requirement.
+- Added compliance-controlled approval and generated package metadata without creating a real binary file.
+- Upserted the generated export package as document metadata with a deterministic storage key, checksum and version row.
+- Added download and secure-share actions with expiry, watermark and audit metadata.
+- Wrote evidence items for package generation, download and share-link creation.
+
+### Changed Files
+
+- `app/api/demo-workflow/route.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Commands Run
+
+- `pnpm typecheck`
+- `pnpm db:seed`
+- Direct `tsx` route-handler proof for `j08.selectDataExtract`, `j08.clearScope`, `j08.confirmApproval`, `j08.downloadExport` and `j08.shareExport`
+- `pnpm lint`
+- `pnpm db:validate`
+- `pnpm visual:contract`
+- `pnpm screencast:seed-journey -- J08 --dry-run`
+- `pnpm build`
+- `BASE_URL=http://127.0.0.1:3020 pnpm screencast:journey -- J08 --speed=qa-fast --date=2026-06-16-j08-export-transaction-proof`
+
+### Runtime Evidence
+
+- Summit export request ended `DOWNLOADED`, type `EXTERNAL_ADVISOR_DATA_ROOM`, with `approvalRequired = true`.
+- Export request has compliance approval user `185923a2-c1c3-550f-b064-f6cafd6d79e1`.
+- Generated export package document `77ffdda9-bb81-5860-a41f-2b2a1aa09cbf` is linked through `generatedFileDocumentId`.
+- Generated document metadata is client-hidden, `LINKED_TO_EVIDENCE`, and uses storage key `demo/summit/exports/EXP-2026-06-16-0087.zip`.
+- Document version `1` exists for the generated export metadata.
+- Evidence items exist for `export_package_generated`, `export_download` and `export_share_created`.
+- J08 audit rows exist for export created, scope selected, approved/generated, downloaded and share created.
+- Live J08 journey proof passed at `artifacts/screencasts/runs/2026-06-16-j08-export-transaction-proof/J08/journey.mp4`.
+
+### Known Gaps
+
+- J08 still generates metadata only; real file packaging, object storage, scanning and signed download links remain Phase 18 work.
+- The visible export pages still use static demo content rather than reading the updated Prisma export state.
+- Phase 16 must still enforce role-aware export denial paths instead of permissive demo permission results.
+- J07 governance/access-control remains the next P0 lifecycle gap.
+
+## Phase 14 Slice 6 - J07 Governance Access and Second Confirmation
+
+Date: 2026-06-16
+
+### Completed Tasks
+
+- Replaced J07 generic audit-only behavior with scoped governance/access lifecycle transactions.
+- Added invitation-open and send-invitation actions for the Northbridge governance fixture.
+- Persisted invited user `emily.roberts@example.test` with pending scoped analyst role.
+- Added a tenant-scoped custom `portfolio_manager` role for Northbridge.
+- Added sensitive role permissions and confirmed the role change through `SecondConfirmation`.
+- Approved the Northbridge external-advisor access request after policy and second-confirmation checks.
+- Persisted scoped document-level external-advisor access for the Northbridge statement document.
+- Added controlled audit export behavior that keeps audit export at `APPROVAL_REQUIRED` instead of bypassing export controls.
+- Wrote evidence items for access approval and audit export control.
+
+### Changed Files
+
+- `app/api/demo-workflow/route.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Commands Run
+
+- `pnpm typecheck`
+- `pnpm db:seed`
+- Direct `tsx` route-handler proof for `j07.inviteUser`, `j07.sendInvitation`, `j07.saveRoleChanges`, `j07.approveAccess` and `j07.exportAudit`
+- `pnpm lint`
+- `pnpm db:validate`
+- `pnpm visual:contract`
+- `pnpm screencast:seed-journey -- J07 --dry-run`
+- `pnpm build`
+- `BASE_URL=http://127.0.0.1:3020 pnpm screencast:journey -- J07 --speed=qa-fast --date=2026-06-16-j07-governance-access-transaction-proof`
+
+### Runtime Evidence
+
+- Northbridge invited user `emily.roberts@example.test` ended `INVITED`, with MFA disabled and no login.
+- Pending invite role exists for the invited user.
+- Northbridge custom role `portfolio_manager` exists with scope `TENANT` and `requiresSecondConfirmation = true`.
+- Three role-permission rows exist for the custom role.
+- Role second confirmation is `confirmed` with phrase `PORTFOLIO MANAGER`.
+- Northbridge access request ended `COMPLETED` with compliance reviewer recorded.
+- Scoped external-advisor document access grant exists for the Northbridge statement document.
+- Northbridge audit export request ended `APPROVAL_REQUIRED`, type `ACTIVITY_LOG_EXPORT`, with `approvalRequired = true`.
+- Evidence items exist for `access_request_approved` and `audit_export_controlled`.
+- J07 audit rows exist for invite opened, invitation sent, sensitive role confirmed, access approved and audit export controlled.
+- Live J07 journey proof passed at `artifacts/screencasts/runs/2026-06-16-j07-governance-access-transaction-proof/J07/journey.mp4`.
+
+### Known Gaps
+
+- J07 remains demo-permissive; Phase 16 must convert role and tenant checks into enforceable denial paths.
+- The visible governance pages still use static demo content rather than reading the updated Prisma access state.
+- The J07 JSON journey text references Bennett in places, but the executable seed fixture validates Northbridge; implementation follows the executable fixture.
+- J05 and J09 remain the next lower-priority stateful journey gaps after the P0 workflow slices.
+
+## Phase 14 Slice 7 - J05 Entity and Action Ready Gate
+
+Date: 2026-06-16
+
+### Completed Tasks
+
+- Replaced J05 generic audit-only behavior with scoped entity and action-gate transactions.
+- Added entity creation intent audit for the Summit entity fixture.
+- Persisted `Summit Ridge Philanthropy LLC` as a restricted company entity routed to legal review.
+- Added a founder participant row linked to the Summit principal family member.
+- Persisted wealth-map review state after entity edit/view.
+- Recorded conflict/status viewing without creating advice output or release.
+- Blocked `Mark Ready` when required approval evidence is missing.
+- Added `Request Info` as the non-release remediation path.
+- Wrote evidence items for entity creation, ready-block and more-info request.
+
+### Changed Files
+
+- `app/api/demo-workflow/route.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Commands Run
+
+- `pnpm typecheck`
+- `pnpm db:seed`
+- Direct `tsx` route-handler proof for `j05.createEntity`, `j05.continueEntity`, `j05.editEntity`, `j05.viewDetails`, `j05.markReady` and `j05.requestInfo`
+- `pnpm lint`
+- `pnpm db:validate`
+- `pnpm visual:contract`
+- `pnpm screencast:seed-journey -- J05 --dry-run`
+- `pnpm build`
+- `BASE_URL=http://127.0.0.1:3020 pnpm screencast:journey -- J05 --speed=qa-fast --date=2026-06-16-j05-entity-action-gate-transaction-proof`
+
+### Runtime Evidence
+
+- Summit entity `Summit Ridge Philanthropy LLC` exists as `COMPANY`, jurisdiction `Cayman Islands`, status `wealth_map_review`, data-quality score `62`.
+- Founder participant exists with `100%` ownership.
+- Summit action item `Upload current tax residency certificate` ended `AWAITING_INFO`.
+- Action evidence status stayed `PLACEHOLDER`; ready state was not created.
+- Blocked reason records that missing client approval evidence is required before readiness.
+- Evidence items exist for `entity_created_legal_review_required`, `action_ready_blocked` and `action_more_info_requested`.
+- J05 audit rows exist for entity create intent, entity created, edit viewed, conflict viewed, ready blocked and request info.
+- Live J05 journey proof passed at `artifacts/screencasts/runs/2026-06-16-j05-entity-action-gate-transaction-proof/J05/journey.mp4`.
+
+### Known Gaps
+
+- J05 still writes demo workflow state only; visible entity, wealth-map and action-board pages do not yet render from Prisma.
+- Ready-gate behavior is scoped to the Summit fixture and does not yet provide a reusable evidence completeness service.
+- Phase 16 must still enforce role-aware denial paths for entity and action workflows.
+- J09 profile/family/relationship intake remains the next P1 stateful journey gap.
+
+## Phase 14 Slice 8 - J09 Profile, Family and Relationship Intake
+
+Date: 2026-06-16
+
+### Completed Tasks
+
+- Replaced J09 generic audit-only behavior with scoped profile, family-member and relationship transactions.
+- Added profile-intake entry audit from the portal.
+- Persisted Bennett principal profile updates and submitted them for review.
+- Added `Olivia Bennett` as a Next Gen family member.
+- Persisted Olivia's family details, date of birth and South African tax residency.
+- Added a family-map view audit that keeps restricted relationships scoped.
+- Persisted a `parent_child_governance` relationship from the Bennett principal to Olivia Bennett.
+- Wrote evidence items for profile update, family member creation/update and relationship creation.
+
+### Changed Files
+
+- `app/api/demo-workflow/route.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Commands Run
+
+- `pnpm typecheck`
+- `pnpm db:seed`
+- Direct `tsx` route-handler proof for `j09.portalUpload`, `j09.submitProfile`, `j09.addMember`, `j09.saveFamilyChanges`, `j09.openFamilyMap` and `j09.addRelationship`
+- `pnpm lint`
+- `pnpm db:validate`
+- `pnpm visual:contract`
+- `pnpm screencast:seed-journey -- J09 --dry-run`
+- `pnpm build`
+- `BASE_URL=http://127.0.0.1:3020 pnpm screencast:journey -- J09 --speed=qa-fast --date=2026-06-16-j09-profile-family-relationship-transaction-proof`
+
+### Runtime Evidence
+
+- Bennett principal profile phone updated to `+27 10 555 0199`.
+- Bennett principal relationship label updated to `Principal / governance contact`.
+- Family member `Olivia Bennett` exists with relationship type `Next Gen` and tax residency `South Africa`.
+- Relationship `parent_child_governance` exists from the principal family member to Olivia Bennett with confidence `88`.
+- Evidence items exist for `profile_updated`, `family_member_created`, `family_member_updated` and `relationship_created`.
+- J09 audit rows exist for portal upload entry, profile submitted, family member created, family member updated, family map opened and relationship created.
+- Live J09 journey proof passed at `artifacts/screencasts/runs/2026-06-16-j09-profile-family-relationship-transaction-proof/J09/journey.mp4`.
+
+### Known Gaps
+
+- J09 still writes demo workflow state only; visible profile/family/relationship pages do not yet render from Prisma.
+- Relationship conflict detection is not generalized; this slice persists the planned Bennett fixture relationship only.
+- Phase 16 must still enforce role-aware denial paths for profile/family/relationship operations.
+- J01 follow-through, communication/call escalation and ops/SLA mutations remain the next P1 workflow gaps.
+
+## Phase 15 - Testing Baseline
+
+Date: 2026-06-16
+
+### Completed Tasks
+
+- Added a Playwright test baseline for the full route catalogue and stateful demo-workflow API.
+- Centralized route smoke coverage over `routeSmokeList`, checking HTTP 200 and each route's expected heading.
+- Added a workflow API regression test that seeds the database and executes the implemented J02-J09 mutation actions.
+- Added package scripts for the Playwright suite, route smoke and workflow API coverage.
+- Set the Playwright default base port to the active local demo server port so the suite reuses the existing dev server cleanly in local runs.
+- Ran the full phase gate after the Playwright baseline to prove typecheck, lint, database validation and build still pass.
+
+### Changed Files
+
+- `package.json`
+- `playwright.config.ts`
+- `tests/route-smoke.spec.ts`
+- `tests/demo-workflow-api.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Commands Run
+
+- `pnpm typecheck`
+- `pnpm test:playwright` - first run exposed a local dev-server lock caused by trying to start a second Next server on a different port.
+- `pnpm test:playwright` - passed after aligning the local Playwright default to the active server port; 64 tests passed.
+- `pnpm phase:check`
+
+### Runtime Evidence
+
+- Route smoke covered all 63 registered routes and verified each expected heading over HTTP.
+- Workflow API coverage executed the implemented J02-J09 mutation actions successfully after a deterministic seed reset.
+- The combined Playwright suite reported 64 passing tests: 63 route smoke checks plus 1 workflow API regression test.
+- `pnpm phase:check` completed successfully after adding the test baseline.
+
+### Known Gaps
+
+- The workflow API regression test proves action success, not every downstream Prisma row; direct DB proof remains documented in the Phase 14 slice reports.
+- The baseline does not yet include explicit denied-role or cross-tenant tests; Phase 16 owns those role-aware permission cases.
+- File/export binary realism and schema validation remain deferred to Phases 17 and 18.
+
+### Next Phase Recommendation
+
+Proceed to Phase 16: Role-Aware Permissions and Tenant Isolation.
+
+## Phase 16 - Role-Aware Permissions and Tenant Isolation
+
+Date: 2026-06-16
+
+### Completed Tasks
+
+- Converted the permissive Phase 04 permission stub into a role-aware demo policy engine.
+- Added hard demo denials for cross-tenant access, non-compliance recommendation release/block, non-compliance export approval, unauthorized role/policy management, unauthorized permission assignment, unauthorized tenant/user invitation, forbidden export roles and internal-only object access by limited external roles.
+- Preserved the no-real-auth demo mode while making `permission.allowed = false` meaningful for sensitive role/tenant paths.
+- Reused the existing shared demo mutation wrapper so denied mutations write `AuditResult.DENIED` and skip domain mutation callbacks.
+- Corrected J03 decision/evidence mutation wrapper context from Northbridge tenant ID to Bennett tenant ID so tenant-isolation checks match the actual decision fixture.
+- Added Playwright permission tests covering allow/deny policy decisions and denied-audit proof.
+
+### Changed Files
+
+- `app/api/demo-workflow/route.ts`
+- `lib/permission-engine.ts`
+- `package.json`
+- `tests/permission-engine.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Commands Run
+
+- `pnpm typecheck`
+- `pnpm test:permissions` - first run exposed missing test-process `.env` loading; fixed by loading `dotenv/config` in the test.
+- `pnpm test:permissions` - passed, 3 tests.
+- `pnpm test:playwright` - passed, 67 tests.
+- `pnpm visual:contract`
+- `pnpm phase:check`
+
+### Runtime Evidence
+
+- Cross-tenant Bennett-principal access to Morgan document context returns `DEMO_DENY_CROSS_TENANT`.
+- Bennett principal attempting `RELEASE` on a recommendation returns `DEMO_DENY_COMPLIANCE_RELEASE_REQUIRED`.
+- Compliance Officer release remains allowed and still requires compliance review metadata.
+- External Advisor export against an export request returns `DEMO_DENY_EXPORT_ROLE_FORBIDDEN`.
+- Next Gen access to an internal-only document returns `DEMO_DENY_INTERNAL_OBJECT_ACCESS`.
+- Shared mutation wrapper proof wrote a `DENIED` audit row for a principal release attempt and did not execute the mutation callback.
+- Existing J02-J09 workflow API actions still pass after the role-aware policy was enabled.
+
+### Known Gaps
+
+- The policy remains a deterministic demo policy, not production authentication or real identity-provider authorization.
+- Object-level grants are still simplified; Phase 17 should move repeated workflow/data checks into service/repository validation.
+- Export and file download denials do not yet inspect real binary package manifests; Phase 18 owns file/export realism.
+
+### Next Phase Recommendation
+
+Proceed to Phase 17: API/Data Quality and Validation.
+
+## Phase 17 - API/Data Quality and Validation
+
+Date: 2026-06-16
+
+### Completed Tasks
+
+- Added a typed demo-workflow request validator with structured validation issues.
+- Wired `/api/demo-workflow` to reject malformed request bodies before workflow dispatch.
+- Added a data-quality repository for open issue listing/counting by tenant and optional target.
+- Added a data-quality service that summarizes open issues and evaluates a `DATA_QUALITY_READY` gate.
+- Added API regression coverage for invalid workflow payloads.
+- Added service coverage proving open high-severity Northbridge issues block readiness while Bennett's completed issues are filtered out.
+- Added package script coverage for the data-quality service test.
+
+### Changed Files
+
+- `app/api/demo-workflow/route.ts`
+- `lib/data-quality-repository.ts`
+- `lib/data-quality-service.ts`
+- `lib/demo-workflow-validation.ts`
+- `package.json`
+- `tests/data-quality-service.spec.ts`
+- `tests/demo-workflow-api.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Commands Run
+
+- `pnpm typecheck`
+- `pnpm test:workflow-api`
+- `pnpm test:data-quality` - first parallel attempt failed because two separate test commands ran `pnpm db:seed` concurrently against the same local database.
+- `pnpm test:data-quality` - passed when rerun alone.
+- `pnpm test:playwright` - passed, 70 tests.
+- `pnpm visual:contract`
+- `pnpm phase:check`
+
+### Runtime Evidence
+
+- Malformed demo-workflow payloads now return HTTP 400 with `error = Invalid demo workflow request.` and structured `issues`.
+- J02-J09 implemented workflow actions still return successful mutation responses after API validation was added.
+- Northbridge data-quality snapshot reports open high-severity issues and fails `DATA_QUALITY_READY`.
+- Bennett data-quality snapshot filters out completed issues and passes `DATA_QUALITY_READY`.
+- Full Playwright suite reports 70 passing tests.
+
+### Known Gaps
+
+- Validation remains focused on the demo workflow API and data-quality service; individual page forms are still mostly static UI.
+- Data-quality severity rules are deterministic demo rules and do not yet include configurable policy thresholds.
+- Repository coverage is intentionally narrow around data-quality issues; broader read/write repositories remain future production hardening.
+
+### Next Phase Recommendation
+
+Proceed to Phase 18: File/Export Realism.
+
+## Phase 18 - File/Export Realism
+
+Date: 2026-06-16
+
+### Completed Tasks
+
+- Added a file metadata service that validates safe filenames, supported MIME types, positive file sizes and deterministic checksum seeds.
+- Added deterministic content addresses and storage keys for demo upload/export metadata.
+- Added an export package service that builds a metadata-only package manifest with approval, redaction, selected-object, watermark and expiry controls.
+- Wired J04 document upload metadata through the new file metadata service.
+- Wired J08 export package generation through the file metadata service and export package manifest builder.
+- Kept the no-real-binary demo boundary explicit with `realBinaryGenerated = false`.
+- Added service tests for valid upload metadata, invalid file metadata, valid export package manifests and invalid export generation conditions.
+
+### Changed Files
+
+- `app/api/demo-workflow/route.ts`
+- `lib/export-package-service.ts`
+- `lib/file-metadata-service.ts`
+- `package.json`
+- `tests/file-export-realism.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Commands Run
+
+- `pnpm typecheck`
+- `pnpm test:file-export`
+- `pnpm test:workflow-api`
+- `pnpm test:playwright` - passed, 74 tests.
+- `pnpm visual:contract`
+- `pnpm phase:check`
+
+### Runtime Evidence
+
+- J04 upload now writes checksum, content address and storage key from validated metadata.
+- J08 generated export document/version now use validated ZIP metadata instead of ad hoc hardcoded package fields.
+- J08 export scope now stores a `2026.06.phase18` manifest with approval, watermark, redaction, selected-object count and metadata-only binary boundary.
+- Invalid file metadata is rejected for unsafe filename, unsupported MIME type, empty checksum seed and non-positive file size.
+- Invalid export package generation is rejected without approval, ZIP format, redaction profile, selected objects and watermark.
+- Existing workflow API actions still pass after J04/J08 metadata validation.
+
+### Known Gaps
+
+- Phase 18 still does not create, upload or stream real binary files.
+- Storage keys are deterministic demo keys; there is no object-store adapter yet.
+- Export manifests are written into existing JSON metadata but not yet exposed as a downloadable manifest endpoint.
+
+### Next Phase Recommendation
+
+Proceed to Phase 19: Hardening and Final Handoff.
+
+## Phase 19 - Hardening and Final Handoff
+
+Date: 2026-06-16
+
+### Completed Tasks
+
+- Added an app-level loading state using the shared AlphaVest shell and `StatePanel`.
+- Added an app-level error boundary with a retry action in the shared AlphaVest design language.
+- Added a registered-catalogue not-found surface for unknown routes.
+- Added route smoke coverage for the unknown-route hardening surface.
+- Updated `README.md` from stale Phase 13 status to Phase 19 handoff status.
+- Added `docs/v3/FINAL_HANDOFF_REPORT.md` with current status, verification commands, intentional boundaries and next productionization moves.
+- Ran the final full Playwright, visual-contract and phase-check gates.
+
+### Changed Files
+
+- `README.md`
+- `app/error.tsx`
+- `app/loading.tsx`
+- `app/not-found.tsx`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/FINAL_HANDOFF_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Commands Run
+
+- `pnpm typecheck`
+- `pnpm test:route-smoke` - first run exposed a Next App Router soft-not-found status mismatch; the body rendered the hardened not-found surface but HTTP status was `200`.
+- `pnpm test:route-smoke` - passed after the test asserted the visible hardened not-found contract while accepting `200` or `404`.
+- `pnpm test:playwright` - passed, 75 tests.
+- `pnpm visual:contract`
+- `pnpm phase:check`
+
+### Runtime Evidence
+
+- Loading state renders through `AppShell` with `StatePanel state = loading`.
+- Error boundary renders through `AppShell` with retry action and `StatePanel state = error`.
+- Unknown route renders the `Route unavailable` not-found surface.
+- Route smoke covers 63 registered routes plus the unknown-route hardening surface.
+- Full Playwright suite reports 75 passing tests.
+- Visual contract checked 63 assets and 63 routes with zero failures.
+- Production build completed successfully.
+
+### Known Gaps
+
+- The unknown-route surface can be delivered as a soft not-found with HTTP 200 in the current App Router request path; the hardened UI is verified, but strict HTTP 404 enforcement is not.
+- No automated axe/accessibility scan has been added yet.
+- The prototype still does not include real authentication, real object storage or production authorization.
+
+### Final Handoff
+
+The V3 phase sequence through Phase 19 is complete for this demo-data-first prototype. Use `docs/v3/FINAL_HANDOFF_REPORT.md` as the concise handoff entrypoint.
+
+## Strict Visual Remediation - Phases 00-08
+
+Date: 2026-06-16
+
+### Completed Tasks
+
+- Implemented the strict visual remediation sequence from `docs/v3/STRICT_VISUAL_IMPLEMENTATION_PLAN_V3.md` and `docs/v3/STRICT_VISUAL_TASKS_DETAILED_V3.md`.
+- Preserved the original strict visual review as the evidence baseline and generated a new non-overwriting screenshot bundle.
+- Converted the mobile app shell into a content-first layout with global navigation behind a drawer and compact topbar controls.
+- Strengthened shared dense-data primitives with responsive DataTable card rows, better table containment, mobile-aware search placeholders and safer drawer/modal context handling.
+- Rebalanced high-risk desktop layouts for wealth map, compliance review, export redaction, service blueprint, governance confirmation and sensitive workflow modals.
+- Added richer redaction-preview and redaction-status content without hiding evidence, audit, redaction or compliance-release states.
+- Added mobile route identity coverage for the previously high-risk admin and tenant pages.
+- Added `pnpm visual:strict` as a reproducible strict screenshot-capture command.
+- Updated the strict visual review status and QA evidence with the new post-remediation results.
+
+### Changed Files
+
+- `app/globals.css`
+- `components/admin-tenant-setup-screen.tsx`
+- `components/app-shell.tsx`
+- `components/auth-onboarding-screen.tsx`
+- `components/client-intake-screen.tsx`
+- `components/communication-export-ops-screen.tsx`
+- `components/decisions-governance-screen.tsx`
+- `components/internal-workflow-screen.tsx`
+- `components/sidebar.tsx`
+- `components/top-bar.tsx`
+- `components/ui/data-table.tsx`
+- `components/ui/drawer.tsx`
+- `components/ui/filter-bar.tsx`
+- `components/ui/modal.tsx`
+- `components/wealth-actions-screen.tsx`
+- `package.json`
+- `scripts/strict-visual-capture.ts`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/STRICT_VISUAL_SCREENSHOT_REVIEW_V3.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Commands Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `VISUAL_QA_BASE_URL=http://127.0.0.1:3107 pnpm visual:contract` - passed, 63 assets and 63 routes, 0 failures.
+- `STRICT_VISUAL_BASE_URL=http://127.0.0.1:3107 STRICT_VISUAL_OUTPUT=2026-06-16-alpha-v3-implementation pnpm visual:strict` - passed, 126 screenshots, 0 capture errors, 0 overflow, 0 lingering loading states.
+- `pnpm build` - passed.
+- `pnpm test:route-smoke` - first rerun was blocked by an already-running Next dev-server lock on port 3107; rerun after stopping that server passed, 72 tests.
+- `pnpm test:playwright` - passed, 83 tests.
+
+### Runtime Evidence
+
+- New evidence bundle: `artifacts/strict-visual-review/2026-06-16-alpha-v3-implementation/`.
+- Desktop screenshots: 63.
+- Mobile screenshots: 63.
+- Contact sheets: `artifacts/strict-visual-review/2026-06-16-alpha-v3-implementation/contact-sheets/contact-desktop.png` and `artifacts/strict-visual-review/2026-06-16-alpha-v3-implementation/contact-sheets/contact-mobile.png`.
+- DOM metrics summary: 126 entries, 0 document horizontal overflow, 0 loading text present, 0 cramped-text candidates, 0 console warnings, 0 console errors.
+- Calibration anchors manually rechecked after remediation: PAGE-031, PAGE-039, PAGE-042, PAGE-049, PAGE-056 and PAGE-059.
+- Visual contract remained green after shared primitive and route-layout changes.
+
+### Known Gaps
+
+- Residual P2-level polish can still improve action-board card rhythm and call-trigger matrix hierarchy.
+- The strict capture is screenshot and DOM-geometry based; it is not a calibrated perceptual pixel-diff engine.
+- Production authentication, production authorization, real object storage and real client data remain intentionally outside this demo visual remediation.
+
+### Final Status
+
+Strict P1 findings are closed for the inspected implementation bundle. Remaining work is P2 polish, not a blocker for the strict visual remediation acceptance gate.
+
+## Demo Video Portfolio Fast Implementation - Phases 0-7
+
+Date: 2026-06-16
+
+### Completed Tasks
+
+- Implemented the accepted MESO-B demo-video rollout as split portfolio artifacts without replacing the legacy `J01-J10` manifest.
+- Added portfolio manifest generation for P0, selected P1, selected P2 and P3 proof families.
+- Added manifest selection support to the screencast runner, run-all command and one-journey command.
+- Added portfolio metadata validation for generated manifest entries.
+- Added portfolio fields to screencast QA results and generated metadata.
+- Updated MP4 rendering discovery so portfolio folders such as `P0-01` can be rendered.
+- Added package scripts for P0/P1/P2 dry-runs and captures.
+- Added customer-delivery and internal-proof indices for deciding which clips are safe to send externally.
+
+### Changed Files
+
+- `package.json`
+- `scripts/screencast/generate-portfolio-manifests.ts`
+- `scripts/screencast/lib/runner.ts`
+- `scripts/screencast/lib/types.ts`
+- `scripts/screencast/run-all.ts`
+- `scripts/screencast/run-journey.ts`
+- `scripts/screencast/render-mp4.ts`
+- `docs/v3/DEMO_VIDEO_PORTFOLIO_DECISION_V3.md`
+- `docs/v3/DEMO_JOURNEY_LEGACY_TO_PORTFOLIO_MAP_V3.json`
+- `docs/v3/DEMO_CAPTION_PROOF_METADATA_CONTRACT_V3.json`
+- `docs/v3/DEMO_VIDEO_CUSTOMER_DELIVERY_INDEX_V3.md`
+- `docs/v3/DEMO_VIDEO_INTERNAL_PROOF_INDEX_V3.md`
+- `docs/v3/SCREENCAST_RUNBOOK_V3.md`
+- `docs/v3/journeys.screencast.p0.v3.json`
+- `docs/v3/journeys.screencast.p1.v3.json`
+- `docs/v3/journeys.screencast.p2.v3.json`
+- `docs/v3/DEMO_P3_PROOF_FAMILIES_V3.json`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Commands Run
+
+- `pnpm screencast:generate-portfolio` - passed.
+- `pnpm typecheck` - passed.
+- `pnpm screencast:p0:dry-run` - passed, 12 P0 journeys checked, 0 warnings, 0 errors.
+
+### Known Gaps
+
+- No live browser capture or MP4 rendering was run in this pass by request.
+- P1/P2 are intentionally selected subsets, not the full opportunity backlog.
+- Route-static and metadata-only entries must keep their caveats in captions/notes before external sharing.
+
+## Workflow Completion Plan Visual-Gate Update
+
+Date: 2026-06-17
+
+### Completed Tasks
+
+- Read the Human Visual Implementation Standard before editing AlphaVest planning docs.
+- Added `docs/v3/WORKFLOW_COMPLETION_IMPLEMENTATION_PLAN_V3.md` as the repo-local phase and ticket contract for completing missing business workflows.
+- Added the Human Visual Implementation Standard as the governing rule for ImageGen-to-UI and visual-reference-to-UI tickets.
+- Added the required `implementation-map` template for future UI work.
+- Updated `CODEX_MASTER_TASK.md` with a scoped visual implementation preflight override.
+- Updated `docs/v3/IMPLEMENTATION_GAP_BACKLOG_V3.md` so the existing backlog points to the new workflow completion plan and its visual proof gates.
+- Updated `docs/v3/QUALITY_GATES_AND_TEST_PLAN_V3.md` so screenshot proof, Human Visual Review Rubric status and "DOM success is not design acceptance" are global visual QA requirements.
+
+### Changed Files
+
+- `CODEX_MASTER_TASK.md`
+- `docs/v3/WORKFLOW_COMPLETION_IMPLEMENTATION_PLAN_V3.md`
+- `docs/v3/IMPLEMENTATION_GAP_BACKLOG_V3.md`
+- `docs/v3/QUALITY_GATES_AND_TEST_PLAN_V3.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- Documentation consistency checks with `rg` for `implementation-map`, `Human Visual Review Rubric`, `screenshot proof` and `DOM success is not design acceptance`.
+- `git diff --stat` checked, but tracked diff output is not informative because the current checkout is untracked.
+- `git status --short` checked for the touched planning/reporting files.
+
+### Known Gaps
+
+- No product UI was implemented in this update.
+- No app screenshots were captured.
+- No ImageGen mockups were generated.
+- Future UI tickets still need to create concrete implementation-maps, screenshot proof artifacts and Human Visual Review Rubric results when they implement screens.
+
+## Workflow Completion Phase A Preparation
+
+Date: 2026-06-17
+
+### Completed Tasks
+
+- Ran Phase A only from `docs/v3/WORKFLOW_COMPLETION_IMPLEMENTATION_PLAN_V3.md`.
+- Read the Human Visual Implementation Standard in the plan-defined order before `AGENTS.md` and the AlphaVest source-of-truth files.
+- Checked A-05, A-05a, A-05b, A-05c, A-07, A-07a, A-08 and A-08a against the existing workflow plan and QA gates.
+- Added a repo-local `implementation-map` template for future UI tickets.
+- Added the ImageGen-Artefaktstruktur contract for future generated-screen folders.
+- Added the Human Visual Review Rubric Ergebnis template.
+- Added the Screenshot-Proof Status template.
+- Added the Completion Status Labels reference.
+- Updated the workflow completion plan to point every Phase A visual-gate ticket to the concrete template or status artifact.
+- Updated the QA gates so future ImageGen-to-UI work references the new Phase A templates by file name.
+- Confirmed this pass did not implement product UI, capture app screenshots or generate ImageGen images.
+
+### Phase A Ticket Readiness
+
+| Ticket | Status | Evidence |
+| --- | --- | --- |
+| A-05 | implemented | Capture/ImageGen protocol now points to `IMAGEGEN_ARTIFACT_STRUCTURE_V3.md`. |
+| A-05a | implemented | Human Visual Standard path and read order remain in the plan and `CODEX_MASTER_TASK.md`. |
+| A-05b | implemented | `IMPLEMENTATION_MAP_TEMPLATE_V3.md` exists with route, component, state, role/tenant, reference, ImageGen, data, interaction and proof fields. |
+| A-05c | implemented | `IMAGEGEN_ARTIFACT_STRUCTURE_V3.md` defines required future folder files. |
+| A-07 | implemented | Design review checklist separates technical pass, Screenshot-Proof Status and human visual status. |
+| A-07a | implemented | `HUMAN_VISUAL_REVIEW_RUBRIC_RESULT_TEMPLATE_V3.md` exists for future result records. |
+| A-08 | implemented | QA gates distinguish build/route/Playwright checks from design acceptance and Screenshot-Proof Status. |
+| A-08a | implemented | Reporting fields now reference implementation-maps, screenshot proof, rubric status and Completion Status Labels. |
+
+### Changed Files
+
+- `docs/v3/IMPLEMENTATION_MAP_TEMPLATE_V3.md`
+- `docs/v3/IMAGEGEN_ARTIFACT_STRUCTURE_V3.md`
+- `docs/v3/HUMAN_VISUAL_REVIEW_RUBRIC_RESULT_TEMPLATE_V3.md`
+- `docs/v3/SCREENSHOT_PROOF_STATUS_TEMPLATE_V3.md`
+- `docs/v3/COMPLETION_STATUS_LABELS_V3.md`
+- `docs/v3/WORKFLOW_COMPLETION_IMPLEMENTATION_PLAN_V3.md`
+- `docs/v3/QUALITY_GATES_AND_TEST_PLAN_V3.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `rg` checks for `implementation-map`, ImageGen-Artefaktstruktur, Human Visual Review Rubric Ergebnis, Screenshot-Proof Status and Completion Status Labels.
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `git status --short` checked for touched files.
+
+### Known Gaps
+
+- No product UI was implemented in Phase A.
+- No app screenshots were captured.
+- No ImageGen images were generated.
+- Future UI tickets still need concrete screen-level implementation-maps, artifact folders, screenshot proof and Human Visual Review Rubric results.
+
+## Workflow Completion Phase B - KYC / AML / Source-of-Wealth
+
+Date: 2026-06-17
+
+### Scope
+
+Phase B only from `docs/v3/WORKFLOW_COMPLETION_IMPLEMENTATION_PLAN_V3.md`.
+
+Ticket order honored: B-01, B-02, B-03, B-08, B-09, B-04, B-05, B-06, B-07, B-10, B-11, B-12.
+
+### Completed Tasks
+
+- Added a Phase B KYC/AML/Source-of-Wealth demo-data model.
+- Added two real routes:
+  - `/kyc/demo/review`
+  - `/kyc/demo/source-of-wealth`
+- Registered both routes in `screenRoutes`, route smoke, and live visual contract coverage.
+- Added KYC workflow UI with internal-only shell, role/tenant context, workflow states, evidence panels, audit timeline, blocked/restricted states and disabled client-release controls.
+- Added explicit J12 demo workflow API actions:
+  - `j12.requestKycEvidence`
+  - `j12.completeKycReview`
+  - `j12.escalateSourceOfWealth`
+  - `j12.linkSourceEvidence`
+- J12 actions upsert demo KYC documents, compliance review state, evidence record, evidence item and audit event while returning `clientVisible: false`.
+- Captured real reference screenshots before ImageGen:
+  - `artifacts/imagegen/B-05/kyc-review/reference-app.png`
+  - `artifacts/imagegen/B-05/source-of-wealth-review/reference-app.png`
+- Invoked built-in ImageGen for both mockups. The environment produced inline outputs but did not expose a movable filesystem file, so `generated-mockup.png` remains blocked and is not claimed as present.
+- Captured implemented-route screenshots:
+  - `artifacts/imagegen/B-05/kyc-review/implemented-route.png`
+  - `artifacts/imagegen/B-05/source-of-wealth-review/implemented-route.png`
+- Added implementation maps, prompts, screenshot-proof status files and Human Visual Review Rubric result files for B-06 and B-07.
+- Added the scaled mixed-engine method artifact for Phase B proof and no-overclaim boundaries.
+
+### Workflow States
+
+| Workflow area | States represented |
+| --- | --- |
+| KYC / AML review | intake complete, identity complete, AML current, source review current, compliance release upcoming |
+| KYC evidence gap | `AWAITING_INFO`, `NEEDS_CLARIFICATION`, `NEEDS_EVIDENCE` |
+| KYC evidence linked | `EVIDENCE_LINKED`, `LINKED_TO_EVIDENCE`, `IN_REVIEW` |
+| Source-of-Wealth review | partially verified, proof gaps open, internal-only, awaiting proof |
+| Client visibility | blocked; no J12 action returns client visibility |
+
+### Evidence / Audit Boundaries
+
+| Boundary | Status |
+| --- | --- |
+| Audit events | implemented through `runDemoWorkflowMutation`; each J12 action returns `auditRows: 1`. |
+| Evidence record | implemented through J12 Prisma upsert for `morganKycEvidenceRecordId`. |
+| Evidence item | implemented through J12 Prisma upsert per action. |
+| Compliance review | implemented through J12 Prisma upsert for KYC/FICA status and evidence completeness. |
+| Client release | explicitly blocked; `noClientRelease: true`, `clientVisible: false`. |
+| Production KYC/AML provider | not implemented; explicitly out of scope. |
+
+### Changed Files
+
+- `app/[...segments]/page.tsx`
+- `app/api/demo-workflow/route.ts`
+- `components/kyc-aml-workflow-screen.tsx`
+- `lib/kyc-aml-demo-data.ts`
+- `lib/route-registry.ts`
+- `tests/demo-workflow-api.spec.ts`
+- `artifacts/phase-b-kyc/phase-b-method-artifacts.md`
+- `artifacts/imagegen/B-05/kyc-review/README.md`
+- `artifacts/imagegen/B-05/kyc-review/implementation-map.md`
+- `artifacts/imagegen/B-05/kyc-review/prompt.md`
+- `artifacts/imagegen/B-05/kyc-review/reference-app.png`
+- `artifacts/imagegen/B-05/kyc-review/implemented-route.png`
+- `artifacts/imagegen/B-05/kyc-review/screenshot-proof-status.md`
+- `artifacts/imagegen/B-05/kyc-review/human-visual-review.md`
+- `artifacts/imagegen/B-05/source-of-wealth-review/README.md`
+- `artifacts/imagegen/B-05/source-of-wealth-review/implementation-map.md`
+- `artifacts/imagegen/B-05/source-of-wealth-review/prompt.md`
+- `artifacts/imagegen/B-05/source-of-wealth-review/reference-app.png`
+- `artifacts/imagegen/B-05/source-of-wealth-review/implemented-route.png`
+- `artifacts/imagegen/B-05/source-of-wealth-review/screenshot-proof-status.md`
+- `artifacts/imagegen/B-05/source-of-wealth-review/human-visual-review.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `VISUAL_QA_BASE_URL=http://localhost:3000 pnpm visual:contract` - passed, 65 assets/routes, 0 failures.
+- `PLAYWRIGHT_SKIP_WEB_SERVER=1 PLAYWRIGHT_BASE_URL=http://localhost:3000 pnpm test:route-smoke` - passed, 74 tests.
+- `PLAYWRIGHT_SKIP_WEB_SERVER=1 PLAYWRIGHT_BASE_URL=http://localhost:3000 pnpm test:workflow-api` - passed, 3 tests.
+- `pnpm build` - passed.
+- Playwright screenshot capture for reference and implemented routes - passed after recapturing the KYC reference from real content.
+
+### Known Gaps
+
+- Built-in ImageGen output was generated inline but no filesystem path was exposed, so both `generated-mockup.png` files are marked `blocked`.
+- Hover/focus states are implemented through standard controls but not screenshot-proven.
+- Mobile screenshots are out of Phase B proof scope.
+- Production KYC provider, sanctions provider, bank/source verification integrations and production auth remain out of scope.
+
+### Next Phase
+
+Proceed to Phase C: Suitability and IPS foundation, tickets C-01 to C-12, with the same visual gate sequence: implementation-map, real app reference screenshots, ImageGen, UI, screenshot proof and Human Visual Review Rubric.
+
+## Workflow Completion Phase C - Suitability / IPS Foundation
+
+Date: 2026-06-17
+
+### Scope
+
+Phase C only from `docs/v3/WORKFLOW_COMPLETION_IMPLEMENTATION_PLAN_V3.md`.
+
+Ticket order honored: C-01, C-02, C-03, C-08, C-09, C-04, C-05, C-06, C-07, C-10, C-11, C-12.
+
+### Completed Tasks
+
+- Added a Suitability/IPS demo-data model for Morgan Family Office.
+- Extended `workflowGate` with `canReleaseAdviceWithSuitabilityIps`, adding local prerequisites for suitability profile completion, risk profile completion, investment objective completion, IPS acknowledgement, mandate evidence and client acknowledgement.
+- Added two real routes:
+  - `/suitability/demo/profile`
+  - `/ips/demo`
+- Registered both routes in `screenRoutes`, route smoke and visual contract coverage as page IDs `066` and `067`.
+- Added Suitability and IPS UI with AlphaVest shell, workflow states, evidence panels, audit timeline, blocked/restricted states and disabled client-release controls.
+- Added explicit J13/J14 demo workflow API actions:
+  - `j13.requestSuitabilityEvidence`
+  - `j13.markSuitabilityReviewed`
+  - `j14.requestIpsMandateChanges`
+  - `j14.linkIpsEvidence`
+- J13/J14 actions upsert demo evidence records/items and audit events while returning `clientVisible: false`, `noClientRelease: true` and `gatePassed: false`.
+- Captured real reference screenshots before ImageGen:
+  - `artifacts/phase-c-suitability-ips/C-04-reference-screenshots/client-profile-reference-app.png`
+  - `artifacts/phase-c-suitability-ips/C-04-reference-screenshots/documents-reference-app.png`
+  - `artifacts/phase-c-suitability-ips/C-04-reference-screenshots/evidence-detail-reference-app.png`
+- Invoked built-in ImageGen for Suitability and IPS references. The environment produced inline outputs but did not expose a movable filesystem file, so generated mockup files remain blocked and are not claimed as present.
+- Captured implemented-route production screenshots:
+  - `artifacts/phase-c-suitability-ips/C-06-suitability-ui/suitability-implemented.png`
+  - `artifacts/phase-c-suitability-ips/C-07-ips-ui/ips-implemented.png`
+- Added implementation maps, prompts, screenshot-proof status files and Human Visual Review Rubric result files for C-06 and C-07.
+- Added the scaled mixed-engine method artifact for Phase C proof and no-overclaim boundaries.
+
+### Gate Behavior
+
+| Gate | Behavior |
+| --- | --- |
+| Base advice gate | Client visibility still requires recommendation released-to-client, advisor approval, compliance release, releasable evidence and permission. |
+| Suitability gate | Blocks if suitability profile, risk profile or investment objectives are not complete. |
+| IPS gate | Blocks if IPS mandate is not acknowledged or mandate evidence is not releasable. |
+| Client acknowledgement | Blocks until acknowledgement is present. |
+| UI release controls | Disabled on both Phase C screens. |
+| API actions | J13/J14 return `clientVisible: false`, `noClientRelease: true`, `gatePassed: false`. |
+
+### Changed Files
+
+- `app/[...segments]/page.tsx`
+- `app/api/demo-workflow/route.ts`
+- `components/suitability-ips-screen.tsx`
+- `lib/suitability-ips-demo-data.ts`
+- `lib/workflow-gate.ts`
+- `lib/route-registry.ts`
+- `package.json`
+- `tests/demo-workflow-api.spec.ts`
+- `tests/workflow-gate.spec.ts`
+- `artifacts/phase-c-suitability-ips/phase-c-method-artifacts.md`
+- `artifacts/phase-c-suitability-ips/C-04-reference-screenshots/client-profile-reference-app.png`
+- `artifacts/phase-c-suitability-ips/C-04-reference-screenshots/documents-reference-app.png`
+- `artifacts/phase-c-suitability-ips/C-04-reference-screenshots/evidence-detail-reference-app.png`
+- `artifacts/phase-c-suitability-ips/C-05-imagegen-mockups/suitability-prompt.md`
+- `artifacts/phase-c-suitability-ips/C-05-imagegen-mockups/ips-prompt.md`
+- `artifacts/phase-c-suitability-ips/C-06-suitability-ui/implementation-map.md`
+- `artifacts/phase-c-suitability-ips/C-06-suitability-ui/suitability-implemented.png`
+- `artifacts/phase-c-suitability-ips/C-06-suitability-ui/screenshot-proof-status.md`
+- `artifacts/phase-c-suitability-ips/C-06-suitability-ui/human-visual-review.md`
+- `artifacts/phase-c-suitability-ips/C-07-ips-ui/implementation-map.md`
+- `artifacts/phase-c-suitability-ips/C-07-ips-ui/ips-implemented.png`
+- `artifacts/phase-c-suitability-ips/C-07-ips-ui/screenshot-proof-status.md`
+- `artifacts/phase-c-suitability-ips/C-07-ips-ui/human-visual-review.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm visual:contract` - passed, 67 assets/routes, 0 failures.
+- `PLAYWRIGHT_PORT=3021 pnpm test:workflow-gate` - passed, 2 tests.
+- `PLAYWRIGHT_PORT=3021 pnpm test:route-smoke` - passed, 76 tests.
+- `PLAYWRIGHT_PORT=3021 pnpm test:workflow-api` - passed, 4 tests.
+- `pnpm lint` - passed.
+- `pnpm build` - passed.
+- Playwright screenshot capture for C-04 references and C-06/C-07 implemented routes - passed. Final implemented screenshots were captured from `next start`.
+
+### Known Gaps
+
+- Built-in ImageGen output was generated inline but no filesystem path was exposed, so both generated mockup files are marked `blocked`.
+- Hover/focus states are implemented through standard controls but not screenshot-proven.
+- Mobile screenshots are out of Phase C proof scope.
+- Production suitability persistence, IPS document generation, e-signature, real auth and production compliance enforcement remain out of scope.
+- The Phase C implementation uses demo actions and demo evidence records; no final financial/legal/tax advice was created.
+
+### Next Phase
+
+Proceed to Phase D: Review calendar and monitoring, tickets D-01 to D-10.
+## 2026-06-17 - Capability Truth Audit V3
+
+### Scope
+
+Executed a Max / mixed ENGINE_v2 + ENGINE_v3 audit of implemented AlphaVest capabilities against the V3 source-of-truth docs, data model, workflows, screens, demo-workflow API, permission gates, and tests.
+
+### Artifacts Added
+
+- `docs/v3/CAPABILITY_TRUTH_AUDIT_V3.md`
+- `docs/v3/CAPABILITY_GAP_BACKLOG_V3.md`
+- `docs/v3/INPUT_MASK_AND_DATA_MAINTENANCE_REQUIREMENTS_V3.md`
+- `docs/v3/WORKFLOW_EXECUTION_REALITY_MATRIX_V3.md`
+- `docs/v3/capability-truth-audit.v3.json`
+
+### Phase Verdict
+
+The application is a strong demo-data workflow simulator, but not yet an operational data maintenance system. Real document upload is not implemented: the UI is visual, the client posts JSON `actionId`, the API reads `request.json()`, file metadata is deterministic, and export/file realism tests intentionally assert metadata-only behavior.
+
+The same fixture/static pattern appears in tenant setup, profile/family/entity maintenance, governance confirmation, communication, evidence download/share, and export generation. The audit therefore defines the next required implementation slices before operational claims should be made.
+
+### Highest Priority Follow-Up
+
+Implement `GAP-001` from `CAPABILITY_GAP_BACKLOG_V3.md`: a narrow real document upload vertical slice with drag/drop, file picker, multipart API, demo storage adapter, document/version/extraction/evidence/audit persistence, reload from DB, and tests.
+
+## Phase D - Review Calendar and Monitoring
+
+Date: 2026-06-17
+
+### Scope
+
+Executed only Phase D from `docs/v3/WORKFLOW_COMPLETION_IMPLEMENTATION_PLAN_V3.md`, tickets D-01 through D-10, in the required order.
+
+### Completed Tasks
+
+- D-01: Defined the review calendar and rebalance monitoring service boundary around existing Prisma demo objects.
+- D-02: Added `getReviewMonitoringSnapshot()` to derive review due state, queue state, trigger state and client-visibility counts from `ReviewSchedule`, `QueueItem`, `Trigger`, `ActionItem` and `AuditEvent`.
+- D-03: Added `GET /api/review-monitoring` as the tested snapshot path for due/overdue/trigger proof.
+- D-04: Captured/copied and inspected `/ops/sla` and `/signals` reference screenshots into `artifacts/phase-d-review-monitoring/D-04-reference-screenshots/`.
+- D-05: Added ImageGen prompt contracts for the review calendar and rebalance monitoring screens. Generated mockup files were not used as acceptance proof.
+- D-06: Implemented `/reviews/calendar` with due-soon, completed, escalated, blocked/restricted and API-proof states.
+- D-07: Implemented `/monitoring/rebalance` with blocked, in-review, awaiting-info, overdue, disabled execution and no-client-release states.
+- D-08: Added `tests/review-monitoring-service.spec.ts` and `pnpm test:phase-d`.
+- D-09: Updated Phase D execution/QA reporting and visual proof artifacts.
+- D-10: Documented next phase as Phase E: Committee / peer review.
+
+### Due / Overdue / Trigger State Proof
+
+| Proof | Result |
+| --- | --- |
+| Snapshot API | `GET /api/review-monitoring?asOf=2026-06-17T12:00:00.000Z` returns review rows, rebalance rows, due-state counts and audit proof metadata. |
+| J16 review actions | `j16.scheduleReview` and `j16.escalateOverdueReview` persist review/queue state and audit rows through `/api/demo-workflow`. |
+| J17 rebalance actions | `j17.blockRebalanceTrigger` and `j17.routeRebalanceReview` persist trigger/action/queue/recommendation state and audit rows through `/api/demo-workflow`. |
+| No client release | Phase D tests assert `noClientRelease: true` and `clientVisible: false` for J16/J17. |
+| Product boundary | Rebalance execution remains disabled; no advice/trading/execution claim was made. |
+
+### Visual Proof Status
+
+| Ticket | Route | Implementation-map | Screenshot proof | Human Visual Review |
+| --- | --- | --- | --- | --- |
+| D-04/D-06 | `/reviews/calendar` | `artifacts/phase-d-review-monitoring/D-06-review-calendar-ui/implementation-map.md` | `artifacts/phase-d-review-monitoring/D-06-review-calendar-ui/review-calendar-implemented.png` | accepted with minor issues |
+| D-04/D-07 | `/monitoring/rebalance` | `artifacts/phase-d-review-monitoring/D-07-rebalance-monitoring-ui/implementation-map.md` | `artifacts/phase-d-review-monitoring/D-07-rebalance-monitoring-ui/rebalance-monitoring-implemented.png` | accepted with minor issues |
+
+### Changed Files
+
+- `app/[...segments]/page.tsx`
+- `app/api/demo-workflow/route.ts`
+- `app/api/review-monitoring/route.ts`
+- `components/review-monitoring-screen.tsx`
+- `lib/review-monitoring-demo-data.ts`
+- `lib/review-monitoring-service.ts`
+- `lib/route-registry.ts`
+- `package.json`
+- `tests/review-monitoring-service.spec.ts`
+- `artifacts/phase-d-review-monitoring/**`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm test:phase-d` - passed, 3 tests.
+- `pnpm test:route-smoke` - passed, 78 tests including `/reviews/calendar` and `/monitoring/rebalance`.
+- `pnpm lint` - passed.
+- `pnpm build` - passed.
+- `pnpm visual:contract` - passed, 69 checked assets/routes, 0 failures.
+- Playwright production screenshot capture against `http://127.0.0.1:3022` - passed.
+
+### Known Gaps
+
+- Generated ImageGen mockup files were not produced as local image files; Phase D uses prompt contracts plus inspected AlphaVest reference screenshots and production route screenshots.
+- Human visual review is Codex self-review from screenshots, not external stakeholder approval.
+- Hover/focus states use shared/native controls but are not separately screenshot-proven.
+- No production scheduler, reminder engine, real portfolio trading, real rebalance execution or production authentication was implemented.
+
+### Next Phase
+
+Proceed to Phase E: Committee / peer review, tickets E-01 through E-08.
+
+## Phase P0 - Operationalization Foundations / Guardrails
+
+Date: 2026-06-17
+
+### Scope
+
+Implemented only the P0 guardrail layer requested for operationalization. No product features, UI routes, APIs, Prisma schema changes, demo workflow mutations or seed changes were added.
+
+### Completed Tasks
+
+- Read the required P0 source files: `AGENTS.md`, `CODEX_MASTER_TASK.md`, capability audit, gap backlog, input mask requirements, workflow reality matrix and Human Visual Implementation Standard.
+- Created `docs/v3/OPERATIONALIZATION_PROJECT_CONTRACT_V3.md` as the authoritative P0 project contract.
+- Defined Capability Levels E0-E7 as required vocabulary for later tasks, QA and phase reports.
+- Added the Operationalization task structure for future workflow, upload, export, evidence, audit, governance, communication and client-visibility work.
+- Defined project-wide Definition of Done for P0 and future operational tasks.
+- Added the QA/proof matrix that separates visual, static, fixture-backed, gated-demo and E7 operational claims.
+- Added Human Visual Acceptance Gates and preserved the rule that DOM/test success is not design acceptance.
+- Added explicit denial rules for static UI, read-only fields, metadata-only file/export behavior and `actionId`-only demo workflows as operational claims.
+- Anchored the contract in `CODEX_MASTER_TASK.md`, `CODEX_TASKS_DETAILED_V3.md` and `QUALITY_GATES_AND_TEST_PLAN_V3.md`.
+
+### Changed Files
+
+- `CODEX_MASTER_TASK.md`
+- `docs/v3/CODEX_TASKS_DETAILED_V3.md`
+- `docs/v3/QUALITY_GATES_AND_TEST_PLAN_V3.md`
+- `docs/v3/OPERATIONALIZATION_PROJECT_CONTRACT_V3.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `pnpm db:validate` - passed.
+
+### Known Gaps
+
+- P0 is a project contract and reporting guardrail, not an implementation of real upload, export, editable data maintenance, communication send, governance confirmation or E7 operational capability.
+- Existing metadata-only upload/export and fixture-backed workflow limitations remain unchanged until later operationalization slices implement payloaded services and tests.
+- Human visual acceptance remains required for future UI changes, but P0 itself did not change product UI and therefore did not require screenshot proof.
+
+### Next Phase Recommendation
+
+Use this P0 contract before the next implementation slice. The highest-priority operationalization task remains `GAP-001`: real document upload with multipart payload, storage adapter, persisted document/version/extraction/evidence/audit state, reload proof and rejection tests.
+
+## Phase E - Committee / Peer Review
+
+Date: 2026-06-17
+
+### Scope
+
+Executed only Phase E from `docs/v3/WORKFLOW_COMPLETION_IMPLEMENTATION_PLAN_V3.md`, tickets E-01 through E-08, in the requested order. Current/target capability level: E6 gated demo simulation. No E7 operational committee vote, dissent, evidence or release persistence was claimed.
+
+### Completed Tasks
+
+- E-01: Mapped Phase E to PF-E / UF-08 and recorded the high-risk peer-review gate boundary.
+- E-02: Captured real running-app reference screenshots from `/advisor-approval` and `/advisor-approval/demo` into `artifacts/phase-e-committee-peer-review/E-02-reference-screenshots/`.
+- E-03: Implemented `/committee/reviews` as a Committee Review Queue with high-risk, vote, dissent, evidence and `clientVisible=false` states.
+- E-04: Implemented `/committee/reviews/:id` as a Committee Review Detail with peer votes, dissent resolution, evidence labels and disabled committee approval while gates are incomplete.
+- E-05: Added `canPassHighRiskCommitteeGate()` to `lib/workflow-gate.ts`.
+- E-06: Added gate tests and route tests for Committee Review.
+- E-07: Updated phase execution and QA reports.
+- E-08: Recorded Phase F as the next phase.
+
+### Gate Proof
+
+| Proof | Result |
+| --- | --- |
+| Advisor-only high-risk gate | `tests/workflow-gate.spec.ts` proves advisor approval alone does not pass; missing gates include `committee_approval` and `committee_dissent_resolved`. |
+| Committee-complete gate | `tests/workflow-gate.spec.ts` proves advisor approval + committee approval + resolved dissent + validated evidence + permission passes. |
+| UI route gate | `/committee/reviews` shows client-visible count `0` and second-review block. |
+| Detail route gate | `/committee/reviews/demo` shows disabled committee approval and explicit committee gate proof. |
+| Product boundary | Committee review does not release advice to the client; compliance release remains downstream. |
+
+### Visual Proof Status
+
+| Ticket | Route | Implementation-map | Screenshot proof | Human Visual Review |
+| --- | --- | --- | --- | --- |
+| E-02 | `/advisor-approval` | not required | `artifacts/phase-e-committee-peer-review/E-02-reference-screenshots/advisor-approval-reference-app.png` | reference only |
+| E-02 | `/advisor-approval/demo` | not required | `artifacts/phase-e-committee-peer-review/E-02-reference-screenshots/advisor-approval-detail-reference-app.png` | reference only |
+| E-03 | `/committee/reviews` | `artifacts/phase-e-committee-peer-review/E-03-committee-review-queue-ui/implementation-map.md` | `artifacts/phase-e-committee-peer-review/E-03-committee-review-queue-ui/committee-review-queue-implemented.png` | accepted |
+| E-04 | `/committee/reviews/demo` | `artifacts/phase-e-committee-peer-review/E-04-committee-review-detail-ui/implementation-map.md` | `artifacts/phase-e-committee-peer-review/E-04-committee-review-detail-ui/committee-review-detail-implemented.png` | accepted |
+
+### Changed Files
+
+- `app/[...segments]/page.tsx`
+- `components/committee-review-screen.tsx`
+- `lib/committee-review-demo-data.ts`
+- `lib/route-registry.ts`
+- `lib/workflow-gate.ts`
+- `tests/workflow-gate.spec.ts`
+- `tests/committee-review-routes.spec.ts`
+- `artifacts/phase-e-committee-peer-review/**`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm test:workflow-gate` - passed, 4 tests.
+- `PLAYWRIGHT_PORT=3021 pnpm exec playwright test tests/committee-review-routes.spec.ts` - passed, 2 tests.
+- `PLAYWRIGHT_SKIP_WEB_SERVER=1 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3030 pnpm exec playwright test tests/workflow-gate.spec.ts tests/committee-review-routes.spec.ts` - passed, 6 tests.
+- `PLAYWRIGHT_SKIP_WEB_SERVER=1 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3030 pnpm exec playwright test tests/route-smoke.spec.ts` - passed, 80 tests.
+- `pnpm exec eslint 'app/[...segments]/page.tsx' components/committee-review-screen.tsx lib/committee-review-demo-data.ts lib/route-registry.ts lib/workflow-gate.ts tests/workflow-gate.spec.ts tests/committee-review-routes.spec.ts` - passed.
+- `pnpm lint` - passed.
+- `pnpm build` - passed with existing Turbopack warnings for dynamic demo document-storage path tracing.
+- `pnpm visual:contract` - passed, 71 checked assets/routes, 0 failures.
+- Playwright Chromium screenshot capture against `http://127.0.0.1:3030` - passed for 4 screenshots.
+
+### Known Gaps
+
+- Committee review is fixture-backed / static interaction plus E6 gate proof. It does not persist user-entered votes, dissent or evidence updates.
+- Human visual review is Codex self-review from screenshots, not external stakeholder approval.
+- Empty, route-local error, mobile, hover and focus screenshots remain unverified.
+- Build emits existing Turbopack warnings around dynamic demo document-storage filesystem tracing; production build still completes successfully.
+
+### Next Phase
+
+Proceed to Phase F: Complaints, incidents and privacy requests, tickets F-01 through F-08.
+
+## Phase P1 - Real Document Upload Vertical Slice
+
+Date: 2026-06-17
+
+### Scope
+
+Implemented the requested Phase P1 vertical slice for `/documents/upload`: real browser file selection/drag-drop, multipart upload API, local demo storage, and persisted document/version/extraction/evidence/audit records. This upgrades only the upload path from fixture-backed/demo-only behavior toward an E7 payloaded demo proof. Authentication remains demo-session based; no real client data, production auth, malware scanning, OCR extraction, analyst validation, document download, or compliance release is claimed.
+
+### Completed Tasks
+
+- Added real drag/drop and file-picker handling on `/documents/upload`.
+- Added multipart `POST /api/documents/upload`.
+- Added `GET /api/documents` for reload proof of persisted uploaded documents.
+- Added a local demo-storage adapter for uploaded binary payloads.
+- Persisted `Document`, `DocumentVersion`, `DocumentExtraction`, `EvidenceRecord`, `EvidenceItem` and `AuditEvent` records for successful uploads.
+- Added rejection handling for unsupported file types and unauthorized demo roles.
+- Preserved the existing demo journey harness action `j04.uploadDocument`.
+- Applied PAGE-027 through PAGE-030 as visual direction and kept the upload/list UI inside the existing AlphaVest design system.
+- Captured screenshot proof for upload reload and document list reload.
+
+### Gate Proof
+
+| Proof | Result |
+| --- | --- |
+| Real payload upload | Multipart file upload stores bytes through the local demo-storage adapter. |
+| Database persistence | Upload creates document, latest version, pending extraction, evidence and audit rows. |
+| Reload proof | Uploaded document remains visible after page reload and on `/documents`. |
+| Rejection tests | Unsupported file type returns `supported_file_type_required`; denied demo role returns `403`. |
+| Demo journey compatibility | Existing `j04-upload-document` harness button remains available and unchanged in behavior. |
+| Product boundary | Upload remains demo-scoped and does not create real advice, client visibility, OCR output or compliance release. |
+
+### Visual Proof Status
+
+| Route | Reference | Screenshot proof | Human Visual Review |
+| --- | --- | --- | --- |
+| `/documents/upload` | PAGE-027, PAGE-028, PAGE-029, PAGE-030 | `_codex_audit/p1-document-upload/documents-upload-reload-proof.png` | accepted with minor limits |
+| `/documents` | PAGE-027, PAGE-028, PAGE-029, PAGE-030 | `_codex_audit/p1-document-upload/documents-list-reload-proof.png` | accepted with minor limits |
+
+Minor limits: hover, focus, narrow-mobile and rejected-upload visual states were covered by automated behavior tests but not separately screenshot-reviewed.
+
+### Changed Files
+
+- `app/api/documents/route.ts`
+- `app/api/documents/upload/route.ts`
+- `components/client-intake-screen.tsx`
+- `lib/document-storage-adapter.ts`
+- `lib/document-upload-service.ts`
+- `lib/prisma.ts`
+- `lib/stable-id.ts`
+- `tests/document-upload-api.spec.ts`
+- `tests/document-upload-flow.spec.ts`
+- `_codex_audit/p1-document-upload/documents-upload-reload-proof.png`
+- `_codex_audit/p1-document-upload/documents-list-reload-proof.png`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `PLAYWRIGHT_SKIP_WEB_SERVER=1 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3030 pnpm exec playwright test tests/document-upload-api.spec.ts tests/document-upload-flow.spec.ts` - passed, 4 tests.
+- `PLAYWRIGHT_SKIP_WEB_SERVER=1 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3030 pnpm test:playwright` - passed, 106 tests.
+- Playwright Chromium screenshot capture against `http://127.0.0.1:3030` - passed for both P1 screenshots.
+
+### Known Gaps
+
+- Demo session and role/tenant switchers remain the only identity model; real authentication is intentionally absent.
+- Extraction is persisted as `pending`; no production OCR, parsing, malware scanning or analyst validation is implemented.
+- No document download route or production object-storage adapter is implemented.
+- Compliance release and client visibility remain downstream controls.
+- Existing app session context can reset after reload; screenshot proof explicitly restored Morgan / Family CFO context before capture.
+
+### Next Phase
+
+Proceed with extraction-review operationalization or a document download / analyst validation slice before claiming a full document-workflow E7 path.

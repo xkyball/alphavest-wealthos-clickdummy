@@ -1,0 +1,88 @@
+{
+  "generatedAt": "2026-06-16T23:45:34.113Z",
+  "tasks": [
+    {
+      "id": "MT-001",
+      "title": "Configure the platform policy baseline",
+      "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-001-platform-settings.png"
+    },
+    {
+      "id": "MT-002",
+      "title": "Create and prepare a client tenant",
+      "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-002-tenant-list.png"
+    },
+    {
+      "id": "MT-003",
+      "title": "Accept an invitation and complete onboarding",
+      "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-003-invitation-acceptance.png"
+    },
+    {
+      "id": "MT-004",
+      "title": "Submit client profile and family context",
+      "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-004-client-web-dashboard.png"
+    },
+    {
+      "id": "MT-005",
+      "title": "Create an entity and review wealth structure",
+      "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-005-entity-list.png"
+    },
+    {
+      "id": "MT-006",
+      "title": "Upload and verify a document",
+      "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-006-documents-list.png"
+    },
+    {
+      "id": "MT-007",
+      "title": "Process a signal and route internal work",
+      "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-007-signal-review.png"
+    },
+    {
+      "id": "MT-008",
+      "title": "Review an advisor approval package",
+      "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-008-advisor-approval-queue.png"
+    },
+    {
+      "id": "MT-009",
+      "title": "Release, block, or request evidence for advice-like content",
+      "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-009-compliance-queue.png"
+    },
+    {
+      "id": "MT-010",
+      "title": "Review and submit a released client decision",
+      "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-010-decision-list.png"
+    },
+    {
+      "id": "MT-011",
+      "title": "Review evidence and create a controlled export",
+      "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-011-evidence-vault.png"
+    },
+    {
+      "id": "MT-012",
+      "title": "Manage governance users, roles, and access requests",
+      "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-012-governance-users.png"
+    },
+    {
+      "id": "MT-013",
+      "title": "Choose a communication or escalation path",
+      "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-013-communication-centre.png"
+    },
+    {
+      "id": "MT-014",
+      "title": "Monitor operations, SLA, and reference state",
+      "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-014-ops-queues.png"
+    }
+  ],
+  "counts": {
+    "manualTasks": 14,
+    "workflowCrosswalkRecords": 14,
+    "procedureSourceCards": 14,
+    "stepRecords": 66,
+    "screenshotRegisterEntries": 91,
+    "successfulLiveScreenshotsUsed": 14,
+    "fieldInputReferences": 19,
+    "roles": 22,
+    "branchRecords": 28,
+    "proofPaths": 10,
+    "limitations": 3
+  }
+}

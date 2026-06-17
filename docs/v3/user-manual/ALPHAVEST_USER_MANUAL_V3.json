@@ -1,0 +1,52 @@
+{
+  "manualId": "alphavest-user-manual-v3",
+  "title": "AlphaVest WealthOS User Manual V3",
+  "language": "en",
+  "engineMode": "ENGINE_MIX_V2_CODEX_V3_PROOF",
+  "sourcePackage": "docs/v3/user-manual-source/user-manual-source.v3.json",
+  "generatedFromCounts": {
+    "manualTasks": 14,
+    "workflowCrosswalkRecords": 14,
+    "procedureSourceCards": 14,
+    "stepRecords": 66,
+    "screenshotRegisterEntries": 91,
+    "successfulLiveScreenshotsUsed": 14,
+    "fieldInputReferences": 19,
+    "roles": 22,
+    "branchRecords": 28,
+    "proofPaths": 10,
+    "limitations": 3
+  },
+  "deliverables": [
+    "docs/v3/user-manual/README.md",
+    "docs/v3/user-manual/ALPHAVEST_USER_MANUAL_V3.md",
+    "docs/v3/user-manual/ALPHAVEST_USER_MANUAL_SCREENSHOT_INDEX_V3.md",
+    "docs/v3/user-manual/ALPHAVEST_USER_MANUAL_TRACEABILITY_V3.md",
+    "docs/v3/user-manual/ALPHAVEST_USER_MANUAL_QA_REPORT_V3.md"
+  ],
+  "coverage": {
+    "manualTasksCovered": [
+      "MT-001",
+      "MT-002",
+      "MT-003",
+      "MT-004",
+      "MT-005",
+      "MT-006",
+      "MT-007",
+      "MT-008",
+      "MT-009",
+      "MT-010",
+      "MT-011",
+      "MT-012",
+      "MT-013",
+      "MT-014"
+    ],
+    "uncoveredManualTasks": []
+  },
+  "boundaries": [
+    "Demo session is not production authentication.",
+    "Advisor approval does not create client visibility.",
+    "Compliance release controls advice-like client visibility.",
+    "The manual does not claim full production persistence where the source package only proves navigable or demo-state behavior."
+  ]
+}

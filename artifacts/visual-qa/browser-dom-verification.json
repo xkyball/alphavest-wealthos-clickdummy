@@ -1,0 +1,72 @@
+[
+  {
+    "asides": 1,
+    "dialogs": 1,
+    "graphNodeCount": 0,
+    "graphNodeOverlaps": 0,
+    "headers": 2,
+    "leaks": [],
+    "path": "/admin/platform",
+    "sample": "A AlphaVest WEALTHOS ACCESS Authentication Login Multi-Factor Authentication Invitation Acceptance Identity Setup Consent and Privacy Role Confirmation PLATFORM Platform Settings Advice Boundary Policy Global Role Templa"
+  },
+  {
+    "asides": 2,
+    "dialogs": 0,
+    "graphNodeCount": 0,
+    "graphNodeOverlaps": 0,
+    "headers": 1,
+    "leaks": [],
+    "path": "/portal",
+    "sample": "A AlphaVest WEALTHOS Dashboard Overview Family & Entities Relationships Entities Documents Upload Extraction Review Verification 3 Tasks 7 Evidence Settings Morgan Family Office Principal / Family CFO Active Collapse Sea"
+  },
+  {
+    "asides": 0,
+    "dialogs": 0,
+    "graphNodeCount": 0,
+    "graphNodeOverlaps": 0,
+    "headers": 0,
+    "leaks": [],
+    "path": "/mobile",
+    "sample": "Mobile Home A AlphaVest WEALTHOS 2 CO Good morning, Christopher Principal · Main Household NEXT STEP TODAY Complete compliance to unlock recommendations Recommendations are blocked while compliance items are pending. Con"
+  },
+  {
+    "asides": 2,
+    "dialogs": 0,
+    "graphNodeCount": 19,
+    "graphNodeOverlaps": 0,
+    "headers": 1,
+    "leaks": [],
+    "path": "/wealth-map",
+    "sample": "A AlphaVest WEALTHOS Home Clients Entities Live wealth map Documents Actions Workflows Communications Compliance Evidence Bennett Family Office Demo tenant context Configure Search ⌘ K Tenant context Bennett Family Offic"
+  },
+  {
+    "asides": 3,
+    "dialogs": 1,
+    "graphNodeCount": 0,
+    "graphNodeOverlaps": 0,
+    "headers": 1,
+    "leaks": [],
+    "path": "/compliance/demo/block",
+    "sample": "A AlphaVest WEALTHOS Home Clients Wealth Map Actions Decisions 3 Evidence Vault Compliance Governance 8 Documents Messages Settings Controlled visibility No unapproved advice reaches the client. Sensitive actions are aud"
+  },
+  {
+    "asides": 1,
+    "dialogs": 0,
+    "graphNodeCount": 0,
+    "graphNodeOverlaps": 0,
+    "headers": 1,
+    "leaks": [],
+    "path": "/export/new",
+    "sample": "Create Export A AlphaVest WEALTHOS Home Governance 5 Communication 3 Exports 2 Ops Queues 18 Blueprint Roadmap States Evidence Decisions Settings Collapse << Search WealthOS cmd K Tenant context Bennett Family Office Mor"
+  },
+  {
+    "asides": 1,
+    "dialogs": 0,
+    "graphNodeCount": 0,
+    "graphNodeOverlaps": 0,
+    "headers": 1,
+    "leaks": [],
+    "path": "/ops/queues",
+    "sample": "Ops Queues A AlphaVest WEALTHOS Home Governance 5 Communication 3 Exports 2 Ops Queues 18 Blueprint Roadmap States Evidence Decisions Settings Collapse << Search WealthOS cmd K Tenant context Bennett Family Office Morgan"
+  }
+]

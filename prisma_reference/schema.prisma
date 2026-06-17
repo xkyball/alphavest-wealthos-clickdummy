@@ -1,0 +1,997 @@
+// AlphaVest WealthOS — Prisma-style schema draft V3
+// This is an implementation planning schema, not a final production schema.
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum TenantStatus {
+  DRAFT
+  ONBOARDING
+  ACTIVE
+  SUSPENDED
+  ARCHIVED
+}
+
+enum UserStatus {
+  INVITED
+  ACTIVE
+  SUSPENDED
+  LOCKED
+  ARCHIVED
+}
+
+enum RoleScope {
+  PLATFORM
+  TENANT
+  ENTITY
+  ENGAGEMENT
+  DOCUMENT
+  DECISION
+}
+
+enum ObjectType {
+  PLATFORM
+  TENANT
+  USER
+  ROLE
+  PERMISSION
+  FAMILY_MEMBER
+  RELATIONSHIP
+  ENTITY
+  ASSET
+  DOCUMENT
+  TRIGGER
+  ACTION_ITEM
+  RECOMMENDATION
+  DECISION
+  EVIDENCE_RECORD
+  AUDIT_EVENT
+  EXPORT_REQUEST
+  MESSAGE
+  REVIEW_SCHEDULE
+}
+
+enum PermissionAction {
+  VIEW
+  CREATE
+  EDIT
+  DELETE
+  UPLOAD
+  REVIEW
+  APPROVE
+  RELEASE
+  BLOCK
+  EXPORT
+  INVITE
+  ASSIGN
+  REVOKE
+  COMMENT
+  SCHEDULE
+  ESCALATE
+  MANAGE
+}
+
+enum Sensitivity {
+  PUBLIC
+  CLIENT_VISIBLE
+  CONFIDENTIAL
+  RESTRICTED
+  HIGHLY_RESTRICTED
+  INTERNAL_ONLY
+}
+
+enum VisibilityStatus {
+  INTERNAL_ONLY
+  ADVISOR_VISIBLE
+  COMPLIANCE_VISIBLE
+  CLIENT_VISIBLE
+  RESTRICTED
+  REDACTED
+}
+
+enum WorkflowStatus {
+  DRAFT
+  NEW
+  IN_REVIEW
+  AWAITING_INFO
+  ANALYST_REVIEW
+  ADVISOR_REVIEW
+  COMPLIANCE_PENDING
+  READY_FOR_CLIENT
+  CLIENT_VISIBLE
+  COMPLETED
+  DEFERRED
+  BLOCKED
+  REJECTED
+  ARCHIVED
+}
+
+enum DocumentStatus {
+  EMPTY
+  UPLOADING
+  UPLOADED
+  AI_EXTRACTED
+  CLIENT_CONFIRMED
+  ANALYST_REVIEW_PENDING
+  VERIFIED
+  NEEDS_CLARIFICATION
+  BLOCKED
+  LINKED_TO_EVIDENCE
+  ARCHIVED
+}
+
+enum ReviewStatus {
+  NOT_STARTED
+  PENDING
+  IN_REVIEW
+  APPROVED
+  REVISED
+  REJECTED
+  REQUEST_MORE_DATA
+  ESCALATED_TO_CALL
+  COMPLETED
+}
+
+enum ComplianceStatus {
+  NOT_REQUIRED
+  PENDING
+  IN_REVIEW
+  RELEASED
+  BLOCKED
+  NEEDS_EVIDENCE
+  EXCEPTION
+  EXPIRED
+}
+
+enum AdviceClassification {
+  INFORMATION
+  WORKFLOW
+  GUIDANCE
+  ADVICE_RELEVANT
+  ADVICE
+  OUT_OF_SCOPE
+}
+
+enum RecommendationStatus {
+  DRAFT
+  AI_DRAFT
+  ANALYST_REVIEWED
+  ADVISOR_PENDING
+  ADVISOR_APPROVED
+  REVISION_REQUESTED
+  MORE_DATA_REQUESTED
+  COMPLIANCE_PENDING
+  RELEASED_TO_CLIENT
+  BLOCKED
+  CLIENT_ACCEPTED
+  CLIENT_DEFERRED
+  CLIENT_REJECTED
+  ARCHIVED
+}
+
+enum DecisionStatus {
+  DRAFT
+  RELEASED_TO_CLIENT
+  AWAITING_FAMILY_APPROVAL
+  ACCEPTED
+  DEFERRED
+  REJECTED
+  EVIDENCE_CREATED
+  REVIEW_SCHEDULED
+  ARCHIVED
+}
+
+enum EvidenceStatus {
+  PLACEHOLDER
+  CREATED
+  LINKED
+  VALIDATED
+  RELEASED
+  RESTRICTED
+  ARCHIVED
+  SUPERSEDED
+}
+
+enum ExportStatus {
+  DRAFT
+  SCOPE_SELECTED
+  REDACTION_PENDING
+  APPROVAL_REQUIRED
+  APPROVED
+  GENERATED
+  DOWNLOADED
+  EXPIRED
+  REVOKED
+  FAILED
+}
+
+enum CommunicationChannel {
+  SECURE_MESSAGE
+  EMAIL
+  PHONE
+  VIDEO
+  IN_PERSON
+  SYSTEM_NOTIFICATION
+}
+
+enum EscalationType {
+  NONE
+  REQUEST_DATA
+  ADVISOR_CALL
+  F2F_WORKSHOP
+  EXTERNAL_SPECIALIST
+  COMPLIANCE_ESCALATION
+  SECURITY_PRIVACY_REVIEW
+}
+
+enum AuditResult {
+  SUCCESS
+  DENIED
+  BLOCKED
+  FAILED
+  PENDING
+  WARNING
+}
+
+enum EntityType {
+  TRUST
+  COMPANY
+  FOUNDATION
+  PARTNERSHIP
+  INDIVIDUAL
+  FAMILY_OFFICE
+  OTHER
+}
+
+enum AssetType {
+  PORTFOLIO
+  BANK_ACCOUNT
+  REAL_ESTATE
+  INSURANCE_POLICY
+  BUSINESS_INTEREST
+  LIQUIDITY
+  TAX_RESIDENCY
+  OTHER
+}
+
+enum ExportType {
+  CLIENT_DECISION_PACK
+  EVIDENCE_PACKAGE
+  COMPLIANCE_AUDIT_PACK
+  EXTERNAL_ADVISOR_DATA_ROOM
+  TENANT_DATA_INVENTORY
+  USER_ACCESS_REPORT
+  ACTIVITY_LOG_EXPORT
+  PILOT_METRICS_EXPORT
+}
+
+model PlatformTenant {
+  id String @id @default(uuid())
+  name String
+  legalName String?
+  status TenantStatus
+  defaultTimezone String
+  defaultLocale String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("platform_tenants")
+}
+
+model ClientTenant {
+  id String @id @default(uuid())
+  platformTenantId String
+  displayName String
+  legalName String?
+  status TenantStatus
+  jurisdiction String?
+  relationshipTier String?
+  primaryAdvisorUserId String?
+  primaryAnalystUserId String?
+  complianceOwnerUserId String?
+  clientSuccessOwnerUserId String?
+  policyProfileId String?
+  dataRegion String?
+  riskRating String?
+  onboardingCompletedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("client_tenants")
+}
+
+model Engagement {
+  id String @id @default(uuid())
+  clientTenantId String
+  name String
+  type String
+  status WorkflowStatus
+  ownerUserId String
+  advisorUserId String?
+  analystUserId String?
+  complianceUserId String?
+  startDate DateTime?
+  targetEndDate DateTime?
+  closedAt DateTime?
+  sensitivity Sensitivity
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("engagements")
+}
+
+model User {
+  id String @id @default(uuid())
+  platformTenantId String
+  email String
+  displayName String
+  status UserStatus
+  mfaEnabled Boolean
+  lastLoginAt DateTime?
+  preferredLocale String?
+  timezone String?
+  isServiceAccount Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model UserProfile {
+  id String @id @default(uuid())
+  userId String
+  clientTenantId String?
+  firstName String?
+  lastName String?
+  phone String?
+  relationshipLabel String?
+  countryOfResidence String?
+  dateOfBirth DateTime?
+  sensitivity Sensitivity
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_profiles")
+}
+
+model Role {
+  id String @id @default(uuid())
+  platformTenantId String
+  clientTenantId String?
+  name String
+  description String?
+  scope RoleScope
+  isSystemRole Boolean
+  requiresSecondConfirmation Boolean
+  segregationGroup String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("roles")
+}
+
+model Permission {
+  id String @id @default(uuid())
+  key String
+  objectType ObjectType
+  action PermissionAction
+  description String?
+  defaultSensitivityLimit Sensitivity?
+  requiresAudit Boolean
+  requiresSecondConfirmation Boolean
+  requiresComplianceReview Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("permissions")
+}
+
+model UserRole {
+  id String @id @default(uuid())
+  userId String
+  roleId String
+  clientTenantId String?
+  entityId String?
+  engagementId String?
+  objectType ObjectType?
+  objectId String?
+  status String
+  validFrom DateTime?
+  validUntil DateTime?
+  assignedByUserId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_roles")
+}
+
+model RolePermission {
+  id String @id @default(uuid())
+  roleId String
+  permissionId String
+  effect String(20)
+  conditionJson Json?
+  createdAt DateTime @default(now())
+
+  @@map("role_permissions")
+}
+
+model AccessRequest {
+  id String @id @default(uuid())
+  clientTenantId String
+  requesterUserId String
+  targetUserId String?
+  objectType ObjectType
+  objectId String
+  requestedAction PermissionAction
+  reason String
+  status WorkflowStatus
+  reviewerUserId String?
+  complianceRequired Boolean
+  decisionAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("access_requests")
+}
+
+model SecondConfirmation {
+  id String @id @default(uuid())
+  clientTenantId String?
+  actorUserId String
+  targetObjectType ObjectType
+  targetObjectId String
+  action PermissionAction
+  confirmationPhrase String?
+  confirmedByUserId String?
+  status String
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+  confirmedAt DateTime?
+
+  @@map("second_confirmations")
+}
+
+model ConsentRecord {
+  id String @id @default(uuid())
+  clientTenantId String?
+  userId String
+  consentType String
+  version String
+  status String
+  acceptedAt DateTime?
+  withdrawnAt DateTime?
+  source String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@map("consent_records")
+}
+
+model FamilyMember {
+  id String @id @default(uuid())
+  clientTenantId String
+  userId String?
+  displayName String
+  relationshipType String
+  dateOfBirth DateTime?
+  taxResidency String?
+  isPrincipal Boolean
+  sensitivity Sensitivity
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("family_members")
+}
+
+model Relationship {
+  id String @id @default(uuid())
+  clientTenantId String
+  subjectType ObjectType
+  subjectId String
+  relationshipType String
+  objectType ObjectType
+  objectId String
+  startDate DateTime?
+  endDate DateTime?
+  confidence Decimal?
+  sourceDocumentId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("relationships")
+}
+
+model ClientObjective {
+  id String @id @default(uuid())
+  clientTenantId String
+  ownerFamilyMemberId String?
+  category String
+  title String
+  description String?
+  priority String?
+  timeHorizon String?
+  status WorkflowStatus
+  sensitivity Sensitivity
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("client_objectives")
+}
+
+model Entity {
+  id String @id @default(uuid())
+  clientTenantId String
+  entityType EntityType
+  name String
+  jurisdiction String?
+  registrationNumber String?
+  status String
+  ownerSummary String?
+  riskRating String?
+  dataQualityScore Int?
+  sensitivity Sensitivity
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("entitys")
+}
+
+model EntityParticipant {
+  id String @id @default(uuid())
+  clientTenantId String
+  entityId String
+  participantType ObjectType
+  participantId String
+  roleLabel String
+  ownershipPercent Decimal?
+  effectiveFrom DateTime?
+  effectiveUntil DateTime?
+  sourceDocumentId String?
+  createdAt DateTime @default(now())
+
+  @@map("entity_participants")
+}
+
+model Asset {
+  id String @id @default(uuid())
+  clientTenantId String
+  entityId String?
+  assetType AssetType
+  name String
+  jurisdiction String?
+  currency String(3)?
+  valueBand String?
+  estimatedValue Decimal?
+  valuationDate DateTime?
+  riskRating String?
+  status String
+  sensitivity Sensitivity
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("assets")
+}
+
+model Document {
+  id String @id @default(uuid())
+  clientTenantId String
+  engagementId String?
+  uploadedByUserId String
+  documentType String
+  title String
+  status DocumentStatus
+  fileName String?
+  mimeType String?
+  fileSizeBytes Int?
+  storageKey String?
+  checksum String?
+  source String?
+  sensitivity Sensitivity
+  clientVisible Boolean
+  retentionPolicy String?
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("documents")
+}
+
+model DocumentVersion {
+  id String @id @default(uuid())
+  documentId String
+  versionNumber Int
+  storageKey String
+  checksum String?
+  createdByUserId String
+  changeReason String?
+  createdAt DateTime @default(now())
+
+  @@map("document_versions")
+}
+
+model DocumentExtraction {
+  id String @id @default(uuid())
+  documentId String
+  extractionStatus String(60)
+  confidenceScore Decimal?
+  extractedFieldsJson Json?
+  lowConfidenceFieldsJson Json?
+  modelVersion String?
+  isClientVisible Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("document_extractions")
+}
+
+model DocumentReview {
+  id String @id @default(uuid())
+  documentId String
+  reviewerUserId String
+  reviewType String
+  status ReviewStatus
+  notes String?
+  clientVisibleSummary String?
+  reviewedAt DateTime?
+  createdAt DateTime @default(now())
+
+  @@map("document_reviews")
+}
+
+model DocumentLink {
+  id String @id @default(uuid())
+  documentId String
+  targetType ObjectType
+  targetId String
+  relationship String
+  createdByUserId String
+  createdAt DateTime @default(now())
+
+  @@map("document_links")
+}
+
+model Trigger {
+  id String @id @default(uuid())
+  clientTenantId String
+  engagementId String?
+  source String
+  triggerType String
+  title String
+  description String?
+  severity String
+  confidenceScore Decimal?
+  status WorkflowStatus
+  clientVisible Boolean
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("triggers")
+}
+
+model ActionItem {
+  id String @id @default(uuid())
+  clientTenantId String
+  engagementId String?
+  triggerId String?
+  title String
+  description String?
+  ownerUserId String?
+  assignedRoleKey String?
+  priority String
+  status WorkflowStatus
+  dueDate DateTime?
+  clientVisible Boolean
+  evidenceStatus EvidenceStatus?
+  blockedReason String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("action_items")
+}
+
+model Recommendation {
+  id String @id @default(uuid())
+  clientTenantId String
+  engagementId String?
+  triggerId String?
+  createdByUserId String?
+  title String
+  summaryInternal String?
+  clientSummaryDraft String?
+  adviceClassification AdviceClassification
+  status RecommendationStatus
+  advisorApprovalId String?
+  complianceReviewId String?
+  clientVisible Boolean
+  riskSummary String?
+  assumptionsJson Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("recommendations")
+}
+
+model RecommendationOption {
+  id String @id @default(uuid())
+  recommendationId String
+  label String
+  description String?
+  prosJson Json?
+  consJson Json?
+  riskLevel String?
+  isPreferred Boolean
+  sortOrder Int
+
+  @@map("recommendation_options")
+}
+
+model Approval {
+  id String @id @default(uuid())
+  clientTenantId String
+  targetType ObjectType
+  targetId String
+  approverUserId String
+  approverRoleKey String
+  approvalType String
+  status ReviewStatus
+  notes String?
+  approvedAt DateTime?
+  createdAt DateTime @default(now())
+
+  @@map("approvals")
+}
+
+model ComplianceReview {
+  id String @id @default(uuid())
+  clientTenantId String
+  targetType ObjectType
+  targetId String
+  reviewerUserId String
+  status ComplianceStatus
+  adviceClassification AdviceClassification
+  recordOfAdviceRequired Boolean
+  recordOfAdviceDocumentId String?
+  kycFicaStatus String?
+  popiaConsentStatus String?
+  evidenceComplete Boolean
+  releaseNotes String?
+  releasedAt DateTime?
+  blockedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("compliance_reviews")
+}
+
+model Decision {
+  id String @id @default(uuid())
+  clientTenantId String
+  recommendationId String?
+  title String
+  status DecisionStatus
+  releasedToClientAt DateTime?
+  decisionByUserId String?
+  decisionAction String?
+  decisionReason String?
+  decisionAt DateTime?
+  reviewDate DateTime?
+  evidenceRecordId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("decisions")
+}
+
+model DecisionParticipant {
+  id String @id @default(uuid())
+  decisionId String
+  userId String?
+  roleKey String?
+  required Boolean
+  status ReviewStatus
+  actedAt DateTime?
+  createdAt DateTime @default(now())
+
+  @@map("decision_participants")
+}
+
+model EvidenceRecord {
+  id String @id @default(uuid())
+  clientTenantId String
+  engagementId String?
+  title String
+  status EvidenceStatus
+  relatedObjectType ObjectType
+  relatedObjectId String
+  summary String?
+  visibilityStatus VisibilityStatus
+  retentionPolicy String?
+  reviewDate DateTime?
+  createdByUserId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("evidence_records")
+}
+
+model EvidenceItem {
+  id String @id @default(uuid())
+  evidenceRecordId String
+  itemType String
+  sourceObjectType ObjectType
+  sourceObjectId String
+  title String
+  visibilityStatus VisibilityStatus
+  hash String?
+  createdAt DateTime @default(now())
+
+  @@map("evidence_items")
+}
+
+model AuditEvent {
+  id String @id @default(uuid())
+  platformTenantId String
+  clientTenantId String?
+  actorUserId String?
+  actorRoleKey String?
+  eventType String
+  targetType ObjectType
+  targetId String
+  previousState String?
+  nextState String?
+  result AuditResult
+  reason String?
+  ipAddress String?
+  deviceId String?
+  correlationId String?
+  evidenceRecordId String?
+  metadataJson Json?
+  createdAt DateTime @default(now())
+
+  @@map("audit_events")
+}
+
+model ReviewSchedule {
+  id String @id @default(uuid())
+  clientTenantId String
+  targetType ObjectType
+  targetId String
+  cadence String
+  nextReviewDate DateTime
+  ownerUserId String?
+  status WorkflowStatus
+  lastCompletedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("review_schedules")
+}
+
+model MessageThread {
+  id String @id @default(uuid())
+  clientTenantId String
+  engagementId String?
+  subject String
+  channel CommunicationChannel
+  status WorkflowStatus
+  clientVisible Boolean
+  relatedObjectType ObjectType?
+  relatedObjectId String?
+  createdByUserId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("message_threads")
+}
+
+model Message {
+  id String @id @default(uuid())
+  threadId String
+  senderUserId String
+  body String
+  clientVisible Boolean
+  requiresApproval Boolean
+  approvalId String?
+  sentAt DateTime?
+  createdAt DateTime @default(now())
+
+  @@map("messages")
+}
+
+model CallEvent {
+  id String @id @default(uuid())
+  clientTenantId String
+  engagementId String?
+  relatedObjectType ObjectType?
+  relatedObjectId String?
+  escalationType EscalationType
+  scheduledByUserId String
+  scheduledFor DateTime?
+  durationMinutes Int?
+  status WorkflowStatus
+  outcomeSummary String?
+  evidenceRecordId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("call_events")
+}
+
+model ExportRequest {
+  id String @id @default(uuid())
+  clientTenantId String
+  requestedByUserId String
+  exportType ExportType
+  status ExportStatus
+  scopeJson Json
+  redactionProfile String
+  approvalRequired Boolean
+  approvedByUserId String?
+  generatedFileDocumentId String?
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("export_requests")
+}
+
+model PolicyDefinition {
+  id String @id @default(uuid())
+  platformTenantId String
+  clientTenantId String?
+  policyKey String(140)
+  name String
+  version String
+  category String
+  rulesJson Json
+  status String
+  createdByUserId String
+  effectiveFrom DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("policy_definitions")
+}
+
+model QueueItem {
+  id String @id @default(uuid())
+  clientTenantId String
+  queueName String
+  targetType ObjectType
+  targetId String
+  assignedToUserId String?
+  assignedRoleKey String?
+  priority String
+  status WorkflowStatus
+  slaDueAt DateTime?
+  escalated Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("queue_items")
+}
+
+model DataQualityIssue {
+  id String @id @default(uuid())
+  clientTenantId String
+  targetType ObjectType
+  targetId String
+  severity String
+  issueType String
+  description String
+  status WorkflowStatus
+  ownerUserId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("data_quality_issues")
+}
+

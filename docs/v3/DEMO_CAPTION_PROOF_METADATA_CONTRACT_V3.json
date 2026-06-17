@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-06-16",
+  "purpose": "Metadata contract for captions, speaker notes, proof paths and delivery caveats.",
+  "requiredForPortfolioManifests": true,
+  "requiredJourneyFields": [
+    "portfolioLayer",
+    "candidateId",
+    "demoPriority",
+    "audienceFit",
+    "currentRealityLabel",
+    "proofLevel",
+    "overclaimRisk",
+    "caveat",
+    "proofPath",
+    "captionShort",
+    "captionLong",
+    "presenterNotes",
+    "customerSendable"
+  ],
+  "proofLevels": {
+    "PL0": "Plan only",
+    "PL1": "Route/static visual proof",
+    "PL2": "Screencast manifest navigation proof",
+    "PL3": "Fixture-backed demo state",
+    "PL4": "Specific demo workflow action exists",
+    "PL5": "Automated/direct proof exists",
+    "PL6": "Customer-sendable recording passed"
+  },
+  "currentRealityLabels": [
+    "route-static",
+    "fixture-backed",
+    "demo-action-executable",
+    "test-proven",
+    "customer-recording-ready",
+    "policy-frame-only",
+    "metadata-only-export"
+  ],
+  "captionRules": [
+    "Use short English captions for video overlays.",
+    "Keep German or detailed explanation in presenter notes.",
+    "Do not claim production authentication, production compliance or final advice.",
+    "Do not claim real binary export generation from metadata-only proof.",
+    "Do not encode documentation panels into app UI."
+  ],
+  "example": {
+    "journeyId": "P0-07",
+    "candidateId": "P0-07",
+    "portfolioLayer": "P0",
+    "demoPriority": "P0",
+    "audienceFit": ["customer", "compliance", "executive"],
+    "captionShort": "Advisor approval is human review, not client release.",
+    "captionLong": "The advisor can approve the recommendation package, but client visibility still waits for compliance release.",
+    "presenterNotes": [
+      "Use this clip to explain the core no-unapproved-advice rule.",
+      "Do not say the advisor released the recommendation."
+    ],
+    "currentRealityLabel": "demo-action-executable",
+    "proofLevel": "PL4",
+    "overclaimRisk": "Viewer may assume advisor approval releases to client.",
+    "caveat": "Advisor approval remains internal until compliance release.",
+    "proofPath": ["app/api/demo-workflow/route.ts", "docs/v3/IMPLEMENTATION_QA_REPORT.md"],
+    "customerSendable": true
+  }
+}

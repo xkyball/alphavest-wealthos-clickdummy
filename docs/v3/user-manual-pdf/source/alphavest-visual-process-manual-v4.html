@@ -1,0 +1,776 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AlphaVest WealthOS Visual Process User Manual V4</title>
+  <link rel="stylesheet" href="./alphavest-visual-process-manual-v4.css" />
+</head>
+<body>
+  <main>
+    <section class="cover">
+      <div class="cover-kicker">
+        <span>AlphaVest WealthOS</span>
+        <span>Visual Process User Manual / V4</span>
+      </div>
+      <div class="cover-copy">
+        <p class="eyebrow light">Process graphics + annotated UI evidence</p>
+        <h1>Understand the workflow before touching the interface.</h1>
+        <p>Role handoffs, visibility gates, evidence trails, and UI callouts are explained together so the reader can see why each action matters.</p>
+      </div>
+      <div class="cover-meta">
+        <span>Generated 2026-06-17</span>
+        <span>ENGINE_MIX_V2_CODEX_V3_PROOF</span>
+        <span>10 workflows</span>
+      </div>
+    </section>
+
+    <section class="page orientation">
+      <p class="eyebrow">Reader orientation</p>
+      <h2>How to read this manual</h2>
+      <p class="lead">AlphaVest WealthOS is a collaboration system for turning fragmented client, document, recommendation, governance, export, and operations data into controlled workflow state.</p>
+      <div class="orientation-grid">
+        <article><h3>Process first</h3><p>Each workflow begins with a role/state process graphic so the reader knows what is happening before reading UI detail.</p></article>
+        <article><h3>Screenshot second</h3><p>Annotated screenshots show where the process appears and connect numbered regions to procedure explanations.</p></article>
+        <article><h3>Gate-aware</h3><p>Advisor review, compliance release, permission scope, evidence lineage, and audit boundaries are explained as workflow controls.</p></article>
+        <article><h3>Demo-aware</h3><p>The manual distinguishes current demo surfaces from production persistence, certification, and full PDF/UA accessibility claims.</p></article>
+      </div>
+      <div class="source-note">
+        <h3>Codex Visual Implementation Standard</h3>
+        <p>This V4 PDF is produced under the Codex Visual Implementation Standard: rendered pages, contact sheet, visual self-review, and explicit limitations are required before acceptance.</p>
+      </div>
+    </section>
+
+    <section class="page legend">
+      <p class="eyebrow">Process legend</p>
+      <h2>The visual grammar used throughout the manual</h2>
+      <p class="lead">The same symbols repeat across every workflow so process graphics and annotated screenshots reinforce each other instead of becoming separate artifacts.</p>
+      <svg class="legend-svg" viewBox="0 0 980 255" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Visual legend for process graphics">
+  <rect x="0" y="0" width="980" height="255" rx="18" fill="#fffdf8" stroke="#d8cfbf"/>
+  <rect x="42" y="44" width="150" height="58" rx="12" fill="#ffffff" stroke="#b88a38" stroke-width="3"/>
+  <text x="64" y="80" font-family="Inter, Arial" font-size="18" fill="#10283b">Task/action</text>
+  <polygon points="304,30 390,73 304,116 218,73" fill="#efe2c2" stroke="#b88a38" stroke-width="3"/>
+  <text x="260" y="81" font-family="Inter, Arial" font-size="17" fill="#10283b">Gate</text>
+  <rect x="432" y="38" width="158" height="76" rx="16" fill="#fbf7ef" stroke="#d8cfbf"/>
+  <text x="456" y="80" font-family="Inter, Arial" font-size="18" font-weight="700" fill="#10283b">Role lane</text>
+  <path d="M648 38 h120 l20 20 v62 h-140 z" fill="#ffffff" stroke="#687586" stroke-width="3"/>
+  <text x="674" y="80" font-family="Inter, Arial" font-size="17" fill="#10283b">Data object</text>
+  <circle cx="872" cy="72" r="25" fill="#b88a38"/>
+  <text x="864" y="82" font-family="Inter, Arial" font-size="26" font-weight="800" fill="#ffffff">1</text>
+  <text x="822" y="124" font-family="Inter, Arial" font-size="16" fill="#10283b">Screenshot callout</text>
+  <line x1="55" y1="181" x2="196" y2="181" stroke="#10283b" stroke-width="4" marker-end="url(#arrow)"/>
+  <text x="55" y="215" font-family="Inter, Arial" font-size="16" fill="#10283b">Current path</text>
+  <line x1="250" y1="181" x2="390" y2="181" stroke="#687586" stroke-width="4" stroke-dasharray="10 8" marker-end="url(#arrow)"/>
+  <text x="250" y="215" font-family="Inter, Arial" font-size="16" fill="#10283b">Future/demo boundary</text>
+  <rect x="456" y="158" width="52" height="52" rx="12" fill="#10283b"/>
+  <text x="472" y="193" font-family="Inter, Arial" font-size="28" fill="#ffffff">L</text>
+  <text x="525" y="190" font-family="Inter, Arial" font-size="16" fill="#10283b">Visibility / lock boundary</text>
+  <rect x="735" y="158" width="52" height="52" rx="12" fill="#efe2c2" stroke="#b88a38" stroke-width="3"/>
+  <text x="751" y="193" font-family="Inter, Arial" font-size="28" fill="#10283b">A</text>
+  <text x="804" y="190" font-family="Inter, Arial" font-size="16" fill="#10283b">Audit / evidence marker</text>
+  <defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#10283b"/></marker></defs>
+</svg>
+      <div class="legend-grid">
+        <article><h3>Numbered markers</h3><p>Numbers in the process graphic correspond to numbered regions in the annotated screenshot and nearby callout cards.</p></article>
+        <article><h3>Solid and dashed paths</h3><p>Solid lines indicate current documented flow. Dashed paths are reserved for future, fallback, or demo-boundary behavior.</p></article>
+        <article><h3>Boundaries</h3><p>Lock, visibility, audit, and evidence markers show why a step changes what another role can see or do next.</p></article>
+      </div>
+    </section>
+
+    <section class="page workflow-overview" id="WS-001">
+    <p class="eyebrow">Workflow module WS-001</p>
+    <h2>Tenant becomes operational</h2>
+    <p class="lead">Tenant setup becomes a governed collaboration container.</p>
+    <div class="fact-strip">
+      <article><h3>Why this exists</h3><p>A family-office workspace can become active before ownership, compliance, policy, and invitation context are aligned.</p></article>
+      <article><h3>Roles</h3><p>Platform Admin, Ops Admin, Client Success, Compliance, Invited User</p></article>
+      <article><h3>Data object</h3><p>PolicyDefinition, ClientTenant, User, UserRole, AuditEvent</p></article>
+    </div>
+    <figure class="process-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/docs/v3/user-manual-visual-process/process-graphics/ws-001-tenant-becomes-operational.png" alt="WS-001 process graphic" />
+      <figcaption>WS-001 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts. This page shows the process before the reader inspects the UI evidence.</figcaption>
+    </figure>
+  </section>
+
+  <section class="page ui-evidence">
+    <p class="eyebrow">Annotated UI evidence WS-001</p>
+    <h2>Where the process appears in the interface</h2>
+    <figure class="screenshot-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/docs/v3/user-manual-visual-process/annotated-screenshots/ws-001-tenant-becomes-operational-annotated.png" alt="WS-001 annotated screenshot" />
+      <figcaption>Show policy baseline, tenant readiness, and invitation as one activation relay.</figcaption>
+    </figure>
+    <div class="callout-grid">
+      <article class="callout-card">
+    <div class="callout-heading"><span>1</span><strong>Trigger and source context</strong></div>
+    <p><b>User action or inspection:</b> Platform Admin establishes baseline</p>
+    <p><b>Why this matters:</b> This anchors tenant becomes operational in the source context instead of treating the screen as an isolated page.</p>
+    <p><b>Required data:</b> PolicyDefinition, ClientTenant, User</p>
+    <p><b>State:</b> TenantStatus: draft -&gt; TenantStatus: onboarding</p>
+    <p><b>Visibility:</b> Internal setup visible to AlphaVest roles</p>
+    <p><b>Evidence/audit:</b> Policy changes audit</p>
+    <p><b>Next role sees:</b> Ops Admin receives a scoped view of the workflow context.</p>
+  </article><article class="callout-card">
+    <div class="callout-heading"><span>2</span><strong>Review or gate action</strong></div>
+    <p><b>User action or inspection:</b> Ops Admin creates tenant</p>
+    <p><b>Why this matters:</b> This is where the workflow becomes controlled work rather than raw information.</p>
+    <p><b>Required data:</b> ClientTenant, User, UserRole</p>
+    <p><b>State:</b> TenantStatus: onboarding -&gt; UserStatus: invited</p>
+    <p><b>Visibility:</b> Invited user sees only onboarding context</p>
+    <p><b>Evidence/audit:</b> Tenant create/team assignment audit expected</p>
+    <p><b>Next role sees:</b> Compliance can act only after the relevant review or gate is satisfied.</p>
+  </article><article class="callout-card">
+    <div class="callout-heading"><span>3</span><strong>Outcome, visibility, or evidence result</strong></div>
+    <p><b>User action or inspection:</b> Invited User accepts and acknowledges scope</p>
+    <p><b>Why this matters:</b> This shows what the workflow makes possible next and which boundary has changed.</p>
+    <p><b>Required data:</b> User, UserRole, AuditEvent</p>
+    <p><b>State:</b> UserStatus: invited -&gt; UserStatus: active/demo-confirmed</p>
+    <p><b>Visibility:</b> Client workspace is not treated as operational until gates are satisfied</p>
+    <p><b>Evidence/audit:</b> Invitation and consent audit expected</p>
+    <p><b>Next role sees:</b> The next role sees the resulting state, not the entire internal preparation history.</p>
+  </article>
+    </div>
+  </section>
+
+  <section class="page recovery">
+    <p class="eyebrow">Gate, exception, and recovery WS-001</p>
+    <h2>What can block the workflow and what remains protected</h2>
+    <div class="recovery-grid">
+      <article><h3>What the system prevents</h3><ul><li>tenant activation without required owners</li><li>role context without invitation/consent</li><li>unscoped client data</li></ul></article>
+      <article><h3>What remains hidden</h3><ul><li>Internal setup visible to AlphaVest roles</li><li>Invited user sees only onboarding context</li><li>Client workspace is not treated as operational until gates are satisfied</li></ul></article>
+      <article><h3>Evidence and audit lineage</h3><ul><li>Policy changes audit</li><li>Tenant create/team assignment audit expected</li><li>Invitation and consent audit expected</li></ul></article>
+      <article><h3>What becomes possible next</h3><p>A tenant is not just a record. It is the scoped collaboration container that makes later visibility and accountability possible.</p></article>
+    </div>
+    <aside class="demo-boundary">
+      <h3>Demo boundary</h3>
+      <p>The UI is navigable with demo data; broad persisted tenant governance transactions are not fully claimed.</p>
+    </aside>
+  </section>
+<section class="page workflow-overview" id="WS-002">
+    <p class="eyebrow">Workflow module WS-002</p>
+    <h2>Client profile becomes usable shared family context</h2>
+    <p class="lead">Family context becomes shared, reviewed operating context.</p>
+    <div class="fact-strip">
+      <article><h3>Why this exists</h3><p>Family information, relationships, governance roles, and objectives often sit in separate memories, emails, spreadsheets, and documents.</p></article>
+      <article><h3>Roles</h3><p>Principal, Family CFO, Analyst, Advisor</p></article>
+      <article><h3>Data object</h3><p>ClientTenant, FamilyMember, Relationship, Entity, Asset, DataQualityIssue</p></article>
+    </div>
+    <figure class="process-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/docs/v3/user-manual-visual-process/process-graphics/ws-002-client-profile-becomes-usable-shared-family-context.png" alt="WS-002 process graphic" />
+      <figcaption>WS-002 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts. This page shows the process before the reader inspects the UI evidence.</figcaption>
+    </figure>
+  </section>
+
+  <section class="page ui-evidence">
+    <p class="eyebrow">Annotated UI evidence WS-002</p>
+    <h2>Where the process appears in the interface</h2>
+    <figure class="screenshot-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/docs/v3/user-manual-visual-process/annotated-screenshots/ws-002-client-profile-becomes-usable-shared-family-context-annotated.png" alt="WS-002 annotated screenshot" />
+      <figcaption>Show client context and wealth structure becoming shared review material.</figcaption>
+    </figure>
+    <div class="callout-grid">
+      <article class="callout-card">
+    <div class="callout-heading"><span>1</span><strong>Trigger and source context</strong></div>
+    <p><b>User action or inspection:</b> Principal or Family CFO submits context</p>
+    <p><b>Why this matters:</b> This anchors client profile becomes usable shared family context in the source context instead of treating the screen as an isolated page.</p>
+    <p><b>Required data:</b> ClientTenant, FamilyMember, Relationship</p>
+    <p><b>State:</b> WorkflowStatus: draft/new -&gt; WorkflowStatus: in_review</p>
+    <p><b>Visibility:</b> Client-side profile input remains tenant-scoped</p>
+    <p><b>Evidence/audit:</b> Profile edits should audit when material</p>
+    <p><b>Next role sees:</b> Family CFO receives a scoped view of the workflow context.</p>
+  </article><article class="callout-card">
+    <div class="callout-heading"><span>2</span><strong>Review or gate action</strong></div>
+    <p><b>User action or inspection:</b> Analyst validates and flags gaps</p>
+    <p><b>Why this matters:</b> This is where the workflow becomes controlled work rather than raw information.</p>
+    <p><b>Required data:</b> FamilyMember, Relationship, Entity</p>
+    <p><b>State:</b> WorkflowStatus: in_review -&gt; WorkflowStatus: awaiting_info or completed</p>
+    <p><b>Visibility:</b> Analyst sees quality gaps and relationship context</p>
+    <p><b>Evidence/audit:</b> Missing evidence creates review tasks or data quality issues</p>
+    <p><b>Next role sees:</b> Advisor can act only after the relevant review or gate is satisfied.</p>
+  </article><article class="callout-card">
+    <div class="callout-heading"><span>3</span><strong>Outcome, visibility, or evidence result</strong></div>
+    <p><b>User action or inspection:</b> Advisor reviews governance significance</p>
+    <p><b>Why this matters:</b> This shows what the workflow makes possible next and which boundary has changed.</p>
+    <p><b>Required data:</b> Entity, Asset, DataQualityIssue</p>
+    <p><b>State:</b> WorkflowStatus: in_review -&gt; WorkflowStatus: awaiting_info or completed</p>
+    <p><b>Visibility:</b> Advisor sees decision-relevant context only after review</p>
+    <p><b>Evidence/audit:</b> Missing evidence creates review tasks or data quality issues</p>
+    <p><b>Next role sees:</b> The next role sees the resulting state, not the entire internal preparation history.</p>
+  </article>
+    </div>
+  </section>
+
+  <section class="page recovery">
+    <p class="eyebrow">Gate, exception, and recovery WS-002</p>
+    <h2>What can block the workflow and what remains protected</h2>
+    <div class="recovery-grid">
+      <article><h3>What the system prevents</h3><ul><li>advisory work based on memory alone</li><li>unreviewed relationships driving decisions</li><li>hidden conflicts in family/entity structure</li></ul></article>
+      <article><h3>What remains hidden</h3><ul><li>Client-side profile input remains tenant-scoped</li><li>Analyst sees quality gaps and relationship context</li><li>Advisor sees decision-relevant context only after review</li></ul></article>
+      <article><h3>Evidence and audit lineage</h3><ul><li>Profile edits should audit when material</li><li>Missing evidence creates review tasks or data quality issues</li></ul></article>
+      <article><h3>What becomes possible next</h3><p>The wealth map is not decoration. It is a shared model that tells every role what the family structure currently means and where uncertainty remains.</p></article>
+    </div>
+    <aside class="demo-boundary">
+      <h3>Demo boundary</h3>
+      <p>Profile and relationship screens are navigable with demo data; full persistence is still a stated implementation need.</p>
+    </aside>
+  </section>
+<section class="page workflow-overview" id="WS-003">
+    <p class="eyebrow">Workflow module WS-003</p>
+    <h2>Document chaos becomes verified evidence</h2>
+    <p class="lead">Raw documents become classified, checked, and evidence-ready.</p>
+    <div class="fact-strip">
+      <article><h3>Why this exists</h3><p>Documents arrive from different people, in different formats, with uncertain sensitivity, entity links, and extracted facts.</p></article>
+      <article><h3>Roles</h3><p>Client, Family CFO, External Advisor, Analyst, Compliance</p></article>
+      <article><h3>Data object</h3><p>Document, DocumentVersion, DocumentExtraction, DocumentReview, DocumentLink, EvidenceRecord</p></article>
+    </div>
+    <figure class="process-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/docs/v3/user-manual-visual-process/process-graphics/ws-003-document-chaos-becomes-verified-evidence.png" alt="WS-003 process graphic" />
+      <figcaption>WS-003 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts. This page shows the process before the reader inspects the UI evidence.</figcaption>
+    </figure>
+  </section>
+
+  <section class="page ui-evidence">
+    <p class="eyebrow">Annotated UI evidence WS-003</p>
+    <h2>Where the process appears in the interface</h2>
+    <figure class="screenshot-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/docs/v3/user-manual-visual-process/annotated-screenshots/ws-003-document-chaos-becomes-verified-evidence-annotated.png" alt="WS-003 annotated screenshot" />
+      <figcaption>Show document inventory and evidence vault as the conversion from file to proof.</figcaption>
+    </figure>
+    <div class="callout-grid">
+      <article class="callout-card">
+    <div class="callout-heading"><span>1</span><strong>Trigger and source context</strong></div>
+    <p><b>User action or inspection:</b> Client or advisor uploads source</p>
+    <p><b>Why this matters:</b> This anchors document chaos becomes verified evidence in the source context instead of treating the screen as an isolated page.</p>
+    <p><b>Required data:</b> Document, DocumentVersion, DocumentExtraction</p>
+    <p><b>State:</b> DocumentStatus: empty -&gt; uploading</p>
+    <p><b>Visibility:</b> Uploader sees upload/confirmation state</p>
+    <p><b>Evidence/audit:</b> Upload, extraction review, versioning, correction, verification, and evidence linking should be auditable</p>
+    <p><b>Next role sees:</b> Family CFO receives a scoped view of the workflow context.</p>
+  </article><article class="callout-card">
+    <div class="callout-heading"><span>2</span><strong>Review or gate action</strong></div>
+    <p><b>User action or inspection:</b> System/extraction drafts structure</p>
+    <p><b>Why this matters:</b> This is where the workflow becomes controlled work rather than raw information.</p>
+    <p><b>Required data:</b> DocumentVersion, DocumentExtraction, DocumentReview</p>
+    <p><b>State:</b> uploading -&gt; uploaded</p>
+    <p><b>Visibility:</b> Analyst sees extraction detail</p>
+    <p><b>Evidence/audit:</b> Review action becomes part of the workflow history when applicable.</p>
+    <p><b>Next role sees:</b> Analyst can act only after the relevant review or gate is satisfied.</p>
+  </article><article class="callout-card">
+    <div class="callout-heading"><span>3</span><strong>Outcome, visibility, or evidence result</strong></div>
+    <p><b>User action or inspection:</b> Evidence receives verified source link</p>
+    <p><b>Why this matters:</b> This shows what the workflow makes possible next and which boundary has changed.</p>
+    <p><b>Required data:</b> DocumentReview, DocumentLink, EvidenceRecord</p>
+    <p><b>State:</b> verified or needs_clarification or blocked -&gt; linked_to_evidence</p>
+    <p><b>Visibility:</b> Restricted documents remain scoped</p>
+    <p><b>Evidence/audit:</b> Upload, extraction review, versioning, correction, verification, and evidence linking should be auditable</p>
+    <p><b>Next role sees:</b> The next role sees the resulting state, not the entire internal preparation history.</p>
+  </article>
+    </div>
+  </section>
+
+  <section class="page recovery">
+    <p class="eyebrow">Gate, exception, and recovery WS-003</p>
+    <h2>What can block the workflow and what remains protected</h2>
+    <div class="recovery-grid">
+      <article><h3>What the system prevents</h3><ul><li>low-confidence extraction becoming accepted fact</li><li>restricted document exposure</li><li>unlinked evidence claims</li></ul></article>
+      <article><h3>What remains hidden</h3><ul><li>Uploader sees upload/confirmation state</li><li>Analyst sees extraction detail</li><li>Compliance sees evidence readiness when relevant</li><li>Restricted documents remain scoped</li></ul></article>
+      <article><h3>Evidence and audit lineage</h3><ul><li>Upload, extraction review, versioning, correction, verification, and evidence linking should be auditable</li></ul></article>
+      <article><h3>What becomes possible next</h3><p>A document becomes useful only when it is classified, checked, linked, and made available at the correct visibility level.</p></article>
+    </div>
+    <aside class="demo-boundary">
+      <h3>Demo boundary</h3>
+      <p>The manual documents demo UI and workflow intent; no real file storage or extraction transaction is claimed.</p>
+    </aside>
+  </section>
+<section class="page workflow-overview" id="WS-004">
+    <p class="eyebrow">Workflow module WS-004</p>
+    <h2>Signal becomes reviewed recommendation candidate</h2>
+    <p class="lead">Signals become reviewable recommendation candidates without becoming advice.</p>
+    <div class="fact-strip">
+      <article><h3>Why this exists</h3><p>A signal, data gap, market prompt, or document expiry can be mistaken for advice if review boundaries are not explicit.</p></article>
+      <article><h3>Roles</h3><p>System, Analyst, Advisor</p></article>
+      <article><h3>Data object</h3><p>Trigger, ActionItem, Recommendation, Approval, AuditEvent</p></article>
+    </div>
+    <figure class="process-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/docs/v3/user-manual-visual-process/process-graphics/ws-004-signal-becomes-reviewed-recommendation-candidate.png" alt="WS-004 process graphic" />
+      <figcaption>WS-004 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts. This page shows the process before the reader inspects the UI evidence.</figcaption>
+    </figure>
+  </section>
+
+  <section class="page ui-evidence">
+    <p class="eyebrow">Annotated UI evidence WS-004</p>
+    <h2>Where the process appears in the interface</h2>
+    <figure class="screenshot-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/docs/v3/user-manual-visual-process/annotated-screenshots/ws-004-signal-becomes-reviewed-recommendation-candidate-annotated.png" alt="WS-004 annotated screenshot" />
+      <figcaption>Show internal-only signal review and advisor package before release.</figcaption>
+    </figure>
+    <div class="callout-grid">
+      <article class="callout-card">
+    <div class="callout-heading"><span>1</span><strong>Trigger and source context</strong></div>
+    <p><b>User action or inspection:</b> Signal enters queue</p>
+    <p><b>Why this matters:</b> This anchors signal becomes reviewed recommendation candidate in the source context instead of treating the screen as an isolated page.</p>
+    <p><b>Required data:</b> Trigger, ActionItem, Recommendation</p>
+    <p><b>State:</b> WorkflowStatus: new -&gt; analyst_review</p>
+    <p><b>Visibility:</b> Signal and draft remain internal</p>
+    <p><b>Evidence/audit:</b> Routing, request-data, and recommendation-prep actions should create traceable events</p>
+    <p><b>Next role sees:</b> Analyst receives a scoped view of the workflow context.</p>
+  </article><article class="callout-card">
+    <div class="callout-heading"><span>2</span><strong>Review or gate action</strong></div>
+    <p><b>User action or inspection:</b> Analyst classifies and routes</p>
+    <p><b>Why this matters:</b> This is where the workflow becomes controlled work rather than raw information.</p>
+    <p><b>Required data:</b> ActionItem, Recommendation, Approval</p>
+    <p><b>State:</b> analyst_review -&gt; awaiting_info or advisor_review</p>
+    <p><b>Visibility:</b> Advisor sees review context</p>
+    <p><b>Evidence/audit:</b> Review action becomes part of the workflow history when applicable.</p>
+    <p><b>Next role sees:</b> Advisor can act only after the relevant review or gate is satisfied.</p>
+  </article><article class="callout-card">
+    <div class="callout-heading"><span>3</span><strong>Outcome, visibility, or evidence result</strong></div>
+    <p><b>User action or inspection:</b> Advisor receives a prepared candidate package</p>
+    <p><b>Why this matters:</b> This shows what the workflow makes possible next and which boundary has changed.</p>
+    <p><b>Required data:</b> Recommendation, Approval, AuditEvent</p>
+    <p><b>State:</b> awaiting_info or advisor_review -&gt; RecommendationStatus: advisor_pending</p>
+    <p><b>Visibility:</b> Client sees nothing advice-like yet</p>
+    <p><b>Evidence/audit:</b> Routing, request-data, and recommendation-prep actions should create traceable events</p>
+    <p><b>Next role sees:</b> The next role sees the resulting state, not the entire internal preparation history.</p>
+  </article>
+    </div>
+  </section>
+
+  <section class="page recovery">
+    <p class="eyebrow">Gate, exception, and recovery WS-004</p>
+    <h2>What can block the workflow and what remains protected</h2>
+    <div class="recovery-grid">
+      <article><h3>What the system prevents</h3><ul><li>AI draft or signal becoming client advice</li><li>analyst review being treated as release</li><li>unsupported advisor package</li></ul></article>
+      <article><h3>What remains hidden</h3><ul><li>Signal and draft remain internal</li><li>Advisor sees review context</li><li>Client sees nothing advice-like yet</li></ul></article>
+      <article><h3>Evidence and audit lineage</h3><ul><li>Routing, request-data, and recommendation-prep actions should create traceable events</li></ul></article>
+      <article><h3>What becomes possible next</h3><p>The system keeps signals useful without letting them masquerade as advice.</p></article>
+    </div>
+    <aside class="demo-boundary">
+      <h3>Demo boundary</h3>
+      <p>The J01 subset has demo-executable workflow actions; broad signal governance remains partial.</p>
+    </aside>
+  </section>
+<section class="page workflow-overview" id="WS-005">
+    <p class="eyebrow">Workflow module WS-005</p>
+    <h2>Advisor-approved package becomes compliance-controlled client visibility</h2>
+    <p class="lead">Advisor-approved work becomes client-visible only after compliance release.</p>
+    <div class="fact-strip">
+      <article><h3>Why this exists</h3><p>Advisor approval can feel final, but in a regulated wealth workflow it cannot be the same as client release.</p></article>
+      <article><h3>Roles</h3><p>Senior Wealth Advisor, Compliance Officer, Principal</p></article>
+      <article><h3>Data object</h3><p>Recommendation, Approval, ComplianceReview, EvidenceRecord, Permission</p></article>
+    </div>
+    <figure class="process-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/docs/v3/user-manual-visual-process/process-graphics/ws-005-advisor-approved-package-becomes-compliance-controlled-client-visibility.png" alt="WS-005 process graphic" />
+      <figcaption>WS-005 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts. This page shows the process before the reader inspects the UI evidence.</figcaption>
+    </figure>
+  </section>
+
+  <section class="page ui-evidence">
+    <p class="eyebrow">Annotated UI evidence WS-005</p>
+    <h2>Where the process appears in the interface</h2>
+    <figure class="screenshot-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/docs/v3/user-manual-visual-process/annotated-screenshots/ws-005-advisor-approved-package-becomes-compliance-controlled-client-visibility-annotated.png" alt="WS-005 annotated screenshot" />
+      <figcaption>Show advisor approval and compliance queue as separate gates.</figcaption>
+    </figure>
+    <div class="callout-grid">
+      <article class="callout-card">
+    <div class="callout-heading"><span>1</span><strong>Trigger and source context</strong></div>
+    <p><b>User action or inspection:</b> Advisor records rationale</p>
+    <p><b>Why this matters:</b> This anchors advisor-approved package becomes compliance-controlled client visibility in the source context instead of treating the screen as an isolated page.</p>
+    <p><b>Required data:</b> Recommendation, Approval, ComplianceReview</p>
+    <p><b>State:</b> RecommendationStatus: advisor_pending -&gt; advisor_approved</p>
+    <p><b>Visibility:</b> Advisor approval remains internal</p>
+    <p><b>Evidence/audit:</b> Advisor approval, compliance release, block, and evidence request should all create audit lineage</p>
+    <p><b>Next role sees:</b> Compliance Officer receives a scoped view of the workflow context.</p>
+  </article><article class="callout-card">
+    <div class="callout-heading"><span>2</span><strong>Review or gate action</strong></div>
+    <p><b>User action or inspection:</b> Compliance checks classification/evidence/permissions</p>
+    <p><b>Why this matters:</b> This is where the workflow becomes controlled work rather than raw information.</p>
+    <p><b>Required data:</b> Approval, ComplianceReview, EvidenceRecord</p>
+    <p><b>State:</b> advisor_approved -&gt; compliance_pending</p>
+    <p><b>Visibility:</b> Compliance sees release controls</p>
+    <p><b>Evidence/audit:</b> Review action becomes part of the workflow history when applicable.</p>
+    <p><b>Next role sees:</b> Principal can act only after the relevant review or gate is satisfied.</p>
+  </article><article class="callout-card">
+    <div class="callout-heading"><span>3</span><strong>Outcome, visibility, or evidence result</strong></div>
+    <p><b>User action or inspection:</b> Client visibility is released or blocked with reason</p>
+    <p><b>Why this matters:</b> This shows what the workflow makes possible next and which boundary has changed.</p>
+    <p><b>Required data:</b> ComplianceReview, EvidenceRecord, Permission</p>
+    <p><b>State:</b> compliance_pending -&gt; released_to_client or blocked</p>
+    <p><b>Visibility:</b> Client visibility begins only after release and permission check</p>
+    <p><b>Evidence/audit:</b> Advisor approval, compliance release, block, and evidence request should all create audit lineage</p>
+    <p><b>Next role sees:</b> The next role sees the resulting state, not the entire internal preparation history.</p>
+  </article>
+    </div>
+  </section>
+
+  <section class="page recovery">
+    <p class="eyebrow">Gate, exception, and recovery WS-005</p>
+    <h2>What can block the workflow and what remains protected</h2>
+    <div class="recovery-grid">
+      <article><h3>What the system prevents</h3><ul><li>unapproved advice reaching client</li><li>release without evidence</li><li>advisor approval being treated as final</li></ul></article>
+      <article><h3>What remains hidden</h3><ul><li>Advisor approval remains internal</li><li>Compliance sees release controls</li><li>Client visibility begins only after release and permission check</li></ul></article>
+      <article><h3>Evidence and audit lineage</h3><ul><li>Advisor approval, compliance release, block, and evidence request should all create audit lineage</li></ul></article>
+      <article><h3>What becomes possible next</h3><p>Client visibility is a controlled outcome, not a side effect of internal approval.</p></article>
+    </div>
+    <aside class="demo-boundary">
+      <h3>Demo boundary</h3>
+      <p>Release/block states are visible; broad release persistence remains a top implementation gap.</p>
+    </aside>
+  </section>
+<section class="page workflow-overview" id="WS-006">
+    <p class="eyebrow">Workflow module WS-006</p>
+    <h2>Client decision becomes evidence and review cadence</h2>
+    <p class="lead">Client decisions become evidence and future review cadence.</p>
+    <div class="fact-strip">
+      <article><h3>Why this exists</h3><p>A client decision can disappear into email, meeting notes, or memory unless the decision, participants, rationale, and review date are captured together.</p></article>
+      <article><h3>Roles</h3><p>Compliance Officer, Principal, Family Council, Trustee scoped, Advisor</p></article>
+      <article><h3>Data object</h3><p>Decision, DecisionParticipant, EvidenceRecord, ReviewSchedule, AuditEvent</p></article>
+    </div>
+    <figure class="process-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/docs/v3/user-manual-visual-process/process-graphics/ws-006-client-decision-becomes-evidence-and-review-cadence.png" alt="WS-006 process graphic" />
+      <figcaption>WS-006 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts. This page shows the process before the reader inspects the UI evidence.</figcaption>
+    </figure>
+  </section>
+
+  <section class="page ui-evidence">
+    <p class="eyebrow">Annotated UI evidence WS-006</p>
+    <h2>Where the process appears in the interface</h2>
+    <figure class="screenshot-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/docs/v3/user-manual-visual-process/annotated-screenshots/ws-006-client-decision-becomes-evidence-and-review-cadence-annotated.png" alt="WS-006 annotated screenshot" />
+      <figcaption>Show released decision and evidence lineage.</figcaption>
+    </figure>
+    <div class="callout-grid">
+      <article class="callout-card">
+    <div class="callout-heading"><span>1</span><strong>Trigger and source context</strong></div>
+    <p><b>User action or inspection:</b> Compliance releases safe decision</p>
+    <p><b>Why this matters:</b> This anchors client decision becomes evidence and review cadence in the source context instead of treating the screen as an isolated page.</p>
+    <p><b>Required data:</b> Decision, DecisionParticipant, EvidenceRecord</p>
+    <p><b>State:</b> DecisionStatus: released_to_client -&gt; awaiting_family_approval</p>
+    <p><b>Visibility:</b> Client sees released decision only</p>
+    <p><b>Evidence/audit:</b> Decision action, reason, participant action, and evidence package should be immutable/audited</p>
+    <p><b>Next role sees:</b> Principal receives a scoped view of the workflow context.</p>
+  </article><article class="callout-card">
+    <div class="callout-heading"><span>2</span><strong>Review or gate action</strong></div>
+    <p><b>User action or inspection:</b> Client-side participant acts</p>
+    <p><b>Why this matters:</b> This is where the workflow becomes controlled work rather than raw information.</p>
+    <p><b>Required data:</b> DecisionParticipant, EvidenceRecord, ReviewSchedule</p>
+    <p><b>State:</b> awaiting_family_approval -&gt; accepted/deferred/rejected</p>
+    <p><b>Visibility:</b> Advisor/compliance see outcome and evidence lineage</p>
+    <p><b>Evidence/audit:</b> Review action becomes part of the workflow history when applicable.</p>
+    <p><b>Next role sees:</b> Trustee scoped can act only after the relevant review or gate is satisfied.</p>
+  </article><article class="callout-card">
+    <div class="callout-heading"><span>3</span><strong>Outcome, visibility, or evidence result</strong></div>
+    <p><b>User action or inspection:</b> Review cadence schedules follow-up</p>
+    <p><b>Why this matters:</b> This shows what the workflow makes possible next and which boundary has changed.</p>
+    <p><b>Required data:</b> EvidenceRecord, ReviewSchedule, AuditEvent</p>
+    <p><b>State:</b> evidence_created -&gt; review_scheduled</p>
+    <p><b>Visibility:</b> Restricted internal notes remain hidden</p>
+    <p><b>Evidence/audit:</b> Decision action, reason, participant action, and evidence package should be immutable/audited</p>
+    <p><b>Next role sees:</b> The next role sees the resulting state, not the entire internal preparation history.</p>
+  </article>
+    </div>
+  </section>
+
+  <section class="page recovery">
+    <p class="eyebrow">Gate, exception, and recovery WS-006</p>
+    <h2>What can block the workflow and what remains protected</h2>
+    <div class="recovery-grid">
+      <article><h3>What the system prevents</h3><ul><li>unscoped participant decisions</li><li>lost decision rationale</li><li>completed decisions without proof</li></ul></article>
+      <article><h3>What remains hidden</h3><ul><li>Client sees released decision only</li><li>Advisor/compliance see outcome and evidence lineage</li><li>Restricted internal notes remain hidden</li></ul></article>
+      <article><h3>Evidence and audit lineage</h3><ul><li>Decision action, reason, participant action, and evidence package should be immutable/audited</li></ul></article>
+      <article><h3>What becomes possible next</h3><p>The client decision is not the end of the workflow; it becomes the start of evidence and future review discipline.</p></article>
+    </div>
+    <aside class="demo-boundary">
+      <h3>Demo boundary</h3>
+      <p>Decision surfaces are navigable; final decision/evidence package persistence remains incomplete.</p>
+    </aside>
+  </section>
+<section class="page workflow-overview" id="WS-007">
+    <p class="eyebrow">Workflow module WS-007</p>
+    <h2>Governance change becomes permission-safe access</h2>
+    <p class="lead">Access changes become governed permission state.</p>
+    <div class="fact-strip">
+      <article><h3>Why this exists</h3><p>Family offices frequently need to adjust access, but access changes can silently overexpose sensitive client data.</p></article>
+      <article><h3>Roles</h3><p>Principal, Admin, Compliance, Security, External Advisor</p></article>
+      <article><h3>Data object</h3><p>UserRole, RolePermission, AccessRequest, SecondConfirmation, AuditEvent</p></article>
+    </div>
+    <figure class="process-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/docs/v3/user-manual-visual-process/process-graphics/ws-007-governance-change-becomes-permission-safe-access.png" alt="WS-007 process graphic" />
+      <figcaption>WS-007 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts. This page shows the process before the reader inspects the UI evidence.</figcaption>
+    </figure>
+  </section>
+
+  <section class="page ui-evidence">
+    <p class="eyebrow">Annotated UI evidence WS-007</p>
+    <h2>Where the process appears in the interface</h2>
+    <figure class="screenshot-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/docs/v3/user-manual-visual-process/annotated-screenshots/ws-007-governance-change-becomes-permission-safe-access-annotated.png" alt="WS-007 annotated screenshot" />
+      <figcaption>Show access and governance as controlled collaboration boundary.</figcaption>
+    </figure>
+    <div class="callout-grid">
+      <article class="callout-card">
+    <div class="callout-heading"><span>1</span><strong>Trigger and source context</strong></div>
+    <p><b>User action or inspection:</b> Principal/Admin requests access</p>
+    <p><b>Why this matters:</b> This anchors governance change becomes permission-safe access in the source context instead of treating the screen as an isolated page.</p>
+    <p><b>Required data:</b> UserRole, RolePermission, AccessRequest</p>
+    <p><b>State:</b> WorkflowStatus: new/requested -&gt; in_review</p>
+    <p><b>Visibility:</b> Requester sees request state</p>
+    <p><b>Evidence/audit:</b> Sensitive role/access actions require second confirmation and audit</p>
+    <p><b>Next role sees:</b> Admin receives a scoped view of the workflow context.</p>
+  </article><article class="callout-card">
+    <div class="callout-heading"><span>2</span><strong>Review or gate action</strong></div>
+    <p><b>User action or inspection:</b> Compliance reviews purpose/scope</p>
+    <p><b>Why this matters:</b> This is where the workflow becomes controlled work rather than raw information.</p>
+    <p><b>Required data:</b> RolePermission, AccessRequest, SecondConfirmation</p>
+    <p><b>State:</b> in_review -&gt; approved or blocked or revoked</p>
+    <p><b>Visibility:</b> Reviewer sees sensitivity and scope</p>
+    <p><b>Evidence/audit:</b> Review action becomes part of the workflow history when applicable.</p>
+    <p><b>Next role sees:</b> Security can act only after the relevant review or gate is satisfied.</p>
+  </article><article class="callout-card">
+    <div class="callout-heading"><span>3</span><strong>Outcome, visibility, or evidence result</strong></div>
+    <p><b>User action or inspection:</b> Audit history records lineage</p>
+    <p><b>Why this matters:</b> This shows what the workflow makes possible next and which boundary has changed.</p>
+    <p><b>Required data:</b> AccessRequest, SecondConfirmation, AuditEvent</p>
+    <p><b>State:</b> in_review -&gt; approved or blocked or revoked</p>
+    <p><b>Visibility:</b> Target user sees only approved role scope</p>
+    <p><b>Evidence/audit:</b> Sensitive role/access actions require second confirmation and audit</p>
+    <p><b>Next role sees:</b> The next role sees the resulting state, not the entire internal preparation history.</p>
+  </article>
+    </div>
+  </section>
+
+  <section class="page recovery">
+    <p class="eyebrow">Gate, exception, and recovery WS-007</p>
+    <h2>What can block the workflow and what remains protected</h2>
+    <div class="recovery-grid">
+      <article><h3>What the system prevents</h3><ul><li>external broad access without review</li><li>cross-tenant exposure</li><li>permission changes without audit</li></ul></article>
+      <article><h3>What remains hidden</h3><ul><li>Requester sees request state</li><li>Reviewer sees sensitivity and scope</li><li>Target user sees only approved role scope</li></ul></article>
+      <article><h3>Evidence and audit lineage</h3><ul><li>Sensitive role/access actions require second confirmation and audit</li></ul></article>
+      <article><h3>What becomes possible next</h3><p>Access is not a user setting. It is a governed collaboration boundary.</p></article>
+    </div>
+    <aside class="demo-boundary">
+      <h3>Demo boundary</h3>
+      <p>Demo actions are visible; governed access transactions remain incomplete.</p>
+    </aside>
+  </section>
+<section class="page workflow-overview" id="WS-008">
+    <p class="eyebrow">Workflow module WS-008</p>
+    <h2>Communication escalation becomes recorded service context</h2>
+    <p class="lead">Communication escalation becomes recorded service context.</p>
+    <div class="fact-strip">
+      <article><h3>Why this exists</h3><p>Complex advisory work often shifts between digital messages, calls, workshops, and specialists without preserving why the channel changed.</p></article>
+      <article><h3>Roles</h3><p>Advisor, Client Success, Client, External Specialist, Compliance</p></article>
+      <article><h3>Data object</h3><p>MessageThread, Message, CallEvent, EvidenceRecord, AuditEvent</p></article>
+    </div>
+    <figure class="process-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/docs/v3/user-manual-visual-process/process-graphics/ws-008-communication-escalation-becomes-recorded-service-context.png" alt="WS-008 process graphic" />
+      <figcaption>WS-008 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts. This page shows the process before the reader inspects the UI evidence.</figcaption>
+    </figure>
+  </section>
+
+  <section class="page ui-evidence">
+    <p class="eyebrow">Annotated UI evidence WS-008</p>
+    <h2>Where the process appears in the interface</h2>
+    <figure class="screenshot-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/docs/v3/user-manual-visual-process/annotated-screenshots/ws-008-communication-escalation-becomes-recorded-service-context-annotated.png" alt="WS-008 annotated screenshot" />
+      <figcaption>Show channel escalation as service workflow state.</figcaption>
+    </figure>
+    <div class="callout-grid">
+      <article class="callout-card">
+    <div class="callout-heading"><span>1</span><strong>Trigger and source context</strong></div>
+    <p><b>User action or inspection:</b> Advisor/Client Success selects channel</p>
+    <p><b>Why this matters:</b> This anchors communication escalation becomes recorded service context in the source context instead of treating the screen as an isolated page.</p>
+    <p><b>Required data:</b> MessageThread, Message, CallEvent</p>
+    <p><b>State:</b> WorkflowStatus: draft -&gt; sent or scheduled</p>
+    <p><b>Visibility:</b> Client-visible messages are separated from internal notes</p>
+    <p><b>Evidence/audit:</b> Sensitive communication should audit; material calls can link to evidence</p>
+    <p><b>Next role sees:</b> Client Success receives a scoped view of the workflow context.</p>
+  </article><article class="callout-card">
+    <div class="callout-heading"><span>2</span><strong>Review or gate action</strong></div>
+    <p><b>User action or inspection:</b> Client responds or joins call</p>
+    <p><b>Why this matters:</b> This is where the workflow becomes controlled work rather than raw information.</p>
+    <p><b>Required data:</b> Message, CallEvent, EvidenceRecord</p>
+    <p><b>State:</b> sent or scheduled -&gt; awaiting_reply</p>
+    <p><b>Visibility:</b> Material outcomes can become evidence-linked</p>
+    <p><b>Evidence/audit:</b> Review action becomes part of the workflow history when applicable.</p>
+    <p><b>Next role sees:</b> External Specialist can act only after the relevant review or gate is satisfied.</p>
+  </article><article class="callout-card">
+    <div class="callout-heading"><span>3</span><strong>Outcome, visibility, or evidence result</strong></div>
+    <p><b>User action or inspection:</b> Compliance controls advice-like messages when needed</p>
+    <p><b>Why this matters:</b> This shows what the workflow makes possible next and which boundary has changed.</p>
+    <p><b>Required data:</b> CallEvent, EvidenceRecord, AuditEvent</p>
+    <p><b>State:</b> awaiting_reply -&gt; completed or escalated</p>
+    <p><b>Visibility:</b> Advice-like content remains release-controlled</p>
+    <p><b>Evidence/audit:</b> Sensitive communication should audit; material calls can link to evidence</p>
+    <p><b>Next role sees:</b> The next role sees the resulting state, not the entire internal preparation history.</p>
+  </article>
+    </div>
+  </section>
+
+  <section class="page recovery">
+    <p class="eyebrow">Gate, exception, and recovery WS-008</p>
+    <h2>What can block the workflow and what remains protected</h2>
+    <div class="recovery-grid">
+      <article><h3>What the system prevents</h3><ul><li>unrecorded escalations</li><li>advice-like messages without release control</li><li>lost service context</li></ul></article>
+      <article><h3>What remains hidden</h3><ul><li>Client-visible messages are separated from internal notes</li><li>Material outcomes can become evidence-linked</li><li>Advice-like content remains release-controlled</li></ul></article>
+      <article><h3>Evidence and audit lineage</h3><ul><li>Sensitive communication should audit; material calls can link to evidence</li></ul></article>
+      <article><h3>What becomes possible next</h3><p>Communication is part of the workflow state, not a side channel outside the system.</p></article>
+    </div>
+    <aside class="demo-boundary">
+      <h3>Demo boundary</h3>
+      <p>Communication surfaces are mostly static; message and call persistence is not claimed.</p>
+    </aside>
+  </section>
+<section class="page workflow-overview" id="WS-009">
+    <p class="eyebrow">Workflow module WS-009</p>
+    <h2>Export request becomes redacted, approved, auditable package</h2>
+    <p class="lead">Export requests become redacted, approved, auditable packages.</p>
+    <div class="fact-strip">
+      <article><h3>Why this exists</h3><p>Exporting data can break the system's visibility controls if scope, redaction, approval, expiry, and audit are not explicit.</p></article>
+      <article><h3>Roles</h3><p>Advisor, Compliance, Privacy Officer, Client, External Advisor</p></article>
+      <article><h3>Data object</h3><p>EvidenceRecord, ExportRequest, Document, AuditEvent, Permission</p></article>
+    </div>
+    <figure class="process-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/docs/v3/user-manual-visual-process/process-graphics/ws-009-export-request-becomes-redacted-approved-auditable-package.png" alt="WS-009 process graphic" />
+      <figcaption>WS-009 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts. This page shows the process before the reader inspects the UI evidence.</figcaption>
+    </figure>
+  </section>
+
+  <section class="page ui-evidence">
+    <p class="eyebrow">Annotated UI evidence WS-009</p>
+    <h2>Where the process appears in the interface</h2>
+    <figure class="screenshot-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/docs/v3/user-manual-visual-process/annotated-screenshots/ws-009-export-request-becomes-redacted-approved-auditable-package-annotated.png" alt="WS-009 annotated screenshot" />
+      <figcaption>Use evidence/export surface to explain scoped redaction and auditable sharing.</figcaption>
+    </figure>
+    <div class="callout-grid">
+      <article class="callout-card">
+    <div class="callout-heading"><span>1</span><strong>Trigger and source context</strong></div>
+    <p><b>User action or inspection:</b> Requester chooses scope</p>
+    <p><b>Why this matters:</b> This anchors export request becomes redacted, approved, auditable package in the source context instead of treating the screen as an isolated page.</p>
+    <p><b>Required data:</b> EvidenceRecord, ExportRequest, Document</p>
+    <p><b>State:</b> ExportStatus: draft -&gt; scope_selected</p>
+    <p><b>Visibility:</b> Internal evidence may become redacted package</p>
+    <p><b>Evidence/audit:</b> Export create, scope, redaction, approval, generation, download, and share should audit</p>
+    <p><b>Next role sees:</b> Compliance receives a scoped view of the workflow context.</p>
+  </article><article class="callout-card">
+    <div class="callout-heading"><span>2</span><strong>Review or gate action</strong></div>
+    <p><b>User action or inspection:</b> Privacy/Compliance reviews redaction and approval</p>
+    <p><b>Why this matters:</b> This is where the workflow becomes controlled work rather than raw information.</p>
+    <p><b>Required data:</b> ExportRequest, Document, AuditEvent</p>
+    <p><b>State:</b> scope_selected -&gt; redaction_pending</p>
+    <p><b>Visibility:</b> External sharing has expiry and classification</p>
+    <p><b>Evidence/audit:</b> Review action becomes part of the workflow history when applicable.</p>
+    <p><b>Next role sees:</b> Client can act only after the relevant review or gate is satisfied.</p>
+  </article><article class="callout-card">
+    <div class="callout-heading"><span>3</span><strong>Outcome, visibility, or evidence result</strong></div>
+    <p><b>User action or inspection:</b> Audit captures export lifecycle</p>
+    <p><b>Why this matters:</b> This shows what the workflow makes possible next and which boundary has changed.</p>
+    <p><b>Required data:</b> Document, AuditEvent, Permission</p>
+    <p><b>State:</b> generated -&gt; downloaded or expired</p>
+    <p><b>Visibility:</b> Restricted material remains excluded</p>
+    <p><b>Evidence/audit:</b> Export create, scope, redaction, approval, generation, download, and share should audit</p>
+    <p><b>Next role sees:</b> The next role sees the resulting state, not the entire internal preparation history.</p>
+  </article>
+    </div>
+  </section>
+
+  <section class="page recovery">
+    <p class="eyebrow">Gate, exception, and recovery WS-009</p>
+    <h2>What can block the workflow and what remains protected</h2>
+    <div class="recovery-grid">
+      <article><h3>What the system prevents</h3><ul><li>unredacted data leaving the platform</li><li>permission-free downloads</li><li>external packages without expiry</li></ul></article>
+      <article><h3>What remains hidden</h3><ul><li>Internal evidence may become redacted package</li><li>External sharing has expiry and classification</li><li>Restricted material remains excluded</li></ul></article>
+      <article><h3>Evidence and audit lineage</h3><ul><li>Export create, scope, redaction, approval, generation, download, and share should audit</li></ul></article>
+      <article><h3>What becomes possible next</h3><p>An export is a controlled visibility event, not a simple download.</p></article>
+    </div>
+    <aside class="demo-boundary">
+      <h3>Demo boundary</h3>
+      <p>Export UI is navigable; file/share realism is a Phase 18 gap.</p>
+    </aside>
+  </section>
+<section class="page workflow-overview" id="WS-010">
+    <p class="eyebrow">Workflow module WS-010</p>
+    <h2>Ops monitoring turns workflow friction into service and product improvement</h2>
+    <p class="lead">Operational friction becomes service and product improvement evidence.</p>
+    <div class="fact-strip">
+      <article><h3>Why this exists</h3><p>Workflow friction often remains anecdotal: someone knows a queue is slow, but the system does not show where or why.</p></article>
+      <article><h3>Roles</h3><p>Ops, Product, QA, Leads</p></article>
+      <article><h3>Data object</h3><p>QueueItem, DataQualityIssue, ReviewSchedule, AuditEvent</p></article>
+    </div>
+    <figure class="process-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/docs/v3/user-manual-visual-process/process-graphics/ws-010-ops-monitoring-turns-workflow-friction-into-service-and-product-improvement.png" alt="WS-010 process graphic" />
+      <figcaption>WS-010 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts. This page shows the process before the reader inspects the UI evidence.</figcaption>
+    </figure>
+  </section>
+
+  <section class="page ui-evidence">
+    <p class="eyebrow">Annotated UI evidence WS-010</p>
+    <h2>Where the process appears in the interface</h2>
+    <figure class="screenshot-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/docs/v3/user-manual-visual-process/annotated-screenshots/ws-010-ops-monitoring-turns-workflow-friction-into-service-and-product-improvement-annotated.png" alt="WS-010 annotated screenshot" />
+      <figcaption>Show ops queues as workflow feedback and improvement surface.</figcaption>
+    </figure>
+    <div class="callout-grid">
+      <article class="callout-card">
+    <div class="callout-heading"><span>1</span><strong>Trigger and source context</strong></div>
+    <p><b>User action or inspection:</b> Ops monitors queues</p>
+    <p><b>Why this matters:</b> This anchors ops monitoring turns workflow friction into service and product improvement in the source context instead of treating the screen as an isolated page.</p>
+    <p><b>Required data:</b> QueueItem, DataQualityIssue, ReviewSchedule</p>
+    <p><b>State:</b> WorkflowStatus: open -&gt; in_review</p>
+    <p><b>Visibility:</b> Operational pages remain internal</p>
+    <p><b>Evidence/audit:</b> Ops mutations should audit when implemented and service-affecting</p>
+    <p><b>Next role sees:</b> Product receives a scoped view of the workflow context.</p>
+  </article><article class="callout-card">
+    <div class="callout-heading"><span>2</span><strong>Review or gate action</strong></div>
+    <p><b>User action or inspection:</b> QA validates coverage and state language</p>
+    <p><b>Why this matters:</b> This is where the workflow becomes controlled work rather than raw information.</p>
+    <p><b>Required data:</b> DataQualityIssue, ReviewSchedule, AuditEvent</p>
+    <p><b>State:</b> in_review -&gt; blocked</p>
+    <p><b>Visibility:</b> Workflow health informs product/service decisions</p>
+    <p><b>Evidence/audit:</b> Review action becomes part of the workflow history when applicable.</p>
+    <p><b>Next role sees:</b> Leads can act only after the relevant review or gate is satisfied.</p>
+  </article><article class="callout-card">
+    <div class="callout-heading"><span>3</span><strong>Outcome, visibility, or evidence result</strong></div>
+    <p><b>User action or inspection:</b> Leads prioritize next workflow improvement</p>
+    <p><b>Why this matters:</b> This shows what the workflow makes possible next and which boundary has changed.</p>
+    <p><b>Required data:</b> DataQualityIssue, ReviewSchedule, AuditEvent</p>
+    <p><b>State:</b> deferred -&gt; completed</p>
+    <p><b>Visibility:</b> Client-facing promises are not inflated by reference pages</p>
+    <p><b>Evidence/audit:</b> Ops mutations should audit when implemented and service-affecting</p>
+    <p><b>Next role sees:</b> The next role sees the resulting state, not the entire internal preparation history.</p>
+  </article>
+    </div>
+  </section>
+
+  <section class="page recovery">
+    <p class="eyebrow">Gate, exception, and recovery WS-010</p>
+    <h2>What can block the workflow and what remains protected</h2>
+    <div class="recovery-grid">
+      <article><h3>What the system prevents</h3><ul><li>invisible SLA drift</li><li>reference pages being mistaken for product capability</li><li>untracked data quality debt</li></ul></article>
+      <article><h3>What remains hidden</h3><ul><li>Operational pages remain internal</li><li>Workflow health informs product/service decisions</li><li>Client-facing promises are not inflated by reference pages</li></ul></article>
+      <article><h3>Evidence and audit lineage</h3><ul><li>Ops mutations should audit when implemented and service-affecting</li></ul></article>
+      <article><h3>What becomes possible next</h3><p>AlphaVest uses operations feedback to keep the workflow model honest and continuously improve the shared state.</p></article>
+    </div>
+    <aside class="demo-boundary">
+      <h3>Demo boundary</h3>
+      <p>Queue/SLA mutation is not fully implemented; reference pages are internal only.</p>
+    </aside>
+  </section>
+
+    <section class="page proof">
+      <p class="eyebrow">Boundary and proof</p>
+      <h2>What this PDF claims and what it does not claim</h2>
+      <div class="proof-grid">
+        <article><h3>Grounded</h3><p>Workflow content comes from the visual-process package and its process graphic and annotated screenshot maps.</p></article>
+        <article><h3>Not table-led</h3><p>Tables are not the spine of this manual. The primary pattern is process graphic, annotated UI evidence, and callout explanation.</p></article>
+        <article><h3>Broad callouts</h3><p>Callouts identify UI regions rather than exact DOM hitboxes because the screenshot source package does not expose semantic coordinates.</p></article>
+        <article><h3>Not PDF/UA</h3><p>The PDF is text-extractable and titled, but Chromium output is not claimed as tagged PDF/UA.</p></article>
+      </div>
+      <div class="research-grid">
+        <article><h3>NN/g Help and Documentation</h3><p>Keep help task-focused, concise, searchable, and grounded in concrete steps.</p></article><article><h3>NN/g Complex Application Design</h3><p>Complex applications need clear workflow support, visible state, and reduced cognitive load.</p></article><article><h3>Microsoft Procedures and Instructions</h3><p>Use consistent procedural instructions and input-neutral UI interaction wording.</p></article><article><h3>Microsoft Step-by-Step Instructions</h3><p>Choose simple or complex procedure formats based on the task, not on route structure.</p></article><article><h3>W3C PDF Reading Order</h3><p>PDF content should preserve a logical reading order as far as the production pipeline allows.</p></article><article><h3>W3C PDF Document Title</h3><p>The PDF should expose a meaningful document title and metadata where possible.</p></article><article><h3>PDF Association Accessibility</h3><p>Tagged PDF and PDF/UA status must be handled honestly as a structural accessibility question.</p></article><article><h3>PDF Association Tagged PDF Best Practice Guide</h3><p>Tagged PDFs require structural semantics, not only visual polish.</p></article>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-06-16",
+  "purpose": "Compatibility map from legacy J01-J10 screencasts to portfolio candidates.",
+  "rules": [
+    "Legacy J01-J10 remain runnable until P0 passes end-to-end.",
+    "Portfolio candidates clone, split or extend legacy journeys instead of renaming them in place.",
+    "J10 is policy-frame-only unless dedicated j10.* handlers are implemented."
+  ],
+  "legacyToPortfolio": {
+    "J01": ["P0-06", "P0-07", "P2-07", "P2-08"],
+    "J02": ["P0-08", "P0-09", "P2-01", "P2-15"],
+    "J03": ["P0-10", "P1-01", "P1-15", "P2-09", "P2-10"],
+    "J04": ["P0-04", "P1-10", "P2-05", "P2-06"],
+    "J05": ["P0-05", "P2-16", "P2-17"],
+    "J06": ["P0-02", "P0-03", "P2-14"],
+    "J07": ["P0-12", "P1-13", "P1-14", "P2-13"],
+    "J08": ["P0-11", "P1-11", "P2-03", "P2-11", "P2-12"],
+    "J09": ["P0-04", "P1-16"],
+    "J10": ["P0-01", "P1-12"]
+  },
+  "portfolioToLegacy": {
+    "P0-01": ["J10"],
+    "P0-02": ["J06"],
+    "P0-03": ["J06"],
+    "P0-04": ["J09", "J04"],
+    "P0-05": ["J05"],
+    "P0-06": ["J01"],
+    "P0-07": ["J01"],
+    "P0-08": ["J02"],
+    "P0-09": ["J02"],
+    "P0-10": ["J03"],
+    "P0-11": ["J08"],
+    "P0-12": ["J07"],
+    "P1-01": ["J03"],
+    "P1-02": ["J01"],
+    "P1-03": ["J01"],
+    "P1-04": [],
+    "P1-05": [],
+    "P1-06": [],
+    "P1-07": [],
+    "P1-08": [],
+    "P1-09": ["J04", "J09"],
+    "P1-10": ["J04"],
+    "P1-11": ["J08"],
+    "P1-12": ["J06", "J10"],
+    "P1-13": ["J07", "J10"],
+    "P1-14": ["J07"],
+    "P1-15": ["J03"],
+    "P1-16": ["J09", "J04"]
+  },
+  "caveats": {
+    "J10": "Policy/security/template changes remain policy-frame-only until dedicated j10.* handlers exist.",
+    "P0-03": "Onboarding and MFA are demo-state, not real authentication.",
+    "P0-11": "Export is metadata/package-manifest proof, not real binary archive generation.",
+    "P1-02": "Communication routes are route/static unless dedicated communication handlers are added."
+  }
+}

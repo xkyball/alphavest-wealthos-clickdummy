@@ -1,0 +1,236 @@
+{
+  "generatedAt": "2026-06-16T07:47:11+02:00",
+  "sourceFiles": [
+    "AGENTS.md",
+    "CODEX_MASTER_TASK.md",
+    "docs/v3/CODEX_TASKS_DETAILED_V3.md",
+    "docs/v3/SCREEN_CATALOGUE_V3.md",
+    "docs/v3/DESIGN_SYSTEM_AND_VISUAL_RULES_V3.md",
+    "docs/v3/TECHNICAL_IMPLEMENTATION_SEQUENCE_V3.md",
+    "docs/v3/PAGEFLOW_USERFLOW_MAPPING_V3.md",
+    "docs/v3/DATA_MODEL_V3.md",
+    "docs/v3/QUALITY_GATES_AND_TEST_PLAN_V3.md",
+    "docs/v3/USERFLOW_DEFINITIONS_V3.md",
+    "docs/v3/WORKFLOW_DEFINITIONS_V3.md",
+    "docs/v3/PAGE_SPECS_V3.md",
+    "docs/v3/SCREEN_TO_TASK_MATRIX_V3.md",
+    "docs/v3/USER_JOURNEY_PLAYBOOK_V3.md",
+    "docs/v3/journeys.screencast.v3.json",
+    "docs/v3/SCREENCAST_AUTOMATION_PLAN_V3.md",
+    "docs/v3/SCREENCAST_RUNBOOK_V3.md",
+    "docs/v3/SCREENCAST_QA_REPORT_V3.md",
+    "docs/v3/VISUAL_ASSET_MANIFEST_V3.md",
+    "docs/v3/VISUAL_ASSET_MANIFEST_V3.json",
+    "app/[...segments]/page.tsx",
+    "app/api/demo-workflow/route.ts",
+    "components/",
+    "lib/",
+    "prisma/schema.prisma",
+    "prisma/seed.ts",
+    "scripts/"
+  ],
+  "definitionInventory": [
+    {
+      "id": "PF-A/UF-01/W-01/J10",
+      "name": "Platform policy setup",
+      "actor": "Platform Admin, Compliance, Security",
+      "routes": ["/admin/platform", "/admin/policies/advice-boundary", "/admin/roles", "/admin/security", "/admin/evidence-templates", "/admin/export-templates"],
+      "entities": ["PolicyDefinition", "Role", "Permission", "AuditEvent"],
+      "evidenceLevel": "E3 navigable UI"
+    },
+    {
+      "id": "PF-B/UF-02/W-02/J06",
+      "name": "Tenant onboarding",
+      "actor": "Ops Admin, Client Success, Compliance",
+      "routes": ["/admin/tenants", "/tenants/new", "/tenants/:id/setup", "/tenants/:id/team", "/tenants/:id/policies", "/tenants/:id/users", "/onboarding/invite"],
+      "entities": ["ClientTenant", "User", "UserRole", "PolicyDefinition", "AuditEvent"],
+      "evidenceLevel": "E3 navigable UI"
+    },
+    {
+      "id": "PF-D/UF-06/W-06/J04",
+      "name": "Document intake",
+      "actor": "Client, Family CFO, Analyst",
+      "routes": ["/documents", "/documents/upload", "/documents/extraction-review", "/documents/verification-pending"],
+      "entities": ["Document", "DocumentVersion", "DocumentExtraction", "DocumentReview", "EvidenceItem"],
+      "evidenceLevel": "E3 navigable UI"
+    },
+    {
+      "id": "PF-E/UF-07/W-07/J01",
+      "name": "Signal and analyst review",
+      "actor": "Analyst",
+      "routes": ["/signals", "/workbench/triggers/:id"],
+      "entities": ["Trigger", "ActionItem", "Recommendation", "AuditEvent"],
+      "evidenceLevel": "E5 persisted executable for selected J01 actions"
+    },
+    {
+      "id": "PF-E/UF-08/W-08/J01",
+      "name": "Advisor approval",
+      "actor": "Senior Wealth Advisor",
+      "routes": ["/advisor-approval", "/advisor-approval/:id"],
+      "entities": ["Approval", "Recommendation", "AuditEvent"],
+      "evidenceLevel": "E5 persisted executable for selected J01 actions"
+    },
+    {
+      "id": "PF-F/UF-09/W-09/J02",
+      "name": "Compliance release or block",
+      "actor": "Compliance Officer",
+      "routes": ["/compliance", "/compliance/:id/review", "/compliance/:id/release", "/compliance/:id/block", "/compliance/:id/audit"],
+      "entities": ["ComplianceReview", "Recommendation", "EvidenceRecord", "AuditEvent"],
+      "evidenceLevel": "E3 navigable UI"
+    },
+    {
+      "id": "PF-F/UF-10/W-10/J03",
+      "name": "Client decision and evidence",
+      "actor": "Principal, Family Council, Trustee",
+      "routes": ["/decisions", "/decisions/:id", "/decisions/:id/success", "/evidence/:id"],
+      "entities": ["Decision", "DecisionParticipant", "EvidenceRecord", "AuditEvent"],
+      "evidenceLevel": "E3 navigable UI"
+    },
+    {
+      "id": "PF-I/UF-11/W-11/J08",
+      "name": "Evidence and export",
+      "actor": "Client, Advisor, Compliance, Privacy",
+      "routes": ["/evidence", "/evidence/:id", "/export/new", "/export/:id/scope", "/export/:id/redaction", "/export/:id/preview", "/export/:id/download"],
+      "entities": ["EvidenceRecord", "EvidenceItem", "ExportRequest", "AuditEvent"],
+      "evidenceLevel": "E3 navigable UI"
+    },
+    {
+      "id": "PF-G/UF-12/W-12/J07",
+      "name": "Governance access",
+      "actor": "Principal, Admin, Security",
+      "routes": ["/governance/users", "/governance/roles", "/governance/access-requests", "/governance/audit-history"],
+      "entities": ["User", "Role", "UserRole", "AccessRequest", "SecondConfirmation", "AuditEvent"],
+      "evidenceLevel": "E3 navigable UI"
+    }
+  ],
+  "workflowCapabilityMatrix": [
+    { "workflow": "W-01 Platform setup", "status": "navigable-only", "evidenceLevel": "E3", "missing": "persisted policy/security/role mutations" },
+    { "workflow": "W-02 Tenant setup", "status": "navigable-only", "evidenceLevel": "E3", "missing": "tenant/team/policy/invite transactions" },
+    { "workflow": "W-03 User onboarding", "status": "static-only", "evidenceLevel": "E2", "missing": "invite identity MFA consent write path" },
+    { "workflow": "W-04 Client profile/family", "status": "navigable-only", "evidenceLevel": "E3", "missing": "profile family relationship persistence" },
+    { "workflow": "W-05 Entity/wealth/actions", "status": "navigable-only", "evidenceLevel": "E3", "missing": "entity create and action gate persistence" },
+    { "workflow": "W-06 Document intake", "status": "navigable-only", "evidenceLevel": "E3", "missing": "file upload version extraction review persistence" },
+    { "workflow": "W-07 Signal review", "status": "complete-demo-persisted", "evidenceLevel": "E5", "missing": "role enforcement and evidence-builder transaction" },
+    { "workflow": "W-08 Advisor approval", "status": "complete-demo-persisted", "evidenceLevel": "E5", "missing": "compliance handoff/release transaction" },
+    { "workflow": "W-09 Compliance release/block", "status": "navigable-only", "evidenceLevel": "E3", "missing": "release/block/request evidence transaction" },
+    { "workflow": "W-10 Client decision", "status": "navigable-only", "evidenceLevel": "E3", "missing": "decision submit and evidence package transaction" },
+    { "workflow": "W-11 Evidence/export", "status": "navigable-only", "evidenceLevel": "E3", "missing": "export lifecycle and package generation" },
+    { "workflow": "W-12 Governance/access", "status": "navigable-only", "evidenceLevel": "E3", "missing": "role/access/second confirmation transaction" },
+    { "workflow": "W-13 Communication", "status": "static-only", "evidenceLevel": "E2", "missing": "message/call persistence" },
+    { "workflow": "W-14 Ops/reference", "status": "static-only", "evidenceLevel": "E2", "missing": "queue/SLA mutation if required" }
+  ],
+  "pageflowClickflowGaps": [
+    { "pageflow": "PF-A", "routeCount": 6, "gap": "settings and policy CTAs do not persist" },
+    { "pageflow": "PF-B", "routeCount": 13, "gap": "tenant/user onboarding CTAs mostly route or static" },
+    { "pageflow": "PF-C", "routeCount": 10, "gap": "profile/entity/action data not written" },
+    { "pageflow": "PF-D", "routeCount": 4, "gap": "document upload/extraction review not written" },
+    { "pageflow": "PF-E", "routeCount": 5, "gap": "J01 selected actions persisted; other controls mixed" },
+    { "pageflow": "PF-F", "routeCount": 8, "gap": "compliance release and client decision not transactional" },
+    { "pageflow": "PF-G", "routeCount": 4, "gap": "governance actions not persisted" },
+    { "pageflow": "PF-H", "routeCount": 2, "gap": "communication/call outcome not persisted" },
+    { "pageflow": "PF-I", "routeCount": 7, "gap": "export/evidence actions not generated or downloaded" },
+    { "pageflow": "PF-J", "routeCount": 5, "gap": "ops/reference mostly read-only" }
+  ],
+  "inputMaskRequirements": [
+    { "id": "IM-01", "name": "Platform Settings Confirmation", "priority": "P1", "workflow": "W-01", "entities": ["PolicyDefinition", "AuditEvent", "SecondConfirmation"] },
+    { "id": "IM-02", "name": "Advice Boundary Policy Editor", "priority": "P1", "workflow": "W-01", "entities": ["PolicyDefinition", "AuditEvent"] },
+    { "id": "IM-03", "name": "Role Permission Change", "priority": "P0", "workflow": "W-01/W-12", "entities": ["Role", "Permission", "RolePermission", "SecondConfirmation", "AuditEvent"] },
+    { "id": "IM-04", "name": "Tenant Create Wizard", "priority": "P0", "workflow": "W-02", "entities": ["ClientTenant", "Engagement", "AuditEvent"] },
+    { "id": "IM-05", "name": "Tenant Team Assignment", "priority": "P0", "workflow": "W-02", "entities": ["UserRole", "Engagement", "AuditEvent"] },
+    { "id": "IM-06", "name": "Tenant Policy Override", "priority": "P0", "workflow": "W-02", "entities": ["PolicyDefinition", "ClientTenant", "AuditEvent"] },
+    { "id": "IM-07", "name": "Tenant User Invite", "priority": "P0", "workflow": "W-02/W-03", "entities": ["User", "UserRole", "ConsentRecord", "AuditEvent"] },
+    { "id": "IM-08", "name": "Onboarding Identity And MFA", "priority": "P1", "workflow": "W-03", "entities": ["User", "UserProfile", "ConsentRecord", "AuditEvent"] },
+    { "id": "IM-09", "name": "Consent And Privacy Acknowledgement", "priority": "P1", "workflow": "W-03", "entities": ["ConsentRecord", "AuditEvent"] },
+    { "id": "IM-10", "name": "Client Profile Submission", "priority": "P1", "workflow": "W-04", "entities": ["UserProfile", "ClientObjective", "AuditEvent", "DataQualityIssue"] },
+    { "id": "IM-11", "name": "Family Member Editor", "priority": "P1", "workflow": "W-04", "entities": ["FamilyMember", "Relationship", "AuditEvent"] },
+    { "id": "IM-12", "name": "Relationship Editor", "priority": "P1", "workflow": "W-04", "entities": ["Relationship", "DataQualityIssue", "EvidenceItem", "AuditEvent"] },
+    { "id": "IM-13", "name": "Entity Creation Wizard", "priority": "P1", "workflow": "W-05", "entities": ["Entity", "EntityParticipant", "Asset", "DocumentLink", "AuditEvent"] },
+    { "id": "IM-14", "name": "Document Upload", "priority": "P0", "workflow": "W-06", "entities": ["Document", "DocumentVersion", "AuditEvent"] },
+    { "id": "IM-15", "name": "Extraction Review", "priority": "P0", "workflow": "W-06", "entities": ["DocumentExtraction", "DocumentReview", "DocumentLink", "EvidenceItem", "AuditEvent"] },
+    { "id": "IM-16", "name": "Analyst Trigger Review", "priority": "P1", "workflow": "W-07", "entities": ["Trigger", "ActionItem", "Recommendation", "AuditEvent"] },
+    { "id": "IM-17", "name": "Advisor Approval Detail", "priority": "P1", "workflow": "W-08", "entities": ["Approval", "Recommendation", "ActionItem", "AuditEvent"] },
+    { "id": "IM-18", "name": "Compliance Release/Block", "priority": "P0", "workflow": "W-09", "entities": ["ComplianceReview", "Recommendation", "EvidenceRecord", "AuditEvent"] },
+    { "id": "IM-19", "name": "Client Decision Room", "priority": "P0", "workflow": "W-10", "entities": ["Decision", "DecisionParticipant", "EvidenceRecord", "AuditEvent"] },
+    { "id": "IM-20", "name": "Evidence Item Add/Release", "priority": "P0", "workflow": "W-06/W-09/W-10/W-11", "entities": ["EvidenceRecord", "EvidenceItem", "DocumentLink", "AuditEvent"] },
+    { "id": "IM-21", "name": "Governance User/Role/Access", "priority": "P0", "workflow": "W-12", "entities": ["User", "UserRole", "AccessRequest", "SecondConfirmation", "AuditEvent"] },
+    { "id": "IM-22", "name": "Communication/Call Outcome", "priority": "P1", "workflow": "W-13", "entities": ["MessageThread", "Message", "CallEvent", "EvidenceRecord", "AuditEvent"] },
+    { "id": "IM-23", "name": "Export Wizard", "priority": "P0", "workflow": "W-11", "entities": ["ExportRequest", "EvidenceRecord", "AuditEvent"] },
+    { "id": "IM-24", "name": "Ops Queue/SLA Action", "priority": "P2", "workflow": "W-14", "entities": ["QueueItem", "DataQualityIssue", "AuditEvent"] }
+  ],
+  "fieldRequirements": [
+    { "inputMaskId": "IM-01", "field": "settingKey", "type": "select", "required": true, "mapping": "PolicyDefinition.policyKey" },
+    { "inputMaskId": "IM-02", "field": "adviceClass", "type": "select", "required": true, "mapping": "PolicyDefinition.payload" },
+    { "inputMaskId": "IM-03", "field": "permissionKeys", "type": "multiselect", "required": true, "mapping": "RolePermission.permissionId" },
+    { "inputMaskId": "IM-04", "field": "legalName", "type": "text", "required": true, "mapping": "ClientTenant.legalName" },
+    { "inputMaskId": "IM-05", "field": "complianceOwnerId", "type": "user select", "required": true, "mapping": "UserRole.userId" },
+    { "inputMaskId": "IM-06", "field": "overrideReason", "type": "textarea", "required": true, "mapping": "PolicyDefinition.payload.reason" },
+    { "inputMaskId": "IM-07", "field": "inviteEmail", "type": "email", "required": true, "mapping": "User.email" },
+    { "inputMaskId": "IM-08", "field": "inviteToken", "type": "token", "required": true, "mapping": "User.status / invite metadata" },
+    { "inputMaskId": "IM-09", "field": "acceptedVersion", "type": "checkbox/version", "required": true, "mapping": "ConsentRecord.consentVersion" },
+    { "inputMaskId": "IM-10", "field": "engagementModel", "type": "select", "required": true, "mapping": "Engagement.engagementType" },
+    { "inputMaskId": "IM-11", "field": "familyRole", "type": "select", "required": true, "mapping": "FamilyMember.roleLabel" },
+    { "inputMaskId": "IM-12", "field": "relationshipType", "type": "select", "required": true, "mapping": "Relationship.relationshipType" },
+    { "inputMaskId": "IM-13", "field": "entityType", "type": "select", "required": true, "mapping": "Entity.entityType" },
+    { "inputMaskId": "IM-18", "field": "releaseDecision", "type": "radio", "required": true, "mapping": "ComplianceReview.status / Recommendation.status" },
+    { "inputMaskId": "IM-18", "field": "evidenceComplete", "type": "computed checkbox", "required": true, "mapping": "ComplianceReview.evidenceComplete / EvidenceRecord.status" },
+    { "inputMaskId": "IM-19", "field": "decisionChoice", "type": "radio", "required": true, "mapping": "Decision.status / DecisionParticipant.response" },
+    { "inputMaskId": "IM-14", "field": "documentFile", "type": "file", "required": true, "mapping": "DocumentVersion.storageKey/checksum" },
+    { "inputMaskId": "IM-15", "field": "correctedFieldValue", "type": "structured text", "required": "conditional", "mapping": "DocumentExtraction.extractedPayload" },
+    { "inputMaskId": "IM-16", "field": "analystDecision", "type": "radio", "required": true, "mapping": "Trigger.status / ActionItem.status" },
+    { "inputMaskId": "IM-17", "field": "advisorDecision", "type": "radio", "required": true, "mapping": "Approval.status / Recommendation.status" },
+    { "inputMaskId": "IM-20", "field": "visibilityStatus", "type": "select", "required": true, "mapping": "EvidenceRecord.visibilityStatus / EvidenceItem.visibilityStatus" },
+    { "inputMaskId": "IM-21", "field": "accessDecision", "type": "radio", "required": true, "mapping": "AccessRequest.status" },
+    { "inputMaskId": "IM-22", "field": "adviceSensitivity", "type": "select", "required": true, "mapping": "Message.visibilityStatus / audit metadata" },
+    { "inputMaskId": "IM-23", "field": "redactionProfile", "type": "select", "required": true, "mapping": "ExportRequest.redactionProfile" },
+    { "inputMaskId": "IM-24", "field": "queueStatus", "type": "select", "required": true, "mapping": "QueueItem.status" }
+  ],
+  "dataModelReconciliation": [
+    { "plannedEntity": "ClientTenant", "prismaEntity": "ClientTenant", "status": "modeled and seeded", "gap": "not created by UI" },
+    { "plannedEntity": "RBAC", "prismaEntity": "Role/Permission/UserRole/RolePermission", "status": "modeled and seeded", "gap": "permission engine permissive" },
+    { "plannedEntity": "Document pipeline", "prismaEntity": "Document/DocumentVersion/DocumentExtraction/DocumentReview", "status": "modeled and seeded", "gap": "no file upload mutation" },
+    { "plannedEntity": "Recommendation approval", "prismaEntity": "Recommendation/Approval", "status": "modeled and J01-mutated", "gap": "not governed E6" },
+    { "plannedEntity": "Compliance review", "prismaEntity": "ComplianceReview", "status": "modeled and seeded", "gap": "release/block UI transaction missing" },
+    { "plannedEntity": "Evidence", "prismaEntity": "EvidenceRecord/EvidenceItem", "status": "modeled and seeded", "gap": "service placeholder for new evidence" },
+    { "plannedEntity": "Audit", "prismaEntity": "AuditEvent", "status": "modeled, seeded, J01/generic writes", "gap": "append-only service not universal" },
+    { "plannedEntity": "Export", "prismaEntity": "ExportRequest", "status": "modeled and seeded", "gap": "no generated package/file" }
+  ],
+  "rolePermissionComplianceGaps": [
+    { "workflow": "W-09", "gap": "compliance release helper exists but not broadly wired to persisted transaction" },
+    { "workflow": "W-10", "gap": "client decision visibility depends on release but UI submit does not enforce persisted release path" },
+    { "workflow": "W-11", "gap": "export service gates only; no redaction/download audit transaction" },
+    { "workflow": "W-12", "gap": "role/access actions visual; second confirmation not enforced in UI mutation" },
+    { "workflow": "all", "gap": "permission engine returns allowed true in demo mode" }
+  ],
+  "prioritizedBacklog": [
+    { "priority": "P0", "gap": "Compliance release/block transaction", "slice": "J02 stateful demo action with workflow gate and audit" },
+    { "priority": "P0", "gap": "Client decision/evidence package transaction", "slice": "J03 decision submit after release" },
+    { "priority": "P0", "gap": "Document upload/extraction review transaction", "slice": "J04 upload metadata and review writes" },
+    { "priority": "P0", "gap": "Tenant onboarding writes", "slice": "J06 create/team/policy/invite" },
+    { "priority": "P0", "gap": "Shared mutation wrapper", "slice": "tenant/permission/state/evidence/audit wrapper" },
+    { "priority": "P0", "gap": "Governance role/access/second confirmation", "slice": "J07 access transaction" },
+    { "priority": "P0", "gap": "Export lifecycle", "slice": "J08 scope/redaction/approval/download" },
+    { "priority": "P0", "gap": "Role/tenant enforcement", "slice": "Phase 16 guards after demo transitions" },
+    { "priority": "P1", "gap": "Entity/action readiness", "slice": "J05 entity wizard and action gate" },
+    { "priority": "P1", "gap": "Profile/family persistence", "slice": "J09 profile/family/relationship writes" }
+  ],
+  "confidenceNotes": [
+    { "claim": "All mandatory source files were present", "confidence": "high" },
+    { "claim": "J01 selected actions are persisted demo executable", "confidence": "high" },
+    { "claim": "Most J02-J10 actions are not domain-persisted", "confidence": "high" },
+    { "claim": "Every individual button behavior", "confidence": "medium because this run did not click every route in browser" }
+  ],
+  "blockedChecks": [
+    {
+      "check": "nl -ba with multiple files",
+      "status": "failed",
+      "cause": "macOS nl usage rejected the multi-file invocation",
+      "impact": "low; replaced with rg -n and targeted reads"
+    },
+    {
+      "check": "unquoted app/[...segments]/page.tsx path",
+      "status": "failed",
+      "cause": "zsh globbing",
+      "impact": "low; fixed by quoting the path"
+    }
+  ]
+}

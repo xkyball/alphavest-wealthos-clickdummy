@@ -1,0 +1,838 @@
+[
+  {
+    "pageId": "005",
+    "route": "/onboarding/consent",
+    "title": "Consent and Privacy",
+    "state": "base",
+    "stateScreenshot": "state-fullpage/PAGE-005-onboarding-consent-desktop-state-fullpage.png",
+    "stateMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1000
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 0,
+      "samples": [],
+      "dialogCount": 0
+    },
+    "baseScreenshot": null,
+    "baseMetric": null,
+    "stateUrl": "http://127.0.0.1:3107/onboarding/consent",
+    "baseUrl": null
+  },
+  {
+    "pageId": "008",
+    "route": "/admin/policies/advice-boundary",
+    "title": "Advice Boundary Policy",
+    "state": "base",
+    "stateScreenshot": "state-fullpage/PAGE-008-admin-policies-advice-boundary-desktop-state-fullpage.png",
+    "stateMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1473
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 4,
+      "samples": [
+        "Tenant context",
+        "Role context",
+        "Reset demo session",
+        "Notifications"
+      ],
+      "dialogCount": 0
+    },
+    "baseScreenshot": null,
+    "baseMetric": null,
+    "stateUrl": "http://127.0.0.1:3107/admin/policies/advice-boundary",
+    "baseUrl": null
+  },
+  {
+    "pageId": "011",
+    "route": "/admin/evidence-templates",
+    "title": "Evidence Templates",
+    "state": "base",
+    "stateScreenshot": "state-fullpage/PAGE-011-admin-evidence-templates-desktop-state-fullpage.png",
+    "stateMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1034
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 4,
+      "samples": [
+        "Tenant context",
+        "Role context",
+        "Reset demo session",
+        "Notifications"
+      ],
+      "dialogCount": 0
+    },
+    "baseScreenshot": null,
+    "baseMetric": null,
+    "stateUrl": "http://127.0.0.1:3107/admin/evidence-templates",
+    "baseUrl": null
+  },
+  {
+    "pageId": "012",
+    "route": "/admin/export-templates",
+    "title": "Export Templates and Redaction",
+    "state": "base",
+    "stateScreenshot": "state-fullpage/PAGE-012-admin-export-templates-desktop-state-fullpage.png",
+    "stateMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1382
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 4,
+      "samples": [
+        "Tenant context",
+        "Role context",
+        "Reset demo session",
+        "Notifications"
+      ],
+      "dialogCount": 0
+    },
+    "baseScreenshot": null,
+    "baseMetric": null,
+    "stateUrl": "http://127.0.0.1:3107/admin/export-templates",
+    "baseUrl": null
+  },
+  {
+    "pageId": "013",
+    "route": "/admin/tenants",
+    "title": "Tenant List",
+    "state": "base",
+    "stateScreenshot": "state-fullpage/PAGE-013-admin-tenants-desktop-state-fullpage.png",
+    "stateMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1000
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 4,
+      "samples": [
+        "Tenant context",
+        "Role context",
+        "Reset demo session",
+        "Notifications"
+      ],
+      "dialogCount": 0
+    },
+    "baseScreenshot": null,
+    "baseMetric": null,
+    "stateUrl": "http://127.0.0.1:3107/admin/tenants",
+    "baseUrl": null
+  },
+  {
+    "pageId": "014",
+    "route": "/tenants/new",
+    "title": "Create Client Tenant",
+    "state": "base",
+    "stateScreenshot": "state-fullpage/PAGE-014-tenants-new-desktop-state-fullpage.png",
+    "stateMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1000
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 4,
+      "samples": [
+        "Tenant context",
+        "Role context",
+        "Reset demo session",
+        "Notifications"
+      ],
+      "dialogCount": 0
+    },
+    "baseScreenshot": null,
+    "baseMetric": null,
+    "stateUrl": "http://127.0.0.1:3107/tenants/new",
+    "baseUrl": null
+  },
+  {
+    "pageId": "015",
+    "route": "/tenants/:id/setup",
+    "title": "Tenant Setup Dashboard",
+    "state": "base",
+    "stateScreenshot": "state-fullpage/PAGE-015-tenants-id-setup-desktop-state-fullpage.png",
+    "stateMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1740
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 4,
+      "samples": [
+        "Tenant context",
+        "Role context",
+        "Reset demo session",
+        "Notifications"
+      ],
+      "dialogCount": 0
+    },
+    "baseScreenshot": null,
+    "baseMetric": null,
+    "stateUrl": "http://127.0.0.1:3107/tenants/demo/setup",
+    "baseUrl": null
+  },
+  {
+    "pageId": "016",
+    "route": "/tenants/:id/team",
+    "title": "Assign AlphaVest Team",
+    "state": "base",
+    "stateScreenshot": "state-fullpage/PAGE-016-tenants-id-team-desktop-state-fullpage.png",
+    "stateMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1000
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 4,
+      "samples": [
+        "Tenant context",
+        "Role context",
+        "Reset demo session",
+        "Notifications"
+      ],
+      "dialogCount": 0
+    },
+    "baseScreenshot": null,
+    "baseMetric": null,
+    "stateUrl": "http://127.0.0.1:3107/tenants/demo/team",
+    "baseUrl": null
+  },
+  {
+    "pageId": "017",
+    "route": "/tenants/:id/policies",
+    "title": "Tenant Policies",
+    "state": "base",
+    "stateScreenshot": "state-fullpage/PAGE-017-tenants-id-policies-desktop-state-fullpage.png",
+    "stateMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1310
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 4,
+      "samples": [
+        "Tenant context",
+        "Role context",
+        "Reset demo session",
+        "Notifications"
+      ],
+      "dialogCount": 0
+    },
+    "baseScreenshot": null,
+    "baseMetric": null,
+    "stateUrl": "http://127.0.0.1:3107/tenants/demo/policies",
+    "baseUrl": null
+  },
+  {
+    "pageId": "022",
+    "route": "/client/family-members",
+    "title": "Family Members",
+    "state": "base",
+    "stateScreenshot": "state-fullpage/PAGE-022-client-family-members-desktop-state-fullpage.png",
+    "stateMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1463
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 3,
+      "samples": [
+        "Tenant context",
+        "Role context",
+        "Family Members"
+      ],
+      "dialogCount": 0
+    },
+    "baseScreenshot": null,
+    "baseMetric": null,
+    "stateUrl": "http://127.0.0.1:3107/client/family-members",
+    "baseUrl": null
+  },
+  {
+    "pageId": "023",
+    "route": "/relationships",
+    "title": "Relationship Map",
+    "state": "base",
+    "stateScreenshot": "state-fullpage/PAGE-023-relationships-desktop-state-fullpage.png",
+    "stateMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1995
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 3,
+      "samples": [
+        "Tenant context",
+        "Role context",
+        "Relationship Map"
+      ],
+      "dialogCount": 0
+    },
+    "baseScreenshot": null,
+    "baseMetric": null,
+    "stateUrl": "http://127.0.0.1:3107/relationships",
+    "baseUrl": null
+  },
+  {
+    "pageId": "031",
+    "route": "/wealth-map",
+    "title": "Live Wealth Map",
+    "state": "drawer",
+    "stateScreenshot": "state-fullpage/PAGE-031-wealth-map-desktop-state-fullpage.png",
+    "stateMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1158
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 5,
+      "samples": [
+        "Tenant context",
+        "Role context",
+        "Live Wealth Map",
+        "Filter nodes",
+        "Close detail drawer"
+      ],
+      "dialogCount": 0
+    },
+    "baseScreenshot": "base-fullpage/PAGE-031-wealth-map-desktop-base-fullpage.png",
+    "baseMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1158
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 5,
+      "samples": [
+        "Tenant context",
+        "Role context",
+        "Live Wealth Map",
+        "Filter nodes",
+        "Close detail drawer"
+      ],
+      "dialogCount": 0
+    },
+    "stateUrl": "http://127.0.0.1:3107/wealth-map?state=drawer",
+    "baseUrl": "http://127.0.0.1:3107/wealth-map?state=base"
+  },
+  {
+    "pageId": "032",
+    "route": "/actions",
+    "title": "Action Board",
+    "state": "drawer",
+    "stateScreenshot": "state-fullpage/PAGE-032-actions-desktop-state-fullpage.png",
+    "stateMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 3725
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 4,
+      "samples": [
+        "Tenant context",
+        "Role context",
+        "Action Board",
+        "Close action drawer"
+      ],
+      "dialogCount": 0
+    },
+    "baseScreenshot": "base-fullpage/PAGE-032-actions-desktop-base-fullpage.png",
+    "baseMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 3725
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 4,
+      "samples": [
+        "Tenant context",
+        "Role context",
+        "Action Board",
+        "Close action drawer"
+      ],
+      "dialogCount": 0
+    },
+    "stateUrl": "http://127.0.0.1:3107/actions?state=drawer",
+    "baseUrl": "http://127.0.0.1:3107/actions?state=base"
+  },
+  {
+    "pageId": "033",
+    "route": "/signals",
+    "title": "Signal Review",
+    "state": "base",
+    "stateScreenshot": "state-fullpage/PAGE-033-signals-desktop-state-fullpage.png",
+    "stateMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 3061
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 4,
+      "samples": [
+        "Search internal workspace",
+        "Tenant context",
+        "Role context",
+        "Signal Review"
+      ],
+      "dialogCount": 0
+    },
+    "baseScreenshot": null,
+    "baseMetric": null,
+    "stateUrl": "http://127.0.0.1:3107/signals",
+    "baseUrl": null
+  },
+  {
+    "pageId": "037",
+    "route": "/advisor-approval/:id",
+    "title": "Advisor Approval Detail",
+    "state": "base",
+    "stateScreenshot": "state-fullpage/PAGE-037-advisor-approval-id-desktop-state-fullpage.png",
+    "stateMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1769
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 4,
+      "samples": [
+        "Search internal workspace",
+        "Tenant context",
+        "Role context",
+        "Advisor Approval Detail"
+      ],
+      "dialogCount": 0
+    },
+    "baseScreenshot": null,
+    "baseMetric": null,
+    "stateUrl": "http://127.0.0.1:3107/advisor-approval/demo",
+    "baseUrl": null
+  },
+  {
+    "pageId": "039",
+    "route": "/compliance/:id/review",
+    "title": "Compliance Review Detail",
+    "state": "base",
+    "stateScreenshot": "state-fullpage/PAGE-039-compliance-id-review-desktop-state-fullpage.png",
+    "stateMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 2453
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 4,
+      "samples": [
+        "Search internal workspace",
+        "Tenant context",
+        "Role context",
+        "Compliance Review Detail"
+      ],
+      "dialogCount": 0
+    },
+    "baseScreenshot": null,
+    "baseMetric": null,
+    "stateUrl": "http://127.0.0.1:3107/compliance/demo/review",
+    "baseUrl": null
+  },
+  {
+    "pageId": "040",
+    "route": "/compliance/:id/release",
+    "title": "Release to Client",
+    "state": "release",
+    "stateScreenshot": "state-fullpage/PAGE-040-compliance-id-release-desktop-state-fullpage.png",
+    "stateMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1000
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 4,
+      "samples": [
+        "Search internal workspace",
+        "Tenant context",
+        "Role context",
+        "Release to Client"
+      ],
+      "dialogCount": 1
+    },
+    "baseScreenshot": "base-fullpage/PAGE-040-compliance-id-release-desktop-base-fullpage.png",
+    "baseMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1000
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 4,
+      "samples": [
+        "Search internal workspace",
+        "Tenant context",
+        "Role context",
+        "Release to Client"
+      ],
+      "dialogCount": 0
+    },
+    "stateUrl": "http://127.0.0.1:3107/compliance/demo/release?state=release",
+    "baseUrl": "http://127.0.0.1:3107/compliance/demo/release?state=base"
+  },
+  {
+    "pageId": "042",
+    "route": "/compliance/:id/audit",
+    "title": "Audit and Exception Log",
+    "state": "base",
+    "stateScreenshot": "state-fullpage/PAGE-042-compliance-id-audit-desktop-state-fullpage.png",
+    "stateMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1850
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 4,
+      "samples": [
+        "Search WealthOS",
+        "Tenant context",
+        "Role context",
+        "Audit and Exception Log"
+      ],
+      "dialogCount": 0
+    },
+    "baseScreenshot": null,
+    "baseMetric": null,
+    "stateUrl": "http://127.0.0.1:3107/compliance/demo/audit",
+    "baseUrl": null
+  },
+  {
+    "pageId": "046",
+    "route": "/evidence",
+    "title": "Evidence Vault",
+    "state": "drawer",
+    "stateScreenshot": "state-fullpage/PAGE-046-evidence-desktop-state-fullpage.png",
+    "stateMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1000
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 4,
+      "samples": [
+        "Search WealthOS",
+        "Tenant context",
+        "Role context",
+        "Evidence Vault"
+      ],
+      "dialogCount": 0
+    },
+    "baseScreenshot": "base-fullpage/PAGE-046-evidence-desktop-base-fullpage.png",
+    "baseMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1000
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 4,
+      "samples": [
+        "Search WealthOS",
+        "Tenant context",
+        "Role context",
+        "Evidence Vault"
+      ],
+      "dialogCount": 0
+    },
+    "stateUrl": "http://127.0.0.1:3107/evidence?state=drawer",
+    "baseUrl": "http://127.0.0.1:3107/evidence?state=base"
+  },
+  {
+    "pageId": "049",
+    "route": "/governance/roles",
+    "title": "Role Management",
+    "state": "confirm",
+    "stateScreenshot": "state-fullpage/PAGE-049-governance-roles-desktop-state-fullpage.png",
+    "stateMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1000
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 5,
+      "samples": [
+        "Search WealthOS",
+        "Tenant context",
+        "Role context",
+        "Role Management",
+        "ROLE CLIENTS ACCOUNTS INVESTMENTS TRADING REPORTING BILLING Super AdministratorSystem Full"
+      ],
+      "dialogCount": 1
+    },
+    "baseScreenshot": "base-fullpage/PAGE-049-governance-roles-desktop-base-fullpage.png",
+    "baseMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1000
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 4,
+      "samples": [
+        "Search WealthOS",
+        "Tenant context",
+        "Role context",
+        "Role Management"
+      ],
+      "dialogCount": 0
+    },
+    "stateUrl": "http://127.0.0.1:3107/governance/roles?state=confirm",
+    "baseUrl": "http://127.0.0.1:3107/governance/roles?state=base"
+  },
+  {
+    "pageId": "051",
+    "route": "/governance/audit-history",
+    "title": "Access Audit History",
+    "state": "drawer",
+    "stateScreenshot": "state-fullpage/PAGE-051-governance-audit-history-desktop-state-fullpage.png",
+    "stateMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1014
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 4,
+      "samples": [
+        "Access Audit History",
+        "Search WealthOS",
+        "Tenant context",
+        "Role context"
+      ],
+      "dialogCount": 0
+    },
+    "baseScreenshot": "base-fullpage/PAGE-051-governance-audit-history-desktop-base-fullpage.png",
+    "baseMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1014
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 4,
+      "samples": [
+        "Access Audit History",
+        "Search WealthOS",
+        "Tenant context",
+        "Role context"
+      ],
+      "dialogCount": 0
+    },
+    "stateUrl": "http://127.0.0.1:3107/governance/audit-history?state=drawer",
+    "baseUrl": "http://127.0.0.1:3107/governance/audit-history?state=base"
+  },
+  {
+    "pageId": "053",
+    "route": "/communication/call-trigger",
+    "title": "Call Trigger Matrix",
+    "state": "base",
+    "stateScreenshot": "state-fullpage/PAGE-053-communication-call-trigger-desktop-state-fullpage.png",
+    "stateMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1384
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 4,
+      "samples": [
+        "Call Trigger Matrix",
+        "Search WealthOS",
+        "Tenant context",
+        "Role context"
+      ],
+      "dialogCount": 0
+    },
+    "baseScreenshot": null,
+    "baseMetric": null,
+    "stateUrl": "http://127.0.0.1:3107/communication/call-trigger",
+    "baseUrl": null
+  },
+  {
+    "pageId": "056",
+    "route": "/export/:id/redaction",
+    "title": "Export Redaction",
+    "state": "base",
+    "stateScreenshot": "state-fullpage/PAGE-056-export-id-redaction-desktop-state-fullpage.png",
+    "stateMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 2061
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 4,
+      "samples": [
+        "Export Redaction",
+        "Search WealthOS",
+        "Tenant context",
+        "Role context"
+      ],
+      "dialogCount": 0
+    },
+    "baseScreenshot": null,
+    "baseMetric": null,
+    "stateUrl": "http://127.0.0.1:3107/export/demo/redaction",
+    "baseUrl": null
+  },
+  {
+    "pageId": "057",
+    "route": "/export/:id/preview",
+    "title": "Export Preview",
+    "state": "approval",
+    "stateScreenshot": "state-fullpage/PAGE-057-export-id-preview-desktop-state-fullpage.png",
+    "stateMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1000
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 4,
+      "samples": [
+        "Export Preview",
+        "Search WealthOS",
+        "Tenant context",
+        "Role context"
+      ],
+      "dialogCount": 1
+    },
+    "baseScreenshot": "base-fullpage/PAGE-057-export-id-preview-desktop-base-fullpage.png",
+    "baseMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1000
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 4,
+      "samples": [
+        "Export Preview",
+        "Search WealthOS",
+        "Tenant context",
+        "Role context"
+      ],
+      "dialogCount": 0
+    },
+    "stateUrl": "http://127.0.0.1:3107/export/demo/preview?state=approval",
+    "baseUrl": "http://127.0.0.1:3107/export/demo/preview?state=base"
+  },
+  {
+    "pageId": "061",
+    "route": "/service-blueprint",
+    "title": "Service Blueprint",
+    "state": "base",
+    "stateScreenshot": "state-fullpage/PAGE-061-service-blueprint-desktop-state-fullpage.png",
+    "stateMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1537
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 4,
+      "samples": [
+        "Service Blueprint",
+        "Search WealthOS",
+        "Tenant context",
+        "Role context"
+      ],
+      "dialogCount": 0
+    },
+    "baseScreenshot": null,
+    "baseMetric": null,
+    "stateUrl": "http://127.0.0.1:3107/service-blueprint",
+    "baseUrl": null
+  },
+  {
+    "pageId": "062",
+    "route": "/roadmap",
+    "title": "MVP vs Future Scope",
+    "state": "base",
+    "stateScreenshot": "state-fullpage/PAGE-062-roadmap-desktop-state-fullpage.png",
+    "stateMetric": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1440
+      },
+      "docOverflow": false,
+      "outside": 0,
+      "textOverflow": 4,
+      "samples": [
+        "MVP vs Future Scope",
+        "Search WealthOS",
+        "Tenant context",
+        "Role context"
+      ],
+      "dialogCount": 0
+    },
+    "baseScreenshot": null,
+    "baseMetric": null,
+    "stateUrl": "http://127.0.0.1:3107/roadmap",
+    "baseUrl": null
+  }
+]

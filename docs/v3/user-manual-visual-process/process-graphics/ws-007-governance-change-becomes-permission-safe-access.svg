@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="760" viewBox="0 0 1500 760">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#10283b"/>
+    </marker>
+  </defs>
+  <rect width="1500" height="760" fill="#fbf7ef"/>
+  <text x="60" y="58" font-family="Inter, Arial" font-size="16" font-weight="800" fill="#b88a38">AlphaVest process explanation</text>
+  <text x="60" y="92" font-family="Inter, Arial" font-size="31" font-weight="800" fill="#10283b">Governance change becomes permission-safe access</text>
+  <text x="60" y="122" font-family="Inter, Arial" font-size="18" fill="#687586">Access changes become governed permission state.</text>
+  <rect x="60" y="150" width="268" height="470" rx="18" fill="#fffdf8" stroke="#d8cfbf"/>
+      <text x="78" y="185" font-family="Inter, Arial" font-size="20" font-weight="700" fill="#10283b">Principal</text>
+<rect x="336" y="150" width="268" height="470" rx="18" fill="#fbf7ef" stroke="#d8cfbf"/>
+      <text x="354" y="185" font-family="Inter, Arial" font-size="20" font-weight="700" fill="#10283b">Admin</text>
+<rect x="612" y="150" width="268" height="470" rx="18" fill="#fffdf8" stroke="#d8cfbf"/>
+      <text x="630" y="185" font-family="Inter, Arial" font-size="20" font-weight="700" fill="#10283b">Compliance</text>
+<rect x="888" y="150" width="268" height="470" rx="18" fill="#fbf7ef" stroke="#d8cfbf"/>
+      <text x="906" y="185" font-family="Inter, Arial" font-size="20" font-weight="700" fill="#10283b">Security</text>
+<rect x="1164" y="150" width="268" height="470" rx="18" fill="#fffdf8" stroke="#d8cfbf"/>
+      <text x="1182" y="185" font-family="Inter, Arial" font-size="20" font-weight="700" fill="#10283b">External Advisor</text>
+  <line x1="306" y1="283" x2="342.5" y2="438" stroke="#10283b" stroke-width="3" marker-end="url(#arrow)"/>
+<rect x="80" y="235" width="210" height="96" rx="12" fill="#fff" stroke="#b88a38" stroke-width="2.5"/>
+<text x="132" y="271" font-family="Inter, Arial" font-size="17" fill="#10283b">Principal/Admin requests</text>
+<text x="132" y="293" font-family="Inter, Arial" font-size="17" fill="#10283b">access</text>
+<circle cx="106" cy="259" r="17" fill="#b88a38"/>
+             <text x="100" y="266" font-family="Inter, Arial" font-size="19" font-weight="800" fill="#fff">1</text>
+<text x="98" y="365" font-family="Inter, Arial" font-size="15" fill="#687586">WorkflowStatus: new/requested</text>
+<line x1="588.5" y1="438" x2="625" y2="283" stroke="#10283b" stroke-width="3" marker-end="url(#arrow)"/>
+<polygon points="467.5,378 582.5,438 467.5,498 352.5,438" fill="#efe2c2" stroke="#b88a38" stroke-width="2.5"/>
+<text x="414.5" y="426" font-family="Inter, Arial" font-size="17" fill="#10283b">Compliance reviews</text>
+<text x="414.5" y="448" font-family="Inter, Arial" font-size="17" fill="#10283b">purpose/scope</text>
+<circle cx="388.5" cy="414" r="17" fill="#b88a38"/>
+             <text x="382.5" y="421" font-family="Inter, Arial" font-size="19" font-weight="800" fill="#fff">2</text>
+<text x="380.5" y="520" font-family="Inter, Arial" font-size="15" fill="#687586">in_review</text>
+<line x1="871" y1="283" x2="907.5" y2="438" stroke="#10283b" stroke-width="3" marker-end="url(#arrow)"/>
+<polygon points="750,223 865,283 750,343 635,283" fill="#efe2c2" stroke="#b88a38" stroke-width="2.5"/>
+<text x="697" y="271" font-family="Inter, Arial" font-size="17" fill="#10283b">Security confirms</text>
+<text x="697" y="293" font-family="Inter, Arial" font-size="17" fill="#10283b">sensitive changes</text>
+<circle cx="671" cy="259" r="17" fill="#b88a38"/>
+             <text x="665" y="266" font-family="Inter, Arial" font-size="19" font-weight="800" fill="#fff">3</text>
+<text x="663" y="365" font-family="Inter, Arial" font-size="15" fill="#687586">approved or blocked or revoked</text>
+<line x1="1153.5" y1="438" x2="1190" y2="283" stroke="#10283b" stroke-width="3" marker-end="url(#arrow)"/>
+<rect x="927.5" y="390" width="210" height="96" rx="12" fill="#fff" stroke="#b88a38" stroke-width="2.5"/>
+<text x="979.5" y="426" font-family="Inter, Arial" font-size="17" fill="#10283b">Audit history records</text>
+<text x="979.5" y="448" font-family="Inter, Arial" font-size="17" fill="#10283b">lineage</text>
+
+<text x="945.5" y="520" font-family="Inter, Arial" font-size="15" fill="#687586">approved or blocked or revoked</text>
+
+<rect x="1210" y="235" width="210" height="96" rx="12" fill="#fff" stroke="#b88a38" stroke-width="2.5"/>
+<text x="1262" y="271" font-family="Inter, Arial" font-size="17" fill="#10283b">Outcome recorded</text>
+
+<text x="1228" y="365" font-family="Inter, Arial" font-size="15" fill="#687586">approved or blocked or revoked</text>
+  <rect x="60" y="648" width="1380" height="64" rx="16" fill="#10283b"/>
+  <text x="88" y="686" font-family="Inter, Arial" font-size="20" fill="#fff">State and visibility result: Target user sees only approved role scope</text>
+</svg>

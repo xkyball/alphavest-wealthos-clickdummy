@@ -1,0 +1,146 @@
+{
+  "generatedAt": "2026-06-16T23:26:15.422Z",
+  "baseUrl": "http://127.0.0.1:3007",
+  "captures": [
+    {
+      "screenshotId": "SS-TASK-MT-001",
+      "manualTaskId": "MT-001",
+      "route": "/admin/platform?state=confirm",
+      "title": "Platform Settings",
+      "url": "http://127.0.0.1:3007/admin/platform?state=confirm",
+      "filePath": "/Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232615Z/screenshots/ss-task-mt-001-platform-settings.png",
+      "ok": false,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3007/admin/platform?state=confirm\nCall log:\n  - navigating to \"http://127.0.0.1:3007/admin/platform?state=confirm\", waiting until \"load\"\n"
+    },
+    {
+      "screenshotId": "SS-TASK-MT-002",
+      "manualTaskId": "MT-002",
+      "route": "/admin/tenants",
+      "title": "Tenant List",
+      "url": "http://127.0.0.1:3007/admin/tenants",
+      "filePath": "/Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232615Z/screenshots/ss-task-mt-002-tenant-list.png",
+      "ok": false,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3007/admin/tenants\nCall log:\n  - navigating to \"http://127.0.0.1:3007/admin/tenants\", waiting until \"load\"\n"
+    },
+    {
+      "screenshotId": "SS-TASK-MT-003",
+      "manualTaskId": "MT-003",
+      "route": "/onboarding/invite",
+      "title": "Invitation Acceptance",
+      "url": "http://127.0.0.1:3007/onboarding/invite",
+      "filePath": "/Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232615Z/screenshots/ss-task-mt-003-invitation-acceptance.png",
+      "ok": false,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3007/onboarding/invite\nCall log:\n  - navigating to \"http://127.0.0.1:3007/onboarding/invite\", waiting until \"load\"\n"
+    },
+    {
+      "screenshotId": "SS-TASK-MT-004",
+      "manualTaskId": "MT-004",
+      "route": "/portal",
+      "title": "Client Web Dashboard",
+      "url": "http://127.0.0.1:3007/portal",
+      "filePath": "/Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232615Z/screenshots/ss-task-mt-004-client-web-dashboard.png",
+      "ok": false,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3007/portal\nCall log:\n  - navigating to \"http://127.0.0.1:3007/portal\", waiting until \"load\"\n"
+    },
+    {
+      "screenshotId": "SS-TASK-MT-005",
+      "manualTaskId": "MT-005",
+      "route": "/entities",
+      "title": "Entity List",
+      "url": "http://127.0.0.1:3007/entities",
+      "filePath": "/Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232615Z/screenshots/ss-task-mt-005-entity-list.png",
+      "ok": false,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3007/entities\nCall log:\n  - navigating to \"http://127.0.0.1:3007/entities\", waiting until \"load\"\n"
+    },
+    {
+      "screenshotId": "SS-TASK-MT-006",
+      "manualTaskId": "MT-006",
+      "route": "/documents",
+      "title": "Documents List",
+      "url": "http://127.0.0.1:3007/documents",
+      "filePath": "/Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232615Z/screenshots/ss-task-mt-006-documents-list.png",
+      "ok": false,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3007/documents\nCall log:\n  - navigating to \"http://127.0.0.1:3007/documents\", waiting until \"load\"\n"
+    },
+    {
+      "screenshotId": "SS-TASK-MT-007",
+      "manualTaskId": "MT-007",
+      "route": "/signals",
+      "title": "Signal Review",
+      "url": "http://127.0.0.1:3007/signals",
+      "filePath": "/Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232615Z/screenshots/ss-task-mt-007-signal-review.png",
+      "ok": false,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3007/signals\nCall log:\n  - navigating to \"http://127.0.0.1:3007/signals\", waiting until \"load\"\n"
+    },
+    {
+      "screenshotId": "SS-TASK-MT-008",
+      "manualTaskId": "MT-008",
+      "route": "/advisor-approval",
+      "title": "Advisor Approval Queue",
+      "url": "http://127.0.0.1:3007/advisor-approval",
+      "filePath": "/Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232615Z/screenshots/ss-task-mt-008-advisor-approval-queue.png",
+      "ok": false,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3007/advisor-approval\nCall log:\n  - navigating to \"http://127.0.0.1:3007/advisor-approval\", waiting until \"load\"\n"
+    },
+    {
+      "screenshotId": "SS-TASK-MT-009",
+      "manualTaskId": "MT-009",
+      "route": "/compliance",
+      "title": "Compliance Queue",
+      "url": "http://127.0.0.1:3007/compliance",
+      "filePath": "/Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232615Z/screenshots/ss-task-mt-009-compliance-queue.png",
+      "ok": false,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3007/compliance\nCall log:\n  - navigating to \"http://127.0.0.1:3007/compliance\", waiting until \"load\"\n"
+    },
+    {
+      "screenshotId": "SS-TASK-MT-010",
+      "manualTaskId": "MT-010",
+      "route": "/decisions",
+      "title": "Decision List",
+      "url": "http://127.0.0.1:3007/decisions",
+      "filePath": "/Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232615Z/screenshots/ss-task-mt-010-decision-list.png",
+      "ok": false,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3007/decisions\nCall log:\n  - navigating to \"http://127.0.0.1:3007/decisions\", waiting until \"load\"\n"
+    },
+    {
+      "screenshotId": "SS-TASK-MT-011",
+      "manualTaskId": "MT-011",
+      "route": "/evidence",
+      "title": "Evidence Vault",
+      "url": "http://127.0.0.1:3007/evidence",
+      "filePath": "/Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232615Z/screenshots/ss-task-mt-011-evidence-vault.png",
+      "ok": false,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3007/evidence\nCall log:\n  - navigating to \"http://127.0.0.1:3007/evidence\", waiting until \"load\"\n"
+    },
+    {
+      "screenshotId": "SS-TASK-MT-012",
+      "manualTaskId": "MT-012",
+      "route": "/governance/users",
+      "title": "Governance Users",
+      "url": "http://127.0.0.1:3007/governance/users",
+      "filePath": "/Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232615Z/screenshots/ss-task-mt-012-governance-users.png",
+      "ok": false,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3007/governance/users\nCall log:\n  - navigating to \"http://127.0.0.1:3007/governance/users\", waiting until \"load\"\n"
+    },
+    {
+      "screenshotId": "SS-TASK-MT-013",
+      "manualTaskId": "MT-013",
+      "route": "/communication",
+      "title": "Communication Centre",
+      "url": "http://127.0.0.1:3007/communication",
+      "filePath": "/Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232615Z/screenshots/ss-task-mt-013-communication-centre.png",
+      "ok": false,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3007/communication\nCall log:\n  - navigating to \"http://127.0.0.1:3007/communication\", waiting until \"load\"\n"
+    },
+    {
+      "screenshotId": "SS-TASK-MT-014",
+      "manualTaskId": "MT-014",
+      "route": "/ops/queues",
+      "title": "Ops Queues",
+      "url": "http://127.0.0.1:3007/ops/queues",
+      "filePath": "/Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232615Z/screenshots/ss-task-mt-014-ops-queues.png",
+      "ok": false,
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3007/ops/queues\nCall log:\n  - navigating to \"http://127.0.0.1:3007/ops/queues\", waiting until \"load\"\n"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+[
+  {
+    "id": "001",
+    "route": "/login",
+    "family": "auth-mobile",
+    "file": "/Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/visual-gap-audit/screenshots/MOBILE-PAGE-001-login-current.png",
+    "asides": 0,
+    "headers": 1,
+    "leaks": [],
+    "path": "/login",
+    "sample": "A AlphaVest WEALTHOS Digital first. Human reviewed. Evidence backed. Authentication Login Sign in to your account. Demo access Email address Password Remember me Forgot password? S"
+  },
+  {
+    "id": "019",
+    "route": "/portal",
+    "family": "client-mobile",
+    "file": "/Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/visual-gap-audit/screenshots/MOBILE-PAGE-019-portal-current.png",
+    "asides": 1,
+    "headers": 1,
+    "leaks": [],
+    "path": "/portal",
+    "sample": "Search Tenant context Bennett Family Office Morgan Family Office Northbridge Family Office Summit Ridge Capital Role context Principal Family CFO Trustee Next Gen External Advisor "
+  },
+  {
+    "id": "020",
+    "route": "/mobile",
+    "family": "mobile-canonical",
+    "file": "/Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/visual-gap-audit/screenshots/MOBILE-PAGE-020-mobile-current.png",
+    "asides": 0,
+    "headers": 0,
+    "leaks": [],
+    "path": "/mobile",
+    "sample": "Mobile Home A AlphaVest WEALTHOS 2 CO Good morning, Christopher Principal · Main Household NEXT STEP TODAY Complete compliance to unlock recommendations Recommendations are blocked"
+  }
+]

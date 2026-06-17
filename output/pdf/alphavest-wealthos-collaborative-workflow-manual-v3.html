@@ -1,0 +1,1459 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AlphaVest WealthOS Collaborative Workflow User Manual V3</title>
+  <link rel="stylesheet" href="./alphavest-collaborative-workflow-manual-v3.css" />
+</head>
+<body>
+  <main>
+    <section class="cover">
+      <div class="cover-topline">
+        <span>AlphaVest WealthOS</span>
+        <span>Collaborative Workflow User Manual / V3</span>
+      </div>
+      <div class="cover-content">
+        <p class="eyebrow light">Manual thesis</p>
+        <h1>Turning data chaos into controlled shared workflow state.</h1>
+        <p>Current manual is too page/table/screenshot led; target manual must make cross-role collaboration and controlled visibility the primary structure.</p>
+      </div>
+      <div class="cover-meta">
+        <span>Generated: 2026-06-17</span>
+        <span>ENGINE_MIX_V2_CODEX_V3_PROOF</span>
+        <span>English PDF source package</span>
+      </div>
+    </section>
+
+    <section class="section-page orientation">
+      <p class="eyebrow">Executive orientation</p>
+      <h2>What AlphaVest coordinates</h2>
+      <p class="lead">AlphaVest WealthOS Collaborative Workflow User Manual V3 explains AlphaVest as a collaboration system, not as a catalogue of screens. The product value is that multiple roles can move from fragmented inputs to reviewed, released, evidenced, and auditable outcomes without confusing internal progress with client-visible advice.</p>
+      <div class="principle-grid">
+        <article><h3>Digital first</h3><p>Work enters the system as structured tenant, profile, entity, document, message, signal, decision, or export context.</p></article>
+        <article><h3>Human reviewed</h3><p>Analysts, advisors, compliance, privacy, and security each inspect the part of the workflow they are responsible for.</p></article>
+        <article><h3>Evidence backed</h3><p>Important actions create traceable proof so future reviewers know why the workflow advanced.</p></article>
+        <article><h3>Client release controlled</h3><p>Client visibility waits for the required release, permission, evidence, and sensitivity gates.</p></article>
+      </div>
+      <figure class="diagram diagram-lifecycle" data-diagram-id="D-001">
+    <div class="diagram-title">D-001. Global workflow lifecycle</div>
+    <div class="lifecycle-track">
+      <div class="life-step">
+            <span>01</span>
+            <strong>Input</strong>
+          </div><div class="life-step">
+            <span>02</span>
+            <strong>Normalization</strong>
+          </div><div class="life-step">
+            <span>03</span>
+            <strong>Review</strong>
+          </div><div class="life-step">
+            <span>04</span>
+            <strong>Gate</strong>
+          </div><div class="life-step">
+            <span>05</span>
+            <strong>Visibility</strong>
+          </div><div class="life-step">
+            <span>06</span>
+            <strong>Decision</strong>
+          </div><div class="life-step">
+            <span>07</span>
+            <strong>Evidence</strong>
+          </div><div class="life-step">
+            <span>08</span>
+            <strong>Audit</strong>
+          </div><div class="life-step">
+            <span>09</span>
+            <strong>Monitoring</strong>
+          </div>
+    </div>
+    <figcaption>The lifecycle shows how raw material becomes reviewed, gated, visible, decided, evidenced, audited, and monitored. It matters because a user action in AlphaVest often prepares the next role rather than finishing the entire workflow.</figcaption>
+  </figure>
+    </section>
+
+    <section class="section-page">
+      <p class="eyebrow">Table of contents</p>
+      <h2>Manual spine</h2>
+      <p>This manual is organized by collaboration concept and workflow story. Tables and screenshots are supporting evidence, not the document structure.</p>
+      <table class="toc-table">
+        <thead><tr><th>Chapter</th><th>Title</th><th>Purpose</th></tr></thead>
+        <tbody><tr>
+        <td>1</td>
+        <td>What AlphaVest Coordinates</td>
+        <td>Explain data chaos, shared state, and why collaboration is the product value.</td>
+      </tr><tr>
+        <td>2</td>
+        <td>The Collaboration Model</td>
+        <td>Introduce Input -&gt; Normalization -&gt; Review -&gt; Gate -&gt; Visibility -&gt; Decision -&gt; Evidence -&gt; Audit -&gt; Monitoring.</td>
+      </tr><tr>
+        <td>3</td>
+        <td>Roles and Relays</td>
+        <td>Explain how each role changes what the next role sees.</td>
+      </tr><tr>
+        <td>4</td>
+        <td>Workflow Stories</td>
+        <td>Use the ten end-to-end stories as the main manual body.</td>
+      </tr><tr>
+        <td>5</td>
+        <td>Visibility and Client Release</td>
+        <td>Explain internal progress versus client-visible outcomes.</td>
+      </tr><tr>
+        <td>6</td>
+        <td>Evidence, Audit, and Blocked States</td>
+        <td>Explain proof, lineage, and protective stops as normal work.</td>
+      </tr><tr>
+        <td>7</td>
+        <td>State Transition Atlas</td>
+        <td>Document important lifecycle states and who can move them forward.</td>
+      </tr><tr>
+        <td>8</td>
+        <td>Screen Evidence Appendix</td>
+        <td>Use screenshots as proof of workflow viewpoints, not as the table of contents.</td>
+      </tr><tr>
+        <td>9</td>
+        <td>Demo Boundary and Implementation Limits</td>
+        <td>Separate navigable demo UI from production persistence claims.</td>
+      </tr><tr>
+        <td>10</td>
+        <td>Future PDF Production Notes</td>
+        <td>Guide layout, diagrams, callouts, and story-first rendering.</td>
+      </tr></tbody>
+      </table>
+      <div class="summary-grid">
+        <article><strong>9</strong><span>collaboration stages</span></article>
+        <article><strong>13</strong><span>role relays</span></article>
+        <article><strong>10</strong><span>workflow stories</span></article>
+        <article><strong>8</strong><span>state groups</span></article>
+      </div>
+    </section>
+
+    <section class="section-page">
+      <p class="eyebrow">Collaboration model</p>
+      <h2>How work moves through AlphaVest</h2>
+      <p>Every important flow follows the same pattern: a role introduces or improves an object, the system changes state, the next role sees a controlled view, and evidence or audit explains why the relay is legitimate.</p>
+      <div class="stage-grid"><article class="stage-card">
+        <span class="stage-index">01</span>
+        <h3>Input</h3>
+        <p>Tenant, profile, entity, document, message, or request data</p>
+        <dl>
+          <dt>Roles</dt><dd>Principal, Family CFO, Client, External Advisor, Ops Admin</dd>
+          <dt>State movement</dt><dd>draft/new/empty -&gt; submitted/uploaded/onboarding</dd>
+          <dt>Other roles see</dt><dd>Internal teams see a scoped work item, data gap, or review-ready object inside the tenant context.</dd>
+          <dt>Protected from view</dt><dd>Advice-like conclusions, unreleased recommendations, restricted documents, and unapproved exports remain hidden.</dd>
+        </dl>
+      </article><article class="stage-card">
+        <span class="stage-index">02</span>
+        <h3>Normalization</h3>
+        <p>Raw profile fields, entity details, extraction output, trigger context, or queue item</p>
+        <dl>
+          <dt>Roles</dt><dd>Analyst, Client Success, System</dd>
+          <dt>State movement</dt><dd>submitted/uploaded/ai_extracted -&gt; analyst_review/client_confirmed/in_review</dd>
+          <dt>Other roles see</dt><dd>Reviewers see structured context instead of raw fragments: who owns it, what is missing, what is sensitive, and what action is next.</dd>
+          <dt>Protected from view</dt><dd>Client-facing advice, compliance release, and final evidence packages remain unavailable.</dd>
+        </dl>
+      </article><article class="stage-card">
+        <span class="stage-index">03</span>
+        <h3>Review</h3>
+        <p>Normalized signal, document, recommendation candidate, export scope, or governance request</p>
+        <dl>
+          <dt>Roles</dt><dd>Analyst, Advisor, Compliance, Privacy Officer</dd>
+          <dt>State movement</dt><dd>analyst_review -&gt; advisor_review/compliance_pending/needs_evidence</dd>
+          <dt>Other roles see</dt><dd>The next role sees why the item is ready, what evidence supports it, and which gate still controls visibility.</dd>
+          <dt>Protected from view</dt><dd>Client-visible release stays blocked until compliance and permission conditions are satisfied.</dd>
+        </dl>
+      </article><article class="stage-card">
+        <span class="stage-index">04</span>
+        <h3>Gate</h3>
+        <p>Advice-like recommendation, sensitive access change, export package, or client-visible message</p>
+        <dl>
+          <dt>Roles</dt><dd>Compliance, Security, Privacy Officer</dd>
+          <dt>State movement</dt><dd>compliance_pending/approval_required -&gt; released/blocked/needs_evidence</dd>
+          <dt>Other roles see</dt><dd>Approved material becomes available to the correct downstream role; blocked items return with a reason and next legitimate action.</dd>
+          <dt>Protected from view</dt><dd>Anything blocked, restricted, or redacted remains hidden from unauthorized roles.</dd>
+        </dl>
+      </article><article class="stage-card">
+        <span class="stage-index">05</span>
+        <h3>Visibility</h3>
+        <p>Released recommendation, decision, evidence record, message, or export</p>
+        <dl>
+          <dt>Roles</dt><dd>Compliance, Permission engine, Client-facing roles</dd>
+          <dt>State movement</dt><dd>internal_only/advisor_visible/compliance_visible -&gt; client_visible or redacted</dd>
+          <dt>Other roles see</dt><dd>Clients see only released, scoped, or redacted material; internal teams see full lineage and control history.</dd>
+          <dt>Protected from view</dt><dd>Internal notes, unreleased drafts, raw extraction data, and restricted evidence remain internal.</dd>
+        </dl>
+      </article><article class="stage-card">
+        <span class="stage-index">06</span>
+        <h3>Decision</h3>
+        <p>Released decision object with evidence context</p>
+        <dl>
+          <dt>Roles</dt><dd>Principal, Family Council, Trustee scoped</dd>
+          <dt>State movement</dt><dd>released_to_client -&gt; accepted/deferred/rejected/evidence_created/review_scheduled</dd>
+          <dt>Other roles see</dt><dd>Advisor, compliance, and operations see the decision outcome, evidence link, and review cadence.</dd>
+          <dt>Protected from view</dt><dd>Unrelated internal review notes and restricted evidence remain hidden.</dd>
+        </dl>
+      </article><article class="stage-card">
+        <span class="stage-index">07</span>
+        <h3>Evidence</h3>
+        <p>Decision, compliance release, document, approval, communication, export, or audit event</p>
+        <dl>
+          <dt>Roles</dt><dd>Analyst, Advisor, Compliance, Privacy Officer, System</dd>
+          <dt>State movement</dt><dd>initial evidence stub/created -&gt; linked/validated/released/restricted</dd>
+          <dt>Other roles see</dt><dd>Each role sees proof appropriate to its permission and visibility scope.</dd>
+          <dt>Protected from view</dt><dd>Highly restricted or internal-only evidence is hidden or redacted.</dd>
+        </dl>
+      </article><article class="stage-card">
+        <span class="stage-index">08</span>
+        <h3>Audit</h3>
+        <p>Sensitive action, state transition, release, block, export, access change, or denied action</p>
+        <dl>
+          <dt>Roles</dt><dd>Security, Compliance, Ops, Product, QA</dd>
+          <dt>State movement</dt><dd>action attempted -&gt; audit result success/denied/blocked/failed/pending/warning</dd>
+          <dt>Other roles see</dt><dd>Control owners see lineage, result, actor role, target object, previous state, next state, and reason.</dd>
+          <dt>Protected from view</dt><dd>Audit details remain internal unless released as an approved evidence or export item.</dd>
+        </dl>
+      </article><article class="stage-card">
+        <span class="stage-index">09</span>
+        <h3>Monitoring</h3>
+        <p>Queue item, SLA breach, data quality issue, roadmap scope, or state reference</p>
+        <dl>
+          <dt>Roles</dt><dd>Ops, Product, QA, Leads</dd>
+          <dt>State movement</dt><dd>open/in_review/blocked -&gt; resolved/deferred/escalated/completed</dd>
+          <dt>Other roles see</dt><dd>Teams see where workflow friction accumulates and which service or product action should follow.</dd>
+          <dt>Protected from view</dt><dd>Reference and operational pages remain internal-only.</dd>
+        </dl>
+      </article></div>
+    </section>
+
+    <section class="section-page role-relays">
+      <p class="eyebrow">Role relay model</p>
+      <h2>Who changes what the next role can see</h2>
+      <p>These relays make collaboration explicit. They show where a workflow crosses from one role lens into another and why that handoff protects visibility, release, and accountability.</p>
+      <div class="relay-grid"><article class="relay-card">
+        <div class="relay-id">RR-001</div>
+        <h3>Platform Admin -> Compliance</h3>
+        <p class="relay-object">Platform policy baseline</p>
+        <dl>
+          <dt>Why first role acts</dt><dd>The platform role establishes the rule set that later tenant, evidence, export, and release workflows inherit.</dd>
+          <dt>What changes</dt><dd>Policy settings move from draft or review candidate into a reviewed baseline.</dd>
+          <dt>Next role sees</dt><dd>Compliance sees advice-boundary, evidence, release, and export rules that determine whether later work can become client-visible.</dd>
+          <dt>Client visibility impact</dt><dd>Indirect but foundational: later client visibility depends on this baseline.</dd>
+        </dl>
+      </article><article class="relay-card">
+        <div class="relay-id">RR-002</div>
+        <h3>Compliance -> Security Officer</h3>
+        <p class="relay-object">Sensitive platform controls</p>
+        <dl>
+          <dt>Why first role acts</dt><dd>Compliance confirms the policy meaning; security confirms access, session, and second-confirmation controls.</dd>
+          <dt>What changes</dt><dd>Sensitive configuration remains blocked until confirmation and audit expectations are satisfied.</dd>
+          <dt>Next role sees</dt><dd>Security sees which policy areas affect permission, MFA/session, external access, and export behavior.</dd>
+          <dt>Client visibility impact</dt><dd>Prevents unsafe visibility defaults from being inherited by tenants.</dd>
+        </dl>
+      </article><article class="relay-card">
+        <div class="relay-id">RR-003</div>
+        <h3>Ops Admin -> Client Success</h3>
+        <p class="relay-object">ClientTenant onboarding</p>
+        <dl>
+          <dt>Why first role acts</dt><dd>Ops creates the tenant shell so a family office can be configured in a scoped environment.</dd>
+          <dt>What changes</dt><dd>Tenant moves from draft to onboarding readiness.</dd>
+          <dt>Next role sees</dt><dd>Client Success sees owner assignments, missing activation gates, invitation readiness, and tenant policy profile.</dd>
+          <dt>Client visibility impact</dt><dd>No client-facing workspace is reliable until activation gates are satisfied.</dd>
+        </dl>
+      </article><article class="relay-card">
+        <div class="relay-id">RR-004</div>
+        <h3>Client Success -> Invited User</h3>
+        <p class="relay-object">Invitation and onboarding consent</p>
+        <dl>
+          <dt>Why first role acts</dt><dd>Client Success sends the invitation only after tenant setup has enough owner, policy, and role context.</dd>
+          <dt>What changes</dt><dd>User moves from invited toward active/demo role-confirmed state.</dd>
+          <dt>Next role sees</dt><dd>The invited user sees identity, privacy acknowledgement, consent, and role confirmation surfaces.</dd>
+          <dt>Client visibility impact</dt><dd>Creates scoped access context for later client-side visibility.</dd>
+        </dl>
+      </article><article class="relay-card">
+        <div class="relay-id">RR-005</div>
+        <h3>Principal / Family CFO -> Analyst</h3>
+        <p class="relay-object">Client profile and family context</p>
+        <dl>
+          <dt>Why first role acts</dt><dd>Client-side roles provide facts, relationships, preferences, and structure context that internal teams cannot safely infer.</dd>
+          <dt>What changes</dt><dd>Profile and relationship data become reviewable tenant context.</dd>
+          <dt>Next role sees</dt><dd>The analyst sees a structured family context with missing evidence, conflicts, and review needs.</dd>
+          <dt>Client visibility impact</dt><dd>Client input can remain visible to the client, but internal interpretation and advice remain gated.</dd>
+        </dl>
+      </article><article class="relay-card">
+        <div class="relay-id">RR-006</div>
+        <h3>Analyst -> Advisor</h3>
+        <p class="relay-object">Entity, document, signal, or recommendation candidate</p>
+        <dl>
+          <dt>Why first role acts</dt><dd>Analysts normalize data chaos into structured, reviewable context before advisory judgement is applied.</dd>
+          <dt>What changes</dt><dd>Workflow moves from analyst review toward advisor review or awaiting information.</dd>
+          <dt>Next role sees</dt><dd>Advisor sees the candidate package, source context, evidence status, and unresolved blockers.</dd>
+          <dt>Client visibility impact</dt><dd>Advisor approval is internal human review, not client visibility.</dd>
+        </dl>
+      </article><article class="relay-card">
+        <div class="relay-id">RR-007</div>
+        <h3>Client / External Advisor -> Analyst</h3>
+        <p class="relay-object">Document upload and extraction</p>
+        <dl>
+          <dt>Why first role acts</dt><dd>The source document enters the system from the party that has it, but extracted values must be reviewed before they become trusted context.</dd>
+          <dt>What changes</dt><dd>Document moves uploaded -&gt; ai_extracted -&gt; client_confirmed -&gt; analyst_review_pending.</dd>
+          <dt>Next role sees</dt><dd>Analyst sees document type, sensitivity, extracted values, confidence, corrected values, and entity links.</dd>
+          <dt>Client visibility impact</dt><dd>Clients may see simplified document state; internal extraction detail is not automatically client-visible.</dd>
+        </dl>
+      </article><article class="relay-card">
+        <div class="relay-id">RR-008</div>
+        <h3>Advisor -> Compliance Officer</h3>
+        <p class="relay-object">Advisor-approved recommendation package</p>
+        <dl>
+          <dt>Why first role acts</dt><dd>Advisor review supplies human judgement and rationale, but the package still requires release control.</dd>
+          <dt>What changes</dt><dd>Recommendation moves advisor_approved -&gt; compliance_pending.</dd>
+          <dt>Next role sees</dt><dd>Compliance sees advisor rationale, evidence completeness, classification, permissions, and release/block controls.</dd>
+          <dt>Client visibility impact</dt><dd>This relay is the decisive client-visibility gate.</dd>
+        </dl>
+      </article><article class="relay-card">
+        <div class="relay-id">RR-009</div>
+        <h3>Compliance Officer -> Principal / Family Council / Trustee scoped</h3>
+        <p class="relay-object">Released client decision</p>
+        <dl>
+          <dt>Why first role acts</dt><dd>Compliance releases only the version that is safe, scoped, evidenced, and permitted for client review.</dd>
+          <dt>What changes</dt><dd>Decision moves released_to_client -&gt; awaiting_family_approval or decision-ready.</dd>
+          <dt>Next role sees</dt><dd>Client-side participants see the released decision, evidence summary, required participants, and accept/defer/reject controls.</dd>
+          <dt>Client visibility impact</dt><dd>Client visibility is now permitted but still role/participant scoped.</dd>
+        </dl>
+      </article><article class="relay-card">
+        <div class="relay-id">RR-010</div>
+        <h3>Principal / Admin -> Compliance / Security</h3>
+        <p class="relay-object">Governance access request</p>
+        <dl>
+          <dt>Why first role acts</dt><dd>A user or admin requests changed access because collaboration requires the right people to see the right objects.</dd>
+          <dt>What changes</dt><dd>Access request moves requested -&gt; in_review -&gt; approved/blocked/revoked.</dd>
+          <dt>Next role sees</dt><dd>Compliance/Security sees requester, target user, scope, sensitivity, reason, and second-confirmation need.</dd>
+          <dt>Client visibility impact</dt><dd>Access changes alter who can see client-visible, restricted, or internal objects later.</dd>
+        </dl>
+      </article><article class="relay-card">
+        <div class="relay-id">RR-011</div>
+        <h3>Advisor / Client Success -> Client</h3>
+        <p class="relay-object">Communication escalation</p>
+        <dl>
+          <dt>Why first role acts</dt><dd>The internal team chooses the right channel when digital-only work is no longer enough.</dd>
+          <dt>What changes</dt><dd>Communication moves draft/scheduled -&gt; sent/completed/evidence-linked when material.</dd>
+          <dt>Next role sees</dt><dd>Client sees only the approved or appropriate message/call context, not internal notes.</dd>
+          <dt>Client visibility impact</dt><dd>Channel choice determines what is client-visible and what remains internal service context.</dd>
+        </dl>
+      </article><article class="relay-card">
+        <div class="relay-id">RR-012</div>
+        <h3>Advisor / Compliance -> Privacy Officer</h3>
+        <p class="relay-object">Export request and redaction</p>
+        <dl>
+          <dt>Why first role acts</dt><dd>The business wants to share evidence or decision material outside the live UI, but export creates risk.</dd>
+          <dt>What changes</dt><dd>Export request moves draft -&gt; scope_selected -&gt; redaction_pending -&gt; approval_required/approved -&gt; generated/downloaded.</dd>
+          <dt>Next role sees</dt><dd>Privacy Officer sees export type, scope, redaction profile, external sharing context, expiry, and approval state.</dd>
+          <dt>Client visibility impact</dt><dd>Exports create a controlled external visibility surface separate from the app UI.</dd>
+        </dl>
+      </article><article class="relay-card">
+        <div class="relay-id">RR-013</div>
+        <h3>Ops -> Product / QA / Leads</h3>
+        <p class="relay-object">Queue, SLA, roadmap, and state friction</p>
+        <dl>
+          <dt>Why first role acts</dt><dd>Ops observes bottlenecks and service friction that reveal where the workflow model needs improvement.</dd>
+          <dt>What changes</dt><dd>Queue/data quality issue moves open -&gt; in_review/blocked/resolved/deferred.</dd>
+          <dt>Next role sees</dt><dd>Product and QA see which states, queues, or routes create friction and which gaps are implementation limits.</dd>
+          <dt>Client visibility impact</dt><dd>Mostly internal; improves future consistency and reduces client-facing confusion.</dd>
+        </dl>
+      </article></div>
+    </section>
+
+    <section class="section-page">
+      <p class="eyebrow">Core swimlanes</p>
+      <h2>Collaboration flows that carry the manual</h2>
+      <figure class="diagram swimlane" data-diagram-id="D-002">
+    <div class="diagram-title">D-002. Trigger to client decision</div>
+    <div class="swimlane-grid" style="--lane-count:4">
+      <div class="lane">
+            <h4>System / Analyst</h4>
+            <span>Signal enters queue</span><span>Classify and route</span><span>Prepare candidate</span>
+          </div><div class="lane">
+            <h4>Advisor</h4>
+            <span>Review rationale</span><span>Approve internally</span><span>Send to compliance</span>
+          </div><div class="lane">
+            <h4>Compliance</h4>
+            <span>Check evidence</span><span>Release or block</span><span>Control visibility</span>
+          </div><div class="lane">
+            <h4>Client-side role</h4>
+            <span>View released context</span><span>Accept, defer, or reject</span><span>Decision recorded</span>
+          </div>
+    </div>
+    <figcaption>The flow shows why signal handling, advisor approval, compliance release, and client decision are distinct workflow events.</figcaption>
+  </figure>
+      <figure class="diagram swimlane" data-diagram-id="D-003">
+    <div class="diagram-title">D-003. Document intake handoff</div>
+    <div class="swimlane-grid" style="--lane-count:3">
+      <div class="lane">
+            <h4>Client / External Advisor</h4>
+            <span>Upload source</span><span>Confirm extraction</span><span>Resolve missing context</span>
+          </div><div class="lane">
+            <h4>Analyst</h4>
+            <span>Validate classification</span><span>Link entity or context</span><span>Mark verified or blocked</span>
+          </div><div class="lane">
+            <h4>Compliance</h4>
+            <span>Check suitability</span><span>Use as release evidence</span><span>Preserve audit trail</span>
+          </div>
+    </div>
+    <figcaption>The flow shows how an uploaded source becomes trusted evidence only after classification, confirmation, and review.</figcaption>
+  </figure>
+      <figure class="diagram swimlane" data-diagram-id="D-004">
+    <div class="diagram-title">D-004. Tenant onboarding relay</div>
+    <div class="swimlane-grid" style="--lane-count:4">
+      <div class="lane">
+            <h4>Platform Admin</h4>
+            <span>Set policy baseline</span><span>Prepare platform rules</span>
+          </div><div class="lane">
+            <h4>Ops Admin</h4>
+            <span>Create tenant</span><span>Assign team</span><span>Prepare activation</span>
+          </div><div class="lane">
+            <h4>Client Success</h4>
+            <span>Coordinate readiness</span><span>Invite user</span><span>Track consent</span>
+          </div><div class="lane">
+            <h4>Compliance</h4>
+            <span>Confirm owner gates</span><span>Review release controls</span>
+          </div>
+    </div>
+    <figcaption>The flow shows tenant activation as a governed collaboration container, not only an account setup task.</figcaption>
+  </figure>
+      <figure class="diagram lineage-diagram" data-diagram-id="D-005">
+    <div class="diagram-title">D-005. Evidence and audit lineage</div>
+    <div class="lineage-row">
+      <div>Action</div>
+      <div>Document</div>
+      <div>Approval</div>
+      <div>Release</div>
+      <div>Decision</div>
+      <div>Export</div>
+    </div>
+    <div class="lineage-spine">Evidence item -> Evidence record -> Audit event lineage</div>
+    <figcaption>Evidence is assembled from workflow events, so a later reviewer can understand what happened before they entered the flow.</figcaption>
+  </figure>
+      <figure class="diagram gate-diagram" data-diagram-id="D-006">
+    <div class="diagram-title">D-006. Visibility and release gate model</div>
+    <div class="gate-chain">
+      <div>Advisor approval</div>
+      <div>Compliance review</div>
+      <div>Evidence complete</div>
+      <div>Permission check</div>
+      <div class="gate-result">Client visible</div>
+    </div>
+    <p class="diagram-note">The chain is conjunctive: client visibility is allowed only when review, release, evidence, and permission conditions align.</p>
+    <figcaption>This diagram turns the no-unapproved-advice rule into a business-readable control model. Advisor approval alone is useful internal review, but it is not the client release event.</figcaption>
+  </figure>
+    </section>
+
+    <section class="story-chapter" id="WS-001">
+    <div class="chapter-kicker">Workflow story WS-001</div>
+    <h2>Tenant becomes operational</h2>
+    <div class="story-hero">
+      <article>
+        <h3>Workflow purpose</h3>
+        <p>A family-office workspace can become active before ownership, compliance, policy, and invitation context are aligned.</p>
+      </article>
+      <article>
+        <h3>Roles involved</h3>
+        <p>Platform Admin, Ops Admin, Client Success, Compliance, Invited User</p>
+      </article>
+      <article>
+        <h3>Reader takeaway</h3>
+        <p>A tenant is not just a record. It is the scoped collaboration container that makes later visibility and accountability possible.</p>
+      </article>
+    </div>
+    <div class="story-flow">
+      <article>
+        <h3>Handoff sequence</h3>
+        <ul class="numbered-flow"><li>Platform Admin establishes baseline</li><li>Ops Admin creates tenant</li><li>Client Success coordinates readiness</li><li>Compliance confirms owner/policy gates</li><li>Invited User accepts and acknowledges scope</li></ul>
+      </article>
+      <article>
+        <h3>State changes</h3>
+        <ul class="state-list"><li>TenantStatus: draft</li><li>TenantStatus: onboarding</li><li>UserStatus: invited</li><li>UserStatus: active/demo-confirmed</li></ul>
+      </article>
+      <article>
+        <h3>Visibility changes</h3>
+        <ul class=""><li>Internal setup visible to AlphaVest roles</li><li>Invited user sees only onboarding context</li><li>Client workspace is not treated as operational until gates are satisfied</li></ul>
+      </article>
+      <article>
+        <h3>Evidence and audit</h3>
+        <ul class=""><li>Policy changes audit</li><li>Tenant create/team assignment audit expected</li><li>Invitation and consent audit expected</li></ul>
+      </article>
+    </div>
+    <div class="story-detail">
+      <article>
+        <h3>Required inputs and objects</h3>
+        <p>PolicyDefinition, ClientTenant, User, UserRole, AuditEvent</p>
+        <h3>What the system prevents</h3>
+        <p>tenant activation without required owners,role context without invitation/consent,unscoped client data</p>
+      </article>
+      <figure class="evidence-panel">
+        <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-001-platform-settings.png" alt="WS-001 supporting interface evidence" />
+        <figcaption>Evidence panel 1: Show policy baseline, tenant readiness, and invitation as one activation relay. Role viewpoint: Platform/Ops/Invited User. This panel supports the workflow explanation; it is not a route instruction.</figcaption>
+      </figure>
+    </div>
+    <div class="boundary-note">
+      <strong>Demo boundary:</strong> The UI is navigable with demo data; broad persisted tenant governance transactions are not fully claimed.
+    </div>
+  </section>
+<section class="story-chapter" id="WS-002">
+    <div class="chapter-kicker">Workflow story WS-002</div>
+    <h2>Client profile becomes usable shared family context</h2>
+    <div class="story-hero">
+      <article>
+        <h3>Workflow purpose</h3>
+        <p>Family information, relationships, governance roles, and objectives often sit in separate memories, emails, spreadsheets, and documents.</p>
+      </article>
+      <article>
+        <h3>Roles involved</h3>
+        <p>Principal, Family CFO, Analyst, Advisor</p>
+      </article>
+      <article>
+        <h3>Reader takeaway</h3>
+        <p>The wealth map is not decoration. It is a shared model that tells every role what the family structure currently means and where uncertainty remains.</p>
+      </article>
+    </div>
+    <div class="story-flow">
+      <article>
+        <h3>Handoff sequence</h3>
+        <ul class="numbered-flow"><li>Principal or Family CFO submits context</li><li>Analyst validates and flags gaps</li><li>Advisor reviews governance significance</li></ul>
+      </article>
+      <article>
+        <h3>State changes</h3>
+        <ul class="state-list"><li>WorkflowStatus: draft/new</li><li>WorkflowStatus: in_review</li><li>WorkflowStatus: awaiting_info or completed</li></ul>
+      </article>
+      <article>
+        <h3>Visibility changes</h3>
+        <ul class=""><li>Client-side profile input remains tenant-scoped</li><li>Analyst sees quality gaps and relationship context</li><li>Advisor sees decision-relevant context only after review</li></ul>
+      </article>
+      <article>
+        <h3>Evidence and audit</h3>
+        <ul class=""><li>Profile edits should audit when material</li><li>Missing evidence creates review tasks or data quality issues</li></ul>
+      </article>
+    </div>
+    <div class="story-detail">
+      <article>
+        <h3>Required inputs and objects</h3>
+        <p>ClientTenant, FamilyMember, Relationship, Entity, Asset, DataQualityIssue</p>
+        <h3>What the system prevents</h3>
+        <p>advisory work based on memory alone,unreviewed relationships driving decisions,hidden conflicts in family/entity structure</p>
+      </article>
+      <figure class="evidence-panel">
+        <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-004-client-web-dashboard.png" alt="WS-002 supporting interface evidence" />
+        <figcaption>Evidence panel 2: Show client context and wealth structure becoming shared review material. Role viewpoint: Principal/Analyst/Advisor. This panel supports the workflow explanation; it is not a route instruction.</figcaption>
+      </figure>
+    </div>
+    <div class="boundary-note">
+      <strong>Demo boundary:</strong> Profile and relationship screens are navigable with demo data; full persistence is still a stated implementation need.
+    </div>
+  </section>
+<section class="story-chapter" id="WS-003">
+    <div class="chapter-kicker">Workflow story WS-003</div>
+    <h2>Document chaos becomes verified evidence</h2>
+    <div class="story-hero">
+      <article>
+        <h3>Workflow purpose</h3>
+        <p>Documents arrive from different people, in different formats, with uncertain sensitivity, entity links, and extracted facts.</p>
+      </article>
+      <article>
+        <h3>Roles involved</h3>
+        <p>Client, Family CFO, External Advisor, Analyst, Compliance</p>
+      </article>
+      <article>
+        <h3>Reader takeaway</h3>
+        <p>A document becomes useful only when it is classified, checked, linked, and made available at the correct visibility level.</p>
+      </article>
+    </div>
+    <div class="story-flow">
+      <article>
+        <h3>Handoff sequence</h3>
+        <ul class="numbered-flow"><li>Client or advisor uploads source</li><li>System/extraction drafts structure</li><li>Client confirms or corrects</li><li>Analyst validates</li><li>Evidence receives verified source link</li></ul>
+      </article>
+      <article>
+        <h3>State changes</h3>
+        <ul class="state-list"><li>DocumentStatus: empty</li><li>uploading</li><li>uploaded</li><li>ai_extracted</li><li>client_confirmed</li><li>analyst_review_pending</li><li>verified or needs_clarification or blocked</li><li>linked_to_evidence</li></ul>
+      </article>
+      <article>
+        <h3>Visibility changes</h3>
+        <ul class=""><li>Uploader sees upload/confirmation state</li><li>Analyst sees extraction detail</li><li>Compliance sees evidence readiness when relevant</li><li>Restricted documents remain scoped</li></ul>
+      </article>
+      <article>
+        <h3>Evidence and audit</h3>
+        <ul class=""><li>Upload, extraction review, versioning, correction, verification, and evidence linking should be auditable</li></ul>
+      </article>
+    </div>
+    <div class="story-detail">
+      <article>
+        <h3>Required inputs and objects</h3>
+        <p>Document, DocumentVersion, DocumentExtraction, DocumentReview, DocumentLink, EvidenceRecord</p>
+        <h3>What the system prevents</h3>
+        <p>low-confidence extraction becoming accepted fact,restricted document exposure,unlinked evidence claims</p>
+      </article>
+      <figure class="evidence-panel">
+        <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-006-documents-list.png" alt="WS-003 supporting interface evidence" />
+        <figcaption>Evidence panel 3: Show document inventory and evidence vault as the conversion from file to proof. Role viewpoint: Client/Analyst/Compliance. This panel supports the workflow explanation; it is not a route instruction.</figcaption>
+      </figure>
+    </div>
+    <div class="boundary-note">
+      <strong>Demo boundary:</strong> The manual documents demo UI and workflow intent; no real file storage or extraction transaction is claimed.
+    </div>
+  </section>
+<section class="story-chapter" id="WS-004">
+    <div class="chapter-kicker">Workflow story WS-004</div>
+    <h2>Signal becomes reviewed recommendation candidate</h2>
+    <div class="story-hero">
+      <article>
+        <h3>Workflow purpose</h3>
+        <p>A signal, data gap, market prompt, or document expiry can be mistaken for advice if review boundaries are not explicit.</p>
+      </article>
+      <article>
+        <h3>Roles involved</h3>
+        <p>System, Analyst, Advisor</p>
+      </article>
+      <article>
+        <h3>Reader takeaway</h3>
+        <p>The system keeps signals useful without letting them masquerade as advice.</p>
+      </article>
+    </div>
+    <div class="story-flow">
+      <article>
+        <h3>Handoff sequence</h3>
+        <ul class="numbered-flow"><li>Signal enters queue</li><li>Analyst classifies and routes</li><li>Advisor receives a prepared candidate package</li></ul>
+      </article>
+      <article>
+        <h3>State changes</h3>
+        <ul class="state-list"><li>WorkflowStatus: new</li><li>analyst_review</li><li>awaiting_info or advisor_review</li><li>RecommendationStatus: advisor_pending</li></ul>
+      </article>
+      <article>
+        <h3>Visibility changes</h3>
+        <ul class=""><li>Signal and draft remain internal</li><li>Advisor sees review context</li><li>Client sees nothing advice-like yet</li></ul>
+      </article>
+      <article>
+        <h3>Evidence and audit</h3>
+        <ul class=""><li>Routing, request-data, and recommendation-prep actions should create traceable events</li></ul>
+      </article>
+    </div>
+    <div class="story-detail">
+      <article>
+        <h3>Required inputs and objects</h3>
+        <p>Trigger, ActionItem, Recommendation, Approval, AuditEvent</p>
+        <h3>What the system prevents</h3>
+        <p>AI draft or signal becoming client advice,analyst review being treated as release,unsupported advisor package</p>
+      </article>
+      <figure class="evidence-panel">
+        <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-007-signal-review.png" alt="WS-004 supporting interface evidence" />
+        <figcaption>Evidence panel 4: Show internal-only signal review and advisor package before release. Role viewpoint: Analyst/Advisor. This panel supports the workflow explanation; it is not a route instruction.</figcaption>
+      </figure>
+    </div>
+    <div class="boundary-note">
+      <strong>Demo boundary:</strong> The J01 subset has demo-executable workflow actions; broad signal governance remains partial.
+    </div>
+  </section>
+<section class="story-chapter" id="WS-005">
+    <div class="chapter-kicker">Workflow story WS-005</div>
+    <h2>Advisor-approved package becomes compliance-controlled client visibility</h2>
+    <div class="story-hero">
+      <article>
+        <h3>Workflow purpose</h3>
+        <p>Advisor approval can feel final, but in a regulated wealth workflow it cannot be the same as client release.</p>
+      </article>
+      <article>
+        <h3>Roles involved</h3>
+        <p>Senior Wealth Advisor, Compliance Officer, Principal</p>
+      </article>
+      <article>
+        <h3>Reader takeaway</h3>
+        <p>Client visibility is a controlled outcome, not a side effect of internal approval.</p>
+      </article>
+    </div>
+    <div class="story-flow">
+      <article>
+        <h3>Handoff sequence</h3>
+        <ul class="numbered-flow"><li>Advisor records rationale</li><li>Compliance checks classification/evidence/permissions</li><li>Client visibility is released or blocked with reason</li></ul>
+      </article>
+      <article>
+        <h3>State changes</h3>
+        <ul class="state-list"><li>RecommendationStatus: advisor_pending</li><li>advisor_approved</li><li>compliance_pending</li><li>released_to_client or blocked</li></ul>
+      </article>
+      <article>
+        <h3>Visibility changes</h3>
+        <ul class=""><li>Advisor approval remains internal</li><li>Compliance sees release controls</li><li>Client visibility begins only after release and permission check</li></ul>
+      </article>
+      <article>
+        <h3>Evidence and audit</h3>
+        <ul class=""><li>Advisor approval, compliance release, block, and evidence request should all create audit lineage</li></ul>
+      </article>
+    </div>
+    <div class="story-detail">
+      <article>
+        <h3>Required inputs and objects</h3>
+        <p>Recommendation, Approval, ComplianceReview, EvidenceRecord, Permission</p>
+        <h3>What the system prevents</h3>
+        <p>unapproved advice reaching client,release without evidence,advisor approval being treated as final</p>
+      </article>
+      <figure class="evidence-panel">
+        <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-008-advisor-approval-queue.png" alt="WS-005 supporting interface evidence" />
+        <figcaption>Evidence panel 5: Show advisor approval and compliance queue as separate gates. Role viewpoint: Advisor/Compliance. This panel supports the workflow explanation; it is not a route instruction.</figcaption>
+      </figure>
+    </div>
+    <div class="boundary-note">
+      <strong>Demo boundary:</strong> Release/block states are visible; broad release persistence remains a top implementation gap.
+    </div>
+  </section>
+<section class="story-chapter" id="WS-006">
+    <div class="chapter-kicker">Workflow story WS-006</div>
+    <h2>Client decision becomes evidence and review cadence</h2>
+    <div class="story-hero">
+      <article>
+        <h3>Workflow purpose</h3>
+        <p>A client decision can disappear into email, meeting notes, or memory unless the decision, participants, rationale, and review date are captured together.</p>
+      </article>
+      <article>
+        <h3>Roles involved</h3>
+        <p>Compliance Officer, Principal, Family Council, Trustee scoped, Advisor</p>
+      </article>
+      <article>
+        <h3>Reader takeaway</h3>
+        <p>The client decision is not the end of the workflow; it becomes the start of evidence and future review discipline.</p>
+      </article>
+    </div>
+    <div class="story-flow">
+      <article>
+        <h3>Handoff sequence</h3>
+        <ul class="numbered-flow"><li>Compliance releases safe decision</li><li>Client-side participant acts</li><li>Evidence captures decision outcome</li><li>Review cadence schedules follow-up</li></ul>
+      </article>
+      <article>
+        <h3>State changes</h3>
+        <ul class="state-list"><li>DecisionStatus: released_to_client</li><li>awaiting_family_approval</li><li>accepted/deferred/rejected</li><li>evidence_created</li><li>review_scheduled</li></ul>
+      </article>
+      <article>
+        <h3>Visibility changes</h3>
+        <ul class=""><li>Client sees released decision only</li><li>Advisor/compliance see outcome and evidence lineage</li><li>Restricted internal notes remain hidden</li></ul>
+      </article>
+      <article>
+        <h3>Evidence and audit</h3>
+        <ul class=""><li>Decision action, reason, participant action, and evidence package should be immutable/audited</li></ul>
+      </article>
+    </div>
+    <div class="story-detail">
+      <article>
+        <h3>Required inputs and objects</h3>
+        <p>Decision, DecisionParticipant, EvidenceRecord, ReviewSchedule, AuditEvent</p>
+        <h3>What the system prevents</h3>
+        <p>unscoped participant decisions,lost decision rationale,completed decisions without proof</p>
+      </article>
+      <figure class="evidence-panel">
+        <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-010-decision-list.png" alt="WS-006 supporting interface evidence" />
+        <figcaption>Evidence panel 6: Show released decision and evidence lineage. Role viewpoint: Principal/Family Council/Compliance. This panel supports the workflow explanation; it is not a route instruction.</figcaption>
+      </figure>
+    </div>
+    <div class="boundary-note">
+      <strong>Demo boundary:</strong> Decision surfaces are navigable; final decision/evidence package persistence remains incomplete.
+    </div>
+  </section>
+<section class="story-chapter" id="WS-007">
+    <div class="chapter-kicker">Workflow story WS-007</div>
+    <h2>Governance change becomes permission-safe access</h2>
+    <div class="story-hero">
+      <article>
+        <h3>Workflow purpose</h3>
+        <p>Family offices frequently need to adjust access, but access changes can silently overexpose sensitive client data.</p>
+      </article>
+      <article>
+        <h3>Roles involved</h3>
+        <p>Principal, Admin, Compliance, Security, External Advisor</p>
+      </article>
+      <article>
+        <h3>Reader takeaway</h3>
+        <p>Access is not a user setting. It is a governed collaboration boundary.</p>
+      </article>
+    </div>
+    <div class="story-flow">
+      <article>
+        <h3>Handoff sequence</h3>
+        <ul class="numbered-flow"><li>Principal/Admin requests access</li><li>Compliance reviews purpose/scope</li><li>Security confirms sensitive changes</li><li>Audit history records lineage</li></ul>
+      </article>
+      <article>
+        <h3>State changes</h3>
+        <ul class="state-list"><li>WorkflowStatus: new/requested</li><li>in_review</li><li>approved or blocked or revoked</li></ul>
+      </article>
+      <article>
+        <h3>Visibility changes</h3>
+        <ul class=""><li>Requester sees request state</li><li>Reviewer sees sensitivity and scope</li><li>Target user sees only approved role scope</li></ul>
+      </article>
+      <article>
+        <h3>Evidence and audit</h3>
+        <ul class=""><li>Sensitive role/access actions require second confirmation and audit</li></ul>
+      </article>
+    </div>
+    <div class="story-detail">
+      <article>
+        <h3>Required inputs and objects</h3>
+        <p>UserRole, RolePermission, AccessRequest, SecondConfirmation, AuditEvent</p>
+        <h3>What the system prevents</h3>
+        <p>external broad access without review,cross-tenant exposure,permission changes without audit</p>
+      </article>
+      <figure class="evidence-panel">
+        <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-012-governance-users.png" alt="WS-007 supporting interface evidence" />
+        <figcaption>Evidence panel 7: Show access and governance as controlled collaboration boundary. Role viewpoint: Principal/Admin/Compliance/Security. This panel supports the workflow explanation; it is not a route instruction.</figcaption>
+      </figure>
+    </div>
+    <div class="boundary-note">
+      <strong>Demo boundary:</strong> Demo actions are visible; governed access transactions remain incomplete.
+    </div>
+  </section>
+<section class="story-chapter" id="WS-008">
+    <div class="chapter-kicker">Workflow story WS-008</div>
+    <h2>Communication escalation becomes recorded service context</h2>
+    <div class="story-hero">
+      <article>
+        <h3>Workflow purpose</h3>
+        <p>Complex advisory work often shifts between digital messages, calls, workshops, and specialists without preserving why the channel changed.</p>
+      </article>
+      <article>
+        <h3>Roles involved</h3>
+        <p>Advisor, Client Success, Client, External Specialist, Compliance</p>
+      </article>
+      <article>
+        <h3>Reader takeaway</h3>
+        <p>Communication is part of the workflow state, not a side channel outside the system.</p>
+      </article>
+    </div>
+    <div class="story-flow">
+      <article>
+        <h3>Handoff sequence</h3>
+        <ul class="numbered-flow"><li>Advisor/Client Success selects channel</li><li>Client responds or joins call</li><li>Material outcome links to evidence</li><li>Compliance controls advice-like messages when needed</li></ul>
+      </article>
+      <article>
+        <h3>State changes</h3>
+        <ul class="state-list"><li>WorkflowStatus: draft</li><li>sent or scheduled</li><li>awaiting_reply</li><li>completed or escalated</li></ul>
+      </article>
+      <article>
+        <h3>Visibility changes</h3>
+        <ul class=""><li>Client-visible messages are separated from internal notes</li><li>Material outcomes can become evidence-linked</li><li>Advice-like content remains release-controlled</li></ul>
+      </article>
+      <article>
+        <h3>Evidence and audit</h3>
+        <ul class=""><li>Sensitive communication should audit; material calls can link to evidence</li></ul>
+      </article>
+    </div>
+    <div class="story-detail">
+      <article>
+        <h3>Required inputs and objects</h3>
+        <p>MessageThread, Message, CallEvent, EvidenceRecord, AuditEvent</p>
+        <h3>What the system prevents</h3>
+        <p>unrecorded escalations,advice-like messages without release control,lost service context</p>
+      </article>
+      <figure class="evidence-panel">
+        <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-013-communication-centre.png" alt="WS-008 supporting interface evidence" />
+        <figcaption>Evidence panel 8: Show channel escalation as service workflow state. Role viewpoint: Advisor/Client Success/Client. This panel supports the workflow explanation; it is not a route instruction.</figcaption>
+      </figure>
+    </div>
+    <div class="boundary-note">
+      <strong>Demo boundary:</strong> Communication surfaces are mostly static; message and call persistence is not claimed.
+    </div>
+  </section>
+<section class="story-chapter" id="WS-009">
+    <div class="chapter-kicker">Workflow story WS-009</div>
+    <h2>Export request becomes redacted, approved, auditable package</h2>
+    <div class="story-hero">
+      <article>
+        <h3>Workflow purpose</h3>
+        <p>Exporting data can break the system's visibility controls if scope, redaction, approval, expiry, and audit are not explicit.</p>
+      </article>
+      <article>
+        <h3>Roles involved</h3>
+        <p>Advisor, Compliance, Privacy Officer, Client, External Advisor</p>
+      </article>
+      <article>
+        <h3>Reader takeaway</h3>
+        <p>An export is a controlled visibility event, not a simple download.</p>
+      </article>
+    </div>
+    <div class="story-flow">
+      <article>
+        <h3>Handoff sequence</h3>
+        <ul class="numbered-flow"><li>Requester chooses scope</li><li>Privacy/Compliance reviews redaction and approval</li><li>Generated package becomes downloadable only if allowed</li><li>Audit captures export lifecycle</li></ul>
+      </article>
+      <article>
+        <h3>State changes</h3>
+        <ul class="state-list"><li>ExportStatus: draft</li><li>scope_selected</li><li>redaction_pending</li><li>approval_required</li><li>approved</li><li>generated</li><li>downloaded or expired</li></ul>
+      </article>
+      <article>
+        <h3>Visibility changes</h3>
+        <ul class=""><li>Internal evidence may become redacted package</li><li>External sharing has expiry and classification</li><li>Restricted material remains excluded</li></ul>
+      </article>
+      <article>
+        <h3>Evidence and audit</h3>
+        <ul class=""><li>Export create, scope, redaction, approval, generation, download, and share should audit</li></ul>
+      </article>
+    </div>
+    <div class="story-detail">
+      <article>
+        <h3>Required inputs and objects</h3>
+        <p>EvidenceRecord, ExportRequest, Document, AuditEvent, Permission</p>
+        <h3>What the system prevents</h3>
+        <p>unredacted data leaving the platform,permission-free downloads,external packages without expiry</p>
+      </article>
+      <figure class="evidence-panel">
+        <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-011-evidence-vault.png" alt="WS-009 supporting interface evidence" />
+        <figcaption>Evidence panel 9: Use evidence/export surface to explain scoped redaction and auditable sharing. Role viewpoint: Advisor/Compliance/Privacy. This panel supports the workflow explanation; it is not a route instruction.</figcaption>
+      </figure>
+    </div>
+    <div class="boundary-note">
+      <strong>Demo boundary:</strong> Export UI is navigable; file/share realism is a Phase 18 gap.
+    </div>
+  </section>
+<section class="story-chapter" id="WS-010">
+    <div class="chapter-kicker">Workflow story WS-010</div>
+    <h2>Ops monitoring turns workflow friction into service and product improvement</h2>
+    <div class="story-hero">
+      <article>
+        <h3>Workflow purpose</h3>
+        <p>Workflow friction often remains anecdotal: someone knows a queue is slow, but the system does not show where or why.</p>
+      </article>
+      <article>
+        <h3>Roles involved</h3>
+        <p>Ops, Product, QA, Leads</p>
+      </article>
+      <article>
+        <h3>Reader takeaway</h3>
+        <p>AlphaVest uses operations feedback to keep the workflow model honest and continuously improve the shared state.</p>
+      </article>
+    </div>
+    <div class="story-flow">
+      <article>
+        <h3>Handoff sequence</h3>
+        <ul class="numbered-flow"><li>Ops monitors queues</li><li>QA validates coverage and state language</li><li>Product identifies roadmap or implementation gaps</li><li>Leads prioritize next workflow improvement</li></ul>
+      </article>
+      <article>
+        <h3>State changes</h3>
+        <ul class="state-list"><li>WorkflowStatus: open</li><li>in_review</li><li>blocked</li><li>deferred</li><li>completed</li></ul>
+      </article>
+      <article>
+        <h3>Visibility changes</h3>
+        <ul class=""><li>Operational pages remain internal</li><li>Workflow health informs product/service decisions</li><li>Client-facing promises are not inflated by reference pages</li></ul>
+      </article>
+      <article>
+        <h3>Evidence and audit</h3>
+        <ul class=""><li>Ops mutations should audit when implemented and service-affecting</li></ul>
+      </article>
+    </div>
+    <div class="story-detail">
+      <article>
+        <h3>Required inputs and objects</h3>
+        <p>QueueItem, DataQualityIssue, ReviewSchedule, AuditEvent</p>
+        <h3>What the system prevents</h3>
+        <p>invisible SLA drift,reference pages being mistaken for product capability,untracked data quality debt</p>
+      </article>
+      <figure class="evidence-panel">
+        <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-014-ops-queues.png" alt="WS-010 supporting interface evidence" />
+        <figcaption>Evidence panel 10: Show ops queues as workflow feedback and improvement surface. Role viewpoint: Ops/Product/QA. This panel supports the workflow explanation; it is not a route instruction.</figcaption>
+      </figure>
+    </div>
+    <div class="boundary-note">
+      <strong>Demo boundary:</strong> Queue/SLA mutation is not fully implemented; reference pages are internal only.
+    </div>
+  </section>
+
+    <section class="section-page">
+      <p class="eyebrow">Visibility and release gates</p>
+      <h2>Why internal progress is different from client visibility</h2>
+      <p class="lead">AlphaVest separates internal collaboration from client-visible release. Advisor approval is a human review step, but compliance release, evidence completeness, permission checks, and sensitivity boundaries decide whether a client can see or act on something.</p>
+      <figure class="diagram gate-diagram" data-diagram-id="D-006">
+    <div class="diagram-title">D-006. Visibility and release gate model</div>
+    <div class="gate-chain">
+      <div>Advisor approval</div>
+      <div>Compliance review</div>
+      <div>Evidence complete</div>
+      <div>Permission check</div>
+      <div class="gate-result">Client visible</div>
+    </div>
+    <p class="diagram-note">The chain is conjunctive: client visibility is allowed only when review, release, evidence, and permission conditions align.</p>
+    <figcaption>This diagram turns the no-unapproved-advice rule into a business-readable control model. Advisor approval alone is useful internal review, but it is not the client release event.</figcaption>
+  </figure>
+      <p>The matrix below is intentionally supporting material. It helps readers compare role visibility across objects, but it is not the main story of the manual.</p>
+      <div class="visibility-groups">
+    <section class="visibility-group">
+          <h3>Setup and client-side visibility</h3>
+          <table class="visibility-table">
+            <thead>
+              <tr>
+                <th>Object or state</th>
+                <th>Platform Admin</th><th>Ops Admin</th><th>Client Success</th><th>Principal</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                    <td><strong>tenant</strong></td>
+                    <td>can create/review baseline</td><td>can create</td><td>can coordinate</td><td>blocked until invited</td>
+                  </tr><tr>
+                    <td><strong>profile</strong></td>
+                    <td>internal only</td><td>summary only</td><td>can review onboarding context</td><td>can create/review</td>
+                  </tr><tr>
+                    <td><strong>entity</strong></td>
+                    <td>internal only</td><td>summary only</td><td>summary only</td><td>can create/review</td>
+                  </tr><tr>
+                    <td><strong>document</strong></td>
+                    <td>internal only</td><td>blocked unless scoped</td><td>summary only</td><td>can upload/review own</td>
+                  </tr><tr>
+                    <td><strong>extraction</strong></td>
+                    <td>internal only</td><td>blocked</td><td>blocked</td><td>can confirm/correct if scoped</td>
+                  </tr><tr>
+                    <td><strong>trigger</strong></td>
+                    <td>internal only</td><td>summary only</td><td>summary only</td><td>blocked unless neutral/released</td>
+                  </tr><tr>
+                    <td><strong>recommendation</strong></td>
+                    <td>internal only</td><td>blocked</td><td>blocked/summary only</td><td>blocked until released</td>
+                  </tr><tr>
+                    <td><strong>approval</strong></td>
+                    <td>audit-only</td><td>blocked</td><td>blocked</td><td>blocked</td>
+                  </tr><tr>
+                    <td><strong>compliance review</strong></td>
+                    <td>audit-only</td><td>blocked</td><td>blocked</td><td>blocked until release</td>
+                  </tr><tr>
+                    <td><strong>decision</strong></td>
+                    <td>audit-only</td><td>blocked</td><td>summary only if service scoped</td><td>can review/decide if released</td>
+                  </tr><tr>
+                    <td><strong>evidence record</strong></td>
+                    <td>audit-only</td><td>blocked/summary only</td><td>summary only</td><td>client-visible/released only</td>
+                  </tr><tr>
+                    <td><strong>export request</strong></td>
+                    <td>audit-only</td><td>blocked</td><td>blocked/summary only</td><td>can request if permitted</td>
+                  </tr><tr>
+                    <td><strong>message thread</strong></td>
+                    <td>audit-only</td><td>blocked</td><td>can coordinate</td><td>client-visible messages only</td>
+                  </tr><tr>
+                    <td><strong>access request</strong></td>
+                    <td>can review platform scope</td><td>can request/administer</td><td>can coordinate</td><td>can request/approve scoped</td>
+                  </tr><tr>
+                    <td><strong>queue item</strong></td>
+                    <td>summary only</td><td>can monitor</td><td>can own service queue</td><td>blocked</td>
+                  </tr><tr>
+                    <td><strong>data quality issue</strong></td>
+                    <td>summary only</td><td>can monitor</td><td>can coordinate</td><td>may see client-safe request</td>
+                  </tr>
+            </tbody>
+          </table>
+        </section><section class="visibility-group">
+          <h3>Family, analysis, advice, and release</h3>
+          <table class="visibility-table">
+            <thead>
+              <tr>
+                <th>Object or state</th>
+                <th>Family CFO</th><th>Analyst</th><th>Advisor</th><th>Compliance</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                    <td><strong>tenant</strong></td>
+                    <td>blocked until invited</td><td>can see assigned tenant</td><td>can see assigned tenant</td><td>can review/release gates</td>
+                  </tr><tr>
+                    <td><strong>profile</strong></td>
+                    <td>can create/review if scoped</td><td>can review/flag gaps</td><td>can review after normalization</td><td>can review if sensitive</td>
+                  </tr><tr>
+                    <td><strong>entity</strong></td>
+                    <td>can create/review</td><td>can review/link evidence</td><td>can review significance</td><td>can review if release-sensitive</td>
+                  </tr><tr>
+                    <td><strong>document</strong></td>
+                    <td>can upload/review scoped</td><td>can review/verify</td><td>can review if permitted</td><td>can review sensitive/release evidence</td>
+                  </tr><tr>
+                    <td><strong>extraction</strong></td>
+                    <td>can confirm/correct if scoped</td><td>can review/accept/block</td><td>summary only after review</td><td>review if evidence-sensitive</td>
+                  </tr><tr>
+                    <td><strong>trigger</strong></td>
+                    <td>blocked unless neutral/released</td><td>can review/route</td><td>can review after routing</td><td>can review release-sensitive</td>
+                  </tr><tr>
+                    <td><strong>recommendation</strong></td>
+                    <td>blocked until released</td><td>can draft/prepare</td><td>can approve/revise/request data</td><td>can release/block/request evidence</td>
+                  </tr><tr>
+                    <td><strong>approval</strong></td>
+                    <td>blocked</td><td>can see status if assigned</td><td>can approve/revise</td><td>can review as release input</td>
+                  </tr><tr>
+                    <td><strong>compliance review</strong></td>
+                    <td>blocked until release</td><td>can see request for evidence</td><td>can see release/block result</td><td>can release/block/request evidence</td>
+                  </tr><tr>
+                    <td><strong>decision</strong></td>
+                    <td>can review/decide if participant</td><td>can see status if assigned</td><td>can review outcome</td><td>can review release/evidence</td>
+                  </tr><tr>
+                    <td><strong>evidence record</strong></td>
+                    <td>client-visible/released only</td><td>can create/link</td><td>can review</td><td>can validate/release/restrict</td>
+                  </tr><tr>
+                    <td><strong>export request</strong></td>
+                    <td>can request if permitted</td><td>can prepare if assigned</td><td>can request/review</td><td>can approve/block</td>
+                  </tr><tr>
+                    <td><strong>message thread</strong></td>
+                    <td>client-visible messages only</td><td>internal notes if assigned</td><td>can send/review</td><td>release controls if advice-like</td>
+                  </tr><tr>
+                    <td><strong>access request</strong></td>
+                    <td>can request if scoped</td><td>blocked</td><td>blocked/request scoped</td><td>can approve/block</td>
+                  </tr><tr>
+                    <td><strong>queue item</strong></td>
+                    <td>blocked</td><td>can own analyst queue</td><td>can own advisor queue</td><td>can own compliance queue</td>
+                  </tr><tr>
+                    <td><strong>data quality issue</strong></td>
+                    <td>may see client-safe request</td><td>can create/resolve</td><td>can review impact</td><td>can block release</td>
+                  </tr>
+            </tbody>
+          </table>
+        </section><section class="visibility-group">
+          <h3>Privacy, security, external scope, and QA</h3>
+          <table class="visibility-table">
+            <thead>
+              <tr>
+                <th>Object or state</th>
+                <th>Privacy Officer</th><th>Security</th><th>External Advisor</th><th>Product / QA</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                    <td><strong>tenant</strong></td>
+                    <td>internal only unless export/privacy</td><td>can review access/session controls</td><td>blocked until scoped</td><td>internal reference only</td>
+                  </tr><tr>
+                    <td><strong>profile</strong></td>
+                    <td>can see privacy-sensitive summary</td><td>audit-only</td><td>see redacted/scoped only</td><td>demo/reference only</td>
+                  </tr><tr>
+                    <td><strong>entity</strong></td>
+                    <td>redaction review</td><td>audit-only</td><td>scoped/redacted only</td><td>internal demo/reference</td>
+                  </tr><tr>
+                    <td><strong>document</strong></td>
+                    <td>can review redaction</td><td>audit-only</td><td>can upload/review scoped</td><td>no real client data</td>
+                  </tr><tr>
+                    <td><strong>extraction</strong></td>
+                    <td>review redaction sensitivity</td><td>audit-only</td><td>confirm if source owner</td><td>demo quality only</td>
+                  </tr><tr>
+                    <td><strong>trigger</strong></td>
+                    <td>blocked unless export/privacy</td><td>audit-only</td><td>blocked</td><td>internal monitoring</td>
+                  </tr><tr>
+                    <td><strong>recommendation</strong></td>
+                    <td>redaction/privacy review if exported</td><td>audit-only</td><td>blocked unless explicitly scoped</td><td>state reference only</td>
+                  </tr><tr>
+                    <td><strong>approval</strong></td>
+                    <td>audit/redaction only</td><td>audit-only</td><td>blocked</td><td>state reference only</td>
+                  </tr><tr>
+                    <td><strong>compliance review</strong></td>
+                    <td>can review redaction/privacy</td><td>audit-only</td><td>blocked</td><td>state reference only</td>
+                  </tr><tr>
+                    <td><strong>decision</strong></td>
+                    <td>redacted/export review</td><td>audit-only</td><td>blocked unless scoped</td><td>state reference only</td>
+                  </tr><tr>
+                    <td><strong>evidence record</strong></td>
+                    <td>can review redaction</td><td>audit-only</td><td>redacted/scoped only</td><td>no real client data</td>
+                  </tr><tr>
+                    <td><strong>export request</strong></td>
+                    <td>can review redaction</td><td>audit-only</td><td>recipient/scoped only</td><td>state reference only</td>
+                  </tr><tr>
+                    <td><strong>message thread</strong></td>
+                    <td>privacy review if needed</td><td>audit-only</td><td>scoped thread only</td><td>no client content</td>
+                  </tr><tr>
+                    <td><strong>access request</strong></td>
+                    <td>review privacy scope</td><td>can confirm/deny</td><td>target/request scoped</td><td>state reference only</td>
+                  </tr><tr>
+                    <td><strong>queue item</strong></td>
+                    <td>export/privacy queue</td><td>security queue</td><td>blocked</td><td>can monitor quality</td>
+                  </tr><tr>
+                    <td><strong>data quality issue</strong></td>
+                    <td>review sensitive issue</td><td>audit-only</td><td>scoped request only</td><td>can analyze trend</td>
+                  </tr>
+            </tbody>
+          </table>
+        </section>
+  </div>
+    </section>
+
+    <section class="section-page">
+      <p class="eyebrow">Evidence and audit lineage</p>
+      <h2>How AlphaVest preserves the reason a workflow advanced</h2>
+      <p>Evidence lets a later reviewer understand what changed before they entered the flow. Audit events protect sensitive actions by preserving actor, role, object, previous state, next state, and result.</p>
+      <figure class="diagram lineage-diagram" data-diagram-id="D-005">
+    <div class="diagram-title">D-005. Evidence and audit lineage</div>
+    <div class="lineage-row">
+      <div>Action</div>
+      <div>Document</div>
+      <div>Approval</div>
+      <div>Release</div>
+      <div>Decision</div>
+      <div>Export</div>
+    </div>
+    <div class="lineage-spine">Evidence item -> Evidence record -> Audit event lineage</div>
+    <figcaption>Evidence is assembled from workflow events, so a later reviewer can understand what happened before they entered the flow.</figcaption>
+  </figure>
+      <div class="principle-grid">
+        <article><h3>Review memory</h3><p>Evidence connects decisions, releases, documents, exports, messages, and approvals into a coherent trace.</p></article>
+        <article><h3>Controlled correction</h3><p>Corrections create new events rather than silently rewriting what happened.</p></article>
+        <article><h3>Future collaboration</h3><p>The next role can act with context instead of reconstructing the past from messages or memory.</p></article>
+        <article><h3>Client trust</h3><p>Released material has an explainable lineage instead of appearing as an unsupported conclusion.</p></article>
+      </div>
+    </section>
+
+    <section class="section-page">
+      <p class="eyebrow">State transition atlas</p>
+      <h2>What states mean for collaboration</h2>
+      <p>States are not technical labels in this manual. They explain whether an object is still being prepared, blocked for protection, ready for review, released to a client, or captured as evidence.</p>
+      <div class="state-grid"><article class="state-card">
+        <h3>TenantStatus</h3>
+        <p>Defines whether a tenant is merely configured, being onboarded, operational, paused, or no longer active.</p>
+        <div class="state-strip"><span>draft</span><span>onboarding</span><span>active</span><span>suspended</span><span>archived</span></div>
+        <dl>
+          <dt>Who moves it forward</dt><dd>Ops Admin, Client Success, Compliance</dd>
+          <dt>What other roles see</dt><dd>Client-side users see onboarding only after invitation; internal teams see readiness gates before activation.</dd>
+          <dt>Evidence and audit</dt><dd>Tenant create, owner assignment, policy override, activation, suspension, and archive should audit.</dd>
+          <dt>Client visibility</dt><dd>Client workspace visibility should not be treated as operational before activation gates.</dd>
+        </dl>
+      </article><article class="state-card">
+        <h3>DocumentStatus</h3>
+        <p>Turns an untrusted file into reviewed source material or blocks it before it can support decisions.</p>
+        <div class="state-strip"><span>empty</span><span>uploading</span><span>uploaded</span><span>ai_extracted</span><span>client_confirmed</span><span>analyst_review_pending</span><span>verified</span><span>needs_clarification</span><span>blocked</span><span>linked_to_evidence</span><span>archived</span></div>
+        <dl>
+          <dt>Who moves it forward</dt><dd>Client, Family CFO, External Advisor, Analyst, Compliance</dd>
+          <dt>What other roles see</dt><dd>Uploader sees upload/confirmation; analyst sees extraction/review; compliance sees evidence suitability.</dd>
+          <dt>Evidence and audit</dt><dd>Upload, extraction correction, review, block, and evidence link should audit.</dd>
+          <dt>Client visibility</dt><dd>Raw extraction and internal review are not automatically client-visible.</dd>
+        </dl>
+      </article><article class="state-card">
+        <h3>WorkflowStatus</h3>
+        <p>Generic lifecycle for action, queue, engagement, access, and service work.</p>
+        <div class="state-strip"><span>draft</span><span>new</span><span>in_review</span><span>awaiting_info</span><span>analyst_review</span><span>advisor_review</span><span>compliance_pending</span><span>ready_for_client</span><span>client_visible</span><span>completed</span><span>deferred</span><span>blocked</span><span>rejected</span><span>archived</span></div>
+        <dl>
+          <dt>Who moves it forward</dt><dd>Assigned owner, Analyst, Advisor, Compliance, Ops</dd>
+          <dt>What other roles see</dt><dd>Each role sees whether the next action is theirs, blocked, or waiting on someone else.</dd>
+          <dt>Evidence and audit</dt><dd>Material state transitions and sensitive actions should audit.</dd>
+          <dt>Client visibility</dt><dd>ready_for_client and client_visible are distinct from internal completion.</dd>
+        </dl>
+      </article><article class="state-card">
+        <h3>RecommendationStatus</h3>
+        <p>Separates draft/AI/internal review from advisor judgement, compliance release, and client action.</p>
+        <div class="state-strip"><span>draft</span><span>ai_draft</span><span>analyst_reviewed</span><span>advisor_pending</span><span>advisor_approved</span><span>revision_requested</span><span>more_data_requested</span><span>compliance_pending</span><span>released_to_client</span><span>blocked</span><span>client_accepted</span><span>client_deferred</span><span>client_rejected</span><span>archived</span></div>
+        <dl>
+          <dt>Who moves it forward</dt><dd>Analyst, Advisor, Compliance, Client-side participant</dd>
+          <dt>What other roles see</dt><dd>Advisor sees prepared context; compliance sees release package; client sees only released recommendation/decision material.</dd>
+          <dt>Evidence and audit</dt><dd>Approval, revision, evidence request, release, block, and client outcome should audit.</dd>
+          <dt>Client visibility</dt><dd>advisor_approved is not client_visible; only released_to_client plus permission/evidence gates allows visibility.</dd>
+        </dl>
+      </article><article class="state-card">
+        <h3>ComplianceStatus</h3>
+        <p>Controls whether sensitive/advice-like work can cross the internal-to-client boundary.</p>
+        <div class="state-strip"><span>not_required</span><span>pending</span><span>in_review</span><span>released</span><span>blocked</span><span>needs_evidence</span><span>exception</span><span>expired</span></div>
+        <dl>
+          <dt>Who moves it forward</dt><dd>Compliance Officer, Privacy Officer where relevant</dd>
+          <dt>What other roles see</dt><dd>Advisor and analyst see release/block/evidence request outcome; client sees only released content.</dd>
+          <dt>Evidence and audit</dt><dd>Release, block, exception, and evidence request are audit-critical.</dd>
+          <dt>Client visibility</dt><dd>released is required for advice-like client-visible content.</dd>
+        </dl>
+      </article><article class="state-card">
+        <h3>DecisionStatus</h3>
+        <p>Tracks the client-side decision lifecycle after compliance release.</p>
+        <div class="state-strip"><span>draft</span><span>released_to_client</span><span>awaiting_family_approval</span><span>accepted</span><span>deferred</span><span>rejected</span><span>evidence_created</span><span>review_scheduled</span><span>archived</span></div>
+        <dl>
+          <dt>Who moves it forward</dt><dd>Compliance Officer, Principal, Family Council, Trustee scoped, System for evidence/review schedule</dd>
+          <dt>What other roles see</dt><dd>Client-side participants see required actions; advisor/compliance see outcome and evidence status.</dd>
+          <dt>Evidence and audit</dt><dd>Decision action, participant status, evidence creation, and review scheduling should audit.</dd>
+          <dt>Client visibility</dt><dd>Decision becomes visible only after release; participant scope controls who can act.</dd>
+        </dl>
+      </article><article class="state-card">
+        <h3>EvidenceStatus</h3>
+        <p>Tracks whether proof exists, is linked, validated, releasable, restricted, or obsolete.</p>
+        <div class="state-strip"><span>initial evidence stub</span><span>created</span><span>linked</span><span>validated</span><span>released</span><span>restricted</span><span>archived</span><span>superseded</span></div>
+        <dl>
+          <dt>Who moves it forward</dt><dd>Analyst, Advisor, Compliance, Privacy Officer, System</dd>
+          <dt>What other roles see</dt><dd>Each role sees the proof package according to visibilityStatus and permission.</dd>
+          <dt>Evidence and audit</dt><dd>Evidence item linking, validation, release, restriction, and supersession should audit.</dd>
+          <dt>Client visibility</dt><dd>Evidence can be client-visible, redacted, restricted, or internal-only.</dd>
+        </dl>
+      </article><article class="state-card">
+        <h3>ExportStatus</h3>
+        <p>Controls how internal evidence or decision data leaves the platform as an auditable package.</p>
+        <div class="state-strip"><span>draft</span><span>scope_selected</span><span>redaction_pending</span><span>approval_required</span><span>approved</span><span>generated</span><span>downloaded</span><span>expired</span><span>revoked</span><span>failed</span></div>
+        <dl>
+          <dt>Who moves it forward</dt><dd>Requester, Advisor, Compliance, Privacy Officer, System</dd>
+          <dt>What other roles see</dt><dd>Requesters see progress; approvers see scope/redaction; recipients see only approved package output.</dd>
+          <dt>Evidence and audit</dt><dd>Export scope, approval, generation, download, expiry, and revocation should audit.</dd>
+          <dt>Client visibility</dt><dd>Exports are a separate visibility surface and must preserve redaction, permission, classification, and expiry.</dd>
+        </dl>
+      </article></div>
+    </section>
+
+    <section class="section-page appendix">
+      <p class="eyebrow">Screen evidence appendix</p>
+      <h2>Screenshots as workflow evidence</h2>
+      <p>Each screenshot is tied to a workflow moment, role viewpoint, and handoff. The screenshot supports the explanation; it does not replace it.</p>
+      <div class="screen-evidence-list"><article class="screen-evidence">
+        <div>
+          <p class="evidence-id">WS-001</p>
+          <h3>Tenant becomes operational</h3>
+          <p>Show policy baseline, tenant readiness, and invitation as one activation relay.</p>
+          <dl>
+            <dt>Role viewpoint</dt><dd>Platform/Ops/Invited User</dd>
+            <dt>Handoff shown</dt><dd>policy -&gt; tenant -&gt; invitation</dd>
+            <dt>What happened before</dt><dd>Platform Admin establishes baseline</dd>
+            <dt>What happens next</dt><dd>Invited User accepts and acknowledges scope</dd>
+          </dl>
+        </div>
+        <figure>
+          <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-001-platform-settings.png" alt="WS-001 appendix screenshot" />
+          <figcaption>Appendix screenshot 1. Used as workflow evidence only.</figcaption>
+        </figure>
+      </article><article class="screen-evidence">
+        <div>
+          <p class="evidence-id">WS-002</p>
+          <h3>Client profile becomes usable shared family context</h3>
+          <p>Show client context and wealth structure becoming shared review material.</p>
+          <dl>
+            <dt>Role viewpoint</dt><dd>Principal/Analyst/Advisor</dd>
+            <dt>Handoff shown</dt><dd>client input -&gt; analyst review -&gt; advisor context</dd>
+            <dt>What happened before</dt><dd>Principal or Family CFO submits context</dd>
+            <dt>What happens next</dt><dd>Advisor reviews governance significance</dd>
+          </dl>
+        </div>
+        <figure>
+          <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-004-client-web-dashboard.png" alt="WS-002 appendix screenshot" />
+          <figcaption>Appendix screenshot 2. Used as workflow evidence only.</figcaption>
+        </figure>
+      </article><article class="screen-evidence">
+        <div>
+          <p class="evidence-id">WS-003</p>
+          <h3>Document chaos becomes verified evidence</h3>
+          <p>Show document inventory and evidence vault as the conversion from file to proof.</p>
+          <dl>
+            <dt>Role viewpoint</dt><dd>Client/Analyst/Compliance</dd>
+            <dt>Handoff shown</dt><dd>upload -&gt; verify -&gt; evidence</dd>
+            <dt>What happened before</dt><dd>Client or advisor uploads source</dd>
+            <dt>What happens next</dt><dd>Evidence receives verified source link</dd>
+          </dl>
+        </div>
+        <figure>
+          <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-006-documents-list.png" alt="WS-003 appendix screenshot" />
+          <figcaption>Appendix screenshot 3. Used as workflow evidence only.</figcaption>
+        </figure>
+      </article><article class="screen-evidence">
+        <div>
+          <p class="evidence-id">WS-004</p>
+          <h3>Signal becomes reviewed recommendation candidate</h3>
+          <p>Show internal-only signal review and advisor package before release.</p>
+          <dl>
+            <dt>Role viewpoint</dt><dd>Analyst/Advisor</dd>
+            <dt>Handoff shown</dt><dd>signal -&gt; analyst route -&gt; advisor approval</dd>
+            <dt>What happened before</dt><dd>Signal enters queue</dd>
+            <dt>What happens next</dt><dd>Advisor receives a prepared candidate package</dd>
+          </dl>
+        </div>
+        <figure>
+          <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-007-signal-review.png" alt="WS-004 appendix screenshot" />
+          <figcaption>Appendix screenshot 4. Used as workflow evidence only.</figcaption>
+        </figure>
+      </article><article class="screen-evidence">
+        <div>
+          <p class="evidence-id">WS-005</p>
+          <h3>Advisor-approved package becomes compliance-controlled client visibility</h3>
+          <p>Show advisor approval and compliance queue as separate gates.</p>
+          <dl>
+            <dt>Role viewpoint</dt><dd>Advisor/Compliance</dd>
+            <dt>Handoff shown</dt><dd>advisor-approved -&gt; compliance-controlled</dd>
+            <dt>What happened before</dt><dd>Advisor records rationale</dd>
+            <dt>What happens next</dt><dd>Client visibility is released or blocked with reason</dd>
+          </dl>
+        </div>
+        <figure>
+          <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-008-advisor-approval-queue.png" alt="WS-005 appendix screenshot" />
+          <figcaption>Appendix screenshot 5. Used as workflow evidence only.</figcaption>
+        </figure>
+      </article><article class="screen-evidence">
+        <div>
+          <p class="evidence-id">WS-006</p>
+          <h3>Client decision becomes evidence and review cadence</h3>
+          <p>Show released decision and evidence lineage.</p>
+          <dl>
+            <dt>Role viewpoint</dt><dd>Principal/Family Council/Compliance</dd>
+            <dt>Handoff shown</dt><dd>release -&gt; decision -&gt; evidence</dd>
+            <dt>What happened before</dt><dd>Compliance releases safe decision</dd>
+            <dt>What happens next</dt><dd>Review cadence schedules follow-up</dd>
+          </dl>
+        </div>
+        <figure>
+          <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-010-decision-list.png" alt="WS-006 appendix screenshot" />
+          <figcaption>Appendix screenshot 6. Used as workflow evidence only.</figcaption>
+        </figure>
+      </article><article class="screen-evidence">
+        <div>
+          <p class="evidence-id">WS-007</p>
+          <h3>Governance change becomes permission-safe access</h3>
+          <p>Show access and governance as controlled collaboration boundary.</p>
+          <dl>
+            <dt>Role viewpoint</dt><dd>Principal/Admin/Compliance/Security</dd>
+            <dt>Handoff shown</dt><dd>request -&gt; review -&gt; audit</dd>
+            <dt>What happened before</dt><dd>Principal/Admin requests access</dd>
+            <dt>What happens next</dt><dd>Audit history records lineage</dd>
+          </dl>
+        </div>
+        <figure>
+          <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-012-governance-users.png" alt="WS-007 appendix screenshot" />
+          <figcaption>Appendix screenshot 7. Used as workflow evidence only.</figcaption>
+        </figure>
+      </article><article class="screen-evidence">
+        <div>
+          <p class="evidence-id">WS-008</p>
+          <h3>Communication escalation becomes recorded service context</h3>
+          <p>Show channel escalation as service workflow state.</p>
+          <dl>
+            <dt>Role viewpoint</dt><dd>Advisor/Client Success/Client</dd>
+            <dt>Handoff shown</dt><dd>digital -&gt; call/escalation -&gt; evidence context</dd>
+            <dt>What happened before</dt><dd>Advisor/Client Success selects channel</dd>
+            <dt>What happens next</dt><dd>Compliance controls advice-like messages when needed</dd>
+          </dl>
+        </div>
+        <figure>
+          <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-013-communication-centre.png" alt="WS-008 appendix screenshot" />
+          <figcaption>Appendix screenshot 8. Used as workflow evidence only.</figcaption>
+        </figure>
+      </article><article class="screen-evidence">
+        <div>
+          <p class="evidence-id">WS-009</p>
+          <h3>Export request becomes redacted, approved, auditable package</h3>
+          <p>Use evidence/export surface to explain scoped redaction and auditable sharing.</p>
+          <dl>
+            <dt>Role viewpoint</dt><dd>Advisor/Compliance/Privacy</dd>
+            <dt>Handoff shown</dt><dd>evidence -&gt; export scope -&gt; redaction</dd>
+            <dt>What happened before</dt><dd>Requester chooses scope</dd>
+            <dt>What happens next</dt><dd>Audit captures export lifecycle</dd>
+          </dl>
+        </div>
+        <figure>
+          <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-011-evidence-vault.png" alt="WS-009 appendix screenshot" />
+          <figcaption>Appendix screenshot 9. Used as workflow evidence only.</figcaption>
+        </figure>
+      </article><article class="screen-evidence">
+        <div>
+          <p class="evidence-id">WS-010</p>
+          <h3>Ops monitoring turns workflow friction into service and product improvement</h3>
+          <p>Show ops queues as workflow feedback and improvement surface.</p>
+          <dl>
+            <dt>Role viewpoint</dt><dd>Ops/Product/QA</dd>
+            <dt>Handoff shown</dt><dd>queue friction -&gt; QA/product action</dd>
+            <dt>What happened before</dt><dd>Ops monitors queues</dd>
+            <dt>What happens next</dt><dd>Leads prioritize next workflow improvement</dd>
+          </dl>
+        </div>
+        <figure>
+          <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-014-ops-queues.png" alt="WS-010 appendix screenshot" />
+          <figcaption>Appendix screenshot 10. Used as workflow evidence only.</figcaption>
+        </figure>
+      </article></div>
+    </section>
+
+    <section class="section-page appendix">
+      <p class="eyebrow">Production boundary</p>
+      <h2>What this PDF claims and what it does not claim</h2>
+      <div class="principle-grid">
+        <article><h3>Grounded claim</h3><p>The manual is generated from the collaboration source package and current repository documentation.</p></article>
+        <article><h3>Demo boundary</h3><p>Some workflows are navigable with demo data but not claimed as fully persisted production transactions.</p></article>
+        <article><h3>Accessibility boundary</h3><p>The PDF is text-extractable, but this Chromium generation is not claimed as tagged PDF/UA output.</p></article>
+        <article><h3>Operational use</h3><p>The manual should support onboarding, review, QA, and stakeholder explanation of collaboration mechanics.</p></article>
+      </div>
+      <h3>Proof points from the source package</h3>
+      <ul class=""><li>JSON schema present</li><li>10 workflow stories present</li><li>13 role relays present</li><li>8 state groups present</li><li>6 diagram specs present</li></ul>
+      <h3>Adversarial QA from the source package</h3>
+      <ul class=""><li>Does not claim production persistence</li><li>Does not make advisor approval equal client release</li><li>Does not use URL paths as operating instructions</li></ul>
+    </section>
+  </main>
+</body>
+</html>

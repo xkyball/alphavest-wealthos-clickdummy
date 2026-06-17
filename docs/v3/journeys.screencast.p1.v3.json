@@ -1,0 +1,2677 @@
+{
+  "schemaVersion": "3.1.0",
+  "engineMode": "ENGINE_MIX_V2_CODEX_V3_PROOF",
+  "outputRoot": "artifacts/screencasts",
+  "sourcePlaybook": "docs/v3/DEMO_VIDEO_IMPLEMENTATION_ROADMAP_V3.md",
+  "generatedFor": "AlphaVest WealthOS P1 portfolio screencast automation",
+  "manifestId": "journeys.screencast.p1.v3",
+  "portfolioLayer": "P1",
+  "requiresPortfolioMetadata": true,
+  "speedProfiles": [
+    "human-demo",
+    "qa-fast"
+  ],
+  "journeys": [
+    {
+      "id": "P1-01",
+      "name": "Evidence Vault Browse",
+      "portfolioLayer": "P1",
+      "candidateId": "P1-01",
+      "legacyJourneyIds": [
+        "J03"
+      ],
+      "demoPriority": "P1",
+      "audienceFit": [
+        "compliance",
+        "customer",
+        "investor"
+      ],
+      "currentRealityLabel": "route-static",
+      "proofLevel": "PL2",
+      "overclaimRisk": "Viewer may assume every vault list action is persisted.",
+      "caveat": "The evidence index is route/static; detail view/download proof is in J03/P1-15.",
+      "proofPath": [
+        "lib/route-registry.ts",
+        "app/api/demo-workflow/route.ts#j03.viewEvidenceRecord"
+      ],
+      "captionShort": "Evidence is browseable before opening a record.",
+      "captionLong": "The evidence vault frames proof access; detailed view/download audit uses the J03 handler path.",
+      "presenterNotes": [
+        "Use together with P1-15 for audit proof."
+      ],
+      "customerSendable": false,
+      "fixtureId": "fixture-j03-client-decision-evidence",
+      "provisioning": {
+        "mode": "database-fixture",
+        "fixtureId": "fixture-j03-client-decision-evidence",
+        "resetStrategy": "base-seed",
+        "required": true,
+        "seedCommand": "pnpm screencast:seed-journey -- P1-01 --fixture=fixture-j03-client-decision-evidence",
+        "validates": [
+          "fixture refs",
+          "demo data state",
+          "expected mutation context"
+        ]
+      },
+      "primaryActor": "Principal",
+      "additionalRoles": [
+        "Compliance Officer"
+      ],
+      "tenant": "Bennett Family Office",
+      "startRoute": "/evidence",
+      "endState": "Evidence record detail can be opened from vault context.",
+      "demoSession": {
+        "mode": "demo",
+        "defaultRoleKey": "principal",
+        "defaultTenantSlug": "bennett"
+      },
+      "queryParams": {},
+      "preconditions": [
+        "Demo session mode is active",
+        "No real customer data is used",
+        "The evidence index is route/static; detail view/download proof is in J03/P1-15."
+      ],
+      "demoData": [
+        "P1-01",
+        "J03"
+      ],
+      "visibilityRules": [
+        "No unapproved advice reaches the client",
+        "Client visibility is controlled by compliance and route-specific caveats"
+      ],
+      "complianceRules": [
+        "Advisor approval alone is not enough",
+        "Compliance release controls client visibility when advice-like content is involved"
+      ],
+      "evidenceExpectations": [
+        "lib/route-registry.ts",
+        "app/api/demo-workflow/route.ts#j03.viewEvidenceRecord"
+      ],
+      "auditExpectations": [
+        "route-static",
+        "PL2"
+      ],
+      "riskNotes": [
+        "Viewer may assume every vault list action is persisted.",
+        "The evidence index is route/static; detail view/download proof is in J03/P1-15."
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Bennett Family Office",
+          "tenantSlug": "bennett",
+          "route": "/decisions",
+          "screen": "Decision List",
+          "inputData": [
+            "Approve Q2 Investment Rebalance"
+          ],
+          "action": "Set role and inspect decision list",
+          "target": null,
+          "expectedVisibleText": [
+            "Decision List"
+          ],
+          "expectedStateChange": "Released decision list loaded",
+          "blockedActions": [
+            "Unreleased recommendation"
+          ],
+          "clientVisibility": "Released decisions only",
+          "evidence": "Decision evidence references visible",
+          "audit": "decision.list.view expected",
+          "qaAssertion": "Only released decisions appear.",
+          "pauseMs": 1600,
+          "screenshotName": "p1-01-01-decision-list",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "lib/decisions-governance-demo-data.ts"
+          ],
+          "id": "P1-01-S01",
+          "title": "Decision List: Set role and inspect decision list",
+          "caption": "The client reviews a released decision here. The evidence trail shows why the decision is ready to act on.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j03-client-decision-evidence",
+            "DEC-2025-000147",
+            "DEC-2025-000124",
+            "EVD-2025-000124",
+            "Approve Q2 Investment Rebalance"
+          ],
+          "interaction": {
+            "type": "none"
+          }
+        },
+        {
+          "step": 2,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Bennett Family Office",
+          "tenantSlug": "bennett",
+          "route": "/decisions/demo?state=approval",
+          "screen": "Digital Decision Room",
+          "inputData": [
+            "DEC-2025-000147",
+            "Strategic Rebalance"
+          ],
+          "action": "Inspect option cards",
+          "target": null,
+          "expectedVisibleText": [
+            "Content is client-visible only after Compliance Release",
+            "Strategic Rebalance"
+          ],
+          "expectedStateChange": "Client evaluates released decision",
+          "blockedActions": [
+            "Internal note exposure"
+          ],
+          "clientVisibility": "Client-visible released package",
+          "evidence": "Evidence references visible",
+          "audit": "decision.open expected",
+          "qaAssertion": "Compliance release banner is present.",
+          "pauseMs": 2200,
+          "screenshotName": "p1-01-02-decision-room",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/decisions-governance-screen.tsx"
+          ],
+          "id": "P1-01-S02",
+          "title": "Digital Decision Room: Inspect option cards",
+          "caption": "The client reviews a released decision here. The evidence trail shows why the decision is ready to act on.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j03-client-decision-evidence",
+            "DEC-2025-000147",
+            "DEC-2025-000124",
+            "EVD-2025-000124",
+            "Strategic Rebalance"
+          ],
+          "interaction": {
+            "type": "none"
+          }
+        },
+        {
+          "step": 3,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Bennett Family Office",
+          "tenantSlug": "bennett",
+          "route": "/decisions/demo?state=approval",
+          "screen": "Digital Decision Room",
+          "inputData": [
+            "Approved for Q2 rebalance after review."
+          ],
+          "action": "Click Accept Option 1",
+          "target": {
+            "testId": "j03-accept-option",
+            "name": "Accept Option 1"
+          },
+          "expectedVisibleText": [],
+          "expectedStateChange": "Target state accepted",
+          "blockedActions": [
+            "Accept before release"
+          ],
+          "clientVisibility": "Allowed in released decision room",
+          "evidence": "Decision evidence expected",
+          "audit": "decision.accepted expected",
+          "qaAssertion": "Accept is available only on released decision route.",
+          "pauseMs": 2000,
+          "screenshotName": "p1-01-03-decision-accept",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "docs/v3/PAGE_SPECS_V3.md"
+          ],
+          "id": "P1-01-S03",
+          "title": "Digital Decision Room: Click Accept Option 1",
+          "caption": "The client reviews a released decision here. The evidence trail shows why the decision is ready to act on.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j03-client-decision-evidence",
+            "DEC-2025-000147",
+            "DEC-2025-000124",
+            "EVD-2025-000124",
+            "Approved for Q2 rebalance after review."
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 4,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Bennett Family Office",
+          "tenantSlug": "bennett",
+          "route": "/decisions/demo?state=approval",
+          "screen": "Digital Decision Room",
+          "inputData": [
+            "Negative alternatives"
+          ],
+          "action": "Inspect request more information, defer and reject",
+          "target": {
+            "testId": "j03-request-more-information",
+            "name": "Request More Information"
+          },
+          "expectedVisibleText": [
+            "Decision Actions",
+            "Request More Information"
+          ],
+          "expectedStateChange": "Non-coercive alternatives remain available",
+          "blockedActions": [
+            "Forced accept"
+          ],
+          "clientVisibility": "Released decision only",
+          "evidence": "Alternative outcome evidence expected",
+          "audit": "decision.alternative expected",
+          "qaAssertion": "Decision provides exit options.",
+          "pauseMs": 1800,
+          "screenshotName": "p1-01-04-decision-alternatives",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "docs/v3/USER_JOURNEY_PLAYBOOK_V3.md#journey-3"
+          ],
+          "id": "P1-01-S04",
+          "title": "Digital Decision Room: Inspect request more information, defer and reject",
+          "caption": "The client reviews a released decision here. The evidence trail shows why the decision is ready to act on.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j03-client-decision-evidence",
+            "DEC-2025-000147",
+            "DEC-2025-000124",
+            "EVD-2025-000124",
+            "Negative alternatives"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 5,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Bennett Family Office",
+          "tenantSlug": "bennett",
+          "route": "/decisions/demo/success",
+          "screen": "Decision Submitted",
+          "inputData": [
+            "DEC-2025-000124"
+          ],
+          "action": "Open success route",
+          "target": null,
+          "expectedVisibleText": [
+            "Evidence Package Created"
+          ],
+          "expectedStateChange": "Decision immutable and review scheduled",
+          "blockedActions": [
+            "Edit submitted decision"
+          ],
+          "clientVisibility": "Submitted decision visible",
+          "evidence": "Evidence package created",
+          "audit": "decision.submitted expected",
+          "qaAssertion": "Evidence Package Created is visible.",
+          "pauseMs": 2000,
+          "screenshotName": "p1-01-05-decision-success",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/decisions-governance-screen.tsx"
+          ],
+          "id": "P1-01-S05",
+          "title": "Decision Submitted: Open success route",
+          "caption": "The client reviews a released decision here. The evidence trail shows why the decision is ready to act on.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j03-client-decision-evidence",
+            "DEC-2025-000147",
+            "DEC-2025-000124",
+            "EVD-2025-000124"
+          ],
+          "interaction": {
+            "type": "none"
+          }
+        },
+        {
+          "step": 6,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Bennett Family Office",
+          "tenantSlug": "bennett",
+          "route": "/decisions/demo/success",
+          "screen": "Decision Submitted",
+          "inputData": [
+            "EVD-2025-000124"
+          ],
+          "action": "Click View Evidence Record",
+          "target": {
+            "testId": "j03-view-evidence-record",
+            "name": "View Evidence Record"
+          },
+          "expectedVisibleText": [],
+          "expectedStateChange": "User moves to evidence proof surface if link is wired",
+          "blockedActions": [
+            "Evidence access without permission"
+          ],
+          "clientVisibility": "Evidence role-scoped",
+          "evidence": "Evidence access expected",
+          "audit": "evidence.open expected",
+          "qaAssertion": "Evidence link/control renders.",
+          "pauseMs": 1800,
+          "screenshotName": "p1-01-06-view-evidence-link",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "lib/evidence-service.ts"
+          ],
+          "id": "P1-01-S06",
+          "title": "Decision Submitted: Click View Evidence Record",
+          "caption": "The client reviews a released decision here. The evidence trail shows why the decision is ready to act on.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j03-client-decision-evidence",
+            "DEC-2025-000147",
+            "DEC-2025-000124",
+            "EVD-2025-000124"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 7,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Bennett Family Office",
+          "tenantSlug": "bennett",
+          "route": "/evidence/demo",
+          "screen": "Evidence Record Detail",
+          "inputData": [
+            "Evidence record detail"
+          ],
+          "action": "Inspect evidence and click Download if allowed",
+          "target": {
+            "testId": "j03-download-evidence",
+            "name": "Download"
+          },
+          "expectedVisibleText": [
+            "Evidence Record Detail",
+            "Audit"
+          ],
+          "expectedStateChange": "Evidence access is audited",
+          "blockedActions": [
+            "Restricted evidence download"
+          ],
+          "clientVisibility": "Role-scoped evidence",
+          "evidence": "Evidence record detail visible",
+          "audit": "evidence.view/download expected",
+          "qaAssertion": "Restricted evidence remains role-scoped.",
+          "pauseMs": 2000,
+          "screenshotName": "p1-01-07-evidence-detail",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/decisions-governance-screen.tsx"
+          ],
+          "id": "P1-01-S07",
+          "title": "Evidence Record Detail: Inspect evidence and click Download if allowed",
+          "caption": "The package is prepared for download only after review. Scope, redaction and evidence keep the shared material controlled.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j03-client-decision-evidence",
+            "DEC-2025-000147",
+            "DEC-2025-000124",
+            "EVD-2025-000124",
+            "Evidence record detail"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 8,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Bennett Family Office",
+          "tenantSlug": "bennett",
+          "route": "/evidence",
+          "screen": "Evidence Vault",
+          "inputData": [],
+          "action": "Inspect route state",
+          "target": null,
+          "interaction": {
+            "type": "none"
+          },
+          "navigation": "goto",
+          "dataRefs": [],
+          "caption": "This view shows the proof behind the decision or release. It gives the team a record they can check later.",
+          "expectedVisibleText": [
+            "Evidence"
+          ],
+          "expectedStateChange": "Route/static demo state is visible; no production workflow claim is made.",
+          "blockedActions": [
+            "Unapproved advice release"
+          ],
+          "clientVisibility": "Controlled by demo route state and caveat",
+          "evidence": "Route/static evidence only unless linked to a handler proof.",
+          "audit": "No audit event claimed for route/static steps.",
+          "qaAssertion": "Evidence Vault renders without spec chrome or unsafe advice claims.",
+          "pauseMs": 1400,
+          "screenshotName": "p1-01-08-evidence-vault",
+          "manualOrStatic": true,
+          "sourceProof": [
+            "docs/v3/DEMO_JOURNEY_OPPORTUNITY_BACKLOG_V3.json"
+          ],
+          "id": "P1-01-S08"
+        },
+        {
+          "step": 9,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Bennett Family Office",
+          "tenantSlug": "bennett",
+          "route": "/evidence/demo",
+          "screen": "Evidence Record Detail",
+          "inputData": [],
+          "action": "Inspect route state",
+          "target": null,
+          "interaction": {
+            "type": "none"
+          },
+          "navigation": "goto",
+          "dataRefs": [],
+          "caption": "This view shows the proof behind the decision or release. It gives the team a record they can check later.",
+          "expectedVisibleText": [
+            "Evidence"
+          ],
+          "expectedStateChange": "Route/static demo state is visible; no production workflow claim is made.",
+          "blockedActions": [
+            "Unapproved advice release"
+          ],
+          "clientVisibility": "Controlled by demo route state and caveat",
+          "evidence": "Route/static evidence only unless linked to a handler proof.",
+          "audit": "No audit event claimed for route/static steps.",
+          "qaAssertion": "Evidence Record Detail renders without spec chrome or unsafe advice claims.",
+          "pauseMs": 1400,
+          "screenshotName": "p1-01-09-evidence-record-detail",
+          "manualOrStatic": true,
+          "sourceProof": [
+            "docs/v3/DEMO_JOURNEY_OPPORTUNITY_BACKLOG_V3.json"
+          ],
+          "id": "P1-01-S09"
+        }
+      ]
+    },
+    {
+      "id": "P1-15",
+      "name": "Evidence Download Audited",
+      "portfolioLayer": "P1",
+      "candidateId": "P1-15",
+      "legacyJourneyIds": [
+        "J03"
+      ],
+      "demoPriority": "P1",
+      "audienceFit": [
+        "compliance",
+        "investor"
+      ],
+      "currentRealityLabel": "demo-action-executable",
+      "proofLevel": "PL4",
+      "overclaimRisk": "Viewer may assume unrestricted evidence download.",
+      "caveat": "Evidence access remains role-scoped and demo-action-backed.",
+      "proofPath": [
+        "app/api/demo-workflow/route.ts#j03.downloadEvidence",
+        "docs/v3/IMPLEMENTATION_QA_REPORT.md#phase-14-slice-2"
+      ],
+      "captionShort": "Evidence access is audited.",
+      "captionLong": "Opening and downloading a record creates an audit trail in the demo workflow.",
+      "presenterNotes": [
+        "Good follow-up after P0-10."
+      ],
+      "customerSendable": false,
+      "fixtureId": "fixture-j03-client-decision-evidence",
+      "provisioning": {
+        "mode": "database-fixture",
+        "fixtureId": "fixture-j03-client-decision-evidence",
+        "resetStrategy": "base-seed",
+        "required": true,
+        "seedCommand": "pnpm screencast:seed-journey -- P1-15 --fixture=fixture-j03-client-decision-evidence",
+        "validates": [
+          "fixture refs",
+          "demo data state",
+          "expected mutation context"
+        ]
+      },
+      "primaryActor": "Principal",
+      "additionalRoles": [
+        "Compliance Officer"
+      ],
+      "tenant": "Bennett Family Office",
+      "startRoute": "/evidence/demo",
+      "endState": "Evidence download audit is captured.",
+      "demoSession": {
+        "mode": "demo",
+        "defaultRoleKey": "principal",
+        "defaultTenantSlug": "bennett"
+      },
+      "queryParams": {},
+      "preconditions": [
+        "Demo session mode is active",
+        "No real customer data is used",
+        "Evidence access remains role-scoped and demo-action-backed."
+      ],
+      "demoData": [
+        "P1-15",
+        "J03"
+      ],
+      "visibilityRules": [
+        "No unapproved advice reaches the client",
+        "Client visibility is controlled by compliance and route-specific caveats"
+      ],
+      "complianceRules": [
+        "Advisor approval alone is not enough",
+        "Compliance release controls client visibility when advice-like content is involved"
+      ],
+      "evidenceExpectations": [
+        "app/api/demo-workflow/route.ts#j03.downloadEvidence",
+        "docs/v3/IMPLEMENTATION_QA_REPORT.md#phase-14-slice-2"
+      ],
+      "auditExpectations": [
+        "demo-action-executable",
+        "PL4"
+      ],
+      "riskNotes": [
+        "Viewer may assume unrestricted evidence download.",
+        "Evidence access remains role-scoped and demo-action-backed."
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Bennett Family Office",
+          "tenantSlug": "bennett",
+          "route": "/evidence/demo",
+          "screen": "Evidence Record Detail",
+          "inputData": [
+            "Evidence record detail"
+          ],
+          "action": "Inspect evidence and click Download if allowed",
+          "target": {
+            "testId": "j03-download-evidence",
+            "name": "Download"
+          },
+          "expectedVisibleText": [
+            "Evidence Record Detail",
+            "Audit"
+          ],
+          "expectedStateChange": "Evidence access is audited",
+          "blockedActions": [
+            "Restricted evidence download"
+          ],
+          "clientVisibility": "Role-scoped evidence",
+          "evidence": "Evidence record detail visible",
+          "audit": "evidence.view/download expected",
+          "qaAssertion": "Restricted evidence remains role-scoped.",
+          "pauseMs": 2000,
+          "screenshotName": "p1-15-01-evidence-detail",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/decisions-governance-screen.tsx"
+          ],
+          "id": "P1-15-S01",
+          "title": "Evidence Record Detail: Inspect evidence and click Download if allowed",
+          "caption": "The package is prepared for download only after review. Scope, redaction and evidence keep the shared material controlled.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j03-client-decision-evidence",
+            "DEC-2025-000147",
+            "DEC-2025-000124",
+            "EVD-2025-000124",
+            "Evidence record detail"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "P1-16",
+      "name": "Mobile Safe Next Step",
+      "portfolioLayer": "P1",
+      "candidateId": "P1-16",
+      "legacyJourneyIds": [
+        "J09",
+        "J04"
+      ],
+      "demoPriority": "P1",
+      "audienceFit": [
+        "customer",
+        "client"
+      ],
+      "currentRealityLabel": "route-static",
+      "proofLevel": "PL2",
+      "overclaimRisk": "Viewer may assume mobile has full production parity.",
+      "caveat": "Mobile is route/static client-safe proof for demo; no real mobile auth is claimed.",
+      "proofPath": [
+        "lib/route-registry.ts",
+        "docs/v3/DEMO_JOURNEY_UNIVERSE_AUDIT_V3.md"
+      ],
+      "captionShort": "Mobile shows safe next steps, not unreleased advice.",
+      "captionLong": "The mobile surface is useful for customer demos, but remains demo-route proof.",
+      "presenterNotes": [
+        "Use if the audience cares about client experience."
+      ],
+      "customerSendable": false,
+      "primaryActor": "Principal",
+      "additionalRoles": [
+        "Family Member"
+      ],
+      "tenant": "Morgan Family Office",
+      "startRoute": "/mobile",
+      "endState": "Client-safe mobile state is visible.",
+      "demoSession": {
+        "mode": "demo",
+        "defaultRoleKey": "principal",
+        "defaultTenantSlug": "morgan"
+      },
+      "queryParams": {},
+      "preconditions": [
+        "Demo session mode is active",
+        "No real customer data is used",
+        "Mobile is route/static client-safe proof for demo; no real mobile auth is claimed."
+      ],
+      "demoData": [
+        "P1-16",
+        "J09",
+        "J04"
+      ],
+      "visibilityRules": [
+        "No unapproved advice reaches the client",
+        "Client visibility is controlled by compliance and route-specific caveats"
+      ],
+      "complianceRules": [
+        "Advisor approval alone is not enough",
+        "Compliance release controls client visibility when advice-like content is involved"
+      ],
+      "evidenceExpectations": [
+        "lib/route-registry.ts",
+        "docs/v3/DEMO_JOURNEY_UNIVERSE_AUDIT_V3.md"
+      ],
+      "auditExpectations": [
+        "route-static",
+        "PL2"
+      ],
+      "riskNotes": [
+        "Viewer may assume mobile has full production parity.",
+        "Mobile is route/static client-safe proof for demo; no real mobile auth is claimed."
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/portal",
+          "screen": "Client Web Dashboard",
+          "inputData": [
+            "Morgan Family Office"
+          ],
+          "action": "Set role and inspect dashboard",
+          "target": null,
+          "expectedVisibleText": [
+            "Client Web Dashboard"
+          ],
+          "expectedStateChange": "Client workspace loaded",
+          "blockedActions": [
+            "Internal notes"
+          ],
+          "clientVisibility": "Own data and safe next steps",
+          "evidence": "portal.view expected",
+          "audit": "portal.view expected",
+          "qaAssertion": "No internal notes or unreleased advice.",
+          "pauseMs": 1600,
+          "screenshotName": "p1-16-01-portal-dashboard",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/client-intake-screen.tsx"
+          ],
+          "id": "P1-16-S01",
+          "title": "Client Web Dashboard: Set role and inspect dashboard",
+          "caption": "This page captures family context for later decisions. Missing or conflicting details stay visible so the team knows what to clarify.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j09-client-profile-family-intake",
+            "Morgan",
+            "Alex Morgan",
+            "Sophia Chen",
+            "Morgan Family Office"
+          ],
+          "interaction": {
+            "type": "none"
+          }
+        },
+        {
+          "step": 2,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/portal",
+          "screen": "Client Web Dashboard",
+          "inputData": [
+            "Missing docs W-9",
+            "Trust Agreement",
+            "Source of Funds"
+          ],
+          "action": "Click Review open actions or Upload",
+          "target": {
+            "testId": "j09-portal-upload",
+            "name": "Upload"
+          },
+          "expectedVisibleText": [],
+          "expectedStateChange": "Client starts action intake",
+          "blockedActions": [
+            "Advice recommendations"
+          ],
+          "clientVisibility": "Safe next steps only",
+          "evidence": "next_step.open expected",
+          "audit": "next_step.open expected",
+          "qaAssertion": "Safe next steps, not recommendations.",
+          "pauseMs": 1600,
+          "screenshotName": "p1-16-02-portal-open-actions",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "docs/v3/PAGE_SPECS_V3.md#portal"
+          ],
+          "id": "P1-16-S02",
+          "title": "Client Web Dashboard: Click Review open actions or Upload",
+          "caption": "The document is uploaded so the team can review the source material. The file still needs checking before it supports a decision.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j09-client-profile-family-intake",
+            "Morgan",
+            "Alex Morgan",
+            "Sophia Chen",
+            "Missing docs W-9",
+            "Trust Agreement",
+            "Source of Funds"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 3,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/client/profile",
+          "screen": "Client Profile",
+          "inputData": [
+            "Family Name Morgan",
+            "Principal Alex Morgan",
+            "Engagement Family Office Advisory"
+          ],
+          "action": "Click Save Draft then Submit for Review if exposed",
+          "target": {
+            "testId": "j09-submit-profile",
+            "name": "Submit for Review"
+          },
+          "expectedVisibleText": [
+            "Family Members"
+          ],
+          "expectedStateChange": "Target state profile submitted/needs_review",
+          "blockedActions": [
+            "Bypass review"
+          ],
+          "clientVisibility": "Scoped profile",
+          "evidence": "profile.submit expected",
+          "audit": "profile.submit expected",
+          "qaAssertion": "Sensitive edits are scoped.",
+          "pauseMs": 2000,
+          "screenshotName": "p1-16-03-client-profile",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/client-intake-screen.tsx"
+          ],
+          "id": "P1-16-S03",
+          "title": "Client Profile: Click Save Draft then Submit for Review if exposed",
+          "caption": "This page captures family context for later decisions. Missing or conflicting details stay visible so the team knows what to clarify.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j09-client-profile-family-intake",
+            "Morgan",
+            "Alex Morgan",
+            "Sophia Chen",
+            "Family Name Morgan",
+            "Principal Alex Morgan",
+            "Engagement Family Office Advisory"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 4,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/client/family-members",
+          "screen": "Family Members",
+          "inputData": [
+            "Add member details if interactive"
+          ],
+          "action": "Click Add Member",
+          "target": {
+            "testId": "j09-add-member",
+            "name": "Add Member"
+          },
+          "expectedVisibleText": [
+            "Family Members",
+            "Trustee / Beneficiary conflict"
+          ],
+          "expectedStateChange": "Target state family member captured",
+          "blockedActions": [
+            "Conflict hidden"
+          ],
+          "clientVisibility": "Family context only",
+          "evidence": "family_member.create expected",
+          "audit": "family_member.create expected",
+          "qaAssertion": "Conflict rows are visible.",
+          "pauseMs": 1800,
+          "screenshotName": "p1-16-04-family-members",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "docs/v3/SCREEN_CATALOGUE_V3.md#022"
+          ],
+          "id": "P1-16-S04",
+          "title": "Family Members: Click Add Member",
+          "caption": "This page captures family context for later decisions. Missing or conflicting details stay visible so the team knows what to clarify.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j09-client-profile-family-intake",
+            "Morgan",
+            "Alex Morgan",
+            "Sophia Chen",
+            "Add member details if interactive"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 5,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/client/family-members",
+          "screen": "Family Members",
+          "inputData": [
+            "Edit existing member"
+          ],
+          "action": "Click Manage/Edit/Save Changes if exposed",
+          "target": {
+            "testId": "j09-save-family-changes",
+            "name": "Save Changes"
+          },
+          "expectedVisibleText": [
+            "Add"
+          ],
+          "expectedStateChange": "Target state relationship/profile update",
+          "blockedActions": [
+            "Bypass review"
+          ],
+          "clientVisibility": "Scoped family data",
+          "evidence": "family_member.edit expected",
+          "audit": "family_member.edit expected",
+          "qaAssertion": "Changes do not bypass review.",
+          "pauseMs": 1800,
+          "screenshotName": "p1-16-05-family-member-edit",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "docs/v3/DATA_MODEL_V3.md#familymember"
+          ],
+          "id": "P1-16-S05",
+          "title": "Family Members: Click Manage/Edit/Save Changes if exposed",
+          "caption": "This page captures family context for later decisions. Missing or conflicting details stay visible so the team knows what to clarify.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j09-client-profile-family-intake",
+            "Morgan",
+            "Alex Morgan",
+            "Sophia Chen",
+            "Edit existing member"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 6,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/client/family-members",
+          "screen": "Relationship Map",
+          "inputData": [
+            "Sophia Chen beneficiary with missing evidence"
+          ],
+          "action": "Click Family Map/Fit View or relationship row if exposed",
+          "target": {
+            "testId": "j09-family-map",
+            "name": "Family Map"
+          },
+          "expectedVisibleText": [
+            "Add"
+          ],
+          "expectedStateChange": "Missing evidence path identified",
+          "blockedActions": [
+            "Final validation"
+          ],
+          "clientVisibility": "Data quality issue only",
+          "evidence": "Evidence request expected",
+          "audit": "relationship.view expected",
+          "qaAssertion": "Missing Evidence row visible.",
+          "pauseMs": 2000,
+          "screenshotName": "p1-16-06-relationships",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/client-intake-screen.tsx"
+          ],
+          "id": "P1-16-S06",
+          "title": "Relationship Map: Click Family Map/Fit View or relationship row if exposed",
+          "caption": "This page captures family context for later decisions. Missing or conflicting details stay visible so the team knows what to clarify.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j09-client-profile-family-intake",
+            "Morgan",
+            "Alex Morgan",
+            "Sophia Chen",
+            "Sophia Chen beneficiary with missing evidence"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 7,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/relationships",
+          "screen": "Relationship Map",
+          "inputData": [
+            "Conflict state"
+          ],
+          "action": "Inspect conflict edge or click Add if exposed",
+          "target": {
+            "testId": "j09-add-relationship",
+            "name": "Add"
+          },
+          "expectedVisibleText": [
+            "Conflict",
+            "Relationship"
+          ],
+          "expectedStateChange": "Advisor/legal review expected",
+          "blockedActions": [
+            "Unreviewed advice"
+          ],
+          "clientVisibility": "Conflict/gap only",
+          "evidence": "relationship.conflict expected",
+          "audit": "relationship.conflict expected",
+          "qaAssertion": "Client sees data quality issue without advice.",
+          "pauseMs": 1800,
+          "screenshotName": "p1-16-07-relationship-conflict",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "docs/v3/USER_JOURNEY_PLAYBOOK_V3.md#journey-9"
+          ],
+          "id": "P1-16-S07",
+          "title": "Relationship Map: Inspect conflict edge or click Add if exposed",
+          "caption": "This page captures family context for later decisions. Missing or conflicting details stay visible so the team knows what to clarify.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j09-client-profile-family-intake",
+            "Morgan",
+            "Alex Morgan",
+            "Sophia Chen",
+            "Conflict state"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 8,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/portal",
+          "screen": "Client Web Dashboard",
+          "inputData": [
+            "Missing documents"
+          ],
+          "action": "Click Upload missing documents if exposed",
+          "target": {
+            "testId": "j04-portal-upload",
+            "name": "Upload"
+          },
+          "expectedVisibleText": [],
+          "expectedStateChange": "Document intake intent starts",
+          "blockedActions": [
+            "Advice output"
+          ],
+          "clientVisibility": "Safe missing-doc state",
+          "evidence": "document.intent expected",
+          "audit": "document.intent expected",
+          "qaAssertion": "Missing documents are client-visible but not advice.",
+          "pauseMs": 1600,
+          "screenshotName": "p1-16-08-portal-missing-docs",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "docs/v3/USER_JOURNEY_PLAYBOOK_V3.md#journey-4"
+          ],
+          "id": "P1-16-S08",
+          "title": "Client Web Dashboard: Click Upload missing documents if exposed",
+          "caption": "The document is uploaded so the team can review the source material. The file still needs checking before it supports a decision.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j04-document-upload-verification",
+            "Q1 2024 Financial Statements.pdf",
+            "PortfolioReport.exe",
+            "Missing documents"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 9,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/documents",
+          "screen": "Documents List",
+          "inputData": [
+            "Search/filter optional"
+          ],
+          "action": "Click Upload Document",
+          "target": {
+            "testId": "j04-open-upload-document",
+            "name": "Upload Document"
+          },
+          "expectedVisibleText": [],
+          "expectedStateChange": "Upload route selected or reachable",
+          "blockedActions": [
+            "Restricted document leak"
+          ],
+          "clientVisibility": "Scoped documents only",
+          "evidence": "Document rows show evidence links",
+          "audit": "documents.open expected",
+          "qaAssertion": "Restricted docs remain scoped.",
+          "pauseMs": 1600,
+          "screenshotName": "p1-16-09-documents-list",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/client-intake-screen.tsx"
+          ],
+          "id": "P1-16-S09",
+          "title": "Documents List: Click Upload Document",
+          "caption": "The document is uploaded so the team can review the source material. The file still needs checking before it supports a decision.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j04-document-upload-verification",
+            "Q1 2024 Financial Statements.pdf",
+            "PortfolioReport.exe",
+            "Search/filter optional"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 10,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/documents/upload",
+          "screen": "Document Upload",
+          "inputData": [
+            "Document type Financial Statement",
+            "File Q1 2024 Financial Statements.pdf",
+            "Note Q1 upload for review"
+          ],
+          "action": "Inspect upload form and click Upload Document if exposed",
+          "target": {
+            "testId": "j04-upload-document",
+            "name": "Upload Document"
+          },
+          "expectedVisibleText": [
+            "Extraction Review"
+          ],
+          "expectedStateChange": "Target state uploaded/extraction pending",
+          "blockedActions": [
+            "Unsupported file continue"
+          ],
+          "clientVisibility": "Upload status safe to client",
+          "evidence": "document.upload expected",
+          "audit": "document.upload expected",
+          "qaAssertion": "Allowed file upload state is visible.",
+          "pauseMs": 2000,
+          "screenshotName": "p1-16-10-document-upload",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "docs/v3/PAGE_SPECS_V3.md"
+          ],
+          "id": "P1-16-S10",
+          "title": "Document Upload: Inspect upload form and click Upload Document if exposed",
+          "caption": "The document is uploaded so the team can review the source material. The file still needs checking before it supports a decision.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j04-document-upload-verification",
+            "Q1 2024 Financial Statements.pdf",
+            "PortfolioReport.exe",
+            "Document type Financial Statement",
+            "File Q1 2024 Financial Statements.pdf",
+            "Note Q1 upload for review"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 11,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/documents/upload",
+          "screen": "Document Upload",
+          "inputData": [
+            "Blocked file PortfolioReport.exe"
+          ],
+          "action": "Inspect blocked upload row",
+          "target": null,
+          "expectedVisibleText": [
+            "File type not allowed"
+          ],
+          "expectedStateChange": "Upload is blocked",
+          "blockedActions": [
+            "Continue blocked file"
+          ],
+          "clientVisibility": "Safe error visible",
+          "evidence": "Blocked upload evidence expected",
+          "audit": "document.upload_blocked expected",
+          "qaAssertion": "Unsupported file cannot continue.",
+          "pauseMs": 1800,
+          "screenshotName": "p1-16-11-blocked-upload",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/client-intake-screen.tsx"
+          ],
+          "id": "P1-16-S11",
+          "title": "Document Upload: Inspect blocked upload row",
+          "caption": "The document is uploaded so the team can review the source material. The file still needs checking before it supports a decision.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j04-document-upload-verification",
+            "Q1 2024 Financial Statements.pdf",
+            "PortfolioReport.exe",
+            "Blocked file PortfolioReport.exe"
+          ],
+          "interaction": {
+            "type": "none"
+          }
+        },
+        {
+          "step": 12,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/documents/extraction-review",
+          "screen": "Extraction Review",
+          "inputData": [
+            "Statement Date",
+            "Account Number",
+            "Net Investment Change"
+          ],
+          "action": "Click Confirm and Finalize if exposed",
+          "target": {
+            "testId": "j04-confirm-finalize",
+            "name": "Confirm & Finalize"
+          },
+          "expectedVisibleText": [],
+          "expectedStateChange": "Target state analyst_review_pending",
+          "blockedActions": [
+            "Final evidence claim"
+          ],
+          "clientVisibility": "Draft extraction only",
+          "evidence": "Evidence placeholder expected",
+          "audit": "extraction.confirm expected",
+          "qaAssertion": "AI draft is not final evidence.",
+          "pauseMs": 2000,
+          "screenshotName": "p1-16-12-extraction-review",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "docs/v3/DATA_MODEL_V3.md#documentextraction"
+          ],
+          "id": "P1-16-S12",
+          "title": "Extraction Review: Click Confirm and Finalize if exposed",
+          "caption": "The document is captured for review, not treated as automatically correct. Unclear details stay pending until a human checks them.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j04-document-upload-verification",
+            "Q1 2024 Financial Statements.pdf",
+            "PortfolioReport.exe",
+            "Statement Date",
+            "Account Number",
+            "Net Investment Change"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 13,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/documents/verification-pending",
+          "screen": "Verification Pending",
+          "inputData": [
+            "Submitted May 21 2025",
+            "Expected review 2-3 days"
+          ],
+          "action": "Open verification pending route",
+          "target": null,
+          "expectedVisibleText": [
+            "Verification Pending",
+            "Human Review"
+          ],
+          "expectedStateChange": "Analyst review task created as target",
+          "blockedActions": [
+            "Final validation"
+          ],
+          "clientVisibility": "Pending status only",
+          "evidence": "review.pending expected",
+          "audit": "document.review_pending expected",
+          "qaAssertion": "No final validation is implied.",
+          "pauseMs": 1800,
+          "screenshotName": "p1-16-13-verification-pending",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "docs/v3/SCREEN_CATALOGUE_V3.md#030"
+          ],
+          "id": "P1-16-S13",
+          "title": "Verification Pending: Open verification pending route",
+          "caption": "The document is captured for review, not treated as automatically correct. Unclear details stay pending until a human checks them.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j04-document-upload-verification",
+            "Q1 2024 Financial Statements.pdf",
+            "PortfolioReport.exe",
+            "Submitted May 21 2025",
+            "Expected review 2-3 days"
+          ],
+          "interaction": {
+            "type": "none"
+          }
+        },
+        {
+          "step": 14,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/documents/verification-pending",
+          "screen": "Verification Pending",
+          "inputData": [
+            "Needs clarification"
+          ],
+          "action": "Click View Details if exposed",
+          "target": {
+            "testId": "j04-view-details",
+            "name": "View Details"
+          },
+          "expectedVisibleText": [
+            "Needs Clarification",
+            "View Details"
+          ],
+          "expectedStateChange": "More-info path remains available",
+          "blockedActions": [
+            "Silent rejection"
+          ],
+          "clientVisibility": "Safe clarification",
+          "evidence": "clarification evidence expected",
+          "audit": "document.clarification_open expected",
+          "qaAssertion": "Human review can request additional evidence.",
+          "pauseMs": 1600,
+          "screenshotName": "p1-16-14-clarification-path",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "docs/v3/USER_JOURNEY_PLAYBOOK_V3.md#journey-4"
+          ],
+          "id": "P1-16-S14",
+          "title": "Verification Pending: Click View Details if exposed",
+          "caption": "The document is captured for review, not treated as automatically correct. Unclear details stay pending until a human checks them.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j04-document-upload-verification",
+            "Q1 2024 Financial Statements.pdf",
+            "PortfolioReport.exe",
+            "Needs clarification"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 15,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/mobile",
+          "screen": "Mobile Client Workspace",
+          "inputData": [],
+          "action": "Inspect route state",
+          "target": null,
+          "interaction": {
+            "type": "none"
+          },
+          "navigation": "goto",
+          "dataRefs": [],
+          "caption": "The family profile gives the team the context behind later decisions. Missing or conflicting details stay visible so they can be clarified.",
+          "expectedVisibleText": [
+            "Mobile"
+          ],
+          "expectedStateChange": "Route/static demo state is visible; no production workflow claim is made.",
+          "blockedActions": [
+            "Unapproved advice release"
+          ],
+          "clientVisibility": "Controlled by demo route state and caveat",
+          "evidence": "Route/static evidence only unless linked to a handler proof.",
+          "audit": "No audit event claimed for route/static steps.",
+          "qaAssertion": "Mobile Client Workspace renders without spec chrome or unsafe advice claims.",
+          "pauseMs": 1400,
+          "screenshotName": "p1-16-15-mobile-client-workspace",
+          "manualOrStatic": true,
+          "sourceProof": [
+            "docs/v3/DEMO_JOURNEY_OPPORTUNITY_BACKLOG_V3.json"
+          ],
+          "id": "P1-16-S15"
+        }
+      ]
+    },
+    {
+      "id": "P1-02",
+      "name": "Communication Path Selection",
+      "portfolioLayer": "P1",
+      "candidateId": "P1-02",
+      "legacyJourneyIds": [
+        "J01"
+      ],
+      "demoPriority": "P1",
+      "audienceFit": [
+        "operations",
+        "client success",
+        "investor"
+      ],
+      "currentRealityLabel": "route-static",
+      "proofLevel": "PL2",
+      "overclaimRisk": "Viewer may assume message persistence.",
+      "caveat": "Communication routes are route/static until dedicated message/call handlers are added.",
+      "proofPath": [
+        "lib/route-registry.ts",
+        "docs/v3/DEMO_JOURNEY_UNIVERSE_AUDIT_V3.md"
+      ],
+      "captionShort": "Human escalation is part of the digital-first workflow.",
+      "captionLong": "Communication path selection shows how digital work can escalate without releasing advice.",
+      "presenterNotes": [
+        "Do not claim message persistence."
+      ],
+      "customerSendable": false,
+      "primaryActor": "Advisor",
+      "additionalRoles": [
+        "Client Success"
+      ],
+      "tenant": "Northbridge Family Office",
+      "startRoute": "/communication",
+      "endState": "Communication escalation path is visible.",
+      "demoSession": {
+        "mode": "demo",
+        "defaultRoleKey": "senior_wealth_advisor",
+        "defaultTenantSlug": "northbridge"
+      },
+      "queryParams": {},
+      "preconditions": [
+        "Demo session mode is active",
+        "No real customer data is used",
+        "Communication routes are route/static until dedicated message/call handlers are added."
+      ],
+      "demoData": [
+        "P1-02",
+        "J01"
+      ],
+      "visibilityRules": [
+        "No unapproved advice reaches the client",
+        "Client visibility is controlled by compliance and route-specific caveats"
+      ],
+      "complianceRules": [
+        "Advisor approval alone is not enough",
+        "Compliance release controls client visibility when advice-like content is involved"
+      ],
+      "evidenceExpectations": [
+        "lib/route-registry.ts",
+        "docs/v3/DEMO_JOURNEY_UNIVERSE_AUDIT_V3.md"
+      ],
+      "auditExpectations": [
+        "route-static",
+        "PL2"
+      ],
+      "riskNotes": [
+        "Viewer may assume message persistence.",
+        "Communication routes are route/static until dedicated message/call handlers are added."
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "role": "Advisor",
+          "roleKey": "senior_wealth_advisor",
+          "tenant": "Northbridge Family Office",
+          "tenantSlug": "northbridge",
+          "route": "/signals",
+          "screen": "Signal Review",
+          "inputData": [
+            "SIG-2025-001228",
+            "Large Outflow Detected"
+          ],
+          "action": "Set role and inspect signal queue",
+          "target": null,
+          "expectedVisibleText": [
+            "Signal Review",
+            "Large Outflow Detected"
+          ],
+          "expectedStateChange": "Seeded trigger remains internal-only before the analyst action.",
+          "blockedActions": [
+            "Publish to Client"
+          ],
+          "clientVisibility": "Internal only",
+          "evidence": "Evidence preview only",
+          "audit": "trigger.review expected",
+          "qaAssertion": "Signal page renders with no client advice copy.",
+          "pauseMs": 1600,
+          "screenshotName": "p1-02-01-signals-queue",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "docs/v3/USER_JOURNEY_PLAYBOOK_V3.md#journey-1",
+            "lib/internal-workflow-demo-data.ts"
+          ],
+          "id": "P1-02-S01",
+          "title": "Signal Review: Set role and inspect signal queue",
+          "caption": "We review the signal before the client sees anything. That gives the team time to check the risk and decide what needs human review.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j01-signal-advisor-gate",
+            "SIG-2025-001228",
+            "TRG-2025-000348",
+            "REC-2025-05-0147",
+            "Large Outflow Detected"
+          ],
+          "interaction": {
+            "type": "none"
+          }
+        },
+        {
+          "step": 2,
+          "role": "Advisor",
+          "roleKey": "senior_wealth_advisor",
+          "tenant": "Northbridge Family Office",
+          "tenantSlug": "northbridge",
+          "route": "/signals",
+          "screen": "Signal Review",
+          "inputData": [
+            "Missing beneficial owner",
+            "Purpose of wire",
+            "Source of funds"
+          ],
+          "action": "Click request information path",
+          "target": {
+            "testId": "j01-request-data",
+            "name": "Request Data"
+          },
+          "expectedVisibleText": [
+            "Consultant Workbench"
+          ],
+          "expectedStateChange": "Request-data state is saved and the analyst lands in the workbench.",
+          "blockedActions": [
+            "Recommendation release"
+          ],
+          "clientVisibility": "No client visibility",
+          "evidence": "Missing-data evidence expected later",
+          "audit": "screencast.trigger.request_data created",
+          "qaAssertion": "Clicking Request Data reaches the workbench without client release.",
+          "pauseMs": 1600,
+          "screenshotName": "p1-02-02-request-data-to-workbench",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "docs/v3/USER_JOURNEY_PLAYBOOK_V3.md#journey-1"
+          ],
+          "id": "P1-02-S02",
+          "title": "Signal Review: Click request information path if exposed",
+          "caption": "The team asks for missing information before the work moves forward. This keeps weak or incomplete advice away from the client.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j01-signal-advisor-gate",
+            "SIG-2025-001228",
+            "TRG-2025-000348",
+            "REC-2025-05-0147",
+            "Missing beneficial owner",
+            "Purpose of wire",
+            "Source of funds"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 3,
+          "role": "Advisor",
+          "roleKey": "senior_wealth_advisor",
+          "tenant": "Northbridge Family Office",
+          "tenantSlug": "northbridge",
+          "route": "/workbench",
+          "screen": "Consultant Workbench",
+          "inputData": [
+            "Readiness 68 percent",
+            "Publish readiness not ready"
+          ],
+          "action": "Continue into readiness checklist after request-data action",
+          "target": null,
+          "expectedVisibleText": [
+            "Consultant Workbench"
+          ],
+          "expectedStateChange": "Analyst workbench shows internal publish readiness after the click-through.",
+          "blockedActions": [
+            "Publish to Client"
+          ],
+          "clientVisibility": "Internal only",
+          "evidence": "Evidence links can be previewed",
+          "audit": "workbench.open expected",
+          "qaAssertion": "Publish to Client remains unavailable as a completed release.",
+          "pauseMs": 1800,
+          "screenshotName": "p1-02-03-workbench-readiness",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/internal-workflow-screen.tsx",
+            "lib/workflow-gate.ts"
+          ],
+          "id": "P1-02-S03",
+          "title": "Consultant Workbench: Inspect readiness checklist",
+          "caption": "The workbench shows what is missing and what is ready. This keeps the package internal until the review path is clear.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j01-signal-advisor-gate",
+            "SIG-2025-001228",
+            "TRG-2025-000348",
+            "REC-2025-05-0147",
+            "Readiness 68 percent",
+            "Publish readiness not ready"
+          ],
+          "interaction": {
+            "type": "none"
+          }
+        },
+        {
+          "step": 4,
+          "role": "Advisor",
+          "roleKey": "senior_wealth_advisor",
+          "tenant": "Northbridge Family Office",
+          "tenantSlug": "northbridge",
+          "route": "/workbench/triggers/demo",
+          "screen": "Trigger Detail",
+          "inputData": [
+            "TRG-2025-000348",
+            "Apex Global Holdings Ltd."
+          ],
+          "action": "Click route or reassignment control",
+          "target": {
+            "testId": "j01-route-to-advisor",
+            "name": "Reassign / Route"
+          },
+          "expectedVisibleText": [],
+          "expectedStateChange": "Trigger is routed to advisor review and the advisor queue opens.",
+          "blockedActions": [
+            "Client release"
+          ],
+          "clientVisibility": "No client-visible state created",
+          "evidence": "Routing note expected",
+          "audit": "screencast.trigger.route_to_advisor created",
+          "qaAssertion": "Routing moves to advisor review while the package remains internal.",
+          "pauseMs": 1800,
+          "screenshotName": "p1-02-04-route-to-advisor-queue",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "docs/v3/SCREEN_CATALOGUE_V3.md",
+            "components/internal-workflow-screen.tsx"
+          ],
+          "id": "P1-02-S04",
+          "title": "Trigger Detail: Click route or reassignment control if exposed",
+          "caption": "The workbench shows what is missing and what is ready. This keeps the package internal until the review path is clear.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j01-signal-advisor-gate",
+            "SIG-2025-001228",
+            "TRG-2025-000348",
+            "REC-2025-05-0147",
+            "Apex Global Holdings Ltd."
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 5,
+          "role": "Advisor",
+          "roleKey": "senior_wealth_advisor",
+          "tenant": "Northbridge Family Office",
+          "tenantSlug": "northbridge",
+          "route": "/advisor-approval",
+          "screen": "Advisor Approval Queue",
+          "inputData": [
+            "Pending review package",
+            "James Thornton"
+          ],
+          "action": "Continue into advisor queue after routing",
+          "target": null,
+          "expectedVisibleText": [],
+          "expectedStateChange": "Advisor queue is reached by the previous routing action.",
+          "blockedActions": [
+            "Release to Client"
+          ],
+          "clientVisibility": "Advisor-visible only",
+          "evidence": "Approval package visible",
+          "audit": "approval.opened expected",
+          "qaAssertion": "Queue shows pending review after the route transition.",
+          "pauseMs": 1600,
+          "screenshotName": "p1-02-05-advisor-queue",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "docs/v3/USER_JOURNEY_PLAYBOOK_V3.md#journey-1"
+          ],
+          "id": "P1-02-S05",
+          "title": "Advisor Approval Queue: Set advisor role and inspect queue",
+          "caption": "The advisor reviews the package here, but this is still internal. The client cannot see it until compliance releases it.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j01-signal-advisor-gate",
+            "SIG-2025-001228",
+            "TRG-2025-000348",
+            "REC-2025-05-0147",
+            "Pending review package",
+            "James Thornton"
+          ],
+          "interaction": {
+            "type": "none"
+          }
+        },
+        {
+          "step": 6,
+          "role": "Advisor",
+          "roleKey": "senior_wealth_advisor",
+          "tenant": "Northbridge Family Office",
+          "tenantSlug": "northbridge",
+          "route": "/advisor-approval/demo",
+          "screen": "Advisor Approval Detail",
+          "inputData": [
+            "REC-2025-05-0147"
+          ],
+          "action": "Click Approve",
+          "target": {
+            "testId": "j01-approve-advisor",
+            "name": "Approve"
+          },
+          "expectedVisibleText": [],
+          "expectedStateChange": "Advisor approval is saved, but compliance release is still required.",
+          "blockedActions": [
+            "Client decision visibility"
+          ],
+          "clientVisibility": "Still blocked until compliance",
+          "evidence": "Advisor approval evidence expected",
+          "audit": "screencast.approval.approve created",
+          "qaAssertion": "Advisor approval writes demo state without client visibility.",
+          "pauseMs": 2000,
+          "screenshotName": "p1-02-06-advisor-approval-detail",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "lib/workflow-gate.ts",
+            "components/internal-workflow-screen.tsx"
+          ],
+          "id": "P1-02-S06",
+          "title": "Advisor Approval Detail: Click Approve",
+          "caption": "The advisor approves the package here, but this is still internal. The client cannot see it until compliance releases it.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j01-signal-advisor-gate",
+            "SIG-2025-001228",
+            "TRG-2025-000348",
+            "REC-2025-05-0147"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 7,
+          "role": "Advisor",
+          "roleKey": "senior_wealth_advisor",
+          "tenant": "Northbridge Family Office",
+          "tenantSlug": "northbridge",
+          "route": "/advisor-approval/demo",
+          "screen": "Advisor Approval Detail",
+          "inputData": [
+            "Negative path"
+          ],
+          "action": "Click Escalate to Call as the non-release alternative",
+          "target": {
+            "testId": "j01-escalate-advisor",
+            "name": "Escalate to Call"
+          },
+          "expectedVisibleText": [],
+          "expectedStateChange": "Escalation is saved and the client-side negative check opens.",
+          "blockedActions": [
+            "Client release"
+          ],
+          "clientVisibility": "No release",
+          "evidence": "Escalation evidence expected if selected",
+          "audit": "screencast.approval.escalate_to_call created",
+          "qaAssertion": "Escalation creates no client release and routes to the decision negative check.",
+          "pauseMs": 1600,
+          "screenshotName": "p1-02-07-escalate-to-decision-check",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "docs/v3/PAGE_SPECS_V3.md"
+          ],
+          "id": "P1-02-S07",
+          "title": "Advisor Approval Detail: Inspect or click Escalate to Call",
+          "caption": "The advisor escalates instead of releasing the package. That keeps the next step human and controlled when more discussion is needed.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j01-signal-advisor-gate",
+            "SIG-2025-001228",
+            "TRG-2025-000348",
+            "REC-2025-05-0147",
+            "Negative path"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 8,
+          "role": "Advisor",
+          "roleKey": "senior_wealth_advisor",
+          "tenant": "Northbridge Family Office",
+          "tenantSlug": "northbridge",
+          "route": "/decisions",
+          "screen": "Decision List",
+          "inputData": [
+            "Negative check after advisor approval only"
+          ],
+          "action": "Continue to client decision negative check",
+          "target": null,
+          "expectedVisibleText": [],
+          "expectedStateChange": "Advisor-only package is not exposed as a released client decision.",
+          "blockedActions": [
+            "Unreleased decision view"
+          ],
+          "clientVisibility": "Blocked without compliance release",
+          "evidence": "Gate proof only",
+          "audit": "visibility.check expected",
+          "qaAssertion": "Advisor approval alone does not show a released client decision.",
+          "pauseMs": 1800,
+          "screenshotName": "p1-02-08-client-negative-check",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "lib/workflow-gate.ts",
+            "lib/visibility-engine.ts"
+          ],
+          "id": "P1-02-S08",
+          "title": "Decision List: Switch to client role and inspect decisions",
+          "caption": "The client reviews a released decision here. The evidence trail shows why the decision is ready to act on.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j01-signal-advisor-gate",
+            "SIG-2025-001228",
+            "TRG-2025-000348",
+            "REC-2025-05-0147",
+            "Negative check after advisor approval only"
+          ],
+          "interaction": {
+            "type": "none"
+          }
+        },
+        {
+          "step": 9,
+          "role": "Advisor",
+          "roleKey": "senior_wealth_advisor",
+          "tenant": "Northbridge Family Office",
+          "tenantSlug": "northbridge",
+          "route": "/communication",
+          "screen": "Communication Center",
+          "inputData": [],
+          "action": "Inspect route state",
+          "target": null,
+          "interaction": {
+            "type": "none"
+          },
+          "navigation": "goto",
+          "dataRefs": [],
+          "caption": "The team chooses the right communication path here. Sensitive follow-up stays connected to evidence and review expectations.",
+          "expectedVisibleText": [
+            "Communication"
+          ],
+          "expectedStateChange": "Route/static demo state is visible; no production workflow claim is made.",
+          "blockedActions": [
+            "Unapproved advice release"
+          ],
+          "clientVisibility": "Controlled by demo route state and caveat",
+          "evidence": "Route/static evidence only unless linked to a handler proof.",
+          "audit": "No audit event claimed for route/static steps.",
+          "qaAssertion": "Communication Center renders without spec chrome or unsafe advice claims.",
+          "pauseMs": 1400,
+          "screenshotName": "p1-02-09-communication-center",
+          "manualOrStatic": true,
+          "sourceProof": [
+            "docs/v3/DEMO_JOURNEY_OPPORTUNITY_BACKLOG_V3.json"
+          ],
+          "id": "P1-02-S09"
+        },
+        {
+          "step": 10,
+          "role": "Advisor",
+          "roleKey": "senior_wealth_advisor",
+          "tenant": "Northbridge Family Office",
+          "tenantSlug": "northbridge",
+          "route": "/communication/call-trigger",
+          "screen": "Call Trigger Matrix",
+          "inputData": [],
+          "action": "Inspect route state",
+          "target": null,
+          "interaction": {
+            "type": "none"
+          },
+          "navigation": "goto",
+          "dataRefs": [],
+          "caption": "The team chooses the right communication path here. Sensitive follow-up stays connected to evidence and review expectations.",
+          "expectedVisibleText": [
+            "Call"
+          ],
+          "expectedStateChange": "Route/static demo state is visible; no production workflow claim is made.",
+          "blockedActions": [
+            "Unapproved advice release"
+          ],
+          "clientVisibility": "Controlled by demo route state and caveat",
+          "evidence": "Route/static evidence only unless linked to a handler proof.",
+          "audit": "No audit event claimed for route/static steps.",
+          "qaAssertion": "Call Trigger Matrix renders without spec chrome or unsafe advice claims.",
+          "pauseMs": 1400,
+          "screenshotName": "p1-02-10-call-trigger-matrix",
+          "manualOrStatic": true,
+          "sourceProof": [
+            "docs/v3/DEMO_JOURNEY_OPPORTUNITY_BACKLOG_V3.json"
+          ],
+          "id": "P1-02-S10"
+        }
+      ]
+    },
+    {
+      "id": "P1-03",
+      "name": "Call Trigger Matrix",
+      "portfolioLayer": "P1",
+      "candidateId": "P1-03",
+      "legacyJourneyIds": [
+        "J01"
+      ],
+      "demoPriority": "P1",
+      "audienceFit": [
+        "operations",
+        "compliance"
+      ],
+      "currentRealityLabel": "route-static",
+      "proofLevel": "PL2",
+      "overclaimRisk": "Viewer may assume call outcome persistence.",
+      "caveat": "Call trigger is route/static unless a future handler records call outcomes.",
+      "proofPath": [
+        "lib/route-registry.ts"
+      ],
+      "captionShort": "Escalation rules make human review visible.",
+      "captionLong": "The call-trigger route explains when digital work should become human escalation.",
+      "presenterNotes": [
+        "Good appendix clip; not core P0."
+      ],
+      "customerSendable": false,
+      "primaryActor": "Advisor",
+      "additionalRoles": [
+        "Client Success"
+      ],
+      "tenant": "Northbridge Family Office",
+      "startRoute": "/communication/call-trigger",
+      "endState": "Call escalation matrix is visible.",
+      "demoSession": {
+        "mode": "demo",
+        "defaultRoleKey": "senior_wealth_advisor",
+        "defaultTenantSlug": "northbridge"
+      },
+      "queryParams": {},
+      "preconditions": [
+        "Demo session mode is active",
+        "No real customer data is used",
+        "Call trigger is route/static unless a future handler records call outcomes."
+      ],
+      "demoData": [
+        "P1-03",
+        "J01"
+      ],
+      "visibilityRules": [
+        "No unapproved advice reaches the client",
+        "Client visibility is controlled by compliance and route-specific caveats"
+      ],
+      "complianceRules": [
+        "Advisor approval alone is not enough",
+        "Compliance release controls client visibility when advice-like content is involved"
+      ],
+      "evidenceExpectations": [
+        "lib/route-registry.ts"
+      ],
+      "auditExpectations": [
+        "route-static",
+        "PL2"
+      ],
+      "riskNotes": [
+        "Viewer may assume call outcome persistence.",
+        "Call trigger is route/static unless a future handler records call outcomes."
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "role": "Advisor",
+          "roleKey": "senior_wealth_advisor",
+          "tenant": "Northbridge Family Office",
+          "tenantSlug": "northbridge",
+          "route": "/signals",
+          "screen": "Signal Review",
+          "inputData": [
+            "SIG-2025-001228",
+            "Large Outflow Detected"
+          ],
+          "action": "Set role and inspect signal queue",
+          "target": null,
+          "expectedVisibleText": [
+            "Signal Review",
+            "Large Outflow Detected"
+          ],
+          "expectedStateChange": "Seeded trigger remains internal-only before the analyst action.",
+          "blockedActions": [
+            "Publish to Client"
+          ],
+          "clientVisibility": "Internal only",
+          "evidence": "Evidence preview only",
+          "audit": "trigger.review expected",
+          "qaAssertion": "Signal page renders with no client advice copy.",
+          "pauseMs": 1600,
+          "screenshotName": "p1-03-01-signals-queue",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "docs/v3/USER_JOURNEY_PLAYBOOK_V3.md#journey-1",
+            "lib/internal-workflow-demo-data.ts"
+          ],
+          "id": "P1-03-S01",
+          "title": "Signal Review: Set role and inspect signal queue",
+          "caption": "We review the signal before the client sees anything. That gives the team time to check the risk and decide what needs human review.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j01-signal-advisor-gate",
+            "SIG-2025-001228",
+            "TRG-2025-000348",
+            "REC-2025-05-0147",
+            "Large Outflow Detected"
+          ],
+          "interaction": {
+            "type": "none"
+          }
+        },
+        {
+          "step": 2,
+          "role": "Advisor",
+          "roleKey": "senior_wealth_advisor",
+          "tenant": "Northbridge Family Office",
+          "tenantSlug": "northbridge",
+          "route": "/signals",
+          "screen": "Signal Review",
+          "inputData": [
+            "Missing beneficial owner",
+            "Purpose of wire",
+            "Source of funds"
+          ],
+          "action": "Click request information path",
+          "target": {
+            "testId": "j01-request-data",
+            "name": "Request Data"
+          },
+          "expectedVisibleText": [
+            "Consultant Workbench"
+          ],
+          "expectedStateChange": "Request-data state is saved and the analyst lands in the workbench.",
+          "blockedActions": [
+            "Recommendation release"
+          ],
+          "clientVisibility": "No client visibility",
+          "evidence": "Missing-data evidence expected later",
+          "audit": "screencast.trigger.request_data created",
+          "qaAssertion": "Clicking Request Data reaches the workbench without client release.",
+          "pauseMs": 1600,
+          "screenshotName": "p1-03-02-request-data-to-workbench",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "docs/v3/USER_JOURNEY_PLAYBOOK_V3.md#journey-1"
+          ],
+          "id": "P1-03-S02",
+          "title": "Signal Review: Click request information path if exposed",
+          "caption": "The team asks for missing information before the work moves forward. This keeps weak or incomplete advice away from the client.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j01-signal-advisor-gate",
+            "SIG-2025-001228",
+            "TRG-2025-000348",
+            "REC-2025-05-0147",
+            "Missing beneficial owner",
+            "Purpose of wire",
+            "Source of funds"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 3,
+          "role": "Advisor",
+          "roleKey": "senior_wealth_advisor",
+          "tenant": "Northbridge Family Office",
+          "tenantSlug": "northbridge",
+          "route": "/workbench",
+          "screen": "Consultant Workbench",
+          "inputData": [
+            "Readiness 68 percent",
+            "Publish readiness not ready"
+          ],
+          "action": "Continue into readiness checklist after request-data action",
+          "target": null,
+          "expectedVisibleText": [
+            "Consultant Workbench"
+          ],
+          "expectedStateChange": "Analyst workbench shows internal publish readiness after the click-through.",
+          "blockedActions": [
+            "Publish to Client"
+          ],
+          "clientVisibility": "Internal only",
+          "evidence": "Evidence links can be previewed",
+          "audit": "workbench.open expected",
+          "qaAssertion": "Publish to Client remains unavailable as a completed release.",
+          "pauseMs": 1800,
+          "screenshotName": "p1-03-03-workbench-readiness",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/internal-workflow-screen.tsx",
+            "lib/workflow-gate.ts"
+          ],
+          "id": "P1-03-S03",
+          "title": "Consultant Workbench: Inspect readiness checklist",
+          "caption": "The workbench shows what is missing and what is ready. This keeps the package internal until the review path is clear.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j01-signal-advisor-gate",
+            "SIG-2025-001228",
+            "TRG-2025-000348",
+            "REC-2025-05-0147",
+            "Readiness 68 percent",
+            "Publish readiness not ready"
+          ],
+          "interaction": {
+            "type": "none"
+          }
+        },
+        {
+          "step": 4,
+          "role": "Advisor",
+          "roleKey": "senior_wealth_advisor",
+          "tenant": "Northbridge Family Office",
+          "tenantSlug": "northbridge",
+          "route": "/workbench/triggers/demo",
+          "screen": "Trigger Detail",
+          "inputData": [
+            "TRG-2025-000348",
+            "Apex Global Holdings Ltd."
+          ],
+          "action": "Click route or reassignment control",
+          "target": {
+            "testId": "j01-route-to-advisor",
+            "name": "Reassign / Route"
+          },
+          "expectedVisibleText": [],
+          "expectedStateChange": "Trigger is routed to advisor review and the advisor queue opens.",
+          "blockedActions": [
+            "Client release"
+          ],
+          "clientVisibility": "No client-visible state created",
+          "evidence": "Routing note expected",
+          "audit": "screencast.trigger.route_to_advisor created",
+          "qaAssertion": "Routing moves to advisor review while the package remains internal.",
+          "pauseMs": 1800,
+          "screenshotName": "p1-03-04-route-to-advisor-queue",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "docs/v3/SCREEN_CATALOGUE_V3.md",
+            "components/internal-workflow-screen.tsx"
+          ],
+          "id": "P1-03-S04",
+          "title": "Trigger Detail: Click route or reassignment control if exposed",
+          "caption": "The workbench shows what is missing and what is ready. This keeps the package internal until the review path is clear.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j01-signal-advisor-gate",
+            "SIG-2025-001228",
+            "TRG-2025-000348",
+            "REC-2025-05-0147",
+            "Apex Global Holdings Ltd."
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 5,
+          "role": "Advisor",
+          "roleKey": "senior_wealth_advisor",
+          "tenant": "Northbridge Family Office",
+          "tenantSlug": "northbridge",
+          "route": "/advisor-approval",
+          "screen": "Advisor Approval Queue",
+          "inputData": [
+            "Pending review package",
+            "James Thornton"
+          ],
+          "action": "Continue into advisor queue after routing",
+          "target": null,
+          "expectedVisibleText": [],
+          "expectedStateChange": "Advisor queue is reached by the previous routing action.",
+          "blockedActions": [
+            "Release to Client"
+          ],
+          "clientVisibility": "Advisor-visible only",
+          "evidence": "Approval package visible",
+          "audit": "approval.opened expected",
+          "qaAssertion": "Queue shows pending review after the route transition.",
+          "pauseMs": 1600,
+          "screenshotName": "p1-03-05-advisor-queue",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "docs/v3/USER_JOURNEY_PLAYBOOK_V3.md#journey-1"
+          ],
+          "id": "P1-03-S05",
+          "title": "Advisor Approval Queue: Set advisor role and inspect queue",
+          "caption": "The advisor reviews the package here, but this is still internal. The client cannot see it until compliance releases it.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j01-signal-advisor-gate",
+            "SIG-2025-001228",
+            "TRG-2025-000348",
+            "REC-2025-05-0147",
+            "Pending review package",
+            "James Thornton"
+          ],
+          "interaction": {
+            "type": "none"
+          }
+        },
+        {
+          "step": 6,
+          "role": "Advisor",
+          "roleKey": "senior_wealth_advisor",
+          "tenant": "Northbridge Family Office",
+          "tenantSlug": "northbridge",
+          "route": "/advisor-approval/demo",
+          "screen": "Advisor Approval Detail",
+          "inputData": [
+            "REC-2025-05-0147"
+          ],
+          "action": "Click Approve",
+          "target": {
+            "testId": "j01-approve-advisor",
+            "name": "Approve"
+          },
+          "expectedVisibleText": [],
+          "expectedStateChange": "Advisor approval is saved, but compliance release is still required.",
+          "blockedActions": [
+            "Client decision visibility"
+          ],
+          "clientVisibility": "Still blocked until compliance",
+          "evidence": "Advisor approval evidence expected",
+          "audit": "screencast.approval.approve created",
+          "qaAssertion": "Advisor approval writes demo state without client visibility.",
+          "pauseMs": 2000,
+          "screenshotName": "p1-03-06-advisor-approval-detail",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "lib/workflow-gate.ts",
+            "components/internal-workflow-screen.tsx"
+          ],
+          "id": "P1-03-S06",
+          "title": "Advisor Approval Detail: Click Approve",
+          "caption": "The advisor approves the package here, but this is still internal. The client cannot see it until compliance releases it.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j01-signal-advisor-gate",
+            "SIG-2025-001228",
+            "TRG-2025-000348",
+            "REC-2025-05-0147"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 7,
+          "role": "Advisor",
+          "roleKey": "senior_wealth_advisor",
+          "tenant": "Northbridge Family Office",
+          "tenantSlug": "northbridge",
+          "route": "/advisor-approval/demo",
+          "screen": "Advisor Approval Detail",
+          "inputData": [
+            "Negative path"
+          ],
+          "action": "Click Escalate to Call as the non-release alternative",
+          "target": {
+            "testId": "j01-escalate-advisor",
+            "name": "Escalate to Call"
+          },
+          "expectedVisibleText": [],
+          "expectedStateChange": "Escalation is saved and the client-side negative check opens.",
+          "blockedActions": [
+            "Client release"
+          ],
+          "clientVisibility": "No release",
+          "evidence": "Escalation evidence expected if selected",
+          "audit": "screencast.approval.escalate_to_call created",
+          "qaAssertion": "Escalation creates no client release and routes to the decision negative check.",
+          "pauseMs": 1600,
+          "screenshotName": "p1-03-07-escalate-to-decision-check",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "docs/v3/PAGE_SPECS_V3.md"
+          ],
+          "id": "P1-03-S07",
+          "title": "Advisor Approval Detail: Inspect or click Escalate to Call",
+          "caption": "The advisor escalates instead of releasing the package. That keeps the next step human and controlled when more discussion is needed.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j01-signal-advisor-gate",
+            "SIG-2025-001228",
+            "TRG-2025-000348",
+            "REC-2025-05-0147",
+            "Negative path"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 8,
+          "role": "Advisor",
+          "roleKey": "senior_wealth_advisor",
+          "tenant": "Northbridge Family Office",
+          "tenantSlug": "northbridge",
+          "route": "/decisions",
+          "screen": "Decision List",
+          "inputData": [
+            "Negative check after advisor approval only"
+          ],
+          "action": "Continue to client decision negative check",
+          "target": null,
+          "expectedVisibleText": [],
+          "expectedStateChange": "Advisor-only package is not exposed as a released client decision.",
+          "blockedActions": [
+            "Unreleased decision view"
+          ],
+          "clientVisibility": "Blocked without compliance release",
+          "evidence": "Gate proof only",
+          "audit": "visibility.check expected",
+          "qaAssertion": "Advisor approval alone does not show a released client decision.",
+          "pauseMs": 1800,
+          "screenshotName": "p1-03-08-client-negative-check",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "lib/workflow-gate.ts",
+            "lib/visibility-engine.ts"
+          ],
+          "id": "P1-03-S08",
+          "title": "Decision List: Switch to client role and inspect decisions",
+          "caption": "The client reviews a released decision here. The evidence trail shows why the decision is ready to act on.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j01-signal-advisor-gate",
+            "SIG-2025-001228",
+            "TRG-2025-000348",
+            "REC-2025-05-0147",
+            "Negative check after advisor approval only"
+          ],
+          "interaction": {
+            "type": "none"
+          }
+        },
+        {
+          "step": 9,
+          "role": "Advisor",
+          "roleKey": "senior_wealth_advisor",
+          "tenant": "Northbridge Family Office",
+          "tenantSlug": "northbridge",
+          "route": "/communication/call-trigger",
+          "screen": "Call Trigger Matrix",
+          "inputData": [],
+          "action": "Inspect route state",
+          "target": null,
+          "interaction": {
+            "type": "none"
+          },
+          "navigation": "goto",
+          "dataRefs": [],
+          "caption": "The team chooses the right communication path here. Sensitive follow-up stays connected to evidence and review expectations.",
+          "expectedVisibleText": [
+            "Call"
+          ],
+          "expectedStateChange": "Route/static demo state is visible; no production workflow claim is made.",
+          "blockedActions": [
+            "Unapproved advice release"
+          ],
+          "clientVisibility": "Controlled by demo route state and caveat",
+          "evidence": "Route/static evidence only unless linked to a handler proof.",
+          "audit": "No audit event claimed for route/static steps.",
+          "qaAssertion": "Call Trigger Matrix renders without spec chrome or unsafe advice claims.",
+          "pauseMs": 1400,
+          "screenshotName": "p1-03-09-call-trigger-matrix",
+          "manualOrStatic": true,
+          "sourceProof": [
+            "docs/v3/DEMO_JOURNEY_OPPORTUNITY_BACKLOG_V3.json"
+          ],
+          "id": "P1-03-S09"
+        }
+      ]
+    },
+    {
+      "id": "P1-13",
+      "name": "Permission Matrix And Second Confirmation",
+      "portfolioLayer": "P1",
+      "candidateId": "P1-13",
+      "legacyJourneyIds": [
+        "J07"
+      ],
+      "demoPriority": "P1",
+      "audienceFit": [
+        "security",
+        "compliance",
+        "investor"
+      ],
+      "currentRealityLabel": "test-proven",
+      "proofLevel": "PL5",
+      "overclaimRisk": "Viewer may assume complete production RBAC.",
+      "caveat": "Permission proof is deterministic demo authorization, not real identity-provider auth.",
+      "proofPath": [
+        "tests/permission-engine.spec.ts",
+        "app/api/demo-workflow/route.ts#j07.saveRoleChanges"
+      ],
+      "captionShort": "Sensitive role changes require confirmation.",
+      "captionLong": "Role and access changes show scoped governance with second confirmation and audit proof.",
+      "presenterNotes": [
+        "Use for diligence, not core P0."
+      ],
+      "customerSendable": false,
+      "fixtureId": "fixture-j07-governance-access-audit",
+      "provisioning": {
+        "mode": "database-fixture",
+        "fixtureId": "fixture-j07-governance-access-audit",
+        "resetStrategy": "base-seed",
+        "required": true,
+        "seedCommand": "pnpm screencast:seed-journey -- P1-13 --fixture=fixture-j07-governance-access-audit",
+        "validates": [
+          "fixture refs",
+          "demo data state",
+          "expected mutation context"
+        ]
+      },
+      "primaryActor": "Security Officer",
+      "additionalRoles": [
+        "Principal",
+        "Compliance Officer"
+      ],
+      "tenant": "Northbridge Family Office",
+      "startRoute": "/governance/roles",
+      "endState": "Sensitive role confirmation is visible.",
+      "demoSession": {
+        "mode": "demo",
+        "defaultRoleKey": "principal",
+        "defaultTenantSlug": "northbridge"
+      },
+      "queryParams": {},
+      "preconditions": [
+        "Demo session mode is active",
+        "No real customer data is used",
+        "Permission proof is deterministic demo authorization, not real identity-provider auth."
+      ],
+      "demoData": [
+        "P1-13",
+        "J07"
+      ],
+      "visibilityRules": [
+        "No unapproved advice reaches the client",
+        "Client visibility is controlled by compliance and route-specific caveats"
+      ],
+      "complianceRules": [
+        "Advisor approval alone is not enough",
+        "Compliance release controls client visibility when advice-like content is involved"
+      ],
+      "evidenceExpectations": [
+        "tests/permission-engine.spec.ts",
+        "app/api/demo-workflow/route.ts#j07.saveRoleChanges"
+      ],
+      "auditExpectations": [
+        "test-proven",
+        "PL5"
+      ],
+      "riskNotes": [
+        "Viewer may assume complete production RBAC.",
+        "Permission proof is deterministic demo authorization, not real identity-provider auth."
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "role": "Security Officer",
+          "roleKey": "principal",
+          "tenant": "Northbridge Family Office",
+          "tenantSlug": "northbridge",
+          "route": "/governance/roles?state=confirm",
+          "screen": "Role Management",
+          "inputData": [
+            "Role Portfolio Manager",
+            "Confirmation phrase PORTFOLIO MANAGER"
+          ],
+          "action": "Click Save Changes",
+          "target": {
+            "testId": "j07-save-role-changes",
+            "name": "Save Changes"
+          },
+          "expectedVisibleText": [
+            "Approve"
+          ],
+          "expectedStateChange": "Role change pending confirmation",
+          "blockedActions": [
+            "Silent sensitive permission change"
+          ],
+          "clientVisibility": "Permission-scoped only",
+          "evidence": "role.change_requested expected",
+          "audit": "role.change_requested expected",
+          "qaAssertion": "Sensitive permission confirmation visible.",
+          "pauseMs": 2200,
+          "screenshotName": "p1-13-01-role-confirmation",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "lib/permission-engine.ts"
+          ],
+          "id": "P1-13-S01",
+          "title": "Role Management: Click Save Changes",
+          "caption": "A role or access change is reviewed with clear scope. Sensitive permission changes need a record so they can be checked later.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j07-governance-access-audit",
+            "emily.roberts@example.test",
+            "Portfolio Manager",
+            "AUD-2184",
+            "Role Portfolio Manager",
+            "Confirmation phrase PORTFOLIO MANAGER"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 2,
+          "role": "Security Officer",
+          "roleKey": "principal",
+          "tenant": "Northbridge Family Office",
+          "tenantSlug": "northbridge",
+          "route": "/governance/access-requests?state=approval",
+          "screen": "Access Requests",
+          "inputData": [
+            "Decision path"
+          ],
+          "action": "Click Approve",
+          "target": {
+            "testId": "j07-approve-access",
+            "name": "Approve"
+          },
+          "expectedVisibleText": [],
+          "expectedStateChange": "Target state approved/denied/escalated",
+          "blockedActions": [
+            "Decision without policy check"
+          ],
+          "clientVisibility": "Access scoped after decision",
+          "evidence": "access decision expected",
+          "audit": "access.decision expected",
+          "qaAssertion": "Policy checks shown before decision.",
+          "pauseMs": 1800,
+          "screenshotName": "p1-13-02-access-decision",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/decisions-governance-screen.tsx"
+          ],
+          "id": "P1-13-S02",
+          "title": "Access Requests: Click Approve",
+          "caption": "A role or access change is reviewed with clear scope. Sensitive permission changes need a record so they can be checked later.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j07-governance-access-audit",
+            "emily.roberts@example.test",
+            "Portfolio Manager",
+            "AUD-2184",
+            "Decision path"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 3,
+          "role": "Security Officer",
+          "roleKey": "principal",
+          "tenant": "Northbridge Family Office",
+          "tenantSlug": "northbridge",
+          "route": "/governance/audit-history?state=drawer",
+          "screen": "Access Audit History",
+          "inputData": [
+            "Export controlled"
+          ],
+          "action": "Click Export events if exposed",
+          "target": {
+            "testId": "j07-export-audit",
+            "name": "Export events"
+          },
+          "expectedVisibleText": [
+            "Access Audit History",
+            "Export events"
+          ],
+          "expectedStateChange": "Export remains controlled",
+          "blockedActions": [
+            "Audit export bypass"
+          ],
+          "clientVisibility": "Export controlled",
+          "evidence": "audit export expected if performed",
+          "audit": "audit.export expected",
+          "qaAssertion": "Audit export cannot bypass export controls.",
+          "pauseMs": 1600,
+          "screenshotName": "p1-13-03-audit-export",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "lib/export-service.ts"
+          ],
+          "id": "P1-13-S03",
+          "title": "Access Audit History: Click Export events if exposed",
+          "caption": "A role or access change is reviewed with clear scope. Sensitive permission changes need a record so they can be checked later.",
+          "navigation": "goto",
+          "dataRefs": [
+            "fixture-j07-governance-access-audit",
+            "emily.roberts@example.test",
+            "Portfolio Manager",
+            "AUD-2184",
+            "Export controlled"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        }
+      ]
+    }
+  ]
+}

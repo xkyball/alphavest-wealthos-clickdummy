@@ -1,0 +1,3468 @@
+[
+  {
+    "pageId": "005",
+    "route": "/onboarding/consent",
+    "title": "Consent and Privacy",
+    "url": "http://127.0.0.1:3107/onboarding/consent",
+    "screenshot": "fullpage/PAGE-005-onboarding-consent-desktop-fullpage.png",
+    "metrics": {
+      "documentMetrics": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "clientHeight": 1000,
+        "scrollHeight": 1000
+      },
+      "elementOverflow": [],
+      "clipped": [],
+      "outsideViewport": [],
+      "dialogs": [],
+      "fixed": []
+    }
+  },
+  {
+    "pageId": "008",
+    "route": "/admin/policies/advice-boundary",
+    "title": "Advice Boundary Policy",
+    "url": "http://127.0.0.1:3107/admin/policies/advice-boundary",
+    "screenshot": "fullpage/PAGE-008-admin-policies-advice-boundary-desktop-fullpage.png",
+    "metrics": {
+      "documentMetrics": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "clientHeight": 1000,
+        "scrollHeight": 1206
+      },
+      "elementOverflow": [
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Multi-Factor Authentication",
+          "rect": {
+            "x": 62,
+            "y": 167,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Templates and Redaction",
+          "rect": {
+            "x": 62,
+            "y": 608,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Download and Share",
+          "rect": {
+            "x": 62,
+            "y": 2746,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "State and Badge Reference",
+          "rect": {
+            "x": 62,
+            "y": 2986,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "overflow-x-auto rounded-md border border-alphavest-border/70",
+          "text": "CONTENT TYPE CLASSIFICATION HANDLING APPROVAL CLIENT REACHABLE General education Not advice Auto-release No Yes Tools and calculators Not advice Auto-release No",
+          "rect": {
+            "x": 293,
+            "y": 319,
+            "width": 697,
+            "height": 379
+          },
+          "overflowX": "auto",
+          "overflowY": "auto",
+          "position": "static"
+        }
+      ],
+      "clipped": [
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Multi-Factor Authentication",
+          "rect": {
+            "x": 62,
+            "y": 167,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Templates and Redaction",
+          "rect": {
+            "x": 62,
+            "y": 608,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Download and Share",
+          "rect": {
+            "x": 62,
+            "y": 2746,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "State and Badge Reference",
+          "rect": {
+            "x": 62,
+            "y": 2986,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        }
+      ],
+      "outsideViewport": [],
+      "dialogs": [],
+      "fixed": [
+        {
+          "tag": "aside",
+          "className": "alpha-panel hidden w-full flex-col gap-7 border-x-0 border-t-0 p-4 lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-[var(--sidebar-width)] lg:border-y-0 lg:border-l-0 lg:p-5",
+          "text": "A AlphaVest WEALTHOS ACCESS Authentication Login Multi-Factor Authentication Invitation Acceptance Identity Setup Consent and Privacy Role Confirmation PLATFORM",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 248,
+            "height": 1000
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        },
+        {
+          "tag": "header",
+          "className": "av-topbar sticky top-0 z-20 px-4 py-3 md:px-6",
+          "text": "Search Tenant context Bennett Family Office Morgan Family Office Northbridge Family Office Summit Ridge Capital Role context Principal Family CFO Trustee Next G",
+          "rect": {
+            "x": 248,
+            "y": 0,
+            "width": 1192,
+            "height": 73
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        }
+      ]
+    }
+  },
+  {
+    "pageId": "011",
+    "route": "/admin/evidence-templates",
+    "title": "Evidence Templates",
+    "url": "http://127.0.0.1:3107/admin/evidence-templates",
+    "screenshot": "fullpage/PAGE-011-admin-evidence-templates-desktop-fullpage.png",
+    "metrics": {
+      "documentMetrics": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "clientHeight": 1000,
+        "scrollHeight": 1000
+      },
+      "elementOverflow": [
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Multi-Factor Authentication",
+          "rect": {
+            "x": 62,
+            "y": 167,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Templates and Redaction",
+          "rect": {
+            "x": 62,
+            "y": 608,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Download and Share",
+          "rect": {
+            "x": 62,
+            "y": 2746,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "State and Badge Reference",
+          "rect": {
+            "x": 62,
+            "y": 2986,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "min-w-0 max-w-full overflow-x-auto rounded-md border border-alphavest-border/70 [contain:inline-size]",
+          "text": "TEMPLATE CATEGORY EVIDENCE TYPE ITEMS CYCLE STATUS ACTIONS Client Onboarding - KYC KYC / AML Client Due Diligence 8 12 months Active Source of Funds Verificatio",
+          "rect": {
+            "x": 293,
+            "y": 433,
+            "width": 689,
+            "height": 432
+          },
+          "overflowX": "auto",
+          "overflowY": "auto",
+          "position": "static"
+        }
+      ],
+      "clipped": [
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Multi-Factor Authentication",
+          "rect": {
+            "x": 62,
+            "y": 167,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Templates and Redaction",
+          "rect": {
+            "x": 62,
+            "y": 608,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Download and Share",
+          "rect": {
+            "x": 62,
+            "y": 2746,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "State and Badge Reference",
+          "rect": {
+            "x": 62,
+            "y": 2986,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        }
+      ],
+      "outsideViewport": [],
+      "dialogs": [],
+      "fixed": [
+        {
+          "tag": "aside",
+          "className": "alpha-panel hidden w-full flex-col gap-7 border-x-0 border-t-0 p-4 lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-[var(--sidebar-width)] lg:border-y-0 lg:border-l-0 lg:p-5",
+          "text": "A AlphaVest WEALTHOS ACCESS Authentication Login Multi-Factor Authentication Invitation Acceptance Identity Setup Consent and Privacy Role Confirmation PLATFORM",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 248,
+            "height": 1000
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        },
+        {
+          "tag": "header",
+          "className": "av-topbar sticky top-0 z-20 px-4 py-3 md:px-6",
+          "text": "Search Tenant context Bennett Family Office Morgan Family Office Northbridge Family Office Summit Ridge Capital Role context Principal Family CFO Trustee Next G",
+          "rect": {
+            "x": 248,
+            "y": 0,
+            "width": 1192,
+            "height": 73
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        }
+      ]
+    }
+  },
+  {
+    "pageId": "012",
+    "route": "/admin/export-templates",
+    "title": "Export Templates and Redaction",
+    "url": "http://127.0.0.1:3107/admin/export-templates",
+    "screenshot": "fullpage/PAGE-012-admin-export-templates-desktop-fullpage.png",
+    "metrics": {
+      "documentMetrics": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "clientHeight": 1000,
+        "scrollHeight": 1008
+      },
+      "elementOverflow": [
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Multi-Factor Authentication",
+          "rect": {
+            "x": 62,
+            "y": 167,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Templates and Redaction",
+          "rect": {
+            "x": 62,
+            "y": 608,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Download and Share",
+          "rect": {
+            "x": 62,
+            "y": 2746,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "State and Badge Reference",
+          "rect": {
+            "x": 62,
+            "y": 2986,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "min-w-0 max-w-full overflow-x-auto rounded-md border border-alphavest-border/70 [contain:inline-size]",
+          "text": "TEMPLATE CATEGORY REDACTION PROFILE VERSION STATUS UPDATED ACTIONS Client onboarding pack Onboarding Client Sensitive v2 v1.3 Active 15 May Portfolio summary Re",
+          "rect": {
+            "x": 293,
+            "y": 535,
+            "width": 609,
+            "height": 342
+          },
+          "overflowX": "auto",
+          "overflowY": "auto",
+          "position": "static"
+        }
+      ],
+      "clipped": [
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Multi-Factor Authentication",
+          "rect": {
+            "x": 62,
+            "y": 167,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Templates and Redaction",
+          "rect": {
+            "x": 62,
+            "y": 608,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Download and Share",
+          "rect": {
+            "x": 62,
+            "y": 2746,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "State and Badge Reference",
+          "rect": {
+            "x": 62,
+            "y": 2986,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        }
+      ],
+      "outsideViewport": [],
+      "dialogs": [],
+      "fixed": [
+        {
+          "tag": "aside",
+          "className": "alpha-panel hidden w-full flex-col gap-7 border-x-0 border-t-0 p-4 lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-[var(--sidebar-width)] lg:border-y-0 lg:border-l-0 lg:p-5",
+          "text": "A AlphaVest WEALTHOS ACCESS Authentication Login Multi-Factor Authentication Invitation Acceptance Identity Setup Consent and Privacy Role Confirmation PLATFORM",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 248,
+            "height": 1000
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        },
+        {
+          "tag": "header",
+          "className": "av-topbar sticky top-0 z-20 px-4 py-3 md:px-6",
+          "text": "Search Tenant context Bennett Family Office Morgan Family Office Northbridge Family Office Summit Ridge Capital Role context Principal Family CFO Trustee Next G",
+          "rect": {
+            "x": 248,
+            "y": 0,
+            "width": 1192,
+            "height": 73
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        }
+      ]
+    }
+  },
+  {
+    "pageId": "013",
+    "route": "/admin/tenants",
+    "title": "Tenant List",
+    "url": "http://127.0.0.1:3107/admin/tenants",
+    "screenshot": "fullpage/PAGE-013-admin-tenants-desktop-fullpage.png",
+    "metrics": {
+      "documentMetrics": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "clientHeight": 1000,
+        "scrollHeight": 1000
+      },
+      "elementOverflow": [
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Multi-Factor Authentication",
+          "rect": {
+            "x": 62,
+            "y": 167,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Templates and Redaction",
+          "rect": {
+            "x": 62,
+            "y": 608,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Download and Share",
+          "rect": {
+            "x": 62,
+            "y": 2746,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "State and Badge Reference",
+          "rect": {
+            "x": 62,
+            "y": 2986,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        }
+      ],
+      "clipped": [
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Multi-Factor Authentication",
+          "rect": {
+            "x": 62,
+            "y": 167,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Templates and Redaction",
+          "rect": {
+            "x": 62,
+            "y": 608,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Download and Share",
+          "rect": {
+            "x": 62,
+            "y": 2746,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "State and Badge Reference",
+          "rect": {
+            "x": 62,
+            "y": 2986,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        }
+      ],
+      "outsideViewport": [],
+      "dialogs": [],
+      "fixed": [
+        {
+          "tag": "aside",
+          "className": "alpha-panel hidden w-full flex-col gap-7 border-x-0 border-t-0 p-4 lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-[var(--sidebar-width)] lg:border-y-0 lg:border-l-0 lg:p-5",
+          "text": "A AlphaVest WEALTHOS ACCESS Authentication Login Multi-Factor Authentication Invitation Acceptance Identity Setup Consent and Privacy Role Confirmation PLATFORM",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 248,
+            "height": 1000
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        },
+        {
+          "tag": "header",
+          "className": "av-topbar sticky top-0 z-20 px-4 py-3 md:px-6",
+          "text": "Search Tenant context Bennett Family Office Morgan Family Office Northbridge Family Office Summit Ridge Capital Role context Principal Family CFO Trustee Next G",
+          "rect": {
+            "x": 248,
+            "y": 0,
+            "width": 1192,
+            "height": 73
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        }
+      ]
+    }
+  },
+  {
+    "pageId": "014",
+    "route": "/tenants/new",
+    "title": "Create Client Tenant",
+    "url": "http://127.0.0.1:3107/tenants/new",
+    "screenshot": "fullpage/PAGE-014-tenants-new-desktop-fullpage.png",
+    "metrics": {
+      "documentMetrics": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "clientHeight": 1000,
+        "scrollHeight": 1000
+      },
+      "elementOverflow": [
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Multi-Factor Authentication",
+          "rect": {
+            "x": 62,
+            "y": 167,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Templates and Redaction",
+          "rect": {
+            "x": 62,
+            "y": 608,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Download and Share",
+          "rect": {
+            "x": 62,
+            "y": 2746,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "State and Badge Reference",
+          "rect": {
+            "x": 62,
+            "y": 2986,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        }
+      ],
+      "clipped": [
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Multi-Factor Authentication",
+          "rect": {
+            "x": 62,
+            "y": 167,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Templates and Redaction",
+          "rect": {
+            "x": 62,
+            "y": 608,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Download and Share",
+          "rect": {
+            "x": 62,
+            "y": 2746,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "State and Badge Reference",
+          "rect": {
+            "x": 62,
+            "y": 2986,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        }
+      ],
+      "outsideViewport": [],
+      "dialogs": [],
+      "fixed": [
+        {
+          "tag": "aside",
+          "className": "alpha-panel hidden w-full flex-col gap-7 border-x-0 border-t-0 p-4 lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-[var(--sidebar-width)] lg:border-y-0 lg:border-l-0 lg:p-5",
+          "text": "A AlphaVest WEALTHOS ACCESS Authentication Login Multi-Factor Authentication Invitation Acceptance Identity Setup Consent and Privacy Role Confirmation PLATFORM",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 248,
+            "height": 1000
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        },
+        {
+          "tag": "header",
+          "className": "av-topbar sticky top-0 z-20 px-4 py-3 md:px-6",
+          "text": "Search Tenant context Bennett Family Office Morgan Family Office Northbridge Family Office Summit Ridge Capital Role context Principal Family CFO Trustee Next G",
+          "rect": {
+            "x": 248,
+            "y": 0,
+            "width": 1192,
+            "height": 73
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        }
+      ]
+    }
+  },
+  {
+    "pageId": "015",
+    "route": "/tenants/:id/setup",
+    "title": "Tenant Setup Dashboard",
+    "url": "http://127.0.0.1:3107/tenants/demo/setup",
+    "screenshot": "fullpage/PAGE-015-tenants-id-setup-desktop-fullpage.png",
+    "metrics": {
+      "documentMetrics": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "clientHeight": 1000,
+        "scrollHeight": 1109
+      },
+      "elementOverflow": [
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Multi-Factor Authentication",
+          "rect": {
+            "x": 62,
+            "y": 167,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Templates and Redaction",
+          "rect": {
+            "x": 62,
+            "y": 608,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Download and Share",
+          "rect": {
+            "x": 62,
+            "y": 2746,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "State and Badge Reference",
+          "rect": {
+            "x": 62,
+            "y": 2986,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "mt-5 min-w-0 space-y-4",
+          "text": "Total items 16 Checklist items Completed 13 Active Ready Missing 2 Failed Needs attention Blocked 1 Pending Blocked dependency Setup complete 81% Processing Nea",
+          "rect": {
+            "x": 293,
+            "y": 379,
+            "width": 717,
+            "height": 677
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "grid gap-3 md:grid-cols-5",
+          "text": "Total items 16 Checklist items Completed 13 Active Ready Missing 2 Failed Needs attention Blocked 1 Pending Blocked dependency Setup complete 81% Processing Nea",
+          "rect": {
+            "x": 293,
+            "y": 379,
+            "width": 717,
+            "height": 174
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "flex items-start justify-between gap-4",
+          "text": "Completed 13 Active",
+          "rect": {
+            "x": 460,
+            "y": 400,
+            "width": 92,
+            "height": 68
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "flex items-start justify-between gap-4",
+          "text": "Missing 2 Failed",
+          "rect": {
+            "x": 606,
+            "y": 400,
+            "width": 92,
+            "height": 68
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "flex items-start justify-between gap-4",
+          "text": "Blocked 1 Pending",
+          "rect": {
+            "x": 752,
+            "y": 400,
+            "width": 92,
+            "height": 68
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "section",
+          "className": "alpha-card min-w-0 p-[var(--card-padding)] min-h-40",
+          "text": "Setup complete 81% Processing Nearly ready",
+          "rect": {
+            "x": 877,
+            "y": 379,
+            "width": 134,
+            "height": 174
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "flex items-start justify-between gap-4",
+          "text": "Setup complete 81% Processing",
+          "rect": {
+            "x": 898,
+            "y": 400,
+            "width": 92,
+            "height": 88
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "min-w-0 max-w-full overflow-x-auto rounded-md border border-alphavest-border/70 [contain:inline-size]",
+          "text": "ITEM OWNER STATUS READINESS ACTIONS Tenant details and branding Olivia Chen Completed Ready Primary admin and roles Daniel Park Completed Ready Team and user pr",
+          "rect": {
+            "x": 293,
+            "y": 569,
+            "width": 717,
+            "height": 413
+          },
+          "overflowX": "auto",
+          "overflowY": "auto",
+          "position": "static"
+        }
+      ],
+      "clipped": [
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Multi-Factor Authentication",
+          "rect": {
+            "x": 62,
+            "y": 167,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Templates and Redaction",
+          "rect": {
+            "x": 62,
+            "y": 608,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Download and Share",
+          "rect": {
+            "x": 62,
+            "y": 2746,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "State and Badge Reference",
+          "rect": {
+            "x": 62,
+            "y": 2986,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        }
+      ],
+      "outsideViewport": [],
+      "dialogs": [],
+      "fixed": [
+        {
+          "tag": "aside",
+          "className": "alpha-panel hidden w-full flex-col gap-7 border-x-0 border-t-0 p-4 lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-[var(--sidebar-width)] lg:border-y-0 lg:border-l-0 lg:p-5",
+          "text": "A AlphaVest WEALTHOS ACCESS Authentication Login Multi-Factor Authentication Invitation Acceptance Identity Setup Consent and Privacy Role Confirmation PLATFORM",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 248,
+            "height": 1000
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        },
+        {
+          "tag": "header",
+          "className": "av-topbar sticky top-0 z-20 px-4 py-3 md:px-6",
+          "text": "Search Tenant context Bennett Family Office Morgan Family Office Northbridge Family Office Summit Ridge Capital Role context Principal Family CFO Trustee Next G",
+          "rect": {
+            "x": 248,
+            "y": 0,
+            "width": 1192,
+            "height": 73
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        }
+      ]
+    }
+  },
+  {
+    "pageId": "016",
+    "route": "/tenants/:id/team",
+    "title": "Assign AlphaVest Team",
+    "url": "http://127.0.0.1:3107/tenants/demo/team",
+    "screenshot": "fullpage/PAGE-016-tenants-id-team-desktop-fullpage.png",
+    "metrics": {
+      "documentMetrics": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "clientHeight": 1000,
+        "scrollHeight": 1000
+      },
+      "elementOverflow": [
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Multi-Factor Authentication",
+          "rect": {
+            "x": 62,
+            "y": 167,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Templates and Redaction",
+          "rect": {
+            "x": 62,
+            "y": 608,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Download and Share",
+          "rect": {
+            "x": 62,
+            "y": 2746,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "State and Badge Reference",
+          "rect": {
+            "x": 62,
+            "y": 2986,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "min-w-0 max-w-full overflow-x-auto rounded-md border border-alphavest-border/70 [contain:inline-size]",
+          "text": "ROLE ASSIGNEE WORKLOAD CAPACITY STATUS ACTIONS Advisor Michelle Carter 72% Medium Good Analyst Daniel Lee 58% Medium Good Compliance Owner Assign compliance own",
+          "rect": {
+            "x": 293,
+            "y": 383,
+            "width": 733,
+            "height": 254
+          },
+          "overflowX": "auto",
+          "overflowY": "auto",
+          "position": "static"
+        }
+      ],
+      "clipped": [
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Multi-Factor Authentication",
+          "rect": {
+            "x": 62,
+            "y": 167,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Templates and Redaction",
+          "rect": {
+            "x": 62,
+            "y": 608,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Download and Share",
+          "rect": {
+            "x": 62,
+            "y": 2746,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "State and Badge Reference",
+          "rect": {
+            "x": 62,
+            "y": 2986,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        }
+      ],
+      "outsideViewport": [],
+      "dialogs": [],
+      "fixed": [
+        {
+          "tag": "aside",
+          "className": "alpha-panel hidden w-full flex-col gap-7 border-x-0 border-t-0 p-4 lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-[var(--sidebar-width)] lg:border-y-0 lg:border-l-0 lg:p-5",
+          "text": "A AlphaVest WEALTHOS ACCESS Authentication Login Multi-Factor Authentication Invitation Acceptance Identity Setup Consent and Privacy Role Confirmation PLATFORM",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 248,
+            "height": 1000
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        },
+        {
+          "tag": "header",
+          "className": "av-topbar sticky top-0 z-20 px-4 py-3 md:px-6",
+          "text": "Search Tenant context Bennett Family Office Morgan Family Office Northbridge Family Office Summit Ridge Capital Role context Principal Family CFO Trustee Next G",
+          "rect": {
+            "x": 248,
+            "y": 0,
+            "width": 1192,
+            "height": 73
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        }
+      ]
+    }
+  },
+  {
+    "pageId": "017",
+    "route": "/tenants/:id/policies",
+    "title": "Tenant Policies",
+    "url": "http://127.0.0.1:3107/tenants/demo/policies",
+    "screenshot": "fullpage/PAGE-017-tenants-id-policies-desktop-fullpage.png",
+    "metrics": {
+      "documentMetrics": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "clientHeight": 1000,
+        "scrollHeight": 1310
+      },
+      "elementOverflow": [
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Multi-Factor Authentication",
+          "rect": {
+            "x": 62,
+            "y": 167,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Templates and Redaction",
+          "rect": {
+            "x": 62,
+            "y": 608,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Download and Share",
+          "rect": {
+            "x": 62,
+            "y": 2746,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "State and Badge Reference",
+          "rect": {
+            "x": 62,
+            "y": 2986,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        }
+      ],
+      "clipped": [
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Multi-Factor Authentication",
+          "rect": {
+            "x": 62,
+            "y": 167,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Templates and Redaction",
+          "rect": {
+            "x": 62,
+            "y": 608,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Download and Share",
+          "rect": {
+            "x": 62,
+            "y": 2746,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "State and Badge Reference",
+          "rect": {
+            "x": 62,
+            "y": 2986,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "static"
+        }
+      ],
+      "outsideViewport": [],
+      "dialogs": [],
+      "fixed": [
+        {
+          "tag": "aside",
+          "className": "alpha-panel hidden w-full flex-col gap-7 border-x-0 border-t-0 p-4 lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-[var(--sidebar-width)] lg:border-y-0 lg:border-l-0 lg:p-5",
+          "text": "A AlphaVest WEALTHOS ACCESS Authentication Login Multi-Factor Authentication Invitation Acceptance Identity Setup Consent and Privacy Role Confirmation PLATFORM",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 248,
+            "height": 1000
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        },
+        {
+          "tag": "header",
+          "className": "av-topbar sticky top-0 z-20 px-4 py-3 md:px-6",
+          "text": "Search Tenant context Bennett Family Office Morgan Family Office Northbridge Family Office Summit Ridge Capital Role context Principal Family CFO Trustee Next G",
+          "rect": {
+            "x": 248,
+            "y": 0,
+            "width": 1192,
+            "height": 73
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        }
+      ]
+    }
+  },
+  {
+    "pageId": "022",
+    "route": "/client/family-members",
+    "title": "Family Members",
+    "url": "http://127.0.0.1:3107/client/family-members",
+    "screenshot": "fullpage/PAGE-022-client-family-members-desktop-fullpage.png",
+    "metrics": {
+      "documentMetrics": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "clientHeight": 1000,
+        "scrollHeight": 1000
+      },
+      "elementOverflow": [
+        {
+          "tag": "button",
+          "className": "relative grid size-10 place-items-center rounded-full border border-alphavest-border text-alphavest-muted",
+          "text": "5",
+          "rect": {
+            "x": 1376,
+            "y": 12,
+            "width": 40,
+            "height": 40
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "relative"
+        },
+        {
+          "tag": "div",
+          "className": "min-w-0 max-w-full overflow-x-auto rounded-md border border-alphavest-border/70 [contain:inline-size]",
+          "text": "NAME FAMILY ROLE RELATIONSHIP GOVERNANCE STATUS ACTIONS Richard Harbor1952 Patriarch Self Trustee Active Eleanor Harbor1955 Matriarch Spouse Trustee, Director A",
+          "rect": {
+            "x": 293,
+            "y": 389,
+            "width": 451,
+            "height": 360
+          },
+          "overflowX": "auto",
+          "overflowY": "auto",
+          "position": "static"
+        }
+      ],
+      "clipped": [],
+      "outsideViewport": [],
+      "dialogs": [],
+      "fixed": [
+        {
+          "tag": "header",
+          "className": "av-topbar sticky top-0 z-20 px-4 py-3 md:px-6",
+          "text": "Search Tenant context Bennett Family Office Morgan Family Office Northbridge Family Office Summit Ridge Capital Role context Principal Family CFO Trustee Next G",
+          "rect": {
+            "x": 248,
+            "y": 0,
+            "width": 1192,
+            "height": 113
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        }
+      ]
+    }
+  },
+  {
+    "pageId": "023",
+    "route": "/relationships",
+    "title": "Relationship Map",
+    "url": "http://127.0.0.1:3107/relationships",
+    "screenshot": "fullpage/PAGE-023-relationships-desktop-fullpage.png",
+    "metrics": {
+      "documentMetrics": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "clientHeight": 1000,
+        "scrollHeight": 1194
+      },
+      "elementOverflow": [
+        {
+          "tag": "button",
+          "className": "relative grid size-10 place-items-center rounded-full border border-alphavest-border text-alphavest-muted",
+          "text": "5",
+          "rect": {
+            "x": 1376,
+            "y": 12,
+            "width": 40,
+            "height": 40
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "relative"
+        },
+        {
+          "tag": "div",
+          "className": "hidden h-[30rem] overflow-hidden rounded-t-md border-b border-alphavest-border bg-[radial-gradient(circle_at_center,rgba(90,167,216,0.08),transparent_30rem)] md:relative md:block",
+          "text": "Margaret Chen Mother David Chen Principal Linda Chen Spouse Chen Family Trust Irrevocable Trust Ethan Chen Son Sophia Chen Daughter Chen Holdings LLC Holding Co",
+          "rect": {
+            "x": 293,
+            "y": 262,
+            "width": 666,
+            "height": 480
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "relative"
+        },
+        {
+          "tag": "div",
+          "className": "min-w-0 max-w-full overflow-x-auto rounded-md border border-alphavest-border/70 [contain:inline-size]",
+          "text": "FROM RELATIONSHIP TO TYPE EVIDENCE STATUS ACTIONS David Chen Spouse of Linda Chen Family 2 Verified David Chen Settlor of Chen Family Trust Legal 1 Conflict Che",
+          "rect": {
+            "x": 309,
+            "y": 758,
+            "width": 634,
+            "height": 375
+          },
+          "overflowX": "auto",
+          "overflowY": "auto",
+          "position": "static"
+        }
+      ],
+      "clipped": [
+        {
+          "tag": "div",
+          "className": "hidden h-[30rem] overflow-hidden rounded-t-md border-b border-alphavest-border bg-[radial-gradient(circle_at_center,rgba(90,167,216,0.08),transparent_30rem)] md:relative md:block",
+          "text": "Margaret Chen Mother David Chen Principal Linda Chen Spouse Chen Family Trust Irrevocable Trust Ethan Chen Son Sophia Chen Daughter Chen Holdings LLC Holding Co",
+          "rect": {
+            "x": 293,
+            "y": 262,
+            "width": 666,
+            "height": 480
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "relative"
+        }
+      ],
+      "outsideViewport": [],
+      "dialogs": [],
+      "fixed": [
+        {
+          "tag": "header",
+          "className": "av-topbar sticky top-0 z-20 px-4 py-3 md:px-6",
+          "text": "Search Tenant context Bennett Family Office Morgan Family Office Northbridge Family Office Summit Ridge Capital Role context Principal Family CFO Trustee Next G",
+          "rect": {
+            "x": 248,
+            "y": 0,
+            "width": 1192,
+            "height": 113
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        }
+      ]
+    }
+  },
+  {
+    "pageId": "031",
+    "route": "/wealth-map",
+    "title": "Live Wealth Map",
+    "url": "http://127.0.0.1:3107/wealth-map?state=drawer",
+    "screenshot": "fullpage/PAGE-031-wealth-map-desktop-fullpage.png",
+    "metrics": {
+      "documentMetrics": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "clientHeight": 1000,
+        "scrollHeight": 1158
+      },
+      "elementOverflow": [
+        {
+          "tag": "button",
+          "className": "relative grid size-10 place-items-center rounded-full border border-alphavest-border text-alphavest-muted",
+          "text": "7",
+          "rect": {
+            "x": 1376,
+            "y": 14,
+            "width": 40,
+            "height": 40
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "relative"
+        },
+        {
+          "tag": "div",
+          "className": "relative mx-auto w-fit",
+          "text": "",
+          "rect": {
+            "x": 464,
+            "y": 548,
+            "width": 40,
+            "height": 40
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "relative"
+        },
+        {
+          "tag": "div",
+          "className": "relative mx-auto w-fit",
+          "text": "",
+          "rect": {
+            "x": 423,
+            "y": 658,
+            "width": 40,
+            "height": 40
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "relative"
+        },
+        {
+          "tag": "div",
+          "className": "relative mx-auto w-fit",
+          "text": "",
+          "rect": {
+            "x": 614,
+            "y": 658,
+            "width": 40,
+            "height": 40
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "relative"
+        },
+        {
+          "tag": "div",
+          "className": "relative mx-auto w-fit",
+          "text": "",
+          "rect": {
+            "x": 860,
+            "y": 658,
+            "width": 40,
+            "height": 40
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "relative"
+        },
+        {
+          "tag": "div",
+          "className": "relative mx-auto w-fit",
+          "text": "",
+          "rect": {
+            "x": 860,
+            "y": 767,
+            "width": 40,
+            "height": 40
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "relative"
+        },
+        {
+          "tag": "div",
+          "className": "relative mx-auto w-fit",
+          "text": "",
+          "rect": {
+            "x": 860,
+            "y": 877,
+            "width": 40,
+            "height": 40
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "relative"
+        }
+      ],
+      "clipped": [
+        {
+          "tag": "div",
+          "className": "av-graph-grid relative min-h-[32rem] overflow-hidden rounded-b-md pb-20 lg:min-h-[36rem]",
+          "text": "Alex Bennett Principal Sophie Bennett Spouse Bennett Family Trust Discretionary Trust $39.9M Bennett Holdings Ltd Holding Company Singapore Bennett Education Tr",
+          "rect": {
+            "x": 293,
+            "y": 451,
+            "width": 682,
+            "height": 576
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "position": "relative"
+        }
+      ],
+      "outsideViewport": [],
+      "dialogs": [],
+      "fixed": [
+        {
+          "tag": "header",
+          "className": "av-topbar sticky top-0 z-20 px-4 py-3 md:px-6",
+          "text": "Search ⌘ K Tenant context Bennett Family Office Morgan Family Office Northbridge Family Office Summit Ridge Capital Role context Principal Family CFO Trustee Ne",
+          "rect": {
+            "x": 248,
+            "y": 0,
+            "width": 1192,
+            "height": 117
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        },
+        {
+          "tag": "aside",
+          "className": "min-w-0 rounded-md border border-alphavest-border bg-alphavest-panel/88 p-4 shadow-2xl xl:sticky xl:top-24 xl:max-h-[calc(100vh-7rem)] xl:overflow-y-auto",
+          "text": "Bennett Family Trust Discretionary Trust Close detail drawer Active Relationships 8 Documents 3 Estimated value $39.9M USD Last updated Today, 9:15 AM Purpose W",
+          "rect": {
+            "x": 1016,
+            "y": 141,
+            "width": 400,
+            "height": 888
+          },
+          "overflowX": "auto",
+          "overflowY": "auto",
+          "position": "sticky"
+        }
+      ]
+    }
+  },
+  {
+    "pageId": "032",
+    "route": "/actions",
+    "title": "Action Board",
+    "url": "http://127.0.0.1:3107/actions?state=drawer",
+    "screenshot": "fullpage/PAGE-032-actions-desktop-fullpage.png",
+    "metrics": {
+      "documentMetrics": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "clientHeight": 1000,
+        "scrollHeight": 3155
+      },
+      "elementOverflow": [
+        {
+          "tag": "button",
+          "className": "relative grid size-10 place-items-center rounded-full border border-alphavest-border text-alphavest-muted",
+          "text": "7",
+          "rect": {
+            "x": 1376,
+            "y": 14,
+            "width": 40,
+            "height": 40
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "relative"
+        },
+        {
+          "tag": "div",
+          "className": "overflow-x-auto pb-2",
+          "text": "To Review 11 Update Risk Profile High Patel Family Trust Alex Brown May 20, 2025 Evidence: Not Started Review Q1 Performance Medium Patel Family Trust Maria San",
+          "rect": {
+            "x": 272,
+            "y": 461,
+            "width": 1144,
+            "height": 814
+          },
+          "overflowX": "auto",
+          "overflowY": "auto",
+          "position": "static"
+        },
+        {
+          "tag": "section",
+          "className": "rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-3",
+          "text": "To Review 11 Update Risk Profile High Patel Family Trust Alex Brown May 20, 2025 Evidence: Not Started Review Q1 Performance Medium Patel Family Trust Maria San",
+          "rect": {
+            "x": 272,
+            "y": 461,
+            "width": 162,
+            "height": 806
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "space-y-3",
+          "text": "Update Risk Profile High Patel Family Trust Alex Brown May 20, 2025 Evidence: Not Started Review Q1 Performance Medium Patel Family Trust Maria Santos May 22, 2",
+          "rect": {
+            "x": 285,
+            "y": 514,
+            "width": 136,
+            "height": 708
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "article",
+          "className": "rounded-md border bg-alphavest-charcoal/70 p-3 shadow-lg border-alphavest-border/70",
+          "text": "Review Q1 Performance Medium Patel Family Trust Maria Santos May 22, 2025 Evidence: Not Started",
+          "rect": {
+            "x": 285,
+            "y": 746,
+            "width": 136,
+            "height": 200
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "flex items-start justify-between gap-2",
+          "text": "Review Q1 Performance Medium",
+          "rect": {
+            "x": 298,
+            "y": 759,
+            "width": 110,
+            "height": 40
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "section",
+          "className": "rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-3",
+          "text": "Awaiting Documents 9 Beneficial Ownership High Harrington Family LP Sofia Martinez Overdue 3 days Evidence: 1 of 3 Tax Residency Certificate Medium Patel Family",
+          "rect": {
+            "x": 446,
+            "y": 461,
+            "width": 162,
+            "height": 806
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "space-y-3",
+          "text": "Beneficial Ownership High Harrington Family LP Sofia Martinez Overdue 3 days Evidence: 1 of 3 Tax Residency Certificate Medium Patel Family Trust Alex Brown May",
+          "rect": {
+            "x": 459,
+            "y": 526,
+            "width": 136,
+            "height": 728
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "article",
+          "className": "rounded-md border bg-alphavest-charcoal/70 p-3 shadow-lg border-alphavest-red/45",
+          "text": "Beneficial Ownership High Harrington Family LP Sofia Martinez Overdue 3 days Evidence: 1 of 3",
+          "rect": {
+            "x": 459,
+            "y": 526,
+            "width": 136,
+            "height": 232
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "flex items-start justify-between gap-2",
+          "text": "Beneficial Ownership High",
+          "rect": {
+            "x": 472,
+            "y": 539,
+            "width": 110,
+            "height": 40
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "article",
+          "className": "rounded-md border bg-alphavest-charcoal/70 p-3 shadow-lg border-alphavest-border/70",
+          "text": "Tax Residency Certificate Medium Patel Family Trust Alex Brown May 23, 2025 Evidence: 0 of 1",
+          "rect": {
+            "x": 459,
+            "y": 770,
+            "width": 136,
+            "height": 204
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "flex items-start justify-between gap-2",
+          "text": "Tax Residency Certificate Medium",
+          "rect": {
+            "x": 472,
+            "y": 783,
+            "width": 110,
+            "height": 60
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "article",
+          "className": "rounded-md border bg-alphavest-charcoal/70 p-3 shadow-lg border-alphavest-border/70",
+          "text": "Quarterly Bank Statements Medium Anderson Family Office Daniel Kim May 28, 2025 Evidence: 0 of 4",
+          "rect": {
+            "x": 459,
+            "y": 986,
+            "width": 136,
+            "height": 220
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "flex items-start justify-between gap-2",
+          "text": "Quarterly Bank Statements Medium",
+          "rect": {
+            "x": 472,
+            "y": 999,
+            "width": 110,
+            "height": 60
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "section",
+          "className": "rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-3",
+          "text": "Analyst Reviewing 14 Investment Policy Review High Patel Family Trust Alex Brown May 21, 2025 Evidence: 4 of 5 Concentration Analysis Medium Harrington Family L",
+          "rect": {
+            "x": 619,
+            "y": 461,
+            "width": 162,
+            "height": 806
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "space-y-3",
+          "text": "Investment Policy Review High Patel Family Trust Alex Brown May 21, 2025 Evidence: 4 of 5 Concentration Analysis Medium Harrington Family LP Alex Brown May 22, ",
+          "rect": {
+            "x": 632,
+            "y": 526,
+            "width": 136,
+            "height": 692
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "article",
+          "className": "rounded-md border bg-alphavest-charcoal/70 p-3 shadow-lg border-alphavest-gold/70",
+          "text": "Investment Policy Review High Patel Family Trust Alex Brown May 21, 2025 Evidence: 4 of 5",
+          "rect": {
+            "x": 632,
+            "y": 526,
+            "width": 136,
+            "height": 220
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "flex items-start justify-between gap-2",
+          "text": "Investment Policy Review High",
+          "rect": {
+            "x": 645,
+            "y": 539,
+            "width": 110,
+            "height": 60
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "article",
+          "className": "rounded-md border bg-alphavest-charcoal/70 p-3 shadow-lg border-alphavest-border/70",
+          "text": "Concentration Analysis Medium Harrington Family LP Alex Brown May 22, 2025 Evidence: 3 of 3",
+          "rect": {
+            "x": 632,
+            "y": 758,
+            "width": 136,
+            "height": 200
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "flex items-start justify-between gap-2",
+          "text": "Concentration Analysis Medium",
+          "rect": {
+            "x": 645,
+            "y": 771,
+            "width": 110,
+            "height": 40
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        }
+      ],
+      "clipped": [],
+      "outsideViewport": [
+        {
+          "tag": "div",
+          "className": "grid min-w-[86rem] grid-cols-8 gap-3",
+          "text": "To Review 11 Update Risk Profile High Patel Family Trust Alex Brown May 20, 2025 Evidence: Not Started Review Q1 Performance Medium Patel Family Trust Maria San",
+          "rect": {
+            "x": 272,
+            "y": 461,
+            "width": 1376,
+            "height": 806
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "section",
+          "className": "rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-3",
+          "text": "Completed 32 2024 Tax Organizer Review Low Patel Family Trust Alex Brown May 12, 2025 Evidence: Done Trust Account Summary Low Harrington Family LP Sofia Martin",
+          "rect": {
+            "x": 1313,
+            "y": 461,
+            "width": 162,
+            "height": 806
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "mb-3 flex items-center justify-between gap-2",
+          "text": "Completed 32",
+          "rect": {
+            "x": 1326,
+            "y": 474,
+            "width": 136,
+            "height": 28
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "inline-flex h-[var(--status-chip-height)] w-fit items-center rounded-full border px-3 text-xs font-semibold border-alphavest-border bg-alphavest-charcoal/70 text-alphavest-muted",
+          "text": "32",
+          "rect": {
+            "x": 1420,
+            "y": 474,
+            "width": 41,
+            "height": 28
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "space-y-3",
+          "text": "2024 Tax Organizer Review Low Patel Family Trust Alex Brown May 12, 2025 Evidence: Done Trust Account Summary Low Harrington Family LP Sofia Martinez May 9, 202",
+          "rect": {
+            "x": 1326,
+            "y": 514,
+            "width": 136,
+            "height": 716
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "article",
+          "className": "rounded-md border bg-alphavest-charcoal/70 p-3 shadow-lg border-alphavest-border/70",
+          "text": "2024 Tax Organizer Review Low Patel Family Trust Alex Brown May 12, 2025 Evidence: Done",
+          "rect": {
+            "x": 1326,
+            "y": 514,
+            "width": 136,
+            "height": 204
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "flex items-start justify-between gap-2",
+          "text": "2024 Tax Organizer Review Low",
+          "rect": {
+            "x": 1339,
+            "y": 527,
+            "width": 110,
+            "height": 60
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "inline-flex h-[var(--status-chip-height)] w-fit items-center rounded-full border px-3 text-xs font-semibold border-alphavest-blue/35 bg-alphavest-blue/10 text-alphavest-blue",
+          "text": "Low",
+          "rect": {
+            "x": 1413,
+            "y": 527,
+            "width": 50,
+            "height": 28
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "p",
+          "className": "mt-2 text-xs text-alphavest-muted",
+          "text": "Patel Family Trust",
+          "rect": {
+            "x": 1339,
+            "y": 595,
+            "width": 110,
+            "height": 16
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "mt-3 space-y-2 text-xs text-alphavest-muted",
+          "text": "Alex Brown May 12, 2025",
+          "rect": {
+            "x": 1339,
+            "y": 623,
+            "width": 110,
+            "height": 40
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "p",
+          "className": "flex items-center gap-2",
+          "text": "Alex Brown",
+          "rect": {
+            "x": 1339,
+            "y": 623,
+            "width": 110,
+            "height": 16
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "p",
+          "className": "flex items-center gap-2",
+          "text": "May 12, 2025",
+          "rect": {
+            "x": 1339,
+            "y": 647,
+            "width": 110,
+            "height": 16
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "mt-3",
+          "text": "Evidence: Done",
+          "rect": {
+            "x": 1339,
+            "y": 675,
+            "width": 110,
+            "height": 30
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "flex items-center justify-between gap-2 text-xs",
+          "text": "Evidence: Done",
+          "rect": {
+            "x": 1339,
+            "y": 675,
+            "width": 110,
+            "height": 16
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "mt-2 h-1.5 rounded-full bg-alphavest-border",
+          "text": "",
+          "rect": {
+            "x": 1339,
+            "y": 699,
+            "width": 110,
+            "height": 6
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "h-1.5 rounded-full bg-alphavest-green",
+          "text": "",
+          "rect": {
+            "x": 1339,
+            "y": 699,
+            "width": 110,
+            "height": 6
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "article",
+          "className": "rounded-md border bg-alphavest-charcoal/70 p-3 shadow-lg border-alphavest-border/70",
+          "text": "Trust Account Summary Low Harrington Family LP Sofia Martinez May 9, 2025 Evidence: Done",
+          "rect": {
+            "x": 1326,
+            "y": 730,
+            "width": 136,
+            "height": 220
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "flex items-start justify-between gap-2",
+          "text": "Trust Account Summary Low",
+          "rect": {
+            "x": 1339,
+            "y": 743,
+            "width": 110,
+            "height": 60
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "inline-flex h-[var(--status-chip-height)] w-fit items-center rounded-full border px-3 text-xs font-semibold border-alphavest-blue/35 bg-alphavest-blue/10 text-alphavest-blue",
+          "text": "Low",
+          "rect": {
+            "x": 1411,
+            "y": 743,
+            "width": 50,
+            "height": 28
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "p",
+          "className": "mt-2 text-xs text-alphavest-muted",
+          "text": "Harrington Family LP",
+          "rect": {
+            "x": 1339,
+            "y": 811,
+            "width": 110,
+            "height": 32
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        }
+      ],
+      "dialogs": [],
+      "fixed": [
+        {
+          "tag": "header",
+          "className": "av-topbar sticky top-0 z-20 px-4 py-3 md:px-6",
+          "text": "Search ⌘ K Tenant context Bennett Family Office Morgan Family Office Northbridge Family Office Summit Ridge Capital Role context Principal Family CFO Trustee Ne",
+          "rect": {
+            "x": 248,
+            "y": 0,
+            "width": 1192,
+            "height": 117
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        }
+      ]
+    }
+  },
+  {
+    "pageId": "033",
+    "route": "/signals",
+    "title": "Signal Review",
+    "url": "http://127.0.0.1:3107/signals",
+    "screenshot": "fullpage/PAGE-033-signals-desktop-fullpage.png",
+    "metrics": {
+      "documentMetrics": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "clientHeight": 1000,
+        "scrollHeight": 3061
+      },
+      "elementOverflow": [
+        {
+          "tag": "button",
+          "className": "relative grid size-10 place-items-center rounded-full border border-alphavest-border text-alphavest-muted",
+          "text": "7",
+          "rect": {
+            "x": 1376,
+            "y": 12,
+            "width": 40,
+            "height": 40
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "relative"
+        }
+      ],
+      "clipped": [],
+      "outsideViewport": [],
+      "dialogs": [],
+      "fixed": [
+        {
+          "tag": "header",
+          "className": "av-topbar sticky top-0 z-20 px-4 py-3 md:px-6",
+          "text": "Search internal workspace cmd K Tenant context Bennett Family Office Morgan Family Office Northbridge Family Office Summit Ridge Capital Role context Principal ",
+          "rect": {
+            "x": 248,
+            "y": 0,
+            "width": 1192,
+            "height": 113
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        }
+      ]
+    }
+  },
+  {
+    "pageId": "037",
+    "route": "/advisor-approval/:id",
+    "title": "Advisor Approval Detail",
+    "url": "http://127.0.0.1:3107/advisor-approval/demo",
+    "screenshot": "fullpage/PAGE-037-advisor-approval-id-desktop-fullpage.png",
+    "metrics": {
+      "documentMetrics": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "clientHeight": 1000,
+        "scrollHeight": 1769
+      },
+      "elementOverflow": [
+        {
+          "tag": "button",
+          "className": "relative grid size-10 place-items-center rounded-full border border-alphavest-border text-alphavest-muted",
+          "text": "7",
+          "rect": {
+            "x": 1376,
+            "y": 12,
+            "width": 40,
+            "height": 40
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "relative"
+        }
+      ],
+      "clipped": [],
+      "outsideViewport": [],
+      "dialogs": [],
+      "fixed": [
+        {
+          "tag": "header",
+          "className": "av-topbar sticky top-0 z-20 px-4 py-3 md:px-6",
+          "text": "Search internal workspace cmd K Tenant context Bennett Family Office Morgan Family Office Northbridge Family Office Summit Ridge Capital Role context Principal ",
+          "rect": {
+            "x": 248,
+            "y": 0,
+            "width": 1192,
+            "height": 113
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        }
+      ]
+    }
+  },
+  {
+    "pageId": "039",
+    "route": "/compliance/:id/review",
+    "title": "Compliance Review Detail",
+    "url": "http://127.0.0.1:3107/compliance/demo/review",
+    "screenshot": "fullpage/PAGE-039-compliance-id-review-desktop-fullpage.png",
+    "metrics": {
+      "documentMetrics": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "clientHeight": 1000,
+        "scrollHeight": 2453
+      },
+      "elementOverflow": [
+        {
+          "tag": "button",
+          "className": "relative grid size-10 place-items-center rounded-full border border-alphavest-border text-alphavest-muted",
+          "text": "7",
+          "rect": {
+            "x": 1376,
+            "y": 12,
+            "width": 40,
+            "height": 40
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "relative"
+        }
+      ],
+      "clipped": [],
+      "outsideViewport": [],
+      "dialogs": [],
+      "fixed": [
+        {
+          "tag": "header",
+          "className": "av-topbar sticky top-0 z-20 px-4 py-3 md:px-6",
+          "text": "Search internal workspace cmd K Tenant context Bennett Family Office Morgan Family Office Northbridge Family Office Summit Ridge Capital Role context Principal ",
+          "rect": {
+            "x": 248,
+            "y": 0,
+            "width": 1192,
+            "height": 113
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        }
+      ]
+    }
+  },
+  {
+    "pageId": "040",
+    "route": "/compliance/:id/release",
+    "title": "Release to Client",
+    "url": "http://127.0.0.1:3107/compliance/demo/release?state=release",
+    "screenshot": "fullpage/PAGE-040-compliance-id-release-desktop-fullpage.png",
+    "metrics": {
+      "documentMetrics": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "clientHeight": 1000,
+        "scrollHeight": 1000
+      },
+      "elementOverflow": [
+        {
+          "tag": "button",
+          "className": "relative grid size-10 place-items-center rounded-full border border-alphavest-border text-alphavest-muted",
+          "text": "7",
+          "rect": {
+            "x": 1376,
+            "y": 12,
+            "width": 40,
+            "height": 40
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "relative"
+        },
+        {
+          "tag": "span",
+          "className": "min-w-0 text-alphavest-muted",
+          "text": "Licensee",
+          "rect": {
+            "x": 910,
+            "y": 617,
+            "width": 35,
+            "height": 60
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        }
+      ],
+      "clipped": [],
+      "outsideViewport": [],
+      "dialogs": [
+        {
+          "tag": "section",
+          "className": "max-h-[calc(100vh-2rem)] w-full max-w-[var(--modal-width)] overflow-y-auto rounded-md border border-alphavest-gold/38 bg-alphavest-panel/95 p-5 shadow-2xl max-w-[58rem]",
+          "text": "Release to client No unapproved advice reaches the client. Close Compliance release controls client visibility Advisor approval alone is not enough. Evidence, p",
+          "rect": {
+            "x": 304,
+            "y": 16,
+            "width": 832,
+            "height": 968
+          },
+          "overflowX": "auto",
+          "overflowY": "auto",
+          "position": "static"
+        }
+      ],
+      "fixed": [
+        {
+          "tag": "header",
+          "className": "av-topbar sticky top-0 z-20 px-4 py-3 md:px-6",
+          "text": "Search internal workspace cmd K Tenant context Bennett Family Office Morgan Family Office Northbridge Family Office Summit Ridge Capital Role context Principal ",
+          "rect": {
+            "x": 248,
+            "y": 0,
+            "width": 1192,
+            "height": 113
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        },
+        {
+          "tag": "div",
+          "className": "fixed inset-0 z-50 grid place-items-center bg-alphavest-navy/68 p-4 backdrop-blur-sm",
+          "text": "Release to client No unapproved advice reaches the client. Close Compliance release controls client visibility Advisor approval alone is not enough. Evidence, p",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 1440,
+            "height": 1000
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "fixed"
+        }
+      ]
+    }
+  },
+  {
+    "pageId": "042",
+    "route": "/compliance/:id/audit",
+    "title": "Audit and Exception Log",
+    "url": "http://127.0.0.1:3107/compliance/demo/audit",
+    "screenshot": "fullpage/PAGE-042-compliance-id-audit-desktop-fullpage.png",
+    "metrics": {
+      "documentMetrics": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "clientHeight": 1000,
+        "scrollHeight": 1834
+      },
+      "elementOverflow": [
+        {
+          "tag": "button",
+          "className": "relative grid size-10 place-items-center rounded-full border border-alphavest-border text-alphavest-muted",
+          "text": "7",
+          "rect": {
+            "x": 1376,
+            "y": 12,
+            "width": 40,
+            "height": 40
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "relative"
+        }
+      ],
+      "clipped": [],
+      "outsideViewport": [],
+      "dialogs": [],
+      "fixed": [
+        {
+          "tag": "header",
+          "className": "av-topbar sticky top-0 z-20 px-4 py-3 md:px-6",
+          "text": "Search WealthOS cmd K Tenant context Bennett Family Office Morgan Family Office Northbridge Family Office Summit Ridge Capital Role context Principal Family CFO",
+          "rect": {
+            "x": 248,
+            "y": 0,
+            "width": 1192,
+            "height": 113
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        }
+      ]
+    }
+  },
+  {
+    "pageId": "046",
+    "route": "/evidence",
+    "title": "Evidence Vault",
+    "url": "http://127.0.0.1:3107/evidence?state=drawer",
+    "screenshot": "fullpage/PAGE-046-evidence-desktop-fullpage.png",
+    "metrics": {
+      "documentMetrics": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "clientHeight": 1000,
+        "scrollHeight": 1000
+      },
+      "elementOverflow": [
+        {
+          "tag": "button",
+          "className": "relative grid size-10 place-items-center rounded-full border border-alphavest-border text-alphavest-muted",
+          "text": "7",
+          "rect": {
+            "x": 1376,
+            "y": 12,
+            "width": 40,
+            "height": 40
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "relative"
+        },
+        {
+          "tag": "div",
+          "className": "grid gap-3 lg:grid-cols-[1fr_repeat(4,10rem)_auto]",
+          "text": "Category Evidence Type Status Date Range Filters",
+          "rect": {
+            "x": 272,
+            "y": 280,
+            "width": 776,
+            "height": 44
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        }
+      ],
+      "clipped": [],
+      "outsideViewport": [],
+      "dialogs": [],
+      "fixed": [
+        {
+          "tag": "header",
+          "className": "av-topbar sticky top-0 z-20 px-4 py-3 md:px-6",
+          "text": "Search WealthOS cmd K Tenant context Bennett Family Office Morgan Family Office Northbridge Family Office Summit Ridge Capital Role context Principal Family CFO",
+          "rect": {
+            "x": 248,
+            "y": 0,
+            "width": 1192,
+            "height": 113
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        },
+        {
+          "tag": "aside",
+          "className": "fixed bottom-0 right-0 top-0 z-40 flex w-full max-w-[var(--drawer-width)] flex-col border-l border-alphavest-border bg-alphavest-panel shadow-2xl sm:w-[min(100vw,var(--drawer-width",
+          "text": "Risk Tolerance Questionnaire Verified form assessment. Close Controlled visibility Internal and advisor visibility only. Not shared with client. Summary Client ",
+          "rect": {
+            "x": 1056,
+            "y": 0,
+            "width": 384,
+            "height": 1000
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "fixed"
+        }
+      ]
+    }
+  },
+  {
+    "pageId": "049",
+    "route": "/governance/roles",
+    "title": "Role Management",
+    "url": "http://127.0.0.1:3107/governance/roles?state=confirm",
+    "screenshot": "fullpage/PAGE-049-governance-roles-desktop-fullpage.png",
+    "metrics": {
+      "documentMetrics": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "clientHeight": 1000,
+        "scrollHeight": 1000
+      },
+      "elementOverflow": [
+        {
+          "tag": "button",
+          "className": "relative grid size-10 place-items-center rounded-full border border-alphavest-border text-alphavest-muted",
+          "text": "7",
+          "rect": {
+            "x": 1376,
+            "y": 12,
+            "width": 40,
+            "height": 40
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "relative"
+        },
+        {
+          "tag": "div",
+          "className": "overflow-x-auto rounded-md border border-alphavest-border/70",
+          "text": "ROLE CLIENTS ACCOUNTS INVESTMENTS TRADING REPORTING BILLING Super AdministratorSystem Full Full Full Full Full None Portfolio ManagerCustom Partial Full Full Pa",
+          "rect": {
+            "x": 272,
+            "y": 395,
+            "width": 776,
+            "height": 580
+          },
+          "overflowX": "auto",
+          "overflowY": "auto",
+          "position": "static"
+        }
+      ],
+      "clipped": [],
+      "outsideViewport": [],
+      "dialogs": [
+        {
+          "tag": "section",
+          "className": "max-h-[calc(100vh-2rem)] w-full max-w-[var(--modal-width)] overflow-y-auto rounded-md border border-alphavest-gold/38 bg-alphavest-panel/95 p-5 shadow-2xl max-w-[34rem]",
+          "text": "Confirm Sensitive Permission Changes You are about to save changes that modify sensitive permissions. Close Portfolio Manager role Second confirmation protects ",
+          "rect": {
+            "x": 304,
+            "y": 198,
+            "width": 832,
+            "height": 605
+          },
+          "overflowX": "auto",
+          "overflowY": "auto",
+          "position": "static"
+        }
+      ],
+      "fixed": [
+        {
+          "tag": "header",
+          "className": "av-topbar sticky top-0 z-20 px-4 py-3 md:px-6",
+          "text": "Search WealthOS cmd K Tenant context Bennett Family Office Morgan Family Office Northbridge Family Office Summit Ridge Capital Role context Principal Family CFO",
+          "rect": {
+            "x": 248,
+            "y": 0,
+            "width": 1192,
+            "height": 113
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        },
+        {
+          "tag": "aside",
+          "className": "fixed bottom-0 right-0 top-0 z-40 flex w-full max-w-[var(--drawer-width)] flex-col border-l border-alphavest-border bg-alphavest-panel shadow-2xl sm:w-[min(100vw,var(--drawer-width",
+          "text": "Portfolio Manager Custom role with sensitive permission changes. Close Sensitive permission change Changes to sensitive permissions require additional confirmat",
+          "rect": {
+            "x": 1056,
+            "y": 0,
+            "width": 384,
+            "height": 1000
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "fixed"
+        },
+        {
+          "tag": "div",
+          "className": "fixed inset-0 z-50 grid place-items-center bg-alphavest-navy/68 p-4 backdrop-blur-sm",
+          "text": "Confirm Sensitive Permission Changes You are about to save changes that modify sensitive permissions. Close Portfolio Manager role Second confirmation protects ",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 1440,
+            "height": 1000
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "fixed"
+        }
+      ]
+    }
+  },
+  {
+    "pageId": "051",
+    "route": "/governance/audit-history",
+    "title": "Access Audit History",
+    "url": "http://127.0.0.1:3107/governance/audit-history?state=drawer",
+    "screenshot": "fullpage/PAGE-051-governance-audit-history-desktop-fullpage.png",
+    "metrics": {
+      "documentMetrics": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "clientHeight": 1000,
+        "scrollHeight": 1013
+      },
+      "elementOverflow": [],
+      "clipped": [],
+      "outsideViewport": [],
+      "dialogs": [],
+      "fixed": [
+        {
+          "tag": "header",
+          "className": "av-topbar sticky top-0 z-20 px-4 py-3 md:px-6",
+          "text": "Search WealthOS cmd K Tenant context Bennett Family Office Morgan Family Office Northbridge Family Office Summit Ridge Capital Role context Principal Family CFO",
+          "rect": {
+            "x": 248,
+            "y": 0,
+            "width": 1192,
+            "height": 73
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        },
+        {
+          "tag": "aside",
+          "className": "fixed bottom-0 right-0 top-0 z-40 flex w-full max-w-[var(--drawer-width)] flex-col border-l border-alphavest-border bg-alphavest-panel shadow-2xl sm:w-[min(100vw,var(--drawer-width",
+          "text": "Event Details Selected immutable event lineage and before/after access state. Close Success Export events Event AUD-2184 Action Granted access Object Bennett Fa",
+          "rect": {
+            "x": 1056,
+            "y": 0,
+            "width": 384,
+            "height": 1000
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "fixed"
+        }
+      ]
+    }
+  },
+  {
+    "pageId": "053",
+    "route": "/communication/call-trigger",
+    "title": "Call Trigger Matrix",
+    "url": "http://127.0.0.1:3107/communication/call-trigger",
+    "screenshot": "fullpage/PAGE-053-communication-call-trigger-desktop-fullpage.png",
+    "metrics": {
+      "documentMetrics": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "clientHeight": 1000,
+        "scrollHeight": 1000
+      },
+      "elementOverflow": [
+        {
+          "tag": "div",
+          "className": "min-w-0 max-w-full overflow-x-auto rounded-md border border-alphavest-border/70 [contain:inline-size]",
+          "text": "SCENARIO TYPE COMPLEXITY EMOTIONAL REGULATORY URGENCY RECOMMENDED PATH ESCALATION ACTIONS Portfolio volatility spike Low Medium Low Medium Digital message defau",
+          "rect": {
+            "x": 301,
+            "y": 401,
+            "width": 746,
+            "height": 472
+          },
+          "overflowX": "auto",
+          "overflowY": "auto",
+          "position": "static"
+        }
+      ],
+      "clipped": [],
+      "outsideViewport": [],
+      "dialogs": [],
+      "fixed": [
+        {
+          "tag": "header",
+          "className": "av-topbar sticky top-0 z-20 px-4 py-3 md:px-6",
+          "text": "Search WealthOS cmd K Tenant context Bennett Family Office Morgan Family Office Northbridge Family Office Summit Ridge Capital Role context Principal Family CFO",
+          "rect": {
+            "x": 248,
+            "y": 0,
+            "width": 1192,
+            "height": 73
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        }
+      ]
+    }
+  },
+  {
+    "pageId": "056",
+    "route": "/export/:id/redaction",
+    "title": "Export Redaction",
+    "url": "http://127.0.0.1:3107/export/demo/redaction",
+    "screenshot": "fullpage/PAGE-056-export-id-redaction-desktop-fullpage.png",
+    "metrics": {
+      "documentMetrics": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "clientHeight": 1000,
+        "scrollHeight": 2061
+      },
+      "elementOverflow": [],
+      "clipped": [],
+      "outsideViewport": [],
+      "dialogs": [],
+      "fixed": [
+        {
+          "tag": "header",
+          "className": "av-topbar sticky top-0 z-20 px-4 py-3 md:px-6",
+          "text": "Search WealthOS cmd K Tenant context Bennett Family Office Morgan Family Office Northbridge Family Office Summit Ridge Capital Role context Principal Family CFO",
+          "rect": {
+            "x": 248,
+            "y": 0,
+            "width": 1192,
+            "height": 73
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        }
+      ]
+    }
+  },
+  {
+    "pageId": "057",
+    "route": "/export/:id/preview",
+    "title": "Export Preview",
+    "url": "http://127.0.0.1:3107/export/demo/preview?state=approval",
+    "screenshot": "fullpage/PAGE-057-export-id-preview-desktop-fullpage.png",
+    "metrics": {
+      "documentMetrics": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "clientHeight": 1000,
+        "scrollHeight": 1000
+      },
+      "elementOverflow": [],
+      "clipped": [],
+      "outsideViewport": [],
+      "dialogs": [
+        {
+          "tag": "section",
+          "className": "max-h-[calc(100vh-2rem)] w-full max-w-[var(--modal-width)] overflow-y-auto rounded-md border border-alphavest-gold/38 bg-alphavest-panel/95 p-5 shadow-2xl",
+          "text": "Approve and Export Package You are about to approve this export package for controlled release. Close Controlled export package Approval requires policy checks,",
+          "rect": {
+            "x": 304,
+            "y": 256,
+            "width": 832,
+            "height": 488
+          },
+          "overflowX": "auto",
+          "overflowY": "auto",
+          "position": "static"
+        }
+      ],
+      "fixed": [
+        {
+          "tag": "header",
+          "className": "av-topbar sticky top-0 z-20 px-4 py-3 md:px-6",
+          "text": "Search WealthOS cmd K Tenant context Bennett Family Office Morgan Family Office Northbridge Family Office Summit Ridge Capital Role context Principal Family CFO",
+          "rect": {
+            "x": 248,
+            "y": 0,
+            "width": 1192,
+            "height": 73
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        },
+        {
+          "tag": "div",
+          "className": "fixed inset-0 z-50 grid place-items-center bg-alphavest-navy/68 p-4 backdrop-blur-sm",
+          "text": "Approve and Export Package You are about to approve this export package for controlled release. Close Controlled export package Approval requires policy checks,",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 1440,
+            "height": 1000
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "fixed"
+        }
+      ]
+    }
+  },
+  {
+    "pageId": "061",
+    "route": "/service-blueprint",
+    "title": "Service Blueprint",
+    "url": "http://127.0.0.1:3107/service-blueprint",
+    "screenshot": "fullpage/PAGE-061-service-blueprint-desktop-fullpage.png",
+    "metrics": {
+      "documentMetrics": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "clientHeight": 1000,
+        "scrollHeight": 1035
+      },
+      "elementOverflow": [
+        {
+          "tag": "div",
+          "className": "hidden overflow-x-auto md:block",
+          "text": "Stage Intake Data Collection Review Approval Release Decision Evidence Ongoing Review Customer Client actions and touchpoints Requests engagement Provides docum",
+          "rect": {
+            "x": 301,
+            "y": 297,
+            "width": 1086,
+            "height": 693
+          },
+          "overflowX": "auto",
+          "overflowY": "auto",
+          "position": "static"
+        }
+      ],
+      "clipped": [],
+      "outsideViewport": [
+        {
+          "tag": "div",
+          "className": "min-w-[76rem]",
+          "text": "Stage Intake Data Collection Review Approval Release Decision Evidence Ongoing Review Customer Client actions and touchpoints Requests engagement Provides docum",
+          "rect": {
+            "x": 301,
+            "y": 297,
+            "width": 1216,
+            "height": 693
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "grid grid-cols-[8rem_repeat(8,minmax(8rem,1fr))] border-b border-alphavest-border text-sm",
+          "text": "Stage Intake Data Collection Review Approval Release Decision Evidence Ongoing Review",
+          "rect": {
+            "x": 301,
+            "y": 297,
+            "width": 1216,
+            "height": 45
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "border-l border-alphavest-border p-3 text-center font-semibold text-alphavest-ivory",
+          "text": "Ongoing Review",
+          "rect": {
+            "x": 1381,
+            "y": 297,
+            "width": 136,
+            "height": 44
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "grid grid-cols-[8rem_repeat(8,minmax(8rem,1fr))] border-b border-alphavest-border/60 last:border-0",
+          "text": "Customer Client actions and touchpoints Requests engagement Provides documents Clarifies questions Acknowledges approval Receives readiness Receives outcome Vie",
+          "rect": {
+            "x": 301,
+            "y": 342,
+            "width": 1216,
+            "height": 105
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "border-l border-alphavest-border/60 p-3",
+          "text": "Engages review",
+          "rect": {
+            "x": 1381,
+            "y": 342,
+            "width": 136,
+            "height": 104
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "min-h-20 rounded-md border border-alphavest-border bg-alphavest-charcoal/50 p-3 text-sm leading-5 text-alphavest-muted",
+          "text": "Engages review",
+          "rect": {
+            "x": 1394,
+            "y": 354,
+            "width": 111,
+            "height": 80
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "grid grid-cols-[8rem_repeat(8,minmax(8rem,1fr))] border-b border-alphavest-border/60 last:border-0",
+          "text": "Frontstage Client-facing activities Capture requestHandoff Guide intakeHandoff Review qualityHandoff Present for approvalHandoff Communicate next stepsHandoff C",
+          "rect": {
+            "x": 301,
+            "y": 447,
+            "width": 1216,
+            "height": 131
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "border-l border-alphavest-border/60 p-3",
+          "text": "Schedule reviewHandoff",
+          "rect": {
+            "x": 1381,
+            "y": 447,
+            "width": 136,
+            "height": 130
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "min-h-20 rounded-md border border-alphavest-border bg-alphavest-charcoal/50 p-3 text-sm leading-5 text-alphavest-muted",
+          "text": "Schedule reviewHandoff",
+          "rect": {
+            "x": 1394,
+            "y": 459,
+            "width": 111,
+            "height": 106
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "inline-flex h-[var(--status-chip-height)] w-fit items-center rounded-full border px-3 text-xs font-semibold border-alphavest-gold/40 bg-alphavest-gold/12 text-alphavest-gold-soft m",
+          "text": "Handoff",
+          "rect": {
+            "x": 1407,
+            "y": 524,
+            "width": 74,
+            "height": 28
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "grid grid-cols-[8rem_repeat(8,minmax(8rem,1fr))] border-b border-alphavest-border/60 last:border-0",
+          "text": "Backstage Internal operations Triage requestHandoff Standardize dataHandoff Assess criteriaHandoff Compliance reviewHandoff Prepare releaseHandoff Record decisi",
+          "rect": {
+            "x": 301,
+            "y": 578,
+            "width": 1216,
+            "height": 131
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "border-l border-alphavest-border/60 p-3",
+          "text": "Monitor triggersHandoff",
+          "rect": {
+            "x": 1381,
+            "y": 578,
+            "width": 136,
+            "height": 130
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "min-h-20 rounded-md border border-alphavest-border bg-alphavest-charcoal/50 p-3 text-sm leading-5 text-alphavest-muted",
+          "text": "Monitor triggersHandoff",
+          "rect": {
+            "x": 1394,
+            "y": 590,
+            "width": 111,
+            "height": 106
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "inline-flex h-[var(--status-chip-height)] w-fit items-center rounded-full border px-3 text-xs font-semibold border-alphavest-gold/40 bg-alphavest-gold/12 text-alphavest-gold-soft m",
+          "text": "Handoff",
+          "rect": {
+            "x": 1407,
+            "y": 655,
+            "width": 74,
+            "height": 28
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "grid grid-cols-[8rem_repeat(8,minmax(8rem,1fr))] border-b border-alphavest-border/60 last:border-0",
+          "text": "Support Systems and controls CRM and intake formsHandoff Connectors and documentsHandoff Analytics engineHandoff Policy engineHandoff Client commsHandoff Decisi",
+          "rect": {
+            "x": 301,
+            "y": 709,
+            "width": 1216,
+            "height": 151
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "border-l border-alphavest-border/60 p-3",
+          "text": "SchedulerHandoff",
+          "rect": {
+            "x": 1381,
+            "y": 709,
+            "width": 136,
+            "height": 150
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "min-h-20 rounded-md border border-alphavest-border bg-alphavest-charcoal/50 p-3 text-sm leading-5 text-alphavest-muted",
+          "text": "SchedulerHandoff",
+          "rect": {
+            "x": 1394,
+            "y": 721,
+            "width": 111,
+            "height": 86
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "span",
+          "className": "inline-flex h-[var(--status-chip-height)] w-fit items-center rounded-full border px-3 text-xs font-semibold border-alphavest-gold/40 bg-alphavest-gold/12 text-alphavest-gold-soft m",
+          "text": "Handoff",
+          "rect": {
+            "x": 1407,
+            "y": 766,
+            "width": 74,
+            "height": 28
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "grid grid-cols-[8rem_repeat(8,minmax(8rem,1fr))] border-b border-alphavest-border/60 last:border-0",
+          "text": "Evidence Immutable outputs Request IDHandoff Source receiptHandoff Review notesHandoff Approval recordHandoff Release recordHandoff Decision recordHandoff Evide",
+          "rect": {
+            "x": 301,
+            "y": 860,
+            "width": 1216,
+            "height": 130
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        },
+        {
+          "tag": "div",
+          "className": "border-l border-alphavest-border/60 p-3",
+          "text": "Change logHandoff",
+          "rect": {
+            "x": 1381,
+            "y": 860,
+            "width": 136,
+            "height": 130
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        }
+      ],
+      "dialogs": [],
+      "fixed": [
+        {
+          "tag": "header",
+          "className": "av-topbar sticky top-0 z-20 px-4 py-3 md:px-6",
+          "text": "Search WealthOS cmd K Tenant context Bennett Family Office Morgan Family Office Northbridge Family Office Summit Ridge Capital Role context Principal Family CFO",
+          "rect": {
+            "x": 248,
+            "y": 0,
+            "width": 1192,
+            "height": 73
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        }
+      ]
+    }
+  },
+  {
+    "pageId": "062",
+    "route": "/roadmap",
+    "title": "MVP vs Future Scope",
+    "url": "http://127.0.0.1:3107/roadmap",
+    "screenshot": "fullpage/PAGE-062-roadmap-desktop-fullpage.png",
+    "metrics": {
+      "documentMetrics": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "clientHeight": 1000,
+        "scrollHeight": 1452
+      },
+      "elementOverflow": [
+        {
+          "tag": "p",
+          "className": "text-sm leading-5 text-alphavest-muted",
+          "text": "Dependencies",
+          "rect": {
+            "x": 450,
+            "y": 1220,
+            "width": 82,
+            "height": 20
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "static"
+        }
+      ],
+      "clipped": [],
+      "outsideViewport": [],
+      "dialogs": [],
+      "fixed": [
+        {
+          "tag": "header",
+          "className": "av-topbar sticky top-0 z-20 px-4 py-3 md:px-6",
+          "text": "Search WealthOS cmd K Tenant context Bennett Family Office Morgan Family Office Northbridge Family Office Summit Ridge Capital Role context Principal Family CFO",
+          "rect": {
+            "x": 248,
+            "y": 0,
+            "width": 1192,
+            "height": 73
+          },
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "position": "sticky"
+        }
+      ]
+    }
+  }
+]

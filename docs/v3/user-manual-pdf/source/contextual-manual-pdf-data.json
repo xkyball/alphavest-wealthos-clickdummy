@@ -1,0 +1,2160 @@
+{
+  "metadata": {
+    "title": "AlphaVest WealthOS Contextual User Manual V3",
+    "language": "en",
+    "generatedAt": "2026-06-17T00:18:40.150Z",
+    "engineMode": "ENGINE_MIX_V2_CODEX_V3_PROOF",
+    "boundary": "Generated manual production artifact, not a production certification."
+  },
+  "sourceInputs": {
+    "contextNarrative": "docs/v3/user-manual-context/ALPHAVEST_USER_MANUAL_CONTEXTUAL_NARRATIVE_V3.json",
+    "manualSource": "docs/v3/user-manual-source/user-manual-source.v3.json",
+    "screenshots": "artifacts/user-manual-source/20260616-232649Z/screenshots"
+  },
+  "counts": {
+    "tasks": 14,
+    "fields": 19,
+    "taskScreenshots": 14,
+    "steps": 66,
+    "gates": 44,
+    "blockedStates": 28
+  },
+  "tasks": [
+    {
+      "index": 1,
+      "taskId": "MT-001",
+      "title": "Configure the platform policy baseline",
+      "workflowId": "UF-01",
+      "pageflowId": "PF-A",
+      "section": "Platform and policy setup",
+      "role": "Platform Admin / Compliance / Security Officer",
+      "entry": "Platform Settings",
+      "outcome": "Platform settings, advice-boundary rules, role templates, security defaults, evidence templates, and export defaults are visible and ready for tenant setup.",
+      "result": "Policy baseline is reviewed; sensitive changes require confirmation and audit.",
+      "sourceStatus": "E3 navigable UI with visible policy states; broad persisted policy transactions are not claimed.",
+      "whyThisTaskExists": "AlphaVest needs a policy baseline before client work starts because advice boundaries, role templates, evidence expectations, security defaults, and export rules define what later workflows may safely do. Without this baseline, teams would be moving client data and review work through unclear controls.",
+      "whatTheUserIsTryingToAchieve": "The user is trying to confirm that the operating model is safe enough for tenant setup and that sensitive changes still require review, confirmation, and audit.",
+      "whatThisEnablesNext": [
+        "tenant setup with consistent policy inheritance",
+        "clear role templates for invitations and governance",
+        "future evidence templates for important actions",
+        "safer export and release rules"
+      ],
+      "steps": [
+        {
+          "stepRef": "MT-001-S1",
+          "userAction": "Open start screen and verify role/tenant context",
+          "whyItMatters": "Opening the entry screen confirms that the user is working in the intended task context before acting.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "tenant setup with consistent policy inheritance",
+            "clear role templates for invitations and governance"
+          ]
+        },
+        {
+          "stepRef": "MT-001-S2",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "tenant setup with consistent policy inheritance",
+            "clear role templates for invitations and governance"
+          ]
+        },
+        {
+          "stepRef": "MT-001-S3",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "tenant setup with consistent policy inheritance",
+            "clear role templates for invitations and governance"
+          ]
+        },
+        {
+          "stepRef": "MT-001-S4",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "tenant setup with consistent policy inheritance",
+            "clear role templates for invitations and governance"
+          ]
+        },
+        {
+          "stepRef": "MT-001-S5",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "tenant setup with consistent policy inheritance",
+            "clear role templates for invitations and governance"
+          ]
+        },
+        {
+          "stepRef": "MT-001-S6",
+          "userAction": "Review final state or blocked condition",
+          "whyItMatters": "Reviewing the visible state helps the user spot missing context, blocked controls, or evidence gaps before taking action.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "tenant setup with consistent policy inheritance",
+            "clear role templates for invitations and governance"
+          ]
+        }
+      ],
+      "gates": [
+        {
+          "gateId": "MT-001-G1",
+          "rationale": "Second confirmation protects sensitive platform, security, and role changes from accidental activation."
+        },
+        {
+          "gateId": "MT-001-G2",
+          "rationale": "Advice-boundary policy protects clients from seeing advice-like material before human review and compliance release."
+        },
+        {
+          "gateId": "MT-001-G3",
+          "rationale": "Audit expectations preserve the lineage of sensitive configuration changes."
+        }
+      ],
+      "blockedStates": [
+        {
+          "branchId": "MT-001-B1",
+          "condition": "Happy path / intended demo path",
+          "controlRationale": "This state confirms the intended demo path while preserving the rule that gates cannot be bypassed.",
+          "userCanDo": "Review, select, enter, or confirm permitted data.",
+          "userCannotDo": "Bypass required gates or tenant/role scope.",
+          "nextLegitimateAction": "Policy baseline is reviewed; sensitive changes require confirmation and audit.",
+          "source": "USER_JOURNEY_PLAYBOOK_V3.md; PAGEFLOW_USERFLOW_MAPPING_V3.md"
+        },
+        {
+          "branchId": "MT-001-B2",
+          "condition": "Blocked, restricted, or incomplete path",
+          "controlRationale": "This state protects the workflow from being forced forward when role, evidence, compliance, data, or implementation conditions are not satisfied.",
+          "userCanDo": "Review the reason, request evidence, change role, or return to the correct prior step.",
+          "userCannotDo": "Force completion or claim persistence when the app only shows a static/demo state.",
+          "nextLegitimateAction": "Resolve the missing role, evidence, compliance, or data requirement.",
+          "source": "WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md; INPUT_MASK_REQUIREMENTS_V3.md"
+        }
+      ],
+      "fieldReferences": [
+        "F-001",
+        "F-002"
+      ],
+      "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-001-platform-settings.png",
+      "demoBoundaryNote": "In the current demo, the UI shows policy states and confirmation patterns. It does not prove broad persisted policy transactions across every platform setting.",
+      "futureReadinessNote": "This prepares the workflow for production governance because later tenant policies, release checks, audit history, and evidence templates can inherit one controlled baseline instead of relying on ad hoc screen behavior."
+    },
+    {
+      "index": 2,
+      "taskId": "MT-002",
+      "title": "Create and prepare a client tenant",
+      "workflowId": "UF-02",
+      "pageflowId": "PF-B",
+      "section": "Tenant onboarding",
+      "role": "Admin / Client Success / Compliance",
+      "entry": "Tenant List",
+      "outcome": "A tenant moves from list/create/setup into team assignment, policy selection, and user invitation readiness.",
+      "result": "Tenant setup checklist shows whether activation gates are ready or blocked.",
+      "sourceStatus": "E3 navigable UI; tenant write workflow is a required input-mask slice, not yet fully governed.",
+      "whyThisTaskExists": "A client tenant is the container that keeps family-office data, roles, policies, evidence, and workflow state isolated from every other client. Creating it carefully prevents later work from being attached to the wrong client, jurisdiction, or service team.",
+      "whatTheUserIsTryingToAchieve": "The user is trying to prepare a client workspace that has the right identity, jurisdiction, service tier, assigned team, policy profile, and invitation path.",
+      "whatThisEnablesNext": [
+        "principal invitation",
+        "role-scoped onboarding",
+        "tenant-specific policy selection",
+        "client profile and document intake under the correct tenant"
+      ],
+      "steps": [
+        {
+          "stepRef": "MT-002-S1",
+          "userAction": "Open start screen and verify role/tenant context",
+          "whyItMatters": "Opening the entry screen confirms that the user is working in the intended task context before acting.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "principal invitation",
+            "role-scoped onboarding"
+          ]
+        },
+        {
+          "stepRef": "MT-002-S2",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "principal invitation",
+            "role-scoped onboarding"
+          ]
+        },
+        {
+          "stepRef": "MT-002-S3",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "principal invitation",
+            "role-scoped onboarding"
+          ]
+        },
+        {
+          "stepRef": "MT-002-S4",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "principal invitation",
+            "role-scoped onboarding"
+          ]
+        },
+        {
+          "stepRef": "MT-002-S5",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "principal invitation",
+            "role-scoped onboarding"
+          ]
+        },
+        {
+          "stepRef": "MT-002-S6",
+          "userAction": "Review final state or blocked condition",
+          "whyItMatters": "Reviewing the visible state helps the user spot missing context, blocked controls, or evidence gaps before taking action.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "principal invitation",
+            "role-scoped onboarding"
+          ]
+        }
+      ],
+      "gates": [
+        {
+          "gateId": "MT-002-G1",
+          "rationale": "Activation gates protect the tenant from becoming active without assigned owners and required setup context."
+        },
+        {
+          "gateId": "MT-002-G2",
+          "rationale": "Compliance ownership ensures release decisions have an accountable role before client-visible work begins."
+        },
+        {
+          "gateId": "MT-002-G3",
+          "rationale": "Audit expectations preserve who created, assigned, or changed tenant setup state."
+        }
+      ],
+      "blockedStates": [
+        {
+          "branchId": "MT-002-B1",
+          "condition": "Happy path / intended demo path",
+          "controlRationale": "This state confirms the intended demo path while preserving the rule that gates cannot be bypassed.",
+          "userCanDo": "Review, select, enter, or confirm permitted data.",
+          "userCannotDo": "Bypass required gates or tenant/role scope.",
+          "nextLegitimateAction": "Tenant setup checklist shows whether activation gates are ready or blocked.",
+          "source": "USER_JOURNEY_PLAYBOOK_V3.md; PAGEFLOW_USERFLOW_MAPPING_V3.md"
+        },
+        {
+          "branchId": "MT-002-B2",
+          "condition": "Blocked, restricted, or incomplete path",
+          "controlRationale": "This state protects the workflow from being forced forward when role, evidence, compliance, data, or implementation conditions are not satisfied.",
+          "userCanDo": "Review the reason, request evidence, change role, or return to the correct prior step.",
+          "userCannotDo": "Force completion or claim persistence when the app only shows a static/demo state.",
+          "nextLegitimateAction": "Resolve the missing role, evidence, compliance, or data requirement.",
+          "source": "WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md; INPUT_MASK_REQUIREMENTS_V3.md"
+        }
+      ],
+      "fieldReferences": [
+        "F-003",
+        "F-004"
+      ],
+      "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-002-tenant-list.png",
+      "demoBoundaryNote": "In the current demo, tenant setup is navigable and explains readiness. It does not yet prove a fully governed tenant-write lifecycle.",
+      "futureReadinessNote": "This prepares the workflow for production tenant isolation, onboarding automation, team assignment reporting, and policy inheritance once governed persistence is expanded."
+    },
+    {
+      "index": 3,
+      "taskId": "MT-003",
+      "title": "Accept an invitation and complete onboarding",
+      "workflowId": "UF-03",
+      "pageflowId": "PF-B",
+      "section": "Client onboarding and profile",
+      "role": "Invited User",
+      "entry": "Invitation Acceptance",
+      "outcome": "The invited user accepts the invitation, confirms identity/MFA, accepts privacy/consent, and acknowledges role scope.",
+      "result": "User reaches role confirmation; production auth remains intentionally deferred.",
+      "sourceStatus": "E2/E3 visual and navigable onboarding surfaces; no real authentication claim.",
+      "whyThisTaskExists": "Onboarding connects a person to the right tenant, role, consent version, and access scope. This matters because later decisions, evidence views, and communications should depend on who the user is allowed to be in that client context.",
+      "whatTheUserIsTryingToAchieve": "The user is trying to confirm that the invitation belongs to the expected tenant, acknowledge required privacy context, and understand the role scope they will operate under.",
+      "whatThisEnablesNext": [
+        "client profile work",
+        "role-scoped evidence access",
+        "decision participation",
+        "governed communication and consent history in later production flows"
+      ],
+      "steps": [
+        {
+          "stepRef": "MT-003-S1",
+          "userAction": "Open start screen and verify role/tenant context",
+          "whyItMatters": "Opening the entry screen confirms that the user is working in the intended task context before acting.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "client profile work",
+            "role-scoped evidence access"
+          ]
+        },
+        {
+          "stepRef": "MT-003-S2",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "client profile work",
+            "role-scoped evidence access"
+          ]
+        },
+        {
+          "stepRef": "MT-003-S3",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "client profile work",
+            "role-scoped evidence access"
+          ]
+        },
+        {
+          "stepRef": "MT-003-S4",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "client profile work",
+            "role-scoped evidence access"
+          ]
+        },
+        {
+          "stepRef": "MT-003-S5",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "client profile work",
+            "role-scoped evidence access"
+          ]
+        },
+        {
+          "stepRef": "MT-003-S6",
+          "userAction": "Review final state or blocked condition",
+          "whyItMatters": "Reviewing the visible state helps the user spot missing context, blocked controls, or evidence gaps before taking action.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "client profile work",
+            "role-scoped evidence access"
+          ]
+        }
+      ],
+      "gates": [
+        {
+          "gateId": "MT-003-G1",
+          "rationale": "Invite-token scope prevents a user from entering the wrong tenant context."
+        },
+        {
+          "gateId": "MT-003-G2",
+          "rationale": "Privacy acknowledgement records which consent version the user has accepted."
+        },
+        {
+          "gateId": "MT-003-G3",
+          "rationale": "Role confirmation prevents users from assuming broader access than the assigned scope allows."
+        }
+      ],
+      "blockedStates": [
+        {
+          "branchId": "MT-003-B1",
+          "condition": "Happy path / intended demo path",
+          "controlRationale": "This state confirms the intended demo path while preserving the rule that gates cannot be bypassed.",
+          "userCanDo": "Review, select, enter, or confirm permitted data.",
+          "userCannotDo": "Bypass required gates or tenant/role scope.",
+          "nextLegitimateAction": "User reaches role confirmation; production auth remains intentionally deferred.",
+          "source": "USER_JOURNEY_PLAYBOOK_V3.md; PAGEFLOW_USERFLOW_MAPPING_V3.md"
+        },
+        {
+          "branchId": "MT-003-B2",
+          "condition": "Blocked, restricted, or incomplete path",
+          "controlRationale": "This state protects the workflow from being forced forward when role, evidence, compliance, data, or implementation conditions are not satisfied.",
+          "userCanDo": "Review the reason, request evidence, change role, or return to the correct prior step.",
+          "userCannotDo": "Force completion or claim persistence when the app only shows a static/demo state.",
+          "nextLegitimateAction": "Resolve the missing role, evidence, compliance, or data requirement.",
+          "source": "WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md; INPUT_MASK_REQUIREMENTS_V3.md"
+        }
+      ],
+      "fieldReferences": [
+        "F-005",
+        "F-006"
+      ],
+      "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-003-invitation-acceptance.png",
+      "demoBoundaryNote": "In the current demo, onboarding screens are visual and navigable. They do not introduce real production authentication.",
+      "futureReadinessNote": "This prepares the workflow for provider-backed authentication, consent versioning, and role-scoped client access without changing the demo-first implementation order."
+    },
+    {
+      "index": 4,
+      "taskId": "MT-004",
+      "title": "Submit client profile and family context",
+      "workflowId": "UF-04",
+      "pageflowId": "PF-C",
+      "section": "Client onboarding and profile",
+      "role": "Principal / Family CFO",
+      "entry": "Client Web Dashboard",
+      "outcome": "Client profile, family members, and relationships provide context for later decisions and access.",
+      "result": "Profile and relationship context is visible with conflicts or missing evidence flagged.",
+      "sourceStatus": "E3 navigable UI with static/demo data; profile persistence is a P0/P1 implementation need.",
+      "whyThisTaskExists": "Family-office work depends on relationships, responsibilities, objectives, and governance preferences. Capturing that context helps AlphaVest distinguish useful information from incomplete or conflicted inputs.",
+      "whatTheUserIsTryingToAchieve": "The user is trying to make the client profile clear enough that later reviewers can understand family roles, decision scopes, relationship conflicts, and missing evidence.",
+      "whatThisEnablesNext": [
+        "entity and wealth-structure intake",
+        "role-aware decision participation",
+        "relationship-aware governance review",
+        "better evidence requests and analyst follow-up"
+      ],
+      "steps": [
+        {
+          "stepRef": "MT-004-S1",
+          "userAction": "Open start screen and verify role/tenant context",
+          "whyItMatters": "Opening the entry screen confirms that the user is working in the intended task context before acting.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "entity and wealth-structure intake",
+            "role-aware decision participation"
+          ]
+        },
+        {
+          "stepRef": "MT-004-S2",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "entity and wealth-structure intake",
+            "role-aware decision participation"
+          ]
+        },
+        {
+          "stepRef": "MT-004-S3",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "entity and wealth-structure intake",
+            "role-aware decision participation"
+          ]
+        },
+        {
+          "stepRef": "MT-004-S4",
+          "userAction": "Review final state or blocked condition",
+          "whyItMatters": "Reviewing the visible state helps the user spot missing context, blocked controls, or evidence gaps before taking action.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "entity and wealth-structure intake",
+            "role-aware decision participation"
+          ]
+        }
+      ],
+      "gates": [
+        {
+          "gateId": "MT-004-G1",
+          "rationale": "Tenant context protects family data from crossing client boundaries."
+        },
+        {
+          "gateId": "MT-004-G2",
+          "rationale": "Relationship and role scope protect decision and access workflows from using the wrong participant model."
+        },
+        {
+          "gateId": "MT-004-G3",
+          "rationale": "Missing-evidence indicators keep incomplete profile context visible instead of hiding uncertainty."
+        }
+      ],
+      "blockedStates": [
+        {
+          "branchId": "MT-004-B1",
+          "condition": "Happy path / intended demo path",
+          "controlRationale": "This state confirms the intended demo path while preserving the rule that gates cannot be bypassed.",
+          "userCanDo": "Review, select, enter, or confirm permitted data.",
+          "userCannotDo": "Bypass required gates or tenant/role scope.",
+          "nextLegitimateAction": "Profile and relationship context is visible with conflicts or missing evidence flagged.",
+          "source": "USER_JOURNEY_PLAYBOOK_V3.md; PAGEFLOW_USERFLOW_MAPPING_V3.md"
+        },
+        {
+          "branchId": "MT-004-B2",
+          "condition": "Blocked, restricted, or incomplete path",
+          "controlRationale": "This state protects the workflow from being forced forward when role, evidence, compliance, data, or implementation conditions are not satisfied.",
+          "userCanDo": "Review the reason, request evidence, change role, or return to the correct prior step.",
+          "userCannotDo": "Force completion or claim persistence when the app only shows a static/demo state.",
+          "nextLegitimateAction": "Resolve the missing role, evidence, compliance, or data requirement.",
+          "source": "WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md; INPUT_MASK_REQUIREMENTS_V3.md"
+        }
+      ],
+      "fieldReferences": [
+        "F-007",
+        "F-008"
+      ],
+      "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-004-client-web-dashboard.png",
+      "demoBoundaryNote": "In the current demo, profile and relationship screens are navigable with static or demo data. Profile persistence is not fully claimed.",
+      "futureReadinessNote": "This prepares the workflow for richer family governance, permission scoping, conflict review, and future data-quality automation."
+    },
+    {
+      "index": 5,
+      "taskId": "MT-005",
+      "title": "Create an entity and review wealth structure",
+      "workflowId": "UF-05",
+      "pageflowId": "PF-C",
+      "section": "Structure, documents and evidence intake",
+      "role": "Principal / Family CFO / Analyst / Advisor",
+      "entry": "Entity List",
+      "outcome": "Entity records, participants, documents, wealth-map nodes, and action cards expose structure gaps safely.",
+      "result": "Entity detail, wealth-map drawer, and action-board blockers show what must happen next.",
+      "sourceStatus": "E3 navigable UI; entity/action mutations and evidence gate need transaction wiring.",
+      "whyThisTaskExists": "Wealth operations need a clear map of entities, participants, jurisdictions, assets, and missing proof. Entity intake turns loose structure information into nodes that can be reviewed, evidenced, and acted on.",
+      "whatTheUserIsTryingToAchieve": "The user is trying to create or review a structure node and understand what evidence or action is still needed before the structure can support decisions.",
+      "whatThisEnablesNext": [
+        "document linking",
+        "wealth-map analysis",
+        "action-board follow-up",
+        "evidence-backed review of ownership and participants"
+      ],
+      "steps": [
+        {
+          "stepRef": "MT-005-S1",
+          "userAction": "Open start screen and verify role/tenant context",
+          "whyItMatters": "Opening the entry screen confirms that the user is working in the intended task context before acting.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "document linking",
+            "wealth-map analysis"
+          ]
+        },
+        {
+          "stepRef": "MT-005-S2",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "document linking",
+            "wealth-map analysis"
+          ]
+        },
+        {
+          "stepRef": "MT-005-S3",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "document linking",
+            "wealth-map analysis"
+          ]
+        },
+        {
+          "stepRef": "MT-005-S4",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "document linking",
+            "wealth-map analysis"
+          ]
+        },
+        {
+          "stepRef": "MT-005-S5",
+          "userAction": "Review final state or blocked condition",
+          "whyItMatters": "Reviewing the visible state helps the user spot missing context, blocked controls, or evidence gaps before taking action.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "document linking",
+            "wealth-map analysis"
+          ]
+        }
+      ],
+      "gates": [
+        {
+          "gateId": "MT-005-G1",
+          "rationale": "Entity sensitivity and jurisdiction checks protect high-risk structures from casual progression."
+        },
+        {
+          "gateId": "MT-005-G2",
+          "rationale": "Evidence requirements prevent structure records from looking complete before supporting documents exist."
+        },
+        {
+          "gateId": "MT-005-G3",
+          "rationale": "Action-board blockers keep unresolved structure work visible."
+        }
+      ],
+      "blockedStates": [
+        {
+          "branchId": "MT-005-B1",
+          "condition": "Happy path / intended demo path",
+          "controlRationale": "This state confirms the intended demo path while preserving the rule that gates cannot be bypassed.",
+          "userCanDo": "Review, select, enter, or confirm permitted data.",
+          "userCannotDo": "Bypass required gates or tenant/role scope.",
+          "nextLegitimateAction": "Entity detail, wealth-map drawer, and action-board blockers show what must happen next.",
+          "source": "USER_JOURNEY_PLAYBOOK_V3.md; PAGEFLOW_USERFLOW_MAPPING_V3.md"
+        },
+        {
+          "branchId": "MT-005-B2",
+          "condition": "Blocked, restricted, or incomplete path",
+          "controlRationale": "This state protects the workflow from being forced forward when role, evidence, compliance, data, or implementation conditions are not satisfied.",
+          "userCanDo": "Review the reason, request evidence, change role, or return to the correct prior step.",
+          "userCannotDo": "Force completion or claim persistence when the app only shows a static/demo state.",
+          "nextLegitimateAction": "Resolve the missing role, evidence, compliance, or data requirement.",
+          "source": "WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md; INPUT_MASK_REQUIREMENTS_V3.md"
+        }
+      ],
+      "fieldReferences": [
+        "F-009"
+      ],
+      "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-005-entity-list.png",
+      "demoBoundaryNote": "In the current demo, entity and wealth-map screens are navigable. Entity mutations, action transitions, and evidence gates still need broader transaction wiring.",
+      "futureReadinessNote": "This prepares the workflow for richer wealth-map analysis, specialist review, automated gap detection, and evidence-backed entity governance."
+    },
+    {
+      "index": 6,
+      "taskId": "MT-006",
+      "title": "Upload and verify a document",
+      "workflowId": "UF-06",
+      "pageflowId": "PF-D",
+      "section": "Structure, documents and evidence intake",
+      "role": "Client / Family CFO / External Advisor / Analyst",
+      "entry": "Documents List",
+      "outcome": "A document is uploaded, extraction is reviewed as draft, and human verification or evidence linking is required.",
+      "result": "Document reaches verification-pending or needs-clarification state.",
+      "sourceStatus": "E3 navigable UI; no real file storage/extraction transaction is claimed.",
+      "whyThisTaskExists": "Documents are the source proof behind profile, entity, recommendation, export, and compliance decisions. Uploading and verifying them reduces reliance on memory, assumptions, or unreviewed extracted data.",
+      "whatTheUserIsTryingToAchieve": "The user is trying to upload source evidence, classify it, review extracted draft data, correct uncertainty, and move it toward human verification.",
+      "whatThisEnablesNext": [
+        "analyst validation",
+        "evidence linking",
+        "compliance review",
+        "controlled exports",
+        "future data extraction and document-quality workflows"
+      ],
+      "steps": [
+        {
+          "stepRef": "MT-006-S1",
+          "userAction": "Open start screen and verify role/tenant context",
+          "whyItMatters": "Opening the entry screen confirms that the user is working in the intended task context before acting.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "analyst validation",
+            "evidence linking"
+          ]
+        },
+        {
+          "stepRef": "MT-006-S2",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "analyst validation",
+            "evidence linking"
+          ]
+        },
+        {
+          "stepRef": "MT-006-S3",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "analyst validation",
+            "evidence linking"
+          ]
+        },
+        {
+          "stepRef": "MT-006-S4",
+          "userAction": "Review final state or blocked condition",
+          "whyItMatters": "Reviewing the visible state helps the user spot missing context, blocked controls, or evidence gaps before taking action.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "analyst validation",
+            "evidence linking"
+          ]
+        }
+      ],
+      "gates": [
+        {
+          "gateId": "MT-006-G1",
+          "rationale": "Allowed file type and document taxonomy protect the intake queue from unusable sources."
+        },
+        {
+          "gateId": "MT-006-G2",
+          "rationale": "Extraction review prevents AI draft data from becoming accepted evidence without human confirmation."
+        },
+        {
+          "gateId": "MT-006-G3",
+          "rationale": "Sensitivity and scope controls determine who can view or export the document later."
+        }
+      ],
+      "blockedStates": [
+        {
+          "branchId": "MT-006-B1",
+          "condition": "Happy path / intended demo path",
+          "controlRationale": "This state confirms the intended demo path while preserving the rule that gates cannot be bypassed.",
+          "userCanDo": "Review, select, enter, or confirm permitted data.",
+          "userCannotDo": "Bypass required gates or tenant/role scope.",
+          "nextLegitimateAction": "Document reaches verification-pending or needs-clarification state.",
+          "source": "USER_JOURNEY_PLAYBOOK_V3.md; PAGEFLOW_USERFLOW_MAPPING_V3.md"
+        },
+        {
+          "branchId": "MT-006-B2",
+          "condition": "Blocked, restricted, or incomplete path",
+          "controlRationale": "This state protects the workflow from being forced forward when role, evidence, compliance, data, or implementation conditions are not satisfied.",
+          "userCanDo": "Review the reason, request evidence, change role, or return to the correct prior step.",
+          "userCannotDo": "Force completion or claim persistence when the app only shows a static/demo state.",
+          "nextLegitimateAction": "Resolve the missing role, evidence, compliance, or data requirement.",
+          "source": "WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md; INPUT_MASK_REQUIREMENTS_V3.md"
+        }
+      ],
+      "fieldReferences": [
+        "F-010",
+        "F-011"
+      ],
+      "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-006-documents-list.png",
+      "demoBoundaryNote": "In the current demo, document screens are navigable. Real file storage and extraction transactions are not claimed as production-complete.",
+      "futureReadinessNote": "This prepares the workflow for production file storage, extraction confidence handling, analyst review queues, evidence automation, and redacted export packaging."
+    },
+    {
+      "index": 7,
+      "taskId": "MT-007",
+      "title": "Process a signal and route internal work",
+      "workflowId": "UF-07",
+      "pageflowId": "PF-E",
+      "section": "Internal advisory review",
+      "role": "Analyst",
+      "entry": "Signal Review",
+      "outcome": "The analyst reviews an internal-only trigger, requests data or routes to advisor, and keeps client visibility blocked.",
+      "result": "Trigger moves toward awaiting information or advisor review while staying internal-only.",
+      "sourceStatus": "E4 demo-state executable for J01 subset; not fully governed across all signals.",
+      "whyThisTaskExists": "Signals may indicate missing ownership data, funding questions, document gaps, or workflow triggers. Analyst review separates internal triage from client-visible recommendations.",
+      "whatTheUserIsTryingToAchieve": "The user is trying to understand the signal, add internal context, and choose the next safe route without creating client-visible advice.",
+      "whatThisEnablesNext": [
+        "data request workflows",
+        "advisor approval packages",
+        "internal action tracking",
+        "audit-backed triage for the J01 subset"
+      ],
+      "steps": [
+        {
+          "stepRef": "MT-007-S1",
+          "userAction": "Open start screen and verify role/tenant context",
+          "whyItMatters": "Opening the entry screen confirms that the user is working in the intended task context before acting.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "data request workflows",
+            "advisor approval packages"
+          ]
+        },
+        {
+          "stepRef": "MT-007-S2",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "data request workflows",
+            "advisor approval packages"
+          ]
+        },
+        {
+          "stepRef": "MT-007-S3",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "data request workflows",
+            "advisor approval packages"
+          ]
+        },
+        {
+          "stepRef": "MT-007-S4",
+          "userAction": "Review final state or blocked condition",
+          "whyItMatters": "Reviewing the visible state helps the user spot missing context, blocked controls, or evidence gaps before taking action.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "data request workflows",
+            "advisor approval packages"
+          ]
+        }
+      ],
+      "gates": [
+        {
+          "gateId": "MT-007-G1",
+          "rationale": "Internal-only visibility protects clients from seeing unreviewed triggers."
+        },
+        {
+          "gateId": "MT-007-G2",
+          "rationale": "Route decisions create the next workflow state without bypassing advisor and compliance gates."
+        },
+        {
+          "gateId": "MT-007-G3",
+          "rationale": "Audit rows are expected for executable request or route actions where the demo API supports them."
+        }
+      ],
+      "blockedStates": [
+        {
+          "branchId": "MT-007-B1",
+          "condition": "Happy path / intended demo path",
+          "controlRationale": "This state confirms the intended demo path while preserving the rule that gates cannot be bypassed.",
+          "userCanDo": "Review, select, enter, or confirm permitted data.",
+          "userCannotDo": "Bypass required gates or tenant/role scope.",
+          "nextLegitimateAction": "Trigger moves toward awaiting information or advisor review while staying internal-only.",
+          "source": "USER_JOURNEY_PLAYBOOK_V3.md; PAGEFLOW_USERFLOW_MAPPING_V3.md"
+        },
+        {
+          "branchId": "MT-007-B2",
+          "condition": "Blocked, restricted, or incomplete path",
+          "controlRationale": "This state protects the workflow from being forced forward when role, evidence, compliance, data, or implementation conditions are not satisfied.",
+          "userCanDo": "Review the reason, request evidence, change role, or return to the correct prior step.",
+          "userCannotDo": "Force completion or claim persistence when the app only shows a static/demo state.",
+          "nextLegitimateAction": "Resolve the missing role, evidence, compliance, or data requirement.",
+          "source": "WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md; INPUT_MASK_REQUIREMENTS_V3.md"
+        }
+      ],
+      "fieldReferences": [
+        "F-012"
+      ],
+      "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-007-signal-review.png",
+      "demoBoundaryNote": "In the current demo, the J01 signal/advisor subset has the strongest executable proof. Not every signal path is fully governed.",
+      "futureReadinessNote": "This prepares the workflow for broader signal governance, triage metrics, automated queueing, and safer recommendation preparation."
+    },
+    {
+      "index": 8,
+      "taskId": "MT-008",
+      "title": "Review an advisor approval package",
+      "workflowId": "UF-08",
+      "pageflowId": "PF-E",
+      "section": "Internal advisory review",
+      "role": "Senior Wealth Advisor",
+      "entry": "Advisor Approval Queue",
+      "outcome": "Advisor approves, revises, requests more data, or escalates without releasing to the client.",
+      "result": "Advisor decision is recorded or routed; compliance release remains required.",
+      "sourceStatus": "E4 for J01 advisor action; advisor approval is explicitly not client visibility.",
+      "whyThisTaskExists": "Advisor review is the human judgment stage between analyst work and compliance release. It lets advisors approve, revise, request more data, or escalate without granting client visibility.",
+      "whatTheUserIsTryingToAchieve": "The user is trying to review the recommendation package, record a defensible advisor decision, and route the work to the next gate.",
+      "whatThisEnablesNext": [
+        "compliance review",
+        "revision loops",
+        "data requests",
+        "escalation to calls when complexity needs human conversation"
+      ],
+      "steps": [
+        {
+          "stepRef": "MT-008-S1",
+          "userAction": "Open start screen and verify role/tenant context",
+          "whyItMatters": "Opening the entry screen confirms that the user is working in the intended task context before acting.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "compliance review",
+            "revision loops"
+          ]
+        },
+        {
+          "stepRef": "MT-008-S2",
+          "userAction": "Review final state or blocked condition",
+          "whyItMatters": "Reviewing the visible state helps the user spot missing context, blocked controls, or evidence gaps before taking action.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "compliance review",
+            "revision loops"
+          ]
+        }
+      ],
+      "gates": [
+        {
+          "gateId": "MT-008-G1",
+          "rationale": "Advisor decision and rationale create review lineage."
+        },
+        {
+          "gateId": "MT-008-G2",
+          "rationale": "Compliance release remains required before client visibility."
+        },
+        {
+          "gateId": "MT-008-G3",
+          "rationale": "Escalation paths protect complex matters from being forced through a digital-only route."
+        }
+      ],
+      "blockedStates": [
+        {
+          "branchId": "MT-008-B1",
+          "condition": "Happy path / intended demo path",
+          "controlRationale": "This state confirms the intended demo path while preserving the rule that gates cannot be bypassed.",
+          "userCanDo": "Review, select, enter, or confirm permitted data.",
+          "userCannotDo": "Bypass required gates or tenant/role scope.",
+          "nextLegitimateAction": "Advisor decision is recorded or routed; compliance release remains required.",
+          "source": "USER_JOURNEY_PLAYBOOK_V3.md; PAGEFLOW_USERFLOW_MAPPING_V3.md"
+        },
+        {
+          "branchId": "MT-008-B2",
+          "condition": "Blocked, restricted, or incomplete path",
+          "controlRationale": "This state protects the workflow from being forced forward when role, evidence, compliance, data, or implementation conditions are not satisfied.",
+          "userCanDo": "Review the reason, request evidence, change role, or return to the correct prior step.",
+          "userCannotDo": "Force completion or claim persistence when the app only shows a static/demo state.",
+          "nextLegitimateAction": "Resolve the missing role, evidence, compliance, or data requirement.",
+          "source": "WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md; INPUT_MASK_REQUIREMENTS_V3.md"
+        }
+      ],
+      "fieldReferences": [
+        "F-013"
+      ],
+      "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-008-advisor-approval-queue.png",
+      "demoBoundaryNote": "In the current demo, J01 advisor actions are executable. Broader advisor-governance coverage is not claimed across every package type.",
+      "futureReadinessNote": "This prepares the workflow for clearer advisor accountability, package quality metrics, and compliance-ready recommendation records."
+    },
+    {
+      "index": 9,
+      "taskId": "MT-009",
+      "title": "Release, block, or request evidence for advice-like content",
+      "workflowId": "UF-09",
+      "pageflowId": "PF-F",
+      "section": "Compliance release and client decisions",
+      "role": "Compliance Officer",
+      "entry": "Compliance Queue",
+      "outcome": "Compliance determines whether content can become client-visible, stays blocked, or needs more evidence.",
+      "result": "Release, block, or evidence-request state is visible; no unapproved advice reaches the client.",
+      "sourceStatus": "E3/E4 mixed demo states; broad release transaction is still a top implementation gap.",
+      "whyThisTaskExists": "Compliance release is the decisive client-visibility gate. It checks whether classification, evidence, permissions, disclosures, and review lineage are strong enough for the client to see the material.",
+      "whatTheUserIsTryingToAchieve": "The user is trying to release, block, or request evidence in a way that preserves the no-unapproved-advice rule and leaves a defensible record.",
+      "whatThisEnablesNext": [
+        "released client decisions",
+        "evidence requests",
+        "blocked-state recovery",
+        "client-visible content only after gates pass"
+      ],
+      "steps": [
+        {
+          "stepRef": "MT-009-S1",
+          "userAction": "Open start screen and verify role/tenant context",
+          "whyItMatters": "Opening the entry screen confirms that the user is working in the intended task context before acting.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state",
+            "client visibility"
+          ],
+          "downstreamDependency": [
+            "released client decisions",
+            "evidence requests"
+          ]
+        },
+        {
+          "stepRef": "MT-009-S2",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state",
+            "client visibility"
+          ],
+          "downstreamDependency": [
+            "released client decisions",
+            "evidence requests"
+          ]
+        },
+        {
+          "stepRef": "MT-009-S3",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state",
+            "client visibility"
+          ],
+          "downstreamDependency": [
+            "released client decisions",
+            "evidence requests"
+          ]
+        },
+        {
+          "stepRef": "MT-009-S4",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state",
+            "client visibility"
+          ],
+          "downstreamDependency": [
+            "released client decisions",
+            "evidence requests"
+          ]
+        },
+        {
+          "stepRef": "MT-009-S5",
+          "userAction": "Review final state or blocked condition",
+          "whyItMatters": "Reviewing the visible state helps the user spot missing context, blocked controls, or evidence gaps before taking action.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state",
+            "client visibility"
+          ],
+          "downstreamDependency": [
+            "released client decisions",
+            "evidence requests"
+          ]
+        }
+      ],
+      "gates": [
+        {
+          "gateId": "MT-009-G1",
+          "rationale": "Compliance release protects client visibility."
+        },
+        {
+          "gateId": "MT-009-G2",
+          "rationale": "Evidence completeness protects the release decision from unsupported claims."
+        },
+        {
+          "gateId": "MT-009-G3",
+          "rationale": "Block and request-evidence states are legitimate controls, not failures."
+        },
+        {
+          "gateId": "MT-009-G4",
+          "rationale": "Audit records preserve why release did or did not happen."
+        }
+      ],
+      "blockedStates": [
+        {
+          "branchId": "MT-009-B1",
+          "condition": "Happy path / intended demo path",
+          "controlRationale": "This state confirms the intended demo path while preserving the rule that gates cannot be bypassed.",
+          "userCanDo": "Review, select, enter, or confirm permitted data.",
+          "userCannotDo": "Bypass required gates or tenant/role scope.",
+          "nextLegitimateAction": "Release, block, or evidence-request state is visible; no unapproved advice reaches the client.",
+          "source": "USER_JOURNEY_PLAYBOOK_V3.md; PAGEFLOW_USERFLOW_MAPPING_V3.md"
+        },
+        {
+          "branchId": "MT-009-B2",
+          "condition": "Blocked, restricted, or incomplete path",
+          "controlRationale": "This state protects the workflow from being forced forward when role, evidence, compliance, data, or implementation conditions are not satisfied.",
+          "userCanDo": "Review the reason, request evidence, change role, or return to the correct prior step.",
+          "userCannotDo": "Force completion or claim persistence when the app only shows a static/demo state.",
+          "nextLegitimateAction": "Resolve the missing role, evidence, compliance, or data requirement.",
+          "source": "WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md; INPUT_MASK_REQUIREMENTS_V3.md"
+        }
+      ],
+      "fieldReferences": [
+        "F-014"
+      ],
+      "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-009-compliance-queue.png",
+      "demoBoundaryNote": "In the current demo, compliance states are visible and partially executable. Broad release transactions remain a top implementation gap.",
+      "futureReadinessNote": "This prepares the workflow for production release governance, release analytics, exception review, and evidence-backed client-decision packages."
+    },
+    {
+      "index": 10,
+      "taskId": "MT-010",
+      "title": "Review and submit a released client decision",
+      "workflowId": "UF-10",
+      "pageflowId": "PF-F",
+      "section": "Compliance release and client decisions",
+      "role": "Principal / Family Council / Trustee scoped",
+      "entry": "Decision List",
+      "outcome": "Client reviews only released content, chooses accept/defer/reject, and receives proof of submission.",
+      "result": "Decision success page and linked evidence record show the completion proof.",
+      "sourceStatus": "E3 navigable UI with demo workflow actions; final decision/evidence package persistence remains incomplete.",
+      "whyThisTaskExists": "Client decisions should be based only on material that has passed the release gate. The decision workflow records acceptance, deferral, rejection, or a request for more information with evidence context.",
+      "whatTheUserIsTryingToAchieve": "The user is trying to understand the released decision context and record a response that can be traced later.",
+      "whatThisEnablesNext": [
+        "evidence package creation",
+        "review scheduling",
+        "family approval tracking",
+        "clear completion proof after submission"
+      ],
+      "steps": [
+        {
+          "stepRef": "MT-010-S1",
+          "userAction": "Open start screen and verify role/tenant context",
+          "whyItMatters": "Opening the entry screen confirms that the user is working in the intended task context before acting.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "evidence package creation",
+            "review scheduling"
+          ]
+        },
+        {
+          "stepRef": "MT-010-S2",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "evidence package creation",
+            "review scheduling"
+          ]
+        },
+        {
+          "stepRef": "MT-010-S3",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "evidence package creation",
+            "review scheduling"
+          ]
+        },
+        {
+          "stepRef": "MT-010-S4",
+          "userAction": "Review final state or blocked condition",
+          "whyItMatters": "Reviewing the visible state helps the user spot missing context, blocked controls, or evidence gaps before taking action.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "evidence package creation",
+            "review scheduling"
+          ]
+        }
+      ],
+      "gates": [
+        {
+          "gateId": "MT-010-G1",
+          "rationale": "Only released decisions are shown to client roles."
+        },
+        {
+          "gateId": "MT-010-G2",
+          "rationale": "Participant acknowledgement protects family-governance context."
+        },
+        {
+          "gateId": "MT-010-G3",
+          "rationale": "Evidence records preserve completion proof after the decision response."
+        }
+      ],
+      "blockedStates": [
+        {
+          "branchId": "MT-010-B1",
+          "condition": "Happy path / intended demo path",
+          "controlRationale": "This state confirms the intended demo path while preserving the rule that gates cannot be bypassed.",
+          "userCanDo": "Review, select, enter, or confirm permitted data.",
+          "userCannotDo": "Bypass required gates or tenant/role scope.",
+          "nextLegitimateAction": "Decision success page and linked evidence record show the completion proof.",
+          "source": "USER_JOURNEY_PLAYBOOK_V3.md; PAGEFLOW_USERFLOW_MAPPING_V3.md"
+        },
+        {
+          "branchId": "MT-010-B2",
+          "condition": "Blocked, restricted, or incomplete path",
+          "controlRationale": "This state protects the workflow from being forced forward when role, evidence, compliance, data, or implementation conditions are not satisfied.",
+          "userCanDo": "Review the reason, request evidence, change role, or return to the correct prior step.",
+          "userCannotDo": "Force completion or claim persistence when the app only shows a static/demo state.",
+          "nextLegitimateAction": "Resolve the missing role, evidence, compliance, or data requirement.",
+          "source": "WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md; INPUT_MASK_REQUIREMENTS_V3.md"
+        }
+      ],
+      "fieldReferences": [
+        "F-015"
+      ],
+      "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-010-decision-list.png",
+      "demoBoundaryNote": "In the current demo, decision screens are navigable and show demo workflow actions. Final decision and evidence package persistence remains incomplete.",
+      "futureReadinessNote": "This prepares the workflow for richer family approval chains, review scheduling, evidence-backed decision history, and client-facing status clarity."
+    },
+    {
+      "index": 11,
+      "taskId": "MT-011",
+      "title": "Review evidence and create a controlled export",
+      "workflowId": "UF-11",
+      "pageflowId": "PF-I",
+      "section": "Evidence, export and data sharing",
+      "role": "Client / Advisor / Compliance / Privacy Officer",
+      "entry": "Evidence Vault / Create Export",
+      "outcome": "Evidence is inspected and exported only through scoped, redacted, approved, audited export steps.",
+      "result": "Export package is previewed/downloaded only if scope, redaction, permission, and approval allow it.",
+      "sourceStatus": "E3 visual/navigable; export package/file/share realism is a Phase 18 gap.",
+      "whyThisTaskExists": "Evidence and export workflows make proof portable without making all underlying data visible. They help users share the right subset of records while preserving redaction, permission, expiry, and audit controls.",
+      "whatTheUserIsTryingToAchieve": "The user is trying to find relevant evidence, choose an export scope, apply redaction, confirm approval, and avoid exposing restricted material.",
+      "whatThisEnablesNext": [
+        "client decision packs",
+        "compliance audit packs",
+        "external advisor data rooms",
+        "controlled evidence review",
+        "future export reporting"
+      ],
+      "steps": [
+        {
+          "stepRef": "MT-011-S1",
+          "userAction": "Open start screen and verify role/tenant context",
+          "whyItMatters": "Opening the entry screen confirms that the user is working in the intended task context before acting.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state",
+            "redaction",
+            "export approval"
+          ],
+          "downstreamDependency": [
+            "client decision packs",
+            "compliance audit packs"
+          ]
+        },
+        {
+          "stepRef": "MT-011-S2",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state",
+            "redaction",
+            "export approval"
+          ],
+          "downstreamDependency": [
+            "client decision packs",
+            "compliance audit packs"
+          ]
+        },
+        {
+          "stepRef": "MT-011-S3",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state",
+            "redaction",
+            "export approval"
+          ],
+          "downstreamDependency": [
+            "client decision packs",
+            "compliance audit packs"
+          ]
+        },
+        {
+          "stepRef": "MT-011-S4",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state",
+            "redaction",
+            "export approval"
+          ],
+          "downstreamDependency": [
+            "client decision packs",
+            "compliance audit packs"
+          ]
+        },
+        {
+          "stepRef": "MT-011-S5",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state",
+            "redaction",
+            "export approval"
+          ],
+          "downstreamDependency": [
+            "client decision packs",
+            "compliance audit packs"
+          ]
+        },
+        {
+          "stepRef": "MT-011-S6",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state",
+            "redaction",
+            "export approval"
+          ],
+          "downstreamDependency": [
+            "client decision packs",
+            "compliance audit packs"
+          ]
+        },
+        {
+          "stepRef": "MT-011-S7",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state",
+            "redaction",
+            "export approval"
+          ],
+          "downstreamDependency": [
+            "client decision packs",
+            "compliance audit packs"
+          ]
+        },
+        {
+          "stepRef": "MT-011-S8",
+          "userAction": "Review final state or blocked condition",
+          "whyItMatters": "Reviewing the visible state helps the user spot missing context, blocked controls, or evidence gaps before taking action.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state",
+            "redaction",
+            "export approval"
+          ],
+          "downstreamDependency": [
+            "client decision packs",
+            "compliance audit packs"
+          ]
+        }
+      ],
+      "gates": [
+        {
+          "gateId": "MT-011-G1",
+          "rationale": "Scope selection limits what can leave the vault."
+        },
+        {
+          "gateId": "MT-011-G2",
+          "rationale": "Redaction protects restricted fields before preview or sharing."
+        },
+        {
+          "gateId": "MT-011-G3",
+          "rationale": "Approval and audit controls protect download and share actions."
+        },
+        {
+          "gateId": "MT-011-G4",
+          "rationale": "Expiry or revocation prevents old packages from staying valid indefinitely."
+        }
+      ],
+      "blockedStates": [
+        {
+          "branchId": "MT-011-B1",
+          "condition": "Happy path / intended demo path",
+          "controlRationale": "This state confirms the intended demo path while preserving the rule that gates cannot be bypassed.",
+          "userCanDo": "Review, select, enter, or confirm permitted data.",
+          "userCannotDo": "Bypass required gates or tenant/role scope.",
+          "nextLegitimateAction": "Export package is previewed/downloaded only if scope, redaction, permission, and approval allow it.",
+          "source": "USER_JOURNEY_PLAYBOOK_V3.md; PAGEFLOW_USERFLOW_MAPPING_V3.md"
+        },
+        {
+          "branchId": "MT-011-B2",
+          "condition": "Blocked, restricted, or incomplete path",
+          "controlRationale": "This state protects the workflow from being forced forward when role, evidence, compliance, data, or implementation conditions are not satisfied.",
+          "userCanDo": "Review the reason, request evidence, change role, or return to the correct prior step.",
+          "userCannotDo": "Force completion or claim persistence when the app only shows a static/demo state.",
+          "nextLegitimateAction": "Resolve the missing role, evidence, compliance, or data requirement.",
+          "source": "WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md; INPUT_MASK_REQUIREMENTS_V3.md"
+        }
+      ],
+      "fieldReferences": [
+        "F-016"
+      ],
+      "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-011-evidence-vault.png",
+      "demoBoundaryNote": "In the current demo, evidence and export screens are visual and navigable. Export package generation, file realism, and share-link behavior remain future implementation work.",
+      "futureReadinessNote": "This prepares the workflow for production-grade data rooms, evidence packages, activity-log exports, privacy review, and auditable disclosure history."
+    },
+    {
+      "index": 12,
+      "taskId": "MT-012",
+      "title": "Manage governance users, roles, and access requests",
+      "workflowId": "UF-12",
+      "pageflowId": "PF-G",
+      "section": "Governance and access",
+      "role": "Principal / Admin / Compliance / Security",
+      "entry": "Governance Users",
+      "outcome": "Sensitive user/role/access changes require scoped roles, confirmation, and audit history.",
+      "result": "Access request is approved/denied/escalated and audit history shows lineage.",
+      "sourceStatus": "E3/E4 demo actions visible; governed role/access transactions remain incomplete.",
+      "whyThisTaskExists": "Role and permission changes can expose documents, decisions, evidence, exports, and governance controls. AlphaVest needs access changes to be scoped, confirmed, reviewable, and auditable.",
+      "whatTheUserIsTryingToAchieve": "The user is trying to assign, revoke, approve, deny, or escalate access in a way that preserves tenant scope and audit lineage.",
+      "whatThisEnablesNext": [
+        "safe collaboration",
+        "segregation-of-duties review",
+        "access audit history",
+        "future permission governance and security reporting"
+      ],
+      "steps": [
+        {
+          "stepRef": "MT-012-S1",
+          "userAction": "Open start screen and verify role/tenant context",
+          "whyItMatters": "Opening the entry screen confirms that the user is working in the intended task context before acting.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "safe collaboration",
+            "segregation-of-duties review"
+          ]
+        },
+        {
+          "stepRef": "MT-012-S2",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "safe collaboration",
+            "segregation-of-duties review"
+          ]
+        },
+        {
+          "stepRef": "MT-012-S3",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "safe collaboration",
+            "segregation-of-duties review"
+          ]
+        },
+        {
+          "stepRef": "MT-012-S4",
+          "userAction": "Review final state or blocked condition",
+          "whyItMatters": "Reviewing the visible state helps the user spot missing context, blocked controls, or evidence gaps before taking action.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "safe collaboration",
+            "segregation-of-duties review"
+          ]
+        }
+      ],
+      "gates": [
+        {
+          "gateId": "MT-012-G1",
+          "rationale": "Second confirmation protects sensitive assign, revoke, release, and manage actions."
+        },
+        {
+          "gateId": "MT-012-G2",
+          "rationale": "Role and scope checks prevent users from acting outside their tenant or object boundary."
+        },
+        {
+          "gateId": "MT-012-G3",
+          "rationale": "Audit history preserves who requested, approved, denied, or changed access."
+        }
+      ],
+      "blockedStates": [
+        {
+          "branchId": "MT-012-B1",
+          "condition": "Happy path / intended demo path",
+          "controlRationale": "This state confirms the intended demo path while preserving the rule that gates cannot be bypassed.",
+          "userCanDo": "Review, select, enter, or confirm permitted data.",
+          "userCannotDo": "Bypass required gates or tenant/role scope.",
+          "nextLegitimateAction": "Access request is approved/denied/escalated and audit history shows lineage.",
+          "source": "USER_JOURNEY_PLAYBOOK_V3.md; PAGEFLOW_USERFLOW_MAPPING_V3.md"
+        },
+        {
+          "branchId": "MT-012-B2",
+          "condition": "Blocked, restricted, or incomplete path",
+          "controlRationale": "This state protects the workflow from being forced forward when role, evidence, compliance, data, or implementation conditions are not satisfied.",
+          "userCanDo": "Review the reason, request evidence, change role, or return to the correct prior step.",
+          "userCannotDo": "Force completion or claim persistence when the app only shows a static/demo state.",
+          "nextLegitimateAction": "Resolve the missing role, evidence, compliance, or data requirement.",
+          "source": "WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md; INPUT_MASK_REQUIREMENTS_V3.md"
+        }
+      ],
+      "fieldReferences": [
+        "F-017"
+      ],
+      "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-012-governance-users.png",
+      "demoBoundaryNote": "In the current demo, governance screens and selected demo actions are visible. Fully governed role and access transactions remain incomplete.",
+      "futureReadinessNote": "This prepares the workflow for production access reviews, separation-of-duties controls, delegated administration, and security audit reporting."
+    },
+    {
+      "index": 13,
+      "taskId": "MT-013",
+      "title": "Choose a communication or escalation path",
+      "workflowId": "UF-13",
+      "pageflowId": "PF-H",
+      "section": "Communication and escalation",
+      "role": "Advisor / Client Success / Client",
+      "entry": "Communication Centre",
+      "outcome": "The right secure message, data request, call, workshop, external specialist, or compliance escalation path is selected.",
+      "result": "Communication path or call-trigger state is visible and linked to evidence when material.",
+      "sourceStatus": "E2/E3 mostly static communication surfaces; message/call persistence not claimed.",
+      "whyThisTaskExists": "Not every issue belongs in the same channel. AlphaVest needs a way to distinguish secure messages, data requests, advisor calls, workshops, external specialist handoffs, and compliance escalations.",
+      "whatTheUserIsTryingToAchieve": "The user is trying to choose the least risky communication path that can resolve the issue while preserving evidence and compliance context where material.",
+      "whatThisEnablesNext": [
+        "data requests",
+        "advisor calls",
+        "workshops",
+        "external specialist escalation",
+        "communication evidence links"
+      ],
+      "steps": [
+        {
+          "stepRef": "MT-013-S1",
+          "userAction": "Open start screen and verify role/tenant context",
+          "whyItMatters": "Opening the entry screen confirms that the user is working in the intended task context before acting.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "data requests",
+            "advisor calls"
+          ]
+        },
+        {
+          "stepRef": "MT-013-S2",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "data requests",
+            "advisor calls"
+          ]
+        },
+        {
+          "stepRef": "MT-013-S3",
+          "userAction": "Review final state or blocked condition",
+          "whyItMatters": "Reviewing the visible state helps the user spot missing context, blocked controls, or evidence gaps before taking action.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "data requests",
+            "advisor calls"
+          ]
+        }
+      ],
+      "gates": [
+        {
+          "gateId": "MT-013-G1",
+          "rationale": "Sensitivity and recipient checks protect communication from leaking advice-like or confidential material."
+        },
+        {
+          "gateId": "MT-013-G2",
+          "rationale": "Compliance holds protect messages that require review before client visibility."
+        },
+        {
+          "gateId": "MT-013-G3",
+          "rationale": "Evidence links preserve material communications where the workflow needs proof."
+        }
+      ],
+      "blockedStates": [
+        {
+          "branchId": "MT-013-B1",
+          "condition": "Happy path / intended demo path",
+          "controlRationale": "This state confirms the intended demo path while preserving the rule that gates cannot be bypassed.",
+          "userCanDo": "Review, select, enter, or confirm permitted data.",
+          "userCannotDo": "Bypass required gates or tenant/role scope.",
+          "nextLegitimateAction": "Communication path or call-trigger state is visible and linked to evidence when material.",
+          "source": "USER_JOURNEY_PLAYBOOK_V3.md; PAGEFLOW_USERFLOW_MAPPING_V3.md"
+        },
+        {
+          "branchId": "MT-013-B2",
+          "condition": "Blocked, restricted, or incomplete path",
+          "controlRationale": "This state protects the workflow from being forced forward when role, evidence, compliance, data, or implementation conditions are not satisfied.",
+          "userCanDo": "Review the reason, request evidence, change role, or return to the correct prior step.",
+          "userCannotDo": "Force completion or claim persistence when the app only shows a static/demo state.",
+          "nextLegitimateAction": "Resolve the missing role, evidence, compliance, or data requirement.",
+          "source": "WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md; INPUT_MASK_REQUIREMENTS_V3.md"
+        }
+      ],
+      "fieldReferences": [
+        "F-018"
+      ],
+      "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-013-communication-centre.png",
+      "demoBoundaryNote": "In the current demo, communication surfaces are mostly static or navigable. Message and call persistence is not claimed.",
+      "futureReadinessNote": "This prepares the workflow for communication logs, meeting/call evidence, follow-up ownership, and escalation analytics."
+    },
+    {
+      "index": 14,
+      "taskId": "MT-014",
+      "title": "Monitor operations, SLA, and reference state",
+      "workflowId": "UF-14",
+      "pageflowId": "PF-J",
+      "section": "Operations and reference",
+      "role": "Ops / Product / QA / Leads",
+      "entry": "Ops Queues",
+      "outcome": "Ops reviews queues, SLA risk, service blueprint, roadmap, and state catalogue for delivery/control monitoring.",
+      "result": "Bottlenecks, SLA breaches, roadmap scope, and state language are visible for internal use.",
+      "sourceStatus": "E2/E3 reference and dashboard surfaces; queue/SLA mutation not yet implemented.",
+      "whyThisTaskExists": "Operations users need to see bottlenecks, SLA pressure, roadmap boundaries, and state definitions so the service model can improve without confusing reference material with client workflow.",
+      "whatTheUserIsTryingToAchieve": "The user is trying to understand current workload, risk, reference state, and product scope without treating reference pages as client task flows.",
+      "whatThisEnablesNext": [
+        "capacity planning",
+        "QA triage",
+        "workflow consistency reviews",
+        "future queue automation",
+        "clearer roadmap and implementation reporting"
+      ],
+      "steps": [
+        {
+          "stepRef": "MT-014-S1",
+          "userAction": "Open start screen and verify role/tenant context",
+          "whyItMatters": "Opening the entry screen confirms that the user is working in the intended task context before acting.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "capacity planning",
+            "QA triage"
+          ]
+        },
+        {
+          "stepRef": "MT-014-S2",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "capacity planning",
+            "QA triage"
+          ]
+        },
+        {
+          "stepRef": "MT-014-S3",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "capacity planning",
+            "QA triage"
+          ]
+        },
+        {
+          "stepRef": "MT-014-S4",
+          "userAction": "Select next visible workflow action or navigation item",
+          "whyItMatters": "Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "capacity planning",
+            "QA triage"
+          ]
+        },
+        {
+          "stepRef": "MT-014-S5",
+          "userAction": "Review final state or blocked condition",
+          "whyItMatters": "Reviewing the visible state helps the user spot missing context, blocked controls, or evidence gaps before taking action.",
+          "affectedState": [
+            "role context",
+            "tenant context",
+            "workflow state"
+          ],
+          "downstreamDependency": [
+            "capacity planning",
+            "QA triage"
+          ]
+        }
+      ],
+      "gates": [
+        {
+          "gateId": "MT-014-G1",
+          "rationale": "Reference-only framing protects users from mistaking product documentation pages for client workflow actions."
+        },
+        {
+          "gateId": "MT-014-G2",
+          "rationale": "Queue ownership and SLA status guide operational follow-up."
+        },
+        {
+          "gateId": "MT-014-G3",
+          "rationale": "Audit expectations should apply if queue mutations become implemented actions."
+        }
+      ],
+      "blockedStates": [
+        {
+          "branchId": "MT-014-B1",
+          "condition": "Happy path / intended demo path",
+          "controlRationale": "This state confirms the intended demo path while preserving the rule that gates cannot be bypassed.",
+          "userCanDo": "Review, select, enter, or confirm permitted data.",
+          "userCannotDo": "Bypass required gates or tenant/role scope.",
+          "nextLegitimateAction": "Bottlenecks, SLA breaches, roadmap scope, and state language are visible for internal use.",
+          "source": "USER_JOURNEY_PLAYBOOK_V3.md; PAGEFLOW_USERFLOW_MAPPING_V3.md"
+        },
+        {
+          "branchId": "MT-014-B2",
+          "condition": "Blocked, restricted, or incomplete path",
+          "controlRationale": "This state protects the workflow from being forced forward when role, evidence, compliance, data, or implementation conditions are not satisfied.",
+          "userCanDo": "Review the reason, request evidence, change role, or return to the correct prior step.",
+          "userCannotDo": "Force completion or claim persistence when the app only shows a static/demo state.",
+          "nextLegitimateAction": "Resolve the missing role, evidence, compliance, or data requirement.",
+          "source": "WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md; INPUT_MASK_REQUIREMENTS_V3.md"
+        }
+      ],
+      "fieldReferences": [
+        "F-019"
+      ],
+      "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-014-ops-queues.png",
+      "demoBoundaryNote": "In the current demo, operations and reference pages are mostly dashboard or reference surfaces. Queue and SLA mutation is not yet implemented.",
+      "futureReadinessNote": "This prepares the workflow for SLA analytics, queue ownership, product health reporting, and cleaner internal operating cadence."
+    }
+  ],
+  "fields": [
+    {
+      "fieldReferenceId": "F-001",
+      "manualTaskId": "MT-001",
+      "screen": "Platform Settings",
+      "fieldLabel": "Setting key/value",
+      "userMeaning": "Select and change platform defaults",
+      "required": "yes",
+      "type": "select/text",
+      "allowedValues": "Known platform setting; bounded value",
+      "exampleDemoValue": "AlphaVest WealthOS / 7 years / 30 minutes",
+      "validation": "Must be within policy limits",
+      "errorBlockedState": "Second confirmation required",
+      "dataModelMapping": "PolicyDefinition / AuditEvent",
+      "sensitivity": "internal"
+    },
+    {
+      "fieldReferenceId": "F-002",
+      "manualTaskId": "MT-001",
+      "screen": "Advice Boundary Policy",
+      "fieldLabel": "Advice classification",
+      "userMeaning": "Classify information, workflow, guidance, advice-relevant, or advice",
+      "required": "yes",
+      "type": "select/matrix",
+      "allowedValues": "AdviceClassification enum",
+      "exampleDemoValue": "advice_relevant",
+      "validation": "Cannot weaken release rule without reason",
+      "errorBlockedState": "Compliance review required",
+      "dataModelMapping": "PolicyDefinition",
+      "sensitivity": "compliance-sensitive"
+    },
+    {
+      "fieldReferenceId": "F-003",
+      "manualTaskId": "MT-002",
+      "screen": "Create Client Tenant",
+      "fieldLabel": "Client name and jurisdiction",
+      "userMeaning": "Create tenant identity and regulatory context",
+      "required": "yes",
+      "type": "text/select",
+      "allowedValues": "Approved jurisdiction list",
+      "exampleDemoValue": "Northbridge Family Office / Switzerland",
+      "validation": "Required and unique enough for demo",
+      "errorBlockedState": "Duplicate or missing tenant details",
+      "dataModelMapping": "ClientTenant",
+      "sensitivity": "client confidential"
+    },
+    {
+      "fieldReferenceId": "F-004",
+      "manualTaskId": "MT-002",
+      "screen": "Assign AlphaVest Team",
+      "fieldLabel": "Compliance owner",
+      "userMeaning": "Assign accountable release owner",
+      "required": "yes",
+      "type": "user select",
+      "allowedValues": "Users with compliance_officer role",
+      "exampleDemoValue": "Naledi Mokoena",
+      "validation": "Required before active readiness",
+      "errorBlockedState": "Activation remains blocked",
+      "dataModelMapping": "UserRole / ClientTenant",
+      "sensitivity": "internal"
+    },
+    {
+      "fieldReferenceId": "F-005",
+      "manualTaskId": "MT-003",
+      "screen": "Onboarding Invite",
+      "fieldLabel": "Invite token",
+      "userMeaning": "Scope onboarding to one tenant/user",
+      "required": "yes",
+      "type": "token",
+      "allowedValues": "Valid active invitation",
+      "exampleDemoValue": "demo invite token",
+      "validation": "Expired/used token blocks continuation",
+      "errorBlockedState": "Invalid invitation state",
+      "dataModelMapping": "User / ConsentRecord",
+      "sensitivity": "sensitive"
+    },
+    {
+      "fieldReferenceId": "F-006",
+      "manualTaskId": "MT-003",
+      "screen": "Consent",
+      "fieldLabel": "Privacy acknowledgement",
+      "userMeaning": "Record required consent version",
+      "required": "yes",
+      "type": "checkbox/version",
+      "allowedValues": "Active consent policy",
+      "exampleDemoValue": "Privacy Notice v1 accepted",
+      "validation": "All required boxes must be selected",
+      "errorBlockedState": "Cannot continue without consent",
+      "dataModelMapping": "ConsentRecord / AuditEvent",
+      "sensitivity": "legal/privacy"
+    },
+    {
+      "fieldReferenceId": "F-007",
+      "manualTaskId": "MT-004",
+      "screen": "Client Profile",
+      "fieldLabel": "Family profile and objective",
+      "userMeaning": "Capture client context without advice",
+      "required": "yes",
+      "type": "structured text/select",
+      "allowedValues": "Profile taxonomy",
+      "exampleDemoValue": "Morgan Family Office / Family Office Advisory",
+      "validation": "No final advice fields; required basics",
+      "errorBlockedState": "Submitted for review or blocked",
+      "dataModelMapping": "UserProfile / ClientObjective",
+      "sensitivity": "client confidential"
+    },
+    {
+      "fieldReferenceId": "F-008",
+      "manualTaskId": "MT-004",
+      "screen": "Family Members",
+      "fieldLabel": "Family member role",
+      "userMeaning": "Define family role and decision scope",
+      "required": "yes",
+      "type": "select/text",
+      "allowedValues": "Principal, CFO, Trustee, Beneficiary, Next Gen",
+      "exampleDemoValue": "Trustee",
+      "validation": "Must fit tenant scope",
+      "errorBlockedState": "Conflict or missing relationship",
+      "dataModelMapping": "FamilyMember / Relationship",
+      "sensitivity": "personal data"
+    },
+    {
+      "fieldReferenceId": "F-009",
+      "manualTaskId": "MT-005",
+      "screen": "Create Entity",
+      "fieldLabel": "Entity type/name/jurisdiction",
+      "userMeaning": "Create legal/entity structure node",
+      "required": "yes",
+      "type": "select/text",
+      "allowedValues": "EntityType enum and jurisdictions",
+      "exampleDemoValue": "trust / Sunward Trust / Switzerland",
+      "validation": "Sensitive jurisdictions flag review",
+      "errorBlockedState": "Blocked or legal review state",
+      "dataModelMapping": "Entity / EntityParticipant",
+      "sensitivity": "legal entity data"
+    },
+    {
+      "fieldReferenceId": "F-010",
+      "manualTaskId": "MT-006",
+      "screen": "Document Upload",
+      "fieldLabel": "Document file/type/scope",
+      "userMeaning": "Upload source evidence for review",
+      "required": "yes",
+      "type": "file/select",
+      "allowedValues": "Allowed file types and document taxonomy",
+      "exampleDemoValue": "Trust Agreement.pdf / Trust deed",
+      "validation": "Unsupported file or missing scope blocks upload",
+      "errorBlockedState": "Upload error / verification pending",
+      "dataModelMapping": "Document / DocumentVersion",
+      "sensitivity": "confidential"
+    },
+    {
+      "fieldReferenceId": "F-011",
+      "manualTaskId": "MT-006",
+      "screen": "Extraction Review",
+      "fieldLabel": "Corrected extracted value",
+      "userMeaning": "Confirm or correct AI draft data",
+      "required": "conditional",
+      "type": "structured text",
+      "allowedValues": "Extracted payload fields",
+      "exampleDemoValue": "Beneficial owner: Sunward Holdings",
+      "validation": "Required for low confidence",
+      "errorBlockedState": "Needs clarification",
+      "dataModelMapping": "DocumentExtraction / DocumentReview",
+      "sensitivity": "confidential"
+    },
+    {
+      "fieldReferenceId": "F-012",
+      "manualTaskId": "MT-007",
+      "screen": "Signal Review",
+      "fieldLabel": "Analyst route decision",
+      "userMeaning": "Request data, assign, route, dismiss",
+      "required": "yes",
+      "type": "radio/button",
+      "allowedValues": "Request Data / Assign / Route / Dismiss",
+      "exampleDemoValue": "Request Data / Information",
+      "validation": "Must not create client advice",
+      "errorBlockedState": "Internal-only state",
+      "dataModelMapping": "Trigger / ActionItem / AuditEvent",
+      "sensitivity": "internal"
+    },
+    {
+      "fieldReferenceId": "F-013",
+      "manualTaskId": "MT-008",
+      "screen": "Advisor Approval",
+      "fieldLabel": "Advisor decision and rationale",
+      "userMeaning": "Approve, revise, request data, or escalate",
+      "required": "yes",
+      "type": "button/textarea",
+      "allowedValues": "Approve, Revise, Request More Data, Escalate",
+      "exampleDemoValue": "Approve with rationale",
+      "validation": "Approval does not release to client",
+      "errorBlockedState": "Compliance pending",
+      "dataModelMapping": "Approval / Recommendation",
+      "sensitivity": "advice-sensitive"
+    },
+    {
+      "fieldReferenceId": "F-014",
+      "manualTaskId": "MT-009",
+      "screen": "Compliance Review",
+      "fieldLabel": "Release/block decision",
+      "userMeaning": "Determine client visibility",
+      "required": "yes",
+      "type": "radio/textarea",
+      "allowedValues": "Release, Block, Request Evidence",
+      "exampleDemoValue": "Request Evidence",
+      "validation": "Release requires all gates",
+      "errorBlockedState": "Release disabled or blocked",
+      "dataModelMapping": "ComplianceReview / Recommendation / EvidenceRecord",
+      "sensitivity": "release-sensitive"
+    },
+    {
+      "fieldReferenceId": "F-015",
+      "manualTaskId": "MT-010",
+      "screen": "Decision Room",
+      "fieldLabel": "Decision choice",
+      "userMeaning": "Accept, defer, reject, or request more information",
+      "required": "yes",
+      "type": "button/comment",
+      "allowedValues": "Accept, Defer, Reject, Request Info",
+      "exampleDemoValue": "Defer with comment",
+      "validation": "Only released decisions are shown",
+      "errorBlockedState": "Permission or release block",
+      "dataModelMapping": "Decision / DecisionParticipant",
+      "sensitivity": "client-visible"
+    },
+    {
+      "fieldReferenceId": "F-016",
+      "manualTaskId": "MT-011",
+      "screen": "Export Wizard",
+      "fieldLabel": "Scope and redaction profile",
+      "userMeaning": "Control exported data",
+      "required": "yes",
+      "type": "tree/select",
+      "allowedValues": "Allowed objects and redaction profiles",
+      "exampleDemoValue": "Client-visible evidence package",
+      "validation": "Restricted/unredacted data cannot export",
+      "errorBlockedState": "Approval required/block",
+      "dataModelMapping": "ExportRequest / AuditEvent",
+      "sensitivity": "restricted"
+    },
+    {
+      "fieldReferenceId": "F-017",
+      "manualTaskId": "MT-012",
+      "screen": "Governance Role Change",
+      "fieldLabel": "Role/permission/scope/reason",
+      "userMeaning": "Change sensitive access safely",
+      "required": "yes",
+      "type": "select/matrix/textarea",
+      "allowedValues": "Roles and permissions table",
+      "exampleDemoValue": "Portfolio Manager + view performance",
+      "validation": "SOD/second confirmation required",
+      "errorBlockedState": "Confirmation required",
+      "dataModelMapping": "Role / Permission / AccessRequest",
+      "sensitivity": "security-sensitive"
+    },
+    {
+      "fieldReferenceId": "F-018",
+      "manualTaskId": "MT-013",
+      "screen": "Communication Path",
+      "fieldLabel": "Channel, recipient, sensitivity, notes",
+      "userMeaning": "Choose secure message or escalation path",
+      "required": "yes",
+      "type": "select/textarea",
+      "allowedValues": "secure_message, phone, video, in_person",
+      "exampleDemoValue": "Advisor call",
+      "validation": "Advice-like content needs gate",
+      "errorBlockedState": "Compliance hold",
+      "dataModelMapping": "MessageThread / CallEvent",
+      "sensitivity": "communication-sensitive"
+    },
+    {
+      "fieldReferenceId": "F-019",
+      "manualTaskId": "MT-014",
+      "screen": "Ops Queue",
+      "fieldLabel": "Queue filter, owner, status, SLA",
+      "userMeaning": "Monitor internal work",
+      "required": "optional",
+      "type": "filter/select",
+      "allowedValues": "Queue and SLA taxonomy",
+      "exampleDemoValue": "At risk",
+      "validation": "Mutations require owner/status",
+      "errorBlockedState": "Read-only if not implemented",
+      "dataModelMapping": "QueueItem / DataQualityIssue",
+      "sensitivity": "internal"
+    }
+  ],
+  "qaExpectations": [
+    "The manual is UI-task-led rather than route-path-led.",
+    "Every task chapter includes why, goal, next-use, screenshot, procedure, fields, gates, blocked states, future readiness, and demo boundary.",
+    "The PDF is text-extractable and visually rendered to PNG for inspection."
+  ]
+}

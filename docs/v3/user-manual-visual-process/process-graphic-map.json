@@ -1,0 +1,482 @@
+[
+  {
+    "workflowId": "WS-001",
+    "svgPath": "docs/v3/user-manual-visual-process/process-graphics/ws-001-tenant-becomes-operational.svg",
+    "pngPath": "docs/v3/user-manual-visual-process/process-graphics/ws-001-tenant-becomes-operational.png",
+    "nodes": [
+      {
+        "id": "WS-001-P1",
+        "label": "Platform Admin establishes baseline",
+        "role": "Platform Admin",
+        "state": "TenantStatus: draft",
+        "kind": "task",
+        "calloutNumber": 1
+      },
+      {
+        "id": "WS-001-P2",
+        "label": "Ops Admin creates tenant",
+        "role": "Ops Admin",
+        "state": "TenantStatus: onboarding",
+        "kind": "task",
+        "calloutNumber": 2
+      },
+      {
+        "id": "WS-001-P3",
+        "label": "Client Success coordinates readiness",
+        "role": "Client Success",
+        "state": "UserStatus: invited",
+        "kind": "gate",
+        "calloutNumber": 3
+      },
+      {
+        "id": "WS-001-P4",
+        "label": "Compliance confirms owner/policy gates",
+        "role": "Compliance",
+        "state": "UserStatus: active/demo-confirmed",
+        "kind": "gate",
+        "calloutNumber": null
+      },
+      {
+        "id": "WS-001-P5",
+        "label": "Invited User accepts and acknowledges scope",
+        "role": "Invited User",
+        "state": "UserStatus: active/demo-confirmed",
+        "kind": "task",
+        "calloutNumber": null
+      }
+    ],
+    "caption": "WS-001 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts."
+  },
+  {
+    "workflowId": "WS-002",
+    "svgPath": "docs/v3/user-manual-visual-process/process-graphics/ws-002-client-profile-becomes-usable-shared-family-context.svg",
+    "pngPath": "docs/v3/user-manual-visual-process/process-graphics/ws-002-client-profile-becomes-usable-shared-family-context.png",
+    "nodes": [
+      {
+        "id": "WS-002-P1",
+        "label": "Principal or Family CFO submits context",
+        "role": "Principal",
+        "state": "WorkflowStatus: draft/new",
+        "kind": "task",
+        "calloutNumber": 1
+      },
+      {
+        "id": "WS-002-P2",
+        "label": "Analyst validates and flags gaps",
+        "role": "Family CFO",
+        "state": "WorkflowStatus: in_review",
+        "kind": "task",
+        "calloutNumber": 2
+      },
+      {
+        "id": "WS-002-P3",
+        "label": "Advisor reviews governance significance",
+        "role": "Analyst",
+        "state": "WorkflowStatus: awaiting_info or completed",
+        "kind": "gate",
+        "calloutNumber": 3
+      },
+      {
+        "id": "WS-002-P4",
+        "label": "Visibility changes",
+        "role": "Advisor",
+        "state": "WorkflowStatus: awaiting_info or completed",
+        "kind": "task",
+        "calloutNumber": null
+      },
+      {
+        "id": "WS-002-P5",
+        "label": "Outcome recorded",
+        "role": "Advisor",
+        "state": "WorkflowStatus: awaiting_info or completed",
+        "kind": "task",
+        "calloutNumber": null
+      }
+    ],
+    "caption": "WS-002 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts."
+  },
+  {
+    "workflowId": "WS-003",
+    "svgPath": "docs/v3/user-manual-visual-process/process-graphics/ws-003-document-chaos-becomes-verified-evidence.svg",
+    "pngPath": "docs/v3/user-manual-visual-process/process-graphics/ws-003-document-chaos-becomes-verified-evidence.png",
+    "nodes": [
+      {
+        "id": "WS-003-P1",
+        "label": "Client or advisor uploads source",
+        "role": "Client",
+        "state": "DocumentStatus: empty",
+        "kind": "task",
+        "calloutNumber": 1
+      },
+      {
+        "id": "WS-003-P2",
+        "label": "System/extraction drafts structure",
+        "role": "Family CFO",
+        "state": "uploading",
+        "kind": "task",
+        "calloutNumber": 2
+      },
+      {
+        "id": "WS-003-P3",
+        "label": "Client confirms or corrects",
+        "role": "External Advisor",
+        "state": "uploaded",
+        "kind": "gate",
+        "calloutNumber": 3
+      },
+      {
+        "id": "WS-003-P4",
+        "label": "Analyst validates",
+        "role": "Analyst",
+        "state": "ai_extracted",
+        "kind": "task",
+        "calloutNumber": null
+      },
+      {
+        "id": "WS-003-P5",
+        "label": "Evidence receives verified source link",
+        "role": "Compliance",
+        "state": "client_confirmed",
+        "kind": "task",
+        "calloutNumber": null
+      }
+    ],
+    "caption": "WS-003 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts."
+  },
+  {
+    "workflowId": "WS-004",
+    "svgPath": "docs/v3/user-manual-visual-process/process-graphics/ws-004-signal-becomes-reviewed-recommendation-candidate.svg",
+    "pngPath": "docs/v3/user-manual-visual-process/process-graphics/ws-004-signal-becomes-reviewed-recommendation-candidate.png",
+    "nodes": [
+      {
+        "id": "WS-004-P1",
+        "label": "Signal enters queue",
+        "role": "System",
+        "state": "WorkflowStatus: new",
+        "kind": "task",
+        "calloutNumber": 1
+      },
+      {
+        "id": "WS-004-P2",
+        "label": "Analyst classifies and routes",
+        "role": "Analyst",
+        "state": "analyst_review",
+        "kind": "task",
+        "calloutNumber": 2
+      },
+      {
+        "id": "WS-004-P3",
+        "label": "Advisor receives a prepared candidate package",
+        "role": "Advisor",
+        "state": "awaiting_info or advisor_review",
+        "kind": "gate",
+        "calloutNumber": 3
+      },
+      {
+        "id": "WS-004-P4",
+        "label": "Visibility changes",
+        "role": "Advisor",
+        "state": "RecommendationStatus: advisor_pending",
+        "kind": "task",
+        "calloutNumber": null
+      },
+      {
+        "id": "WS-004-P5",
+        "label": "Outcome recorded",
+        "role": "Advisor",
+        "state": "RecommendationStatus: advisor_pending",
+        "kind": "task",
+        "calloutNumber": null
+      }
+    ],
+    "caption": "WS-004 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts."
+  },
+  {
+    "workflowId": "WS-005",
+    "svgPath": "docs/v3/user-manual-visual-process/process-graphics/ws-005-advisor-approved-package-becomes-compliance-controlled-client-visibility.svg",
+    "pngPath": "docs/v3/user-manual-visual-process/process-graphics/ws-005-advisor-approved-package-becomes-compliance-controlled-client-visibility.png",
+    "nodes": [
+      {
+        "id": "WS-005-P1",
+        "label": "Advisor records rationale",
+        "role": "Senior Wealth Advisor",
+        "state": "RecommendationStatus: advisor_pending",
+        "kind": "task",
+        "calloutNumber": 1
+      },
+      {
+        "id": "WS-005-P2",
+        "label": "Compliance checks classification/evidence/permissions",
+        "role": "Compliance Officer",
+        "state": "advisor_approved",
+        "kind": "gate",
+        "calloutNumber": 2
+      },
+      {
+        "id": "WS-005-P3",
+        "label": "Client visibility is released or blocked with reason",
+        "role": "Principal",
+        "state": "compliance_pending",
+        "kind": "gate",
+        "calloutNumber": 3
+      },
+      {
+        "id": "WS-005-P4",
+        "label": "Visibility changes",
+        "role": "Principal",
+        "state": "released_to_client or blocked",
+        "kind": "task",
+        "calloutNumber": null
+      },
+      {
+        "id": "WS-005-P5",
+        "label": "Outcome recorded",
+        "role": "Principal",
+        "state": "released_to_client or blocked",
+        "kind": "task",
+        "calloutNumber": null
+      }
+    ],
+    "caption": "WS-005 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts."
+  },
+  {
+    "workflowId": "WS-006",
+    "svgPath": "docs/v3/user-manual-visual-process/process-graphics/ws-006-client-decision-becomes-evidence-and-review-cadence.svg",
+    "pngPath": "docs/v3/user-manual-visual-process/process-graphics/ws-006-client-decision-becomes-evidence-and-review-cadence.png",
+    "nodes": [
+      {
+        "id": "WS-006-P1",
+        "label": "Compliance releases safe decision",
+        "role": "Compliance Officer",
+        "state": "DecisionStatus: released_to_client",
+        "kind": "gate",
+        "calloutNumber": 1
+      },
+      {
+        "id": "WS-006-P2",
+        "label": "Client-side participant acts",
+        "role": "Principal",
+        "state": "awaiting_family_approval",
+        "kind": "task",
+        "calloutNumber": 2
+      },
+      {
+        "id": "WS-006-P3",
+        "label": "Evidence captures decision outcome",
+        "role": "Family Council",
+        "state": "accepted/deferred/rejected",
+        "kind": "gate",
+        "calloutNumber": 3
+      },
+      {
+        "id": "WS-006-P4",
+        "label": "Review cadence schedules follow-up",
+        "role": "Trustee scoped",
+        "state": "evidence_created",
+        "kind": "gate",
+        "calloutNumber": null
+      },
+      {
+        "id": "WS-006-P5",
+        "label": "Outcome recorded",
+        "role": "Advisor",
+        "state": "review_scheduled",
+        "kind": "task",
+        "calloutNumber": null
+      }
+    ],
+    "caption": "WS-006 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts."
+  },
+  {
+    "workflowId": "WS-007",
+    "svgPath": "docs/v3/user-manual-visual-process/process-graphics/ws-007-governance-change-becomes-permission-safe-access.svg",
+    "pngPath": "docs/v3/user-manual-visual-process/process-graphics/ws-007-governance-change-becomes-permission-safe-access.png",
+    "nodes": [
+      {
+        "id": "WS-007-P1",
+        "label": "Principal/Admin requests access",
+        "role": "Principal",
+        "state": "WorkflowStatus: new/requested",
+        "kind": "task",
+        "calloutNumber": 1
+      },
+      {
+        "id": "WS-007-P2",
+        "label": "Compliance reviews purpose/scope",
+        "role": "Admin",
+        "state": "in_review",
+        "kind": "gate",
+        "calloutNumber": 2
+      },
+      {
+        "id": "WS-007-P3",
+        "label": "Security confirms sensitive changes",
+        "role": "Compliance",
+        "state": "approved or blocked or revoked",
+        "kind": "gate",
+        "calloutNumber": 3
+      },
+      {
+        "id": "WS-007-P4",
+        "label": "Audit history records lineage",
+        "role": "Security",
+        "state": "approved or blocked or revoked",
+        "kind": "task",
+        "calloutNumber": null
+      },
+      {
+        "id": "WS-007-P5",
+        "label": "Outcome recorded",
+        "role": "External Advisor",
+        "state": "approved or blocked or revoked",
+        "kind": "task",
+        "calloutNumber": null
+      }
+    ],
+    "caption": "WS-007 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts."
+  },
+  {
+    "workflowId": "WS-008",
+    "svgPath": "docs/v3/user-manual-visual-process/process-graphics/ws-008-communication-escalation-becomes-recorded-service-context.svg",
+    "pngPath": "docs/v3/user-manual-visual-process/process-graphics/ws-008-communication-escalation-becomes-recorded-service-context.png",
+    "nodes": [
+      {
+        "id": "WS-008-P1",
+        "label": "Advisor/Client Success selects channel",
+        "role": "Advisor",
+        "state": "WorkflowStatus: draft",
+        "kind": "task",
+        "calloutNumber": 1
+      },
+      {
+        "id": "WS-008-P2",
+        "label": "Client responds or joins call",
+        "role": "Client Success",
+        "state": "sent or scheduled",
+        "kind": "task",
+        "calloutNumber": 2
+      },
+      {
+        "id": "WS-008-P3",
+        "label": "Material outcome links to evidence",
+        "role": "Client",
+        "state": "awaiting_reply",
+        "kind": "gate",
+        "calloutNumber": 3
+      },
+      {
+        "id": "WS-008-P4",
+        "label": "Compliance controls advice-like messages when needed",
+        "role": "External Specialist",
+        "state": "completed or escalated",
+        "kind": "gate",
+        "calloutNumber": null
+      },
+      {
+        "id": "WS-008-P5",
+        "label": "Outcome recorded",
+        "role": "Compliance",
+        "state": "completed or escalated",
+        "kind": "task",
+        "calloutNumber": null
+      }
+    ],
+    "caption": "WS-008 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts."
+  },
+  {
+    "workflowId": "WS-009",
+    "svgPath": "docs/v3/user-manual-visual-process/process-graphics/ws-009-export-request-becomes-redacted-approved-auditable-package.svg",
+    "pngPath": "docs/v3/user-manual-visual-process/process-graphics/ws-009-export-request-becomes-redacted-approved-auditable-package.png",
+    "nodes": [
+      {
+        "id": "WS-009-P1",
+        "label": "Requester chooses scope",
+        "role": "Advisor",
+        "state": "ExportStatus: draft",
+        "kind": "task",
+        "calloutNumber": 1
+      },
+      {
+        "id": "WS-009-P2",
+        "label": "Privacy/Compliance reviews redaction and approval",
+        "role": "Compliance",
+        "state": "scope_selected",
+        "kind": "gate",
+        "calloutNumber": 2
+      },
+      {
+        "id": "WS-009-P3",
+        "label": "Generated package becomes downloadable only if allowed",
+        "role": "Privacy Officer",
+        "state": "redaction_pending",
+        "kind": "gate",
+        "calloutNumber": 3
+      },
+      {
+        "id": "WS-009-P4",
+        "label": "Audit captures export lifecycle",
+        "role": "Client",
+        "state": "approval_required",
+        "kind": "task",
+        "calloutNumber": null
+      },
+      {
+        "id": "WS-009-P5",
+        "label": "Outcome recorded",
+        "role": "External Advisor",
+        "state": "approved",
+        "kind": "task",
+        "calloutNumber": null
+      }
+    ],
+    "caption": "WS-009 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts."
+  },
+  {
+    "workflowId": "WS-010",
+    "svgPath": "docs/v3/user-manual-visual-process/process-graphics/ws-010-ops-monitoring-turns-workflow-friction-into-service-and-product-improvement.svg",
+    "pngPath": "docs/v3/user-manual-visual-process/process-graphics/ws-010-ops-monitoring-turns-workflow-friction-into-service-and-product-improvement.png",
+    "nodes": [
+      {
+        "id": "WS-010-P1",
+        "label": "Ops monitors queues",
+        "role": "Ops",
+        "state": "WorkflowStatus: open",
+        "kind": "task",
+        "calloutNumber": 1
+      },
+      {
+        "id": "WS-010-P2",
+        "label": "QA validates coverage and state language",
+        "role": "Product",
+        "state": "in_review",
+        "kind": "task",
+        "calloutNumber": 2
+      },
+      {
+        "id": "WS-010-P3",
+        "label": "Product identifies roadmap or implementation gaps",
+        "role": "QA",
+        "state": "blocked",
+        "kind": "gate",
+        "calloutNumber": 3
+      },
+      {
+        "id": "WS-010-P4",
+        "label": "Leads prioritize next workflow improvement",
+        "role": "Leads",
+        "state": "deferred",
+        "kind": "task",
+        "calloutNumber": null
+      },
+      {
+        "id": "WS-010-P5",
+        "label": "Outcome recorded",
+        "role": "Leads",
+        "state": "completed",
+        "kind": "task",
+        "calloutNumber": null
+      }
+    ],
+    "caption": "WS-010 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts."
+  }
+]

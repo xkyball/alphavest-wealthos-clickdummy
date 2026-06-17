@@ -1,0 +1,685 @@
+[
+  {
+    "pageId": "008",
+    "route": "/admin/policies/advice-boundary",
+    "screenshot": "fullpage/PAGE-008-admin-policies-advice-boundary-desktop-fullpage.png",
+    "metrics": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1473
+      },
+      "overflow": [
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Multi-Factor Authentication",
+          "rect": {
+            "x": 62,
+            "y": 167,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Templates and Redaction",
+          "rect": {
+            "x": 62,
+            "y": 608,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Download and Share",
+          "rect": {
+            "x": 62,
+            "y": 2746,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "State and Badge Reference",
+          "rect": {
+            "x": 62,
+            "y": 2986,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        }
+      ],
+      "clipped": [
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Multi-Factor Authentication",
+          "rect": {
+            "x": 62,
+            "y": 167,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Templates and Redaction",
+          "rect": {
+            "x": 62,
+            "y": 608,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Download and Share",
+          "rect": {
+            "x": 62,
+            "y": 2746,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "State and Badge Reference",
+          "rect": {
+            "x": 62,
+            "y": 2986,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "sr-only",
+          "text": "Search",
+          "rect": {
+            "x": 415,
+            "y": 15,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "sr-only",
+          "text": "Tenant context",
+          "rect": {
+            "x": 668,
+            "y": 15,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "sr-only",
+          "text": "Role context",
+          "rect": {
+            "x": 916,
+            "y": 15,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "sr-only",
+          "text": "Reset demo session",
+          "rect": {
+            "x": 1156,
+            "y": 36,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "sr-only",
+          "text": "Notifications",
+          "rect": {
+            "x": 1208,
+            "y": 36,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        }
+      ],
+      "outside": []
+    }
+  },
+  {
+    "pageId": "015",
+    "route": "/tenants/:id/setup",
+    "screenshot": "fullpage/PAGE-015-tenants-id-setup-desktop-fullpage.png",
+    "metrics": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1740
+      },
+      "overflow": [
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Multi-Factor Authentication",
+          "rect": {
+            "x": 62,
+            "y": 167,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Templates and Redaction",
+          "rect": {
+            "x": 62,
+            "y": 608,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Download and Share",
+          "rect": {
+            "x": 62,
+            "y": 2746,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "State and Badge Reference",
+          "rect": {
+            "x": 62,
+            "y": 2986,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        }
+      ],
+      "clipped": [
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Multi-Factor Authentication",
+          "rect": {
+            "x": 62,
+            "y": 167,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Templates and Redaction",
+          "rect": {
+            "x": 62,
+            "y": 608,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "Export Download and Share",
+          "rect": {
+            "x": 62,
+            "y": 2746,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "truncate",
+          "text": "State and Badge Reference",
+          "rect": {
+            "x": 62,
+            "y": 2986,
+            "width": 148,
+            "height": 16
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "sr-only",
+          "text": "Search",
+          "rect": {
+            "x": 415,
+            "y": 15,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "sr-only",
+          "text": "Tenant context",
+          "rect": {
+            "x": 668,
+            "y": 15,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "sr-only",
+          "text": "Role context",
+          "rect": {
+            "x": 916,
+            "y": 15,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "sr-only",
+          "text": "Reset demo session",
+          "rect": {
+            "x": 1156,
+            "y": 36,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "sr-only",
+          "text": "Notifications",
+          "rect": {
+            "x": 1208,
+            "y": 36,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "sr-only",
+          "text": "ACTIONS",
+          "rect": {
+            "x": 1361,
+            "y": 747,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        }
+      ],
+      "outside": []
+    }
+  },
+  {
+    "pageId": "023",
+    "route": "/relationships",
+    "screenshot": "fullpage/PAGE-023-relationships-desktop-fullpage.png",
+    "metrics": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1994
+      },
+      "overflow": [],
+      "clipped": [
+        {
+          "tag": "span",
+          "className": "sr-only",
+          "text": "Search",
+          "rect": {
+            "x": 271,
+            "y": 35,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "sr-only",
+          "text": "Tenant context",
+          "rect": {
+            "x": 879,
+            "y": 11,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "sr-only",
+          "text": "Role context",
+          "rect": {
+            "x": 1143,
+            "y": 11,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "h1",
+          "className": "sr-only",
+          "text": "Relationship Map",
+          "rect": {
+            "x": 271,
+            "y": 136,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "sr-only",
+          "text": "ACTIONS",
+          "rect": {
+            "x": 1345,
+            "y": 778,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        }
+      ],
+      "outside": []
+    }
+  },
+  {
+    "pageId": "032",
+    "route": "/actions",
+    "screenshot": "fullpage/PAGE-032-actions-desktop-fullpage.png",
+    "metrics": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 3725
+      },
+      "overflow": [],
+      "clipped": [
+        {
+          "tag": "span",
+          "className": "sr-only",
+          "text": "Search",
+          "rect": {
+            "x": 271,
+            "y": 37,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "sr-only",
+          "text": "Tenant context",
+          "rect": {
+            "x": 784,
+            "y": 13,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "sr-only",
+          "text": "Role context",
+          "rect": {
+            "x": 1048,
+            "y": 13,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "h1",
+          "className": "sr-only",
+          "text": "Action Board",
+          "rect": {
+            "x": 271,
+            "y": 140,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "sr-only",
+          "text": "Close action drawer",
+          "rect": {
+            "x": 1381,
+            "y": 2028,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        }
+      ],
+      "outside": []
+    }
+  },
+  {
+    "pageId": "056",
+    "route": "/export/:id/redaction",
+    "screenshot": "fullpage/PAGE-056-export-id-redaction-desktop-fullpage.png",
+    "metrics": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 2061
+      },
+      "overflow": [],
+      "clipped": [
+        {
+          "tag": "h1",
+          "className": "sr-only",
+          "text": "Export Redaction",
+          "rect": {
+            "x": -1,
+            "y": -1,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "sr-only",
+          "text": "Search WealthOS",
+          "rect": {
+            "x": 271,
+            "y": 15,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "sr-only",
+          "text": "Tenant context",
+          "rect": {
+            "x": 847,
+            "y": 15,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "sr-only",
+          "text": "Role context",
+          "rect": {
+            "x": 1111,
+            "y": 15,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        }
+      ],
+      "outside": []
+    }
+  },
+  {
+    "pageId": "061",
+    "route": "/service-blueprint",
+    "screenshot": "fullpage/PAGE-061-service-blueprint-desktop-fullpage.png",
+    "metrics": {
+      "doc": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1537
+      },
+      "overflow": [],
+      "clipped": [
+        {
+          "tag": "h1",
+          "className": "sr-only",
+          "text": "Service Blueprint",
+          "rect": {
+            "x": -1,
+            "y": -1,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "sr-only",
+          "text": "Search WealthOS",
+          "rect": {
+            "x": 271,
+            "y": 15,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "sr-only",
+          "text": "Tenant context",
+          "rect": {
+            "x": 847,
+            "y": 15,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        },
+        {
+          "tag": "span",
+          "className": "sr-only",
+          "text": "Role context",
+          "rect": {
+            "x": 1111,
+            "y": 15,
+            "width": 1,
+            "height": 1
+          },
+          "overflowX": "hidden",
+          "overflowY": "hidden"
+        }
+      ],
+      "outside": []
+    }
+  }
+]

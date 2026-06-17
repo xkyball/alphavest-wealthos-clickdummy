@@ -1,0 +1,104 @@
+{
+  "auditDate": "2026-06-17",
+  "mode": "Max mixed ENGINE_v2 + ENGINE_v3",
+  "verdict": "AlphaVest is a strong demo workflow simulator, but it does not yet support real document upload and does not yet provide generalized operational data maintenance for many visible workflows.",
+  "classificationScale": {
+    "E0": "Not present",
+    "E1": "Visual only",
+    "E2": "Static interaction",
+    "E3": "Generic audit",
+    "E4": "Fixture mutation",
+    "E5": "Partial domain mutation",
+    "E6": "Gated workflow simulation",
+    "E7": "Operational"
+  },
+  "topFindings": [
+    {
+      "id": "F-001",
+      "capability": "Real document upload",
+      "level": "E1-E5",
+      "status": "not operational",
+      "evidence": [
+        "components/client-intake-screen.tsx document upload screen is visual/static",
+        "lib/screencast-demo-client.ts posts JSON actionId only",
+        "app/api/demo-workflow/route.ts parses request.json()",
+        "lib/file-metadata-service.ts validates metadata, not bytes",
+        "tests/file-export-realism.spec.ts asserts metadata-only behavior"
+      ],
+      "nextStep": "Add multipart upload API, storage adapter, persisted document/version/extraction/evidence/audit rows, and UI reload."
+    },
+    {
+      "id": "F-002",
+      "capability": "Data maintenance",
+      "level": "E4-E5",
+      "status": "fixture-bound",
+      "evidence": [
+        "Client/family/entity/tenant/governance screens use static field components in key places",
+        "Workflow API receives actionId instead of typed user payloads"
+      ],
+      "nextStep": "Convert top masks to controlled forms and domain services."
+    },
+    {
+      "id": "F-003",
+      "capability": "Export package",
+      "level": "E5",
+      "status": "metadata-only",
+      "evidence": [
+        "lib/export-package-service.ts sets realBinaryGenerated false",
+        "tests/file-export-realism.spec.ts validates metadata-only export realism"
+      ],
+      "nextStep": "Generate a real demo binary artifact and signed download route."
+    },
+    {
+      "id": "F-004",
+      "capability": "Governance confirmation",
+      "level": "E4-E6",
+      "status": "simulated",
+      "evidence": [
+        "Governance confirmation phrase controls are read-only/static in critical drawers",
+        "Permission engine can deny, but UI payload confirmation is not operational"
+      ],
+      "nextStep": "Add editable confirmation phrase validation and audited denied attempts."
+    },
+    {
+      "id": "F-005",
+      "capability": "Communication workflows",
+      "level": "E1-E3",
+      "status": "mostly visual",
+      "evidence": [
+        "Communication screen buttons and fields do not create persisted messages/call records"
+      ],
+      "nextStep": "Add communication service for drafts, sends, call notes, and linked audit events."
+    }
+  ],
+  "workflowLevels": [
+    { "workflow": "UF-01 Platform policy setup", "level": "E3" },
+    { "workflow": "UF-02 Tenant onboarding", "level": "E4-E5" },
+    { "workflow": "UF-03 User onboarding and consent", "level": "E2-E4" },
+    { "workflow": "UF-04 Family profile intake", "level": "E4-E5" },
+    { "workflow": "UF-05 Entity and asset intake", "level": "E4-E5" },
+    { "workflow": "UF-06 Document upload and verification", "level": "E1-E5" },
+    { "workflow": "UF-07 Signal review and routing", "level": "E5" },
+    { "workflow": "UF-08 Advisor approval", "level": "E6" },
+    { "workflow": "UF-09 Compliance release/block", "level": "E6" },
+    { "workflow": "UF-10 Client decision", "level": "E6" },
+    { "workflow": "UF-11 Evidence review and export", "level": "E5" },
+    { "workflow": "UF-12 Governance access change", "level": "E6" },
+    { "workflow": "UF-13 Communication escalation", "level": "E1-E3" },
+    { "workflow": "UF-14 Operations monitoring", "level": "E1-E2" },
+    { "workflow": "J12 Suitability", "level": "E6" },
+    { "workflow": "J13 IPS", "level": "E5-E6" },
+    { "workflow": "J14 Risk alert", "level": "E5-E6" }
+  ],
+  "priorityBacklog": [
+    "GAP-001 Real document upload",
+    "GAP-002 Convert static fields to persisted forms",
+    "GAP-003 Add typed payload APIs beyond actionId",
+    "GAP-004 Real binary export generation",
+    "GAP-005 Operational governance confirmation",
+    "GAP-006 Persisted communication/call workflows",
+    "GAP-007 Real tenant setup maintenance",
+    "GAP-008 Evidence upload/download/share"
+  ],
+  "recommendedNextPrompt": "Use Max. Implement GAP-001 as a narrow vertical slice. Keep the demo journey harness intact, but add a real document upload path: browser file input plus drag/drop, multipart API, local demo storage adapter, document/version/extraction/audit/evidence persistence, UI reload from DB, and tests proving upload, rejection, and persisted reload. Do not introduce real auth or real client data. Update the Phase and QA reports with files changed, tests run, and remaining limitations."
+}

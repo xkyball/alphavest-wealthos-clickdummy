@@ -1,0 +1,2990 @@
+{
+  "metadata": {
+    "title": "AlphaVest WealthOS Visual Process Manual V3",
+    "generatedAt": "2026-06-17T01:16:08.741Z",
+    "engineMode": "ENGINE_MIX_V2_CODEX_V3_PROOF",
+    "boundary": "Generated visual process explanation package; not production certification.",
+    "visualImplementationStandard": "/Users/chris/Documents/Codex/2026-06-16/du-bist-ein-senior-architekt-f/docs/codex-visual-implementation-standard/README.md"
+  },
+  "researchPrinciples": [
+    {
+      "source": "NN/g Help and Documentation",
+      "url": "https://www.nngroup.com/articles/help-and-documentation/",
+      "principle": "Help must stay focused on the user task, list concrete steps, and avoid excessive bulk."
+    },
+    {
+      "source": "Microsoft Procedures and Instructions",
+      "url": "https://learn.microsoft.com/en-us/style-guide/procedures-instructions/",
+      "principle": "Complex tasks may need pictures, illustrations, videos, or numbered procedures with supporting visuals."
+    },
+    {
+      "source": "Atlassian Process Documentation",
+      "url": "https://www.atlassian.com/work-management/knowledge-sharing/documentation/process-documentation",
+      "principle": "Process documentation records exact workflow steps and may use checklists or flowcharts."
+    },
+    {
+      "source": "Asana Process Documentation",
+      "url": "https://asana.com/resources/process-documentation",
+      "principle": "Screenshots, diagrams, and flowcharts help users understand complex procedures with multiple steps."
+    },
+    {
+      "source": "TechSmith Workflow Documentation",
+      "url": "https://www.techsmith.com/blog/best-ways-to-document-workflows/",
+      "principle": "Visual documentation such as screenshots and walkthroughs creates clearer workflow training material."
+    },
+    {
+      "source": "ScreenSteps End-User Documentation",
+      "url": "https://blog.screensteps.com/10-examples-of-great-end-user-documentation",
+      "principle": "Annotated screenshots with arrows, circles, or numbered sequences reduce ambiguity."
+    },
+    {
+      "source": "Ritza Screenshot Guidelines",
+      "url": "https://styleguide.ritza.co/screenshots/screenshot-guidelines-for-technical-documentation/",
+      "principle": "Use focused callouts, avoid too many annotations, keep placement consistent, and combine text with screenshots."
+    }
+  ],
+  "sourceInputs": {
+    "collaboration": "docs/v3/user-manual-collaboration/ALPHAVEST_COLLABORATIVE_WORKFLOW_MANUAL_V3.json",
+    "manualSource": "docs/v3/user-manual-source/user-manual-source.v3.json",
+    "contextNarrative": "docs/v3/user-manual-context/ALPHAVEST_USER_MANUAL_CONTEXTUAL_NARRATIVE_V3.json",
+    "screenshots": "artifacts/user-manual-source/20260616-232649Z/screenshots"
+  },
+  "counts": {
+    "workflowModules": 10,
+    "processGraphics": 10,
+    "annotatedScreenshots": 10,
+    "callouts": 30,
+    "roleRelays": 13
+  },
+  "modules": [
+    {
+      "index": 1,
+      "workflowId": "WS-001",
+      "title": "Tenant becomes operational",
+      "slug": "ws-001-tenant-becomes-operational",
+      "outcome": "Tenant setup becomes a governed collaboration container.",
+      "businessReason": "A family-office workspace can become active before ownership, compliance, policy, and invitation context are aligned.",
+      "roles": [
+        "Platform Admin",
+        "Ops Admin",
+        "Client Success",
+        "Compliance",
+        "Invited User"
+      ],
+      "sourceScreens": [
+        "Platform Settings",
+        "Tenant List",
+        "Tenant Setup Dashboard",
+        "Tenant Users",
+        "Invitation Acceptance"
+      ],
+      "dataObjects": [
+        "PolicyDefinition",
+        "ClientTenant",
+        "User",
+        "UserRole",
+        "AuditEvent"
+      ],
+      "stateSequence": [
+        "TenantStatus: draft",
+        "TenantStatus: onboarding",
+        "UserStatus: invited",
+        "UserStatus: active/demo-confirmed"
+      ],
+      "visibilitySequence": [
+        "Internal setup visible to AlphaVest roles",
+        "Invited user sees only onboarding context",
+        "Client workspace is not treated as operational until gates are satisfied"
+      ],
+      "visibilityBoundary": "Client workspace is not treated as operational until gates are satisfied",
+      "evidenceAuditSequence": [
+        "Policy changes audit",
+        "Tenant create/team assignment audit expected",
+        "Invitation and consent audit expected"
+      ],
+      "readerTakeaway": "A tenant is not just a record. It is the scoped collaboration container that makes later visibility and accountability possible.",
+      "systemPrevents": [
+        "tenant activation without required owners",
+        "role context without invitation/consent",
+        "unscoped client data"
+      ],
+      "demoBoundary": "The UI is navigable with demo data; broad persisted tenant governance transactions are not fully claimed.",
+      "screenshotPlan": {
+        "storyId": "WS-001",
+        "primaryScreenshots": [
+          "SS-TASK-MT-001",
+          "SS-TASK-MT-002",
+          "SS-TASK-MT-003"
+        ],
+        "whyTheyMatter": "Show policy baseline, tenant readiness, and invitation as one activation relay.",
+        "roleViewpoint": "Platform/Ops/Invited User",
+        "handoffShown": "policy -> tenant -> invitation"
+      },
+      "screenshotSource": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-001-platform-settings.png",
+      "annotatedScreenshot": "docs/v3/user-manual-visual-process/annotated-screenshots/ws-001-tenant-becomes-operational-annotated.png",
+      "processGraphicSvg": "docs/v3/user-manual-visual-process/process-graphics/ws-001-tenant-becomes-operational.svg",
+      "processGraphicPng": "docs/v3/user-manual-visual-process/process-graphics/ws-001-tenant-becomes-operational.png",
+      "processGraphicCaption": "WS-001 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts.",
+      "callouts": [
+        {
+          "number": 1,
+          "label": "Trigger and source context",
+          "targetUiRegion": "Primary page context or source work item area",
+          "normalizedBox": {
+            "x": 0.08,
+            "y": 0.12,
+            "w": 0.34,
+            "h": 0.22
+          },
+          "action": "Platform Admin establishes baseline",
+          "why": "This anchors tenant becomes operational in the source context instead of treating the screen as an isolated page.",
+          "requiredData": "PolicyDefinition, ClientTenant, User",
+          "stateChange": "TenantStatus: draft -> TenantStatus: onboarding",
+          "visibilityChange": "Internal setup visible to AlphaVest roles",
+          "evidenceEffect": "Policy changes audit",
+          "nextRoleSees": "Ops Admin receives a scoped view of the workflow context.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-001",
+          "relatedScreenshotId": "SS-TASK-MT-001",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-001-platform-settings.png"
+        },
+        {
+          "number": 2,
+          "label": "Review or gate action",
+          "targetUiRegion": "Central review, decision, queue, or action region",
+          "normalizedBox": {
+            "x": 0.38,
+            "y": 0.28,
+            "w": 0.35,
+            "h": 0.24
+          },
+          "action": "Ops Admin creates tenant",
+          "why": "This is where the workflow becomes controlled work rather than raw information.",
+          "requiredData": "ClientTenant, User, UserRole",
+          "stateChange": "TenantStatus: onboarding -> UserStatus: invited",
+          "visibilityChange": "Invited user sees only onboarding context",
+          "evidenceEffect": "Tenant create/team assignment audit expected",
+          "nextRoleSees": "Compliance can act only after the relevant review or gate is satisfied.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-001",
+          "relatedScreenshotId": "SS-TASK-MT-001",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-001-platform-settings.png"
+        },
+        {
+          "number": 3,
+          "label": "Outcome, visibility, or evidence result",
+          "targetUiRegion": "Status, confirmation, released item, or evidence area",
+          "normalizedBox": {
+            "x": 0.62,
+            "y": 0.58,
+            "w": 0.3,
+            "h": 0.25
+          },
+          "action": "Invited User accepts and acknowledges scope",
+          "why": "This shows what the workflow makes possible next and which boundary has changed.",
+          "requiredData": "User, UserRole, AuditEvent",
+          "stateChange": "UserStatus: invited -> UserStatus: active/demo-confirmed",
+          "visibilityChange": "Client workspace is not treated as operational until gates are satisfied",
+          "evidenceEffect": "Invitation and consent audit expected",
+          "nextRoleSees": "The next role sees the resulting state, not the entire internal preparation history.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-001",
+          "relatedScreenshotId": "SS-TASK-MT-001",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-001-platform-settings.png"
+        }
+      ],
+      "processNodes": [
+        {
+          "id": "WS-001-P1",
+          "label": "Platform Admin establishes baseline",
+          "role": "Platform Admin",
+          "state": "TenantStatus: draft",
+          "kind": "task",
+          "calloutNumber": 1
+        },
+        {
+          "id": "WS-001-P2",
+          "label": "Ops Admin creates tenant",
+          "role": "Ops Admin",
+          "state": "TenantStatus: onboarding",
+          "kind": "task",
+          "calloutNumber": 2
+        },
+        {
+          "id": "WS-001-P3",
+          "label": "Client Success coordinates readiness",
+          "role": "Client Success",
+          "state": "UserStatus: invited",
+          "kind": "gate",
+          "calloutNumber": 3
+        },
+        {
+          "id": "WS-001-P4",
+          "label": "Compliance confirms owner/policy gates",
+          "role": "Compliance",
+          "state": "UserStatus: active/demo-confirmed",
+          "kind": "gate",
+          "calloutNumber": null
+        },
+        {
+          "id": "WS-001-P5",
+          "label": "Invited User accepts and acknowledges scope",
+          "role": "Invited User",
+          "state": "UserStatus: active/demo-confirmed",
+          "kind": "task",
+          "calloutNumber": null
+        }
+      ],
+      "relatedRelays": [
+        "RR-001",
+        "RR-002",
+        "RR-003",
+        "RR-004"
+      ],
+      "nextProcessEnabled": "A tenant is not just a record. It is the scoped collaboration container that makes later visibility and accountability possible.",
+      "contextTask": null,
+      "sourceTaskIds": [
+        "MT-001",
+        "MT-002",
+        "MT-003"
+      ],
+      "confidenceNote": "Callouts mark broad UI regions because source screenshots do not expose semantic element coordinates."
+    },
+    {
+      "index": 2,
+      "workflowId": "WS-002",
+      "title": "Client profile becomes usable shared family context",
+      "slug": "ws-002-client-profile-becomes-usable-shared-family-context",
+      "outcome": "Family context becomes shared, reviewed operating context.",
+      "businessReason": "Family information, relationships, governance roles, and objectives often sit in separate memories, emails, spreadsheets, and documents.",
+      "roles": [
+        "Principal",
+        "Family CFO",
+        "Analyst",
+        "Advisor"
+      ],
+      "sourceScreens": [
+        "Client Web Dashboard",
+        "Client Profile",
+        "Family Members",
+        "Relationships",
+        "Wealth Map"
+      ],
+      "dataObjects": [
+        "ClientTenant",
+        "FamilyMember",
+        "Relationship",
+        "Entity",
+        "Asset",
+        "DataQualityIssue"
+      ],
+      "stateSequence": [
+        "WorkflowStatus: draft/new",
+        "WorkflowStatus: in_review",
+        "WorkflowStatus: awaiting_info or completed"
+      ],
+      "visibilitySequence": [
+        "Client-side profile input remains tenant-scoped",
+        "Analyst sees quality gaps and relationship context",
+        "Advisor sees decision-relevant context only after review"
+      ],
+      "visibilityBoundary": "Advisor sees decision-relevant context only after review",
+      "evidenceAuditSequence": [
+        "Profile edits should audit when material",
+        "Missing evidence creates review tasks or data quality issues"
+      ],
+      "readerTakeaway": "The wealth map is not decoration. It is a shared model that tells every role what the family structure currently means and where uncertainty remains.",
+      "systemPrevents": [
+        "advisory work based on memory alone",
+        "unreviewed relationships driving decisions",
+        "hidden conflicts in family/entity structure"
+      ],
+      "demoBoundary": "Profile and relationship screens are navigable with demo data; full persistence is still a stated implementation need.",
+      "screenshotPlan": {
+        "storyId": "WS-002",
+        "primaryScreenshots": [
+          "SS-TASK-MT-004",
+          "SS-TASK-MT-005"
+        ],
+        "whyTheyMatter": "Show client context and wealth structure becoming shared review material.",
+        "roleViewpoint": "Principal/Analyst/Advisor",
+        "handoffShown": "client input -> analyst review -> advisor context"
+      },
+      "screenshotSource": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-004-client-web-dashboard.png",
+      "annotatedScreenshot": "docs/v3/user-manual-visual-process/annotated-screenshots/ws-002-client-profile-becomes-usable-shared-family-context-annotated.png",
+      "processGraphicSvg": "docs/v3/user-manual-visual-process/process-graphics/ws-002-client-profile-becomes-usable-shared-family-context.svg",
+      "processGraphicPng": "docs/v3/user-manual-visual-process/process-graphics/ws-002-client-profile-becomes-usable-shared-family-context.png",
+      "processGraphicCaption": "WS-002 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts.",
+      "callouts": [
+        {
+          "number": 1,
+          "label": "Trigger and source context",
+          "targetUiRegion": "Primary page context or source work item area",
+          "normalizedBox": {
+            "x": 0.08,
+            "y": 0.12,
+            "w": 0.34,
+            "h": 0.22
+          },
+          "action": "Principal or Family CFO submits context",
+          "why": "This anchors client profile becomes usable shared family context in the source context instead of treating the screen as an isolated page.",
+          "requiredData": "ClientTenant, FamilyMember, Relationship",
+          "stateChange": "WorkflowStatus: draft/new -> WorkflowStatus: in_review",
+          "visibilityChange": "Client-side profile input remains tenant-scoped",
+          "evidenceEffect": "Profile edits should audit when material",
+          "nextRoleSees": "Family CFO receives a scoped view of the workflow context.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-002",
+          "relatedScreenshotId": "SS-TASK-MT-004",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-004-client-web-dashboard.png"
+        },
+        {
+          "number": 2,
+          "label": "Review or gate action",
+          "targetUiRegion": "Central review, decision, queue, or action region",
+          "normalizedBox": {
+            "x": 0.38,
+            "y": 0.28,
+            "w": 0.35,
+            "h": 0.24
+          },
+          "action": "Analyst validates and flags gaps",
+          "why": "This is where the workflow becomes controlled work rather than raw information.",
+          "requiredData": "FamilyMember, Relationship, Entity",
+          "stateChange": "WorkflowStatus: in_review -> WorkflowStatus: awaiting_info or completed",
+          "visibilityChange": "Analyst sees quality gaps and relationship context",
+          "evidenceEffect": "Missing evidence creates review tasks or data quality issues",
+          "nextRoleSees": "Advisor can act only after the relevant review or gate is satisfied.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-002",
+          "relatedScreenshotId": "SS-TASK-MT-004",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-004-client-web-dashboard.png"
+        },
+        {
+          "number": 3,
+          "label": "Outcome, visibility, or evidence result",
+          "targetUiRegion": "Status, confirmation, released item, or evidence area",
+          "normalizedBox": {
+            "x": 0.62,
+            "y": 0.58,
+            "w": 0.3,
+            "h": 0.25
+          },
+          "action": "Advisor reviews governance significance",
+          "why": "This shows what the workflow makes possible next and which boundary has changed.",
+          "requiredData": "Entity, Asset, DataQualityIssue",
+          "stateChange": "WorkflowStatus: in_review -> WorkflowStatus: awaiting_info or completed",
+          "visibilityChange": "Advisor sees decision-relevant context only after review",
+          "evidenceEffect": "Missing evidence creates review tasks or data quality issues",
+          "nextRoleSees": "The next role sees the resulting state, not the entire internal preparation history.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-002",
+          "relatedScreenshotId": "SS-TASK-MT-004",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-004-client-web-dashboard.png"
+        }
+      ],
+      "processNodes": [
+        {
+          "id": "WS-002-P1",
+          "label": "Principal or Family CFO submits context",
+          "role": "Principal",
+          "state": "WorkflowStatus: draft/new",
+          "kind": "task",
+          "calloutNumber": 1
+        },
+        {
+          "id": "WS-002-P2",
+          "label": "Analyst validates and flags gaps",
+          "role": "Family CFO",
+          "state": "WorkflowStatus: in_review",
+          "kind": "task",
+          "calloutNumber": 2
+        },
+        {
+          "id": "WS-002-P3",
+          "label": "Advisor reviews governance significance",
+          "role": "Analyst",
+          "state": "WorkflowStatus: awaiting_info or completed",
+          "kind": "gate",
+          "calloutNumber": 3
+        },
+        {
+          "id": "WS-002-P4",
+          "label": "Visibility changes",
+          "role": "Advisor",
+          "state": "WorkflowStatus: awaiting_info or completed",
+          "kind": "task",
+          "calloutNumber": null
+        },
+        {
+          "id": "WS-002-P5",
+          "label": "Outcome recorded",
+          "role": "Advisor",
+          "state": "WorkflowStatus: awaiting_info or completed",
+          "kind": "task",
+          "calloutNumber": null
+        }
+      ],
+      "relatedRelays": [
+        "RR-005"
+      ],
+      "nextProcessEnabled": "The wealth map is not decoration. It is a shared model that tells every role what the family structure currently means and where uncertainty remains.",
+      "contextTask": null,
+      "sourceTaskIds": [
+        "MT-004"
+      ],
+      "confidenceNote": "Callouts mark broad UI regions because source screenshots do not expose semantic element coordinates."
+    },
+    {
+      "index": 3,
+      "workflowId": "WS-003",
+      "title": "Document chaos becomes verified evidence",
+      "slug": "ws-003-document-chaos-becomes-verified-evidence",
+      "outcome": "Raw documents become classified, checked, and evidence-ready.",
+      "businessReason": "Documents arrive from different people, in different formats, with uncertain sensitivity, entity links, and extracted facts.",
+      "roles": [
+        "Client",
+        "Family CFO",
+        "External Advisor",
+        "Analyst",
+        "Compliance"
+      ],
+      "sourceScreens": [
+        "Documents List",
+        "Document Upload",
+        "Extraction Review",
+        "Verification Pending",
+        "Evidence Vault"
+      ],
+      "dataObjects": [
+        "Document",
+        "DocumentVersion",
+        "DocumentExtraction",
+        "DocumentReview",
+        "DocumentLink",
+        "EvidenceRecord"
+      ],
+      "stateSequence": [
+        "DocumentStatus: empty",
+        "uploading",
+        "uploaded",
+        "ai_extracted",
+        "client_confirmed",
+        "analyst_review_pending",
+        "verified or needs_clarification or blocked",
+        "linked_to_evidence"
+      ],
+      "visibilitySequence": [
+        "Uploader sees upload/confirmation state",
+        "Analyst sees extraction detail",
+        "Compliance sees evidence readiness when relevant",
+        "Restricted documents remain scoped"
+      ],
+      "visibilityBoundary": "Restricted documents remain scoped",
+      "evidenceAuditSequence": [
+        "Upload, extraction review, versioning, correction, verification, and evidence linking should be auditable"
+      ],
+      "readerTakeaway": "A document becomes useful only when it is classified, checked, linked, and made available at the correct visibility level.",
+      "systemPrevents": [
+        "low-confidence extraction becoming accepted fact",
+        "restricted document exposure",
+        "unlinked evidence claims"
+      ],
+      "demoBoundary": "The manual documents demo UI and workflow intent; no real file storage or extraction transaction is claimed.",
+      "screenshotPlan": {
+        "storyId": "WS-003",
+        "primaryScreenshots": [
+          "SS-TASK-MT-006",
+          "SS-TASK-MT-011"
+        ],
+        "whyTheyMatter": "Show document inventory and evidence vault as the conversion from file to proof.",
+        "roleViewpoint": "Client/Analyst/Compliance",
+        "handoffShown": "upload -> verify -> evidence"
+      },
+      "screenshotSource": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-006-documents-list.png",
+      "annotatedScreenshot": "docs/v3/user-manual-visual-process/annotated-screenshots/ws-003-document-chaos-becomes-verified-evidence-annotated.png",
+      "processGraphicSvg": "docs/v3/user-manual-visual-process/process-graphics/ws-003-document-chaos-becomes-verified-evidence.svg",
+      "processGraphicPng": "docs/v3/user-manual-visual-process/process-graphics/ws-003-document-chaos-becomes-verified-evidence.png",
+      "processGraphicCaption": "WS-003 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts.",
+      "callouts": [
+        {
+          "number": 1,
+          "label": "Trigger and source context",
+          "targetUiRegion": "Primary page context or source work item area",
+          "normalizedBox": {
+            "x": 0.08,
+            "y": 0.12,
+            "w": 0.34,
+            "h": 0.22
+          },
+          "action": "Client or advisor uploads source",
+          "why": "This anchors document chaos becomes verified evidence in the source context instead of treating the screen as an isolated page.",
+          "requiredData": "Document, DocumentVersion, DocumentExtraction",
+          "stateChange": "DocumentStatus: empty -> uploading",
+          "visibilityChange": "Uploader sees upload/confirmation state",
+          "evidenceEffect": "Upload, extraction review, versioning, correction, verification, and evidence linking should be auditable",
+          "nextRoleSees": "Family CFO receives a scoped view of the workflow context.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-003",
+          "relatedScreenshotId": "SS-TASK-MT-006",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-006-documents-list.png"
+        },
+        {
+          "number": 2,
+          "label": "Review or gate action",
+          "targetUiRegion": "Central review, decision, queue, or action region",
+          "normalizedBox": {
+            "x": 0.38,
+            "y": 0.28,
+            "w": 0.35,
+            "h": 0.24
+          },
+          "action": "System/extraction drafts structure",
+          "why": "This is where the workflow becomes controlled work rather than raw information.",
+          "requiredData": "DocumentVersion, DocumentExtraction, DocumentReview",
+          "stateChange": "uploading -> uploaded",
+          "visibilityChange": "Analyst sees extraction detail",
+          "evidenceEffect": "Review action becomes part of the workflow history when applicable.",
+          "nextRoleSees": "Analyst can act only after the relevant review or gate is satisfied.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-003",
+          "relatedScreenshotId": "SS-TASK-MT-006",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-006-documents-list.png"
+        },
+        {
+          "number": 3,
+          "label": "Outcome, visibility, or evidence result",
+          "targetUiRegion": "Status, confirmation, released item, or evidence area",
+          "normalizedBox": {
+            "x": 0.62,
+            "y": 0.58,
+            "w": 0.3,
+            "h": 0.25
+          },
+          "action": "Evidence receives verified source link",
+          "why": "This shows what the workflow makes possible next and which boundary has changed.",
+          "requiredData": "DocumentReview, DocumentLink, EvidenceRecord",
+          "stateChange": "verified or needs_clarification or blocked -> linked_to_evidence",
+          "visibilityChange": "Restricted documents remain scoped",
+          "evidenceEffect": "Upload, extraction review, versioning, correction, verification, and evidence linking should be auditable",
+          "nextRoleSees": "The next role sees the resulting state, not the entire internal preparation history.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-003",
+          "relatedScreenshotId": "SS-TASK-MT-006",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-006-documents-list.png"
+        }
+      ],
+      "processNodes": [
+        {
+          "id": "WS-003-P1",
+          "label": "Client or advisor uploads source",
+          "role": "Client",
+          "state": "DocumentStatus: empty",
+          "kind": "task",
+          "calloutNumber": 1
+        },
+        {
+          "id": "WS-003-P2",
+          "label": "System/extraction drafts structure",
+          "role": "Family CFO",
+          "state": "uploading",
+          "kind": "task",
+          "calloutNumber": 2
+        },
+        {
+          "id": "WS-003-P3",
+          "label": "Client confirms or corrects",
+          "role": "External Advisor",
+          "state": "uploaded",
+          "kind": "gate",
+          "calloutNumber": 3
+        },
+        {
+          "id": "WS-003-P4",
+          "label": "Analyst validates",
+          "role": "Analyst",
+          "state": "ai_extracted",
+          "kind": "task",
+          "calloutNumber": null
+        },
+        {
+          "id": "WS-003-P5",
+          "label": "Evidence receives verified source link",
+          "role": "Compliance",
+          "state": "client_confirmed",
+          "kind": "task",
+          "calloutNumber": null
+        }
+      ],
+      "relatedRelays": [
+        "RR-001",
+        "RR-003",
+        "RR-004",
+        "RR-005",
+        "RR-006",
+        "RR-007",
+        "RR-008",
+        "RR-009",
+        "RR-010",
+        "RR-011",
+        "RR-012",
+        "RR-013"
+      ],
+      "nextProcessEnabled": "A document becomes useful only when it is classified, checked, linked, and made available at the correct visibility level.",
+      "contextTask": null,
+      "sourceTaskIds": [
+        "MT-006",
+        "MT-011"
+      ],
+      "confidenceNote": "Callouts mark broad UI regions because source screenshots do not expose semantic element coordinates."
+    },
+    {
+      "index": 4,
+      "workflowId": "WS-004",
+      "title": "Signal becomes reviewed recommendation candidate",
+      "slug": "ws-004-signal-becomes-reviewed-recommendation-candidate",
+      "outcome": "Signals become reviewable recommendation candidates without becoming advice.",
+      "businessReason": "A signal, data gap, market prompt, or document expiry can be mistaken for advice if review boundaries are not explicit.",
+      "roles": [
+        "System",
+        "Analyst",
+        "Advisor"
+      ],
+      "sourceScreens": [
+        "Signal Review",
+        "Consultant Workbench",
+        "Trigger Detail",
+        "Advisor Approval Queue"
+      ],
+      "dataObjects": [
+        "Trigger",
+        "ActionItem",
+        "Recommendation",
+        "Approval",
+        "AuditEvent"
+      ],
+      "stateSequence": [
+        "WorkflowStatus: new",
+        "analyst_review",
+        "awaiting_info or advisor_review",
+        "RecommendationStatus: advisor_pending"
+      ],
+      "visibilitySequence": [
+        "Signal and draft remain internal",
+        "Advisor sees review context",
+        "Client sees nothing advice-like yet"
+      ],
+      "visibilityBoundary": "Client sees nothing advice-like yet",
+      "evidenceAuditSequence": [
+        "Routing, request-data, and recommendation-prep actions should create traceable events"
+      ],
+      "readerTakeaway": "The system keeps signals useful without letting them masquerade as advice.",
+      "systemPrevents": [
+        "AI draft or signal becoming client advice",
+        "analyst review being treated as release",
+        "unsupported advisor package"
+      ],
+      "demoBoundary": "The J01 subset has demo-executable workflow actions; broad signal governance remains partial.",
+      "screenshotPlan": {
+        "storyId": "WS-004",
+        "primaryScreenshots": [
+          "SS-TASK-MT-007",
+          "SS-TASK-MT-008"
+        ],
+        "whyTheyMatter": "Show internal-only signal review and advisor package before release.",
+        "roleViewpoint": "Analyst/Advisor",
+        "handoffShown": "signal -> analyst route -> advisor approval"
+      },
+      "screenshotSource": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-007-signal-review.png",
+      "annotatedScreenshot": "docs/v3/user-manual-visual-process/annotated-screenshots/ws-004-signal-becomes-reviewed-recommendation-candidate-annotated.png",
+      "processGraphicSvg": "docs/v3/user-manual-visual-process/process-graphics/ws-004-signal-becomes-reviewed-recommendation-candidate.svg",
+      "processGraphicPng": "docs/v3/user-manual-visual-process/process-graphics/ws-004-signal-becomes-reviewed-recommendation-candidate.png",
+      "processGraphicCaption": "WS-004 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts.",
+      "callouts": [
+        {
+          "number": 1,
+          "label": "Trigger and source context",
+          "targetUiRegion": "Primary page context or source work item area",
+          "normalizedBox": {
+            "x": 0.08,
+            "y": 0.12,
+            "w": 0.34,
+            "h": 0.22
+          },
+          "action": "Signal enters queue",
+          "why": "This anchors signal becomes reviewed recommendation candidate in the source context instead of treating the screen as an isolated page.",
+          "requiredData": "Trigger, ActionItem, Recommendation",
+          "stateChange": "WorkflowStatus: new -> analyst_review",
+          "visibilityChange": "Signal and draft remain internal",
+          "evidenceEffect": "Routing, request-data, and recommendation-prep actions should create traceable events",
+          "nextRoleSees": "Analyst receives a scoped view of the workflow context.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-004",
+          "relatedScreenshotId": "SS-TASK-MT-007",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-007-signal-review.png"
+        },
+        {
+          "number": 2,
+          "label": "Review or gate action",
+          "targetUiRegion": "Central review, decision, queue, or action region",
+          "normalizedBox": {
+            "x": 0.38,
+            "y": 0.28,
+            "w": 0.35,
+            "h": 0.24
+          },
+          "action": "Analyst classifies and routes",
+          "why": "This is where the workflow becomes controlled work rather than raw information.",
+          "requiredData": "ActionItem, Recommendation, Approval",
+          "stateChange": "analyst_review -> awaiting_info or advisor_review",
+          "visibilityChange": "Advisor sees review context",
+          "evidenceEffect": "Review action becomes part of the workflow history when applicable.",
+          "nextRoleSees": "Advisor can act only after the relevant review or gate is satisfied.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-004",
+          "relatedScreenshotId": "SS-TASK-MT-007",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-007-signal-review.png"
+        },
+        {
+          "number": 3,
+          "label": "Outcome, visibility, or evidence result",
+          "targetUiRegion": "Status, confirmation, released item, or evidence area",
+          "normalizedBox": {
+            "x": 0.62,
+            "y": 0.58,
+            "w": 0.3,
+            "h": 0.25
+          },
+          "action": "Advisor receives a prepared candidate package",
+          "why": "This shows what the workflow makes possible next and which boundary has changed.",
+          "requiredData": "Recommendation, Approval, AuditEvent",
+          "stateChange": "awaiting_info or advisor_review -> RecommendationStatus: advisor_pending",
+          "visibilityChange": "Client sees nothing advice-like yet",
+          "evidenceEffect": "Routing, request-data, and recommendation-prep actions should create traceable events",
+          "nextRoleSees": "The next role sees the resulting state, not the entire internal preparation history.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-004",
+          "relatedScreenshotId": "SS-TASK-MT-007",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-007-signal-review.png"
+        }
+      ],
+      "processNodes": [
+        {
+          "id": "WS-004-P1",
+          "label": "Signal enters queue",
+          "role": "System",
+          "state": "WorkflowStatus: new",
+          "kind": "task",
+          "calloutNumber": 1
+        },
+        {
+          "id": "WS-004-P2",
+          "label": "Analyst classifies and routes",
+          "role": "Analyst",
+          "state": "analyst_review",
+          "kind": "task",
+          "calloutNumber": 2
+        },
+        {
+          "id": "WS-004-P3",
+          "label": "Advisor receives a prepared candidate package",
+          "role": "Advisor",
+          "state": "awaiting_info or advisor_review",
+          "kind": "gate",
+          "calloutNumber": 3
+        },
+        {
+          "id": "WS-004-P4",
+          "label": "Visibility changes",
+          "role": "Advisor",
+          "state": "RecommendationStatus: advisor_pending",
+          "kind": "task",
+          "calloutNumber": null
+        },
+        {
+          "id": "WS-004-P5",
+          "label": "Outcome recorded",
+          "role": "Advisor",
+          "state": "RecommendationStatus: advisor_pending",
+          "kind": "task",
+          "calloutNumber": null
+        }
+      ],
+      "relatedRelays": [
+        "RR-001",
+        "RR-003",
+        "RR-004",
+        "RR-005",
+        "RR-006",
+        "RR-007",
+        "RR-008",
+        "RR-009",
+        "RR-010",
+        "RR-011",
+        "RR-012",
+        "RR-013"
+      ],
+      "nextProcessEnabled": "The system keeps signals useful without letting them masquerade as advice.",
+      "contextTask": null,
+      "sourceTaskIds": [
+        "MT-007",
+        "MT-008"
+      ],
+      "confidenceNote": "Callouts mark broad UI regions because source screenshots do not expose semantic element coordinates."
+    },
+    {
+      "index": 5,
+      "workflowId": "WS-005",
+      "title": "Advisor-approved package becomes compliance-controlled client visibility",
+      "slug": "ws-005-advisor-approved-package-becomes-compliance-controlled-client-visibility",
+      "outcome": "Advisor-approved work becomes client-visible only after compliance release.",
+      "businessReason": "Advisor approval can feel final, but in a regulated wealth workflow it cannot be the same as client release.",
+      "roles": [
+        "Senior Wealth Advisor",
+        "Compliance Officer",
+        "Principal"
+      ],
+      "sourceScreens": [
+        "Advisor Approval Queue",
+        "Advisor Approval Detail",
+        "Compliance Queue",
+        "Compliance Release",
+        "Compliance Block"
+      ],
+      "dataObjects": [
+        "Recommendation",
+        "Approval",
+        "ComplianceReview",
+        "EvidenceRecord",
+        "Permission"
+      ],
+      "stateSequence": [
+        "RecommendationStatus: advisor_pending",
+        "advisor_approved",
+        "compliance_pending",
+        "released_to_client or blocked"
+      ],
+      "visibilitySequence": [
+        "Advisor approval remains internal",
+        "Compliance sees release controls",
+        "Client visibility begins only after release and permission check"
+      ],
+      "visibilityBoundary": "Client visibility begins only after release and permission check",
+      "evidenceAuditSequence": [
+        "Advisor approval, compliance release, block, and evidence request should all create audit lineage"
+      ],
+      "readerTakeaway": "Client visibility is a controlled outcome, not a side effect of internal approval.",
+      "systemPrevents": [
+        "unapproved advice reaching client",
+        "release without evidence",
+        "advisor approval being treated as final"
+      ],
+      "demoBoundary": "Release/block states are visible; broad release persistence remains a top implementation gap.",
+      "screenshotPlan": {
+        "storyId": "WS-005",
+        "primaryScreenshots": [
+          "SS-TASK-MT-008",
+          "SS-TASK-MT-009"
+        ],
+        "whyTheyMatter": "Show advisor approval and compliance queue as separate gates.",
+        "roleViewpoint": "Advisor/Compliance",
+        "handoffShown": "advisor-approved -> compliance-controlled"
+      },
+      "screenshotSource": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-008-advisor-approval-queue.png",
+      "annotatedScreenshot": "docs/v3/user-manual-visual-process/annotated-screenshots/ws-005-advisor-approved-package-becomes-compliance-controlled-client-visibility-annotated.png",
+      "processGraphicSvg": "docs/v3/user-manual-visual-process/process-graphics/ws-005-advisor-approved-package-becomes-compliance-controlled-client-visibility.svg",
+      "processGraphicPng": "docs/v3/user-manual-visual-process/process-graphics/ws-005-advisor-approved-package-becomes-compliance-controlled-client-visibility.png",
+      "processGraphicCaption": "WS-005 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts.",
+      "callouts": [
+        {
+          "number": 1,
+          "label": "Trigger and source context",
+          "targetUiRegion": "Primary page context or source work item area",
+          "normalizedBox": {
+            "x": 0.08,
+            "y": 0.12,
+            "w": 0.34,
+            "h": 0.22
+          },
+          "action": "Advisor records rationale",
+          "why": "This anchors advisor-approved package becomes compliance-controlled client visibility in the source context instead of treating the screen as an isolated page.",
+          "requiredData": "Recommendation, Approval, ComplianceReview",
+          "stateChange": "RecommendationStatus: advisor_pending -> advisor_approved",
+          "visibilityChange": "Advisor approval remains internal",
+          "evidenceEffect": "Advisor approval, compliance release, block, and evidence request should all create audit lineage",
+          "nextRoleSees": "Compliance Officer receives a scoped view of the workflow context.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-005",
+          "relatedScreenshotId": "SS-TASK-MT-008",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-008-advisor-approval-queue.png"
+        },
+        {
+          "number": 2,
+          "label": "Review or gate action",
+          "targetUiRegion": "Central review, decision, queue, or action region",
+          "normalizedBox": {
+            "x": 0.38,
+            "y": 0.28,
+            "w": 0.35,
+            "h": 0.24
+          },
+          "action": "Compliance checks classification/evidence/permissions",
+          "why": "This is where the workflow becomes controlled work rather than raw information.",
+          "requiredData": "Approval, ComplianceReview, EvidenceRecord",
+          "stateChange": "advisor_approved -> compliance_pending",
+          "visibilityChange": "Compliance sees release controls",
+          "evidenceEffect": "Review action becomes part of the workflow history when applicable.",
+          "nextRoleSees": "Principal can act only after the relevant review or gate is satisfied.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-005",
+          "relatedScreenshotId": "SS-TASK-MT-008",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-008-advisor-approval-queue.png"
+        },
+        {
+          "number": 3,
+          "label": "Outcome, visibility, or evidence result",
+          "targetUiRegion": "Status, confirmation, released item, or evidence area",
+          "normalizedBox": {
+            "x": 0.62,
+            "y": 0.58,
+            "w": 0.3,
+            "h": 0.25
+          },
+          "action": "Client visibility is released or blocked with reason",
+          "why": "This shows what the workflow makes possible next and which boundary has changed.",
+          "requiredData": "ComplianceReview, EvidenceRecord, Permission",
+          "stateChange": "compliance_pending -> released_to_client or blocked",
+          "visibilityChange": "Client visibility begins only after release and permission check",
+          "evidenceEffect": "Advisor approval, compliance release, block, and evidence request should all create audit lineage",
+          "nextRoleSees": "The next role sees the resulting state, not the entire internal preparation history.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-005",
+          "relatedScreenshotId": "SS-TASK-MT-008",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-008-advisor-approval-queue.png"
+        }
+      ],
+      "processNodes": [
+        {
+          "id": "WS-005-P1",
+          "label": "Advisor records rationale",
+          "role": "Senior Wealth Advisor",
+          "state": "RecommendationStatus: advisor_pending",
+          "kind": "task",
+          "calloutNumber": 1
+        },
+        {
+          "id": "WS-005-P2",
+          "label": "Compliance checks classification/evidence/permissions",
+          "role": "Compliance Officer",
+          "state": "advisor_approved",
+          "kind": "gate",
+          "calloutNumber": 2
+        },
+        {
+          "id": "WS-005-P3",
+          "label": "Client visibility is released or blocked with reason",
+          "role": "Principal",
+          "state": "compliance_pending",
+          "kind": "gate",
+          "calloutNumber": 3
+        },
+        {
+          "id": "WS-005-P4",
+          "label": "Visibility changes",
+          "role": "Principal",
+          "state": "released_to_client or blocked",
+          "kind": "task",
+          "calloutNumber": null
+        },
+        {
+          "id": "WS-005-P5",
+          "label": "Outcome recorded",
+          "role": "Principal",
+          "state": "released_to_client or blocked",
+          "kind": "task",
+          "calloutNumber": null
+        }
+      ],
+      "relatedRelays": [
+        "RR-001",
+        "RR-003",
+        "RR-004",
+        "RR-005",
+        "RR-006",
+        "RR-007",
+        "RR-008",
+        "RR-009",
+        "RR-010",
+        "RR-011",
+        "RR-012",
+        "RR-013"
+      ],
+      "nextProcessEnabled": "Client visibility is a controlled outcome, not a side effect of internal approval.",
+      "contextTask": null,
+      "sourceTaskIds": [
+        "MT-008",
+        "MT-009"
+      ],
+      "confidenceNote": "Callouts mark broad UI regions because source screenshots do not expose semantic element coordinates."
+    },
+    {
+      "index": 6,
+      "workflowId": "WS-006",
+      "title": "Client decision becomes evidence and review cadence",
+      "slug": "ws-006-client-decision-becomes-evidence-and-review-cadence",
+      "outcome": "Client decisions become evidence and future review cadence.",
+      "businessReason": "A client decision can disappear into email, meeting notes, or memory unless the decision, participants, rationale, and review date are captured together.",
+      "roles": [
+        "Compliance Officer",
+        "Principal",
+        "Family Council",
+        "Trustee scoped",
+        "Advisor"
+      ],
+      "sourceScreens": [
+        "Decision List",
+        "Digital Decision Room",
+        "Decision Submitted",
+        "Evidence Record Detail"
+      ],
+      "dataObjects": [
+        "Decision",
+        "DecisionParticipant",
+        "EvidenceRecord",
+        "ReviewSchedule",
+        "AuditEvent"
+      ],
+      "stateSequence": [
+        "DecisionStatus: released_to_client",
+        "awaiting_family_approval",
+        "accepted/deferred/rejected",
+        "evidence_created",
+        "review_scheduled"
+      ],
+      "visibilitySequence": [
+        "Client sees released decision only",
+        "Advisor/compliance see outcome and evidence lineage",
+        "Restricted internal notes remain hidden"
+      ],
+      "visibilityBoundary": "Restricted internal notes remain hidden",
+      "evidenceAuditSequence": [
+        "Decision action, reason, participant action, and evidence package should be immutable/audited"
+      ],
+      "readerTakeaway": "The client decision is not the end of the workflow; it becomes the start of evidence and future review discipline.",
+      "systemPrevents": [
+        "unscoped participant decisions",
+        "lost decision rationale",
+        "completed decisions without proof"
+      ],
+      "demoBoundary": "Decision surfaces are navigable; final decision/evidence package persistence remains incomplete.",
+      "screenshotPlan": {
+        "storyId": "WS-006",
+        "primaryScreenshots": [
+          "SS-TASK-MT-010",
+          "SS-TASK-MT-011"
+        ],
+        "whyTheyMatter": "Show released decision and evidence lineage.",
+        "roleViewpoint": "Principal/Family Council/Compliance",
+        "handoffShown": "release -> decision -> evidence"
+      },
+      "screenshotSource": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-010-decision-list.png",
+      "annotatedScreenshot": "docs/v3/user-manual-visual-process/annotated-screenshots/ws-006-client-decision-becomes-evidence-and-review-cadence-annotated.png",
+      "processGraphicSvg": "docs/v3/user-manual-visual-process/process-graphics/ws-006-client-decision-becomes-evidence-and-review-cadence.svg",
+      "processGraphicPng": "docs/v3/user-manual-visual-process/process-graphics/ws-006-client-decision-becomes-evidence-and-review-cadence.png",
+      "processGraphicCaption": "WS-006 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts.",
+      "callouts": [
+        {
+          "number": 1,
+          "label": "Trigger and source context",
+          "targetUiRegion": "Primary page context or source work item area",
+          "normalizedBox": {
+            "x": 0.08,
+            "y": 0.12,
+            "w": 0.34,
+            "h": 0.22
+          },
+          "action": "Compliance releases safe decision",
+          "why": "This anchors client decision becomes evidence and review cadence in the source context instead of treating the screen as an isolated page.",
+          "requiredData": "Decision, DecisionParticipant, EvidenceRecord",
+          "stateChange": "DecisionStatus: released_to_client -> awaiting_family_approval",
+          "visibilityChange": "Client sees released decision only",
+          "evidenceEffect": "Decision action, reason, participant action, and evidence package should be immutable/audited",
+          "nextRoleSees": "Principal receives a scoped view of the workflow context.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-006",
+          "relatedScreenshotId": "SS-TASK-MT-010",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-010-decision-list.png"
+        },
+        {
+          "number": 2,
+          "label": "Review or gate action",
+          "targetUiRegion": "Central review, decision, queue, or action region",
+          "normalizedBox": {
+            "x": 0.38,
+            "y": 0.28,
+            "w": 0.35,
+            "h": 0.24
+          },
+          "action": "Client-side participant acts",
+          "why": "This is where the workflow becomes controlled work rather than raw information.",
+          "requiredData": "DecisionParticipant, EvidenceRecord, ReviewSchedule",
+          "stateChange": "awaiting_family_approval -> accepted/deferred/rejected",
+          "visibilityChange": "Advisor/compliance see outcome and evidence lineage",
+          "evidenceEffect": "Review action becomes part of the workflow history when applicable.",
+          "nextRoleSees": "Trustee scoped can act only after the relevant review or gate is satisfied.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-006",
+          "relatedScreenshotId": "SS-TASK-MT-010",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-010-decision-list.png"
+        },
+        {
+          "number": 3,
+          "label": "Outcome, visibility, or evidence result",
+          "targetUiRegion": "Status, confirmation, released item, or evidence area",
+          "normalizedBox": {
+            "x": 0.62,
+            "y": 0.58,
+            "w": 0.3,
+            "h": 0.25
+          },
+          "action": "Review cadence schedules follow-up",
+          "why": "This shows what the workflow makes possible next and which boundary has changed.",
+          "requiredData": "EvidenceRecord, ReviewSchedule, AuditEvent",
+          "stateChange": "evidence_created -> review_scheduled",
+          "visibilityChange": "Restricted internal notes remain hidden",
+          "evidenceEffect": "Decision action, reason, participant action, and evidence package should be immutable/audited",
+          "nextRoleSees": "The next role sees the resulting state, not the entire internal preparation history.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-006",
+          "relatedScreenshotId": "SS-TASK-MT-010",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-010-decision-list.png"
+        }
+      ],
+      "processNodes": [
+        {
+          "id": "WS-006-P1",
+          "label": "Compliance releases safe decision",
+          "role": "Compliance Officer",
+          "state": "DecisionStatus: released_to_client",
+          "kind": "gate",
+          "calloutNumber": 1
+        },
+        {
+          "id": "WS-006-P2",
+          "label": "Client-side participant acts",
+          "role": "Principal",
+          "state": "awaiting_family_approval",
+          "kind": "task",
+          "calloutNumber": 2
+        },
+        {
+          "id": "WS-006-P3",
+          "label": "Evidence captures decision outcome",
+          "role": "Family Council",
+          "state": "accepted/deferred/rejected",
+          "kind": "gate",
+          "calloutNumber": 3
+        },
+        {
+          "id": "WS-006-P4",
+          "label": "Review cadence schedules follow-up",
+          "role": "Trustee scoped",
+          "state": "evidence_created",
+          "kind": "gate",
+          "calloutNumber": null
+        },
+        {
+          "id": "WS-006-P5",
+          "label": "Outcome recorded",
+          "role": "Advisor",
+          "state": "review_scheduled",
+          "kind": "task",
+          "calloutNumber": null
+        }
+      ],
+      "relatedRelays": [
+        "RR-001",
+        "RR-003",
+        "RR-004",
+        "RR-005",
+        "RR-006",
+        "RR-007",
+        "RR-008",
+        "RR-009",
+        "RR-010",
+        "RR-011",
+        "RR-012",
+        "RR-013"
+      ],
+      "nextProcessEnabled": "The client decision is not the end of the workflow; it becomes the start of evidence and future review discipline.",
+      "contextTask": null,
+      "sourceTaskIds": [
+        "MT-010"
+      ],
+      "confidenceNote": "Callouts mark broad UI regions because source screenshots do not expose semantic element coordinates."
+    },
+    {
+      "index": 7,
+      "workflowId": "WS-007",
+      "title": "Governance change becomes permission-safe access",
+      "slug": "ws-007-governance-change-becomes-permission-safe-access",
+      "outcome": "Access changes become governed permission state.",
+      "businessReason": "Family offices frequently need to adjust access, but access changes can silently overexpose sensitive client data.",
+      "roles": [
+        "Principal",
+        "Admin",
+        "Compliance",
+        "Security",
+        "External Advisor"
+      ],
+      "sourceScreens": [
+        "Governance Users",
+        "Role Management",
+        "Access Requests",
+        "Access Audit History"
+      ],
+      "dataObjects": [
+        "UserRole",
+        "RolePermission",
+        "AccessRequest",
+        "SecondConfirmation",
+        "AuditEvent"
+      ],
+      "stateSequence": [
+        "WorkflowStatus: new/requested",
+        "in_review",
+        "approved or blocked or revoked"
+      ],
+      "visibilitySequence": [
+        "Requester sees request state",
+        "Reviewer sees sensitivity and scope",
+        "Target user sees only approved role scope"
+      ],
+      "visibilityBoundary": "Target user sees only approved role scope",
+      "evidenceAuditSequence": [
+        "Sensitive role/access actions require second confirmation and audit"
+      ],
+      "readerTakeaway": "Access is not a user setting. It is a governed collaboration boundary.",
+      "systemPrevents": [
+        "external broad access without review",
+        "cross-tenant exposure",
+        "permission changes without audit"
+      ],
+      "demoBoundary": "Demo actions are visible; governed access transactions remain incomplete.",
+      "screenshotPlan": {
+        "storyId": "WS-007",
+        "primaryScreenshots": [
+          "SS-TASK-MT-012"
+        ],
+        "whyTheyMatter": "Show access and governance as controlled collaboration boundary.",
+        "roleViewpoint": "Principal/Admin/Compliance/Security",
+        "handoffShown": "request -> review -> audit"
+      },
+      "screenshotSource": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-012-governance-users.png",
+      "annotatedScreenshot": "docs/v3/user-manual-visual-process/annotated-screenshots/ws-007-governance-change-becomes-permission-safe-access-annotated.png",
+      "processGraphicSvg": "docs/v3/user-manual-visual-process/process-graphics/ws-007-governance-change-becomes-permission-safe-access.svg",
+      "processGraphicPng": "docs/v3/user-manual-visual-process/process-graphics/ws-007-governance-change-becomes-permission-safe-access.png",
+      "processGraphicCaption": "WS-007 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts.",
+      "callouts": [
+        {
+          "number": 1,
+          "label": "Trigger and source context",
+          "targetUiRegion": "Primary page context or source work item area",
+          "normalizedBox": {
+            "x": 0.08,
+            "y": 0.12,
+            "w": 0.34,
+            "h": 0.22
+          },
+          "action": "Principal/Admin requests access",
+          "why": "This anchors governance change becomes permission-safe access in the source context instead of treating the screen as an isolated page.",
+          "requiredData": "UserRole, RolePermission, AccessRequest",
+          "stateChange": "WorkflowStatus: new/requested -> in_review",
+          "visibilityChange": "Requester sees request state",
+          "evidenceEffect": "Sensitive role/access actions require second confirmation and audit",
+          "nextRoleSees": "Admin receives a scoped view of the workflow context.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-007",
+          "relatedScreenshotId": "SS-TASK-MT-012",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-012-governance-users.png"
+        },
+        {
+          "number": 2,
+          "label": "Review or gate action",
+          "targetUiRegion": "Central review, decision, queue, or action region",
+          "normalizedBox": {
+            "x": 0.38,
+            "y": 0.28,
+            "w": 0.35,
+            "h": 0.24
+          },
+          "action": "Compliance reviews purpose/scope",
+          "why": "This is where the workflow becomes controlled work rather than raw information.",
+          "requiredData": "RolePermission, AccessRequest, SecondConfirmation",
+          "stateChange": "in_review -> approved or blocked or revoked",
+          "visibilityChange": "Reviewer sees sensitivity and scope",
+          "evidenceEffect": "Review action becomes part of the workflow history when applicable.",
+          "nextRoleSees": "Security can act only after the relevant review or gate is satisfied.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-007",
+          "relatedScreenshotId": "SS-TASK-MT-012",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-012-governance-users.png"
+        },
+        {
+          "number": 3,
+          "label": "Outcome, visibility, or evidence result",
+          "targetUiRegion": "Status, confirmation, released item, or evidence area",
+          "normalizedBox": {
+            "x": 0.62,
+            "y": 0.58,
+            "w": 0.3,
+            "h": 0.25
+          },
+          "action": "Audit history records lineage",
+          "why": "This shows what the workflow makes possible next and which boundary has changed.",
+          "requiredData": "AccessRequest, SecondConfirmation, AuditEvent",
+          "stateChange": "in_review -> approved or blocked or revoked",
+          "visibilityChange": "Target user sees only approved role scope",
+          "evidenceEffect": "Sensitive role/access actions require second confirmation and audit",
+          "nextRoleSees": "The next role sees the resulting state, not the entire internal preparation history.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-007",
+          "relatedScreenshotId": "SS-TASK-MT-012",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-012-governance-users.png"
+        }
+      ],
+      "processNodes": [
+        {
+          "id": "WS-007-P1",
+          "label": "Principal/Admin requests access",
+          "role": "Principal",
+          "state": "WorkflowStatus: new/requested",
+          "kind": "task",
+          "calloutNumber": 1
+        },
+        {
+          "id": "WS-007-P2",
+          "label": "Compliance reviews purpose/scope",
+          "role": "Admin",
+          "state": "in_review",
+          "kind": "gate",
+          "calloutNumber": 2
+        },
+        {
+          "id": "WS-007-P3",
+          "label": "Security confirms sensitive changes",
+          "role": "Compliance",
+          "state": "approved or blocked or revoked",
+          "kind": "gate",
+          "calloutNumber": 3
+        },
+        {
+          "id": "WS-007-P4",
+          "label": "Audit history records lineage",
+          "role": "Security",
+          "state": "approved or blocked or revoked",
+          "kind": "task",
+          "calloutNumber": null
+        },
+        {
+          "id": "WS-007-P5",
+          "label": "Outcome recorded",
+          "role": "External Advisor",
+          "state": "approved or blocked or revoked",
+          "kind": "task",
+          "calloutNumber": null
+        }
+      ],
+      "relatedRelays": [
+        "RR-001",
+        "RR-003",
+        "RR-004",
+        "RR-005",
+        "RR-006",
+        "RR-007",
+        "RR-008",
+        "RR-009",
+        "RR-010",
+        "RR-011",
+        "RR-012",
+        "RR-013"
+      ],
+      "nextProcessEnabled": "Access is not a user setting. It is a governed collaboration boundary.",
+      "contextTask": null,
+      "sourceTaskIds": [
+        "MT-012"
+      ],
+      "confidenceNote": "Callouts mark broad UI regions because source screenshots do not expose semantic element coordinates."
+    },
+    {
+      "index": 8,
+      "workflowId": "WS-008",
+      "title": "Communication escalation becomes recorded service context",
+      "slug": "ws-008-communication-escalation-becomes-recorded-service-context",
+      "outcome": "Communication escalation becomes recorded service context.",
+      "businessReason": "Complex advisory work often shifts between digital messages, calls, workshops, and specialists without preserving why the channel changed.",
+      "roles": [
+        "Advisor",
+        "Client Success",
+        "Client",
+        "External Specialist",
+        "Compliance"
+      ],
+      "sourceScreens": [
+        "Communication Centre",
+        "Call Trigger Matrix",
+        "Evidence Vault"
+      ],
+      "dataObjects": [
+        "MessageThread",
+        "Message",
+        "CallEvent",
+        "EvidenceRecord",
+        "AuditEvent"
+      ],
+      "stateSequence": [
+        "WorkflowStatus: draft",
+        "sent or scheduled",
+        "awaiting_reply",
+        "completed or escalated"
+      ],
+      "visibilitySequence": [
+        "Client-visible messages are separated from internal notes",
+        "Material outcomes can become evidence-linked",
+        "Advice-like content remains release-controlled"
+      ],
+      "visibilityBoundary": "Advice-like content remains release-controlled",
+      "evidenceAuditSequence": [
+        "Sensitive communication should audit; material calls can link to evidence"
+      ],
+      "readerTakeaway": "Communication is part of the workflow state, not a side channel outside the system.",
+      "systemPrevents": [
+        "unrecorded escalations",
+        "advice-like messages without release control",
+        "lost service context"
+      ],
+      "demoBoundary": "Communication surfaces are mostly static; message and call persistence is not claimed.",
+      "screenshotPlan": {
+        "storyId": "WS-008",
+        "primaryScreenshots": [
+          "SS-TASK-MT-013"
+        ],
+        "whyTheyMatter": "Show channel escalation as service workflow state.",
+        "roleViewpoint": "Advisor/Client Success/Client",
+        "handoffShown": "digital -> call/escalation -> evidence context"
+      },
+      "screenshotSource": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-013-communication-centre.png",
+      "annotatedScreenshot": "docs/v3/user-manual-visual-process/annotated-screenshots/ws-008-communication-escalation-becomes-recorded-service-context-annotated.png",
+      "processGraphicSvg": "docs/v3/user-manual-visual-process/process-graphics/ws-008-communication-escalation-becomes-recorded-service-context.svg",
+      "processGraphicPng": "docs/v3/user-manual-visual-process/process-graphics/ws-008-communication-escalation-becomes-recorded-service-context.png",
+      "processGraphicCaption": "WS-008 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts.",
+      "callouts": [
+        {
+          "number": 1,
+          "label": "Trigger and source context",
+          "targetUiRegion": "Primary page context or source work item area",
+          "normalizedBox": {
+            "x": 0.08,
+            "y": 0.12,
+            "w": 0.34,
+            "h": 0.22
+          },
+          "action": "Advisor/Client Success selects channel",
+          "why": "This anchors communication escalation becomes recorded service context in the source context instead of treating the screen as an isolated page.",
+          "requiredData": "MessageThread, Message, CallEvent",
+          "stateChange": "WorkflowStatus: draft -> sent or scheduled",
+          "visibilityChange": "Client-visible messages are separated from internal notes",
+          "evidenceEffect": "Sensitive communication should audit; material calls can link to evidence",
+          "nextRoleSees": "Client Success receives a scoped view of the workflow context.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-008",
+          "relatedScreenshotId": "SS-TASK-MT-013",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-013-communication-centre.png"
+        },
+        {
+          "number": 2,
+          "label": "Review or gate action",
+          "targetUiRegion": "Central review, decision, queue, or action region",
+          "normalizedBox": {
+            "x": 0.38,
+            "y": 0.28,
+            "w": 0.35,
+            "h": 0.24
+          },
+          "action": "Client responds or joins call",
+          "why": "This is where the workflow becomes controlled work rather than raw information.",
+          "requiredData": "Message, CallEvent, EvidenceRecord",
+          "stateChange": "sent or scheduled -> awaiting_reply",
+          "visibilityChange": "Material outcomes can become evidence-linked",
+          "evidenceEffect": "Review action becomes part of the workflow history when applicable.",
+          "nextRoleSees": "External Specialist can act only after the relevant review or gate is satisfied.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-008",
+          "relatedScreenshotId": "SS-TASK-MT-013",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-013-communication-centre.png"
+        },
+        {
+          "number": 3,
+          "label": "Outcome, visibility, or evidence result",
+          "targetUiRegion": "Status, confirmation, released item, or evidence area",
+          "normalizedBox": {
+            "x": 0.62,
+            "y": 0.58,
+            "w": 0.3,
+            "h": 0.25
+          },
+          "action": "Compliance controls advice-like messages when needed",
+          "why": "This shows what the workflow makes possible next and which boundary has changed.",
+          "requiredData": "CallEvent, EvidenceRecord, AuditEvent",
+          "stateChange": "awaiting_reply -> completed or escalated",
+          "visibilityChange": "Advice-like content remains release-controlled",
+          "evidenceEffect": "Sensitive communication should audit; material calls can link to evidence",
+          "nextRoleSees": "The next role sees the resulting state, not the entire internal preparation history.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-008",
+          "relatedScreenshotId": "SS-TASK-MT-013",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-013-communication-centre.png"
+        }
+      ],
+      "processNodes": [
+        {
+          "id": "WS-008-P1",
+          "label": "Advisor/Client Success selects channel",
+          "role": "Advisor",
+          "state": "WorkflowStatus: draft",
+          "kind": "task",
+          "calloutNumber": 1
+        },
+        {
+          "id": "WS-008-P2",
+          "label": "Client responds or joins call",
+          "role": "Client Success",
+          "state": "sent or scheduled",
+          "kind": "task",
+          "calloutNumber": 2
+        },
+        {
+          "id": "WS-008-P3",
+          "label": "Material outcome links to evidence",
+          "role": "Client",
+          "state": "awaiting_reply",
+          "kind": "gate",
+          "calloutNumber": 3
+        },
+        {
+          "id": "WS-008-P4",
+          "label": "Compliance controls advice-like messages when needed",
+          "role": "External Specialist",
+          "state": "completed or escalated",
+          "kind": "gate",
+          "calloutNumber": null
+        },
+        {
+          "id": "WS-008-P5",
+          "label": "Outcome recorded",
+          "role": "Compliance",
+          "state": "completed or escalated",
+          "kind": "task",
+          "calloutNumber": null
+        }
+      ],
+      "relatedRelays": [
+        "RR-001",
+        "RR-003",
+        "RR-004",
+        "RR-005",
+        "RR-006",
+        "RR-007",
+        "RR-008",
+        "RR-009",
+        "RR-010",
+        "RR-011",
+        "RR-012",
+        "RR-013"
+      ],
+      "nextProcessEnabled": "Communication is part of the workflow state, not a side channel outside the system.",
+      "contextTask": null,
+      "sourceTaskIds": [
+        "MT-011",
+        "MT-013"
+      ],
+      "confidenceNote": "Callouts mark broad UI regions because source screenshots do not expose semantic element coordinates."
+    },
+    {
+      "index": 9,
+      "workflowId": "WS-009",
+      "title": "Export request becomes redacted, approved, auditable package",
+      "slug": "ws-009-export-request-becomes-redacted-approved-auditable-package",
+      "outcome": "Export requests become redacted, approved, auditable packages.",
+      "businessReason": "Exporting data can break the system's visibility controls if scope, redaction, approval, expiry, and audit are not explicit.",
+      "roles": [
+        "Advisor",
+        "Compliance",
+        "Privacy Officer",
+        "Client",
+        "External Advisor"
+      ],
+      "sourceScreens": [
+        "Evidence Vault",
+        "Create Export",
+        "Export Scope",
+        "Export Redaction",
+        "Export Preview",
+        "Export Download"
+      ],
+      "dataObjects": [
+        "EvidenceRecord",
+        "ExportRequest",
+        "Document",
+        "AuditEvent",
+        "Permission"
+      ],
+      "stateSequence": [
+        "ExportStatus: draft",
+        "scope_selected",
+        "redaction_pending",
+        "approval_required",
+        "approved",
+        "generated",
+        "downloaded or expired"
+      ],
+      "visibilitySequence": [
+        "Internal evidence may become redacted package",
+        "External sharing has expiry and classification",
+        "Restricted material remains excluded"
+      ],
+      "visibilityBoundary": "Restricted material remains excluded",
+      "evidenceAuditSequence": [
+        "Export create, scope, redaction, approval, generation, download, and share should audit"
+      ],
+      "readerTakeaway": "An export is a controlled visibility event, not a simple download.",
+      "systemPrevents": [
+        "unredacted data leaving the platform",
+        "permission-free downloads",
+        "external packages without expiry"
+      ],
+      "demoBoundary": "Export UI is navigable; file/share realism is a Phase 18 gap.",
+      "screenshotPlan": {
+        "storyId": "WS-009",
+        "primaryScreenshots": [
+          "SS-TASK-MT-011"
+        ],
+        "whyTheyMatter": "Use evidence/export surface to explain scoped redaction and auditable sharing.",
+        "roleViewpoint": "Advisor/Compliance/Privacy",
+        "handoffShown": "evidence -> export scope -> redaction"
+      },
+      "screenshotSource": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-011-evidence-vault.png",
+      "annotatedScreenshot": "docs/v3/user-manual-visual-process/annotated-screenshots/ws-009-export-request-becomes-redacted-approved-auditable-package-annotated.png",
+      "processGraphicSvg": "docs/v3/user-manual-visual-process/process-graphics/ws-009-export-request-becomes-redacted-approved-auditable-package.svg",
+      "processGraphicPng": "docs/v3/user-manual-visual-process/process-graphics/ws-009-export-request-becomes-redacted-approved-auditable-package.png",
+      "processGraphicCaption": "WS-009 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts.",
+      "callouts": [
+        {
+          "number": 1,
+          "label": "Trigger and source context",
+          "targetUiRegion": "Primary page context or source work item area",
+          "normalizedBox": {
+            "x": 0.08,
+            "y": 0.12,
+            "w": 0.34,
+            "h": 0.22
+          },
+          "action": "Requester chooses scope",
+          "why": "This anchors export request becomes redacted, approved, auditable package in the source context instead of treating the screen as an isolated page.",
+          "requiredData": "EvidenceRecord, ExportRequest, Document",
+          "stateChange": "ExportStatus: draft -> scope_selected",
+          "visibilityChange": "Internal evidence may become redacted package",
+          "evidenceEffect": "Export create, scope, redaction, approval, generation, download, and share should audit",
+          "nextRoleSees": "Compliance receives a scoped view of the workflow context.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-009",
+          "relatedScreenshotId": "SS-TASK-MT-011",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-011-evidence-vault.png"
+        },
+        {
+          "number": 2,
+          "label": "Review or gate action",
+          "targetUiRegion": "Central review, decision, queue, or action region",
+          "normalizedBox": {
+            "x": 0.38,
+            "y": 0.28,
+            "w": 0.35,
+            "h": 0.24
+          },
+          "action": "Privacy/Compliance reviews redaction and approval",
+          "why": "This is where the workflow becomes controlled work rather than raw information.",
+          "requiredData": "ExportRequest, Document, AuditEvent",
+          "stateChange": "scope_selected -> redaction_pending",
+          "visibilityChange": "External sharing has expiry and classification",
+          "evidenceEffect": "Review action becomes part of the workflow history when applicable.",
+          "nextRoleSees": "Client can act only after the relevant review or gate is satisfied.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-009",
+          "relatedScreenshotId": "SS-TASK-MT-011",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-011-evidence-vault.png"
+        },
+        {
+          "number": 3,
+          "label": "Outcome, visibility, or evidence result",
+          "targetUiRegion": "Status, confirmation, released item, or evidence area",
+          "normalizedBox": {
+            "x": 0.62,
+            "y": 0.58,
+            "w": 0.3,
+            "h": 0.25
+          },
+          "action": "Audit captures export lifecycle",
+          "why": "This shows what the workflow makes possible next and which boundary has changed.",
+          "requiredData": "Document, AuditEvent, Permission",
+          "stateChange": "generated -> downloaded or expired",
+          "visibilityChange": "Restricted material remains excluded",
+          "evidenceEffect": "Export create, scope, redaction, approval, generation, download, and share should audit",
+          "nextRoleSees": "The next role sees the resulting state, not the entire internal preparation history.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-009",
+          "relatedScreenshotId": "SS-TASK-MT-011",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-011-evidence-vault.png"
+        }
+      ],
+      "processNodes": [
+        {
+          "id": "WS-009-P1",
+          "label": "Requester chooses scope",
+          "role": "Advisor",
+          "state": "ExportStatus: draft",
+          "kind": "task",
+          "calloutNumber": 1
+        },
+        {
+          "id": "WS-009-P2",
+          "label": "Privacy/Compliance reviews redaction and approval",
+          "role": "Compliance",
+          "state": "scope_selected",
+          "kind": "gate",
+          "calloutNumber": 2
+        },
+        {
+          "id": "WS-009-P3",
+          "label": "Generated package becomes downloadable only if allowed",
+          "role": "Privacy Officer",
+          "state": "redaction_pending",
+          "kind": "gate",
+          "calloutNumber": 3
+        },
+        {
+          "id": "WS-009-P4",
+          "label": "Audit captures export lifecycle",
+          "role": "Client",
+          "state": "approval_required",
+          "kind": "task",
+          "calloutNumber": null
+        },
+        {
+          "id": "WS-009-P5",
+          "label": "Outcome recorded",
+          "role": "External Advisor",
+          "state": "approved",
+          "kind": "task",
+          "calloutNumber": null
+        }
+      ],
+      "relatedRelays": [
+        "RR-001",
+        "RR-003",
+        "RR-004",
+        "RR-005",
+        "RR-006",
+        "RR-007",
+        "RR-008",
+        "RR-009",
+        "RR-010",
+        "RR-011",
+        "RR-012",
+        "RR-013"
+      ],
+      "nextProcessEnabled": "An export is a controlled visibility event, not a simple download.",
+      "contextTask": null,
+      "sourceTaskIds": [
+        "MT-011"
+      ],
+      "confidenceNote": "Callouts mark broad UI regions because source screenshots do not expose semantic element coordinates."
+    },
+    {
+      "index": 10,
+      "workflowId": "WS-010",
+      "title": "Ops monitoring turns workflow friction into service and product improvement",
+      "slug": "ws-010-ops-monitoring-turns-workflow-friction-into-service-and-product-improvement",
+      "outcome": "Operational friction becomes service and product improvement evidence.",
+      "businessReason": "Workflow friction often remains anecdotal: someone knows a queue is slow, but the system does not show where or why.",
+      "roles": [
+        "Ops",
+        "Product",
+        "QA",
+        "Leads"
+      ],
+      "sourceScreens": [
+        "Ops Queues",
+        "SLA and Escalation",
+        "Service Blueprint",
+        "Roadmap",
+        "State Reference"
+      ],
+      "dataObjects": [
+        "QueueItem",
+        "DataQualityIssue",
+        "ReviewSchedule",
+        "AuditEvent"
+      ],
+      "stateSequence": [
+        "WorkflowStatus: open",
+        "in_review",
+        "blocked",
+        "deferred",
+        "completed"
+      ],
+      "visibilitySequence": [
+        "Operational pages remain internal",
+        "Workflow health informs product/service decisions",
+        "Client-facing promises are not inflated by reference pages"
+      ],
+      "visibilityBoundary": "Client-facing promises are not inflated by reference pages",
+      "evidenceAuditSequence": [
+        "Ops mutations should audit when implemented and service-affecting"
+      ],
+      "readerTakeaway": "AlphaVest uses operations feedback to keep the workflow model honest and continuously improve the shared state.",
+      "systemPrevents": [
+        "invisible SLA drift",
+        "reference pages being mistaken for product capability",
+        "untracked data quality debt"
+      ],
+      "demoBoundary": "Queue/SLA mutation is not fully implemented; reference pages are internal only.",
+      "screenshotPlan": {
+        "storyId": "WS-010",
+        "primaryScreenshots": [
+          "SS-TASK-MT-014"
+        ],
+        "whyTheyMatter": "Show ops queues as workflow feedback and improvement surface.",
+        "roleViewpoint": "Ops/Product/QA",
+        "handoffShown": "queue friction -> QA/product action"
+      },
+      "screenshotSource": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-014-ops-queues.png",
+      "annotatedScreenshot": "docs/v3/user-manual-visual-process/annotated-screenshots/ws-010-ops-monitoring-turns-workflow-friction-into-service-and-product-improvement-annotated.png",
+      "processGraphicSvg": "docs/v3/user-manual-visual-process/process-graphics/ws-010-ops-monitoring-turns-workflow-friction-into-service-and-product-improvement.svg",
+      "processGraphicPng": "docs/v3/user-manual-visual-process/process-graphics/ws-010-ops-monitoring-turns-workflow-friction-into-service-and-product-improvement.png",
+      "processGraphicCaption": "WS-010 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts.",
+      "callouts": [
+        {
+          "number": 1,
+          "label": "Trigger and source context",
+          "targetUiRegion": "Primary page context or source work item area",
+          "normalizedBox": {
+            "x": 0.08,
+            "y": 0.12,
+            "w": 0.34,
+            "h": 0.22
+          },
+          "action": "Ops monitors queues",
+          "why": "This anchors ops monitoring turns workflow friction into service and product improvement in the source context instead of treating the screen as an isolated page.",
+          "requiredData": "QueueItem, DataQualityIssue, ReviewSchedule",
+          "stateChange": "WorkflowStatus: open -> in_review",
+          "visibilityChange": "Operational pages remain internal",
+          "evidenceEffect": "Ops mutations should audit when implemented and service-affecting",
+          "nextRoleSees": "Product receives a scoped view of the workflow context.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-010",
+          "relatedScreenshotId": "SS-TASK-MT-014",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-014-ops-queues.png"
+        },
+        {
+          "number": 2,
+          "label": "Review or gate action",
+          "targetUiRegion": "Central review, decision, queue, or action region",
+          "normalizedBox": {
+            "x": 0.38,
+            "y": 0.28,
+            "w": 0.35,
+            "h": 0.24
+          },
+          "action": "QA validates coverage and state language",
+          "why": "This is where the workflow becomes controlled work rather than raw information.",
+          "requiredData": "DataQualityIssue, ReviewSchedule, AuditEvent",
+          "stateChange": "in_review -> blocked",
+          "visibilityChange": "Workflow health informs product/service decisions",
+          "evidenceEffect": "Review action becomes part of the workflow history when applicable.",
+          "nextRoleSees": "Leads can act only after the relevant review or gate is satisfied.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-010",
+          "relatedScreenshotId": "SS-TASK-MT-014",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-014-ops-queues.png"
+        },
+        {
+          "number": 3,
+          "label": "Outcome, visibility, or evidence result",
+          "targetUiRegion": "Status, confirmation, released item, or evidence area",
+          "normalizedBox": {
+            "x": 0.62,
+            "y": 0.58,
+            "w": 0.3,
+            "h": 0.25
+          },
+          "action": "Leads prioritize next workflow improvement",
+          "why": "This shows what the workflow makes possible next and which boundary has changed.",
+          "requiredData": "DataQualityIssue, ReviewSchedule, AuditEvent",
+          "stateChange": "deferred -> completed",
+          "visibilityChange": "Client-facing promises are not inflated by reference pages",
+          "evidenceEffect": "Ops mutations should audit when implemented and service-affecting",
+          "nextRoleSees": "The next role sees the resulting state, not the entire internal preparation history.",
+          "confidence": "medium-broad-region",
+          "relatedWorkflowId": "WS-010",
+          "relatedScreenshotId": "SS-TASK-MT-014",
+          "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-014-ops-queues.png"
+        }
+      ],
+      "processNodes": [
+        {
+          "id": "WS-010-P1",
+          "label": "Ops monitors queues",
+          "role": "Ops",
+          "state": "WorkflowStatus: open",
+          "kind": "task",
+          "calloutNumber": 1
+        },
+        {
+          "id": "WS-010-P2",
+          "label": "QA validates coverage and state language",
+          "role": "Product",
+          "state": "in_review",
+          "kind": "task",
+          "calloutNumber": 2
+        },
+        {
+          "id": "WS-010-P3",
+          "label": "Product identifies roadmap or implementation gaps",
+          "role": "QA",
+          "state": "blocked",
+          "kind": "gate",
+          "calloutNumber": 3
+        },
+        {
+          "id": "WS-010-P4",
+          "label": "Leads prioritize next workflow improvement",
+          "role": "Leads",
+          "state": "deferred",
+          "kind": "task",
+          "calloutNumber": null
+        },
+        {
+          "id": "WS-010-P5",
+          "label": "Outcome recorded",
+          "role": "Leads",
+          "state": "completed",
+          "kind": "task",
+          "calloutNumber": null
+        }
+      ],
+      "relatedRelays": [
+        "RR-001",
+        "RR-003",
+        "RR-004",
+        "RR-005",
+        "RR-006",
+        "RR-007",
+        "RR-008",
+        "RR-009",
+        "RR-010",
+        "RR-011",
+        "RR-012",
+        "RR-013"
+      ],
+      "nextProcessEnabled": "AlphaVest uses operations feedback to keep the workflow model honest and continuously improve the shared state.",
+      "contextTask": null,
+      "sourceTaskIds": [
+        "MT-014"
+      ],
+      "confidenceNote": "Callouts mark broad UI regions because source screenshots do not expose semantic element coordinates."
+    }
+  ],
+  "annotationMap": [
+    {
+      "workflowId": "WS-001",
+      "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-001-platform-settings.png",
+      "outputAnnotatedScreenshotPath": "docs/v3/user-manual-visual-process/annotated-screenshots/ws-001-tenant-becomes-operational-annotated.png",
+      "callouts": [
+        {
+          "number": 1,
+          "label": "Trigger and source context",
+          "coordinates": {
+            "x": 0.08,
+            "y": 0.12,
+            "w": 0.34,
+            "h": 0.22
+          },
+          "targetUiRegion": "Primary page context or source work item area",
+          "relatedWorkflowId": "WS-001",
+          "relatedProcessStep": "Platform Admin establishes baseline",
+          "confidence": "medium-broad-region"
+        },
+        {
+          "number": 2,
+          "label": "Review or gate action",
+          "coordinates": {
+            "x": 0.38,
+            "y": 0.28,
+            "w": 0.35,
+            "h": 0.24
+          },
+          "targetUiRegion": "Central review, decision, queue, or action region",
+          "relatedWorkflowId": "WS-001",
+          "relatedProcessStep": "Ops Admin creates tenant",
+          "confidence": "medium-broad-region"
+        },
+        {
+          "number": 3,
+          "label": "Outcome, visibility, or evidence result",
+          "coordinates": {
+            "x": 0.62,
+            "y": 0.58,
+            "w": 0.3,
+            "h": 0.25
+          },
+          "targetUiRegion": "Status, confirmation, released item, or evidence area",
+          "relatedWorkflowId": "WS-001",
+          "relatedProcessStep": "Invited User accepts and acknowledges scope",
+          "confidence": "medium-broad-region"
+        }
+      ]
+    },
+    {
+      "workflowId": "WS-002",
+      "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-004-client-web-dashboard.png",
+      "outputAnnotatedScreenshotPath": "docs/v3/user-manual-visual-process/annotated-screenshots/ws-002-client-profile-becomes-usable-shared-family-context-annotated.png",
+      "callouts": [
+        {
+          "number": 1,
+          "label": "Trigger and source context",
+          "coordinates": {
+            "x": 0.08,
+            "y": 0.12,
+            "w": 0.34,
+            "h": 0.22
+          },
+          "targetUiRegion": "Primary page context or source work item area",
+          "relatedWorkflowId": "WS-002",
+          "relatedProcessStep": "Principal or Family CFO submits context",
+          "confidence": "medium-broad-region"
+        },
+        {
+          "number": 2,
+          "label": "Review or gate action",
+          "coordinates": {
+            "x": 0.38,
+            "y": 0.28,
+            "w": 0.35,
+            "h": 0.24
+          },
+          "targetUiRegion": "Central review, decision, queue, or action region",
+          "relatedWorkflowId": "WS-002",
+          "relatedProcessStep": "Analyst validates and flags gaps",
+          "confidence": "medium-broad-region"
+        },
+        {
+          "number": 3,
+          "label": "Outcome, visibility, or evidence result",
+          "coordinates": {
+            "x": 0.62,
+            "y": 0.58,
+            "w": 0.3,
+            "h": 0.25
+          },
+          "targetUiRegion": "Status, confirmation, released item, or evidence area",
+          "relatedWorkflowId": "WS-002",
+          "relatedProcessStep": "Advisor reviews governance significance",
+          "confidence": "medium-broad-region"
+        }
+      ]
+    },
+    {
+      "workflowId": "WS-003",
+      "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-006-documents-list.png",
+      "outputAnnotatedScreenshotPath": "docs/v3/user-manual-visual-process/annotated-screenshots/ws-003-document-chaos-becomes-verified-evidence-annotated.png",
+      "callouts": [
+        {
+          "number": 1,
+          "label": "Trigger and source context",
+          "coordinates": {
+            "x": 0.08,
+            "y": 0.12,
+            "w": 0.34,
+            "h": 0.22
+          },
+          "targetUiRegion": "Primary page context or source work item area",
+          "relatedWorkflowId": "WS-003",
+          "relatedProcessStep": "Client or advisor uploads source",
+          "confidence": "medium-broad-region"
+        },
+        {
+          "number": 2,
+          "label": "Review or gate action",
+          "coordinates": {
+            "x": 0.38,
+            "y": 0.28,
+            "w": 0.35,
+            "h": 0.24
+          },
+          "targetUiRegion": "Central review, decision, queue, or action region",
+          "relatedWorkflowId": "WS-003",
+          "relatedProcessStep": "System/extraction drafts structure",
+          "confidence": "medium-broad-region"
+        },
+        {
+          "number": 3,
+          "label": "Outcome, visibility, or evidence result",
+          "coordinates": {
+            "x": 0.62,
+            "y": 0.58,
+            "w": 0.3,
+            "h": 0.25
+          },
+          "targetUiRegion": "Status, confirmation, released item, or evidence area",
+          "relatedWorkflowId": "WS-003",
+          "relatedProcessStep": "Evidence receives verified source link",
+          "confidence": "medium-broad-region"
+        }
+      ]
+    },
+    {
+      "workflowId": "WS-004",
+      "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-007-signal-review.png",
+      "outputAnnotatedScreenshotPath": "docs/v3/user-manual-visual-process/annotated-screenshots/ws-004-signal-becomes-reviewed-recommendation-candidate-annotated.png",
+      "callouts": [
+        {
+          "number": 1,
+          "label": "Trigger and source context",
+          "coordinates": {
+            "x": 0.08,
+            "y": 0.12,
+            "w": 0.34,
+            "h": 0.22
+          },
+          "targetUiRegion": "Primary page context or source work item area",
+          "relatedWorkflowId": "WS-004",
+          "relatedProcessStep": "Signal enters queue",
+          "confidence": "medium-broad-region"
+        },
+        {
+          "number": 2,
+          "label": "Review or gate action",
+          "coordinates": {
+            "x": 0.38,
+            "y": 0.28,
+            "w": 0.35,
+            "h": 0.24
+          },
+          "targetUiRegion": "Central review, decision, queue, or action region",
+          "relatedWorkflowId": "WS-004",
+          "relatedProcessStep": "Analyst classifies and routes",
+          "confidence": "medium-broad-region"
+        },
+        {
+          "number": 3,
+          "label": "Outcome, visibility, or evidence result",
+          "coordinates": {
+            "x": 0.62,
+            "y": 0.58,
+            "w": 0.3,
+            "h": 0.25
+          },
+          "targetUiRegion": "Status, confirmation, released item, or evidence area",
+          "relatedWorkflowId": "WS-004",
+          "relatedProcessStep": "Advisor receives a prepared candidate package",
+          "confidence": "medium-broad-region"
+        }
+      ]
+    },
+    {
+      "workflowId": "WS-005",
+      "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-008-advisor-approval-queue.png",
+      "outputAnnotatedScreenshotPath": "docs/v3/user-manual-visual-process/annotated-screenshots/ws-005-advisor-approved-package-becomes-compliance-controlled-client-visibility-annotated.png",
+      "callouts": [
+        {
+          "number": 1,
+          "label": "Trigger and source context",
+          "coordinates": {
+            "x": 0.08,
+            "y": 0.12,
+            "w": 0.34,
+            "h": 0.22
+          },
+          "targetUiRegion": "Primary page context or source work item area",
+          "relatedWorkflowId": "WS-005",
+          "relatedProcessStep": "Advisor records rationale",
+          "confidence": "medium-broad-region"
+        },
+        {
+          "number": 2,
+          "label": "Review or gate action",
+          "coordinates": {
+            "x": 0.38,
+            "y": 0.28,
+            "w": 0.35,
+            "h": 0.24
+          },
+          "targetUiRegion": "Central review, decision, queue, or action region",
+          "relatedWorkflowId": "WS-005",
+          "relatedProcessStep": "Compliance checks classification/evidence/permissions",
+          "confidence": "medium-broad-region"
+        },
+        {
+          "number": 3,
+          "label": "Outcome, visibility, or evidence result",
+          "coordinates": {
+            "x": 0.62,
+            "y": 0.58,
+            "w": 0.3,
+            "h": 0.25
+          },
+          "targetUiRegion": "Status, confirmation, released item, or evidence area",
+          "relatedWorkflowId": "WS-005",
+          "relatedProcessStep": "Client visibility is released or blocked with reason",
+          "confidence": "medium-broad-region"
+        }
+      ]
+    },
+    {
+      "workflowId": "WS-006",
+      "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-010-decision-list.png",
+      "outputAnnotatedScreenshotPath": "docs/v3/user-manual-visual-process/annotated-screenshots/ws-006-client-decision-becomes-evidence-and-review-cadence-annotated.png",
+      "callouts": [
+        {
+          "number": 1,
+          "label": "Trigger and source context",
+          "coordinates": {
+            "x": 0.08,
+            "y": 0.12,
+            "w": 0.34,
+            "h": 0.22
+          },
+          "targetUiRegion": "Primary page context or source work item area",
+          "relatedWorkflowId": "WS-006",
+          "relatedProcessStep": "Compliance releases safe decision",
+          "confidence": "medium-broad-region"
+        },
+        {
+          "number": 2,
+          "label": "Review or gate action",
+          "coordinates": {
+            "x": 0.38,
+            "y": 0.28,
+            "w": 0.35,
+            "h": 0.24
+          },
+          "targetUiRegion": "Central review, decision, queue, or action region",
+          "relatedWorkflowId": "WS-006",
+          "relatedProcessStep": "Client-side participant acts",
+          "confidence": "medium-broad-region"
+        },
+        {
+          "number": 3,
+          "label": "Outcome, visibility, or evidence result",
+          "coordinates": {
+            "x": 0.62,
+            "y": 0.58,
+            "w": 0.3,
+            "h": 0.25
+          },
+          "targetUiRegion": "Status, confirmation, released item, or evidence area",
+          "relatedWorkflowId": "WS-006",
+          "relatedProcessStep": "Review cadence schedules follow-up",
+          "confidence": "medium-broad-region"
+        }
+      ]
+    },
+    {
+      "workflowId": "WS-007",
+      "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-012-governance-users.png",
+      "outputAnnotatedScreenshotPath": "docs/v3/user-manual-visual-process/annotated-screenshots/ws-007-governance-change-becomes-permission-safe-access-annotated.png",
+      "callouts": [
+        {
+          "number": 1,
+          "label": "Trigger and source context",
+          "coordinates": {
+            "x": 0.08,
+            "y": 0.12,
+            "w": 0.34,
+            "h": 0.22
+          },
+          "targetUiRegion": "Primary page context or source work item area",
+          "relatedWorkflowId": "WS-007",
+          "relatedProcessStep": "Principal/Admin requests access",
+          "confidence": "medium-broad-region"
+        },
+        {
+          "number": 2,
+          "label": "Review or gate action",
+          "coordinates": {
+            "x": 0.38,
+            "y": 0.28,
+            "w": 0.35,
+            "h": 0.24
+          },
+          "targetUiRegion": "Central review, decision, queue, or action region",
+          "relatedWorkflowId": "WS-007",
+          "relatedProcessStep": "Compliance reviews purpose/scope",
+          "confidence": "medium-broad-region"
+        },
+        {
+          "number": 3,
+          "label": "Outcome, visibility, or evidence result",
+          "coordinates": {
+            "x": 0.62,
+            "y": 0.58,
+            "w": 0.3,
+            "h": 0.25
+          },
+          "targetUiRegion": "Status, confirmation, released item, or evidence area",
+          "relatedWorkflowId": "WS-007",
+          "relatedProcessStep": "Audit history records lineage",
+          "confidence": "medium-broad-region"
+        }
+      ]
+    },
+    {
+      "workflowId": "WS-008",
+      "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-013-communication-centre.png",
+      "outputAnnotatedScreenshotPath": "docs/v3/user-manual-visual-process/annotated-screenshots/ws-008-communication-escalation-becomes-recorded-service-context-annotated.png",
+      "callouts": [
+        {
+          "number": 1,
+          "label": "Trigger and source context",
+          "coordinates": {
+            "x": 0.08,
+            "y": 0.12,
+            "w": 0.34,
+            "h": 0.22
+          },
+          "targetUiRegion": "Primary page context or source work item area",
+          "relatedWorkflowId": "WS-008",
+          "relatedProcessStep": "Advisor/Client Success selects channel",
+          "confidence": "medium-broad-region"
+        },
+        {
+          "number": 2,
+          "label": "Review or gate action",
+          "coordinates": {
+            "x": 0.38,
+            "y": 0.28,
+            "w": 0.35,
+            "h": 0.24
+          },
+          "targetUiRegion": "Central review, decision, queue, or action region",
+          "relatedWorkflowId": "WS-008",
+          "relatedProcessStep": "Client responds or joins call",
+          "confidence": "medium-broad-region"
+        },
+        {
+          "number": 3,
+          "label": "Outcome, visibility, or evidence result",
+          "coordinates": {
+            "x": 0.62,
+            "y": 0.58,
+            "w": 0.3,
+            "h": 0.25
+          },
+          "targetUiRegion": "Status, confirmation, released item, or evidence area",
+          "relatedWorkflowId": "WS-008",
+          "relatedProcessStep": "Compliance controls advice-like messages when needed",
+          "confidence": "medium-broad-region"
+        }
+      ]
+    },
+    {
+      "workflowId": "WS-009",
+      "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-011-evidence-vault.png",
+      "outputAnnotatedScreenshotPath": "docs/v3/user-manual-visual-process/annotated-screenshots/ws-009-export-request-becomes-redacted-approved-auditable-package-annotated.png",
+      "callouts": [
+        {
+          "number": 1,
+          "label": "Trigger and source context",
+          "coordinates": {
+            "x": 0.08,
+            "y": 0.12,
+            "w": 0.34,
+            "h": 0.22
+          },
+          "targetUiRegion": "Primary page context or source work item area",
+          "relatedWorkflowId": "WS-009",
+          "relatedProcessStep": "Requester chooses scope",
+          "confidence": "medium-broad-region"
+        },
+        {
+          "number": 2,
+          "label": "Review or gate action",
+          "coordinates": {
+            "x": 0.38,
+            "y": 0.28,
+            "w": 0.35,
+            "h": 0.24
+          },
+          "targetUiRegion": "Central review, decision, queue, or action region",
+          "relatedWorkflowId": "WS-009",
+          "relatedProcessStep": "Privacy/Compliance reviews redaction and approval",
+          "confidence": "medium-broad-region"
+        },
+        {
+          "number": 3,
+          "label": "Outcome, visibility, or evidence result",
+          "coordinates": {
+            "x": 0.62,
+            "y": 0.58,
+            "w": 0.3,
+            "h": 0.25
+          },
+          "targetUiRegion": "Status, confirmation, released item, or evidence area",
+          "relatedWorkflowId": "WS-009",
+          "relatedProcessStep": "Audit captures export lifecycle",
+          "confidence": "medium-broad-region"
+        }
+      ]
+    },
+    {
+      "workflowId": "WS-010",
+      "sourceScreenshotPath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-014-ops-queues.png",
+      "outputAnnotatedScreenshotPath": "docs/v3/user-manual-visual-process/annotated-screenshots/ws-010-ops-monitoring-turns-workflow-friction-into-service-and-product-improvement-annotated.png",
+      "callouts": [
+        {
+          "number": 1,
+          "label": "Trigger and source context",
+          "coordinates": {
+            "x": 0.08,
+            "y": 0.12,
+            "w": 0.34,
+            "h": 0.22
+          },
+          "targetUiRegion": "Primary page context or source work item area",
+          "relatedWorkflowId": "WS-010",
+          "relatedProcessStep": "Ops monitors queues",
+          "confidence": "medium-broad-region"
+        },
+        {
+          "number": 2,
+          "label": "Review or gate action",
+          "coordinates": {
+            "x": 0.38,
+            "y": 0.28,
+            "w": 0.35,
+            "h": 0.24
+          },
+          "targetUiRegion": "Central review, decision, queue, or action region",
+          "relatedWorkflowId": "WS-010",
+          "relatedProcessStep": "QA validates coverage and state language",
+          "confidence": "medium-broad-region"
+        },
+        {
+          "number": 3,
+          "label": "Outcome, visibility, or evidence result",
+          "coordinates": {
+            "x": 0.62,
+            "y": 0.58,
+            "w": 0.3,
+            "h": 0.25
+          },
+          "targetUiRegion": "Status, confirmation, released item, or evidence area",
+          "relatedWorkflowId": "WS-010",
+          "relatedProcessStep": "Leads prioritize next workflow improvement",
+          "confidence": "medium-broad-region"
+        }
+      ]
+    }
+  ],
+  "processGraphicMap": [
+    {
+      "workflowId": "WS-001",
+      "svgPath": "docs/v3/user-manual-visual-process/process-graphics/ws-001-tenant-becomes-operational.svg",
+      "pngPath": "docs/v3/user-manual-visual-process/process-graphics/ws-001-tenant-becomes-operational.png",
+      "nodes": [
+        {
+          "id": "WS-001-P1",
+          "label": "Platform Admin establishes baseline",
+          "role": "Platform Admin",
+          "state": "TenantStatus: draft",
+          "kind": "task",
+          "calloutNumber": 1
+        },
+        {
+          "id": "WS-001-P2",
+          "label": "Ops Admin creates tenant",
+          "role": "Ops Admin",
+          "state": "TenantStatus: onboarding",
+          "kind": "task",
+          "calloutNumber": 2
+        },
+        {
+          "id": "WS-001-P3",
+          "label": "Client Success coordinates readiness",
+          "role": "Client Success",
+          "state": "UserStatus: invited",
+          "kind": "gate",
+          "calloutNumber": 3
+        },
+        {
+          "id": "WS-001-P4",
+          "label": "Compliance confirms owner/policy gates",
+          "role": "Compliance",
+          "state": "UserStatus: active/demo-confirmed",
+          "kind": "gate",
+          "calloutNumber": null
+        },
+        {
+          "id": "WS-001-P5",
+          "label": "Invited User accepts and acknowledges scope",
+          "role": "Invited User",
+          "state": "UserStatus: active/demo-confirmed",
+          "kind": "task",
+          "calloutNumber": null
+        }
+      ],
+      "caption": "WS-001 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts."
+    },
+    {
+      "workflowId": "WS-002",
+      "svgPath": "docs/v3/user-manual-visual-process/process-graphics/ws-002-client-profile-becomes-usable-shared-family-context.svg",
+      "pngPath": "docs/v3/user-manual-visual-process/process-graphics/ws-002-client-profile-becomes-usable-shared-family-context.png",
+      "nodes": [
+        {
+          "id": "WS-002-P1",
+          "label": "Principal or Family CFO submits context",
+          "role": "Principal",
+          "state": "WorkflowStatus: draft/new",
+          "kind": "task",
+          "calloutNumber": 1
+        },
+        {
+          "id": "WS-002-P2",
+          "label": "Analyst validates and flags gaps",
+          "role": "Family CFO",
+          "state": "WorkflowStatus: in_review",
+          "kind": "task",
+          "calloutNumber": 2
+        },
+        {
+          "id": "WS-002-P3",
+          "label": "Advisor reviews governance significance",
+          "role": "Analyst",
+          "state": "WorkflowStatus: awaiting_info or completed",
+          "kind": "gate",
+          "calloutNumber": 3
+        },
+        {
+          "id": "WS-002-P4",
+          "label": "Visibility changes",
+          "role": "Advisor",
+          "state": "WorkflowStatus: awaiting_info or completed",
+          "kind": "task",
+          "calloutNumber": null
+        },
+        {
+          "id": "WS-002-P5",
+          "label": "Outcome recorded",
+          "role": "Advisor",
+          "state": "WorkflowStatus: awaiting_info or completed",
+          "kind": "task",
+          "calloutNumber": null
+        }
+      ],
+      "caption": "WS-002 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts."
+    },
+    {
+      "workflowId": "WS-003",
+      "svgPath": "docs/v3/user-manual-visual-process/process-graphics/ws-003-document-chaos-becomes-verified-evidence.svg",
+      "pngPath": "docs/v3/user-manual-visual-process/process-graphics/ws-003-document-chaos-becomes-verified-evidence.png",
+      "nodes": [
+        {
+          "id": "WS-003-P1",
+          "label": "Client or advisor uploads source",
+          "role": "Client",
+          "state": "DocumentStatus: empty",
+          "kind": "task",
+          "calloutNumber": 1
+        },
+        {
+          "id": "WS-003-P2",
+          "label": "System/extraction drafts structure",
+          "role": "Family CFO",
+          "state": "uploading",
+          "kind": "task",
+          "calloutNumber": 2
+        },
+        {
+          "id": "WS-003-P3",
+          "label": "Client confirms or corrects",
+          "role": "External Advisor",
+          "state": "uploaded",
+          "kind": "gate",
+          "calloutNumber": 3
+        },
+        {
+          "id": "WS-003-P4",
+          "label": "Analyst validates",
+          "role": "Analyst",
+          "state": "ai_extracted",
+          "kind": "task",
+          "calloutNumber": null
+        },
+        {
+          "id": "WS-003-P5",
+          "label": "Evidence receives verified source link",
+          "role": "Compliance",
+          "state": "client_confirmed",
+          "kind": "task",
+          "calloutNumber": null
+        }
+      ],
+      "caption": "WS-003 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts."
+    },
+    {
+      "workflowId": "WS-004",
+      "svgPath": "docs/v3/user-manual-visual-process/process-graphics/ws-004-signal-becomes-reviewed-recommendation-candidate.svg",
+      "pngPath": "docs/v3/user-manual-visual-process/process-graphics/ws-004-signal-becomes-reviewed-recommendation-candidate.png",
+      "nodes": [
+        {
+          "id": "WS-004-P1",
+          "label": "Signal enters queue",
+          "role": "System",
+          "state": "WorkflowStatus: new",
+          "kind": "task",
+          "calloutNumber": 1
+        },
+        {
+          "id": "WS-004-P2",
+          "label": "Analyst classifies and routes",
+          "role": "Analyst",
+          "state": "analyst_review",
+          "kind": "task",
+          "calloutNumber": 2
+        },
+        {
+          "id": "WS-004-P3",
+          "label": "Advisor receives a prepared candidate package",
+          "role": "Advisor",
+          "state": "awaiting_info or advisor_review",
+          "kind": "gate",
+          "calloutNumber": 3
+        },
+        {
+          "id": "WS-004-P4",
+          "label": "Visibility changes",
+          "role": "Advisor",
+          "state": "RecommendationStatus: advisor_pending",
+          "kind": "task",
+          "calloutNumber": null
+        },
+        {
+          "id": "WS-004-P5",
+          "label": "Outcome recorded",
+          "role": "Advisor",
+          "state": "RecommendationStatus: advisor_pending",
+          "kind": "task",
+          "calloutNumber": null
+        }
+      ],
+      "caption": "WS-004 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts."
+    },
+    {
+      "workflowId": "WS-005",
+      "svgPath": "docs/v3/user-manual-visual-process/process-graphics/ws-005-advisor-approved-package-becomes-compliance-controlled-client-visibility.svg",
+      "pngPath": "docs/v3/user-manual-visual-process/process-graphics/ws-005-advisor-approved-package-becomes-compliance-controlled-client-visibility.png",
+      "nodes": [
+        {
+          "id": "WS-005-P1",
+          "label": "Advisor records rationale",
+          "role": "Senior Wealth Advisor",
+          "state": "RecommendationStatus: advisor_pending",
+          "kind": "task",
+          "calloutNumber": 1
+        },
+        {
+          "id": "WS-005-P2",
+          "label": "Compliance checks classification/evidence/permissions",
+          "role": "Compliance Officer",
+          "state": "advisor_approved",
+          "kind": "gate",
+          "calloutNumber": 2
+        },
+        {
+          "id": "WS-005-P3",
+          "label": "Client visibility is released or blocked with reason",
+          "role": "Principal",
+          "state": "compliance_pending",
+          "kind": "gate",
+          "calloutNumber": 3
+        },
+        {
+          "id": "WS-005-P4",
+          "label": "Visibility changes",
+          "role": "Principal",
+          "state": "released_to_client or blocked",
+          "kind": "task",
+          "calloutNumber": null
+        },
+        {
+          "id": "WS-005-P5",
+          "label": "Outcome recorded",
+          "role": "Principal",
+          "state": "released_to_client or blocked",
+          "kind": "task",
+          "calloutNumber": null
+        }
+      ],
+      "caption": "WS-005 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts."
+    },
+    {
+      "workflowId": "WS-006",
+      "svgPath": "docs/v3/user-manual-visual-process/process-graphics/ws-006-client-decision-becomes-evidence-and-review-cadence.svg",
+      "pngPath": "docs/v3/user-manual-visual-process/process-graphics/ws-006-client-decision-becomes-evidence-and-review-cadence.png",
+      "nodes": [
+        {
+          "id": "WS-006-P1",
+          "label": "Compliance releases safe decision",
+          "role": "Compliance Officer",
+          "state": "DecisionStatus: released_to_client",
+          "kind": "gate",
+          "calloutNumber": 1
+        },
+        {
+          "id": "WS-006-P2",
+          "label": "Client-side participant acts",
+          "role": "Principal",
+          "state": "awaiting_family_approval",
+          "kind": "task",
+          "calloutNumber": 2
+        },
+        {
+          "id": "WS-006-P3",
+          "label": "Evidence captures decision outcome",
+          "role": "Family Council",
+          "state": "accepted/deferred/rejected",
+          "kind": "gate",
+          "calloutNumber": 3
+        },
+        {
+          "id": "WS-006-P4",
+          "label": "Review cadence schedules follow-up",
+          "role": "Trustee scoped",
+          "state": "evidence_created",
+          "kind": "gate",
+          "calloutNumber": null
+        },
+        {
+          "id": "WS-006-P5",
+          "label": "Outcome recorded",
+          "role": "Advisor",
+          "state": "review_scheduled",
+          "kind": "task",
+          "calloutNumber": null
+        }
+      ],
+      "caption": "WS-006 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts."
+    },
+    {
+      "workflowId": "WS-007",
+      "svgPath": "docs/v3/user-manual-visual-process/process-graphics/ws-007-governance-change-becomes-permission-safe-access.svg",
+      "pngPath": "docs/v3/user-manual-visual-process/process-graphics/ws-007-governance-change-becomes-permission-safe-access.png",
+      "nodes": [
+        {
+          "id": "WS-007-P1",
+          "label": "Principal/Admin requests access",
+          "role": "Principal",
+          "state": "WorkflowStatus: new/requested",
+          "kind": "task",
+          "calloutNumber": 1
+        },
+        {
+          "id": "WS-007-P2",
+          "label": "Compliance reviews purpose/scope",
+          "role": "Admin",
+          "state": "in_review",
+          "kind": "gate",
+          "calloutNumber": 2
+        },
+        {
+          "id": "WS-007-P3",
+          "label": "Security confirms sensitive changes",
+          "role": "Compliance",
+          "state": "approved or blocked or revoked",
+          "kind": "gate",
+          "calloutNumber": 3
+        },
+        {
+          "id": "WS-007-P4",
+          "label": "Audit history records lineage",
+          "role": "Security",
+          "state": "approved or blocked or revoked",
+          "kind": "task",
+          "calloutNumber": null
+        },
+        {
+          "id": "WS-007-P5",
+          "label": "Outcome recorded",
+          "role": "External Advisor",
+          "state": "approved or blocked or revoked",
+          "kind": "task",
+          "calloutNumber": null
+        }
+      ],
+      "caption": "WS-007 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts."
+    },
+    {
+      "workflowId": "WS-008",
+      "svgPath": "docs/v3/user-manual-visual-process/process-graphics/ws-008-communication-escalation-becomes-recorded-service-context.svg",
+      "pngPath": "docs/v3/user-manual-visual-process/process-graphics/ws-008-communication-escalation-becomes-recorded-service-context.png",
+      "nodes": [
+        {
+          "id": "WS-008-P1",
+          "label": "Advisor/Client Success selects channel",
+          "role": "Advisor",
+          "state": "WorkflowStatus: draft",
+          "kind": "task",
+          "calloutNumber": 1
+        },
+        {
+          "id": "WS-008-P2",
+          "label": "Client responds or joins call",
+          "role": "Client Success",
+          "state": "sent or scheduled",
+          "kind": "task",
+          "calloutNumber": 2
+        },
+        {
+          "id": "WS-008-P3",
+          "label": "Material outcome links to evidence",
+          "role": "Client",
+          "state": "awaiting_reply",
+          "kind": "gate",
+          "calloutNumber": 3
+        },
+        {
+          "id": "WS-008-P4",
+          "label": "Compliance controls advice-like messages when needed",
+          "role": "External Specialist",
+          "state": "completed or escalated",
+          "kind": "gate",
+          "calloutNumber": null
+        },
+        {
+          "id": "WS-008-P5",
+          "label": "Outcome recorded",
+          "role": "Compliance",
+          "state": "completed or escalated",
+          "kind": "task",
+          "calloutNumber": null
+        }
+      ],
+      "caption": "WS-008 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts."
+    },
+    {
+      "workflowId": "WS-009",
+      "svgPath": "docs/v3/user-manual-visual-process/process-graphics/ws-009-export-request-becomes-redacted-approved-auditable-package.svg",
+      "pngPath": "docs/v3/user-manual-visual-process/process-graphics/ws-009-export-request-becomes-redacted-approved-auditable-package.png",
+      "nodes": [
+        {
+          "id": "WS-009-P1",
+          "label": "Requester chooses scope",
+          "role": "Advisor",
+          "state": "ExportStatus: draft",
+          "kind": "task",
+          "calloutNumber": 1
+        },
+        {
+          "id": "WS-009-P2",
+          "label": "Privacy/Compliance reviews redaction and approval",
+          "role": "Compliance",
+          "state": "scope_selected",
+          "kind": "gate",
+          "calloutNumber": 2
+        },
+        {
+          "id": "WS-009-P3",
+          "label": "Generated package becomes downloadable only if allowed",
+          "role": "Privacy Officer",
+          "state": "redaction_pending",
+          "kind": "gate",
+          "calloutNumber": 3
+        },
+        {
+          "id": "WS-009-P4",
+          "label": "Audit captures export lifecycle",
+          "role": "Client",
+          "state": "approval_required",
+          "kind": "task",
+          "calloutNumber": null
+        },
+        {
+          "id": "WS-009-P5",
+          "label": "Outcome recorded",
+          "role": "External Advisor",
+          "state": "approved",
+          "kind": "task",
+          "calloutNumber": null
+        }
+      ],
+      "caption": "WS-009 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts."
+    },
+    {
+      "workflowId": "WS-010",
+      "svgPath": "docs/v3/user-manual-visual-process/process-graphics/ws-010-ops-monitoring-turns-workflow-friction-into-service-and-product-improvement.svg",
+      "pngPath": "docs/v3/user-manual-visual-process/process-graphics/ws-010-ops-monitoring-turns-workflow-friction-into-service-and-product-improvement.png",
+      "nodes": [
+        {
+          "id": "WS-010-P1",
+          "label": "Ops monitors queues",
+          "role": "Ops",
+          "state": "WorkflowStatus: open",
+          "kind": "task",
+          "calloutNumber": 1
+        },
+        {
+          "id": "WS-010-P2",
+          "label": "QA validates coverage and state language",
+          "role": "Product",
+          "state": "in_review",
+          "kind": "task",
+          "calloutNumber": 2
+        },
+        {
+          "id": "WS-010-P3",
+          "label": "Product identifies roadmap or implementation gaps",
+          "role": "QA",
+          "state": "blocked",
+          "kind": "gate",
+          "calloutNumber": 3
+        },
+        {
+          "id": "WS-010-P4",
+          "label": "Leads prioritize next workflow improvement",
+          "role": "Leads",
+          "state": "deferred",
+          "kind": "task",
+          "calloutNumber": null
+        },
+        {
+          "id": "WS-010-P5",
+          "label": "Outcome recorded",
+          "role": "Leads",
+          "state": "completed",
+          "kind": "task",
+          "calloutNumber": null
+        }
+      ],
+      "caption": "WS-010 shows the workflow from trigger through role handoff, state movement, visibility boundary, and evidence/audit result. Numbered markers correspond to the annotated screenshot callouts."
+    }
+  ],
+  "rejectedWeakApproaches": [
+    "Table-led manual",
+    "Screenshot-only manual",
+    "Route-led manual",
+    "Generic diagram-only manual",
+    "Dense visibility matrix as the main explanation",
+    "Unannotated screenshot evidence",
+    "Decorative process graphics that do not map to UI evidence"
+  ]
+}

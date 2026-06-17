@@ -1,0 +1,378 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>AlphaVest WealthOS User Manual V3</title><meta name="author" content="AlphaVest WealthOS"><meta name="subject" content="Task-led user manual for AlphaVest WealthOS demo workflows"><link rel="stylesheet" href="alphavest-user-manual-v3.css"></head><body>
+  <section class="cover">
+    <div>
+      <div class="kicker">AlphaVest WealthOS</div>
+      <h1>User Manual V3</h1>
+      <p class="subtitle">A task-led guide for demo-data-first wealth operations workflows, evidence-backed review, and compliance-controlled client visibility.</p>
+    </div>
+    <div class="meta">
+      <div><b>Document type</b><br>Premium PDF manual</div>
+      <div><b>Version</b><br>V3 - 2026-06-16</div>
+      <div><b>Source</b><br>docs/v3/user-manual</div>
+      <div><b>Boundary</b><br>Demo workflow prototype; no real client data</div>
+    </div>
+  </section>
+  <section class="metadata">
+    <h2>Document Metadata</h2>
+    <table><tbody>
+      <tr><th>Field</th><th>Value</th></tr>
+      <tr><td>Title</td><td>AlphaVest WealthOS User Manual V3</td></tr>
+      <tr><td>Language</td><td>English</td></tr>
+      <tr><td>Primary artifact</td><td>output/pdf/alphavest-wealthos-user-manual-v3.pdf</td></tr>
+      <tr><td>Source package</td><td>docs/v3/user-manual-source/user-manual-source.v3.json</td></tr>
+      <tr><td>Evidence boundary</td><td>Task-led manual for current demo application; production authentication and full workflow persistence are not claimed.</td></tr>
+    </tbody></table>
+  </section>
+  <section class="toc">
+    <h2>Table Of Contents</h2>
+    <div class="toc-grid">
+      <a href="#how-to-use">How To Use This Manual</a>
+      <a href="#boundaries">Demo Boundaries And Safety Principles</a>
+      <a href="#roles">Roles And Core Concepts</a>
+      <a href="#getting-started">Getting Started</a>
+      <a href="#mt-001-configure-the-platform-policy-baseline">MT-001 - Configure the platform policy baseline</a><a href="#mt-002-create-and-prepare-a-client-tenant">MT-002 - Create and prepare a client tenant</a><a href="#mt-003-accept-an-invitation-and-complete-onboarding">MT-003 - Accept an invitation and complete onboarding</a><a href="#mt-004-submit-client-profile-and-family-context">MT-004 - Submit client profile and family context</a><a href="#mt-005-create-an-entity-and-review-wealth-structure">MT-005 - Create an entity and review wealth structure</a><a href="#mt-006-upload-and-verify-a-document">MT-006 - Upload and verify a document</a><a href="#mt-007-process-a-signal-and-route-internal-work">MT-007 - Process a signal and route internal work</a><a href="#mt-008-review-an-advisor-approval-package">MT-008 - Review an advisor approval package</a><a href="#mt-009-release-block-or-request-evidence-for-advice-like-content">MT-009 - Release, block, or request evidence for advice-like content</a><a href="#mt-010-review-and-submit-a-released-client-decision">MT-010 - Review and submit a released client decision</a><a href="#mt-011-review-evidence-and-create-a-controlled-export">MT-011 - Review evidence and create a controlled export</a><a href="#mt-012-manage-governance-users-roles-and-access-requests">MT-012 - Manage governance users, roles, and access requests</a><a href="#mt-013-choose-a-communication-or-escalation-path">MT-013 - Choose a communication or escalation path</a><a href="#mt-014-monitor-operations-sla-and-reference-state">MT-014 - Monitor operations, SLA, and reference state</a>
+      <a href="#workflow-reference">Workflow Reference</a>
+      <a href="#field-reference">Field And Data Reference</a>
+      <a href="#troubleshooting">Troubleshooting And Blocked States</a>
+      <a href="#appendix">Source And QA Appendix</a>
+    </div>
+  </section>
+  <section id="how-to-use">
+    <h2>How To Use This Manual</h2>
+    <p>This manual is organized around user tasks, not technical paths. Start with your role, then open the task chapter that matches the outcome you want to achieve.</p>
+    <div class="callout safety"><b>Important:</b> Advice-like material cannot become client-visible until advisor review, compliance release, evidence, and permission checks allow it. Advisor approval alone is not client release.</div>
+    <ol>
+      <li>Confirm your demo role and tenant context.</li>
+      <li>Use the task chapter for your goal.</li>
+      <li>Check required information before starting.</li>
+      <li>Review result and blocked-state guidance before moving to the next workflow.</li>
+    </ol>
+  </section>
+  <section id="boundaries" class="page-break">
+    <h2>Demo Boundaries And Safety Principles</h2>
+    <div class="two-col">
+      <div>
+        <h3>Current Demo Boundaries</h3>
+        <ul>
+          <li>Real production authentication is intentionally deferred.</li>
+          <li>No real client data is used.</li>
+          <li>File upload, extraction, export package generation, share links, and full governance transactions are not claimed as production-complete.</li>
+          <li>Implementation notes identify where behavior is navigable, demonstrational, or partially executable.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Product Principles</h3>
+        <ul>
+          <li>Digital first.</li>
+          <li>Human reviewed.</li>
+          <li>Evidence backed.</li>
+          <li>Compliance release controls client visibility.</li>
+          <li>Sensitive actions require audit treatment.</li>
+        </ul>
+      </div>
+    </div>
+  </section><section id="roles" class="page-break"><h2>Roles And Core Concepts</h2><table><thead><tr><th>Role Group</th><th>Typical Work</th></tr></thead><tbody><tr><td>Platform Admin / Compliance / Security Officer</td><td>Configure platform policy, role templates, evidence requirements, security defaults, and export defaults.</td></tr><tr><td>Admin / Client Success / Compliance</td><td>Create client tenants, assign AlphaVest teams, apply policies, and prepare invitations.</td></tr><tr><td>Invited User</td><td>Accept invitation, confirm identity context, acknowledge consent, and confirm role scope.</td></tr><tr><td>Principal / Family CFO</td><td>Maintain profile, family, relationship, entity, decision, evidence, and export context.</td></tr><tr><td>Analyst</td><td>Review signals, missing evidence, document status, and internal work routing.</td></tr><tr><td>Senior Wealth Advisor</td><td>Review recommendation packages and approve, revise, request more data, or escalate without client release.</td></tr><tr><td>Compliance Officer</td><td>Release, block, or request evidence for advice-like content.</td></tr><tr><td>Ops / Product / QA / Leads</td><td>Monitor queues, SLA risk, service blueprint, roadmap, and state references.</td></tr></tbody></table><h3>Core Concepts</h3><div class="meta-grid"><div class="meta-box"><b>Demo session</b><br>A non-production role and tenant context used before real authentication.</div><div class="meta-box"><b>No unapproved advice</b><br>Advice-like content cannot reach clients until advisor approval, compliance release, evidence, and permission checks pass.</div><div class="meta-box"><b>Advisor approval</b><br>Human advisor review stage that still stays internal.</div><div class="meta-box"><b>Compliance release</b><br>Final compliance control for client visibility.</div><div class="meta-box"><b>Evidence record</b><br>Proof package for important actions, decisions, and releases.</div><div class="meta-box"><b>Audit event</b><br>Append-only proof that a sensitive action occurred or was denied.</div><div class="meta-box"><b>Redaction</b><br>Removal or masking of sensitive fields before export/share.</div><div class="meta-box"><b>Second confirmation</b><br>Extra confirmation for sensitive role, policy, manage, revoke, assign, or release actions.</div><div class="meta-box"><b>Restricted state</b><br>User can see a blocked/restricted explanation instead of inaccessible data.</div><div class="meta-box"><b>Reference-only page</b><br>Internal documentation/product page, not a client workflow.</div></div></section>
+  <section id="getting-started"><h2>Getting Started</h2><ol><li>Open the application in the current demo environment.</li><li>Confirm the role and tenant context in the demo session controls.</li><li>Start from the task area that matches your role.</li><li>Review visible state before making a change.</li><li>Follow blocked-state messages instead of bypassing them.</li></ol></section><section class="divider"><div class="num">Task Guide</div><h1>Role-Based Workflow Procedures</h1><p>Each chapter explains the purpose, responsible roles, required information, screenshot context, procedure, result, blocked states, and implementation boundary for one user task.</p></section><section class="task" id="mt-001-configure-the-platform-policy-baseline">
+    <div class="task-head">
+      <div class="task-titleline"><div class="task-id">MT-001 / UF-01 / W-01</div><span class="badge">PF-A</span></div>
+      <h2>Configure the platform policy baseline</h2>
+      <p>Platform settings, advice-boundary rules, role templates, security defaults, evidence templates, and export defaults are visible and ready for tenant setup.</p>
+    </div>
+    <div class="meta-grid">
+      <div class="meta-box"><b>Who can do this</b><br>Platform Admin / Compliance / Security Officer</div>
+      <div class="meta-box"><b>Entry screen</b><br>Platform Settings</div>
+      <div class="meta-box"><b>Required information</b><br>Platform name; retention default; MFA/session defaults; advice classification rules; role template changes; evidence and export template settings</div>
+      <div class="meta-box"><b>Current implementation status</b><br>E3 navigable UI with visible policy states; broad persisted policy transactions are not claimed.</div>
+    </div>
+    <figure class="figure"><img src="../../../../artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-001-platform-settings.png" alt="Platform Settings task entry screen for MT-001"><figcaption>Figure MT-001: Platform Settings task entry screen. Screenshot ID SS-TASK-MT-001.</figcaption></figure>
+    <h3>Procedure</h3>
+    <ol class="steps"><li><span>Go to Platform Settings.</span></li><li><span>Review the visible configure the platform policy baseline context and current workflow state.</span></li><li><span>Enter or review required information: Platform name; retention default; MFA/session defaults; advice classification rules; role template changes.</span></li><li><span>Select only actions that are allowed for your role and current evidence/compliance state.</span></li><li><span>Review any blocked, restricted, or missing-evidence message before continuing.</span></li><li><span>Confirm the expected result: Policy baseline is reviewed; sensitive changes require confirmation and audit.</span></li></ol>
+    <div class="callout result"><b>Result:</b> Policy baseline is reviewed; sensitive changes require confirmation and audit.</div>
+    <div class="callout"><b>Evidence and audit:</b> Audit expected for policy/security/role changes; evidence templates define later proof requirements.</div>
+    <div class="callout safety"><b>Client visibility rule:</b> No unapproved advice reaches the client</div>
+    <h3>Task fields</h3><table class="compact-table"><thead><tr><th>Field</th><th>Required</th><th>Allowed values</th><th>Block</th></tr></thead><tbody><tr><td>Setting key/value</td><td>yes</td><td>Known platform setting; bounded value</td><td>Second confirmation required</td></tr><tr><td>Advice classification</td><td>yes</td><td>AdviceClassification enum</td><td>Compliance review required</td></tr></tbody></table>
+    <h3>Branches And Blocked States</h3><table class="compact-table"><thead><tr><th>Condition</th><th>User can do</th><th>User cannot do</th><th>Next step</th></tr></thead><tbody><tr><td>Happy path / intended demo path</td><td>Review, select, enter, or confirm permitted data.</td><td>Bypass required gates or tenant/role scope.</td><td>Policy baseline is reviewed; sensitive changes require confirmation and audit.</td></tr><tr><td>Blocked, restricted, or incomplete path</td><td>Review the reason, request evidence, change role, or return to the correct prior step.</td><td>Force completion or claim persistence when the app only shows a static/demo state.</td><td>Resolve the missing role, evidence, compliance, or data requirement.</td></tr></tbody></table>
+  </section>
+<section class="task" id="mt-002-create-and-prepare-a-client-tenant">
+    <div class="task-head">
+      <div class="task-titleline"><div class="task-id">MT-002 / UF-02 / W-02</div><span class="badge">PF-B</span></div>
+      <h2>Create and prepare a client tenant</h2>
+      <p>A tenant moves from list/create/setup into team assignment, policy selection, and user invitation readiness.</p>
+    </div>
+    <div class="meta-grid">
+      <div class="meta-box"><b>Who can do this</b><br>Admin / Client Success / Compliance</div>
+      <div class="meta-box"><b>Entry screen</b><br>Tenant List</div>
+      <div class="meta-box"><b>Required information</b><br>family office name; jurisdiction; service tier; advisor; analyst; compliance owner; client success owner; tenant policy profile; principal invitation</div>
+      <div class="meta-box"><b>Current implementation status</b><br>E3 navigable UI; tenant write workflow is a required input-mask slice, not yet fully governed.</div>
+    </div>
+    <figure class="figure"><img src="../../../../artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-002-tenant-list.png" alt="Tenant List task entry screen for MT-002"><figcaption>Figure MT-002: Tenant List task entry screen. Screenshot ID SS-TASK-MT-002.</figcaption></figure>
+    <h3>Procedure</h3>
+    <ol class="steps"><li><span>Go to Tenant List.</span></li><li><span>Review the visible create and prepare a client tenant context and current workflow state.</span></li><li><span>Enter or review required information: family office name; jurisdiction; service tier; advisor; analyst.</span></li><li><span>Select only actions that are allowed for your role and current evidence/compliance state.</span></li><li><span>Review any blocked, restricted, or missing-evidence message before continuing.</span></li><li><span>Confirm the expected result: Tenant setup checklist shows whether activation gates are ready or blocked.</span></li></ol>
+    <div class="callout result"><b>Result:</b> Tenant setup checklist shows whether activation gates are ready or blocked.</div>
+    <div class="callout"><b>Evidence and audit:</b> Tenant create, team assignment, policy override, and invitation should be audited.</div>
+    <div class="callout safety"><b>Client visibility rule:</b> No unapproved advice reaches the client</div>
+    <h3>Task fields</h3><table class="compact-table"><thead><tr><th>Field</th><th>Required</th><th>Allowed values</th><th>Block</th></tr></thead><tbody><tr><td>Client name and jurisdiction</td><td>yes</td><td>Approved jurisdiction list</td><td>Duplicate or missing tenant details</td></tr><tr><td>Compliance owner</td><td>yes</td><td>Users with compliance_officer role</td><td>Activation remains blocked</td></tr></tbody></table>
+    <h3>Branches And Blocked States</h3><table class="compact-table"><thead><tr><th>Condition</th><th>User can do</th><th>User cannot do</th><th>Next step</th></tr></thead><tbody><tr><td>Happy path / intended demo path</td><td>Review, select, enter, or confirm permitted data.</td><td>Bypass required gates or tenant/role scope.</td><td>Tenant setup checklist shows whether activation gates are ready or blocked.</td></tr><tr><td>Blocked, restricted, or incomplete path</td><td>Review the reason, request evidence, change role, or return to the correct prior step.</td><td>Force completion or claim persistence when the app only shows a static/demo state.</td><td>Resolve the missing role, evidence, compliance, or data requirement.</td></tr></tbody></table>
+  </section>
+<section class="task" id="mt-003-accept-an-invitation-and-complete-onboarding">
+    <div class="task-head">
+      <div class="task-titleline"><div class="task-id">MT-003 / UF-03 / W-03</div><span class="badge">PF-B</span></div>
+      <h2>Accept an invitation and complete onboarding</h2>
+      <p>The invited user accepts the invitation, confirms identity/MFA, accepts privacy/consent, and acknowledges role scope.</p>
+    </div>
+    <div class="meta-grid">
+      <div class="meta-box"><b>Who can do this</b><br>Invited User</div>
+      <div class="meta-box"><b>Entry screen</b><br>Invitation Acceptance</div>
+      <div class="meta-box"><b>Required information</b><br>invite token; name; email confirmation; MFA method; consent version; role acknowledgement</div>
+      <div class="meta-box"><b>Current implementation status</b><br>E2/E3 visual and navigable onboarding surfaces; no real authentication claim.</div>
+    </div>
+    <figure class="figure"><img src="../../../../artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-003-invitation-acceptance.png" alt="Invitation Acceptance task entry screen for MT-003"><figcaption>Figure MT-003: Invitation Acceptance task entry screen. Screenshot ID SS-TASK-MT-003.</figcaption></figure>
+    <h3>Procedure</h3>
+    <ol class="steps"><li><span>Go to Invitation Acceptance.</span></li><li><span>Review the visible accept an invitation and complete onboarding context and current workflow state.</span></li><li><span>Enter or review required information: invite token; name; email confirmation; MFA method; consent version.</span></li><li><span>Select only actions that are allowed for your role and current evidence/compliance state.</span></li><li><span>Review any blocked, restricted, or missing-evidence message before continuing.</span></li><li><span>Confirm the expected result: User reaches role confirmation; production auth remains intentionally deferred.</span></li></ol>
+    <div class="callout result"><b>Result:</b> User reaches role confirmation; production auth remains intentionally deferred.</div>
+    <div class="callout"><b>Evidence and audit:</b> Consent and onboarding audit expected; no real auth is introduced in this demo-first phase.</div>
+    <div class="callout safety"><b>Client visibility rule:</b> No unapproved advice reaches the client</div>
+    <h3>Task fields</h3><table class="compact-table"><thead><tr><th>Field</th><th>Required</th><th>Allowed values</th><th>Block</th></tr></thead><tbody><tr><td>Invite token</td><td>yes</td><td>Valid active invitation</td><td>Invalid invitation state</td></tr><tr><td>Privacy acknowledgement</td><td>yes</td><td>Active consent policy</td><td>Cannot continue without consent</td></tr></tbody></table>
+    <h3>Branches And Blocked States</h3><table class="compact-table"><thead><tr><th>Condition</th><th>User can do</th><th>User cannot do</th><th>Next step</th></tr></thead><tbody><tr><td>Happy path / intended demo path</td><td>Review, select, enter, or confirm permitted data.</td><td>Bypass required gates or tenant/role scope.</td><td>User reaches role confirmation; production auth remains intentionally deferred.</td></tr><tr><td>Blocked, restricted, or incomplete path</td><td>Review the reason, request evidence, change role, or return to the correct prior step.</td><td>Force completion or claim persistence when the app only shows a static/demo state.</td><td>Resolve the missing role, evidence, compliance, or data requirement.</td></tr></tbody></table>
+  </section>
+<section class="task" id="mt-004-submit-client-profile-and-family-context">
+    <div class="task-head">
+      <div class="task-titleline"><div class="task-id">MT-004 / UF-04 / W-04</div><span class="badge">PF-C</span></div>
+      <h2>Submit client profile and family context</h2>
+      <p>Client profile, family members, and relationships provide context for later decisions and access.</p>
+    </div>
+    <div class="meta-grid">
+      <div class="meta-box"><b>Who can do this</b><br>Principal / Family CFO</div>
+      <div class="meta-box"><b>Entry screen</b><br>Client Web Dashboard</div>
+      <div class="meta-box"><b>Required information</b><br>family profile; governance preferences; family member details; relationship type; ownership or beneficiary links; missing-evidence notes</div>
+      <div class="meta-box"><b>Current implementation status</b><br>E3 navigable UI with static/demo data; profile persistence is a P0/P1 implementation need.</div>
+    </div>
+    <figure class="figure"><img src="../../../../artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-004-client-web-dashboard.png" alt="Client Web Dashboard task entry screen for MT-004"><figcaption>Figure MT-004: Client Web Dashboard task entry screen. Screenshot ID SS-TASK-MT-004.</figcaption></figure>
+    <h3>Procedure</h3>
+    <ol class="steps"><li><span>Go to Client Web Dashboard.</span></li><li><span>Review the visible submit client profile and family context context and current workflow state.</span></li><li><span>Enter or review required information: family profile; governance preferences; family member details; relationship type; ownership or beneficiary links.</span></li><li><span>Select only actions that are allowed for your role and current evidence/compliance state.</span></li><li><span>Review any blocked, restricted, or missing-evidence message before continuing.</span></li><li><span>Confirm the expected result: Profile and relationship context is visible with conflicts or missing evidence flagged.</span></li></ol>
+    <div class="callout result"><b>Result:</b> Profile and relationship context is visible with conflicts or missing evidence flagged.</div>
+    <div class="callout"><b>Evidence and audit:</b> Profile/family edits should create audit events and review tasks.</div>
+    <div class="callout safety"><b>Client visibility rule:</b> No unapproved advice reaches the client</div>
+    <h3>Task fields</h3><table class="compact-table"><thead><tr><th>Field</th><th>Required</th><th>Allowed values</th><th>Block</th></tr></thead><tbody><tr><td>Family profile and objective</td><td>yes</td><td>Profile taxonomy</td><td>Submitted for review or blocked</td></tr><tr><td>Family member role</td><td>yes</td><td>Principal, CFO, Trustee, Beneficiary, Next Gen</td><td>Conflict or missing relationship</td></tr></tbody></table>
+    <h3>Branches And Blocked States</h3><table class="compact-table"><thead><tr><th>Condition</th><th>User can do</th><th>User cannot do</th><th>Next step</th></tr></thead><tbody><tr><td>Happy path / intended demo path</td><td>Review, select, enter, or confirm permitted data.</td><td>Bypass required gates or tenant/role scope.</td><td>Profile and relationship context is visible with conflicts or missing evidence flagged.</td></tr><tr><td>Blocked, restricted, or incomplete path</td><td>Review the reason, request evidence, change role, or return to the correct prior step.</td><td>Force completion or claim persistence when the app only shows a static/demo state.</td><td>Resolve the missing role, evidence, compliance, or data requirement.</td></tr></tbody></table>
+  </section>
+<section class="task" id="mt-005-create-an-entity-and-review-wealth-structure">
+    <div class="task-head">
+      <div class="task-titleline"><div class="task-id">MT-005 / UF-05 / W-05</div><span class="badge">PF-C</span></div>
+      <h2>Create an entity and review wealth structure</h2>
+      <p>Entity records, participants, documents, wealth-map nodes, and action cards expose structure gaps safely.</p>
+    </div>
+    <div class="meta-grid">
+      <div class="meta-box"><b>Who can do this</b><br>Principal / Family CFO / Analyst / Advisor</div>
+      <div class="meta-box"><b>Entry screen</b><br>Entity List</div>
+      <div class="meta-box"><b>Required information</b><br>entity type; entity name; jurisdiction; participants; asset link; document evidence; action owner; readiness state</div>
+      <div class="meta-box"><b>Current implementation status</b><br>E3 navigable UI; entity/action mutations and evidence gate need transaction wiring.</div>
+    </div>
+    <figure class="figure"><img src="../../../../artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-005-entity-list.png" alt="Entity List task entry screen for MT-005"><figcaption>Figure MT-005: Entity List task entry screen. Screenshot ID SS-TASK-MT-005.</figcaption></figure>
+    <h3>Procedure</h3>
+    <ol class="steps"><li><span>Go to Entity List.</span></li><li><span>Review the visible create an entity and review wealth structure context and current workflow state.</span></li><li><span>Enter or review required information: entity type; entity name; jurisdiction; participants; asset link.</span></li><li><span>Select only actions that are allowed for your role and current evidence/compliance state.</span></li><li><span>Review any blocked, restricted, or missing-evidence message before continuing.</span></li><li><span>Confirm the expected result: Entity detail, wealth-map drawer, and action-board blockers show what must happen next.</span></li></ol>
+    <div class="callout result"><b>Result:</b> Entity detail, wealth-map drawer, and action-board blockers show what must happen next.</div>
+    <div class="callout"><b>Evidence and audit:</b> Entity/action changes should audit; missing evidence blocks readiness.</div>
+    <div class="callout safety"><b>Client visibility rule:</b> No unapproved advice reaches the client</div>
+    <h3>Task fields</h3><table class="compact-table"><thead><tr><th>Field</th><th>Required</th><th>Allowed values</th><th>Block</th></tr></thead><tbody><tr><td>Entity type/name/jurisdiction</td><td>yes</td><td>EntityType enum and jurisdictions</td><td>Blocked or legal review state</td></tr></tbody></table>
+    <h3>Branches And Blocked States</h3><table class="compact-table"><thead><tr><th>Condition</th><th>User can do</th><th>User cannot do</th><th>Next step</th></tr></thead><tbody><tr><td>Happy path / intended demo path</td><td>Review, select, enter, or confirm permitted data.</td><td>Bypass required gates or tenant/role scope.</td><td>Entity detail, wealth-map drawer, and action-board blockers show what must happen next.</td></tr><tr><td>Blocked, restricted, or incomplete path</td><td>Review the reason, request evidence, change role, or return to the correct prior step.</td><td>Force completion or claim persistence when the app only shows a static/demo state.</td><td>Resolve the missing role, evidence, compliance, or data requirement.</td></tr></tbody></table>
+  </section>
+<section class="task" id="mt-006-upload-and-verify-a-document">
+    <div class="task-head">
+      <div class="task-titleline"><div class="task-id">MT-006 / UF-06 / W-06</div><span class="badge">PF-D</span></div>
+      <h2>Upload and verify a document</h2>
+      <p>A document is uploaded, extraction is reviewed as draft, and human verification or evidence linking is required.</p>
+    </div>
+    <div class="meta-grid">
+      <div class="meta-box"><b>Who can do this</b><br>Client / Family CFO / External Advisor / Analyst</div>
+      <div class="meta-box"><b>Entry screen</b><br>Documents List</div>
+      <div class="meta-box"><b>Required information</b><br>document file; document type; entity/asset link; sensitivity; notes; corrected extracted values; confidence override</div>
+      <div class="meta-box"><b>Current implementation status</b><br>E3 navigable UI; no real file storage/extraction transaction is claimed.</div>
+    </div>
+    <figure class="figure"><img src="../../../../artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-006-documents-list.png" alt="Documents List task entry screen for MT-006"><figcaption>Figure MT-006: Documents List task entry screen. Screenshot ID SS-TASK-MT-006.</figcaption></figure>
+    <h3>Procedure</h3>
+    <ol class="steps"><li><span>Go to Documents List.</span></li><li><span>Review the visible upload and verify a document context and current workflow state.</span></li><li><span>Enter or review required information: document file; document type; entity/asset link; sensitivity; notes.</span></li><li><span>Select only actions that are allowed for your role and current evidence/compliance state.</span></li><li><span>Review any blocked, restricted, or missing-evidence message before continuing.</span></li><li><span>Confirm the expected result: Document reaches verification-pending or needs-clarification state.</span></li></ol>
+    <div class="callout result"><b>Result:</b> Document reaches verification-pending or needs-clarification state.</div>
+    <div class="callout"><b>Evidence and audit:</b> Upload, extraction review, document version, and evidence link should audit.</div>
+    <div class="callout safety"><b>Client visibility rule:</b> No unapproved advice reaches the client</div>
+    <h3>Task fields</h3><table class="compact-table"><thead><tr><th>Field</th><th>Required</th><th>Allowed values</th><th>Block</th></tr></thead><tbody><tr><td>Document file/type/scope</td><td>yes</td><td>Allowed file types and document taxonomy</td><td>Upload error / verification pending</td></tr><tr><td>Corrected extracted value</td><td>conditional</td><td>Extracted payload fields</td><td>Needs clarification</td></tr></tbody></table>
+    <h3>Branches And Blocked States</h3><table class="compact-table"><thead><tr><th>Condition</th><th>User can do</th><th>User cannot do</th><th>Next step</th></tr></thead><tbody><tr><td>Happy path / intended demo path</td><td>Review, select, enter, or confirm permitted data.</td><td>Bypass required gates or tenant/role scope.</td><td>Document reaches verification-pending or needs-clarification state.</td></tr><tr><td>Blocked, restricted, or incomplete path</td><td>Review the reason, request evidence, change role, or return to the correct prior step.</td><td>Force completion or claim persistence when the app only shows a static/demo state.</td><td>Resolve the missing role, evidence, compliance, or data requirement.</td></tr></tbody></table>
+  </section>
+<section class="task" id="mt-007-process-a-signal-and-route-internal-work">
+    <div class="task-head">
+      <div class="task-titleline"><div class="task-id">MT-007 / UF-07 / W-07</div><span class="badge">PF-E</span></div>
+      <h2>Process a signal and route internal work</h2>
+      <p>The analyst reviews an internal-only trigger, requests data or routes to advisor, and keeps client visibility blocked.</p>
+    </div>
+    <div class="meta-grid">
+      <div class="meta-box"><b>Who can do this</b><br>Analyst</div>
+      <div class="meta-box"><b>Entry screen</b><br>Signal Review</div>
+      <div class="meta-box"><b>Required information</b><br>signal ID; missing beneficial owner; purpose of wire; source of funds; analyst note; route decision</div>
+      <div class="meta-box"><b>Current implementation status</b><br>E4 demo-state executable for J01 subset; not fully governed across all signals.</div>
+    </div>
+    <figure class="figure"><img src="../../../../artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-007-signal-review.png" alt="Signal Review task entry screen for MT-007"><figcaption>Figure MT-007: Signal Review task entry screen. Screenshot ID SS-TASK-MT-007.</figcaption></figure>
+    <h3>Procedure</h3>
+    <ol class="steps"><li><span>Go to Signal Review.</span></li><li><span>Review the visible process a signal and route internal work context and current workflow state.</span></li><li><span>Enter or review required information: signal ID; missing beneficial owner; purpose of wire; source of funds; analyst note.</span></li><li><span>Select only actions that are allowed for your role and current evidence/compliance state.</span></li><li><span>Review any blocked, restricted, or missing-evidence message before continuing.</span></li><li><span>Confirm the expected result: Trigger moves toward awaiting information or advisor review while staying internal-only.</span></li></ol>
+    <div class="callout result"><b>Result:</b> Trigger moves toward awaiting information or advisor review while staying internal-only.</div>
+    <div class="callout"><b>Evidence and audit:</b> J01 request/route actions are backed by demo workflow API and audit rows when database is available.</div>
+    <div class="callout safety"><b>Client visibility rule:</b> No unapproved advice reaches the client</div>
+    <h3>Task fields</h3><table class="compact-table"><thead><tr><th>Field</th><th>Required</th><th>Allowed values</th><th>Block</th></tr></thead><tbody><tr><td>Analyst route decision</td><td>yes</td><td>Request Data / Assign / Route / Dismiss</td><td>Internal-only state</td></tr></tbody></table>
+    <h3>Branches And Blocked States</h3><table class="compact-table"><thead><tr><th>Condition</th><th>User can do</th><th>User cannot do</th><th>Next step</th></tr></thead><tbody><tr><td>Happy path / intended demo path</td><td>Review, select, enter, or confirm permitted data.</td><td>Bypass required gates or tenant/role scope.</td><td>Trigger moves toward awaiting information or advisor review while staying internal-only.</td></tr><tr><td>Blocked, restricted, or incomplete path</td><td>Review the reason, request evidence, change role, or return to the correct prior step.</td><td>Force completion or claim persistence when the app only shows a static/demo state.</td><td>Resolve the missing role, evidence, compliance, or data requirement.</td></tr></tbody></table>
+  </section>
+<section class="task" id="mt-008-review-an-advisor-approval-package">
+    <div class="task-head">
+      <div class="task-titleline"><div class="task-id">MT-008 / UF-08 / W-08</div><span class="badge">PF-E</span></div>
+      <h2>Review an advisor approval package</h2>
+      <p>Advisor approves, revises, requests more data, or escalates without releasing to the client.</p>
+    </div>
+    <div class="meta-grid">
+      <div class="meta-box"><b>Who can do this</b><br>Senior Wealth Advisor</div>
+      <div class="meta-box"><b>Entry screen</b><br>Advisor Approval Queue</div>
+      <div class="meta-box"><b>Required information</b><br>recommendation ID; advisor decision; rationale; conditions; escalation reason</div>
+      <div class="meta-box"><b>Current implementation status</b><br>E4 for J01 advisor action; advisor approval is explicitly not client visibility.</div>
+    </div>
+    <figure class="figure"><img src="../../../../artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-008-advisor-approval-queue.png" alt="Advisor Approval Queue task entry screen for MT-008"><figcaption>Figure MT-008: Advisor Approval Queue task entry screen. Screenshot ID SS-TASK-MT-008.</figcaption></figure>
+    <h3>Procedure</h3>
+    <ol class="steps"><li><span>Go to Advisor Approval Queue.</span></li><li><span>Review the visible review an advisor approval package context and current workflow state.</span></li><li><span>Enter or review required information: recommendation ID; advisor decision; rationale; conditions; escalation reason.</span></li><li><span>Select only actions that are allowed for your role and current evidence/compliance state.</span></li><li><span>Review any blocked, restricted, or missing-evidence message before continuing.</span></li><li><span>Confirm the expected result: Advisor decision is recorded or routed; compliance release remains required.</span></li></ol>
+    <div class="callout result"><b>Result:</b> Advisor decision is recorded or routed; compliance release remains required.</div>
+    <div class="callout"><b>Evidence and audit:</b> Advisor approval should audit; J01 approve/escalate actions are demo-executable.</div>
+    <div class="callout safety"><b>Client visibility rule:</b> No unapproved advice reaches the client</div>
+    <h3>Task fields</h3><table class="compact-table"><thead><tr><th>Field</th><th>Required</th><th>Allowed values</th><th>Block</th></tr></thead><tbody><tr><td>Advisor decision and rationale</td><td>yes</td><td>Approve, Revise, Request More Data, Escalate</td><td>Compliance pending</td></tr></tbody></table>
+    <h3>Branches And Blocked States</h3><table class="compact-table"><thead><tr><th>Condition</th><th>User can do</th><th>User cannot do</th><th>Next step</th></tr></thead><tbody><tr><td>Happy path / intended demo path</td><td>Review, select, enter, or confirm permitted data.</td><td>Bypass required gates or tenant/role scope.</td><td>Advisor decision is recorded or routed; compliance release remains required.</td></tr><tr><td>Blocked, restricted, or incomplete path</td><td>Review the reason, request evidence, change role, or return to the correct prior step.</td><td>Force completion or claim persistence when the app only shows a static/demo state.</td><td>Resolve the missing role, evidence, compliance, or data requirement.</td></tr></tbody></table>
+  </section>
+<section class="task" id="mt-009-release-block-or-request-evidence-for-advice-like-content">
+    <div class="task-head">
+      <div class="task-titleline"><div class="task-id">MT-009 / UF-09 / W-09</div><span class="badge">PF-F</span></div>
+      <h2>Release, block, or request evidence for advice-like content</h2>
+      <p>Compliance determines whether content can become client-visible, stays blocked, or needs more evidence.</p>
+    </div>
+    <div class="meta-grid">
+      <div class="meta-box"><b>Who can do this</b><br>Compliance Officer</div>
+      <div class="meta-box"><b>Entry screen</b><br>Compliance Queue</div>
+      <div class="meta-box"><b>Required information</b><br>classification; evidence completeness; risk disclosure check; release note; block reason; requested evidence; owner</div>
+      <div class="meta-box"><b>Current implementation status</b><br>E3/E4 mixed demo states; broad release transaction is still a top implementation gap.</div>
+    </div>
+    <figure class="figure"><img src="../../../../artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-009-compliance-queue.png" alt="Compliance Queue task entry screen for MT-009"><figcaption>Figure MT-009: Compliance Queue task entry screen. Screenshot ID SS-TASK-MT-009.</figcaption></figure>
+    <h3>Procedure</h3>
+    <ol class="steps"><li><span>Go to Compliance Queue.</span></li><li><span>Review the visible release, block, or request evidence for advice-like content context and current workflow state.</span></li><li><span>Enter or review required information: classification; evidence completeness; risk disclosure check; release note; block reason.</span></li><li><span>Select only actions that are allowed for your role and current evidence/compliance state.</span></li><li><span>Review any blocked, restricted, or missing-evidence message before continuing.</span></li><li><span>Confirm the expected result: Release, block, or evidence-request state is visible; no unapproved advice reaches the client.</span></li></ol>
+    <div class="callout result"><b>Result:</b> Release, block, or evidence-request state is visible; no unapproved advice reaches the client.</div>
+    <div class="callout"><b>Evidence and audit:</b> Compliance release/block must create audit; evidence completeness is required for release.</div>
+    <div class="callout safety"><b>Client visibility rule:</b> Compliance release controls client visibility</div>
+    <h3>Task fields</h3><table class="compact-table"><thead><tr><th>Field</th><th>Required</th><th>Allowed values</th><th>Block</th></tr></thead><tbody><tr><td>Release/block decision</td><td>yes</td><td>Release, Block, Request Evidence</td><td>Release disabled or blocked</td></tr></tbody></table>
+    <h3>Branches And Blocked States</h3><table class="compact-table"><thead><tr><th>Condition</th><th>User can do</th><th>User cannot do</th><th>Next step</th></tr></thead><tbody><tr><td>Happy path / intended demo path</td><td>Review, select, enter, or confirm permitted data.</td><td>Bypass required gates or tenant/role scope.</td><td>Release, block, or evidence-request state is visible; no unapproved advice reaches the client.</td></tr><tr><td>Blocked, restricted, or incomplete path</td><td>Review the reason, request evidence, change role, or return to the correct prior step.</td><td>Force completion or claim persistence when the app only shows a static/demo state.</td><td>Resolve the missing role, evidence, compliance, or data requirement.</td></tr></tbody></table>
+  </section>
+<section class="task" id="mt-010-review-and-submit-a-released-client-decision">
+    <div class="task-head">
+      <div class="task-titleline"><div class="task-id">MT-010 / UF-10 / W-10</div><span class="badge">PF-F</span></div>
+      <h2>Review and submit a released client decision</h2>
+      <p>Client reviews only released content, chooses accept/defer/reject, and receives proof of submission.</p>
+    </div>
+    <div class="meta-grid">
+      <div class="meta-box"><b>Who can do this</b><br>Principal / Family Council / Trustee scoped</div>
+      <div class="meta-box"><b>Entry screen</b><br>Decision List</div>
+      <div class="meta-box"><b>Required information</b><br>decision choice; participant acknowledgement; comment; request-more-information reason</div>
+      <div class="meta-box"><b>Current implementation status</b><br>E3 navigable UI with demo workflow actions; final decision/evidence package persistence remains incomplete.</div>
+    </div>
+    <figure class="figure"><img src="../../../../artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-010-decision-list.png" alt="Decision List task entry screen for MT-010"><figcaption>Figure MT-010: Decision List task entry screen. Screenshot ID SS-TASK-MT-010.</figcaption></figure>
+    <h3>Procedure</h3>
+    <ol class="steps"><li><span>Go to Decision List.</span></li><li><span>Review the visible review and submit a released client decision context and current workflow state.</span></li><li><span>Enter or review required information: decision choice; participant acknowledgement; comment; request-more-information reason.</span></li><li><span>Select only actions that are allowed for your role and current evidence/compliance state.</span></li><li><span>Review any blocked, restricted, or missing-evidence message before continuing.</span></li><li><span>Confirm the expected result: Decision success page and linked evidence record show the completion proof.</span></li></ol>
+    <div class="callout result"><b>Result:</b> Decision success page and linked evidence record show the completion proof.</div>
+    <div class="callout"><b>Evidence and audit:</b> Decision event and evidence package should be immutable/audited.</div>
+    <div class="callout safety"><b>Client visibility rule:</b> No unapproved advice reaches the client</div>
+    <h3>Task fields</h3><table class="compact-table"><thead><tr><th>Field</th><th>Required</th><th>Allowed values</th><th>Block</th></tr></thead><tbody><tr><td>Decision choice</td><td>yes</td><td>Accept, Defer, Reject, Request Info</td><td>Permission or release block</td></tr></tbody></table>
+    <h3>Branches And Blocked States</h3><table class="compact-table"><thead><tr><th>Condition</th><th>User can do</th><th>User cannot do</th><th>Next step</th></tr></thead><tbody><tr><td>Happy path / intended demo path</td><td>Review, select, enter, or confirm permitted data.</td><td>Bypass required gates or tenant/role scope.</td><td>Decision success page and linked evidence record show the completion proof.</td></tr><tr><td>Blocked, restricted, or incomplete path</td><td>Review the reason, request evidence, change role, or return to the correct prior step.</td><td>Force completion or claim persistence when the app only shows a static/demo state.</td><td>Resolve the missing role, evidence, compliance, or data requirement.</td></tr></tbody></table>
+  </section>
+<section class="task" id="mt-011-review-evidence-and-create-a-controlled-export">
+    <div class="task-head">
+      <div class="task-titleline"><div class="task-id">MT-011 / UF-11 / W-11</div><span class="badge">PF-I</span></div>
+      <h2>Review evidence and create a controlled export</h2>
+      <p>Evidence is inspected and exported only through scoped, redacted, approved, audited export steps.</p>
+    </div>
+    <div class="meta-grid">
+      <div class="meta-box"><b>Who can do this</b><br>Client / Advisor / Compliance / Privacy Officer</div>
+      <div class="meta-box"><b>Entry screen</b><br>Evidence Vault / Create Export</div>
+      <div class="meta-box"><b>Required information</b><br>evidence search/filter; export type; scope items; redaction profile; recipient/share expiry; approval reason</div>
+      <div class="meta-box"><b>Current implementation status</b><br>E3 visual/navigable; export package/file/share realism is a Phase 18 gap.</div>
+    </div>
+    <figure class="figure"><img src="../../../../artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-011-evidence-vault.png" alt="Evidence Vault / Create Export task entry screen for MT-011"><figcaption>Figure MT-011: Evidence Vault / Create Export task entry screen. Screenshot ID SS-TASK-MT-011.</figcaption></figure>
+    <h3>Procedure</h3>
+    <ol class="steps"><li><span>Go to Evidence Vault / Create Export.</span></li><li><span>Review the visible review evidence and create a controlled export context and current workflow state.</span></li><li><span>Enter or review required information: evidence search/filter; export type; scope items; redaction profile; recipient/share expiry.</span></li><li><span>Select only actions that are allowed for your role and current evidence/compliance state.</span></li><li><span>Review any blocked, restricted, or missing-evidence message before continuing.</span></li><li><span>Confirm the expected result: Export package is previewed/downloaded only if scope, redaction, permission, and approval allow it.</span></li></ol>
+    <div class="callout result"><b>Result:</b> Export package is previewed/downloaded only if scope, redaction, permission, and approval allow it.</div>
+    <div class="callout"><b>Evidence and audit:</b> Export create/scope/redaction/approval/download/share should audit.</div>
+    <div class="callout safety"><b>Client visibility rule:</b> No unapproved advice reaches the client</div>
+    <h3>Task fields</h3><table class="compact-table"><thead><tr><th>Field</th><th>Required</th><th>Allowed values</th><th>Block</th></tr></thead><tbody><tr><td>Scope and redaction profile</td><td>yes</td><td>Allowed objects and redaction profiles</td><td>Approval required/block</td></tr></tbody></table>
+    <h3>Branches And Blocked States</h3><table class="compact-table"><thead><tr><th>Condition</th><th>User can do</th><th>User cannot do</th><th>Next step</th></tr></thead><tbody><tr><td>Happy path / intended demo path</td><td>Review, select, enter, or confirm permitted data.</td><td>Bypass required gates or tenant/role scope.</td><td>Export package is previewed/downloaded only if scope, redaction, permission, and approval allow it.</td></tr><tr><td>Blocked, restricted, or incomplete path</td><td>Review the reason, request evidence, change role, or return to the correct prior step.</td><td>Force completion or claim persistence when the app only shows a static/demo state.</td><td>Resolve the missing role, evidence, compliance, or data requirement.</td></tr></tbody></table>
+  </section>
+<section class="task" id="mt-012-manage-governance-users-roles-and-access-requests">
+    <div class="task-head">
+      <div class="task-titleline"><div class="task-id">MT-012 / UF-12 / W-12</div><span class="badge">PF-G</span></div>
+      <h2>Manage governance users, roles, and access requests</h2>
+      <p>Sensitive user/role/access changes require scoped roles, confirmation, and audit history.</p>
+    </div>
+    <div class="meta-grid">
+      <div class="meta-box"><b>Who can do this</b><br>Principal / Admin / Compliance / Security</div>
+      <div class="meta-box"><b>Entry screen</b><br>Governance Users</div>
+      <div class="meta-box"><b>Required information</b><br>user email; role; permission scope; change reason; confirmation phrase; access decision; comment</div>
+      <div class="meta-box"><b>Current implementation status</b><br>E3/E4 demo actions visible; governed role/access transactions remain incomplete.</div>
+    </div>
+    <figure class="figure"><img src="../../../../artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-012-governance-users.png" alt="Governance Users task entry screen for MT-012"><figcaption>Figure MT-012: Governance Users task entry screen. Screenshot ID SS-TASK-MT-012.</figcaption></figure>
+    <h3>Procedure</h3>
+    <ol class="steps"><li><span>Go to Governance Users.</span></li><li><span>Review the visible manage governance users, roles, and access requests context and current workflow state.</span></li><li><span>Enter or review required information: user email; role; permission scope; change reason; confirmation phrase.</span></li><li><span>Select only actions that are allowed for your role and current evidence/compliance state.</span></li><li><span>Review any blocked, restricted, or missing-evidence message before continuing.</span></li><li><span>Confirm the expected result: Access request is approved/denied/escalated and audit history shows lineage.</span></li></ol>
+    <div class="callout result"><b>Result:</b> Access request is approved/denied/escalated and audit history shows lineage.</div>
+    <div class="callout"><b>Evidence and audit:</b> Sensitive role/access actions require second confirmation and audit.</div>
+    <div class="callout safety"><b>Client visibility rule:</b> No unapproved advice reaches the client</div>
+    <h3>Task fields</h3><table class="compact-table"><thead><tr><th>Field</th><th>Required</th><th>Allowed values</th><th>Block</th></tr></thead><tbody><tr><td>Role/permission/scope/reason</td><td>yes</td><td>Roles and permissions table</td><td>Confirmation required</td></tr></tbody></table>
+    <h3>Branches And Blocked States</h3><table class="compact-table"><thead><tr><th>Condition</th><th>User can do</th><th>User cannot do</th><th>Next step</th></tr></thead><tbody><tr><td>Happy path / intended demo path</td><td>Review, select, enter, or confirm permitted data.</td><td>Bypass required gates or tenant/role scope.</td><td>Access request is approved/denied/escalated and audit history shows lineage.</td></tr><tr><td>Blocked, restricted, or incomplete path</td><td>Review the reason, request evidence, change role, or return to the correct prior step.</td><td>Force completion or claim persistence when the app only shows a static/demo state.</td><td>Resolve the missing role, evidence, compliance, or data requirement.</td></tr></tbody></table>
+  </section>
+<section class="task" id="mt-013-choose-a-communication-or-escalation-path">
+    <div class="task-head">
+      <div class="task-titleline"><div class="task-id">MT-013 / UF-13 / W-13</div><span class="badge">PF-H</span></div>
+      <h2>Choose a communication or escalation path</h2>
+      <p>The right secure message, data request, call, workshop, external specialist, or compliance escalation path is selected.</p>
+    </div>
+    <div class="meta-grid">
+      <div class="meta-box"><b>Who can do this</b><br>Advisor / Client Success / Client</div>
+      <div class="meta-box"><b>Entry screen</b><br>Communication Centre</div>
+      <div class="meta-box"><b>Required information</b><br>channel; recipient; message/call notes; sensitivity; reason for escalation; follow-up owner</div>
+      <div class="meta-box"><b>Current implementation status</b><br>E2/E3 mostly static communication surfaces; message/call persistence not claimed.</div>
+    </div>
+    <figure class="figure"><img src="../../../../artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-013-communication-centre.png" alt="Communication Centre task entry screen for MT-013"><figcaption>Figure MT-013: Communication Centre task entry screen. Screenshot ID SS-TASK-MT-013.</figcaption></figure>
+    <h3>Procedure</h3>
+    <ol class="steps"><li><span>Go to Communication Centre.</span></li><li><span>Review the visible choose a communication or escalation path context and current workflow state.</span></li><li><span>Enter or review required information: channel; recipient; message/call notes; sensitivity; reason for escalation.</span></li><li><span>Select only actions that are allowed for your role and current evidence/compliance state.</span></li><li><span>Review any blocked, restricted, or missing-evidence message before continuing.</span></li><li><span>Confirm the expected result: Communication path or call-trigger state is visible and linked to evidence when material.</span></li></ol>
+    <div class="callout result"><b>Result:</b> Communication path or call-trigger state is visible and linked to evidence when material.</div>
+    <div class="callout"><b>Evidence and audit:</b> Sensitive communication should audit and evidence-link; advice-like messages require release controls.</div>
+    <div class="callout safety"><b>Client visibility rule:</b> No unapproved advice reaches the client</div>
+    <h3>Task fields</h3><table class="compact-table"><thead><tr><th>Field</th><th>Required</th><th>Allowed values</th><th>Block</th></tr></thead><tbody><tr><td>Channel, recipient, sensitivity, notes</td><td>yes</td><td>secure_message, phone, video, in_person</td><td>Compliance hold</td></tr></tbody></table>
+    <h3>Branches And Blocked States</h3><table class="compact-table"><thead><tr><th>Condition</th><th>User can do</th><th>User cannot do</th><th>Next step</th></tr></thead><tbody><tr><td>Happy path / intended demo path</td><td>Review, select, enter, or confirm permitted data.</td><td>Bypass required gates or tenant/role scope.</td><td>Communication path or call-trigger state is visible and linked to evidence when material.</td></tr><tr><td>Blocked, restricted, or incomplete path</td><td>Review the reason, request evidence, change role, or return to the correct prior step.</td><td>Force completion or claim persistence when the app only shows a static/demo state.</td><td>Resolve the missing role, evidence, compliance, or data requirement.</td></tr></tbody></table>
+  </section>
+<section class="task" id="mt-014-monitor-operations-sla-and-reference-state">
+    <div class="task-head">
+      <div class="task-titleline"><div class="task-id">MT-014 / UF-14 / W-14</div><span class="badge">PF-J</span></div>
+      <h2>Monitor operations, SLA, and reference state</h2>
+      <p>Ops reviews queues, SLA risk, service blueprint, roadmap, and state catalogue for delivery/control monitoring.</p>
+    </div>
+    <div class="meta-grid">
+      <div class="meta-box"><b>Who can do this</b><br>Ops / Product / QA / Leads</div>
+      <div class="meta-box"><b>Entry screen</b><br>Ops Queues</div>
+      <div class="meta-box"><b>Required information</b><br>queue filter; SLA threshold; owner; roadmap scope; state/badge reference</div>
+      <div class="meta-box"><b>Current implementation status</b><br>E2/E3 reference and dashboard surfaces; queue/SLA mutation not yet implemented.</div>
+    </div>
+    <figure class="figure"><img src="../../../../artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-014-ops-queues.png" alt="Ops Queues task entry screen for MT-014"><figcaption>Figure MT-014: Ops Queues task entry screen. Screenshot ID SS-TASK-MT-014.</figcaption></figure>
+    <h3>Procedure</h3>
+    <ol class="steps"><li><span>Go to Ops Queues.</span></li><li><span>Review the visible monitor operations, sla, and reference state context and current workflow state.</span></li><li><span>Enter or review required information: queue filter; SLA threshold; owner; roadmap scope; state/badge reference.</span></li><li><span>Select only actions that are allowed for your role and current evidence/compliance state.</span></li><li><span>Review any blocked, restricted, or missing-evidence message before continuing.</span></li><li><span>Confirm the expected result: Bottlenecks, SLA breaches, roadmap scope, and state language are visible for internal use.</span></li></ol>
+    <div class="callout result"><b>Result:</b> Bottlenecks, SLA breaches, roadmap scope, and state language are visible for internal use.</div>
+    <div class="callout"><b>Evidence and audit:</b> Ops mutations should audit if implemented; reference pages are internal only.</div>
+    <div class="callout safety"><b>Client visibility rule:</b> No unapproved advice reaches the client</div>
+    <h3>Task fields</h3><table class="compact-table"><thead><tr><th>Field</th><th>Required</th><th>Allowed values</th><th>Block</th></tr></thead><tbody><tr><td>Queue filter, owner, status, SLA</td><td>optional</td><td>Queue and SLA taxonomy</td><td>Read-only if not implemented</td></tr></tbody></table>
+    <h3>Branches And Blocked States</h3><table class="compact-table"><thead><tr><th>Condition</th><th>User can do</th><th>User cannot do</th><th>Next step</th></tr></thead><tbody><tr><td>Happy path / intended demo path</td><td>Review, select, enter, or confirm permitted data.</td><td>Bypass required gates or tenant/role scope.</td><td>Bottlenecks, SLA breaches, roadmap scope, and state language are visible for internal use.</td></tr><tr><td>Blocked, restricted, or incomplete path</td><td>Review the reason, request evidence, change role, or return to the correct prior step.</td><td>Force completion or claim persistence when the app only shows a static/demo state.</td><td>Resolve the missing role, evidence, compliance, or data requirement.</td></tr></tbody></table>
+  </section><section id="workflow-reference" class="appendix"><h2>Workflow Reference</h2><table><thead><tr><th>Task</th><th>Workflow</th><th>Pageflow</th><th>Required Data</th><th>Status</th></tr></thead><tbody><tr><td>MT-001</td><td>UF-01 / W-01</td><td>PF-A</td><td>Platform name; retention default; MFA/session defaults; advice classification rules; role template changes; evidence and export template settings</td><td>E3 navigable UI with visible policy states; broad persisted policy transactions are not claimed.</td></tr><tr><td>MT-002</td><td>UF-02 / W-02</td><td>PF-B</td><td>family office name; jurisdiction; service tier; advisor; analyst; compliance owner; client success owner; tenant policy profile; principal invitation</td><td>E3 navigable UI; tenant write workflow is a required input-mask slice, not yet fully governed.</td></tr><tr><td>MT-003</td><td>UF-03 / W-03</td><td>PF-B</td><td>invite token; name; email confirmation; MFA method; consent version; role acknowledgement</td><td>E2/E3 visual and navigable onboarding surfaces; no real authentication claim.</td></tr><tr><td>MT-004</td><td>UF-04 / W-04</td><td>PF-C</td><td>family profile; governance preferences; family member details; relationship type; ownership or beneficiary links; missing-evidence notes</td><td>E3 navigable UI with static/demo data; profile persistence is a P0/P1 implementation need.</td></tr><tr><td>MT-005</td><td>UF-05 / W-05</td><td>PF-C</td><td>entity type; entity name; jurisdiction; participants; asset link; document evidence; action owner; readiness state</td><td>E3 navigable UI; entity/action mutations and evidence gate need transaction wiring.</td></tr><tr><td>MT-006</td><td>UF-06 / W-06</td><td>PF-D</td><td>document file; document type; entity/asset link; sensitivity; notes; corrected extracted values; confidence override</td><td>E3 navigable UI; no real file storage/extraction transaction is claimed.</td></tr><tr><td>MT-007</td><td>UF-07 / W-07</td><td>PF-E</td><td>signal ID; missing beneficial owner; purpose of wire; source of funds; analyst note; route decision</td><td>E4 demo-state executable for J01 subset; not fully governed across all signals.</td></tr><tr><td>MT-008</td><td>UF-08 / W-08</td><td>PF-E</td><td>recommendation ID; advisor decision; rationale; conditions; escalation reason</td><td>E4 for J01 advisor action; advisor approval is explicitly not client visibility.</td></tr><tr><td>MT-009</td><td>UF-09 / W-09</td><td>PF-F</td><td>classification; evidence completeness; risk disclosure check; release note; block reason; requested evidence; owner</td><td>E3/E4 mixed demo states; broad release transaction is still a top implementation gap.</td></tr><tr><td>MT-010</td><td>UF-10 / W-10</td><td>PF-F</td><td>decision choice; participant acknowledgement; comment; request-more-information reason</td><td>E3 navigable UI with demo workflow actions; final decision/evidence package persistence remains incomplete.</td></tr><tr><td>MT-011</td><td>UF-11 / W-11</td><td>PF-I</td><td>evidence search/filter; export type; scope items; redaction profile; recipient/share expiry; approval reason</td><td>E3 visual/navigable; export package/file/share realism is a Phase 18 gap.</td></tr><tr><td>MT-012</td><td>UF-12 / W-12</td><td>PF-G</td><td>user email; role; permission scope; change reason; confirmation phrase; access decision; comment</td><td>E3/E4 demo actions visible; governed role/access transactions remain incomplete.</td></tr><tr><td>MT-013</td><td>UF-13 / W-13</td><td>PF-H</td><td>channel; recipient; message/call notes; sensitivity; reason for escalation; follow-up owner</td><td>E2/E3 mostly static communication surfaces; message/call persistence not claimed.</td></tr><tr><td>MT-014</td><td>UF-14 / W-14</td><td>PF-J</td><td>queue filter; SLA threshold; owner; roadmap scope; state/badge reference</td><td>E2/E3 reference and dashboard surfaces; queue/SLA mutation not yet implemented.</td></tr></tbody></table></section>
+  <section id="field-reference" class="appendix"><h2>Field And Data Reference</h2><table class="compact-table"><thead><tr><th>Field</th><th>Task</th><th>Purpose</th><th>Required</th><th>Example</th><th>Sensitivity</th></tr></thead><tbody><tr><td>Setting key/value</td><td>MT-001</td><td>Select and change platform defaults</td><td>yes</td><td>AlphaVest WealthOS / 7 years / 30 minutes</td><td>internal</td></tr><tr><td>Advice classification</td><td>MT-001</td><td>Classify information, workflow, guidance, advice-relevant, or advice</td><td>yes</td><td>advice_relevant</td><td>compliance-sensitive</td></tr><tr><td>Client name and jurisdiction</td><td>MT-002</td><td>Create tenant identity and regulatory context</td><td>yes</td><td>Northbridge Family Office / Switzerland</td><td>client confidential</td></tr><tr><td>Compliance owner</td><td>MT-002</td><td>Assign accountable release owner</td><td>yes</td><td>Naledi Mokoena</td><td>internal</td></tr><tr><td>Invite token</td><td>MT-003</td><td>Scope onboarding to one tenant/user</td><td>yes</td><td>demo invite token</td><td>sensitive</td></tr><tr><td>Privacy acknowledgement</td><td>MT-003</td><td>Record required consent version</td><td>yes</td><td>Privacy Notice v1 accepted</td><td>legal/privacy</td></tr><tr><td>Family profile and objective</td><td>MT-004</td><td>Capture client context without advice</td><td>yes</td><td>Morgan Family Office / Family Office Advisory</td><td>client confidential</td></tr><tr><td>Family member role</td><td>MT-004</td><td>Define family role and decision scope</td><td>yes</td><td>Trustee</td><td>personal data</td></tr><tr><td>Entity type/name/jurisdiction</td><td>MT-005</td><td>Create legal/entity structure node</td><td>yes</td><td>trust / Sunward Trust / Switzerland</td><td>legal entity data</td></tr><tr><td>Document file/type/scope</td><td>MT-006</td><td>Upload source evidence for review</td><td>yes</td><td>Trust Agreement.pdf / Trust deed</td><td>confidential</td></tr><tr><td>Corrected extracted value</td><td>MT-006</td><td>Confirm or correct AI draft data</td><td>conditional</td><td>Beneficial owner: Sunward Holdings</td><td>confidential</td></tr><tr><td>Analyst route decision</td><td>MT-007</td><td>Request data, assign, route, dismiss</td><td>yes</td><td>Request Data / Information</td><td>internal</td></tr><tr><td>Advisor decision and rationale</td><td>MT-008</td><td>Approve, revise, request data, or escalate</td><td>yes</td><td>Approve with rationale</td><td>advice-sensitive</td></tr><tr><td>Release/block decision</td><td>MT-009</td><td>Determine client visibility</td><td>yes</td><td>Request Evidence</td><td>release-sensitive</td></tr><tr><td>Decision choice</td><td>MT-010</td><td>Accept, defer, reject, or request more information</td><td>yes</td><td>Defer with comment</td><td>client-visible</td></tr><tr><td>Scope and redaction profile</td><td>MT-011</td><td>Control exported data</td><td>yes</td><td>Client-visible evidence package</td><td>restricted</td></tr><tr><td>Role/permission/scope/reason</td><td>MT-012</td><td>Change sensitive access safely</td><td>yes</td><td>Portfolio Manager + view performance</td><td>security-sensitive</td></tr><tr><td>Channel, recipient, sensitivity, notes</td><td>MT-013</td><td>Choose secure message or escalation path</td><td>yes</td><td>Advisor call</td><td>communication-sensitive</td></tr><tr><td>Queue filter, owner, status, SLA</td><td>MT-014</td><td>Monitor internal work</td><td>optional</td><td>At risk</td><td>internal</td></tr></tbody></table></section>
+  <section id="troubleshooting" class="appendix"><h2>Troubleshooting And Blocked States</h2><table><thead><tr><th>Pattern</th><th>What It Usually Means</th><th>What To Do</th></tr></thead><tbody>
+    <tr><td>Wrong role</td><td>The selected demo role cannot view or complete the action.</td><td>Confirm the role selector or ask an authorized role to complete the task.</td></tr>
+    <tr><td>Wrong tenant</td><td>The object belongs to another tenant context.</td><td>Confirm the tenant selector before continuing.</td></tr>
+    <tr><td>Missing evidence</td><td>The workflow does not have enough proof for release, decision, readiness, or export.</td><td>Upload or request the required evidence and return to the task.</td></tr>
+    <tr><td>Compliance hold</td><td>Advice-like material has not been released.</td><td>Open the compliance review or block state and follow the requested next step.</td></tr>
+    <tr><td>Export blocked</td><td>Scope, redaction, approval, permission, or expiry is not satisfied.</td><td>Review export scope and redaction profile before preview or download.</td></tr>
+    <tr><td>Static or no-op control</td><td>The demo may show a future action before persistence is implemented.</td><td>Treat the screen as demonstrational and check the implementation note.</td></tr>
+  </tbody></table></section>
+  <section id="appendix" class="appendix"><h2>Source And QA Appendix</h2><div class="two-col"><div><h3>Generated Artifacts</h3><ul><li>HTML source: docs/v3/user-manual-pdf/source/alphavest-user-manual-v3.html</li><li>CSS source: docs/v3/user-manual-pdf/source/alphavest-user-manual-v3.css</li><li>Final PDF: output/pdf/alphavest-wealthos-user-manual-v3.pdf</li></ul></div><div><h3>Source Counts</h3><ul><li>14 manual tasks</li><li>14 workflows</li><li>19 field references</li><li>14 live screenshots used</li></ul></div></div><p class="footer-note">This PDF is generated from the current demo manual package. It does not claim PDF/UA conformance unless a dedicated validator confirms it.</p></section></body></html>

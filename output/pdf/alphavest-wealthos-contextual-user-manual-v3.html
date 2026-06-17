@@ -1,0 +1,2212 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AlphaVest WealthOS Contextual User Manual V3</title>
+  <link rel="stylesheet" href="./alphavest-contextual-user-manual-v3.css" />
+</head>
+<body>
+  <main>
+    <section class="cover">
+      <div class="brand-mark">AlphaVest WealthOS</div>
+      <div class="cover-main">
+        <p class="eyebrow">Contextual User Manual / V3</p>
+        <h1>Operating the demo-data-first wealth workflow with purpose, evidence, and release control.</h1>
+        <p class="cover-copy">This manual explains what users do, why each action exists, which data is required, what the application protects, and what later workflows become possible.</p>
+      </div>
+      <div class="cover-meta">
+        <span>English source manual</span>
+        <span>Generated: 2026-06-17T00:00:00Z</span>
+        <span>ENGINE_MIX_V2_CODEX_V3_PROOF</span>
+      </div>
+    </section>
+
+    <section class="section-page">
+      <p class="eyebrow">Manual frame</p>
+      <h2>How to read this manual</h2>
+      <div class="intro-grid">
+        <article>
+          <h3>Task-led, not path-led</h3>
+          <p>The manual follows visible UI tasks and user outcomes. Route paths remain source trace material, not operating instructions.</p>
+        </article>
+        <article>
+          <h3>Context beside action</h3>
+          <p>Each flow explains the reason for the action, the data it depends on, the controls it activates, and the downstream workflow it prepares.</p>
+        </article>
+        <article>
+          <h3>Evidence boundary</h3>
+          <p>Where a feature is navigable but not fully production-persistent, the manual says so. Demo behavior is never inflated into a production claim.</p>
+        </article>
+      </div>
+      <h3>Product purpose</h3>
+      <ul><li>AlphaVest WealthOS supports demo-data-first wealth operations for family-office and advisory workflows.</li><li>The product model connects digital intake, human review, evidence-backed decisions, role-scoped access, redaction, audit, and compliance-controlled client visibility.</li><li>The manual context layer teaches why actions exist, what they protect, and what later workflows depend on.</li></ul>
+      <h3>Safety principles</h3>
+      <ul><li>No unapproved advice reaches the client.</li><li>Advisor approval alone is not enough.</li><li>Compliance release controls client visibility.</li><li>Evidence and audit are required where the app claims important actions are complete.</li><li>Blocked states are protective controls, not generic errors.</li></ul>
+      <h3>Demo boundaries</h3>
+      <ul><li>Demo session is not production authentication.</li><li>Visible UI does not prove full persistence unless the source package states it.</li><li>File extraction, export package generation, share links, and broad governance transactions remain partial unless proven.</li><li>No real client data or final financial, legal, or tax advice is introduced.</li></ul>
+    </section>
+
+    <section class="section-page">
+      <p class="eyebrow">Operating model</p>
+      <h2>From intake to controlled visibility</h2>
+      <div class="operating-strip">
+        <span>Policy baseline</span>
+        <span>Tenant readiness</span>
+        <span>Client intake</span>
+        <span>Entity and document work</span>
+        <span>Signals and advice review</span>
+        <span>Compliance release</span>
+        <span>Evidence and audit</span>
+      </div>
+      <p>The application is designed around a simple rule: important client-facing outcomes must pass through human review, evidence creation, and compliance-controlled release. The manual therefore explains controls as part of normal work, not as separate compliance decoration.</p>
+      <table class="role-table">
+        <thead>
+          <tr><th>Role family</th><th>Primary purpose in the manual</th><th>Control idea</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+        <td>Platform Admin</td>
+        <td>Sets platform-wide operating rules before tenant work starts.<br><span>Related tasks: MT-001</span></td>
+        <td>Sensitive configuration changes require visible controls and audit.</td>
+      </tr><tr>
+        <td>Compliance</td>
+        <td>Controls release, visibility, policy exceptions, and evidence completeness.<br><span>Related tasks: MT-001, MT-002, MT-009, MT-011</span></td>
+        <td>Client visibility must wait for compliance release.</td>
+      </tr><tr>
+        <td>Security Officer</td>
+        <td>Protects access, session, permission, and sensitive-change controls.<br><span>Related tasks: MT-001</span></td>
+        <td>Sensitive configuration changes require visible controls and audit.</td>
+      </tr><tr>
+        <td>Admin</td>
+        <td>Prepares tenant setup, users, policies, and activation readiness.<br><span>Related tasks: MT-001, MT-002, MT-012</span></td>
+        <td>Important actions remain role-scoped, evidence-backed, and audit-aware.</td>
+      </tr><tr>
+        <td>Client Success</td>
+        <td>Coordinates tenant readiness, communication, and service follow-through.<br><span>Related tasks: MT-002, MT-013</span></td>
+        <td>Client views expose only released or permitted material.</td>
+      </tr><tr>
+        <td>Invited User</td>
+        <td>Uses the UI within role, tenant, evidence, and release boundaries.<br><span>Related tasks: MT-003</span></td>
+        <td>Important actions remain role-scoped, evidence-backed, and audit-aware.</td>
+      </tr><tr>
+        <td>Principal</td>
+        <td>Represents client-side review, consent, and visible decision context.<br><span>Related tasks: MT-004, MT-005, MT-010, MT-012</span></td>
+        <td>Client views expose only released or permitted material.</td>
+      </tr><tr>
+        <td>Family CFO</td>
+        <td>Uses the UI within role, tenant, evidence, and release boundaries.<br><span>Related tasks: MT-004, MT-005, MT-006</span></td>
+        <td>Important actions remain role-scoped, evidence-backed, and audit-aware.</td>
+      </tr><tr>
+        <td>Analyst</td>
+        <td>Prepares entity, document, signal, and decision inputs for review.<br><span>Related tasks: MT-005, MT-006, MT-007</span></td>
+        <td>Prepared inputs stay reviewable before becoming client-facing.</td>
+      </tr><tr>
+        <td>Advisor</td>
+        <td>Reviews advice-like work before it can move toward release.<br><span>Related tasks: MT-005, MT-006, MT-008, MT-011</span></td>
+        <td>Advisor review helps, but does not replace compliance release.</td>
+      </tr><tr>
+        <td>Client</td>
+        <td>Uses the UI within role, tenant, evidence, and release boundaries.<br><span>Related tasks: MT-002, MT-006, MT-011, MT-013</span></td>
+        <td>Client views expose only released or permitted material.</td>
+      </tr><tr>
+        <td>External Advisor</td>
+        <td>Reviews advice-like work before it can move toward release.<br><span>Related tasks: MT-006</span></td>
+        <td>Advisor review helps, but does not replace compliance release.</td>
+      </tr><tr>
+        <td>Senior Wealth Advisor</td>
+        <td>Reviews advice-like work before it can move toward release.<br><span>Related tasks: MT-008</span></td>
+        <td>Advisor review helps, but does not replace compliance release.</td>
+      </tr><tr>
+        <td>Compliance Officer</td>
+        <td>Controls release, visibility, policy exceptions, and evidence completeness.<br><span>Related tasks: MT-009</span></td>
+        <td>Client visibility must wait for compliance release.</td>
+      </tr><tr>
+        <td>Family Council</td>
+        <td>Uses the UI within role, tenant, evidence, and release boundaries.<br><span>Related tasks: MT-010</span></td>
+        <td>Important actions remain role-scoped, evidence-backed, and audit-aware.</td>
+      </tr><tr>
+        <td>Trustee scoped</td>
+        <td>Participates in client-side decision review and accountability.<br><span>Related tasks: MT-010</span></td>
+        <td>Important actions remain role-scoped, evidence-backed, and audit-aware.</td>
+      </tr><tr>
+        <td>Privacy Officer</td>
+        <td>Uses the UI within role, tenant, evidence, and release boundaries.<br><span>Related tasks: MT-011</span></td>
+        <td>Important actions remain role-scoped, evidence-backed, and audit-aware.</td>
+      </tr><tr>
+        <td>Security</td>
+        <td>Protects access, session, permission, and sensitive-change controls.<br><span>Related tasks: MT-001, MT-012</span></td>
+        <td>Sensitive configuration changes require visible controls and audit.</td>
+      </tr><tr>
+        <td>Ops</td>
+        <td>Maintains operational cadence, service-level follow-up, and unresolved work queues.<br><span>Related tasks: MT-014</span></td>
+        <td>Important actions remain role-scoped, evidence-backed, and audit-aware.</td>
+      </tr><tr>
+        <td>Product</td>
+        <td>Monitors operational quality, queues, and reference-data health.<br><span>Related tasks: MT-014</span></td>
+        <td>Important actions remain role-scoped, evidence-backed, and audit-aware.</td>
+      </tr><tr>
+        <td>QA</td>
+        <td>Uses the manual to verify flow coverage, blocked states, and source evidence.<br><span>Related tasks: MT-014</span></td>
+        <td>Important actions remain role-scoped, evidence-backed, and audit-aware.</td>
+      </tr><tr>
+        <td>Leads</td>
+        <td>Uses the UI within role, tenant, evidence, and release boundaries.<br><span>Related tasks: MT-014</span></td>
+        <td>Important actions remain role-scoped, evidence-backed, and audit-aware.</td>
+      </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section-page">
+      <p class="eyebrow">Coverage</p>
+      <h2>Task and flow index</h2>
+      <table class="toc-table">
+        <thead>
+          <tr><th>#</th><th>ID</th><th>Task</th><th>Primary roles</th><th>Workflow / pageflow</th></tr>
+        </thead>
+        <tbody><tr>
+        <td>1</td>
+        <td>MT-001</td>
+        <td>Configure the platform policy baseline</td>
+        <td>Platform Admin / Compliance / Security Officer</td>
+        <td>UF-01 / PF-A</td>
+      </tr><tr>
+        <td>2</td>
+        <td>MT-002</td>
+        <td>Create and prepare a client tenant</td>
+        <td>Admin / Client Success / Compliance</td>
+        <td>UF-02 / PF-B</td>
+      </tr><tr>
+        <td>3</td>
+        <td>MT-003</td>
+        <td>Accept an invitation and complete onboarding</td>
+        <td>Invited User</td>
+        <td>UF-03 / PF-B</td>
+      </tr><tr>
+        <td>4</td>
+        <td>MT-004</td>
+        <td>Submit client profile and family context</td>
+        <td>Principal / Family CFO</td>
+        <td>UF-04 / PF-C</td>
+      </tr><tr>
+        <td>5</td>
+        <td>MT-005</td>
+        <td>Create an entity and review wealth structure</td>
+        <td>Principal / Family CFO / Analyst / Advisor</td>
+        <td>UF-05 / PF-C</td>
+      </tr><tr>
+        <td>6</td>
+        <td>MT-006</td>
+        <td>Upload and verify a document</td>
+        <td>Client / Family CFO / External Advisor / Analyst</td>
+        <td>UF-06 / PF-D</td>
+      </tr><tr>
+        <td>7</td>
+        <td>MT-007</td>
+        <td>Process a signal and route internal work</td>
+        <td>Analyst</td>
+        <td>UF-07 / PF-E</td>
+      </tr><tr>
+        <td>8</td>
+        <td>MT-008</td>
+        <td>Review an advisor approval package</td>
+        <td>Senior Wealth Advisor</td>
+        <td>UF-08 / PF-E</td>
+      </tr><tr>
+        <td>9</td>
+        <td>MT-009</td>
+        <td>Release, block, or request evidence for advice-like content</td>
+        <td>Compliance Officer</td>
+        <td>UF-09 / PF-F</td>
+      </tr><tr>
+        <td>10</td>
+        <td>MT-010</td>
+        <td>Review and submit a released client decision</td>
+        <td>Principal / Family Council / Trustee scoped</td>
+        <td>UF-10 / PF-F</td>
+      </tr><tr>
+        <td>11</td>
+        <td>MT-011</td>
+        <td>Review evidence and create a controlled export</td>
+        <td>Client / Advisor / Compliance / Privacy Officer</td>
+        <td>UF-11 / PF-I</td>
+      </tr><tr>
+        <td>12</td>
+        <td>MT-012</td>
+        <td>Manage governance users, roles, and access requests</td>
+        <td>Principal / Admin / Compliance / Security</td>
+        <td>UF-12 / PF-G</td>
+      </tr><tr>
+        <td>13</td>
+        <td>MT-013</td>
+        <td>Choose a communication or escalation path</td>
+        <td>Advisor / Client Success / Client</td>
+        <td>UF-13 / PF-H</td>
+      </tr><tr>
+        <td>14</td>
+        <td>MT-014</td>
+        <td>Monitor operations, SLA, and reference state</td>
+        <td>Ops / Product / QA / Leads</td>
+        <td>UF-14 / PF-J</td>
+      </tr></tbody>
+      </table>
+      <div class="summary-grid">
+        <article><strong>14</strong><span>documented task flows</span></article>
+        <article><strong>19</strong><span>field contracts</span></article>
+        <article><strong>14</strong><span>task screenshots embedded</span></article>
+        <article><strong>66</strong><span>contextualized step notes</span></article>
+      </div>
+    </section>
+
+    
+  <section class="task-chapter" id="MT-001">
+    <div class="chapter-kicker">Platform and policy setup / UF-01 / PF-A</div>
+    <div class="chapter-title-row">
+      <div>
+        <h2>MT-001. Configure the platform policy baseline</h2>
+        <p class="role-line">Platform Admin / Compliance / Security Officer</p>
+      </div>
+      <span class="status-pill">Navigable demo UI</span>
+    </div>
+
+    <div class="context-grid">
+      <article class="context-callout context-why">
+        <h3>Why this is here</h3>
+        <p>AlphaVest needs a policy baseline before client work starts because advice boundaries, role templates, evidence expectations, security defaults, and export rules define what later workflows may safely do. Without this baseline, teams would be moving client data and review work through unclear controls.</p>
+      </article>
+      <article class="context-callout context-goal">
+        <h3>What the user is trying to achieve</h3>
+        <p>The user is trying to confirm that the operating model is safe enough for tenant setup and that sensitive changes still require review, confirmation, and audit.</p>
+      </article>
+      <article class="context-callout context-next">
+        <h3>What this enables next</h3>
+        <ul><li>tenant setup with consistent policy inheritance</li><li>clear role templates for invitations and governance</li><li>future evidence templates for important actions</li><li>safer export and release rules</li></ul>
+      </article>
+    </div>
+
+    <figure class="screen-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-001-platform-settings.png" alt="Configure the platform policy baseline screen capture" />
+      <figcaption>FIG-01. Platform Settings. The screenshot is referenced as UI evidence for the task context, not as a route instruction.</figcaption>
+    </figure>
+
+    <div class="flow-grid">
+      <article>
+        <h3>Procedure with rationale</h3>
+        <ol class="steps">
+          <li>
+                <strong>Open start screen and verify role/tenant context</strong>
+                <span>Opening the entry screen confirms that the user is working in the intended task context before acting.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Review final state or blocked condition</strong>
+                <span>Reviewing the visible state helps the user spot missing context, blocked controls, or evidence gaps before taking action.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li>
+        </ol>
+      </article>
+      <article>
+        <h3>Controls and gates</h3>
+        <ul class="gate-list"><li><strong>MT-001-G1</strong> Second confirmation protects sensitive platform, security, and role changes from accidental activation.</li><li><strong>MT-001-G2</strong> Advice-boundary policy protects clients from seeing advice-like material before human review and compliance release.</li><li><strong>MT-001-G3</strong> Audit expectations preserve the lineage of sensitive configuration changes.</li></ul>
+        <h3>Data used in this flow</h3>
+        <p>Platform name, retention default, MFA/session defaults, advice classification rules, role template changes, evidence and export template settings</p>
+      </article>
+    </div>
+
+    <div class="field-block">
+      <h3>Input and data contract</h3>
+      
+    <table class="compact">
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Required input</th>
+          <th>Allowed or example value</th>
+          <th>Why it matters</th>
+          <th>Blocked state</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+              <td><strong>Setting key/value</strong><br><span>Platform Settings</span></td>
+              <td>yes / select/text</td>
+              <td>Known platform setting; bounded value<br><span>Demo: AlphaVest WealthOS / 7 years / 30 minutes</span></td>
+              <td>Select and change platform defaults<br><span>PolicyDefinition / AuditEvent</span></td>
+              <td>Second confirmation required<br><span>internal</span></td>
+            </tr><tr>
+              <td><strong>Advice classification</strong><br><span>Advice Boundary Policy</span></td>
+              <td>yes / select/matrix</td>
+              <td>AdviceClassification enum<br><span>Demo: advice_relevant</span></td>
+              <td>Classify information, workflow, guidance, advice-relevant, or advice<br><span>PolicyDefinition</span></td>
+              <td>Compliance review required<br><span>compliance-sensitive</span></td>
+            </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="branch-grid">
+      <article class="branch-card">
+            <h3>Happy path / intended demo path</h3>
+            <p>This state confirms the intended demo path while preserving the rule that gates cannot be bypassed.</p>
+            <dl>
+              <dt>User can do</dt><dd>Review, select, enter, or confirm permitted data.</dd>
+              <dt>User cannot do</dt><dd>Bypass required gates or tenant/role scope.</dd>
+              <dt>Next legitimate action</dt><dd>Policy baseline is reviewed; sensitive changes require confirmation and audit.</dd>
+            </dl>
+          </article><article class="branch-card">
+            <h3>Blocked, restricted, or incomplete path</h3>
+            <p>This state protects the workflow from being forced forward when role, evidence, compliance, data, or implementation conditions are not satisfied.</p>
+            <dl>
+              <dt>User can do</dt><dd>Review the reason, request evidence, change role, or return to the correct prior step.</dd>
+              <dt>User cannot do</dt><dd>Force completion or claim persistence when the app only shows a static/demo state.</dd>
+              <dt>Next legitimate action</dt><dd>Resolve the missing role, evidence, compliance, or data requirement.</dd>
+            </dl>
+          </article>
+    </div>
+
+    <div class="takeaway-row">
+      <article>
+        <h3>Reader takeaway</h3>
+        <p>A safe tenant workflow starts with a visible and reviewable platform policy baseline.</p>
+      </article>
+      <article>
+        <h3>Future readiness</h3>
+        <p>This prepares the workflow for production governance because later tenant policies, release checks, audit history, and evidence templates can inherit one controlled baseline instead of relying on ad hoc screen behavior.</p>
+      </article>
+      <article>
+        <h3>Demo boundary</h3>
+        <p>In the current demo, the UI shows policy states and confirmation patterns. It does not prove broad persisted policy transactions across every platform setting.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="task-chapter" id="MT-002">
+    <div class="chapter-kicker">Tenant onboarding / UF-02 / PF-B</div>
+    <div class="chapter-title-row">
+      <div>
+        <h2>MT-002. Create and prepare a client tenant</h2>
+        <p class="role-line">Admin / Client Success / Compliance</p>
+      </div>
+      <span class="status-pill">Navigable demo UI</span>
+    </div>
+
+    <div class="context-grid">
+      <article class="context-callout context-why">
+        <h3>Why this is here</h3>
+        <p>A client tenant is the container that keeps family-office data, roles, policies, evidence, and workflow state isolated from every other client. Creating it carefully prevents later work from being attached to the wrong client, jurisdiction, or service team.</p>
+      </article>
+      <article class="context-callout context-goal">
+        <h3>What the user is trying to achieve</h3>
+        <p>The user is trying to prepare a client workspace that has the right identity, jurisdiction, service tier, assigned team, policy profile, and invitation path.</p>
+      </article>
+      <article class="context-callout context-next">
+        <h3>What this enables next</h3>
+        <ul><li>principal invitation</li><li>role-scoped onboarding</li><li>tenant-specific policy selection</li><li>client profile and document intake under the correct tenant</li></ul>
+      </article>
+    </div>
+
+    <figure class="screen-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-002-tenant-list.png" alt="Create and prepare a client tenant screen capture" />
+      <figcaption>FIG-02. Tenant List. The screenshot is referenced as UI evidence for the task context, not as a route instruction.</figcaption>
+    </figure>
+
+    <div class="flow-grid">
+      <article>
+        <h3>Procedure with rationale</h3>
+        <ol class="steps">
+          <li>
+                <strong>Open start screen and verify role/tenant context</strong>
+                <span>Opening the entry screen confirms that the user is working in the intended task context before acting.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Review final state or blocked condition</strong>
+                <span>Reviewing the visible state helps the user spot missing context, blocked controls, or evidence gaps before taking action.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li>
+        </ol>
+      </article>
+      <article>
+        <h3>Controls and gates</h3>
+        <ul class="gate-list"><li><strong>MT-002-G1</strong> Activation gates protect the tenant from becoming active without assigned owners and required setup context.</li><li><strong>MT-002-G2</strong> Compliance ownership ensures release decisions have an accountable role before client-visible work begins.</li><li><strong>MT-002-G3</strong> Audit expectations preserve who created, assigned, or changed tenant setup state.</li></ul>
+        <h3>Data used in this flow</h3>
+        <p>family office name, jurisdiction, service tier, advisor, analyst, compliance owner, client success owner, tenant policy profile, principal invitation</p>
+      </article>
+    </div>
+
+    <div class="field-block">
+      <h3>Input and data contract</h3>
+      
+    <table class="compact">
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Required input</th>
+          <th>Allowed or example value</th>
+          <th>Why it matters</th>
+          <th>Blocked state</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+              <td><strong>Client name and jurisdiction</strong><br><span>Create Client Tenant</span></td>
+              <td>yes / text/select</td>
+              <td>Approved jurisdiction list<br><span>Demo: Northbridge Family Office / Switzerland</span></td>
+              <td>Create tenant identity and regulatory context<br><span>ClientTenant</span></td>
+              <td>Duplicate or missing tenant details<br><span>client confidential</span></td>
+            </tr><tr>
+              <td><strong>Compliance owner</strong><br><span>Assign AlphaVest Team</span></td>
+              <td>yes / user select</td>
+              <td>Users with compliance_officer role<br><span>Demo: Naledi Mokoena</span></td>
+              <td>Assign accountable release owner<br><span>UserRole / ClientTenant</span></td>
+              <td>Activation remains blocked<br><span>internal</span></td>
+            </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="branch-grid">
+      <article class="branch-card">
+            <h3>Happy path / intended demo path</h3>
+            <p>This state confirms the intended demo path while preserving the rule that gates cannot be bypassed.</p>
+            <dl>
+              <dt>User can do</dt><dd>Review, select, enter, or confirm permitted data.</dd>
+              <dt>User cannot do</dt><dd>Bypass required gates or tenant/role scope.</dd>
+              <dt>Next legitimate action</dt><dd>Tenant setup checklist shows whether activation gates are ready or blocked.</dd>
+            </dl>
+          </article><article class="branch-card">
+            <h3>Blocked, restricted, or incomplete path</h3>
+            <p>This state protects the workflow from being forced forward when role, evidence, compliance, data, or implementation conditions are not satisfied.</p>
+            <dl>
+              <dt>User can do</dt><dd>Review the reason, request evidence, change role, or return to the correct prior step.</dd>
+              <dt>User cannot do</dt><dd>Force completion or claim persistence when the app only shows a static/demo state.</dd>
+              <dt>Next legitimate action</dt><dd>Resolve the missing role, evidence, compliance, or data requirement.</dd>
+            </dl>
+          </article>
+    </div>
+
+    <div class="takeaway-row">
+      <article>
+        <h3>Reader takeaway</h3>
+        <p>Tenant setup is the point where AlphaVest makes client work isolated, owned, and ready for safe onboarding.</p>
+      </article>
+      <article>
+        <h3>Future readiness</h3>
+        <p>This prepares the workflow for production tenant isolation, onboarding automation, team assignment reporting, and policy inheritance once governed persistence is expanded.</p>
+      </article>
+      <article>
+        <h3>Demo boundary</h3>
+        <p>In the current demo, tenant setup is navigable and explains readiness. It does not yet prove a fully governed tenant-write lifecycle.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="task-chapter" id="MT-003">
+    <div class="chapter-kicker">Client onboarding and profile / UF-03 / PF-B</div>
+    <div class="chapter-title-row">
+      <div>
+        <h2>MT-003. Accept an invitation and complete onboarding</h2>
+        <p class="role-line">Invited User</p>
+      </div>
+      <span class="status-pill">Navigable demo UI</span>
+    </div>
+
+    <div class="context-grid">
+      <article class="context-callout context-why">
+        <h3>Why this is here</h3>
+        <p>Onboarding connects a person to the right tenant, role, consent version, and access scope. This matters because later decisions, evidence views, and communications should depend on who the user is allowed to be in that client context.</p>
+      </article>
+      <article class="context-callout context-goal">
+        <h3>What the user is trying to achieve</h3>
+        <p>The user is trying to confirm that the invitation belongs to the expected tenant, acknowledge required privacy context, and understand the role scope they will operate under.</p>
+      </article>
+      <article class="context-callout context-next">
+        <h3>What this enables next</h3>
+        <ul><li>client profile work</li><li>role-scoped evidence access</li><li>decision participation</li><li>governed communication and consent history in later production flows</li></ul>
+      </article>
+    </div>
+
+    <figure class="screen-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-003-invitation-acceptance.png" alt="Accept an invitation and complete onboarding screen capture" />
+      <figcaption>FIG-03. Invitation Acceptance. The screenshot is referenced as UI evidence for the task context, not as a route instruction.</figcaption>
+    </figure>
+
+    <div class="flow-grid">
+      <article>
+        <h3>Procedure with rationale</h3>
+        <ol class="steps">
+          <li>
+                <strong>Open start screen and verify role/tenant context</strong>
+                <span>Opening the entry screen confirms that the user is working in the intended task context before acting.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Review final state or blocked condition</strong>
+                <span>Reviewing the visible state helps the user spot missing context, blocked controls, or evidence gaps before taking action.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li>
+        </ol>
+      </article>
+      <article>
+        <h3>Controls and gates</h3>
+        <ul class="gate-list"><li><strong>MT-003-G1</strong> Invite-token scope prevents a user from entering the wrong tenant context.</li><li><strong>MT-003-G2</strong> Privacy acknowledgement records which consent version the user has accepted.</li><li><strong>MT-003-G3</strong> Role confirmation prevents users from assuming broader access than the assigned scope allows.</li></ul>
+        <h3>Data used in this flow</h3>
+        <p>invite token, name, email confirmation, MFA method, consent version, role acknowledgement</p>
+      </article>
+    </div>
+
+    <div class="field-block">
+      <h3>Input and data contract</h3>
+      
+    <table class="compact">
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Required input</th>
+          <th>Allowed or example value</th>
+          <th>Why it matters</th>
+          <th>Blocked state</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+              <td><strong>Invite token</strong><br><span>Onboarding Invite</span></td>
+              <td>yes / token</td>
+              <td>Valid active invitation<br><span>Demo: demo invite token</span></td>
+              <td>Scope onboarding to one tenant/user<br><span>User / ConsentRecord</span></td>
+              <td>Invalid invitation state<br><span>sensitive</span></td>
+            </tr><tr>
+              <td><strong>Privacy acknowledgement</strong><br><span>Consent</span></td>
+              <td>yes / checkbox/version</td>
+              <td>Active consent policy<br><span>Demo: Privacy Notice v1 accepted</span></td>
+              <td>Record required consent version<br><span>ConsentRecord / AuditEvent</span></td>
+              <td>Cannot continue without consent<br><span>legal/privacy</span></td>
+            </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="branch-grid">
+      <article class="branch-card">
+            <h3>Happy path / intended demo path</h3>
+            <p>This state confirms the intended demo path while preserving the rule that gates cannot be bypassed.</p>
+            <dl>
+              <dt>User can do</dt><dd>Review, select, enter, or confirm permitted data.</dd>
+              <dt>User cannot do</dt><dd>Bypass required gates or tenant/role scope.</dd>
+              <dt>Next legitimate action</dt><dd>User reaches role confirmation; production auth remains intentionally deferred.</dd>
+            </dl>
+          </article><article class="branch-card">
+            <h3>Blocked, restricted, or incomplete path</h3>
+            <p>This state protects the workflow from being forced forward when role, evidence, compliance, data, or implementation conditions are not satisfied.</p>
+            <dl>
+              <dt>User can do</dt><dd>Review the reason, request evidence, change role, or return to the correct prior step.</dd>
+              <dt>User cannot do</dt><dd>Force completion or claim persistence when the app only shows a static/demo state.</dd>
+              <dt>Next legitimate action</dt><dd>Resolve the missing role, evidence, compliance, or data requirement.</dd>
+            </dl>
+          </article>
+    </div>
+
+    <div class="takeaway-row">
+      <article>
+        <h3>Reader takeaway</h3>
+        <p>Onboarding is where the user, tenant, consent, and role context become explicit before client work begins.</p>
+      </article>
+      <article>
+        <h3>Future readiness</h3>
+        <p>This prepares the workflow for provider-backed authentication, consent versioning, and role-scoped client access without changing the demo-first implementation order.</p>
+      </article>
+      <article>
+        <h3>Demo boundary</h3>
+        <p>In the current demo, onboarding screens are visual and navigable. They do not introduce real production authentication.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="task-chapter" id="MT-004">
+    <div class="chapter-kicker">Client onboarding and profile / UF-04 / PF-C</div>
+    <div class="chapter-title-row">
+      <div>
+        <h2>MT-004. Submit client profile and family context</h2>
+        <p class="role-line">Principal / Family CFO</p>
+      </div>
+      <span class="status-pill">Navigable demo UI</span>
+    </div>
+
+    <div class="context-grid">
+      <article class="context-callout context-why">
+        <h3>Why this is here</h3>
+        <p>Family-office work depends on relationships, responsibilities, objectives, and governance preferences. Capturing that context helps AlphaVest distinguish useful information from incomplete or conflicted inputs.</p>
+      </article>
+      <article class="context-callout context-goal">
+        <h3>What the user is trying to achieve</h3>
+        <p>The user is trying to make the client profile clear enough that later reviewers can understand family roles, decision scopes, relationship conflicts, and missing evidence.</p>
+      </article>
+      <article class="context-callout context-next">
+        <h3>What this enables next</h3>
+        <ul><li>entity and wealth-structure intake</li><li>role-aware decision participation</li><li>relationship-aware governance review</li><li>better evidence requests and analyst follow-up</li></ul>
+      </article>
+    </div>
+
+    <figure class="screen-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-004-client-web-dashboard.png" alt="Submit client profile and family context screen capture" />
+      <figcaption>FIG-04. Client Web Dashboard. The screenshot is referenced as UI evidence for the task context, not as a route instruction.</figcaption>
+    </figure>
+
+    <div class="flow-grid">
+      <article>
+        <h3>Procedure with rationale</h3>
+        <ol class="steps">
+          <li>
+                <strong>Open start screen and verify role/tenant context</strong>
+                <span>Opening the entry screen confirms that the user is working in the intended task context before acting.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Review final state or blocked condition</strong>
+                <span>Reviewing the visible state helps the user spot missing context, blocked controls, or evidence gaps before taking action.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li>
+        </ol>
+      </article>
+      <article>
+        <h3>Controls and gates</h3>
+        <ul class="gate-list"><li><strong>MT-004-G1</strong> Tenant context protects family data from crossing client boundaries.</li><li><strong>MT-004-G2</strong> Relationship and role scope protect decision and access workflows from using the wrong participant model.</li><li><strong>MT-004-G3</strong> Missing-evidence indicators keep incomplete profile context visible instead of hiding uncertainty.</li></ul>
+        <h3>Data used in this flow</h3>
+        <p>family profile, governance preferences, family member details, relationship type, ownership or beneficiary links, missing-evidence notes</p>
+      </article>
+    </div>
+
+    <div class="field-block">
+      <h3>Input and data contract</h3>
+      
+    <table class="compact">
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Required input</th>
+          <th>Allowed or example value</th>
+          <th>Why it matters</th>
+          <th>Blocked state</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+              <td><strong>Family profile and objective</strong><br><span>Client Profile</span></td>
+              <td>yes / structured text/select</td>
+              <td>Profile taxonomy<br><span>Demo: Morgan Family Office / Family Office Advisory</span></td>
+              <td>Capture client context without advice<br><span>UserProfile / ClientObjective</span></td>
+              <td>Submitted for review or blocked<br><span>client confidential</span></td>
+            </tr><tr>
+              <td><strong>Family member role</strong><br><span>Family Members</span></td>
+              <td>yes / select/text</td>
+              <td>Principal, CFO, Trustee, Beneficiary, Next Gen<br><span>Demo: Trustee</span></td>
+              <td>Define family role and decision scope<br><span>FamilyMember / Relationship</span></td>
+              <td>Conflict or missing relationship<br><span>personal data</span></td>
+            </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="branch-grid">
+      <article class="branch-card">
+            <h3>Happy path / intended demo path</h3>
+            <p>This state confirms the intended demo path while preserving the rule that gates cannot be bypassed.</p>
+            <dl>
+              <dt>User can do</dt><dd>Review, select, enter, or confirm permitted data.</dd>
+              <dt>User cannot do</dt><dd>Bypass required gates or tenant/role scope.</dd>
+              <dt>Next legitimate action</dt><dd>Profile and relationship context is visible with conflicts or missing evidence flagged.</dd>
+            </dl>
+          </article><article class="branch-card">
+            <h3>Blocked, restricted, or incomplete path</h3>
+            <p>This state protects the workflow from being forced forward when role, evidence, compliance, data, or implementation conditions are not satisfied.</p>
+            <dl>
+              <dt>User can do</dt><dd>Review the reason, request evidence, change role, or return to the correct prior step.</dd>
+              <dt>User cannot do</dt><dd>Force completion or claim persistence when the app only shows a static/demo state.</dd>
+              <dt>Next legitimate action</dt><dd>Resolve the missing role, evidence, compliance, or data requirement.</dd>
+            </dl>
+          </article>
+    </div>
+
+    <div class="takeaway-row">
+      <article>
+        <h3>Reader takeaway</h3>
+        <p>Family context turns later workflow actions from isolated clicks into role-aware client decisions.</p>
+      </article>
+      <article>
+        <h3>Future readiness</h3>
+        <p>This prepares the workflow for richer family governance, permission scoping, conflict review, and future data-quality automation.</p>
+      </article>
+      <article>
+        <h3>Demo boundary</h3>
+        <p>In the current demo, profile and relationship screens are navigable with static or demo data. Profile persistence is not fully claimed.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="task-chapter" id="MT-005">
+    <div class="chapter-kicker">Structure, documents and evidence intake / UF-05 / PF-C</div>
+    <div class="chapter-title-row">
+      <div>
+        <h2>MT-005. Create an entity and review wealth structure</h2>
+        <p class="role-line">Principal / Family CFO / Analyst / Advisor</p>
+      </div>
+      <span class="status-pill">Navigable demo UI</span>
+    </div>
+
+    <div class="context-grid">
+      <article class="context-callout context-why">
+        <h3>Why this is here</h3>
+        <p>Wealth operations need a clear map of entities, participants, jurisdictions, assets, and missing proof. Entity intake turns loose structure information into nodes that can be reviewed, evidenced, and acted on.</p>
+      </article>
+      <article class="context-callout context-goal">
+        <h3>What the user is trying to achieve</h3>
+        <p>The user is trying to create or review a structure node and understand what evidence or action is still needed before the structure can support decisions.</p>
+      </article>
+      <article class="context-callout context-next">
+        <h3>What this enables next</h3>
+        <ul><li>document linking</li><li>wealth-map analysis</li><li>action-board follow-up</li><li>evidence-backed review of ownership and participants</li></ul>
+      </article>
+    </div>
+
+    <figure class="screen-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-005-entity-list.png" alt="Create an entity and review wealth structure screen capture" />
+      <figcaption>FIG-05. Entity List. The screenshot is referenced as UI evidence for the task context, not as a route instruction.</figcaption>
+    </figure>
+
+    <div class="flow-grid">
+      <article>
+        <h3>Procedure with rationale</h3>
+        <ol class="steps">
+          <li>
+                <strong>Open start screen and verify role/tenant context</strong>
+                <span>Opening the entry screen confirms that the user is working in the intended task context before acting.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Review final state or blocked condition</strong>
+                <span>Reviewing the visible state helps the user spot missing context, blocked controls, or evidence gaps before taking action.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li>
+        </ol>
+      </article>
+      <article>
+        <h3>Controls and gates</h3>
+        <ul class="gate-list"><li><strong>MT-005-G1</strong> Entity sensitivity and jurisdiction checks protect high-risk structures from casual progression.</li><li><strong>MT-005-G2</strong> Evidence requirements prevent structure records from looking complete before supporting documents exist.</li><li><strong>MT-005-G3</strong> Action-board blockers keep unresolved structure work visible.</li></ul>
+        <h3>Data used in this flow</h3>
+        <p>entity type, entity name, jurisdiction, participants, asset link, document evidence, action owner, readiness state</p>
+      </article>
+    </div>
+
+    <div class="field-block">
+      <h3>Input and data contract</h3>
+      
+    <table class="compact">
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Required input</th>
+          <th>Allowed or example value</th>
+          <th>Why it matters</th>
+          <th>Blocked state</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+              <td><strong>Entity type/name/jurisdiction</strong><br><span>Create Entity</span></td>
+              <td>yes / select/text</td>
+              <td>EntityType enum and jurisdictions<br><span>Demo: trust / Sunward Trust / Switzerland</span></td>
+              <td>Create legal/entity structure node<br><span>Entity / EntityParticipant</span></td>
+              <td>Blocked or legal review state<br><span>legal entity data</span></td>
+            </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="branch-grid">
+      <article class="branch-card">
+            <h3>Happy path / intended demo path</h3>
+            <p>This state confirms the intended demo path while preserving the rule that gates cannot be bypassed.</p>
+            <dl>
+              <dt>User can do</dt><dd>Review, select, enter, or confirm permitted data.</dd>
+              <dt>User cannot do</dt><dd>Bypass required gates or tenant/role scope.</dd>
+              <dt>Next legitimate action</dt><dd>Entity detail, wealth-map drawer, and action-board blockers show what must happen next.</dd>
+            </dl>
+          </article><article class="branch-card">
+            <h3>Blocked, restricted, or incomplete path</h3>
+            <p>This state protects the workflow from being forced forward when role, evidence, compliance, data, or implementation conditions are not satisfied.</p>
+            <dl>
+              <dt>User can do</dt><dd>Review the reason, request evidence, change role, or return to the correct prior step.</dd>
+              <dt>User cannot do</dt><dd>Force completion or claim persistence when the app only shows a static/demo state.</dd>
+              <dt>Next legitimate action</dt><dd>Resolve the missing role, evidence, compliance, or data requirement.</dd>
+            </dl>
+          </article>
+    </div>
+
+    <div class="takeaway-row">
+      <article>
+        <h3>Reader takeaway</h3>
+        <p>Entity intake makes the client structure visible enough to review, but missing evidence must stay visible too.</p>
+      </article>
+      <article>
+        <h3>Future readiness</h3>
+        <p>This prepares the workflow for richer wealth-map analysis, specialist review, automated gap detection, and evidence-backed entity governance.</p>
+      </article>
+      <article>
+        <h3>Demo boundary</h3>
+        <p>In the current demo, entity and wealth-map screens are navigable. Entity mutations, action transitions, and evidence gates still need broader transaction wiring.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="task-chapter" id="MT-006">
+    <div class="chapter-kicker">Structure, documents and evidence intake / UF-06 / PF-D</div>
+    <div class="chapter-title-row">
+      <div>
+        <h2>MT-006. Upload and verify a document</h2>
+        <p class="role-line">Client / Family CFO / External Advisor / Analyst</p>
+      </div>
+      <span class="status-pill">Navigable demo UI</span>
+    </div>
+
+    <div class="context-grid">
+      <article class="context-callout context-why">
+        <h3>Why this is here</h3>
+        <p>Documents are the source proof behind profile, entity, recommendation, export, and compliance decisions. Uploading and verifying them reduces reliance on memory, assumptions, or unreviewed extracted data.</p>
+      </article>
+      <article class="context-callout context-goal">
+        <h3>What the user is trying to achieve</h3>
+        <p>The user is trying to upload source evidence, classify it, review extracted draft data, correct uncertainty, and move it toward human verification.</p>
+      </article>
+      <article class="context-callout context-next">
+        <h3>What this enables next</h3>
+        <ul><li>analyst validation</li><li>evidence linking</li><li>compliance review</li><li>controlled exports</li><li>future data extraction and document-quality workflows</li></ul>
+      </article>
+    </div>
+
+    <figure class="screen-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-006-documents-list.png" alt="Upload and verify a document screen capture" />
+      <figcaption>FIG-06. Documents List. The screenshot is referenced as UI evidence for the task context, not as a route instruction.</figcaption>
+    </figure>
+
+    <div class="flow-grid">
+      <article>
+        <h3>Procedure with rationale</h3>
+        <ol class="steps">
+          <li>
+                <strong>Open start screen and verify role/tenant context</strong>
+                <span>Opening the entry screen confirms that the user is working in the intended task context before acting.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Review final state or blocked condition</strong>
+                <span>Reviewing the visible state helps the user spot missing context, blocked controls, or evidence gaps before taking action.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li>
+        </ol>
+      </article>
+      <article>
+        <h3>Controls and gates</h3>
+        <ul class="gate-list"><li><strong>MT-006-G1</strong> Allowed file type and document taxonomy protect the intake queue from unusable sources.</li><li><strong>MT-006-G2</strong> Extraction review prevents AI draft data from becoming accepted evidence without human confirmation.</li><li><strong>MT-006-G3</strong> Sensitivity and scope controls determine who can view or export the document later.</li></ul>
+        <h3>Data used in this flow</h3>
+        <p>document file, document type, entity/asset link, sensitivity, notes, corrected extracted values, confidence override</p>
+      </article>
+    </div>
+
+    <div class="field-block">
+      <h3>Input and data contract</h3>
+      
+    <table class="compact">
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Required input</th>
+          <th>Allowed or example value</th>
+          <th>Why it matters</th>
+          <th>Blocked state</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+              <td><strong>Document file/type/scope</strong><br><span>Document Upload</span></td>
+              <td>yes / file/select</td>
+              <td>Allowed file types and document taxonomy<br><span>Demo: Trust Agreement.pdf / Trust deed</span></td>
+              <td>Upload source evidence for review<br><span>Document / DocumentVersion</span></td>
+              <td>Upload error / verification pending<br><span>confidential</span></td>
+            </tr><tr>
+              <td><strong>Corrected extracted value</strong><br><span>Extraction Review</span></td>
+              <td>conditional / structured text</td>
+              <td>Extracted payload fields<br><span>Demo: Beneficial owner: Sunward Holdings</span></td>
+              <td>Confirm or correct AI draft data<br><span>DocumentExtraction / DocumentReview</span></td>
+              <td>Needs clarification<br><span>confidential</span></td>
+            </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="branch-grid">
+      <article class="branch-card">
+            <h3>Happy path / intended demo path</h3>
+            <p>This state confirms the intended demo path while preserving the rule that gates cannot be bypassed.</p>
+            <dl>
+              <dt>User can do</dt><dd>Review, select, enter, or confirm permitted data.</dd>
+              <dt>User cannot do</dt><dd>Bypass required gates or tenant/role scope.</dd>
+              <dt>Next legitimate action</dt><dd>Document reaches verification-pending or needs-clarification state.</dd>
+            </dl>
+          </article><article class="branch-card">
+            <h3>Blocked, restricted, or incomplete path</h3>
+            <p>This state protects the workflow from being forced forward when role, evidence, compliance, data, or implementation conditions are not satisfied.</p>
+            <dl>
+              <dt>User can do</dt><dd>Review the reason, request evidence, change role, or return to the correct prior step.</dd>
+              <dt>User cannot do</dt><dd>Force completion or claim persistence when the app only shows a static/demo state.</dd>
+              <dt>Next legitimate action</dt><dd>Resolve the missing role, evidence, compliance, or data requirement.</dd>
+            </dl>
+          </article>
+    </div>
+
+    <div class="takeaway-row">
+      <article>
+        <h3>Reader takeaway</h3>
+        <p>Documents become useful to AlphaVest only when they are scoped, reviewed, corrected, and linked to evidence.</p>
+      </article>
+      <article>
+        <h3>Future readiness</h3>
+        <p>This prepares the workflow for production file storage, extraction confidence handling, analyst review queues, evidence automation, and redacted export packaging.</p>
+      </article>
+      <article>
+        <h3>Demo boundary</h3>
+        <p>In the current demo, document screens are navigable. Real file storage and extraction transactions are not claimed as production-complete.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="task-chapter" id="MT-007">
+    <div class="chapter-kicker">Internal advisory review / UF-07 / PF-E</div>
+    <div class="chapter-title-row">
+      <div>
+        <h2>MT-007. Process a signal and route internal work</h2>
+        <p class="role-line">Analyst</p>
+      </div>
+      <span class="status-pill">Source bounded</span>
+    </div>
+
+    <div class="context-grid">
+      <article class="context-callout context-why">
+        <h3>Why this is here</h3>
+        <p>Signals may indicate missing ownership data, funding questions, document gaps, or workflow triggers. Analyst review separates internal triage from client-visible recommendations.</p>
+      </article>
+      <article class="context-callout context-goal">
+        <h3>What the user is trying to achieve</h3>
+        <p>The user is trying to understand the signal, add internal context, and choose the next safe route without creating client-visible advice.</p>
+      </article>
+      <article class="context-callout context-next">
+        <h3>What this enables next</h3>
+        <ul><li>data request workflows</li><li>advisor approval packages</li><li>internal action tracking</li><li>audit-backed triage for the J01 subset</li></ul>
+      </article>
+    </div>
+
+    <figure class="screen-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-007-signal-review.png" alt="Process a signal and route internal work screen capture" />
+      <figcaption>FIG-07. Signal Review. The screenshot is referenced as UI evidence for the task context, not as a route instruction.</figcaption>
+    </figure>
+
+    <div class="flow-grid">
+      <article>
+        <h3>Procedure with rationale</h3>
+        <ol class="steps">
+          <li>
+                <strong>Open start screen and verify role/tenant context</strong>
+                <span>Opening the entry screen confirms that the user is working in the intended task context before acting.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Review final state or blocked condition</strong>
+                <span>Reviewing the visible state helps the user spot missing context, blocked controls, or evidence gaps before taking action.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li>
+        </ol>
+      </article>
+      <article>
+        <h3>Controls and gates</h3>
+        <ul class="gate-list"><li><strong>MT-007-G1</strong> Internal-only visibility protects clients from seeing unreviewed triggers.</li><li><strong>MT-007-G2</strong> Route decisions create the next workflow state without bypassing advisor and compliance gates.</li><li><strong>MT-007-G3</strong> Audit rows are expected for executable request or route actions where the demo API supports them.</li></ul>
+        <h3>Data used in this flow</h3>
+        <p>signal ID, missing beneficial owner, purpose of wire, source of funds, analyst note, route decision</p>
+      </article>
+    </div>
+
+    <div class="field-block">
+      <h3>Input and data contract</h3>
+      
+    <table class="compact">
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Required input</th>
+          <th>Allowed or example value</th>
+          <th>Why it matters</th>
+          <th>Blocked state</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+              <td><strong>Analyst route decision</strong><br><span>Signal Review</span></td>
+              <td>yes / radio/button</td>
+              <td>Request Data / Assign / Route / Dismiss<br><span>Demo: Request Data / Information</span></td>
+              <td>Request data, assign, route, dismiss<br><span>Trigger / ActionItem / AuditEvent</span></td>
+              <td>Internal-only state<br><span>internal</span></td>
+            </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="branch-grid">
+      <article class="branch-card">
+            <h3>Happy path / intended demo path</h3>
+            <p>This state confirms the intended demo path while preserving the rule that gates cannot be bypassed.</p>
+            <dl>
+              <dt>User can do</dt><dd>Review, select, enter, or confirm permitted data.</dd>
+              <dt>User cannot do</dt><dd>Bypass required gates or tenant/role scope.</dd>
+              <dt>Next legitimate action</dt><dd>Trigger moves toward awaiting information or advisor review while staying internal-only.</dd>
+            </dl>
+          </article><article class="branch-card">
+            <h3>Blocked, restricted, or incomplete path</h3>
+            <p>This state protects the workflow from being forced forward when role, evidence, compliance, data, or implementation conditions are not satisfied.</p>
+            <dl>
+              <dt>User can do</dt><dd>Review the reason, request evidence, change role, or return to the correct prior step.</dd>
+              <dt>User cannot do</dt><dd>Force completion or claim persistence when the app only shows a static/demo state.</dd>
+              <dt>Next legitimate action</dt><dd>Resolve the missing role, evidence, compliance, or data requirement.</dd>
+            </dl>
+          </article>
+    </div>
+
+    <div class="takeaway-row">
+      <article>
+        <h3>Reader takeaway</h3>
+        <p>Signal review turns ambiguity into internal work without turning it into client advice.</p>
+      </article>
+      <article>
+        <h3>Future readiness</h3>
+        <p>This prepares the workflow for broader signal governance, triage metrics, automated queueing, and safer recommendation preparation.</p>
+      </article>
+      <article>
+        <h3>Demo boundary</h3>
+        <p>In the current demo, the J01 signal/advisor subset has the strongest executable proof. Not every signal path is fully governed.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="task-chapter" id="MT-008">
+    <div class="chapter-kicker">Internal advisory review / UF-08 / PF-E</div>
+    <div class="chapter-title-row">
+      <div>
+        <h2>MT-008. Review an advisor approval package</h2>
+        <p class="role-line">Senior Wealth Advisor</p>
+      </div>
+      <span class="status-pill">Source bounded</span>
+    </div>
+
+    <div class="context-grid">
+      <article class="context-callout context-why">
+        <h3>Why this is here</h3>
+        <p>Advisor review is the human judgment stage between analyst work and compliance release. It lets advisors approve, revise, request more data, or escalate without granting client visibility.</p>
+      </article>
+      <article class="context-callout context-goal">
+        <h3>What the user is trying to achieve</h3>
+        <p>The user is trying to review the recommendation package, record a defensible advisor decision, and route the work to the next gate.</p>
+      </article>
+      <article class="context-callout context-next">
+        <h3>What this enables next</h3>
+        <ul><li>compliance review</li><li>revision loops</li><li>data requests</li><li>escalation to calls when complexity needs human conversation</li></ul>
+      </article>
+    </div>
+
+    <figure class="screen-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-008-advisor-approval-queue.png" alt="Review an advisor approval package screen capture" />
+      <figcaption>FIG-08. Advisor Approval Queue. The screenshot is referenced as UI evidence for the task context, not as a route instruction.</figcaption>
+    </figure>
+
+    <div class="flow-grid">
+      <article>
+        <h3>Procedure with rationale</h3>
+        <ol class="steps">
+          <li>
+                <strong>Open start screen and verify role/tenant context</strong>
+                <span>Opening the entry screen confirms that the user is working in the intended task context before acting.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Review final state or blocked condition</strong>
+                <span>Reviewing the visible state helps the user spot missing context, blocked controls, or evidence gaps before taking action.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li>
+        </ol>
+      </article>
+      <article>
+        <h3>Controls and gates</h3>
+        <ul class="gate-list"><li><strong>MT-008-G1</strong> Advisor decision and rationale create review lineage.</li><li><strong>MT-008-G2</strong> Compliance release remains required before client visibility.</li><li><strong>MT-008-G3</strong> Escalation paths protect complex matters from being forced through a digital-only route.</li></ul>
+        <h3>Data used in this flow</h3>
+        <p>recommendation ID, advisor decision, rationale, conditions, escalation reason</p>
+      </article>
+    </div>
+
+    <div class="field-block">
+      <h3>Input and data contract</h3>
+      
+    <table class="compact">
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Required input</th>
+          <th>Allowed or example value</th>
+          <th>Why it matters</th>
+          <th>Blocked state</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+              <td><strong>Advisor decision and rationale</strong><br><span>Advisor Approval</span></td>
+              <td>yes / button/textarea</td>
+              <td>Approve, Revise, Request More Data, Escalate<br><span>Demo: Approve with rationale</span></td>
+              <td>Approve, revise, request data, or escalate<br><span>Approval / Recommendation</span></td>
+              <td>Compliance pending<br><span>advice-sensitive</span></td>
+            </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="branch-grid">
+      <article class="branch-card">
+            <h3>Happy path / intended demo path</h3>
+            <p>This state confirms the intended demo path while preserving the rule that gates cannot be bypassed.</p>
+            <dl>
+              <dt>User can do</dt><dd>Review, select, enter, or confirm permitted data.</dd>
+              <dt>User cannot do</dt><dd>Bypass required gates or tenant/role scope.</dd>
+              <dt>Next legitimate action</dt><dd>Advisor decision is recorded or routed; compliance release remains required.</dd>
+            </dl>
+          </article><article class="branch-card">
+            <h3>Blocked, restricted, or incomplete path</h3>
+            <p>This state protects the workflow from being forced forward when role, evidence, compliance, data, or implementation conditions are not satisfied.</p>
+            <dl>
+              <dt>User can do</dt><dd>Review the reason, request evidence, change role, or return to the correct prior step.</dd>
+              <dt>User cannot do</dt><dd>Force completion or claim persistence when the app only shows a static/demo state.</dd>
+              <dt>Next legitimate action</dt><dd>Resolve the missing role, evidence, compliance, or data requirement.</dd>
+            </dl>
+          </article>
+    </div>
+
+    <div class="takeaway-row">
+      <article>
+        <h3>Reader takeaway</h3>
+        <p>Advisor approval is human review, not client release.</p>
+      </article>
+      <article>
+        <h3>Future readiness</h3>
+        <p>This prepares the workflow for clearer advisor accountability, package quality metrics, and compliance-ready recommendation records.</p>
+      </article>
+      <article>
+        <h3>Demo boundary</h3>
+        <p>In the current demo, J01 advisor actions are executable. Broader advisor-governance coverage is not claimed across every package type.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="task-chapter" id="MT-009">
+    <div class="chapter-kicker">Compliance release and client decisions / UF-09 / PF-F</div>
+    <div class="chapter-title-row">
+      <div>
+        <h2>MT-009. Release, block, or request evidence for advice-like content</h2>
+        <p class="role-line">Compliance Officer</p>
+      </div>
+      <span class="status-pill">Navigable demo UI</span>
+    </div>
+
+    <div class="context-grid">
+      <article class="context-callout context-why">
+        <h3>Why this is here</h3>
+        <p>Compliance release is the decisive client-visibility gate. It checks whether classification, evidence, permissions, disclosures, and review lineage are strong enough for the client to see the material.</p>
+      </article>
+      <article class="context-callout context-goal">
+        <h3>What the user is trying to achieve</h3>
+        <p>The user is trying to release, block, or request evidence in a way that preserves the no-unapproved-advice rule and leaves a defensible record.</p>
+      </article>
+      <article class="context-callout context-next">
+        <h3>What this enables next</h3>
+        <ul><li>released client decisions</li><li>evidence requests</li><li>blocked-state recovery</li><li>client-visible content only after gates pass</li></ul>
+      </article>
+    </div>
+
+    <figure class="screen-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-009-compliance-queue.png" alt="Release, block, or request evidence for advice-like content screen capture" />
+      <figcaption>FIG-09. Compliance Queue. The screenshot is referenced as UI evidence for the task context, not as a route instruction.</figcaption>
+    </figure>
+
+    <div class="flow-grid">
+      <article>
+        <h3>Procedure with rationale</h3>
+        <ol class="steps">
+          <li>
+                <strong>Open start screen and verify role/tenant context</strong>
+                <span>Opening the entry screen confirms that the user is working in the intended task context before acting.</span>
+                <small>Affected state: role context, tenant context, workflow state, client visibility</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state, client visibility</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state, client visibility</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state, client visibility</small>
+              </li><li>
+                <strong>Review final state or blocked condition</strong>
+                <span>Reviewing the visible state helps the user spot missing context, blocked controls, or evidence gaps before taking action.</span>
+                <small>Affected state: role context, tenant context, workflow state, client visibility</small>
+              </li>
+        </ol>
+      </article>
+      <article>
+        <h3>Controls and gates</h3>
+        <ul class="gate-list"><li><strong>MT-009-G1</strong> Compliance release protects client visibility.</li><li><strong>MT-009-G2</strong> Evidence completeness protects the release decision from unsupported claims.</li><li><strong>MT-009-G3</strong> Block and request-evidence states are legitimate controls, not failures.</li><li><strong>MT-009-G4</strong> Audit records preserve why release did or did not happen.</li></ul>
+        <h3>Data used in this flow</h3>
+        <p>classification, evidence completeness, risk disclosure check, release note, block reason, requested evidence, owner</p>
+      </article>
+    </div>
+
+    <div class="field-block">
+      <h3>Input and data contract</h3>
+      
+    <table class="compact">
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Required input</th>
+          <th>Allowed or example value</th>
+          <th>Why it matters</th>
+          <th>Blocked state</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+              <td><strong>Release/block decision</strong><br><span>Compliance Review</span></td>
+              <td>yes / radio/textarea</td>
+              <td>Release, Block, Request Evidence<br><span>Demo: Request Evidence</span></td>
+              <td>Determine client visibility<br><span>ComplianceReview / Recommendation / EvidenceRecord</span></td>
+              <td>Release disabled or blocked<br><span>release-sensitive</span></td>
+            </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="branch-grid">
+      <article class="branch-card">
+            <h3>Happy path / intended demo path</h3>
+            <p>This state confirms the intended demo path while preserving the rule that gates cannot be bypassed.</p>
+            <dl>
+              <dt>User can do</dt><dd>Review, select, enter, or confirm permitted data.</dd>
+              <dt>User cannot do</dt><dd>Bypass required gates or tenant/role scope.</dd>
+              <dt>Next legitimate action</dt><dd>Release, block, or evidence-request state is visible; no unapproved advice reaches the client.</dd>
+            </dl>
+          </article><article class="branch-card">
+            <h3>Blocked, restricted, or incomplete path</h3>
+            <p>This state protects the workflow from being forced forward when role, evidence, compliance, data, or implementation conditions are not satisfied.</p>
+            <dl>
+              <dt>User can do</dt><dd>Review the reason, request evidence, change role, or return to the correct prior step.</dd>
+              <dt>User cannot do</dt><dd>Force completion or claim persistence when the app only shows a static/demo state.</dd>
+              <dt>Next legitimate action</dt><dd>Resolve the missing role, evidence, compliance, or data requirement.</dd>
+            </dl>
+          </article>
+    </div>
+
+    <div class="takeaway-row">
+      <article>
+        <h3>Reader takeaway</h3>
+        <p>Compliance release is the client-visibility control point.</p>
+      </article>
+      <article>
+        <h3>Future readiness</h3>
+        <p>This prepares the workflow for production release governance, release analytics, exception review, and evidence-backed client-decision packages.</p>
+      </article>
+      <article>
+        <h3>Demo boundary</h3>
+        <p>In the current demo, compliance states are visible and partially executable. Broad release transactions remain a top implementation gap.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="task-chapter" id="MT-010">
+    <div class="chapter-kicker">Compliance release and client decisions / UF-10 / PF-F</div>
+    <div class="chapter-title-row">
+      <div>
+        <h2>MT-010. Review and submit a released client decision</h2>
+        <p class="role-line">Principal / Family Council / Trustee scoped</p>
+      </div>
+      <span class="status-pill">Navigable demo UI</span>
+    </div>
+
+    <div class="context-grid">
+      <article class="context-callout context-why">
+        <h3>Why this is here</h3>
+        <p>Client decisions should be based only on material that has passed the release gate. The decision workflow records acceptance, deferral, rejection, or a request for more information with evidence context.</p>
+      </article>
+      <article class="context-callout context-goal">
+        <h3>What the user is trying to achieve</h3>
+        <p>The user is trying to understand the released decision context and record a response that can be traced later.</p>
+      </article>
+      <article class="context-callout context-next">
+        <h3>What this enables next</h3>
+        <ul><li>evidence package creation</li><li>review scheduling</li><li>family approval tracking</li><li>clear completion proof after submission</li></ul>
+      </article>
+    </div>
+
+    <figure class="screen-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-010-decision-list.png" alt="Review and submit a released client decision screen capture" />
+      <figcaption>FIG-10. Decision List. The screenshot is referenced as UI evidence for the task context, not as a route instruction.</figcaption>
+    </figure>
+
+    <div class="flow-grid">
+      <article>
+        <h3>Procedure with rationale</h3>
+        <ol class="steps">
+          <li>
+                <strong>Open start screen and verify role/tenant context</strong>
+                <span>Opening the entry screen confirms that the user is working in the intended task context before acting.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Review final state or blocked condition</strong>
+                <span>Reviewing the visible state helps the user spot missing context, blocked controls, or evidence gaps before taking action.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li>
+        </ol>
+      </article>
+      <article>
+        <h3>Controls and gates</h3>
+        <ul class="gate-list"><li><strong>MT-010-G1</strong> Only released decisions are shown to client roles.</li><li><strong>MT-010-G2</strong> Participant acknowledgement protects family-governance context.</li><li><strong>MT-010-G3</strong> Evidence records preserve completion proof after the decision response.</li></ul>
+        <h3>Data used in this flow</h3>
+        <p>decision choice, participant acknowledgement, comment, request-more-information reason</p>
+      </article>
+    </div>
+
+    <div class="field-block">
+      <h3>Input and data contract</h3>
+      
+    <table class="compact">
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Required input</th>
+          <th>Allowed or example value</th>
+          <th>Why it matters</th>
+          <th>Blocked state</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+              <td><strong>Decision choice</strong><br><span>Decision Room</span></td>
+              <td>yes / button/comment</td>
+              <td>Accept, Defer, Reject, Request Info<br><span>Demo: Defer with comment</span></td>
+              <td>Accept, defer, reject, or request more information<br><span>Decision / DecisionParticipant</span></td>
+              <td>Permission or release block<br><span>client-visible</span></td>
+            </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="branch-grid">
+      <article class="branch-card">
+            <h3>Happy path / intended demo path</h3>
+            <p>This state confirms the intended demo path while preserving the rule that gates cannot be bypassed.</p>
+            <dl>
+              <dt>User can do</dt><dd>Review, select, enter, or confirm permitted data.</dd>
+              <dt>User cannot do</dt><dd>Bypass required gates or tenant/role scope.</dd>
+              <dt>Next legitimate action</dt><dd>Decision success page and linked evidence record show the completion proof.</dd>
+            </dl>
+          </article><article class="branch-card">
+            <h3>Blocked, restricted, or incomplete path</h3>
+            <p>This state protects the workflow from being forced forward when role, evidence, compliance, data, or implementation conditions are not satisfied.</p>
+            <dl>
+              <dt>User can do</dt><dd>Review the reason, request evidence, change role, or return to the correct prior step.</dd>
+              <dt>User cannot do</dt><dd>Force completion or claim persistence when the app only shows a static/demo state.</dd>
+              <dt>Next legitimate action</dt><dd>Resolve the missing role, evidence, compliance, or data requirement.</dd>
+            </dl>
+          </article>
+    </div>
+
+    <div class="takeaway-row">
+      <article>
+        <h3>Reader takeaway</h3>
+        <p>Client decisions begin only after release and should end with traceable proof.</p>
+      </article>
+      <article>
+        <h3>Future readiness</h3>
+        <p>This prepares the workflow for richer family approval chains, review scheduling, evidence-backed decision history, and client-facing status clarity.</p>
+      </article>
+      <article>
+        <h3>Demo boundary</h3>
+        <p>In the current demo, decision screens are navigable and show demo workflow actions. Final decision and evidence package persistence remains incomplete.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="task-chapter" id="MT-011">
+    <div class="chapter-kicker">Evidence, export and data sharing / UF-11 / PF-I</div>
+    <div class="chapter-title-row">
+      <div>
+        <h2>MT-011. Review evidence and create a controlled export</h2>
+        <p class="role-line">Client / Advisor / Compliance / Privacy Officer</p>
+      </div>
+      <span class="status-pill">Navigable demo UI</span>
+    </div>
+
+    <div class="context-grid">
+      <article class="context-callout context-why">
+        <h3>Why this is here</h3>
+        <p>Evidence and export workflows make proof portable without making all underlying data visible. They help users share the right subset of records while preserving redaction, permission, expiry, and audit controls.</p>
+      </article>
+      <article class="context-callout context-goal">
+        <h3>What the user is trying to achieve</h3>
+        <p>The user is trying to find relevant evidence, choose an export scope, apply redaction, confirm approval, and avoid exposing restricted material.</p>
+      </article>
+      <article class="context-callout context-next">
+        <h3>What this enables next</h3>
+        <ul><li>client decision packs</li><li>compliance audit packs</li><li>external advisor data rooms</li><li>controlled evidence review</li><li>future export reporting</li></ul>
+      </article>
+    </div>
+
+    <figure class="screen-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-011-evidence-vault.png" alt="Review evidence and create a controlled export screen capture" />
+      <figcaption>FIG-11. Evidence Vault / Create Export. The screenshot is referenced as UI evidence for the task context, not as a route instruction.</figcaption>
+    </figure>
+
+    <div class="flow-grid">
+      <article>
+        <h3>Procedure with rationale</h3>
+        <ol class="steps">
+          <li>
+                <strong>Open start screen and verify role/tenant context</strong>
+                <span>Opening the entry screen confirms that the user is working in the intended task context before acting.</span>
+                <small>Affected state: role context, tenant context, workflow state, redaction, export approval</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state, redaction, export approval</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state, redaction, export approval</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state, redaction, export approval</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state, redaction, export approval</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state, redaction, export approval</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state, redaction, export approval</small>
+              </li><li>
+                <strong>Review final state or blocked condition</strong>
+                <span>Reviewing the visible state helps the user spot missing context, blocked controls, or evidence gaps before taking action.</span>
+                <small>Affected state: role context, tenant context, workflow state, redaction, export approval</small>
+              </li>
+        </ol>
+      </article>
+      <article>
+        <h3>Controls and gates</h3>
+        <ul class="gate-list"><li><strong>MT-011-G1</strong> Scope selection limits what can leave the vault.</li><li><strong>MT-011-G2</strong> Redaction protects restricted fields before preview or sharing.</li><li><strong>MT-011-G3</strong> Approval and audit controls protect download and share actions.</li><li><strong>MT-011-G4</strong> Expiry or revocation prevents old packages from staying valid indefinitely.</li></ul>
+        <h3>Data used in this flow</h3>
+        <p>evidence search/filter, export type, scope items, redaction profile, recipient/share expiry, approval reason</p>
+      </article>
+    </div>
+
+    <div class="field-block">
+      <h3>Input and data contract</h3>
+      
+    <table class="compact">
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Required input</th>
+          <th>Allowed or example value</th>
+          <th>Why it matters</th>
+          <th>Blocked state</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+              <td><strong>Scope and redaction profile</strong><br><span>Export Wizard</span></td>
+              <td>yes / tree/select</td>
+              <td>Allowed objects and redaction profiles<br><span>Demo: Client-visible evidence package</span></td>
+              <td>Control exported data<br><span>ExportRequest / AuditEvent</span></td>
+              <td>Approval required/block<br><span>restricted</span></td>
+            </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="branch-grid">
+      <article class="branch-card">
+            <h3>Happy path / intended demo path</h3>
+            <p>This state confirms the intended demo path while preserving the rule that gates cannot be bypassed.</p>
+            <dl>
+              <dt>User can do</dt><dd>Review, select, enter, or confirm permitted data.</dd>
+              <dt>User cannot do</dt><dd>Bypass required gates or tenant/role scope.</dd>
+              <dt>Next legitimate action</dt><dd>Export package is previewed/downloaded only if scope, redaction, permission, and approval allow it.</dd>
+            </dl>
+          </article><article class="branch-card">
+            <h3>Blocked, restricted, or incomplete path</h3>
+            <p>This state protects the workflow from being forced forward when role, evidence, compliance, data, or implementation conditions are not satisfied.</p>
+            <dl>
+              <dt>User can do</dt><dd>Review the reason, request evidence, change role, or return to the correct prior step.</dd>
+              <dt>User cannot do</dt><dd>Force completion or claim persistence when the app only shows a static/demo state.</dd>
+              <dt>Next legitimate action</dt><dd>Resolve the missing role, evidence, compliance, or data requirement.</dd>
+            </dl>
+          </article>
+    </div>
+
+    <div class="takeaway-row">
+      <article>
+        <h3>Reader takeaway</h3>
+        <p>Evidence can be shared only when scope, redaction, permission, approval, and audit all line up.</p>
+      </article>
+      <article>
+        <h3>Future readiness</h3>
+        <p>This prepares the workflow for production-grade data rooms, evidence packages, activity-log exports, privacy review, and auditable disclosure history.</p>
+      </article>
+      <article>
+        <h3>Demo boundary</h3>
+        <p>In the current demo, evidence and export screens are visual and navigable. Export package generation, file realism, and share-link behavior remain future implementation work.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="task-chapter" id="MT-012">
+    <div class="chapter-kicker">Governance and access / UF-12 / PF-G</div>
+    <div class="chapter-title-row">
+      <div>
+        <h2>MT-012. Manage governance users, roles, and access requests</h2>
+        <p class="role-line">Principal / Admin / Compliance / Security</p>
+      </div>
+      <span class="status-pill">Navigable demo UI</span>
+    </div>
+
+    <div class="context-grid">
+      <article class="context-callout context-why">
+        <h3>Why this is here</h3>
+        <p>Role and permission changes can expose documents, decisions, evidence, exports, and governance controls. AlphaVest needs access changes to be scoped, confirmed, reviewable, and auditable.</p>
+      </article>
+      <article class="context-callout context-goal">
+        <h3>What the user is trying to achieve</h3>
+        <p>The user is trying to assign, revoke, approve, deny, or escalate access in a way that preserves tenant scope and audit lineage.</p>
+      </article>
+      <article class="context-callout context-next">
+        <h3>What this enables next</h3>
+        <ul><li>safe collaboration</li><li>segregation-of-duties review</li><li>access audit history</li><li>future permission governance and security reporting</li></ul>
+      </article>
+    </div>
+
+    <figure class="screen-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-012-governance-users.png" alt="Manage governance users, roles, and access requests screen capture" />
+      <figcaption>FIG-12. Governance Users. The screenshot is referenced as UI evidence for the task context, not as a route instruction.</figcaption>
+    </figure>
+
+    <div class="flow-grid">
+      <article>
+        <h3>Procedure with rationale</h3>
+        <ol class="steps">
+          <li>
+                <strong>Open start screen and verify role/tenant context</strong>
+                <span>Opening the entry screen confirms that the user is working in the intended task context before acting.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Review final state or blocked condition</strong>
+                <span>Reviewing the visible state helps the user spot missing context, blocked controls, or evidence gaps before taking action.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li>
+        </ol>
+      </article>
+      <article>
+        <h3>Controls and gates</h3>
+        <ul class="gate-list"><li><strong>MT-012-G1</strong> Second confirmation protects sensitive assign, revoke, release, and manage actions.</li><li><strong>MT-012-G2</strong> Role and scope checks prevent users from acting outside their tenant or object boundary.</li><li><strong>MT-012-G3</strong> Audit history preserves who requested, approved, denied, or changed access.</li></ul>
+        <h3>Data used in this flow</h3>
+        <p>user email, role, permission scope, change reason, confirmation phrase, access decision, comment</p>
+      </article>
+    </div>
+
+    <div class="field-block">
+      <h3>Input and data contract</h3>
+      
+    <table class="compact">
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Required input</th>
+          <th>Allowed or example value</th>
+          <th>Why it matters</th>
+          <th>Blocked state</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+              <td><strong>Role/permission/scope/reason</strong><br><span>Governance Role Change</span></td>
+              <td>yes / select/matrix/textarea</td>
+              <td>Roles and permissions table<br><span>Demo: Portfolio Manager + view performance</span></td>
+              <td>Change sensitive access safely<br><span>Role / Permission / AccessRequest</span></td>
+              <td>Confirmation required<br><span>security-sensitive</span></td>
+            </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="branch-grid">
+      <article class="branch-card">
+            <h3>Happy path / intended demo path</h3>
+            <p>This state confirms the intended demo path while preserving the rule that gates cannot be bypassed.</p>
+            <dl>
+              <dt>User can do</dt><dd>Review, select, enter, or confirm permitted data.</dd>
+              <dt>User cannot do</dt><dd>Bypass required gates or tenant/role scope.</dd>
+              <dt>Next legitimate action</dt><dd>Access request is approved/denied/escalated and audit history shows lineage.</dd>
+            </dl>
+          </article><article class="branch-card">
+            <h3>Blocked, restricted, or incomplete path</h3>
+            <p>This state protects the workflow from being forced forward when role, evidence, compliance, data, or implementation conditions are not satisfied.</p>
+            <dl>
+              <dt>User can do</dt><dd>Review the reason, request evidence, change role, or return to the correct prior step.</dd>
+              <dt>User cannot do</dt><dd>Force completion or claim persistence when the app only shows a static/demo state.</dd>
+              <dt>Next legitimate action</dt><dd>Resolve the missing role, evidence, compliance, or data requirement.</dd>
+            </dl>
+          </article>
+    </div>
+
+    <div class="takeaway-row">
+      <article>
+        <h3>Reader takeaway</h3>
+        <p>Governance changes should be scoped, confirmed, and auditable before they affect sensitive work.</p>
+      </article>
+      <article>
+        <h3>Future readiness</h3>
+        <p>This prepares the workflow for production access reviews, separation-of-duties controls, delegated administration, and security audit reporting.</p>
+      </article>
+      <article>
+        <h3>Demo boundary</h3>
+        <p>In the current demo, governance screens and selected demo actions are visible. Fully governed role and access transactions remain incomplete.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="task-chapter" id="MT-013">
+    <div class="chapter-kicker">Communication and escalation / UF-13 / PF-H</div>
+    <div class="chapter-title-row">
+      <div>
+        <h2>MT-013. Choose a communication or escalation path</h2>
+        <p class="role-line">Advisor / Client Success / Client</p>
+      </div>
+      <span class="status-pill">Navigable demo UI</span>
+    </div>
+
+    <div class="context-grid">
+      <article class="context-callout context-why">
+        <h3>Why this is here</h3>
+        <p>Not every issue belongs in the same channel. AlphaVest needs a way to distinguish secure messages, data requests, advisor calls, workshops, external specialist handoffs, and compliance escalations.</p>
+      </article>
+      <article class="context-callout context-goal">
+        <h3>What the user is trying to achieve</h3>
+        <p>The user is trying to choose the least risky communication path that can resolve the issue while preserving evidence and compliance context where material.</p>
+      </article>
+      <article class="context-callout context-next">
+        <h3>What this enables next</h3>
+        <ul><li>data requests</li><li>advisor calls</li><li>workshops</li><li>external specialist escalation</li><li>communication evidence links</li></ul>
+      </article>
+    </div>
+
+    <figure class="screen-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-013-communication-centre.png" alt="Choose a communication or escalation path screen capture" />
+      <figcaption>FIG-13. Communication Centre. The screenshot is referenced as UI evidence for the task context, not as a route instruction.</figcaption>
+    </figure>
+
+    <div class="flow-grid">
+      <article>
+        <h3>Procedure with rationale</h3>
+        <ol class="steps">
+          <li>
+                <strong>Open start screen and verify role/tenant context</strong>
+                <span>Opening the entry screen confirms that the user is working in the intended task context before acting.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Review final state or blocked condition</strong>
+                <span>Reviewing the visible state helps the user spot missing context, blocked controls, or evidence gaps before taking action.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li>
+        </ol>
+      </article>
+      <article>
+        <h3>Controls and gates</h3>
+        <ul class="gate-list"><li><strong>MT-013-G1</strong> Sensitivity and recipient checks protect communication from leaking advice-like or confidential material.</li><li><strong>MT-013-G2</strong> Compliance holds protect messages that require review before client visibility.</li><li><strong>MT-013-G3</strong> Evidence links preserve material communications where the workflow needs proof.</li></ul>
+        <h3>Data used in this flow</h3>
+        <p>channel, recipient, message/call notes, sensitivity, reason for escalation, follow-up owner</p>
+      </article>
+    </div>
+
+    <div class="field-block">
+      <h3>Input and data contract</h3>
+      
+    <table class="compact">
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Required input</th>
+          <th>Allowed or example value</th>
+          <th>Why it matters</th>
+          <th>Blocked state</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+              <td><strong>Channel, recipient, sensitivity, notes</strong><br><span>Communication Path</span></td>
+              <td>yes / select/textarea</td>
+              <td>secure_message, phone, video, in_person<br><span>Demo: Advisor call</span></td>
+              <td>Choose secure message or escalation path<br><span>MessageThread / CallEvent</span></td>
+              <td>Compliance hold<br><span>communication-sensitive</span></td>
+            </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="branch-grid">
+      <article class="branch-card">
+            <h3>Happy path / intended demo path</h3>
+            <p>This state confirms the intended demo path while preserving the rule that gates cannot be bypassed.</p>
+            <dl>
+              <dt>User can do</dt><dd>Review, select, enter, or confirm permitted data.</dd>
+              <dt>User cannot do</dt><dd>Bypass required gates or tenant/role scope.</dd>
+              <dt>Next legitimate action</dt><dd>Communication path or call-trigger state is visible and linked to evidence when material.</dd>
+            </dl>
+          </article><article class="branch-card">
+            <h3>Blocked, restricted, or incomplete path</h3>
+            <p>This state protects the workflow from being forced forward when role, evidence, compliance, data, or implementation conditions are not satisfied.</p>
+            <dl>
+              <dt>User can do</dt><dd>Review the reason, request evidence, change role, or return to the correct prior step.</dd>
+              <dt>User cannot do</dt><dd>Force completion or claim persistence when the app only shows a static/demo state.</dd>
+              <dt>Next legitimate action</dt><dd>Resolve the missing role, evidence, compliance, or data requirement.</dd>
+            </dl>
+          </article>
+    </div>
+
+    <div class="takeaway-row">
+      <article>
+        <h3>Reader takeaway</h3>
+        <p>The right communication path reduces risk and makes follow-up work traceable.</p>
+      </article>
+      <article>
+        <h3>Future readiness</h3>
+        <p>This prepares the workflow for communication logs, meeting/call evidence, follow-up ownership, and escalation analytics.</p>
+      </article>
+      <article>
+        <h3>Demo boundary</h3>
+        <p>In the current demo, communication surfaces are mostly static or navigable. Message and call persistence is not claimed.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="task-chapter" id="MT-014">
+    <div class="chapter-kicker">Operations and reference / UF-14 / PF-J</div>
+    <div class="chapter-title-row">
+      <div>
+        <h2>MT-014. Monitor operations, SLA, and reference state</h2>
+        <p class="role-line">Ops / Product / QA / Leads</p>
+      </div>
+      <span class="status-pill">Navigable demo UI</span>
+    </div>
+
+    <div class="context-grid">
+      <article class="context-callout context-why">
+        <h3>Why this is here</h3>
+        <p>Operations users need to see bottlenecks, SLA pressure, roadmap boundaries, and state definitions so the service model can improve without confusing reference material with client workflow.</p>
+      </article>
+      <article class="context-callout context-goal">
+        <h3>What the user is trying to achieve</h3>
+        <p>The user is trying to understand current workload, risk, reference state, and product scope without treating reference pages as client task flows.</p>
+      </article>
+      <article class="context-callout context-next">
+        <h3>What this enables next</h3>
+        <ul><li>capacity planning</li><li>QA triage</li><li>workflow consistency reviews</li><li>future queue automation</li><li>clearer roadmap and implementation reporting</li></ul>
+      </article>
+    </div>
+
+    <figure class="screen-figure">
+      <img src="file:///Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-014-ops-queues.png" alt="Monitor operations, SLA, and reference state screen capture" />
+      <figcaption>FIG-14. Ops Queues. The screenshot is referenced as UI evidence for the task context, not as a route instruction.</figcaption>
+    </figure>
+
+    <div class="flow-grid">
+      <article>
+        <h3>Procedure with rationale</h3>
+        <ol class="steps">
+          <li>
+                <strong>Open start screen and verify role/tenant context</strong>
+                <span>Opening the entry screen confirms that the user is working in the intended task context before acting.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Select next visible workflow action or navigation item</strong>
+                <span>Entering or selecting the required data gives later reviewers the context they need to interpret the workflow safely.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li><li>
+                <strong>Review final state or blocked condition</strong>
+                <span>Reviewing the visible state helps the user spot missing context, blocked controls, or evidence gaps before taking action.</span>
+                <small>Affected state: role context, tenant context, workflow state</small>
+              </li>
+        </ol>
+      </article>
+      <article>
+        <h3>Controls and gates</h3>
+        <ul class="gate-list"><li><strong>MT-014-G1</strong> Reference-only framing protects users from mistaking product documentation pages for client workflow actions.</li><li><strong>MT-014-G2</strong> Queue ownership and SLA status guide operational follow-up.</li><li><strong>MT-014-G3</strong> Audit expectations should apply if queue mutations become implemented actions.</li></ul>
+        <h3>Data used in this flow</h3>
+        <p>queue filter, SLA threshold, owner, roadmap scope, state/badge reference</p>
+      </article>
+    </div>
+
+    <div class="field-block">
+      <h3>Input and data contract</h3>
+      
+    <table class="compact">
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Required input</th>
+          <th>Allowed or example value</th>
+          <th>Why it matters</th>
+          <th>Blocked state</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+              <td><strong>Queue filter, owner, status, SLA</strong><br><span>Ops Queue</span></td>
+              <td>optional / filter/select</td>
+              <td>Queue and SLA taxonomy<br><span>Demo: At risk</span></td>
+              <td>Monitor internal work<br><span>QueueItem / DataQualityIssue</span></td>
+              <td>Read-only if not implemented<br><span>internal</span></td>
+            </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="branch-grid">
+      <article class="branch-card">
+            <h3>Happy path / intended demo path</h3>
+            <p>This state confirms the intended demo path while preserving the rule that gates cannot be bypassed.</p>
+            <dl>
+              <dt>User can do</dt><dd>Review, select, enter, or confirm permitted data.</dd>
+              <dt>User cannot do</dt><dd>Bypass required gates or tenant/role scope.</dd>
+              <dt>Next legitimate action</dt><dd>Bottlenecks, SLA breaches, roadmap scope, and state language are visible for internal use.</dd>
+            </dl>
+          </article><article class="branch-card">
+            <h3>Blocked, restricted, or incomplete path</h3>
+            <p>This state protects the workflow from being forced forward when role, evidence, compliance, data, or implementation conditions are not satisfied.</p>
+            <dl>
+              <dt>User can do</dt><dd>Review the reason, request evidence, change role, or return to the correct prior step.</dd>
+              <dt>User cannot do</dt><dd>Force completion or claim persistence when the app only shows a static/demo state.</dd>
+              <dt>Next legitimate action</dt><dd>Resolve the missing role, evidence, compliance, or data requirement.</dd>
+            </dl>
+          </article>
+    </div>
+
+    <div class="takeaway-row">
+      <article>
+        <h3>Reader takeaway</h3>
+        <p>Ops pages help AlphaVest run the system; they are not client-facing advice workflows.</p>
+      </article>
+      <article>
+        <h3>Future readiness</h3>
+        <p>This prepares the workflow for SLA analytics, queue ownership, product health reporting, and cleaner internal operating cadence.</p>
+      </article>
+      <article>
+        <h3>Demo boundary</h3>
+        <p>In the current demo, operations and reference pages are mostly dashboard or reference surfaces. Queue and SLA mutation is not yet implemented.</p>
+      </article>
+    </div>
+  </section>
+
+    <section class="section-page appendix">
+      <p class="eyebrow">Reference appendix</p>
+      <h2>Field and data rationale</h2>
+      <p>These fields are the manual-facing contract for what a user must provide, may select, or must resolve before the workflow can move forward legitimately.</p>
+      <table class="compact appendix-table">
+        <thead>
+          <tr><th>ID</th><th>Task</th><th>Field</th><th>Required/type</th><th>Allowed or example</th><th>Validation and blocked state</th></tr>
+        </thead>
+        <tbody><tr>
+        <td>F-001</td>
+        <td>MT-001</td>
+        <td><strong>Setting key/value</strong><br><span>Platform Settings</span></td>
+        <td>yes / select/text</td>
+        <td>Known platform setting; bounded value<br><span>Example: AlphaVest WealthOS / 7 years / 30 minutes</span></td>
+        <td>Must be within policy limits<br><span>Second confirmation required</span></td>
+      </tr><tr>
+        <td>F-002</td>
+        <td>MT-001</td>
+        <td><strong>Advice classification</strong><br><span>Advice Boundary Policy</span></td>
+        <td>yes / select/matrix</td>
+        <td>AdviceClassification enum<br><span>Example: advice_relevant</span></td>
+        <td>Cannot weaken release rule without reason<br><span>Compliance review required</span></td>
+      </tr><tr>
+        <td>F-003</td>
+        <td>MT-002</td>
+        <td><strong>Client name and jurisdiction</strong><br><span>Create Client Tenant</span></td>
+        <td>yes / text/select</td>
+        <td>Approved jurisdiction list<br><span>Example: Northbridge Family Office / Switzerland</span></td>
+        <td>Required and unique enough for demo<br><span>Duplicate or missing tenant details</span></td>
+      </tr><tr>
+        <td>F-004</td>
+        <td>MT-002</td>
+        <td><strong>Compliance owner</strong><br><span>Assign AlphaVest Team</span></td>
+        <td>yes / user select</td>
+        <td>Users with compliance_officer role<br><span>Example: Naledi Mokoena</span></td>
+        <td>Required before active readiness<br><span>Activation remains blocked</span></td>
+      </tr><tr>
+        <td>F-005</td>
+        <td>MT-003</td>
+        <td><strong>Invite token</strong><br><span>Onboarding Invite</span></td>
+        <td>yes / token</td>
+        <td>Valid active invitation<br><span>Example: demo invite token</span></td>
+        <td>Expired/used token blocks continuation<br><span>Invalid invitation state</span></td>
+      </tr><tr>
+        <td>F-006</td>
+        <td>MT-003</td>
+        <td><strong>Privacy acknowledgement</strong><br><span>Consent</span></td>
+        <td>yes / checkbox/version</td>
+        <td>Active consent policy<br><span>Example: Privacy Notice v1 accepted</span></td>
+        <td>All required boxes must be selected<br><span>Cannot continue without consent</span></td>
+      </tr><tr>
+        <td>F-007</td>
+        <td>MT-004</td>
+        <td><strong>Family profile and objective</strong><br><span>Client Profile</span></td>
+        <td>yes / structured text/select</td>
+        <td>Profile taxonomy<br><span>Example: Morgan Family Office / Family Office Advisory</span></td>
+        <td>No final advice fields; required basics<br><span>Submitted for review or blocked</span></td>
+      </tr><tr>
+        <td>F-008</td>
+        <td>MT-004</td>
+        <td><strong>Family member role</strong><br><span>Family Members</span></td>
+        <td>yes / select/text</td>
+        <td>Principal, CFO, Trustee, Beneficiary, Next Gen<br><span>Example: Trustee</span></td>
+        <td>Must fit tenant scope<br><span>Conflict or missing relationship</span></td>
+      </tr><tr>
+        <td>F-009</td>
+        <td>MT-005</td>
+        <td><strong>Entity type/name/jurisdiction</strong><br><span>Create Entity</span></td>
+        <td>yes / select/text</td>
+        <td>EntityType enum and jurisdictions<br><span>Example: trust / Sunward Trust / Switzerland</span></td>
+        <td>Sensitive jurisdictions flag review<br><span>Blocked or legal review state</span></td>
+      </tr><tr>
+        <td>F-010</td>
+        <td>MT-006</td>
+        <td><strong>Document file/type/scope</strong><br><span>Document Upload</span></td>
+        <td>yes / file/select</td>
+        <td>Allowed file types and document taxonomy<br><span>Example: Trust Agreement.pdf / Trust deed</span></td>
+        <td>Unsupported file or missing scope blocks upload<br><span>Upload error / verification pending</span></td>
+      </tr><tr>
+        <td>F-011</td>
+        <td>MT-006</td>
+        <td><strong>Corrected extracted value</strong><br><span>Extraction Review</span></td>
+        <td>conditional / structured text</td>
+        <td>Extracted payload fields<br><span>Example: Beneficial owner: Sunward Holdings</span></td>
+        <td>Required for low confidence<br><span>Needs clarification</span></td>
+      </tr><tr>
+        <td>F-012</td>
+        <td>MT-007</td>
+        <td><strong>Analyst route decision</strong><br><span>Signal Review</span></td>
+        <td>yes / radio/button</td>
+        <td>Request Data / Assign / Route / Dismiss<br><span>Example: Request Data / Information</span></td>
+        <td>Must not create client advice<br><span>Internal-only state</span></td>
+      </tr><tr>
+        <td>F-013</td>
+        <td>MT-008</td>
+        <td><strong>Advisor decision and rationale</strong><br><span>Advisor Approval</span></td>
+        <td>yes / button/textarea</td>
+        <td>Approve, Revise, Request More Data, Escalate<br><span>Example: Approve with rationale</span></td>
+        <td>Approval does not release to client<br><span>Compliance pending</span></td>
+      </tr><tr>
+        <td>F-014</td>
+        <td>MT-009</td>
+        <td><strong>Release/block decision</strong><br><span>Compliance Review</span></td>
+        <td>yes / radio/textarea</td>
+        <td>Release, Block, Request Evidence<br><span>Example: Request Evidence</span></td>
+        <td>Release requires all gates<br><span>Release disabled or blocked</span></td>
+      </tr><tr>
+        <td>F-015</td>
+        <td>MT-010</td>
+        <td><strong>Decision choice</strong><br><span>Decision Room</span></td>
+        <td>yes / button/comment</td>
+        <td>Accept, Defer, Reject, Request Info<br><span>Example: Defer with comment</span></td>
+        <td>Only released decisions are shown<br><span>Permission or release block</span></td>
+      </tr><tr>
+        <td>F-016</td>
+        <td>MT-011</td>
+        <td><strong>Scope and redaction profile</strong><br><span>Export Wizard</span></td>
+        <td>yes / tree/select</td>
+        <td>Allowed objects and redaction profiles<br><span>Example: Client-visible evidence package</span></td>
+        <td>Restricted/unredacted data cannot export<br><span>Approval required/block</span></td>
+      </tr><tr>
+        <td>F-017</td>
+        <td>MT-012</td>
+        <td><strong>Role/permission/scope/reason</strong><br><span>Governance Role Change</span></td>
+        <td>yes / select/matrix/textarea</td>
+        <td>Roles and permissions table<br><span>Example: Portfolio Manager + view performance</span></td>
+        <td>SOD/second confirmation required<br><span>Confirmation required</span></td>
+      </tr><tr>
+        <td>F-018</td>
+        <td>MT-013</td>
+        <td><strong>Channel, recipient, sensitivity, notes</strong><br><span>Communication Path</span></td>
+        <td>yes / select/textarea</td>
+        <td>secure_message, phone, video, in_person<br><span>Example: Advisor call</span></td>
+        <td>Advice-like content needs gate<br><span>Compliance hold</span></td>
+      </tr><tr>
+        <td>F-019</td>
+        <td>MT-014</td>
+        <td><strong>Queue filter, owner, status, SLA</strong><br><span>Ops Queue</span></td>
+        <td>optional / filter/select</td>
+        <td>Queue and SLA taxonomy<br><span>Example: At risk</span></td>
+        <td>Mutations require owner/status<br><span>Read-only if not implemented</span></td>
+      </tr></tbody>
+      </table>
+    </section>
+
+    <section class="section-page appendix">
+      <p class="eyebrow">Evidence model</p>
+      <h2>Why blocked states and release gates are part of the workflow</h2>
+      <div class="intro-grid">
+        <article>
+          <h3>Evidence by default</h3>
+          <p>Important actions should leave an evidence trail so future reviewers can understand what changed, who approved it, and why the system allowed it.</p>
+        </article>
+        <article>
+          <h3>Compliance release</h3>
+          <p>Client visibility is controlled by compliance release, especially when content may influence financial, legal, or tax decisions.</p>
+        </article>
+        <article>
+          <h3>Blocked states</h3>
+          <p>A blocked state is a protective control. It tells the user what condition is missing instead of allowing an unsafe completion claim.</p>
+        </article>
+      </div>
+      <h3>Manual QA boundary</h3>
+      <ul>
+        <li>The PDF is generated from demo-data-first sources and contextual narrative files.</li>
+        <li>It is text-extractable and screenshot-backed, but it is not claimed as PDF/UA conformant.</li>
+        <li>It documents current source evidence and known boundaries; it does not certify production persistence.</li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>

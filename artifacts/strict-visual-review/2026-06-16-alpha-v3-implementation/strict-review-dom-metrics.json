@@ -1,0 +1,2325 @@
+[
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "001",
+    "route": "/login",
+    "screenshot": "desktop/PAGE-001-login-desktop.png",
+    "title": "Authentication Login",
+    "url": "http://127.0.0.1:3107/login",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "002",
+    "route": "/mfa",
+    "screenshot": "desktop/PAGE-002-mfa-desktop.png",
+    "title": "Multi-Factor Authentication",
+    "url": "http://127.0.0.1:3107/mfa",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "003",
+    "route": "/onboarding/invite",
+    "screenshot": "desktop/PAGE-003-onboarding-invite-desktop.png",
+    "title": "Invitation Acceptance",
+    "url": "http://127.0.0.1:3107/onboarding/invite",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "004",
+    "route": "/onboarding/identity",
+    "screenshot": "desktop/PAGE-004-onboarding-identity-desktop.png",
+    "title": "Identity Setup",
+    "url": "http://127.0.0.1:3107/onboarding/identity",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "005",
+    "route": "/onboarding/consent",
+    "screenshot": "desktop/PAGE-005-onboarding-consent-desktop.png",
+    "title": "Consent and Privacy",
+    "url": "http://127.0.0.1:3107/onboarding/consent",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "006",
+    "route": "/onboarding/role-confirmation",
+    "screenshot": "desktop/PAGE-006-onboarding-role-confirmation-desktop.png",
+    "title": "Role Confirmation",
+    "url": "http://127.0.0.1:3107/onboarding/role-confirmation",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "007",
+    "route": "/admin/platform",
+    "screenshot": "desktop/PAGE-007-admin-platform-desktop.png",
+    "title": "Platform Settings",
+    "url": "http://127.0.0.1:3107/admin/platform?state=confirm",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "008",
+    "route": "/admin/policies/advice-boundary",
+    "screenshot": "desktop/PAGE-008-admin-policies-advice-boundary-desktop.png",
+    "title": "Advice Boundary Policy",
+    "url": "http://127.0.0.1:3107/admin/policies/advice-boundary",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "009",
+    "route": "/admin/roles",
+    "screenshot": "desktop/PAGE-009-admin-roles-desktop.png",
+    "title": "Global Role Templates",
+    "url": "http://127.0.0.1:3107/admin/roles?state=permission",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "010",
+    "route": "/admin/security",
+    "screenshot": "desktop/PAGE-010-admin-security-desktop.png",
+    "title": "Security Configuration",
+    "url": "http://127.0.0.1:3107/admin/security?state=confirm",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "011",
+    "route": "/admin/evidence-templates",
+    "screenshot": "desktop/PAGE-011-admin-evidence-templates-desktop.png",
+    "title": "Evidence Templates",
+    "url": "http://127.0.0.1:3107/admin/evidence-templates",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "012",
+    "route": "/admin/export-templates",
+    "screenshot": "desktop/PAGE-012-admin-export-templates-desktop.png",
+    "title": "Export Templates and Redaction",
+    "url": "http://127.0.0.1:3107/admin/export-templates",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "013",
+    "route": "/admin/tenants",
+    "screenshot": "desktop/PAGE-013-admin-tenants-desktop.png",
+    "title": "Tenant List",
+    "url": "http://127.0.0.1:3107/admin/tenants",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "014",
+    "route": "/tenants/new",
+    "screenshot": "desktop/PAGE-014-tenants-new-desktop.png",
+    "title": "Create Client Tenant",
+    "url": "http://127.0.0.1:3107/tenants/new",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Setup complete 81% Processing"
+      ],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "015",
+    "route": "/tenants/:id/setup",
+    "screenshot": "desktop/PAGE-015-tenants-id-setup-desktop.png",
+    "title": "Tenant Setup Dashboard",
+    "url": "http://127.0.0.1:3107/tenants/demo/setup",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "016",
+    "route": "/tenants/:id/team",
+    "screenshot": "desktop/PAGE-016-tenants-id-team-desktop.png",
+    "title": "Assign AlphaVest Team",
+    "url": "http://127.0.0.1:3107/tenants/demo/team",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "017",
+    "route": "/tenants/:id/policies",
+    "screenshot": "desktop/PAGE-017-tenants-id-policies-desktop.png",
+    "title": "Tenant Policies",
+    "url": "http://127.0.0.1:3107/tenants/demo/policies",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "018",
+    "route": "/tenants/:id/users",
+    "screenshot": "desktop/PAGE-018-tenants-id-users-desktop.png",
+    "title": "Tenant Users",
+    "url": "http://127.0.0.1:3107/tenants/demo/users?state=invite",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Client Web Dashboard",
+        "Your overall readiness is 72 /100 Complete a few items to strengthen resilience and governance.",
+        "Complete a few items to strengthen resilience and governance.",
+        "● Complete 68% ● In progress 20% ● Missing 12%"
+      ],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "019",
+    "route": "/portal",
+    "screenshot": "desktop/PAGE-019-portal-desktop.png",
+    "title": "Client Web Dashboard",
+    "url": "http://127.0.0.1:3107/portal",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "020",
+    "route": "/mobile",
+    "screenshot": "desktop/PAGE-020-mobile-desktop.png",
+    "title": "Mobile Home",
+    "url": "http://127.0.0.1:3107/mobile",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Decision-Making Approval thresholds and escalation"
+      ],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "021",
+    "route": "/client/profile",
+    "screenshot": "desktop/PAGE-021-client-profile-desktop.png",
+    "title": "Client Profile",
+    "url": "http://127.0.0.1:3107/client/profile",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "022",
+    "route": "/client/family-members",
+    "screenshot": "desktop/PAGE-022-client-family-members-desktop.png",
+    "title": "Family Members",
+    "url": "http://127.0.0.1:3107/client/family-members",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "023",
+    "route": "/relationships",
+    "screenshot": "desktop/PAGE-023-relationships-desktop.png",
+    "title": "Relationship Map",
+    "url": "http://127.0.0.1:3107/relationships",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "024",
+    "route": "/entities",
+    "screenshot": "desktop/PAGE-024-entities-desktop.png",
+    "title": "Entity List",
+    "url": "http://127.0.0.1:3107/entities",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "025",
+    "route": "/entities/new",
+    "screenshot": "desktop/PAGE-025-entities-new-desktop.png",
+    "title": "Create Entity",
+    "url": "http://127.0.0.1:3107/entities/new",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "026",
+    "route": "/entities/:id",
+    "screenshot": "desktop/PAGE-026-entities-id-desktop.png",
+    "title": "Entity Detail",
+    "url": "http://127.0.0.1:3107/entities/demo",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "027",
+    "route": "/documents",
+    "screenshot": "desktop/PAGE-027-documents-desktop.png",
+    "title": "Documents List",
+    "url": "http://127.0.0.1:3107/documents",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "028",
+    "route": "/documents/upload",
+    "screenshot": "desktop/PAGE-028-documents-upload-desktop.png",
+    "title": "Document Upload",
+    "url": "http://127.0.0.1:3107/documents/upload",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "High (9) Medium (2) Low (1) Error (1)"
+      ],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "029",
+    "route": "/documents/extraction-review",
+    "screenshot": "desktop/PAGE-029-documents-extraction-review-desktop.png",
+    "title": "Extraction Review",
+    "url": "http://127.0.0.1:3107/documents/extraction-review",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Verification Pending",
+        "Overall Status Pending",
+        "Expected Review Time 2-3 Days",
+        "Expected Review Time",
+        "Submitted On May 21, 2025"
+      ],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "030",
+    "route": "/documents/verification-pending",
+    "screenshot": "desktop/PAGE-030-documents-verification-pending-desktop.png",
+    "title": "Verification Pending",
+    "url": "http://127.0.0.1:3107/documents/verification-pending",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Scope Bennett Family Office",
+        "Bennett Family Office",
+        "Visibility All incl. restricted",
+        "All incl. restricted",
+        "Global Growth Portfolio $28.7M USD",
+        "Income & Yield Portfolio $11.2M USD",
+        "Oceanview Estate Real Estate $18.5M USD",
+        "Bennett Life Plan Insurance $3.2M USD",
+        "Bennett OpCo Operating Co. Australia",
+        "Operating Cash Liquidity $4.1M USD",
+        "Education Fund Portfolio $2.3M USD",
+        "United States Tax Residency",
+        "New Zealand Tax Residency",
+        "Close detail drawer",
+        "Close detail drawer"
+      ],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "031",
+    "route": "/wealth-map",
+    "screenshot": "desktop/PAGE-031-wealth-map-desktop.png",
+    "title": "Live Wealth Map",
+    "url": "http://127.0.0.1:3107/wealth-map?state=drawer",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Update Risk Profile",
+        "Tax Residency Certificate",
+        "Charitable Strategy Review",
+        "ESG Screening Review",
+        "Tax Planning Summary",
+        "2024 Tax Organizer Review",
+        "Trust Account Summary",
+        "Close action drawer",
+        "Close action drawer"
+      ],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "032",
+    "route": "/actions",
+    "screenshot": "desktop/PAGE-032-actions-desktop.png",
+    "title": "Action Board",
+    "url": "http://127.0.0.1:3107/actions?state=drawer",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Search internal workspace"
+      ],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "033",
+    "route": "/signals",
+    "screenshot": "desktop/PAGE-033-signals-desktop.png",
+    "title": "Signal Review",
+    "url": "http://127.0.0.1:3107/signals",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Search internal workspace",
+        "Consultant Workbench",
+        "+4 pts vs yesterday",
+        "5 of 7 gates complete"
+      ],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "034",
+    "route": "/workbench",
+    "screenshot": "desktop/PAGE-034-workbench-desktop.png",
+    "title": "Consultant Workbench",
+    "url": "http://127.0.0.1:3107/workbench",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Search internal workspace"
+      ],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "035",
+    "route": "/workbench/triggers/:id",
+    "screenshot": "desktop/PAGE-035-workbench-triggers-id-desktop.png",
+    "title": "Trigger Detail",
+    "url": "http://127.0.0.1:3107/workbench/triggers/demo",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Search internal workspace",
+        "Advisor Approval Queue"
+      ],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "036",
+    "route": "/advisor-approval",
+    "screenshot": "desktop/PAGE-036-advisor-approval-desktop.png",
+    "title": "Advisor Approval Queue",
+    "url": "http://127.0.0.1:3107/advisor-approval",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Search internal workspace",
+        "Advisor Approval Detail"
+      ],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "037",
+    "route": "/advisor-approval/:id",
+    "screenshot": "desktop/PAGE-037-advisor-approval-id-desktop.png",
+    "title": "Advisor Approval Detail",
+    "url": "http://127.0.0.1:3107/advisor-approval/demo",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Search internal workspace",
+        "Marketing Material Review Q2 Fact Sheet",
+        "Referral Arrangement Review Referral from ABC Partners",
+        "Quarterly Performance Review Q1 2025 Performance"
+      ],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "038",
+    "route": "/compliance",
+    "screenshot": "desktop/PAGE-038-compliance-desktop.png",
+    "title": "Compliance Queue",
+    "url": "http://127.0.0.1:3107/compliance",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Search internal workspace",
+        "Compliance Review Detail"
+      ],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "039",
+    "route": "/compliance/:id/review",
+    "screenshot": "desktop/PAGE-039-compliance-id-review-desktop.png",
+    "title": "Compliance Review Detail",
+    "url": "http://127.0.0.1:3107/compliance/demo/review",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Search internal workspace"
+      ],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "040",
+    "route": "/compliance/:id/release",
+    "screenshot": "desktop/PAGE-040-compliance-id-release-desktop.png",
+    "title": "Release to Client",
+    "url": "http://127.0.0.1:3107/compliance/demo/release?state=release",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Block or Request Evidence"
+      ],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "041",
+    "route": "/compliance/:id/block",
+    "screenshot": "desktop/PAGE-041-compliance-id-block-desktop.png",
+    "title": "Block or Request Evidence",
+    "url": "http://127.0.0.1:3107/compliance/demo/block?state=block",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Audit and Exception Log"
+      ],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "042",
+    "route": "/compliance/:id/audit",
+    "screenshot": "desktop/PAGE-042-compliance-id-audit-desktop.png",
+    "title": "Audit and Exception Log",
+    "url": "http://127.0.0.1:3107/compliance/demo/audit",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "043",
+    "route": "/decisions",
+    "screenshot": "desktop/PAGE-043-decisions-desktop.png",
+    "title": "Decision List",
+    "url": "http://127.0.0.1:3107/decisions",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Digital Decision Room"
+      ],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "044",
+    "route": "/decisions/:id",
+    "screenshot": "desktop/PAGE-044-decisions-id-desktop.png",
+    "title": "Digital Decision Room",
+    "url": "http://127.0.0.1:3107/decisions/demo?state=approval",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "045",
+    "route": "/decisions/:id/success",
+    "screenshot": "desktop/PAGE-045-decisions-id-success-desktop.png",
+    "title": "Decision Submitted",
+    "url": "http://127.0.0.1:3107/decisions/demo/success",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "046",
+    "route": "/evidence",
+    "screenshot": "desktop/PAGE-046-evidence-desktop.png",
+    "title": "Evidence Vault",
+    "url": "http://127.0.0.1:3107/evidence?state=drawer",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Evidence Record Detail"
+      ],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "047",
+    "route": "/evidence/:id",
+    "screenshot": "desktop/PAGE-047-evidence-id-desktop.png",
+    "title": "Evidence Record Detail",
+    "url": "http://127.0.0.1:3107/evidence/demo",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "048",
+    "route": "/governance/users",
+    "screenshot": "desktop/PAGE-048-governance-users-desktop.png",
+    "title": "Governance Users",
+    "url": "http://127.0.0.1:3107/governance/users?state=drawer",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "049",
+    "route": "/governance/roles",
+    "screenshot": "desktop/PAGE-049-governance-roles-desktop.png",
+    "title": "Role Management",
+    "url": "http://127.0.0.1:3107/governance/roles?state=confirm",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Export account holdings Export",
+        "Edit investment model Edit",
+        "View sensitive documents View"
+      ],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "050",
+    "route": "/governance/access-requests",
+    "screenshot": "desktop/PAGE-050-governance-access-requests-desktop.png",
+    "title": "Access Requests",
+    "url": "http://127.0.0.1:3107/governance/access-requests",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Access Audit History"
+      ],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "051",
+    "route": "/governance/audit-history",
+    "screenshot": "desktop/PAGE-051-governance-audit-history-desktop.png",
+    "title": "Access Audit History",
+    "url": "http://127.0.0.1:3107/governance/audit-history?state=drawer",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Communication Centre"
+      ],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "052",
+    "route": "/communication",
+    "screenshot": "desktop/PAGE-052-communication-desktop.png",
+    "title": "Communication Centre",
+    "url": "http://127.0.0.1:3107/communication",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Call Trigger Matrix"
+      ],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "053",
+    "route": "/communication/call-trigger",
+    "screenshot": "desktop/PAGE-053-communication-call-trigger-desktop.png",
+    "title": "Call Trigger Matrix",
+    "url": "http://127.0.0.1:3107/communication/call-trigger",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "054",
+    "route": "/export/new",
+    "screenshot": "desktop/PAGE-054-export-new-desktop.png",
+    "title": "Create Export",
+    "url": "http://127.0.0.1:3107/export/new",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Export Scope Selection"
+      ],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "055",
+    "route": "/export/:id/scope",
+    "screenshot": "desktop/PAGE-055-export-id-scope-desktop.png",
+    "title": "Export Scope Selection",
+    "url": "http://127.0.0.1:3107/export/demo/scope",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "056",
+    "route": "/export/:id/redaction",
+    "screenshot": "desktop/PAGE-056-export-id-redaction-desktop.png",
+    "title": "Export Redaction",
+    "url": "http://127.0.0.1:3107/export/demo/redaction",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "057",
+    "route": "/export/:id/preview",
+    "screenshot": "desktop/PAGE-057-export-id-preview-desktop.png",
+    "title": "Export Preview",
+    "url": "http://127.0.0.1:3107/export/demo/preview?state=approval",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Export Download and Share"
+      ],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "058",
+    "route": "/export/:id/download",
+    "screenshot": "desktop/PAGE-058-export-id-download-desktop.png",
+    "title": "Export Download and Share",
+    "url": "http://127.0.0.1:3107/export/demo/download?state=confirm",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Total Backlog 1,284 +8% vs yesterday",
+        "Overdue 146 +12% vs yesterday",
+        "At Risk 213 +5% vs yesterday",
+        "SLA Met 92% -2pp vs yesterday",
+        "Avg. Age 2.6 days +0.4 vs yesterday",
+        "Capacity 84% +9pp vs yesterday"
+      ],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "059",
+    "route": "/ops/queues",
+    "screenshot": "desktop/PAGE-059-ops-queues-desktop.png",
+    "title": "Ops Queues",
+    "url": "http://127.0.0.1:3107/ops/queues",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "060",
+    "route": "/ops/sla",
+    "screenshot": "desktop/PAGE-060-ops-sla-desktop.png",
+    "title": "SLA and Escalation",
+    "url": "http://127.0.0.1:3107/ops/sla",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "061",
+    "route": "/service-blueprint",
+    "screenshot": "desktop/PAGE-061-service-blueprint-desktop.png",
+    "title": "Service Blueprint",
+    "url": "http://127.0.0.1:3107/service-blueprint",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "MVP vs Future Scope"
+      ],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "062",
+    "route": "/roadmap",
+    "screenshot": "desktop/PAGE-062-roadmap-desktop.png",
+    "title": "MVP vs Future Scope",
+    "url": "http://127.0.0.1:3107/roadmap",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "State and Badge Reference"
+      ],
+      "document": {
+        "clientWidth": 1440,
+        "scrollWidth": 1440
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "063",
+    "route": "/states",
+    "screenshot": "desktop/PAGE-063-states-desktop.png",
+    "title": "State and Badge Reference",
+    "url": "http://127.0.0.1:3107/states",
+    "viewport": "desktop"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "001",
+    "route": "/login",
+    "screenshot": "mobile/PAGE-001-login-mobile.png",
+    "title": "Authentication Login",
+    "url": "http://127.0.0.1:3107/login",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "002",
+    "route": "/mfa",
+    "screenshot": "mobile/PAGE-002-mfa-mobile.png",
+    "title": "Multi-Factor Authentication",
+    "url": "http://127.0.0.1:3107/mfa",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "003",
+    "route": "/onboarding/invite",
+    "screenshot": "mobile/PAGE-003-onboarding-invite-mobile.png",
+    "title": "Invitation Acceptance",
+    "url": "http://127.0.0.1:3107/onboarding/invite",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "004",
+    "route": "/onboarding/identity",
+    "screenshot": "mobile/PAGE-004-onboarding-identity-mobile.png",
+    "title": "Identity Setup",
+    "url": "http://127.0.0.1:3107/onboarding/identity",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "005",
+    "route": "/onboarding/consent",
+    "screenshot": "mobile/PAGE-005-onboarding-consent-mobile.png",
+    "title": "Consent and Privacy",
+    "url": "http://127.0.0.1:3107/onboarding/consent",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "006",
+    "route": "/onboarding/role-confirmation",
+    "screenshot": "mobile/PAGE-006-onboarding-role-confirmation-mobile.png",
+    "title": "Role Confirmation",
+    "url": "http://127.0.0.1:3107/onboarding/role-confirmation",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "007",
+    "route": "/admin/platform",
+    "screenshot": "mobile/PAGE-007-admin-platform-mobile.png",
+    "title": "Platform Settings",
+    "url": "http://127.0.0.1:3107/admin/platform?state=confirm",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Tools and calculators",
+        "Personalised recommendations"
+      ],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "008",
+    "route": "/admin/policies/advice-boundary",
+    "screenshot": "mobile/PAGE-008-admin-policies-advice-boundary-mobile.png",
+    "title": "Advice Boundary Policy",
+    "url": "http://127.0.0.1:3107/admin/policies/advice-boundary",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Super administrator"
+      ],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "009",
+    "route": "/admin/roles",
+    "screenshot": "mobile/PAGE-009-admin-roles-mobile.png",
+    "title": "Global Role Templates",
+    "url": "http://127.0.0.1:3107/admin/roles?state=permission",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "010",
+    "route": "/admin/security",
+    "screenshot": "mobile/PAGE-010-admin-security-mobile.png",
+    "title": "Security Configuration",
+    "url": "http://127.0.0.1:3107/admin/security?state=confirm",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "011",
+    "route": "/admin/evidence-templates",
+    "screenshot": "mobile/PAGE-011-admin-evidence-templates-mobile.png",
+    "title": "Evidence Templates",
+    "url": "http://127.0.0.1:3107/admin/evidence-templates",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "012",
+    "route": "/admin/export-templates",
+    "screenshot": "mobile/PAGE-012-admin-export-templates-mobile.png",
+    "title": "Export Templates and Redaction",
+    "url": "http://127.0.0.1:3107/admin/export-templates",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "013",
+    "route": "/admin/tenants",
+    "screenshot": "mobile/PAGE-013-admin-tenants-mobile.png",
+    "title": "Tenant List",
+    "url": "http://127.0.0.1:3107/admin/tenants",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "014",
+    "route": "/tenants/new",
+    "screenshot": "mobile/PAGE-014-tenants-new-mobile.png",
+    "title": "Create Client Tenant",
+    "url": "http://127.0.0.1:3107/tenants/new",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "015",
+    "route": "/tenants/:id/setup",
+    "screenshot": "mobile/PAGE-015-tenants-id-setup-mobile.png",
+    "title": "Tenant Setup Dashboard",
+    "url": "http://127.0.0.1:3107/tenants/demo/setup",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "016",
+    "route": "/tenants/:id/team",
+    "screenshot": "mobile/PAGE-016-tenants-id-team-mobile.png",
+    "title": "Assign AlphaVest Team",
+    "url": "http://127.0.0.1:3107/tenants/demo/team",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "017",
+    "route": "/tenants/:id/policies",
+    "screenshot": "mobile/PAGE-017-tenants-id-policies-mobile.png",
+    "title": "Tenant Policies",
+    "url": "http://127.0.0.1:3107/tenants/demo/policies",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "018",
+    "route": "/tenants/:id/users",
+    "screenshot": "mobile/PAGE-018-tenants-id-users-mobile.png",
+    "title": "Tenant Users",
+    "url": "http://127.0.0.1:3107/tenants/demo/users?state=invite",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Client Web Dashboard"
+      ],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "019",
+    "route": "/portal",
+    "screenshot": "mobile/PAGE-019-portal-mobile.png",
+    "title": "Client Web Dashboard",
+    "url": "http://127.0.0.1:3107/portal",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "020",
+    "route": "/mobile",
+    "screenshot": "mobile/PAGE-020-mobile-mobile.png",
+    "title": "Mobile Home",
+    "url": "http://127.0.0.1:3107/mobile",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "021",
+    "route": "/client/profile",
+    "screenshot": "mobile/PAGE-021-client-profile-mobile.png",
+    "title": "Client Profile",
+    "url": "http://127.0.0.1:3107/client/profile",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "022",
+    "route": "/client/family-members",
+    "screenshot": "mobile/PAGE-022-client-family-members-mobile.png",
+    "title": "Family Members",
+    "url": "http://127.0.0.1:3107/client/family-members",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "023",
+    "route": "/relationships",
+    "screenshot": "mobile/PAGE-023-relationships-mobile.png",
+    "title": "Relationship Map",
+    "url": "http://127.0.0.1:3107/relationships",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "024",
+    "route": "/entities",
+    "screenshot": "mobile/PAGE-024-entities-mobile.png",
+    "title": "Entity List",
+    "url": "http://127.0.0.1:3107/entities",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "025",
+    "route": "/entities/new",
+    "screenshot": "mobile/PAGE-025-entities-new-mobile.png",
+    "title": "Create Entity",
+    "url": "http://127.0.0.1:3107/entities/new",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "026",
+    "route": "/entities/:id",
+    "screenshot": "mobile/PAGE-026-entities-id-mobile.png",
+    "title": "Entity Detail",
+    "url": "http://127.0.0.1:3107/entities/demo",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "027",
+    "route": "/documents",
+    "screenshot": "mobile/PAGE-027-documents-mobile.png",
+    "title": "Documents List",
+    "url": "http://127.0.0.1:3107/documents",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "028",
+    "route": "/documents/upload",
+    "screenshot": "mobile/PAGE-028-documents-upload-mobile.png",
+    "title": "Document Upload",
+    "url": "http://127.0.0.1:3107/documents/upload",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "High (9) Medium (2) Low (1) Error (1)"
+      ],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "029",
+    "route": "/documents/extraction-review",
+    "screenshot": "mobile/PAGE-029-documents-extraction-review-mobile.png",
+    "title": "Extraction Review",
+    "url": "http://127.0.0.1:3107/documents/extraction-review",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Verification Pending"
+      ],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "030",
+    "route": "/documents/verification-pending",
+    "screenshot": "mobile/PAGE-030-documents-verification-pending-mobile.png",
+    "title": "Verification Pending",
+    "url": "http://127.0.0.1:3107/documents/verification-pending",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Global Growth Portfolio $28.7M USD",
+        "Income & Yield Portfolio $11.2M USD",
+        "Oceanview Estate Real Estate $18.5M USD",
+        "Bennett Life Plan Insurance $3.2M USD",
+        "Bennett OpCo Operating Co. Australia",
+        "Operating Cash Liquidity $4.1M USD",
+        "Education Fund Portfolio $2.3M USD",
+        "United States Tax Residency",
+        "New Zealand Tax Residency",
+        "Close detail drawer",
+        "Close detail drawer"
+      ],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "031",
+    "route": "/wealth-map",
+    "screenshot": "mobile/PAGE-031-wealth-map-mobile.png",
+    "title": "Live Wealth Map",
+    "url": "http://127.0.0.1:3107/wealth-map?state=drawer",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Update Risk Profile",
+        "Tax Residency Certificate",
+        "Charitable Strategy Review",
+        "ESG Screening Review",
+        "Tax Planning Summary",
+        "2024 Tax Organizer Review",
+        "Trust Account Summary",
+        "Close action drawer",
+        "Close action drawer"
+      ],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "032",
+    "route": "/actions",
+    "screenshot": "mobile/PAGE-032-actions-mobile.png",
+    "title": "Action Board",
+    "url": "http://127.0.0.1:3107/actions?state=drawer",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Search internal workspace"
+      ],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "033",
+    "route": "/signals",
+    "screenshot": "mobile/PAGE-033-signals-mobile.png",
+    "title": "Signal Review",
+    "url": "http://127.0.0.1:3107/signals",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Search internal workspace",
+        "Consultant Workbench"
+      ],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "034",
+    "route": "/workbench",
+    "screenshot": "mobile/PAGE-034-workbench-mobile.png",
+    "title": "Consultant Workbench",
+    "url": "http://127.0.0.1:3107/workbench",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Search internal workspace"
+      ],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "035",
+    "route": "/workbench/triggers/:id",
+    "screenshot": "mobile/PAGE-035-workbench-triggers-id-mobile.png",
+    "title": "Trigger Detail",
+    "url": "http://127.0.0.1:3107/workbench/triggers/demo",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Search internal workspace",
+        "Advisor Approval Queue"
+      ],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "036",
+    "route": "/advisor-approval",
+    "screenshot": "mobile/PAGE-036-advisor-approval-mobile.png",
+    "title": "Advisor Approval Queue",
+    "url": "http://127.0.0.1:3107/advisor-approval",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Search internal workspace",
+        "Advisor Approval Detail"
+      ],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "037",
+    "route": "/advisor-approval/:id",
+    "screenshot": "mobile/PAGE-037-advisor-approval-id-mobile.png",
+    "title": "Advisor Approval Detail",
+    "url": "http://127.0.0.1:3107/advisor-approval/demo",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Search internal workspace"
+      ],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "038",
+    "route": "/compliance",
+    "screenshot": "mobile/PAGE-038-compliance-mobile.png",
+    "title": "Compliance Queue",
+    "url": "http://127.0.0.1:3107/compliance",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Search internal workspace",
+        "Compliance Review Detail"
+      ],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "039",
+    "route": "/compliance/:id/review",
+    "screenshot": "mobile/PAGE-039-compliance-id-review-mobile.png",
+    "title": "Compliance Review Detail",
+    "url": "http://127.0.0.1:3107/compliance/demo/review",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Search internal workspace"
+      ],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "040",
+    "route": "/compliance/:id/release",
+    "screenshot": "mobile/PAGE-040-compliance-id-release-mobile.png",
+    "title": "Release to Client",
+    "url": "http://127.0.0.1:3107/compliance/demo/release?state=release",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Block or Request Evidence"
+      ],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "041",
+    "route": "/compliance/:id/block",
+    "screenshot": "mobile/PAGE-041-compliance-id-block-mobile.png",
+    "title": "Block or Request Evidence",
+    "url": "http://127.0.0.1:3107/compliance/demo/block?state=block",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Audit and Exception Log"
+      ],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "042",
+    "route": "/compliance/:id/audit",
+    "screenshot": "mobile/PAGE-042-compliance-id-audit-mobile.png",
+    "title": "Audit and Exception Log",
+    "url": "http://127.0.0.1:3107/compliance/demo/audit",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "043",
+    "route": "/decisions",
+    "screenshot": "mobile/PAGE-043-decisions-mobile.png",
+    "title": "Decision List",
+    "url": "http://127.0.0.1:3107/decisions",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Digital Decision Room"
+      ],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "044",
+    "route": "/decisions/:id",
+    "screenshot": "mobile/PAGE-044-decisions-id-mobile.png",
+    "title": "Digital Decision Room",
+    "url": "http://127.0.0.1:3107/decisions/demo?state=approval",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "045",
+    "route": "/decisions/:id/success",
+    "screenshot": "mobile/PAGE-045-decisions-id-success-mobile.png",
+    "title": "Decision Submitted",
+    "url": "http://127.0.0.1:3107/decisions/demo/success",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "046",
+    "route": "/evidence",
+    "screenshot": "mobile/PAGE-046-evidence-mobile.png",
+    "title": "Evidence Vault",
+    "url": "http://127.0.0.1:3107/evidence?state=drawer",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Evidence Record Detail"
+      ],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "047",
+    "route": "/evidence/:id",
+    "screenshot": "mobile/PAGE-047-evidence-id-mobile.png",
+    "title": "Evidence Record Detail",
+    "url": "http://127.0.0.1:3107/evidence/demo",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "048",
+    "route": "/governance/users",
+    "screenshot": "mobile/PAGE-048-governance-users-mobile.png",
+    "title": "Governance Users",
+    "url": "http://127.0.0.1:3107/governance/users?state=drawer",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "049",
+    "route": "/governance/roles",
+    "screenshot": "mobile/PAGE-049-governance-roles-mobile.png",
+    "title": "Role Management",
+    "url": "http://127.0.0.1:3107/governance/roles?state=confirm",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "050",
+    "route": "/governance/access-requests",
+    "screenshot": "mobile/PAGE-050-governance-access-requests-mobile.png",
+    "title": "Access Requests",
+    "url": "http://127.0.0.1:3107/governance/access-requests",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Access Audit History"
+      ],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "051",
+    "route": "/governance/audit-history",
+    "screenshot": "mobile/PAGE-051-governance-audit-history-mobile.png",
+    "title": "Access Audit History",
+    "url": "http://127.0.0.1:3107/governance/audit-history?state=drawer",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Communication Centre"
+      ],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "052",
+    "route": "/communication",
+    "screenshot": "mobile/PAGE-052-communication-mobile.png",
+    "title": "Communication Centre",
+    "url": "http://127.0.0.1:3107/communication",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Call Trigger Matrix"
+      ],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "053",
+    "route": "/communication/call-trigger",
+    "screenshot": "mobile/PAGE-053-communication-call-trigger-mobile.png",
+    "title": "Call Trigger Matrix",
+    "url": "http://127.0.0.1:3107/communication/call-trigger",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "054",
+    "route": "/export/new",
+    "screenshot": "mobile/PAGE-054-export-new-mobile.png",
+    "title": "Create Export",
+    "url": "http://127.0.0.1:3107/export/new",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Export Scope Selection"
+      ],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "055",
+    "route": "/export/:id/scope",
+    "screenshot": "mobile/PAGE-055-export-id-scope-mobile.png",
+    "title": "Export Scope Selection",
+    "url": "http://127.0.0.1:3107/export/demo/scope",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Beginning market value",
+        "Net investment change",
+        "Ending market value",
+        "Unrealized gain/loss"
+      ],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "056",
+    "route": "/export/:id/redaction",
+    "screenshot": "mobile/PAGE-056-export-id-redaction-mobile.png",
+    "title": "Export Redaction",
+    "url": "http://127.0.0.1:3107/export/demo/redaction",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "057",
+    "route": "/export/:id/preview",
+    "screenshot": "mobile/PAGE-057-export-id-preview-mobile.png",
+    "title": "Export Preview",
+    "url": "http://127.0.0.1:3107/export/demo/preview?state=approval",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "Export Download and Share"
+      ],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "058",
+    "route": "/export/:id/download",
+    "screenshot": "mobile/PAGE-058-export-id-download-mobile.png",
+    "title": "Export Download and Share",
+    "url": "http://127.0.0.1:3107/export/demo/download?state=confirm",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "059",
+    "route": "/ops/queues",
+    "screenshot": "mobile/PAGE-059-ops-queues-mobile.png",
+    "title": "Ops Queues",
+    "url": "http://127.0.0.1:3107/ops/queues",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "060",
+    "route": "/ops/sla",
+    "screenshot": "mobile/PAGE-060-ops-sla-mobile.png",
+    "title": "SLA and Escalation",
+    "url": "http://127.0.0.1:3107/ops/sla",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "061",
+    "route": "/service-blueprint",
+    "screenshot": "mobile/PAGE-061-service-blueprint-mobile.png",
+    "title": "Service Blueprint",
+    "url": "http://127.0.0.1:3107/service-blueprint",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "MVP vs Future Scope"
+      ],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "062",
+    "route": "/roadmap",
+    "screenshot": "mobile/PAGE-062-roadmap-mobile.png",
+    "title": "MVP vs Future Scope",
+    "url": "http://127.0.0.1:3107/roadmap",
+    "viewport": "mobile"
+  },
+  {
+    "consoleMessages": [],
+    "metrics": {
+      "crampedText": [
+        "State and Badge Reference"
+      ],
+      "document": {
+        "clientWidth": 390,
+        "scrollWidth": 390
+      },
+      "loadingTextPresent": false
+    },
+    "pageId": "063",
+    "route": "/states",
+    "screenshot": "mobile/PAGE-063-states-mobile.png",
+    "title": "State and Badge Reference",
+    "url": "http://127.0.0.1:3107/states",
+    "viewport": "mobile"
+  }
+]

@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-06-16",
+  "purpose": "P3 proof families are QA/report artifacts, not video manifests by default.",
+  "proofFamilies": [
+    {
+      "id": "P3-01",
+      "name": "63-route smoke coverage",
+      "command": "pnpm test:route-smoke"
+    },
+    {
+      "id": "P3-02",
+      "name": "route x state x role matrix",
+      "command": "manual/generated matrix from route registry and backlog"
+    },
+    {
+      "id": "P3-03",
+      "name": "permission denial matrix",
+      "command": "pnpm test:permissions"
+    },
+    {
+      "id": "P3-04",
+      "name": "evidence/audit lifecycle matrix",
+      "command": "manual/generated matrix from handlers and QA report"
+    },
+    {
+      "id": "P3-05",
+      "name": "visual contract bundle",
+      "command": "pnpm visual:contract"
+    }
+  ],
+  "overclaimGuard": "P3 artifacts prove coverage and safety boundaries; they are not customer workflow videos."
+}

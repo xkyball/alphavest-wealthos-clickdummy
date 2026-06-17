@@ -1,0 +1,3582 @@
+{
+  "generatedAt": "2026-06-16T23:25:11.459Z",
+  "engineMode": "ENGINE_MIX_V2_CODEX_V3_PROOF",
+  "repository": "/Users/chris/projects/alphavest-wealthos-clickdummy",
+  "sourceFiles": [
+    "AGENTS.md",
+    "CODEX_MASTER_TASK.md",
+    "docs/v3/CODEX_TASKS_DETAILED_V3.md",
+    "docs/v3/SCREEN_CATALOGUE_V3.md",
+    "docs/v3/DESIGN_SYSTEM_AND_VISUAL_RULES_V3.md",
+    "docs/v3/TECHNICAL_IMPLEMENTATION_SEQUENCE_V3.md",
+    "docs/v3/PAGEFLOW_USERFLOW_MAPPING_V3.md",
+    "docs/v3/DATA_MODEL_V3.md",
+    "docs/v3/QUALITY_GATES_AND_TEST_PLAN_V3.md",
+    "docs/v3/USERFLOW_DEFINITIONS_V3.md",
+    "docs/v3/WORKFLOW_DEFINITIONS_V3.md",
+    "docs/v3/PAGE_SPECS_V3.md",
+    "docs/v3/SCREEN_TO_TASK_MATRIX_V3.md",
+    "docs/v3/USER_JOURNEY_PLAYBOOK_V3.md",
+    "docs/v3/journeys.screencast.v3.json",
+    "docs/v3/WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md",
+    "docs/v3/INPUT_MASK_REQUIREMENTS_V3.md",
+    "docs/v3/DATA_MODEL_IMPLEMENTATION_RECONCILIATION_V3.md",
+    "docs/v3/IMPLEMENTATION_GAP_BACKLOG_V3.md",
+    "lib/route-registry.ts",
+    "lib/demo-session.ts",
+    "lib/permission-engine.ts",
+    "lib/workflow-gate.ts",
+    "app/[...segments]/page.tsx",
+    "app/api/demo-workflow/route.ts",
+    "components/*-screen.tsx",
+    "prisma/schema.prisma",
+    "tests/route-smoke.spec.ts",
+    "tests/demo-workflow-api.spec.ts",
+    "tests/permission-engine.spec.ts"
+  ],
+  "externalDocumentationSources": [
+    "Microsoft Style Guide - Procedures and instructions",
+    "Microsoft Style Guide - Writing step-by-step instructions",
+    "Microsoft Style Guide - Describing interactions with UI",
+    "Microsoft Style Guide - Lists",
+    "Google Developer Documentation Style Guide - UI elements and interaction",
+    "Nielsen Norman Group - Help and Documentation",
+    "Nielsen Norman Group - Task Analysis",
+    "TechScribe - How to write user documentation",
+    "ScreenSteps - 10 Examples of Great End-User Documentation"
+  ],
+  "manualInformationArchitecture": [
+    "Getting started with demo session",
+    "Platform and policy setup",
+    "Tenant onboarding",
+    "Client onboarding and profile",
+    "Structure, documents and evidence intake",
+    "Internal advisory review",
+    "Compliance release and client decisions",
+    "Evidence/export/data sharing",
+    "Governance and access",
+    "Communication and escalation",
+    "Operations and reference",
+    "Field/status/troubleshooting reference"
+  ],
+  "roles": [
+    "Platform Admin",
+    "Compliance",
+    "Security Officer",
+    "Admin",
+    "Client Success",
+    "Invited User",
+    "Principal",
+    "Family CFO",
+    "Analyst",
+    "Advisor",
+    "Client",
+    "External Advisor",
+    "Senior Wealth Advisor",
+    "Compliance Officer",
+    "Family Council",
+    "Trustee scoped",
+    "Privacy Officer",
+    "Security",
+    "Ops",
+    "Product",
+    "QA",
+    "Leads"
+  ],
+  "manualTasks": [
+    {
+      "id": "MT-001",
+      "uf": "UF-01",
+      "wf": "W-01",
+      "pf": "PF-A",
+      "role": "Platform Admin / Compliance / Security Officer",
+      "title": "Configure the platform policy baseline",
+      "outcome": "Platform settings, advice-boundary rules, role templates, security defaults, evidence templates, and export defaults are visible and ready for tenant setup.",
+      "entry": "Platform Settings",
+      "routes": [
+        "/admin/platform",
+        "/admin/policies/advice-boundary",
+        "/admin/roles",
+        "/admin/security",
+        "/admin/evidence-templates",
+        "/admin/export-templates"
+      ],
+      "data": [
+        "Platform name",
+        "retention default",
+        "MFA/session defaults",
+        "advice classification rules",
+        "role template changes",
+        "evidence and export template settings"
+      ],
+      "result": "Policy baseline is reviewed; sensitive changes require confirmation and audit.",
+      "evidence": "Audit expected for policy/security/role changes; evidence templates define later proof requirements.",
+      "status": "E3 navigable UI with visible policy states; broad persisted policy transactions are not claimed."
+    },
+    {
+      "id": "MT-002",
+      "uf": "UF-02",
+      "wf": "W-02",
+      "pf": "PF-B",
+      "role": "Admin / Client Success / Compliance",
+      "title": "Create and prepare a client tenant",
+      "outcome": "A tenant moves from list/create/setup into team assignment, policy selection, and user invitation readiness.",
+      "entry": "Tenant List",
+      "routes": [
+        "/admin/tenants",
+        "/tenants/new",
+        "/tenants/demo/setup",
+        "/tenants/demo/team",
+        "/tenants/demo/policies",
+        "/tenants/demo/users"
+      ],
+      "data": [
+        "family office name",
+        "jurisdiction",
+        "service tier",
+        "advisor",
+        "analyst",
+        "compliance owner",
+        "client success owner",
+        "tenant policy profile",
+        "principal invitation"
+      ],
+      "result": "Tenant setup checklist shows whether activation gates are ready or blocked.",
+      "evidence": "Tenant create, team assignment, policy override, and invitation should be audited.",
+      "status": "E3 navigable UI; tenant write workflow is a required input-mask slice, not yet fully governed."
+    },
+    {
+      "id": "MT-003",
+      "uf": "UF-03",
+      "wf": "W-03",
+      "pf": "PF-B",
+      "role": "Invited User",
+      "title": "Accept an invitation and complete onboarding",
+      "outcome": "The invited user accepts the invitation, confirms identity/MFA, accepts privacy/consent, and acknowledges role scope.",
+      "entry": "Invitation Acceptance",
+      "routes": [
+        "/onboarding/invite",
+        "/onboarding/identity",
+        "/mfa",
+        "/onboarding/consent",
+        "/onboarding/role-confirmation",
+        "/login"
+      ],
+      "data": [
+        "invite token",
+        "name",
+        "email confirmation",
+        "MFA method",
+        "consent version",
+        "role acknowledgement"
+      ],
+      "result": "User reaches role confirmation; production auth remains intentionally deferred.",
+      "evidence": "Consent and onboarding audit expected; no real auth is introduced in this demo-first phase.",
+      "status": "E2/E3 visual and navigable onboarding surfaces; no real authentication claim."
+    },
+    {
+      "id": "MT-004",
+      "uf": "UF-04",
+      "wf": "W-04",
+      "pf": "PF-C",
+      "role": "Principal / Family CFO",
+      "title": "Submit client profile and family context",
+      "outcome": "Client profile, family members, and relationships provide context for later decisions and access.",
+      "entry": "Client Web Dashboard",
+      "routes": [
+        "/portal",
+        "/client/profile",
+        "/client/family-members",
+        "/relationships"
+      ],
+      "data": [
+        "family profile",
+        "governance preferences",
+        "family member details",
+        "relationship type",
+        "ownership or beneficiary links",
+        "missing-evidence notes"
+      ],
+      "result": "Profile and relationship context is visible with conflicts or missing evidence flagged.",
+      "evidence": "Profile/family edits should create audit events and review tasks.",
+      "status": "E3 navigable UI with static/demo data; profile persistence is a P0/P1 implementation need."
+    },
+    {
+      "id": "MT-005",
+      "uf": "UF-05",
+      "wf": "W-05",
+      "pf": "PF-C",
+      "role": "Principal / Family CFO / Analyst / Advisor",
+      "title": "Create an entity and review wealth structure",
+      "outcome": "Entity records, participants, documents, wealth-map nodes, and action cards expose structure gaps safely.",
+      "entry": "Entity List",
+      "routes": [
+        "/entities",
+        "/entities/new",
+        "/entities/demo",
+        "/wealth-map",
+        "/actions"
+      ],
+      "data": [
+        "entity type",
+        "entity name",
+        "jurisdiction",
+        "participants",
+        "asset link",
+        "document evidence",
+        "action owner",
+        "readiness state"
+      ],
+      "result": "Entity detail, wealth-map drawer, and action-board blockers show what must happen next.",
+      "evidence": "Entity/action changes should audit; missing evidence blocks readiness.",
+      "status": "E3 navigable UI; entity/action mutations and evidence gate need transaction wiring."
+    },
+    {
+      "id": "MT-006",
+      "uf": "UF-06",
+      "wf": "W-06",
+      "pf": "PF-D",
+      "role": "Client / Family CFO / External Advisor / Analyst",
+      "title": "Upload and verify a document",
+      "outcome": "A document is uploaded, extraction is reviewed as draft, and human verification or evidence linking is required.",
+      "entry": "Documents List",
+      "routes": [
+        "/documents",
+        "/documents/upload",
+        "/documents/extraction-review",
+        "/documents/verification-pending"
+      ],
+      "data": [
+        "document file",
+        "document type",
+        "entity/asset link",
+        "sensitivity",
+        "notes",
+        "corrected extracted values",
+        "confidence override"
+      ],
+      "result": "Document reaches verification-pending or needs-clarification state.",
+      "evidence": "Upload, extraction review, document version, and evidence link should audit.",
+      "status": "E3 navigable UI; no real file storage/extraction transaction is claimed."
+    },
+    {
+      "id": "MT-007",
+      "uf": "UF-07",
+      "wf": "W-07",
+      "pf": "PF-E",
+      "role": "Analyst",
+      "title": "Process a signal and route internal work",
+      "outcome": "The analyst reviews an internal-only trigger, requests data or routes to advisor, and keeps client visibility blocked.",
+      "entry": "Signal Review",
+      "routes": [
+        "/signals",
+        "/workbench",
+        "/workbench/triggers/demo",
+        "/actions"
+      ],
+      "data": [
+        "signal ID",
+        "missing beneficial owner",
+        "purpose of wire",
+        "source of funds",
+        "analyst note",
+        "route decision"
+      ],
+      "result": "Trigger moves toward awaiting information or advisor review while staying internal-only.",
+      "evidence": "J01 request/route actions are backed by demo workflow API and audit rows when database is available.",
+      "status": "E4 demo-state executable for J01 subset; not fully governed across all signals."
+    },
+    {
+      "id": "MT-008",
+      "uf": "UF-08",
+      "wf": "W-08",
+      "pf": "PF-E",
+      "role": "Senior Wealth Advisor",
+      "title": "Review an advisor approval package",
+      "outcome": "Advisor approves, revises, requests more data, or escalates without releasing to the client.",
+      "entry": "Advisor Approval Queue",
+      "routes": [
+        "/advisor-approval",
+        "/advisor-approval/demo"
+      ],
+      "data": [
+        "recommendation ID",
+        "advisor decision",
+        "rationale",
+        "conditions",
+        "escalation reason"
+      ],
+      "result": "Advisor decision is recorded or routed; compliance release remains required.",
+      "evidence": "Advisor approval should audit; J01 approve/escalate actions are demo-executable.",
+      "status": "E4 for J01 advisor action; advisor approval is explicitly not client visibility."
+    },
+    {
+      "id": "MT-009",
+      "uf": "UF-09",
+      "wf": "W-09",
+      "pf": "PF-F",
+      "role": "Compliance Officer",
+      "title": "Release, block, or request evidence for advice-like content",
+      "outcome": "Compliance determines whether content can become client-visible, stays blocked, or needs more evidence.",
+      "entry": "Compliance Queue",
+      "routes": [
+        "/compliance",
+        "/compliance/demo/review",
+        "/compliance/demo/release",
+        "/compliance/demo/block",
+        "/compliance/demo/audit"
+      ],
+      "data": [
+        "classification",
+        "evidence completeness",
+        "risk disclosure check",
+        "release note",
+        "block reason",
+        "requested evidence",
+        "owner"
+      ],
+      "result": "Release, block, or evidence-request state is visible; no unapproved advice reaches the client.",
+      "evidence": "Compliance release/block must create audit; evidence completeness is required for release.",
+      "status": "E3/E4 mixed demo states; broad release transaction is still a top implementation gap."
+    },
+    {
+      "id": "MT-010",
+      "uf": "UF-10",
+      "wf": "W-10",
+      "pf": "PF-F",
+      "role": "Principal / Family Council / Trustee scoped",
+      "title": "Review and submit a released client decision",
+      "outcome": "Client reviews only released content, chooses accept/defer/reject, and receives proof of submission.",
+      "entry": "Decision List",
+      "routes": [
+        "/decisions",
+        "/decisions/demo",
+        "/decisions/demo/success",
+        "/evidence/demo"
+      ],
+      "data": [
+        "decision choice",
+        "participant acknowledgement",
+        "comment",
+        "request-more-information reason"
+      ],
+      "result": "Decision success page and linked evidence record show the completion proof.",
+      "evidence": "Decision event and evidence package should be immutable/audited.",
+      "status": "E3 navigable UI with demo workflow actions; final decision/evidence package persistence remains incomplete."
+    },
+    {
+      "id": "MT-011",
+      "uf": "UF-11",
+      "wf": "W-11",
+      "pf": "PF-I",
+      "role": "Client / Advisor / Compliance / Privacy Officer",
+      "title": "Review evidence and create a controlled export",
+      "outcome": "Evidence is inspected and exported only through scoped, redacted, approved, audited export steps.",
+      "entry": "Evidence Vault / Create Export",
+      "routes": [
+        "/evidence",
+        "/evidence/demo",
+        "/governance/audit-history",
+        "/export/new",
+        "/export/demo/scope",
+        "/export/demo/redaction",
+        "/export/demo/preview",
+        "/export/demo/download"
+      ],
+      "data": [
+        "evidence search/filter",
+        "export type",
+        "scope items",
+        "redaction profile",
+        "recipient/share expiry",
+        "approval reason"
+      ],
+      "result": "Export package is previewed/downloaded only if scope, redaction, permission, and approval allow it.",
+      "evidence": "Export create/scope/redaction/approval/download/share should audit.",
+      "status": "E3 visual/navigable; export package/file/share realism is a Phase 18 gap."
+    },
+    {
+      "id": "MT-012",
+      "uf": "UF-12",
+      "wf": "W-12",
+      "pf": "PF-G",
+      "role": "Principal / Admin / Compliance / Security",
+      "title": "Manage governance users, roles, and access requests",
+      "outcome": "Sensitive user/role/access changes require scoped roles, confirmation, and audit history.",
+      "entry": "Governance Users",
+      "routes": [
+        "/governance/users",
+        "/governance/roles",
+        "/governance/access-requests",
+        "/governance/audit-history"
+      ],
+      "data": [
+        "user email",
+        "role",
+        "permission scope",
+        "change reason",
+        "confirmation phrase",
+        "access decision",
+        "comment"
+      ],
+      "result": "Access request is approved/denied/escalated and audit history shows lineage.",
+      "evidence": "Sensitive role/access actions require second confirmation and audit.",
+      "status": "E3/E4 demo actions visible; governed role/access transactions remain incomplete."
+    },
+    {
+      "id": "MT-013",
+      "uf": "UF-13",
+      "wf": "W-13",
+      "pf": "PF-H",
+      "role": "Advisor / Client Success / Client",
+      "title": "Choose a communication or escalation path",
+      "outcome": "The right secure message, data request, call, workshop, external specialist, or compliance escalation path is selected.",
+      "entry": "Communication Centre",
+      "routes": [
+        "/communication",
+        "/communication/call-trigger",
+        "/evidence"
+      ],
+      "data": [
+        "channel",
+        "recipient",
+        "message/call notes",
+        "sensitivity",
+        "reason for escalation",
+        "follow-up owner"
+      ],
+      "result": "Communication path or call-trigger state is visible and linked to evidence when material.",
+      "evidence": "Sensitive communication should audit and evidence-link; advice-like messages require release controls.",
+      "status": "E2/E3 mostly static communication surfaces; message/call persistence not claimed."
+    },
+    {
+      "id": "MT-014",
+      "uf": "UF-14",
+      "wf": "W-14",
+      "pf": "PF-J",
+      "role": "Ops / Product / QA / Leads",
+      "title": "Monitor operations, SLA, and reference state",
+      "outcome": "Ops reviews queues, SLA risk, service blueprint, roadmap, and state catalogue for delivery/control monitoring.",
+      "entry": "Ops Queues",
+      "routes": [
+        "/ops/queues",
+        "/ops/sla",
+        "/service-blueprint",
+        "/roadmap",
+        "/states"
+      ],
+      "data": [
+        "queue filter",
+        "SLA threshold",
+        "owner",
+        "roadmap scope",
+        "state/badge reference"
+      ],
+      "result": "Bottlenecks, SLA breaches, roadmap scope, and state language are visible for internal use.",
+      "evidence": "Ops mutations should audit if implemented; reference pages are internal only.",
+      "status": "E2/E3 reference and dashboard surfaces; queue/SLA mutation not yet implemented."
+    }
+  ],
+  "workflowCrosswalk": [
+    {
+      "manualTaskId": "MT-001",
+      "userWorkflow": "UF-01",
+      "workflow": "W-01",
+      "pageflow": "PF-A",
+      "routes": [
+        "/admin/platform",
+        "/admin/policies/advice-boundary",
+        "/admin/roles",
+        "/admin/security",
+        "/admin/evidence-templates",
+        "/admin/export-templates"
+      ],
+      "requiredData": [
+        "Platform name",
+        "retention default",
+        "MFA/session defaults",
+        "advice classification rules",
+        "role template changes",
+        "evidence and export template settings"
+      ],
+      "status": "E3 navigable UI with visible policy states; broad persisted policy transactions are not claimed.",
+      "clientVisibilityRule": "No unapproved advice reaches the client"
+    },
+    {
+      "manualTaskId": "MT-002",
+      "userWorkflow": "UF-02",
+      "workflow": "W-02",
+      "pageflow": "PF-B",
+      "routes": [
+        "/admin/tenants",
+        "/tenants/new",
+        "/tenants/demo/setup",
+        "/tenants/demo/team",
+        "/tenants/demo/policies",
+        "/tenants/demo/users"
+      ],
+      "requiredData": [
+        "family office name",
+        "jurisdiction",
+        "service tier",
+        "advisor",
+        "analyst",
+        "compliance owner",
+        "client success owner",
+        "tenant policy profile",
+        "principal invitation"
+      ],
+      "status": "E3 navigable UI; tenant write workflow is a required input-mask slice, not yet fully governed.",
+      "clientVisibilityRule": "No unapproved advice reaches the client"
+    },
+    {
+      "manualTaskId": "MT-003",
+      "userWorkflow": "UF-03",
+      "workflow": "W-03",
+      "pageflow": "PF-B",
+      "routes": [
+        "/onboarding/invite",
+        "/onboarding/identity",
+        "/mfa",
+        "/onboarding/consent",
+        "/onboarding/role-confirmation",
+        "/login"
+      ],
+      "requiredData": [
+        "invite token",
+        "name",
+        "email confirmation",
+        "MFA method",
+        "consent version",
+        "role acknowledgement"
+      ],
+      "status": "E2/E3 visual and navigable onboarding surfaces; no real authentication claim.",
+      "clientVisibilityRule": "No unapproved advice reaches the client"
+    },
+    {
+      "manualTaskId": "MT-004",
+      "userWorkflow": "UF-04",
+      "workflow": "W-04",
+      "pageflow": "PF-C",
+      "routes": [
+        "/portal",
+        "/client/profile",
+        "/client/family-members",
+        "/relationships"
+      ],
+      "requiredData": [
+        "family profile",
+        "governance preferences",
+        "family member details",
+        "relationship type",
+        "ownership or beneficiary links",
+        "missing-evidence notes"
+      ],
+      "status": "E3 navigable UI with static/demo data; profile persistence is a P0/P1 implementation need.",
+      "clientVisibilityRule": "No unapproved advice reaches the client"
+    },
+    {
+      "manualTaskId": "MT-005",
+      "userWorkflow": "UF-05",
+      "workflow": "W-05",
+      "pageflow": "PF-C",
+      "routes": [
+        "/entities",
+        "/entities/new",
+        "/entities/demo",
+        "/wealth-map",
+        "/actions"
+      ],
+      "requiredData": [
+        "entity type",
+        "entity name",
+        "jurisdiction",
+        "participants",
+        "asset link",
+        "document evidence",
+        "action owner",
+        "readiness state"
+      ],
+      "status": "E3 navigable UI; entity/action mutations and evidence gate need transaction wiring.",
+      "clientVisibilityRule": "No unapproved advice reaches the client"
+    },
+    {
+      "manualTaskId": "MT-006",
+      "userWorkflow": "UF-06",
+      "workflow": "W-06",
+      "pageflow": "PF-D",
+      "routes": [
+        "/documents",
+        "/documents/upload",
+        "/documents/extraction-review",
+        "/documents/verification-pending"
+      ],
+      "requiredData": [
+        "document file",
+        "document type",
+        "entity/asset link",
+        "sensitivity",
+        "notes",
+        "corrected extracted values",
+        "confidence override"
+      ],
+      "status": "E3 navigable UI; no real file storage/extraction transaction is claimed.",
+      "clientVisibilityRule": "No unapproved advice reaches the client"
+    },
+    {
+      "manualTaskId": "MT-007",
+      "userWorkflow": "UF-07",
+      "workflow": "W-07",
+      "pageflow": "PF-E",
+      "routes": [
+        "/signals",
+        "/workbench",
+        "/workbench/triggers/demo",
+        "/actions"
+      ],
+      "requiredData": [
+        "signal ID",
+        "missing beneficial owner",
+        "purpose of wire",
+        "source of funds",
+        "analyst note",
+        "route decision"
+      ],
+      "status": "E4 demo-state executable for J01 subset; not fully governed across all signals.",
+      "clientVisibilityRule": "No unapproved advice reaches the client"
+    },
+    {
+      "manualTaskId": "MT-008",
+      "userWorkflow": "UF-08",
+      "workflow": "W-08",
+      "pageflow": "PF-E",
+      "routes": [
+        "/advisor-approval",
+        "/advisor-approval/demo"
+      ],
+      "requiredData": [
+        "recommendation ID",
+        "advisor decision",
+        "rationale",
+        "conditions",
+        "escalation reason"
+      ],
+      "status": "E4 for J01 advisor action; advisor approval is explicitly not client visibility.",
+      "clientVisibilityRule": "No unapproved advice reaches the client"
+    },
+    {
+      "manualTaskId": "MT-009",
+      "userWorkflow": "UF-09",
+      "workflow": "W-09",
+      "pageflow": "PF-F",
+      "routes": [
+        "/compliance",
+        "/compliance/demo/review",
+        "/compliance/demo/release",
+        "/compliance/demo/block",
+        "/compliance/demo/audit"
+      ],
+      "requiredData": [
+        "classification",
+        "evidence completeness",
+        "risk disclosure check",
+        "release note",
+        "block reason",
+        "requested evidence",
+        "owner"
+      ],
+      "status": "E3/E4 mixed demo states; broad release transaction is still a top implementation gap.",
+      "clientVisibilityRule": "Compliance release controls client visibility"
+    },
+    {
+      "manualTaskId": "MT-010",
+      "userWorkflow": "UF-10",
+      "workflow": "W-10",
+      "pageflow": "PF-F",
+      "routes": [
+        "/decisions",
+        "/decisions/demo",
+        "/decisions/demo/success",
+        "/evidence/demo"
+      ],
+      "requiredData": [
+        "decision choice",
+        "participant acknowledgement",
+        "comment",
+        "request-more-information reason"
+      ],
+      "status": "E3 navigable UI with demo workflow actions; final decision/evidence package persistence remains incomplete.",
+      "clientVisibilityRule": "No unapproved advice reaches the client"
+    },
+    {
+      "manualTaskId": "MT-011",
+      "userWorkflow": "UF-11",
+      "workflow": "W-11",
+      "pageflow": "PF-I",
+      "routes": [
+        "/evidence",
+        "/evidence/demo",
+        "/governance/audit-history",
+        "/export/new",
+        "/export/demo/scope",
+        "/export/demo/redaction",
+        "/export/demo/preview",
+        "/export/demo/download"
+      ],
+      "requiredData": [
+        "evidence search/filter",
+        "export type",
+        "scope items",
+        "redaction profile",
+        "recipient/share expiry",
+        "approval reason"
+      ],
+      "status": "E3 visual/navigable; export package/file/share realism is a Phase 18 gap.",
+      "clientVisibilityRule": "No unapproved advice reaches the client"
+    },
+    {
+      "manualTaskId": "MT-012",
+      "userWorkflow": "UF-12",
+      "workflow": "W-12",
+      "pageflow": "PF-G",
+      "routes": [
+        "/governance/users",
+        "/governance/roles",
+        "/governance/access-requests",
+        "/governance/audit-history"
+      ],
+      "requiredData": [
+        "user email",
+        "role",
+        "permission scope",
+        "change reason",
+        "confirmation phrase",
+        "access decision",
+        "comment"
+      ],
+      "status": "E3/E4 demo actions visible; governed role/access transactions remain incomplete.",
+      "clientVisibilityRule": "No unapproved advice reaches the client"
+    },
+    {
+      "manualTaskId": "MT-013",
+      "userWorkflow": "UF-13",
+      "workflow": "W-13",
+      "pageflow": "PF-H",
+      "routes": [
+        "/communication",
+        "/communication/call-trigger",
+        "/evidence"
+      ],
+      "requiredData": [
+        "channel",
+        "recipient",
+        "message/call notes",
+        "sensitivity",
+        "reason for escalation",
+        "follow-up owner"
+      ],
+      "status": "E2/E3 mostly static communication surfaces; message/call persistence not claimed.",
+      "clientVisibilityRule": "No unapproved advice reaches the client"
+    },
+    {
+      "manualTaskId": "MT-014",
+      "userWorkflow": "UF-14",
+      "workflow": "W-14",
+      "pageflow": "PF-J",
+      "routes": [
+        "/ops/queues",
+        "/ops/sla",
+        "/service-blueprint",
+        "/roadmap",
+        "/states"
+      ],
+      "requiredData": [
+        "queue filter",
+        "SLA threshold",
+        "owner",
+        "roadmap scope",
+        "state/badge reference"
+      ],
+      "status": "E2/E3 reference and dashboard surfaces; queue/SLA mutation not yet implemented.",
+      "clientVisibilityRule": "No unapproved advice reaches the client"
+    }
+  ],
+  "procedureCards": [
+    {
+      "manualTaskId": "MT-001",
+      "title": "Configure the platform policy baseline",
+      "audience": "Platform Admin / Compliance / Security Officer",
+      "entry": "Platform Settings",
+      "routes": [
+        "/admin/platform",
+        "/admin/policies/advice-boundary",
+        "/admin/roles",
+        "/admin/security",
+        "/admin/evidence-templates",
+        "/admin/export-templates"
+      ],
+      "requiredData": [
+        "Platform name",
+        "retention default",
+        "MFA/session defaults",
+        "advice classification rules",
+        "role template changes",
+        "evidence and export template settings"
+      ],
+      "expectedResult": "Policy baseline is reviewed; sensitive changes require confirmation and audit.",
+      "status": "E3 navigable UI with visible policy states; broad persisted policy transactions are not claimed."
+    },
+    {
+      "manualTaskId": "MT-002",
+      "title": "Create and prepare a client tenant",
+      "audience": "Admin / Client Success / Compliance",
+      "entry": "Tenant List",
+      "routes": [
+        "/admin/tenants",
+        "/tenants/new",
+        "/tenants/demo/setup",
+        "/tenants/demo/team",
+        "/tenants/demo/policies",
+        "/tenants/demo/users"
+      ],
+      "requiredData": [
+        "family office name",
+        "jurisdiction",
+        "service tier",
+        "advisor",
+        "analyst",
+        "compliance owner",
+        "client success owner",
+        "tenant policy profile",
+        "principal invitation"
+      ],
+      "expectedResult": "Tenant setup checklist shows whether activation gates are ready or blocked.",
+      "status": "E3 navigable UI; tenant write workflow is a required input-mask slice, not yet fully governed."
+    },
+    {
+      "manualTaskId": "MT-003",
+      "title": "Accept an invitation and complete onboarding",
+      "audience": "Invited User",
+      "entry": "Invitation Acceptance",
+      "routes": [
+        "/onboarding/invite",
+        "/onboarding/identity",
+        "/mfa",
+        "/onboarding/consent",
+        "/onboarding/role-confirmation",
+        "/login"
+      ],
+      "requiredData": [
+        "invite token",
+        "name",
+        "email confirmation",
+        "MFA method",
+        "consent version",
+        "role acknowledgement"
+      ],
+      "expectedResult": "User reaches role confirmation; production auth remains intentionally deferred.",
+      "status": "E2/E3 visual and navigable onboarding surfaces; no real authentication claim."
+    },
+    {
+      "manualTaskId": "MT-004",
+      "title": "Submit client profile and family context",
+      "audience": "Principal / Family CFO",
+      "entry": "Client Web Dashboard",
+      "routes": [
+        "/portal",
+        "/client/profile",
+        "/client/family-members",
+        "/relationships"
+      ],
+      "requiredData": [
+        "family profile",
+        "governance preferences",
+        "family member details",
+        "relationship type",
+        "ownership or beneficiary links",
+        "missing-evidence notes"
+      ],
+      "expectedResult": "Profile and relationship context is visible with conflicts or missing evidence flagged.",
+      "status": "E3 navigable UI with static/demo data; profile persistence is a P0/P1 implementation need."
+    },
+    {
+      "manualTaskId": "MT-005",
+      "title": "Create an entity and review wealth structure",
+      "audience": "Principal / Family CFO / Analyst / Advisor",
+      "entry": "Entity List",
+      "routes": [
+        "/entities",
+        "/entities/new",
+        "/entities/demo",
+        "/wealth-map",
+        "/actions"
+      ],
+      "requiredData": [
+        "entity type",
+        "entity name",
+        "jurisdiction",
+        "participants",
+        "asset link",
+        "document evidence",
+        "action owner",
+        "readiness state"
+      ],
+      "expectedResult": "Entity detail, wealth-map drawer, and action-board blockers show what must happen next.",
+      "status": "E3 navigable UI; entity/action mutations and evidence gate need transaction wiring."
+    },
+    {
+      "manualTaskId": "MT-006",
+      "title": "Upload and verify a document",
+      "audience": "Client / Family CFO / External Advisor / Analyst",
+      "entry": "Documents List",
+      "routes": [
+        "/documents",
+        "/documents/upload",
+        "/documents/extraction-review",
+        "/documents/verification-pending"
+      ],
+      "requiredData": [
+        "document file",
+        "document type",
+        "entity/asset link",
+        "sensitivity",
+        "notes",
+        "corrected extracted values",
+        "confidence override"
+      ],
+      "expectedResult": "Document reaches verification-pending or needs-clarification state.",
+      "status": "E3 navigable UI; no real file storage/extraction transaction is claimed."
+    },
+    {
+      "manualTaskId": "MT-007",
+      "title": "Process a signal and route internal work",
+      "audience": "Analyst",
+      "entry": "Signal Review",
+      "routes": [
+        "/signals",
+        "/workbench",
+        "/workbench/triggers/demo",
+        "/actions"
+      ],
+      "requiredData": [
+        "signal ID",
+        "missing beneficial owner",
+        "purpose of wire",
+        "source of funds",
+        "analyst note",
+        "route decision"
+      ],
+      "expectedResult": "Trigger moves toward awaiting information or advisor review while staying internal-only.",
+      "status": "E4 demo-state executable for J01 subset; not fully governed across all signals."
+    },
+    {
+      "manualTaskId": "MT-008",
+      "title": "Review an advisor approval package",
+      "audience": "Senior Wealth Advisor",
+      "entry": "Advisor Approval Queue",
+      "routes": [
+        "/advisor-approval",
+        "/advisor-approval/demo"
+      ],
+      "requiredData": [
+        "recommendation ID",
+        "advisor decision",
+        "rationale",
+        "conditions",
+        "escalation reason"
+      ],
+      "expectedResult": "Advisor decision is recorded or routed; compliance release remains required.",
+      "status": "E4 for J01 advisor action; advisor approval is explicitly not client visibility."
+    },
+    {
+      "manualTaskId": "MT-009",
+      "title": "Release, block, or request evidence for advice-like content",
+      "audience": "Compliance Officer",
+      "entry": "Compliance Queue",
+      "routes": [
+        "/compliance",
+        "/compliance/demo/review",
+        "/compliance/demo/release",
+        "/compliance/demo/block",
+        "/compliance/demo/audit"
+      ],
+      "requiredData": [
+        "classification",
+        "evidence completeness",
+        "risk disclosure check",
+        "release note",
+        "block reason",
+        "requested evidence",
+        "owner"
+      ],
+      "expectedResult": "Release, block, or evidence-request state is visible; no unapproved advice reaches the client.",
+      "status": "E3/E4 mixed demo states; broad release transaction is still a top implementation gap."
+    },
+    {
+      "manualTaskId": "MT-010",
+      "title": "Review and submit a released client decision",
+      "audience": "Principal / Family Council / Trustee scoped",
+      "entry": "Decision List",
+      "routes": [
+        "/decisions",
+        "/decisions/demo",
+        "/decisions/demo/success",
+        "/evidence/demo"
+      ],
+      "requiredData": [
+        "decision choice",
+        "participant acknowledgement",
+        "comment",
+        "request-more-information reason"
+      ],
+      "expectedResult": "Decision success page and linked evidence record show the completion proof.",
+      "status": "E3 navigable UI with demo workflow actions; final decision/evidence package persistence remains incomplete."
+    },
+    {
+      "manualTaskId": "MT-011",
+      "title": "Review evidence and create a controlled export",
+      "audience": "Client / Advisor / Compliance / Privacy Officer",
+      "entry": "Evidence Vault / Create Export",
+      "routes": [
+        "/evidence",
+        "/evidence/demo",
+        "/governance/audit-history",
+        "/export/new",
+        "/export/demo/scope",
+        "/export/demo/redaction",
+        "/export/demo/preview",
+        "/export/demo/download"
+      ],
+      "requiredData": [
+        "evidence search/filter",
+        "export type",
+        "scope items",
+        "redaction profile",
+        "recipient/share expiry",
+        "approval reason"
+      ],
+      "expectedResult": "Export package is previewed/downloaded only if scope, redaction, permission, and approval allow it.",
+      "status": "E3 visual/navigable; export package/file/share realism is a Phase 18 gap."
+    },
+    {
+      "manualTaskId": "MT-012",
+      "title": "Manage governance users, roles, and access requests",
+      "audience": "Principal / Admin / Compliance / Security",
+      "entry": "Governance Users",
+      "routes": [
+        "/governance/users",
+        "/governance/roles",
+        "/governance/access-requests",
+        "/governance/audit-history"
+      ],
+      "requiredData": [
+        "user email",
+        "role",
+        "permission scope",
+        "change reason",
+        "confirmation phrase",
+        "access decision",
+        "comment"
+      ],
+      "expectedResult": "Access request is approved/denied/escalated and audit history shows lineage.",
+      "status": "E3/E4 demo actions visible; governed role/access transactions remain incomplete."
+    },
+    {
+      "manualTaskId": "MT-013",
+      "title": "Choose a communication or escalation path",
+      "audience": "Advisor / Client Success / Client",
+      "entry": "Communication Centre",
+      "routes": [
+        "/communication",
+        "/communication/call-trigger",
+        "/evidence"
+      ],
+      "requiredData": [
+        "channel",
+        "recipient",
+        "message/call notes",
+        "sensitivity",
+        "reason for escalation",
+        "follow-up owner"
+      ],
+      "expectedResult": "Communication path or call-trigger state is visible and linked to evidence when material.",
+      "status": "E2/E3 mostly static communication surfaces; message/call persistence not claimed."
+    },
+    {
+      "manualTaskId": "MT-014",
+      "title": "Monitor operations, SLA, and reference state",
+      "audience": "Ops / Product / QA / Leads",
+      "entry": "Ops Queues",
+      "routes": [
+        "/ops/queues",
+        "/ops/sla",
+        "/service-blueprint",
+        "/roadmap",
+        "/states"
+      ],
+      "requiredData": [
+        "queue filter",
+        "SLA threshold",
+        "owner",
+        "roadmap scope",
+        "state/badge reference"
+      ],
+      "expectedResult": "Bottlenecks, SLA breaches, roadmap scope, and state language are visible for internal use.",
+      "status": "E2/E3 reference and dashboard surfaces; queue/SLA mutation not yet implemented."
+    }
+  ],
+  "steps": [
+    {
+      "manualTaskId": "MT-001",
+      "step": 1,
+      "uiLocation": "/admin/platform",
+      "action": "Open start screen and verify role/tenant context",
+      "screenshotId": "SS-01-01",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-001",
+      "step": 2,
+      "uiLocation": "/admin/policies/advice-boundary",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-01-02",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-001",
+      "step": 3,
+      "uiLocation": "/admin/roles",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-01-03",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-001",
+      "step": 4,
+      "uiLocation": "/admin/security",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-01-04",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-001",
+      "step": 5,
+      "uiLocation": "/admin/evidence-templates",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-01-05",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-001",
+      "step": 6,
+      "uiLocation": "/admin/export-templates",
+      "action": "Review final state or blocked condition",
+      "screenshotId": "SS-01-06",
+      "expectedResult": "Policy baseline is reviewed; sensitive changes require confirmation and audit."
+    },
+    {
+      "manualTaskId": "MT-002",
+      "step": 1,
+      "uiLocation": "/admin/tenants",
+      "action": "Open start screen and verify role/tenant context",
+      "screenshotId": "SS-02-01",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-002",
+      "step": 2,
+      "uiLocation": "/tenants/new",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-02-02",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-002",
+      "step": 3,
+      "uiLocation": "/tenants/demo/setup",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-02-03",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-002",
+      "step": 4,
+      "uiLocation": "/tenants/demo/team",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-02-04",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-002",
+      "step": 5,
+      "uiLocation": "/tenants/demo/policies",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-02-05",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-002",
+      "step": 6,
+      "uiLocation": "/tenants/demo/users",
+      "action": "Review final state or blocked condition",
+      "screenshotId": "SS-02-06",
+      "expectedResult": "Tenant setup checklist shows whether activation gates are ready or blocked."
+    },
+    {
+      "manualTaskId": "MT-003",
+      "step": 1,
+      "uiLocation": "/onboarding/invite",
+      "action": "Open start screen and verify role/tenant context",
+      "screenshotId": "SS-03-01",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-003",
+      "step": 2,
+      "uiLocation": "/onboarding/identity",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-03-02",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-003",
+      "step": 3,
+      "uiLocation": "/mfa",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-03-03",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-003",
+      "step": 4,
+      "uiLocation": "/onboarding/consent",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-03-04",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-003",
+      "step": 5,
+      "uiLocation": "/onboarding/role-confirmation",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-03-05",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-003",
+      "step": 6,
+      "uiLocation": "/login",
+      "action": "Review final state or blocked condition",
+      "screenshotId": "SS-03-06",
+      "expectedResult": "User reaches role confirmation; production auth remains intentionally deferred."
+    },
+    {
+      "manualTaskId": "MT-004",
+      "step": 1,
+      "uiLocation": "/portal",
+      "action": "Open start screen and verify role/tenant context",
+      "screenshotId": "SS-04-01",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-004",
+      "step": 2,
+      "uiLocation": "/client/profile",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-04-02",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-004",
+      "step": 3,
+      "uiLocation": "/client/family-members",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-04-03",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-004",
+      "step": 4,
+      "uiLocation": "/relationships",
+      "action": "Review final state or blocked condition",
+      "screenshotId": "SS-04-04",
+      "expectedResult": "Profile and relationship context is visible with conflicts or missing evidence flagged."
+    },
+    {
+      "manualTaskId": "MT-005",
+      "step": 1,
+      "uiLocation": "/entities",
+      "action": "Open start screen and verify role/tenant context",
+      "screenshotId": "SS-05-01",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-005",
+      "step": 2,
+      "uiLocation": "/entities/new",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-05-02",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-005",
+      "step": 3,
+      "uiLocation": "/entities/demo",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-05-03",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-005",
+      "step": 4,
+      "uiLocation": "/wealth-map",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-05-04",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-005",
+      "step": 5,
+      "uiLocation": "/actions",
+      "action": "Review final state or blocked condition",
+      "screenshotId": "SS-05-05",
+      "expectedResult": "Entity detail, wealth-map drawer, and action-board blockers show what must happen next."
+    },
+    {
+      "manualTaskId": "MT-006",
+      "step": 1,
+      "uiLocation": "/documents",
+      "action": "Open start screen and verify role/tenant context",
+      "screenshotId": "SS-06-01",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-006",
+      "step": 2,
+      "uiLocation": "/documents/upload",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-06-02",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-006",
+      "step": 3,
+      "uiLocation": "/documents/extraction-review",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-06-03",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-006",
+      "step": 4,
+      "uiLocation": "/documents/verification-pending",
+      "action": "Review final state or blocked condition",
+      "screenshotId": "SS-06-04",
+      "expectedResult": "Document reaches verification-pending or needs-clarification state."
+    },
+    {
+      "manualTaskId": "MT-007",
+      "step": 1,
+      "uiLocation": "/signals",
+      "action": "Open start screen and verify role/tenant context",
+      "screenshotId": "SS-07-01",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-007",
+      "step": 2,
+      "uiLocation": "/workbench",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-07-02",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-007",
+      "step": 3,
+      "uiLocation": "/workbench/triggers/demo",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-07-03",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-007",
+      "step": 4,
+      "uiLocation": "/actions",
+      "action": "Review final state or blocked condition",
+      "screenshotId": "SS-07-04",
+      "expectedResult": "Trigger moves toward awaiting information or advisor review while staying internal-only."
+    },
+    {
+      "manualTaskId": "MT-008",
+      "step": 1,
+      "uiLocation": "/advisor-approval",
+      "action": "Open start screen and verify role/tenant context",
+      "screenshotId": "SS-08-01",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-008",
+      "step": 2,
+      "uiLocation": "/advisor-approval/demo",
+      "action": "Review final state or blocked condition",
+      "screenshotId": "SS-08-02",
+      "expectedResult": "Advisor decision is recorded or routed; compliance release remains required."
+    },
+    {
+      "manualTaskId": "MT-009",
+      "step": 1,
+      "uiLocation": "/compliance",
+      "action": "Open start screen and verify role/tenant context",
+      "screenshotId": "SS-09-01",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-009",
+      "step": 2,
+      "uiLocation": "/compliance/demo/review",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-09-02",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-009",
+      "step": 3,
+      "uiLocation": "/compliance/demo/release",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-09-03",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-009",
+      "step": 4,
+      "uiLocation": "/compliance/demo/block",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-09-04",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-009",
+      "step": 5,
+      "uiLocation": "/compliance/demo/audit",
+      "action": "Review final state or blocked condition",
+      "screenshotId": "SS-09-05",
+      "expectedResult": "Release, block, or evidence-request state is visible; no unapproved advice reaches the client."
+    },
+    {
+      "manualTaskId": "MT-010",
+      "step": 1,
+      "uiLocation": "/decisions",
+      "action": "Open start screen and verify role/tenant context",
+      "screenshotId": "SS-10-01",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-010",
+      "step": 2,
+      "uiLocation": "/decisions/demo",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-10-02",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-010",
+      "step": 3,
+      "uiLocation": "/decisions/demo/success",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-10-03",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-010",
+      "step": 4,
+      "uiLocation": "/evidence/demo",
+      "action": "Review final state or blocked condition",
+      "screenshotId": "SS-10-04",
+      "expectedResult": "Decision success page and linked evidence record show the completion proof."
+    },
+    {
+      "manualTaskId": "MT-011",
+      "step": 1,
+      "uiLocation": "/evidence",
+      "action": "Open start screen and verify role/tenant context",
+      "screenshotId": "SS-11-01",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-011",
+      "step": 2,
+      "uiLocation": "/evidence/demo",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-11-02",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-011",
+      "step": 3,
+      "uiLocation": "/governance/audit-history",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-11-03",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-011",
+      "step": 4,
+      "uiLocation": "/export/new",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-11-04",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-011",
+      "step": 5,
+      "uiLocation": "/export/demo/scope",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-11-05",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-011",
+      "step": 6,
+      "uiLocation": "/export/demo/redaction",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-11-06",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-011",
+      "step": 7,
+      "uiLocation": "/export/demo/preview",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-11-07",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-011",
+      "step": 8,
+      "uiLocation": "/export/demo/download",
+      "action": "Review final state or blocked condition",
+      "screenshotId": "SS-11-08",
+      "expectedResult": "Export package is previewed/downloaded only if scope, redaction, permission, and approval allow it."
+    },
+    {
+      "manualTaskId": "MT-012",
+      "step": 1,
+      "uiLocation": "/governance/users",
+      "action": "Open start screen and verify role/tenant context",
+      "screenshotId": "SS-12-01",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-012",
+      "step": 2,
+      "uiLocation": "/governance/roles",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-12-02",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-012",
+      "step": 3,
+      "uiLocation": "/governance/access-requests",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-12-03",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-012",
+      "step": 4,
+      "uiLocation": "/governance/audit-history",
+      "action": "Review final state or blocked condition",
+      "screenshotId": "SS-12-04",
+      "expectedResult": "Access request is approved/denied/escalated and audit history shows lineage."
+    },
+    {
+      "manualTaskId": "MT-013",
+      "step": 1,
+      "uiLocation": "/communication",
+      "action": "Open start screen and verify role/tenant context",
+      "screenshotId": "SS-13-01",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-013",
+      "step": 2,
+      "uiLocation": "/communication/call-trigger",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-13-02",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-013",
+      "step": 3,
+      "uiLocation": "/evidence",
+      "action": "Review final state or blocked condition",
+      "screenshotId": "SS-13-03",
+      "expectedResult": "Communication path or call-trigger state is visible and linked to evidence when material."
+    },
+    {
+      "manualTaskId": "MT-014",
+      "step": 1,
+      "uiLocation": "/ops/queues",
+      "action": "Open start screen and verify role/tenant context",
+      "screenshotId": "SS-14-01",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-014",
+      "step": 2,
+      "uiLocation": "/ops/sla",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-14-02",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-014",
+      "step": 3,
+      "uiLocation": "/service-blueprint",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-14-03",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-014",
+      "step": 4,
+      "uiLocation": "/roadmap",
+      "action": "Select next visible workflow action or navigation item",
+      "screenshotId": "SS-14-04",
+      "expectedResult": "Next workflow state is visible"
+    },
+    {
+      "manualTaskId": "MT-014",
+      "step": 5,
+      "uiLocation": "/states",
+      "action": "Review final state or blocked condition",
+      "screenshotId": "SS-14-05",
+      "expectedResult": "Bottlenecks, SLA breaches, roadmap scope, and state language are visible for internal use."
+    }
+  ],
+  "screenshots": [
+    {
+      "screenshotId": "SS-PAGE-001",
+      "pageId": "001",
+      "title": "Authentication Login",
+      "route": "/login",
+      "group": "Access",
+      "userWorkflow": "UF-03",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-001-login.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-002",
+      "pageId": "002",
+      "title": "Multi-Factor Authentication",
+      "route": "/mfa",
+      "group": "Access",
+      "userWorkflow": "UF-03",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-002-mfa.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-003",
+      "pageId": "003",
+      "title": "Invitation Acceptance",
+      "route": "/onboarding/invite",
+      "group": "Access",
+      "userWorkflow": "UF-03",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-003-onboarding-invite.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-004",
+      "pageId": "004",
+      "title": "Identity Setup",
+      "route": "/onboarding/identity",
+      "group": "Access",
+      "userWorkflow": "UF-03",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-004-onboarding-identity.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-005",
+      "pageId": "005",
+      "title": "Consent and Privacy",
+      "route": "/onboarding/consent",
+      "group": "Access",
+      "userWorkflow": "UF-03",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-005-onboarding-consent.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-006",
+      "pageId": "006",
+      "title": "Role Confirmation",
+      "route": "/onboarding/role-confirmation",
+      "group": "Access",
+      "userWorkflow": "UF-03",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-006-onboarding-role-confirmation.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-007",
+      "pageId": "007",
+      "title": "Platform Settings",
+      "route": "/admin/platform?state=confirm",
+      "group": "Platform",
+      "userWorkflow": "UF-01",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-007-admin-platform.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-008",
+      "pageId": "008",
+      "title": "Advice Boundary Policy",
+      "route": "/admin/policies/advice-boundary",
+      "group": "Platform",
+      "userWorkflow": "UF-01",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-008-admin-policies-advice-boundary.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-009",
+      "pageId": "009",
+      "title": "Global Role Templates",
+      "route": "/admin/roles?state=permission",
+      "group": "Platform",
+      "userWorkflow": "UF-01",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-009-admin-roles.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-010",
+      "pageId": "010",
+      "title": "Security Configuration",
+      "route": "/admin/security?state=confirm",
+      "group": "Platform",
+      "userWorkflow": "UF-01",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-010-admin-security.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-011",
+      "pageId": "011",
+      "title": "Evidence Templates",
+      "route": "/admin/evidence-templates",
+      "group": "Platform",
+      "userWorkflow": "UF-01",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-011-admin-evidence-templates.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-012",
+      "pageId": "012",
+      "title": "Export Templates and Redaction",
+      "route": "/admin/export-templates",
+      "group": "Platform",
+      "userWorkflow": "UF-01",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-012-admin-export-templates.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-013",
+      "pageId": "013",
+      "title": "Tenant List",
+      "route": "/admin/tenants",
+      "group": "Tenant Setup",
+      "userWorkflow": "UF-02",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-013-admin-tenants.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-014",
+      "pageId": "014",
+      "title": "Create Client Tenant",
+      "route": "/tenants/new",
+      "group": "Tenant Setup",
+      "userWorkflow": "UF-02",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-014-tenants-new.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-015",
+      "pageId": "015",
+      "title": "Tenant Setup Dashboard",
+      "route": "/tenants/demo/setup",
+      "group": "Tenant Setup",
+      "userWorkflow": "UF-02",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-015-tenants-id-setup.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-016",
+      "pageId": "016",
+      "title": "Assign AlphaVest Team",
+      "route": "/tenants/demo/team",
+      "group": "Tenant Setup",
+      "userWorkflow": "UF-02",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-016-tenants-id-team.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-017",
+      "pageId": "017",
+      "title": "Tenant Policies",
+      "route": "/tenants/demo/policies",
+      "group": "Tenant Setup",
+      "userWorkflow": "UF-02",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-017-tenants-id-policies.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-018",
+      "pageId": "018",
+      "title": "Tenant Users",
+      "route": "/tenants/demo/users?state=invite",
+      "group": "Tenant Setup",
+      "userWorkflow": "UF-02",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-018-tenants-id-users.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-019",
+      "pageId": "019",
+      "title": "Client Web Dashboard",
+      "route": "/portal",
+      "group": "Client Workspace",
+      "userWorkflow": "UF-04",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-019-portal.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-020",
+      "pageId": "020",
+      "title": "Mobile Home",
+      "route": "/mobile",
+      "group": "Client Workspace",
+      "userWorkflow": "UF-04",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-020-mobile.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-021",
+      "pageId": "021",
+      "title": "Client Profile",
+      "route": "/client/profile",
+      "group": "Client Workspace",
+      "userWorkflow": "UF-04",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-021-client-profile.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-022",
+      "pageId": "022",
+      "title": "Family Members",
+      "route": "/client/family-members",
+      "group": "Client Workspace",
+      "userWorkflow": "UF-04",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-022-client-family-members.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-023",
+      "pageId": "023",
+      "title": "Relationship Map",
+      "route": "/relationships",
+      "group": "Client Workspace",
+      "userWorkflow": "UF-04",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-023-relationships.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-024",
+      "pageId": "024",
+      "title": "Entity List",
+      "route": "/entities",
+      "group": "Client Workspace",
+      "userWorkflow": "UF-05",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-024-entities.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-025",
+      "pageId": "025",
+      "title": "Create Entity",
+      "route": "/entities/new",
+      "group": "Client Workspace",
+      "userWorkflow": "UF-05",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-025-entities-new.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-026",
+      "pageId": "026",
+      "title": "Entity Detail",
+      "route": "/entities/demo",
+      "group": "Client Workspace",
+      "userWorkflow": "UF-05",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-026-entities-id.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-027",
+      "pageId": "027",
+      "title": "Documents List",
+      "route": "/documents",
+      "group": "Client Workspace",
+      "userWorkflow": "UF-06",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-027-documents.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-028",
+      "pageId": "028",
+      "title": "Document Upload",
+      "route": "/documents/upload",
+      "group": "Client Workspace",
+      "userWorkflow": "UF-06",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-028-documents-upload.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-029",
+      "pageId": "029",
+      "title": "Extraction Review",
+      "route": "/documents/extraction-review",
+      "group": "Client Workspace",
+      "userWorkflow": "UF-06",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-029-documents-extraction-review.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-030",
+      "pageId": "030",
+      "title": "Verification Pending",
+      "route": "/documents/verification-pending",
+      "group": "Client Workspace",
+      "userWorkflow": "UF-06",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-030-documents-verification-pending.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-031",
+      "pageId": "031",
+      "title": "Live Wealth Map",
+      "route": "/wealth-map?state=drawer",
+      "group": "Wealth and Actions",
+      "userWorkflow": "UF-05",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-031-wealth-map.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-032",
+      "pageId": "032",
+      "title": "Action Board",
+      "route": "/actions?state=drawer",
+      "group": "Wealth and Actions",
+      "userWorkflow": "UF-05",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-032-actions.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-033",
+      "pageId": "033",
+      "title": "Signal Review",
+      "route": "/signals",
+      "group": "Advisory Workflow",
+      "userWorkflow": "UF-07",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-033-signals.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-034",
+      "pageId": "034",
+      "title": "Consultant Workbench",
+      "route": "/workbench",
+      "group": "Advisory Workflow",
+      "userWorkflow": "UF-07",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-034-workbench.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-035",
+      "pageId": "035",
+      "title": "Trigger Detail",
+      "route": "/workbench/triggers/demo",
+      "group": "Advisory Workflow",
+      "userWorkflow": "UF-07",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-035-workbench-triggers-id.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-036",
+      "pageId": "036",
+      "title": "Advisor Approval Queue",
+      "route": "/advisor-approval",
+      "group": "Advisory Workflow",
+      "userWorkflow": "UF-08",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-036-advisor-approval.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-037",
+      "pageId": "037",
+      "title": "Advisor Approval Detail",
+      "route": "/advisor-approval/demo",
+      "group": "Advisory Workflow",
+      "userWorkflow": "UF-08",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-037-advisor-approval-id.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-038",
+      "pageId": "038",
+      "title": "Compliance Queue",
+      "route": "/compliance",
+      "group": "Advisory Workflow",
+      "userWorkflow": "UF-09",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-038-compliance.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-039",
+      "pageId": "039",
+      "title": "Compliance Review Detail",
+      "route": "/compliance/demo/review",
+      "group": "Advisory Workflow",
+      "userWorkflow": "UF-09",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-039-compliance-id-review.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-040",
+      "pageId": "040",
+      "title": "Release to Client",
+      "route": "/compliance/demo/release?state=release",
+      "group": "Advisory Workflow",
+      "userWorkflow": "UF-09",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-040-compliance-id-release.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-041",
+      "pageId": "041",
+      "title": "Block or Request Evidence",
+      "route": "/compliance/demo/block?state=block",
+      "group": "Advisory Workflow",
+      "userWorkflow": "UF-09",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-041-compliance-id-block.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-042",
+      "pageId": "042",
+      "title": "Compliance Audit",
+      "route": "/compliance/demo/audit",
+      "group": "Advisory Workflow",
+      "userWorkflow": "UF-09",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-042-compliance-id-audit.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-043",
+      "pageId": "043",
+      "title": "Decision List",
+      "route": "/decisions",
+      "group": "Decisions and Evidence",
+      "userWorkflow": "UF-10",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-043-decisions.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-044",
+      "pageId": "044",
+      "title": "Digital Decision Room",
+      "route": "/decisions/demo",
+      "group": "Decisions and Evidence",
+      "userWorkflow": "UF-10",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-044-decisions-id.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-045",
+      "pageId": "045",
+      "title": "Decision Submitted",
+      "route": "/decisions/demo/success",
+      "group": "Decisions and Evidence",
+      "userWorkflow": "UF-10",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-045-decisions-id-success.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-046",
+      "pageId": "046",
+      "title": "Evidence Vault",
+      "route": "/evidence?state=drawer",
+      "group": "Decisions and Evidence",
+      "userWorkflow": "UF-11",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-046-evidence.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-047",
+      "pageId": "047",
+      "title": "Evidence Record Detail",
+      "route": "/evidence/demo",
+      "group": "Decisions and Evidence",
+      "userWorkflow": "UF-11",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-047-evidence-id.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-048",
+      "pageId": "048",
+      "title": "Governance Users",
+      "route": "/governance/users?state=invite",
+      "group": "Governance",
+      "userWorkflow": "UF-12",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-048-governance-users.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-049",
+      "pageId": "049",
+      "title": "Role Management",
+      "route": "/governance/roles?state=confirm",
+      "group": "Governance",
+      "userWorkflow": "UF-12",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-049-governance-roles.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-050",
+      "pageId": "050",
+      "title": "Access Requests",
+      "route": "/governance/access-requests?state=approval",
+      "group": "Governance",
+      "userWorkflow": "UF-12",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-050-governance-access-requests.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-051",
+      "pageId": "051",
+      "title": "Access Audit History",
+      "route": "/governance/audit-history?state=drawer",
+      "group": "Governance",
+      "userWorkflow": "UF-12",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-051-governance-audit-history.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-052",
+      "pageId": "052",
+      "title": "Communication Centre",
+      "route": "/communication",
+      "group": "Communication",
+      "userWorkflow": "UF-13",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-052-communication.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-053",
+      "pageId": "053",
+      "title": "Call Trigger Matrix",
+      "route": "/communication/call-trigger",
+      "group": "Communication",
+      "userWorkflow": "UF-13",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-053-communication-call-trigger.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-054",
+      "pageId": "054",
+      "title": "Create Export",
+      "route": "/export/new",
+      "group": "Export",
+      "userWorkflow": "UF-11",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-054-export-new.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-055",
+      "pageId": "055",
+      "title": "Export Scope Selection",
+      "route": "/export/demo/scope",
+      "group": "Export",
+      "userWorkflow": "UF-11",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-055-export-id-scope.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-056",
+      "pageId": "056",
+      "title": "Export Redaction",
+      "route": "/export/demo/redaction",
+      "group": "Export",
+      "userWorkflow": "UF-11",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-056-export-id-redaction.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-057",
+      "pageId": "057",
+      "title": "Export Preview",
+      "route": "/export/demo/preview?state=approval",
+      "group": "Export",
+      "userWorkflow": "UF-11",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-057-export-id-preview.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-058",
+      "pageId": "058",
+      "title": "Export Download",
+      "route": "/export/demo/download?state=confirm",
+      "group": "Export",
+      "userWorkflow": "UF-11",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-058-export-id-download.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-059",
+      "pageId": "059",
+      "title": "Ops Queues",
+      "route": "/ops/queues",
+      "group": "Operations",
+      "userWorkflow": "UF-14",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-059-ops-queues.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-060",
+      "pageId": "060",
+      "title": "SLA and Escalation",
+      "route": "/ops/sla",
+      "group": "Operations",
+      "userWorkflow": "UF-14",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-060-ops-sla.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-061",
+      "pageId": "061",
+      "title": "Service Blueprint",
+      "route": "/service-blueprint",
+      "group": "Operations",
+      "userWorkflow": "UF-14",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-061-service-blueprint.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-062",
+      "pageId": "062",
+      "title": "Roadmap",
+      "route": "/roadmap",
+      "group": "Operations",
+      "userWorkflow": "UF-14",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-062-roadmap.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-PAGE-063",
+      "pageId": "063",
+      "title": "State Reference",
+      "route": "/states",
+      "group": "Operations",
+      "userWorkflow": "UF-14",
+      "referenceAsset": "public/reference/page_ui_v3/clean_pages/PAGE-063-states.png",
+      "capturedLive": false,
+      "filePath": null,
+      "notes": "Planned shot; live capture not yet registered."
+    },
+    {
+      "screenshotId": "SS-TASK-MT-001",
+      "manualTaskId": "MT-001",
+      "title": "Platform Settings",
+      "route": "/admin/platform?state=confirm",
+      "capturedLive": false,
+      "filePath": "artifacts/user-manual-source/20260616-232615Z/screenshots/ss-task-mt-001-platform-settings.png",
+      "captureStatus": null,
+      "titleVisible": false,
+      "notes": "Capture failed; inspect capture-log."
+    },
+    {
+      "screenshotId": "SS-TASK-MT-002",
+      "manualTaskId": "MT-002",
+      "title": "Tenant List",
+      "route": "/admin/tenants",
+      "capturedLive": false,
+      "filePath": "artifacts/user-manual-source/20260616-232615Z/screenshots/ss-task-mt-002-tenant-list.png",
+      "captureStatus": null,
+      "titleVisible": false,
+      "notes": "Capture failed; inspect capture-log."
+    },
+    {
+      "screenshotId": "SS-TASK-MT-003",
+      "manualTaskId": "MT-003",
+      "title": "Invitation Acceptance",
+      "route": "/onboarding/invite",
+      "capturedLive": false,
+      "filePath": "artifacts/user-manual-source/20260616-232615Z/screenshots/ss-task-mt-003-invitation-acceptance.png",
+      "captureStatus": null,
+      "titleVisible": false,
+      "notes": "Capture failed; inspect capture-log."
+    },
+    {
+      "screenshotId": "SS-TASK-MT-004",
+      "manualTaskId": "MT-004",
+      "title": "Client Web Dashboard",
+      "route": "/portal",
+      "capturedLive": false,
+      "filePath": "artifacts/user-manual-source/20260616-232615Z/screenshots/ss-task-mt-004-client-web-dashboard.png",
+      "captureStatus": null,
+      "titleVisible": false,
+      "notes": "Capture failed; inspect capture-log."
+    },
+    {
+      "screenshotId": "SS-TASK-MT-005",
+      "manualTaskId": "MT-005",
+      "title": "Entity List",
+      "route": "/entities",
+      "capturedLive": false,
+      "filePath": "artifacts/user-manual-source/20260616-232615Z/screenshots/ss-task-mt-005-entity-list.png",
+      "captureStatus": null,
+      "titleVisible": false,
+      "notes": "Capture failed; inspect capture-log."
+    },
+    {
+      "screenshotId": "SS-TASK-MT-006",
+      "manualTaskId": "MT-006",
+      "title": "Documents List",
+      "route": "/documents",
+      "capturedLive": false,
+      "filePath": "artifacts/user-manual-source/20260616-232615Z/screenshots/ss-task-mt-006-documents-list.png",
+      "captureStatus": null,
+      "titleVisible": false,
+      "notes": "Capture failed; inspect capture-log."
+    },
+    {
+      "screenshotId": "SS-TASK-MT-007",
+      "manualTaskId": "MT-007",
+      "title": "Signal Review",
+      "route": "/signals",
+      "capturedLive": false,
+      "filePath": "artifacts/user-manual-source/20260616-232615Z/screenshots/ss-task-mt-007-signal-review.png",
+      "captureStatus": null,
+      "titleVisible": false,
+      "notes": "Capture failed; inspect capture-log."
+    },
+    {
+      "screenshotId": "SS-TASK-MT-008",
+      "manualTaskId": "MT-008",
+      "title": "Advisor Approval Queue",
+      "route": "/advisor-approval",
+      "capturedLive": false,
+      "filePath": "artifacts/user-manual-source/20260616-232615Z/screenshots/ss-task-mt-008-advisor-approval-queue.png",
+      "captureStatus": null,
+      "titleVisible": false,
+      "notes": "Capture failed; inspect capture-log."
+    },
+    {
+      "screenshotId": "SS-TASK-MT-009",
+      "manualTaskId": "MT-009",
+      "title": "Compliance Queue",
+      "route": "/compliance",
+      "capturedLive": false,
+      "filePath": "artifacts/user-manual-source/20260616-232615Z/screenshots/ss-task-mt-009-compliance-queue.png",
+      "captureStatus": null,
+      "titleVisible": false,
+      "notes": "Capture failed; inspect capture-log."
+    },
+    {
+      "screenshotId": "SS-TASK-MT-010",
+      "manualTaskId": "MT-010",
+      "title": "Decision List",
+      "route": "/decisions",
+      "capturedLive": false,
+      "filePath": "artifacts/user-manual-source/20260616-232615Z/screenshots/ss-task-mt-010-decision-list.png",
+      "captureStatus": null,
+      "titleVisible": false,
+      "notes": "Capture failed; inspect capture-log."
+    },
+    {
+      "screenshotId": "SS-TASK-MT-011",
+      "manualTaskId": "MT-011",
+      "title": "Evidence Vault",
+      "route": "/evidence",
+      "capturedLive": false,
+      "filePath": "artifacts/user-manual-source/20260616-232615Z/screenshots/ss-task-mt-011-evidence-vault.png",
+      "captureStatus": null,
+      "titleVisible": false,
+      "notes": "Capture failed; inspect capture-log."
+    },
+    {
+      "screenshotId": "SS-TASK-MT-012",
+      "manualTaskId": "MT-012",
+      "title": "Governance Users",
+      "route": "/governance/users",
+      "capturedLive": false,
+      "filePath": "artifacts/user-manual-source/20260616-232615Z/screenshots/ss-task-mt-012-governance-users.png",
+      "captureStatus": null,
+      "titleVisible": false,
+      "notes": "Capture failed; inspect capture-log."
+    },
+    {
+      "screenshotId": "SS-TASK-MT-013",
+      "manualTaskId": "MT-013",
+      "title": "Communication Centre",
+      "route": "/communication",
+      "capturedLive": false,
+      "filePath": "artifacts/user-manual-source/20260616-232615Z/screenshots/ss-task-mt-013-communication-centre.png",
+      "captureStatus": null,
+      "titleVisible": false,
+      "notes": "Capture failed; inspect capture-log."
+    },
+    {
+      "screenshotId": "SS-TASK-MT-014",
+      "manualTaskId": "MT-014",
+      "title": "Ops Queues",
+      "route": "/ops/queues",
+      "capturedLive": false,
+      "filePath": "artifacts/user-manual-source/20260616-232615Z/screenshots/ss-task-mt-014-ops-queues.png",
+      "captureStatus": null,
+      "titleVisible": false,
+      "notes": "Capture failed; inspect capture-log."
+    },
+    {
+      "screenshotId": "SS-TASK-MT-001",
+      "manualTaskId": "MT-001",
+      "title": "Platform Settings",
+      "route": "/admin/platform?state=confirm",
+      "capturedLive": true,
+      "filePath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-001-platform-settings.png",
+      "captureStatus": 200,
+      "titleVisible": true,
+      "firstHeading": "Platform Settings",
+      "notes": "Representative live screenshot captured from existing dev server."
+    },
+    {
+      "screenshotId": "SS-TASK-MT-002",
+      "manualTaskId": "MT-002",
+      "title": "Tenant List",
+      "route": "/admin/tenants",
+      "capturedLive": true,
+      "filePath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-002-tenant-list.png",
+      "captureStatus": 200,
+      "titleVisible": true,
+      "firstHeading": "Tenant List",
+      "notes": "Representative live screenshot captured from existing dev server."
+    },
+    {
+      "screenshotId": "SS-TASK-MT-003",
+      "manualTaskId": "MT-003",
+      "title": "Invitation Acceptance",
+      "route": "/onboarding/invite",
+      "capturedLive": true,
+      "filePath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-003-invitation-acceptance.png",
+      "captureStatus": 200,
+      "titleVisible": true,
+      "firstHeading": "Invitation Acceptance",
+      "notes": "Representative live screenshot captured from existing dev server."
+    },
+    {
+      "screenshotId": "SS-TASK-MT-004",
+      "manualTaskId": "MT-004",
+      "title": "Client Web Dashboard",
+      "route": "/portal",
+      "capturedLive": true,
+      "filePath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-004-client-web-dashboard.png",
+      "captureStatus": 200,
+      "titleVisible": true,
+      "firstHeading": "Client Web Dashboard",
+      "notes": "Representative live screenshot captured from existing dev server."
+    },
+    {
+      "screenshotId": "SS-TASK-MT-005",
+      "manualTaskId": "MT-005",
+      "title": "Entity List",
+      "route": "/entities",
+      "capturedLive": true,
+      "filePath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-005-entity-list.png",
+      "captureStatus": 200,
+      "titleVisible": true,
+      "firstHeading": "Entity List",
+      "notes": "Representative live screenshot captured from existing dev server."
+    },
+    {
+      "screenshotId": "SS-TASK-MT-006",
+      "manualTaskId": "MT-006",
+      "title": "Documents List",
+      "route": "/documents",
+      "capturedLive": true,
+      "filePath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-006-documents-list.png",
+      "captureStatus": 200,
+      "titleVisible": true,
+      "firstHeading": "Documents List",
+      "notes": "Representative live screenshot captured from existing dev server."
+    },
+    {
+      "screenshotId": "SS-TASK-MT-007",
+      "manualTaskId": "MT-007",
+      "title": "Signal Review",
+      "route": "/signals",
+      "capturedLive": true,
+      "filePath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-007-signal-review.png",
+      "captureStatus": 200,
+      "titleVisible": true,
+      "firstHeading": "Signal Review",
+      "notes": "Representative live screenshot captured from existing dev server."
+    },
+    {
+      "screenshotId": "SS-TASK-MT-008",
+      "manualTaskId": "MT-008",
+      "title": "Advisor Approval Queue",
+      "route": "/advisor-approval",
+      "capturedLive": true,
+      "filePath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-008-advisor-approval-queue.png",
+      "captureStatus": 200,
+      "titleVisible": true,
+      "firstHeading": "Advisor Approval Queue",
+      "notes": "Representative live screenshot captured from existing dev server."
+    },
+    {
+      "screenshotId": "SS-TASK-MT-009",
+      "manualTaskId": "MT-009",
+      "title": "Compliance Queue",
+      "route": "/compliance",
+      "capturedLive": true,
+      "filePath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-009-compliance-queue.png",
+      "captureStatus": 200,
+      "titleVisible": true,
+      "firstHeading": "Compliance Queue",
+      "notes": "Representative live screenshot captured from existing dev server."
+    },
+    {
+      "screenshotId": "SS-TASK-MT-010",
+      "manualTaskId": "MT-010",
+      "title": "Decision List",
+      "route": "/decisions",
+      "capturedLive": true,
+      "filePath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-010-decision-list.png",
+      "captureStatus": 200,
+      "titleVisible": true,
+      "firstHeading": "Decision List",
+      "notes": "Representative live screenshot captured from existing dev server."
+    },
+    {
+      "screenshotId": "SS-TASK-MT-011",
+      "manualTaskId": "MT-011",
+      "title": "Evidence Vault",
+      "route": "/evidence",
+      "capturedLive": true,
+      "filePath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-011-evidence-vault.png",
+      "captureStatus": 200,
+      "titleVisible": true,
+      "firstHeading": "Evidence Vault",
+      "notes": "Representative live screenshot captured from existing dev server."
+    },
+    {
+      "screenshotId": "SS-TASK-MT-012",
+      "manualTaskId": "MT-012",
+      "title": "Governance Users",
+      "route": "/governance/users",
+      "capturedLive": true,
+      "filePath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-012-governance-users.png",
+      "captureStatus": 200,
+      "titleVisible": true,
+      "firstHeading": "Governance Users",
+      "notes": "Representative live screenshot captured from existing dev server."
+    },
+    {
+      "screenshotId": "SS-TASK-MT-013",
+      "manualTaskId": "MT-013",
+      "title": "Communication Centre",
+      "route": "/communication",
+      "capturedLive": true,
+      "filePath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-013-communication-centre.png",
+      "captureStatus": 200,
+      "titleVisible": true,
+      "firstHeading": "Communication Centre",
+      "notes": "Representative live screenshot captured from existing dev server."
+    },
+    {
+      "screenshotId": "SS-TASK-MT-014",
+      "manualTaskId": "MT-014",
+      "title": "Ops Queues",
+      "route": "/ops/queues",
+      "capturedLive": true,
+      "filePath": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-014-ops-queues.png",
+      "captureStatus": 200,
+      "titleVisible": true,
+      "firstHeading": "Ops Queues",
+      "notes": "Representative live screenshot captured from existing dev server."
+    }
+  ],
+  "fields": [
+    {
+      "fieldReferenceId": "F-001",
+      "manualTaskId": "MT-001",
+      "screen": "Platform Settings",
+      "fieldLabel": "Setting key/value",
+      "userMeaning": "Select and change platform defaults",
+      "required": "yes",
+      "type": "select/text",
+      "allowedValues": "Known platform setting; bounded value",
+      "exampleDemoValue": "AlphaVest WealthOS / 7 years / 30 minutes",
+      "validation": "Must be within policy limits",
+      "errorBlockedState": "Second confirmation required",
+      "dataModelMapping": "PolicyDefinition / AuditEvent",
+      "sensitivity": "internal"
+    },
+    {
+      "fieldReferenceId": "F-002",
+      "manualTaskId": "MT-001",
+      "screen": "Advice Boundary Policy",
+      "fieldLabel": "Advice classification",
+      "userMeaning": "Classify information, workflow, guidance, advice-relevant, or advice",
+      "required": "yes",
+      "type": "select/matrix",
+      "allowedValues": "AdviceClassification enum",
+      "exampleDemoValue": "advice_relevant",
+      "validation": "Cannot weaken release rule without reason",
+      "errorBlockedState": "Compliance review required",
+      "dataModelMapping": "PolicyDefinition",
+      "sensitivity": "compliance-sensitive"
+    },
+    {
+      "fieldReferenceId": "F-003",
+      "manualTaskId": "MT-002",
+      "screen": "Create Client Tenant",
+      "fieldLabel": "Client name and jurisdiction",
+      "userMeaning": "Create tenant identity and regulatory context",
+      "required": "yes",
+      "type": "text/select",
+      "allowedValues": "Approved jurisdiction list",
+      "exampleDemoValue": "Northbridge Family Office / Switzerland",
+      "validation": "Required and unique enough for demo",
+      "errorBlockedState": "Duplicate or missing tenant details",
+      "dataModelMapping": "ClientTenant",
+      "sensitivity": "client confidential"
+    },
+    {
+      "fieldReferenceId": "F-004",
+      "manualTaskId": "MT-002",
+      "screen": "Assign AlphaVest Team",
+      "fieldLabel": "Compliance owner",
+      "userMeaning": "Assign accountable release owner",
+      "required": "yes",
+      "type": "user select",
+      "allowedValues": "Users with compliance_officer role",
+      "exampleDemoValue": "Naledi Mokoena",
+      "validation": "Required before active readiness",
+      "errorBlockedState": "Activation remains blocked",
+      "dataModelMapping": "UserRole / ClientTenant",
+      "sensitivity": "internal"
+    },
+    {
+      "fieldReferenceId": "F-005",
+      "manualTaskId": "MT-003",
+      "screen": "Onboarding Invite",
+      "fieldLabel": "Invite token",
+      "userMeaning": "Scope onboarding to one tenant/user",
+      "required": "yes",
+      "type": "token",
+      "allowedValues": "Valid active invitation",
+      "exampleDemoValue": "demo invite token",
+      "validation": "Expired/used token blocks continuation",
+      "errorBlockedState": "Invalid invitation state",
+      "dataModelMapping": "User / ConsentRecord",
+      "sensitivity": "sensitive"
+    },
+    {
+      "fieldReferenceId": "F-006",
+      "manualTaskId": "MT-003",
+      "screen": "Consent",
+      "fieldLabel": "Privacy acknowledgement",
+      "userMeaning": "Record required consent version",
+      "required": "yes",
+      "type": "checkbox/version",
+      "allowedValues": "Active consent policy",
+      "exampleDemoValue": "Privacy Notice v1 accepted",
+      "validation": "All required boxes must be selected",
+      "errorBlockedState": "Cannot continue without consent",
+      "dataModelMapping": "ConsentRecord / AuditEvent",
+      "sensitivity": "legal/privacy"
+    },
+    {
+      "fieldReferenceId": "F-007",
+      "manualTaskId": "MT-004",
+      "screen": "Client Profile",
+      "fieldLabel": "Family profile and objective",
+      "userMeaning": "Capture client context without advice",
+      "required": "yes",
+      "type": "structured text/select",
+      "allowedValues": "Profile taxonomy",
+      "exampleDemoValue": "Morgan Family Office / Family Office Advisory",
+      "validation": "No final advice fields; required basics",
+      "errorBlockedState": "Submitted for review or blocked",
+      "dataModelMapping": "UserProfile / ClientObjective",
+      "sensitivity": "client confidential"
+    },
+    {
+      "fieldReferenceId": "F-008",
+      "manualTaskId": "MT-004",
+      "screen": "Family Members",
+      "fieldLabel": "Family member role",
+      "userMeaning": "Define family role and decision scope",
+      "required": "yes",
+      "type": "select/text",
+      "allowedValues": "Principal, CFO, Trustee, Beneficiary, Next Gen",
+      "exampleDemoValue": "Trustee",
+      "validation": "Must fit tenant scope",
+      "errorBlockedState": "Conflict or missing relationship",
+      "dataModelMapping": "FamilyMember / Relationship",
+      "sensitivity": "personal data"
+    },
+    {
+      "fieldReferenceId": "F-009",
+      "manualTaskId": "MT-005",
+      "screen": "Create Entity",
+      "fieldLabel": "Entity type/name/jurisdiction",
+      "userMeaning": "Create legal/entity structure node",
+      "required": "yes",
+      "type": "select/text",
+      "allowedValues": "EntityType enum and jurisdictions",
+      "exampleDemoValue": "trust / Sunward Trust / Switzerland",
+      "validation": "Sensitive jurisdictions flag review",
+      "errorBlockedState": "Blocked or legal review state",
+      "dataModelMapping": "Entity / EntityParticipant",
+      "sensitivity": "legal entity data"
+    },
+    {
+      "fieldReferenceId": "F-010",
+      "manualTaskId": "MT-006",
+      "screen": "Document Upload",
+      "fieldLabel": "Document file/type/scope",
+      "userMeaning": "Upload source evidence for review",
+      "required": "yes",
+      "type": "file/select",
+      "allowedValues": "Allowed file types and document taxonomy",
+      "exampleDemoValue": "Trust Agreement.pdf / Trust deed",
+      "validation": "Unsupported file or missing scope blocks upload",
+      "errorBlockedState": "Upload error / verification pending",
+      "dataModelMapping": "Document / DocumentVersion",
+      "sensitivity": "confidential"
+    },
+    {
+      "fieldReferenceId": "F-011",
+      "manualTaskId": "MT-006",
+      "screen": "Extraction Review",
+      "fieldLabel": "Corrected extracted value",
+      "userMeaning": "Confirm or correct AI draft data",
+      "required": "conditional",
+      "type": "structured text",
+      "allowedValues": "Extracted payload fields",
+      "exampleDemoValue": "Beneficial owner: Sunward Holdings",
+      "validation": "Required for low confidence",
+      "errorBlockedState": "Needs clarification",
+      "dataModelMapping": "DocumentExtraction / DocumentReview",
+      "sensitivity": "confidential"
+    },
+    {
+      "fieldReferenceId": "F-012",
+      "manualTaskId": "MT-007",
+      "screen": "Signal Review",
+      "fieldLabel": "Analyst route decision",
+      "userMeaning": "Request data, assign, route, dismiss",
+      "required": "yes",
+      "type": "radio/button",
+      "allowedValues": "Request Data / Assign / Route / Dismiss",
+      "exampleDemoValue": "Request Data / Information",
+      "validation": "Must not create client advice",
+      "errorBlockedState": "Internal-only state",
+      "dataModelMapping": "Trigger / ActionItem / AuditEvent",
+      "sensitivity": "internal"
+    },
+    {
+      "fieldReferenceId": "F-013",
+      "manualTaskId": "MT-008",
+      "screen": "Advisor Approval",
+      "fieldLabel": "Advisor decision and rationale",
+      "userMeaning": "Approve, revise, request data, or escalate",
+      "required": "yes",
+      "type": "button/textarea",
+      "allowedValues": "Approve, Revise, Request More Data, Escalate",
+      "exampleDemoValue": "Approve with rationale",
+      "validation": "Approval does not release to client",
+      "errorBlockedState": "Compliance pending",
+      "dataModelMapping": "Approval / Recommendation",
+      "sensitivity": "advice-sensitive"
+    },
+    {
+      "fieldReferenceId": "F-014",
+      "manualTaskId": "MT-009",
+      "screen": "Compliance Review",
+      "fieldLabel": "Release/block decision",
+      "userMeaning": "Determine client visibility",
+      "required": "yes",
+      "type": "radio/textarea",
+      "allowedValues": "Release, Block, Request Evidence",
+      "exampleDemoValue": "Request Evidence",
+      "validation": "Release requires all gates",
+      "errorBlockedState": "Release disabled or blocked",
+      "dataModelMapping": "ComplianceReview / Recommendation / EvidenceRecord",
+      "sensitivity": "release-sensitive"
+    },
+    {
+      "fieldReferenceId": "F-015",
+      "manualTaskId": "MT-010",
+      "screen": "Decision Room",
+      "fieldLabel": "Decision choice",
+      "userMeaning": "Accept, defer, reject, or request more information",
+      "required": "yes",
+      "type": "button/comment",
+      "allowedValues": "Accept, Defer, Reject, Request Info",
+      "exampleDemoValue": "Defer with comment",
+      "validation": "Only released decisions are shown",
+      "errorBlockedState": "Permission or release block",
+      "dataModelMapping": "Decision / DecisionParticipant",
+      "sensitivity": "client-visible"
+    },
+    {
+      "fieldReferenceId": "F-016",
+      "manualTaskId": "MT-011",
+      "screen": "Export Wizard",
+      "fieldLabel": "Scope and redaction profile",
+      "userMeaning": "Control exported data",
+      "required": "yes",
+      "type": "tree/select",
+      "allowedValues": "Allowed objects and redaction profiles",
+      "exampleDemoValue": "Client-visible evidence package",
+      "validation": "Restricted/unredacted data cannot export",
+      "errorBlockedState": "Approval required/block",
+      "dataModelMapping": "ExportRequest / AuditEvent",
+      "sensitivity": "restricted"
+    },
+    {
+      "fieldReferenceId": "F-017",
+      "manualTaskId": "MT-012",
+      "screen": "Governance Role Change",
+      "fieldLabel": "Role/permission/scope/reason",
+      "userMeaning": "Change sensitive access safely",
+      "required": "yes",
+      "type": "select/matrix/textarea",
+      "allowedValues": "Roles and permissions table",
+      "exampleDemoValue": "Portfolio Manager + view performance",
+      "validation": "SOD/second confirmation required",
+      "errorBlockedState": "Confirmation required",
+      "dataModelMapping": "Role / Permission / AccessRequest",
+      "sensitivity": "security-sensitive"
+    },
+    {
+      "fieldReferenceId": "F-018",
+      "manualTaskId": "MT-013",
+      "screen": "Communication Path",
+      "fieldLabel": "Channel, recipient, sensitivity, notes",
+      "userMeaning": "Choose secure message or escalation path",
+      "required": "yes",
+      "type": "select/textarea",
+      "allowedValues": "secure_message, phone, video, in_person",
+      "exampleDemoValue": "Advisor call",
+      "validation": "Advice-like content needs gate",
+      "errorBlockedState": "Compliance hold",
+      "dataModelMapping": "MessageThread / CallEvent",
+      "sensitivity": "communication-sensitive"
+    },
+    {
+      "fieldReferenceId": "F-019",
+      "manualTaskId": "MT-014",
+      "screen": "Ops Queue",
+      "fieldLabel": "Queue filter, owner, status, SLA",
+      "userMeaning": "Monitor internal work",
+      "required": "optional",
+      "type": "filter/select",
+      "allowedValues": "Queue and SLA taxonomy",
+      "exampleDemoValue": "At risk",
+      "validation": "Mutations require owner/status",
+      "errorBlockedState": "Read-only if not implemented",
+      "dataModelMapping": "QueueItem / DataQualityIssue",
+      "sensitivity": "internal"
+    }
+  ],
+  "referenceTerms": [
+    {
+      "referenceId": "REF-001",
+      "term": "Demo session",
+      "meaning": "A non-production role and tenant context used before real authentication.",
+      "source": "lib/demo-session.ts",
+      "whereUsersSeeIt": "Top bar and demo panels",
+      "allows": "Fast role/tenant review",
+      "blocks": "Production-auth claims"
+    },
+    {
+      "referenceId": "REF-002",
+      "term": "No unapproved advice",
+      "meaning": "Advice-like content cannot reach clients until advisor approval, compliance release, evidence, and permission checks pass.",
+      "source": "AGENTS.md; lib/workflow-gate.ts",
+      "whereUsersSeeIt": "Advisor, compliance, decisions, export",
+      "allows": "Safe client visibility",
+      "blocks": "Advisor-only release"
+    },
+    {
+      "referenceId": "REF-003",
+      "term": "Advisor approval",
+      "meaning": "Human advisor review stage that still stays internal.",
+      "source": "WORKFLOW_DEFINITIONS_V3.md",
+      "whereUsersSeeIt": "Advisor Approval Detail",
+      "allows": "Routes package to compliance",
+      "blocks": "Client visibility"
+    },
+    {
+      "referenceId": "REF-004",
+      "term": "Compliance release",
+      "meaning": "Final compliance control for client visibility.",
+      "source": "DATA_MODEL_V3.md; workflow-gate.ts",
+      "whereUsersSeeIt": "Compliance review/release pages",
+      "allows": "Allows released content if all gates pass",
+      "blocks": "Release with missing evidence"
+    },
+    {
+      "referenceId": "REF-005",
+      "term": "Evidence record",
+      "meaning": "Proof package for important actions, decisions, and releases.",
+      "source": "prisma/schema.prisma; evidence-service.ts",
+      "whereUsersSeeIt": "Evidence vault and decision success",
+      "allows": "Traceability",
+      "blocks": "Unsupported advice or export"
+    },
+    {
+      "referenceId": "REF-006",
+      "term": "Audit event",
+      "meaning": "Append-only proof that a sensitive action occurred or was denied.",
+      "source": "prisma/schema.prisma; audit-service.ts",
+      "whereUsersSeeIt": "Audit history/compliance pages",
+      "allows": "Reconstruct lineage",
+      "blocks": "Silent sensitive changes"
+    },
+    {
+      "referenceId": "REF-007",
+      "term": "Redaction",
+      "meaning": "Removal or masking of sensitive fields before export/share.",
+      "source": "export-service.ts; DATA_MODEL_V3.md",
+      "whereUsersSeeIt": "Export redaction and preview",
+      "allows": "Role-safe export",
+      "blocks": "Unredacted external package"
+    },
+    {
+      "referenceId": "REF-008",
+      "term": "Second confirmation",
+      "meaning": "Extra confirmation for sensitive role, policy, manage, revoke, assign, or release actions.",
+      "source": "permission-engine.ts",
+      "whereUsersSeeIt": "Roles, platform, security, release pages",
+      "allows": "Safer sensitive changes",
+      "blocks": "Silent privilege escalation"
+    },
+    {
+      "referenceId": "REF-009",
+      "term": "Restricted state",
+      "meaning": "User can see a blocked/restricted explanation instead of inaccessible data.",
+      "source": "components/ui/state-panel.tsx",
+      "whereUsersSeeIt": "Many workflow pages",
+      "allows": "Clear next step",
+      "blocks": "Data leakage"
+    },
+    {
+      "referenceId": "REF-010",
+      "term": "Reference-only page",
+      "meaning": "Internal documentation/product page, not a client workflow.",
+      "source": "SCREEN_CATALOGUE_V3.md",
+      "whereUsersSeeIt": "Service blueprint, roadmap, states",
+      "allows": "Shared understanding",
+      "blocks": "Client/manual task overclaim"
+    }
+  ],
+  "branches": [
+    {
+      "manualTaskId": "MT-001",
+      "branchId": "MT-001-B1",
+      "condition": "Happy path / intended demo path",
+      "whatUserSees": "The user sees the Platform Settings task context and follows the expected UI sequence.",
+      "whatUserCanDo": "Review, select, enter, or confirm permitted data.",
+      "whatUserCannotDo": "Bypass required gates or tenant/role scope.",
+      "requiredNextStep": "Policy baseline is reviewed; sensitive changes require confirmation and audit.",
+      "screenshotId": "SS-ADMIN-PLATFORM",
+      "sourceProof": "USER_JOURNEY_PLAYBOOK_V3.md; PAGEFLOW_USERFLOW_MAPPING_V3.md"
+    },
+    {
+      "manualTaskId": "MT-001",
+      "branchId": "MT-001-B2",
+      "condition": "Blocked, restricted, or incomplete path",
+      "whatUserSees": "The UI shows a blocked/restricted/missing-evidence state.",
+      "whatUserCanDo": "Review the reason, request evidence, change role, or return to the correct prior step.",
+      "whatUserCannotDo": "Force completion or claim persistence when the app only shows a static/demo state.",
+      "requiredNextStep": "Resolve the missing role, evidence, compliance, or data requirement.",
+      "screenshotId": "SS-ADMIN-POLICIES-ADVICE-BOUNDARY",
+      "sourceProof": "WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md; INPUT_MASK_REQUIREMENTS_V3.md"
+    },
+    {
+      "manualTaskId": "MT-002",
+      "branchId": "MT-002-B1",
+      "condition": "Happy path / intended demo path",
+      "whatUserSees": "The user sees the Tenant List task context and follows the expected UI sequence.",
+      "whatUserCanDo": "Review, select, enter, or confirm permitted data.",
+      "whatUserCannotDo": "Bypass required gates or tenant/role scope.",
+      "requiredNextStep": "Tenant setup checklist shows whether activation gates are ready or blocked.",
+      "screenshotId": "SS-ADMIN-TENANTS",
+      "sourceProof": "USER_JOURNEY_PLAYBOOK_V3.md; PAGEFLOW_USERFLOW_MAPPING_V3.md"
+    },
+    {
+      "manualTaskId": "MT-002",
+      "branchId": "MT-002-B2",
+      "condition": "Blocked, restricted, or incomplete path",
+      "whatUserSees": "The UI shows a blocked/restricted/missing-evidence state.",
+      "whatUserCanDo": "Review the reason, request evidence, change role, or return to the correct prior step.",
+      "whatUserCannotDo": "Force completion or claim persistence when the app only shows a static/demo state.",
+      "requiredNextStep": "Resolve the missing role, evidence, compliance, or data requirement.",
+      "screenshotId": "SS-TENANTS-NEW",
+      "sourceProof": "WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md; INPUT_MASK_REQUIREMENTS_V3.md"
+    },
+    {
+      "manualTaskId": "MT-003",
+      "branchId": "MT-003-B1",
+      "condition": "Happy path / intended demo path",
+      "whatUserSees": "The user sees the Invitation Acceptance task context and follows the expected UI sequence.",
+      "whatUserCanDo": "Review, select, enter, or confirm permitted data.",
+      "whatUserCannotDo": "Bypass required gates or tenant/role scope.",
+      "requiredNextStep": "User reaches role confirmation; production auth remains intentionally deferred.",
+      "screenshotId": "SS-ONBOARDING-INVITE",
+      "sourceProof": "USER_JOURNEY_PLAYBOOK_V3.md; PAGEFLOW_USERFLOW_MAPPING_V3.md"
+    },
+    {
+      "manualTaskId": "MT-003",
+      "branchId": "MT-003-B2",
+      "condition": "Blocked, restricted, or incomplete path",
+      "whatUserSees": "The UI shows a blocked/restricted/missing-evidence state.",
+      "whatUserCanDo": "Review the reason, request evidence, change role, or return to the correct prior step.",
+      "whatUserCannotDo": "Force completion or claim persistence when the app only shows a static/demo state.",
+      "requiredNextStep": "Resolve the missing role, evidence, compliance, or data requirement.",
+      "screenshotId": "SS-ONBOARDING-IDENTITY",
+      "sourceProof": "WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md; INPUT_MASK_REQUIREMENTS_V3.md"
+    },
+    {
+      "manualTaskId": "MT-004",
+      "branchId": "MT-004-B1",
+      "condition": "Happy path / intended demo path",
+      "whatUserSees": "The user sees the Client Web Dashboard task context and follows the expected UI sequence.",
+      "whatUserCanDo": "Review, select, enter, or confirm permitted data.",
+      "whatUserCannotDo": "Bypass required gates or tenant/role scope.",
+      "requiredNextStep": "Profile and relationship context is visible with conflicts or missing evidence flagged.",
+      "screenshotId": "SS-PORTAL",
+      "sourceProof": "USER_JOURNEY_PLAYBOOK_V3.md; PAGEFLOW_USERFLOW_MAPPING_V3.md"
+    },
+    {
+      "manualTaskId": "MT-004",
+      "branchId": "MT-004-B2",
+      "condition": "Blocked, restricted, or incomplete path",
+      "whatUserSees": "The UI shows a blocked/restricted/missing-evidence state.",
+      "whatUserCanDo": "Review the reason, request evidence, change role, or return to the correct prior step.",
+      "whatUserCannotDo": "Force completion or claim persistence when the app only shows a static/demo state.",
+      "requiredNextStep": "Resolve the missing role, evidence, compliance, or data requirement.",
+      "screenshotId": "SS-CLIENT-PROFILE",
+      "sourceProof": "WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md; INPUT_MASK_REQUIREMENTS_V3.md"
+    },
+    {
+      "manualTaskId": "MT-005",
+      "branchId": "MT-005-B1",
+      "condition": "Happy path / intended demo path",
+      "whatUserSees": "The user sees the Entity List task context and follows the expected UI sequence.",
+      "whatUserCanDo": "Review, select, enter, or confirm permitted data.",
+      "whatUserCannotDo": "Bypass required gates or tenant/role scope.",
+      "requiredNextStep": "Entity detail, wealth-map drawer, and action-board blockers show what must happen next.",
+      "screenshotId": "SS-ENTITIES",
+      "sourceProof": "USER_JOURNEY_PLAYBOOK_V3.md; PAGEFLOW_USERFLOW_MAPPING_V3.md"
+    },
+    {
+      "manualTaskId": "MT-005",
+      "branchId": "MT-005-B2",
+      "condition": "Blocked, restricted, or incomplete path",
+      "whatUserSees": "The UI shows a blocked/restricted/missing-evidence state.",
+      "whatUserCanDo": "Review the reason, request evidence, change role, or return to the correct prior step.",
+      "whatUserCannotDo": "Force completion or claim persistence when the app only shows a static/demo state.",
+      "requiredNextStep": "Resolve the missing role, evidence, compliance, or data requirement.",
+      "screenshotId": "SS-ENTITIES-NEW",
+      "sourceProof": "WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md; INPUT_MASK_REQUIREMENTS_V3.md"
+    },
+    {
+      "manualTaskId": "MT-006",
+      "branchId": "MT-006-B1",
+      "condition": "Happy path / intended demo path",
+      "whatUserSees": "The user sees the Documents List task context and follows the expected UI sequence.",
+      "whatUserCanDo": "Review, select, enter, or confirm permitted data.",
+      "whatUserCannotDo": "Bypass required gates or tenant/role scope.",
+      "requiredNextStep": "Document reaches verification-pending or needs-clarification state.",
+      "screenshotId": "SS-DOCUMENTS",
+      "sourceProof": "USER_JOURNEY_PLAYBOOK_V3.md; PAGEFLOW_USERFLOW_MAPPING_V3.md"
+    },
+    {
+      "manualTaskId": "MT-006",
+      "branchId": "MT-006-B2",
+      "condition": "Blocked, restricted, or incomplete path",
+      "whatUserSees": "The UI shows a blocked/restricted/missing-evidence state.",
+      "whatUserCanDo": "Review the reason, request evidence, change role, or return to the correct prior step.",
+      "whatUserCannotDo": "Force completion or claim persistence when the app only shows a static/demo state.",
+      "requiredNextStep": "Resolve the missing role, evidence, compliance, or data requirement.",
+      "screenshotId": "SS-DOCUMENTS-UPLOAD",
+      "sourceProof": "WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md; INPUT_MASK_REQUIREMENTS_V3.md"
+    },
+    {
+      "manualTaskId": "MT-007",
+      "branchId": "MT-007-B1",
+      "condition": "Happy path / intended demo path",
+      "whatUserSees": "The user sees the Signal Review task context and follows the expected UI sequence.",
+      "whatUserCanDo": "Review, select, enter, or confirm permitted data.",
+      "whatUserCannotDo": "Bypass required gates or tenant/role scope.",
+      "requiredNextStep": "Trigger moves toward awaiting information or advisor review while staying internal-only.",
+      "screenshotId": "SS-SIGNALS",
+      "sourceProof": "USER_JOURNEY_PLAYBOOK_V3.md; PAGEFLOW_USERFLOW_MAPPING_V3.md"
+    },
+    {
+      "manualTaskId": "MT-007",
+      "branchId": "MT-007-B2",
+      "condition": "Blocked, restricted, or incomplete path",
+      "whatUserSees": "The UI shows a blocked/restricted/missing-evidence state.",
+      "whatUserCanDo": "Review the reason, request evidence, change role, or return to the correct prior step.",
+      "whatUserCannotDo": "Force completion or claim persistence when the app only shows a static/demo state.",
+      "requiredNextStep": "Resolve the missing role, evidence, compliance, or data requirement.",
+      "screenshotId": "SS-WORKBENCH",
+      "sourceProof": "WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md; INPUT_MASK_REQUIREMENTS_V3.md"
+    },
+    {
+      "manualTaskId": "MT-008",
+      "branchId": "MT-008-B1",
+      "condition": "Happy path / intended demo path",
+      "whatUserSees": "The user sees the Advisor Approval Queue task context and follows the expected UI sequence.",
+      "whatUserCanDo": "Review, select, enter, or confirm permitted data.",
+      "whatUserCannotDo": "Bypass required gates or tenant/role scope.",
+      "requiredNextStep": "Advisor decision is recorded or routed; compliance release remains required.",
+      "screenshotId": "SS-ADVISOR-APPROVAL",
+      "sourceProof": "USER_JOURNEY_PLAYBOOK_V3.md; PAGEFLOW_USERFLOW_MAPPING_V3.md"
+    },
+    {
+      "manualTaskId": "MT-008",
+      "branchId": "MT-008-B2",
+      "condition": "Blocked, restricted, or incomplete path",
+      "whatUserSees": "The UI shows a blocked/restricted/missing-evidence state.",
+      "whatUserCanDo": "Review the reason, request evidence, change role, or return to the correct prior step.",
+      "whatUserCannotDo": "Force completion or claim persistence when the app only shows a static/demo state.",
+      "requiredNextStep": "Resolve the missing role, evidence, compliance, or data requirement.",
+      "screenshotId": "SS-ADVISOR-APPROVAL-DEMO",
+      "sourceProof": "WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md; INPUT_MASK_REQUIREMENTS_V3.md"
+    },
+    {
+      "manualTaskId": "MT-009",
+      "branchId": "MT-009-B1",
+      "condition": "Happy path / intended demo path",
+      "whatUserSees": "The user sees the Compliance Queue task context and follows the expected UI sequence.",
+      "whatUserCanDo": "Review, select, enter, or confirm permitted data.",
+      "whatUserCannotDo": "Bypass required gates or tenant/role scope.",
+      "requiredNextStep": "Release, block, or evidence-request state is visible; no unapproved advice reaches the client.",
+      "screenshotId": "SS-COMPLIANCE",
+      "sourceProof": "USER_JOURNEY_PLAYBOOK_V3.md; PAGEFLOW_USERFLOW_MAPPING_V3.md"
+    },
+    {
+      "manualTaskId": "MT-009",
+      "branchId": "MT-009-B2",
+      "condition": "Blocked, restricted, or incomplete path",
+      "whatUserSees": "The UI shows a blocked/restricted/missing-evidence state.",
+      "whatUserCanDo": "Review the reason, request evidence, change role, or return to the correct prior step.",
+      "whatUserCannotDo": "Force completion or claim persistence when the app only shows a static/demo state.",
+      "requiredNextStep": "Resolve the missing role, evidence, compliance, or data requirement.",
+      "screenshotId": "SS-COMPLIANCE-DEMO-REVIEW",
+      "sourceProof": "WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md; INPUT_MASK_REQUIREMENTS_V3.md"
+    },
+    {
+      "manualTaskId": "MT-010",
+      "branchId": "MT-010-B1",
+      "condition": "Happy path / intended demo path",
+      "whatUserSees": "The user sees the Decision List task context and follows the expected UI sequence.",
+      "whatUserCanDo": "Review, select, enter, or confirm permitted data.",
+      "whatUserCannotDo": "Bypass required gates or tenant/role scope.",
+      "requiredNextStep": "Decision success page and linked evidence record show the completion proof.",
+      "screenshotId": "SS-DECISIONS",
+      "sourceProof": "USER_JOURNEY_PLAYBOOK_V3.md; PAGEFLOW_USERFLOW_MAPPING_V3.md"
+    },
+    {
+      "manualTaskId": "MT-010",
+      "branchId": "MT-010-B2",
+      "condition": "Blocked, restricted, or incomplete path",
+      "whatUserSees": "The UI shows a blocked/restricted/missing-evidence state.",
+      "whatUserCanDo": "Review the reason, request evidence, change role, or return to the correct prior step.",
+      "whatUserCannotDo": "Force completion or claim persistence when the app only shows a static/demo state.",
+      "requiredNextStep": "Resolve the missing role, evidence, compliance, or data requirement.",
+      "screenshotId": "SS-DECISIONS-DEMO",
+      "sourceProof": "WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md; INPUT_MASK_REQUIREMENTS_V3.md"
+    },
+    {
+      "manualTaskId": "MT-011",
+      "branchId": "MT-011-B1",
+      "condition": "Happy path / intended demo path",
+      "whatUserSees": "The user sees the Evidence Vault / Create Export task context and follows the expected UI sequence.",
+      "whatUserCanDo": "Review, select, enter, or confirm permitted data.",
+      "whatUserCannotDo": "Bypass required gates or tenant/role scope.",
+      "requiredNextStep": "Export package is previewed/downloaded only if scope, redaction, permission, and approval allow it.",
+      "screenshotId": "SS-EVIDENCE",
+      "sourceProof": "USER_JOURNEY_PLAYBOOK_V3.md; PAGEFLOW_USERFLOW_MAPPING_V3.md"
+    },
+    {
+      "manualTaskId": "MT-011",
+      "branchId": "MT-011-B2",
+      "condition": "Blocked, restricted, or incomplete path",
+      "whatUserSees": "The UI shows a blocked/restricted/missing-evidence state.",
+      "whatUserCanDo": "Review the reason, request evidence, change role, or return to the correct prior step.",
+      "whatUserCannotDo": "Force completion or claim persistence when the app only shows a static/demo state.",
+      "requiredNextStep": "Resolve the missing role, evidence, compliance, or data requirement.",
+      "screenshotId": "SS-EVIDENCE-DEMO",
+      "sourceProof": "WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md; INPUT_MASK_REQUIREMENTS_V3.md"
+    },
+    {
+      "manualTaskId": "MT-012",
+      "branchId": "MT-012-B1",
+      "condition": "Happy path / intended demo path",
+      "whatUserSees": "The user sees the Governance Users task context and follows the expected UI sequence.",
+      "whatUserCanDo": "Review, select, enter, or confirm permitted data.",
+      "whatUserCannotDo": "Bypass required gates or tenant/role scope.",
+      "requiredNextStep": "Access request is approved/denied/escalated and audit history shows lineage.",
+      "screenshotId": "SS-GOVERNANCE-USERS",
+      "sourceProof": "USER_JOURNEY_PLAYBOOK_V3.md; PAGEFLOW_USERFLOW_MAPPING_V3.md"
+    },
+    {
+      "manualTaskId": "MT-012",
+      "branchId": "MT-012-B2",
+      "condition": "Blocked, restricted, or incomplete path",
+      "whatUserSees": "The UI shows a blocked/restricted/missing-evidence state.",
+      "whatUserCanDo": "Review the reason, request evidence, change role, or return to the correct prior step.",
+      "whatUserCannotDo": "Force completion or claim persistence when the app only shows a static/demo state.",
+      "requiredNextStep": "Resolve the missing role, evidence, compliance, or data requirement.",
+      "screenshotId": "SS-GOVERNANCE-ROLES",
+      "sourceProof": "WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md; INPUT_MASK_REQUIREMENTS_V3.md"
+    },
+    {
+      "manualTaskId": "MT-013",
+      "branchId": "MT-013-B1",
+      "condition": "Happy path / intended demo path",
+      "whatUserSees": "The user sees the Communication Centre task context and follows the expected UI sequence.",
+      "whatUserCanDo": "Review, select, enter, or confirm permitted data.",
+      "whatUserCannotDo": "Bypass required gates or tenant/role scope.",
+      "requiredNextStep": "Communication path or call-trigger state is visible and linked to evidence when material.",
+      "screenshotId": "SS-COMMUNICATION",
+      "sourceProof": "USER_JOURNEY_PLAYBOOK_V3.md; PAGEFLOW_USERFLOW_MAPPING_V3.md"
+    },
+    {
+      "manualTaskId": "MT-013",
+      "branchId": "MT-013-B2",
+      "condition": "Blocked, restricted, or incomplete path",
+      "whatUserSees": "The UI shows a blocked/restricted/missing-evidence state.",
+      "whatUserCanDo": "Review the reason, request evidence, change role, or return to the correct prior step.",
+      "whatUserCannotDo": "Force completion or claim persistence when the app only shows a static/demo state.",
+      "requiredNextStep": "Resolve the missing role, evidence, compliance, or data requirement.",
+      "screenshotId": "SS-COMMUNICATION-CALL-TRIGGER",
+      "sourceProof": "WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md; INPUT_MASK_REQUIREMENTS_V3.md"
+    },
+    {
+      "manualTaskId": "MT-014",
+      "branchId": "MT-014-B1",
+      "condition": "Happy path / intended demo path",
+      "whatUserSees": "The user sees the Ops Queues task context and follows the expected UI sequence.",
+      "whatUserCanDo": "Review, select, enter, or confirm permitted data.",
+      "whatUserCannotDo": "Bypass required gates or tenant/role scope.",
+      "requiredNextStep": "Bottlenecks, SLA breaches, roadmap scope, and state language are visible for internal use.",
+      "screenshotId": "SS-OPS-QUEUES",
+      "sourceProof": "USER_JOURNEY_PLAYBOOK_V3.md; PAGEFLOW_USERFLOW_MAPPING_V3.md"
+    },
+    {
+      "manualTaskId": "MT-014",
+      "branchId": "MT-014-B2",
+      "condition": "Blocked, restricted, or incomplete path",
+      "whatUserSees": "The UI shows a blocked/restricted/missing-evidence state.",
+      "whatUserCanDo": "Review the reason, request evidence, change role, or return to the correct prior step.",
+      "whatUserCannotDo": "Force completion or claim persistence when the app only shows a static/demo state.",
+      "requiredNextStep": "Resolve the missing role, evidence, compliance, or data requirement.",
+      "screenshotId": "SS-OPS-SLA",
+      "sourceProof": "WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md; INPUT_MASK_REQUIREMENTS_V3.md"
+    }
+  ],
+  "implementationStatus": [
+    {
+      "manualTaskId": "MT-001",
+      "status": "E3 navigable UI with visible policy states; broad persisted policy transactions are not claimed."
+    },
+    {
+      "manualTaskId": "MT-002",
+      "status": "E3 navigable UI; tenant write workflow is a required input-mask slice, not yet fully governed."
+    },
+    {
+      "manualTaskId": "MT-003",
+      "status": "E2/E3 visual and navigable onboarding surfaces; no real authentication claim."
+    },
+    {
+      "manualTaskId": "MT-004",
+      "status": "E3 navigable UI with static/demo data; profile persistence is a P0/P1 implementation need."
+    },
+    {
+      "manualTaskId": "MT-005",
+      "status": "E3 navigable UI; entity/action mutations and evidence gate need transaction wiring."
+    },
+    {
+      "manualTaskId": "MT-006",
+      "status": "E3 navigable UI; no real file storage/extraction transaction is claimed."
+    },
+    {
+      "manualTaskId": "MT-007",
+      "status": "E4 demo-state executable for J01 subset; not fully governed across all signals."
+    },
+    {
+      "manualTaskId": "MT-008",
+      "status": "E4 for J01 advisor action; advisor approval is explicitly not client visibility."
+    },
+    {
+      "manualTaskId": "MT-009",
+      "status": "E3/E4 mixed demo states; broad release transaction is still a top implementation gap."
+    },
+    {
+      "manualTaskId": "MT-010",
+      "status": "E3 navigable UI with demo workflow actions; final decision/evidence package persistence remains incomplete."
+    },
+    {
+      "manualTaskId": "MT-011",
+      "status": "E3 visual/navigable; export package/file/share realism is a Phase 18 gap."
+    },
+    {
+      "manualTaskId": "MT-012",
+      "status": "E3/E4 demo actions visible; governed role/access transactions remain incomplete."
+    },
+    {
+      "manualTaskId": "MT-013",
+      "status": "E2/E3 mostly static communication surfaces; message/call persistence not claimed."
+    },
+    {
+      "manualTaskId": "MT-014",
+      "status": "E2/E3 reference and dashboard surfaces; queue/SLA mutation not yet implemented."
+    }
+  ],
+  "gaps": [
+    "Real auth deferred by design",
+    "Most non-J01 workflows are not fully persisted/governed",
+    "File upload/extraction/export package realism incomplete",
+    "Compliance release transaction needs full domain wiring",
+    "Role/tenant permission enforcement remains demo-stage",
+    "Live screenshots still need capture pass"
+  ],
+  "blockedChecks": [
+    {
+      "check": "live screenshot capture",
+      "route": "/admin/platform?state=confirm",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3007/admin/platform?state=confirm\nCall log:\n  - navigating to \"http://127.0.0.1:3007/admin/platform?state=confirm\", waiting until \"load\"\n"
+    },
+    {
+      "check": "live screenshot capture",
+      "route": "/admin/tenants",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3007/admin/tenants\nCall log:\n  - navigating to \"http://127.0.0.1:3007/admin/tenants\", waiting until \"load\"\n"
+    },
+    {
+      "check": "live screenshot capture",
+      "route": "/onboarding/invite",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3007/onboarding/invite\nCall log:\n  - navigating to \"http://127.0.0.1:3007/onboarding/invite\", waiting until \"load\"\n"
+    },
+    {
+      "check": "live screenshot capture",
+      "route": "/portal",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3007/portal\nCall log:\n  - navigating to \"http://127.0.0.1:3007/portal\", waiting until \"load\"\n"
+    },
+    {
+      "check": "live screenshot capture",
+      "route": "/entities",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3007/entities\nCall log:\n  - navigating to \"http://127.0.0.1:3007/entities\", waiting until \"load\"\n"
+    },
+    {
+      "check": "live screenshot capture",
+      "route": "/documents",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3007/documents\nCall log:\n  - navigating to \"http://127.0.0.1:3007/documents\", waiting until \"load\"\n"
+    },
+    {
+      "check": "live screenshot capture",
+      "route": "/signals",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3007/signals\nCall log:\n  - navigating to \"http://127.0.0.1:3007/signals\", waiting until \"load\"\n"
+    },
+    {
+      "check": "live screenshot capture",
+      "route": "/advisor-approval",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3007/advisor-approval\nCall log:\n  - navigating to \"http://127.0.0.1:3007/advisor-approval\", waiting until \"load\"\n"
+    },
+    {
+      "check": "live screenshot capture",
+      "route": "/compliance",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3007/compliance\nCall log:\n  - navigating to \"http://127.0.0.1:3007/compliance\", waiting until \"load\"\n"
+    },
+    {
+      "check": "live screenshot capture",
+      "route": "/decisions",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3007/decisions\nCall log:\n  - navigating to \"http://127.0.0.1:3007/decisions\", waiting until \"load\"\n"
+    },
+    {
+      "check": "live screenshot capture",
+      "route": "/evidence",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3007/evidence\nCall log:\n  - navigating to \"http://127.0.0.1:3007/evidence\", waiting until \"load\"\n"
+    },
+    {
+      "check": "live screenshot capture",
+      "route": "/governance/users",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3007/governance/users\nCall log:\n  - navigating to \"http://127.0.0.1:3007/governance/users\", waiting until \"load\"\n"
+    },
+    {
+      "check": "live screenshot capture",
+      "route": "/communication",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3007/communication\nCall log:\n  - navigating to \"http://127.0.0.1:3007/communication\", waiting until \"load\"\n"
+    },
+    {
+      "check": "live screenshot capture",
+      "route": "/ops/queues",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3007/ops/queues\nCall log:\n  - navigating to \"http://127.0.0.1:3007/ops/queues\", waiting until \"load\"\n"
+    }
+  ],
+  "proofPaths": [
+    "pnpm typecheck",
+    "pnpm lint",
+    "pnpm db:validate",
+    "pnpm visual:contract",
+    "pnpm screencast:dry-run",
+    "pnpm test:route-smoke",
+    "pnpm test:workflow-api",
+    "Live screenshot capture against local Next server",
+    "artifacts/user-manual-source/20260616-232615Z/capture-log.json",
+    "artifacts/user-manual-source/20260616-232649Z/capture-log.json"
+  ],
+  "limitations": [
+    "This is raw manual source, not finished manual prose.",
+    "Screenshot register currently marks planned shots until live capture updates it.",
+    "Evidence levels are conservative and should be upgraded only after current-run tests/browser proof."
+  ]
+}
