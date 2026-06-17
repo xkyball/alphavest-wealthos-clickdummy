@@ -1,0 +1,118 @@
+# package.json script/dependency hints
+
+## _next_docker_context_20260617_175245/root/package.json
+name: alphavest-wealthos-clickdummy
+type: <none>
+packageManager: pnpm@9.15.9
+scripts: {
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start",
+  "lint": "eslint .",
+  "typecheck": "tsc --noEmit",
+  "db:generate": "prisma generate",
+  "db:migrate": "prisma migrate dev",
+  "db:reset": "prisma migrate reset",
+  "db:seed": "prisma db seed",
+  "db:studio": "prisma studio",
+  "db:validate": "prisma validate",
+  "smoke:phase07": "tsx scripts/smoke-phase-07.ts",
+  "smoke:phase08": "tsx scripts/smoke-phase-08.ts",
+  "smoke:phase09": "tsx scripts/smoke-phase-09.ts",
+  "smoke:phase10": "tsx scripts/smoke-phase-10.ts",
+  "smoke:phase11": "tsx scripts/smoke-phase-11.ts",
+  "smoke:phase12": "tsx scripts/smoke-phase-12.ts",
+  "smoke:phase13": "tsx scripts/smoke-phase-13.ts",
+  "visual:contract": "tsx scripts/visual-qa-contract.ts",
+  "visual:strict": "tsx scripts/strict-visual-capture.ts",
+  "screencast:journey": "tsx scripts/screencast/run-journey.ts",
+  "screencast:all": "tsx scripts/screencast/run-all.ts",
+  "screencast:dry-run": "tsx scripts/screencast/run-all.ts --dry-run",
+  "screencast:p0": "tsx scripts/screencast/run-all.ts --manifest=docs/v3/journeys.screencast.p0.v3.json",
+  "screencast:p0:dry-run": "tsx scripts/screencast/run-all.ts --manifest=docs/v3/journeys.screencast.p0.v3.json --dry-run",
+  "screencast:p1": "tsx scripts/screencast/run-all.ts --manifest=docs/v3/journeys.screencast.p1.v3.json",
+  "screencast:p1:dry-run": "tsx scripts/screencast/run-all.ts --manifest=docs/v3/journeys.screencast.p1.v3.json --dry-run",
+  "screencast:p2": "tsx scripts/screencast/run-all.ts --manifest=docs/v3/journeys.screencast.p2.v3.json",
+  "screencast:p2:dry-run": "tsx scripts/screencast/run-all.ts --manifest=docs/v3/journeys.screencast.p2.v3.json --dry-run",
+  "screencast:generate-portfolio": "tsx scripts/screencast/generate-portfolio-manifests.ts",
+  "screencast:seed-journey": "tsx scripts/screencast/seed-journey.ts",
+  "screencast:mp4": "tsx scripts/screencast/render-mp4.ts",
+  "test:data-quality": "playwright test tests/data-quality-service.spec.ts",
+  "test:file-export": "playwright test tests/file-export-realism.spec.ts",
+  "test:playwright": "playwright test",
+  "test:permissions": "playwright test tests/permission-engine.spec.ts",
+  "test:phase-d": "playwright test tests/review-monitoring-service.spec.ts",
+  "test:route-smoke": "playwright test tests/route-smoke.spec.ts",
+  "test:workflow-gate": "playwright test tests/workflow-gate.spec.ts",
+  "test:workflow-api": "playwright test tests/demo-workflow-api.spec.ts",
+  "phase:check": "pnpm typecheck && pnpm lint && pnpm db:validate && pnpm build"
+}
+selectedDependencies: {
+  "next": "16.2.9",
+  "react": "19.2.7",
+  "react-dom": "19.2.7",
+  "typescript": "6.0.3",
+  "prisma": "7.8.0",
+  "@prisma/client": "7.8.0",
+  "@prisma/adapter-pg": "7.8.0",
+  "dotenv": "17.4.2"
+}
+
+## package.json
+name: alphavest-wealthos-clickdummy
+type: <none>
+packageManager: pnpm@9.15.9
+scripts: {
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start",
+  "lint": "eslint .",
+  "typecheck": "tsc --noEmit",
+  "db:generate": "prisma generate",
+  "db:migrate": "prisma migrate dev",
+  "db:reset": "prisma migrate reset",
+  "db:seed": "prisma db seed",
+  "db:studio": "prisma studio",
+  "db:validate": "prisma validate",
+  "smoke:phase07": "tsx scripts/smoke-phase-07.ts",
+  "smoke:phase08": "tsx scripts/smoke-phase-08.ts",
+  "smoke:phase09": "tsx scripts/smoke-phase-09.ts",
+  "smoke:phase10": "tsx scripts/smoke-phase-10.ts",
+  "smoke:phase11": "tsx scripts/smoke-phase-11.ts",
+  "smoke:phase12": "tsx scripts/smoke-phase-12.ts",
+  "smoke:phase13": "tsx scripts/smoke-phase-13.ts",
+  "visual:contract": "tsx scripts/visual-qa-contract.ts",
+  "visual:strict": "tsx scripts/strict-visual-capture.ts",
+  "screencast:journey": "tsx scripts/screencast/run-journey.ts",
+  "screencast:all": "tsx scripts/screencast/run-all.ts",
+  "screencast:dry-run": "tsx scripts/screencast/run-all.ts --dry-run",
+  "screencast:p0": "tsx scripts/screencast/run-all.ts --manifest=docs/v3/journeys.screencast.p0.v3.json",
+  "screencast:p0:dry-run": "tsx scripts/screencast/run-all.ts --manifest=docs/v3/journeys.screencast.p0.v3.json --dry-run",
+  "screencast:p1": "tsx scripts/screencast/run-all.ts --manifest=docs/v3/journeys.screencast.p1.v3.json",
+  "screencast:p1:dry-run": "tsx scripts/screencast/run-all.ts --manifest=docs/v3/journeys.screencast.p1.v3.json --dry-run",
+  "screencast:p2": "tsx scripts/screencast/run-all.ts --manifest=docs/v3/journeys.screencast.p2.v3.json",
+  "screencast:p2:dry-run": "tsx scripts/screencast/run-all.ts --manifest=docs/v3/journeys.screencast.p2.v3.json --dry-run",
+  "screencast:generate-portfolio": "tsx scripts/screencast/generate-portfolio-manifests.ts",
+  "screencast:seed-journey": "tsx scripts/screencast/seed-journey.ts",
+  "screencast:mp4": "tsx scripts/screencast/render-mp4.ts",
+  "test:data-quality": "playwright test tests/data-quality-service.spec.ts",
+  "test:file-export": "playwright test tests/file-export-realism.spec.ts",
+  "test:playwright": "playwright test",
+  "test:permissions": "playwright test tests/permission-engine.spec.ts",
+  "test:phase-d": "playwright test tests/review-monitoring-service.spec.ts",
+  "test:route-smoke": "playwright test tests/route-smoke.spec.ts",
+  "test:workflow-gate": "playwright test tests/workflow-gate.spec.ts",
+  "test:workflow-api": "playwright test tests/demo-workflow-api.spec.ts",
+  "phase:check": "pnpm typecheck && pnpm lint && pnpm db:validate && pnpm build"
+}
+selectedDependencies: {
+  "next": "16.2.9",
+  "react": "19.2.7",
+  "react-dom": "19.2.7",
+  "typescript": "6.0.3",
+  "prisma": "7.8.0",
+  "@prisma/client": "7.8.0",
+  "@prisma/adapter-pg": "7.8.0",
+  "dotenv": "17.4.2"
+}
+

@@ -1,0 +1,24 @@
+## OS
+Darwin MacBook-Pro-von-Christoph.local 24.6.0 Darwin Kernel Version 24.6.0: Wed Nov  5 21:30:44 PST 2025; root:xnu-11417.140.69.705.2~1/RELEASE_ARM64_T6041 arm64
+
+## Node
+v25.8.2
+
+## npm
+11.11.1
+
+## pnpm
+9.15.9
+
+## yarn
+1.22.22
+
+## bun
+not installed / not found in PATH
+
+## Docker
+Docker version 29.5.3, build d1c06ef
+
+## Docker Compose
+Docker Compose version v5.1.4
+

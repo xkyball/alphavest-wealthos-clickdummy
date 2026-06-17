@@ -1,0 +1,15 @@
+# Prisma schema files
+
+.git
+.next
+_next_docker_context_20260617_175245/root/prisma/schema.prisma
+_next_docker_context_20260617_180020
+node_modules
+prisma/schema.prisma
+
+# Prisma migration directories
+.git
+.next
+_next_docker_context_20260617_180020
+node_modules
+prisma/migrations

@@ -1,0 +1,2 @@
+_next_docker_context_20260617_175245/root/package.json
+package.json

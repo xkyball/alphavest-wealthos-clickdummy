@@ -18,6 +18,34 @@ services:
     volumes:
       - alphavest_postgres_data:/var/lib/postgresql/data
 
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: alphavest-wealthos-web
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      APP_ENV: ${APP_ENV:-docker}
+      NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-AlphaVest WealthOS}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-alphavest}:${POSTGRES_PASSWORD:-alphavest}@postgres:5432/${POSTGRES_DB:-alphavest_wealthos}
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      NEXT_TELEMETRY_DISABLED: 1
+    ports:
+      - "${WEB_PORT:-4000}:3000"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"fetch('http://127.0.0.1:3000').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
 volumes:
   alphavest_postgres_data:
-
