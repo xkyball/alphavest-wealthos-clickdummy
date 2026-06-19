@@ -1,3 +1,0 @@
-# Project tree, max depth 5
-# Excludes: node_modules, .next, .git, dist, build, coverage, .turbo, .cache, out, .vercel
-
