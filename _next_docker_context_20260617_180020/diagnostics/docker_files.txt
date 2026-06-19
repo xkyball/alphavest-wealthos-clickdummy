@@ -1,8 +1,0 @@
-# Docker / Compose files
-
-.git
-.next
-_next_docker_context_20260617_175245/root/docker-compose.yml
-_next_docker_context_20260617_180020
-docker-compose.yml
-node_modules

@@ -76,3 +76,9 @@ Thumbs.db
 *.swo
 *~
 # <<< AlphaVest Git Hygiene Cleanup <<<
+
+# >>> AlphaVest Docker Context Ignore >>>
+_next_docker_context_*/
+_next_docker_context_*.tar.gz
+# <<< AlphaVest Docker Context Ignore <<<
+
