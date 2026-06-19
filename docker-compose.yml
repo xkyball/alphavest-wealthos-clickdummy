@@ -5,8 +5,8 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-alphavest_wealthos}
-      POSTGRES_USER: ${POSTGRES_USER:-alphavest}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-alphavest}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in local .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in local .env}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     healthcheck:
@@ -30,7 +30,7 @@ services:
     environment:
       APP_ENV: ${APP_ENV:-docker}
       NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-AlphaVest WealthOS}
-      DATABASE_URL: postgresql://${POSTGRES_USER:-alphavest}:${POSTGRES_PASSWORD:-alphavest}@postgres:5432/${POSTGRES_DB:-alphavest_wealthos}
+      DATABASE_URL: postgresql://${POSTGRES_USER:?Set POSTGRES_USER in local .env}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in local .env}@postgres:5432/${POSTGRES_DB:-alphavest_wealthos}?schema=public
       PORT: 3000
       HOSTNAME: 0.0.0.0
       NEXT_TELEMETRY_DISABLED: 1

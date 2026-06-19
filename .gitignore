@@ -32,3 +32,47 @@ tsconfig.tsbuildinfo
 # Local editor state
 .idea/
 .vscode/
+
+# >>> AlphaVest Git Hygiene Cleanup >>>
+# AlphaVest local/generated artefacts
+_next_docker_context_*/
+_next_docker_context_*.tar.gz
+
+# Local env and secrets
+.env
+.env.*
+!.env.example
+!.env.template
+!.env.sample
+
+# Local generated review/audit artefacts
+artifacts/
+_codex_audit/
+tmp/
+output/
+screenshots/
+exports/
+
+# Generated reports
+reports/*.pdf
+reports/*.docx
+reports/*.pptx
+reports/*.zip
+reports/*.tar
+reports/*.tar.gz
+
+# Logs and local runtime
+*.log
+*.pid
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+
+# macOS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+# <<< AlphaVest Git Hygiene Cleanup <<<
