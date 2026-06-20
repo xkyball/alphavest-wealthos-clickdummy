@@ -15,6 +15,8 @@ export type ClientVisibilityCandidate = {
   evidenceStatus: EvidenceStatus;
   permission: Pick<PermissionDecision, "allowed" | "reasonCode">;
   currentVisibility?: VisibilityStatus;
+  containsAiDraft?: boolean;
+  containsInternalRationale?: boolean;
 };
 
 export type WorkflowGateResult = {
@@ -54,6 +56,14 @@ export function canBecomeClientVisible(candidate: ClientVisibilityCandidate): Wo
 
   if (candidate.recommendationStatus !== "RELEASED_TO_CLIENT") {
     missing.push("recommendation_released_to_client");
+  }
+
+  if (candidate.recommendationStatus === "AI_DRAFT" || candidate.containsAiDraft) {
+    missing.push("ai_draft_internal_only");
+  }
+
+  if (candidate.containsInternalRationale) {
+    missing.push("internal_rationale_hidden");
   }
 
   if (candidate.advisorApprovalStatus !== "APPROVED") {

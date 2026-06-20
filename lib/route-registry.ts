@@ -85,6 +85,12 @@ export type ScreenRoute = {
   clientVisibilitySensitive?: boolean;
 };
 
+export type RouteImplementationAccessDecision = {
+  routeScope: RouteScopeLabel;
+  implementationShellAccessible: boolean;
+  exclusionReason?: "P1_DEFERRED" | "REFERENCE_ONLY_NO_PRODUCT_TASK" | "HOLD_PENDING_SCOPE_UNLOCK";
+};
+
 export const navigationGroupLabels: Record<NavigationGroupKey, string> = {
   access: "Access",
   platform: "Platform",
@@ -1357,10 +1363,32 @@ export function routeScopeForPageId(pageId: string): RouteScopeLabel {
   return scope;
 }
 
-export function isRouteImplementationShellAccessible(route: Pick<ScreenRoute, "pageId">) {
-  const scope = routeScopeForPageId(route.pageId);
+export function routeImplementationAccessDecision(
+  route: Pick<ScreenRoute, "pageId">
+): RouteImplementationAccessDecision {
+  const routeScope = routeScopeForPageId(route.pageId);
 
-  return scope === "MVP" || scope === "MVP_SUPPORT";
+  if (routeScope === "MVP" || routeScope === "MVP_SUPPORT") {
+    return {
+      routeScope,
+      implementationShellAccessible: true
+    };
+  }
+
+  return {
+    routeScope,
+    implementationShellAccessible: false,
+    exclusionReason:
+      routeScope === "P1_AFTER_MVP"
+        ? "P1_DEFERRED"
+        : routeScope === "REFERENCE_ONLY"
+          ? "REFERENCE_ONLY_NO_PRODUCT_TASK"
+          : "HOLD_PENDING_SCOPE_UNLOCK"
+  };
+}
+
+export function isRouteImplementationShellAccessible(route: Pick<ScreenRoute, "pageId">) {
+  return routeImplementationAccessDecision(route).implementationShellAccessible;
 }
 
 export const routeWorksetIntegrity = (() => {

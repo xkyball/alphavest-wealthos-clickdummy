@@ -2525,3 +2525,96 @@ Date: 2026-06-20
 - Confirmation submit paths still rely on existing demo workflow actions; production mutation, audit persistence and RBAC fail-closed semantics remain later-phase obligations.
 - Build warnings around demo document storage tracing remain outside this phase.
 - Authentication remains demo-session based.
+
+## PHASE-06-RBAC_VISIBILITY_ADVICE QA Addendum
+
+Date: 2026-06-20
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Phase scope discipline | Passed | Only `AV-SLICE-RBAC-01..05` service/test/report work was changed. |
+| Source artefacts | Passed | Final handoff, task master, source order, stop rules, RBAC contract, P0 assertion plan, done checklist and required V3/operationalization docs were read before edits. |
+| Stop rules | Passed | No route scope change, P1/Hold/reference promotion, visual generation, new API, Prisma schema replacement, migration, `main` target or P0 overclaim. |
+| Advisor approval separation | Passed | Recommendation approval is limited to Senior Wealth Advisor; advisor approval alone remains blocked from client visibility without compliance release. |
+| Client visibility projection | Passed | Client-side recommendation projection returns only released client-safe summary fields and hides AI Draft/internal rationale/compliance/internal fields. |
+| AI Draft internal-only | Passed | Workflow gate and projection tests fail closed when AI Draft/internal rationale is present. |
+| Admin non-bypass | Passed | Admin/security export generation authority is denied instead of bypassing export approval/redaction/client-visibility gates. |
+| Typecheck | Passed | `pnpm typecheck`. |
+| Workflow gate tests | Passed | `pnpm test:workflow-gate`, 9 tests. |
+| Permission tests | Passed | `pnpm test:permissions`, 6 tests; includes seeded denied-audit proof. |
+| Lint | Passed | `pnpm lint`. |
+| Whitespace diff check | Passed | `git diff --check`. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm test:workflow-gate` | Passed | 9 tests; includes advisor-not-release and AI/internal payload blockers. |
+| `pnpm typecheck` | Passed | TypeScript clean after permission/visibility/workflow updates. |
+| `pnpm test:permissions` | Passed | 6 tests; includes advisor-only approval, admin non-bypass, client projection and denied audit cases. |
+| `pnpm lint` | Passed | ESLint clean after RBAC/visibility changes. |
+| `git diff --check` | Passed | No whitespace errors. |
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| Advisor-only recommendation approval | implemented + tested | Admin cannot perform the advisor approval step. |
+| Advisor approval not release | implemented + tested | Workflow gate still requires compliance release before client visibility. |
+| Client-safe recommendation projection | implemented + tested | Client roles receive only released summary payload; internal-only fields are hidden. |
+| AI Draft internal-only blocker | implemented + tested | AI Draft/internal rationale blocks client visibility. |
+| Admin export non-bypass | implemented + tested | Admin/security cannot bypass export approval/redaction gates. |
+| Full P0 gate closure | not claimed | Current tests are proof slices only. |
+
+### Residual Risks
+
+- The phase hardens centralized demo services, not production authentication.
+- Client route/API/export leakage coverage is targeted, not exhaustive across every route/action/object combination.
+- Export binary generation and full evidence/audit/export lifecycle remain later safety/P0 work.
+- Existing `.gitignore` modification was not part of this phase.
+
+## PHASE-02-ROUTE_ACCESS QA Hardening Addendum
+
+Date: 2026-06-20
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Phase scope discipline | Passed | Only `AV-SLICE-RTE-01..05` route registry/test/report hardening was changed. |
+| Source artefacts | Passed | Final handoff, task master, source order, stop rules, slice plan, phase checklist, route scope lock, MVP scope lock and required project V3 docs were read before edits. |
+| Stop rules | Passed | No route scope change, P1/Hold/reference promotion, visual generation, API, Prisma/schema replacement, migration, `main` target or P0 overclaim. |
+| Route access shell decision | Passed | `routeImplementationAccessDecision()` now exposes whether a route can render implementation UI or must remain excluded. |
+| P1 exclusion | Passed | P1 routes return `P1_DEFERRED` and stay out of implementation navigation. |
+| Reference exclusion | Passed | Reference routes return `REFERENCE_ONLY_NO_PRODUCT_TASK` and render reference shells. |
+| Hold exclusion | Passed | Held routes return `HOLD_PENDING_SCOPE_UNLOCK` and render held shells instead of product screens. |
+| Route smoke | Passed | `pnpm test:route-smoke`, 85 tests. |
+| Typecheck | Passed on rerun | Initial tuple-literal test narrowing failure fixed; rerun passed. |
+| Focused lint | Passed | `pnpm exec eslint lib/route-registry.ts tests/route-smoke.spec.ts`. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Failed then rerun | Initial TS2345 tuple `.includes()` narrowing failure in the new test; fixed by string sets. |
+| `pnpm test:route-smoke` | Passed | 85 tests; includes direct P1/reference/hold exclusion-shell assertions. |
+| `pnpm typecheck` | Passed | TypeScript clean after the test fix. |
+| `pnpm exec eslint lib/route-registry.ts tests/route-smoke.spec.ts` | Passed | Focused lint clean for touched code/test files. |
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| Route implementation access decision helper | implemented + typechecked | Central helper preserves existing MVP/MVP_SUPPORT access behavior and exposes exclusion reasons. |
+| P1 route non-elevation proof | implemented + tested | `/communication` renders the deferred shell rather than communication product UI. |
+| Reference route non-product proof | implemented + tested | `/service-blueprint` renders the reference shell rather than product lifecycle UI. |
+| Hold route non-elevation proof | implemented + tested | `/kyc/demo/review` and `/committee/reviews` render held shells rather than dormant product screens. |
+| Full P0 gate closure | not claimed | Current coverage is route/access proof only. |
+
+### Residual Risks
+
+- Route shell proof does not prove action permission or payload visibility safety.
+- Dormant held-route component modules still exist in the repository; this phase proves they are not reached through the catch-all route guard.
+- Full RBAC, evidence/audit/export and API fail-closed proof remains later-phase work.

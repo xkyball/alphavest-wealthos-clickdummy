@@ -58,9 +58,11 @@ const complianceActions = new Set<PermissionAction>(["RELEASE", "BLOCK", "EXPORT
 
 const complianceReleaseRoles = new Set<DemoRoleKey>(["compliance_officer"]);
 const exportApprovalRoles = new Set<DemoRoleKey>(["compliance_officer"]);
+const advisorApprovalRoles = new Set<DemoRoleKey>(["senior_wealth_advisor"]);
 const governanceRoles = new Set<DemoRoleKey>(["admin", "security_officer"]);
 const accessApprovalRoles = new Set<DemoRoleKey>(["admin", "security_officer", "compliance_officer"]);
 const tenantAdminRoles = new Set<DemoRoleKey>(["admin", "client_success"]);
+const adminNonBypassRoles = new Set<DemoRoleKey>(["admin", "security_officer"]);
 const forbiddenExportRoles = new Set<DemoRoleKey>([
   "analyst",
   "external_advisor",
@@ -134,6 +136,20 @@ function can(
 
   if (
     action === "APPROVE" &&
+    subject.objectType === "RECOMMENDATION" &&
+    !advisorApprovalRoles.has(roleKey)
+  ) {
+    return deny(
+      action,
+      subject,
+      "DEMO_DENY_ADVISOR_APPROVAL_REQUIRED",
+      "Senior Wealth Advisor approval is required before a recommendation can move toward compliance review.",
+      true,
+    );
+  }
+
+  if (
+    action === "APPROVE" &&
     subject.objectType === "EXPORT_REQUEST" &&
     !exportApprovalRoles.has(roleKey)
   ) {
@@ -142,6 +158,20 @@ function can(
       subject,
       "DEMO_DENY_EXPORT_APPROVAL_REQUIRED",
       "Compliance Officer approval is required before a restricted export package can be generated.",
+      true,
+    );
+  }
+
+  if (
+    action === "EXPORT" &&
+    subject.objectType === "EXPORT_REQUEST" &&
+    adminNonBypassRoles.has(roleKey)
+  ) {
+    return deny(
+      action,
+      subject,
+      "DEMO_DENY_ADMIN_NON_BYPASS",
+      "Admin and security roles cannot bypass export approval, redaction and client-visibility gates.",
       true,
     );
   }

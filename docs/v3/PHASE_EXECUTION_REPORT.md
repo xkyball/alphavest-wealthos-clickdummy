@@ -76,6 +76,52 @@ This phase improves guardrail proof for `P0_MAIN_FALSE_GAP_BLOCK_GATE`, no-gener
 
 `PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
 
+## PHASE-02-ROUTE_ACCESS - Route / Navigation / Access Shell Hardening Addendum
+
+Date: 2026-06-20
+
+### Scope
+
+Re-executed the handoff phase prompt `02_PHASE_ROUTE_ACCESS_PROMPT.md` for allowed slices `AV-SLICE-RTE-01..05`. This addendum keeps the existing locked route registry and catch-all guard intact, and adds explicit route implementation-access decisions plus direct regression tests that P1, Reference and Hold requests render exclusion shells instead of product-specific screens.
+
+### Slice Coverage
+
+| Slice | Status | Notes |
+| --- | --- | --- |
+| `AV-SLICE-RTE-01` | Hardened / tested | Route implementation access is now exposed through `routeImplementationAccessDecision()` while preserving the existing MVP/MVP_SUPPORT shell behavior. |
+| `AV-SLICE-RTE-02` | Verified | MVP_SUPPORT routes remain implementation-shell accessible but do not expand action or payload authority. |
+| `AV-SLICE-RTE-03` | Tested | P1 routes return `P1_DEFERRED` decisions and stay out of implementation navigation. |
+| `AV-SLICE-RTE-04` | Tested | Reference-only routes return `REFERENCE_ONLY_NO_PRODUCT_TASK` decisions and render the reference exclusion shell. |
+| `AV-SLICE-RTE-05` | Tested | Held routes return `HOLD_PENDING_SCOPE_UNLOCK` decisions and render the held exclusion shell rather than dormant product components. |
+
+### Changed Files
+
+- `lib/route-registry.ts`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - first run failed on tuple-literal `.includes()` narrowing in `tests/route-smoke.spec.ts`; fixed by using string sets and reran successfully.
+- `pnpm test:route-smoke` - passed, 85 tests.
+- `pnpm exec eslint lib/route-registry.ts tests/route-smoke.spec.ts` - passed.
+
+### P0 Impact
+
+This addendum strengthens proof slices for `P0_ROUTE_ACCESS_GATE` and `P0_HOLD_ROUTE_BLOCK_GATE`. It does not claim full P0 passed. Route access remains separate from action permission and payload visibility.
+
+### Blockers / Deferred / Hold Items
+
+- P1 routes `052`, `053`, `059`, `060` and `068` remain deferred.
+- Reference routes `061`, `062` and `063` remain non-product implementation surfaces.
+- Hold routes `064`, `065`, `066`, `067`, `069`, `070` and `071` remain registered but blocked from MVP implementation.
+- Existing committee/review/KYC/suitability component code remains dormant behind the route guard for held routes; no held product route was elevated.
+
+### Exit Gate Decision
+
+`PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
 ## Phase 00 - Repository and Project Setup
 
 Date: 2026-06-14
@@ -2770,6 +2816,76 @@ Executed the handoff phase prompt `07_PHASE_EVIDENCE_AUDIT_EXPORT_PROMPT.md` for
 ### P0 Impact
 
 This phase improves P0 proof slices for `P0_UPLOAD_NOT_SUFFICIENCY_GATE`, `P0_EVIDENCE_SUFFICIENCY_GATE`, `P0_AUDIT_FAIL_CLOSED_GATE`, `P0_EXPORT_REDACTION_GATE` and `P0_EXPORT_APPROVAL_GATE`. It does not claim full P0 passed. Export remains metadata-only (`realBinaryGenerated: false`), authentication remains demo-session based, and evidence sufficiency is service-level/demo proof rather than a full production workflow.
+
+### Exit Gate Decision
+
+`PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
+## PHASE-06-RBAC_VISIBILITY_ADVICE - RBAC / Visibility / Advice Boundary
+
+Date: 2026-06-20
+
+### Scope
+
+Executed the handoff phase prompt `06_PHASE_RBAC_VISIBILITY_ADVICE_PROMPT.md` for allowed slices `AV-SLICE-RBAC-01..05`. This phase hardened demo RBAC decisions, client-safe recommendation payload projection, AI Draft/internal rationale fail-closed checks, advisor approval versus compliance release separation and admin non-bypass coverage. No routes, APIs, Prisma schema, migrations, screen assets or visual references were changed.
+
+### Source Artefacts Used
+
+- `FINAL_CODEX_IMPLEMENTATION_HANDOFF.md`
+- `FINAL_CODEX_TASK_MASTER.md`
+- `SOURCE_OF_TRUTH_ORDER.md`
+- `STOP_RULES_MASTER.md`
+- `RBAC_CLIENT_VISIBILITY_ADVICE_BOUNDARY_CONTRACT.md`
+- `P0_TEST_ASSERTION_AND_FIXTURE_PLAN.md`
+- `TASK_DONE_DEFINITION_AND_QA_CHECKLIST.md`
+- Project V3 source-of-truth and operationalization docs listed in `AGENTS.md` and `CODEX_MASTER_TASK.md`.
+
+### Completed Tasks
+
+- Added an explicit Senior Wealth Advisor-only recommendation approval rule so admin, client and non-advisor roles cannot perform advisor approval.
+- Added explicit admin/security non-bypass denial for export generation authority, preserving compliance/redaction/client-visibility gates.
+- Added `visibilityEngine.projectRecommendationPayload()` to produce client-safe recommendation projections that hide AI Draft, internal rationale, compliance notes and assumptions from client-side roles.
+- Added workflow-gate blockers for AI Draft/internal rationale payloads even when other release prerequisites appear satisfied.
+- Added targeted positive and negative tests for advisor approval separation, admin non-bypass, client-safe payload projection, AI Draft redaction and advisor-approval-not-release.
+
+### Slice Coverage
+
+| Slice | Status | Notes |
+| --- | --- | --- |
+| `AV-SLICE-RBAC-01` | Implemented / tested | Route/action/object/payload separation improved through explicit approval/export denials and payload projection tests. |
+| `AV-SLICE-RBAC-02` | Implemented / tested | Client visibility projection now fails closed unless recommendation payload is released and client-visible. |
+| `AV-SLICE-RBAC-03` | Implemented / tested | AI Draft and internal rationale are explicit blockers for client visibility and hidden from client projections. |
+| `AV-SLICE-RBAC-04` | Implemented / tested | Advisor approval remains separate from compliance release and client visibility. |
+| `AV-SLICE-RBAC-05` | Implemented / tested | Admin/security export bypass is denied and covered by permissions tests. |
+
+### Changed Files
+
+- `lib/permission-engine.ts`
+- `lib/visibility-engine.ts`
+- `lib/workflow-gate.ts`
+- `tests/permission-engine.spec.ts`
+- `tests/workflow-gate.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm test:workflow-gate` - passed, 9 tests.
+- `pnpm typecheck` - passed.
+- `pnpm test:permissions` - passed, 6 tests; seeded the demo database before the audit-backed permission tests.
+- `pnpm lint` - passed.
+- `git diff --check` - passed.
+
+### P0 Impact
+
+This phase improves proof slices for `P0_RBAC_ACTION_GATE`, `P0_PAYLOAD_VISIBILITY_GATE`, `P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE`, `P0_AI_DRAFT_INTERNAL_ONLY_GATE`, `P0_ADVISOR_NOT_RELEASE_GATE` and `P0_ADMIN_NON_BYPASS_GATE`. It does not claim full P0 passed. The proof remains demo-session/service-level and targeted; broader API/export/client route leakage matrices remain future P0 work.
+
+### Blockers / Deferred / Hold Items
+
+- No P1, Reference-only or Hold routes were elevated.
+- No new API route, Prisma schema replacement, migration or visual generation was performed.
+- Full production auth and exhaustive route/API/export leakage coverage remain out of this phase.
+- Existing `.gitignore` worktree modification was pre-existing and not touched.
 
 ### Exit Gate Decision
 

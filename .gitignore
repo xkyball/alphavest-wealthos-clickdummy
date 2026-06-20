@@ -47,11 +47,13 @@ _next_docker_context_*.tar.gz
 
 # Local generated review/audit artefacts
 artifacts/
+_codex_handoff/
 _codex_audit/
 tmp/
 output/
 screenshots/
 exports/
+reports/
 
 # Generated reports
 reports/*.pdf
@@ -81,4 +83,3 @@ Thumbs.db
 _next_docker_context_*/
 _next_docker_context_*.tar.gz
 # <<< AlphaVest Docker Context Ignore <<<
-

@@ -80,6 +80,40 @@ test.describe("Suitability and IPS advice visibility gate", () => {
     expect(gate.missing).toContain("evidence_record");
   });
 
+  test("keeps advisor approval separate from compliance release and client visibility", () => {
+    const gate = canBecomeClientVisible({
+      advisorApprovalStatus: "APPROVED",
+      complianceStatus: "PENDING",
+      currentVisibility: "ADVISOR_VISIBLE",
+      evidenceStatus: "VALIDATED",
+      permission: { allowed: true, reasonCode: "DEMO_ALLOWED" },
+      recommendationStatus: "ADVISOR_APPROVED",
+    });
+
+    expect(gate.passed).toBe(false);
+    expect(gate.blockedReason).toBe("No unapproved advice reaches the client.");
+    expect(gate.missing).toContain("recommendation_released_to_client");
+    expect(gate.missing).toContain("compliance_release");
+    expect(gate.missing).not.toContain("advisor_approval");
+  });
+
+  test("blocks client visibility when AI Draft or internal rationale payload is present", () => {
+    const gate = canBecomeClientVisible({
+      advisorApprovalStatus: "APPROVED",
+      complianceStatus: "RELEASED",
+      containsAiDraft: true,
+      containsInternalRationale: true,
+      currentVisibility: "CLIENT_VISIBLE",
+      evidenceStatus: "RELEASED",
+      permission: { allowed: true, reasonCode: "DEMO_ALLOWED" },
+      recommendationStatus: "RELEASED_TO_CLIENT",
+    });
+
+    expect(gate.passed).toBe(false);
+    expect(gate.missing).toContain("ai_draft_internal_only");
+    expect(gate.missing).toContain("internal_rationale_hidden");
+  });
+
   test("blocks advice-like client visibility when suitability and IPS prerequisites are incomplete", () => {
     const gate = canReleaseAdviceWithSuitabilityIps(suitabilityGateCandidate);
 

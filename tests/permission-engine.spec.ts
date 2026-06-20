@@ -13,6 +13,7 @@ import {
 } from "../lib/demo-session";
 import { AuditPersistenceUnavailableError, runDemoWorkflowMutation } from "../lib/demo-workflow-mutation";
 import { permissionEngine } from "../lib/permission-engine";
+import { visibilityEngine } from "../lib/visibility-engine";
 
 function tenantId(slug: DemoTenantSlug) {
   const tenant = demoTenants.find((candidate) => candidate.slug === slug);
@@ -133,6 +134,142 @@ test.describe("Phase 16 demo role-aware permissions", () => {
 
     expect(internalDocumentDecision.allowed).toBe(false);
     expect(internalDocumentDecision.reasonCode).toBe("DEMO_DENY_INTERNAL_OBJECT_ACCESS");
+  });
+
+  test("keeps advisor approval and admin export bypass separated from route access", () => {
+    const bennettTenantId = tenantId("bennett");
+    const adminSession = createDemoSession({ roleKey: "admin", tenantSlug: "bennett" });
+    const advisorSession = createDemoSession({ roleKey: "senior_wealth_advisor", tenantSlug: "bennett" });
+
+    const adminApprovalDecision = permissionEngine.can(
+      adminSession.actor,
+      "APPROVE",
+      {
+        clientTenantId: bennettTenantId,
+        objectType: "RECOMMENDATION",
+        sensitivity: "RESTRICTED",
+        visibilityStatus: "ADVISOR_VISIBLE",
+      },
+      {
+        clientTenantId: bennettTenantId,
+        platformTenantId: demoPlatformTenantId,
+      },
+      adminSession.role,
+    );
+
+    expect(adminApprovalDecision.allowed).toBe(false);
+    expect(adminApprovalDecision.reasonCode).toBe("DEMO_DENY_ADVISOR_APPROVAL_REQUIRED");
+
+    const advisorApprovalDecision = permissionEngine.can(
+      advisorSession.actor,
+      "APPROVE",
+      {
+        clientTenantId: bennettTenantId,
+        objectType: "RECOMMENDATION",
+        sensitivity: "RESTRICTED",
+        visibilityStatus: "ADVISOR_VISIBLE",
+      },
+      {
+        clientTenantId: bennettTenantId,
+        platformTenantId: demoPlatformTenantId,
+      },
+      advisorSession.role,
+    );
+
+    expect(advisorApprovalDecision.allowed).toBe(true);
+    expect(advisorApprovalDecision.requiresAudit).toBe(true);
+
+    const adminExportDecision = permissionEngine.can(
+      adminSession.actor,
+      "EXPORT",
+      {
+        clientTenantId: bennettTenantId,
+        objectType: "EXPORT_REQUEST",
+        sensitivity: "RESTRICTED",
+        visibilityStatus: "REDACTED",
+      },
+      {
+        clientTenantId: bennettTenantId,
+        platformTenantId: demoPlatformTenantId,
+      },
+      adminSession.role,
+    );
+
+    expect(adminExportDecision.allowed).toBe(false);
+    expect(adminExportDecision.reasonCode).toBe("DEMO_DENY_ADMIN_NON_BYPASS");
+    expect(adminExportDecision.requiresSecondConfirmation).toBe(true);
+  });
+
+  test("projects only released client-safe recommendation fields to client roles", () => {
+    const bennettPrincipal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const analyst = createDemoSession({ roleKey: "analyst", tenantSlug: "bennett" });
+    const internalPayload = {
+      assumptionsJson: { source: "rules-draft" },
+      clientSummary: "Released client-safe summary.",
+      clientSummaryDraft: "AI generated draft summary.",
+      clientTenantId: bennettPrincipal.tenant.id,
+      clientVisible: true,
+      complianceNotes: "Compliance-only reviewer notes.",
+      internalRationale: "Internal recommendation rationale.",
+      recommendationStatus: "RELEASED_TO_CLIENT" as const,
+      sensitivity: "RESTRICTED" as const,
+      summaryInternal: "Analyst-only working summary.",
+      visibilityStatus: "CLIENT_VISIBLE" as const,
+    };
+
+    const clientProjection = visibilityEngine.projectRecommendationPayload(
+      bennettPrincipal.actor,
+      bennettPrincipal.role,
+      internalPayload,
+      demoPlatformTenantId,
+      bennettPrincipal.tenant.id,
+    );
+
+    expect(clientProjection.visible).toBe(true);
+    expect(clientProjection.reasonCode).toBe("DEMO_CLIENT_SAFE_PROJECTION");
+    expect(clientProjection.payload).toEqual({ clientSummary: "Released client-safe summary." });
+    expect(clientProjection.hiddenFields).toEqual([
+      "clientSummaryDraft",
+      "summaryInternal",
+      "internalRationale",
+      "complianceNotes",
+      "assumptionsJson",
+    ]);
+
+    const aiDraftProjection = visibilityEngine.projectRecommendationPayload(
+      bennettPrincipal.actor,
+      bennettPrincipal.role,
+      {
+        ...internalPayload,
+        clientVisible: false,
+        recommendationStatus: "AI_DRAFT",
+        visibilityStatus: "ADVISOR_VISIBLE",
+      },
+      demoPlatformTenantId,
+      bennettPrincipal.tenant.id,
+    );
+
+    expect(aiDraftProjection.visible).toBe(false);
+    expect(aiDraftProjection.reasonCode).toBe("DEMO_CLIENT_VISIBILITY_FAIL_CLOSED");
+    expect(aiDraftProjection.payload).toEqual({});
+
+    const internalProjection = visibilityEngine.projectRecommendationPayload(
+      analyst.actor,
+      analyst.role,
+      {
+        ...internalPayload,
+        clientVisible: false,
+        recommendationStatus: "AI_DRAFT",
+        visibilityStatus: "ADVISOR_VISIBLE",
+      },
+      demoPlatformTenantId,
+      analyst.tenant.id,
+    );
+
+    expect(internalProjection.visible).toBe(true);
+    expect(internalProjection.reasonCode).toBe("DEMO_INTERNAL_PROJECTION");
+    expect(internalProjection.payload.clientSummaryDraft).toBe("AI generated draft summary.");
+    expect(internalProjection.payload.internalRationale).toBe("Internal recommendation rationale.");
   });
 });
 
