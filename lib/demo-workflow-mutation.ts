@@ -91,6 +91,18 @@ type RecommendationReviewState = {
   };
 };
 
+type ComplianceReleasePreconditions = {
+  advisorApproval: boolean;
+  auditReady: boolean;
+  compliancePermission: boolean;
+  evidenceAccepted: boolean;
+  evidenceProvided: boolean;
+  evidenceScoped: boolean;
+  payloadReady: boolean;
+  missing: string[];
+  selectedEvidenceRecordId: string | null;
+};
+
 type RecommendationReviewWorkflowResult = {
   action: RecommendationReviewWorkflowAction;
   auditEventId: string;
@@ -106,6 +118,7 @@ type RecommendationReviewWorkflowResult = {
     requiresAudit: boolean;
     requiresComplianceReview: boolean;
   };
+  releasePreconditions: ComplianceReleasePreconditions | null;
   reloadedState: RecommendationReviewState;
   workflowType: "recommendation-review";
 };
@@ -120,6 +133,10 @@ class RecommendationReviewWorkflowError extends Error {
   constructor(
     message: string,
     public readonly status = 409,
+    public readonly details?: {
+      gateMissing?: string[];
+      releasePreconditions?: ComplianceReleasePreconditions;
+    },
   ) {
     super(message);
   }
@@ -346,6 +363,95 @@ function hasAcceptedEvidence(record: { status: EvidenceStatus }) {
   return record.status === EvidenceStatus.VALIDATED || record.status === EvidenceStatus.RELEASED;
 }
 
+function isRecord(value: Prisma.JsonValue | null | undefined): value is Prisma.JsonObject {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
+}
+
+function hasReleaseReadyPayload(recommendation: {
+  assumptionsJson: Prisma.JsonValue | null;
+  clientSummaryDraft: string | null;
+}) {
+  if (!recommendation.clientSummaryDraft?.trim()) {
+    return false;
+  }
+
+  if (isRecord(recommendation.assumptionsJson) && recommendation.assumptionsJson.aiDraftInternalOnly === true) {
+    return false;
+  }
+
+  return true;
+}
+
+function evaluateComplianceReleasePreconditions(input: {
+  advisorApprovalStatus: ReviewStatus;
+  evidenceRecords: Array<{
+    id: string;
+    items: Array<{
+      sourceObjectId: string;
+      sourceObjectType: ObjectType;
+    }>;
+    relatedObjectId: string;
+    relatedObjectType: ObjectType;
+    status: EvidenceStatus;
+  }>;
+  permissionAllowed: boolean;
+  payloadReady: boolean;
+  targetId: string;
+}) {
+  const selectedEvidence =
+    input.evidenceRecords.find((record) => {
+      const directlyScoped =
+        record.relatedObjectType === ObjectType.RECOMMENDATION && record.relatedObjectId === input.targetId;
+      const itemScoped = record.items.some(
+        (item) => item.sourceObjectType === ObjectType.RECOMMENDATION && item.sourceObjectId === input.targetId,
+      );
+
+      return hasAcceptedEvidence(record) && (directlyScoped || itemScoped);
+    }) ?? null;
+
+  const preconditions: ComplianceReleasePreconditions = {
+    advisorApproval: input.advisorApprovalStatus === ReviewStatus.APPROVED,
+    auditReady: true,
+    compliancePermission: input.permissionAllowed,
+    evidenceAccepted: Boolean(selectedEvidence),
+    evidenceProvided: input.evidenceRecords.length > 0,
+    evidenceScoped: Boolean(selectedEvidence),
+    payloadReady: input.payloadReady,
+    missing: [],
+    selectedEvidenceRecordId: selectedEvidence?.id ?? null,
+  };
+
+  if (!preconditions.advisorApproval) {
+    preconditions.missing.push("advisor_approval");
+  }
+
+  if (!preconditions.evidenceProvided) {
+    preconditions.missing.push("evidence_record");
+  } else {
+    if (!preconditions.evidenceAccepted) {
+      preconditions.missing.push("accepted_evidence");
+    }
+
+    if (!preconditions.evidenceScoped) {
+      preconditions.missing.push("scoped_evidence");
+    }
+  }
+
+  if (!preconditions.payloadReady) {
+    preconditions.missing.push("payload_ready");
+  }
+
+  if (!preconditions.compliancePermission) {
+    preconditions.missing.push("permission_check");
+  }
+
+  if (!preconditions.auditReady) {
+    preconditions.missing.push("audit_persistence");
+  }
+
+  return preconditions;
+}
+
 async function reloadRecommendationReviewState(
   tx: Prisma.TransactionClient,
   targetId: string,
@@ -501,6 +607,7 @@ export async function runRecommendationReviewWorkflowMutation(
           requiresAudit: true,
           requiresComplianceReview: true,
         },
+        releasePreconditions: null,
         reloadedState,
         workflowType: "recommendation-review",
       };
@@ -526,6 +633,14 @@ export async function runRecommendationReviewWorkflowMutation(
         orderBy: { createdAt: "desc" },
       }),
       tx.evidenceRecord.findMany({
+        include: {
+          items: {
+            select: {
+              sourceObjectId: true,
+              sourceObjectType: true,
+            },
+          },
+        },
         where: {
           clientTenantId: recommendation.clientTenantId,
           OR: [
@@ -542,6 +657,7 @@ export async function runRecommendationReviewWorkflowMutation(
 
     let gateMissing: string[] = [];
     let gatePassed = false;
+    let releasePreconditions: ComplianceReleasePreconditions | null = null;
 
     if (input.action === "reject_unsupported_claim") {
       await tx.recommendation.update({
@@ -738,26 +854,38 @@ export async function runRecommendationReviewWorkflowMutation(
     }
 
     if (input.action === "compliance_release") {
-      const evidenceRecord = evidenceRecords[0];
+      releasePreconditions = evaluateComplianceReleasePreconditions({
+        advisorApprovalStatus: advisorApproval.status,
+        evidenceRecords,
+        permissionAllowed: permission.allowed,
+        payloadReady: hasReleaseReadyPayload(recommendation),
+        targetId: input.targetId,
+      });
 
-      if (advisorApproval.status !== ReviewStatus.APPROVED) {
-        throw new RecommendationReviewWorkflowError("Advisor approval is required before compliance release.");
-      }
-
-      if (!evidenceRecord) {
-        throw new RecommendationReviewWorkflowError("Evidence record is required before compliance release.");
+      if (releasePreconditions.missing.length > 0) {
+        throw new RecommendationReviewWorkflowError(
+          `Compliance release preconditions failed: ${releasePreconditions.missing.join(", ")}`,
+          409,
+          {
+            gateMissing: releasePreconditions.missing,
+            releasePreconditions,
+          },
+        );
       }
 
       const gate = workflowGate.canBecomeClientVisible({
         advisorApprovalStatus: advisorApproval.status,
         complianceStatus: "RELEASED",
-        evidenceStatus: evidenceRecord.status,
+        evidenceStatus: EvidenceStatus.RELEASED,
         permission,
         recommendationStatus: "RELEASED_TO_CLIENT",
       });
 
       if (!gate.passed) {
-        throw new RecommendationReviewWorkflowError(`Client visibility gate failed: ${gate.missing.join(", ")}`);
+        throw new RecommendationReviewWorkflowError(`Client visibility gate failed: ${gate.missing.join(", ")}`, 409, {
+          gateMissing: gate.missing,
+          releasePreconditions,
+        });
       }
 
       gateMissing = gate.missing;
@@ -784,7 +912,7 @@ export async function runRecommendationReviewWorkflowMutation(
           status: EvidenceStatus.RELEASED,
           visibilityStatus: VisibilityStatus.CLIENT_VISIBLE,
         },
-        where: { id: { in: evidenceRecords.map((record) => record.id) } },
+        where: { id: releasePreconditions.selectedEvidenceRecordId! },
       });
     }
 
@@ -830,6 +958,7 @@ export async function runRecommendationReviewWorkflowMutation(
         requiresAudit: permission.requiresAudit,
         requiresComplianceReview: permission.requiresComplianceReview,
       },
+      releasePreconditions,
       reloadedState,
       workflowType: "recommendation-review",
     };

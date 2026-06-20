@@ -3996,9 +3996,14 @@ export async function POST(request: Request) {
             error instanceof RecommendationReviewWorkflowError
               ? error.message
               : "Recommendation review workflow action failed.",
+          gateMissing: error instanceof RecommendationReviewWorkflowError ? error.details?.gateMissing : undefined,
           mutated: false,
           noClientRelease: true,
           ok: false,
+          releasePreconditions:
+            error instanceof RecommendationReviewWorkflowError
+              ? error.details?.releasePreconditions
+              : undefined,
           workflowType: "recommendation-review",
         },
         { status: error instanceof RecommendationReviewWorkflowError ? error.status : 409 },

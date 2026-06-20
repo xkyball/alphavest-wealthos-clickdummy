@@ -3,7 +3,9 @@
 Date: 2026-06-20
 Phase source: `mega_journeys_1/ALPHAVEST_MVP_JOURNEY_IMPLEMENTATION_PLAN.md`
 Phase: `5 - Advisor Approval -> Compliance Gate`
-Execution status: `PHASE_5_COMPLETED_DOCS_ONLY`
+Execution status: `PHASE_5_DOCS_ONLY_BASELINE_SUPERSEDED_BY_IMPLEMENTATION`
+
+Superseded by: `docs/v3/ALPHAVEST_MVP_PHASE_5_ADVISOR_COMPLIANCE_GATE_IMPLEMENTATION.md`
 
 ## 1. Scope
 

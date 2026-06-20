@@ -3969,3 +3969,48 @@ Date: 2026-06-20
 - Confirmation hardening remains scoped to the minimum-path Review -> Advisor Approval -> Compliance vertical.
 - Production authentication and complete RBAC remain outside this phase.
 - Export approval and broader governance second-confirmation persistence remain separate future scope unless explicitly requested.
+
+## ALPHAVEST-MVP-PHASE-5-IMPLEMENTATION QA Addendum
+
+Date: 2026-06-20
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Phase source of truth | Passed | Used `mega_journeys_1/ALPHAVEST_MVP_JOURNEY_IMPLEMENTATION_PLAN.md`, Phase 5. |
+| Implementation mode | Passed | Phase 5 was executed as backend/API/test implementation, not docs-only. |
+| Advisor approval not release | Passed | API test proves advisor approval persists while `clientVisible=false`. |
+| Compliance release preconditions | Passed | Release requires advisor approval, compliance permission, accepted/scoped evidence, payload readiness and audit readiness. |
+| Negative release proof | Passed | API tests cover missing advisor approval, missing evidence and missing client-safe payload. |
+| Positive release proof | Passed | API test proves successful release sets recommendation/compliance/evidence release state after all gates pass. |
+| API fail-closed detail | Passed | Failed recommendation-review release responses include `gateMissing` and `releasePreconditions`. |
+| Visual gate | Not applicable | No UI, screen state, screenshot, ImageGen or visual-reference implementation was changed. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | TypeScript completed with `tsc --noEmit`. |
+| `pnpm test:workflow-gate` | Passed | 9 service-level gate tests. |
+| `pnpm test:workflow-api` | Passed | 13 API tests, including the expanded Phase 5 release precondition proof. |
+| `pnpm lint` | Passed | ESLint completed cleanly. |
+| `git diff --check` | Passed | No whitespace errors. |
+| `pnpm build` | Passed with warnings | Existing Turbopack tracing warnings in `lib/document-storage-adapter.ts`. |
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| Advisor approval human-review boundary | implemented + tested | Approval moves to advisor-approved/compliance-pending state and keeps client visibility blocked. |
+| Compliance release precondition matrix | implemented + tested | Matrix includes advisor, permission, evidence, payload and audit readiness. |
+| Failed release response details | implemented + tested | API returns missing gates for failed compliance release attempts. |
+| Successful compliance release | implemented + tested | Release only succeeds after all preconditions pass. |
+| Full client projection / export / acceptance | not claimed | Deferred to later Phase 6/8/decision proof. |
+
+### Residual Risks
+
+- Phase 5 remains a bounded demo workflow proof, not production authentication or a generalized arbitrary recommendation release API.
+- Full client-safe projection across portal/API/export remains Phase 6 and Phase 8 scope.
+- `next-env.d.ts` has a pre-existing local modification outside this phase and was left untouched.
+- Existing Turbopack tracing warnings around `lib/document-storage-adapter.ts` remain outside this Phase 5 scope.

@@ -392,6 +392,12 @@ test.describe("demo workflow API", () => {
       const blockedBody = await blockedResponse.json();
 
       expect(blockedResponse.status(), JSON.stringify(blockedBody)).toBe(409);
+      expect(blockedBody.noClientRelease).toBe(true);
+      expect(blockedBody.gateMissing).toContain("advisor_approval");
+      expect(blockedBody.gateMissing).toContain("accepted_evidence");
+      expect(blockedBody.releasePreconditions.advisorApproval).toBe(false);
+      expect(blockedBody.releasePreconditions.evidenceAccepted).toBe(false);
+      expect(blockedBody.releasePreconditions.payloadReady).toBe(true);
 
       const blockedRecommendation = await prisma.recommendation.findUniqueOrThrow({
         where: { id: demoTargets.northbridge.recommendationId },
@@ -424,6 +430,57 @@ test.describe("demo workflow API", () => {
       expect(summitBeforeRelease.clientVisible).toBe(false);
       expect(summitBeforeRelease.status).toBe(RecommendationStatus.ADVISOR_APPROVED);
 
+      const missingEvidenceResponse = await request.post("/api/demo-workflow", {
+        data: {
+          action: "compliance_release",
+          actorRole: "compliance_officer",
+          confirmationText: "RELEASE TO CLIENT",
+          reason: "Attempt release without scoped evidence payload.",
+          targetId: demoTargets.summit.recommendationId,
+          workflowType: "recommendation-review",
+        },
+      });
+      const missingEvidenceBody = await missingEvidenceResponse.json();
+
+      expect(missingEvidenceResponse.status(), JSON.stringify(missingEvidenceBody)).toBe(409);
+      expect(missingEvidenceBody.noClientRelease).toBe(true);
+      expect(missingEvidenceBody.gateMissing).toContain("evidence_record");
+      expect(missingEvidenceBody.releasePreconditions.advisorApproval).toBe(true);
+      expect(missingEvidenceBody.releasePreconditions.evidenceProvided).toBe(false);
+
+      await prisma.recommendation.update({
+        data: { clientSummaryDraft: null },
+        where: { id: demoTargets.summit.recommendationId },
+      });
+
+      const payloadBlockedResponse = await request.post("/api/demo-workflow", {
+        data: {
+          action: "compliance_release",
+          actorRole: "compliance_officer",
+          confirmationText: "RELEASE TO CLIENT",
+          evidenceIds: [demoTargets.summit.evidenceId],
+          reason: "Attempt release without a client-safe summary payload.",
+          targetId: demoTargets.summit.recommendationId,
+          workflowType: "recommendation-review",
+        },
+      });
+      const payloadBlockedBody = await payloadBlockedResponse.json();
+
+      expect(payloadBlockedResponse.status(), JSON.stringify(payloadBlockedBody)).toBe(409);
+      expect(payloadBlockedBody.noClientRelease).toBe(true);
+      expect(payloadBlockedBody.gateMissing).toContain("payload_ready");
+      expect(payloadBlockedBody.releasePreconditions.evidenceAccepted).toBe(true);
+      expect(payloadBlockedBody.releasePreconditions.evidenceScoped).toBe(true);
+      expect(payloadBlockedBody.releasePreconditions.payloadReady).toBe(false);
+
+      await prisma.recommendation.update({
+        data: {
+          clientSummaryDraft:
+            "Compliance-ready client summary for a released liquidity governance next step.",
+        },
+        where: { id: demoTargets.summit.recommendationId },
+      });
+
       const releaseResponse = await request.post("/api/demo-workflow", {
         data: {
           action: "compliance_release",
@@ -440,10 +497,27 @@ test.describe("demo workflow API", () => {
       expect(releaseResponse.ok(), JSON.stringify(releaseBody)).toBe(true);
       expect(releaseBody.noClientRelease).toBe(false);
       expect(releaseBody.result.gatePassed).toBe(true);
+      expect(releaseBody.result.gateMissing).toEqual([]);
+      expect(releaseBody.result.releasePreconditions).toMatchObject({
+        advisorApproval: true,
+        auditReady: true,
+        compliancePermission: true,
+        evidenceAccepted: true,
+        evidenceProvided: true,
+        evidenceScoped: true,
+        payloadReady: true,
+        selectedEvidenceRecordId: demoTargets.summit.evidenceId,
+      });
+      expect(releaseBody.result.releasePreconditions.missing).toEqual([]);
       expect(releaseBody.result.reloadedState.recommendation.status).toBe(
         RecommendationStatus.RELEASED_TO_CLIENT,
       );
       expect(releaseBody.result.reloadedState.complianceReview.status).toBe(ComplianceStatus.RELEASED);
+      expect(releaseBody.result.reloadedState.evidence).toContainEqual({
+        id: demoTargets.summit.evidenceId,
+        status: EvidenceStatus.RELEASED,
+        visibilityStatus: VisibilityStatus.CLIENT_VISIBLE,
+      });
 
       const audit = await prisma.auditEvent.findUniqueOrThrow({
         where: { id: releaseBody.result.auditEventId },

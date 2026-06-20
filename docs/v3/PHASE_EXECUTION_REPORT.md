@@ -241,6 +241,79 @@ Phase 2 adds executable proof for `FND-004` / admin non-bypass: positive governa
 
 `PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
 
+## ALPHAVEST-MVP-PHASE-5-IMPLEMENTATION - Advisor Approval To Compliance Gate
+
+Date: 2026-06-20
+
+### Scope
+
+Executed Phase 5 from `mega_journeys_1/ALPHAVEST_MVP_JOURNEY_IMPLEMENTATION_PLAN.md` as an implementation phase. This supersedes the earlier docs-only Phase 5 baseline. The implementation is intentionally backend/API/test scoped: no UI, route composition, schema, migration, visual asset or ImageGen work was performed.
+
+### Source Artefacts Used
+
+- `AGENTS.md`
+- `CODEX_MASTER_TASK.md`
+- `mega_journeys_1/ALPHAVEST_MVP_JOURNEY_IMPLEMENTATION_PLAN.md`
+- `docs/v3/CODEX_TASKS_DETAILED_V3.md`
+- `docs/v3/SCREEN_CATALOGUE_V3.md`
+- `docs/v3/DESIGN_SYSTEM_AND_VISUAL_RULES_V3.md`
+- `docs/v3/TECHNICAL_IMPLEMENTATION_SEQUENCE_V3.md`
+- `docs/v3/PAGEFLOW_USERFLOW_MAPPING_V3.md`
+- `docs/v3/DATA_MODEL_V3.md`
+- `docs/v3/QUALITY_GATES_AND_TEST_PLAN_V3.md`
+- `docs/v3/OPERATIONALIZATION_PROJECT_CONTRACT_V3.md`
+- `docs/v3/ALPHAVEST_MVP_PHASE_5_ADVISOR_COMPLIANCE_GATE_BASELINE.md`
+
+### Completed Tasks
+
+- Added a typed compliance release precondition matrix for advisor approval, compliance permission, accepted/scoped evidence, payload readiness and audit readiness.
+- Returned `gateMissing` and `releasePreconditions` in failed recommendation-review API responses.
+- Kept advisor approval as human review only: it persists approval and `ADVISOR_APPROVED` state while keeping `clientVisible=false`.
+- Required compliance release to pass all preconditions before setting `RELEASED_TO_CLIENT`, `ComplianceStatus.RELEASED`, released evidence status and client visibility.
+- Added API tests for advisor-only release failure, missing evidence failure, payload readiness failure and successful release after gates pass.
+- Added `docs/v3/ALPHAVEST_MVP_PHASE_5_ADVISOR_COMPLIANCE_GATE_IMPLEMENTATION.md` and marked the previous docs-only baseline as superseded.
+
+### Changed Files
+
+- `app/api/demo-workflow/route.ts`
+- `lib/demo-workflow-mutation.ts`
+- `tests/demo-workflow-api.spec.ts`
+- `docs/v3/ALPHAVEST_MVP_PHASE_5_ADVISOR_COMPLIANCE_GATE_BASELINE.md`
+- `docs/v3/ALPHAVEST_MVP_PHASE_5_ADVISOR_COMPLIANCE_GATE_IMPLEMENTATION.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+Pre-existing worktree note: `next-env.d.ts` was already modified and was not touched as part of this phase.
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm test:workflow-gate` - passed, 9 tests.
+- `pnpm test:workflow-api` - passed, 13 tests.
+- `pnpm lint` - passed.
+- `git diff --check` - passed.
+- `pnpm build` - passed with existing Turbopack tracing warnings in `lib/document-storage-adapter.ts`.
+
+### Capability / P0 Impact
+
+| Surface | Capability result | Notes |
+| --- | --- | --- |
+| Advisor approval as human review | E6 tested | Advisor approval remains separate from compliance release and client visibility. |
+| Compliance release preconditions | E6 tested | Release requires advisor approval, compliance permission, accepted/scoped evidence, payload readiness and audit readiness. |
+| Compliance block/request evidence | E6 preserved | Existing fail-closed behavior remains covered by the API suite. |
+| Client visibility | Narrow release proof only | Full Phase 6 client-safe projection proof is not claimed here. |
+
+### Blockers / Deferred / Hold Items
+
+- No production authentication or generalized arbitrary release API is claimed.
+- No schema migration or production evidence-review engine was added.
+- Full client projection, export/download/share readiness, client acceptance and full P0 closure remain later-phase scope.
+- Existing Turbopack tracing warnings around `lib/document-storage-adapter.ts` remain outside this Phase 5 scope.
+
+### Exit Gate Decision
+
+`PHASE_5_EXIT_PASSED_WITH_IMPLEMENTATION_PROOF_AND_LIMITATIONS`
+
 ## MEGA-JOURNEY-PHASE-1 - Providerless Scope Implementation
 
 Date: 2026-06-20
