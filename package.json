@@ -44,6 +44,7 @@
     "test:permissions": "playwright test tests/permission-engine.spec.ts",
     "test:phase-d": "playwright test tests/review-monitoring-service.spec.ts",
     "test:route-smoke": "playwright test tests/route-smoke.spec.ts",
+    "test:source-reality": "playwright test tests/source-reality-gate.spec.ts",
     "test:workflow-gate": "playwright test tests/workflow-gate.spec.ts",
     "test:workflow-api": "playwright test tests/demo-workflow-api.spec.ts",
     "phase:check": "pnpm typecheck && pnpm lint && pnpm db:validate && pnpm build"
