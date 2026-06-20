@@ -4,6 +4,7 @@ import { exportService, type ExportPayloadClassification } from "@/lib/export-se
 export type ExportPackageManifestInput = {
   approvalRequired: boolean;
   approved: boolean;
+  auditPersistenceAvailable?: boolean;
   expiresAt: Date;
   exportRequestId: string;
   externalShare: boolean;
@@ -49,6 +50,7 @@ export function buildExportPackageManifest(input: ExportPackageManifestInput): E
   if (!input.file.valid) issues.push("valid_file_metadata_required");
   if (input.file.mimeType !== "application/zip") issues.push("zip_package_required");
   if (input.approvalRequired && !input.approved) issues.push("approval_required_before_generation");
+  if (input.auditPersistenceAvailable === false) issues.push("audit_persistence_required_before_generation");
   if (!input.redactionProfile.trim()) issues.push("redaction_profile_required");
   if (input.selectedObjectCount <= 0) issues.push("selected_export_objects_required");
   if (!input.watermark) issues.push("watermark_required");

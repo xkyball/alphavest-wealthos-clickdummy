@@ -55,6 +55,7 @@ test.describe("Phase 18 export package manifest", () => {
     const result = exportPackageService.buildExportPackageManifest({
       approvalRequired: true,
       approved: true,
+      auditPersistenceAvailable: true,
       expiresAt: new Date("2026-06-23T12:00:00.000Z"),
       exportRequestId: "68c2dd2e-2322-526f-8a48-2fdadf996c40",
       externalShare: false,
@@ -86,6 +87,7 @@ test.describe("Phase 18 export package manifest", () => {
     const result = exportPackageService.buildExportPackageManifest({
       approvalRequired: true,
       approved: false,
+      auditPersistenceAvailable: false,
       expiresAt: new Date("2026-06-23T12:00:00.000Z"),
       exportRequestId: "68c2dd2e-2322-526f-8a48-2fdadf996c40",
       externalShare: true,
@@ -99,6 +101,7 @@ test.describe("Phase 18 export package manifest", () => {
     expect(result.valid).toBe(false);
     expect(result.issues).toContain("zip_package_required");
     expect(result.issues).toContain("approval_required_before_generation");
+    expect(result.issues).toContain("audit_persistence_required_before_generation");
     expect(result.issues).toContain("redaction_profile_required");
     expect(result.issues).toContain("selected_export_objects_required");
     expect(result.issues).toContain("watermark_required");
@@ -116,6 +119,7 @@ test.describe("Phase 18 export package manifest", () => {
     const result = exportPackageService.buildExportPackageManifest({
       approvalRequired: true,
       approved: true,
+      auditPersistenceAvailable: true,
       expiresAt: new Date("2026-06-23T12:00:00.000Z"),
       exportRequestId: "68c2dd2e-2322-526f-8a48-2fdadf996c40",
       externalShare: false,
@@ -138,6 +142,7 @@ test.describe("Phase 18 export package manifest", () => {
     const gate = exportService.canGenerateExport({
       actor: session.actor,
       approvalComplete: false,
+      auditPersistenceAvailable: true,
       clientTenantId: session.tenant.id,
       externalShare: true,
       payloadClassifications: ["CLIENT_SAFE_SUMMARY"],
@@ -151,5 +156,25 @@ test.describe("Phase 18 export package manifest", () => {
     expect(gate.allowedToGenerate).toBe(false);
     expect(gate.status).toBe("APPROVAL_REQUIRED");
     expect(gate.missing).toContain("external_share_approval");
+  });
+
+  test("blocks export generation when audit persistence is unavailable", () => {
+    const session = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
+    const gate = exportService.canGenerateExport({
+      actor: session.actor,
+      approvalComplete: true,
+      auditPersistenceAvailable: false,
+      clientTenantId: session.tenant.id,
+      externalShare: false,
+      payloadClassifications: ["CLIENT_SAFE_SUMMARY"],
+      platformTenantId: demoPlatformTenantId,
+      redactionProfile: "external-limited",
+      role: session.role,
+      targetId: "68c2dd2e-2322-526f-8a48-2fdadf996c40",
+      targetType: "EXPORT_REQUEST",
+    });
+
+    expect(gate.allowedToGenerate).toBe(false);
+    expect(gate.missing).toContain("audit_persistence");
   });
 });

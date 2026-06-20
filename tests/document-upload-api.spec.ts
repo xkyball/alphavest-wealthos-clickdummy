@@ -9,6 +9,8 @@ import {
 } from "@prisma/client";
 import { expect, test } from "@playwright/test";
 
+import { createDemoSession } from "../lib/demo-session";
+
 test.describe("document upload multipart API", () => {
   let prisma: PrismaClient;
 
@@ -29,6 +31,10 @@ test.describe("document upload multipart API", () => {
 
   test("stores multipart document bytes, domain rows, extraction, evidence and audit", async ({ request }) => {
     const fileName = "phase-p1-upload-proof.pdf";
+    const morganSession = createDemoSession({ roleKey: "family_cfo", tenantSlug: "morgan" });
+    const exportCountBefore = await prisma.exportRequest.count({
+      where: { clientTenantId: morganSession.tenant.id },
+    });
     const response = await request.post("/api/documents/upload", {
       multipart: {
         documentType: "financial_statement",
@@ -77,11 +83,21 @@ test.describe("document upload multipart API", () => {
     expect(document.extractions[0]?.extractionStatus).toBe("pending");
     expect(evidenceRecord.relatedObjectId).toBe(document.id);
     expect(evidenceRecord.status).toBe(EvidenceStatus.CREATED);
+    expect(evidenceRecord.visibilityStatus).toBe("INTERNAL_ONLY");
     expect(document.clientVisible).toBe(false);
+    expect(document.status).toBe("UPLOADED");
     expect(evidenceRecord.items.map((item) => item.itemType).sort()).toEqual(["audit_event", "document"]);
     expect(audit.result).toBe(AuditResult.SUCCESS);
     expect(audit.targetType).toBe(ObjectType.DOCUMENT);
     expect(audit.targetId).toBe(document.id);
+    expect(audit.eventType).toBe("document.upload.created");
+    expect(audit.nextState).toBe("UPLOADED");
+
+    const exportCountAfter = await prisma.exportRequest.count({
+      where: { clientTenantId: morganSession.tenant.id },
+    });
+
+    expect(exportCountAfter).toBe(exportCountBefore);
 
     const reload = await request.get("/api/documents?tenantSlug=morgan");
     const reloadBody = await reload.json();

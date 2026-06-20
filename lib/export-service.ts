@@ -44,6 +44,7 @@ function canGenerateExport(input: {
   redactionProfile?: string;
   payloadClassifications?: ExportPayloadClassification[];
   approvalComplete?: boolean;
+  auditPersistenceAvailable?: boolean;
   externalShare?: boolean;
 }): ExportGateDecision {
   const permission = permissionEngine.can(
@@ -73,6 +74,10 @@ function canGenerateExport(input: {
 
   if (input.externalShare && !input.approvalComplete) {
     missing.push("external_share_approval");
+  }
+
+  if (input.auditPersistenceAvailable === false) {
+    missing.push("audit_persistence");
   }
 
   for (const classification of forbiddenExportPayloads(input.payloadClassifications)) {
