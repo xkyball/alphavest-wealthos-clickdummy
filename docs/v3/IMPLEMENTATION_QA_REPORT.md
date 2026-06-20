@@ -1,5 +1,68 @@
 # Implementation QA Report
 
+## PHASE-10-P0_TESTS QA Addendum
+
+Date: 2026-06-20
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Phase scope discipline | Passed | Only `AV-SLICE-P0-01..09` P0 acceptance-test proof work was changed. |
+| Source hierarchy | Passed | Final Handoff, Task Master, Source Order, Stop Rules, slice plan, phase gate, P0 assertion plan, P0 acceptance matrix, done checklist and V3 operationalization docs were used. |
+| Payload visibility / client fail-closed | Passed | New P0 assertions prove released client projection is redacted and unreleased/internal payloads are hidden. |
+| AI Draft internal-only | Passed | New P0 assertions prove AI Draft is internal-only and forbidden from client/export payload classifications. |
+| Advisor versus compliance release | Passed | New P0 assertions and workflow-gate suite prove advisor approval is not client release. |
+| Admin non-bypass | Passed | New P0 assertions and permission suite prove admin governance authority does not bypass advice/release/export safety gates. |
+| Upload-not-sufficiency | Passed | New P0 assertions and upload API suite prove upload/evidence creation is not release/export sufficiency. |
+| Audit persistence / fail-closed | Passed | New P0 assertions and permission/export tests prove critical actions require audit persistence and fail closed where unavailable. |
+| Export redaction / lifecycle | Passed | New P0 assertions and file-export tests prove forbidden payload blocking and preview/approval/download separation. |
+| API validation / API universe | Passed | New P0 assertions and workflow API tests prove fail-closed request validation and preserve the four-route API baseline. |
+| Route scope / hold exclusions | Passed | New P0 assertions and route-smoke tests prove route worksets and P1/reference/hold exclusions are preserved. |
+| No route-scope drift | Passed | No route registry classification changed. |
+| No visual generation | Passed | No images, state-screen assets or replacement visuals were generated. |
+| No new API/schema work | Passed | No API route, Prisma schema or migration changed. |
+| Typecheck | Passed | `pnpm typecheck`. |
+| Lint | Passed | `pnpm lint`. |
+| Whitespace diff check | Passed | `git diff --check`. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm exec playwright test tests/p0-acceptance.spec.ts` | Passed | 9 tests covering `AV-SLICE-P0-01..09`. |
+| `pnpm test:permissions` | Passed | 7 tests. |
+| `pnpm test:workflow-gate` | Passed | 9 tests. |
+| `pnpm test:file-export` | Passed | 7 tests. |
+| `pnpm test:workflow-api` | Passed | 5 tests. |
+| `pnpm test:route-smoke` | Passed | 85 tests. |
+| `pnpm exec playwright test tests/document-upload-api.spec.ts` | Passed | 5 tests. |
+| `pnpm test:data-quality` | Passed | 2 tests. |
+| `pnpm typecheck` | Passed | TypeScript clean after the P0 test addition. |
+| `pnpm lint` | Passed | ESLint clean after the P0 test addition. |
+| `git diff --check` | Passed | No whitespace errors. |
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| `AV-SLICE-P0-01` payload visibility proof | implemented + tested | Released client-safe payload is redacted; unreleased/internal payload fails closed. |
+| `AV-SLICE-P0-02` AI Draft proof | implemented + tested | AI Draft is internal-only and forbidden in export/client payloads. |
+| `AV-SLICE-P0-03` advisor/compliance proof | implemented + tested | Advisor approval remains separate from compliance release and client visibility. |
+| `AV-SLICE-P0-04` admin non-bypass proof | implemented + tested | Admin can manage governance roles but cannot bypass release gates. |
+| `AV-SLICE-P0-05` upload-not-sufficiency proof | implemented + tested | Upload-created evidence remains review-pending and cannot satisfy release/export gates. |
+| `AV-SLICE-P0-06` audit proof | implemented + tested | Critical gate paths require audit persistence; unavailable audit blocks export generation. |
+| `AV-SLICE-P0-07` export proof | implemented + tested | Export redaction and lifecycle boundaries are asserted. |
+| `AV-SLICE-P0-08` API proof | implemented + tested | Demo workflow validation and four-route API universe are asserted. |
+| `AV-SLICE-P0-09` route/scope proof | implemented + tested | MVP/P1/reference/hold worksets are preserved. |
+| Full operational capability | not claimed | These are P0 safety acceptance tests, not a claim that every workflow is E7 operational. |
+
+### Residual Risks
+
+- `pnpm test:playwright` full-suite was not run in this phase; the handoff prompt allowed proportionate targeted checks, and all P0-focused commands above passed.
+- Export remains metadata-only with `realBinaryGenerated=false`; this phase proves P0 safety boundaries, not generated binary export capability.
+- Demo workflow and route surfaces still include documented fixture-backed behavior. The P0 tests preserve honest boundaries rather than upgrading those surfaces to production or arbitrary-payload capability.
+
 ## PHASE-07-EVIDENCE_AUDIT_EXPORT QA Addendum
 
 Date: 2026-06-20

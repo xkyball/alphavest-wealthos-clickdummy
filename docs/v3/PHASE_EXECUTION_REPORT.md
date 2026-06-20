@@ -1,5 +1,112 @@
 # Phase Execution Report
 
+## PHASE-10-P0_TESTS - P0 Tests
+
+Date: 2026-06-20
+
+### Entry Decision
+
+`ENTRY_READY`
+
+### Scope
+
+Executed `_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/04_CODEX_PHASE_PROMPTS/10_PHASE_P0_TESTS_PROMPT.md` for allowed slices `AV-SLICE-P0-01..09`. This phase added P0 acceptance assertions only. No product route scope, P1/Hold/Reference route status, API route, Prisma schema, migration, generated visual, image or state-screen was changed.
+
+### Source Artefacts Used
+
+- `AGENTS.md`
+- `CODEX_MASTER_TASK.md`
+- Required V3 project source files listed by `AGENTS.md`
+- `docs/v3/OPERATIONALIZATION_PROJECT_CONTRACT_V3.md`
+- `docs/v3/CAPABILITY_TRUTH_AUDIT_V3.md`
+- `docs/v3/INPUT_MASK_AND_DATA_MAINTENANCE_REQUIREMENTS_V3.md`
+- `docs/v3/WORKFLOW_EXECUTION_REALITY_MATRIX_V3.md`
+- `FINAL_CODEX_IMPLEMENTATION_HANDOFF.md`
+- `FINAL_CODEX_TASK_MASTER.md`
+- `SOURCE_OF_TRUTH_ORDER.md`
+- `STOP_RULES_MASTER.md`
+- `ATOMIC_IMPLEMENTATION_SLICE_PLAN.md`
+- `PHASE_ENTRY_EXIT_GATE_CHECKLIST.md`
+- `P0_TEST_ASSERTION_AND_FIXTURE_PLAN.md`
+- `P0_TEST_ACCEPTANCE_MATRIX.md`
+- `TASK_DONE_DEFINITION_AND_QA_CHECKLIST.md`
+
+### Slice Coverage
+
+| Slice | Status | Notes |
+| --- | --- | --- |
+| `AV-SLICE-P0-01` | Added / tested | Client-safe recommendation projection exposes only released client summary and hides unreleased/internal fields fail-closed. |
+| `AV-SLICE-P0-02` | Added / tested | AI Draft remains visible only to authorized internal analyst context and is forbidden from client/export payloads. |
+| `AV-SLICE-P0-03` | Added / tested | Advisor approval alone remains compliance-pending; full release passes only after compliance, evidence and permission align. |
+| `AV-SLICE-P0-04` | Added / tested | Admin can perform governance management but cannot bypass recommendation release gates. |
+| `AV-SLICE-P0-05` | Added / tested | Upload-created evidence is review-pending and cannot satisfy release/export sufficiency. |
+| `AV-SLICE-P0-06` | Added / tested | Critical release/export paths require audit persistence; audit-unavailable export remains blocked. |
+| `AV-SLICE-P0-07` | Added / tested | Export preview, approval and generation remain separate; forbidden internal payload blocks package validity. |
+| `AV-SLICE-P0-08` | Added / tested | Demo workflow request validation rejects unsafe shapes and the API universe remains the four locked routes. |
+| `AV-SLICE-P0-09` | Added / tested | Route worksets preserve MVP/MVP_SUPPORT/P1/Reference/Hold counts and exclusions. |
+
+### Files Inspected
+
+- `tests/permission-engine.spec.ts`
+- `tests/workflow-gate.spec.ts`
+- `tests/file-export-realism.spec.ts`
+- `tests/document-upload-api.spec.ts`
+- `tests/demo-workflow-api.spec.ts`
+- `tests/foundation-guardrails.spec.ts`
+- `tests/schema-alignment.spec.ts`
+- `lib/permission-engine.ts`
+- `lib/visibility-engine.ts`
+- `lib/workflow-gate.ts`
+- `lib/evidence-service.ts`
+- `lib/export-service.ts`
+- `lib/export-package-service.ts`
+- `lib/demo-workflow-validation.ts`
+- `lib/route-registry.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Changed Files
+
+- `tests/p0-acceptance.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+Note: `next-env.d.ts` was already modified by local generated Next type output and was not edited as part of this phase.
+
+### Tests Added Or Updated
+
+- Added `tests/p0-acceptance.spec.ts` with 9 service/contract-level P0 acceptance tests mapped one-to-one to `AV-SLICE-P0-01..09`.
+- Tests include positive and negative/fail-closed assertions for payload visibility, AI Draft internal-only, advisor/compliance separation, admin non-bypass, upload-not-sufficiency, audit persistence, export lifecycle/redaction, API validation and route-scope exclusions.
+
+### Commands Run
+
+- `pnpm exec playwright test tests/p0-acceptance.spec.ts` - passed, 9 tests.
+- `pnpm test:permissions` - passed, 7 tests.
+- `pnpm test:workflow-gate` - passed, 9 tests.
+- `pnpm test:file-export` - passed, 7 tests.
+- `pnpm test:workflow-api` - passed, 5 tests.
+- `pnpm test:route-smoke` - passed, 85 tests.
+- `pnpm exec playwright test tests/document-upload-api.spec.ts` - passed, 5 tests.
+- `pnpm test:data-quality` - passed, 2 tests.
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `git diff --check` - passed.
+
+### P0 Impact
+
+This phase closes the required P0 test-slice execution for `AV-SLICE-P0-01..09` with targeted passing tests and preserves proof-slice discipline across related safety suites. P0 test assertions now cover the missing positive and negative acceptance categories identified by the handoff plan. This does not upgrade every product capability to E7 and does not claim metadata-only export has become generated binary export.
+
+### Blockers / Deferred / Hold Items
+
+- No P1, reference-only or hold routes were promoted.
+- No new API route, Prisma schema change, migration, generated visual, image or state-screen was added.
+- Export remains metadata-only with `realBinaryGenerated=false`; P0 tests prove redaction/approval boundaries, not operational binary export generation.
+- The full all-suite `pnpm test:playwright` command was not run because the phase called for proportionate targeted scripts; the relevant P0 and safety-focused suites listed above passed.
+
+### Exit Gate Decision
+
+`PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
 ## PHASE-07-EVIDENCE_AUDIT_EXPORT - Evidence / Audit / Export Addendum
 
 Date: 2026-06-20
