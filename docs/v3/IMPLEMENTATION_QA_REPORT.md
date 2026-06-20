@@ -2381,6 +2381,54 @@ Date: 2026-06-20
 - Turbopack build warnings around `lib/document-storage-adapter.ts` remain outside this phase.
 - Authentication remains demo-session based.
 
+## PHASE-05-FEEDBACK QA Addendum
+
+Date: 2026-06-20
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Phase scope discipline | Passed | Only `AV-SLICE-FVE-01..05` feedback/test/report work was changed. |
+| Source artefacts | Passed | Final handoff, task master, source order, stop rules, feedback contract, task done checklist and UI interaction remediation patch were read before edits. |
+| Stop rules | Passed | No route scope change, P1/Hold/reference promotion, visual generation, API route, Prisma schema, migration, `main` target or P0 overclaim. |
+| Upload feedback | Passed | Upload progress and success copy preserve upload-only semantics and keep evidence/release/client visibility locked. |
+| Release feedback | Passed | Release modal no longer displays pre-submit release success; release remains pending until the demo action is submitted. |
+| Export feedback | Passed | Export approval copy separates approval from generation, download, share and client acceptance. |
+| Audit feedback | Passed | Audit-sensitive copy states audit requirement/expectation instead of claiming persistence. |
+| Focused Playwright | Passed | Upload, release, export and audit no-overclaim assertions passed. |
+| Typecheck | Passed | `pnpm typecheck`. |
+| Lint | Passed | `pnpm lint`. |
+| Build | Passed with warnings | `pnpm build` passed; existing Turbopack tracing warnings remain around `lib/document-storage-adapter.ts`. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | TypeScript clean after feedback copy/test updates. |
+| `pnpm exec playwright test tests/document-upload-flow.spec.ts tests/ui-state-boundaries.spec.ts` | Passed | 5 tests; Playwright seeded the demo database before execution. |
+| `pnpm lint` | Passed | ESLint clean. |
+| `pnpm build` | Passed with warnings | Production build completed; Turbopack warned about broad tracing from demo document storage path resolution. |
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| Upload no-overclaim feedback | implemented + tested | Upload completion no longer implies review completion, evidence sufficiency, release or client visibility. |
+| Release no-overclaim feedback | implemented + tested | Pre-submit modal state no longer displays release success. |
+| Export approval separation feedback | implemented + tested | Approval is separate from generation, download, share and client acceptance. |
+| Audit requirement feedback | implemented + tested | Audit wording states required/expected audit logging, not proven persistence. |
+| Full audit persistence / fail-closed proof | not implemented | Later safety/P0 phases own persistence and negative failure proof. |
+| Full P0 gate closure | not claimed | Current tests are proof slices only. |
+
+### Residual Risks
+
+- Feedback copy is hardened, but production release/export/audit mutations still rely on later safety, API and P0 phases.
+- Export remains metadata/control-state oriented; no binary package generation or recipient acceptance proof is claimed.
+- Audit logging is required/expected by copy, but full audit persistence and fail-closed tests are not closed in this phase.
+- Turbopack build warnings around `lib/document-storage-adapter.ts` remain outside this phase.
+- Authentication remains demo-session based.
+
 ## PHASE-04-INTERACTION QA Addendum
 
 Date: 2026-06-20

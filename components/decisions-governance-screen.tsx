@@ -1131,7 +1131,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
           <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4 text-sm text-alphavest-muted">
             <p>3 sensitive permissions modified.</p>
             <p>Affects 7 users across 2 teams.</p>
-            <p>This change will be logged in the audit trail.</p>
+            <p>This change requires audit logging before it can be accepted.</p>
           </div>
           <Field label="Confirmation phrase" value="PORTFOLIO MANAGER" />
         </div>

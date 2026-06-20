@@ -2699,6 +2699,82 @@ This phase improves P0 proof slices for `P0_UPLOAD_NOT_SUFFICIENCY_GATE`, `P0_EV
 
 `PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
 
+## PHASE-05-FEEDBACK - Feedback / Validation / Error
+
+Date: 2026-06-20
+
+### Scope
+
+Executed the handoff phase prompt `05_PHASE_FEEDBACK_VALIDATION_ERROR_PROMPT.md` for allowed slices `AV-SLICE-FVE-01..05`. This pass hardened no-overclaim feedback copy on upload, compliance release, export approval/download/share and audit-sensitive role-change surfaces. No routes, APIs, schema, migrations, visual assets or route worksets were changed.
+
+### Source Artefacts Used
+
+- `FINAL_CODEX_IMPLEMENTATION_HANDOFF.md`
+- `FINAL_CODEX_TASK_MASTER.md`
+- `SOURCE_OF_TRUTH_ORDER.md`
+- `STOP_RULES_MASTER.md`
+- `FEEDBACK_VALIDATION_ERROR_STATE_CONTRACT.md`
+- `TASK_DONE_DEFINITION_AND_QA_CHECKLIST.md`
+- `03_04_05_UI_INTERACTION_REALITY_REMEDIATION_PATCH.md`
+- `ALPHAVEST_UI_INTERACTION_REALITY_CLARIFICATION.md`
+- `STATIC_VS_REACTIVE_UI_CLASSIFICATION.md`
+- `UI_INTERACTION_REALITY_CODEBASE_AUDIT_CHECKLIST.md`
+- `ATOMIC_IMPLEMENTATION_SLICE_PLAN.md`
+- `PHASE_ENTRY_EXIT_GATE_CHECKLIST.md`
+- Project V3 source-of-truth docs listed in `AGENTS.md` and `CODEX_MASTER_TASK.md`.
+
+### Completed Tasks
+
+- Reworded document upload progress and success feedback so upload completion names file transfer only and keeps review routing, evidence sufficiency, release and client visibility locked.
+- Reworded profile/audit copy so audit is stated as a required gate rather than claimed persistence.
+- Reworded release review and release modal feedback so release is pending until submit, and no pre-submit success state appears.
+- Reworded export approval feedback so approval is separate from generation, download, share and client acceptance.
+- Reworded export delivery/security feedback so audit is expected rather than claimed as already persisted.
+- Added focused Playwright assertions for release, export and audit no-overclaim boundaries.
+
+### UI Interaction Reality Exit Classification
+
+| Surface | Classification | Result |
+| --- | --- | --- |
+| `DocumentUploadForm` | `UPLOAD_LIFECYCLE` | Existing lifecycle retained; upload-only copy hardened. |
+| `ReleaseModal` | `REACTIVE_MODAL` / confirmation dialog | Existing lifecycle retained from Phase 04; feedback now avoids pre-submit release success. |
+| `ExportPreviewPage` approval modal | `REACTIVE_MODAL` / confirmation dialog | Existing lifecycle retained; approval copy now separates approval from export generation/download/share. |
+| `ExportDownloadPage` | Permanent export delivery state region | Delivery copy now avoids client-acceptance and audit-persistence overclaim. |
+| `RoleManagementPage` second confirmation modal | `REACTIVE_MODAL` / confirmation dialog | Audit copy now states audit requirement rather than audit persistence. |
+
+### Changed Files
+
+- `components/client-intake-screen.tsx`
+- `components/internal-workflow-screen.tsx`
+- `components/communication-export-ops-screen.tsx`
+- `components/decisions-governance-screen.tsx`
+- `tests/document-upload-flow.spec.ts`
+- `tests/ui-state-boundaries.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm exec playwright test tests/document-upload-flow.spec.ts tests/ui-state-boundaries.spec.ts` - passed, 5 tests.
+- `pnpm lint` - passed.
+- `pnpm build` - passed with existing Turbopack file-tracing warnings around `lib/document-storage-adapter.ts`.
+
+### P0 Impact
+
+This phase improves proof slices for `P0_STATE_FEEDBACK_GATE`, `P0_UPLOAD_NOT_SUFFICIENCY_GATE`, `P0_ADVISOR_NOT_RELEASE_GATE`, `P0_COMPLIANCE_RELEASE_GATE`, `P0_EXPORT_APPROVAL_GATE` and `P0_AUDIT_PERSISTENCE_GATE` feedback wording. It does not claim full P0 passed.
+
+### Blockers / Deferred / Hold Items
+
+- No P1, Reference-only or Hold route implementation was performed.
+- Export remains metadata/control-state oriented; no real binary generation or recipient acceptance proof is claimed.
+- Audit feedback now avoids persistence overclaim; full audit persistence and fail-closed proof remain later safety/P0 obligations.
+- Existing Turbopack tracing warnings in `lib/document-storage-adapter.ts` remain outside this phase.
+
+### Exit Gate Decision
+
+`PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
 ## PHASE-04-INTERACTION - Drawer / Modal / Interaction Lifecycle
 
 Date: 2026-06-20

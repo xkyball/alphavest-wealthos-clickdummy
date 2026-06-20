@@ -928,18 +928,18 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
             <p className="text-alphavest-muted">Approval requires policy checks, redaction review and audit trail readiness before download/share actions are allowed.</p>
           </div>
         }
-        description="You are about to approve this export package for controlled release."
+        description="You are about to approve this export package. Generation, download and share remain separate controlled steps."
         footer={
           <>
             <button className={secondaryButtonClass} onClick={() => setModalOpen(false)} type="button">Cancel</button>
-            <button className={primaryButtonClass} data-testid="j08-confirm-approval" onClick={() => { void runScreencastDemoAction("j08.confirmApproval", "/export/demo/download?state=confirm"); }} type="button">Confirm Approval and Export</button>
+            <button className={primaryButtonClass} data-testid="j08-confirm-approval" onClick={() => { void runScreencastDemoAction("j08.confirmApproval", "/export/demo/download?state=confirm"); }} type="button">Confirm Export Approval</button>
           </>
         }
         onClose={() => setModalOpen(false)}
         open={modalOpen}
-        title="Approve and Export Package"
+        title="Approve Export Package"
       >
-        <StatePanel detail="This action cannot be undone. Ensure all included data is accurate and necessary." state="blocked" title="Approval confirmation" />
+        <StatePanel detail="This demo approval records the approval step only. Download, share and client acceptance remain separate." state="blocked" title="Approval confirmation" />
         <label className="mt-4 flex items-start gap-3 text-sm leading-6 text-alphavest-muted">
           <span className="mt-1 grid size-5 shrink-0 place-items-center rounded border border-alphavest-gold bg-alphavest-gold text-alphavest-navy">
             <Check aria-hidden="true" className="size-3" />
@@ -961,7 +961,7 @@ function ExportDownloadPage({ title }: { title: string }) {
         className="mb-5"
         detail="The export package is approved for controlled delivery. Download and share actions do not imply client acceptance or downstream advice execution."
         state="success"
-        title="Approved export delivery state"
+        title="Export approved for delivery"
       />
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div className="space-y-5">
@@ -987,7 +987,7 @@ function ExportDownloadPage({ title }: { title: string }) {
               <CardTitle>Security and Compliance</CardTitle>
             </CardHeader>
             <CardContent>
-              {["Data classified and watermarked", "Access validated for approved requester", "Export scanned and cleared", "Audit logging enabled", "External sharing secured with expiry"].map((item) => (
+              {["Data classified and watermarked", "Access validated for approved requester", "Demo package scan marked clear", "Audit logging expected", "External sharing secured with expiry"].map((item) => (
                 <div className="mb-2 flex items-center gap-3 text-sm text-alphavest-muted" key={item}>
                   <CheckCircle2 aria-hidden="true" className="size-4 text-alphavest-green" />
                   {item}
@@ -1041,7 +1041,7 @@ function ExportDownloadPage({ title }: { title: string }) {
         </div>
       </div>
       <Modal
-        description="Your secure link is ready to share."
+        description="Your secure link is ready to share. Link creation does not imply recipient acceptance."
         footer={<button className={primaryButtonClass} onClick={() => setModalOpen(false)} type="button">Done</button>}
         onClose={() => setModalOpen(false)}
         open={modalOpen}

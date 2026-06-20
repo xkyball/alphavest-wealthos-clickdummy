@@ -756,7 +756,7 @@ function ClientProfilePage({ title }: { title: string }) {
                   <span className="font-semibold text-alphavest-ivory">{value}</span>
                 </div>
               ))}
-              <SafeClientBanner>All profile edits are audit logged.</SafeClientBanner>
+              <SafeClientBanner>Profile edits require audit logging before they can be accepted.</SafeClientBanner>
             </CardContent>
           </Card>
         </div>
@@ -1286,7 +1286,7 @@ function DocumentUploadForm() {
     formData.append("tenantSlug", session.tenant.slug);
 
     setUploadState("uploading");
-    setMessage("Uploading the file and creating a review queue record.");
+    setMessage("Uploading the file. Review routing, evidence sufficiency, release and client visibility remain locked until later gates pass.");
 
     try {
       const response = await fetch("/api/documents/upload", {
@@ -1301,7 +1301,7 @@ function DocumentUploadForm() {
 
       setSelectedFile(null);
       setUploadState("success");
-      setMessage(`${body.result.document.fileName} is uploaded and queued for extraction review. Evidence sufficiency, release and client visibility remain locked.`);
+      setMessage(`${body.result.document.fileName} upload completed. Extraction review is the next step; evidence sufficiency, release and client visibility remain locked.`);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }

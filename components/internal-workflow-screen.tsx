@@ -1293,7 +1293,7 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
       <div className="mx-auto grid max-w-[104rem] gap-5 xl:grid-cols-[18rem_1fr_22rem]">
         <aside className="space-y-4">
           <Card><CardHeader><CardTitle>Review progress</CardTitle></CardHeader><CardContent className="space-y-3">{["Advice validation", "Risk & suitability", "Product & fee review", "Disclosures", "Documents", "Overall review"].map((item) => <p className="flex items-center gap-2 text-sm text-alphavest-muted" key={item}><CheckCircle2 aria-hidden="true" className="size-4 text-alphavest-green" />{item}</p>)}</CardContent></Card>
-          <StatePanel detail="All mandatory requirements satisfied. Advice is compliant and suitable for release." state="success" title="Overall decision approved" />
+          <StatePanel detail="Demo checklist is marked ready for release review; client visibility still requires the explicit release action and audit proof." state="success" title="Review decision marked approved" />
         </aside>
         <section className={cn("min-w-0 space-y-5", modalOpen ? "opacity-45" : "")}>
           <PageHeading badge={<Badge tone="green">Approved</Badge>} subtitle="Review ID: CR-2025-0407-0012" title="Compliance review" />
@@ -1301,7 +1301,7 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
           <InternalGuard />
         </section>
         <aside className={cn("space-y-5", modalOpen ? "opacity-45" : "")}>
-          <StatePanel detail="All compliance checks passed." state="success" title="Review status approved" />
+          <StatePanel detail="Compliance checklist is marked complete for this demo review. Client visibility is still controlled by the release action." state="success" title="Review status marked approved" />
           <Card><CardHeader><CardTitle>Related items</CardTitle></CardHeader><CardContent className="space-y-3">{["SOA - Retirement Income Plan", "PDS - AlphaVest Balanced Fund", "Fee Disclosure Statement", "Risk Profile Assessment"].map((item) => <p className="text-sm text-alphavest-muted" key={item}>{item}</p>)}</CardContent></Card>
         </aside>
       </div>
@@ -1346,7 +1346,7 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
                 </div>
               </div>
             ))}
-            <StatePanel detail="All requirements satisfied." state="success" title="Release ready" />
+            <StatePanel detail="Demo prerequisites are shown as satisfied for this confirmation state; release remains pending until the action completes." state="success" title="Release action pending" />
             <button
               className={primaryButtonClass + " w-full"}
               data-testid="j02-release-client"
@@ -1382,7 +1382,7 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
                 </div>
               </div>
             </div>
-            <StatePanel className="mt-4" detail="Only approved content will be released." state="restricted" title="This is what the client will see" />
+            <StatePanel className="mt-4" detail="Only content that passes release, redaction and permission checks can become client-visible." state="restricted" title="Client-safe preview candidate" />
           </CardContent>
         </Card>
         <Card>
@@ -1407,7 +1407,7 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
         </Card>
       </div>
       <div className="mt-4 rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-4 text-sm text-alphavest-green">
-        Released successfully - demo state shown for confirmation flow.
+        Release has not been completed in this modal state. The demo action records only the requested release step after submit.
       </div>
     </Modal>
   );

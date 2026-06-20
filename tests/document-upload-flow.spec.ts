@@ -20,7 +20,8 @@ test.describe("document upload browser flow", () => {
     });
 
     await page.getByTestId("real-upload-document").click();
-    await expect(page.getByText(`${fileName} is uploaded and queued for extraction review.`)).toBeVisible();
+    await expect(page.getByText(`${fileName} upload completed.`)).toBeVisible();
+    await expect(page.getByText("Extraction review is the next step;")).toBeVisible();
     await expect(page.getByText("Evidence sufficiency, release and client visibility remain locked.")).toBeVisible();
 
     await page.reload();
