@@ -750,7 +750,7 @@ function TenantPoliciesPage() {
         ))}
       </section>
       <AuditBanner action={<button className={secondaryButtonClass} type="button">Review pending overrides</button>}>
-        All policy overrides require Compliance approval and are fully audited.
+        Policy overrides require Compliance approval and audit confirmation before activation.
       </AuditBanner>
     </div>
   );

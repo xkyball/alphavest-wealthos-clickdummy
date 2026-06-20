@@ -463,7 +463,7 @@ function ComplianceAuditPage({ title }: { title: string }) {
       <ScreenTitle>{title}</ScreenTitle>
       <div className="mx-auto grid max-w-[112rem] gap-5 2xl:grid-cols-[1fr_20rem]">
         <section className="min-w-0 space-y-5">
-          <PageHeading subtitle="Complete audit trail of compliance decisions, exceptions and resolutions." title={title} />
+          <PageHeading subtitle="Compliance decision, exception and resolution activity for audit review." title={title} />
           <div className="grid gap-3 md:grid-cols-4">
             {complianceAuditMetrics.map((metric) => (
               <Card key={metric.label}>
@@ -518,7 +518,7 @@ function ComplianceAuditPage({ title }: { title: string }) {
               <InfoRow label="Avg. time" value="2.6 days" />
             </CardContent>
           </Card>
-          <StatePanel detail="All exports are security-controlled and fully audited." state="restricted" title="Export controlled" />
+          <StatePanel detail="Exports require security controls and audit confirmation before they can proceed." state="restricted" title="Export controlled" />
         </aside>
       </div>
     </Phase12Shell>
@@ -740,7 +740,7 @@ function DecisionSuccessPage({ title }: { title: string }) {
           </div>
           <div>
             <h2 className="font-display text-5xl text-alphavest-ivory">{title}</h2>
-            <p className="mt-2 text-lg text-alphavest-gold">The decision has been recorded and is now part of the immutable audit trail.</p>
+            <p className="mt-2 text-lg text-alphavest-gold">The decision has been recorded for review. Audit persistence remains a controlled gate.</p>
             <div className="mt-8 grid gap-4 md:grid-cols-4">
               <InfoRow label="Decision ID" value={decisionSuccess.decisionId} />
               <InfoRow label="Client" value={decisionSuccess.client} />
@@ -752,17 +752,17 @@ function DecisionSuccessPage({ title }: { title: string }) {
         <Card className="border-alphavest-gold/45 bg-alphavest-green/10">
           <CardContent className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="font-display text-2xl text-alphavest-ivory">Immutable and Recorded</p>
-              <p className="mt-2 text-sm leading-6 text-alphavest-muted">This decision event is final and cannot be altered or deleted. It has been sealed and time-stamped.</p>
+              <p className="font-display text-2xl text-alphavest-ivory">Recorded for Review</p>
+              <p className="mt-2 text-sm leading-6 text-alphavest-muted">This screen confirms the decision event only. Later audit checks must prove final persistence and immutability.</p>
             </div>
-            <Badge tone="gold">Verified and sealed</Badge>
+            <Badge tone="gold">Audit gate pending</Badge>
           </CardContent>
         </Card>
         <div className="grid gap-5 lg:grid-cols-3">
           <Card>
-            <CardHeader><CardTitle>Evidence Package Created</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Evidence Package Queued</CardTitle></CardHeader>
             <CardContent>
-              <p className="text-sm leading-6 text-alphavest-muted">A complete evidence package has been generated for this decision.</p>
+              <p className="text-sm leading-6 text-alphavest-muted">An evidence package reference has been queued for this decision. Evidence sufficiency still requires review and release gates.</p>
               <p className="mt-6 text-xl font-semibold text-alphavest-ivory">{decisionSuccess.evidenceId}</p>
             </CardContent>
           </Card>

@@ -78,4 +78,28 @@ test.describe("Phase 05 feedback no-overclaim boundaries", () => {
     await expect(page.getByText("This change requires audit logging before it can be accepted.")).toBeVisible();
     await expect(page.getByText("This change will be logged in the audit trail.")).toHaveCount(0);
   });
+
+  test("decision success feedback avoids audit and evidence completeness overclaim", async ({ page }) => {
+    await page.goto("/decisions/demo/success");
+
+    await expect(page.getByText("The decision has been recorded for review. Audit persistence remains a controlled gate.")).toBeVisible();
+    await expect(page.getByText("Recorded for Review", { exact: true })).toBeVisible();
+    await expect(page.getByText("Audit gate pending")).toBeVisible();
+    await expect(page.getByText("Evidence Package Queued")).toBeVisible();
+    await expect(page.getByText("Evidence sufficiency still requires review and release gates.")).toBeVisible();
+    await expect(page.getByText("immutable audit trail")).toHaveCount(0);
+    await expect(page.getByText("A complete evidence package has been generated for this decision.")).toHaveCount(0);
+  });
+
+  test("static audit-facing panels describe audit requirements instead of persistence proof", async ({ page }) => {
+    await page.goto("/workbench/triggers/demo");
+
+    await expect(page.getByText("Audit logging required", { exact: true })).toBeVisible();
+    await expect(page.getByText("Audit logging required before accepted save")).toBeVisible();
+    await expect(page.getByText("All notes are audit logged")).toHaveCount(0);
+
+    await page.goto("/tenants/demo/policies");
+    await expect(page.getByText("Policy overrides require Compliance approval and audit confirmation before activation.")).toBeVisible();
+    await expect(page.getByText("fully audited")).toHaveCount(0);
+  });
 });

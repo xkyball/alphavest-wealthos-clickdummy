@@ -833,7 +833,7 @@ function TriggerDetailPage({ title }: { title: string }) {
             </Card>
           </div>
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between"><CardTitle>Analyst Notes</CardTitle><Badge tone="gold">All notes are audit logged</Badge></CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between"><CardTitle>Analyst Notes</CardTitle><Badge tone="gold">Audit logging required</Badge></CardHeader>
             <CardContent>
               <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35">
                 <div className="flex flex-wrap gap-3 border-b border-alphavest-border p-3 text-sm text-alphavest-muted">
@@ -869,7 +869,7 @@ function TriggerDetailPage({ title }: { title: string }) {
             <CardContent className="space-y-3 text-sm">
               <InfoRow label="Notes Last Updated" value="May 9, 2025 10:22 UTC" />
               <InfoRow label="Updated By" value={triggerDetail.analyst} />
-              <InfoRow label="Audit Trail" value="All notes are audit logged" />
+              <InfoRow label="Audit status" value="Audit logging required before accepted save" />
             </CardContent>
           </Card>
         </aside>
