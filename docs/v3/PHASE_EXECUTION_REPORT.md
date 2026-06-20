@@ -1,5 +1,84 @@
 # Phase Execution Report
 
+## MEGA-JOURNEY-PHASE-2 - Governance Non-Bypass Implementation
+
+Date: 2026-06-20
+
+### Scope
+
+Executed Phase 2 from `mega_journeys_1/ALPHAVEST_MVP_JOURNEY_IMPLEMENTATION_PLAN.md` as an implementation phase instead of docs-only. The implementation keeps admin/security governance authority available for role and policy management while explicitly blocking governance-role bypass of release, evidence sufficiency, export and client-visibility controls.
+
+No production authentication, new route, new API handler, Prisma schema change, migration, screen state, visual asset or route promotion was added.
+
+### Implemented Behavior
+
+- Added explicit admin/security denial for evidence-sufficiency approval attempts on `EVIDENCE_RECORD`.
+- Added explicit admin/security denial for direct client-visibility release attempts on `DECISION`, `DOCUMENT` and `EVIDENCE_RECORD`.
+- Preserved existing non-compliance denial for recommendation release and admin export non-bypass.
+- Preserved positive governance management for admin/security with audit and second-confirmation flags.
+- Added focused governance non-bypass tests with denied audit persistence through `runDemoWorkflowMutation`.
+- Extended P0 acceptance coverage so admin non-bypass now covers release, evidence, visibility and export.
+
+### Changed Files
+
+- `lib/permission-engine.ts`
+- `tests/governance-non-bypass.spec.ts`
+- `tests/p0-acceptance.spec.ts`
+- `package.json`
+- `docs/v3/ALPHAVEST_MVP_PHASE_2_GOVERNANCE_NON_BYPASS_IMPLEMENTATION.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Commands Run
+
+- `git status --short --branch`
+- Read-only source inspection commands using `rg` and `sed`
+- `pnpm typecheck`
+- `pnpm lint`
+- `pnpm test:governance-non-bypass`
+- `pnpm test:permissions`
+- `pnpm test:workflow-api`
+- `pnpm test:file-export`
+- `pnpm test:workflow-gate`
+- `pnpm exec playwright test tests/p0-acceptance.spec.ts`
+- `git diff --check`
+
+### Tests / Build / Migrations Run
+
+- `pnpm typecheck` - passed before and after the permission metadata tweak.
+- `pnpm lint` - passed before and after the permission metadata tweak.
+- `pnpm test:governance-non-bypass` - failed once because compliance evidence approval was allowed but not marked as requiring compliance review; fixed and reran successfully, 3 tests.
+- `pnpm test:permissions` - passed, 7 tests.
+- `pnpm test:workflow-api` - passed, 11 tests.
+- `pnpm test:file-export` - passed, 7 tests.
+- `pnpm test:workflow-gate` - passed, 9 tests.
+- `pnpm exec playwright test tests/p0-acceptance.spec.ts` - passed, 9 tests.
+- `git diff --check` - passed.
+- No Prisma migration, build, visual capture or screenshot command was planned for this non-UI governance phase.
+
+### Current Capability Level
+
+Phase 2 reaches E6 demo security proof for admin/governance non-bypass on the permission and audit-mutation surfaces. It does not claim production authentication, persisted role-management workflows, full second-confirmation tables, complete governance APIs or E7 operational security.
+
+### Pre-Existing Worktree State
+
+- Branch `full-workflow` was already ahead of `origin/full-workflow` by eight commits from prior work.
+- `next-env.d.ts` was already modified and was left untouched.
+
+### P0 Impact
+
+Phase 2 adds executable proof for `FND-004` / admin non-bypass: positive governance management remains possible, while admin/security release, evidence sufficiency, client visibility and export bypass attempts fail closed and denied attempts can be audited without mutation.
+
+### Blockers / Deferred / Hold Items
+
+- Full role/permission assignment persistence and second-confirmation records remain future governance workflow work.
+- Compliance release route implementation remains protected by permission tests, but broad route/UI release escalation work remains out of this Phase 2 scope.
+- Production auth and provider-backed access enforcement remain out of scope.
+
+### Exit Gate Decision
+
+`PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
 ## MEGA-JOURNEY-PHASE-1 - Providerless Scope Implementation
 
 Date: 2026-06-20

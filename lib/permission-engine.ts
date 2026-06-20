@@ -57,6 +57,7 @@ const secondConfirmationActions = new Set<PermissionAction>(["ASSIGN", "REVOKE",
 const complianceActions = new Set<PermissionAction>(["RELEASE", "BLOCK", "EXPORT"]);
 
 const complianceReleaseRoles = new Set<DemoRoleKey>(["compliance_officer"]);
+const evidenceSufficiencyRoles = new Set<DemoRoleKey>(["compliance_officer"]);
 const exportApprovalRoles = new Set<DemoRoleKey>(["compliance_officer"]);
 const advisorApprovalRoles = new Set<DemoRoleKey>(["senior_wealth_advisor"]);
 const internalAdvicePayloadRoles = new Set<DemoRoleKey>([
@@ -68,6 +69,7 @@ const governanceRoles = new Set<DemoRoleKey>(["admin", "security_officer"]);
 const accessApprovalRoles = new Set<DemoRoleKey>(["admin", "security_officer", "compliance_officer"]);
 const tenantAdminRoles = new Set<DemoRoleKey>(["admin", "client_success"]);
 const adminNonBypassRoles = new Set<DemoRoleKey>(["admin", "security_officer"]);
+const clientVisibilityReleaseObjects = new Set<ObjectType>(["DECISION", "DOCUMENT", "EVIDENCE_RECORD"]);
 const forbiddenExportRoles = new Set<DemoRoleKey>([
   "analyst",
   "external_advisor",
@@ -128,6 +130,7 @@ function can(
     subject.sensitivity === "HIGHLY_RESTRICTED" ||
     context.sensitivity === "RESTRICTED" ||
     context.sensitivity === "HIGHLY_RESTRICTED";
+  const evidenceSufficiencyAction = action === "APPROVE" && subject.objectType === "EVIDENCE_RECORD";
 
   if (crossTenant) {
     return deny(
@@ -214,6 +217,34 @@ function can(
 
   if (
     action === "APPROVE" &&
+    subject.objectType === "EVIDENCE_RECORD" &&
+    adminNonBypassRoles.has(roleKey)
+  ) {
+    return deny(
+      action,
+      subject,
+      "DEMO_DENY_ADMIN_EVIDENCE_NON_BYPASS",
+      "Admin and security roles cannot force evidence sufficiency outside compliance review.",
+      true,
+    );
+  }
+
+  if (
+    action === "APPROVE" &&
+    subject.objectType === "EVIDENCE_RECORD" &&
+    !evidenceSufficiencyRoles.has(roleKey)
+  ) {
+    return deny(
+      action,
+      subject,
+      "DEMO_DENY_EVIDENCE_APPROVAL_REQUIRED",
+      "Compliance Officer approval is required before evidence can satisfy a release or export gate.",
+      true,
+    );
+  }
+
+  if (
+    action === "APPROVE" &&
     subject.objectType === "EXPORT_REQUEST" &&
     !exportApprovalRoles.has(roleKey)
   ) {
@@ -236,6 +267,20 @@ function can(
       subject,
       "DEMO_DENY_ADMIN_NON_BYPASS",
       "Admin and security roles cannot bypass export approval, redaction and client-visibility gates.",
+      true,
+    );
+  }
+
+  if (
+    action === "RELEASE" &&
+    clientVisibilityReleaseObjects.has(subject.objectType) &&
+    adminNonBypassRoles.has(roleKey)
+  ) {
+    return deny(
+      action,
+      subject,
+      "DEMO_DENY_ADMIN_VISIBILITY_NON_BYPASS",
+      "Admin and security roles cannot directly force client visibility outside compliance release gates.",
       true,
     );
   }
@@ -320,7 +365,7 @@ function can(
       : `${actor.displayName} is allowed by the Phase 16 demo role policy.`,
     requiresAudit: auditActions.has(action) || highSensitivity,
     requiresSecondConfirmation: secondConfirmationActions.has(action),
-    requiresComplianceReview: complianceActions.has(action),
+    requiresComplianceReview: complianceActions.has(action) || evidenceSufficiencyAction,
     demoMode: true,
   };
 }

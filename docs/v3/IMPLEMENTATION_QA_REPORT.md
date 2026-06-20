@@ -1,5 +1,64 @@
 # Implementation QA Report
 
+## MEGA-JOURNEY-PHASE-2 Implementation QA Addendum
+
+Date: 2026-06-20
+
+### Executive Decision
+
+`PHASE_2_IMPLEMENTATION_QA_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Phase scope discipline | Passed | Implementation is scoped to governance non-bypass permission decisions, tests and reports; no UI, route, schema, migration or production auth change was added. |
+| Positive governance authority | Passed | Admin/security can still manage role and policy surfaces with audit and second-confirmation requirements. |
+| Release non-bypass | Passed | Admin/security cannot release recommendation-like content without compliance authority. |
+| Evidence non-bypass | Passed | Admin/security cannot approve evidence sufficiency for release/export gates. |
+| Visibility non-bypass | Passed | Admin/security cannot directly release decision/document/evidence records into client visibility. |
+| Export non-bypass | Passed | Admin/security cannot export restricted packages by governance authority alone. |
+| Denied audit proof | Passed | Denied admin evidence-sufficiency bypass attempts persist `DENIED` audit rows and skip mutation. |
+| P0 acceptance mapping | Passed | P0 acceptance slice now includes release, evidence, visibility and export admin non-bypass assertions. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | Passed before and after the permission metadata tweak. |
+| `pnpm lint` | Passed | Passed before and after the permission metadata tweak. |
+| `pnpm test:governance-non-bypass` | Failed then passed | Initial run exposed missing compliance-review metadata on allowed evidence approval; fixed and reran successfully, 3 tests. |
+| `pnpm test:permissions` | Passed | 7 tests passed. |
+| `pnpm test:workflow-api` | Passed | 11 tests passed. |
+| `pnpm test:file-export` | Passed | 7 tests passed. |
+| `pnpm test:workflow-gate` | Passed | 9 tests passed. |
+| `pnpm exec playwright test tests/p0-acceptance.spec.ts` | Passed | 9 tests passed. |
+| `git diff --check` | Passed | No whitespace errors. |
+
+### Tests / Build / Migrations Run
+
+- TypeScript, lint, focused governance non-bypass, permissions, workflow API, file export, workflow gate and P0 acceptance checks were run as listed above.
+- No Prisma migration, build, visual capture or screenshot command was planned for this non-UI governance phase.
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| Governance management positive path | implemented + tested | Admin/security governance role remains allowed with audit and second confirmation. |
+| Admin release non-bypass | implemented + tested | Existing compliance release denial is preserved and mapped into P0 acceptance. |
+| Admin evidence sufficiency non-bypass | implemented + tested | New denial code `DEMO_DENY_ADMIN_EVIDENCE_NON_BYPASS`. |
+| Admin client visibility non-bypass | implemented + tested | New denial code `DEMO_DENY_ADMIN_VISIBILITY_NON_BYPASS`. |
+| Admin export non-bypass | implemented + tested | Existing denial code `DEMO_DENY_ADMIN_NON_BYPASS` remains covered. |
+| Denied audit persistence | implemented + tested | Denied admin evidence approval is tested through `runDemoWorkflowMutation`. |
+| Production governance workflow | not performed | Outside Phase 2. |
+
+### Residual Risks
+
+- Phase 2 remains demo-session based and does not claim production authentication.
+- Full role/permission write workflows, `SecondConfirmation` persistence and future governance APIs remain later implementation work.
+- Compliance release route/UI escalation is protected by service-level tests here, not broadly rebuilt.
+- `next-env.d.ts` remained a pre-existing local modification outside this Phase 2 scope.
+
 ## MEGA-JOURNEY-PHASE-1 Implementation QA Addendum
 
 Date: 2026-06-20

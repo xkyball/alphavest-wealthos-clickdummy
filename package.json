@@ -40,6 +40,7 @@
     "test:data-quality": "playwright test tests/data-quality-service.spec.ts",
     "test:file-export": "playwright test tests/file-export-realism.spec.ts",
     "test:foundation": "playwright test tests/foundation-guardrails.spec.ts",
+    "test:governance-non-bypass": "playwright test tests/governance-non-bypass.spec.ts",
     "test:playwright": "playwright test",
     "test:permissions": "playwright test tests/permission-engine.spec.ts",
     "test:phase-d": "playwright test tests/review-monitoring-service.spec.ts",

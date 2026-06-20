@@ -205,6 +205,64 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
 
     expect(adminRelease.allowed).toBe(false);
     expect(adminRelease.reasonCode).toBe("DEMO_DENY_COMPLIANCE_RELEASE_REQUIRED");
+    expect(adminRelease.requiresSecondConfirmation).toBe(true);
+
+    const adminEvidenceApproval = permissionEngine.can(
+      admin.actor,
+      "APPROVE",
+      {
+        clientTenantId: admin.tenant.id,
+        objectType: "EVIDENCE_RECORD",
+        sensitivity: "RESTRICTED",
+        visibilityStatus: "COMPLIANCE_VISIBLE",
+      },
+      {
+        clientTenantId: admin.tenant.id,
+        platformTenantId: demoPlatformTenantId,
+      },
+      admin.role,
+    );
+
+    expect(adminEvidenceApproval.allowed).toBe(false);
+    expect(adminEvidenceApproval.reasonCode).toBe("DEMO_DENY_ADMIN_EVIDENCE_NON_BYPASS");
+
+    const adminVisibilityRelease = permissionEngine.can(
+      admin.actor,
+      "RELEASE",
+      {
+        clientTenantId: admin.tenant.id,
+        objectType: "DECISION",
+        sensitivity: "RESTRICTED",
+        visibilityStatus: "COMPLIANCE_VISIBLE",
+      },
+      {
+        clientTenantId: admin.tenant.id,
+        platformTenantId: demoPlatformTenantId,
+      },
+      admin.role,
+    );
+
+    expect(adminVisibilityRelease.allowed).toBe(false);
+    expect(adminVisibilityRelease.reasonCode).toBe("DEMO_DENY_ADMIN_VISIBILITY_NON_BYPASS");
+
+    const adminExport = permissionEngine.can(
+      admin.actor,
+      "EXPORT",
+      {
+        clientTenantId: admin.tenant.id,
+        objectType: "EXPORT_REQUEST",
+        sensitivity: "RESTRICTED",
+        visibilityStatus: "REDACTED",
+      },
+      {
+        clientTenantId: admin.tenant.id,
+        platformTenantId: demoPlatformTenantId,
+      },
+      admin.role,
+    );
+
+    expect(adminExport.allowed).toBe(false);
+    expect(adminExport.reasonCode).toBe("DEMO_DENY_ADMIN_NON_BYPASS");
 
     const complianceRelease = permissionEngine.can(
       compliance.actor,
