@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import {
-  groupedScreenRoutes,
+  groupedImplementationScreenRoutes,
   routeToSmokePath,
   type NavigationGroupKey
 } from "@/lib/route-registry";
@@ -65,13 +65,15 @@ const compactNavigationLabels: Record<string, string> = {
   "063": "States Reference"
 };
 
-export const navigationGroups: NavigationGroup[] = groupedScreenRoutes.map((group) => ({
-  key: group.key,
-  label: group.label,
-  icon: groupIcons[group.key],
-  items: group.routes.map((route) => ({
-    label: compactNavigationLabels[route.pageId] ?? route.title,
-    href: routeToSmokePath(route.route),
-    icon: itemIcons[group.key] ?? groupIcons[group.key]
-  }))
-}));
+export const navigationGroups: NavigationGroup[] = groupedImplementationScreenRoutes
+  .filter((group) => group.routes.length > 0)
+  .map((group) => ({
+    key: group.key,
+    label: group.label,
+    icon: groupIcons[group.key],
+    items: group.routes.map((route) => ({
+      label: compactNavigationLabels[route.pageId] ?? route.title,
+      href: routeToSmokePath(route.route),
+      icon: itemIcons[group.key] ?? groupIcons[group.key]
+    }))
+  }));

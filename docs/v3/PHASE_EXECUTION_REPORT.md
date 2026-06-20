@@ -2637,3 +2637,126 @@ Minor limits: hover, focus, narrow-mobile and rejected-upload visual states were
 ### Next Phase
 
 Proceed with extraction-review operationalization or a document download / analyst validation slice before claiming a full document-workflow E7 path.
+
+## PHASE-07-EVIDENCE_AUDIT_EXPORT - Evidence, Audit and Export Safety
+
+Date: 2026-06-20
+
+### Scope
+
+Executed the handoff phase prompt `07_PHASE_EVIDENCE_AUDIT_EXPORT_PROMPT.md` for allowed slices `AV-SLICE-EAE-01..05`. This phase hardened service-level evidence sufficiency, upload-not-sufficiency, audit fail-closed behavior, and export redaction/approval boundaries. No routes, route scope, visual assets, Prisma schema, migrations or new API routes were changed.
+
+### Source Artefacts Used
+
+- `FINAL_CODEX_IMPLEMENTATION_HANDOFF.md`
+- `FINAL_CODEX_TASK_MASTER.md`
+- `SOURCE_OF_TRUTH_ORDER.md`
+- `STOP_RULES_MASTER.md`
+- `EVIDENCE_AUDIT_EXPORT_SAFETY_CONTRACT.md`
+- `P0_TEST_ASSERTION_AND_FIXTURE_PLAN.md`
+- `TASK_DONE_DEFINITION_AND_QA_CHECKLIST.md`
+- `ATOMIC_IMPLEMENTATION_SLICE_PLAN.md`
+- `PHASE_ENTRY_EXIT_GATE_CHECKLIST.md`
+- Project V3 source-of-truth and operationalization docs listed in `AGENTS.md` and `CODEX_MASTER_TASK.md`.
+
+### Completed Tasks
+
+- Added contextual evidence sufficiency evaluation requiring reviewed, accepted, current, scoped and client-safe evidence.
+- Removed `CREATED` evidence from client-visibility release eligibility; upload-created evidence now remains review-pending.
+- Added a fail-closed audit-unavailable seam to `runDemoWorkflowMutation` so safety mutations do not run when audit persistence is unavailable.
+- Added export payload classification checks that block AI draft, internal rationale, compliance notes, unreleased evidence/recommendations and hidden fields.
+- Added/updated tests for evidence lifecycle, upload-not-sufficiency, audit fail-closed, export forbidden payloads and export preview/approval/download separation.
+
+### Changed Files
+
+- `lib/evidence-service.ts`
+- `lib/workflow-gate.ts`
+- `lib/demo-workflow-mutation.ts`
+- `lib/export-service.ts`
+- `lib/export-package-service.ts`
+- `tests/workflow-gate.spec.ts`
+- `tests/file-export-realism.spec.ts`
+- `tests/document-upload-api.spec.ts`
+- `tests/permission-engine.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm test:workflow-gate` - passed, 7 tests.
+- `pnpm typecheck` - passed.
+- `pnpm test:file-export` - first run blocked by local port conflict on `127.0.0.1:3020`; rerun with `PLAYWRIGHT_SKIP_WEB_SERVER=1 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3020 pnpm test:file-export` passed, 6 tests.
+- `PLAYWRIGHT_SKIP_WEB_SERVER=1 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3020 pnpm test:permissions` - passed, 4 tests.
+- `PLAYWRIGHT_SKIP_WEB_SERVER=1 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3020 pnpm exec playwright test tests/document-upload-api.spec.ts` - blocked by no server listening on `3020`.
+- `pnpm exec playwright test tests/document-upload-api.spec.ts` - passed, 3 tests.
+- `pnpm lint` - passed.
+
+### P0 Impact
+
+This phase improves P0 proof slices for `P0_UPLOAD_NOT_SUFFICIENCY_GATE`, `P0_EVIDENCE_SUFFICIENCY_GATE`, `P0_AUDIT_FAIL_CLOSED_GATE`, `P0_EXPORT_REDACTION_GATE` and `P0_EXPORT_APPROVAL_GATE`. It does not claim full P0 passed. Export remains metadata-only (`realBinaryGenerated: false`), authentication remains demo-session based, and evidence sufficiency is service-level/demo proof rather than a full production workflow.
+
+### Exit Gate Decision
+
+`PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
+## PHASE-02-ROUTE_ACCESS - Route / Navigation / Access Shell
+
+Date: 2026-06-20
+
+### Scope
+
+Executed the handoff phase prompt `02_PHASE_ROUTE_ACCESS_PROMPT.md` for allowed slices `AV-SLICE-RTE-01..05`. This phase hardened locked route workset preservation, implementation-shell navigation, catch-all route guard behavior and Hold/P1/Reference exclusion checks. No routes were added or reclassified, and no APIs, schema, migrations, images or replacement visuals were created.
+
+### Source Artefacts Used
+
+- `FINAL_CODEX_IMPLEMENTATION_HANDOFF.md`
+- `FINAL_CODEX_TASK_MASTER.md`
+- `SOURCE_OF_TRUTH_ORDER.md`
+- `STOP_RULES_MASTER.md`
+- `ATOMIC_IMPLEMENTATION_SLICE_PLAN.md`
+- `PHASE_ENTRY_EXIT_GATE_CHECKLIST.md`
+- `ROUTE_SCOPE_LOCK.md`
+- `MVP_SCOPE_LOCK.md`
+- Project V3 source-of-truth docs listed in `AGENTS.md` and `CODEX_MASTER_TASK.md`.
+
+### Completed Tasks
+
+- Added central locked workset metadata for all 71 registered routes: 31 `MVP`, 25 `MVP_SUPPORT`, 5 `P1_AFTER_MVP`, 3 `REFERENCE_ONLY` and 7 `HOLD_PENDING_DECISION`.
+- Added route-workset integrity helpers so missing, unknown or duplicate route classifications are testable.
+- Derived implementation navigation from MVP/MVP_SUPPORT routes only, keeping P1, Reference and Hold routes out of the app shell navigation.
+- Added a catch-all route guard so registered P1, Reference and Hold paths remain smoke-testable but render the neutral skeleton shell instead of product-specific components.
+- Updated skeleton shell copy for deferred/reference/held paths so route registration is not overclaimed as product implementation or payload/action authority.
+- Added route smoke assertions for locked counts, exact classification coverage and P1/Reference/Hold non-elevation.
+
+### Changed Files
+
+- `lib/route-registry.ts`
+- `lib/navigation.ts`
+- `app/[...segments]/page.tsx`
+- `components/route-skeleton-page.tsx`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - first run failed on a narrow `ReadonlyMap` key type in `lib/route-registry.ts`; fixed and reran successfully.
+- `pnpm test:route-smoke` - passed, 83 tests.
+- `pnpm typecheck` - passed after the map-key fix.
+- `pnpm test:route-smoke` - passed after the map-key fix, 83 tests.
+- `pnpm lint` - passed. One intermediate rerun after parallel Playwright execution hit a transient missing `test-results` artifact directory; rerun passed.
+
+### P0 Impact
+
+This phase improves proof slices for `P0_ROUTE_ACCESS_GATE` and `P0_HOLD_ROUTE_BLOCK_GATE` by asserting route workset preservation and non-elevation. It does not claim full P0 passed. Route access remains separate from action permission and payload visibility; deeper RBAC/client visibility proof remains in later safety phases.
+
+### Blockers / Deferred / Hold Items
+
+- P1 routes `052`, `053`, `059`, `060` and `068` remain deferred.
+- Reference routes `061`, `062` and `063` remain non-product implementation surfaces.
+- Hold routes `064`, `065`, `066`, `067`, `069`, `070` and `071` remain registered but blocked from MVP implementation.
+- Full RBAC/action/object/payload enforcement remains out of this phase scope.
+
+### Exit Gate Decision
+
+`PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`

@@ -2235,3 +2235,97 @@ Date: 2026-06-17
 ### Next Phase
 
 Recommended next slice: make extraction review, document download or analyst validation payload-backed before claiming the broader document workflow as operational beyond this upload path.
+
+## PHASE-07-EVIDENCE_AUDIT_EXPORT QA Addendum
+
+Date: 2026-06-20
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Phase scope discipline | Passed | Only `AV-SLICE-EAE-01..05` service/test/report work was changed. |
+| Stop rules | Passed | No route scope changes, P1/Hold/reference elevation, visual generation, new API route, schema replacement, migration, `main` target truth or P0 overclaim. |
+| Upload not sufficiency | Passed | Upload API regression now asserts uploaded document remains `clientVisible=false` and evidence status is `CREATED`, not sufficient. |
+| Evidence sufficiency lifecycle | Passed | `evidenceService.evaluateEvidenceSufficiency` requires reviewed, accepted, current, scoped and client-safe evidence; `CREATED` evidence remains review-pending. |
+| Audit fail-closed | Passed | `runDemoWorkflowMutation` can simulate unavailable audit persistence and fails before mutation. |
+| Export forbidden payloads | Passed | Export gate and manifest validation reject AI draft, internal rationale, compliance notes, unreleased evidence/recommendations and hidden fields. |
+| Export lifecycle separation | Passed | Tests assert external share/download remains blocked when approval is missing. |
+| Typecheck | Passed | `pnpm typecheck`. |
+| Lint | Passed | `pnpm lint`. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm test:workflow-gate` | Passed | 7 tests; includes evidence sufficiency and created-evidence release block. |
+| `pnpm typecheck` | Passed | TypeScript clean after EAE service changes. |
+| `pnpm test:file-export` | Blocked then rerun | Initial run hit `EADDRINUSE` on `127.0.0.1:3020`; not counted as product failure. |
+| `PLAYWRIGHT_SKIP_WEB_SERVER=1 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3020 pnpm test:file-export` | Passed | 6 tests; includes forbidden export payload and lifecycle separation. |
+| `PLAYWRIGHT_SKIP_WEB_SERVER=1 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3020 pnpm test:permissions` | Passed | 4 tests; includes audit-unavailable fail-closed proof. |
+| `PLAYWRIGHT_SKIP_WEB_SERVER=1 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3020 pnpm exec playwright test tests/document-upload-api.spec.ts` | Blocked | No server listening on `3020`; rerun without skip. |
+| `pnpm exec playwright test tests/document-upload-api.spec.ts` | Passed | 3 tests; upload success, invalid type and denied-role audit proof. |
+| `pnpm lint` | Passed | ESLint clean after EAE changes. |
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| Evidence sufficiency evaluator | implemented + tested | Service-level E6/E7-adjacent proof, not production advice release. |
+| Upload-created evidence release block | implemented + tested | Upload evidence remains review-pending and client-hidden. |
+| Audit unavailable fail-closed seam | implemented + tested | Mutation callback is not executed when audit persistence is unavailable. |
+| Export forbidden payload classification | implemented + tested | Metadata-only export gate blocks forbidden internal payload classes. |
+| Export lifecycle separation | implemented + tested | Preview/external-share approval boundary is asserted. |
+| Full P0 gate closure | not claimed | Existing tests remain proof slices, not full P0 pass. |
+| Real binary export generation | not implemented | Export manifests still report `realBinaryGenerated: false`. |
+
+### Residual Risks
+
+- Evidence sufficiency is evaluated at service/test level; not every route has been wired to a payloaded sufficiency workflow.
+- Audit fail-closed is covered by an explicit test seam; it does not simulate every possible database failure mode.
+- Export safety remains metadata-only and does not generate a real ZIP/PDF/CSV binary artifact.
+- Authentication remains demo-session based.
+
+## PHASE-02-ROUTE_ACCESS QA Addendum
+
+Date: 2026-06-20
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Phase scope discipline | Passed | Only `AV-SLICE-RTE-01..05` route/access registry, shell, guard, tests and reports were changed. |
+| Source artefacts | Passed | Final handoff, task master, source order, stop rules, slice plan, gate checklist, route lock and MVP lock were read before edits. |
+| Route workset preservation | Passed | Registry integrity asserts 31 MVP, 25 MVP_SUPPORT, 5 P1, 3 Reference and 7 Hold route IDs across all 71 routes. |
+| P1/Hold/Reference exclusion | Passed | Implementation navigation is derived only from MVP/MVP_SUPPORT routes; route smoke asserts excluded routes stay out. |
+| Route registration preservation | Passed | P1/Hold/Reference paths remain registered smoke routes and render without 404. |
+| Route guard behavior | Passed | Catch-all routing sends non-implementation worksets to the neutral skeleton shell instead of richer product-specific components. |
+| No forbidden work | Passed | No route reclassification, new API, schema change, migration, generated image, state-screen or visual replacement was introduced. |
+| Typecheck | Passed | `pnpm typecheck` passed after a local `ReadonlyMap` key typing fix. |
+| Route smoke | Passed | `pnpm test:route-smoke` passed, 83 tests. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Failed then fixed | Initial run failed on `routeWorksetLookup.get(pageId)` key typing; no product behavior issue. |
+| `pnpm test:route-smoke` | Passed | 83 tests, including new workset preservation assertions. |
+| `pnpm typecheck` | Passed | TypeScript clean after explicit `ReadonlyMap<string, RouteScopeLabel>` typing. |
+| `pnpm test:route-smoke` | Passed | 83 tests after the type fix. |
+| `pnpm lint` | Passed | ESLint clean after route/access changes; one intermediate rerun hit transient `test-results` artifact absence after parallel Playwright cleanup, then passed. |
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| Locked route workset registry | implemented + tested | Exact workset counts and route coverage are asserted. |
+| Implementation navigation exclusion | implemented + tested | P1, Reference and Hold route IDs are excluded from implementation navigation. |
+| Non-implementation route guard | implemented + tested | Registered paths remain smoke-testable while avoiding product-specific rendering. |
+| Full route/action/payload RBAC | not implemented | Out of scope for this phase; later RBAC/visibility/advice phase owns it. |
+| Full P0 gate closure | not claimed | Existing/new tests are proof slices, not complete P0 acceptance. |
+
+### Residual Risks
+
+- Route access is still shell-level/demo scoped and must not be treated as action or payload authorization.
+- Existing product-specific components for held/P1 domains remain in the repository for prior work/history, but catch-all route access no longer reaches them for non-implementation worksets.
+- Broader Playwright, lint, build and full validation commands were not run for this phase because the phase prompt called for proportionate route/access validation.

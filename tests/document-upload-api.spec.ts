@@ -3,6 +3,7 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import {
   AuditResult,
+  EvidenceStatus,
   ObjectType,
   PrismaClient,
 } from "@prisma/client";
@@ -75,6 +76,8 @@ test.describe("document upload multipart API", () => {
     expect(document.versions).toHaveLength(1);
     expect(document.extractions[0]?.extractionStatus).toBe("pending");
     expect(evidenceRecord.relatedObjectId).toBe(document.id);
+    expect(evidenceRecord.status).toBe(EvidenceStatus.CREATED);
+    expect(document.clientVisible).toBe(false);
     expect(evidenceRecord.items.map((item) => item.itemType).sort()).toEqual(["audit_event", "document"]);
     expect(audit.result).toBe(AuditResult.SUCCESS);
     expect(audit.targetType).toBe(ObjectType.DOCUMENT);

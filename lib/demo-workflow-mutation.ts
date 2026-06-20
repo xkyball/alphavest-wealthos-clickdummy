@@ -22,6 +22,7 @@ import type {
 
 type DemoWorkflowMutationInput = {
   actionId: string;
+  auditPersistenceAvailable?: boolean;
   actorRoleKey: DemoRoleKey;
   auditResult?: AuditResult;
   clientTenantId: string;
@@ -41,6 +42,12 @@ type DemoWorkflowMutationInput = {
   visibilityStatus?: VisibilityStatus;
   workflowState?: WorkflowStatus;
 };
+
+export class AuditPersistenceUnavailableError extends Error {
+  constructor(public readonly actionId: string) {
+    super("Required audit persistence is unavailable; safety action was not applied.");
+  }
+}
 
 type DemoWorkflowMutationHelpers = {
   permission: Awaited<ReturnType<typeof permissionEngine.can>>;
@@ -125,6 +132,10 @@ export async function runDemoWorkflowMutation<T extends Record<string, unknown>>
           requiresComplianceReview: permission.requiresComplianceReview,
         },
       } as DemoWorkflowMutationResult<T>;
+    }
+
+    if (input.auditPersistenceAvailable === false) {
+      throw new AuditPersistenceUnavailableError(input.actionId);
     }
 
     const mutationResult = await mutate(tx, { permission, session });

@@ -60,6 +60,13 @@ export type NavigationGroupKey =
   | "export"
   | "operations";
 
+export type RouteScopeLabel =
+  | "MVP"
+  | "MVP_SUPPORT"
+  | "P1_AFTER_MVP"
+  | "REFERENCE_ONLY"
+  | "HOLD_PENDING_DECISION";
+
 export type ScreenRoute = {
   pageId: string;
   route: string;
@@ -1255,6 +1262,136 @@ export const screenRoutes = [
 
 export const routeRegistryCount = screenRoutes.length;
 
+export const routeWorksetPageIds = {
+  MVP: [
+    "008",
+    "019",
+    "020",
+    "027",
+    "028",
+    "029",
+    "030",
+    "033",
+    "034",
+    "035",
+    "036",
+    "037",
+    "038",
+    "039",
+    "040",
+    "041",
+    "042",
+    "043",
+    "044",
+    "045",
+    "046",
+    "047",
+    "048",
+    "049",
+    "050",
+    "051",
+    "054",
+    "055",
+    "056",
+    "057",
+    "058"
+  ],
+  MVP_SUPPORT: [
+    "001",
+    "002",
+    "003",
+    "004",
+    "005",
+    "006",
+    "007",
+    "009",
+    "010",
+    "011",
+    "012",
+    "013",
+    "014",
+    "015",
+    "016",
+    "017",
+    "018",
+    "021",
+    "022",
+    "023",
+    "024",
+    "025",
+    "026",
+    "031",
+    "032"
+  ],
+  P1_AFTER_MVP: ["052", "053", "059", "060", "068"],
+  REFERENCE_ONLY: ["061", "062", "063"],
+  HOLD_PENDING_DECISION: ["064", "065", "066", "067", "069", "070", "071"]
+} as const satisfies Record<RouteScopeLabel, readonly string[]>;
+
+export const routeScopeLabels: Record<RouteScopeLabel, string> = {
+  MVP: "MVP",
+  MVP_SUPPORT: "MVP support",
+  P1_AFTER_MVP: "Deferred",
+  REFERENCE_ONLY: "Reference",
+  HOLD_PENDING_DECISION: "Held"
+};
+
+export const routeWorksetEntries = Object.entries(routeWorksetPageIds).flatMap(([scope, pageIds]) =>
+  pageIds.map((pageId) => ({
+    pageId,
+    scope: scope as RouteScopeLabel
+  }))
+);
+
+const routeWorksetLookup: ReadonlyMap<string, RouteScopeLabel> = new Map(
+  routeWorksetEntries.map((entry) => [entry.pageId, entry.scope])
+);
+
+export function routeScopeForPageId(pageId: string): RouteScopeLabel {
+  const scope = routeWorksetLookup.get(pageId);
+
+  if (!scope) {
+    throw new Error(`Route ${pageId} is missing from the locked AlphaVest route workset registry.`);
+  }
+
+  return scope;
+}
+
+export function isRouteImplementationShellAccessible(route: Pick<ScreenRoute, "pageId">) {
+  const scope = routeScopeForPageId(route.pageId);
+
+  return scope === "MVP" || scope === "MVP_SUPPORT";
+}
+
+export const routeWorksetIntegrity = (() => {
+  const registryPageIds = new Set(screenRoutes.map((route) => route.pageId));
+  const seenPageIds = new Set<string>();
+  const duplicatePageIds = new Set<string>();
+
+  for (const entry of routeWorksetEntries) {
+    if (seenPageIds.has(entry.pageId)) {
+      duplicatePageIds.add(entry.pageId);
+    }
+
+    seenPageIds.add(entry.pageId);
+  }
+
+  return {
+    counts: Object.fromEntries(
+      Object.entries(routeWorksetPageIds).map(([scope, pageIds]) => [scope, pageIds.length])
+    ) as Record<RouteScopeLabel, number>,
+    missingPageIds: screenRoutes
+      .map((route) => route.pageId)
+      .filter((pageId) => !seenPageIds.has(pageId)),
+    unknownPageIds: routeWorksetEntries
+      .map((entry) => entry.pageId)
+      .filter((pageId) => !registryPageIds.has(pageId)),
+    duplicatePageIds: [...duplicatePageIds]
+  };
+})();
+
+export const implementationScreenRoutes = screenRoutes.filter(isRouteImplementationShellAccessible);
+
 export function routePatternToSegments(route: string) {
   return route.split("/").filter(Boolean);
 }
@@ -1304,7 +1441,8 @@ export const routeSmokeList = screenRoutes.map((route) => {
     path,
     segments: routePatternToSegments(path),
     expectedHeading: route.title,
-    navigationGroup: route.navigationGroup
+    navigationGroup: route.navigationGroup,
+    routeScope: routeScopeForPageId(route.pageId)
   };
 });
 
@@ -1315,5 +1453,15 @@ export const groupedScreenRoutes = Object.entries(navigationGroupLabels).map(([k
     key: navigationGroup,
     label,
     routes: screenRoutes.filter((route) => route.navigationGroup === navigationGroup)
+  };
+});
+
+export const groupedImplementationScreenRoutes = Object.entries(navigationGroupLabels).map(([key, label]) => {
+  const navigationGroup = key as NavigationGroupKey;
+
+  return {
+    key: navigationGroup,
+    label,
+    routes: implementationScreenRoutes.filter((route) => route.navigationGroup === navigationGroup)
   };
 });

@@ -1,4 +1,5 @@
 import type { PreparedFileMetadata } from "@/lib/file-metadata-service";
+import { exportService, type ExportPayloadClassification } from "@/lib/export-service";
 
 export type ExportPackageManifestInput = {
   approvalRequired: boolean;
@@ -7,6 +8,7 @@ export type ExportPackageManifestInput = {
   exportRequestId: string;
   externalShare: boolean;
   file: PreparedFileMetadata;
+  payloadClassifications?: ExportPayloadClassification[];
   redactionProfile: string;
   selectedObjectCount: number;
   tenantSlug: string;
@@ -50,6 +52,9 @@ export function buildExportPackageManifest(input: ExportPackageManifestInput): E
   if (!input.redactionProfile.trim()) issues.push("redaction_profile_required");
   if (input.selectedObjectCount <= 0) issues.push("selected_export_objects_required");
   if (!input.watermark) issues.push("watermark_required");
+  for (const classification of exportService.forbiddenExportPayloads(input.payloadClassifications)) {
+    issues.push(`forbidden_payload:${classification}`);
+  }
 
   const manifest: ExportPackageManifest = {
     checksum: input.file.checksum,

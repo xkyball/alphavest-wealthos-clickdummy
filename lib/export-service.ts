@@ -11,6 +11,29 @@ export type ExportGateDecision = {
   reason: string;
 };
 
+export type ExportPayloadClassification =
+  | "CLIENT_SAFE_SUMMARY"
+  | "RELEASED_EVIDENCE_SUMMARY"
+  | "AI_DRAFT"
+  | "INTERNAL_RATIONALE"
+  | "COMPLIANCE_NOTES"
+  | "UNRELEASED_EVIDENCE"
+  | "UNRELEASED_RECOMMENDATION"
+  | "HIDDEN_FIELD";
+
+const forbiddenClientExportPayloads = new Set<ExportPayloadClassification>([
+  "AI_DRAFT",
+  "INTERNAL_RATIONALE",
+  "COMPLIANCE_NOTES",
+  "UNRELEASED_EVIDENCE",
+  "UNRELEASED_RECOMMENDATION",
+  "HIDDEN_FIELD",
+]);
+
+function forbiddenExportPayloads(payloadClassifications: ExportPayloadClassification[] = []) {
+  return payloadClassifications.filter((classification) => forbiddenClientExportPayloads.has(classification));
+}
+
 function canGenerateExport(input: {
   actor: DemoActor;
   role: DemoRole;
@@ -19,6 +42,7 @@ function canGenerateExport(input: {
   targetType: ObjectType;
   targetId?: UUID;
   redactionProfile?: string;
+  payloadClassifications?: ExportPayloadClassification[];
   approvalComplete?: boolean;
   externalShare?: boolean;
 }): ExportGateDecision {
@@ -51,6 +75,10 @@ function canGenerateExport(input: {
     missing.push("external_share_approval");
   }
 
+  for (const classification of forbiddenExportPayloads(input.payloadClassifications)) {
+    missing.push(`forbidden_payload:${classification}`);
+  }
+
   return {
     status: missing.length > 0 ? "APPROVAL_REQUIRED" : "GENERATED",
     allowedToGenerate: missing.length === 0,
@@ -66,4 +94,5 @@ function canGenerateExport(input: {
 
 export const exportService = {
   canGenerateExport,
+  forbiddenExportPayloads,
 };

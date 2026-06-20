@@ -1,4 +1,5 @@
 import type { PermissionDecision } from "@/lib/permission-engine";
+import { evidenceService } from "@/lib/evidence-service";
 import type {
   ComplianceStatus,
   EvidenceStatus,
@@ -48,8 +49,6 @@ export type SuitabilityIpsAdviceCandidate = ClientVisibilityCandidate & {
   suitabilityStatus: SuitabilityStatus;
 };
 
-const releasableEvidenceStatuses = new Set<EvidenceStatus>(["CREATED", "VALIDATED", "RELEASED"]);
-
 export function canBecomeClientVisible(candidate: ClientVisibilityCandidate): WorkflowGateResult {
   const missing: string[] = [];
 
@@ -65,7 +64,7 @@ export function canBecomeClientVisible(candidate: ClientVisibilityCandidate): Wo
     missing.push("compliance_release");
   }
 
-  if (!releasableEvidenceStatuses.has(candidate.evidenceStatus)) {
+  if (!evidenceService.hasSufficientEvidenceStatus(candidate.evidenceStatus)) {
     missing.push("evidence_record");
   }
 
@@ -101,7 +100,7 @@ export function canReleaseAdviceWithSuitabilityIps(candidate: SuitabilityIpsAdvi
     missing.push("ips_mandate_acknowledged");
   }
 
-  if (!releasableEvidenceStatuses.has(candidate.mandateEvidenceStatus)) {
+  if (!evidenceService.hasSufficientEvidenceStatus(candidate.mandateEvidenceStatus)) {
     missing.push("mandate_evidence_record");
   }
 
@@ -138,7 +137,7 @@ export function canPassHighRiskCommitteeGate(candidate: HighRiskCommitteeCandida
     missing.push("committee_dissent_resolved");
   }
 
-  if (!releasableEvidenceStatuses.has(candidate.evidenceStatus)) {
+  if (!evidenceService.hasSufficientEvidenceStatus(candidate.evidenceStatus)) {
     missing.push("committee_evidence_record");
   }
 

@@ -22,7 +22,11 @@ import { isReviewMonitoringPageId } from "@/lib/review-monitoring-demo-data";
 import { isSuitabilityIpsPageId } from "@/lib/suitability-ips-demo-data";
 import { isWealthActionsPageId } from "@/lib/wealth-actions-demo-data";
 import { RouteSkeletonPage } from "@/components/route-skeleton-page";
-import { matchRouteBySegments, routeSmokeList } from "@/lib/route-registry";
+import {
+  isRouteImplementationShellAccessible,
+  matchRouteBySegments,
+  routeSmokeList
+} from "@/lib/route-registry";
 import { normalizeVisualState, visualStateForRoute } from "@/lib/visual-contract";
 
 type CatchAllRouteProps = {
@@ -48,6 +52,10 @@ export default async function CatchAllRoute({ params, searchParams }: CatchAllRo
 
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const visualState = visualStateForRoute(route, normalizeVisualState(resolvedSearchParams.state));
+
+  if (!isRouteImplementationShellAccessible(route)) {
+    return <RouteSkeletonPage route={route} />;
+  }
 
   if (isAuthOnboardingPageId(route.pageId)) {
     return <AuthOnboardingScreen pageId={route.pageId} />;

@@ -11,7 +11,7 @@ import {
   demoTenants,
   type DemoTenantSlug,
 } from "../lib/demo-session";
-import { runDemoWorkflowMutation } from "../lib/demo-workflow-mutation";
+import { AuditPersistenceUnavailableError, runDemoWorkflowMutation } from "../lib/demo-workflow-mutation";
 import { permissionEngine } from "../lib/permission-engine";
 
 function tenantId(slug: DemoTenantSlug) {
@@ -202,5 +202,44 @@ test.describe("Phase 16 demo workflow deny audit", () => {
     expect((audit?.metadataJson as { permission?: { reasonCode?: string } } | null)?.permission?.reasonCode).toBe(
       "DEMO_DENY_COMPLIANCE_RELEASE_REQUIRED",
     );
+  });
+
+  test("fails closed before mutation when required audit persistence is unavailable", async () => {
+    if (!prisma) throw new Error("Prisma client was not initialized.");
+
+    let mutateCalled = false;
+    const bennettTenantId = tenantId("bennett");
+
+    await expect(
+      runDemoWorkflowMutation(
+        prisma,
+        {
+          actionId: "phase07.auditUnavailableRelease",
+          actorRoleKey: "compliance_officer",
+          auditPersistenceAvailable: false,
+          clientTenantId: bennettTenantId,
+          eventType: "phase07.audit.unavailable_release",
+          metadataJson: {
+            phase: "07",
+            proof: "audit_unavailable_fails_closed",
+          },
+          nextState: "CLIENT_VISIBLE",
+          permissionAction: "RELEASE",
+          previousState: "COMPLIANCE_PENDING",
+          sensitivity: "RESTRICTED",
+          targetId: demoPlatformTenantId,
+          targetType: ObjectType.RECOMMENDATION,
+          tenantSlug: "bennett",
+          visibilityStatus: "COMPLIANCE_VISIBLE",
+          workflowState: "COMPLIANCE_PENDING",
+        },
+        async () => {
+          mutateCalled = true;
+          return { mutated: true };
+        },
+      ),
+    ).rejects.toThrow(AuditPersistenceUnavailableError);
+
+    expect(mutateCalled).toBe(false);
   });
 });

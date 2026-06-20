@@ -1,6 +1,21 @@
 import { expect, test } from "@playwright/test";
 
-import { routeSmokeList } from "../lib/route-registry";
+import {
+  groupedImplementationScreenRoutes,
+  routeSmokeList,
+  routeToSmokePath,
+  routeWorksetIntegrity,
+  routeWorksetPageIds,
+  screenRoutes
+} from "../lib/route-registry";
+
+const lockedRouteWorksetCounts = {
+  MVP: 31,
+  MVP_SUPPORT: 25,
+  P1_AFTER_MVP: 5,
+  REFERENCE_ONLY: 3,
+  HOLD_PENDING_DECISION: 7
+};
 
 test.describe("registered route smoke", () => {
   for (const route of routeSmokeList) {
@@ -19,6 +34,49 @@ test.describe("registered route smoke", () => {
 
     const body = await response.text();
     expect(body).toContain("Route unavailable");
+  });
+});
+
+test.describe("locked route workset preservation", () => {
+  test("all registered routes are classified exactly once", () => {
+    expect(routeWorksetIntegrity.counts).toEqual(lockedRouteWorksetCounts);
+    expect(routeWorksetIntegrity.missingPageIds).toEqual([]);
+    expect(routeWorksetIntegrity.unknownPageIds).toEqual([]);
+    expect(routeWorksetIntegrity.duplicatePageIds).toEqual([]);
+    expect(routeSmokeList).toHaveLength(71);
+  });
+
+  test("P1, reference and held routes stay out of implementation navigation", () => {
+    const implementationPageIds = new Set(
+      groupedImplementationScreenRoutes.flatMap((group) => group.routes.map((route) => route.pageId))
+    );
+
+    const excludedPageIds = [
+      ...routeWorksetPageIds.P1_AFTER_MVP,
+      ...routeWorksetPageIds.REFERENCE_ONLY,
+      ...routeWorksetPageIds.HOLD_PENDING_DECISION
+    ];
+
+    for (const pageId of excludedPageIds) {
+      expect(implementationPageIds.has(pageId), `${pageId} should stay excluded`).toBe(false);
+    }
+  });
+
+  test("deferred, reference and held routes remain registered smoke routes only", () => {
+    const routePathsByPageId = new Map(screenRoutes.map((route) => [route.pageId, routeToSmokePath(route.route)]));
+    const smokePathsByPageId = new Map(routeSmokeList.map((route) => [route.pageId, route.path]));
+
+    const excludedPageIds = [
+      ...routeWorksetPageIds.P1_AFTER_MVP,
+      ...routeWorksetPageIds.REFERENCE_ONLY,
+      ...routeWorksetPageIds.HOLD_PENDING_DECISION
+    ];
+
+    for (const pageId of excludedPageIds) {
+      expect(smokePathsByPageId.get(pageId), `${pageId} smoke path should remain registered`).toBe(
+        routePathsByPageId.get(pageId)
+      );
+    }
   });
 });
 

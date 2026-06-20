@@ -5,7 +5,9 @@ import { PageHeader } from "@/components/page-header";
 import { RouteDemoContextCard } from "@/components/route-demo-context-card";
 import {
   groupedScreenRoutes,
+  isRouteImplementationShellAccessible,
   navigationGroupLabels,
+  routeScopeForPageId,
   routeToSmokePath,
   type ScreenRoute
 } from "@/lib/route-registry";
@@ -36,16 +38,46 @@ const modeLabels: Record<ScreenRoute["visualMode"], string> = {
   WIZARD_OR_STEP_PAGE: "Guided step page"
 };
 
+const scopeShellCopy = {
+  MVP: {
+    heading: "Workspace Ready",
+    description:
+      "This screen is registered, navigable and ready for its dedicated UI build. The placeholder keeps the app shell, demo context and workflow guard visible without implementing the final screen early."
+  },
+  MVP_SUPPORT: {
+    heading: "Support Workspace",
+    description:
+      "This support route remains available for setup, access or client-context flows while action and payload authority stay governed by the dedicated workflow gates."
+  },
+  P1_AFTER_MVP: {
+    heading: "Deferred Workspace",
+    description:
+      "This workspace remains registered for continuity, but it is not active in the current release and does not grant action authority or client-visible data."
+  },
+  REFERENCE_ONLY: {
+    heading: "Reference Workspace",
+    description:
+      "This route remains registered as an internal reference surface and is not treated as product implementation or lifecycle proof."
+  },
+  HOLD_PENDING_DECISION: {
+    heading: "Held Workspace",
+    description:
+      "This workspace remains registered, but implementation is held until a later explicit scope, safety and visual decision unlocks it."
+  }
+} as const;
+
 function getSiblingRoutes(route: ScreenRoute) {
   return (
     groupedScreenRoutes
       .find((group) => group.key === route.navigationGroup)
-      ?.routes.filter((item) => item.route !== route.route)
+      ?.routes.filter((item) => item.route !== route.route && isRouteImplementationShellAccessible(item))
       .slice(0, 4) ?? []
   );
 }
 
 export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
+  const routeScope = routeScopeForPageId(route.pageId);
+  const scopeCopy = scopeShellCopy[routeScope];
   const gate = canBecomeClientVisible({
     recommendationStatus: route.clientVisibilitySensitive ? "ADVISOR_APPROVED" : "DRAFT",
     advisorApprovalStatus: route.clientVisibilitySensitive ? "APPROVED" : "PENDING",
@@ -71,9 +103,9 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
                 <ClipboardList aria-hidden="true" className="size-5" />
               </div>
               <div>
-                <h2 className="font-display text-2xl text-alphavest-ivory">Workspace Ready</h2>
+                <h2 className="font-display text-2xl text-alphavest-ivory">{scopeCopy.heading}</h2>
                 <p className="mt-1 text-sm leading-6 text-alphavest-muted">
-                  This screen is registered, navigable and ready for its dedicated UI build. The placeholder keeps the app shell, demo context and workflow guard visible without implementing the final screen early.
+                  {scopeCopy.description}
                 </p>
               </div>
             </div>
