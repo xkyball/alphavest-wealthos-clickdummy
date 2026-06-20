@@ -11,12 +11,27 @@ test.describe("Phase D review calendar and rebalance monitoring", () => {
     const body = await response.json();
 
     expect(response.ok(), JSON.stringify(body)).toBe(true);
+    expect(body.ok).toBe(true);
+    expect(body.noClientRelease).toBe(true);
+    expect(body.noAdviceExecution).toBe(true);
+    expect(body.mutated).toBe(false);
     expect(body.reviews.total).toBeGreaterThan(0);
     expect(body.reviews.rows.some((row: { dueState: string }) => row.dueState === "scheduled" || row.dueState === "upcoming")).toBe(true);
     expect(body.rebalance.total).toBeGreaterThan(0);
     expect(body.rebalance.overdue).toBeGreaterThan(0);
     expect(body.rebalance.clientVisible).toBe(0);
     expect(body.rebalance.rows.every((row: { clientVisible: boolean }) => row.clientVisible === false)).toBe(true);
+  });
+
+  test("GET /api/review-monitoring rejects invalid asOf values without advice execution", async ({ request }) => {
+    const response = await request.get("/api/review-monitoring?asOf=not-a-date");
+    const body = await response.json();
+
+    expect(response.status(), JSON.stringify(body)).toBe(400);
+    expect(body.ok).toBe(false);
+    expect(body.mutated).toBe(false);
+    expect(body.noClientRelease).toBe(true);
+    expect(body.issues).toContain("valid_as_of_required");
   });
 
   test("J16 review calendar actions persist internal audit state without client release", async ({ request }) => {
@@ -68,4 +83,3 @@ test.describe("Phase D review calendar and rebalance monitoring", () => {
     expect(routeBody.result.clientVisible).toBe(false);
   });
 });
-

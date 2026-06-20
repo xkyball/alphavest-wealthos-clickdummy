@@ -96,6 +96,92 @@ This phase strengthens P0 proof slices for upload-not-sufficiency, evidence suff
 
 `PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
 
+## PHASE-08-API - API Hardening
+
+Date: 2026-06-20
+
+### Scope
+
+Executed the handoff phase prompt `08_PHASE_API_HARDENING_PROMPT.md` for the four existing API routes only: `/api/demo-workflow`, `/api/documents`, `/api/documents/upload` and `/api/review-monitoring`. No APIs, routes, Prisma schema changes, migrations, visuals or screen/state assets were created.
+
+### Source Artefacts Used
+
+- `FINAL_CODEX_IMPLEMENTATION_HANDOFF.md`
+- `FINAL_CODEX_TASK_MASTER.md`
+- `SOURCE_OF_TRUTH_ORDER.md`
+- `STOP_RULES_MASTER.md`
+- `ATOMIC_IMPLEMENTATION_SLICE_PLAN.md`
+- `PHASE_ENTRY_EXIT_GATE_CHECKLIST.md`
+- `API_CONTRACT_MATRIX.md`
+- `API_CONTRACT_EXAMPLES_AND_ASSERTIONS.md`
+- `P0_TEST_ASSERTION_AND_FIXTURE_PLAN.md`
+- Project V3 source-of-truth docs listed in `AGENTS.md` and `CODEX_MASTER_TASK.md`.
+
+### Completed Tasks
+
+- Added bounded fail-closed response fields to malformed `/api/demo-workflow` and action-failure responses: `ok=false`, `mutated=false` and `noClientRelease=true`.
+- Removed fail-open fallback in `/api/documents`; invalid tenant scope now returns a safe 400 with an empty document list instead of silently using `morgan`.
+- Required explicit valid role and tenant metadata before `/api/documents/upload` can reach the upload service defaults.
+- Added upload-only response safety markers to successful document uploads: no sufficiency, no release unlock and no client visibility.
+- Added explicit invalid `asOf` rejection and internal/no-advice/no-client-release response markers to `/api/review-monitoring`.
+- Added focused API negative tests for malformed demo workflow bodies, invalid document tenant queries, invalid upload metadata, upload-only safety markers and invalid review-monitoring queries.
+
+### Slice Coverage
+
+| Slice | Status | Notes |
+| --- | --- | --- |
+| `AV-SLICE-API-01` | Implemented + tested | Demo workflow validation/failure responses now fail closed without mutation or client release claims. |
+| `AV-SLICE-API-02` | Implemented + tested | Document listing validates tenant scope and no longer falls back to another tenant. |
+| `AV-SLICE-API-03` | Implemented + tested | Upload route validates role/tenant metadata and success remains explicitly upload-only. |
+| `AV-SLICE-API-04` | Preserved internal/P1 boundary + tested | Review monitoring remains GET-only/internal, rejects invalid query input and advertises no advice execution. |
+| `AV-SLICE-API-05` | Passed by abstention | No new API route was created. |
+
+### Capability Level
+
+| Surface | Current / Target | Phase Result |
+| --- | --- | --- |
+| `/api/demo-workflow` | E6 gated demo workflow simulation | Preserved E6; no production persistence or P0 closure claim. |
+| `/api/documents` | E5/E6 bounded document listing | Improved fail-closed query validation; no full payload visibility matrix claim. |
+| `/api/documents/upload` | E7 bounded multipart upload capability for demo data | Preserved real file-payload persistence while making upload-only semantics explicit. |
+| `/api/review-monitoring` | E6 internal monitoring proof slice / P1 deferred | Preserved internal no-advice boundary; no MVP promotion. |
+
+### Changed Files
+
+- `app/api/demo-workflow/route.ts`
+- `app/api/documents/route.ts`
+- `app/api/documents/upload/route.ts`
+- `app/api/review-monitoring/route.ts`
+- `tests/demo-workflow-api.spec.ts`
+- `tests/document-upload-api.spec.ts`
+- `tests/review-monitoring-service.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm test:workflow-api` - first parallel run failed with `EADDRINUSE` on `127.0.0.1:3020`; reran sequentially and passed, 5 tests.
+- `pnpm exec playwright test tests/document-upload-api.spec.ts` - first parallel run failed with `EADDRINUSE` on `127.0.0.1:3020`; reran sequentially and passed, 5 tests.
+- `pnpm test:phase-d` - passed, 4 tests.
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `git diff --check` - passed.
+- Accidental broad `pnpm test:playwright` shell substitution during report search - interrupted immediately; not counted as validation.
+
+### P0 Impact
+
+This phase improves proof slices for `P0_API_VALIDATION_GATE`, `P0_API_ERROR_FAIL_CLOSED_GATE`, `P0_UPLOAD_NOT_SUFFICIENCY_GATE` and the review-monitoring no-advice boundary. It does not claim full P0 passed. Existing APIs are safer, but full RBAC/object-scope/payload-visibility coverage remains broader than this phase.
+
+### Blockers / Deferred / Hold Items
+
+- `/api/review-monitoring` remains P1/internal by contract; no MVP promotion is claimed.
+- `/api/documents` now validates tenant scope, but full actor-derived tenant/object authorization remains a later RBAC/API proof obligation.
+- `pnpm build` and broad `pnpm test:playwright` were not run because this phase called for proportionate targeted API validation.
+- Parallel Playwright targeted runs can collide on the shared configured web-server port; sequential reruns passed.
+
+### Exit Gate Decision
+
+`PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
 ## PHASE-05-FEEDBACK - Feedback Validation Error Addendum
 
 Date: 2026-06-20

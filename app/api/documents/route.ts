@@ -2,28 +2,38 @@ import { NextResponse } from "next/server";
 
 import { listUploadedDocuments } from "@/lib/document-upload-service";
 import { prismaClient } from "@/lib/prisma";
-import type { DemoTenantSlug } from "@/lib/demo-session";
+import { demoTenants, type DemoTenantSlug } from "@/lib/demo-session";
 
-function tenantSlugFromUrl(request: Request): DemoTenantSlug {
+function tenantSlugFromUrl(request: Request): DemoTenantSlug | undefined {
   const value = new URL(request.url).searchParams.get("tenantSlug");
 
-  if (value === "bennett" || value === "morgan" || value === "northbridge" || value === "summit") {
-    return value;
-  }
-
-  return "morgan";
+  return demoTenants.some((tenant) => tenant.slug === value) ? (value as DemoTenantSlug) : undefined;
 }
 
 export async function GET(request: Request) {
-  try {
-    const documents = await listUploadedDocuments(prismaClient(), tenantSlugFromUrl(request));
-
-    return NextResponse.json({ documents });
-  } catch (error) {
+  const tenantSlug = tenantSlugFromUrl(request);
+  if (!tenantSlug) {
     return NextResponse.json(
       {
         documents: [],
-        error: error instanceof Error ? error.message : "Unable to load documents.",
+        error: "Documents are not available for this scope.",
+        issues: ["valid_tenant_slug_required"],
+        ok: false,
+      },
+      { status: 400 },
+    );
+  }
+
+  try {
+    const documents = await listUploadedDocuments(prismaClient(), tenantSlug);
+
+    return NextResponse.json({ documents, ok: true });
+  } catch {
+    return NextResponse.json(
+      {
+        documents: [],
+        error: "Documents are not available for this scope.",
+        ok: false,
       },
       { status: 500 },
     );

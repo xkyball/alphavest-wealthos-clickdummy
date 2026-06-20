@@ -85,7 +85,27 @@ test.describe("demo workflow API", () => {
       expect(body.error).toBe("Invalid demo workflow request.");
       expect(body.issues?.[0]?.field).toBe("actionId");
       expect(body.issues?.[0]?.code).toBe("invalid_action_id");
+      expect(body.mutated).toBe(false);
+      expect(body.noClientRelease).toBe(true);
+      expect(body.ok).toBe(false);
     }
+  });
+
+  test("malformed JSON body fails closed without mutation or client release", async ({ request }) => {
+    const response = await request.post("/api/demo-workflow", {
+      data: "[",
+      headers: {
+        "content-type": "application/json",
+      },
+    });
+    const body = await response.json();
+
+    expect(response.status(), JSON.stringify(body)).toBe(400);
+    expect(body.error).toBe("Invalid demo workflow request.");
+    expect(body.issues?.[0]?.code).toBe("invalid_body");
+    expect(body.mutated).toBe(false);
+    expect(body.noClientRelease).toBe(true);
+    expect(body.ok).toBe(false);
   });
 
   test("Phase B J12 KYC workflow actions return evidence and audit boundaries", async ({ request }) => {

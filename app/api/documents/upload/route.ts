@@ -7,7 +7,7 @@ import {
   uploadDocument,
 } from "@/lib/document-upload-service";
 import { prismaClient } from "@/lib/prisma";
-import type { DemoRoleKey, DemoTenantSlug } from "@/lib/demo-session";
+import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 
 export const runtime = "nodejs";
 
@@ -17,27 +17,11 @@ function stringValue(formData: FormData, key: string) {
 }
 
 function roleKey(value: string): DemoRoleKey | undefined {
-  const allowed = new Set<DemoRoleKey>([
-    "admin",
-    "analyst",
-    "client_success",
-    "compliance_officer",
-    "external_advisor",
-    "family_cfo",
-    "next_gen",
-    "principal",
-    "security_officer",
-    "senior_wealth_advisor",
-    "trustee",
-  ]);
-
-  return allowed.has(value as DemoRoleKey) ? (value as DemoRoleKey) : undefined;
+  return demoRoles.some((role) => role.key === value) ? (value as DemoRoleKey) : undefined;
 }
 
 function tenantSlug(value: string): DemoTenantSlug | undefined {
-  const allowed = new Set<DemoTenantSlug>(["bennett", "morgan", "northbridge", "summit"]);
-
-  return allowed.has(value as DemoTenantSlug) ? (value as DemoTenantSlug) : undefined;
+  return demoTenants.some((tenant) => tenant.slug === value) ? (value as DemoTenantSlug) : undefined;
 }
 
 function sensitivity(value: string): Sensitivity {
@@ -61,10 +45,23 @@ export async function POST(request: Request) {
   }
 
   const file = formData.get("file");
+  const parsedRoleKey = roleKey(stringValue(formData, "roleKey"));
+  const parsedTenantSlug = tenantSlug(stringValue(formData, "tenantSlug"));
+  const metadataIssues = [
+    ...(parsedRoleKey ? [] : ["valid_role_key_required"]),
+    ...(parsedTenantSlug ? [] : ["valid_tenant_slug_required"]),
+  ];
 
   if (!(file instanceof File)) {
     return NextResponse.json(
-      { error: "Invalid document upload.", issues: ["file_required"] },
+      { error: "Invalid document upload.", issues: ["file_required"], mutated: false, ok: false },
+      { status: 400 },
+    );
+  }
+
+  if (metadataIssues.length > 0) {
+    return NextResponse.json(
+      { error: "Invalid document upload.", issues: metadataIssues, mutated: false, ok: false },
       { status: 400 },
     );
   }
@@ -76,17 +73,27 @@ export async function POST(request: Request) {
       linkedObjectLabel: stringValue(formData, "linkedObjectLabel"),
       notes: stringValue(formData, "notes"),
       periodLabel: stringValue(formData, "periodLabel"),
-      roleKey: roleKey(stringValue(formData, "roleKey")),
+      roleKey: parsedRoleKey,
       sensitivity: sensitivity(stringValue(formData, "sensitivity")),
       subType: stringValue(formData, "subType"),
-      tenantSlug: tenantSlug(stringValue(formData, "tenantSlug")),
+      tenantSlug: parsedTenantSlug,
     });
 
-    return NextResponse.json({ result });
+    return NextResponse.json({
+      ok: true,
+      result,
+      safety: {
+        clientVisible: false,
+        evidenceStatus: "REVIEW_PENDING",
+        releaseUnlocked: false,
+        sufficiency: false,
+        uploadOnly: true,
+      },
+    });
   } catch (error) {
     if (error instanceof DocumentUploadValidationError) {
       return NextResponse.json(
-        { error: "Invalid document upload.", issues: error.issues },
+        { error: "Invalid document upload.", issues: error.issues, mutated: false, ok: false },
         { status: 400 },
       );
     }
@@ -96,6 +103,8 @@ export async function POST(request: Request) {
         {
           auditEventId: error.auditEventId,
           error: "Document upload denied.",
+          mutated: false,
+          ok: false,
           reason: error.reason,
         },
         { status: 403 },
@@ -103,7 +112,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unable to upload document." },
+      { error: "Unable to upload document.", mutated: false, ok: false },
       { status: 500 },
     );
   }

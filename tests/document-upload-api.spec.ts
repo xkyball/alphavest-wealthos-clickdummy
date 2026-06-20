@@ -60,6 +60,13 @@ test.describe("document upload multipart API", () => {
     expect(body.result.extractionId).toBeTruthy();
     expect(body.result.evidenceRecordId).toBeTruthy();
     expect(body.result.auditEventId).toBeTruthy();
+    expect(body.safety).toEqual({
+      clientVisible: false,
+      evidenceStatus: "REVIEW_PENDING",
+      releaseUnlocked: false,
+      sufficiency: false,
+      uploadOnly: true,
+    });
 
     const document = await prisma.document.findUniqueOrThrow({
       include: {
@@ -106,6 +113,37 @@ test.describe("document upload multipart API", () => {
     expect(reloadedDocument?.fileName).toBe(fileName);
   });
 
+  test("rejects invalid document tenant queries without falling back to another tenant", async ({ request }) => {
+    const response = await request.get("/api/documents?tenantSlug=unknown");
+    const body = await response.json();
+
+    expect(response.status(), JSON.stringify(body)).toBe(400);
+    expect(body.ok).toBe(false);
+    expect(body.documents).toEqual([]);
+    expect(body.issues).toContain("valid_tenant_slug_required");
+  });
+
+  test("rejects upload requests with invalid role or tenant metadata", async ({ request }) => {
+    const response = await request.post("/api/documents/upload", {
+      multipart: {
+        documentType: "financial_statement",
+        file: {
+          buffer: Buffer.from("%PDF-1.4\nInvalid metadata\n%%EOF"),
+          mimeType: "application/pdf",
+          name: "invalid-metadata.pdf",
+        },
+        roleKey: "pretend_role",
+        tenantSlug: "unknown",
+      },
+    });
+    const body = await response.json();
+
+    expect(response.status(), JSON.stringify(body)).toBe(400);
+    expect(body.ok).toBe(false);
+    expect(body.mutated).toBe(false);
+    expect(body.issues).toEqual(["valid_role_key_required", "valid_tenant_slug_required"]);
+  });
+
   test("rejects unsupported file types without creating a document row", async ({ request }) => {
     const fileName = "blocked-upload.exe";
     const before = await prisma.document.count({ where: { fileName } });
@@ -125,6 +163,8 @@ test.describe("document upload multipart API", () => {
     const after = await prisma.document.count({ where: { fileName } });
 
     expect(response.status(), JSON.stringify(body)).toBe(400);
+    expect(body.ok).toBe(false);
+    expect(body.mutated).toBe(false);
     expect(body.issues).toContain("supported_file_type_required");
     expect(after).toBe(before);
   });
@@ -148,6 +188,8 @@ test.describe("document upload multipart API", () => {
     const audit = await prisma.auditEvent.findUniqueOrThrow({ where: { id: body.auditEventId } });
 
     expect(response.status(), JSON.stringify(body)).toBe(403);
+    expect(body.ok).toBe(false);
+    expect(body.mutated).toBe(false);
     expect(documentCount).toBe(0);
     expect(audit.result).toBe(AuditResult.DENIED);
     expect(audit.eventType).toBe("document.upload.denied");

@@ -2859,3 +2859,56 @@ Date: 2026-06-20
 - Route shell proof does not prove action permission or payload visibility safety.
 - Dormant held-route component modules still exist in the repository; this phase proves they are not reached through the catch-all route guard.
 - Full RBAC, evidence/audit/export and API fail-closed proof remains later-phase work.
+
+## PHASE-08-API QA Addendum
+
+Date: 2026-06-20
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Phase scope discipline | Passed | Only the four existing API route files, focused API tests and required reports were changed. |
+| Source artefacts | Passed | Final handoff, task master, source order, stop rules, API matrix, API examples, P0 assertion plan, slice plan, phase checklist and required V3 docs were read before edits. |
+| Stop rules | Passed | No new API, route scope change, P1/Hold/reference promotion, visual generation, schema replacement, migration, `main` target, upload-to-release shortcut or P0 overclaim. |
+| Demo workflow fail-closed semantics | Passed | Invalid bodies and thrown action failures now return bounded no-mutation/no-client-release responses. |
+| Document listing scope validation | Passed | Invalid tenant query returns safe 400 and empty list instead of fallback tenant data. |
+| Upload-only invariant | Passed | Upload success now includes explicit no sufficiency/release/client-visibility markers; invalid metadata and denied uploads remain non-mutating. |
+| Review monitoring internal boundary | Passed | Invalid `asOf` fails closed; valid snapshots include no-advice/no-client-release markers. |
+| Workflow API tests | Passed on sequential rerun | First parallel attempt hit `EADDRINUSE`; sequential `pnpm test:workflow-api` passed. |
+| Document upload API tests | Passed on sequential rerun | First parallel attempt hit `EADDRINUSE`; sequential focused Playwright run passed. |
+| Review monitoring tests | Passed | `pnpm test:phase-d`, 4 tests. |
+| Typecheck | Passed | `pnpm typecheck`. |
+| Lint | Passed | `pnpm lint`. |
+| Whitespace diff check | Passed | `git diff --check`. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm test:workflow-api` | Failed then rerun passed | Initial parallel web-server port collision on `127.0.0.1:3020`; sequential rerun passed, 5 tests. |
+| `pnpm exec playwright test tests/document-upload-api.spec.ts` | Failed then rerun passed | Initial parallel web-server port collision on `127.0.0.1:3020`; sequential rerun passed, 5 tests. |
+| `pnpm test:phase-d` | Passed | 4 tests; review monitoring remains internal/no-advice. |
+| `pnpm typecheck` | Passed | TypeScript clean after API hardening. |
+| `pnpm lint` | Passed | ESLint clean after unused catch variable cleanup. |
+| `git diff --check` | Passed | No whitespace errors. |
+| Accidental broad `pnpm test:playwright` shell substitution | Interrupted | Report search included shell backticks; the broad Playwright run was stopped immediately and is not counted as validation. |
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| Demo workflow invalid request fail-closed response | implemented + tested | Malformed action payload and malformed JSON return no mutation/no client release. |
+| Document tenant query validation | implemented + tested | Invalid tenant does not fall back to `morgan`. |
+| Upload role/tenant metadata validation | implemented + tested | Invalid metadata is rejected before upload service defaults. |
+| Upload-only safety markers | implemented + tested | Success response explicitly keeps sufficiency, release and client visibility false. |
+| Review monitoring invalid query and no-advice markers | implemented + tested | Snapshot remains internal/P1 proof slice, not advice execution. |
+| New API block | preserved | No endpoint outside the four-route API universe was added. |
+| Full P0 gate closure | not claimed | Current coverage is targeted Phase 08 API proof only. |
+
+### Residual Risks
+
+- Full actor-derived API authorization remains a later RBAC/object-scope proof obligation; this phase tightened tenant/metadata validation without introducing production auth.
+- `/api/review-monitoring` remains P1/internal and should not be used as MVP advice or rebalance execution proof.
+- Broad `pnpm test:playwright` and `pnpm build` were not run for this phase; targeted API checks, typecheck, lint and diff-check passed.
+- Targeted Playwright API scripts should be run sequentially unless each run receives a unique web-server port.

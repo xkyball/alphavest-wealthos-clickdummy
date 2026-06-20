@@ -3938,7 +3938,12 @@ export async function POST(request: Request) {
   const prisma = prismaClient();
   if (!prisma) {
     return NextResponse.json(
-      { error: "DATABASE_URL is required for demo workflow actions." },
+      {
+        error: "DATABASE_URL is required for demo workflow actions.",
+        mutated: false,
+        noClientRelease: true,
+        ok: false,
+      },
       { status: 503 }
     );
   }
@@ -3950,6 +3955,9 @@ export async function POST(request: Request) {
       {
         error: "Invalid demo workflow request.",
         issues: parsedBody.issues,
+        mutated: false,
+        noClientRelease: true,
+        ok: false,
       },
       { status: 400 },
     );
@@ -3968,13 +3976,17 @@ export async function POST(request: Request) {
     return NextResponse.json({
       actionId,
       noClientRelease: !releasedToClient,
+      ok: true,
       result,
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       {
         actionId,
-        error: error instanceof Error ? error.message : "Demo workflow action failed.",
+        error: "Demo workflow action failed.",
+        mutated: false,
+        noClientRelease: true,
+        ok: false,
       },
       { status: 409 },
     );

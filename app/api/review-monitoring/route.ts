@@ -25,10 +25,12 @@ function prismaClient() {
 
 function parseAsOf(request: Request) {
   const value = new URL(request.url).searchParams.get("asOf");
-  if (!value) return reviewMonitoringDefaultAsOf;
+  if (!value) return { ok: true as const, value: reviewMonitoringDefaultAsOf };
 
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? reviewMonitoringDefaultAsOf : parsed;
+  return Number.isNaN(parsed.getTime())
+    ? { issue: "valid_as_of_required", ok: false as const }
+    : { ok: true as const, value: parsed };
 }
 
 export async function GET(request: Request) {
@@ -40,7 +42,27 @@ export async function GET(request: Request) {
     );
   }
 
-  const snapshot = await getReviewMonitoringSnapshot(prisma, parseAsOf(request));
-  return NextResponse.json(snapshot);
-}
+  const parsedAsOf = parseAsOf(request);
+  if (!parsedAsOf.ok) {
+    return NextResponse.json(
+      {
+        error: "Review monitoring is not available for this query.",
+        issues: [parsedAsOf.issue],
+        mutated: false,
+        noClientRelease: true,
+        ok: false,
+      },
+      { status: 400 },
+    );
+  }
 
+  const snapshot = await getReviewMonitoringSnapshot(prisma, parsedAsOf.value);
+  return NextResponse.json({
+    ...snapshot,
+    clientVisible: false,
+    mutated: false,
+    noAdviceExecution: true,
+    noClientRelease: true,
+    ok: true,
+  });
+}
