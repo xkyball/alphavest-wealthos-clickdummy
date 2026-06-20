@@ -49,6 +49,7 @@ export async function GET(request: Request) {
         error: "Review monitoring is not available for this query.",
         issues: [parsedAsOf.issue],
         mutated: false,
+        noAdviceExecution: true,
         noClientRelease: true,
         ok: false,
       },

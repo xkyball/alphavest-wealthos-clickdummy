@@ -24,6 +24,8 @@ export async function GET(request: Request) {
         documents: [],
         error: "Documents are not available for this scope.",
         issues: ["valid_tenant_slug_required"],
+        mutated: false,
+        noClientRelease: true,
         ok: false,
       },
       { status: 400 },
@@ -39,6 +41,8 @@ export async function GET(request: Request) {
       {
         documents: [],
         error: "Documents are not available for this scope.",
+        mutated: false,
+        noClientRelease: true,
         ok: false,
       },
       { status: 500 },

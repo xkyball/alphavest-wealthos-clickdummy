@@ -39,7 +39,13 @@ export async function POST(request: Request) {
     formData = await request.formData();
   } catch {
     return NextResponse.json(
-      { error: "Invalid multipart upload request.", issues: ["multipart_form_data_required"] },
+      {
+        error: "Invalid multipart upload request.",
+        issues: ["multipart_form_data_required"],
+        mutated: false,
+        noClientRelease: true,
+        ok: false,
+      },
       { status: 400 },
     );
   }
@@ -54,14 +60,26 @@ export async function POST(request: Request) {
 
   if (!(file instanceof File)) {
     return NextResponse.json(
-      { error: "Invalid document upload.", issues: ["file_required"], mutated: false, ok: false },
+      {
+        error: "Invalid document upload.",
+        issues: ["file_required"],
+        mutated: false,
+        noClientRelease: true,
+        ok: false,
+      },
       { status: 400 },
     );
   }
 
   if (metadataIssues.length > 0) {
     return NextResponse.json(
-      { error: "Invalid document upload.", issues: metadataIssues, mutated: false, ok: false },
+      {
+        error: "Invalid document upload.",
+        issues: metadataIssues,
+        mutated: false,
+        noClientRelease: true,
+        ok: false,
+      },
       { status: 400 },
     );
   }
@@ -70,7 +88,13 @@ export async function POST(request: Request) {
   const resolvedTenantSlug = parsedTenantSlug;
   if (!resolvedRoleKey || !resolvedTenantSlug) {
     return NextResponse.json(
-      { error: "Invalid document upload.", issues: metadataIssues, mutated: false, ok: false },
+      {
+        error: "Invalid document upload.",
+        issues: metadataIssues,
+        mutated: false,
+        noClientRelease: true,
+        ok: false,
+      },
       { status: 400 },
     );
   }
@@ -102,7 +126,13 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof DocumentUploadValidationError) {
       return NextResponse.json(
-        { error: "Invalid document upload.", issues: error.issues, mutated: false, ok: false },
+        {
+          error: "Invalid document upload.",
+          issues: error.issues,
+          mutated: false,
+          noClientRelease: true,
+          ok: false,
+        },
         { status: 400 },
       );
     }
@@ -113,6 +143,7 @@ export async function POST(request: Request) {
           auditEventId: error.auditEventId,
           error: "Document upload denied.",
           mutated: false,
+          noClientRelease: true,
           ok: false,
           reason: error.reason,
         },
@@ -121,7 +152,12 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(
-      { error: "Unable to upload document.", mutated: false, ok: false },
+      {
+        error: "Unable to upload document.",
+        mutated: false,
+        noClientRelease: true,
+        ok: false,
+      },
       { status: 500 },
     );
   }

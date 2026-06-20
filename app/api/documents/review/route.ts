@@ -42,7 +42,13 @@ export async function POST(request: Request) {
     body = await request.json();
   } catch {
     return NextResponse.json(
-      { error: "Invalid evidence review request.", issues: ["json_body_required"], mutated: false, ok: false },
+      {
+        error: "Invalid evidence review request.",
+        issues: ["json_body_required"],
+        mutated: false,
+        noClientRelease: true,
+        ok: false,
+      },
       { status: 400 },
     );
   }
@@ -60,7 +66,13 @@ export async function POST(request: Request) {
 
   if (metadataIssues.length > 0) {
     return NextResponse.json(
-      { error: "Invalid evidence review request.", issues: metadataIssues, mutated: false, ok: false },
+      {
+        error: "Invalid evidence review request.",
+        issues: metadataIssues,
+        mutated: false,
+        noClientRelease: true,
+        ok: false,
+      },
       { status: 400 },
     );
   }
@@ -70,7 +82,13 @@ export async function POST(request: Request) {
   const resolvedAction = parsedAction;
   if (!resolvedRoleKey || !resolvedTenantSlug || !resolvedAction) {
     return NextResponse.json(
-      { error: "Invalid evidence review request.", issues: metadataIssues, mutated: false, ok: false },
+      {
+        error: "Invalid evidence review request.",
+        issues: metadataIssues,
+        mutated: false,
+        noClientRelease: true,
+        ok: false,
+      },
       { status: 400 },
     );
   }
@@ -93,14 +111,26 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof EvidenceReviewValidationError) {
       return NextResponse.json(
-        { error: "Invalid evidence review request.", issues: error.issues, mutated: false, ok: false },
+        {
+          error: "Invalid evidence review request.",
+          issues: error.issues,
+          mutated: false,
+          noClientRelease: true,
+          ok: false,
+        },
         { status: 400 },
       );
     }
 
     if (error instanceof EvidenceReviewNotFoundError) {
       return NextResponse.json(
-        { error: error.message, issues: ["document_not_found_for_tenant"], mutated: false, ok: false },
+        {
+          error: error.message,
+          issues: ["document_not_found_for_tenant"],
+          mutated: false,
+          noClientRelease: true,
+          ok: false,
+        },
         { status: 404 },
       );
     }
@@ -111,6 +141,7 @@ export async function POST(request: Request) {
           auditEventId: error.auditEventId,
           error: "Evidence review denied.",
           mutated: false,
+          noClientRelease: true,
           ok: false,
           reason: error.reason,
         },
@@ -125,6 +156,7 @@ export async function POST(request: Request) {
           decision: error.decision,
           error: error.message,
           mutated: false,
+          noClientRelease: true,
           ok: false,
         },
         { status: 409 },
@@ -132,7 +164,12 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(
-      { error: "Unable to review evidence.", mutated: false, ok: false },
+      {
+        error: "Unable to review evidence.",
+        mutated: false,
+        noClientRelease: true,
+        ok: false,
+      },
       { status: 500 },
     );
   }

@@ -4029,6 +4029,7 @@ export async function POST(request: Request) {
       {
         error: "DATABASE_URL is required for demo workflow actions.",
         mutated: false,
+        noAdviceExecution: true,
         noClientRelease: true,
         ok: false,
       },
@@ -4044,6 +4045,7 @@ export async function POST(request: Request) {
         error: "Invalid demo workflow request.",
         issues: parsedBody.issues,
         mutated: false,
+        noAdviceExecution: true,
         noClientRelease: true,
         ok: false,
       },
@@ -4081,6 +4083,7 @@ export async function POST(request: Request) {
               : "Recommendation review workflow action failed.",
           gateMissing: error instanceof RecommendationReviewWorkflowError ? error.details?.gateMissing : undefined,
           mutated: false,
+          noAdviceExecution: true,
           noClientRelease: true,
           ok: false,
           releasePreconditions:
@@ -4099,6 +4102,7 @@ export async function POST(request: Request) {
       {
         error: "Invalid demo workflow request.",
         mutated: false,
+        noAdviceExecution: true,
         noClientRelease: true,
         ok: false,
       },
@@ -4133,6 +4137,7 @@ export async function POST(request: Request) {
           auditPersistenceRequired: true,
           error: error.message,
           mutated: false,
+          noAdviceExecution: true,
           noClientRelease: true,
           ok: false,
           reasonCode: "AUDIT_PERSISTENCE_UNAVAILABLE",
@@ -4146,6 +4151,7 @@ export async function POST(request: Request) {
         actionId,
         error: "Demo workflow action failed.",
         mutated: false,
+        noAdviceExecution: true,
         noClientRelease: true,
         ok: false,
       },

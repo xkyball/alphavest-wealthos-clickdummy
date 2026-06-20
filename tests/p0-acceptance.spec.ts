@@ -9,6 +9,13 @@ import { evidenceService } from "../lib/evidence-service";
 import { exportPackageService } from "../lib/export-package-service";
 import { exportService } from "../lib/export-service";
 import { fileMetadataService } from "../lib/file-metadata-service";
+import {
+  p0AcceptanceProofGaps,
+  p0AcceptanceProofMap,
+  p0ApiRouteUniverse,
+  p0MappedJourneyIds,
+  p0RouteUiStateObligations,
+} from "../lib/p0-acceptance-proof";
 import { permissionEngine } from "../lib/permission-engine";
 import {
   routeImplementationAccessDecision,
@@ -431,7 +438,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
     expect(unsafeManifest.issues).toContain("forbidden_payload:UNRELEASED_EVIDENCE");
   });
 
-  test("AV-SLICE-P0-08 validates existing API request shapes and preserves the four-API universe", () => {
+  test("AV-SLICE-P0-08 validates existing API request shapes and preserves the P0 API universe", () => {
     expect(parseDemoWorkflowRequestBody({ actionId: "j02.releaseClient" })).toEqual({
       ok: true,
       value: { actionId: "j02.releaseClient" },
@@ -456,12 +463,31 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
       ],
       ok: false,
     });
-    expect(apiRouteFiles("app/api")).toEqual([
-      "app/api/demo-workflow/route.ts",
-      "app/api/documents/route.ts",
-      "app/api/documents/upload/route.ts",
-      "app/api/review-monitoring/route.ts",
-    ]);
+    expect(apiRouteFiles("app/api")).toEqual([...p0ApiRouteUniverse]);
+  });
+
+  test("AV-MVP-P10-T001/T002 maps every MVP journey to positive and negative proof or explicit blocker", () => {
+    expect(p0AcceptanceProofGaps()).toEqual([]);
+    expect(p0MappedJourneyIds()).toEqual(["MJ-001", "MJ-002", "MJ-003", "MJ-005", "MJ-006", "MJ-010", "MJ-012"]);
+
+    for (const entry of p0AcceptanceProofMap) {
+      expect(entry.positiveProof.length, `${entry.journeyId} positive proof`).toBeGreaterThan(0);
+      expect(entry.negativeProof.length, `${entry.journeyId} negative proof`).toBeGreaterThan(0);
+      expect(entry.nonClaims.length, `${entry.journeyId} non-claims`).toBeGreaterThan(0);
+    }
+  });
+
+  test("AV-MVP-P10-T004/T005 keeps UI state obligations and proof report guarded against overclaim", () => {
+    expect(p0RouteUiStateObligations).toHaveLength(4);
+
+    for (const obligation of p0RouteUiStateObligations) {
+      expect(obligation.routes.length).toBeGreaterThan(0);
+      expect(obligation.proof).toBe("tests/ui-state-boundaries.spec.ts");
+    }
+
+    for (const entry of p0AcceptanceProofMap) {
+      expect(entry.nonClaims.join(" ")).not.toMatch(/full MVP accepted|production ready|human visual accepted/i);
+    }
   });
 
   test("AV-SLICE-P0-09 preserves route worksets and hold/P1/reference exclusions", () => {
