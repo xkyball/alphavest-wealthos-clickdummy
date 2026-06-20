@@ -2329,3 +2329,54 @@ Date: 2026-06-20
 - Route access is still shell-level/demo scoped and must not be treated as action or payload authorization.
 - Existing product-specific components for held/P1 domains remain in the repository for prior work/history, but catch-all route access no longer reaches them for non-implementation worksets.
 - Broader Playwright, lint, build and full validation commands were not run for this phase because the phase prompt called for proportionate route/access validation.
+
+## PHASE-03-UI_STATE QA Addendum
+
+Date: 2026-06-20
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Phase scope discipline | Passed | Only `AV-SLICE-STATE-01..05` UI state/test/report work was changed. |
+| Source artefacts | Passed | Final handoff, task master, source order, stop rules, state spec, interaction clarification, static/reactive classification, UI audit checklist and slice plan were read before edits. |
+| Stop rules | Passed | No visual generation, reference updates, route changes, new API route, Prisma schema, migration, P1/Hold/reference elevation or P0 overclaim. |
+| Shared state coverage | Passed | `StatePanel` and `DataTable` now both support the `success` state variant. |
+| Upload-not-sufficiency UI | Passed | Upload completion says the document is queued for extraction review and keeps evidence sufficiency, release and client visibility locked. |
+| Internal workflow state | Passed | Approved/release-ready workflow panels use explicit success state without changing release logic. |
+| Export approval boundary | Passed | Export download state says delivery/download/share do not imply client acceptance or downstream advice execution. |
+| Interaction classification | Passed with limitation | State surfaces were classified; `ReleaseModal` close/cancel lifecycle remains deferred to Phase 04. |
+| Typecheck | Passed | `pnpm typecheck` passed after adding `DataTable` success copy. |
+| Lint | Passed | `pnpm lint` passed after the transient `test-results` artifact issue cleared. |
+| Focused Playwright | Passed | `tests/document-upload-flow.spec.ts` and `tests/ui-state-boundaries.spec.ts` passed. |
+| Build | Passed with warnings | `pnpm build` passed; existing Turbopack tracing warnings remain around `lib/document-storage-adapter.ts`. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Failed then fixed | Initial failure was missing `success` in `components/ui/data-table.tsx` `stateCopy`; rerun passed. |
+| `pnpm lint` | Failed then rerun | Initial failure was `ENOENT` for missing `test-results`; rerun passed after Playwright recreated the directory. |
+| `pnpm exec playwright test tests/document-upload-flow.spec.ts tests/ui-state-boundaries.spec.ts` | Passed | 2 tests; Playwright seeded the demo database before execution. |
+| `pnpm typecheck` | Passed | TypeScript clean after the `DataTable` fix. |
+| `pnpm lint` | Passed | ESLint clean after the UI-state changes. |
+| `pnpm build` | Passed with warnings | Production build completed; Turbopack warned about broad tracing from demo document storage path resolution. |
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| Shared `success` state | implemented + typechecked | StatePanel styling and DataTable fallback copy are complete. |
+| Upload completion state | implemented + tested | Browser flow asserts upload completion still preserves review/release/visibility locks. |
+| Internal approval/release state panels | implemented | Visual state semantics improved; no workflow logic changed. |
+| Export delivery boundary state | implemented + tested | Download page states approval does not equal client acceptance or advice execution. |
+| UI interaction lifecycle proof | not implemented | Explicitly deferred; Phase 03 is state feedback, not modal/drawer lifecycle. |
+| Full P0 gate closure | not claimed | Current tests are proof slices only. |
+
+### Residual Risks
+
+- `ReleaseModal` has an observed close/cancel lifecycle gap on the release page invocation and should be handled in Phase 04 / `AV-SLICE-INT-02`.
+- Upload storage remains local demo filesystem-backed and extraction review remains queued/pending.
+- Export state is approval-boundary UI only; it does not create a real binary export or prove downstream delivery acceptance.
+- Turbopack build warnings around `lib/document-storage-adapter.ts` remain outside this phase.
+- Authentication remains demo-session based.

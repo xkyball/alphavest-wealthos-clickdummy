@@ -1286,7 +1286,7 @@ function DocumentUploadForm() {
     formData.append("tenantSlug", session.tenant.slug);
 
     setUploadState("uploading");
-    setMessage("Uploading, storing and creating review evidence.");
+    setMessage("Uploading the file and creating a review queue record.");
 
     try {
       const response = await fetch("/api/documents/upload", {
@@ -1301,7 +1301,7 @@ function DocumentUploadForm() {
 
       setSelectedFile(null);
       setUploadState("success");
-      setMessage(`${body.result.document.fileName} is uploaded and queued for extraction review.`);
+      setMessage(`${body.result.document.fileName} is uploaded and queued for extraction review. Evidence sufficiency, release and client visibility remain locked.`);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -1415,7 +1415,7 @@ function DocumentUploadForm() {
         <CardContent className="space-y-4">
           <StatePanel
             detail={message}
-            state={uploadState === "error" ? "error" : uploadState === "success" ? "empty" : "loading"}
+            state={uploadState === "error" ? "error" : uploadState === "success" ? "success" : "loading"}
             title={uploadState === "success" ? "Upload complete" : uploadState === "error" ? "Upload failed" : uploadState === "uploading" ? "Uploading" : "Ready"}
           />
           {latestDocument ? (

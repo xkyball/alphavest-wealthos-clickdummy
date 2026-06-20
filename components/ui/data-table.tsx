@@ -26,7 +26,8 @@ const stateCopy: Record<ComponentState, { detail: string; title: string }> = {
   empty: { title: "No records", detail: "There are no matching records for the current filters." },
   error: { title: "Unable to load", detail: "The table could not load the requested demo records." },
   loading: { title: "Loading records", detail: "Rows are being prepared for this workspace." },
-  restricted: { title: "Restricted", detail: "Only permitted roles can view these rows." }
+  restricted: { title: "Restricted", detail: "Only permitted roles can view these rows." },
+  success: { title: "State complete", detail: "The requested state is complete for this workflow view." }
 };
 
 export function DataTable<T>({

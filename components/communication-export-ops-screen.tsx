@@ -957,6 +957,12 @@ function ExportDownloadPage({ title }: { title: string }) {
   return (
     <div>
       <PageLead badge="Completed" description="Download securely or create a time-limited external share after export approval." icon={Download} title={title} />
+      <StatePanel
+        className="mb-5"
+        detail="The export package is approved for controlled delivery. Download and share actions do not imply client acceptance or downstream advice execution."
+        state="success"
+        title="Approved export delivery state"
+      />
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div className="space-y-5">
           <Card>
