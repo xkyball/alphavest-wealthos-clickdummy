@@ -102,4 +102,22 @@ test.describe("Phase 05 feedback no-overclaim boundaries", () => {
     await expect(page.getByText("Policy overrides require Compliance approval and audit confirmation before activation.")).toBeVisible();
     await expect(page.getByText("fully audited")).toHaveCount(0);
   });
+
+  test("audit history and export delivery avoid persistence and binary-delivery overclaim", async ({ page }) => {
+    await page.goto("/governance/audit-history");
+
+    await expect(page.getByText("Audit persistence gate")).toBeVisible();
+    await expect(page.getByText("Audit immutability depends on the retention and persistence gates; this view does not prove those gates by itself.")).toBeVisible();
+    await expect(page.getByText("Showing 1-25 of 1,248 demo audit-event rows.")).toBeVisible();
+    await expect(page.getByText("Read-only and immutable")).toHaveCount(0);
+    await expect(page.getByText("tamper-evident")).toHaveCount(0);
+    await expect(page.getByText("live events")).toHaveCount(0);
+
+    await page.goto("/export/demo/download");
+    await expect(page.getByText("Prepared")).toBeVisible();
+    await expect(page.getByText("8.7 MB demo package metadata, delivery action pending")).toBeVisible();
+    await expect(page.getByText("Audit logging still requires confirmation")).toBeVisible();
+    await expect(page.getByText("downloaded May 21, 2025 09:45")).toHaveCount(0);
+    await expect(page.getByText("Demo package scan marked clear")).toHaveCount(0);
+  });
 });

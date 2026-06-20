@@ -10,7 +10,7 @@ Date: 2026-06-20
 
 ### Scope
 
-Executed `_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/04_CODEX_PHASE_PROMPTS/05_PHASE_FEEDBACK_VALIDATION_ERROR_PROMPT.md` for allowed slices `AV-SLICE-FVE-01..05`. This addendum tightens user-facing feedback copy and tests where existing screens implied audit persistence, evidence completeness or fully audited status before the required gates. No route registry, API route, Prisma schema, migration, visual asset, generated image or state-screen was changed.
+Executed `_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/04_CODEX_PHASE_PROMPTS/05_PHASE_FEEDBACK_VALIDATION_ERROR_PROMPT.md` for allowed slices `AV-SLICE-FVE-01..05`. This addendum tightens user-facing feedback copy and tests where existing screens implied audit persistence, audit immutability, evidence completeness, binary export delivery or fully audited status before the required gates. No route registry, API route, Prisma schema, migration, visual asset, generated image or state-screen was changed.
 
 ### Source Artefacts Used
 
@@ -35,7 +35,7 @@ Executed `_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/04_
 | `AV-SLICE-FVE-01` | Tested | Release confirmation feedback remains gated and does not show success before submit. |
 | `AV-SLICE-FVE-02` | Tested | Export approval feedback remains separate from generation, delivery, share and client acceptance. |
 | `AV-SLICE-FVE-03` | Hardened / tested | Decision success feedback no longer claims immutable audit trail proof or complete evidence package generation. |
-| `AV-SLICE-FVE-04` | Hardened / tested | Audit-facing panels now describe required audit confirmation instead of claiming all notes/policies are already fully audited. |
+| `AV-SLICE-FVE-04` | Hardened / tested | Audit-facing panels now describe required audit confirmation instead of claiming all notes/policies are already fully audited; export delivery metadata no longer implies completed binary download proof. |
 | `AV-SLICE-FVE-05` | Verified | No generated screen, state-screen, image or visual asset was added. |
 
 ### Files Inspected
@@ -45,6 +45,9 @@ Executed `_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/04_
 - `components/communication-export-ops-screen.tsx`
 - `components/decisions-governance-screen.tsx`
 - `components/admin-tenant-setup-screen.tsx`
+- `components/wealth-actions-screen.tsx`
+- `components/review-monitoring-screen.tsx`
+- `components/ui/state-panel.tsx`
 - `tests/ui-state-boundaries.spec.ts`
 - `tests/interaction-lifecycle.spec.ts`
 - `tests/document-upload-flow.spec.ts`
@@ -56,6 +59,7 @@ Executed `_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/04_
 - `components/decisions-governance-screen.tsx`
 - `components/internal-workflow-screen.tsx`
 - `components/admin-tenant-setup-screen.tsx`
+- `components/communication-export-ops-screen.tsx`
 - `tests/ui-state-boundaries.spec.ts`
 - `docs/v3/PHASE_EXECUTION_REPORT.md`
 - `docs/v3/IMPLEMENTATION_QA_REPORT.md`
@@ -65,10 +69,12 @@ Executed `_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/04_
 - Extended `tests/ui-state-boundaries.spec.ts` with Phase 05 assertions for:
   - decision success feedback avoiding audit persistence and evidence completeness overclaim
   - static audit-facing panels describing audit requirements instead of persistence proof
+  - audit-history and export-delivery copy avoiding audit immutability, live-event and completed binary-download overclaim
 
 ### Commands Run
 
 - `pnpm test:playwright tests/ui-state-boundaries.spec.ts` - failed once on strict locator ambiguity in new assertions, then passed after assertion tightening.
+- `pnpm test:playwright tests/ui-state-boundaries.spec.ts` - passed after audit-history/export-delivery hardening, 11 tests.
 - `pnpm typecheck` - passed.
 - `pnpm lint` - passed.
 - `git diff --check` - passed.

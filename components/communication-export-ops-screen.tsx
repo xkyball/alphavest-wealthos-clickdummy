@@ -382,8 +382,8 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
 
   return (
     <div>
-      <PageLead description="Immutable access-event review with filters, export controls and event lineage." icon={LockKeyhole} title={title} />
-      <StatePanel detail="This audit log is read-only, tamper-evident and cannot be edited or deleted." state="restricted" title="Read-only and immutable" />
+      <PageLead description="Access-event review with filters, export controls and event lineage." icon={LockKeyhole} title={title} />
+      <StatePanel detail="Audit immutability depends on the retention and persistence gates; this view does not prove those gates by itself." state="restricted" title="Audit persistence gate" />
       <div className="mt-5 grid gap-4 md:grid-cols-4">
         <FieldPill label="Date range" value="May 14 - May 21, 2025" />
         <FieldPill label="Actor" value="All actors" />
@@ -394,7 +394,7 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
         <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <CardTitle>Access Events</CardTitle>
-            <p className="mt-1 text-sm text-alphavest-muted">Showing 1-25 of 1,248 live events.</p>
+            <p className="mt-1 text-sm text-alphavest-muted">Showing 1-25 of 1,248 demo audit-event rows.</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <button className={secondaryButtonClass} type="button">
@@ -411,12 +411,12 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
           <DataTable columns={columns} getRowId={(row) => row.id} rows={auditHistoryEvents} />
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             <StatePanel detail="No matching access changes for the saved filter." state="empty" title="Empty filter state" />
-            <StatePanel detail="Audit stream is loading sealed events." state="loading" title="Loading state" />
+            <StatePanel detail="Audit event rows are loading; sealed retention proof remains a separate gate." state="loading" title="Loading state" />
             <StatePanel detail="Audit export is unavailable while the retention service is unreachable." state="error" title="Export error state" />
           </div>
         </CardContent>
       </Card>
-      <Drawer description="Selected immutable event lineage and before/after access state." onClose={() => setDrawerOpen(false)} open={drawerOpen} title="Event Details">
+      <Drawer description="Selected event lineage and before/after access state." onClose={() => setDrawerOpen(false)} open={drawerOpen} title="Event Details">
         <div className="space-y-5">
           <div className="flex items-center justify-between gap-3">
             <Badge tone={toneFor(selected.result)}>{selected.result}</Badge>
@@ -975,7 +975,7 @@ function ExportDownloadPage({ title }: { title: string }) {
                   { label: "Export", value: "EXP-2025-05-21-0087" },
                   { label: "Source", value: "Client Comms Portfolio Summary" },
                   { label: "Requested by", value: "Alex Bennett" },
-                  { label: "Generated", value: "May 21, 2025 09:42" },
+                  { label: "Prepared", value: "May 21, 2025 09:42" },
                   { label: "Watermark", value: <Badge tone="green">Enabled</Badge> },
                   { label: "Classification", value: <Badge tone="red">Confidential</Badge> }
                 ]}
@@ -987,7 +987,7 @@ function ExportDownloadPage({ title }: { title: string }) {
               <CardTitle>Security and Compliance</CardTitle>
             </CardHeader>
             <CardContent>
-              {["Data classified and watermarked", "Access validated for approved requester", "Demo package scan marked clear", "Audit logging expected", "External sharing secured with expiry"].map((item) => (
+              {["Data classified and watermarked", "Access check recorded for approved requester", "Demo package scan state shown", "Audit logging still requires confirmation", "External sharing secured with expiry"].map((item) => (
                 <div className="mb-2 flex items-center gap-3 text-sm text-alphavest-muted" key={item}>
                   <CheckCircle2 aria-hidden="true" className="size-4 text-alphavest-green" />
                   {item}
@@ -1005,7 +1005,7 @@ function ExportDownloadPage({ title }: { title: string }) {
               <div className="flex flex-wrap items-center justify-between gap-4 rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-4">
                 <div>
                   <p className="font-semibold text-alphavest-ivory">Watermarked export package</p>
-                  <p className="text-sm text-alphavest-muted">8.7 MB, downloaded May 21, 2025 09:45</p>
+                  <p className="text-sm text-alphavest-muted">8.7 MB demo package metadata, delivery action pending</p>
                 </div>
                 <button className={secondaryButtonClass} data-testid="j08-download-export" onClick={() => { void runScreencastDemoAction("j08.downloadExport"); }} type="button">
                   <Download aria-hidden="true" className="size-4" />

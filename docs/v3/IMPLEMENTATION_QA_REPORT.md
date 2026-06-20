@@ -12,12 +12,13 @@ Date: 2026-06-20
 | Source hierarchy | Passed | Final Handoff, Task Master, phase gate, feedback contract, done checklist and UI reality patch artefacts were used. |
 | Success feedback boundaries | Passed | Decision success now confirms recording for review without claiming immutable audit persistence. |
 | Evidence feedback boundaries | Passed | Decision success now queues the evidence package reference and preserves evidence sufficiency as a later review/release gate. |
-| Audit feedback boundaries | Passed | Audit-facing notes, export and tenant-policy panels describe audit requirements or confirmation gates instead of claiming all activity is fully audited. |
+| Audit feedback boundaries | Passed | Audit-facing notes, audit-history, export and tenant-policy panels describe audit requirements or confirmation gates instead of claiming all activity is fully audited, immutable or tamper-evident. |
 | Release/export feedback boundaries | Passed | Existing focused checks continue to separate release, approval, generation, download/share and client acceptance. |
+| Export delivery feedback boundaries | Passed | Export delivery page uses prepared/demo metadata wording and does not imply completed binary download proof. |
 | No route-scope drift | Passed | No route registry, route availability or workset classification changed. |
 | No visual generation | Passed | No images, state-screen assets or replacement visuals were generated. |
 | No API/schema work | Passed | No API route, Prisma schema or migration changed. |
-| Focused feedback tests | Passed | `pnpm test:playwright tests/ui-state-boundaries.spec.ts` passed, 10 tests. |
+| Focused feedback tests | Passed | `pnpm test:playwright tests/ui-state-boundaries.spec.ts` passed, 11 tests. |
 | Typecheck | Passed | `pnpm typecheck`. |
 | Lint | Passed | `pnpm lint`. |
 | Whitespace diff check | Passed | `git diff --check`. |
@@ -27,6 +28,7 @@ Date: 2026-06-20
 | Command | Status | Notes |
 | --- | --- | --- |
 | `pnpm test:playwright tests/ui-state-boundaries.spec.ts` | Failed then passed | Initial failure was strict locator ambiguity in two new assertions; exact locators were applied and the final run passed 10 tests. |
+| `pnpm test:playwright tests/ui-state-boundaries.spec.ts` | Passed | Audit-history/export-delivery hardening run passed 11 focused tests. |
 | `pnpm typecheck` | Passed | TypeScript clean after feedback-copy and test updates. |
 | `pnpm lint` | Passed | ESLint clean. |
 | `git diff --check` | Passed | No whitespace errors. |
@@ -40,6 +42,8 @@ Date: 2026-06-20
 | Decision success feedback | hardened + tested | Copy now says recorded for review and keeps audit persistence as a controlled gate. |
 | Evidence package feedback | hardened + tested | Copy now says queued reference and keeps evidence sufficiency under review/release gates. |
 | Static audit-facing feedback | hardened + tested | Notes and tenant-policy copy now state audit requirements or confirmation instead of completed audit proof. |
+| Audit-history feedback | hardened + tested | Audit-history copy now treats immutability and retention as gates, not as proof supplied by the visible table/drawer. |
+| Export delivery feedback | hardened + tested | Export delivery copy now separates prepared demo metadata from completed download or generated-binary proof. |
 | Full P0 safety closure | not claimed | Later RBAC/evidence/audit/export/API/schema phases remain responsible for full P0 closure. |
 
 ### Residual Risks
