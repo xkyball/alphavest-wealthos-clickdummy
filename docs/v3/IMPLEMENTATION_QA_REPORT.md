@@ -1,5 +1,69 @@
 # Implementation QA Report
 
+## MEGA-JOURNEY-PHASE-3 Implementation QA Addendum
+
+Date: 2026-06-20
+
+### Executive Decision
+
+`PHASE_3_IMPLEMENTATION_QA_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Phase scope discipline | Passed | Implementation stayed within evidence intake/review/sufficiency. No schema, migration, production auth, production OCR, export or release change was added. |
+| Upload-only boundary | Passed | Upload still returns `uploadOnly: true`, `sufficiency: false`, `releaseUnlocked: false` and `clientVisible: false`. |
+| Review/link separation | Passed | Analyst review can mark the document reviewed and link evidence, but evidence remains insufficient and not client-visible. |
+| Compliance sufficiency gate | Passed | Compliance can accept current, relevant, scoped and client-safe evidence into `VALIDATED` state for the specific document gate. |
+| Admin/advisor/analyst non-bypass | Passed | Analyst sufficiency acceptance is denied and audited; permission engine still reserves evidence sufficiency approval for compliance. |
+| Audit/evidence proof | Passed | Review and sufficiency actions create audit events, evidence items and document links. |
+| Release/export/client visibility boundary | Passed | Implemented actions keep `releaseUnlocked`, `exportUnlocked` and `clientVisible` false. |
+| UI state proof | Partial | Extraction review UI is wired and browser-tested; screenshot artifact captured. Formal human visual acceptance was not performed. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | Passed before and after lint cleanup. |
+| `pnpm exec playwright test tests/evidence-review-api.spec.ts tests/document-upload-api.spec.ts tests/workflow-gate.spec.ts` | Passed | 18 tests passed. |
+| `pnpm exec playwright test tests/document-upload-flow.spec.ts` | Passed | 3 browser-flow tests passed, including Phase 3 sufficiency UI path. |
+| Screenshot capture against local dev server on port `3033` | Passed after retry | First attempt used unavailable `playwright` package import; retry with `@playwright/test` succeeded. |
+| `pnpm lint` | Warned/failed then passed | Initial unused import warning fixed. A later parallel rerun failed transiently because Playwright rotated `test-results`; final rerun passed cleanly. |
+| `pnpm db:validate` | Passed | Prisma schema remains valid. |
+| `pnpm build` | Passed with warnings | Build completed; Turbopack repeated existing broad tracing warnings from `lib/document-storage-adapter.ts`. |
+| `git diff --check` | Passed | No whitespace errors. |
+
+### Tests / Build / Migrations Run
+
+- Focused API, workflow-gate and browser-flow tests passed.
+- Build, typecheck, lint and Prisma validation passed.
+- No Prisma migration was created or run.
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| Upload-only safety response | implemented + tested | Existing upload boundary preserved. |
+| Document review/link API | implemented + tested | New typed JSON API and service path. |
+| Evidence sufficiency acceptance | implemented + tested | Compliance-only and scoped to the reviewed document gate. |
+| Analyst sufficiency denial | implemented + tested | Denied with persisted audit event and no evidence mutation. |
+| Extraction review UI action panel | implemented + browser-tested + screenshot-proven | Screenshot artifact captured, but not human-reviewed. |
+| Production OCR / virus scanning / object storage | not performed | Outside Phase 3. |
+| Compliance release / client visibility / export generation | not performed | Later phase work. |
+
+### Visual Proof
+
+- Screenshot artifact: `artifacts/mvp-phase-3/phase3-extraction-review-evidence-accepted.png`, recaptured after the sidebar session-context display fix.
+- Human Visual Review Rubric result: `not reviewed`.
+
+### Residual Risks
+
+- The review/sufficiency path is bounded demo E7, not production document operations.
+- Evidence sufficiency is implemented for uploaded document evidence; generalized analyst review APIs across all evidence types remain later work.
+- Build still reports pre-existing Turbopack tracing warnings from dynamic local storage paths in `lib/document-storage-adapter.ts`.
+- Screenshot proof exists for the new rendered state, but a full human visual review was not performed.
+
 ## MEGA-JOURNEY-PHASE-2 Implementation QA Addendum
 
 Date: 2026-06-20

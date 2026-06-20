@@ -57,4 +57,30 @@ test.describe("document upload browser flow", () => {
     await page.getByLabel("Tenant context").last().selectOption("morgan");
     await expect(page.locator("p:visible, span:visible, td:visible, article:visible", { hasText: fileName })).toHaveCount(0);
   });
+
+  test("accepts scoped evidence from extraction review without client release", async ({ page }) => {
+    const fileName = "playwright-phase3-evidence-review-proof.pdf";
+
+    await page.goto("/documents/upload");
+    await page.getByLabel("Tenant context").last().selectOption("morgan");
+    await page.getByLabel("Role context").last().selectOption("family_cfo");
+    await page.getByTestId("document-upload-file-input").setInputFiles({
+      buffer: Buffer.from("%PDF-1.4\nPlaywright phase 3 review proof\n%%EOF"),
+      mimeType: "application/pdf",
+      name: fileName,
+    });
+
+    await page.getByTestId("real-upload-document").click();
+    await expect(page.getByText(`${fileName} upload completed.`)).toBeVisible();
+
+    await page.goto("/documents/extraction-review");
+    await page.getByLabel("Tenant context").last().selectOption("morgan");
+    await page.getByLabel("Role context").last().selectOption("compliance_officer");
+    await expect(page.getByText(fileName)).toBeVisible();
+
+    await page.getByTestId("phase3-accept-sufficiency").click();
+    await expect(page.getByText("Evidence accepted for this scoped gate. Release, export and client visibility remain locked.")).toBeVisible();
+    await expect(page.getByText(/Evidence: Validated/)).toBeVisible();
+    await expect(page.getByText(/Visibility: Redacted/)).toBeVisible();
+  });
 });

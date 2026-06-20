@@ -122,6 +122,8 @@ type PersistedUploadDocument = {
   checksum: string;
   documentType: string;
   evidenceRecordId: string | null;
+  evidenceStatus: string | null;
+  evidenceVisibilityStatus: string | null;
   extractionStatus: string | null;
   fileName: string;
   fileSizeBytes: number;
@@ -283,6 +285,8 @@ function ProgressRing({ label, size = "large", value }: { label: string; size?: 
 }
 
 function ClientSidebar({ activePageId }: { activePageId: string }) {
+  const { session } = useDemoSession();
+
   return (
     <aside className="hidden min-h-screen border-r border-alphavest-border/60 bg-alphavest-navy/82 p-5 lg:flex lg:w-[var(--sidebar-width)] lg:flex-col">
       <AlphaVestLogo />
@@ -310,8 +314,8 @@ function ClientSidebar({ activePageId }: { activePageId: string }) {
         })}
       </nav>
       <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/60 p-4">
-        <p className="text-sm font-semibold text-alphavest-ivory">{clientWorkspace.household}</p>
-        <p className="mt-1 text-xs text-alphavest-muted">{clientWorkspace.role}</p>
+        <p className="text-sm font-semibold text-alphavest-ivory">{session.tenant.displayName}</p>
+        <p className="mt-1 text-xs text-alphavest-muted">{session.role.label}</p>
         <div className="mt-3 flex items-center gap-2 text-xs text-alphavest-green">
           <span className="size-2 rounded-full bg-alphavest-green" />
           Active
@@ -1435,6 +1439,113 @@ function DocumentUploadPage({ title }: { title: string }) {
   );
 }
 
+function ExtractionReviewActionPanel() {
+  const { session } = useDemoSession();
+  const { documents, loadState, refresh } = usePersistedUploadDocuments();
+  const latestDocument = documents[0];
+  const [notes, setNotes] = useState("Extraction checked against source file. Relevance, currentness and scope accepted for this document only.");
+  const [reviewState, setReviewState] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [message, setMessage] = useState("Review the latest upload, then link or accept evidence through the controlled review API.");
+
+  async function submitReview(action: "mark_reviewed" | "accept_sufficiency") {
+    if (!latestDocument || reviewState === "submitting") {
+      return;
+    }
+
+    setReviewState("submitting");
+    setMessage(action === "accept_sufficiency" ? "Checking scoped evidence sufficiency." : "Saving extraction review and evidence link.");
+
+    try {
+      const response = await fetch("/api/documents/review", {
+        body: JSON.stringify({
+          action,
+          clientSafeAccepted: action === "accept_sufficiency",
+          currentAccepted: action === "accept_sufficiency",
+          documentId: latestDocument.id,
+          notes,
+          relevanceAccepted: action === "accept_sufficiency",
+          roleKey: session.role.key,
+          scopeAccepted: action === "accept_sufficiency",
+          tenantSlug: session.tenant.slug,
+        }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
+      });
+      const body = (await response.json()) as { error?: string; issues?: string[]; reason?: string; result?: { evidenceStatus?: string; safety?: { evidenceSufficiency: boolean } } };
+
+      if (!response.ok || !body.result) {
+        throw new Error(body.issues?.join(", ") || body.reason || body.error || "Evidence review failed.");
+      }
+
+      setReviewState("success");
+      setMessage(
+        body.result.safety?.evidenceSufficiency
+          ? "Evidence accepted for this scoped gate. Release, export and client visibility remain locked."
+          : "Document reviewed and linked. Evidence remains review-gated and not client-visible.",
+      );
+      await refresh();
+    } catch (error) {
+      setReviewState("error");
+      setMessage(error instanceof Error ? error.message : "Evidence review failed.");
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader><CardTitle>Review & Sufficiency</CardTitle></CardHeader>
+      <CardContent className="space-y-4">
+        {latestDocument ? (
+          <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4">
+            <p className="text-sm font-semibold text-alphavest-ivory">{latestDocument.fileName}</p>
+            <p className="mt-1 text-xs text-alphavest-muted">
+              Document: {labelFromEnum(latestDocument.status)} · Evidence: {latestDocument.evidenceStatus ? labelFromEnum(latestDocument.evidenceStatus) : "Created"}
+            </p>
+            <p className="mt-2 text-xs text-alphavest-muted">Visibility: {latestDocument.evidenceVisibilityStatus ? labelFromEnum(latestDocument.evidenceVisibilityStatus) : "Internal Only"}</p>
+          </div>
+        ) : (
+          <StatePanel
+            detail={loadState === "loading" ? "Fetching uploaded documents." : "Upload a document before running review or sufficiency acceptance."}
+            state={loadState === "error" ? "error" : "empty"}
+            title={loadState === "error" ? "Uploads unavailable" : "No upload selected"}
+          />
+        )}
+        <label className="grid gap-2 text-sm">
+          <span className="text-alphavest-muted">Reviewer Notes</span>
+          <textarea
+            className="min-h-24 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 py-2 text-alphavest-ivory outline-none focus:border-alphavest-gold"
+            maxLength={1000}
+            onChange={(event) => setNotes(event.target.value)}
+            value={notes}
+          />
+        </label>
+        <StatePanel
+          detail={message}
+          state={reviewState === "error" ? "error" : reviewState === "success" ? "success" : "restricted"}
+          title={reviewState === "success" ? "Review saved" : reviewState === "error" ? "Review blocked" : "Human review gate"}
+        />
+        <button
+          className={secondaryButtonClass + " w-full"}
+          data-testid="phase3-mark-reviewed"
+          disabled={!latestDocument || reviewState === "submitting"}
+          onClick={() => { void submitReview("mark_reviewed"); }}
+          type="button"
+        >
+          Mark Reviewed & Link Evidence
+        </button>
+        <button
+          className={primaryButtonClass + " w-full"}
+          data-testid="phase3-accept-sufficiency"
+          disabled={!latestDocument || reviewState === "submitting"}
+          onClick={() => { void submitReview("accept_sufficiency"); }}
+          type="button"
+        >
+          Accept Scoped Evidence
+        </button>
+      </CardContent>
+    </Card>
+  );
+}
+
 function ExtractionReviewPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="029">
@@ -1483,6 +1594,7 @@ function ExtractionReviewPage({ title }: { title: string }) {
           <aside className="space-y-5">
             <Card><CardHeader><CardTitle>Extraction Status</CardTitle></CardHeader><CardContent className="flex items-center gap-5"><ProgressRing label="Confidence" size="small" value={83} /><div className="space-y-2 text-sm text-alphavest-muted"><p>High (9)</p><p>Medium (2)</p><p>Low (1)</p><p>Error (1)</p></div></CardContent></Card>
             <Card><CardHeader><CardTitle>Issues</CardTitle></CardHeader><CardContent className="space-y-3"><StatePanel detail="AI extracted value is inconsistent." state="error" title="Net Investment Change" /><StatePanel detail="Table structure could not be parsed. Please review manually." state="error" title="Page 2 - Table Detected" /></CardContent></Card>
+            <ExtractionReviewActionPanel />
           </aside>
         </div>
       </div>

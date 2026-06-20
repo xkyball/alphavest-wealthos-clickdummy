@@ -42,6 +42,8 @@ export type UploadedDocumentListItem = {
   storageKey: string;
   uploadedAt: string;
   evidenceRecordId: string | null;
+  evidenceStatus: string | null;
+  evidenceVisibilityStatus: string | null;
   extractionStatus: string | null;
 };
 
@@ -115,6 +117,8 @@ function mapDocument(document: {
   createdAt: Date;
   documentType: string;
   evidenceRecords?: Array<{ id: string }>;
+  evidenceStatus?: string | null;
+  evidenceVisibilityStatus?: string | null;
   extractions?: Array<{ extractionStatus: string }>;
   fileName: string | null;
   fileSizeBytes: number | null;
@@ -129,6 +133,8 @@ function mapDocument(document: {
     checksum: document.checksum ?? "",
     documentType: document.documentType,
     evidenceRecordId: document.evidenceRecords?.[0]?.id ?? null,
+    evidenceStatus: document.evidenceStatus ?? null,
+    evidenceVisibilityStatus: document.evidenceVisibilityStatus ?? null,
     extractionStatus: document.extractions?.[0]?.extractionStatus ?? null,
     fileName: document.fileName ?? document.title,
     fileSizeBytes: document.fileSizeBytes ?? 0,
@@ -324,6 +330,8 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
       document: mapDocument({
         ...document,
         evidenceRecords: [{ id: evidenceRecord.id }],
+        evidenceStatus: evidenceRecord.status,
+        evidenceVisibilityStatus: evidenceRecord.visibilityStatus,
         extractions: [{ extractionStatus: extraction.extractionStatus }],
       }),
       documentEvidenceItemId: documentEvidenceItem.id,
@@ -355,7 +363,7 @@ export async function listUploadedDocuments(prisma: PrismaClient, tenantSlug: De
   });
   const evidenceRecords = await prisma.evidenceRecord.findMany({
     orderBy: { createdAt: "desc" },
-    select: { id: true, relatedObjectId: true },
+    select: { id: true, relatedObjectId: true, status: true, visibilityStatus: true },
     where: {
       clientTenantId: session.tenant.id,
       relatedObjectId: { in: documents.map((document) => document.id) },
@@ -363,15 +371,17 @@ export async function listUploadedDocuments(prisma: PrismaClient, tenantSlug: De
     },
   });
   const evidenceRecordByDocumentId = new Map(
-    evidenceRecords.map((record) => [record.relatedObjectId, record.id]),
+    evidenceRecords.map((record) => [record.relatedObjectId, record]),
   );
 
   return documents.map((document) =>
     mapDocument({
       ...document,
       evidenceRecords: evidenceRecordByDocumentId.has(document.id)
-        ? [{ id: evidenceRecordByDocumentId.get(document.id) ?? "" }]
+        ? [{ id: evidenceRecordByDocumentId.get(document.id)?.id ?? "" }]
         : [],
+      evidenceStatus: evidenceRecordByDocumentId.get(document.id)?.status ?? null,
+      evidenceVisibilityStatus: evidenceRecordByDocumentId.get(document.id)?.visibilityStatus ?? null,
     }),
   );
 }
