@@ -1,22 +1,34 @@
 import {
+  ComplianceStatus,
+  EvidenceStatus,
   AuditResult,
+  ObjectType,
   type ObjectType as PrismaObjectType,
   type Prisma,
   type PrismaClient,
+  RecommendationStatus,
+  ReviewStatus,
+  VisibilityStatus,
 } from "@prisma/client";
 
 import {
   createDemoSession,
   demoPlatformTenantId,
+  demoTenants,
   type DemoRoleKey,
   type DemoTenantSlug,
 } from "@/lib/demo-session";
+import {
+  recommendationReviewConfirmationText,
+  type RecommendationReviewWorkflowAction,
+} from "@/lib/demo-workflow-validation";
 import { permissionEngine } from "@/lib/permission-engine";
+import { workflowGate } from "@/lib/workflow-gate";
 import type {
   ObjectType as DomainObjectType,
   PermissionAction,
   Sensitivity,
-  VisibilityStatus,
+  VisibilityStatus as DomainVisibilityStatus,
   WorkflowStatus,
 } from "@/lib/domain-types";
 
@@ -39,13 +51,77 @@ type DemoWorkflowMutationInput = {
   targetId: string;
   targetType: PrismaObjectType;
   tenantSlug: DemoTenantSlug;
-  visibilityStatus?: VisibilityStatus;
+  visibilityStatus?: DomainVisibilityStatus;
   workflowState?: WorkflowStatus;
+};
+
+type RecommendationReviewWorkflowInput = {
+  action: RecommendationReviewWorkflowAction;
+  actorRoleKey: DemoRoleKey;
+  confirmationText?: string;
+  evidenceIds?: string[];
+  reason?: string;
+  targetId: string;
+};
+
+type RecommendationReviewState = {
+  advisorApproval: {
+    approvedAt: string | null;
+    id: string | null;
+    notes: string | null;
+    status: string | null;
+  };
+  complianceReview: {
+    blockedAt: string | null;
+    evidenceComplete: boolean | null;
+    id: string | null;
+    releaseNotes: string | null;
+    releasedAt: string | null;
+    status: string | null;
+  };
+  evidence: {
+    id: string;
+    status: string;
+    visibilityStatus: string;
+  }[];
+  recommendation: {
+    clientVisible: boolean;
+    id: string;
+    status: string;
+  };
+};
+
+type RecommendationReviewWorkflowResult = {
+  action: RecommendationReviewWorkflowAction;
+  auditEventId: string;
+  auditRows: number;
+  clientVisible: boolean;
+  gateMissing: string[];
+  gatePassed: boolean;
+  message: string;
+  mutated: boolean;
+  permission: {
+    allowed: boolean;
+    reason: string;
+    requiresAudit: boolean;
+    requiresComplianceReview: boolean;
+  };
+  reloadedState: RecommendationReviewState;
+  workflowType: "recommendation-review";
 };
 
 export class AuditPersistenceUnavailableError extends Error {
   constructor(public readonly actionId: string) {
     super("Required audit persistence is unavailable; safety action was not applied.");
+  }
+}
+
+class RecommendationReviewWorkflowError extends Error {
+  constructor(
+    message: string,
+    public readonly status = 409,
+  ) {
+    super(message);
   }
 }
 
@@ -176,3 +252,479 @@ export async function runDemoWorkflowMutation<T extends Record<string, unknown>>
     };
   });
 }
+
+function typedActionPermission(action: RecommendationReviewWorkflowAction): PermissionAction {
+  switch (action) {
+    case "advisor_approve":
+      return "APPROVE";
+    case "compliance_release":
+      return "RELEASE";
+    case "compliance_block":
+    case "request_evidence":
+      return "BLOCK";
+    case "submit_review":
+      return "REVIEW";
+  }
+}
+
+function expectedTypedRole(action: RecommendationReviewWorkflowAction): DemoRoleKey {
+  switch (action) {
+    case "submit_review":
+      return "analyst";
+    case "advisor_approve":
+      return "senior_wealth_advisor";
+    case "compliance_release":
+    case "compliance_block":
+    case "request_evidence":
+      return "compliance_officer";
+  }
+}
+
+function typedActionNextState(action: RecommendationReviewWorkflowAction) {
+  switch (action) {
+    case "submit_review":
+      return RecommendationStatus.ANALYST_REVIEWED;
+    case "advisor_approve":
+      return RecommendationStatus.ADVISOR_APPROVED;
+    case "compliance_release":
+      return RecommendationStatus.RELEASED_TO_CLIENT;
+    case "compliance_block":
+      return RecommendationStatus.BLOCKED;
+    case "request_evidence":
+      return RecommendationStatus.MORE_DATA_REQUESTED;
+  }
+}
+
+function typedEventType(action: RecommendationReviewWorkflowAction) {
+  return `recommendation_review.${action}`;
+}
+
+function typedAuditResult(action: RecommendationReviewWorkflowAction) {
+  switch (action) {
+    case "compliance_block":
+      return AuditResult.BLOCKED;
+    case "request_evidence":
+      return AuditResult.PENDING;
+    default:
+      return AuditResult.SUCCESS;
+  }
+}
+
+function tenantSlugForId(clientTenantId: string): DemoTenantSlug {
+  const tenant = demoTenants.find((item) => item.id === clientTenantId);
+  if (!tenant) {
+    throw new RecommendationReviewWorkflowError("Recommendation tenant is not part of the demo tenant set.");
+  }
+
+  return tenant.slug;
+}
+
+function assertTypedConfirmation(input: RecommendationReviewWorkflowInput) {
+  const requiredConfirmation = recommendationReviewConfirmationText[input.action];
+
+  if (!requiredConfirmation) {
+    return;
+  }
+
+  if ((input.confirmationText ?? "").trim() !== requiredConfirmation) {
+    throw new RecommendationReviewWorkflowError(
+      `${requiredConfirmation} confirmation text is required before ${input.action}.`,
+      400,
+    );
+  }
+}
+
+async function reloadRecommendationReviewState(
+  tx: Prisma.TransactionClient,
+  targetId: string,
+  evidenceIds: string[] = [],
+): Promise<RecommendationReviewState> {
+  const recommendation = await tx.recommendation.findUnique({
+    where: { id: targetId },
+  });
+
+  if (!recommendation) {
+    throw new RecommendationReviewWorkflowError("Recommendation target was not found.", 404);
+  }
+
+  const [advisorApproval, complianceReview, evidence] = await Promise.all([
+    tx.approval.findFirst({
+      where: {
+        clientTenantId: recommendation.clientTenantId,
+        targetId,
+        targetType: ObjectType.RECOMMENDATION,
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    tx.complianceReview.findFirst({
+      where: {
+        clientTenantId: recommendation.clientTenantId,
+        targetId,
+        targetType: ObjectType.RECOMMENDATION,
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    tx.evidenceRecord.findMany({
+      where: {
+        clientTenantId: recommendation.clientTenantId,
+        OR: [
+          { relatedObjectId: targetId, relatedObjectType: ObjectType.RECOMMENDATION },
+          ...(evidenceIds.length > 0 ? [{ id: { in: evidenceIds } }] : []),
+        ],
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
+
+  return {
+    advisorApproval: {
+      approvedAt: advisorApproval?.approvedAt?.toISOString() ?? null,
+      id: advisorApproval?.id ?? null,
+      notes: advisorApproval?.notes ?? null,
+      status: advisorApproval?.status ?? null,
+    },
+    complianceReview: {
+      blockedAt: complianceReview?.blockedAt?.toISOString() ?? null,
+      evidenceComplete: complianceReview?.evidenceComplete ?? null,
+      id: complianceReview?.id ?? null,
+      releaseNotes: complianceReview?.releaseNotes ?? null,
+      releasedAt: complianceReview?.releasedAt?.toISOString() ?? null,
+      status: complianceReview?.status ?? null,
+    },
+    evidence: evidence.map((record) => ({
+      id: record.id,
+      status: record.status,
+      visibilityStatus: record.visibilityStatus,
+    })),
+    recommendation: {
+      clientVisible: recommendation.clientVisible,
+      id: recommendation.id,
+      status: recommendation.status,
+    },
+  };
+}
+
+export async function runRecommendationReviewWorkflowMutation(
+  prisma: PrismaClient,
+  input: RecommendationReviewWorkflowInput,
+): Promise<RecommendationReviewWorkflowResult> {
+  assertTypedConfirmation(input);
+
+  const recommendation = await prisma.recommendation.findUnique({
+    where: { id: input.targetId },
+  });
+
+  if (!recommendation) {
+    throw new RecommendationReviewWorkflowError("Recommendation target was not found.", 404);
+  }
+
+  const tenantSlug = tenantSlugForId(recommendation.clientTenantId);
+  const session = createDemoSession({
+    roleKey: input.actorRoleKey,
+    tenantSlug,
+  });
+  const permissionAction = typedActionPermission(input.action);
+  const permission = permissionEngine.can(
+    session.actor,
+    permissionAction,
+    {
+      clientTenantId: recommendation.clientTenantId,
+      objectId: input.targetId,
+      objectType: "RECOMMENDATION",
+      sensitivity: "CONFIDENTIAL",
+      visibilityStatus: "COMPLIANCE_VISIBLE",
+      workflowState: "COMPLIANCE_PENDING",
+    },
+    {
+      clientTenantId: recommendation.clientTenantId,
+      platformTenantId: demoPlatformTenantId,
+      workflowState: "COMPLIANCE_PENDING",
+    },
+    session.role,
+  );
+  const roleAllowed = expectedTypedRole(input.action) === input.actorRoleKey;
+  const deniedReason = roleAllowed
+    ? permission.reason
+    : `${expectedTypedRole(input.action)} is required for ${input.action}.`;
+
+  return prisma.$transaction(async (tx) => {
+    if (!permission.allowed || !roleAllowed) {
+      const audit = await tx.auditEvent.create({
+        data: {
+          actorRoleKey: session.role.key,
+          actorUserId: session.actor.id,
+          clientTenantId: recommendation.clientTenantId,
+          eventType: typedEventType(input.action),
+          metadataJson: {
+            action: input.action,
+            demoMode: true,
+            noRealAuth: true,
+            permission,
+            roleAllowed,
+            workflowType: "recommendation-review",
+          },
+          nextState: recommendation.status,
+          platformTenantId: demoPlatformTenantId,
+          previousState: recommendation.status,
+          reason: deniedReason,
+          result: AuditResult.DENIED,
+          targetId: input.targetId,
+          targetType: ObjectType.RECOMMENDATION,
+        },
+      });
+      const reloadedState = await reloadRecommendationReviewState(tx, input.targetId, input.evidenceIds);
+
+      return {
+        action: input.action,
+        auditEventId: audit.id,
+        auditRows: 1,
+        clientVisible: reloadedState.recommendation.clientVisible,
+        gateMissing: ["permission_check"],
+        gatePassed: false,
+        message: deniedReason,
+        mutated: false,
+        permission: {
+          allowed: false,
+          reason: deniedReason,
+          requiresAudit: true,
+          requiresComplianceReview: true,
+        },
+        reloadedState,
+        workflowType: "recommendation-review",
+      };
+    }
+
+    const now = new Date();
+    const reason = input.reason ?? permission.reason;
+    const [advisorApproval, complianceReview, evidenceRecords] = await Promise.all([
+      tx.approval.findFirst({
+        where: {
+          clientTenantId: recommendation.clientTenantId,
+          targetId: input.targetId,
+          targetType: ObjectType.RECOMMENDATION,
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+      tx.complianceReview.findFirst({
+        where: {
+          clientTenantId: recommendation.clientTenantId,
+          targetId: input.targetId,
+          targetType: ObjectType.RECOMMENDATION,
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+      tx.evidenceRecord.findMany({
+        where: {
+          clientTenantId: recommendation.clientTenantId,
+          OR: [
+            { relatedObjectId: input.targetId, relatedObjectType: ObjectType.RECOMMENDATION },
+            ...(input.evidenceIds?.length ? [{ id: { in: input.evidenceIds } }] : []),
+          ],
+        },
+      }),
+    ]);
+
+    if (!advisorApproval || !complianceReview) {
+      throw new RecommendationReviewWorkflowError("Recommendation review fixture is incomplete.");
+    }
+
+    let gateMissing: string[] = [];
+    let gatePassed = false;
+
+    if (input.action === "submit_review") {
+      await tx.recommendation.update({
+        data: {
+          clientVisible: false,
+          status: RecommendationStatus.ANALYST_REVIEWED,
+        },
+        where: { id: input.targetId },
+      });
+      await tx.approval.update({
+        data: {
+          notes: reason,
+          status: ReviewStatus.IN_REVIEW,
+        },
+        where: { id: advisorApproval.id },
+      });
+      gateMissing = ["advisor_approval", "compliance_release"];
+    }
+
+    if (input.action === "advisor_approve") {
+      await tx.approval.update({
+        data: {
+          approvedAt: now,
+          notes: reason,
+          status: ReviewStatus.APPROVED,
+        },
+        where: { id: advisorApproval.id },
+      });
+      await tx.recommendation.update({
+        data: {
+          clientVisible: false,
+          status: RecommendationStatus.ADVISOR_APPROVED,
+        },
+        where: { id: input.targetId },
+      });
+      await tx.complianceReview.update({
+        data: {
+          blockedAt: null,
+          releasedAt: null,
+          status: ComplianceStatus.PENDING,
+        },
+        where: { id: complianceReview.id },
+      });
+      gateMissing = ["compliance_release"];
+    }
+
+    if (input.action === "request_evidence") {
+      await tx.complianceReview.update({
+        data: {
+          blockedAt: null,
+          evidenceComplete: false,
+          releaseNotes: reason,
+          releasedAt: null,
+          status: ComplianceStatus.NEEDS_EVIDENCE,
+        },
+        where: { id: complianceReview.id },
+      });
+      await tx.recommendation.update({
+        data: {
+          clientVisible: false,
+          status: RecommendationStatus.MORE_DATA_REQUESTED,
+        },
+        where: { id: input.targetId },
+      });
+      if (evidenceRecords.length > 0) {
+        await tx.evidenceRecord.updateMany({
+          data: {
+            status: EvidenceStatus.PLACEHOLDER,
+            summary: reason,
+            visibilityStatus: VisibilityStatus.COMPLIANCE_VISIBLE,
+          },
+          where: { id: { in: evidenceRecords.map((record) => record.id) } },
+        });
+      }
+      gateMissing = ["evidence_record", "compliance_release"];
+    }
+
+    if (input.action === "compliance_block") {
+      await tx.complianceReview.update({
+        data: {
+          blockedAt: now,
+          evidenceComplete: false,
+          releaseNotes: reason,
+          releasedAt: null,
+          status: ComplianceStatus.BLOCKED,
+        },
+        where: { id: complianceReview.id },
+      });
+      await tx.recommendation.update({
+        data: {
+          clientVisible: false,
+          status: RecommendationStatus.BLOCKED,
+        },
+        where: { id: input.targetId },
+      });
+      gateMissing = ["compliance_release"];
+    }
+
+    if (input.action === "compliance_release") {
+      const evidenceRecord = evidenceRecords[0];
+
+      if (advisorApproval.status !== ReviewStatus.APPROVED) {
+        throw new RecommendationReviewWorkflowError("Advisor approval is required before compliance release.");
+      }
+
+      if (!evidenceRecord) {
+        throw new RecommendationReviewWorkflowError("Evidence record is required before compliance release.");
+      }
+
+      const gate = workflowGate.canBecomeClientVisible({
+        advisorApprovalStatus: advisorApproval.status,
+        complianceStatus: "RELEASED",
+        evidenceStatus: evidenceRecord.status,
+        permission,
+        recommendationStatus: "RELEASED_TO_CLIENT",
+      });
+
+      if (!gate.passed) {
+        throw new RecommendationReviewWorkflowError(`Client visibility gate failed: ${gate.missing.join(", ")}`);
+      }
+
+      gateMissing = gate.missing;
+      gatePassed = gate.passed;
+      await tx.complianceReview.update({
+        data: {
+          blockedAt: null,
+          evidenceComplete: true,
+          releaseNotes: reason,
+          releasedAt: now,
+          status: ComplianceStatus.RELEASED,
+        },
+        where: { id: complianceReview.id },
+      });
+      await tx.recommendation.update({
+        data: {
+          clientVisible: true,
+          status: RecommendationStatus.RELEASED_TO_CLIENT,
+        },
+        where: { id: input.targetId },
+      });
+      await tx.evidenceRecord.updateMany({
+        data: {
+          status: EvidenceStatus.RELEASED,
+          visibilityStatus: VisibilityStatus.CLIENT_VISIBLE,
+        },
+        where: { id: { in: evidenceRecords.map((record) => record.id) } },
+      });
+    }
+
+    const audit = await tx.auditEvent.create({
+      data: {
+        actorRoleKey: session.role.key,
+        actorUserId: session.actor.id,
+        clientTenantId: recommendation.clientTenantId,
+        eventType: typedEventType(input.action),
+        evidenceRecordId: evidenceRecords[0]?.id ?? null,
+        metadataJson: {
+          action: input.action,
+          confirmationText: input.confirmationText ?? null,
+          demoMode: true,
+          evidenceIds: input.evidenceIds ?? [],
+          noRealAuth: true,
+          permission,
+          workflowType: "recommendation-review",
+        },
+        nextState: typedActionNextState(input.action),
+        platformTenantId: demoPlatformTenantId,
+        previousState: recommendation.status,
+        reason,
+        result: typedAuditResult(input.action),
+        targetId: input.targetId,
+        targetType: ObjectType.RECOMMENDATION,
+      },
+    });
+    const reloadedState = await reloadRecommendationReviewState(tx, input.targetId, input.evidenceIds);
+
+    return {
+      action: input.action,
+      auditEventId: audit.id,
+      auditRows: 1,
+      clientVisible: reloadedState.recommendation.clientVisible,
+      gateMissing,
+      gatePassed,
+      message: `${input.action} persisted for recommendation review workflow.`,
+      mutated: true,
+      permission: {
+        allowed: permission.allowed,
+        reason: permission.reason,
+        requiresAudit: permission.requiresAudit,
+        requiresComplianceReview: permission.requiresComplianceReview,
+      },
+      reloadedState,
+      workflowType: "recommendation-review",
+    };
+  });
+}
+
+export { RecommendationReviewWorkflowError };

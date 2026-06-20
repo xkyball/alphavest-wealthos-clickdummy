@@ -1,5 +1,115 @@
 # Phase Execution Report
 
+## MINIMUM-PATH-PROMPT-06 - P0 Tests and Validation
+
+Date: 2026-06-20
+
+### Scope
+
+Executed Prompt 06 from `prompts/ALPHAVEST_MVP_MINIMUM_PATH_CODEX_PROMPT_PACK.md` as the Minimum Path validation proof gate. This phase inspected the available scripts and DB/test assumptions, ran every suggested safe command, and did not edit product code, routes, API routes, Prisma schema, migrations, generated visuals or product scope.
+
+### Pre-Check
+
+- `package.json` contains every Prompt 06 suggested script.
+- Local `.env` exists; secrets were not printed.
+- `playwright.config.ts` uses a local dev server on port `3020`, `workers: 1` and `fullyParallel: false`.
+- DB-mutating tests run deterministic `pnpm db:seed` against the configured local demo/test database only.
+- No migrations were run.
+
+### Commands Run
+
+| Command | Result | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | TypeScript completed with `tsc --noEmit`. |
+| `pnpm lint` | Passed | ESLint completed cleanly. |
+| `pnpm db:validate` | Passed | Prisma schema validates. |
+| `pnpm build` | Passed with warnings | Existing Turbopack dynamic file tracing warnings remain around `lib/document-storage-adapter.ts`; build completed. |
+| `pnpm test:playwright` | Passed | 177 tests passed. |
+| `pnpm test:permissions` | Passed | 7 tests passed. |
+| `pnpm test:workflow-gate` | Passed | 9 tests passed. |
+| `pnpm test:workflow-api` | Passed | 11 tests passed. |
+| `pnpm test:route-smoke` | Passed | 85 tests passed. |
+| `pnpm test:data-quality` | Passed | 2 tests passed. |
+| `pnpm test:file-export` | Passed | 7 tests passed. |
+| `pnpm test:phase-d` | Passed | 4 tests passed. |
+
+### Proof Coverage
+
+- Tenant-scoped upload reload: covered by document upload API and browser flow tests.
+- Typed review/advisor/compliance workflow: covered by workflow API tests.
+- Confirmation lifecycle: covered by the broad Playwright suite and confirmation lifecycle tests included in it.
+- Client visibility separation: covered by Prompt 05 client visibility proof tests and permission/P0 assertions.
+- Critical-transition audit: covered by workflow API and permission denied-audit tests.
+- Advisor approval is not client release: covered by workflow gate, workflow API and P0 acceptance tests.
+- Upload is not evidence sufficiency: covered by workflow gate and P0 acceptance tests.
+- AI Draft is not client visible: covered by Prompt 05, workflow gate and P0 acceptance tests.
+- Role/tenant denial: covered by permission, workflow API and Prompt 05 tests.
+- Validation/build health: covered by typecheck, lint, Prisma validate and build.
+
+### Scripts Missing
+
+- None.
+
+### Commands Not Run
+
+- None from the Prompt 06 suggested command list.
+
+### Blockers / Deferred / Hold Items
+
+- No DB/env blocker was found for the executed local validation set.
+- Build warnings around broad Turbopack tracing remain non-blocking and pre-existing.
+- Validation proof remains demo-session and local demo/test DB based; production authentication and external readiness remain outside Prompt 06.
+- MVP readiness is not claimed; Prompt 07 final patch report and any separate readiness re-audit remain required.
+
+### Exit Gate Decision
+
+`PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
+## MINIMUM-PATH-PROMPT-05 - Client Visibility Proof
+
+Date: 2026-06-20
+
+### Scope
+
+Executed Prompt 05 from `prompts/ALPHAVEST_MVP_MINIMUM_PATH_CODEX_PROMPT_PACK.md` for internal/client visibility separation in the minimum-path Review -> Advisor Approval -> Compliance vertical. This phase added focused proof around the existing visibility projection and export payload classification without adding routes, API routes, Prisma schema, migrations, generated visuals or product scope.
+
+### Completed Tasks
+
+- Added a focused Prompt 05 Playwright proof spec for client visibility projection.
+- Proved scoped internal actors can see internal recommendation states.
+- Proved client roles receive hidden/empty payloads before compliance release, including AI Draft and internal rationale states.
+- Proved released client-visible recommendations project only `clientSummary` to client roles.
+- Proved cross-tenant client access fails closed with no payload.
+- Proved admin/client-success route authority does not become internal advice payload access.
+- Proved forbidden export/client payload classifications still include AI Draft, internal rationale, compliance notes and unreleased evidence.
+
+### Changed Files
+
+- `tests/client-visibility-proof.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm exec playwright test tests/client-visibility-proof.spec.ts` - passed, 5 tests.
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `git diff --check` - passed.
+
+### P0 Impact
+
+This phase improves proof slices for client/internal separation, safe recommendation projection, forbidden payload suppression, cross-tenant denial and wrong-role denial. It does not claim full P0 readiness, MVP readiness, production authentication or full export lifecycle completion.
+
+### Blockers / Deferred / Hold Items
+
+- Client visibility proof remains demo-session and projection-service based; production authentication remains out of scope.
+- Full Minimum Path validation remains deferred to Prompt 06.
+- Final patch readiness claims remain deferred to Prompt 07 and any separate readiness re-audit.
+
+### Exit Gate Decision
+
+`PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
 ## PHASE-11-FINAL_QA - Final QA
 
 Date: 2026-06-20
@@ -57,6 +167,118 @@ Pre-existing local change noted but not made by this phase:
 - Previous committee route assertions were stale relative to the current route-workset lock. They now verify held-shell behavior and absence of product-only committee proof labels.
 - No required script was missing.
 - No P1, reference-only or hold routes were promoted.
+
+### Exit Gate Decision
+
+`PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
+## MINIMUM-PATH-PROMPT-04 - Confirmation Lifecycle Hardening
+
+Date: 2026-06-20
+
+### Scope
+
+Executed Prompt 04 from `prompts/ALPHAVEST_MVP_MINIMUM_PATH_CODEX_PROMPT_PACK.md` for sensitive confirmations touched by the Review -> Advisor Approval -> Compliance vertical. This phase hardened release, compliance block and request-evidence confirmations without adding routes, schema, migrations or product scope.
+
+### Completed Tasks
+
+- Added server-side typed confirmation phrases for sensitive workflow actions:
+  - `RELEASE TO CLIENT`
+  - `BLOCK RELEASE`
+  - `REQUEST EVIDENCE`
+- Moved compliance block and request-evidence buttons on the compliance review surface behind controlled confirmation modals.
+- Removed prefilled release confirmation values and replaced them with controlled user input.
+- Added disabled submit states until checkbox, reason where required and exact typed phrase are valid.
+- Added submitting, success and error feedback states for sensitive confirmations.
+- Preserved cancel paths that close without calling `/api/demo-workflow`.
+- Kept denied action behaviour fail-closed and mutation-free.
+
+### Changed Files
+
+- `lib/demo-workflow-validation.ts`
+- `lib/demo-workflow-mutation.ts`
+- `lib/screencast-demo-client.ts`
+- `components/internal-workflow-screen.tsx`
+- `components/decisions-governance-screen.tsx`
+- `tests/demo-workflow-api.spec.ts`
+- `tests/confirmation-lifecycle.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - first run found one narrow nullability issue; fixed and reran successfully.
+- `pnpm lint` - passed.
+- `pnpm exec playwright test tests/demo-workflow-api.spec.ts` - first reruns exposed required test updates for the new server-side phrase layer; final rerun passed, 11 tests.
+- `pnpm exec playwright test tests/confirmation-lifecycle.spec.ts` - passed, 3 tests.
+- `pnpm exec playwright test tests/ui-state-boundaries.spec.ts` - passed, 11 tests.
+- `pnpm exec playwright test tests/interaction-lifecycle.spec.ts` - initial parallel run hit a port `3020` collision; separate rerun passed, 4 tests.
+- `pnpm typecheck` - final rerun passed.
+- `pnpm lint` - final rerun passed.
+- `git diff --check` - passed.
+
+### P0 Impact
+
+This phase improves proof slices for confirmation lifecycle, server-side confirmation validation, no mutation on cancel or invalid input, critical-action audit proof and denied-action fail-closed behaviour. It does not claim full P0 readiness or production authentication.
+
+### Blockers / Deferred / Hold Items
+
+- Broader client-visible payload proof remains deferred to Prompt 05.
+- Confirmation lifecycle is demo-session based; production auth remains out of scope.
+- Export approval and governance role confirmations remain outside this minimum-path vertical unless a later prompt explicitly brings them into scope.
+
+### Exit Gate Decision
+
+`PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
+## MINIMUM-PATH-PROMPT-03 - Typed Persistent Review Approval Compliance Workflow
+
+Date: 2026-06-20
+
+### Scope
+
+Executed Prompt 03 from `prompts/ALPHAVEST_MVP_MINIMUM_PATH_CODEX_PROMPT_PACK.md` for the selected Review -> Advisor Approval -> Compliance vertical. The phase kept the existing `/api/demo-workflow` endpoint, preserved the legacy `actionId` path for demo compatibility, and added a typed `recommendation-review` payload path that persists state changes through Prisma and writes audit events.
+
+### Completed Tasks
+
+- Extended demo workflow request validation to accept typed `recommendation-review` payloads with target, action, actor role, reason/comment, evidence IDs and confirmation text.
+- Added persistent service logic for `submit_review`, `advisor_approve`, `compliance_release`, `compliance_block` and `request_evidence`.
+- Kept advisor approval and compliance release separate: advisor approval persists `APPROVED` but keeps `clientVisible=false`.
+- Enforced compliance release prerequisites through advisor approval, evidence sufficiency, permission checks and `workflowGate` before client visibility can become true.
+- Added fail-closed handling for wrong roles, malformed typed actions and non-recommendation targets.
+- Returned reload proof from Prisma after mutation for recommendation, advisor approval, compliance review and evidence records.
+- Updated relevant J01/J02 UI actions to send typed payloads to the existing API route.
+
+### Changed Files
+
+- `app/api/demo-workflow/route.ts`
+- `lib/demo-workflow-validation.ts`
+- `lib/demo-workflow-mutation.ts`
+- `lib/screencast-demo-client.ts`
+- `components/internal-workflow-screen.tsx`
+- `components/decisions-governance-screen.tsx`
+- `tests/demo-workflow-api.spec.ts`
+- Existing Prompt 02 carry-over files remain modified: `components/client-intake-screen.tsx`, `components/demo-session-provider.tsx`, `tests/document-upload-api.spec.ts`, `tests/document-upload-flow.spec.ts`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm exec playwright test tests/demo-workflow-api.spec.ts` - passed, 11 tests.
+- `pnpm lint` - passed.
+- `pnpm typecheck` - rerun passed.
+- `pnpm exec playwright test tests/document-upload-api.spec.ts tests/document-upload-flow.spec.ts` - passed, 8 tests.
+- `git diff --check` - passed.
+
+### P0 Impact
+
+This phase improves proof slices for typed workflow persistence, advisor/compliance separation, audit creation, fail-closed role/action/object handling and persisted reload proof. It does not claim full P0 readiness, production authentication, full RBAC closure or final MVP readiness.
+
+### Blockers / Deferred / Hold Items
+
+- Production auth remains out of scope; this is demo-session role-aware enforcement.
+- Confirmation lifecycle hardening remains deferred to Prompt 04.
+- Broader client-visibility proof remains deferred to Prompt 05.
+- No schema, migration, API route, route workset or product-scope expansion was performed.
 
 ### Exit Gate Decision
 

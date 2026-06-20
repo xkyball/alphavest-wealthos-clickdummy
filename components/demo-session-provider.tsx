@@ -26,8 +26,32 @@ type DemoSessionProviderProps = {
 
 export function DemoSessionProvider({ children }: DemoSessionProviderProps) {
   const [session, setSession] = useState<DemoSession>(defaultDemoSession);
+  const [storageLoaded, setStorageLoaded] = useState(false);
 
   useEffect(() => {
+    queueMicrotask(() => {
+      try {
+        const storedSession = window.localStorage.getItem(storageKey);
+        if (storedSession) {
+          const parsed = JSON.parse(storedSession) as { roleKey?: string; tenantSlug?: string };
+          setSession(
+            createDemoSession({
+              roleKey: parsed.roleKey as DemoRoleKey,
+              tenantSlug: parsed.tenantSlug as DemoTenantSlug,
+            })
+          );
+        }
+      } catch {
+        setSession(defaultDemoSession);
+      } finally {
+        setStorageLoaded(true);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!storageLoaded) return;
+
     window.localStorage.setItem(
       storageKey,
       JSON.stringify({
@@ -35,7 +59,7 @@ export function DemoSessionProvider({ children }: DemoSessionProviderProps) {
         tenantSlug: session.tenant.slug,
       })
     );
-  }, [session.role.key, session.tenant.slug]);
+  }, [session.role.key, session.tenant.slug, storageLoaded]);
 
   const value = useMemo<DemoSessionContextValue>(
     () => ({

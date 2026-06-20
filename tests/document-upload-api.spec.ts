@@ -113,6 +113,73 @@ test.describe("document upload multipart API", () => {
     expect(reloadedDocument?.fileName).toBe(fileName);
   });
 
+  test("reloads uploaded documents only for the active tenant", async ({ request }) => {
+    const fileName = "phase-p1-summit-tenant-upload-proof.pdf";
+    const summitSession = createDemoSession({ roleKey: "family_cfo", tenantSlug: "summit" });
+    const exportCountBefore = await prisma.exportRequest.count({
+      where: { clientTenantId: summitSession.tenant.id },
+    });
+    const response = await request.post("/api/documents/upload", {
+      multipart: {
+        documentType: "financial_statement",
+        file: {
+          buffer: Buffer.from("%PDF-1.4\nSummit tenant reload proof\n%%EOF"),
+          mimeType: "application/pdf",
+          name: fileName,
+        },
+        linkedObjectLabel: "Summit Ridge Capital",
+        notes: "Tenant isolation API proof upload",
+        periodLabel: "Jun 2026",
+        roleKey: "family_cfo",
+        sensitivity: "CONFIDENTIAL",
+        subType: "Monthly Statement",
+        tenantSlug: "summit",
+      },
+    });
+    const body = await response.json();
+
+    expect(response.ok(), JSON.stringify(body)).toBe(true);
+    expect(body.safety).toEqual({
+      clientVisible: false,
+      evidenceStatus: "REVIEW_PENDING",
+      releaseUnlocked: false,
+      sufficiency: false,
+      uploadOnly: true,
+    });
+
+    const document = await prisma.document.findUniqueOrThrow({
+      where: { id: body.result.document.id },
+    });
+    const evidenceRecord = await prisma.evidenceRecord.findUniqueOrThrow({
+      where: { id: body.result.evidenceRecordId },
+    });
+
+    expect(document.clientTenantId).toBe(summitSession.tenant.id);
+    expect(document.clientVisible).toBe(false);
+    expect(document.storageKey).toContain("demo/summit/documents/");
+    expect(evidenceRecord.status).toBe(EvidenceStatus.CREATED);
+    expect(evidenceRecord.relatedObjectId).toBe(document.id);
+    expect(evidenceRecord.visibilityStatus).toBe("INTERNAL_ONLY");
+
+    const summitReload = await request.get("/api/documents?tenantSlug=summit");
+    const summitReloadBody = await summitReload.json();
+    const summitDocument = summitReloadBody.documents.find((item: { id: string }) => item.id === document.id);
+
+    expect(summitReload.ok(), JSON.stringify(summitReloadBody)).toBe(true);
+    expect(summitDocument?.fileName).toBe(fileName);
+
+    const morganReload = await request.get("/api/documents?tenantSlug=morgan");
+    const morganReloadBody = await morganReload.json();
+    const leakedDocument = morganReloadBody.documents.find((item: { id: string }) => item.id === document.id);
+    const exportCountAfter = await prisma.exportRequest.count({
+      where: { clientTenantId: summitSession.tenant.id },
+    });
+
+    expect(morganReload.ok(), JSON.stringify(morganReloadBody)).toBe(true);
+    expect(leakedDocument).toBeUndefined();
+    expect(exportCountAfter).toBe(exportCountBefore);
+  });
+
   test("rejects invalid document tenant queries without falling back to another tenant", async ({ request }) => {
     const response = await request.get("/api/documents?tenantSlug=unknown");
     const body = await response.json();

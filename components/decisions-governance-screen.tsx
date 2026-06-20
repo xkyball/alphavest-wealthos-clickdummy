@@ -43,7 +43,11 @@ import {
 } from "@/components/ui";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { cn } from "@/lib/cn";
-import { runScreencastDemoAction } from "@/lib/screencast-demo-client";
+import {
+  recommendationReviewDemoTargets,
+  runRecommendationReviewWorkflowAction,
+  runScreencastDemoAction,
+} from "@/lib/screencast-demo-client";
 import {
   accessPolicyChecks,
   accessRequests,
@@ -90,6 +94,12 @@ const primaryButtonClass =
 
 const secondaryButtonClass =
   "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-4 text-sm font-semibold text-alphavest-ivory transition hover:border-alphavest-gold/60 hover:text-alphavest-gold-soft";
+
+const inputClass =
+  "mt-2 h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold disabled:cursor-not-allowed disabled:opacity-60";
+
+const textareaClass =
+  "mt-2 min-h-24 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 py-2 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold disabled:cursor-not-allowed disabled:opacity-60";
 
 const destructiveButtonClass =
   "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-red/60 bg-alphavest-red/10 px-4 text-sm font-semibold text-alphavest-red transition hover:bg-alphavest-red/16";
@@ -321,6 +331,48 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 
 function ComplianceBlockPage({ title, visualState }: { title: string; visualState?: VisualState }) {
   const [modalOpen, setModalOpen] = useState(visualState === "block");
+  const [acknowledged, setAcknowledged] = useState(false);
+  const [confirmationText, setConfirmationText] = useState("");
+  const [reason, setReason] = useState("");
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [message, setMessage] = useState<string | null>(null);
+  const requiredPhrase = "REQUEST EVIDENCE";
+  const requestEvidenceValid = acknowledged && confirmationText.trim() === requiredPhrase && reason.trim().length >= 12;
+
+  function resetAndClose() {
+    setAcknowledged(false);
+    setConfirmationText("");
+    setReason("");
+    setStatus("idle");
+    setMessage(null);
+    setModalOpen(false);
+  }
+
+  async function submitEvidenceRequest() {
+    if (!requestEvidenceValid || status === "submitting") {
+      return;
+    }
+
+    setStatus("submitting");
+    setMessage(null);
+
+    try {
+      const body = await runRecommendationReviewWorkflowAction({
+        action: "request_evidence",
+        actorRole: "compliance_officer",
+        confirmationText: confirmationText.trim(),
+        evidenceIds: [recommendationReviewDemoTargets.morgan.evidenceId],
+        reason: reason.trim(),
+        targetId: recommendationReviewDemoTargets.morgan.recommendationId,
+      });
+
+      setStatus("success");
+      setMessage(body.result?.auditEventId ? `Audit recorded: ${body.result.auditEventId}` : "Evidence request persisted.");
+    } catch (error) {
+      setStatus("error");
+      setMessage(error instanceof Error ? error.message : "Evidence request failed without mutation.");
+    }
+  }
 
   return (
     <Phase12Shell activePageId="041">
@@ -376,22 +428,23 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
         description="Advice remains blocked while evidence is incomplete."
         footer={
           <>
-            <button className={secondaryButtonClass} onClick={() => setModalOpen(false)} type="button">Cancel</button>
-            <button className={secondaryButtonClass} onClick={() => setModalOpen(false)} type="button">Keep Blocked</button>
+            <button className={secondaryButtonClass} disabled={status === "submitting"} onClick={resetAndClose} type="button">Cancel</button>
+            <button className={secondaryButtonClass} disabled={status === "submitting"} onClick={resetAndClose} type="button">Keep Blocked</button>
             <button
               className={primaryButtonClass}
               data-testid="j02-confirm-request-evidence"
+              disabled={!requestEvidenceValid || status === "submitting" || status === "success"}
               onClick={() => {
-                void runScreencastDemoAction("j02.confirmRequestEvidence");
+                void submitEvidenceRequest();
               }}
               type="button"
             >
-              Request Evidence
+              {status === "submitting" ? "Submitting..." : "Request Evidence"}
             </button>
             <button className={secondaryButtonClass} type="button">Escalate</button>
           </>
         }
-        onClose={() => setModalOpen(false)}
+        onClose={status === "submitting" ? undefined : resetAndClose}
         open={modalOpen}
         title={title}
       >
@@ -440,6 +493,47 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
               </CardContent>
             </Card>
           </div>
+          <Card>
+            <CardHeader><CardTitle>Confirm evidence request</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <label className="flex items-start gap-3 text-sm text-alphavest-muted">
+                <input
+                  checked={acknowledged}
+                  className="mt-1"
+                  disabled={status === "submitting" || status === "success"}
+                  onChange={(event) => setAcknowledged(event.target.checked)}
+                  type="checkbox"
+                />
+                <span>I understand this request persists workflow state and writes an audit event.</span>
+              </label>
+              <label className="block">
+                <span className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Reason</span>
+                <textarea
+                  className={textareaClass}
+                  disabled={status === "submitting" || status === "success"}
+                  onChange={(event) => setReason(event.target.value)}
+                  placeholder="Compliance confirmed the evidence request while client visibility remains blocked."
+                  value={reason}
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Type {requiredPhrase}</span>
+                <input
+                  className={inputClass}
+                  data-testid="j02-request-evidence-confirmation"
+                  disabled={status === "submitting" || status === "success"}
+                  onChange={(event) => setConfirmationText(event.target.value)}
+                  value={confirmationText}
+                />
+              </label>
+              {status === "success" ? (
+                <StatePanel detail={message ?? "Evidence request persisted."} state="success" title="Evidence request persisted" />
+              ) : null}
+              {status === "error" ? (
+                <StatePanel detail={message ?? "No mutation was completed."} state="blocked" title="Evidence request failed" />
+              ) : null}
+            </CardContent>
+          </Card>
         </div>
       </Modal>
     </Phase12Shell>

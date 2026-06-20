@@ -27,9 +27,14 @@ import { NextResponse } from "next/server";
 
 import { parseDemoWorkflowRequestBody } from "@/lib/demo-workflow-validation";
 import { exportPackageService } from "@/lib/export-package-service";
-import { runDemoWorkflowMutation } from "@/lib/demo-workflow-mutation";
+import {
+  RecommendationReviewWorkflowError,
+  runDemoWorkflowMutation,
+  runRecommendationReviewWorkflowMutation,
+} from "@/lib/demo-workflow-mutation";
 import { exportService } from "@/lib/export-service";
 import { fileMetadataService } from "@/lib/file-metadata-service";
+import type { DemoRoleKey } from "@/lib/demo-session";
 import type { PermissionDecision } from "@/lib/permission-engine";
 import { workflowGate } from "@/lib/workflow-gate";
 import { suitabilityGateCandidate } from "@/lib/suitability-ips-demo-data";
@@ -3963,7 +3968,57 @@ export async function POST(request: Request) {
     );
   }
 
-  const actionId = parsedBody.value.actionId as DemoWorkflowAction;
+  const parsedValue = parsedBody.value;
+
+  if ("workflowType" in parsedValue && parsedValue.workflowType === "recommendation-review") {
+    try {
+      const result = await runRecommendationReviewWorkflowMutation(prisma, {
+        action: parsedValue.action,
+        actorRoleKey: parsedValue.actorRole as DemoRoleKey,
+        confirmationText: parsedValue.confirmationText,
+        evidenceIds: parsedValue.evidenceIds,
+        reason: parsedValue.reason,
+        targetId: parsedValue.targetId,
+      });
+
+      return NextResponse.json({
+        action: parsedValue.action,
+        noClientRelease: !result.clientVisible,
+        ok: true,
+        result,
+        workflowType: "recommendation-review",
+      });
+    } catch (error) {
+      return NextResponse.json(
+        {
+          action: parsedValue.action,
+          error:
+            error instanceof RecommendationReviewWorkflowError
+              ? error.message
+              : "Recommendation review workflow action failed.",
+          mutated: false,
+          noClientRelease: true,
+          ok: false,
+          workflowType: "recommendation-review",
+        },
+        { status: error instanceof RecommendationReviewWorkflowError ? error.status : 409 },
+      );
+    }
+  }
+
+  if (!("actionId" in parsedValue)) {
+    return NextResponse.json(
+      {
+        error: "Invalid demo workflow request.",
+        mutated: false,
+        noClientRelease: true,
+        ok: false,
+      },
+      { status: 400 },
+    );
+  }
+
+  const actionId = parsedValue.actionId as DemoWorkflowAction;
 
   try {
     const result = await runDemoWorkflowAction(prisma, actionId);

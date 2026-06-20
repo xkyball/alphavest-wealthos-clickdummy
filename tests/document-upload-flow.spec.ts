@@ -30,4 +30,31 @@ test.describe("document upload browser flow", () => {
     await page.goto("/documents");
     await expect(page.locator("p:visible, span:visible, td:visible, article:visible", { hasText: fileName }).first()).toBeVisible();
   });
+
+  test("reloads persisted uploads from the selected tenant context", async ({ page }) => {
+    const fileName = "playwright-summit-tenant-reload-proof.pdf";
+
+    await page.goto("/documents/upload");
+    await page.getByLabel("Tenant context").last().selectOption("summit");
+    await page.getByLabel("Role context").last().selectOption("family_cfo");
+    await page.getByTestId("document-upload-file-input").setInputFiles({
+      buffer: Buffer.from("%PDF-1.4\nPlaywright summit tenant proof\n%%EOF"),
+      mimeType: "application/pdf",
+      name: fileName,
+    });
+
+    await page.getByTestId("real-upload-document").click();
+    await expect(page.getByText(`${fileName} upload completed.`)).toBeVisible();
+    await expect(page.getByText("Evidence sufficiency, release and client visibility remain locked.")).toBeVisible();
+
+    await page.reload();
+    await expect(page.locator("p:visible, span:visible, td:visible, article:visible", { hasText: fileName }).first()).toBeVisible();
+
+    await page.goto("/documents");
+    await expect(page.locator("p:visible, span:visible, td:visible, article:visible", { hasText: fileName }).first()).toBeVisible();
+    await expect(page.locator("td:visible", { hasText: "Summit Ridge Capital" }).first()).toBeVisible();
+
+    await page.getByLabel("Tenant context").last().selectOption("morgan");
+    await expect(page.locator("p:visible, span:visible, td:visible, article:visible", { hasText: fileName })).toHaveCount(0);
+  });
 });

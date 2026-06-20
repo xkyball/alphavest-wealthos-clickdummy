@@ -167,9 +167,9 @@ function labelFromEnum(value: string) {
     .join(" ");
 }
 
-function toDocumentRows(documents: PersistedUploadDocument[]): DocumentTableRow[] {
+function toDocumentRows(documents: PersistedUploadDocument[], entityLabel: string): DocumentTableRow[] {
   return documents.map((document) => ({
-    entity: "Morgan Family Office",
+    entity: entityLabel,
     name: document.fileName,
     sensitivity: labelFromEnum(document.sensitivity),
     status: labelFromEnum(document.status),
@@ -179,14 +179,17 @@ function toDocumentRows(documents: PersistedUploadDocument[]): DocumentTableRow[
 }
 
 function usePersistedUploadDocuments() {
+  const { session } = useDemoSession();
+  const tenantSlug = session.tenant.slug;
   const [documents, setDocuments] = useState<PersistedUploadDocument[]>([]);
   const [loadState, setLoadState] = useState<"idle" | "loading" | "ready" | "error">("idle");
 
   const refresh = useCallback(async () => {
     setLoadState("loading");
+    setDocuments([]);
 
     try {
-      const response = await fetch("/api/documents?tenantSlug=morgan", { cache: "no-store" });
+      const response = await fetch(`/api/documents?tenantSlug=${encodeURIComponent(tenantSlug)}`, { cache: "no-store" });
       const body = (await response.json()) as { documents?: PersistedUploadDocument[] };
 
       if (!response.ok) {
@@ -198,37 +201,13 @@ function usePersistedUploadDocuments() {
     } catch {
       setLoadState("error");
     }
-  }, []);
+  }, [tenantSlug]);
 
   useEffect(() => {
-    let cancelled = false;
-
-    fetch("/api/documents?tenantSlug=morgan", { cache: "no-store" })
-      .then(async (response) => {
-        const body = (await response.json()) as { documents?: PersistedUploadDocument[] };
-
-        if (!response.ok) {
-          throw new Error("Document reload failed.");
-        }
-
-        return body.documents ?? [];
-      })
-      .then((nextDocuments) => {
-        if (!cancelled) {
-          setDocuments(nextDocuments);
-          setLoadState("ready");
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setLoadState("error");
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    queueMicrotask(() => {
+      void refresh();
+    });
+  }, [refresh]);
 
   return { documents, loadState, refresh };
 }
@@ -1180,13 +1159,14 @@ function EntityDetailPage({ title }: { title: string }) {
   );
 }
 
-function DocumentsPage({ title }: { title: string }) {
+function DocumentsPageContent({ title }: { title: string }) {
+  const { session } = useDemoSession();
   const { documents, loadState } = usePersistedUploadDocuments();
-  const persistedRows = toDocumentRows(documents);
+  const persistedRows = toDocumentRows(documents, session.tenant.displayName);
   const rows: DocumentTableRow[] = [...persistedRows, ...documentRows];
 
   return (
-    <ClientShell activePageId="027">
+    <>
       <ScreenTitle>{title}</ScreenTitle>
       <div className="space-y-5">
         <SectionTitle action={<div className="flex gap-3"><button className={secondaryButtonClass} type="button"><Plus aria-hidden="true" className="size-4" />New Folder</button><button className={primaryButtonClass} data-testid="j04-open-upload-document" onClick={() => { void runScreencastDemoAction("j04.openUploadDocument", "/documents/upload"); }} type="button"><Upload aria-hidden="true" className="size-4" />Upload Document</button></div>} icon={Folder} subtitle="Securely manage and access client documents and evidence." title={title} />
@@ -1230,6 +1210,14 @@ function DocumentsPage({ title }: { title: string }) {
           <StatePanel detail="Drag and drop files or choose a supported format." state="empty" title="Upload Documents" />
         </div>
       </div>
+    </>
+  );
+}
+
+function DocumentsPage({ title }: { title: string }) {
+  return (
+    <ClientShell activePageId="027">
+      <DocumentsPageContent title={title} />
     </ClientShell>
   );
 }

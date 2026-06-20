@@ -3092,3 +3092,212 @@ Date: 2026-06-20
 - Schema field availability is not runtime safety proof; RBAC, payload projection, evidence sufficiency, audit fail-closed and export lifecycle tests remain required proof slices.
 - JSON policy fields such as `conditionJson` and `scopeJson` still require fail-closed service/test enforcement outside this schema-alignment slice.
 - Patch-only concepts remain blocked unless a later accepted schema decision authorizes explicit model work.
+
+## MINIMUM-PATH-PROMPT-03 QA Addendum
+
+Date: 2026-06-20
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Prompt source of truth | Passed | Prompt 03 from `prompts/ALPHAVEST_MVP_MINIMUM_PATH_CODEX_PROMPT_PACK.md` was used as the implementation contract. |
+| Existing API route preserved | Passed | Typed workflow payloads use `/api/demo-workflow`; no new API route was added. |
+| Legacy demo path preserved | Passed | Existing `actionId` validation and action dispatch remain supported for backwards demo compatibility. |
+| Typed payload validation | Passed | `recommendation-review` validates workflow type, target UUID, allowed action, demo actor role, optional reason, evidence IDs and confirmation text. |
+| Prisma persistence | Passed | Review, advisor approval, compliance release, compliance block and request-evidence actions persist through Recommendation, Approval, ComplianceReview and EvidenceRecord rows. |
+| Advisor/compliance boundary | Passed | Advisor approval persists `ReviewStatus.APPROVED` while keeping `clientVisible=false`; compliance release remains a separate action. |
+| Visibility gate | Passed | Compliance release requires advisor approval, sufficient evidence, permission and `workflowGate` success before setting client visibility. |
+| Audit proof | Passed | Successful and denied typed workflow transitions write AuditEvent rows with typed workflow metadata. |
+| Fail-closed proof | Passed | Wrong role mutates nothing and writes DENIED audit; invalid action returns 400; non-recommendation target returns fail-closed 404 without release. |
+| Reload proof | Passed | API response returns reloaded Prisma state for recommendation, approval, compliance review and evidence. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | Initial run exposed narrow TypeScript issues; fixes applied and rerun passed. |
+| `pnpm exec playwright test tests/demo-workflow-api.spec.ts` | Passed | 11 tests, including typed workflow persistence, gates, audit and reload proof. |
+| `pnpm lint` | Passed | Initial warning for an unused import was removed; rerun passed cleanly. |
+| `pnpm exec playwright test tests/document-upload-api.spec.ts tests/document-upload-flow.spec.ts` | Passed | 8 tests; Prompt 02 upload tenant reload regression remained green. |
+| `git diff --check` | Passed | No whitespace errors. |
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| Typed recommendation review payload | implemented + tested | Runtime validation and API branch added. |
+| Submit review persistence | implemented + tested | Recommendation moves to analyst-reviewed state and reload proof confirms it. |
+| Advisor approval boundary | implemented + tested | Approval persists without client release. |
+| Compliance release prerequisites | implemented + tested | Fails before prerequisites; persists after advisor/evidence/permission/workflowGate pass. |
+| Compliance block | implemented + tested | Recommendation remains blocked from client visibility and audit is BLOCKED. |
+| Request evidence reason/comment | implemented + tested | Compliance review release notes persist the request reason. |
+| Wrong role/action/object | implemented + tested | Fail-closed behavior asserted. |
+| Full MVP/P0 readiness | not claimed | Later confirmation lifecycle, visibility proof and final P0 validation remain required. |
+
+### Residual Risks
+
+- Runtime role checks remain demo-session based and are not production authentication.
+- Confirmation lifecycle hardening is intentionally deferred to Prompt 04.
+- Broader client visibility and payload projection proof is intentionally deferred to Prompt 05.
+- No schema or migration was performed; future schema changes require explicit authority.
+
+## MINIMUM-PATH-PROMPT-06 QA Addendum
+
+Date: 2026-06-20
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Prompt source of truth | Passed | Prompt 06 from `prompts/ALPHAVEST_MVP_MINIMUM_PATH_CODEX_PROMPT_PACK.md` was used as the validation contract. |
+| Script availability | Passed | Every suggested Prompt 06 script exists in `package.json`. |
+| DB/test safety classification | Passed | DB-mutating tests used deterministic local demo/test DB seeding through the configured local `.env`; no migrations were run. |
+| Tenant-scoped upload reload | Passed | Covered by document upload API/browser tests in `pnpm test:playwright`. |
+| Typed Review -> Advisor -> Compliance workflow | Passed | Covered by `pnpm test:workflow-api`, including reload proof and fail-closed role/object handling. |
+| Confirmation lifecycle | Passed | Covered by the broad Playwright suite including `tests/confirmation-lifecycle.spec.ts`. |
+| Client visibility separation | Passed | Covered by Prompt 05 client visibility proof tests inside `pnpm test:playwright`. |
+| Critical transition audit | Passed | Covered by workflow API and permission denied-audit tests. |
+| Advisor approval not equal release | Passed | Covered by workflow gate, workflow API and P0 acceptance tests. |
+| Upload not equal evidence sufficiency | Passed | Covered by workflow gate and P0 acceptance tests. |
+| AI Draft not client-visible | Passed | Covered by client visibility, workflow gate and P0 acceptance tests. |
+| Role/tenant denial | Passed | Covered by permission engine, client visibility and workflow API tests. |
+| Validation/build health | Passed with warnings | Typecheck, lint, Prisma validate and build passed; existing Turbopack tracing warnings remain non-blocking. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | TypeScript completed with `tsc --noEmit`. |
+| `pnpm lint` | Passed | ESLint completed cleanly. |
+| `pnpm db:validate` | Passed | Prisma schema validates. |
+| `pnpm build` | Passed with warnings | Existing Turbopack dynamic file-tracing warnings around `lib/document-storage-adapter.ts`; build completed. |
+| `pnpm test:playwright` | Passed | 177 tests passed. |
+| `pnpm test:permissions` | Passed | 7 tests passed. |
+| `pnpm test:workflow-gate` | Passed | 9 tests passed. |
+| `pnpm test:workflow-api` | Passed | 11 tests passed. |
+| `pnpm test:route-smoke` | Passed | 85 tests passed. |
+| `pnpm test:data-quality` | Passed | 2 tests passed. |
+| `pnpm test:file-export` | Passed | 7 tests passed. |
+| `pnpm test:phase-d` | Passed | 4 tests passed. |
+
+### Script / Command Classifications
+
+| Item | Classification | Notes |
+| --- | --- | --- |
+| Missing scripts | None | No `SCRIPT_NOT_FOUND` cases. |
+| Failed commands | None | No `COMMAND_FAILED` cases. |
+| Not-run commands | None | No Prompt 06 suggested command was skipped. |
+| Unsafe commands | None in suggested list | Migrations and DB reset were not part of Prompt 06 and were not run. |
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| Minimum Path local validation gate | validated + tested | All Prompt 06 suggested commands passed. |
+| Build health | validated with warnings | Build passes with existing Turbopack tracing warnings. |
+| Local DB/test readiness | validated + tested | Tests seeded deterministic local demo/test data. |
+| P0 proof impact | validated + tested | Required proof categories are covered by passing tests. |
+| MVP readiness | not claimed | Separate Prompt 07 report and readiness re-audit remain required before any MVP-ready claim. |
+
+### Residual Risks
+
+- Production authentication, deployment readiness and external data safety are not proven by this local validation run.
+- Build warnings around broad Turbopack file tracing remain cleanup candidates.
+- Prompt 07 final patch report remains required before final Minimum Path reporting is complete.
+
+## MINIMUM-PATH-PROMPT-05 QA Addendum
+
+Date: 2026-06-20
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Prompt source of truth | Passed | Prompt 05 from `prompts/ALPHAVEST_MVP_MINIMUM_PATH_CODEX_PROMPT_PACK.md` was used as the implementation contract. |
+| Internal actor state visibility | Passed | Scoped analyst role receives internal recommendation state and internal rationale through the projection service. |
+| Client pre-release fail-closed | Passed | Client role receives `visible=false` and empty payload for AI Draft/advisor-visible recommendation state. |
+| AI Draft hidden from client | Passed | `clientSummaryDraft` stays hidden from client projection before release and is listed as hidden. |
+| Internal rationale hidden from client | Passed | `internalRationale`, `summaryInternal`, `assumptionsJson` and compliance notes are not present in client payloads. |
+| Compliance release safe projection | Passed | Released client-visible recommendation returns only client-safe `clientSummary`. |
+| Cross-tenant fail-closed | Passed | Bennett client access to Morgan tenant recommendation returns `DEMO_DENY_CROSS_TENANT` and no payload. |
+| Wrong-role fail-closed | Passed | Admin and Client Success roles cannot treat route/governance authority as internal advice payload access. |
+| Export/client payload leak check | Passed | Export payload classification rejects AI Draft, internal rationale, compliance notes and unreleased evidence. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm exec playwright test tests/client-visibility-proof.spec.ts` | Passed | 5 tests covering internal/client separation, safe projection, cross-tenant denial, wrong-role denial and forbidden payload classification. |
+| `pnpm typecheck` | Passed | TypeScript completed with `tsc --noEmit`. |
+| `pnpm lint` | Passed | ESLint completed cleanly. |
+| `git diff --check` | Passed | No whitespace errors. |
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| Internal recommendation state projection | implemented + tested | Analyst role can see scoped internal recommendation payload. |
+| Client pre-release projection | implemented + tested | Client roles receive hidden/empty payloads before release. |
+| Safe released client payload | implemented + tested | Client roles receive only `clientSummary` after release gates are represented in payload state. |
+| AI Draft/internal rationale/compliance note suppression | implemented + tested | Forbidden fields are absent from client payloads and reported as hidden. |
+| Cross-tenant denial | implemented + tested | Projection fails closed when session tenant and payload tenant differ. |
+| Wrong-role denial | implemented + tested | Admin and Client Success do not bypass advice payload scope. |
+| Export forbidden payload classification | implemented + tested | Forbidden payload classes remain blocked for client/export surfaces. |
+| Full MVP/P0 readiness | not claimed | Prompt 06 validation and Prompt 07 final report remain required. |
+
+### Residual Risks
+
+- Projection proof is demo-session based and does not claim production authentication.
+- This phase does not create a new client payload API; it proves the existing service boundary and export classification.
+- Full Minimum Path validation remains deferred to Prompt 06.
+
+## MINIMUM-PATH-PROMPT-04 QA Addendum
+
+Date: 2026-06-20
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Prompt source of truth | Passed | Prompt 04 from `prompts/ALPHAVEST_MVP_MINIMUM_PATH_CODEX_PROMPT_PACK.md` was used as the implementation contract. |
+| Release confirmation lifecycle | Passed | Release uses controlled checkbox and phrase input, disabled submit until valid, submitting, success and error states. |
+| Compliance block lifecycle | Passed | Compliance block action is routed through a controlled confirmation modal with exact phrase, reason, submit state and success/error state. |
+| Request evidence lifecycle | Passed | Request evidence requires controlled reason plus `REQUEST EVIDENCE` phrase before submit. |
+| Cancel no mutation | Passed | Browser test asserts cancel closes release confirmation without any `/api/demo-workflow` request. |
+| Invalid input no mutation | Passed | UI submit remains disabled while invalid; server rejects invalid confirmation text with fail-closed response. |
+| Server-side confirmation validation | Passed | Sensitive typed workflow actions require exact server-side phrases before Prisma mutation. |
+| Audit proof | Passed | Valid sensitive actions return persisted audit IDs and API tests assert AuditEvent rows for critical transitions. |
+| Denied action no mutation | Passed | Existing typed workflow fail-closed test remains green with DENIED audit and `mutated=false`. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Failed then passed | Initial nullability warning in the shared confirmation modal was fixed; rerun passed. |
+| `pnpm lint` | Passed | ESLint clean. |
+| `pnpm exec playwright test tests/demo-workflow-api.spec.ts` | Failed then passed | Intermediate failures reflected new required phrase layer in tests; final rerun passed, 11 tests. |
+| `pnpm exec playwright test tests/confirmation-lifecycle.spec.ts` | Passed | 3 tests covering invalid disabled state, cancel without API mutation, valid submit and request-evidence lifecycle. |
+| `pnpm exec playwright test tests/ui-state-boundaries.spec.ts` | Passed | 11 tests. |
+| `pnpm exec playwright test tests/interaction-lifecycle.spec.ts` | Failed then passed | Initial parallel run hit port `3020` collision; separate rerun passed, 4 tests. |
+| `pnpm typecheck` | Passed | Final rerun. |
+| `pnpm lint` | Passed | Final rerun. |
+| `git diff --check` | Passed | No whitespace errors. |
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| Release confirmation | implemented + tested | No prefilled confirmation; valid input required before API call. |
+| Compliance block confirmation | implemented + tested | Controlled modal state, exact phrase and reason required. |
+| Request evidence confirmation | implemented + tested | Controlled reason and exact phrase required. |
+| Server-side phrase enforcement | implemented + tested | Sensitive actions fail before mutation when confirmation is invalid. |
+| Cancel path | implemented + tested | Release cancel performs no API request. |
+| Success/error feedback | implemented + tested | Sensitive confirmations display persisted success or fail-closed error state. |
+| Full MVP/P0 readiness | not claimed | Prompt 05 client visibility proof and later validation remain required. |
+
+### Residual Risks
+
+- Confirmation hardening remains scoped to the minimum-path Review -> Advisor Approval -> Compliance vertical.
+- Production authentication and complete RBAC remain outside this phase.
+- Export approval and broader governance second-confirmation persistence remain separate future scope unless explicitly requested.

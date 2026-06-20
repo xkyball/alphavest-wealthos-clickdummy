@@ -46,7 +46,10 @@ import {
 } from "@/components/ui";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { cn } from "@/lib/cn";
-import { runScreencastDemoAction } from "@/lib/screencast-demo-client";
+import {
+  recommendationReviewDemoTargets,
+  runRecommendationReviewWorkflowAction,
+} from "@/lib/screencast-demo-client";
 import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import {
   advisorQueue,
@@ -96,6 +99,49 @@ const primaryButtonClass =
 const secondaryButtonClass =
   "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-4 text-sm font-semibold text-alphavest-ivory transition hover:border-alphavest-gold/60 hover:text-alphavest-gold-soft";
 
+const inputClass =
+  "mt-2 h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold disabled:cursor-not-allowed disabled:opacity-60";
+
+const textareaClass =
+  "mt-2 min-h-24 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 py-2 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold disabled:cursor-not-allowed disabled:opacity-60";
+
+type SensitiveWorkflowAction = "compliance_block" | "request_evidence";
+
+const sensitiveWorkflowCopy: Record<
+  SensitiveWorkflowAction,
+  {
+    action: SensitiveWorkflowAction;
+    defaultReason: string;
+    description: string;
+    evidenceIds: string[];
+    phrase: string;
+    submitLabel: string;
+    targetId: string;
+    title: string;
+  }
+> = {
+  compliance_block: {
+    action: "compliance_block",
+    defaultReason: "Compliance blocked release because required evidence is incomplete.",
+    description: "Block client visibility for this recommendation and record a compliance audit event.",
+    evidenceIds: [recommendationReviewDemoTargets.morgan.evidenceId],
+    phrase: "BLOCK RELEASE",
+    submitLabel: "Block Release",
+    targetId: recommendationReviewDemoTargets.morgan.recommendationId,
+    title: "Confirm Compliance Block",
+  },
+  request_evidence: {
+    action: "request_evidence",
+    defaultReason: "Compliance requested missing evidence before client release.",
+    description: "Request missing evidence while keeping the recommendation blocked from client visibility.",
+    evidenceIds: [recommendationReviewDemoTargets.morgan.evidenceId],
+    phrase: "REQUEST EVIDENCE",
+    submitLabel: "Request Evidence",
+    targetId: recommendationReviewDemoTargets.morgan.recommendationId,
+    title: "Confirm Evidence Request",
+  },
+};
+
 type DemoWorkflowActionId =
   | "j01.requestData"
   | "j01.routeToAdvisor"
@@ -116,6 +162,146 @@ async function postDemoWorkflowAction(actionId: DemoWorkflowActionId) {
   }
 
   return response.json() as Promise<{ result: { message: string }; noClientRelease: boolean }>;
+}
+
+function SensitiveWorkflowConfirmationModal({
+  action,
+  onClose,
+  open,
+}: {
+  action: SensitiveWorkflowAction | null;
+  onClose: () => void;
+  open: boolean;
+}) {
+  const config = action ? sensitiveWorkflowCopy[action] : null;
+  const [acknowledged, setAcknowledged] = useState(false);
+  const [confirmationText, setConfirmationText] = useState("");
+  const [reason, setReason] = useState("");
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [message, setMessage] = useState<string | null>(null);
+
+  if (!config) {
+    return null;
+  }
+
+  const activeConfig = config;
+  const valid = acknowledged && confirmationText.trim() === config.phrase && reason.trim().length >= 12;
+  const disabled = !valid || status === "submitting" || status === "success";
+
+  function resetAndClose() {
+    setAcknowledged(false);
+    setConfirmationText("");
+    setReason("");
+    setStatus("idle");
+    setMessage(null);
+    onClose();
+  }
+
+  async function submit() {
+    if (!valid || status === "submitting") {
+      return;
+    }
+
+    setStatus("submitting");
+    setMessage(null);
+
+    try {
+      const body = await runRecommendationReviewWorkflowAction({
+        action: activeConfig.action,
+        actorRole: "compliance_officer",
+        confirmationText: confirmationText.trim(),
+        evidenceIds: activeConfig.evidenceIds,
+        reason: reason.trim(),
+        targetId: activeConfig.targetId,
+      });
+
+      setStatus("success");
+      setMessage(body.result?.auditEventId ? `Audit recorded: ${body.result.auditEventId}` : "Action persisted.");
+    } catch (error) {
+      setStatus("error");
+      setMessage(error instanceof Error ? error.message : "Sensitive workflow action failed.");
+    }
+  }
+
+  return (
+    <Modal
+      className="max-w-[46rem]"
+      context={
+        <div className="grid gap-2 text-sm">
+          <p className="font-semibold text-alphavest-ivory">{config.title}</p>
+          <p className="text-alphavest-muted">{config.description}</p>
+        </div>
+      }
+      description="Typed confirmation is required before this action can persist."
+      footer={
+        <>
+          <button className={secondaryButtonClass} disabled={status === "submitting"} onClick={resetAndClose} type="button">
+            Cancel
+          </button>
+          <button
+            className={primaryButtonClass}
+            data-testid={`typed-${config.action}-submit`}
+            disabled={disabled}
+            onClick={() => {
+              void submit();
+            }}
+            type="button"
+          >
+            {status === "submitting" ? "Submitting..." : config.submitLabel}
+          </button>
+        </>
+      }
+      onClose={status === "submitting" ? undefined : resetAndClose}
+      open={open}
+      title={config.title}
+    >
+      <div className="space-y-4">
+        <StatePanel
+          detail="Cancel closes this dialog without calling the workflow API. Invalid input keeps submit disabled."
+          state="restricted"
+          title="Sensitive confirmation required"
+        />
+        <label className="flex items-start gap-3 text-sm text-alphavest-muted">
+          <input
+            checked={acknowledged}
+            className="mt-1"
+            disabled={status === "submitting" || status === "success"}
+            onChange={(event) => setAcknowledged(event.target.checked)}
+            type="checkbox"
+          />
+          <span>I understand this action persists workflow state and writes an audit event.</span>
+        </label>
+        <label className="block">
+          <span className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Reason</span>
+          <textarea
+            className={textareaClass}
+            disabled={status === "submitting" || status === "success"}
+            onChange={(event) => setReason(event.target.value)}
+            placeholder={config.defaultReason}
+            value={reason}
+          />
+        </label>
+        <label className="block">
+          <span className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">
+            Type {config.phrase}
+          </span>
+          <input
+            className={inputClass}
+            data-testid={`typed-${config.action}-confirmation`}
+            disabled={status === "submitting" || status === "success"}
+            onChange={(event) => setConfirmationText(event.target.value)}
+            value={confirmationText}
+          />
+        </label>
+        {status === "success" ? (
+          <StatePanel detail={message ?? "Action persisted."} state="success" title="Action persisted" />
+        ) : null}
+        {status === "error" ? (
+          <StatePanel detail={message ?? "No mutation was completed."} state="blocked" title="Action failed" />
+        ) : null}
+      </div>
+    </Modal>
+  );
 }
 
 const internalNav: NavItem[] = [
@@ -998,8 +1184,13 @@ function AdvisorDetailPage({ title }: { title: string }) {
 
   async function approveRecommendation() {
     setDecisionStatus("Saving advisor approval...");
-    const response = await postDemoWorkflowAction("j01.approveAdvisor");
-    setDecisionStatus(response.result.message);
+    await runRecommendationReviewWorkflowAction({
+      action: "advisor_approve",
+      actorRole: "senior_wealth_advisor",
+      reason: "Advisor approved the package; compliance release remains required.",
+      targetId: recommendationReviewDemoTargets.northbridge.recommendationId,
+    });
+    setDecisionStatus("Advisor approval saved. Compliance release is still required.");
   }
 
   async function escalateToCall() {
@@ -1166,6 +1357,8 @@ function ComplianceQueuePage({ title }: { title: string }) {
 }
 
 function ComplianceReviewPage({ title }: { title: string }) {
+  const [confirmationAction, setConfirmationAction] = useState<SensitiveWorkflowAction | null>(null);
+
   return (
     <InternalShell activePageId="039">
       <ScreenTitle>{title}</ScreenTitle>
@@ -1248,7 +1441,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
                 className="inline-flex h-[var(--button-height)] w-full items-center justify-center gap-2 rounded-md border border-alphavest-red/55 bg-alphavest-red/10 px-4 text-sm font-semibold text-alphavest-red"
                 data-testid="j02-block-release"
                 onClick={() => {
-                  void runScreencastDemoAction("j02.blockRelease", "/compliance/demo/block?state=block");
+                  setConfirmationAction("compliance_block");
                 }}
                 type="button"
               >
@@ -1258,7 +1451,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
                 className={secondaryButtonClass + " w-full"}
                 data-testid="j02-request-evidence"
                 onClick={() => {
-                  void runScreencastDemoAction("j02.requestEvidence");
+                  setConfirmationAction("request_evidence");
                 }}
                 type="button"
               >
@@ -1280,6 +1473,11 @@ function ComplianceReviewPage({ title }: { title: string }) {
           </Card>
         </aside>
       </div>
+      <SensitiveWorkflowConfirmationModal
+        action={confirmationAction}
+        onClose={() => setConfirmationAction(null)}
+        open={confirmationAction !== null}
+      />
     </InternalShell>
   );
 }
@@ -1311,6 +1509,49 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
 }
 
 function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean }) {
+  const [acknowledged, setAcknowledged] = useState(false);
+  const [confirmationText, setConfirmationText] = useState("");
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [message, setMessage] = useState<string | null>(null);
+  const releasePhrase = "RELEASE TO CLIENT";
+  const releaseValid = acknowledged && confirmationText.trim() === releasePhrase;
+  const submitDisabled = !releaseValid || status === "submitting" || status === "success";
+
+  function resetAndClose() {
+    setAcknowledged(false);
+    setConfirmationText("");
+    setStatus("idle");
+    setMessage(null);
+    onClose();
+  }
+
+  async function submitRelease() {
+    if (!releaseValid || status === "submitting") {
+      return;
+    }
+
+    setStatus("submitting");
+    setMessage(null);
+
+    try {
+      const body = await runRecommendationReviewWorkflowAction({
+        action: "compliance_release",
+        actorRole: "compliance_officer",
+        confirmationText: confirmationText.trim(),
+        evidenceIds: [recommendationReviewDemoTargets.summit.evidenceId],
+        reason:
+          "Compliance released the recommendation after advisor approval, evidence and permission gates passed.",
+        targetId: recommendationReviewDemoTargets.summit.recommendationId,
+      });
+
+      setStatus("success");
+      setMessage(body.result?.auditEventId ? `Audit recorded: ${body.result.auditEventId}` : "Release persisted.");
+    } catch (error) {
+      setStatus("error");
+      setMessage(error instanceof Error ? error.message : "Release failed without mutation.");
+    }
+  }
+
   return (
     <Modal
       className="max-w-[58rem]"
@@ -1323,13 +1564,21 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
       description="No unapproved advice reaches the client."
       footer={
         <>
-          <button className={secondaryButtonClass} onClick={onClose} type="button">Cancel</button>
-          <button className={primaryButtonClass} onClick={() => { void runScreencastDemoAction("j02.releaseClient", "/compliance/demo/audit"); }} type="button">
-            <LockKeyhole aria-hidden="true" className="size-4" />Release to client
+          <button className={secondaryButtonClass} disabled={status === "submitting"} onClick={resetAndClose} type="button">Cancel</button>
+          <button
+            className={primaryButtonClass}
+            data-testid="j02-release-client"
+            disabled={submitDisabled}
+            onClick={() => {
+              void submitRelease();
+            }}
+            type="button"
+          >
+            <LockKeyhole aria-hidden="true" className="size-4" />{status === "submitting" ? "Submitting..." : "Release to client"}
           </button>
         </>
       }
-      onClose={onClose}
+      onClose={status === "submitting" ? undefined : resetAndClose}
       open={open}
       title="Release to client"
     >
@@ -1347,16 +1596,6 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
               </div>
             ))}
             <StatePanel detail="Demo prerequisites are shown as satisfied for this confirmation state; release remains pending until the action completes." state="success" title="Release action pending" />
-            <button
-              className={primaryButtonClass + " w-full"}
-              data-testid="j02-release-client"
-              onClick={() => {
-                void runScreencastDemoAction("j02.releaseClient", "/compliance/demo/audit");
-              }}
-              type="button"
-            >
-              <LockKeyhole aria-hidden="true" className="size-4" />Release to client
-            </button>
           </CardContent>
         </Card>
         <Card>
@@ -1396,13 +1635,31 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
           <CardContent className="space-y-4">
             <p className="text-sm leading-6 text-alphavest-muted">You must have release permission to continue. Confirm that all information is accurate and compliant.</p>
             <label className="flex items-start gap-3 text-sm text-alphavest-muted">
-              <input className="mt-1" defaultChecked type="checkbox" />
+              <input
+                checked={acknowledged}
+                className="mt-1"
+                disabled={status === "submitting" || status === "success"}
+                onChange={(event) => setAcknowledged(event.target.checked)}
+                type="checkbox"
+              />
               <span>I confirm that all information is accurate and compliant, and I authorise release of this advice to the client.</span>
             </label>
-            <label>
-              <span className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Type CONFIRM to release</span>
-              <input className="mt-2 h-11 w-full rounded-md border border-alphavest-gold bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none" defaultValue="CONFIRM" />
+            <label className="block">
+              <span className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Type {releasePhrase} to release</span>
+              <input
+                className={inputClass}
+                data-testid="j02-release-confirmation"
+                disabled={status === "submitting" || status === "success"}
+                onChange={(event) => setConfirmationText(event.target.value)}
+                value={confirmationText}
+              />
             </label>
+            {status === "success" ? (
+              <StatePanel detail={message ?? "Release persisted."} state="success" title="Released successfully" />
+            ) : null}
+            {status === "error" ? (
+              <StatePanel detail={message ?? "No mutation was completed."} state="blocked" title="Release failed" />
+            ) : null}
           </CardContent>
         </Card>
       </div>
