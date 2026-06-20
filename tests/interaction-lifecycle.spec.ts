@@ -21,4 +21,53 @@ test.describe("Phase 04 interaction lifecycle", () => {
     await page.keyboard.press("Escape");
     await expect(releaseDialog).toBeHidden();
   });
+
+  test("compliance block modal has explicit trigger and cancel lifecycle", async ({ page }) => {
+    await page.goto("/compliance/demo/block?state=base");
+
+    const blockDialog = page.getByRole("dialog", { name: "Block or Request Evidence" });
+    await expect(blockDialog).toHaveCount(0);
+
+    await page.getByRole("button", { name: "Manage Block" }).click();
+    await expect(blockDialog).toBeVisible();
+    await blockDialog.getByRole("button", { name: "Cancel" }).click();
+    await expect(blockDialog).toBeHidden();
+  });
+
+  test("governance role confirmation opens from drawer and cancels without mutation", async ({ page }) => {
+    await page.goto("/governance/roles?state=base");
+
+    await page.getByRole("button", { name: "Create Role" }).click();
+    const roleDrawer = page.getByRole("complementary", { name: "Portfolio Manager" });
+    await expect(roleDrawer).toBeVisible();
+
+    await roleDrawer.getByRole("button", { name: "Save Changes" }).click();
+    const confirmationDialog = page.getByRole("dialog", { name: "Confirm Sensitive Permission Changes" });
+    await expect(confirmationDialog).toBeVisible();
+
+    await confirmationDialog.getByRole("button", { name: "Cancel" }).click();
+    await expect(confirmationDialog).toBeHidden();
+    await expect(roleDrawer).toBeVisible();
+  });
+
+  test("wealth map and action details close instead of acting as permanent fake drawers", async ({ page }) => {
+    await page.goto("/wealth-map?state=drawer");
+
+    const wealthDrawer = page.getByRole("complementary", { name: "Bennett Family Trust" });
+    await expect(wealthDrawer).toBeVisible();
+    await wealthDrawer.getByRole("button", { name: "Close detail drawer" }).click();
+    await expect(wealthDrawer).toBeHidden();
+
+    await page.getByRole("button", { name: "Open selected node" }).click();
+    await expect(wealthDrawer).toBeVisible();
+
+    await page.goto("/actions?state=drawer");
+    const actionDrawer = page.getByRole("complementary", { name: /Action Details/i });
+    await expect(actionDrawer).toBeVisible();
+    await actionDrawer.getByRole("button", { name: "Close action drawer" }).click();
+    await expect(actionDrawer).toBeHidden();
+
+    await page.getByRole("button", { name: "Open selected action" }).click();
+    await expect(actionDrawer).toBeVisible();
+  });
 });

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   AlertTriangle,
   Bell,
@@ -277,14 +278,16 @@ function SafeGateBanner() {
   );
 }
 
-function WealthMapPage({ title }: { title: string }) {
+function WealthMapPage({ title, visualState }: { title: string; visualState?: VisualState }) {
+  const [drawerOpen, setDrawerOpen] = useState(visualState === "drawer");
+
   return (
     <WealthShell activePageId="031">
       <ScreenTitle>{title}</ScreenTitle>
-      <div className="av-page-wide grid gap-5 xl:grid-cols-[minmax(0,1fr)_25rem]">
+      <div className={cn("av-page-wide grid gap-5", drawerOpen ? "xl:grid-cols-[minmax(0,1fr)_25rem]" : "")}>
         <section className="min-w-0 space-y-5">
           <PageHeading
-            action={<div className="flex flex-wrap gap-3"><button className={secondaryButtonClass} type="button">Reset view</button><button className={primaryButtonClass} type="button"><Plus aria-hidden="true" className="size-4" />Add node</button></div>}
+            action={<div className="flex flex-wrap gap-3"><button className={secondaryButtonClass} type="button">Reset view</button><button className={secondaryButtonClass} onClick={() => setDrawerOpen(true)} type="button">Open selected node</button><button className={primaryButtonClass} type="button"><Plus aria-hidden="true" className="size-4" />Add node</button></div>}
             subtitle="Real-time view of connected wealth, entities, assets and relationship gaps."
             title={title}
           />
@@ -343,7 +346,7 @@ function WealthMapPage({ title }: { title: string }) {
           </Card>
           <SafeGateBanner />
         </section>
-        <WealthMapDrawer />
+        {drawerOpen ? <WealthMapDrawer onClose={() => setDrawerOpen(false)} /> : null}
       </div>
     </WealthShell>
   );
@@ -434,9 +437,9 @@ function NodeIcon({ tone }: { tone: string }) {
   return <ClipboardCheck aria-hidden="true" className="size-5 text-alphavest-green" />;
 }
 
-function WealthMapDrawer() {
+function WealthMapDrawer({ onClose }: { onClose: () => void }) {
   return (
-    <aside className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-panel/88 p-4 shadow-2xl xl:sticky xl:top-24 xl:max-h-[calc(100vh-7rem)] xl:overflow-y-auto">
+    <aside aria-label={selectedWealthNode.name} className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-panel/88 p-4 shadow-2xl xl:sticky xl:top-24 xl:max-h-[calc(100vh-7rem)] xl:overflow-y-auto">
       <div className="flex items-start justify-between gap-4">
         <div className="flex min-w-0 gap-4">
           <IconTile tone="gold"><Landmark aria-hidden="true" className="size-5" /></IconTile>
@@ -445,7 +448,7 @@ function WealthMapDrawer() {
             <p className="text-sm text-alphavest-muted">{selectedWealthNode.type}</p>
           </div>
         </div>
-        <button className="grid size-9 place-items-center rounded-full border border-alphavest-border text-alphavest-muted" type="button">
+        <button className="grid size-9 place-items-center rounded-full border border-alphavest-border text-alphavest-muted" onClick={onClose} type="button">
           <X aria-hidden="true" className="size-4" />
           <span className="sr-only">Close detail drawer</span>
         </button>
@@ -516,14 +519,16 @@ function WealthMapDrawer() {
   );
 }
 
-function ActionsPage({ title }: { title: string }) {
+function ActionsPage({ title, visualState }: { title: string; visualState?: VisualState }) {
+  const [drawerOpen, setDrawerOpen] = useState(visualState === "drawer");
+
   return (
     <WealthShell activePageId="032">
       <ScreenTitle>{title}</ScreenTitle>
-      <div className="mx-auto grid max-w-[118rem] gap-5 2xl:grid-cols-[1fr_30rem]">
+      <div className={cn("mx-auto grid max-w-[118rem] gap-5", drawerOpen ? "2xl:grid-cols-[1fr_30rem]" : "")}>
         <section className="min-w-0 space-y-5">
           <PageHeading
-            action={<div className="flex flex-wrap gap-3"><button className={secondaryButtonClass} type="button"><Filter aria-hidden="true" className="size-4" />Filters</button><button className={primaryButtonClass} type="button"><Plus aria-hidden="true" className="size-4" />New action</button></div>}
+            action={<div className="flex flex-wrap gap-3"><button className={secondaryButtonClass} type="button"><Filter aria-hidden="true" className="size-4" />Filters</button><button className={secondaryButtonClass} onClick={() => setDrawerOpen(true)} type="button">Open selected action</button><button className={primaryButtonClass} type="button"><Plus aria-hidden="true" className="size-4" />New action</button></div>}
             subtitle="Track and advance actions through the workflow."
             title={title}
           />
@@ -576,7 +581,7 @@ function ActionsPage({ title }: { title: string }) {
           </div>
           <SafeGateBanner />
         </section>
-        <ActionDrawer />
+        {drawerOpen ? <ActionDrawer onClose={() => setDrawerOpen(false)} /> : null}
       </div>
     </WealthShell>
   );
@@ -610,9 +615,9 @@ function ActionBoardCard({ card, selected }: { card: ActionCard; selected?: bool
   );
 }
 
-function ActionDrawer() {
+function ActionDrawer({ onClose }: { onClose: () => void }) {
   return (
-    <aside className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-panel/88 p-4 shadow-2xl 2xl:sticky 2xl:top-24 2xl:max-h-[calc(100vh-7rem)] 2xl:overflow-y-auto">
+    <aside aria-label="Action Details" className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-panel/88 p-4 shadow-2xl 2xl:sticky 2xl:top-24 2xl:max-h-[calc(100vh-7rem)] 2xl:overflow-y-auto">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-gold">Action Details</p>
@@ -623,7 +628,7 @@ function ActionDrawer() {
           </div>
           <p className="mt-2 text-sm text-alphavest-muted">{selectedAction.object} · Action ID: {selectedAction.id}</p>
         </div>
-        <button className="grid size-9 shrink-0 place-items-center rounded-full border border-alphavest-border text-alphavest-muted" type="button">
+        <button className="grid size-9 shrink-0 place-items-center rounded-full border border-alphavest-border text-alphavest-muted" onClick={onClose} type="button">
           <X aria-hidden="true" className="size-4" />
           <span className="sr-only">Close action drawer</span>
         </button>
@@ -704,14 +709,14 @@ function ActionDrawer() {
   );
 }
 
-export function WealthActionsScreen({ route }: WealthActionsScreenProps) {
+export function WealthActionsScreen({ route, visualState }: WealthActionsScreenProps) {
   if (!wealthActionsPageIds.includes(route.pageId as (typeof wealthActionsPageIds)[number])) {
     return null;
   }
 
   if (route.pageId === "031") {
-    return <WealthMapPage title={route.title} />;
+    return <WealthMapPage title={route.title} visualState={visualState} />;
   }
 
-  return <ActionsPage title={route.title} />;
+  return <ActionsPage title={route.title} visualState={visualState} />;
 }

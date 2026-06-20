@@ -1,5 +1,95 @@
 # Phase Execution Report
 
+## UI_INTERACTION_REALITY_REMEDIATION_PATCH - Phase 03/04/05 Cross-Phase Addendum
+
+Date: 2026-06-20
+
+### Entry Decision
+
+`ENTRY_READY`
+
+### Phase Context
+
+Executed `_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/04_CODEX_PHASE_PROMPTS/03_04_05_UI_INTERACTION_REALITY_REMEDIATION_PATCH.md` as a mandatory cross-phase remediation for Phase 03 UI state, Phase 04 interaction lifecycle and Phase 05 feedback/validation/error boundaries.
+
+### Source Artefacts Used
+
+- `AGENTS.md`
+- `CODEX_MASTER_TASK.md`
+- Required V3 project source files listed by `AGENTS.md`
+- `FINAL_CODEX_IMPLEMENTATION_HANDOFF.md`
+- `FINAL_CODEX_TASK_MASTER.md`
+- `ATOMIC_IMPLEMENTATION_SLICE_PLAN.md`
+- `PHASE_ENTRY_EXIT_GATE_CHECKLIST.md`
+- `TASK_DONE_DEFINITION_AND_QA_CHECKLIST.md`
+- `DRAWER_MODAL_INTERACTION_CONTRACT.md`
+- `STATE_SCREEN_SPEC.md`
+- `FEEDBACK_VALIDATION_ERROR_STATE_CONTRACT.md`
+- `REFACTORING_STRATEGY_MINI_DOC.md`
+- `03_04_05_UI_INTERACTION_REALITY_REMEDIATION_PATCH.md`
+
+### Slice Coverage
+
+| Slice | Status | Notes |
+| --- | --- | --- |
+| `AV-SLICE-STATE-01..05` | Classified / bounded | State-driven route overlays remain demo route states unless user-triggered lifecycle is present. |
+| `AV-SLICE-INT-01` | Hardened / tested | Drawer-like surfaces now have trigger/open/close lifecycle in touched routes. |
+| `AV-SLICE-INT-02` | Hardened / tested | Modal and confirmation surfaces have explicit cancel/close paths where touched. |
+| `AV-SLICE-INT-04` | Inspected / kept | Document upload lifecycle already has file selection, uploading, success and error states; no upload API/schema change made. |
+| `AV-SLICE-FVE-01..05` | Inspected / bounded | Existing no-overclaim copy was preserved; no new downstream gate success claim was added. |
+| `AV-SLICE-RBAC-*`, `AV-SLICE-EAE-*` | Reporting impact only | Sensitive payload and evidence/audit/export rules were preserved; no new safety authority claimed. |
+
+### Surfaces Classified
+
+| Surface | File | Current Pattern | Classification | Treatment |
+| --- | --- | --- | --- | --- |
+| Shared `Drawer` primitive | `components/ui/drawer.tsx` | Open-gated primitive with Escape and optional close | `REACTIVE_DRAWER` primitive | Kept; route integration hardened instead. |
+| Shared `Modal` primitive | `components/ui/modal.tsx` | Open-gated primitive with Escape and optional close | `REACTIVE_MODAL` primitive | Kept; route integration hardened instead. |
+| Compliance block modal | `components/decisions-governance-screen.tsx` | `visualState` preopen without local close/cancel lifecycle | `CONFIRMATION_DIALOG` | Added local state, trigger, `onClose`, cancel and keep-blocked close paths. |
+| Evidence vault detail | `components/decisions-governance-screen.tsx` | `visualState` drawer without close lifecycle | `REACTIVE_DRAWER` | Added local state, open trigger and close path. |
+| Governance invite | `components/decisions-governance-screen.tsx` | `visualState` drawer plus action button that did not open locally | `REACTIVE_DRAWER` | Added local open/close/cancel lifecycle. |
+| Role-management drawer and confirmation | `components/decisions-governance-screen.tsx` | `visualState` drawer/modal with static cancel/save buttons | `REACTIVE_DRAWER` / `CONFIRMATION_DIALOG` | Added local open, save-to-confirm, cancel and close lifecycle. |
+| Access request review drawer | `components/decisions-governance-screen.tsx` | `visualState` drawer without close lifecycle | `REACTIVE_DRAWER` | Added trigger and close/cancel paths. |
+| Wealth map detail panel | `components/wealth-actions-screen.tsx` | Permanent drawer-like panel with fake close icon | `REACTIVE_DRAWER` | Converted to state-gated side panel with open/close trigger and accessible name. |
+| Action board detail panel | `components/wealth-actions-screen.tsx` | Permanent drawer-like panel with fake close icon | `REACTIVE_DRAWER` | Converted to state-gated side panel with open/close trigger and accessible name. |
+| Export approval/download modals | `components/communication-export-ops-screen.tsx` | Existing local state with cancel/close | `REACTIVE_MODAL` | Inspected and kept. |
+| Admin setup confirmations/invite | `components/admin-tenant-setup-screen.tsx` | Existing local state with trigger/close | `REACTIVE_MODAL` / `REACTIVE_DRAWER` | Inspected and kept. |
+| Document upload form | `components/client-intake-screen.tsx` | File selection/uploading/success/error lifecycle | `UPLOAD_LIFECYCLE` | Inspected and kept; upload-only semantics preserved. |
+| Component library preview | `components/component-library-preview.tsx` | Reference/demo local examples | `PERMANENT_DASHBOARD_REGION` / reference demo | Inspected; not product proof. |
+
+### Changed Files
+
+- `components/decisions-governance-screen.tsx`
+- `components/wealth-actions-screen.tsx`
+- `tests/interaction-lifecycle.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests Added Or Updated
+
+- Extended `tests/interaction-lifecycle.spec.ts` with:
+  - compliance block modal trigger/cancel lifecycle
+  - governance role drawer-to-confirmation cancel lifecycle
+  - wealth map and action side-panel open/close lifecycle
+
+### Commands Run
+
+- `pnpm typecheck` - passed.
+- `pnpm exec playwright test tests/interaction-lifecycle.spec.ts` - first run failed on test selectors/default visual-state assumptions; selectors were corrected and rerun.
+- `pnpm exec playwright test tests/interaction-lifecycle.spec.ts` - passed, 4 tests.
+- `pnpm lint` - passed.
+
+### Blockers / Deferred / Hold Items
+
+- No route worksets changed.
+- No P1, reference-only or hold route was promoted.
+- No new API route, Prisma schema change, migration, visual asset, generated image or state-screen was added.
+- This addendum does not claim full P0 safety. Broader RBAC/evidence/export/API P0 tests remain governed by later safety phases.
+
+### Exit Decision
+
+`UI_INTERACTION_PATCH_PASSED_WITH_LIMITATIONS`
+
 ## PHASE-01-FOUNDATION-GUARDRAILS - Foundation / Guardrails
 
 Date: 2026-06-20

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   AlertTriangle,
   Bell,
@@ -319,7 +320,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 }
 
 function ComplianceBlockPage({ title, visualState }: { title: string; visualState?: VisualState }) {
-  const modalOpen = visualState === "block";
+  const [modalOpen, setModalOpen] = useState(visualState === "block");
 
   return (
     <Phase12Shell activePageId="041">
@@ -346,6 +347,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
         </aside>
         <section className={cn("min-w-0 space-y-5", modalOpen ? "opacity-45" : "")}>
           <PageHeading
+            action={<button className={primaryButtonClass} onClick={() => setModalOpen(true)} type="button">Manage Block</button>}
             badge={<Badge tone="red">Blocked</Badge>}
             subtitle={`${complianceBlockReview.id} - ${complianceBlockReview.client} - advisor ${complianceBlockReview.advisor}`}
             title={complianceBlockReview.reviewTitle}
@@ -374,8 +376,8 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
         description="Advice remains blocked while evidence is incomplete."
         footer={
           <>
-            <button className={secondaryButtonClass} type="button">Cancel</button>
-            <button className={secondaryButtonClass} type="button">Keep Blocked</button>
+            <button className={secondaryButtonClass} onClick={() => setModalOpen(false)} type="button">Cancel</button>
+            <button className={secondaryButtonClass} onClick={() => setModalOpen(false)} type="button">Keep Blocked</button>
             <button
               className={primaryButtonClass}
               data-testid="j02-confirm-request-evidence"
@@ -389,6 +391,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
             <button className={secondaryButtonClass} type="button">Escalate</button>
           </>
         }
+        onClose={() => setModalOpen(false)}
         open={modalOpen}
         title={title}
       >
@@ -816,13 +819,18 @@ const evidenceColumns: Array<DataTableColumn<(typeof evidenceRows)[number]>> = [
 ];
 
 function EvidenceVaultPage({ title, visualState }: { title: string; visualState?: VisualState }) {
-  const drawerOpen = visualState === "drawer";
+  const [drawerOpen, setDrawerOpen] = useState(visualState === "drawer");
 
   return (
     <Phase12Shell activePageId="046">
       <ScreenTitle>{title}</ScreenTitle>
       <div className={cn("mx-auto max-w-[104rem] space-y-5", drawerOpen ? "pr-0 xl:pr-[23rem]" : "")}>
-        <PageHeading badge={<ShieldCheck aria-hidden="true" className="size-5 text-alphavest-gold" />} subtitle="Secure, role-based repository for client evidence and attestations." title={title} />
+        <PageHeading
+          action={<button className={primaryButtonClass} onClick={() => setDrawerOpen(true)} type="button">Open Selected Evidence</button>}
+          badge={<ShieldCheck aria-hidden="true" className="size-5 text-alphavest-gold" />}
+          subtitle="Secure, role-based repository for client evidence and attestations."
+          title={title}
+        />
         <div className="flex flex-wrap gap-2 border-b border-alphavest-border/70">
           {["All Evidence", "By Category", "Expiring Soon 12", "Needs Review 5"].map((tab, index) => (
             <span className={cn("px-3 pb-3 text-sm font-semibold", index === 0 ? "border-b-2 border-alphavest-gold text-alphavest-gold" : "text-alphavest-muted")} key={tab}>{tab}</span>
@@ -846,6 +854,7 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
       <Drawer
         description="Verified form assessment."
         footer={<button className={primaryButtonClass + " w-full"} type="button"><Download aria-hidden="true" className="size-4" />Download</button>}
+        onClose={() => setDrawerOpen(false)}
         open={drawerOpen}
         title="Risk Tolerance Questionnaire"
       >
@@ -984,7 +993,7 @@ const userColumns: Array<DataTableColumn<(typeof governanceUsers)[number]>> = [
 ];
 
 function GovernanceUsersPage({ title, visualState }: { title: string; visualState?: VisualState }) {
-  const drawerOpen = visualState === "drawer" || visualState === "invite";
+  const [drawerOpen, setDrawerOpen] = useState(visualState === "drawer" || visualState === "invite");
 
   return (
     <Phase12Shell activePageId="048">
@@ -997,6 +1006,7 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
               data-testid="j07-invite-user"
               onClick={() => {
                 void runScreencastDemoAction("j07.inviteUser");
+                setDrawerOpen(true);
               }}
               type="button"
             >
@@ -1027,7 +1037,8 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
       </div>
       <Drawer
         description="Invite a user and assign scoped roles."
-        footer={<div className="grid gap-3 sm:grid-cols-2"><button className={secondaryButtonClass} type="button">Cancel</button><button className={primaryButtonClass} data-testid="j07-send-invitation" onClick={() => { void runScreencastDemoAction("j07.sendInvitation", "/governance/roles?state=confirm"); }} type="button"><Send aria-hidden="true" className="size-4" />Send Invitation</button></div>}
+        footer={<div className="grid gap-3 sm:grid-cols-2"><button className={secondaryButtonClass} onClick={() => setDrawerOpen(false)} type="button">Cancel</button><button className={primaryButtonClass} data-testid="j07-send-invitation" onClick={() => { void runScreencastDemoAction("j07.sendInvitation", "/governance/roles?state=confirm"); }} type="button"><Send aria-hidden="true" className="size-4" />Send Invitation</button></div>}
+        onClose={() => setDrawerOpen(false)}
         open={drawerOpen}
         title="Invite New User"
       >
@@ -1065,15 +1076,15 @@ function Field({ label, value }: { label: string; value: string }) {
 }
 
 function RoleManagementPage({ title, visualState }: { title: string; visualState?: VisualState }) {
-  const drawerOpen = visualState === "drawer" || visualState === "confirm";
-  const modalOpen = visualState === "confirm";
+  const [drawerOpen, setDrawerOpen] = useState(visualState === "drawer" || visualState === "confirm");
+  const [modalOpen, setModalOpen] = useState(visualState === "confirm");
 
   return (
     <Phase12Shell activePageId="049">
       <ScreenTitle>{title}</ScreenTitle>
       <div className={cn("mx-auto max-w-[104rem] space-y-5", drawerOpen ? "pr-0 xl:pr-[23rem]" : "")}>
         <PageHeading
-          action={<button className={primaryButtonClass} type="button"><Plus aria-hidden="true" className="size-4" />Create Role</button>}
+          action={<button className={primaryButtonClass} onClick={() => setDrawerOpen(true)} type="button"><Plus aria-hidden="true" className="size-4" />Create Role</button>}
           subtitle="Define roles and manage permissions across WealthOS."
           title={title}
         />
@@ -1091,7 +1102,8 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
       </div>
       <Drawer
         description="Custom role with sensitive permission changes."
-        footer={<div className="grid gap-3 sm:grid-cols-2"><button className={secondaryButtonClass} type="button">Discard Changes</button><button className={primaryButtonClass} type="button">Save Changes</button></div>}
+        footer={<div className="grid gap-3 sm:grid-cols-2"><button className={secondaryButtonClass} onClick={() => setDrawerOpen(false)} type="button">Discard Changes</button><button className={primaryButtonClass} onClick={() => setModalOpen(true)} type="button">Save Changes</button></div>}
+        onClose={() => setDrawerOpen(false)}
         open={drawerOpen}
         title="Portfolio Manager"
       >
@@ -1122,7 +1134,8 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
           </div>
         }
         description="You are about to save changes that modify sensitive permissions."
-        footer={<><button className={secondaryButtonClass} type="button">Cancel</button><button className={primaryButtonClass} data-testid="j07-save-role-changes" onClick={() => { void runScreencastDemoAction("j07.saveRoleChanges", "/governance/access-requests?state=approval"); }} type="button">Confirm and Save Changes</button></>}
+        footer={<><button className={secondaryButtonClass} onClick={() => setModalOpen(false)} type="button">Cancel</button><button className={primaryButtonClass} data-testid="j07-save-role-changes" onClick={() => { void runScreencastDemoAction("j07.saveRoleChanges", "/governance/access-requests?state=approval"); }} type="button">Confirm and Save Changes</button></>}
+        onClose={() => setModalOpen(false)}
         open={modalOpen}
         title="Confirm Sensitive Permission Changes"
       >
@@ -1172,13 +1185,17 @@ const accessColumns: Array<DataTableColumn<(typeof accessRequests)[number]>> = [
 ];
 
 function AccessRequestsPage({ title, visualState }: { title: string; visualState?: VisualState }) {
-  const drawerOpen = visualState === "drawer" || visualState === "approval";
+  const [drawerOpen, setDrawerOpen] = useState(visualState === "drawer" || visualState === "approval");
 
   return (
     <Phase12Shell activePageId="050">
       <ScreenTitle>{title}</ScreenTitle>
       <div className={cn("mx-auto max-w-[104rem] space-y-5", drawerOpen ? "pr-0 xl:pr-[23rem]" : "")}>
-        <PageHeading subtitle="Review and take action on access requests across the organization." title={title} />
+        <PageHeading
+          action={<button className={primaryButtonClass} onClick={() => setDrawerOpen(true)} type="button">Review Selected Request</button>}
+          subtitle="Review and take action on access requests across the organization."
+          title={title}
+        />
         <div className="flex flex-wrap gap-2">
           {["All 24", "Pending 8", "Approved 11", "Denied 3", "Escalated 2"].map((item, index) => <Badge key={item} tone={index === 0 ? "gold" : toneFor(item)}>{item}</Badge>)}
           <button className={secondaryButtonClass + " ml-auto"} type="button"><Filter aria-hidden="true" className="size-4" />Filters</button>
@@ -1187,7 +1204,8 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
       </div>
       <Drawer
         description="Review access request, policy checks and decision."
-        footer={<div className="grid gap-3 sm:grid-cols-3"><button className={secondaryButtonClass} type="button">Escalate</button><button className={destructiveButtonClass} type="button">Deny</button><button className={primaryButtonClass} data-testid="j07-approve-access" onClick={() => { void runScreencastDemoAction("j07.approveAccess", "/governance/audit-history?state=drawer"); }} type="button">Approve</button></div>}
+        footer={<div className="grid gap-3 sm:grid-cols-3"><button className={secondaryButtonClass} onClick={() => setDrawerOpen(false)} type="button">Escalate</button><button className={destructiveButtonClass} onClick={() => setDrawerOpen(false)} type="button">Deny</button><button className={primaryButtonClass} data-testid="j07-approve-access" onClick={() => { void runScreencastDemoAction("j07.approveAccess", "/governance/audit-history?state=drawer"); }} type="button">Approve</button></div>}
+        onClose={() => setDrawerOpen(false)}
         open={drawerOpen}
         title="AR-2025-0612"
       >
