@@ -28,6 +28,7 @@ import { NextResponse } from "next/server";
 import { parseDemoWorkflowRequestBody } from "@/lib/demo-workflow-validation";
 import { exportPackageService } from "@/lib/export-package-service";
 import {
+  AuditPersistenceUnavailableError,
   RecommendationReviewWorkflowError,
   runDemoWorkflowMutation,
   runRecommendationReviewWorkflowMutation,
@@ -108,6 +109,10 @@ type DemoWorkflowAction =
   | "j17.blockRebalanceTrigger"
   | "j17.routeRebalanceReview"
   | string;
+
+type DemoWorkflowActionOptions = {
+  auditPersistenceAvailable?: boolean;
+};
 
 type JourneyTarget = {
   actorRoleKey: string;
@@ -579,7 +584,11 @@ async function runJ02BlockRelease(prisma: PrismaClient, actionId: DemoWorkflowAc
   );
 }
 
-async function runJ02ReleaseClient(prisma: PrismaClient, actionId: DemoWorkflowAction) {
+async function runJ02ReleaseClient(
+  prisma: PrismaClient,
+  actionId: DemoWorkflowAction,
+  options: DemoWorkflowActionOptions = {},
+) {
   const now = new Date();
 
   return runDemoWorkflowMutation(
@@ -587,6 +596,7 @@ async function runJ02ReleaseClient(prisma: PrismaClient, actionId: DemoWorkflowA
     {
       actionId,
       actorRoleKey: "compliance_officer",
+      auditPersistenceAvailable: options.auditPersistenceAvailable,
       auditResult: AuditResult.SUCCESS,
       clientTenantId: summitTenantId,
       eventType: "screencast.compliance.release_client",
@@ -3630,7 +3640,11 @@ async function runJ17RebalanceMonitoringWorkflow(prisma: PrismaClient, actionId:
   };
 }
 
-async function runDemoWorkflowAction(prisma: PrismaClient, actionId: DemoWorkflowAction) {
+async function runDemoWorkflowAction(
+  prisma: PrismaClient,
+  actionId: DemoWorkflowAction,
+  options: DemoWorkflowActionOptions = {},
+) {
   const now = new Date();
 
   switch (actionId) {
@@ -3790,7 +3804,7 @@ async function runDemoWorkflowAction(prisma: PrismaClient, actionId: DemoWorkflo
       return runJ02BlockRelease(prisma, actionId);
 
     case "j02.releaseClient":
-      return runJ02ReleaseClient(prisma, actionId);
+      return runJ02ReleaseClient(prisma, actionId, options);
 
     case "j03.requestMoreInformation":
     case "j03.deferDecision":
@@ -4026,7 +4040,10 @@ export async function POST(request: Request) {
   const actionId = parsedValue.actionId as DemoWorkflowAction;
 
   try {
-    const result = await runDemoWorkflowAction(prisma, actionId);
+    const result = await runDemoWorkflowAction(prisma, actionId, {
+      auditPersistenceAvailable:
+        parsedValue.simulateAuditPersistenceFailure === true ? false : undefined,
+    });
     const releasedToClient =
       typeof result === "object" &&
       result !== null &&
@@ -4039,7 +4056,22 @@ export async function POST(request: Request) {
       ok: true,
       result,
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof AuditPersistenceUnavailableError) {
+      return NextResponse.json(
+        {
+          actionId,
+          auditPersistenceRequired: true,
+          error: error.message,
+          mutated: false,
+          noClientRelease: true,
+          ok: false,
+          reasonCode: "AUDIT_PERSISTENCE_UNAVAILABLE",
+        },
+        { status: 409 },
+      );
+    }
+
     return NextResponse.json(
       {
         actionId,

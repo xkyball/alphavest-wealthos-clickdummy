@@ -18,6 +18,7 @@ import {
   type DemoRoleKey,
   type DemoTenantSlug,
 } from "@/lib/demo-session";
+import { auditService, AuditPersistenceRequiredError } from "@/lib/audit-service";
 import {
   recommendationReviewConfirmationText,
   type RecommendationReviewWorkflowAction,
@@ -188,9 +189,26 @@ export async function runDemoWorkflowMutation<T extends Record<string, unknown>>
     },
     session.role,
   );
+  const platformTenantId = input.platformTenantId ?? demoPlatformTenantId;
 
   return prisma.$transaction(async (tx) => {
     if (!permission.allowed) {
+      auditService.assertCriticalAuditWritable({
+        action: input.permissionAction,
+        actorRoleKey: session.role.key,
+        actorUserId: session.actor.id,
+        auditPersistenceAvailable: input.auditPersistenceAvailable,
+        clientTenantId: input.clientTenantId,
+        eventType: input.eventType,
+        nextState: input.previousState,
+        platformTenantId,
+        previousState: input.previousState,
+        reason: permission.reason,
+        result: AuditResult.DENIED,
+        targetId: input.targetId,
+        targetType: input.targetType as DomainObjectType,
+      });
+
       const deniedAudit = await tx.auditEvent.create({
         data: {
           actorRoleKey: session.role.key,
@@ -200,13 +218,28 @@ export async function runDemoWorkflowMutation<T extends Record<string, unknown>>
           evidenceRecordId: input.evidenceRecordId ?? null,
           metadataJson: {
             actionId: input.actionId,
+            ...auditService.criticalAuditMetadata({
+              action: input.permissionAction,
+              actorRoleKey: session.role.key,
+              actorUserId: session.actor.id,
+              auditPersistenceAvailable: input.auditPersistenceAvailable,
+              clientTenantId: input.clientTenantId,
+              eventType: input.eventType,
+              nextState: input.previousState,
+              platformTenantId,
+              previousState: input.previousState,
+              reason: permission.reason,
+              result: AuditResult.DENIED,
+              targetId: input.targetId,
+              targetType: input.targetType as DomainObjectType,
+            }),
             demoMode: true,
             noRealAuth: true,
             permission,
             ...(input.metadataJson ?? {}),
           },
           nextState: input.previousState,
-          platformTenantId: input.platformTenantId ?? demoPlatformTenantId,
+          platformTenantId,
           previousState: input.previousState,
           reason: permission.reason,
           result: AuditResult.DENIED,
@@ -227,6 +260,30 @@ export async function runDemoWorkflowMutation<T extends Record<string, unknown>>
       } as DemoWorkflowMutationResult<T>;
     }
 
+    try {
+      auditService.assertCriticalAuditWritable({
+        action: input.permissionAction,
+        actorRoleKey: session.role.key,
+        actorUserId: session.actor.id,
+        auditPersistenceAvailable: input.auditPersistenceAvailable,
+        clientTenantId: input.clientTenantId,
+        eventType: input.eventType,
+        nextState: input.nextState,
+        platformTenantId,
+        previousState: input.previousState,
+        reason: input.reason ?? permission.reason,
+        result: input.auditResult ?? AuditResult.SUCCESS,
+        targetId: input.targetId,
+        targetType: input.targetType as DomainObjectType,
+      });
+    } catch (error) {
+      if (error instanceof AuditPersistenceRequiredError) {
+        throw new AuditPersistenceUnavailableError(input.actionId);
+      }
+
+      throw error;
+    }
+
     if (input.auditPersistenceAvailable === false) {
       throw new AuditPersistenceUnavailableError(input.actionId);
     }
@@ -241,13 +298,28 @@ export async function runDemoWorkflowMutation<T extends Record<string, unknown>>
         evidenceRecordId: input.evidenceRecordId ?? null,
         metadataJson: {
           actionId: input.actionId,
+          ...auditService.criticalAuditMetadata({
+            action: input.permissionAction,
+            actorRoleKey: session.role.key,
+            actorUserId: session.actor.id,
+            auditPersistenceAvailable: input.auditPersistenceAvailable,
+            clientTenantId: input.clientTenantId,
+            eventType: input.eventType,
+            nextState: input.nextState,
+            platformTenantId,
+            previousState: input.previousState,
+            reason: input.reason ?? permission.reason,
+            result: input.auditResult ?? AuditResult.SUCCESS,
+            targetId: input.targetId,
+            targetType: input.targetType as DomainObjectType,
+          }),
           demoMode: true,
           noRealAuth: true,
           permission,
           ...(input.metadataJson ?? {}),
         },
         nextState: input.nextState,
-        platformTenantId: input.platformTenantId ?? demoPlatformTenantId,
+        platformTenantId,
         previousState: input.previousState,
         reason: input.reason ?? permission.reason,
         result: input.auditResult ?? AuditResult.SUCCESS,

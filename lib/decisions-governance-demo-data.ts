@@ -55,6 +55,15 @@ export const complianceAuditRows = [
   { actor: "Michael Moore", client: "Summit Retirement Plan", event: "Manual Review", policy: "Suitability Rule", severity: "Low", source: "Review", status: "Resolved", timestamp: "May 20, 2025 07:52 AM" }
 ];
 
+export const complianceAuditControls = [
+  { label: "Actor", value: "Required" },
+  { label: "Role", value: "Required" },
+  { label: "Tenant", value: "Required" },
+  { label: "Target", value: "Required" },
+  { label: "Previous / next state", value: "Required" },
+  { label: "Result and reason", value: "Required" }
+];
+
 export const exceptionSummary = [
   { label: "High", value: 7 },
   { label: "Medium", value: 13 },
@@ -101,9 +110,14 @@ export const decisionApprovals = [
 ];
 
 export const decisionSuccess = {
+  auditEventId: "AUD-2025-000924",
   client: "Morgan Family Trust",
   decisionId: "DEC-2025-000124",
   evidenceId: "EVD-2025-000124",
+  auditPreviousState: "released_to_client",
+  auditNextState: "awaiting_family_approval",
+  auditResult: "success",
+  auditReason: "Principal submitted a released decision after visibility and evidence gates passed.",
   nextReview: "May 19, 2026",
   reviewer: "Chief Investment Officer",
   submittedBy: "Alex Baker, CFA",

@@ -31,6 +31,7 @@ export const recommendationReviewConfirmationText: Partial<Record<Recommendation
 
 export type DemoWorkflowActionIdRequestInput = {
   actionId: string;
+  simulateAuditPersistenceFailure?: boolean;
 };
 
 export type DemoWorkflowRequestInput =
@@ -109,9 +110,30 @@ export function parseDemoWorkflowRequestBody(body: unknown): ValidationResult<De
   const record = body as Record<string, unknown>;
   const actionId = record.actionId;
   if (isDemoWorkflowActionId(actionId)) {
+    if (
+      "simulateAuditPersistenceFailure" in record &&
+      typeof record.simulateAuditPersistenceFailure !== "boolean"
+    ) {
+      return {
+        issues: [
+          {
+            code: "invalid_audit_persistence_simulation",
+            field: "simulateAuditPersistenceFailure",
+            message: "Audit persistence simulation must be a boolean when provided.",
+          },
+        ],
+        ok: false,
+      };
+    }
+
     return {
       ok: true,
-      value: { actionId },
+      value: {
+        actionId,
+        ...(record.simulateAuditPersistenceFailure === true
+          ? { simulateAuditPersistenceFailure: true }
+          : {}),
+      },
     };
   }
 

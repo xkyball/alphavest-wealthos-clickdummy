@@ -50,6 +50,7 @@ import {
 } from "@/lib/screencast-demo-client";
 import {
   accessPolicyChecks,
+  complianceAuditControls,
   accessRequests,
   complianceAuditMetrics,
   complianceAuditRows,
@@ -592,6 +593,19 @@ function ComplianceAuditPage({ title }: { title: string }) {
           <DataTable columns={complianceAuditColumns} getRowId={(row) => `${row.timestamp}-${row.event}`} rows={complianceAuditRows} />
         </section>
         <aside className="space-y-5">
+          <StatePanel
+            detail="Critical actions cannot complete unless the audit row can persist with actor, role, tenant, target, state change, result and reason."
+            state="restricted"
+            title="Audit persistence gate"
+          />
+          <Card>
+            <CardHeader><CardTitle>Minimum Audit Fields</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              {complianceAuditControls.map((item) => (
+                <InfoRow key={item.label} label={item.label} value={item.value} />
+              ))}
+            </CardContent>
+          </Card>
           <Card>
             <CardHeader><CardTitle>Exception Summary</CardTitle></CardHeader>
             <CardContent className="space-y-3">
@@ -847,12 +861,22 @@ function DecisionSuccessPage({ title }: { title: string }) {
           <CardContent className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="font-display text-2xl text-alphavest-ivory">Recorded for Review</p>
-              <p className="mt-2 text-sm leading-6 text-alphavest-muted">This screen confirms the decision event only. Later audit checks must prove final persistence and immutability.</p>
+              <p className="mt-2 text-sm leading-6 text-alphavest-muted">This decision record has a persisted audit reference. Compliance release and evidence controls remain the source of client visibility.</p>
             </div>
-            <Badge tone="gold">Audit gate pending</Badge>
+            <Badge tone="green">Audit persisted</Badge>
           </CardContent>
         </Card>
         <div className="grid gap-5 lg:grid-cols-3">
+          <Card>
+            <CardHeader><CardTitle>Persisted Audit Record</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              <InfoRow label="Audit Event" value={decisionSuccess.auditEventId} />
+              <InfoRow label="Previous State" value={decisionSuccess.auditPreviousState} />
+              <InfoRow label="Next State" value={decisionSuccess.auditNextState} />
+              <InfoRow label="Result" value={decisionSuccess.auditResult} />
+              <p className="pt-2 text-sm leading-6 text-alphavest-muted">{decisionSuccess.auditReason}</p>
+            </CardContent>
+          </Card>
           <Card>
             <CardHeader><CardTitle>Evidence Package Queued</CardTitle></CardHeader>
             <CardContent>
@@ -868,7 +892,7 @@ function DecisionSuccessPage({ title }: { title: string }) {
               <InfoRow label="Reviewer" value={decisionSuccess.reviewer} />
             </CardContent>
           </Card>
-          <Card>
+          <Card className="lg:col-span-1">
             <CardHeader><CardTitle>Decision Summary</CardTitle></CardHeader>
             <CardContent className="space-y-3">
               <InfoRow label="Decision Type" value={decisionSuccess.type} />
