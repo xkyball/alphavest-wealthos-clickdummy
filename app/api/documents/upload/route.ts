@@ -66,6 +66,15 @@ export async function POST(request: Request) {
     );
   }
 
+  const resolvedRoleKey = parsedRoleKey;
+  const resolvedTenantSlug = parsedTenantSlug;
+  if (!resolvedRoleKey || !resolvedTenantSlug) {
+    return NextResponse.json(
+      { error: "Invalid document upload.", issues: metadataIssues, mutated: false, ok: false },
+      { status: 400 },
+    );
+  }
+
   try {
     const result = await uploadDocument(prismaClient(), {
       documentType: stringValue(formData, "documentType"),
@@ -73,10 +82,10 @@ export async function POST(request: Request) {
       linkedObjectLabel: stringValue(formData, "linkedObjectLabel"),
       notes: stringValue(formData, "notes"),
       periodLabel: stringValue(formData, "periodLabel"),
-      roleKey: parsedRoleKey,
+      roleKey: resolvedRoleKey,
       sensitivity: sensitivity(stringValue(formData, "sensitivity")),
       subType: stringValue(formData, "subType"),
-      tenantSlug: parsedTenantSlug,
+      tenantSlug: resolvedTenantSlug,
     });
 
     return NextResponse.json({

@@ -11,7 +11,7 @@ import {
   VisibilityStatus,
 } from "@prisma/client";
 
-import { createDemoSession, demoPlatformTenantId, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { requireDemoSession, demoPlatformTenantId, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import { localDocumentStorageAdapter } from "@/lib/document-storage-adapter";
 import { permissionEngine } from "@/lib/permission-engine";
 import { stableId } from "@/lib/stable-id";
@@ -51,10 +51,10 @@ export type UploadDocumentInput = {
   linkedObjectLabel?: string | null;
   notes?: string | null;
   periodLabel?: string | null;
-  roleKey?: DemoRoleKey;
+  roleKey: DemoRoleKey;
   sensitivity?: Sensitivity;
   subType?: string | null;
-  tenantSlug?: DemoTenantSlug;
+  tenantSlug: DemoTenantSlug;
 };
 
 export class DocumentUploadValidationError extends Error {
@@ -143,11 +143,11 @@ function mapDocument(document: {
 }
 
 export async function uploadDocument(prisma: PrismaClient, input: UploadDocumentInput) {
-  const tenantSlug = input.tenantSlug ?? "morgan";
-  const roleKey = input.roleKey ?? "family_cfo";
+  const tenantSlug = input.tenantSlug;
+  const roleKey = input.roleKey;
   const sensitivity = input.sensitivity ?? Sensitivity.CONFIDENTIAL;
   const fileName = validateUploadInput(input);
-  const session = createDemoSession({ roleKey, tenantSlug });
+  const session = requireDemoSession({ roleKey, tenantSlug });
   const clientTenantId = session.tenant.id;
   const uploadAttemptId = stableId(`document-upload-attempt:${tenantSlug}:${roleKey}:${fileName}`);
   const permission = permissionEngine.can(
@@ -337,7 +337,7 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
 }
 
 export async function listUploadedDocuments(prisma: PrismaClient, tenantSlug: DemoTenantSlug = "morgan") {
-  const session = createDemoSession({ roleKey: "family_cfo", tenantSlug });
+  const session = requireDemoSession({ roleKey: "family_cfo", tenantSlug });
   const documents = await prisma.document.findMany({
     include: {
       extractions: {

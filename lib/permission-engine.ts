@@ -1,4 +1,4 @@
-import type { DemoActor, DemoRole, DemoRoleKey } from "@/lib/demo-session";
+import { demoTenants, type DemoActor, type DemoRole, type DemoRoleKey } from "@/lib/demo-session";
 import type {
   ObjectType,
   PermissionAction,
@@ -97,6 +97,14 @@ function deny(
   };
 }
 
+function actorTenantId(actor: DemoActor): UUID | undefined {
+  if (!actor.tenantSlug) {
+    return undefined;
+  }
+
+  return demoTenants.find((tenant) => tenant.slug === actor.tenantSlug)?.id;
+}
+
 function can(
   actor: DemoActor,
   action: PermissionAction,
@@ -109,6 +117,12 @@ function can(
     Boolean(subject.clientTenantId) &&
     Boolean(context.clientTenantId) &&
     subject.clientTenantId !== context.clientTenantId;
+  const mappedActorTenantId = actorTenantId(actor);
+  const missingPayloadTenantContext = Boolean(subject.clientTenantId) && !context.clientTenantId;
+  const actorTenantMismatch =
+    Boolean(mappedActorTenantId) &&
+    Boolean(context.clientTenantId) &&
+    mappedActorTenantId !== context.clientTenantId;
   const highSensitivity =
     subject.sensitivity === "RESTRICTED" ||
     subject.sensitivity === "HIGHLY_RESTRICTED" ||
@@ -121,6 +135,26 @@ function can(
       subject,
       "DEMO_DENY_CROSS_TENANT",
       `${role?.label ?? actor.displayName} cannot access a different client tenant in demo mode.`,
+      true,
+    );
+  }
+
+  if (missingPayloadTenantContext) {
+    return deny(
+      action,
+      subject,
+      "DEMO_DENY_TENANT_CONTEXT_REQUIRED",
+      "Tenant context is required before route access can become payload or action access.",
+      true,
+    );
+  }
+
+  if (actorTenantMismatch) {
+    return deny(
+      action,
+      subject,
+      "DEMO_DENY_ACTOR_TENANT_CONTEXT_MISMATCH",
+      "Mapped client actor tenant does not match the requested action context.",
       true,
     );
   }

@@ -70,6 +70,21 @@ export type DemoSessionDraft = {
   tenantSlug?: string | null;
 };
 
+export type DemoSessionIssue =
+  | "valid_role_key_required"
+  | "valid_tenant_slug_required"
+  | "mapped_actor_required";
+
+export type DemoSessionResolution =
+  | {
+      ok: true;
+      session: DemoSession;
+    }
+  | {
+      issues: DemoSessionIssue[];
+      ok: false;
+    };
+
 export const demoPlatformTenantId = "96705b67-40b2-5fb8-aa69-a3f2c106025e";
 
 export const demoRoles: DemoRole[] = [
@@ -350,6 +365,62 @@ export function createDemoSession(draft: DemoSessionDraft): DemoSession {
     sessionLabel: "Demo session",
     mode: "demo",
   };
+}
+
+export function isDemoTenantSlug(value?: string | null): value is DemoTenantSlug {
+  return demoTenants.some((tenant) => tenant.slug === value);
+}
+
+export function isDemoRoleKey(value?: string | null): value is DemoRoleKey {
+  return demoRoles.some((role) => role.key === value);
+}
+
+export function tryCreateDemoSession(draft: DemoSessionDraft): DemoSessionResolution {
+  const issues: DemoSessionIssue[] = [];
+
+  if (!isDemoRoleKey(draft.roleKey)) {
+    issues.push("valid_role_key_required");
+  }
+
+  if (!isDemoTenantSlug(draft.tenantSlug)) {
+    issues.push("valid_tenant_slug_required");
+  }
+
+  if (issues.length > 0) {
+    return { issues, ok: false };
+  }
+
+  const tenant = demoTenants.find((candidate) => candidate.slug === draft.tenantSlug);
+  const role = demoRoles.find((candidate) => candidate.key === draft.roleKey);
+  if (!tenant || !role) {
+    return { issues: ["mapped_actor_required"], ok: false };
+  }
+
+  const actor = resolveActorForRole(role.key, tenant.slug);
+  if (!actor) {
+    return { issues: ["mapped_actor_required"], ok: false };
+  }
+
+  return {
+    ok: true,
+    session: {
+      actor,
+      role,
+      tenant,
+      sessionLabel: "Demo session",
+      mode: "demo",
+    },
+  };
+}
+
+export function requireDemoSession(draft: DemoSessionDraft): DemoSession {
+  const resolution = tryCreateDemoSession(draft);
+
+  if (!resolution.ok) {
+    throw new Error(`Demo session context is not mapped: ${resolution.issues.join(", ")}`);
+  }
+
+  return resolution.session;
 }
 
 export function resolveTenant(tenantSlug?: string | null) {

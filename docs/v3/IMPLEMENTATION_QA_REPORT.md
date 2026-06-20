@@ -1,5 +1,62 @@
 # Implementation QA Report
 
+## MEGA-JOURNEY-PHASE-1 Implementation QA Addendum
+
+Date: 2026-06-20
+
+### Executive Decision
+
+`PHASE_1_IMPLEMENTATION_QA_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Phase scope discipline | Passed | Implementation stayed within providerless demo actor/tenant/role/object-scope behavior. No production auth, schema, migration, new API route, UI route, screen state or generated visual changed. |
+| Providerless strict context | Passed | `tryCreateDemoSession` fails closed for unknown role/tenant while `createDemoSession` remains available for demo UI fallback. |
+| Tenant membership propagation | Passed | Document upload/list and permission checks require validated tenant context for scoped payload/action paths. |
+| Route/action/payload separation | Passed | Permission engine now denies tenant-scoped payload checks without tenant context and keeps route-level checks separate. |
+| Mapped actor tenant mismatch | Passed | Client actors evaluated under a different tenant context are denied. |
+| API/schema discipline | Passed | No current-user/access API, Prisma schema field or migration was added. |
+| Test coverage | Passed | New providerless-scope tests plus permission, workflow API, document upload API and P0 acceptance suites passed after local DB startup and sequential reruns. |
+| No-overclaim control | Passed | Reports classify this as E6 demo security proof, not production auth or E7 operational security. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Failed then passed | Initial failure was upload API type narrowing after making role/tenant required; fixed and rerun passed. |
+| `pnpm lint` | Passed | ESLint completed cleanly. |
+| `pnpm test:providerless-scope` | Passed | 5 tests passed. |
+| `pnpm test:permissions` | Failed then passed | Initial run failed because local Postgres was not running and seed returned `ECONNREFUSED`; after `docker compose up -d postgres`, 7 tests passed. |
+| `pnpm test:workflow-api` | Passed | 11 tests passed. |
+| `pnpm exec playwright test tests/document-upload-api.spec.ts` | Failed then passed | Parallel run hit `EADDRINUSE` on port `3020`; focused rerun passed 6 tests. |
+| `pnpm exec playwright test tests/p0-acceptance.spec.ts` | Passed | 9 tests passed. |
+
+### Tests / Build / Migrations Run
+
+- TypeScript, lint, providerless scope, permissions, workflow API, document upload API and P0 acceptance checks were run as listed above.
+- `docker compose up -d postgres` was run to make the local DB available for DB-backed tests.
+- No Prisma migration, build, visual capture or screenshot command was run.
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| Strict providerless session resolution | implemented + tested | Unknown role/tenant fails closed in strict paths. |
+| Demo UI fallback separation | implemented + tested | Demo fallback remains explicit and separate from strict acceptance. |
+| Tenant-scoped payload denial without context | implemented + tested | Permission engine returns `DEMO_DENY_TENANT_CONTEXT_REQUIRED`. |
+| Mapped client actor tenant mismatch denial | implemented + tested | Permission engine returns `DEMO_DENY_ACTOR_TENANT_CONTEXT_MISMATCH`. |
+| Document upload role/tenant requirement | implemented + tested | Existing upload API validation and service boundary require role/tenant context. |
+| Production authentication | not performed | Outside Phase 1. |
+
+### Residual Risks
+
+- Providerless scope remains demo-session based; production identity provider enforcement is not claimed.
+- Full UI route authorization is not complete across every route shell.
+- Object-scope proof is tenant/document focused in this phase; deeper entity/engagement/object scopes remain later work.
+- `next-env.d.ts` remained a pre-existing local modification outside this Phase 1 scope.
+
 ## MEGA-JOURNEY-PHASE-0 Implementation QA Addendum
 
 Date: 2026-06-20

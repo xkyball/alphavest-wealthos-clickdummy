@@ -1,5 +1,85 @@
 # Phase Execution Report
 
+## MEGA-JOURNEY-PHASE-1 - Providerless Scope Implementation
+
+Date: 2026-06-20
+
+### Scope
+
+Re-executed Phase 1 from `mega_journeys_1/ALPHAVEST_MVP_JOURNEY_IMPLEMENTATION_PLAN.md` as an implementation phase instead of docs-only. The implementation keeps providerless demo sessions but adds strict mapped actor, tenant, role and payload-context behavior for service/API acceptance paths.
+
+No production authentication, new API route, Prisma schema change, migration, screen state, visual asset or route promotion was added.
+
+### Implemented Behavior
+
+- Added strict providerless session resolution through `tryCreateDemoSession` and `requireDemoSession`.
+- Preserved `createDemoSession` fallback behavior for demo UI convenience while separating it from strict acceptance paths.
+- Added permission denial for tenant-scoped payload/action checks when route context lacks tenant scope.
+- Added permission denial when a mapped client actor is evaluated under a different tenant context.
+- Removed implicit role/tenant defaults from document upload persistence; upload service now requires validated role and tenant context.
+- Added `tests/providerless-scope.spec.ts` and `pnpm test:providerless-scope`.
+
+### Changed Files
+
+- `app/api/documents/upload/route.ts`
+- `lib/demo-session.ts`
+- `lib/document-upload-service.ts`
+- `lib/permission-engine.ts`
+- `tests/providerless-scope.spec.ts`
+- `package.json`
+- `docs/v3/ALPHAVEST_MVP_PHASE_1_PROVIDERLESS_SCOPE_IMPLEMENTATION.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Commands Run
+
+- `git status --short --branch`
+- Read-only source inspection commands using `rg` and `sed`
+- `pnpm typecheck`
+- `pnpm lint`
+- `pnpm test:providerless-scope`
+- `pnpm test:permissions`
+- `docker compose ps`
+- `docker compose up -d postgres`
+- `pnpm test:workflow-api`
+- `pnpm exec playwright test tests/document-upload-api.spec.ts`
+- `pnpm exec playwright test tests/p0-acceptance.spec.ts`
+
+### Tests / Build / Migrations Run
+
+- `pnpm typecheck` - failed once on upload API narrowing, then passed.
+- `pnpm lint` - passed.
+- `pnpm test:providerless-scope` - passed, 5 tests.
+- `pnpm test:permissions` - initially failed because local Postgres was not running and `pnpm db:seed` returned `ECONNREFUSED`; after starting `postgres`, passed, 7 tests.
+- `pnpm test:workflow-api` - passed, 11 tests.
+- `pnpm exec playwright test tests/document-upload-api.spec.ts` - first parallel run failed with `EADDRINUSE` on port `3020`; focused rerun passed, 6 tests.
+- `pnpm exec playwright test tests/p0-acceptance.spec.ts` - passed, 9 tests.
+
+No Prisma migration, build, visual capture or screenshot command was run.
+
+### Current Capability Level
+
+Phase 1 reaches E6 demo security proof for providerless mapped actor/tenant/role scope, route/action/payload separation and tenant-context denial. It does not claim production authentication, real provider integration, generalized CRUD, full route authorization across every surface or E7 security capability.
+
+### Pre-Existing Worktree State
+
+- Branch `full-workflow` was already ahead of `origin/full-workflow` by seven commits from prior work.
+- `next-env.d.ts` was already modified and was left untouched.
+
+### P0 Impact
+
+Phase 1 now has executable proof for unknown/unmapped strict context denial, missing tenant payload-context denial, mapped actor tenant mismatch denial, cross-tenant document isolation, document upload role/tenant validation and P0 acceptance preservation.
+
+### Blockers / Deferred / Hold Items
+
+- Production authentication and external identity provider integration remain out of scope.
+- A candidate current-user/access API was not added because existing demo-session and service/API paths were sufficient for Phase 1.
+- Full route-level authorization for every UI route remains later hardening work.
+
+### Exit Gate Decision
+
+`PHASE_1_IMPLEMENTATION_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
 ## MEGA-JOURNEY-PHASE-0 - Source Reality Gate Implementation
 
 Date: 2026-06-20
