@@ -3198,7 +3198,7 @@ Date: 2026-06-20
 
 ### Scope
 
-Executed the handoff phase prompt `06_PHASE_RBAC_VISIBILITY_ADVICE_PROMPT.md` for allowed slices `AV-SLICE-RBAC-01..05`. This phase hardened demo RBAC decisions, client-safe recommendation payload projection, AI Draft/internal rationale fail-closed checks, advisor approval versus compliance release separation and admin non-bypass coverage. No routes, APIs, Prisma schema, migrations, screen assets or visual references were changed.
+Executed the handoff phase prompt `06_PHASE_RBAC_VISIBILITY_ADVICE_PROMPT.md` for allowed slices `AV-SLICE-RBAC-01..05`. This phase hardened demo RBAC payload decisions so admin, security and client-success route/governance context cannot become internal advice-payload visibility. Existing client-safe recommendation projection, AI Draft/internal rationale fail-closed checks, advisor approval versus compliance release separation and admin export non-bypass coverage were preserved and reverified. No routes, APIs, Prisma schema, migrations, screen assets or visual references were changed.
 
 ### Source Artefacts Used
 
@@ -3213,29 +3213,25 @@ Executed the handoff phase prompt `06_PHASE_RBAC_VISIBILITY_ADVICE_PROMPT.md` fo
 
 ### Completed Tasks
 
-- Added an explicit Senior Wealth Advisor-only recommendation approval rule so admin, client and non-advisor roles cannot perform advisor approval.
-- Added explicit admin/security non-bypass denial for export generation authority, preserving compliance/redaction/client-visibility gates.
-- Added `visibilityEngine.projectRecommendationPayload()` to produce client-safe recommendation projections that hide AI Draft, internal rationale, compliance notes and assumptions from client-side roles.
-- Added workflow-gate blockers for AI Draft/internal rationale payloads even when other release prerequisites appear satisfied.
-- Added targeted positive and negative tests for advisor approval separation, admin non-bypass, client-safe payload projection, AI Draft redaction and advisor-approval-not-release.
+- Added an explicit internal-advice-payload role allowlist in `permissionEngine.can()` for analyst, senior advisor and compliance roles.
+- Added fail-closed denials for admin/security advice-payload access (`DEMO_DENY_ADMIN_ADVICE_PAYLOAD_NON_BYPASS`) and client-success advice-payload access (`DEMO_DENY_ADVICE_PAYLOAD_SCOPE_REQUIRED`).
+- Preserved the existing client fail-closed projection path so client roles still receive `DEMO_CLIENT_VISIBILITY_FAIL_CLOSED` for unreleased/AI Draft payload attempts.
+- Extended targeted positive and negative tests for admin/security/client-success payload denial, compliance internal payload access, client-safe projection, AI Draft redaction and seeded denied-audit behavior.
 
 ### Slice Coverage
 
 | Slice | Status | Notes |
 | --- | --- | --- |
-| `AV-SLICE-RBAC-01` | Implemented / tested | Route/action/object/payload separation improved through explicit approval/export denials and payload projection tests. |
-| `AV-SLICE-RBAC-02` | Implemented / tested | Client visibility projection now fails closed unless recommendation payload is released and client-visible. |
-| `AV-SLICE-RBAC-03` | Implemented / tested | AI Draft and internal rationale are explicit blockers for client visibility and hidden from client projections. |
-| `AV-SLICE-RBAC-04` | Implemented / tested | Advisor approval remains separate from compliance release and client visibility. |
-| `AV-SLICE-RBAC-05` | Implemented / tested | Admin/security export bypass is denied and covered by permissions tests. |
+| `AV-SLICE-RBAC-01` | Implemented / tested | Route/action/object/payload separation improved by denying internal recommendation payload access to non-advice internal roles. |
+| `AV-SLICE-RBAC-02` | Reverified / tested | Client visibility projection still fails closed unless recommendation payload is released and client-visible. |
+| `AV-SLICE-RBAC-03` | Reverified / tested | AI Draft and internal rationale remain blocked for client visibility and hidden from client projections. |
+| `AV-SLICE-RBAC-04` | Reverified / tested | Advisor approval remains separate from compliance release and client visibility. |
+| `AV-SLICE-RBAC-05` | Implemented / tested | Admin/security cannot use platform governance authority to view internal advice payloads; existing export non-bypass remains covered. |
 
 ### Changed Files
 
 - `lib/permission-engine.ts`
-- `lib/visibility-engine.ts`
-- `lib/workflow-gate.ts`
 - `tests/permission-engine.spec.ts`
-- `tests/workflow-gate.spec.ts`
 - `docs/v3/PHASE_EXECUTION_REPORT.md`
 - `docs/v3/IMPLEMENTATION_QA_REPORT.md`
 
@@ -3243,20 +3239,21 @@ Executed the handoff phase prompt `06_PHASE_RBAC_VISIBILITY_ADVICE_PROMPT.md` fo
 
 - `pnpm test:workflow-gate` - passed, 9 tests.
 - `pnpm typecheck` - passed.
-- `pnpm test:permissions` - passed, 6 tests; seeded the demo database before the audit-backed permission tests.
+- `pnpm test:permissions` - first parallel run hit `EADDRINUSE` on `127.0.0.1:3020`; rerun alone passed, 7 tests; seeded the demo database before the audit-backed permission tests.
 - `pnpm lint` - passed.
 - `git diff --check` - passed.
+- Final `pnpm typecheck` after restoring the generated `next-env.d.ts` side effect - passed.
 
 ### P0 Impact
 
-This phase improves proof slices for `P0_RBAC_ACTION_GATE`, `P0_PAYLOAD_VISIBILITY_GATE`, `P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE`, `P0_AI_DRAFT_INTERNAL_ONLY_GATE`, `P0_ADVISOR_NOT_RELEASE_GATE` and `P0_ADMIN_NON_BYPASS_GATE`. It does not claim full P0 passed. The proof remains demo-session/service-level and targeted; broader API/export/client route leakage matrices remain future P0 work.
+This phase improves proof slices for `P0_RBAC_ACTION_GATE`, `P0_PAYLOAD_VISIBILITY_GATE`, `P0_AI_DRAFT_INTERNAL_ONLY_GATE` and `P0_ADMIN_NON_BYPASS_GATE`, and rechecks `P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE` plus `P0_ADVISOR_NOT_RELEASE_GATE`. It does not claim full P0 passed. The proof remains demo-session/service-level and targeted; broader API/export/client route leakage matrices remain future P0 work.
 
 ### Blockers / Deferred / Hold Items
 
 - No P1, Reference-only or Hold routes were elevated.
 - No new API route, Prisma schema replacement, migration or visual generation was performed.
 - Full production auth and exhaustive route/API/export leakage coverage remain out of this phase.
-- Existing `.gitignore` worktree modification was pre-existing and not touched.
+- The first parallel Playwright execution showed the repository web-server config cannot run targeted Playwright scripts concurrently on the same port; the affected permission suite passed when rerun alone.
 
 ### Exit Gate Decision
 

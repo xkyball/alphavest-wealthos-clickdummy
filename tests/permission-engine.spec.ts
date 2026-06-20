@@ -203,6 +203,8 @@ test.describe("Phase 16 demo role-aware permissions", () => {
   test("projects only released client-safe recommendation fields to client roles", () => {
     const bennettPrincipal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
     const analyst = createDemoSession({ roleKey: "analyst", tenantSlug: "bennett" });
+    const adminSession = createDemoSession({ roleKey: "admin", tenantSlug: "bennett" });
+    const clientSuccess = createDemoSession({ roleKey: "client_success", tenantSlug: "bennett" });
     const internalPayload = {
       assumptionsJson: { source: "rules-draft" },
       clientSummary: "Released client-safe summary.",
@@ -270,6 +272,118 @@ test.describe("Phase 16 demo role-aware permissions", () => {
     expect(internalProjection.reasonCode).toBe("DEMO_INTERNAL_PROJECTION");
     expect(internalProjection.payload.clientSummaryDraft).toBe("AI generated draft summary.");
     expect(internalProjection.payload.internalRationale).toBe("Internal recommendation rationale.");
+
+    const adminInternalProjection = visibilityEngine.projectRecommendationPayload(
+      adminSession.actor,
+      adminSession.role,
+      {
+        ...internalPayload,
+        clientVisible: false,
+        recommendationStatus: "AI_DRAFT",
+        visibilityStatus: "ADVISOR_VISIBLE",
+      },
+      demoPlatformTenantId,
+      adminSession.tenant.id,
+    );
+
+    expect(adminInternalProjection.visible).toBe(false);
+    expect(adminInternalProjection.reasonCode).toBe("DEMO_DENY_ADMIN_ADVICE_PAYLOAD_NON_BYPASS");
+    expect(adminInternalProjection.payload).toEqual({});
+    expect(adminInternalProjection.hiddenFields).toEqual([
+      "clientSummary",
+      "clientSummaryDraft",
+      "summaryInternal",
+      "internalRationale",
+      "complianceNotes",
+      "assumptionsJson",
+    ]);
+
+    const clientSuccessProjection = visibilityEngine.projectRecommendationPayload(
+      clientSuccess.actor,
+      clientSuccess.role,
+      {
+        ...internalPayload,
+        clientVisible: false,
+        recommendationStatus: "COMPLIANCE_PENDING",
+        visibilityStatus: "COMPLIANCE_VISIBLE",
+      },
+      demoPlatformTenantId,
+      clientSuccess.tenant.id,
+    );
+
+    expect(clientSuccessProjection.visible).toBe(false);
+    expect(clientSuccessProjection.reasonCode).toBe("DEMO_DENY_ADVICE_PAYLOAD_SCOPE_REQUIRED");
+    expect(clientSuccessProjection.payload).toEqual({});
+  });
+
+  test("does not let admin or client-success route access become internal advice payload permission", () => {
+    const bennettTenantId = tenantId("bennett");
+    const adminSession = createDemoSession({ roleKey: "admin", tenantSlug: "bennett" });
+    const securitySession = createDemoSession({ roleKey: "security_officer", tenantSlug: "bennett" });
+    const clientSuccess = createDemoSession({ roleKey: "client_success", tenantSlug: "bennett" });
+    const complianceSession = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
+
+    for (const session of [adminSession, securitySession]) {
+      const decision = permissionEngine.can(
+        session.actor,
+        "VIEW",
+        {
+          clientTenantId: bennettTenantId,
+          objectType: "RECOMMENDATION",
+          sensitivity: "RESTRICTED",
+          visibilityStatus: "ADVISOR_VISIBLE",
+        },
+        {
+          clientTenantId: bennettTenantId,
+          clientVisibilityState: "ADVISOR_VISIBLE",
+          platformTenantId: demoPlatformTenantId,
+        },
+        session.role,
+      );
+
+      expect(decision.allowed).toBe(false);
+      expect(decision.reasonCode).toBe("DEMO_DENY_ADMIN_ADVICE_PAYLOAD_NON_BYPASS");
+      expect(decision.requiresSecondConfirmation).toBe(true);
+    }
+
+    const clientSuccessDecision = permissionEngine.can(
+      clientSuccess.actor,
+      "VIEW",
+      {
+        clientTenantId: bennettTenantId,
+        objectType: "RECOMMENDATION",
+        sensitivity: "RESTRICTED",
+        visibilityStatus: "COMPLIANCE_VISIBLE",
+      },
+      {
+        clientTenantId: bennettTenantId,
+        clientVisibilityState: "COMPLIANCE_VISIBLE",
+        platformTenantId: demoPlatformTenantId,
+      },
+      clientSuccess.role,
+    );
+
+    expect(clientSuccessDecision.allowed).toBe(false);
+    expect(clientSuccessDecision.reasonCode).toBe("DEMO_DENY_ADVICE_PAYLOAD_SCOPE_REQUIRED");
+
+    const complianceDecision = permissionEngine.can(
+      complianceSession.actor,
+      "VIEW",
+      {
+        clientTenantId: bennettTenantId,
+        objectType: "RECOMMENDATION",
+        sensitivity: "RESTRICTED",
+        visibilityStatus: "COMPLIANCE_VISIBLE",
+      },
+      {
+        clientTenantId: bennettTenantId,
+        clientVisibilityState: "COMPLIANCE_VISIBLE",
+        platformTenantId: demoPlatformTenantId,
+      },
+      complianceSession.role,
+    );
+
+    expect(complianceDecision.allowed).toBe(true);
   });
 });
 

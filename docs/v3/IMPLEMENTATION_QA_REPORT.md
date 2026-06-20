@@ -2728,22 +2728,23 @@ Date: 2026-06-20
 | Advisor approval separation | Passed | Recommendation approval is limited to Senior Wealth Advisor; advisor approval alone remains blocked from client visibility without compliance release. |
 | Client visibility projection | Passed | Client-side recommendation projection returns only released client-safe summary fields and hides AI Draft/internal rationale/compliance/internal fields. |
 | AI Draft internal-only | Passed | Workflow gate and projection tests fail closed when AI Draft/internal rationale is present. |
-| Admin non-bypass | Passed | Admin/security export generation authority is denied instead of bypassing export approval/redaction/client-visibility gates. |
+| Admin non-bypass | Passed | Admin/security cannot use governance/platform authority to view internal advice payloads; existing export non-bypass remains covered. |
 | Typecheck | Passed | `pnpm typecheck`. |
-| Workflow gate tests | Passed | `pnpm test:workflow-gate`, 9 tests. |
-| Permission tests | Passed | `pnpm test:permissions`, 6 tests; includes seeded denied-audit proof. |
 | Lint | Passed | `pnpm lint`. |
 | Whitespace diff check | Passed | `git diff --check`. |
+| Workflow gate tests | Passed | `pnpm test:workflow-gate`, 9 tests. |
+| Permission tests | Passed on rerun | `pnpm test:permissions`, 7 tests; first parallel attempt hit `EADDRINUSE` on `127.0.0.1:3020`, then passed when run alone. |
 
 ### Commands And Results
 
 | Command | Status | Notes |
 | --- | --- | --- |
 | `pnpm test:workflow-gate` | Passed | 9 tests; includes advisor-not-release and AI/internal payload blockers. |
-| `pnpm typecheck` | Passed | TypeScript clean after permission/visibility/workflow updates. |
-| `pnpm test:permissions` | Passed | 6 tests; includes advisor-only approval, admin non-bypass, client projection and denied audit cases. |
-| `pnpm lint` | Passed | ESLint clean after RBAC/visibility changes. |
+| `pnpm typecheck` | Passed | TypeScript clean after permission-engine updates. |
+| `pnpm test:permissions` | Failed then rerun passed | First parallel attempt hit web-server port collision; rerun alone passed, 7 tests, including admin/security/client-success advice-payload denial and seeded denied-audit cases. |
+| `pnpm lint` | Passed | ESLint clean after RBAC/report updates. |
 | `git diff --check` | Passed | No whitespace errors. |
+| final `pnpm typecheck` | Passed | Rechecked after restoring generated `next-env.d.ts` side effect. |
 
 ### Completion Status Labels Inventory
 
@@ -2753,7 +2754,9 @@ Date: 2026-06-20
 | Advisor approval not release | implemented + tested | Workflow gate still requires compliance release before client visibility. |
 | Client-safe recommendation projection | implemented + tested | Client roles receive only released summary payload; internal-only fields are hidden. |
 | AI Draft internal-only blocker | implemented + tested | AI Draft/internal rationale blocks client visibility. |
-| Admin export non-bypass | implemented + tested | Admin/security cannot bypass export approval/redaction gates. |
+| Admin advice-payload non-bypass | implemented + tested | Admin/security route or governance authority cannot view internal advice payload. |
+| Client-success advice-payload denial | implemented + tested | Client Success remains an operational support role, not an internal advice-payload role. |
+| Admin export non-bypass | reverified + tested | Admin/security cannot bypass export approval/redaction gates. |
 | Full P0 gate closure | not claimed | Current tests are proof slices only. |
 
 ### Residual Risks
@@ -2761,7 +2764,7 @@ Date: 2026-06-20
 - The phase hardens centralized demo services, not production authentication.
 - Client route/API/export leakage coverage is targeted, not exhaustive across every route/action/object combination.
 - Export binary generation and full evidence/audit/export lifecycle remain later safety/P0 work.
-- Existing `.gitignore` modification was not part of this phase.
+- Targeted Playwright scripts should be run sequentially unless the web-server port is made unique per run.
 
 ## PHASE-02-ROUTE_ACCESS QA Hardening Addendum
 

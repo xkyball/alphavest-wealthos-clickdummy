@@ -59,6 +59,11 @@ const complianceActions = new Set<PermissionAction>(["RELEASE", "BLOCK", "EXPORT
 const complianceReleaseRoles = new Set<DemoRoleKey>(["compliance_officer"]);
 const exportApprovalRoles = new Set<DemoRoleKey>(["compliance_officer"]);
 const advisorApprovalRoles = new Set<DemoRoleKey>(["senior_wealth_advisor"]);
+const internalAdvicePayloadRoles = new Set<DemoRoleKey>([
+  "analyst",
+  "senior_wealth_advisor",
+  "compliance_officer",
+]);
 const governanceRoles = new Set<DemoRoleKey>(["admin", "security_officer"]);
 const accessApprovalRoles = new Set<DemoRoleKey>(["admin", "security_officer", "compliance_officer"]);
 const tenantAdminRoles = new Set<DemoRoleKey>(["admin", "client_success"]);
@@ -117,6 +122,31 @@ function can(
       "DEMO_DENY_CROSS_TENANT",
       `${role?.label ?? actor.displayName} cannot access a different client tenant in demo mode.`,
       true,
+    );
+  }
+
+  if (
+    action === "VIEW" &&
+    subject.objectType === "RECOMMENDATION" &&
+    (subject.visibilityStatus === "INTERNAL_ONLY" ||
+      subject.visibilityStatus === "ADVISOR_VISIBLE" ||
+      subject.visibilityStatus === "COMPLIANCE_VISIBLE" ||
+      context.clientVisibilityState === "INTERNAL_ONLY" ||
+      context.clientVisibilityState === "ADVISOR_VISIBLE" ||
+      context.clientVisibilityState === "COMPLIANCE_VISIBLE") &&
+    Boolean(role?.internal) &&
+    !internalAdvicePayloadRoles.has(roleKey)
+  ) {
+    return deny(
+      action,
+      subject,
+      adminNonBypassRoles.has(roleKey)
+        ? "DEMO_DENY_ADMIN_ADVICE_PAYLOAD_NON_BYPASS"
+        : "DEMO_DENY_ADVICE_PAYLOAD_SCOPE_REQUIRED",
+      adminNonBypassRoles.has(roleKey)
+        ? "Admin and security roles cannot view internal advice payload by route or governance authority alone."
+        : "Internal advice payload requires an assigned analyst, advisor or compliance role.",
+      adminNonBypassRoles.has(roleKey),
     );
   }
 
