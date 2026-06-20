@@ -15,6 +15,7 @@ import { requireDemoSession, demoPlatformTenantId, type DemoRoleKey, type DemoTe
 import { localDocumentStorageAdapter } from "@/lib/document-storage-adapter";
 import { permissionEngine } from "@/lib/permission-engine";
 import { stableId } from "@/lib/stable-id";
+import { visibilityEngine } from "@/lib/visibility-engine";
 
 const maxUploadSizeBytes = 50 * 1024 * 1024;
 const supportedMimeTypes = new Set([
@@ -31,6 +32,8 @@ const uploadRoleAllowlist = new Set<DemoRoleKey>(["principal", "family_cfo", "ex
 
 export type UploadedDocumentListItem = {
   id: string;
+  clientTenantId: string;
+  clientVisible: boolean;
   title: string;
   documentType: string;
   status: string;
@@ -45,6 +48,15 @@ export type UploadedDocumentListItem = {
   evidenceStatus: string | null;
   evidenceVisibilityStatus: string | null;
   extractionStatus: string | null;
+};
+
+export type ProjectedUploadedDocumentListItem = {
+  [key: string]: unknown;
+  hiddenFields: string[];
+  reason: string;
+  reasonCode: string;
+  visible: boolean;
+  visibilityState: string;
 };
 
 export type UploadDocumentInput = {
@@ -114,6 +126,8 @@ function validateUploadInput(input: UploadDocumentInput) {
 
 function mapDocument(document: {
   checksum: string | null;
+  clientTenantId: string;
+  clientVisible: boolean;
   createdAt: Date;
   documentType: string;
   evidenceRecords?: Array<{ id: string }>;
@@ -131,6 +145,8 @@ function mapDocument(document: {
 }): UploadedDocumentListItem {
   return {
     checksum: document.checksum ?? "",
+    clientTenantId: document.clientTenantId,
+    clientVisible: document.clientVisible,
     documentType: document.documentType,
     evidenceRecordId: document.evidenceRecords?.[0]?.id ?? null,
     evidenceStatus: document.evidenceStatus ?? null,
@@ -145,6 +161,33 @@ function mapDocument(document: {
     storageKey: document.storageKey ?? "",
     title: document.title,
     uploadedAt: document.createdAt.toISOString(),
+  };
+}
+
+function projectDocumentForRole(
+  document: UploadedDocumentListItem,
+  roleKey: DemoRoleKey,
+  tenantSlug: DemoTenantSlug,
+): ProjectedUploadedDocumentListItem {
+  const session = requireDemoSession({ roleKey, tenantSlug });
+  const projection = visibilityEngine.projectDocumentPayload(
+    session.actor,
+    session.role,
+    {
+      ...document,
+      sensitivity: document.sensitivity as Sensitivity,
+    },
+    demoPlatformTenantId,
+    session.tenant.id,
+  );
+
+  return {
+    ...projection.payload,
+    hiddenFields: projection.hiddenFields,
+    reason: projection.reason,
+    reasonCode: projection.reasonCode,
+    visible: projection.visible,
+    visibilityState: projection.visibilityState,
   };
 }
 
@@ -344,8 +387,12 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
   });
 }
 
-export async function listUploadedDocuments(prisma: PrismaClient, tenantSlug: DemoTenantSlug = "morgan") {
-  const session = requireDemoSession({ roleKey: "family_cfo", tenantSlug });
+export async function listUploadedDocuments(
+  prisma: PrismaClient,
+  tenantSlug: DemoTenantSlug = "morgan",
+  roleKey: DemoRoleKey = "analyst",
+) {
+  const session = requireDemoSession({ roleKey, tenantSlug });
   const documents = await prisma.document.findMany({
     include: {
       extractions: {
@@ -374,16 +421,18 @@ export async function listUploadedDocuments(prisma: PrismaClient, tenantSlug: De
     evidenceRecords.map((record) => [record.relatedObjectId, record]),
   );
 
-  return documents.map((document) =>
-    mapDocument({
+  return documents.map((document) => {
+    const mappedDocument = mapDocument({
       ...document,
       evidenceRecords: evidenceRecordByDocumentId.has(document.id)
         ? [{ id: evidenceRecordByDocumentId.get(document.id)?.id ?? "" }]
         : [],
       evidenceStatus: evidenceRecordByDocumentId.get(document.id)?.status ?? null,
       evidenceVisibilityStatus: evidenceRecordByDocumentId.get(document.id)?.visibilityStatus ?? null,
-    }),
-  );
+    });
+
+    return projectDocumentForRole(mappedDocument, roleKey, tenantSlug);
+  });
 }
 
 export const documentUploadLimits = {

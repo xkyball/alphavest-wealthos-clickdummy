@@ -314,6 +314,80 @@ Pre-existing worktree note: `next-env.d.ts` was already modified and was not tou
 
 `PHASE_5_EXIT_PASSED_WITH_IMPLEMENTATION_PROOF_AND_LIMITATIONS`
 
+## ALPHAVEST-MVP-PHASE-6-IMPLEMENTATION - Client Visibility Fail-Closed Projection
+
+Date: 2026-06-20
+
+### Scope
+
+Executed Phase 6 from `mega_journeys_1/ALPHAVEST_MVP_JOURNEY_IMPLEMENTATION_PLAN.md` as an implementation phase. The phase was backend/API/service/test scoped: client-safe projections, document/evidence payload boundaries and export input alignment. No UI, schema migration, route composition, visual asset, screenshot or ImageGen work was performed.
+
+### Source Artefacts Used
+
+- `AGENTS.md`
+- `CODEX_MASTER_TASK.md`
+- `mega_journeys_1/ALPHAVEST_MVP_JOURNEY_IMPLEMENTATION_PLAN.md`
+- `docs/v3/CODEX_TASKS_DETAILED_V3.md`
+- `docs/v3/SCREEN_CATALOGUE_V3.md`
+- `docs/v3/DESIGN_SYSTEM_AND_VISUAL_RULES_V3.md`
+- `docs/v3/TECHNICAL_IMPLEMENTATION_SEQUENCE_V3.md`
+- `docs/v3/PAGEFLOW_USERFLOW_MAPPING_V3.md`
+- `docs/v3/DATA_MODEL_V3.md`
+- `docs/v3/QUALITY_GATES_AND_TEST_PLAN_V3.md`
+- `docs/v3/OPERATIONALIZATION_PROJECT_CONTRACT_V3.md`
+
+### Completed Tasks
+
+- Added document client-safe projection states to `visibility-engine`: `CLIENT_SAFE`, `NO_AVAILABLE_CONTENT`, `PERMISSION_DENIED` and `INTERNAL_PROJECTION`.
+- Made `/api/documents` accept a validated `roleKey` and project document responses according to role/client visibility.
+- Kept existing internal document reload behavior through the default analyst projection while enabling explicit client-role fail-closed proof.
+- Added export input projection checks so invisible or forbidden client payloads cannot become export scope.
+- Added tests for recommendation projection, document/evidence projection, principal-role document fail-closed behavior, released-safe document summaries and export projection alignment.
+- Added `docs/v3/ALPHAVEST_MVP_PHASE_6_CLIENT_VISIBILITY_FAIL_CLOSED_IMPLEMENTATION.md`.
+
+### Changed Files
+
+- `app/api/documents/route.ts`
+- `lib/document-upload-service.ts`
+- `lib/export-service.ts`
+- `lib/visibility-engine.ts`
+- `tests/client-visibility-proof.spec.ts`
+- `tests/document-upload-api.spec.ts`
+- `docs/v3/ALPHAVEST_MVP_PHASE_6_CLIENT_VISIBILITY_FAIL_CLOSED_IMPLEMENTATION.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - first run found a narrow projection return type mismatch; fixed and reran successfully.
+- `pnpm exec playwright test tests/client-visibility-proof.spec.ts tests/file-export-realism.spec.ts` - passed, 15 tests.
+- `pnpm exec playwright test tests/document-upload-api.spec.ts` - passed, 6 tests.
+- `pnpm exec playwright test tests/client-visibility-proof.spec.ts tests/document-upload-api.spec.ts tests/file-export-realism.spec.ts` - passed, 21 tests.
+- `pnpm lint` - passed.
+- `git diff --check` - passed.
+- `pnpm build` - passed with existing Turbopack tracing warnings in `lib/document-storage-adapter.ts`.
+
+### Capability / P0 Impact
+
+| Surface | Capability result | Notes |
+| --- | --- | --- |
+| Recommendation projection allowlist | E6 tested | Client roles receive only released `clientSummary`; internal fields are hidden. |
+| Document/evidence payload boundary | E6 tested | Client roles receive fail-closed state before release and redacted summaries after release. |
+| Export input projection | E6 tested | Export helper rejects invisible or forbidden projection payloads. |
+| Portal/mobile client visibility | API/service proof only | No UI screenshot or visual acceptance is claimed. |
+
+### Blockers / Deferred / Hold Items
+
+- No production authentication or generalized document entitlement engine is claimed.
+- No binary export generation, download/share readiness or client acceptance is claimed.
+- UI screenshot proof and Human Visual Review are not applicable because no UI was changed.
+- Full P0 closure remains later-phase scope.
+- Existing Turbopack tracing warnings around `lib/document-storage-adapter.ts` remain outside this Phase 6 scope.
+
+### Exit Gate Decision
+
+`PHASE_6_EXIT_PASSED_WITH_IMPLEMENTATION_PROOF_AND_LIMITATIONS`
+
 ## MEGA-JOURNEY-PHASE-1 - Providerless Scope Implementation
 
 Date: 2026-06-20

@@ -11,6 +11,19 @@ export type ExportGateDecision = {
   reason: string;
 };
 
+export type ExportProjectionInput = {
+  visible: boolean;
+  payload: Record<string, unknown>;
+  hiddenFields?: string[];
+  reasonCode?: string;
+};
+
+export type ExportProjectionDecision = {
+  allowed: boolean;
+  missing: string[];
+  payloadClassifications: ExportPayloadClassification[];
+};
+
 export type ExportPayloadClassification =
   | "CLIENT_SAFE_SUMMARY"
   | "RELEASED_EVIDENCE_SUMMARY"
@@ -32,6 +45,43 @@ const forbiddenClientExportPayloads = new Set<ExportPayloadClassification>([
 
 function forbiddenExportPayloads(payloadClassifications: ExportPayloadClassification[] = []) {
   return payloadClassifications.filter((classification) => forbiddenClientExportPayloads.has(classification));
+}
+
+function canUseClientProjectionForExport(projection: ExportProjectionInput): ExportProjectionDecision {
+  const missing: string[] = [];
+  const payloadClassifications: ExportPayloadClassification[] = [];
+  const payloadKeys = Object.keys(projection.payload);
+
+  if (!projection.visible) {
+    missing.push("client_safe_projection_visible");
+    payloadClassifications.push("UNRELEASED_RECOMMENDATION");
+  }
+
+  if (payloadKeys.length === 0) {
+    missing.push("client_safe_payload");
+    payloadClassifications.push("HIDDEN_FIELD");
+  }
+
+  for (const key of payloadKeys) {
+    if (key === "clientSummary") {
+      payloadClassifications.push("CLIENT_SAFE_SUMMARY");
+      continue;
+    }
+
+    if (key === "title" || key === "documentType" || key === "status" || key === "uploadedAt") {
+      payloadClassifications.push("RELEASED_EVIDENCE_SUMMARY");
+      continue;
+    }
+
+    missing.push(`forbidden_projection_field:${key}`);
+    payloadClassifications.push("HIDDEN_FIELD");
+  }
+
+  return {
+    allowed: missing.length === 0 && forbiddenExportPayloads(payloadClassifications).length === 0,
+    missing,
+    payloadClassifications: [...new Set(payloadClassifications)],
+  };
 }
 
 function canGenerateExport(input: {
@@ -99,5 +149,6 @@ function canGenerateExport(input: {
 
 export const exportService = {
   canGenerateExport,
+  canUseClientProjectionForExport,
   forbiddenExportPayloads,
 };

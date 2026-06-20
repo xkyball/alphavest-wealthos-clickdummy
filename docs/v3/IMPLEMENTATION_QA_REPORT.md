@@ -4014,3 +4014,50 @@ Date: 2026-06-20
 - Full client-safe projection across portal/API/export remains Phase 6 and Phase 8 scope.
 - `next-env.d.ts` has a pre-existing local modification outside this phase and was left untouched.
 - Existing Turbopack tracing warnings around `lib/document-storage-adapter.ts` remain outside this Phase 5 scope.
+
+## ALPHAVEST-MVP-PHASE-6-IMPLEMENTATION QA Addendum
+
+Date: 2026-06-20
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Phase source of truth | Passed | Used `mega_journeys_1/ALPHAVEST_MVP_JOURNEY_IMPLEMENTATION_PLAN.md`, Phase 6. |
+| Implementation mode | Passed | Phase 6 was executed as service/API/test implementation, not docs-only. |
+| Recommendation allowlist | Passed | Client roles receive only released `clientSummary`; internal rationale, drafts, compliance notes and assumptions stay hidden. |
+| Document/evidence fail-closed state | Passed | Principal-role document API reload returns fail-closed state before release and no storage/checksum payload. |
+| Released document summary | Passed | After release flags, principal-role document API returns only summary fields. |
+| Export input alignment | Passed | Export input helper accepts visible client-safe projections and rejects invisible/forbidden projection payloads. |
+| Cross-tenant and wrong-role boundaries | Passed | Existing visibility tests remain green. |
+| Visual gate | Not applicable | No UI, screen state, screenshot, ImageGen or visual-reference implementation was changed. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Failed then passed | Initial projection type mismatch was fixed; rerun passed. |
+| `pnpm exec playwright test tests/client-visibility-proof.spec.ts tests/file-export-realism.spec.ts` | Passed | 15 tests. |
+| `pnpm exec playwright test tests/document-upload-api.spec.ts` | Passed | 6 tests. |
+| `pnpm exec playwright test tests/client-visibility-proof.spec.ts tests/document-upload-api.spec.ts tests/file-export-realism.spec.ts` | Passed | 21 tests. |
+| `pnpm lint` | Passed | ESLint completed cleanly. |
+| `git diff --check` | Passed | No whitespace errors. |
+| `pnpm build` | Passed with warnings | Existing Turbopack tracing warnings in `lib/document-storage-adapter.ts`. |
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| Recommendation client-safe projection | implemented + tested | Released client roles receive allowlisted summary only. |
+| Document/evidence client projection | implemented + tested | Client roles receive fail-closed state before release and summary-only data after release. |
+| `/api/documents` role-aware projection | implemented + tested | `roleKey` selects internal vs client projection; invalid/missing role defaults to internal analyst projection. |
+| Export projection input alignment | implemented + tested | Invisible or forbidden projection payloads cannot be used as clean export input. |
+| Full UI visual acceptance | not applicable | No UI changed. |
+| Binary export / client acceptance / full P0 | not claimed | Deferred to later phases. |
+
+### Residual Risks
+
+- Phase 6 remains demo-session based and does not claim production authentication.
+- Document/evidence projection is bounded to the existing upload/list API and does not claim a generalized document entitlement engine.
+- Export package generation remains metadata/control oriented; binary E7 export remains later scope.
+- Existing Turbopack tracing warnings around `lib/document-storage-adapter.ts` remain outside this Phase 6 scope.

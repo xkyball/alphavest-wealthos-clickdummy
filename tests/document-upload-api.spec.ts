@@ -111,6 +111,43 @@ test.describe("document upload multipart API", () => {
     const reloadedDocument = reloadBody.documents.find((item: { id: string }) => item.id === document.id);
 
     expect(reloadedDocument?.fileName).toBe(fileName);
+
+    const blockedClientReload = await request.get("/api/documents?tenantSlug=morgan&roleKey=principal");
+    const blockedClientReloadBody = await blockedClientReload.json();
+
+    expect(blockedClientReload.ok(), JSON.stringify(blockedClientReloadBody)).toBe(true);
+    expect(blockedClientReloadBody.documents[0]?.visible).toBe(false);
+    expect(blockedClientReloadBody.documents[0]?.visibilityState).toBe("NO_AVAILABLE_CONTENT");
+    expect(blockedClientReloadBody.documents[0]?.reasonCode).toBe("DEMO_CLIENT_DOCUMENT_FAIL_CLOSED");
+    expect(blockedClientReloadBody.documents[0]).not.toHaveProperty("storageKey");
+    expect(blockedClientReloadBody.documents[0]).not.toHaveProperty("checksum");
+
+    await prisma.document.update({
+      data: { clientVisible: true },
+      where: { id: document.id },
+    });
+    await prisma.evidenceRecord.update({
+      data: {
+        status: EvidenceStatus.RELEASED,
+        visibilityStatus: "CLIENT_VISIBLE",
+      },
+      where: { id: evidenceRecord.id },
+    });
+
+    const releasedClientReload = await request.get("/api/documents?tenantSlug=morgan&roleKey=principal");
+    const releasedClientReloadBody = await releasedClientReload.json();
+    const releasedClientDocument = releasedClientReloadBody.documents.find(
+      (item: { id?: string }) => item.id === document.id,
+    );
+
+    expect(releasedClientReload.ok(), JSON.stringify(releasedClientReloadBody)).toBe(true);
+    expect(releasedClientDocument?.visible).toBe(true);
+    expect(releasedClientDocument?.visibilityState).toBe("CLIENT_SAFE");
+    expect(releasedClientDocument?.title).toBe(document.title);
+    expect(releasedClientDocument?.documentType).toBe(document.documentType);
+    expect(releasedClientDocument).not.toHaveProperty("storageKey");
+    expect(releasedClientDocument).not.toHaveProperty("checksum");
+    expect(releasedClientDocument).not.toHaveProperty("fileName");
   });
 
   test("reloads uploaded documents only for the active tenant", async ({ request }) => {

@@ -102,6 +102,69 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
     expect(projection.hiddenFields).toEqual([...forbiddenClientPayloadFields]);
   });
 
+  test("projects document payloads as redacted/fail-closed for client roles", () => {
+    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const internalDocument = {
+      checksum: "internal-checksum",
+      clientTenantId: principal.tenant.id,
+      clientVisible: false,
+      documentType: "financial_statement",
+      evidenceRecordId: "ed6ecbad-2016-5cfd-9c91-c47189afaa0d",
+      evidenceStatus: "CREATED",
+      evidenceVisibilityStatus: "INTERNAL_ONLY" as const,
+      extractionStatus: "pending",
+      fileName: "bennett-internal-statement.pdf",
+      fileSizeBytes: 128000,
+      id: "abf468d0-7939-5576-a9e2-7e402d5ae531",
+      mimeType: "application/pdf",
+      sensitivity: "CONFIDENTIAL" as const,
+      status: "UPLOADED",
+      storageKey: "demo/bennett/documents/bennett-internal-statement.pdf",
+      title: "Bennett internal statement",
+      uploadedAt: "2026-06-20T00:00:00.000Z",
+    };
+
+    const blockedProjection = visibilityEngine.projectDocumentPayload(
+      principal.actor,
+      principal.role,
+      internalDocument,
+      demoPlatformTenantId,
+      principal.tenant.id,
+    );
+
+    expect(blockedProjection.visible).toBe(false);
+    expect(blockedProjection.visibilityState).toBe("NO_AVAILABLE_CONTENT");
+    expect(blockedProjection.reasonCode).toBe("DEMO_CLIENT_DOCUMENT_FAIL_CLOSED");
+    expect(blockedProjection.payload).toEqual({});
+    expect(blockedProjection.hiddenFields).toContain("storageKey");
+    expect(blockedProjection.hiddenFields).toContain("checksum");
+
+    const releasedProjection = visibilityEngine.projectDocumentPayload(
+      principal.actor,
+      principal.role,
+      {
+        ...internalDocument,
+        clientVisible: true,
+        evidenceStatus: "RELEASED",
+        evidenceVisibilityStatus: "CLIENT_VISIBLE",
+      },
+      demoPlatformTenantId,
+      principal.tenant.id,
+    );
+
+    expect(releasedProjection.visible).toBe(true);
+    expect(releasedProjection.reasonCode).toBe("DEMO_CLIENT_DOCUMENT_SAFE_PROJECTION");
+    expect(releasedProjection.payload).toEqual({
+      documentType: "financial_statement",
+      id: internalDocument.id,
+      status: "UPLOADED",
+      title: "Bennett internal statement",
+      uploadedAt: "2026-06-20T00:00:00.000Z",
+    });
+    expect(releasedProjection.payload).not.toHaveProperty("storageKey");
+    expect(releasedProjection.payload).not.toHaveProperty("checksum");
+  });
+
   test("keeps evidence-backed internal rebuild hidden until release", () => {
     const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
     const payload = recommendationPayload({
@@ -143,6 +206,12 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
       "UNRELEASED_RECOMMENDATION",
       "HIDDEN_FIELD",
     ]);
+
+    const blockedExportProjection = exportService.canUseClientProjectionForExport(projection);
+
+    expect(blockedExportProjection.allowed).toBe(false);
+    expect(blockedExportProjection.missing).toContain("client_safe_projection_visible");
+    expect(blockedExportProjection.payloadClassifications).toContain("UNRELEASED_RECOMMENDATION");
   });
 
   test("fails closed for cross-tenant client access", () => {
@@ -202,5 +271,40 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
       "COMPLIANCE_NOTES",
       "UNRELEASED_EVIDENCE",
     ]);
+  });
+
+  test("allows export input only from visible client-safe projection payloads", () => {
+    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const payload = recommendationPayload({
+      clientTenantId: principal.tenant.id,
+      clientVisible: true,
+      recommendationStatus: "RELEASED_TO_CLIENT",
+      visibilityStatus: "CLIENT_VISIBLE",
+    });
+    const projection = visibilityEngine.projectRecommendationPayload(
+      principal.actor,
+      principal.role,
+      payload,
+      demoPlatformTenantId,
+      principal.tenant.id,
+    );
+
+    const exportProjection = exportService.canUseClientProjectionForExport(projection);
+
+    expect(exportProjection.allowed).toBe(true);
+    expect(exportProjection.missing).toEqual([]);
+    expect(exportProjection.payloadClassifications).toEqual(["CLIENT_SAFE_SUMMARY"]);
+
+    const unsafeProjection = exportService.canUseClientProjectionForExport({
+      visible: true,
+      payload: {
+        clientSummary: "Released summary.",
+        complianceNotes: "Internal compliance note.",
+      },
+    });
+
+    expect(unsafeProjection.allowed).toBe(false);
+    expect(unsafeProjection.missing).toContain("forbidden_projection_field:complianceNotes");
+    expect(unsafeProjection.payloadClassifications).toContain("HIDDEN_FIELD");
   });
 });

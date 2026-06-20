@@ -8,6 +8,12 @@ import type { ObjectType, RecommendationStatus, Sensitivity, UUID, VisibilitySta
 import type { PermissionDecision } from "@/lib/permission-engine";
 import { permissionEngine } from "@/lib/permission-engine";
 
+type ClientProjectionState =
+  | "CLIENT_SAFE"
+  | "NO_AVAILABLE_CONTENT"
+  | "PERMISSION_DENIED"
+  | "INTERNAL_PROJECTION";
+
 export type VisibilitySubject = {
   objectType: ObjectType;
   objectId?: UUID;
@@ -55,6 +61,36 @@ export type RecommendationPayloadProjection = {
   hiddenFields: string[];
 };
 
+export type DocumentVisibilityPayload = {
+  id: UUID;
+  clientTenantId?: UUID;
+  title: string;
+  documentType: string;
+  status: string;
+  sensitivity?: Sensitivity;
+  clientVisible: boolean;
+  evidenceRecordId?: UUID | null;
+  evidenceStatus?: string | null;
+  evidenceVisibilityStatus?: VisibilityStatus | string | null;
+  extractionStatus?: string | null;
+  fileName?: string | null;
+  fileSizeBytes?: number | null;
+  mimeType?: string | null;
+  checksum?: string | null;
+  storageKey?: string | null;
+  uploadedAt?: string;
+};
+
+export type DocumentPayloadProjection = {
+  visible: boolean;
+  reasonCode: string;
+  reason: string;
+  permission: PermissionDecision;
+  visibilityState: ClientProjectionState;
+  payload: Partial<DocumentVisibilityPayload>;
+  hiddenFields: string[];
+};
+
 const releasedRecommendationStatuses = new Set<RecommendationStatus>([
   "RELEASED_TO_CLIENT",
   "CLIENT_ACCEPTED",
@@ -69,6 +105,21 @@ const internalRecommendationFields = [
   "complianceNotes",
   "assumptionsJson",
 ] as const;
+
+const internalDocumentFields = [
+  "fileName",
+  "fileSizeBytes",
+  "mimeType",
+  "checksum",
+  "storageKey",
+  "evidenceRecordId",
+  "evidenceStatus",
+  "evidenceVisibilityStatus",
+  "extractionStatus",
+] as const;
+
+const clientSafeDocumentEvidenceStatuses = new Set(["VALIDATED", "RELEASED"]);
+const clientSafeDocumentVisibilityStatuses = new Set(["CLIENT_VISIBLE", "REDACTED"]);
 
 function canView(
   actor: DemoActor,
@@ -105,6 +156,10 @@ function canView(
 
 function presentInternalFields(payload: RecommendationVisibilityPayload) {
   return internalRecommendationFields.filter((field) => payload[field] !== undefined && payload[field] !== null);
+}
+
+function presentDocumentInternalFields(payload: DocumentVisibilityPayload) {
+  return internalDocumentFields.filter((field) => payload[field] !== undefined && payload[field] !== null);
 }
 
 function projectRecommendationPayload(
@@ -191,6 +246,97 @@ function projectRecommendationPayload(
   };
 }
 
+function projectDocumentPayload(
+  actor: DemoActor,
+  role: DemoRole,
+  payload: DocumentVisibilityPayload,
+  platformTenantId: UUID,
+  clientTenantId?: UUID
+): DocumentPayloadProjection {
+  const permission = permissionEngine.can(
+    actor,
+    "VIEW",
+    {
+      objectType: "DOCUMENT",
+      objectId: payload.id,
+      clientTenantId: payload.clientTenantId,
+      sensitivity: payload.sensitivity,
+      visibilityStatus:
+        payload.evidenceVisibilityStatus === "CLIENT_VISIBLE" || payload.evidenceVisibilityStatus === "REDACTED"
+          ? payload.evidenceVisibilityStatus
+          : "INTERNAL_ONLY",
+    },
+    {
+      platformTenantId,
+      clientTenantId,
+      sensitivity: payload.sensitivity,
+      clientVisibilityState:
+        payload.evidenceVisibilityStatus === "CLIENT_VISIBLE" || payload.evidenceVisibilityStatus === "REDACTED"
+          ? payload.evidenceVisibilityStatus
+          : "INTERNAL_ONLY",
+    },
+    role,
+  );
+  const hiddenFields = presentDocumentInternalFields(payload);
+
+  if (!permission.allowed) {
+    return {
+      visible: false,
+      reasonCode: permission.reasonCode,
+      reason: permission.reason,
+      permission,
+      visibilityState: "PERMISSION_DENIED",
+      payload: {},
+      hiddenFields: ["title", "documentType", "status", ...hiddenFields],
+    };
+  }
+
+  if (!role.internal) {
+    const clientSafeDocument =
+      payload.clientVisible &&
+      clientSafeDocumentEvidenceStatuses.has(payload.evidenceStatus ?? "") &&
+      clientSafeDocumentVisibilityStatuses.has(payload.evidenceVisibilityStatus ?? "");
+
+    if (!clientSafeDocument) {
+      return {
+        visible: false,
+        reasonCode: "DEMO_CLIENT_DOCUMENT_FAIL_CLOSED",
+        reason: "Client-side demo roles can only receive released or redacted document summaries.",
+        permission,
+        visibilityState: "NO_AVAILABLE_CONTENT",
+        payload: {},
+        hiddenFields: ["title", "documentType", "status", ...hiddenFields],
+      };
+    }
+
+    return {
+      visible: true,
+      reasonCode: "DEMO_CLIENT_DOCUMENT_SAFE_PROJECTION",
+      reason: "Client-side demo document payload includes only released or redacted summary fields.",
+      permission,
+      visibilityState: "CLIENT_SAFE",
+      payload: {
+        id: payload.id,
+        title: payload.title,
+        documentType: payload.documentType,
+        status: payload.status,
+        uploadedAt: payload.uploadedAt,
+      },
+      hiddenFields,
+    };
+  }
+
+  return {
+    visible: true,
+    reasonCode: "DEMO_INTERNAL_DOCUMENT_PROJECTION",
+    reason: "Internal demo role can view scoped document operational metadata.",
+    permission,
+    visibilityState: "INTERNAL_PROJECTION",
+    payload,
+    hiddenFields: [],
+  };
+}
+
 function clientRelease(candidate: ClientVisibilityCandidate): WorkflowGateResult {
   return canBecomeClientVisible(candidate);
 }
@@ -198,5 +344,6 @@ function clientRelease(candidate: ClientVisibilityCandidate): WorkflowGateResult
 export const visibilityEngine = {
   canView,
   canBecomeClientVisible: clientRelease,
+  projectDocumentPayload,
   projectRecommendationPayload,
 };
