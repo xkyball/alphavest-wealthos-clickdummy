@@ -177,4 +177,135 @@ test.describe("Phase 18 export package manifest", () => {
     expect(gate.allowedToGenerate).toBe(false);
     expect(gate.missing).toContain("audit_persistence");
   });
+
+  test("filters selected export scope by object access and forbidden payloads", () => {
+    const decision = exportService.evaluateExportScope([
+      {
+        access: "Allowed",
+        id: "68c2dd2e-2322-526f-8a48-2fdadf996c40",
+        name: "Client-safe recommendation summary",
+        payloadClassifications: ["CLIENT_SAFE_SUMMARY"],
+        selected: true,
+        type: "recommendation",
+      },
+      {
+        access: "Limited",
+        id: "1c62e3e3-6a6f-5a44-81d8-fbe3f6f7c101",
+        name: "Released evidence summary",
+        payloadClassifications: ["RELEASED_EVIDENCE_SUMMARY"],
+        selected: true,
+        type: "evidence_record",
+      },
+      {
+        access: "Restricted",
+        id: "2c62e3e3-6a6f-5a44-81d8-fbe3f6f7c102",
+        name: "Internal advisor rationale",
+        payloadClassifications: ["INTERNAL_RATIONALE"],
+        selected: true,
+        type: "advice_note",
+      },
+      {
+        access: "Allowed",
+        id: "3c62e3e3-6a6f-5a44-81d8-fbe3f6f7c103",
+        name: "Unreleased compliance evidence",
+        payloadClassifications: ["UNRELEASED_EVIDENCE"],
+        selected: true,
+        type: "evidence_item",
+      },
+    ]);
+
+    expect(decision.valid).toBe(false);
+    expect(decision.allowedSelectedCount).toBe(2);
+    expect(decision.includedItems.map((item) => item.name)).toEqual([
+      "Client-safe recommendation summary",
+      "Released evidence summary",
+    ]);
+    expect(decision.blockedItems).toEqual([
+      {
+        id: "2c62e3e3-6a6f-5a44-81d8-fbe3f6f7c102",
+        name: "Internal advisor rationale",
+        reason: "restricted_object",
+      },
+      {
+        id: "3c62e3e3-6a6f-5a44-81d8-fbe3f6f7c103",
+        name: "Unreleased compliance evidence",
+        reason: "forbidden_payload:UNRELEASED_EVIDENCE",
+      },
+    ]);
+    expect(decision.missing).toContain("blocked_or_forbidden_scope_items");
+  });
+
+  test("keeps approval, generation, download and share as separate export steps", () => {
+    const previewOnly = exportService.evaluateExportStepSeparation({
+      approved: false,
+      downloaded: false,
+      generated: false,
+      previewed: true,
+      shared: false,
+    });
+
+    expect(previewOnly.canApprove).toBe(true);
+    expect(previewOnly.canGenerate).toBe(false);
+    expect(previewOnly.canDownload).toBe(false);
+    expect(previewOnly.canShare).toBe(false);
+    expect(previewOnly.missing).toEqual([
+      "approval_required_before_generation",
+      "generation_required_before_download",
+      "download_required_before_share",
+    ]);
+
+    const generatedButNotDownloaded = exportService.evaluateExportStepSeparation({
+      approved: true,
+      downloaded: false,
+      generated: true,
+      previewed: true,
+      shared: false,
+    });
+
+    expect(generatedButNotDownloaded.canDownload).toBe(true);
+    expect(generatedButNotDownloaded.canShare).toBe(false);
+    expect(generatedButNotDownloaded.missing).toEqual(["download_required_before_share"]);
+
+    const downloaded = exportService.evaluateExportStepSeparation({
+      approved: true,
+      downloaded: true,
+      generated: true,
+      previewed: true,
+      shared: false,
+    });
+
+    expect(downloaded.canShare).toBe(true);
+    expect(downloaded.missing).toEqual([]);
+  });
+
+  test("requires explicit external share stage controls in package manifests", () => {
+    const file = fileMetadataService.prepareDemoFileMetadata({
+      category: "exports",
+      checksumSeed: "summit:export-package:share-stage",
+      fileName: "EXP-2026-06-16-0087-redacted.zip",
+      fileSizeBytes: 9123840,
+      mimeType: "application/zip",
+      tenantSlug: "summit",
+    });
+    const result = exportPackageService.buildExportPackageManifest({
+      approvalRequired: true,
+      approved: true,
+      auditPersistenceAvailable: true,
+      expiresAt: new Date("2026-06-23T12:00:00.000Z"),
+      exportRequestId: "68c2dd2e-2322-526f-8a48-2fdadf996c40",
+      externalShare: false,
+      file,
+      packageStage: "shared",
+      payloadClassifications: ["CLIENT_SAFE_SUMMARY"],
+      redactionProfile: "external-limited",
+      selectedObjectCount: 3,
+      tenantSlug: "summit",
+      watermark: true,
+    });
+
+    expect(result.valid).toBe(false);
+    expect(result.issues).toContain("external_share_required_for_share_stage");
+    expect(result.manifest.controls.packageStage).toBe("shared");
+    expect(result.manifest.realBinaryGenerated).toBe(false);
+  });
 });

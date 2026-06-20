@@ -59,6 +59,9 @@ import {
   communicationPaths,
   communicationTemplates,
   exportScopeItems,
+  exportScopeSummary,
+  exportForbiddenPayloadChecks,
+  exportPackageControls,
   exportTimeline,
   exportTypes,
   exportWizardSteps,
@@ -743,13 +746,18 @@ function ExportScopePage({ title }: { title: string }) {
           <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <CardTitle>Selected Scope</CardTitle>
-              <p className="mt-1 text-sm text-alphavest-muted">12 selected, 0 invalid.</p>
+              <p className="mt-1 text-sm text-alphavest-muted">{exportScopeSummary.included} included, {exportScopeSummary.invalidSelected} invalid selected.</p>
             </div>
             <button className={secondaryButtonClass} data-testid="j08-clear-scope" onClick={() => { void runScreencastDemoAction("j08.clearScope", "/export/demo/redaction"); }} type="button">Clear all</button>
           </CardHeader>
           <CardContent>
             <DataTable compact columns={availableColumns} getRowId={(row) => `${row.id}-selected`} rows={exportScopeItems.filter((item) => item.selected)} />
-            <StatePanel className="mt-4" detail="Only items with allowed access can be exported. Limited items may need additional review." state="restricted" title="Object-level permission checks" />
+            <StatePanel className="mt-4" detail={`${exportScopeSummary.blocked} restricted or not-permitted objects are excluded. Limited items remain in scope only after redaction review.`} state="restricted" title="Object-level permission checks" />
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <FieldPill label="Included" value={`${exportScopeSummary.included} objects`} />
+              <FieldPill label="Limited" value={`${exportScopeSummary.limitedIncluded} reviewed`} />
+              <FieldPill label="Blocked" value={`${exportScopeSummary.blocked} excluded`} />
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -843,6 +851,12 @@ function ExportRedactionPage({ title }: { title: string }) {
               </div>
             </div>
             <div className="mt-5 space-y-3">
+              {exportForbiddenPayloadChecks.map((item) => (
+                <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-green/30 bg-alphavest-green/10 p-3 text-sm" key={item.label}>
+                  <span className="text-alphavest-muted">{item.label}</span>
+                  <Badge tone="green">{item.state}</Badge>
+                </div>
+              ))}
               {[
                 ["Account identifiers", "Reviewed"],
                 ["Tax residency notes", "Pending"],
@@ -880,10 +894,11 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
                 { label: "Format", value: "Encrypted archive" },
                 { label: "Estimated size", value: "92.4 MB" },
                 { label: "Record count", value: "4,321" },
+                { label: "Binary status", value: <Badge tone="gold">Metadata-only</Badge> },
                 { label: "Classification", value: <Badge tone="red">Confidential</Badge> }
               ]}
             />
-            <StatePanel className="mt-5" detail="No download is available until all required approvals and blocking policy checks are resolved." state="blocked" title="Important" />
+            <StatePanel className="mt-5" detail="Preview does not approve the package. Approval, generation, download and share are separate controlled events." state="restricted" title="Step separation enforced" />
           </CardContent>
         </Card>
         <Card>
@@ -921,6 +936,20 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
           </CardContent>
         </Card>
       </div>
+      <Card className="mt-5">
+        <CardHeader><CardTitle>Package Controls</CardTitle></CardHeader>
+        <CardContent>
+          <div className="grid gap-3 md:grid-cols-5">
+            {exportPackageControls.map((control) => (
+              <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-4" key={control.label}>
+                <p className="text-sm font-semibold text-alphavest-ivory">{control.label}</p>
+                <Badge className="mt-3" tone={toneFor(control.state)}>{control.state}</Badge>
+                <p className="mt-3 text-xs leading-5 text-alphavest-muted">{control.detail}</p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
       <Modal
         context={
           <div className="grid gap-2 text-sm">
@@ -939,7 +968,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
         open={modalOpen}
         title="Approve Export Package"
       >
-        <StatePanel detail="This demo approval records the approval step only. Download, share and client acceptance remain separate." state="blocked" title="Approval confirmation" />
+        <StatePanel detail="This demo approval records the approval step and creates metadata-only package proof. Download, share and client acceptance remain separate." state="restricted" title="Approval confirmation" />
         <label className="mt-4 flex items-start gap-3 text-sm leading-6 text-alphavest-muted">
           <span className="mt-1 grid size-5 shrink-0 place-items-center rounded border border-alphavest-gold bg-alphavest-gold text-alphavest-navy">
             <Check aria-hidden="true" className="size-3" />
@@ -959,7 +988,7 @@ function ExportDownloadPage({ title }: { title: string }) {
       <PageLead badge="Completed" description="Download securely or create a time-limited external share after export approval." icon={Download} title={title} />
       <StatePanel
         className="mb-5"
-        detail="The export package is approved for controlled delivery. Download and share actions do not imply client acceptance or downstream advice execution."
+        detail="The metadata-only export package is approved for controlled delivery. Download and share actions do not imply client acceptance or downstream advice execution."
         state="success"
         title="Export approved for delivery"
       />
@@ -976,6 +1005,8 @@ function ExportDownloadPage({ title }: { title: string }) {
                   { label: "Source", value: "Client Comms Portfolio Summary" },
                   { label: "Requested by", value: "Alex Bennett" },
                   { label: "Prepared", value: "May 21, 2025 09:42" },
+                  { label: "Format", value: "ZIP manifest package" },
+                  { label: "Binary status", value: <Badge tone="gold">Metadata-only</Badge> },
                   { label: "Watermark", value: <Badge tone="green">Enabled</Badge> },
                   { label: "Classification", value: <Badge tone="red">Confidential</Badge> }
                 ]}
@@ -987,7 +1018,7 @@ function ExportDownloadPage({ title }: { title: string }) {
               <CardTitle>Security and Compliance</CardTitle>
             </CardHeader>
             <CardContent>
-              {["Data classified and watermarked", "Access check recorded for approved requester", "Demo package scan state shown", "Audit logging still requires confirmation", "External sharing secured with expiry"].map((item) => (
+              {["Data classified and watermarked", "Access check recorded for approved requester", "Forbidden internal payloads excluded", "Download action audited separately", "External sharing secured with expiry"].map((item) => (
                 <div className="mb-2 flex items-center gap-3 text-sm text-alphavest-muted" key={item}>
                   <CheckCircle2 aria-hidden="true" className="size-4 text-alphavest-green" />
                   {item}
@@ -1005,7 +1036,7 @@ function ExportDownloadPage({ title }: { title: string }) {
               <div className="flex flex-wrap items-center justify-between gap-4 rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-4">
                 <div>
                   <p className="font-semibold text-alphavest-ivory">Watermarked export package</p>
-                  <p className="text-sm text-alphavest-muted">8.7 MB demo package metadata, delivery action pending</p>
+                  <p className="text-sm text-alphavest-muted">8.7 MB metadata-only manifest package, delivery action pending</p>
                 </div>
                 <button className={secondaryButtonClass} data-testid="j08-download-export" onClick={() => { void runScreencastDemoAction("j08.downloadExport"); }} type="button">
                   <Download aria-hidden="true" className="size-4" />

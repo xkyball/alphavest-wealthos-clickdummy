@@ -10,6 +10,7 @@ export type ExportPackageManifestInput = {
   externalShare: boolean;
   file: PreparedFileMetadata;
   payloadClassifications?: ExportPayloadClassification[];
+  packageStage?: "approved" | "downloaded" | "generated" | "preview" | "shared";
   redactionProfile: string;
   selectedObjectCount: number;
   tenantSlug: string;
@@ -22,6 +23,7 @@ export type ExportPackageManifest = {
     approvalRequired: boolean;
     approved: boolean;
     externalShare: boolean;
+    packageStage: "approved" | "downloaded" | "generated" | "preview" | "shared";
     selectedObjectCount: number;
     watermark: boolean;
   };
@@ -46,10 +48,15 @@ export type ExportPackageManifestResult = {
 
 export function buildExportPackageManifest(input: ExportPackageManifestInput): ExportPackageManifestResult {
   const issues = [...input.file.issues];
+  const packageStage = input.packageStage ?? "generated";
 
   if (!input.file.valid) issues.push("valid_file_metadata_required");
   if (input.file.mimeType !== "application/zip") issues.push("zip_package_required");
   if (input.approvalRequired && !input.approved) issues.push("approval_required_before_generation");
+  if ((packageStage === "downloaded" || packageStage === "shared") && !input.approved) {
+    issues.push("approval_required_before_delivery");
+  }
+  if (packageStage === "shared" && !input.externalShare) issues.push("external_share_required_for_share_stage");
   if (input.auditPersistenceAvailable === false) issues.push("audit_persistence_required_before_generation");
   if (!input.redactionProfile.trim()) issues.push("redaction_profile_required");
   if (input.selectedObjectCount <= 0) issues.push("selected_export_objects_required");
@@ -65,6 +72,7 @@ export function buildExportPackageManifest(input: ExportPackageManifestInput): E
       approvalRequired: input.approvalRequired,
       approved: input.approved,
       externalShare: input.externalShare,
+      packageStage,
       selectedObjectCount: input.selectedObjectCount,
       watermark: input.watermark,
     },

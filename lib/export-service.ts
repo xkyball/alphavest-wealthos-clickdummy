@@ -24,6 +24,45 @@ export type ExportProjectionDecision = {
   payloadClassifications: ExportPayloadClassification[];
 };
 
+export type ExportScopeAccess = "Allowed" | "Limited" | "Restricted" | "Not permitted";
+
+export type ExportScopeCandidate = {
+  id: UUID;
+  access: ExportScopeAccess;
+  name: string;
+  selected: boolean;
+  type: string;
+  payloadClassifications?: ExportPayloadClassification[];
+};
+
+export type ExportScopeDecision = {
+  allowedSelectedCount: number;
+  blockedItems: Array<{
+    id: UUID;
+    name: string;
+    reason: string;
+  }>;
+  includedItems: ExportScopeCandidate[];
+  missing: string[];
+  valid: boolean;
+};
+
+export type ExportStepSeparationInput = {
+  approved: boolean;
+  downloaded: boolean;
+  generated: boolean;
+  previewed: boolean;
+  shared: boolean;
+};
+
+export type ExportStepSeparationDecision = {
+  canApprove: boolean;
+  canDownload: boolean;
+  canGenerate: boolean;
+  canShare: boolean;
+  missing: string[];
+};
+
 export type ExportPayloadClassification =
   | "CLIENT_SAFE_SUMMARY"
   | "RELEASED_EVIDENCE_SUMMARY"
@@ -45,6 +84,74 @@ const forbiddenClientExportPayloads = new Set<ExportPayloadClassification>([
 
 function forbiddenExportPayloads(payloadClassifications: ExportPayloadClassification[] = []) {
   return payloadClassifications.filter((classification) => forbiddenClientExportPayloads.has(classification));
+}
+
+function evaluateExportScope(items: ExportScopeCandidate[]): ExportScopeDecision {
+  const missing: string[] = [];
+  const selected = items.filter((item) => item.selected);
+  const blockedItems: ExportScopeDecision["blockedItems"] = [];
+  const includedItems: ExportScopeCandidate[] = [];
+
+  for (const item of selected) {
+    const forbidden = forbiddenExportPayloads(item.payloadClassifications);
+
+    if (item.access === "Restricted" || item.access === "Not permitted") {
+      blockedItems.push({
+        id: item.id,
+        name: item.name,
+        reason: item.access === "Restricted" ? "restricted_object" : "not_permitted",
+      });
+      continue;
+    }
+
+    if (forbidden.length > 0) {
+      blockedItems.push({
+        id: item.id,
+        name: item.name,
+        reason: `forbidden_payload:${forbidden.join(",")}`,
+      });
+      continue;
+    }
+
+    includedItems.push(item);
+  }
+
+  if (selected.length === 0) {
+    missing.push("selected_export_objects");
+  }
+
+  if (blockedItems.length > 0) {
+    missing.push("blocked_or_forbidden_scope_items");
+  }
+
+  return {
+    allowedSelectedCount: includedItems.length,
+    blockedItems,
+    includedItems,
+    missing,
+    valid: missing.length === 0,
+  };
+}
+
+function evaluateExportStepSeparation(input: ExportStepSeparationInput): ExportStepSeparationDecision {
+  const missing: string[] = [];
+  const canApprove = input.previewed;
+  const canGenerate = canApprove && input.approved;
+  const canDownload = canGenerate && input.generated;
+  const canShare = canDownload && input.downloaded;
+
+  if (!input.previewed) missing.push("preview_required_before_approval");
+  if (!input.approved) missing.push("approval_required_before_generation");
+  if (!input.generated) missing.push("generation_required_before_download");
+  if (!input.downloaded) missing.push("download_required_before_share");
+
+  return {
+    canApprove,
+    canDownload,
+    canGenerate,
+    canShare,
+    missing,
+  };
 }
 
 function canUseClientProjectionForExport(projection: ExportProjectionInput): ExportProjectionDecision {
@@ -148,6 +255,8 @@ function canGenerateExport(input: {
 }
 
 export const exportService = {
+  evaluateExportScope,
+  evaluateExportStepSeparation,
   canGenerateExport,
   canUseClientProjectionForExport,
   forbiddenExportPayloads,

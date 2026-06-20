@@ -1,5 +1,88 @@
 # Phase Execution Report
 
+## MEGA-JOURNEY-PHASE-8 - Export / Redaction / Client-Safe Package Implementation
+
+Date: 2026-06-20
+
+### Scope
+
+Executed Phase 8 from `mega_journeys_1/ALPHAVEST_MVP_JOURNEY_IMPLEMENTATION_PLAN.md` as an implementation phase instead of docs-only. The implementation hardens the export journey around object scope selection, redaction of forbidden/internal payloads, explicit preview/approval/generation/download/share separation, audit persistence and metadata-only package proof.
+
+No Prisma schema change, migration, production binary package generation, production storage/download/share delivery, production auth or client advice release was added.
+
+### Implemented Behavior
+
+- Added export scope evaluation for selected objects, restricted/not-permitted objects and forbidden payload classifications.
+- Added explicit export step-separation decisions for preview, approval, generation, download and share.
+- Hardened generated package manifests with package-stage controls and external-share requirements.
+- Updated J08 demo workflow generation to require audit persistence and safe payload classifications.
+- Blocked J08 share until the download step has occurred.
+- Updated export scope, redaction, preview and download UI states to show scope filtering, forbidden payload exclusion, metadata-only package proof and separated delivery controls.
+- Added focused Phase 8 tests for scope filtering, forbidden payloads, step separation, manifest share-stage controls and API fail-closed sequencing.
+
+### Changed Files
+
+- `app/api/demo-workflow/route.ts`
+- `components/communication-export-ops-screen.tsx`
+- `lib/communication-export-ops-demo-data.ts`
+- `lib/export-package-service.ts`
+- `lib/export-service.ts`
+- `tests/file-export-realism.spec.ts`
+- `tests/phase8-export-workflow-api.spec.ts`
+- `docs/v3/ALPHAVEST_MVP_PHASE_8_EXPORT_IMPLEMENTATION_MAP.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Commands Run
+
+- `git status --short --branch`
+- Read-only source inspection commands using `rg`, `sed` and screenshot inspection
+- `pnpm typecheck`
+- `pnpm exec playwright test tests/file-export-realism.spec.ts --grep "Phase 18 export package manifest"`
+- `pnpm exec playwright test tests/phase8-export-workflow-api.spec.ts`
+- `pnpm lint`
+- `pnpm db:validate`
+- `git diff --check`
+- `pnpm build`
+- `pnpm smoke:phase13`
+- Screenshot capture against local dev server on port `3000`
+
+### Tests / Build / Migrations Run
+
+- `pnpm typecheck` - passed.
+- `pnpm exec playwright test tests/file-export-realism.spec.ts --grep "Phase 18 export package manifest"` - passed, 8 tests.
+- `pnpm exec playwright test tests/phase8-export-workflow-api.spec.ts` - passed, 2 tests. Initial parallel run failed because the Playwright web server port `3020` was already in use; rerun by itself passed.
+- `pnpm lint` - passed.
+- `pnpm db:validate` - passed.
+- `git diff --check` - passed.
+- `pnpm build` - passed with existing Turbopack tracing warnings from `lib/document-storage-adapter.ts`.
+- `pnpm smoke:phase13` - passed with 13 checked routes and 0 failures.
+- No Prisma migration was created or run.
+
+### Visual Proof
+
+- Product UI changed on `/export/demo/scope`, `/export/demo/redaction`, `/export/demo/preview?state=approval` and `/export/demo/download`.
+- Screenshot artifacts:
+  - `artifacts/mvp-phase-8/phase8-export-scope-controls.png`
+  - `artifacts/mvp-phase-8/phase8-export-redaction-forbidden-payloads.png`
+  - `artifacts/mvp-phase-8/phase8-export-preview-step-separation.png`
+  - `artifacts/mvp-phase-8/phase8-export-download-share-separation.png`
+- Human Visual Review Rubric result: `not reviewed`.
+
+### Current Capability Level
+
+Phase 8 reaches bounded E6/E7 demo proof for export safety: selected export objects are evaluated against scope and forbidden-payload rules, client-safe package generation remains metadata-only, approval does not collapse into download/share, and audit persistence failure blocks the approval/generation path. It does not claim real binary package generation or production external delivery.
+
+### P0 Impact
+
+Phase 8 adds executable proof for a client-safe export package boundary: internal drafts, compliance notes, unreleased evidence and hidden fields cannot enter a client-safe export manifest, and share/download actions remain separately audited demo workflow events.
+
+### Blockers / Deferred / Hold Items
+
+- Real binary ZIP generation and object storage delivery remain later export/file-realism hardening work.
+- Production share-link authorization, expiry enforcement and download transport are not implemented.
+- Full human visual review is deferred; screenshot proof will be captured for the changed screens.
+
 ## MEGA-JOURNEY-PHASE-7 - Decision Record Audit Persistence Implementation
 
 Date: 2026-06-20

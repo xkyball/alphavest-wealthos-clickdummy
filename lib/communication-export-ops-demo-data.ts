@@ -127,6 +127,14 @@ export const exportScopeItems = [
   { id: "SC-08", name: "Offshore Trust", type: "Trust", access: "Not permitted", selected: false }
 ];
 
+export const exportScopeSummary = {
+  blocked: 2,
+  included: 6,
+  invalidSelected: 0,
+  limitedIncluded: 1,
+  totalAvailable: 8
+};
+
 export const redactionSummary = [
   { id: "RS-01", label: "Financial values", severity: "High", count: 3 },
   { id: "RS-02", label: "Account identifiers", severity: "High", count: 4 },
@@ -135,10 +143,25 @@ export const redactionSummary = [
 ];
 
 export const previewPolicyChecks = [
-  { id: "PC-01", policy: "Data retention policy", state: "Blocked", detail: "Records exceed policy retention limit." },
+  { id: "PC-01", policy: "Data retention policy", state: "Pass", detail: "Records are within the approved retention window." },
   { id: "PC-02", policy: "PII handling policy", state: "Pass", detail: "Direct personal identifiers removed." },
   { id: "PC-03", policy: "Jurisdiction transfer policy", state: "Pass", detail: "Approved for Singapore recipient scope." },
   { id: "PC-04", policy: "Secure export policy", state: "Warning", detail: "Encryption key rotation recommended." }
+];
+
+export const exportPackageControls = [
+  { label: "Preview", state: "Complete", detail: "Package contents reviewed before approval." },
+  { label: "Approval", state: "Required", detail: "Compliance approval is separate from generation." },
+  { label: "Generation", state: "Metadata-only", detail: "Manifest created; real binary generation remains deferred." },
+  { label: "Download", state: "Separate", detail: "Download is blocked until approval and generation complete." },
+  { label: "Share", state: "Separate", detail: "External share requires a time-limited link and audit event." }
+];
+
+export const exportForbiddenPayloadChecks = [
+  { label: "AI draft", state: "Excluded" },
+  { label: "Internal rationale", state: "Excluded" },
+  { label: "Compliance notes", state: "Excluded" },
+  { label: "Unreleased evidence", state: "Excluded" }
 ];
 
 export const exportTimeline = [

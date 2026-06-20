@@ -2486,7 +2486,11 @@ async function runJ08ScopeSelected(prisma: PrismaClient, actionId: DemoWorkflowA
   );
 }
 
-async function runJ08ConfirmApproval(prisma: PrismaClient, actionId: DemoWorkflowAction) {
+async function runJ08ConfirmApproval(
+  prisma: PrismaClient,
+  actionId: DemoWorkflowAction,
+  options: DemoWorkflowActionOptions = {},
+) {
   const now = new Date();
   const expiryDate = exportExpiryDate(now);
   const fileMetadata = fileMetadataService.prepareDemoFileMetadata({
@@ -2507,6 +2511,7 @@ async function runJ08ConfirmApproval(prisma: PrismaClient, actionId: DemoWorkflo
     {
       actionId,
       actorRoleKey: "compliance_officer",
+      auditPersistenceAvailable: options.auditPersistenceAvailable,
       auditResult: AuditResult.SUCCESS,
       clientTenantId: summitTenantId,
       eventType: "screencast.export.approved_generated",
@@ -2543,8 +2548,10 @@ async function runJ08ConfirmApproval(prisma: PrismaClient, actionId: DemoWorkflo
       const exportGate = exportService.canGenerateExport({
         actor: session.actor,
         approvalComplete: true,
+        auditPersistenceAvailable: options.auditPersistenceAvailable,
         clientTenantId: summitTenantId,
         externalShare: false,
+        payloadClassifications: ["CLIENT_SAFE_SUMMARY", "RELEASED_EVIDENCE_SUMMARY"],
         platformTenantId,
         redactionProfile: currentExport.redactionProfile,
         role: session.role,
@@ -2559,10 +2566,13 @@ async function runJ08ConfirmApproval(prisma: PrismaClient, actionId: DemoWorkflo
       const exportPackage = exportPackageService.buildExportPackageManifest({
         approvalRequired: true,
         approved: true,
+        auditPersistenceAvailable: options.auditPersistenceAvailable,
         expiresAt: expiryDate,
         exportRequestId: summitExportRequestId,
         externalShare: false,
         file: fileMetadata,
+        packageStage: "generated",
+        payloadClassifications: ["CLIENT_SAFE_SUMMARY", "RELEASED_EVIDENCE_SUMMARY"],
         redactionProfile: currentExport.redactionProfile,
         selectedObjectCount: 3,
         tenantSlug: "summit",
@@ -2726,6 +2736,18 @@ async function runJ08DownloadExport(prisma: PrismaClient, actionId: DemoWorkflow
         throw new Error("J08 download requires approved generated export metadata.");
       }
 
+      const stepDecision = exportService.evaluateExportStepSeparation({
+        approved: Boolean(currentExport.approvedByUserId),
+        downloaded: false,
+        generated: Boolean(currentExport.generatedFileDocumentId),
+        previewed: true,
+        shared: false,
+      });
+
+      if (!stepDecision.canDownload) {
+        throw new Error(`J08 download blocked: ${stepDecision.missing.join(", ")}`);
+      }
+
       const exportRequest = await tx.exportRequest.updateMany({
         where: { id: summitExportRequestId, clientTenantId: summitTenantId },
         data: {
@@ -2799,6 +2821,18 @@ async function runJ08ShareExport(prisma: PrismaClient, actionId: DemoWorkflowAct
 
       if (!currentExport?.generatedFileDocumentId || !currentExport.approvedByUserId) {
         throw new Error("J08 share requires approved generated export metadata.");
+      }
+
+      const stepDecision = exportService.evaluateExportStepSeparation({
+        approved: Boolean(currentExport.approvedByUserId),
+        downloaded: currentExport.status === ExportStatus.DOWNLOADED,
+        generated: Boolean(currentExport.generatedFileDocumentId),
+        previewed: true,
+        shared: false,
+      });
+
+      if (!stepDecision.canShare) {
+        throw new Error(`J08 share blocked: ${stepDecision.missing.join(", ")}`);
       }
 
       const exportGate = exportService.canGenerateExport({
@@ -3882,7 +3916,7 @@ async function runDemoWorkflowAction(
       return runJ08ScopeSelected(prisma, actionId);
 
     case "j08.confirmApproval":
-      return runJ08ConfirmApproval(prisma, actionId);
+      return runJ08ConfirmApproval(prisma, actionId, options);
 
     case "j08.downloadExport":
       return runJ08DownloadExport(prisma, actionId);

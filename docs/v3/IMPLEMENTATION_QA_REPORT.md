@@ -1,5 +1,78 @@
 # Implementation QA Report
 
+## MEGA-JOURNEY-PHASE-8 Implementation QA Addendum
+
+Date: 2026-06-20
+
+### Executive Decision
+
+`PHASE_8_IMPLEMENTATION_QA_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Phase scope discipline | Passed | Implementation stayed within export/redaction/client-safe package behavior, demo workflow API, UI, tests and reports. No schema, migration, production binary export or client advice release was added. |
+| Export scope selection | Implemented + tested | Selected objects are evaluated for allowed/limited access, restricted/not-permitted objects and forbidden payload classifications. |
+| Redaction and forbidden payload filtering | Implemented + tested | Client-safe exports reject AI drafts, internal rationale, compliance notes, unreleased evidence/recommendations and hidden fields. |
+| Step separation | Implemented + tested | Preview, approval, generation, download and share are explicit service/API/UI states; share is blocked before download. |
+| Audit persistence fail-closed | Implemented + tested | Export approval/generation honors the Phase 7 audit persistence gate and returns no-client-release failure on outage simulation. |
+| Metadata-only package proof | Implemented + tested | Generated package manifests remain metadata-only and carry package-stage controls. |
+| Visual proof | Partial | Screenshots were captured for changed export screens. Human visual review is not performed in this pass. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | TypeScript check passed after implementation. |
+| `pnpm exec playwright test tests/file-export-realism.spec.ts --grep "Phase 18 export package manifest"` | Passed | 8 export package tests passed. |
+| `pnpm exec playwright test tests/phase8-export-workflow-api.spec.ts` | Passed after rerun | Initial parallel run collided on Playwright web-server port `3020`; rerun by itself passed 2 API tests. |
+| `pnpm lint` | Passed | ESLint completed cleanly. |
+| `pnpm db:validate` | Passed | Prisma schema is valid. |
+| `git diff --check` | Passed | No whitespace errors. |
+| `pnpm build` | Passed with warnings | Build completed; Turbopack repeated existing broad tracing warnings from `lib/document-storage-adapter.ts`. |
+| `pnpm smoke:phase13` | Passed | 13 routes checked and 0 failures. |
+| Screenshot capture | Passed after focused recapture | Final artifacts saved under `artifacts/mvp-phase-8/`. |
+
+### Tests / Build / Migrations Run
+
+- `pnpm typecheck` - passed.
+- `pnpm exec playwright test tests/file-export-realism.spec.ts --grep "Phase 18 export package manifest"` - passed.
+- `pnpm exec playwright test tests/phase8-export-workflow-api.spec.ts` - passed after rerun.
+- `pnpm lint` - passed.
+- `pnpm db:validate` - passed.
+- `git diff --check` - passed.
+- `pnpm build` - passed with existing warnings.
+- `pnpm smoke:phase13` - passed.
+- No Prisma migration was created or run.
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| Export scope evaluator | implemented + tested | Allows safe selected objects and blocks restricted/forbidden objects. |
+| Forbidden payload filtering | implemented + tested | Blocks internal draft/compliance/unreleased payload classifications. |
+| Package step separation | implemented + tested | Approval/generation/download/share remain separate controls. |
+| J08 API sequencing | implemented + tested | Share requires prior approved generation and download. |
+| Export UI Phase 8 states | implemented + screenshot-proven | Scope/redaction/preview/download screens updated. |
+| Real binary export generation | not performed | Later hardening scope. |
+| Production share/download delivery | not performed | Later operational export scope. |
+
+### Visual Proof
+
+- Screenshot artifacts:
+  - `artifacts/mvp-phase-8/phase8-export-scope-controls.png`
+  - `artifacts/mvp-phase-8/phase8-export-redaction-forbidden-payloads.png`
+  - `artifacts/mvp-phase-8/phase8-export-preview-step-separation.png`
+  - `artifacts/mvp-phase-8/phase8-export-download-share-separation.png`
+- Human Visual Review Rubric result: `not reviewed`.
+
+### Residual Risks
+
+- Export package generation remains metadata-only and does not create a real ZIP payload.
+- Share/download are demo workflow events, not production transport controls.
+- Screenshots prove rendered states after capture, not full human visual acceptance.
+
 ## MEGA-JOURNEY-PHASE-7 Implementation QA Addendum
 
 Date: 2026-06-20
