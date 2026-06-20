@@ -2912,3 +2912,49 @@ Date: 2026-06-20
 - `/api/review-monitoring` remains P1/internal and should not be used as MVP advice or rebalance execution proof.
 - Broad `pnpm test:playwright` and `pnpm build` were not run for this phase; targeted API checks, typecheck, lint and diff-check passed.
 - Targeted Playwright API scripts should be run sequentially unless each run receives a unique web-server port.
+
+## PHASE-09-SCHEMA_ALIGNMENT QA Addendum
+
+Date: 2026-06-20
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Phase scope discipline | Passed | Only `AV-SLICE-SCH-01..05` schema-alignment test/report work was changed. |
+| Source artefacts | Passed | Final handoff, task master, source order, stop rules, schema reconciliation, refactoring strategy, P0 assertion plan and required V3 docs were read before edits. |
+| Stop rules | Passed | No route scope change, P1/Hold/reference promotion, visual generation, API creation, schema replacement, migration, `main` target use, patch-schema takeover or P0 overclaim. |
+| Full-workflow baseline | Passed | `tests/schema-alignment.spec.ts` asserts 42 Prisma models and 22 enums. |
+| RBAC/object-scope schema support | Passed | Test asserts existing Role, Permission, RolePermission, UserRole, AccessRequest and SecondConfirmation fields. |
+| Visibility/advice-boundary schema support | Passed | Test asserts Recommendation, Approval, ComplianceReview and Decision fields without creating an `AiDraft` model. |
+| Evidence/audit/export schema support | Passed | Test asserts Document, DocumentVersion, DocumentExtraction, DocumentReview, DocumentLink, EvidenceRecord, EvidenceItem, AuditEvent and ExportRequest fields. |
+| Patch-only model block | Passed | Test asserts patch-only concepts remain absent from Prisma and blocked by the handoff. |
+| Prisma validation | Passed | `pnpm db:validate`. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm db:validate` | Passed | Prisma schema validates without migration or schema replacement. |
+| `pnpm exec playwright test tests/schema-alignment.spec.ts` | Passed | 5 tests; schema field support and patch-only blocking proof. |
+| `pnpm typecheck` | Passed | TypeScript clean after adding the schema-alignment test. |
+| `pnpm lint` | Passed | ESLint clean for the updated repo. |
+| `git diff --check` | Passed | No whitespace errors. |
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| Full-workflow schema baseline | verified + tested | Baseline remains 42 models / 22 enums. |
+| RBAC/object-scope field support | verified + tested | Field availability is proven; runtime permission behaviour remains separately tested in RBAC phases. |
+| Visibility/advice-boundary field support | verified + tested | Advisor approval, compliance release and client visibility fields remain separate. |
+| Evidence/audit/export field support | verified + tested | Field availability is proven; sufficiency/audit/export lifecycle proof remains separate. |
+| Patch-only model block | verified + tested | Patch concepts remain mapped or blocked, not silently implemented as models. |
+| Prisma migration | not performed | No migration was authorized or needed. |
+| Full P0 gate closure | not claimed | Current coverage is schema field support only. |
+
+### Residual Risks
+
+- Schema field availability is not runtime safety proof; RBAC, payload projection, evidence sufficiency, audit fail-closed and export lifecycle tests remain required proof slices.
+- JSON policy fields such as `conditionJson` and `scopeJson` still require fail-closed service/test enforcement outside this schema-alignment slice.
+- Patch-only concepts remain blocked unless a later accepted schema decision authorizes explicit model work.

@@ -96,6 +96,70 @@ This phase strengthens P0 proof slices for upload-not-sufficiency, evidence suff
 
 `PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
 
+## PHASE-09-SCHEMA_ALIGNMENT - Schema Alignment
+
+Date: 2026-06-20
+
+### Scope
+
+Executed the handoff phase prompt `09_PHASE_SCHEMA_ALIGNMENT_PROMPT.md` for allowed slices `AV-SLICE-SCH-01..05`. This phase aligned schema proof to the full-workflow baseline without replacing `prisma/schema.prisma`, creating migrations, creating patch-only models, adding APIs, changing routes or touching visual assets.
+
+### Source Artefacts Used
+
+- `FINAL_CODEX_IMPLEMENTATION_HANDOFF.md`
+- `FINAL_CODEX_TASK_MASTER.md`
+- `SOURCE_OF_TRUTH_ORDER.md`
+- `STOP_RULES_MASTER.md`
+- `SCHEMA_FIELD_LEVEL_RECONCILIATION.md`
+- `REFACTORING_STRATEGY_MINI_DOC.md`
+- `P0_TEST_ASSERTION_AND_FIXTURE_PLAN.md`
+- Project V3 source-of-truth docs listed in `AGENTS.md` and `CODEX_MASTER_TASK.md`.
+
+### Completed Tasks
+
+- Verified the current Prisma schema remains the full-workflow baseline with 42 models and 22 enums.
+- Added schema-alignment regression coverage for RBAC/object-scope fields, visibility/advice-boundary fields, evidence/document/audit/export fields and patch-only concept blocking.
+- Preserved `AiDraft`, `ClientVisibilityEvaluation`, `PolicyException` and `VisibilityRule` as blocked/mapped concepts rather than Prisma models.
+- Ran schema validation after the schema-adjacent test work.
+
+### Slice Coverage
+
+| Slice | Status | Notes |
+| --- | --- | --- |
+| `AV-SLICE-SCH-01` | Verified / tested | Full-workflow schema baseline remains 42 models and 22 enums. |
+| `AV-SLICE-SCH-02` | Verified / tested | RBAC and object-scope field families are present on existing baseline models. |
+| `AV-SLICE-SCH-03` | Verified / tested | Recommendation, Approval, ComplianceReview and Decision fields preserve advice-boundary separation. |
+| `AV-SLICE-SCH-04` | Verified / tested | Document, evidence, audit and export safety field families are present on existing baseline models. |
+| `AV-SLICE-SCH-05` | Verified / tested | Patch-only concepts remain blocked/mapped; no patch-only model creation. |
+
+### Changed Files
+
+- `tests/schema-alignment.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm db:validate` - passed.
+- `pnpm exec playwright test tests/schema-alignment.spec.ts` - passed, 5 tests.
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `git diff --check` - passed.
+
+### P0 Impact
+
+This phase improves proof for `P0_SCHEMA_FIELD_SUPPORT_GATE` by asserting that safety-critical code should continue to rely on the existing full-workflow schema fields, not patch-only model assumptions. It does not claim full P0 passed and does not prove runtime RBAC, payload visibility, evidence sufficiency, audit fail-closed or export lifecycle behaviour beyond schema field availability.
+
+### Blockers / Deferred / Hold Items
+
+- No schema migration was created because the final handoff and schema reconciliation do not authorize migration work in this phase.
+- `ClientVisibilityEvaluation`, `AiDraft`, `PolicyException`, `VisibilityRule`, `SourceReference` and `DocumentVerification` remain mapped/blocked concepts unless a later accepted schema decision unlocks explicit models.
+- Full P0 positive and negative runtime tests remain later-phase work.
+
+### Exit Gate Decision
+
+`PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
 ## PHASE-08-API - API Hardening
 
 Date: 2026-06-20
