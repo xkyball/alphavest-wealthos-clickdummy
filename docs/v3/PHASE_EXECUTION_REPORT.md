@@ -1,5 +1,100 @@
 # Phase Execution Report
 
+## PHASE-04-INTERACTION - Drawer / Modal Focus Lifecycle Addendum
+
+Date: 2026-06-20
+
+### Entry Decision
+
+`ENTRY_READY`
+
+### Scope
+
+Executed `_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/04_CODEX_PHASE_PROMPTS/04_PHASE_INTERACTION_LIFECYCLE_PROMPT.md` for `AV-SLICE-INT-01` and `AV-SLICE-INT-02`. This addendum hardens shared drawer/modal keyboard focus lifecycle only. No product route, route registry, API, Prisma schema, migration, visual asset, generated image or state-screen was changed.
+
+### Source Artefacts Used
+
+- `AGENTS.md`
+- `CODEX_MASTER_TASK.md`
+- Required V3 project source files listed by `AGENTS.md`
+- `FINAL_CODEX_IMPLEMENTATION_HANDOFF.md`
+- `FINAL_CODEX_TASK_MASTER.md`
+- `SOURCE_OF_TRUTH_ORDER.md`
+- `STOP_RULES_MASTER.md`
+- `ATOMIC_IMPLEMENTATION_SLICE_PLAN.md`
+- `PHASE_ENTRY_EXIT_GATE_CHECKLIST.md`
+- `DRAWER_MODAL_INTERACTION_CONTRACT.md`
+- `03_04_05_UI_INTERACTION_REALITY_REMEDIATION_PATCH.md`
+- `ALPHAVEST_UI_INTERACTION_REALITY_CLARIFICATION.md`
+- `STATIC_VS_REACTIVE_UI_CLASSIFICATION.md`
+- `UI_INTERACTION_REALITY_CODEBASE_AUDIT_CHECKLIST.md`
+
+### Slice Coverage
+
+| Slice | Status | Notes |
+| --- | --- | --- |
+| `AV-SLICE-INT-01` | Hardened / tested | Shared drawer primitive now focuses opened content, traps Tab inside the drawer and restores prior focus on close. |
+| `AV-SLICE-INT-02` | Hardened / tested | Shared modal primitive now focuses opened content, traps Tab inside the dialog and restores prior focus on close. |
+| `AV-SLICE-INT-03` | Not touched | Demo workflow actions were not changed in this addendum. |
+| `AV-SLICE-INT-04` | Inspected / not touched | Existing upload lifecycle remains selected/uploading/success/error with upload-only semantics. |
+| `AV-SLICE-INT-05` | Not touched | Wizard/stepper behaviour was not changed in this addendum. |
+
+### Surfaces Classified
+
+| Surface | File | Current Pattern | Classification | Treatment |
+| --- | --- | --- | --- | --- |
+| Shared `Drawer` primitive | `components/ui/drawer.tsx` | Open-gated primitive with Escape/backdrop/X close | `REACTIVE_DRAWER` primitive | Added focus entry, focus containment and focus return. |
+| Shared `Modal` primitive | `components/ui/modal.tsx` | Open-gated primitive with Escape/backdrop/X close | `REACTIVE_MODAL` primitive | Added focus entry, focus containment and focus return. |
+| Release confirmation | `components/internal-workflow-screen.tsx` | Route-state preopen plus cancel/Escape close through shared modal | `CONFIRMATION_DIALOG` | Verified through focused interaction test; no screen code change. |
+| Governance role drawer and confirmation | `components/decisions-governance-screen.tsx` | User-triggered drawer and confirmation modal | `REACTIVE_DRAWER` / `CONFIRMATION_DIALOG` | Verified focus entry and focus return through focused interaction test; no screen code change. |
+
+### Files Inspected
+
+- `components/ui/drawer.tsx`
+- `components/ui/modal.tsx`
+- `components/internal-workflow-screen.tsx`
+- `components/decisions-governance-screen.tsx`
+- `components/client-intake-screen.tsx`
+- `components/admin-tenant-setup-screen.tsx`
+- `components/communication-export-ops-screen.tsx`
+- `components/wealth-actions-screen.tsx`
+- `tests/interaction-lifecycle.spec.ts`
+
+### Changed Files
+
+- `components/ui/drawer.tsx`
+- `components/ui/modal.tsx`
+- `tests/interaction-lifecycle.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests Added Or Updated
+
+- Extended `tests/interaction-lifecycle.spec.ts` with focus lifecycle assertions for:
+  - release confirmation focus entry
+  - governance role drawer focus entry
+  - Escape close and focus return to the trigger
+
+### Commands Run
+
+- `pnpm test:playwright tests/interaction-lifecycle.spec.ts` - passed, 4 tests.
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+
+### P0 Impact
+
+This addendum strengthens interaction lifecycle proof slices for drawer/modal primitives. It does not claim full P0 passed and does not implement RBAC, evidence, audit, export, API or schema safety closure.
+
+### Blockers / Deferred / Hold Items
+
+- No P1, reference-only or hold routes were promoted.
+- No new API route, Prisma schema change, migration, generated visual, image or state-screen was added.
+- Broader focus-trap edge cases across every catalogue route remain covered by later full-route QA if required; this addendum verifies representative changed primitive behaviour.
+
+### Exit Gate Decision
+
+`PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
 ## PHASE-03-UI_STATE - UI State Boundary Proof Addendum
 
 Date: 2026-06-20

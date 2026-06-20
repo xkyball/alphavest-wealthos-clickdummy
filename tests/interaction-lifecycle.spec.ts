@@ -13,6 +13,7 @@ test.describe("Phase 04 interaction lifecycle", () => {
 
     const releaseDialog = page.getByRole("dialog", { name: "Release to client" });
     await expect(releaseDialog).toBeVisible();
+    await expect(releaseDialog.getByRole("button", { name: "Close" })).toBeFocused();
     await releaseDialog.getByRole("button", { name: "Cancel" }).click();
     await expect(releaseDialog).toBeHidden();
 
@@ -37,8 +38,17 @@ test.describe("Phase 04 interaction lifecycle", () => {
   test("governance role confirmation opens from drawer and cancels without mutation", async ({ page }) => {
     await page.goto("/governance/roles?state=base");
 
-    await page.getByRole("button", { name: "Create Role" }).click();
+    const createRoleButton = page.getByRole("button", { name: "Create Role" });
+    await createRoleButton.click();
     const roleDrawer = page.getByRole("complementary", { name: "Portfolio Manager" });
+    await expect(roleDrawer).toBeVisible();
+    await expect(roleDrawer.getByRole("button", { name: "Close" })).toBeFocused();
+
+    await page.keyboard.press("Escape");
+    await expect(roleDrawer).toBeHidden();
+    await expect(createRoleButton).toBeFocused();
+
+    await createRoleButton.click();
     await expect(roleDrawer).toBeVisible();
 
     await roleDrawer.getByRole("button", { name: "Save Changes" }).click();

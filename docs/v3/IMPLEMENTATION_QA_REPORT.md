@@ -1,5 +1,49 @@
 # Implementation QA Report
 
+## PHASE-04-INTERACTION QA Addendum
+
+Date: 2026-06-20
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Phase scope discipline | Passed | Only `AV-SLICE-INT-01` and `AV-SLICE-INT-02` primitive lifecycle hardening was changed. |
+| Source hierarchy | Passed | Final Handoff, Task Master, slice plan, phase gate, interaction contract and UI reality patch artefacts were used. |
+| Drawer lifecycle | Passed | Shared drawer primitive now focuses opened content, traps Tab inside the drawer and restores prior focus on close. |
+| Modal lifecycle | Passed | Shared modal primitive now focuses opened content, traps Tab inside the dialog and restores prior focus on close. |
+| Representative route integration | Passed | Release confirmation and governance role drawer flows prove focus entry/return through existing route surfaces. |
+| No route-scope drift | Passed | No route registry or workset classification changed. |
+| No visual generation | Passed | No images, state-screen assets or replacement visuals were generated. |
+| No API/schema work | Passed | No API route, Prisma schema or migration changed. |
+| Focused interaction tests | Passed | `pnpm test:playwright tests/interaction-lifecycle.spec.ts` passed, 4 tests. |
+| Typecheck | Passed | `pnpm typecheck`. |
+| Lint | Passed | `pnpm lint`. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm test:playwright tests/interaction-lifecycle.spec.ts` | Passed | 4 focused Phase 04 interaction lifecycle tests. |
+| `pnpm typecheck` | Passed | TypeScript clean after primitive/test updates. |
+| `pnpm lint` | Passed | ESLint clean. |
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| Shared drawer focus lifecycle | implemented + tested | Opened drawer receives focus, Escape closes, and focus returns to trigger in representative governance route. |
+| Shared modal focus lifecycle | implemented + tested | Opened release confirmation focuses its close control and retains existing cancel/Escape close paths. |
+| Upload lifecycle | inspected | Existing upload-only lifecycle remains unchanged. |
+| Demo action lifecycle | not touched | Remains governed by `AV-SLICE-INT-03` / later API and feedback proof. |
+| Full P0 safety closure | not claimed | Broader RBAC/evidence/audit/export/API/schema phases remain responsible for full P0 closure. |
+
+### Residual Risks
+
+- This addendum verifies representative primitive integration, not every drawer/modal candidate in the 71-route catalogue.
+- Focus lifecycle is now handled at the primitive level; route-specific validation, permission gates and audit persistence remain bounded to their later safety phases.
+- Existing route `visualState` preopen behaviour remains demo/state-route behaviour and is not claimed as user-triggered lifecycle proof by itself.
+
 ## PHASE-03-UI_STATE QA Addendum
 
 Date: 2026-06-20
