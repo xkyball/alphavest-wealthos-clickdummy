@@ -1,5 +1,66 @@
 # Phase Execution Report
 
+## MEGA-JOURNEY-PHASE-1 - Providerless Real User / Tenant / Role Foundation
+
+Date: 2026-06-20
+
+### Scope
+
+Executed Phase 1 from `mega_journeys_1/ALPHAVEST_MVP_JOURNEY_IMPLEMENTATION_PLAN.md` as a docs-only providerless actor/tenant/role/object-scope contract. The controlling plan keeps providerless auth allowed but requires deterministic mapped actor, tenant, role, object and payload context before later MVP acceptance. No product code, route, API, schema, migration, test, screen state or generated visual was changed.
+
+### Completed Tasks
+
+- Defined providerless current-user semantics: provider success is not anonymous access; later paths must resolve mapped actor, tenant, role and object context.
+- Mapped tenant membership propagation through route shell, action context and API/service boundaries.
+- Separated route access, action permission and payload visibility as independent acceptance gates.
+- Defined object-scope lookup obligations for documents, evidence, decisions and exports.
+- Mapped later positive/negative P0 test obligations for mapped user, unknown/unmapped actor, wrong tenant, wrong object, route-shell-only access and client payload redaction.
+
+### Current Source Reality
+
+- `lib/demo-session.ts` provides deterministic demo roles, tenants, actors, `createDemoSession`, `currentActor` and `currentTenant`.
+- `components/demo-session-provider.tsx` provides local demo role/tenant switching; this is demo context, not security proof.
+- `lib/permission-engine.ts` centralizes cross-tenant denial, admin non-bypass, compliance release, advisor approval and internal object checks.
+- `lib/visibility-engine.ts` separates internal recommendation payloads from released client-safe projection.
+- `/api/documents` and `/api/documents/upload` validate demo tenant/role metadata and use tenant-scoped services.
+- Existing permission/client-visibility/upload/export tests are proof candidates only; they were not run in this phase.
+
+### Changed Files
+
+- `docs/v3/ALPHAVEST_MVP_PHASE_1_PROVIDERLESS_SCOPE_BASELINE.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Commands Run
+
+- `git status --short --branch`
+- `git rev-parse HEAD`
+- Read-only source inspection commands using `rg` and `sed`
+
+### Tests / Build / Migrations Run
+
+None. The controlling Phase 1 stop rules explicitly require no test execution, no code change, no schema migration, no screen/state/image generation and no downstream implementation.
+
+### Pre-Existing Worktree State
+
+- Branch `full-workflow` was already ahead of `origin/full-workflow` by one commit from Phase 0.
+- `next-env.d.ts` was already modified before Phase 1 and was left untouched.
+
+### P0 Impact
+
+Phase 1 creates the providerless identity/scope contract for later MVP journey implementation. It does not add behavioral proof and does not claim production auth, real provider integration, full route authorization, fully fail-closed unknown actors, generated binary export readiness, full P0 acceptance or E7 operational capability.
+
+### Blockers / Deferred / Hold Items
+
+- Unknown/unmapped actor fail-closed behavior remains a later implementation/proof obligation because current demo resolution still has fallback defaults.
+- Candidate current-user/access API remains unauthorized until a later explicit handoff.
+- Route/API/object-scope negatives must be implemented and run in later phases before acceptance.
+- P1/reference/hold route boundaries remain active; no held/P1 journey was promoted.
+
+### Exit Gate Decision
+
+`PHASE_1_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
 ## MEGA-JOURNEY-PHASE-0 - Repo / Source Reality Verification
 
 Date: 2026-06-20
