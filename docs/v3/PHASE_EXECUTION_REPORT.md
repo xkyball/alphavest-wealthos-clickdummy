@@ -1,5 +1,69 @@
 # Phase Execution Report
 
+## PHASE-11-FINAL_QA - Final QA
+
+Date: 2026-06-20
+
+### Entry Decision
+
+`ENTRY_READY`
+
+### Scope
+
+Executed `_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/04_CODEX_PHASE_PROMPTS/11_PHASE_FINAL_QA_PROMPT.md`. This phase ran the required validation command set and produced the final implementation report. No app code, route registry, Prisma schema, migration, API route, generated visual, image or state-screen was changed.
+
+### Source Artefacts Used
+
+- `AGENTS.md`
+- `CODEX_MASTER_TASK.md`
+- Required V3 project source files listed by `AGENTS.md`
+- `TASK_DONE_DEFINITION_AND_QA_CHECKLIST.md`
+- `PHASE_ENTRY_EXIT_GATE_CHECKLIST.md`
+- `VALIDATION_COMMANDS_CHECKLIST.md`
+- `FINAL_IMPLEMENTATION_REPORT_TEMPLATE.md`
+- `UI_INTERACTION_REALITY_CODEBASE_AUDIT_CHECKLIST.md`
+
+### Changed Files
+
+- `tests/committee-review-routes.spec.ts`
+- `docs/v3/FINAL_IMPLEMENTATION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+Pre-existing local change noted but not made by this phase:
+
+- `next-env.d.ts`
+
+### Commands Run
+
+| Command | Result | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | TypeScript completed with `tsc --noEmit`. |
+| `pnpm lint` | Passed | ESLint completed cleanly. |
+| `pnpm db:validate` | Passed | Prisma schema is valid. |
+| `pnpm build` | Passed with warnings | Next build completed; Turbopack warned about broad dynamic file tracing. |
+| `pnpm exec playwright test tests/committee-review-routes.spec.ts` | Passed | 2 tests after aligning committee route assertions to held route scope. |
+| `pnpm test:route-smoke` | Failed then passed | Parallel launch collided on port `3020`; sequential rerun passed 85 tests. |
+| `pnpm test:playwright` | Passed | 161 tests. |
+| `pnpm test:permissions` | Passed | 7 tests. |
+| `pnpm test:workflow-gate` | Passed | 9 tests. |
+| `pnpm test:workflow-api` | Passed | 5 tests. |
+| `pnpm test:data-quality` | Passed | 2 tests. |
+| `pnpm test:file-export` | Passed | 7 tests. |
+| `pnpm test:phase-d` | Passed | 4 tests. |
+
+### Blockers / Deferred / Hold Items
+
+- Previous committee route assertions were stale relative to the current route-workset lock. They now verify held-shell behavior and absence of product-only committee proof labels.
+- No required script was missing.
+- No P1, reference-only or hold routes were promoted.
+
+### Exit Gate Decision
+
+`PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
+Final QA passes with documented limitations: committee routes remain held and the build still reports existing broad dynamic file-tracing warnings.
+
 ## PHASE-10-P0_TESTS - P0 Tests
 
 Date: 2026-06-20

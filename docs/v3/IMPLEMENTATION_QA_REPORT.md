@@ -1,5 +1,76 @@
 # Implementation QA Report
 
+## PHASE-11-FINAL_QA QA Addendum
+
+Date: 2026-06-20
+
+### Executive Decision
+
+`FINAL_QA_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Required script availability | Passed | All commands listed in the Final QA prompt exist in `package.json`; no `SCRIPT_NOT_FOUND` result. |
+| Typecheck | Passed | `pnpm typecheck`. |
+| Lint | Passed | `pnpm lint`. |
+| Prisma validation | Passed | `pnpm db:validate`. |
+| Production build | Passed with warnings | `pnpm build` completed; broad file tracing warnings remain. |
+| Committee route assertion fix | Passed | `tests/committee-review-routes.spec.ts` now verifies the current `HOLD_PENDING_DECISION` shell behavior for routes `070` and `071`. |
+| Broad Playwright suite | Passed | `pnpm test:playwright` passed 161 tests. |
+| Permission safety suite | Passed | `pnpm test:permissions`, 7 tests. |
+| Workflow gate suite | Passed | `pnpm test:workflow-gate`, 9 tests. |
+| Workflow API suite | Passed | `pnpm test:workflow-api`, 5 tests. |
+| Route smoke suite | Passed | `pnpm test:route-smoke`, 85 tests. |
+| Data quality suite | Passed | `pnpm test:data-quality`, 2 tests. |
+| File/export suite | Passed | `pnpm test:file-export`, 7 tests. |
+| Phase D suite | Passed | `pnpm test:phase-d`, 4 tests. |
+| No route-scope drift from Final QA | Passed | Final QA only added/updated reports. |
+| No visual generation | Passed | No images, state-screen assets or replacement visuals were generated. |
+| No API/schema work | Passed | No API route, Prisma schema or migration changed. |
+
+### Resolved Assertions
+
+| Test | Previous issue | Resolution |
+| --- | --- | --- |
+| `tests/committee-review-routes.spec.ts:4` | Previous stale assertion expected product copy on a held route. | Updated to assert `Held Workspace`, absence of `Second review required` and visible client-visibility guard. |
+| `tests/committee-review-routes.spec.ts:13` | Previous stale assertion expected product proof labels on a held route. | Updated to assert `Held Workspace`, absence of committee product labels and visible client-visibility guard. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | TypeScript clean. |
+| `pnpm lint` | Passed | ESLint clean. |
+| `pnpm db:validate` | Passed | Prisma schema valid. |
+| `pnpm build` | Passed with warnings | Next build completed with Turbopack broad tracing warnings. |
+| `pnpm exec playwright test tests/committee-review-routes.spec.ts` | Passed | 2 tests. |
+| `pnpm test:route-smoke` | Failed then passed | Parallel run hit `EADDRINUSE` on port `3020`; sequential rerun passed 85 tests. |
+| `pnpm test:playwright` | Passed | 161 tests. |
+| `pnpm test:permissions` | Passed | 7 tests. |
+| `pnpm test:workflow-gate` | Passed | 9 tests. |
+| `pnpm test:workflow-api` | Passed | 5 tests. |
+| `pnpm test:data-quality` | Passed | 2 tests. |
+| `pnpm test:file-export` | Passed | 7 tests. |
+| `pnpm test:phase-d` | Passed | 4 tests. |
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| Final QA command execution | completed | All required commands were run. |
+| Focused P0/safety suites | tested + passed | Required targeted scripts passed. |
+| Broad Playwright acceptance | tested + passed | `pnpm test:playwright` passed 161 tests after the committee route assertion fix. |
+| Final implementation report | completed | `docs/v3/FINAL_IMPLEMENTATION_REPORT.md` added. |
+| Committee product UI activation | not claimed | Routes `070` and `071` remain held and are not promoted to MVP product implementation. |
+
+### Residual Risks
+
+- Committee review product UI remains dormant behind the current hold-route guard. A future explicit scope unlock must update the route-workset lock before product UI assertions are restored.
+- Next build passes but still warns about broad dynamic file tracing in document storage imports.
+- The branch/worktree already had a pre-existing `next-env.d.ts` modification before Final QA reporting.
+
 ## PHASE-10-P0_TESTS QA Addendum
 
 Date: 2026-06-20
