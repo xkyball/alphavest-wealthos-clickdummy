@@ -2699,6 +2699,106 @@ This phase improves P0 proof slices for `P0_UPLOAD_NOT_SUFFICIENCY_GATE`, `P0_EV
 
 `PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
 
+## PHASE-04-INTERACTION - Drawer / Modal / Interaction Lifecycle
+
+Date: 2026-06-20
+
+### Scope
+
+Executed the handoff phase prompt `04_PHASE_INTERACTION_LIFECYCLE_PROMPT.md` for the smallest safe subset of allowed slices `AV-SLICE-INT-01..05`. This phase hardened shared modal/drawer primitive close semantics and remediated the known route `040` release confirmation lifecycle gap. No route scope, P1/Hold/reference route, API, Prisma schema, migration, visual asset, screen generation or product decision was changed.
+
+### Source Artefacts Used
+
+- `FINAL_CODEX_IMPLEMENTATION_HANDOFF.md`
+- `FINAL_CODEX_TASK_MASTER.md`
+- `SOURCE_OF_TRUTH_ORDER.md`
+- `STOP_RULES_MASTER.md`
+- `DRAWER_MODAL_INTERACTION_CONTRACT.md`
+- `ATOMIC_IMPLEMENTATION_SLICE_PLAN.md`
+- `PHASE_ENTRY_EXIT_GATE_CHECKLIST.md`
+- `TASK_DONE_DEFINITION_AND_QA_CHECKLIST.md`
+- `REFACTORING_STRATEGY_MINI_DOC.md`
+- `FEEDBACK_VALIDATION_ERROR_STATE_CONTRACT.md`
+- `03_04_05_UI_INTERACTION_REALITY_REMEDIATION_PATCH.md`
+- `ALPHAVEST_UI_INTERACTION_REALITY_CLARIFICATION.md`
+- `STATIC_VS_REACTIVE_UI_CLASSIFICATION.md`
+- `UI_INTERACTION_REALITY_CODEBASE_AUDIT_CHECKLIST.md`
+
+### Completed Tasks
+
+- Hardened `Modal` with `aria-labelledby`, Escape-to-close support when `onClose` exists, and no rendered close affordance when no close handler exists.
+- Hardened `Drawer` with `aria-labelledby`, Escape-to-close support when `onClose` exists, and no rendered close affordance when no close handler exists.
+- Converted the release confirmation modal on route `040` from route-state-only open state with fake cancel into a local reactive modal with real `onClose` and Cancel behaviour.
+- Added a focused lifecycle Playwright test proving release confirmation Cancel and Escape close paths.
+- Preserved all action semantics: release still routes through the existing demo workflow action and this phase does not claim mutation, audit, RBAC, evidence or full P0 proof.
+
+### Slice Coverage
+
+| Slice | Status | Notes |
+| --- | --- | --- |
+| `AV-SLICE-INT-01` | Implemented partially | Shared drawer primitive now avoids fake close affordances and supports Escape when closable. Route-level drawer lifecycle remains limited to routes with real `onClose`. |
+| `AV-SLICE-INT-02` | Implemented partially + tested | Shared modal primitive hardened; route `040` release confirmation has real close/cancel/Escape lifecycle. |
+| `AV-SLICE-INT-03` | Inspected / no code change | Demo workflow action limits were preserved; no API or mutation semantics changed. |
+| `AV-SLICE-INT-04` | Inspected / no code change | Document upload lifecycle remained intact from Phase 03 and prior upload proof; no upload API/UI changes were required. |
+| `AV-SLICE-INT-05` | Deferred / not touched | Wizard/stepper support routes were not changed in this atomic pass. |
+
+### UI Interaction Reality Exit Classification
+
+| Surface | Classification | Result |
+| --- | --- | --- |
+| `Modal` primitive | `REACTIVE_MODAL` primitive | Open-gated primitive hardened for Escape, labelled dialog relationship and no fake close when `onClose` is absent. |
+| `Drawer` primitive | `REACTIVE_DRAWER` primitive | Open-gated primitive hardened for Escape, labelled relationship and no fake close when `onClose` is absent. |
+| Route `040` release confirmation | `CONFIRMATION_DIALOG` / `REACTIVE_MODAL` | Cancel, backdrop, X and Escape now close the modal through local state. Confirm action remains existing demo workflow action only. |
+| Evidence/governance route-state drawers | `REACTIVE_DRAWER` or route-state visual surfaces depending on invocation | Primitive no longer shows close UI without a handler; full route-triggered lifecycle remains deferred where route code still depends only on `visualState`. |
+| Wealth/workbench drawer-like side panels | `PERMANENT_PAGE_REGION` unless later converted | Not changed; must not be treated as drawer lifecycle proof. |
+
+### Files Inspected
+
+- `components/ui/modal.tsx`
+- `components/ui/drawer.tsx`
+- `components/internal-workflow-screen.tsx`
+- `components/communication-export-ops-screen.tsx`
+- `components/decisions-governance-screen.tsx`
+- `components/admin-tenant-setup-screen.tsx`
+- `components/client-intake-screen.tsx`
+- `components/wealth-actions-screen.tsx`
+- `app/[...segments]/page.tsx`
+- `lib/visual-contract.ts`
+- `lib/route-registry.ts`
+- Existing route/upload/export/workflow tests
+
+### Changed Files
+
+- `components/ui/modal.tsx`
+- `components/ui/drawer.tsx`
+- `components/internal-workflow-screen.tsx`
+- `tests/interaction-lifecycle.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm exec playwright test tests/interaction-lifecycle.spec.ts` - passed, 1 test.
+- `pnpm lint` - first run hit the recurring missing `test-results` artifact directory; rerun passed.
+- `pnpm build` - passed with existing Turbopack file-tracing warnings around `lib/document-storage-adapter.ts`.
+- `pnpm test:route-smoke` - passed, 83 tests.
+
+### P0 Impact
+
+This phase improves proof slices for `P0_RBAC_ACTION_GATE` and interaction-lifecycle readiness by proving a safety-relevant release confirmation can be cancelled or dismissed without mutation. It does not claim full P0 passed. It does not prove release permission, audit persistence, evidence sufficiency, RBAC admin non-bypass or production release semantics.
+
+### Blockers / Deferred / Hold Items
+
+- Route-level drawer lifecycles that are still purely `visualState`-driven remain deferred unless they have explicit user-triggered open/close state in their route component.
+- Static drawer-like wealth/workbench side regions remain classified as permanent page regions; they are not lifecycle proof.
+- Some confirmation actions remain demo workflow actions and require later feedback/RBAC/API/P0 phases for production mutation proof.
+- Existing Turbopack tracing warnings in `lib/document-storage-adapter.ts` remain outside this interaction slice.
+
+### Exit Gate Decision
+
+`PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
 ## PHASE-03-UI_STATE - UI State Implementation
 
 Date: 2026-06-20

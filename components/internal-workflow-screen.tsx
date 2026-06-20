@@ -1285,7 +1285,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
 }
 
 function ReleasePage({ title, visualState }: { title: string; visualState?: VisualState }) {
-  const modalOpen = visualState === "release";
+  const [modalOpen, setModalOpen] = useState(visualState === "release");
 
   return (
     <InternalShell activePageId="040">
@@ -1305,12 +1305,12 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
           <Card><CardHeader><CardTitle>Related items</CardTitle></CardHeader><CardContent className="space-y-3">{["SOA - Retirement Income Plan", "PDS - AlphaVest Balanced Fund", "Fee Disclosure Statement", "Risk Profile Assessment"].map((item) => <p className="text-sm text-alphavest-muted" key={item}>{item}</p>)}</CardContent></Card>
         </aside>
       </div>
-      <ReleaseModal open={modalOpen} />
+      <ReleaseModal onClose={() => setModalOpen(false)} open={modalOpen} />
     </InternalShell>
   );
 }
 
-function ReleaseModal({ open }: { open: boolean }) {
+function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean }) {
   return (
     <Modal
       className="max-w-[58rem]"
@@ -1323,12 +1323,13 @@ function ReleaseModal({ open }: { open: boolean }) {
       description="No unapproved advice reaches the client."
       footer={
         <>
-          <button className={secondaryButtonClass} type="button">Cancel</button>
+          <button className={secondaryButtonClass} onClick={onClose} type="button">Cancel</button>
           <button className={primaryButtonClass} onClick={() => { void runScreencastDemoAction("j02.releaseClient", "/compliance/demo/audit"); }} type="button">
             <LockKeyhole aria-hidden="true" className="size-4" />Release to client
           </button>
         </>
       }
+      onClose={onClose}
       open={open}
       title="Release to client"
     >

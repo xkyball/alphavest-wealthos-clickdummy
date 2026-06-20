@@ -2380,3 +2380,54 @@ Date: 2026-06-20
 - Export state is approval-boundary UI only; it does not create a real binary export or prove downstream delivery acceptance.
 - Turbopack build warnings around `lib/document-storage-adapter.ts` remain outside this phase.
 - Authentication remains demo-session based.
+
+## PHASE-04-INTERACTION QA Addendum
+
+Date: 2026-06-20
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Phase scope discipline | Passed | Only `AV-SLICE-INT-01..05` primitive/route integration/test/report work was changed. |
+| Source artefacts | Passed | Final handoff, task master, source order, stop rules, interaction contract, slice plan, phase checklist, UI remediation patch and audit checklist were read before edits. |
+| Stop rules | Passed | No route scope, P1/Hold/reference, visual generation, API, schema, migration, `main` target or P0 overclaim. |
+| Static-vs-reactive classification | Passed with limitation | Changed surfaces were classified; several route-state drawers and permanent side panels remain documented limitations. |
+| Modal primitive lifecycle | Passed | Modal now has labelled dialog wiring, Escape close when closable and no fake close button without `onClose`. |
+| Drawer primitive lifecycle | Passed | Drawer now has labelled relationship, Escape close when closable and no fake close button without `onClose`. |
+| Release confirmation lifecycle | Passed | Route `040` release modal Cancel, X/backdrop and Escape paths close local state; confirm action remains existing demo workflow only. |
+| Typecheck | Passed | `pnpm typecheck`. |
+| Lint | Passed on rerun | First run hit missing `test-results`; rerun passed. |
+| Focused Playwright | Passed | `tests/interaction-lifecycle.spec.ts` passed. |
+| Route smoke | Passed | `pnpm test:route-smoke` passed, 83 tests. |
+| Build | Passed with warnings | `pnpm build` passed with existing document-storage Turbopack tracing warnings. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | TypeScript clean after primitive and release-modal changes. |
+| `pnpm lint` | Failed then rerun | Initial failure was `ENOENT` for missing `test-results`; rerun passed. |
+| `pnpm exec playwright test tests/interaction-lifecycle.spec.ts` | Passed | 1 focused lifecycle test for release modal Cancel and Escape. |
+| `pnpm lint` | Passed | ESLint clean on rerun. |
+| `pnpm build` | Passed with warnings | Existing Turbopack tracing warnings remain around `lib/document-storage-adapter.ts`. |
+| `pnpm test:route-smoke` | Passed | 83 tests; registered routes still render and route worksets remain preserved. |
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| Modal primitive close affordance hardening | implemented + typechecked | No fake close control without `onClose`; Escape works when closable. |
+| Drawer primitive close affordance hardening | implemented + typechecked | No fake close control without `onClose`; Escape works when closable. |
+| Release confirmation cancel lifecycle | implemented + tested | Cancel and Escape close route `040` release dialog without invoking release. |
+| Full route-level drawer lifecycle | partially implemented / deferred | Primitive is safer, but route-state-only drawers still need route-triggered lifecycle in later slices. |
+| Production release mutation proof | not claimed | Existing demo action remains unchanged; RBAC/API/audit/P0 phases own deeper proof. |
+| Full P0 gate closure | not claimed | Current test is an interaction proof slice only. |
+
+### Residual Risks
+
+- Some drawer/modal surfaces are still opened by route `visualState`; those remain deterministic demo/state surfaces unless route-level triggers and close state are wired.
+- Static drawer-like wealth/workbench regions are accepted only as permanent page regions, not lifecycle proof.
+- Confirmation submit paths still rely on existing demo workflow actions; production mutation, audit persistence and RBAC fail-closed semantics remain later-phase obligations.
+- Build warnings around demo document storage tracing remain outside this phase.
+- Authentication remains demo-session based.

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useId } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/cn";
 
@@ -15,6 +16,23 @@ type DrawerProps = {
 };
 
 export function Drawer({ children, className, context, description, footer, onClose, open, title }: DrawerProps) {
+  const titleId = useId();
+
+  useEffect(() => {
+    if (!open || !onClose) {
+      return;
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onClose?.();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose, open]);
+
   if (!open) {
     return null;
   }
@@ -30,6 +48,7 @@ export function Drawer({ children, className, context, description, footer, onCl
         onMouseDown={onClose}
       />
       <aside
+        aria-labelledby={titleId}
         className={cn(
           "fixed inset-y-0 right-0 z-50 flex w-full max-w-[min(100vw,var(--drawer-width))] flex-col overflow-hidden border-l border-alphavest-border bg-alphavest-panel shadow-2xl",
           "sm:w-[min(100vw-1.25rem,var(--drawer-width))]",
@@ -40,17 +59,19 @@ export function Drawer({ children, className, context, description, footer, onCl
       >
         <div className="flex min-h-0 items-start justify-between gap-4 border-b border-alphavest-border/60 p-5 md:p-6">
           <div>
-            <h2 className="font-display text-2xl text-alphavest-ivory">{title}</h2>
+            <h2 className="font-display text-2xl text-alphavest-ivory" id={titleId}>{title}</h2>
             {description ? <p className="mt-1 text-sm leading-6 text-alphavest-muted">{description}</p> : null}
           </div>
-          <button
-            className="grid size-9 shrink-0 place-items-center rounded-full border border-alphavest-border text-alphavest-muted transition hover:border-alphavest-gold hover:text-alphavest-gold"
-            onClick={onClose}
-            type="button"
-          >
-            <X aria-hidden="true" className="size-4" />
-            <span className="sr-only">Close</span>
-          </button>
+          {onClose ? (
+            <button
+              className="grid size-9 shrink-0 place-items-center rounded-full border border-alphavest-border text-alphavest-muted transition hover:border-alphavest-gold hover:text-alphavest-gold"
+              onClick={onClose}
+              type="button"
+            >
+              <X aria-hidden="true" className="size-4" />
+              <span className="sr-only">Close</span>
+            </button>
+          ) : null}
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 md:px-6 md:py-6">
           {context ? <div className="mb-5 rounded-md border border-alphavest-border/70 bg-alphavest-navy/38 p-4">{context}</div> : null}
