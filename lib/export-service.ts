@@ -1,6 +1,7 @@
 import type { DemoActor, DemoRole } from "@/lib/demo-session";
 import type { ExportStatus, ObjectType, UUID } from "@/lib/domain-types";
 import { permissionEngine } from "@/lib/permission-engine";
+import type { DataQualityGate } from "@/lib/data-quality-service";
 
 export type ExportGateDecision = {
   status: ExportStatus;
@@ -202,6 +203,7 @@ function canGenerateExport(input: {
   payloadClassifications?: ExportPayloadClassification[];
   approvalComplete?: boolean;
   auditPersistenceAvailable?: boolean;
+  dataQualityGate?: DataQualityGate;
   externalShare?: boolean;
 }): ExportGateDecision {
   const permission = permissionEngine.can(
@@ -237,18 +239,25 @@ function canGenerateExport(input: {
     missing.push("audit_persistence");
   }
 
+  if (input.dataQualityGate && !input.dataQualityGate.passed) {
+    missing.push(input.dataQualityGate.gateName.toLowerCase());
+    missing.push(...input.dataQualityGate.missing);
+  }
+
   for (const classification of forbiddenExportPayloads(input.payloadClassifications)) {
     missing.push(`forbidden_payload:${classification}`);
   }
 
+  const uniqueMissing = [...new Set(missing)];
+
   return {
-    status: missing.length > 0 ? "APPROVAL_REQUIRED" : "GENERATED",
-    allowedToGenerate: missing.length === 0,
-    missing,
+    status: uniqueMissing.length > 0 ? "APPROVAL_REQUIRED" : "GENERATED",
+    allowedToGenerate: uniqueMissing.length === 0,
+    missing: uniqueMissing,
     redactionProfile,
     auditRequired: true,
     reason:
-      missing.length === 0
+      uniqueMissing.length === 0
         ? "Demo export can be generated with audit and redaction metadata."
         : "Demo export remains gated until missing controls are complete.",
   };

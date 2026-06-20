@@ -44,6 +44,7 @@
     "test:playwright": "playwright test",
     "test:permissions": "playwright test tests/permission-engine.spec.ts",
     "test:phase-d": "playwright test tests/review-monitoring-service.spec.ts",
+    "test:phase9": "playwright test tests/phase9-support-hardening.spec.ts",
     "test:providerless-scope": "playwright test tests/providerless-scope.spec.ts",
     "test:route-smoke": "playwright test tests/route-smoke.spec.ts",
     "test:source-reality": "playwright test tests/source-reality-gate.spec.ts",

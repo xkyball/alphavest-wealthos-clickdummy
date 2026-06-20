@@ -58,6 +58,7 @@ import {
   communicationLogItems,
   communicationPaths,
   communicationTemplates,
+  dataQualityReleaseControls,
   exportScopeItems,
   exportScopeSummary,
   exportForbiddenPayloadChecks,
@@ -937,9 +938,28 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
         </Card>
       </div>
       <Card className="mt-5">
+        <CardHeader>
+          <CardTitle>Data Quality Release Gate</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 md:grid-cols-3">
+            {dataQualityReleaseControls.map((control) => (
+              <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-4" key={control.label}>
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-sm font-semibold text-alphavest-ivory">{control.label}</p>
+                  <Badge tone={toneFor(control.state)}>{control.state}</Badge>
+                </div>
+                <p className="mt-3 text-xl font-semibold text-alphavest-ivory">{control.value}</p>
+                <p className="mt-2 text-xs leading-5 text-alphavest-muted">{control.detail}</p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+      <Card className="mt-5">
         <CardHeader><CardTitle>Package Controls</CardTitle></CardHeader>
         <CardContent>
-          <div className="grid gap-3 md:grid-cols-5">
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
             {exportPackageControls.map((control) => (
               <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-4" key={control.label}>
                 <p className="text-sm font-semibold text-alphavest-ivory">{control.label}</p>
@@ -1148,6 +1168,25 @@ function OpsQueuesPage({ title }: { title: string }) {
         </CardHeader>
         <CardContent>
           <DataTable columns={columns} getRowId={(row) => row.id} rows={queueRows} />
+        </CardContent>
+      </Card>
+      <Card className="mt-5">
+        <CardHeader>
+          <CardTitle>Release Support Controls</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 md:grid-cols-3">
+            {dataQualityReleaseControls.map((control) => (
+              <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-4" key={control.label}>
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-sm font-semibold text-alphavest-ivory">{control.label}</p>
+                  <Badge tone={toneFor(control.state)}>{control.state}</Badge>
+                </div>
+                <p className="mt-3 text-xl font-semibold text-alphavest-ivory">{control.value}</p>
+                <p className="mt-2 text-xs leading-5 text-alphavest-muted">{control.detail}</p>
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
     </div>

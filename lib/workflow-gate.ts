@@ -1,5 +1,6 @@
 import type { PermissionDecision } from "@/lib/permission-engine";
 import { evidenceService } from "@/lib/evidence-service";
+import type { DataQualityGate } from "@/lib/data-quality-service";
 import type {
   ComplianceStatus,
   EvidenceStatus,
@@ -17,6 +18,7 @@ export type ClientVisibilityCandidate = {
   currentVisibility?: VisibilityStatus;
   containsAiDraft?: boolean;
   containsInternalRationale?: boolean;
+  dataQualityGate?: DataQualityGate;
 };
 
 export type WorkflowGateResult = {
@@ -82,11 +84,18 @@ export function canBecomeClientVisible(candidate: ClientVisibilityCandidate): Wo
     missing.push("permission_check");
   }
 
+  if (candidate.dataQualityGate && !candidate.dataQualityGate.passed) {
+    missing.push(candidate.dataQualityGate.gateName.toLowerCase());
+    missing.push(...candidate.dataQualityGate.missing);
+  }
+
+  const uniqueMissing = [...new Set(missing)];
+
   return {
     gateName: "NO_UNAPPROVED_ADVICE",
-    passed: missing.length === 0,
-    missing,
-    blockedReason: missing.length > 0 ? "No unapproved advice reaches the client." : undefined,
+    passed: uniqueMissing.length === 0,
+    missing: uniqueMissing,
+    blockedReason: uniqueMissing.length > 0 ? "No unapproved advice reaches the client." : undefined,
   };
 }
 

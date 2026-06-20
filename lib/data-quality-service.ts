@@ -25,7 +25,7 @@ export type DataQualitySnapshot = {
 };
 
 export type DataQualityGate = {
-  gateName: "DATA_QUALITY_READY";
+  gateName: "DATA_QUALITY_READY" | "DATA_QUALITY_RELEASE_READY";
   missing: string[];
   passed: boolean;
 };
@@ -74,7 +74,18 @@ export function evaluateDataQualityGate(snapshot: DataQualitySnapshot): DataQual
   };
 }
 
+export function evaluateDataQualityReleaseGate(snapshot: DataQualitySnapshot): DataQualityGate {
+  const missing = snapshot.highSeverityOpenCount > 0 ? ["high_severity_data_quality_issues"] : [];
+
+  return {
+    gateName: "DATA_QUALITY_RELEASE_READY",
+    missing,
+    passed: missing.length === 0,
+  };
+}
+
 export const dataQualityService = {
   buildDataQualitySnapshot,
   evaluateDataQualityGate,
+  evaluateDataQualityReleaseGate,
 };

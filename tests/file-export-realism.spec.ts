@@ -178,6 +178,33 @@ test.describe("Phase 18 export package manifest", () => {
     expect(gate.missing).toContain("audit_persistence");
   });
 
+  test("blocks export generation when data quality release gate fails", () => {
+    const session = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
+    const gate = exportService.canGenerateExport({
+      actor: session.actor,
+      approvalComplete: true,
+      auditPersistenceAvailable: true,
+      clientTenantId: session.tenant.id,
+      dataQualityGate: {
+        gateName: "DATA_QUALITY_RELEASE_READY",
+        missing: ["high_severity_data_quality_issues"],
+        passed: false,
+      },
+      externalShare: false,
+      payloadClassifications: ["CLIENT_SAFE_SUMMARY"],
+      platformTenantId: demoPlatformTenantId,
+      redactionProfile: "external-limited",
+      role: session.role,
+      targetId: "68c2dd2e-2322-526f-8a48-2fdadf996c40",
+      targetType: "EXPORT_REQUEST",
+    });
+
+    expect(gate.allowedToGenerate).toBe(false);
+    expect(gate.status).toBe("APPROVAL_REQUIRED");
+    expect(gate.missing).toContain("data_quality_release_ready");
+    expect(gate.missing).toContain("high_severity_data_quality_issues");
+  });
+
   test("filters selected export scope by object access and forbidden payloads", () => {
     const decision = exportService.evaluateExportScope([
       {

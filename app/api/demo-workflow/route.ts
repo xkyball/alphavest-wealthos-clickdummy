@@ -26,6 +26,7 @@ import {
 import { NextResponse } from "next/server";
 
 import { parseDemoWorkflowRequestBody } from "@/lib/demo-workflow-validation";
+import { dataQualityService } from "@/lib/data-quality-service";
 import { exportPackageService } from "@/lib/export-package-service";
 import {
   AuditPersistenceUnavailableError,
@@ -634,9 +635,15 @@ async function runJ02ReleaseClient(
         throw new Error("J02 release fixture is incomplete.");
       }
 
+      const dataQualitySnapshot = await dataQualityService.buildDataQualitySnapshot(tx, {
+        clientTenantId: summitTenantId,
+      });
+      const dataQualityGate = dataQualityService.evaluateDataQualityReleaseGate(dataQualitySnapshot);
+
       const gate = workflowGate.canBecomeClientVisible({
         advisorApprovalStatus: approval.status as DomainReviewStatus,
         complianceStatus: "RELEASED",
+        dataQualityGate,
         evidenceStatus: evidenceRecord.status as DomainEvidenceStatus,
         permission,
         recommendationStatus: "RELEASED_TO_CLIENT",
@@ -652,7 +659,7 @@ async function runJ02ReleaseClient(
           blockedAt: null,
           evidenceComplete: true,
           releaseNotes:
-            "Screencast J02 compliance release. Advisor approval and validated evidence were checked before visibility.",
+            "Screencast J02 compliance release. Advisor approval, validated evidence and high-severity data-quality blockers were checked before visibility.",
           releasedAt: now,
           status: ComplianceStatus.RELEASED,
         },
@@ -692,6 +699,7 @@ async function runJ02ReleaseClient(
         evidenceRecordRows: updatedEvidenceRecord.count,
         gateMissing: gate.missing,
         gatePassed: gate.passed,
+        highSeverityDataQualityBlockers: dataQualitySnapshot.highSeverityOpenCount,
         message: "Compliance release saved after workflowGate passed.",
         recommendationRows: recommendation.count,
       };
@@ -2545,11 +2553,16 @@ async function runJ08ConfirmApproval(
         throw new Error("J08 export approval requires the external-limited redaction profile.");
       }
 
+      const dataQualitySnapshot = await dataQualityService.buildDataQualitySnapshot(tx, {
+        clientTenantId: summitTenantId,
+      });
+      const dataQualityGate = dataQualityService.evaluateDataQualityReleaseGate(dataQualitySnapshot);
       const exportGate = exportService.canGenerateExport({
         actor: session.actor,
         approvalComplete: true,
         auditPersistenceAvailable: options.auditPersistenceAvailable,
         clientTenantId: summitTenantId,
+        dataQualityGate,
         externalShare: false,
         payloadClassifications: ["CLIENT_SAFE_SUMMARY", "RELEASED_EVIDENCE_SUMMARY"],
         platformTenantId,
@@ -2658,6 +2671,8 @@ async function runJ08ConfirmApproval(
               approvalRequired: true,
             },
             blockedItemIncluded: false,
+            dataQualityGate,
+            highSeverityDataQualityBlockers: dataQualitySnapshot.highSeverityOpenCount,
             exportGate,
             generatedFileIsMetadataOnly: true,
             package: exportPackage.manifest,
@@ -2692,6 +2707,7 @@ async function runJ08ConfirmApproval(
         exportGate,
         exportManifestVersion: exportPackage.manifest.manifestVersion,
         exportRows: exportRequest.count,
+        highSeverityDataQualityBlockers: dataQualitySnapshot.highSeverityOpenCount,
         message: "Export approved and package metadata generated.",
         realFileGenerated: false,
         versionId: version.id,
@@ -2748,14 +2764,24 @@ async function runJ08DownloadExport(prisma: PrismaClient, actionId: DemoWorkflow
         throw new Error(`J08 download blocked: ${stepDecision.missing.join(", ")}`);
       }
 
+      const dataQualitySnapshot = await dataQualityService.buildDataQualitySnapshot(tx, {
+        clientTenantId: summitTenantId,
+      });
+      const dataQualityGate = dataQualityService.evaluateDataQualityReleaseGate(dataQualitySnapshot);
+      if (!dataQualityGate.passed) {
+        throw new Error(`J08 download blocked: ${dataQualityGate.missing.join(", ")}`);
+      }
+
       const exportRequest = await tx.exportRequest.updateMany({
         where: { id: summitExportRequestId, clientTenantId: summitTenantId },
         data: {
           scopeJson: {
+            dataQualityGate,
             downloadedAt: now.toISOString(),
             downloadWatermarked: true,
             generatedFileDocumentId: currentExport.generatedFileDocumentId,
             generatedFileIsMetadataOnly: true,
+            highSeverityDataQualityBlockers: dataQualitySnapshot.highSeverityOpenCount,
             phase18FileRealismDeferred: true,
             redactionProfile: currentExport.redactionProfile,
             tenant: "Summit Family Office",
@@ -2779,6 +2805,7 @@ async function runJ08DownloadExport(prisma: PrismaClient, actionId: DemoWorkflow
         clientVisible: false,
         evidenceItemId: evidenceItem.id,
         exportRows: exportRequest.count,
+        highSeverityDataQualityBlockers: dataQualitySnapshot.highSeverityOpenCount,
         message: "Export download recorded with watermark and audit proof.",
       };
     },
@@ -2835,10 +2862,15 @@ async function runJ08ShareExport(prisma: PrismaClient, actionId: DemoWorkflowAct
         throw new Error(`J08 share blocked: ${stepDecision.missing.join(", ")}`);
       }
 
+      const dataQualitySnapshot = await dataQualityService.buildDataQualitySnapshot(tx, {
+        clientTenantId: summitTenantId,
+      });
+      const dataQualityGate = dataQualityService.evaluateDataQualityReleaseGate(dataQualitySnapshot);
       const exportGate = exportService.canGenerateExport({
         actor: session.actor,
         approvalComplete: true,
         clientTenantId: summitTenantId,
+        dataQualityGate,
         externalShare: true,
         platformTenantId,
         redactionProfile: currentExport.redactionProfile,
@@ -2863,9 +2895,11 @@ async function runJ08ShareExport(prisma: PrismaClient, actionId: DemoWorkflowAct
               shareToken,
               watermark: true,
             },
+            dataQualityGate,
             exportGate,
             generatedFileDocumentId: currentExport.generatedFileDocumentId,
             generatedFileIsMetadataOnly: true,
+            highSeverityDataQualityBlockers: dataQualitySnapshot.highSeverityOpenCount,
             phase18FileRealismDeferred: true,
             redactionProfile: currentExport.redactionProfile,
             tenant: "Summit Family Office",
@@ -2890,6 +2924,7 @@ async function runJ08ShareExport(prisma: PrismaClient, actionId: DemoWorkflowAct
         evidenceItemId: evidenceItem.id,
         exportRows: exportRequest.count,
         expiresAt: expiryDate.toISOString(),
+        highSeverityDataQualityBlockers: dataQualitySnapshot.highSeverityOpenCount,
         message: "Export share link recorded with expiry and audit proof.",
         shareToken,
       };

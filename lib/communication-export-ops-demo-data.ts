@@ -146,11 +146,13 @@ export const previewPolicyChecks = [
   { id: "PC-01", policy: "Data retention policy", state: "Pass", detail: "Records are within the approved retention window." },
   { id: "PC-02", policy: "PII handling policy", state: "Pass", detail: "Direct personal identifiers removed." },
   { id: "PC-03", policy: "Jurisdiction transfer policy", state: "Pass", detail: "Approved for Singapore recipient scope." },
-  { id: "PC-04", policy: "Secure export policy", state: "Warning", detail: "Encryption key rotation recommended." }
+  { id: "PC-04", policy: "Data quality release gate", state: "Pass", detail: "No active high-severity data-quality blocker is present for this export." },
+  { id: "PC-05", policy: "Secure export policy", state: "Warning", detail: "Encryption key rotation recommended." }
 ];
 
 export const exportPackageControls = [
   { label: "Preview", state: "Complete", detail: "Package contents reviewed before approval." },
+  { label: "Data quality", state: "Pass", detail: "Active high-severity blockers stop export generation and sharing." },
   { label: "Approval", state: "Required", detail: "Compliance approval is separate from generation." },
   { label: "Generation", state: "Metadata-only", detail: "Manifest created; real binary generation remains deferred." },
   { label: "Download", state: "Separate", detail: "Download is blocked until approval and generation complete." },
@@ -188,6 +190,12 @@ export const queueRows = [
   { id: "Q-03", queue: "Policy Exceptions", owner: "James Harrison", high: 40, medium: 40, low: 20, backlog: 198, overdue: 27, atRisk: 39, sla: 76, capacity: "115%", status: "Overload" },
   { id: "Q-04", queue: "Document Review", owner: "Mei Lin", high: 12, medium: 48, low: 40, backlog: 156, overdue: 5, atRisk: 22, sla: 96, capacity: "68%", status: "On Track" },
   { id: "Q-05", queue: "Data Quality Issues", owner: "Michael Lee", high: 35, medium: 45, low: 20, backlog: 68, overdue: 43, atRisk: 11, sla: 58, capacity: "130%", status: "Error" }
+];
+
+export const dataQualityReleaseControls = [
+  { label: "High-severity blockers", value: "Release blocked", state: "Blocked", detail: "Active high-severity issues stop client release, export generation, download and share." },
+  { label: "Medium issues", value: "Support queue", state: "Conditional", detail: "Open non-high issues remain visible without destabilizing the MVP release path." },
+  { label: "Review monitoring", value: "Internal only", state: "Internal", detail: "Monitoring can route internal review but cannot execute advice or create client visibility." }
 ];
 
 export const slaMetrics = [

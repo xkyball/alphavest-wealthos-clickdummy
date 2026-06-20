@@ -60,4 +60,19 @@ test.describe("Phase 17 data quality service", () => {
     expect(gate.passed).toBe(true);
     expect(gate.missing).toEqual([]);
   });
+
+  test("allows conditional release support when only non-high issues are open", async () => {
+    if (!prisma) throw new Error("Prisma client was not initialized.");
+
+    const snapshot = await dataQualityService.buildDataQualitySnapshot(prisma, {
+      clientTenantId: tenantId("summit"),
+    });
+    const gate = dataQualityService.evaluateDataQualityReleaseGate(snapshot);
+
+    expect(snapshot.openIssueCount).toBeGreaterThan(0);
+    expect(snapshot.highSeverityOpenCount).toBe(0);
+    expect(gate.gateName).toBe("DATA_QUALITY_RELEASE_READY");
+    expect(gate.passed).toBe(true);
+    expect(gate.missing).toEqual([]);
+  });
 });

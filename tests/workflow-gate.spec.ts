@@ -114,6 +114,25 @@ test.describe("Suitability and IPS advice visibility gate", () => {
     expect(gate.missing).toContain("internal_rationale_hidden");
   });
 
+  test("blocks client visibility when active high-severity data quality is present", () => {
+    const gate = canBecomeClientVisible({
+      advisorApprovalStatus: "APPROVED",
+      complianceStatus: "RELEASED",
+      dataQualityGate: {
+        gateName: "DATA_QUALITY_RELEASE_READY",
+        missing: ["high_severity_data_quality_issues"],
+        passed: false,
+      },
+      evidenceStatus: "RELEASED",
+      permission: { allowed: true, reasonCode: "DEMO_ALLOWED" },
+      recommendationStatus: "RELEASED_TO_CLIENT",
+    });
+
+    expect(gate.passed).toBe(false);
+    expect(gate.missing).toContain("data_quality_release_ready");
+    expect(gate.missing).toContain("high_severity_data_quality_issues");
+  });
+
   test("blocks advice-like client visibility when suitability and IPS prerequisites are incomplete", () => {
     const gate = canReleaseAdviceWithSuitabilityIps(suitabilityGateCandidate);
 
