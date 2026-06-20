@@ -1,5 +1,82 @@
 # Phase Execution Report
 
+## MEGA-JOURNEY-PHASE-4 - Internal Draft Analyst Review Implementation
+
+Date: 2026-06-20
+
+### Scope
+
+Executed Phase 4 from `mega_journeys_1/ALPHAVEST_MVP_JOURNEY_IMPLEMENTATION_PLAN.md` as an implementation phase instead of docs-only. The implementation makes unsupported-claim rejection and evidence-backed internal draft rebuild real typed recommendation-review workflow actions.
+
+No Prisma schema change, migration, production AI integration, product UI change, compliance release unlock, export generation or client visibility unlock was added.
+
+### Implemented Behavior
+
+- Added `reject_unsupported_claim` and `rebuild_with_evidence` to typed `/api/demo-workflow` recommendation-review validation.
+- Persisted analyst unsupported-claim rejection as `REVISION_REQUESTED`, advisor `REQUEST_MORE_DATA`, compliance `NEEDS_EVIDENCE`, placeholder evidence and a blocked audit event.
+- Required accepted evidence (`VALIDATED` or `RELEASED`) before internal draft rebuild.
+- Blocked rebuild attempts that use placeholder/missing evidence without mutation or client release.
+- Persisted evidence-backed rebuild links as `EvidenceItem` rows with `internal_draft_rebuild` item type.
+- Kept rebuilt drafts internal-only with `clientVisible=false`, advisor approval still missing and compliance release still missing.
+- Added explicit client/export redaction proof for an evidence-backed internal rebuild payload.
+
+### Changed Files
+
+- `lib/demo-workflow-validation.ts`
+- `lib/demo-workflow-mutation.ts`
+- `tests/demo-workflow-api.spec.ts`
+- `tests/client-visibility-proof.spec.ts`
+- `docs/v3/ALPHAVEST_MVP_PHASE_4_INTERNAL_DRAFT_ANALYST_REVIEW_IMPLEMENTATION.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Commands Run
+
+- `git status --short --branch`
+- Read-only source inspection commands using `rg` and `sed`
+- `pnpm typecheck`
+- `pnpm exec playwright test tests/client-visibility-proof.spec.ts`
+- `pnpm exec playwright test tests/demo-workflow-api.spec.ts --grep "typed recommendation review workflow"`
+- `pnpm lint`
+- `pnpm db:validate`
+- `git diff --check`
+- `pnpm build`
+
+### Tests / Build / Migrations Run
+
+- `pnpm typecheck` - passed.
+- `pnpm exec playwright test tests/client-visibility-proof.spec.ts` - passed, 6 tests.
+- `pnpm exec playwright test tests/demo-workflow-api.spec.ts --grep "typed recommendation review workflow"` - first parallel attempt failed because the Playwright web server port was already in use; rerun by itself passed, 8 tests.
+- `pnpm lint` - passed.
+- `pnpm db:validate` - passed.
+- `git diff --check` - passed.
+- `pnpm build` - passed with existing Turbopack tracing warnings from `lib/document-storage-adapter.ts`.
+- No Prisma migration was created or run.
+
+### Visual Proof
+
+- No product UI was changed in Phase 4.
+- No screenshot proof was produced for this phase.
+- Existing visual acceptance guardrails remain in force for future UI work.
+
+### Current Capability Level
+
+Phase 4 reaches bounded E7 demo capability for the typed internal draft analyst review workflow: typed payload validation, role gate, permission gate, persisted mutation, audit/evidence state, reload proof, positive path, negative path and client/export redaction proof are covered by tests.
+
+### Pre-Existing Worktree State
+
+- Branch `full-workflow` was already ahead of `origin/full-workflow` from prior work.
+
+### P0 Impact
+
+Phase 4 adds executable proof for `FND-006` and `FND-007`: AI/rules draft material remains internal-only; unsupported claims can be rejected by an analyst; evidence-backed rebuild cannot proceed without accepted evidence and still cannot reach advisor/client release by itself.
+
+### Blockers / Deferred / Hold Items
+
+- Production AI/rules draft generation remains deferred.
+- Generalized arbitrary-payload draft rebuild remains deferred.
+- Advisor approval, compliance release, export generation and client visibility remain later phase concerns.
+
 ## MEGA-JOURNEY-PHASE-3 - Evidence Intake Review Sufficiency Implementation
 
 Date: 2026-06-20

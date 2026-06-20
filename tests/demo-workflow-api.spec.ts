@@ -4,10 +4,12 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import {
   AuditResult,
   ComplianceStatus,
+  EvidenceStatus,
   ObjectType,
   PrismaClient,
   RecommendationStatus,
   ReviewStatus,
+  VisibilityStatus,
 } from "@prisma/client";
 import { expect, test } from "@playwright/test";
 
@@ -231,6 +233,123 @@ test.describe("demo workflow API", () => {
       expect(recommendation.status).toBe(RecommendationStatus.ANALYST_REVIEWED);
       expect(recommendation.clientVisible).toBe(false);
       expect(approval.status).toBe(ReviewStatus.IN_REVIEW);
+    });
+
+    test("analyst rejects unsupported claim and keeps draft internal-only", async ({ request }) => {
+      const reason = "Projected tax impact references an unsupported stale document.";
+      const response = await request.post("/api/demo-workflow", {
+        data: {
+          action: "reject_unsupported_claim",
+          actorRole: "analyst",
+          evidenceIds: [demoTargets.northbridge.evidenceId],
+          reason,
+          targetId: demoTargets.northbridge.recommendationId,
+          workflowType: "recommendation-review",
+        },
+      });
+      const body = await response.json();
+
+      expect(response.ok(), JSON.stringify(body)).toBe(true);
+      expect(body.noClientRelease).toBe(true);
+      expect(body.result.mutated).toBe(true);
+      expect(body.result.reloadedState.recommendation.status).toBe(RecommendationStatus.REVISION_REQUESTED);
+      expect(body.result.reloadedState.recommendation.clientVisible).toBe(false);
+      expect(body.result.reloadedState.advisorApproval.status).toBe(ReviewStatus.REQUEST_MORE_DATA);
+      expect(body.result.reloadedState.complianceReview.status).toBe(ComplianceStatus.NEEDS_EVIDENCE);
+      expect(body.result.gateMissing).toEqual(["evidence_record", "advisor_approval", "compliance_release"]);
+
+      const [recommendation, evidence, audit] = await Promise.all([
+        prisma.recommendation.findUniqueOrThrow({
+          where: { id: demoTargets.northbridge.recommendationId },
+        }),
+        prisma.evidenceRecord.findUniqueOrThrow({
+          where: { id: demoTargets.northbridge.evidenceId },
+        }),
+        prisma.auditEvent.findUniqueOrThrow({
+          where: { id: body.result.auditEventId },
+        }),
+      ]);
+
+      expect(recommendation.clientVisible).toBe(false);
+      expect(recommendation.summaryInternal).toContain(reason);
+      expect(recommendation.assumptionsJson).toMatchObject({
+        aiDraftInternalOnly: true,
+        phase4UnsupportedClaimRejected: true,
+        requiresEvidenceLinkedRebuild: true,
+      });
+      expect(evidence.status).toBe(EvidenceStatus.PLACEHOLDER);
+      expect(evidence.visibilityStatus).toBe(VisibilityStatus.COMPLIANCE_VISIBLE);
+      expect(audit.eventType).toBe("recommendation_review.reject_unsupported_claim");
+      expect(audit.result).toBe(AuditResult.BLOCKED);
+    });
+
+    test("analyst rebuild requires accepted evidence and remains unreleased", async ({ request }) => {
+      const blockedResponse = await request.post("/api/demo-workflow", {
+        data: {
+          action: "rebuild_with_evidence",
+          actorRole: "analyst",
+          evidenceIds: [demoTargets.morgan.evidenceId],
+          reason: "Attempt rebuild with placeholder evidence.",
+          targetId: demoTargets.morgan.recommendationId,
+          workflowType: "recommendation-review",
+        },
+      });
+      const blockedBody = await blockedResponse.json();
+
+      expect(blockedResponse.status(), JSON.stringify(blockedBody)).toBe(409);
+      expect(blockedBody.mutated).toBe(false);
+      expect(blockedBody.noClientRelease).toBe(true);
+
+      const reason = "Rebuilt after accepted liquidity evidence review.";
+      const response = await request.post("/api/demo-workflow", {
+        data: {
+          action: "rebuild_with_evidence",
+          actorRole: "analyst",
+          evidenceIds: [demoTargets.summit.evidenceId],
+          reason,
+          targetId: demoTargets.summit.recommendationId,
+          workflowType: "recommendation-review",
+        },
+      });
+      const body = await response.json();
+
+      expect(response.ok(), JSON.stringify(body)).toBe(true);
+      expect(body.noClientRelease).toBe(true);
+      expect(body.result.mutated).toBe(true);
+      expect(body.result.reloadedState.recommendation.status).toBe(RecommendationStatus.ANALYST_REVIEWED);
+      expect(body.result.reloadedState.recommendation.clientVisible).toBe(false);
+      expect(body.result.reloadedState.complianceReview.evidenceComplete).toBe(true);
+      expect(body.result.gatePassed).toBe(false);
+      expect(body.result.gateMissing).toEqual(["advisor_approval", "compliance_release"]);
+
+      const [recommendation, evidenceItem, audit] = await Promise.all([
+        prisma.recommendation.findUniqueOrThrow({
+          where: { id: demoTargets.summit.recommendationId },
+        }),
+        prisma.evidenceItem.findFirstOrThrow({
+          where: {
+            evidenceRecordId: demoTargets.summit.evidenceId,
+            itemType: "internal_draft_rebuild",
+            sourceObjectId: demoTargets.summit.recommendationId,
+            sourceObjectType: ObjectType.RECOMMENDATION,
+          },
+        }),
+        prisma.auditEvent.findUniqueOrThrow({
+          where: { id: body.result.auditEventId },
+        }),
+      ]);
+
+      expect(recommendation.clientVisible).toBe(false);
+      expect(recommendation.clientSummaryDraft).toContain("Compliance release remains required");
+      expect(recommendation.summaryInternal).toContain(reason);
+      expect(recommendation.assumptionsJson).toMatchObject({
+        aiDraftInternalOnly: true,
+        evidenceBackedRebuild: true,
+        phase4RebuildEvidenceIds: [demoTargets.summit.evidenceId],
+      });
+      expect(evidenceItem.visibilityStatus).toBe(VisibilityStatus.COMPLIANCE_VISIBLE);
+      expect(audit.eventType).toBe("recommendation_review.rebuild_with_evidence");
+      expect(audit.result).toBe(AuditResult.SUCCESS);
     });
 
     test("advisor approval persists without client release", async ({ request }) => {

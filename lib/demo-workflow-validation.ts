@@ -6,6 +6,8 @@ export type ValidationIssue = {
 
 export type RecommendationReviewWorkflowAction =
   | "submit_review"
+  | "reject_unsupported_claim"
+  | "rebuild_with_evidence"
   | "advisor_approve"
   | "compliance_release"
   | "compliance_block"
@@ -49,6 +51,8 @@ const demoWorkflowActionPattern = /^j\d{2}\.[a-zA-Z0-9]+$/;
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const recommendationReviewActions = new Set<RecommendationReviewWorkflowAction>([
   "submit_review",
+  "reject_unsupported_claim",
+  "rebuild_with_evidence",
   "advisor_approve",
   "compliance_release",
   "compliance_block",

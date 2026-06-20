@@ -102,6 +102,49 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
     expect(projection.hiddenFields).toEqual([...forbiddenClientPayloadFields]);
   });
 
+  test("keeps evidence-backed internal rebuild hidden until release", () => {
+    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const payload = recommendationPayload({
+      assumptionsJson: {
+        aiDraftInternalOnly: true,
+        evidenceBackedRebuild: true,
+        phase4RebuildEvidenceIds: ["cd681455-89ef-5ebb-96c7-8464f0dcb721"],
+      },
+      clientSummaryDraft: "Internal draft rebuilt with accepted evidence. Compliance release remains required.",
+      clientTenantId: principal.tenant.id,
+      clientVisible: false,
+      recommendationStatus: "ANALYST_REVIEWED",
+      summaryInternal: "Evidence-backed internal draft rebuilt by analyst.",
+      visibilityStatus: "COMPLIANCE_VISIBLE",
+    });
+
+    const projection = visibilityEngine.projectRecommendationPayload(
+      principal.actor,
+      principal.role,
+      payload,
+      demoPlatformTenantId,
+      principal.tenant.id,
+    );
+
+    expect(projection.visible).toBe(false);
+    expect(projection.reasonCode).toBe("DEMO_CLIENT_VISIBILITY_FAIL_CLOSED");
+    expect(projection.payload).toEqual({});
+    expect(projection.hiddenFields).toEqual(["clientSummary", ...forbiddenClientPayloadFields]);
+
+    const forbiddenExportPayloads = exportService.forbiddenExportPayloads([
+      "CLIENT_SAFE_SUMMARY",
+      "INTERNAL_RATIONALE",
+      "UNRELEASED_RECOMMENDATION",
+      "HIDDEN_FIELD",
+    ]);
+
+    expect(forbiddenExportPayloads).toEqual([
+      "INTERNAL_RATIONALE",
+      "UNRELEASED_RECOMMENDATION",
+      "HIDDEN_FIELD",
+    ]);
+  });
+
   test("fails closed for cross-tenant client access", () => {
     const bennettPrincipal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
     const morganPrincipal = createDemoSession({ roleKey: "principal", tenantSlug: "morgan" });

@@ -1,5 +1,70 @@
 # Implementation QA Report
 
+## MEGA-JOURNEY-PHASE-4 Implementation QA Addendum
+
+Date: 2026-06-20
+
+### Executive Decision
+
+`PHASE_4_IMPLEMENTATION_QA_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Phase scope discipline | Passed | Implementation stayed within internal draft analyst review workflow actions, service behavior, tests and reports. No schema, migration, product UI, production AI, release, export or client visibility change was added. |
+| Internal draft classification | Passed | New mutation metadata marks unsupported rejection and evidence-backed rebuild as internal draft lifecycle states. |
+| Analyst unsupported-claim rejection | Passed | Analyst can reject unsupported claims, moving recommendation/review/compliance/evidence state into revision and evidence-needed status with persisted audit. |
+| Rebuild with evidence | Passed | Rebuild requires accepted evidence and creates an internal evidence link. Placeholder evidence fails closed. |
+| Advisor/client release separation | Passed | Rebuild returns to analyst-reviewed only and keeps `clientVisible=false`; advisor approval and compliance release remain missing gates. |
+| Client/API/export leakage boundary | Passed | Client visibility proof includes an evidence-backed internal rebuild payload and forbids internal rationale/unreleased recommendation export classifications. |
+| Wrong/precondition negative path | Passed | Existing wrong-role/action/object tests remain green; new placeholder-evidence rebuild test fails closed with no mutation and no client release. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | TypeScript check passed after implementation. |
+| `pnpm exec playwright test tests/client-visibility-proof.spec.ts` | Passed | 6 tests passed, including the new evidence-backed internal rebuild redaction proof. |
+| `pnpm exec playwright test tests/demo-workflow-api.spec.ts --grep "typed recommendation review workflow"` | Passed after retry | Initial parallel execution collided on Playwright web-server port `3020`; rerun by itself passed 8 typed workflow tests. |
+| `pnpm lint` | Passed | ESLint passed. |
+| `pnpm db:validate` | Passed | Prisma schema remains valid. |
+| `git diff --check` | Passed | No whitespace errors. |
+| `pnpm build` | Passed with warnings | Build completed; Turbopack repeated existing broad tracing warnings from `lib/document-storage-adapter.ts`. |
+
+### Tests / Build / Migrations Run
+
+- Focused typed recommendation-review workflow tests passed.
+- Focused client visibility/export redaction tests passed.
+- Typecheck passed.
+- Lint, Prisma validation, build and whitespace checks passed.
+- No Prisma migration was created or run.
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| Internal draft action validation | implemented + tested | New action IDs are accepted by the typed workflow validator. |
+| Unsupported-claim rejection lifecycle | implemented + tested | Persists revision/evidence-needed state and blocked audit. |
+| Rebuild-with-evidence precondition | implemented + tested | Placeholder evidence cannot rebuild. |
+| Evidence-backed internal rebuild | implemented + tested | Creates internal evidence item and keeps release gates closed. |
+| Client/export redaction for rebuild payload | implemented + tested | Client projection fails closed before release; export forbidden classifications remain blocked. |
+| Production AI/rules drafting | not performed | Outside Phase 4 implementation scope. |
+| Product UI route changes | not performed | No visible UI changed in this phase. |
+| Compliance release / client visibility / export generation | not performed | Later phase work. |
+
+### Visual Proof
+
+- No product UI was changed.
+- No screenshot proof was produced for Phase 4.
+- Human Visual Review Rubric result: `not applicable for no-UI implementation`.
+
+### Residual Risks
+
+- The workflow is bounded to the seeded demo recommendation-review path.
+- It uses existing evidence status semantics (`VALIDATED` or `RELEASED`) rather than a new evidence sufficiency schema.
+- Generalized AI draft generation and arbitrary draft-payload rebuild APIs remain later work.
+
 ## MEGA-JOURNEY-PHASE-3 Implementation QA Addendum
 
 Date: 2026-06-20

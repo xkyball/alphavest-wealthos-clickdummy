@@ -262,6 +262,8 @@ function typedActionPermission(action: RecommendationReviewWorkflowAction): Perm
     case "compliance_block":
     case "request_evidence":
       return "BLOCK";
+    case "reject_unsupported_claim":
+    case "rebuild_with_evidence":
     case "submit_review":
       return "REVIEW";
   }
@@ -269,6 +271,8 @@ function typedActionPermission(action: RecommendationReviewWorkflowAction): Perm
 
 function expectedTypedRole(action: RecommendationReviewWorkflowAction): DemoRoleKey {
   switch (action) {
+    case "reject_unsupported_claim":
+    case "rebuild_with_evidence":
     case "submit_review":
       return "analyst";
     case "advisor_approve":
@@ -283,7 +287,10 @@ function expectedTypedRole(action: RecommendationReviewWorkflowAction): DemoRole
 function typedActionNextState(action: RecommendationReviewWorkflowAction) {
   switch (action) {
     case "submit_review":
+    case "rebuild_with_evidence":
       return RecommendationStatus.ANALYST_REVIEWED;
+    case "reject_unsupported_claim":
+      return RecommendationStatus.REVISION_REQUESTED;
     case "advisor_approve":
       return RecommendationStatus.ADVISOR_APPROVED;
     case "compliance_release":
@@ -302,6 +309,7 @@ function typedEventType(action: RecommendationReviewWorkflowAction) {
 function typedAuditResult(action: RecommendationReviewWorkflowAction) {
   switch (action) {
     case "compliance_block":
+    case "reject_unsupported_claim":
       return AuditResult.BLOCKED;
     case "request_evidence":
       return AuditResult.PENDING;
@@ -332,6 +340,10 @@ function assertTypedConfirmation(input: RecommendationReviewWorkflowInput) {
       400,
     );
   }
+}
+
+function hasAcceptedEvidence(record: { status: EvidenceStatus }) {
+  return record.status === EvidenceStatus.VALIDATED || record.status === EvidenceStatus.RELEASED;
 }
 
 async function reloadRecommendationReviewState(
@@ -530,6 +542,103 @@ export async function runRecommendationReviewWorkflowMutation(
 
     let gateMissing: string[] = [];
     let gatePassed = false;
+
+    if (input.action === "reject_unsupported_claim") {
+      await tx.recommendation.update({
+        data: {
+          assumptionsJson: {
+            aiDraftInternalOnly: true,
+            phase4UnsupportedClaimRejected: true,
+            rejectionReason: reason,
+            requiresEvidenceLinkedRebuild: true,
+          },
+          clientVisible: false,
+          status: RecommendationStatus.REVISION_REQUESTED,
+          summaryInternal: `Unsupported claim rejected by analyst: ${reason}`,
+        },
+        where: { id: input.targetId },
+      });
+      await tx.approval.update({
+        data: {
+          approvedAt: null,
+          notes: reason,
+          status: ReviewStatus.REQUEST_MORE_DATA,
+        },
+        where: { id: advisorApproval.id },
+      });
+      await tx.complianceReview.update({
+        data: {
+          evidenceComplete: false,
+          releaseNotes: reason,
+          status: ComplianceStatus.NEEDS_EVIDENCE,
+        },
+        where: { id: complianceReview.id },
+      });
+      if (evidenceRecords.length > 0) {
+        await tx.evidenceRecord.updateMany({
+          data: {
+            status: EvidenceStatus.PLACEHOLDER,
+            summary: `Evidence required for rejected unsupported claim: ${reason}`,
+            visibilityStatus: VisibilityStatus.COMPLIANCE_VISIBLE,
+          },
+          where: { id: { in: evidenceRecords.map((record) => record.id) } },
+        });
+      }
+      gateMissing = ["evidence_record", "advisor_approval", "compliance_release"];
+    }
+
+    if (input.action === "rebuild_with_evidence") {
+      const acceptedEvidenceRecords = evidenceRecords.filter((record) => hasAcceptedEvidence(record));
+
+      if (!input.evidenceIds?.length || acceptedEvidenceRecords.length === 0) {
+        throw new RecommendationReviewWorkflowError(
+          "Accepted scoped evidence is required before rebuilding an internal draft.",
+        );
+      }
+
+      await tx.recommendation.update({
+        data: {
+          assumptionsJson: {
+            aiDraftInternalOnly: true,
+            evidenceBackedRebuild: true,
+            phase4RebuildEvidenceIds: acceptedEvidenceRecords.map((record) => record.id),
+            rebuildReason: reason,
+          },
+          clientSummaryDraft: "Internal draft rebuilt with accepted evidence. Compliance release remains required.",
+          clientVisible: false,
+          status: RecommendationStatus.ANALYST_REVIEWED,
+          summaryInternal: `Evidence-backed internal draft rebuilt by analyst: ${reason}`,
+        },
+        where: { id: input.targetId },
+      });
+      await tx.approval.update({
+        data: {
+          approvedAt: null,
+          notes: reason,
+          status: ReviewStatus.IN_REVIEW,
+        },
+        where: { id: advisorApproval.id },
+      });
+      await tx.complianceReview.update({
+        data: {
+          evidenceComplete: true,
+          releaseNotes: "Evidence-backed internal draft rebuilt; advisor and compliance release still required.",
+          status: ComplianceStatus.PENDING,
+        },
+        where: { id: complianceReview.id },
+      });
+      await tx.evidenceItem.createMany({
+        data: acceptedEvidenceRecords.map((record) => ({
+          evidenceRecordId: record.id,
+          itemType: "internal_draft_rebuild",
+          sourceObjectId: input.targetId,
+          sourceObjectType: ObjectType.RECOMMENDATION,
+          title: "Evidence linked to Phase 4 internal draft rebuild",
+          visibilityStatus: VisibilityStatus.COMPLIANCE_VISIBLE,
+        })),
+      });
+      gateMissing = ["advisor_approval", "compliance_release"];
+    }
 
     if (input.action === "submit_review") {
       await tx.recommendation.update({
