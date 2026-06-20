@@ -1,5 +1,65 @@
 # Phase Execution Report
 
+## MEGA-JOURNEY-PHASE-5 - Advisor Approval To Compliance Gate
+
+Date: 2026-06-20
+
+### Scope
+
+Executed Phase 5 from `mega_journeys_1/ALPHAVEST_MVP_JOURNEY_IMPLEMENTATION_PLAN.md` as a docs-only advisor approval and compliance gate contract. The phase keeps advisor approval, compliance block/request-evidence and compliance release separate, and locks release preconditions before client visibility. No product code, route, API, schema, migration, test, screen state or generated visual was changed.
+
+### Completed Tasks
+
+- Specified advisor approval as human review only: approval may move to compliance-pending/advisor-approved state but must keep client visibility blocked.
+- Defined the compliance release precondition matrix: compliance actor, exact confirmation where configured, advisor approval, evidence sufficiency, permission, audit and payload readiness.
+- Defined compliance block and request-evidence as explicit fail-closed lifecycle states.
+- Defined decision creation after compliance release as separate from client acceptance, export/download/share and downstream advice execution.
+- Mapped advisor/compliance positive and negative test obligations to existing proof candidates without adding or running tests.
+
+### Current Source Reality
+
+- `lib/workflow-gate.ts` requires recommendation release state, advisor approval, compliance release, sufficient evidence and permission before client visibility can pass.
+- `lib/demo-workflow-mutation.ts` supports typed recommendation-review actions for analyst submit, advisor approve, compliance release, compliance block and request evidence.
+- `advisor_approve` persists `Approval.APPROVED`, `Recommendation.ADVISOR_APPROVED`, `ComplianceReview.PENDING` and keeps `clientVisible=false`.
+- `compliance_release` requires confirmation, advisor approval, evidence and workflow-gate pass before setting released/client-visible state.
+- `compliance_block` and `request_evidence` keep recommendations client-hidden and persist blocked/needs-evidence state plus audit rows.
+- Existing workflow/P0 tests are proof candidates only; they were not run in this phase.
+
+### Changed Files
+
+- `docs/v3/ALPHAVEST_MVP_PHASE_5_ADVISOR_COMPLIANCE_GATE_BASELINE.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Commands Run
+
+- `git status --short --branch`
+- Read-only source inspection commands using `rg` and `sed`
+
+### Tests / Build / Migrations Run
+
+None. The controlling Phase 5 stop rules explicitly require no test execution, no code change, no schema migration, no screen/state/image generation and no downstream implementation.
+
+### Pre-Existing Worktree State
+
+- Branch `full-workflow` was already ahead of `origin/full-workflow` by five commits from prior phase work.
+- `next-env.d.ts` was already modified before Phase 5 and was left untouched.
+
+### P0 Impact
+
+Phase 5 creates the advisor approval to compliance gate contract for later MVP journey implementation. It does not add behavioral proof and does not claim route-level release proof, production authorization, full client projection, client acceptance, export readiness, binary delivery, audit fail-closed coverage across every path or full P0 closure.
+
+### Blockers / Deferred / Hold Items
+
+- Future release APIs remain unauthorized until a later explicit handoff.
+- Compliance release projection into client-safe portal/mobile surfaces belongs to Phase 6.
+- Decision/client acceptance proof remains separate from release and belongs to later decision/visibility phases.
+- Existing proof-candidate tests must be rerun and expanded later before acceptance.
+
+### Exit Gate Decision
+
+`PHASE_5_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
 ## MEGA-JOURNEY-PHASE-4 - Internal Draft / Analyst Review / AI Internal-Only
 
 Date: 2026-06-20
