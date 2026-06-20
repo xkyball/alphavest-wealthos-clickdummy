@@ -1,5 +1,81 @@
 # Phase Execution Report
 
+## PHASE-01-FOUNDATION-GUARDRAILS - Foundation / Guardrails
+
+Date: 2026-06-20
+
+### Entry Report
+
+1. Phase name: `PHASE-01-FOUNDATION` / Foundation Guardrails.
+2. Source artefacts read: `AGENTS.md`, `CODEX_MASTER_TASK.md`, mandatory `docs/v3/*` source files, `01_PHASE_FOUNDATION_GUARDRAILS_PROMPT.md`, `FINAL_CODEX_IMPLEMENTATION_HANDOFF.md`, `FINAL_CODEX_TASK_MASTER.md`, `SOURCE_OF_TRUTH_ORDER.md`, `STOP_RULES_MASTER.md`, `ATOMIC_IMPLEMENTATION_SLICE_PLAN.md`, `PHASE_ENTRY_EXIT_GATE_CHECKLIST.md`, `ALPHAVEST_UI_INTERACTION_REALITY_CLARIFICATION.md`, `V2_1_PATCH_CHANGELOG.md` and the v2 manifest.
+3. Slice IDs in scope: `AV-SLICE-FND-01..05`.
+4. Files inspected: handoff authority files, phase gate files, `package.json`, `app/api`, `prisma/schema.prisma`, existing tests, `docs/v3/PHASE_EXECUTION_REPORT.md`, `docs/v3/IMPLEMENTATION_QA_REPORT.md`.
+5. Files may edit: `tests/foundation-guardrails.spec.ts`, `package.json`, `docs/v3/PHASE_EXECUTION_REPORT.md`, `docs/v3/IMPLEMENTATION_QA_REPORT.md`.
+6. Tests expected: source hierarchy and forbidden-work checks, plus typecheck/lint because a TypeScript test and package script were added.
+7. Stop rules checked: no `main` target truth, no visual generation, no route scope change, no P1/Hold/reference promotion, no new API by default, no Prisma/schema replacement, no P0 overclaim, no UI visibility as lifecycle proof.
+8. Missing inputs: exact `00_START_HERE/V2_CHANGELOG.md` is absent from the patched package; `00_START_HERE/V2_1_PATCH_CHANGELOG.md` exists and was used as the patched successor. This is documented as a limitation, not treated as new authority.
+9. Entry decision: `ENTRY_READY`.
+
+### Scope
+
+Executed only the Foundation Guardrails prompt for `AV-SLICE-FND-01..05`. This phase added machine-checkable guardrails for the source hierarchy, `full-workflow` target lock, `main` block, no-generation policy, fixed API universe, route workset lock, patch-schema block and P0/UI proof boundaries. No product UI, routes, APIs, Prisma schema, migrations, visuals or state-screen assets were changed.
+
+### Source Artefacts Used
+
+- `FINAL_CODEX_IMPLEMENTATION_HANDOFF.md`
+- `FINAL_CODEX_TASK_MASTER.md`
+- `SOURCE_OF_TRUTH_ORDER.md`
+- `STOP_RULES_MASTER.md`
+- `ATOMIC_IMPLEMENTATION_SLICE_PLAN.md`
+- `PHASE_ENTRY_EXIT_GATE_CHECKLIST.md`
+- `V2_1_PATCH_CHANGELOG.md`
+- `ALPHAVEST_UI_INTERACTION_REALITY_CLARIFICATION.md`
+- Project V3 source-of-truth docs listed in `AGENTS.md`.
+
+### Slice Coverage
+
+| Slice | Status | Notes |
+| --- | --- | --- |
+| `AV-SLICE-FND-01` | Implemented / tested | Source hierarchy and patched target-codebase lock are asserted. |
+| `AV-SLICE-FND-02` | Implemented / tested | `main` remains blocked as target truth. |
+| `AV-SLICE-FND-03` | Implemented / tested | No screen/state/image/visual generation guardrail is asserted. |
+| `AV-SLICE-FND-04` | Implemented / tested | Patch-only schema concepts remain blocked by default. |
+| `AV-SLICE-FND-05` | Implemented / tested | P0 and visible-UI lifecycle proof language remains bounded; full P0 is not claimed. |
+
+### Changed Files
+
+- `package.json`
+- `tests/foundation-guardrails.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests Added Or Updated
+
+- Added `tests/foundation-guardrails.spec.ts`.
+- Added `pnpm test:foundation`.
+
+### Commands Run
+
+- `pnpm test:foundation` - passed, 5 tests.
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `git diff --check` - passed.
+
+### P0 Impact
+
+This phase improves guardrail proof for `P0_MAIN_FALSE_GAP_BLOCK_GATE`, no-generation/no-schema-overreach discipline, route/API universe lock and no-overclaim proof language. It does not claim P0 passed. It does not implement safety behavior beyond source/forbidden-work acceptance checks.
+
+### Blockers / Deferred / Hold Items
+
+- Exact `00_START_HERE/V2_CHANGELOG.md` is absent; the patched successor `V2_1_PATCH_CHANGELOG.md` was used and this mismatch remains documented.
+- No P1, Reference-only or Hold routes were elevated.
+- No new API route, Prisma schema replacement, migration, screen/state/image generation or product decision was performed.
+- Pre-existing worktree changes outside this phase were left intact.
+
+### Exit Gate Decision
+
+`PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
 ## Phase 00 - Repository and Project Setup
 
 Date: 2026-06-14

@@ -39,6 +39,7 @@
     "screencast:mp4": "tsx scripts/screencast/render-mp4.ts",
     "test:data-quality": "playwright test tests/data-quality-service.spec.ts",
     "test:file-export": "playwright test tests/file-export-realism.spec.ts",
+    "test:foundation": "playwright test tests/foundation-guardrails.spec.ts",
     "test:playwright": "playwright test",
     "test:permissions": "playwright test tests/permission-engine.spec.ts",
     "test:phase-d": "playwright test tests/review-monitoring-service.spec.ts",
