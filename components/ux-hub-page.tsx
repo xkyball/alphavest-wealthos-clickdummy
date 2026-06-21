@@ -36,7 +36,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
     <section className="mx-auto w-full max-w-[104rem] space-y-5" data-testid="ux-hub-page">
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <div className="space-y-5">
-          <div className="rounded-md border border-alphavest-border bg-alphavest-panel/72 p-5">
+          <div className="rounded-md border border-alphavest-border bg-alphavest-panel/72 p-5" data-ux-content-tier="must-see">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">{hub.eyebrow}</p>
             <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div className="min-w-0">
@@ -61,7 +61,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-3" data-ux-content-tier="secondary">
             {hub.priorityCards.map((card) => (
               <Card className={cn("border", toneClasses[card.tone])} key={card.label}>
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] opacity-80">{card.label}</p>
@@ -71,7 +71,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
             ))}
           </div>
 
-          <Card>
+          <Card data-ux-content-tier="secondary">
             <CardHeader>
               <CardTitle>Source Summary</CardTitle>
             </CardHeader>
@@ -90,6 +90,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
           </Card>
 
           {pageId === "031" ? (
+            <div data-ux-content-tier="tertiary">
             <UxSecondaryContextTabs
               safetyNote="Wealth-map tabs are context only; full workflows, gate changes and release decisions stay on the linked workbench/detail routes."
               tabs={[
@@ -141,11 +142,12 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
               ]}
               title="Secondary wealth-map context"
             />
+            </div>
           ) : null}
         </div>
 
         <aside className="space-y-5">
-          <Card>
+          <Card data-ux-content-tier="secondary">
             <CardHeader>
               <CardTitle>Next Work Queue</CardTitle>
             </CardHeader>
@@ -176,7 +178,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
             </CardContent>
           </Card>
 
-          <div className="rounded-md border border-alphavest-gold/40 bg-alphavest-gold/10 p-4 text-sm leading-6 text-alphavest-gold-soft">
+          <div className="rounded-md border border-alphavest-gold/40 bg-alphavest-gold/10 p-4 text-sm leading-6 text-alphavest-gold-soft" data-ux-content-tier="must-see">
             <div className="flex gap-3">
               <ShieldCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
               <p>{hub.safetyNote}</p>

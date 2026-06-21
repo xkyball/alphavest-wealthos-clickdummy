@@ -9,6 +9,7 @@ import {
   uxPageContractIntegrity,
   uxPageContracts,
 } from "../lib/ux-page-contract";
+import { uxContentHierarchyForPageType } from "../lib/ux-content-hierarchy";
 import {
   groupedImplementationScreenRoutes,
   routeImplementationAccessDecision,
@@ -319,6 +320,37 @@ test.describe("UX-COMPLEXITY secondary context drawers and tabs", () => {
       expect(await tabs.getByTestId("ux-complexity-secondary-tab").count()).toBeGreaterThan(1);
       await expect(tabs.getByTestId("ux-complexity-secondary-safety-note")).toBeVisible();
       await expect(tabs.getByTestId("ux-complexity-secondary-active-panel")).toBeVisible();
+    });
+  }
+});
+
+test.describe("UX-COMPLEXITY content priority hierarchy", () => {
+  test("defines Must-see, Secondary and Tertiary content for every page type", () => {
+    for (const contract of uxPageContracts) {
+      const hierarchy = uxContentHierarchyForPageType(contract.pageType);
+
+      expect(hierarchy.mustSee.length, `${contract.pageId} must-see`).toBeGreaterThan(0);
+      expect(hierarchy.secondary.length, `${contract.pageId} secondary`).toBeGreaterThan(0);
+      expect(hierarchy.tertiary.length, `${contract.pageId} tertiary`).toBeGreaterThan(0);
+    }
+  });
+
+  const representativeRoutes = [
+    "/wealth-map",
+    "/actions",
+    "/compliance/demo/review",
+    "/evidence?state=drawer",
+  ];
+
+  for (const path of representativeRoutes) {
+    test(`${path} exposes Must-see, Secondary and Tertiary tiers without hiding safety`, async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 1100 });
+      await authenticateRouteSmokePage(page);
+      await page.goto(path);
+
+      await expect(page.locator('[data-ux-content-tier="must-see"]').first()).toBeVisible();
+      await expect(page.locator('[data-ux-content-tier="secondary"]').first()).toBeVisible();
+      await expect(page.locator('[data-ux-content-tier="tertiary"]').first()).toBeVisible();
     });
   }
 });

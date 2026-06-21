@@ -39,7 +39,7 @@ export function UxDetailStandardPanel({
       className={cn("grid gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-panel/72 p-4 xl:grid-cols-[1.1fr_1.2fr_0.9fr]", className)}
       data-testid="ux-page-detail-standard"
     >
-      <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-4" data-testid="ux-page-detail-object-header">
+      <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-4" data-testid="ux-page-detail-object-header" data-ux-content-tier="must-see">
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">{routeId} · {objectType}</p>
         <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectTitle}</h2>
         <p className="mt-2 text-sm font-semibold text-alphavest-gold-soft">{status}</p>
@@ -52,7 +52,7 @@ export function UxDetailStandardPanel({
           ))}
         </div>
       </div>
-      <div className="grid gap-3 md:grid-cols-2" data-testid="ux-page-detail-evidence-timeline">
+      <div className="grid gap-3 md:grid-cols-2" data-testid="ux-page-detail-evidence-timeline" data-ux-content-tier="secondary">
         <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Evidence basis</p>
           <div className="mt-3 space-y-2">
@@ -70,7 +70,7 @@ export function UxDetailStandardPanel({
           </div>
         </div>
       </div>
-      <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4" data-testid="ux-page-detail-gated-action-rail">
+      <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4" data-testid="ux-page-detail-gated-action-rail" data-ux-content-tier="must-see">
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold-soft">Gated action rail</p>
         <p className="mt-3 text-lg font-semibold text-alphavest-ivory">{actionLabel}</p>
         <p className="mt-2 text-sm leading-6 text-alphavest-muted">{actionState}</p>

@@ -26,10 +26,10 @@ export function UxSecondaryContextTabs({ safetyNote, tabs, title }: UxSecondaryC
   }
 
   return (
-    <section className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/30 p-3" data-testid="ux-complexity-secondary-tabs">
+    <section className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/30 p-3" data-testid="ux-complexity-secondary-tabs" data-ux-content-tier="tertiary">
       <div className="flex flex-col gap-1">
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">{title}</p>
-        <p className="text-xs leading-5 text-alphavest-muted" data-testid="ux-complexity-secondary-safety-note">{safetyNote}</p>
+        <p className="text-xs leading-5 text-alphavest-muted" data-testid="ux-complexity-secondary-safety-note" data-ux-content-tier="must-see">{safetyNote}</p>
       </div>
       <div aria-label={title} className="mt-4 flex flex-wrap gap-2" data-testid="ux-complexity-secondary-tablist" role="tablist">
         {tabs.map((tab) => {
@@ -63,6 +63,7 @@ export function UxSecondaryContextTabs({ safetyNote, tabs, title }: UxSecondaryC
         aria-labelledby={`${generatedId}-${activeTab.id}-tab`}
         className="mt-4 rounded-md border border-alphavest-border/60 bg-alphavest-panel/45 p-4"
         data-testid="ux-complexity-secondary-active-panel"
+        data-ux-content-tier="secondary"
         id={`${generatedId}-${activeTab.id}-panel`}
         role="tabpanel"
       >

@@ -8316,3 +8316,75 @@ Completed `UX-COMPLEXITY-002` by moving secondary details for the scoped target 
 ### Exit Gate Decision
 
 `UX_COMPLEXITY_002_COMPLETED_WITH_SECONDARY_CONTEXT_TABS_AND_P0_PROOF`
+
+## UX-COMPLEXITY-003 Addendum - Content Priority Hierarchy Applied
+
+Date: 2026-06-21
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+
+### Scope
+
+Completed `UX-COMPLEXITY-003` by defining Must-see, Secondary and Tertiary responsibilities per page type and applying semantic tier markers to shared page surfaces. This avoids visible spec UI while proving page hierarchy and preserving safety gates.
+
+### Changed Files
+
+- `lib/ux-content-hierarchy.ts`
+- `components/product-guidance-panel.tsx`
+- `components/ux-hub-page.tsx`
+- `components/ux-detail-standard-panel.tsx`
+- `components/ux-complexity-priority-panel.tsx`
+- `components/ux-secondary-context-tabs.tsx`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-003/2026-06-21-UX-COMPLEXITY-003-hub-wealth-map-hierarchy.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-003/2026-06-21-UX-COMPLEXITY-003-workbench-actions-hierarchy.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-003/2026-06-21-UX-COMPLEXITY-003-detail-compliance-review-hierarchy.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-003/2026-06-21-UX-COMPLEXITY-003-drawer-evidence-hierarchy.png`
+
+### Route-Policy Rows Cited
+
+- Page-type policy rules for Hub, Workbench, Detail, Drawer, Modal, Reference, P1 and Hold.
+- Representative proof routes: `031`, `032`, `039`, `046`.
+
+### Implementation Notes
+
+- Added `uxContentHierarchyByPageType`.
+- Marked Product Guidance, Hub, Detail Standard, Priority Panel and Secondary Context Tabs with `data-ux-content-tier`.
+- Kept safety/gate guidance in the Must-see tier.
+- Avoided visible tier labels or spec annotations in app UI.
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with existing warnings.
+- `PLAYWRIGHT_PORT=3383 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-COMPLEXITY content priority hierarchy"` - passed, 5 tests.
+- `PLAYWRIGHT_PORT=3384 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3385 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3386 pnpm test:file-export` - passed, 14 tests.
+- `PLAYWRIGHT_PORT=3387 pnpm test:route-smoke` - passed, 137 tests.
+
+### Screenshot Proof
+
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-003/2026-06-21-UX-COMPLEXITY-003-hub-wealth-map-hierarchy.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-003/2026-06-21-UX-COMPLEXITY-003-workbench-actions-hierarchy.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-003/2026-06-21-UX-COMPLEXITY-003-detail-compliance-review-hierarchy.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-003/2026-06-21-UX-COMPLEXITY-003-drawer-evidence-hierarchy.png`
+
+### Positive Acceptance
+
+- All page types have a Must-see / Secondary / Tertiary hierarchy contract.
+- Representative routes expose all three tiers in DOM proof and screenshot proof.
+
+### Negative Acceptance
+
+- Gate and safety guidance is not hidden in Secondary/Tertiary content.
+- No product scope, route, payload, permission or release behavior changed.
+
+### Exit Gate Decision
+
+`UX_COMPLEXITY_003_COMPLETED_WITH_CONTENT_TIER_HIERARCHY_AND_P0_PROOF`

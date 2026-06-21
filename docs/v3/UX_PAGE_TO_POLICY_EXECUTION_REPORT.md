@@ -359,6 +359,122 @@ No-P1/Hold/Reference-elevation confirmation: `UX-COMPLEXITY-002` touched only sc
 
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed P0 tests.
 
+## Completed Slice: UX-COMPLEXITY-003
+
+Task: `UX-COMPLEXITY-003` - Create Must-see / Secondary / Tertiary content hierarchy per page type.
+
+Mission Card: define and prove a content-priority hierarchy across MVP/MVP_SUPPORT page types without adding visible spec UI, route scope, product actions or safety weakening.
+
+Evidence Intake:
+- Task-master `UX-COMPLEXITY-003`.
+- Route Policy Matrix page-type rules for Hub, Workbench, Detail, Drawer, Modal, Reference, P1 and Hold.
+- Existing implementation finding: PAGE and COMPLEXITY work already produced shared surfaces for product guidance, hubs, workbench priority, detail standard and secondary context tabs.
+
+Problem Architecture: pages need a stable hierarchy, but visible labels such as "Must-see / Secondary / Tertiary" would turn implementation policy into app UI. The safe approach is semantic DOM tiering plus route-smoke proof.
+
+Double Diamond:
+- Discover: shared surfaces exist but did not expose a durable hierarchy contract.
+- Define: map each page type to Must-see, Secondary and Tertiary content responsibilities.
+- Develop: add `lib/ux-content-hierarchy.ts` and mark shared surfaces with `data-ux-content-tier`.
+- Deliver: representative Hub/Workbench/Detail/Drawer route proof, screenshots and reports.
+
+Psycho-Logic + Map/Model: users scan under pressure. The first visible layer must carry job, status, next step and safety; supporting detail can follow without competing.
+
+Reframing Matrix:
+- Page-as-equal-card-wall: rejected.
+- Page-as-priority-stack: kept.
+- Page-as-hidden-gate: rejected.
+- Page-as-policy-overlay: rejected.
+
+TRIZ: increase scan clarity while avoiding new visible meta UI by using semantic tier attributes and existing shared components.
+
+SIT Closed World: reused `ProductGuidancePanel`, `UxHubPage`, `UxDetailStandardPanel`, `UxComplexityPriorityPanel` and `UxSecondaryContextTabs`; no new route, image, generated screen, API, Prisma or scope engine.
+
+Zwicky + CCA:
+- Variant A: visible tier labels on every page. Rejected as spec UI.
+- Variant B: semantic tier contract and shared-component attributes. Chosen.
+- Variant C: per-page bespoke refactor. Deferred to later density/CTA/interaction tasks.
+
+SCAMPER: standardized tier semantics, combined page-type hierarchy with route-smoke proof, and eliminated the need for repeated visible policy labels.
+
+Harvard / BATNA: objective criteria are Route Policy Matrix page-type rules and the clean UI rule. BATNA is metadata/test proof, not visible app annotations.
+
+MESOs:
+- Option A: metadata-only hierarchy. Rejected as too abstract.
+- Option B: metadata plus DOM tiering on shared surfaces. Chosen.
+
+Measurement Plan:
+- `pnpm typecheck`
+- `pnpm lint`
+- `PLAYWRIGHT_PORT=3383 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-COMPLEXITY content priority hierarchy"`
+- `PLAYWRIGHT_PORT=3384 pnpm test:permissions`
+- `PLAYWRIGHT_PORT=3385 pnpm test:workflow-gate`
+- `PLAYWRIGHT_PORT=3386 pnpm test:file-export`
+- `PLAYWRIGHT_PORT=3387 pnpm test:route-smoke`
+- Screenshot proof under `artifacts/ux-page-to-policy/UX-COMPLEXITY-003/`
+
+Ethics/Fairness: no dark-pattern priority, no hidden safety prerequisites, no false proof from visible status/button/tier, and no client-visible leakage.
+
+Adversarial QA: tiering could hide safety under secondary/tertiary content; safety notes and gate guidance are explicitly marked Must-see and tested on representative routes.
+
+Learning Log: later density tasks can reuse `data-ux-content-tier` rather than inventing separate page-by-page rules.
+
+Route-policy rows cited:
+- Page-type rules for Hub, Workbench, Detail, Drawer, Modal, Reference, P1 and Hold.
+- Representative route proof: `031`, `032`, `039`, `046`.
+
+Changed files:
+- `lib/ux-content-hierarchy.ts`
+- `components/product-guidance-panel.tsx`
+- `components/ux-hub-page.tsx`
+- `components/ux-detail-standard-panel.tsx`
+- `components/ux-complexity-priority-panel.tsx`
+- `components/ux-secondary-context-tabs.tsx`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-003/2026-06-21-UX-COMPLEXITY-003-hub-wealth-map-hierarchy.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-003/2026-06-21-UX-COMPLEXITY-003-workbench-actions-hierarchy.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-003/2026-06-21-UX-COMPLEXITY-003-detail-compliance-review-hierarchy.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-003/2026-06-21-UX-COMPLEXITY-003-drawer-evidence-hierarchy.png`
+
+Implementation summary:
+- Added page-type content hierarchy contract.
+- Applied `data-ux-content-tier` to shared must-see, secondary and tertiary UI surfaces.
+- Added route-smoke proof that every page type has all three tiers and representative routes render the tiers without hiding safety.
+
+Validation:
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with existing warnings.
+- `PLAYWRIGHT_PORT=3383 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-COMPLEXITY content priority hierarchy"` - passed, 5 tests.
+- `PLAYWRIGHT_PORT=3384 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3385 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3386 pnpm test:file-export` - passed, 14 tests.
+- `PLAYWRIGHT_PORT=3387 pnpm test:route-smoke` - passed, 137 tests.
+
+Screenshot/proof:
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-003/2026-06-21-UX-COMPLEXITY-003-hub-wealth-map-hierarchy.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-003/2026-06-21-UX-COMPLEXITY-003-workbench-actions-hierarchy.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-003/2026-06-21-UX-COMPLEXITY-003-detail-compliance-review-hierarchy.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-003/2026-06-21-UX-COMPLEXITY-003-drawer-evidence-hierarchy.png`
+
+Positive acceptance:
+- Must-see, Secondary and Tertiary hierarchy is defined for every page type.
+- Representative Hub, Workbench, Detail and Drawer routes render all tiers.
+
+Negative/P0 acceptance:
+- Safety/gate guidance remains in Must-see tier.
+- No visible spec panels or route-label annotations were added to app UI.
+
+No-generation confirmation: no screen generation, state-screen generation, image generation or generated product assets.
+
+No-route-reclassification confirmation: route IDs, paths, scopes, page types and policy labels remain unchanged.
+
+No-P1/Hold/Reference-elevation confirmation: tier metadata does not unlock protected routes.
+
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed P0 tests.
+
 ## Completed Slice: UX-PAGE-004
 
 Task: `UX-PAGE-004` - Keep P1, Reference and Hold routes out of productive MVP page-type work.

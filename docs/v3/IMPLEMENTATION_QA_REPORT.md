@@ -6310,3 +6310,48 @@ Source of truth:
 ### QA Limits
 
 - `UX-COMPLEXITY-002` does not solve the older `tests/interaction-lifecycle.spec.ts` expectation that `/wealth-map?state=drawer` renders a legacy fake drawer. Current accepted proof is the new route-smoke secondary-tab coverage against the standalone Hub implementation.
+
+## UX-COMPLEXITY-003 QA Addendum
+
+Date: 2026-06-21
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+
+| Area | QA result | Evidence |
+| --- | --- | --- |
+| Page-type hierarchy | Passed | Route-smoke verifies every page type has Must-see, Secondary and Tertiary contract entries. |
+| Rendered hierarchy | Passed | Hub, Workbench, Detail and Drawer representative routes expose all three `data-ux-content-tier` levels. |
+| Clean UI rule | Passed | No visible spec panels, tier labels or annotation rails were added to product UI. |
+| Safety gates | Passed | Gate guidance and safety notes are marked Must-see and P0 tests remain green. |
+| Screenshot proof | Passed | Four representative screenshots captured under `artifacts/ux-page-to-policy/UX-COMPLEXITY-003/`. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | `tsc --noEmit` completed successfully. |
+| `pnpm lint` | Passed | Existing warnings remain. |
+| `PLAYWRIGHT_PORT=3383 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-COMPLEXITY content priority hierarchy"` | Passed | 5 tests. |
+| `PLAYWRIGHT_PORT=3384 pnpm test:permissions` | Passed | 8 tests. |
+| `PLAYWRIGHT_PORT=3385 pnpm test:workflow-gate` | Passed | 13 tests. |
+| `PLAYWRIGHT_PORT=3386 pnpm test:file-export` | Passed | 14 tests. |
+| `PLAYWRIGHT_PORT=3387 pnpm test:route-smoke` | Passed | 137 tests. |
+
+### Screenshot Proof
+
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-003/2026-06-21-UX-COMPLEXITY-003-hub-wealth-map-hierarchy.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-003/2026-06-21-UX-COMPLEXITY-003-workbench-actions-hierarchy.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-003/2026-06-21-UX-COMPLEXITY-003-detail-compliance-review-hierarchy.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-003/2026-06-21-UX-COMPLEXITY-003-drawer-evidence-hierarchy.png`
+
+### Safety Proof
+
+- Must-see content includes page job, gate guidance, primary next step, object header or safety note depending on page type.
+- Secondary and Tertiary content cannot be used as behavior proof.
+- Route presence, status chips, visible buttons, drawers and modals remain non-proof unless backed by lifecycle tests.
+
+### QA Limits
+
+- This slice establishes shared hierarchy semantics and representative proof. It does not complete later density-tier layout work or CTA-state consolidation.

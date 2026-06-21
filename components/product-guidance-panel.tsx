@@ -34,6 +34,7 @@ export function ProductGuidancePanel() {
       aria-label="Product workflow guidance"
       className="mb-4 rounded-md border border-alphavest-border/75 bg-alphavest-panel/72 p-3 shadow-[0_18px_50px_rgba(0,0,0,0.18)] md:mb-5 md:p-5"
       data-testid="product-guidance"
+      data-ux-content-tier="must-see"
     >
       <div className="grid gap-3 md:gap-4 xl:grid-cols-[minmax(0,1fr)_auto]">
         <div className="min-w-0">
@@ -90,12 +91,12 @@ export function ProductGuidancePanel() {
             </span>
           </div>
           {guidance.steps.length > 0 ? (
-            <div className="mt-4 rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/35 p-3" data-testid="ux-nav-flow-rail">
+            <div className="mt-4 rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/35 p-3" data-testid="ux-nav-flow-rail" data-ux-content-tier="secondary">
               <WizardStepper steps={guidance.steps} />
             </div>
           ) : null}
           {guidance.workbenchStructure ? (
-            <div className="mt-4 grid gap-3 lg:grid-cols-3" data-testid="ux-page-workbench-triad">
+            <div className="mt-4 grid gap-3 lg:grid-cols-3" data-testid="ux-page-workbench-triad" data-ux-content-tier="secondary">
               <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/40 p-3" data-testid="ux-page-queue">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Priority Queue</p>
                 <p className="mt-2 text-sm leading-6 text-alphavest-muted">{guidance.workbenchStructure.queue}</p>
@@ -111,7 +112,7 @@ export function ProductGuidancePanel() {
               </div>
             </div>
           ) : null}
-          <div className="mt-3 hidden flex-wrap gap-1.5 md:flex">
+          <div className="mt-3 hidden flex-wrap gap-1.5 md:flex" data-ux-content-tier="tertiary">
             {guidance.routePolicyLabels.slice(0, 4).map((label) => (
               <span
                 className="rounded-full border border-alphavest-border/60 bg-alphavest-charcoal/45 px-2.5 py-1 text-[0.62rem] font-semibold uppercase text-alphavest-subtle"
@@ -124,7 +125,7 @@ export function ProductGuidancePanel() {
         </div>
 
         {hasActions ? (
-          <div className="hidden min-w-0 flex-col gap-2 sm:flex xl:w-72" data-testid="ux-nav-next-actions">
+          <div className="hidden min-w-0 flex-col gap-2 sm:flex xl:w-72" data-testid="ux-nav-next-actions" data-ux-content-tier="must-see">
             {guidance.primaryAction ? <GuidanceLink link={guidance.primaryAction} variant="primary" /> : null}
             {guidance.nextStep && guidance.nextStep.href !== guidance.primaryAction?.href ? (
               <GuidanceLink link={guidance.nextStep} variant="secondary" />

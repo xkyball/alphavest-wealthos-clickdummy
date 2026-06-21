@@ -32,7 +32,7 @@ export function UxComplexityPriorityPanel({
       className={cn("grid gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-panel/72 p-4 xl:grid-cols-[1fr_1.25fr_0.9fr]", className)}
       data-testid="ux-complexity-priority-panel"
     >
-      <div data-testid="ux-complexity-summary-strip">
+      <div data-testid="ux-complexity-summary-strip" data-ux-content-tier="must-see">
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">{title}</p>
         <div className="mt-3 grid gap-2 sm:grid-cols-3 xl:grid-cols-1">
           {summaryItems.map((item) => (
@@ -44,7 +44,7 @@ export function UxComplexityPriorityPanel({
           ))}
         </div>
       </div>
-      <div className="rounded-md border border-alphavest-border/55 bg-alphavest-charcoal/45 p-4" data-testid="ux-complexity-priority-queue">
+      <div className="rounded-md border border-alphavest-border/55 bg-alphavest-charcoal/45 p-4" data-testid="ux-complexity-priority-queue" data-ux-content-tier="secondary">
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Priority queue</p>
         <div className="mt-3 grid gap-2">
           {priorityItems.map((item) => (
@@ -56,7 +56,7 @@ export function UxComplexityPriorityPanel({
           ))}
         </div>
       </div>
-      <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4" data-testid="ux-complexity-action-rail">
+      <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4" data-testid="ux-complexity-action-rail" data-ux-content-tier="must-see">
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold-soft">Action rail</p>
         <p className="mt-3 text-lg font-semibold text-alphavest-ivory">{actionLabel}</p>
         <p className="mt-2 text-sm leading-6 text-alphavest-muted">{actionState}</p>
