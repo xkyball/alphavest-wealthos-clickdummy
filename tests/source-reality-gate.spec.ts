@@ -7,6 +7,7 @@ import {
   phase0LockedRouteWorksetCounts,
   phase0P0GateLabels,
   phase0SourceHierarchyMarkers,
+  firstBuildPhase0RequiredArtifacts,
 } from "../lib/source-reality-gate";
 
 test.describe("First Build source reality gate", () => {
@@ -52,5 +53,21 @@ test.describe("First Build source reality gate", () => {
 
     expect(specFiles).toContain("tests/source-reality-gate.spec.ts");
     expect(specFiles.length).toBeGreaterThanOrEqual(17);
+  });
+
+  test("keeps First Build Phase 0 guardrail artifacts present and authoritative", () => {
+    const { phase0Artifacts } = buildPhase0SourceRealitySnapshot();
+
+    expect(phase0Artifacts.map((artifact) => artifact.path)).toEqual(
+      firstBuildPhase0RequiredArtifacts.map((artifact) => artifact.path),
+    );
+
+    for (const artifact of phase0Artifacts) {
+      expect(artifact.exists, `${artifact.path} exists`).toBe(true);
+
+      for (const marker of artifact.markers) {
+        expect(artifact.text, `${artifact.path} contains ${marker}`).toContain(marker);
+      }
+    }
   });
 });

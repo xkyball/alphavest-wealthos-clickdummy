@@ -1,8 +1,15 @@
 # AlphaVest WealthOS — Codex Handoff V3 Technical Implementation Pack
 
+Status: `SUPERSEDED_FOR_IMPLEMENTATION`
+
+`ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md` is now the only operative
+source of truth for implementation. This V3 handoff file is retained as
+historical technical reference only and must not define task scope, phase order
+or execution authority for the First Build.
+
 Date: 2026-06-14
 
-This pack is a repository-ready handoff for implementing AlphaVest WealthOS with Codex.
+This pack was a repository-ready handoff for implementing AlphaVest WealthOS with Codex.
 
 It contains:
 
@@ -43,12 +50,10 @@ Codex must:
 4. avoid UI jumping between screens,
 5. never copy visual annotations or internal reference text into the product UI unless it is natural in-app copy.
 
-## Start here
+## Historical Start Here
 
-1. Copy this pack into the root of your linked repository.
-2. Keep `AGENTS.md` in the repository root.
-3. Run Codex with `CODEX_START_PHASE_MASTER_PROMPT.md` and set `PHASE_TO_RUN`.
-4. Start with `PHASE_TO_RUN: 00` if the repo is empty, or use the intake prompts if a repo already exists.
+For First Build work, do not use `PHASE_TO_RUN`. Use the allowed task IDs and
+phase order in `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md`.
 
 ## Reference folders
 

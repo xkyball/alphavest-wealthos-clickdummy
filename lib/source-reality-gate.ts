@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 import { routeRegistryCount, routeWorksetIntegrity, type RouteScopeLabel } from "./route-registry";
@@ -50,6 +50,41 @@ export const phase0SourceHierarchyMarkers = [
   "full-workflow",
   "`main` is false-gap only",
   "supersedes older phase plans, task definitions",
+] as const;
+
+export const firstBuildPhase0RequiredArtifacts = [
+  {
+    path: "ALPHAVEST_MVP_FIRST_BUILD_PACKAGE_PLAN.md",
+    markers: ["FIRST_BUILD_PACKAGE_PLAN_LOCKED", "BP-00", "BP-11", "DO_NOT_EXECUTE"],
+  },
+  {
+    path: "ALPHAVEST_MAIN_BASED_FALSE_GAP_CLEANUP_v0.3.md",
+    markers: ["MAIN_FALSE_GAP_BLOCKED_FOR_FIRST_BUILD", "DO_NOT_CREATE_TASK", "full-workflow"],
+  },
+  {
+    path: "SCREEN_GENERATION_BRIEF_IF_NEEDED.md",
+    markers: ["NO_SCREEN_GENERATION_FOR_FIRST_BUILD_PHASE_0", "state-screen", "visual asset"],
+  },
+  {
+    path: "SCHEMA_FIELD_LEVEL_RECONCILIATION.md",
+    markers: ["NO_SCHEMA_MIGRATION_ALIGN_USAGE_ONLY", "enum count: 22", "model count: 42"],
+  },
+  {
+    path: "API_CONTRACT_MATRIX.md",
+    markers: ["NO_NEW_API_BY_DEFAULT", "app/api/demo-workflow/route.ts", "API route returning 200 is not"],
+  },
+  {
+    path: "FINAL_CODEX_TASK_MASTER.md",
+    markers: ["SUPERSEDED_BY_FIRST_BUILD_HANDOFF", "Do not use this file as source of truth"],
+  },
+  {
+    path: "FINAL_CODEX_IMPLEMENTATION_HANDOFF.md",
+    markers: ["SUPERSEDED_BY_FIRST_BUILD_HANDOFF", "Do not use this file as implementation authority"],
+  },
+  {
+    path: "P0_TEST_ACCEPTANCE_MATRIX.md",
+    markers: ["P0_ACCEPTANCE_PRECHECK_LOCKED", "P0-NEG-011", "P0-NEG-012"],
+  },
 ] as const;
 
 function walkFiles(currentPath: string, predicate: (fileName: string) => boolean, rootPath: string, matches: string[]) {
@@ -104,11 +139,25 @@ export function readFirstBuildHandoff(cwd = process.cwd()) {
   return readFileSync(path.join(cwd, "ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md"), "utf8");
 }
 
+export function readFirstBuildPhase0ArtifactTexts(cwd = process.cwd()) {
+  return firstBuildPhase0RequiredArtifacts.map((artifact) => {
+    const absolutePath = path.join(cwd, artifact.path);
+
+    return {
+      exists: existsSync(absolutePath),
+      markers: artifact.markers,
+      path: artifact.path,
+      text: existsSync(absolutePath) ? readFileSync(absolutePath, "utf8") : "",
+    };
+  });
+}
+
 export function buildPhase0SourceRealitySnapshot(cwd = process.cwd()) {
   return {
     apiRouteFiles: listApiRouteFiles(cwd),
     p0GateLabels: phase0P0GateLabels,
     planText: readFirstBuildHandoff(cwd),
+    phase0Artifacts: readFirstBuildPhase0ArtifactTexts(cwd),
     prismaShape: readPrismaShape(cwd),
     routeRegistryCount,
     routeWorksetIntegrity,
