@@ -99,6 +99,12 @@ test.describe("document upload multipart API", () => {
     expect(audit.targetId).toBe(document.id);
     expect(audit.eventType).toBe("document.upload.created");
     expect(audit.nextState).toBe("UPLOADED");
+    expect((audit.metadataJson as { auditContract?: string; criticalActionFamily?: string } | null)?.auditContract).toBe(
+      "FIRST_BUILD_PHASE_6_BP09",
+    );
+    expect((audit.metadataJson as { auditContract?: string; criticalActionFamily?: string } | null)?.criticalActionFamily).toBe(
+      "upload",
+    );
 
     const exportCountAfter = await prisma.exportRequest.count({
       where: { clientTenantId: morganSession.tenant.id },
@@ -161,6 +167,55 @@ test.describe("document upload multipart API", () => {
     expect(releasedClientDocument).not.toHaveProperty("storageKey");
     expect(releasedClientDocument).not.toHaveProperty("checksum");
     expect(releasedClientDocument).not.toHaveProperty("fileName");
+  });
+
+  test("fails closed before multipart upload mutation when required audit persistence is unavailable", async ({ request }) => {
+    const fileName = "phase6-audit-unavailable-upload.pdf";
+    const morganSession = createDemoSession({ roleKey: "family_cfo", tenantSlug: "morgan" });
+    const documentCountBefore = await prisma.document.count({ where: { fileName } });
+    const evidenceCountBefore = await prisma.evidenceRecord.count({
+      where: {
+        clientTenantId: morganSession.tenant.id,
+        title: { contains: "phase6-audit-unavailable-upload" },
+      },
+    });
+    const auditCountBefore = await prisma.auditEvent.count({
+      where: { eventType: "document.upload.created" },
+    });
+
+    const response = await request.post("/api/documents/upload", {
+      multipart: {
+        documentType: "financial_statement",
+        file: {
+          buffer: Buffer.from("%PDF-1.4\nAudit unavailable\n%%EOF"),
+          mimeType: "application/pdf",
+          name: fileName,
+        },
+        roleKey: "family_cfo",
+        simulateAuditPersistenceFailure: "true",
+        tenantSlug: "morgan",
+      },
+    });
+    const body = await response.json();
+    const documentCountAfter = await prisma.document.count({ where: { fileName } });
+    const evidenceCountAfter = await prisma.evidenceRecord.count({
+      where: {
+        clientTenantId: morganSession.tenant.id,
+        title: { contains: "phase6-audit-unavailable-upload" },
+      },
+    });
+    const auditCountAfter = await prisma.auditEvent.count({
+      where: { eventType: "document.upload.created" },
+    });
+
+    expect(response.status(), JSON.stringify(body)).toBe(409);
+    expect(body.ok).toBe(false);
+    expect(body.mutated).toBe(false);
+    expect(body.noClientRelease).toBe(true);
+    expect(body.reasonCode).toBe("AUDIT_PERSISTENCE_UNAVAILABLE");
+    expect(documentCountAfter).toBe(documentCountBefore);
+    expect(evidenceCountAfter).toBe(evidenceCountBefore);
+    expect(auditCountAfter).toBe(auditCountBefore);
   });
 
   test("reloads uploaded documents only for the active tenant", async ({ request }) => {

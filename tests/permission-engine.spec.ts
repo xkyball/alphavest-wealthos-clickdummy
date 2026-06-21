@@ -548,13 +548,13 @@ test.describe("Phase 16 demo workflow deny audit", () => {
       runDemoWorkflowMutation(
         prisma,
         {
-          actionId: "phase07.auditUnavailableRelease",
+          actionId: "phase06.auditUnavailableRelease",
           actorRoleKey: "compliance_officer",
           auditPersistenceAvailable: false,
           clientTenantId: bennettTenantId,
-          eventType: "phase07.audit.unavailable_release",
+          eventType: "phase06.audit.unavailable_release",
           metadataJson: {
-            phase: "07",
+            phase: "06",
             proof: "audit_unavailable_fails_closed",
           },
           nextState: "CLIENT_VISIBLE",

@@ -1,5 +1,57 @@
 # Implementation QA Report
 
+## MVP-FIRST-BUILD-PHASE-6 Implementation QA Addendum
+
+Date: 2026-06-21
+
+### Executive Decision
+
+`MVP_FIRST_BUILD_PHASE_6_QA_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Source of truth lock | Passed | Used `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md` Phase 6 / `BP-09` as the operative source. |
+| Decision record semantics | Passed | J03 decision actions persist existing `Decision` fields and add explicit decision-record metadata to the audit payload. |
+| Audit minimum fields | Passed | Critical audit checks require platform tenant, actor, role, event, target, previous/next state, result and reason before mutation. |
+| Critical action families | Passed | Shared audit metadata identifies upload, review, approval, release, block, export, governance and denial families. |
+| Audit fail-closed | Passed | Audit outage simulation blocks decision and upload mutations before state changes or client release. |
+| Upload audit persistence | Passed | Multipart upload now confirms audit writability before local storage, document, extraction and evidence rows are created. |
+| Export audit gate | Passed | Existing export package suite still blocks generation when audit persistence is unavailable. |
+| No forbidden scope | Passed | No Prisma schema/migration, new API route, production auth provider, generated screen image or screen expansion was added. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | TypeScript completed cleanly before focused validation. |
+| `PLAYWRIGHT_PORT=3124 pnpm exec playwright test tests/phase6-audit-persistence.spec.ts tests/demo-workflow-api.spec.ts tests/document-upload-api.spec.ts tests/permission-engine.spec.ts tests/workflow-gate.spec.ts` | Failed then fixed | One new test used the wrong deterministic recommendation fixture ID; corrected from `liquidity` to `liquidity-review`. |
+| `PLAYWRIGHT_PORT=3125 pnpm exec playwright test tests/phase6-audit-persistence.spec.ts tests/demo-workflow-api.spec.ts tests/document-upload-api.spec.ts tests/permission-engine.spec.ts tests/workflow-gate.spec.ts` | Passed | 45 tests covering audit metadata, decision records, upload fail-closed, permission deny-audit and workflow gates. |
+| `PLAYWRIGHT_PORT=3126 pnpm test:file-export` | Passed | 12 export/redaction tests, including audit-persistence generation gate. |
+| `pnpm lint` | Passed | ESLint completed cleanly. |
+| `pnpm db:validate` | Passed | Prisma schema remained valid; no schema or migration was changed. |
+| `pnpm build` | Passed with warnings | Existing Turbopack tracing warnings remain in `lib/document-storage-adapter.ts`. |
+| Screenshot capture | Passed | Captured five image files, with three final proof artifacts used in this report. |
+| `PLAYWRIGHT_PORT=3128 pnpm test:playwright` | Failed then rerun | First attempt failed before assertions because the screenshot dev server was still running on port `3127`; stopped that server. |
+| `PLAYWRIGHT_PORT=3128 pnpm test:playwright` | Passed | Full Playwright suite passed, 246 tests. |
+
+### Screenshot Proof
+
+| Artifact | Status | Notes |
+| --- | --- | --- |
+| `artifacts/phase6-decision-audit-persistence/decision-success-audit-record-full.png` | Captured | Decision submitted screen includes persisted audit record, previous state, next state and result. |
+| `artifacts/phase6-decision-audit-persistence/compliance-audit-persistence-gate-full.png` | Captured | Audit and Exception Log shows audit persistence gate and minimum audit fields. |
+| `artifacts/phase6-decision-audit-persistence/document-upload-audit-context.png` | Captured | Document Upload route shows upload remains behind review, scope, currentness and linkage gates. |
+
+### Residual Risks
+
+- Phase 6 uses existing demo-data and existing Prisma models; it does not claim production audit immutability, tamper-proof ledger semantics or production authentication.
+- Audit outage simulation is an explicit demo/test hook, not a production fault-injection framework.
+- Decision record proof covers the implemented J03 decision path and existing `Decision` model fields; it is not a full product-wide decision policy engine.
+- Upload fail-closed proof covers the local demo upload adapter and API path; it does not certify production file custody or external object storage.
+- `pnpm build` still reports pre-existing broad filesystem tracing warnings in `lib/document-storage-adapter.ts`; this phase did not alter the storage adapter.
+
 ## MVP-FIRST-BUILD-PHASE-5 Implementation QA Addendum
 
 Date: 2026-06-21

@@ -1,5 +1,83 @@
 # Phase Execution Report
 
+## MVP-FIRST-BUILD-PHASE-6 - Decision Record And Audit Persistence
+
+Date: 2026-06-21
+
+### Phase Completion Report
+
+- Phase: 6
+- Package executed: `BP-09`
+- Task IDs completed: `AV-FB-P6-BP09-T001`, `AV-FB-P6-BP09-T002`, `AV-FB-P6-BP09-T003`, `AV-FB-P6-BP09-T004`, `AV-FB-P6-BP09-T005`
+- Source of truth: `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md`
+- Files changed:
+  - `app/api/demo-workflow/route.ts`
+  - `app/api/documents/upload/route.ts`
+  - `lib/audit-service.ts`
+  - `lib/document-upload-service.ts`
+  - `tests/demo-workflow-api.spec.ts`
+  - `tests/document-upload-api.spec.ts`
+  - `tests/permission-engine.spec.ts`
+  - `tests/phase6-audit-persistence.spec.ts`
+  - `docs/v3/PHASE_EXECUTION_REPORT.md`
+  - `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- Renamed:
+  - `tests/phase7-audit-persistence.spec.ts` -> `tests/phase6-audit-persistence.spec.ts`
+- Screenshot artifacts:
+  - `artifacts/phase6-decision-audit-persistence/decision-success-audit-record-full.png`
+  - `artifacts/phase6-decision-audit-persistence/compliance-audit-persistence-gate-full.png`
+  - `artifacts/phase6-decision-audit-persistence/document-upload-audit-context.png`
+
+### Implemented Phase 6 Behaviour
+
+- Rebased the shared critical-audit metadata contract to `FIRST_BUILD_PHASE_6_BP09`.
+- Preserved the existing `AuditEvent` schema and enforced minimum audit fields through `auditService.assertCriticalAuditWritable`.
+- Added explicit Decision-record metadata to J03 decision actions, including decision ID, previous/next decision status, recommendation ID and evidence record ID.
+- Propagated audit-persistence outage simulation into J03 decision actions so client decision mutations fail closed before Decision, Recommendation, Participant or Evidence rows change.
+- Hardened multipart document upload with the same audit-persistence gate before storage, document, extraction, evidence and audit rows are created.
+- Added Phase 6 upload denial/success audit metadata through the shared audit service.
+- Added a 409 fail-closed upload API response for required audit-persistence outage, without creating document/evidence/audit rows.
+- Kept all implementation inside existing routes, services and schema fields.
+
+### Validation Commands Run
+
+- `pnpm typecheck` - passed.
+- `PLAYWRIGHT_PORT=3124 pnpm exec playwright test tests/phase6-audit-persistence.spec.ts tests/demo-workflow-api.spec.ts tests/document-upload-api.spec.ts tests/permission-engine.spec.ts tests/workflow-gate.spec.ts` - first run failed on one test fixture ID typo; no implementation failure.
+- `PLAYWRIGHT_PORT=3125 pnpm exec playwright test tests/phase6-audit-persistence.spec.ts tests/demo-workflow-api.spec.ts tests/document-upload-api.spec.ts tests/permission-engine.spec.ts tests/workflow-gate.spec.ts` - passed, 45 tests.
+- `PLAYWRIGHT_PORT=3126 pnpm test:file-export` - passed, 12 tests.
+- `pnpm lint` - passed.
+- `pnpm db:validate` - passed.
+- `pnpm build` - passed with existing Turbopack tracing warnings in `lib/document-storage-adapter.ts`.
+- Screenshot capture through the local Next server on port `3127` - captured Phase 6 screenshots under `artifacts/phase6-decision-audit-persistence/`.
+- `PLAYWRIGHT_PORT=3128 pnpm test:playwright` - first attempt failed before assertions because the screenshot dev server was still running on port `3127`; stopped the screenshot server and reran.
+- `PLAYWRIGHT_PORT=3128 pnpm test:playwright` - passed, 246 tests.
+
+### Positive P0 Proof
+
+- Critical audit rows now carry the First Build Phase 6 audit contract, minimum-field list, critical action family and fail-closed marker.
+- Client decision action success persists the `Decision` record and the related audit event with previous/next state, actor, target, result and reason.
+- Multipart upload success persists document, version, extraction, evidence and audit rows only after audit persistence is confirmed.
+- Export package tests continue to prove audit persistence remains a generation gate.
+
+### Negative P0 Proof
+
+- Simulated audit persistence failure blocks J03 decision mutation before Decision/Recommendation/Evidence changes.
+- Simulated audit persistence failure blocks multipart upload before document/evidence/audit rows and before local storage write.
+- Existing permission-denial tests continue to prove critical denied actions write audit rows and skip mutation.
+- Workflow-gate tests continue to prove upload-created evidence is not sufficiency, release or client visibility.
+
+### Screenshot Proof
+
+| Artifact | Status | Notes |
+| --- | --- | --- |
+| `artifacts/phase6-decision-audit-persistence/decision-success-audit-record-full.png` | captured | Decision submitted screen with persisted audit record, previous/next state and result. |
+| `artifacts/phase6-decision-audit-persistence/compliance-audit-persistence-gate-full.png` | captured | Audit and Exception Log with audit persistence gate and minimum audit fields. |
+| `artifacts/phase6-decision-audit-persistence/document-upload-audit-context.png` | captured | Document Upload screen showing upload intake remains behind review/gate controls. |
+
+### Exit Gate Decision
+
+`PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
 ## MVP-FIRST-BUILD-PHASE-5 - Compliance Release And Client Projection Gates
 
 Date: 2026-06-21

@@ -772,7 +772,11 @@ async function assertReleasedDecisionContext(
   return { decision, evidenceRecord, gate, recommendation };
 }
 
-async function runJ03DecisionAction(prisma: PrismaClient, actionId: DemoWorkflowAction) {
+async function runJ03DecisionAction(
+  prisma: PrismaClient,
+  actionId: DemoWorkflowAction,
+  options: DemoWorkflowActionOptions = {},
+) {
   const now = new Date();
   const actionMap = {
     "j03.acceptOption": {
@@ -834,12 +838,22 @@ async function runJ03DecisionAction(prisma: PrismaClient, actionId: DemoWorkflow
     {
       actionId,
       actorRoleKey: "principal",
+      auditPersistenceAvailable: options.auditPersistenceAvailable,
       auditResult: actionMap.auditResult,
       clientTenantId: bennettTenantId,
       eventType: actionMap.eventType,
       evidenceRecordId: bennettEvidenceRecordId,
       metadataJson: {
         decisionAction: actionMap.decisionAction,
+        decisionRecord: {
+          action: actionMap.decisionAction,
+          decisionId: bennettDecisionId,
+          evidenceRecordId: bennettEvidenceRecordId,
+          nextStatus: actionMap.decisionStatus,
+          previousStatus: DecisionStatus.RELEASED_TO_CLIENT,
+          recommendationId: bennettRecommendationId,
+        },
+        phasePackage: "BP-09",
         releasedContentOnly: true,
         workflowGateEnforced: true,
       },
@@ -3879,7 +3893,7 @@ async function runDemoWorkflowAction(
     case "j03.deferDecision":
     case "j03.rejectDecision":
     case "j03.acceptOption":
-      return runJ03DecisionAction(prisma, actionId);
+      return runJ03DecisionAction(prisma, actionId, options);
 
     case "j03.viewEvidenceRecord":
     case "j03.downloadEvidence":

@@ -8,6 +8,7 @@ import { expect, test } from "@playwright/test";
 import {
   AuditMinimumFieldsError,
   auditService,
+  firstBuildAuditContract,
 } from "../lib/audit-service";
 import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
 import {
@@ -15,13 +16,13 @@ import {
   runDemoWorkflowMutation,
 } from "../lib/demo-workflow-mutation";
 
-test.describe("mega journey Phase 7 audit persistence", () => {
+test.describe("First Build Phase 6 audit persistence", () => {
   let prisma: PrismaClient;
 
   test.beforeAll(() => {
     const connectionString = process.env.DATABASE_URL;
     if (!connectionString) {
-      throw new Error("DATABASE_URL is required for Phase 7 audit persistence tests.");
+      throw new Error("DATABASE_URL is required for Phase 6 audit persistence tests.");
     }
 
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
@@ -39,7 +40,7 @@ test.describe("mega journey Phase 7 audit persistence", () => {
         actorRoleKey: "compliance_officer",
         actorUserId: "20c160f7-6025-5000-b5ac-5777fb260c35",
         clientTenantId: "5db13e8a-61f5-5bb9-8576-7c81d4ac0044",
-        eventType: "phase7.release.missing_fields",
+        eventType: "phase6.release.missing_fields",
         nextState: "CLIENT_VISIBLE",
         platformTenantId: demoPlatformTenantId,
         previousState: "COMPLIANCE_PENDING",
@@ -50,16 +51,16 @@ test.describe("mega journey Phase 7 audit persistence", () => {
     ).toThrow(AuditMinimumFieldsError);
   });
 
-  test("writes Phase 7 audit metadata for critical successful mutations", async () => {
+  test("writes Phase 6 audit metadata for critical successful mutations", async () => {
     const compliance = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
 
     const result = await runDemoWorkflowMutation(
       prisma,
       {
-        actionId: "phase07.complianceReleaseAuditMetadata",
+        actionId: "phase06.complianceReleaseAuditMetadata",
         actorRoleKey: "compliance_officer",
         clientTenantId: compliance.tenant.id,
-        eventType: "phase07.audit.release_metadata",
+        eventType: "phase06.audit.release_metadata",
         metadataJson: {
           proof: "critical_action_metadata",
         },
@@ -91,7 +92,7 @@ test.describe("mega journey Phase 7 audit persistence", () => {
     expect(audit.actorRoleKey).toBe("compliance_officer");
     expect(audit.previousState).toBe("COMPLIANCE_PENDING");
     expect(audit.nextState).toBe("CLIENT_VISIBLE");
-    expect(metadata?.auditContract).toBe("MEGA_JOURNEY_PHASE_7");
+    expect(metadata?.auditContract).toBe(firstBuildAuditContract);
     expect(metadata?.criticalActionFamily).toBe("release");
     expect(metadata?.failClosedOnAuditPersistence).toBe(true);
     expect(metadata?.auditMinimumFields).toEqual(
@@ -107,11 +108,11 @@ test.describe("mega journey Phase 7 audit persistence", () => {
       runDemoWorkflowMutation(
         prisma,
         {
-          actionId: "phase07.auditUnavailableCriticalAction",
+          actionId: "phase06.auditUnavailableCriticalAction",
           actorRoleKey: "compliance_officer",
           auditPersistenceAvailable: false,
           clientTenantId: compliance.tenant.id,
-          eventType: "phase07.audit.unavailable_critical_action",
+          eventType: "phase06.audit.unavailable_critical_action",
           nextState: "CLIENT_VISIBLE",
           permissionAction: "RELEASE",
           previousState: "COMPLIANCE_PENDING",

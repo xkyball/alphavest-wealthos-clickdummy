@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { Sensitivity } from "@prisma/client";
 
 import {
+  DocumentUploadAuditUnavailableError,
   DocumentUploadPermissionError,
   DocumentUploadValidationError,
   uploadDocument,
@@ -30,6 +31,10 @@ function sensitivity(value: string): Sensitivity {
   }
 
   return Sensitivity.CONFIDENTIAL;
+}
+
+function booleanValue(formData: FormData, key: string) {
+  return stringValue(formData, key).toLowerCase() === "true";
 }
 
 export async function POST(request: Request) {
@@ -101,6 +106,7 @@ export async function POST(request: Request) {
 
   try {
     const result = await uploadDocument(prismaClient(), {
+      auditPersistenceAvailable: booleanValue(formData, "simulateAuditPersistenceFailure") ? false : undefined,
       documentType: stringValue(formData, "documentType"),
       file,
       linkedObjectLabel: stringValue(formData, "linkedObjectLabel"),
@@ -148,6 +154,20 @@ export async function POST(request: Request) {
           reason: error.reason,
         },
         { status: 403 },
+      );
+    }
+
+    if (error instanceof DocumentUploadAuditUnavailableError) {
+      return NextResponse.json(
+        {
+          auditPersistenceRequired: true,
+          error: error.message,
+          mutated: false,
+          noClientRelease: true,
+          ok: false,
+          reasonCode: "AUDIT_PERSISTENCE_UNAVAILABLE",
+        },
+        { status: 409 },
       );
     }
 

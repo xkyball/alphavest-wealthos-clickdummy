@@ -4,6 +4,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import {
   AuditResult,
   ComplianceStatus,
+  DecisionStatus,
   EvidenceStatus,
   ObjectType,
   Prisma,
@@ -13,6 +14,8 @@ import {
   VisibilityStatus,
 } from "@prisma/client";
 import { expect, test } from "@playwright/test";
+
+import { stableId } from "../lib/stable-id";
 
 const demoTargets = {
   morgan: {
@@ -28,6 +31,9 @@ const demoTargets = {
     recommendationId: "b0b09a4b-8067-530d-a45a-2ad04d9c4b1d",
   },
 };
+
+const bennettDecisionId = stableId("decision:bennett:liquidity-review");
+const bennettRecommendationId = stableId("recommendation:bennett:liquidity-review");
 
 const workflowActions = [
   "j02.requestEvidence",
@@ -147,6 +153,109 @@ test.describe("demo workflow API", () => {
     expect(body.mutated).toBe(false);
     expect(body.noClientRelease).toBe(true);
     expect(body.ok).toBe(false);
+  });
+
+  test("Phase 6 decision record actions require audit persistence and write minimum audit fields", async ({ request }) => {
+    await prisma.decision.update({
+      data: {
+        decisionAction: null,
+        decisionAt: null,
+        decisionByUserId: null,
+        decisionReason: null,
+        releasedToClientAt: new Date("2026-06-20T10:00:00.000Z"),
+        status: DecisionStatus.RELEASED_TO_CLIENT,
+      },
+      where: { id: bennettDecisionId },
+    });
+    await prisma.recommendation.update({
+      data: {
+        clientVisible: true,
+        status: RecommendationStatus.RELEASED_TO_CLIENT,
+      },
+      where: { id: bennettRecommendationId },
+    });
+
+    const auditCountBeforeFailure = await prisma.auditEvent.count({
+      where: { eventType: "screencast.decision.accepted" },
+    });
+    const failureResponse = await request.post("/api/demo-workflow", {
+      data: {
+        actionId: "j03.acceptOption",
+        simulateAuditPersistenceFailure: true,
+      },
+    });
+    const failureBody = await failureResponse.json();
+    const auditCountAfterFailure = await prisma.auditEvent.count({
+      where: { eventType: "screencast.decision.accepted" },
+    });
+    const unchangedDecision = await prisma.decision.findUniqueOrThrow({
+      where: { id: bennettDecisionId },
+    });
+
+    expect(failureResponse.status(), JSON.stringify(failureBody)).toBe(409);
+    expect(failureBody.reasonCode).toBe("AUDIT_PERSISTENCE_UNAVAILABLE");
+    expect(failureBody.mutated).toBe(false);
+    expect(failureBody.noClientRelease).toBe(true);
+    expect(auditCountAfterFailure).toBe(auditCountBeforeFailure);
+    expect(unchangedDecision.status).toBe(DecisionStatus.RELEASED_TO_CLIENT);
+    expect(unchangedDecision.decisionAction).toBeNull();
+    expect(unchangedDecision.decisionAt).toBeNull();
+
+    const successResponse = await request.post("/api/demo-workflow", {
+      data: { actionId: "j03.acceptOption" },
+    });
+    const successBody = await successResponse.json();
+
+    expect(successResponse.ok(), JSON.stringify(successBody)).toBe(true);
+    expect(successBody.result.decisionRows).toBe(1);
+    expect(successBody.result.auditRows).toBe(1);
+    expect(successBody.result.gatePassed).toBe(true);
+
+    const decision = await prisma.decision.findUniqueOrThrow({
+      where: { id: bennettDecisionId },
+    });
+    const audit = await prisma.auditEvent.findUniqueOrThrow({
+      where: { id: successBody.result.auditEventId },
+    });
+    const metadata = audit.metadataJson as {
+      auditContract?: string;
+      auditMinimumFields?: string[];
+      criticalActionFamily?: string;
+      decisionRecord?: {
+        action?: string;
+        decisionId?: string;
+        nextStatus?: string;
+        previousStatus?: string;
+        recommendationId?: string;
+      };
+      failClosedOnAuditPersistence?: boolean;
+      phasePackage?: string;
+    } | null;
+
+    expect(decision.status).toBe(DecisionStatus.ACCEPTED);
+    expect(decision.decisionAction).toBe("accept");
+    expect(decision.decisionAt).toBeTruthy();
+    expect(decision.decisionByUserId).toBeTruthy();
+    expect(audit.targetType).toBe(ObjectType.DECISION);
+    expect(audit.targetId).toBe(bennettDecisionId);
+    expect(audit.previousState).toBe(DecisionStatus.RELEASED_TO_CLIENT);
+    expect(audit.nextState).toBe(DecisionStatus.ACCEPTED);
+    expect(audit.result).toBe(AuditResult.SUCCESS);
+    expect(audit.actorRoleKey).toBe("principal");
+    expect(metadata?.auditContract).toBe("FIRST_BUILD_PHASE_6_BP09");
+    expect(metadata?.criticalActionFamily).toBe("review");
+    expect(metadata?.failClosedOnAuditPersistence).toBe(true);
+    expect(metadata?.phasePackage).toBe("BP-09");
+    expect(metadata?.decisionRecord).toMatchObject({
+      action: "accept",
+      decisionId: bennettDecisionId,
+      nextStatus: DecisionStatus.ACCEPTED,
+      previousStatus: DecisionStatus.RELEASED_TO_CLIENT,
+      recommendationId: bennettRecommendationId,
+    });
+    expect(metadata?.auditMinimumFields).toEqual(
+      expect.arrayContaining(["actorUserId", "actorRoleKey", "targetId", "previousState", "nextState", "result", "reason"]),
+    );
   });
 
   test("Phase B J12 KYC workflow actions return evidence and audit boundaries", async ({ request }) => {

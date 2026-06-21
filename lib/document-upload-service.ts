@@ -13,6 +13,7 @@ import {
 
 import { requireDemoSession, demoPlatformTenantId, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import { localDocumentStorageAdapter } from "@/lib/document-storage-adapter";
+import { auditService, AuditPersistenceRequiredError } from "@/lib/audit-service";
 import { permissionEngine } from "@/lib/permission-engine";
 import { stableId } from "@/lib/stable-id";
 import { visibilityEngine } from "@/lib/visibility-engine";
@@ -60,6 +61,7 @@ export type ProjectedUploadedDocumentListItem = {
 };
 
 export type UploadDocumentInput = {
+  auditPersistenceAvailable?: boolean;
   documentType: string;
   file: File;
   linkedObjectLabel?: string | null;
@@ -80,6 +82,12 @@ export class DocumentUploadValidationError extends Error {
 export class DocumentUploadPermissionError extends Error {
   constructor(public readonly reason: string, public readonly auditEventId: string) {
     super(reason);
+  }
+}
+
+export class DocumentUploadAuditUnavailableError extends Error {
+  constructor() {
+    super("Required audit persistence is unavailable; upload was not applied.");
   }
 }
 
@@ -227,6 +235,30 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
     const reason = !uploadRoleAllowlist.has(roleKey)
       ? `${session.role.label} cannot upload source documents in the current demo policy.`
       : permission.reason;
+    try {
+      auditService.assertCriticalAuditWritable({
+        action: "UPLOAD",
+        actorRoleKey: session.role.key,
+        actorUserId: session.actor.id,
+        auditPersistenceAvailable: input.auditPersistenceAvailable,
+        clientTenantId,
+        eventType: "document.upload.denied",
+        nextState: DocumentStatus.EMPTY,
+        platformTenantId: demoPlatformTenantId,
+        previousState: DocumentStatus.EMPTY,
+        reason,
+        result: AuditResult.DENIED,
+        targetId: uploadAttemptId,
+        targetType: ObjectType.DOCUMENT,
+      });
+    } catch (error) {
+      if (error instanceof AuditPersistenceRequiredError) {
+        throw new DocumentUploadAuditUnavailableError();
+      }
+
+      throw error;
+    }
+
     const audit = await prisma.auditEvent.create({
       data: {
         actorRoleKey: session.role.key,
@@ -234,6 +266,21 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
         clientTenantId,
         eventType: "document.upload.denied",
         metadataJson: {
+          ...auditService.criticalAuditMetadata({
+            action: "UPLOAD",
+            actorRoleKey: session.role.key,
+            actorUserId: session.actor.id,
+            auditPersistenceAvailable: input.auditPersistenceAvailable,
+            clientTenantId,
+            eventType: "document.upload.denied",
+            nextState: DocumentStatus.EMPTY,
+            platformTenantId: demoPlatformTenantId,
+            previousState: DocumentStatus.EMPTY,
+            reason,
+            result: AuditResult.DENIED,
+            targetId: uploadAttemptId,
+            targetType: ObjectType.DOCUMENT,
+          }),
           demoMode: true,
           fileName,
           noRealAuth: true,
@@ -258,6 +305,30 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
   const checksum = createHash("sha256").update(bytes).digest("hex");
   const uploadId = randomUUID();
   const storageKey = `demo/${tenantSlug}/documents/${uploadId}-${fileName}`;
+  try {
+    auditService.assertCriticalAuditWritable({
+      action: "UPLOAD",
+      actorRoleKey: session.role.key,
+      actorUserId: session.actor.id,
+      auditPersistenceAvailable: input.auditPersistenceAvailable,
+      clientTenantId,
+      eventType: "document.upload.created",
+      nextState: DocumentStatus.UPLOADED,
+      platformTenantId: demoPlatformTenantId,
+      previousState: DocumentStatus.EMPTY,
+      reason: "Phase 6 upload audit persistence must be available before document, evidence and extraction rows are created.",
+      result: AuditResult.SUCCESS,
+      targetId: uploadId,
+      targetType: ObjectType.DOCUMENT,
+    });
+  } catch (error) {
+    if (error instanceof AuditPersistenceRequiredError) {
+      throw new DocumentUploadAuditUnavailableError();
+    }
+
+    throw error;
+  }
+
   const storedObject = await localDocumentStorageAdapter.putObject({ bytes, fileName, storageKey });
   const now = new Date();
 
@@ -341,6 +412,21 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
         eventType: "document.upload.created",
         evidenceRecordId: evidenceRecord.id,
         metadataJson: {
+          ...auditService.criticalAuditMetadata({
+            action: "UPLOAD",
+            actorRoleKey: session.role.key,
+            actorUserId: session.actor.id,
+            auditPersistenceAvailable: input.auditPersistenceAvailable,
+            clientTenantId,
+            eventType: "document.upload.created",
+            nextState: DocumentStatus.UPLOADED,
+            platformTenantId: demoPlatformTenantId,
+            previousState: DocumentStatus.EMPTY,
+            reason: "Phase 6 upload audit persistence confirmed before document, evidence and extraction rows were created.",
+            result: AuditResult.SUCCESS,
+            targetId: document.id,
+            targetType: ObjectType.DOCUMENT,
+          }),
           absoluteDemoPath: storedObject.absolutePath,
           checksum,
           demoMode: true,

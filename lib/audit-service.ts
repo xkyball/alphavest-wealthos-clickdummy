@@ -26,6 +26,8 @@ export type CriticalAuditActionFamily =
   | "review"
   | "upload";
 
+export const firstBuildAuditContract = "FIRST_BUILD_PHASE_6_BP09";
+
 export type AuditPersistencePolicyInput = {
   action: PermissionAction;
   actorUserId?: UUID | null;
@@ -130,7 +132,7 @@ function criticalAuditMetadata(input: AuditPersistencePolicyInput) {
   const family = criticalActionFamily(input);
 
   return {
-    auditContract: "MEGA_JOURNEY_PHASE_7",
+    auditContract: firstBuildAuditContract,
     auditMinimumFields: [
       "actorUserId",
       "actorRoleKey",
