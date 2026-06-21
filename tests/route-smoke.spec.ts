@@ -14,6 +14,7 @@ import {
   screenRoutes
 } from "../lib/route-registry";
 import { scfDoNotImplementRegister } from "../lib/scf-foundation";
+import { uxFlowStepsForPageId } from "../lib/ux-route-policy";
 
 const lockedRouteWorksetCounts = {
   MVP: 31,
@@ -111,6 +112,51 @@ test.describe("UX-NAV route policy navigation", () => {
       expect(group.items).toHaveLength(0);
       expect(group.lockedReason).toContain("client-safe navigation view");
     }
+  });
+
+  test("preserves route policy page types from the matrix for hub and workbench navigation", () => {
+    for (const pageId of ["007", "013", "015", "019", "020", "024", "031", "034", "043", "054"]) {
+      expect(uxNavigationPolicyForPageId(pageId).pageType, `${pageId} should be a hub`).toBe("Hub");
+    }
+
+    expect(uxNavigationPolicyForPageId("038").pageType).toBe("Workbench");
+    expect(uxNavigationPolicyForPageId("048").pageType).toBe("Workbench");
+  });
+
+  test("journey rails do not treat visual position as gate completion proof", () => {
+    const advisorySteps = uxFlowStepsForPageId("038");
+    expect(advisorySteps.map((step) => step.status)).toEqual([
+      "complete",
+      "complete",
+      "complete",
+      "current",
+      "upcoming",
+      "blocked",
+      "blocked",
+    ]);
+    expect(advisorySteps.filter((step) => step.status === "complete")).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ disabledReason: expect.stringContaining("not gate-completion proof") }),
+      ]),
+    );
+    expect(advisorySteps.filter((step) => step.status === "blocked")).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ disabledReason: expect.stringContaining("Future gate stays blocked") }),
+      ]),
+    );
+  });
+
+  test("renders page job, topbar route context and one primary next step above the desktop fold", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await authenticateRouteSmokePage(page);
+    await page.goto("/workbench");
+
+    const guidance = page.getByTestId("product-guidance").first();
+    await expect(guidance.getByRole("heading", { name: "Page job and next step" })).toBeVisible();
+    await expect(guidance.getByTestId("ux-nav-gate-guidance")).toBeVisible();
+    await expect(guidance.getByTestId("ux-nav-flow-rail")).toBeVisible();
+    await expect(guidance.getByTestId("ux-nav-primary-next-step")).toHaveCount(1);
+    await expect(page.getByText("034 · Workbench").first()).toBeVisible();
   });
 });
 

@@ -40,6 +40,7 @@ import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-p
 import { DemoActorHandoffBar } from "@/components/demo-actor-handoff-bar";
 import { GlobalSearchBox } from "@/components/global-search-box";
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
+import { RouteContextChip } from "@/components/route-context-chip";
 import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
 import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
@@ -627,6 +628,7 @@ function ClientTopBar() {
       <div className="flex min-h-12 flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <GlobalSearchBox className="xl:w-[28rem]" />
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+          <RouteContextChip />
           <p className="max-w-56 text-xs leading-5 text-alphavest-muted">
             Controlled scenario context; production auth is not claimed
           </p>

@@ -44,6 +44,7 @@ import {
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { DemoActorHandoffBar } from "@/components/demo-actor-handoff-bar";
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
+import { RouteContextChip } from "@/components/route-context-chip";
 import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
 import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { cn } from "@/lib/cn";
@@ -253,6 +254,7 @@ function Phase12TopBar() {
           <span className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-alphavest-border px-1.5 py-0.5 text-xs text-alphavest-subtle md:block">cmd K</span>
         </label>
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+          <RouteContextChip />
           <label className="relative">
             <span className="sr-only">Tenant context</span>
             <select

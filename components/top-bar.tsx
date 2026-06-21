@@ -3,6 +3,7 @@
 import { Bell, ChevronDown, KeyRound, Menu, RotateCcw, ShieldCheck, UserRound } from "lucide-react";
 import { useDemoSession } from "@/components/demo-session-provider";
 import { GlobalSearchBox } from "@/components/global-search-box";
+import { RouteContextChip } from "@/components/route-context-chip";
 import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 
 type TopBarProps = {
@@ -47,6 +48,7 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
           <GlobalSearchBox className="hidden min-w-56 sm:block" />
 
           <div className="hidden items-center gap-2 xl:flex">
+            <RouteContextChip />
             <span className="inline-flex h-10 items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/62 px-3 text-xs font-semibold text-alphavest-muted">
               <KeyRound aria-hidden="true" className="size-3.5 text-alphavest-gold" />
               {session.role.internal ? "Internal actor" : "Client-safe actor"}

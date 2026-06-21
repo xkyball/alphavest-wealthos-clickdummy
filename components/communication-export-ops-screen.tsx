@@ -49,6 +49,7 @@ import {
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { GlobalSearchBox } from "@/components/global-search-box";
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
+import { RouteContextChip } from "@/components/route-context-chip";
 import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
 import { cn } from "@/lib/cn";
@@ -405,6 +406,7 @@ function Phase13TopBar() {
       <div className="flex min-h-12 flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <GlobalSearchBox className="xl:w-[34rem]" />
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+          <RouteContextChip />
           <label className="relative">
             <span className="sr-only">Tenant context</span>
             <select

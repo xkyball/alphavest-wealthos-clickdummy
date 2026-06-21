@@ -16,7 +16,7 @@ const secondaryActionClass =
 
 function GuidanceLink({ link, variant }: { link: ProductGuidanceLink; variant: "primary" | "secondary" }) {
   return (
-    <Link className={variant === "primary" ? primaryActionClass : secondaryActionClass} href={link.href}>
+    <Link className={variant === "primary" ? primaryActionClass : secondaryActionClass} data-testid={variant === "primary" ? "ux-nav-primary-next-step" : undefined} href={link.href}>
       {link.label}
       <ArrowRight aria-hidden="true" className="size-4" />
     </Link>
@@ -65,7 +65,7 @@ export function ProductGuidancePanel() {
           <div className="grid gap-2 md:gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.5fr)]">
             <div>
               <h2 className="font-display text-xl text-alphavest-ivory md:text-3xl">
-                Workflow guidance
+                Page job and next step
               </h2>
               <p className="mt-1 text-sm font-semibold text-alphavest-gold-soft md:text-base">
                 {guidance.shortTitle}
@@ -74,7 +74,7 @@ export function ProductGuidancePanel() {
                 {guidance.purpose}
               </p>
             </div>
-            <div className="hidden rounded-md border border-alphavest-gold/25 bg-alphavest-gold/10 p-2.5 sm:block md:p-3">
+            <div className="hidden rounded-md border border-alphavest-gold/25 bg-alphavest-gold/10 p-2.5 sm:block md:p-3" data-testid="ux-nav-gate-guidance">
               <div className="flex items-center gap-2 text-sm font-semibold text-alphavest-gold-soft">
                 <LockKeyhole aria-hidden="true" className="size-4" />
                 Gate guidance
@@ -90,7 +90,7 @@ export function ProductGuidancePanel() {
             </span>
           </div>
           {guidance.steps.length > 0 ? (
-            <div className="mt-4 rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/35 p-3">
+            <div className="mt-4 rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/35 p-3" data-testid="ux-nav-flow-rail">
               <WizardStepper steps={guidance.steps} />
             </div>
           ) : null}
@@ -107,7 +107,7 @@ export function ProductGuidancePanel() {
         </div>
 
         {hasActions ? (
-          <div className="hidden min-w-0 flex-col gap-2 sm:flex xl:w-72">
+          <div className="hidden min-w-0 flex-col gap-2 sm:flex xl:w-72" data-testid="ux-nav-next-actions">
             {guidance.primaryAction ? <GuidanceLink link={guidance.primaryAction} variant="primary" /> : null}
             {guidance.nextStep && guidance.nextStep.href !== guidance.primaryAction?.href ? (
               <GuidanceLink link={guidance.nextStep} variant="secondary" />

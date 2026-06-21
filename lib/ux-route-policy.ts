@@ -30,6 +30,7 @@ export type UxRoutePolicy = {
 };
 
 export type UxFlowStep = {
+  disabledReason?: string;
   href: string;
   label: string;
   pageId: string;
@@ -82,8 +83,8 @@ const workspaceByPageId = new Map<string, UxWorkspaceKey>(
 );
 
 const detailPageIds = new Set(["035", "037", "039", "040", "041", "042", "044", "045", "047", "057", "058"]);
-const hubPageIds = new Set(["019", "020", "034", "038", "043", "048", "054"]);
-const modalPageIds = new Set(["002", "005", "007", "009", "010", "040", "041", "045", "049", "057", "058"]);
+const hubPageIds = new Set(["007", "013", "015", "019", "020", "024", "031", "034", "043", "054"]);
+const modalPageIds = new Set(["002", "005", "009", "010", "040", "041", "045", "049", "057", "058"]);
 const d1PageIds = new Set(["019", "020", "061", "062", "063"]);
 const d4PageIds = detailPageIds;
 const d3Workspaces = new Set<UxWorkspaceKey>(["governance", "export"]);
@@ -236,10 +237,21 @@ export function uxFlowStepsForPageId(pageId: string): UxFlowStep[] {
 
   const currentIndex = chain.indexOf(pageId);
 
-  return chain.map((stepPageId, index) => ({
-    href: flowHrefs[stepPageId],
-    label: flowLabels[stepPageId],
-    pageId: stepPageId,
-    status: index < currentIndex ? "complete" : index === currentIndex ? "current" : "upcoming",
-  }));
+  return chain.map((stepPageId, index) => {
+    const isPast = index < currentIndex;
+    const isCurrent = index === currentIndex;
+    const isNext = index === currentIndex + 1;
+
+    return {
+      disabledReason: isPast
+        ? "Earlier route in the journey; visual position is not gate-completion proof."
+        : !isCurrent && !isNext
+          ? "Future gate stays blocked until the current step and prerequisites are satisfied."
+          : undefined,
+      href: flowHrefs[stepPageId],
+      label: flowLabels[stepPageId],
+      pageId: stepPageId,
+      status: isPast ? "complete" : isCurrent ? "current" : isNext ? "upcoming" : "blocked",
+    };
+  });
 }

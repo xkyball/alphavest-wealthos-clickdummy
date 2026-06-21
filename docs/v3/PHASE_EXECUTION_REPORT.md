@@ -7856,3 +7856,68 @@ Executed `UX-NAV` as the first UX refactoring workstream after the final handoff
 ### Exit Gate Decision
 
 `UX_NAV_IMPLEMENTED_WITH_POLICY_AND_PERMISSION_PROOF`
+
+## UX-NAV Completion Addendum - Topbar Context, Page Job And Flow Rails
+
+Date: 2026-06-21
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+
+### Scope
+
+Completed the remaining UX-NAV tasks after the initial navigation pass. This addendum keeps the existing route registry and workset boundaries intact while strengthening route context, page-job guidance, one-primary-next-step behavior and flow rails.
+
+### Completed Workstream / Tasks
+
+- `UX-NAV-003`: Added a shared `RouteContextChip` to the shared app topbar and major workspace topbars so route ID and route job are visible without exposing payload.
+- `UX-NAV-004`: Updated product guidance copy and test IDs so page job, gate guidance and one primary next step are explicit above the fold.
+- `UX-NAV-005`: Hardened flow rail semantics so future gates become blocked and earlier steps carry a warning that visual position is not gate-completion proof.
+- Corrected UX page-type policy to match the Route Policy Matrix: `007`, `013`, `015`, `019`, `020`, `024`, `031`, `034`, `043` and `054` are hub-type routes; `038` and `048` remain workbench routes.
+- Added UX-NAV route-smoke coverage for page type preservation, flow rail non-overclaim and desktop route-context/page-job rendering.
+
+### Changed Files
+
+- `components/client-intake-screen.tsx`
+- `components/communication-export-ops-screen.tsx`
+- `components/decisions-governance-screen.tsx`
+- `components/internal-workflow-screen.tsx`
+- `components/product-guidance-panel.tsx`
+- `components/route-context-chip.tsx`
+- `components/top-bar.tsx`
+- `components/wealth-actions-screen.tsx`
+- `lib/ux-route-policy.ts`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/proof/ux-nav/screenshots/2026-06-21-ux-nav-desktop-setup-sidebar-topbar.png`
+- `docs/v3/proof/ux-nav/screenshots/2026-06-21-ux-nav-desktop-client-role-guidance.png`
+- `docs/v3/proof/ux-nav/screenshots/2026-06-21-ux-nav-desktop-advisory-flow-rail.png`
+- `docs/v3/proof/ux-nav/screenshots/2026-06-21-ux-nav-desktop-export-flow-rail.png`
+- `docs/v3/proof/ux-nav/screenshots/2026-06-21-ux-nav-mobile-route-identity-nav.png`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `PLAYWRIGHT_PORT=3041 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3042 pnpm test:route-smoke` - passed, 93 tests.
+- Screenshot capture on `http://127.0.0.1:3340` - passed for setup, client, advisory, export and mobile navigation states.
+
+### Positive Acceptance
+
+- Major workspaces now expose tenant, role and route/job context in the topbar without exposing sensitive payload.
+- Product guidance identifies the page job, gate guidance and one primary next step.
+- Flow rails show current, next and blocked future steps without claiming that previous visual steps are completed gates.
+- All 71 registered routes still resolve and registered-only route guards remain intact.
+
+### Negative Acceptance
+
+- No route was created, removed or reclassified outside the Route Policy Matrix.
+- P1, Reference and Hold routes remain outside productive MVP navigation.
+- Route visibility, topbar context and visual step status do not grant payload, action, release, export or client visibility authority.
+
+### Exit Gate Decision
+
+`UX_NAV_ALL_TASKS_COMPLETED_WITH_ROUTE_POLICY_AND_SCREENSHOT_PROOF`

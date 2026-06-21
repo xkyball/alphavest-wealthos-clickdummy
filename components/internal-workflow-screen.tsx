@@ -48,6 +48,7 @@ import {
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { DemoActorHandoffBar } from "@/components/demo-actor-handoff-bar";
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
+import { RouteContextChip } from "@/components/route-context-chip";
 import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
 import { cn } from "@/lib/cn";
 import {
@@ -420,6 +421,7 @@ function InternalTopBar() {
       <div className="flex min-h-12 flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <GlobalSearchBox className="xl:w-[34rem]" placeholder="Search internal workspace..." />
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+          <RouteContextChip />
           <label className="relative">
             <span className="sr-only">Tenant context</span>
             <select

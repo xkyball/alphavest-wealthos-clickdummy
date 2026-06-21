@@ -5993,3 +5993,49 @@ Source of truth:
 
 - UX-NAV intentionally did not implement UX-HUB, UX-PAGE, UX-COMPLEXITY, UX-DENSITY, UX-CTA, UX-INTERACTION, UX-SAFETY or UX-POLICY.
 - The existing generated `next-env.d.ts` dev-server churn was restored and is not part of this workstream.
+
+## UX-NAV Completion QA Addendum
+
+Date: 2026-06-21
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+
+| Area | QA result | Evidence |
+| --- | --- | --- |
+| Topbar context | Passed | `RouteContextChip` renders route ID and page job in shared and major workspace topbars without payload display. |
+| Page job and next step | Passed | `components/product-guidance-panel.tsx` exposes page job, gate guidance, flow rail and one primary next-step link. |
+| Flow rail safety | Passed | `uxFlowStepsForPageId` marks future gates as blocked and labels previous steps as non-proof visual position. |
+| Route Policy Matrix page types | Passed | Route-smoke asserts hub page types for `007`, `013`, `015`, `019`, `020`, `024`, `031`, `034`, `043`, `054` and workbench page types for `038`, `048`. |
+| P0 safety obligations | Passed | `pnpm test:permissions` remains green; route/topbar/rail visibility does not expand action or payload authority. |
+| Screenshot proof | Passed | Five UX-NAV screenshots captured under `docs/v3/proof/ux-nav/screenshots/`. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | `tsc --noEmit` completed successfully. |
+| `pnpm lint` | Passed | ESLint completed successfully. |
+| `PLAYWRIGHT_PORT=3041 pnpm test:permissions` | Passed | 8 tests; command reseeded demo DB as part of existing test flow. |
+| `PLAYWRIGHT_PORT=3042 pnpm test:route-smoke` | Passed | 93 tests covering all 71 registered routes, UX-NAV policy tests, guard routes and mobile route identity. |
+| Screenshot capture on `http://127.0.0.1:3340` | Passed | Captured setup, client, advisory flow rail, export flow rail and mobile navigation states. |
+
+### Screenshot Proof
+
+- `docs/v3/proof/ux-nav/screenshots/2026-06-21-ux-nav-desktop-setup-sidebar-topbar.png`
+- `docs/v3/proof/ux-nav/screenshots/2026-06-21-ux-nav-desktop-client-role-guidance.png`
+- `docs/v3/proof/ux-nav/screenshots/2026-06-21-ux-nav-desktop-advisory-flow-rail.png`
+- `docs/v3/proof/ux-nav/screenshots/2026-06-21-ux-nav-desktop-export-flow-rail.png`
+- `docs/v3/proof/ux-nav/screenshots/2026-06-21-ux-nav-mobile-route-identity-nav.png`
+
+### Safety Proof
+
+- Route visibility remains separate from payload visibility, mutation authority, release authority and export delivery authority.
+- Flow rails are orientation only; previous steps are not represented as gate-completion proof.
+- Status chips and route context do not override evidence sufficiency, advisor approval, compliance release, redaction or audit controls.
+
+### QA Limits
+
+- UX-NAV completion intentionally does not implement UX-HUB, UX-PAGE, UX-COMPLEXITY, UX-DENSITY, UX-CTA, UX-INTERACTION, UX-SAFETY or UX-POLICY.
+- The unrelated local change in `docs/v3/journeys.screencast.p2.v3.json` remains outside this workstream and was not staged.
