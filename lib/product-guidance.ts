@@ -8,6 +8,7 @@ import {
   type RouteScopeLabel,
   type ScreenRoute,
 } from "@/lib/route-registry";
+import { uxFlowStepsForPageId, uxRoutePolicyForRoute, type UxFlowStep } from "@/lib/ux-route-policy";
 
 export type ProductGuidanceLink = {
   href: string;
@@ -22,7 +23,9 @@ export type ProductGuidance = {
   purpose: string;
   relatedRoutes: ProductGuidanceLink[];
   routeId?: string;
+  routePolicyLabels: string[];
   shortTitle: string;
+  steps: UxFlowStep[];
   tier: RouteScopeLabel | "ROOT";
   tierLabel: string;
 };
@@ -235,6 +238,7 @@ function routeFromPathname(pathname: string) {
 
 export function productGuidanceForRoute(route: ScreenRoute): ProductGuidance {
   const tier = routeScopeForPageId(route.pageId);
+  const policy = uxRoutePolicyForRoute(route);
   const override = guidanceOverrides[route.pageId] ?? {};
 
   return {
@@ -244,8 +248,10 @@ export function productGuidanceForRoute(route: ScreenRoute): ProductGuidance {
     primaryAction: override.primaryAction,
     purpose: override.purpose ?? route.purpose,
     relatedRoutes: override.relatedRoutes ?? [],
+    routePolicyLabels: policy.routePolicyLabels,
     routeId: route.pageId,
     shortTitle: override.shortTitle ?? route.title,
+    steps: uxFlowStepsForPageId(route.pageId),
     tier,
     tierLabel: guidanceTierLabels[tier],
   };
@@ -264,7 +270,9 @@ export function productGuidanceForPathname(pathname: string): ProductGuidance {
     primaryAction: linkForPageId("019", "Open client portal"),
     purpose: "Inspect the shared component language used by the AlphaVest workflow implementation.",
     relatedRoutes: [linkForPageId("034", "Open workbench"), linkForPageId("038", "Open compliance queue")],
+    routePolicyLabels: ["NO_ROUTE_RECLASSIFICATION", "NO_SCREEN_GENERATION"],
     shortTitle: "Shared UI component library",
+    steps: [],
     tier: "ROOT",
     tierLabel: "Support",
   };

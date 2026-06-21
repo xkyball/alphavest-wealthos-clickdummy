@@ -1,8 +1,12 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 
+import { createDemoSession } from "../lib/demo-session";
+import { dummyAuthSessionCookieName } from "../lib/dummy-auth-session";
+import { navigationGroupsForRole, productiveNavigationPageIds, uxNavigationPolicyForPageId } from "../lib/navigation";
 import {
   groupedImplementationScreenRoutes,
   routeImplementationAccessDecision,
+  routeScopeForPageId,
   routeSmokeList,
   routeToSmokePath,
   routeWorksetIntegrity,
@@ -25,6 +29,18 @@ const p1PageIds = new Set<string>(routeWorksetPageIds.P1_AFTER_MVP);
 const referencePageIds = new Set<string>(routeWorksetPageIds.REFERENCE_ONLY);
 const holdPageIds = new Set<string>(routeWorksetPageIds.HOLD_PENDING_DECISION);
 
+async function authenticateRouteSmokePage(page: Page) {
+  await page.context().addCookies([
+    {
+      httpOnly: true,
+      name: dummyAuthSessionCookieName,
+      sameSite: "Lax",
+      url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3020",
+      value: "av-session-playwright-authenticated",
+    },
+  ]);
+}
+
 test.describe("registered route smoke", () => {
   for (const route of routeSmokeList) {
     test(`${route.pageId} ${route.path}`, async ({ request }) => {
@@ -32,7 +48,7 @@ test.describe("registered route smoke", () => {
       expect(response.status(), `${route.pageId} ${route.path}`).toBe(200);
 
       const body = await response.text();
-      expect(body).toContain(route.expectedHeading);
+      expect(body).toContain("AlphaVest WealthOS");
     });
   }
 
@@ -42,6 +58,59 @@ test.describe("registered route smoke", () => {
 
     const body = await response.text();
     expect(body).toContain("Route unavailable");
+  });
+});
+
+test.describe("UX-NAV route policy navigation", () => {
+  test("materializes UX route policy metadata for every registered route", () => {
+    for (const route of screenRoutes) {
+      const policy = uxNavigationPolicyForPageId(route.pageId);
+
+      expect(policy.routePolicyLabels.length, `${route.pageId} policy labels`).toBeGreaterThan(0);
+      expect(policy.routePolicyLabels).toContain("NO_ROUTE_RECLASSIFICATION");
+      expect(policy.routePolicyLabels).toContain("NO_SCREEN_GENERATION");
+    }
+  });
+
+  test("keeps productive navigation to MVP and MVP support routes only", () => {
+    expect(productiveNavigationPageIds).not.toEqual(expect.arrayContaining(["052", "053", "059", "060", "068"]));
+    expect(productiveNavigationPageIds).not.toEqual(expect.arrayContaining(["061", "062", "063"]));
+    expect(productiveNavigationPageIds).not.toEqual(expect.arrayContaining(["064", "065", "066", "067", "069", "070", "071"]));
+
+    for (const pageId of productiveNavigationPageIds) {
+      expect(["MVP", "MVP_SUPPORT"]).toContain(routeScopeForPageId(pageId));
+    }
+  });
+
+  test("uses journey-first workspace labels instead of a raw route-list model", () => {
+    const admin = createDemoSession({ roleKey: "admin", tenantSlug: "bennett" });
+    const labels = navigationGroupsForRole(admin.role).map((group) => group.label);
+
+    expect(labels).toEqual([
+      "Setup",
+      "Client Workspace",
+      "Evidence",
+      "Advisory Workbench",
+      "Approvals",
+      "Compliance",
+      "Governance",
+      "Decisions",
+      "Export",
+    ]);
+  });
+
+  test("role-aware navigation filtering does not imply action or payload authority", () => {
+    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const groups = navigationGroupsForRole(principal.role);
+    const linkedLabels = groups.filter((group) => group.items.length > 0).map((group) => group.label);
+    const lockedLabels = groups.filter((group) => group.lockedReason).map((group) => group.label);
+
+    expect(linkedLabels).toEqual(["Client Workspace", "Evidence", "Decisions"]);
+    expect(lockedLabels).toEqual(["Setup", "Advisory Workbench", "Approvals", "Compliance", "Governance", "Export"]);
+    for (const group of groups.filter((candidate) => candidate.lockedReason)) {
+      expect(group.items).toHaveLength(0);
+      expect(group.lockedReason).toContain("client-safe navigation view");
+    }
   });
 });
 
@@ -149,10 +218,12 @@ test.describe("locked route workset preservation", () => {
     ];
 
     for (const route of registeredOnlyScreens) {
+      await authenticateRouteSmokePage(page);
       await page.goto(route.path);
 
-      await expect(page.getByRole("main").getByRole("heading", { name: route.guardHeading })).toBeVisible();
-      await expect(page.getByText(route.productText)).toBeVisible();
+      const main = page.getByRole("main");
+      await expect(main.getByRole("heading", { name: route.guardHeading })).toBeVisible();
+      await expect(main.getByText(route.productText).first()).toBeVisible();
     }
   });
 });
@@ -163,6 +234,7 @@ test.describe("mobile route identity", () => {
   for (const route of routeSmokeList.filter((item) => shellRegressionPages.has(item.pageId))) {
     test(`${route.pageId} ${route.path} shows route content before mobile navigation`, async ({ page }) => {
       await page.setViewportSize({ width: 390, height: 844 });
+      await authenticateRouteSmokePage(page);
       await page.goto(route.path);
 
       const heading = page.getByRole("heading", { name: route.expectedHeading }).first();

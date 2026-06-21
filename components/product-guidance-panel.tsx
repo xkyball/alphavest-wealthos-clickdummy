@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight, Compass, LockKeyhole, Route, ShieldCheck } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useDemoSession } from "@/components/demo-session-provider";
+import { WizardStepper } from "@/components/ui/wizard-stepper";
 import { cn } from "@/lib/cn";
 import { productGuidanceForPathname, type ProductGuidanceLink } from "@/lib/product-guidance";
 
@@ -87,6 +88,21 @@ export function ProductGuidancePanel() {
             <span>
               Scenario context: {session.tenant.displayName} · {session.role.label}. This switcher is demo-local and does not claim production authentication.
             </span>
+          </div>
+          {guidance.steps.length > 0 ? (
+            <div className="mt-4 rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/35 p-3">
+              <WizardStepper steps={guidance.steps} />
+            </div>
+          ) : null}
+          <div className="mt-3 hidden flex-wrap gap-1.5 md:flex">
+            {guidance.routePolicyLabels.slice(0, 4).map((label) => (
+              <span
+                className="rounded-full border border-alphavest-border/60 bg-alphavest-charcoal/45 px-2.5 py-1 text-[0.62rem] font-semibold uppercase text-alphavest-subtle"
+                key={label}
+              >
+                {label.replaceAll("_", " ")}
+              </span>
+            ))}
           </div>
         </div>
 

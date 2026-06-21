@@ -11,6 +11,7 @@ import {
   routeToSmokePath,
   type ScreenRoute
 } from "@/lib/route-registry";
+import { uxFlowStepsForPageId, uxRoutePolicyForRoute } from "@/lib/ux-route-policy";
 import { canBecomeClientVisible } from "@/lib/workflow-gate";
 
 type RouteSkeletonPageProps = {
@@ -77,6 +78,7 @@ function getSiblingRoutes(route: ScreenRoute) {
 
 export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
   const routeScope = routeScopeForPageId(route.pageId);
+  const uxPolicy = uxRoutePolicyForRoute(route);
   const scopeCopy = scopeShellCopy[routeScope];
   const gate = canBecomeClientVisible({
     recommendationStatus: route.clientVisibilitySensitive ? "ADVISOR_APPROVED" : "DRAFT",
@@ -91,8 +93,17 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
     <AppShell>
       <div className="space-y-6">
         <PageHeader
+          blockedReason={routeScope === "MVP" || routeScope === "MVP_SUPPORT" ? undefined : scopeCopy.description}
           description={route.purpose}
           eyebrow={navigationGroupLabels[route.navigationGroup]}
+          primaryAction={
+            siblingRoutes[0] && (routeScope === "MVP" || routeScope === "MVP_SUPPORT")
+              ? { href: routeToSmokePath(siblingRoutes[0].route), label: `Continue to ${siblingRoutes[0].title}` }
+              : { disabledReason: uxPolicy.safetyReminder, label: "Product action locked" }
+          }
+          status={routeScope === "MVP" ? "ACTIVE" : routeScope === "MVP_SUPPORT" ? "PENDING" : "ON_HOLD"}
+          statusLabel={`${uxPolicy.pageType} · ${uxPolicy.densityTier}`}
+          steps={uxFlowStepsForPageId(route.pageId)}
           title={route.title}
         />
 

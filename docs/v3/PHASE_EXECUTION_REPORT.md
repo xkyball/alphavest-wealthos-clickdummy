@@ -7797,3 +7797,62 @@ Executed WS-06 through WS-12 as a real implementation pass over existing Control
 ### Exit Gate Decision
 
 `WCL_WS06_WS12_IMPLEMENTED_WITH_VALIDATION_PASS`
+
+## UX-NAV Workstream Execution Addendum
+
+Date: 2026-06-21
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+
+### Scope
+
+Executed `UX-NAV` as the first UX refactoring workstream after the final handoff-missing policy override. This pass preserved the locked Route Policy Matrix, P0 obligations, registered-only route boundaries and the no-screen-generation rule.
+
+### Completed Workstream / Tasks
+
+- `UX-NAV`: Added a central UX route-policy module covering workspace grouping, density tier, page type, CTA rule, flow steps and safety labels for all 71 registered routes.
+- Reworked primary navigation into journey-first workspaces: Setup, Client Workspace, Evidence, Advisory Workbench, Approvals, Compliance, Governance, Decisions and Export.
+- Added role-aware navigation visibility so client-safe roles see only allowed workspace families while internal-only workspaces remain visibly locked without exposing links.
+- Preserved route workset boundaries by keeping P1, Reference and Hold routes out of productive navigation and keeping `059` / `060` aligned with the Route Policy Matrix as P1 deferred.
+- Added UX-NAV regression coverage for policy metadata, productive navigation scope and role-aware navigation non-authority.
+
+### Changed Files
+
+- `components/page-header.tsx`
+- `components/product-guidance-panel.tsx`
+- `components/route-skeleton-page.tsx`
+- `components/sidebar.tsx`
+- `components/top-bar.tsx`
+- `components/ui/wizard-stepper.tsx`
+- `lib/navigation.ts`
+- `lib/product-guidance.ts`
+- `lib/route-registry.ts`
+- `lib/ux-route-policy.ts`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm test:route-smoke` - passed, 90 tests.
+- `pnpm test:permissions` - passed, 8 tests.
+
+### Positive Acceptance
+
+- Every registered route now has UX policy metadata with `NO_ROUTE_RECLASSIFICATION` and `NO_SCREEN_GENERATION`.
+- Productive navigation is limited to MVP and MVP support routes.
+- Client-safe roles do not receive internal workspace links.
+- Navigation visibility remains separate from action authority, payload visibility, evidence sufficiency, advisor approval and compliance release.
+
+### Negative Acceptance
+
+- P1, Reference and Hold routes remain registered smoke routes only and render guard screens when authenticated.
+- No new screen, API route, Prisma migration, state-screen/image generation, production auth claim, autonomous advice path or client-visible AI draft was introduced.
+- Advisor approval, admin access and route visibility do not bypass compliance release or evidence controls.
+
+### Exit Gate Decision
+
+`UX_NAV_IMPLEMENTED_WITH_POLICY_AND_PERMISSION_PROOF`

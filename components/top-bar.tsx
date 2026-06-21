@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, ChevronDown, Menu, RotateCcw, ShieldCheck, UserRound } from "lucide-react";
+import { Bell, ChevronDown, KeyRound, Menu, RotateCcw, ShieldCheck, UserRound } from "lucide-react";
 import { useDemoSession } from "@/components/demo-session-provider";
 import { GlobalSearchBox } from "@/components/global-search-box";
 import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
@@ -45,6 +45,16 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
 
         <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center lg:justify-end">
           <GlobalSearchBox className="hidden min-w-56 sm:block" />
+
+          <div className="hidden items-center gap-2 xl:flex">
+            <span className="inline-flex h-10 items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/62 px-3 text-xs font-semibold text-alphavest-muted">
+              <KeyRound aria-hidden="true" className="size-3.5 text-alphavest-gold" />
+              {session.role.internal ? "Internal actor" : "Client-safe actor"}
+            </span>
+            <span className="inline-flex h-10 items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/62 px-3 text-xs font-semibold text-alphavest-muted">
+              {session.tenant.riskRating} risk · {session.tenant.jurisdiction}
+            </span>
+          </div>
 
           <div className="grid gap-2 sm:grid-cols-2 lg:flex">
             <label className="grid gap-1 text-[0.66rem] font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">
@@ -115,7 +125,9 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
               <p className="text-sm font-semibold text-alphavest-ivory">
                 {session.actor.displayName}
               </p>
-              <p className="text-xs text-alphavest-muted">{session.role.label}</p>
+              <p className="text-xs text-alphavest-muted">
+                {session.role.label} · {session.role.scope.toLowerCase()} scope
+              </p>
             </div>
           </div>
         </div>

@@ -1,8 +1,9 @@
 "use client";
 
-import { CircleCheck, X } from "lucide-react";
+import { CircleCheck, LockKeyhole, X } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { isActiveNavigationItem, navigationGroups } from "@/lib/navigation";
+import { useDemoSession } from "@/components/demo-session-provider";
+import { isActiveNavigationItem, navigationGroupsForRole } from "@/lib/navigation";
 import { cn } from "@/lib/cn";
 
 function AlphaVestMark() {
@@ -25,6 +26,8 @@ function AlphaVestMark() {
 
 function NavigationContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const { session } = useDemoSession();
+  const navigationGroups = navigationGroupsForRole(session.role);
 
   return (
     <>
@@ -43,7 +46,9 @@ function NavigationContent({ onNavigate }: { onNavigate?: () => void }) {
               aria-label={group.label}
               className={cn(
                 "min-w-0 rounded-md border px-2.5 py-2.5",
-                group.tier === "support"
+                group.lockedReason
+                  ? "border-alphavest-border/35 bg-alphavest-charcoal/24 opacity-80"
+                  : group.tier === "support"
                   ? "border-alphavest-border/35 bg-alphavest-charcoal/30"
                   : "border-transparent bg-transparent"
               )}
@@ -55,7 +60,11 @@ function NavigationContent({ onNavigate }: { onNavigate?: () => void }) {
                   groupActive ? "text-alphavest-gold-soft" : "text-alphavest-subtle"
                 )}
               >
-                <GroupIcon aria-hidden="true" className="size-3.5" />
+                {group.lockedReason ? (
+                  <LockKeyhole aria-hidden="true" className="size-3.5" />
+                ) : (
+                  <GroupIcon aria-hidden="true" className="size-3.5" />
+                )}
                 <p className="truncate">{group.label}</p>
               </div>
               <p
@@ -66,6 +75,11 @@ function NavigationContent({ onNavigate }: { onNavigate?: () => void }) {
               >
                 {group.description}
               </p>
+              {group.lockedReason ? (
+                <div className="rounded-md border border-alphavest-border/50 bg-alphavest-navy/35 p-2 text-[0.66rem] leading-4 text-alphavest-subtle">
+                  {group.lockedReason}
+                </div>
+              ) : null}
               <div className="space-y-1" data-navigation-tier={group.tier}>
                 {group.items.map((item) => {
                   const Icon = item.icon;

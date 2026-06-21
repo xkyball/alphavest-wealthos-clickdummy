@@ -5957,3 +5957,39 @@ Source of truth: `/Users/chris/Downloads/ALPHAVEST_WEALTHOS_CONTROL_LAYER_33_SYS
 - Offboarding remains a control contract service by task-pack design; no production offboarding route, schema or workflow screen was created.
 - This pass does not add production authentication, real export binary generation, autonomous advice, client-visible AI drafts, manual visibility override or admin bypass.
 - Existing Turbopack document-storage tracing warnings are outside WS-06 through WS-12 and remain documented but non-blocking.
+
+## UX-NAV QA Addendum
+
+Date: 2026-06-21
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+
+| Area | QA result | Evidence |
+| --- | --- | --- |
+| Route Policy Matrix preservation | Passed | `lib/ux-route-policy.ts` maps all registered page IDs to UX workspace, page type, density tier, CTA rule and safety labels. |
+| Productive navigation boundary | Passed | `tests/route-smoke.spec.ts` proves productive navigation only includes MVP and MVP support routes. |
+| Role-aware UX navigation | Passed | Principal navigation exposes Client Workspace, Evidence and Decisions while locking internal workspaces without links. |
+| P0 safety obligations | Passed | `pnpm test:permissions` preserves route/action/object separation and admin/client-success non-bypass. |
+| Registered-only guard routes | Passed | Authenticated browser smoke proves P1, Reference and Hold routes render guard workspaces without promotion. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | `tsc --noEmit` completed successfully. |
+| `pnpm test:route-smoke` | Passed | 90 tests, including UX-NAV policy checks, authenticated registered-only guard checks and mobile route identity checks. |
+| `pnpm test:permissions` | Passed | 8 tests; command reseeded demo DB as part of existing test flow. |
+
+### Safety Proof
+
+- `NO_ROUTE_RECLASSIFICATION` and `NO_SCREEN_GENERATION` are asserted for every registered route.
+- P1, Reference and Hold routes remain outside productive MVP navigation.
+- Role-aware navigation filtering does not grant action authority or payload authority.
+- Client visibility remains governed by compliance release and evidence controls, not by route presence, status chips or advisor approval alone.
+
+### QA Limits
+
+- UX-NAV intentionally did not implement UX-HUB, UX-PAGE, UX-COMPLEXITY, UX-DENSITY, UX-CTA, UX-INTERACTION, UX-SAFETY or UX-POLICY.
+- The existing generated `next-env.d.ts` dev-server churn was restored and is not part of this workstream.
