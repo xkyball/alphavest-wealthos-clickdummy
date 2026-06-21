@@ -1,5 +1,44 @@
 # Implementation QA Report
 
+## All Routes Soft Unlock QA Addendum
+
+Date: 2026-06-21
+
+### Executive Decision
+
+`ALL_ROUTES_SOFT_UNLOCK_QA_PASSED_WITH_UI_ONLY_SAFETY_BOUNDARIES`
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Explicit unlock authority | Implemented | Added `ALPHAVEST_ALL_ROUTES_SOFT_UNLOCK_HANDOFF.md` and referenced it from the package plan. |
+| Route workset provenance | Preserved | Route workset labels and counts remain unchanged. |
+| Route UI access | Implemented | All registered routes now return `implementationShellAccessible=true`. |
+| Safety boundary | Implemented | P1/reference/held routes carry `SOFT_UNLOCKED` and `UI_ONLY_NO_RELEASE_OR_ADVICE_UNLOCK`. |
+| Navigation | Implemented | Added support navigation for soft-unlocked route groups. |
+| Committee route UI | Implemented | Committee queue/detail now render product UI instead of held shell. |
+| Forbidden scope | Preserved | No schema, migration, generated visual, new API route, autonomous advice, admin bypass or upload-to-release shortcut was added. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `PLAYWRIGHT_PORT=3163 pnpm exec playwright test tests/route-smoke.spec.ts tests/navigation-shell.spec.ts tests/committee-review-routes.spec.ts tests/p0-acceptance.spec.ts` | Passed | 106 focused route/navigation/committee/P0 acceptance tests. |
+| `pnpm typecheck` | Passed | TypeScript completed cleanly. |
+| `pnpm lint` | Passed | ESLint completed cleanly. |
+| `pnpm db:validate` | Passed | Prisma schema remained valid; no schema or migration was changed. |
+| `pnpm build` | Passed with warnings | Existing Turbopack tracing warnings remain in `lib/document-storage-adapter.ts`. |
+| `pnpm test:permissions` | Passed | 8 permission and deny-audit tests. |
+| `pnpm test:workflow-gate` | Passed | 11 workflow/evidence/advice gate tests. |
+| `pnpm test:workflow-api` | Passed | 15 API workflow tests. |
+| Screenshot capture | Passed | Captured representative soft-unlocked committee, KYC and service-blueprint screenshots under `artifacts/all-routes-soft-unlock/`. |
+
+### Residual Risks
+
+- Soft unlock makes UI surfaces visible; it is not a full regulated workflow acceptance for KYC, suitability, IPS, committee release or communication delivery.
+- The amendment preserves existing demo-data/providerless constraints and does not claim production authentication or production advice execution.
+
 ## MVP-FIRST-BUILD-PHASE-8 Implementation QA Addendum
 
 Date: 2026-06-21

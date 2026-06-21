@@ -289,6 +289,120 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
     ]
   },
   {
+    key: "soft_unlock",
+    label: "Soft-unlocked routes",
+    description: "Extended route access with UI-only safety boundaries still in force.",
+    icon: ClipboardList,
+    tier: "support",
+    items: [
+      {
+        pageId: "052",
+        label: "Communication Centre",
+        description: "Client communication workspace; delivery authority remains gated.",
+        icon: FileText,
+        tier: "secondary"
+      },
+      {
+        pageId: "053",
+        label: "Call Trigger",
+        description: "Communication trigger detail without release or advice authority.",
+        icon: ClipboardList,
+        tier: "secondary"
+      },
+      {
+        pageId: "059",
+        label: "Ops Queues",
+        description: "Operational queue view with no client-release authority.",
+        icon: Archive,
+        tier: "secondary"
+      },
+      {
+        pageId: "060",
+        label: "SLA Monitoring",
+        description: "Service monitoring view for operational follow-up.",
+        icon: FileSearch,
+        tier: "secondary"
+      },
+      {
+        pageId: "061",
+        label: "Service Blueprint",
+        description: "Reference route visible as an internal operating map.",
+        icon: FileText,
+        tier: "secondary"
+      },
+      {
+        pageId: "062",
+        label: "Roadmap",
+        description: "Reference roadmap visible without implementation claims.",
+        icon: ClipboardList,
+        tier: "secondary"
+      },
+      {
+        pageId: "063",
+        label: "States",
+        description: "State reference visible without lifecycle proof overclaim.",
+        icon: BadgeCheck,
+        tier: "secondary"
+      },
+      {
+        pageId: "064",
+        label: "KYC / AML Review",
+        description: "Regulated review surface; no automatic advice or release.",
+        icon: ShieldCheck,
+        tier: "secondary"
+      },
+      {
+        pageId: "065",
+        label: "Source of Wealth",
+        description: "Source-of-wealth evidence review with compliance gates intact.",
+        icon: FileSearch,
+        tier: "secondary"
+      },
+      {
+        pageId: "066",
+        label: "Suitability Profile",
+        description: "Suitability data view without client-visible advice.",
+        icon: Scale,
+        tier: "secondary"
+      },
+      {
+        pageId: "067",
+        label: "IPS Mandate",
+        description: "Mandate workspace; acknowledgement and compliance gates remain required.",
+        icon: FileCheck2,
+        tier: "secondary"
+      },
+      {
+        pageId: "068",
+        label: "Review Calendar",
+        description: "Internal review rhythm with no automatic advice execution.",
+        icon: ClipboardCheck,
+        tier: "secondary"
+      },
+      {
+        pageId: "069",
+        label: "Rebalance Monitoring",
+        description: "Monitoring view; rebalance execution remains disabled.",
+        icon: Scale,
+        tier: "secondary"
+      },
+      {
+        pageId: "070",
+        label: "Committee Review Queue",
+        description: "Committee queue visible while client release stays downstream.",
+        icon: UsersRound,
+        tier: "secondary"
+      },
+      {
+        pageId: "071",
+        label: "Committee Review Detail",
+        description: "Committee detail visible with dissent and release gates preserved.",
+        icon: BadgeCheck,
+        tier: "secondary"
+      }
+    ]
+  },
+  {
     key: "setup_admin",
     label: "Setup",
     description: "Operational setup and templates, kept behind the product workflow.",

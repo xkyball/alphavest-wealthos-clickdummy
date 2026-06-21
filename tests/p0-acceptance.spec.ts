@@ -541,7 +541,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
     }
   });
 
-  test("AV-SLICE-P0-09 preserves route worksets and hold/P1/reference exclusions", () => {
+  test("AV-SLICE-P0-09 preserves route worksets while applying the explicit soft unlock", () => {
     expect(routeWorksetIntegrity.counts).toEqual({
       HOLD_PENDING_DECISION: 7,
       MVP: 31,
@@ -556,27 +556,33 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
     for (const pageId of ["052", "053", "059", "060", "068"]) {
       expect(routeScopeForPageId(pageId)).toBe("P1_AFTER_MVP");
       expect(routeImplementationAccessDecision({ pageId })).toEqual({
+        accessMode: "SOFT_UNLOCKED",
         exclusionReason: "P1_DEFERRED",
-        implementationShellAccessible: false,
+        implementationShellAccessible: true,
         routeScope: "P1_AFTER_MVP",
+        safetyBoundary: "UI_ONLY_NO_RELEASE_OR_ADVICE_UNLOCK",
       });
     }
 
     for (const pageId of ["061", "062", "063"]) {
       expect(routeScopeForPageId(pageId)).toBe("REFERENCE_ONLY");
       expect(routeImplementationAccessDecision({ pageId })).toEqual({
+        accessMode: "SOFT_UNLOCKED",
         exclusionReason: "REFERENCE_ONLY_NO_PRODUCT_TASK",
-        implementationShellAccessible: false,
+        implementationShellAccessible: true,
         routeScope: "REFERENCE_ONLY",
+        safetyBoundary: "UI_ONLY_NO_RELEASE_OR_ADVICE_UNLOCK",
       });
     }
 
     for (const pageId of ["064", "065", "066", "067", "069", "070", "071"]) {
       expect(routeScopeForPageId(pageId)).toBe("HOLD_PENDING_DECISION");
       expect(routeImplementationAccessDecision({ pageId })).toEqual({
+        accessMode: "SOFT_UNLOCKED",
         exclusionReason: "HOLD_PENDING_SCOPE_UNLOCK",
-        implementationShellAccessible: false,
+        implementationShellAccessible: true,
         routeScope: "HOLD_PENDING_DECISION",
+        safetyBoundary: "UI_ONLY_NO_RELEASE_OR_ADVICE_UNLOCK",
       });
     }
   });

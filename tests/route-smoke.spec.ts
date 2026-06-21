@@ -53,39 +53,44 @@ test.describe("locked route workset preservation", () => {
     expect(routeSmokeList).toHaveLength(71);
   });
 
-  test("P1, reference and held routes stay out of implementation navigation", () => {
+  test("P1, reference and held routes are explicitly soft-unlocked into implementation navigation", () => {
     const implementationPageIds = new Set(
       groupedImplementationScreenRoutes.flatMap((group) => group.routes.map((route) => route.pageId))
     );
 
-    const excludedPageIds = [
+    const softUnlockedPageIds = [
       ...routeWorksetPageIds.P1_AFTER_MVP,
       ...routeWorksetPageIds.REFERENCE_ONLY,
       ...routeWorksetPageIds.HOLD_PENDING_DECISION
     ];
 
-    for (const pageId of excludedPageIds) {
-      expect(implementationPageIds.has(pageId), `${pageId} should stay excluded`).toBe(false);
+    for (const pageId of softUnlockedPageIds) {
+      expect(implementationPageIds.has(pageId), `${pageId} should be soft-unlocked`).toBe(true);
     }
   });
 
-  test("route access decisions keep implementation shells limited to MVP and MVP support", () => {
+  test("route access decisions preserve route provenance while soft-unlocking every route shell", () => {
     for (const route of screenRoutes) {
       const decision = routeImplementationAccessDecision(route);
-      const shouldRenderImplementation = mvpPageIds.has(route.pageId) || mvpSupportPageIds.has(route.pageId);
 
       expect(decision.implementationShellAccessible, `${route.pageId} implementation access`).toBe(
-        shouldRenderImplementation
+        true
       );
 
-      if (p1PageIds.has(route.pageId)) {
-        expect(decision.exclusionReason).toBe("P1_DEFERRED");
-      } else if (referencePageIds.has(route.pageId)) {
-        expect(decision.exclusionReason).toBe("REFERENCE_ONLY_NO_PRODUCT_TASK");
-      } else if (holdPageIds.has(route.pageId)) {
-        expect(decision.exclusionReason).toBe("HOLD_PENDING_SCOPE_UNLOCK");
-      } else {
+      if (mvpPageIds.has(route.pageId) || mvpSupportPageIds.has(route.pageId)) {
+        expect(decision.accessMode).toBe("FIRST_BUILD");
         expect(decision.exclusionReason).toBeUndefined();
+        expect(decision.safetyBoundary).toBe("FULL_FIRST_BUILD_SCOPE");
+      } else {
+        expect(decision.accessMode).toBe("SOFT_UNLOCKED");
+        expect(decision.safetyBoundary).toBe("UI_ONLY_NO_RELEASE_OR_ADVICE_UNLOCK");
+        if (p1PageIds.has(route.pageId)) {
+          expect(decision.exclusionReason).toBe("P1_DEFERRED");
+        } else if (referencePageIds.has(route.pageId)) {
+          expect(decision.exclusionReason).toBe("REFERENCE_ONLY_NO_PRODUCT_TASK");
+        } else if (holdPageIds.has(route.pageId)) {
+          expect(decision.exclusionReason).toBe("HOLD_PENDING_SCOPE_UNLOCK");
+        }
       }
     }
   });
@@ -107,40 +112,44 @@ test.describe("locked route workset preservation", () => {
     }
   });
 
-  test("deferred, reference and held requests render exclusion shells instead of product screens", async ({ page }) => {
-    const exclusionShells = [
+  test("deferred, reference and held requests render soft-unlocked product screens", async ({ page }) => {
+    const softUnlockedScreens = [
       {
         path: "/communication",
-        shellHeading: "Deferred Workspace",
         routeHeading: "Communication Centre",
-        forbiddenProductText: "Communication path selected"
+        routeHeadingLevel: 2,
+        productText: "Release gate required"
       },
       {
         path: "/service-blueprint",
-        shellHeading: "Reference Workspace",
         routeHeading: "Service Blueprint",
-        forbiddenProductText: "Plan, sequence and control scope"
+        routeHeadingLevel: 2,
+        productText: "End-to-end service blueprint"
       },
       {
         path: "/kyc/demo/review",
-        shellHeading: "Held Workspace",
         routeHeading: "KYC / AML Review",
-        forbiddenProductText: "Enhanced due diligence"
+        routeHeadingLevel: 2,
+        productText: "No client release from KYC review"
       },
       {
         path: "/committee/reviews",
-        shellHeading: "Held Workspace",
         routeHeading: "Committee Review Queue",
-        forbiddenProductText: "Second review required"
+        routeHeadingLevel: 1,
+        productText: "Second review required"
       }
     ];
 
-    for (const route of exclusionShells) {
+    for (const route of softUnlockedScreens) {
       await page.goto(route.path);
 
-      await expect(page.getByRole("heading", { name: route.routeHeading })).toBeVisible();
-      await expect(page.getByRole("heading", { name: route.shellHeading })).toBeVisible();
-      await expect(page.getByText(route.forbiddenProductText)).toHaveCount(0);
+      await expect(
+        page.getByRole("main").getByRole("heading", { level: route.routeHeadingLevel, name: route.routeHeading })
+      ).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Deferred Workspace" })).toHaveCount(0);
+      await expect(page.getByRole("heading", { name: "Reference Workspace" })).toHaveCount(0);
+      await expect(page.getByRole("heading", { name: "Held Workspace" })).toHaveCount(0);
+      await expect(page.getByText(route.productText)).toBeVisible();
     }
   });
 });

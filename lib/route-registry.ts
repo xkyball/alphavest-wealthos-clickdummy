@@ -88,7 +88,9 @@ export type ScreenRoute = {
 export type RouteImplementationAccessDecision = {
   routeScope: RouteScopeLabel;
   implementationShellAccessible: boolean;
+  accessMode: "FIRST_BUILD" | "SOFT_UNLOCKED";
   exclusionReason?: "P1_DEFERRED" | "REFERENCE_ONLY_NO_PRODUCT_TASK" | "HOLD_PENDING_SCOPE_UNLOCK";
+  safetyBoundary: "FULL_FIRST_BUILD_SCOPE" | "UI_ONLY_NO_RELEASE_OR_ADVICE_UNLOCK";
 };
 
 export const navigationGroupLabels: Record<NavigationGroupKey, string> = {
@@ -1370,20 +1372,24 @@ export function routeImplementationAccessDecision(
 
   if (routeScope === "MVP" || routeScope === "MVP_SUPPORT") {
     return {
+      accessMode: "FIRST_BUILD",
       routeScope,
-      implementationShellAccessible: true
+      implementationShellAccessible: true,
+      safetyBoundary: "FULL_FIRST_BUILD_SCOPE"
     };
   }
 
   return {
+    accessMode: "SOFT_UNLOCKED",
     routeScope,
-    implementationShellAccessible: false,
+    implementationShellAccessible: true,
     exclusionReason:
       routeScope === "P1_AFTER_MVP"
         ? "P1_DEFERRED"
         : routeScope === "REFERENCE_ONLY"
           ? "REFERENCE_ONLY_NO_PRODUCT_TASK"
-          : "HOLD_PENDING_SCOPE_UNLOCK"
+          : "HOLD_PENDING_SCOPE_UNLOCK",
+    safetyBoundary: "UI_ONLY_NO_RELEASE_OR_ADVICE_UNLOCK"
   };
 }
 

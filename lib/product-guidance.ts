@@ -181,25 +181,25 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
     relatedRoutes: [linkForPageId("055", "Review scope"), linkForPageId("056", "Review redaction")],
   },
   "052": {
-    area: "P1 / later",
-    gateHint: "P1 / later: orientation only, not part of the current MVP workflow.",
+    area: "Soft-unlocked communication",
+    gateHint: "Soft-unlocked: route UI is visible, but message delivery and client visibility remain gated.",
   },
   "061": {
-    area: "Reference",
-    gateHint: "Reference only: internal orientation surface, not product workflow proof.",
+    area: "Soft-unlocked reference",
+    gateHint: "Soft-unlocked: reference UI is visible as an operating map, not as lifecycle or release proof.",
   },
   "070": {
-    area: "Held",
-    gateHint: "Held / not MVP: requires scope and safety unlock before product workflow use.",
+    area: "Soft-unlocked committee review",
+    gateHint: "Soft-unlocked: committee UI is visible, but committee approval still cannot release advice to the client.",
   },
 };
 
 const tierGateHints: Record<RouteScopeLabel, string> = {
   MVP: "MVP workflow route: action authority still depends on role, object, evidence and release gates.",
   MVP_SUPPORT: "MVP support route: setup/context support only; safety gates still control downstream actions.",
-  P1_AFTER_MVP: "P1 / later: visible for orientation, not part of the current MVP workflow.",
-  REFERENCE_ONLY: "Reference only: internal orientation surface, not product workflow proof.",
-  HOLD_PENDING_DECISION: "Held / not MVP: requires explicit scope and safety unlock before product workflow use.",
+  P1_AFTER_MVP: "Soft-unlocked P1 route: UI is visible, while release, export and advice authority remain gated.",
+  REFERENCE_ONLY: "Soft-unlocked reference route: visible as an operating map, not lifecycle proof.",
+  HOLD_PENDING_DECISION: "Soft-unlocked held route: UI is visible, while regulated actions remain fail-closed.",
 };
 
 function areaForRoute(route: ScreenRoute) {

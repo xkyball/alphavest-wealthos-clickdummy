@@ -1,5 +1,72 @@
 # Phase Execution Report
 
+## ALL-ROUTES-SOFT-UNLOCK - UI Access With Safety Boundaries
+
+Date: 2026-06-21
+
+### Phase Completion Report
+
+- Phase: Soft unlock amendment
+- Package executed: `AV-SOFT-UNLOCK-ALL`
+- Task IDs completed: `AV-SOFT-UNLOCK-ALL-T001`, `AV-SOFT-UNLOCK-ALL-T002`, `AV-SOFT-UNLOCK-ALL-T003`, `AV-SOFT-UNLOCK-ALL-T004`, `AV-SOFT-UNLOCK-ALL-T005`
+- Source of truth: `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md` plus explicit amendment `ALPHAVEST_ALL_ROUTES_SOFT_UNLOCK_HANDOFF.md`
+- Files changed:
+  - `ALPHAVEST_ALL_ROUTES_SOFT_UNLOCK_HANDOFF.md`
+  - `ALPHAVEST_MVP_FIRST_BUILD_PACKAGE_PLAN.md`
+  - `lib/route-registry.ts`
+  - `lib/navigation.ts`
+  - `lib/product-guidance.ts`
+  - `tests/route-smoke.spec.ts`
+  - `tests/navigation-shell.spec.ts`
+  - `tests/committee-review-routes.spec.ts`
+  - `tests/p0-acceptance.spec.ts`
+  - `docs/v3/PHASE_EXECUTION_REPORT.md`
+  - `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Implemented Behaviour
+
+- Added an explicit `SOFT_UNLOCKED` route access mode for P1, reference and held route worksets while preserving their original workset labels and counts.
+- `routeImplementationAccessDecision()` now returns `implementationShellAccessible=true` for every registered route.
+- P1/reference/held routes carry `safetyBoundary=UI_ONLY_NO_RELEASE_OR_ADVICE_UNLOCK` so route UI access is not mistaken for release, export, advice or payload authority.
+- Added all formerly deferred/reference/held routes to a support navigation group named `Soft-unlocked routes`.
+- Updated product guidance copy so these routes are described as soft-unlocked rather than silently promoted to full MVP.
+- Updated route smoke, navigation, committee route and P0 acceptance tests to assert explicit soft unlock rather than exclusion shells.
+
+### Positive Proof
+
+- All 71 registered routes remain in the route registry.
+- Workset counts remain unchanged: 31 MVP, 25 MVP support, 5 P1, 3 reference and 7 held.
+- Existing screen components now render for P1, reference and held direct URLs instead of the Deferred/Reference/Held exclusion skeletons.
+- Committee queue/detail routes render product UI while preserving client visibility guard language.
+
+### Negative Proof / Boundaries Preserved
+
+- No Prisma schema, migration, generated visual, production auth provider or new API route was added.
+- Soft unlock does not authorize autonomous advice, admin bypass, upload-to-release, advisor-as-release, preview-as-approval or client-visible AI Draft.
+- Rebalance monitoring remains UI-visible but execution controls stay disabled in the existing screen.
+- Committee, KYC, Suitability, IPS and Communication screens remain subject to existing workflow, evidence, compliance, audit and payload gates.
+
+### Validation Commands Run
+
+- `PLAYWRIGHT_PORT=3163 pnpm exec playwright test tests/route-smoke.spec.ts tests/navigation-shell.spec.ts tests/committee-review-routes.spec.ts tests/p0-acceptance.spec.ts` - passed, 106 tests.
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `pnpm db:validate` - passed.
+- `pnpm build` - passed with existing Turbopack tracing warnings in `lib/document-storage-adapter.ts`.
+- `pnpm test:permissions` - passed, 8 tests.
+- `pnpm test:workflow-gate` - passed, 11 tests.
+- `pnpm test:workflow-api` - passed, 15 tests.
+
+### Screenshot Artifacts
+
+- `artifacts/all-routes-soft-unlock/soft-unlock-committee-queue.png`
+- `artifacts/all-routes-soft-unlock/soft-unlock-kyc-aml.png`
+- `artifacts/all-routes-soft-unlock/soft-unlock-service-blueprint.png`
+
+### Exit Gate Decision
+
+`SOFT_UNLOCK_IMPLEMENTED_AND_VALIDATED_WITH_UI_ONLY_SAFETY_BOUNDARIES`
+
 ## MVP-FIRST-BUILD-PHASE-8 - P0 Test Completion And Validation
 
 Date: 2026-06-21

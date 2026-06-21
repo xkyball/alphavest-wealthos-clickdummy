@@ -9,6 +9,7 @@ package order locally explicit and testable.
 ## Operative Source
 
 - Sole source of truth: `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md`
+- Explicit soft-unlock amendment: `ALPHAVEST_ALL_ROUTES_SOFT_UNLOCK_HANDOFF.md`
 - Target branch reality: `full-workflow`
 - Non-target truth: `main`, older V3 phase plans, older final task masters and
   previous implementation handoffs
