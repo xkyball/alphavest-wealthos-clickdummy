@@ -99,17 +99,24 @@ test.describe("MVP Phase 2 governance non-bypass permissions", () => {
     expect(adminEvidenceApproval.requiresAudit).toBe(true);
     expect(adminEvidenceApproval.requiresSecondConfirmation).toBe(true);
 
+    const evidenceRecordId = "evidence:bennett:phase2-sufficiency";
     const complianceEvidenceApproval = permissionEngine.can(
       compliance.actor,
       "APPROVE",
       {
         clientTenantId: compliance.tenant.id,
+        objectId: evidenceRecordId,
         objectType: "EVIDENCE_RECORD",
         sensitivity: "RESTRICTED",
         visibilityStatus: "COMPLIANCE_VISIBLE",
       },
       {
         clientTenantId: compliance.tenant.id,
+        objectScope: {
+          clientTenantId: compliance.tenant.id,
+          objectIds: [evidenceRecordId],
+          objectType: "EVIDENCE_RECORD",
+        },
         platformTenantId: demoPlatformTenantId,
       },
       compliance.role,

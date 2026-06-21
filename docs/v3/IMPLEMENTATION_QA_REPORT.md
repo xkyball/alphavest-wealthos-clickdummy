@@ -1,5 +1,56 @@
 # Implementation QA Report
 
+## MVP-FIRST-BUILD-PHASE-2 Implementation QA Addendum
+
+Date: 2026-06-21
+
+### Executive Decision
+
+`MVP_FIRST_BUILD_PHASE_2_QA_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Source of truth lock | Passed | Used `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md` Phase 2 / `BP-03` as the operative source. |
+| Route/action separation | Passed | Route-shell `VIEW` access remains available, but object-scoped actions now require explicit target object context before permission can allow mutation authority. |
+| Workflow preconditions | Passed | `workflow-gate` and `workflow-api` suites still prove release, evidence, advisor, compliance and audit preconditions. |
+| Tenant/object scope | Passed | Existing object-scope denials remain, and new action-level target requirement closes the no-target allow path. |
+| Payload visibility/redaction | Passed | Recommendation, document and export projection tests still exclude internal rationale, AI draft, compliance notes and unreleased evidence from client/export payloads. |
+| Admin non-bypass | Passed | Admin/security roles remain unable to force release, evidence sufficiency, client visibility or export generation. |
+| No forbidden scope | Passed | No Prisma schema/migration, new API route, screen generation, visual replacement or product route expansion was introduced. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | TypeScript completed cleanly. |
+| `PLAYWRIGHT_PORT=3081 pnpm test:permissions` | Passed | 8 tests, including the new route-access-is-not-mutation-authority negative. |
+| `PLAYWRIGHT_PORT=3083 pnpm test:file-export` | Passed | 12 tests, including missing export request target denial. |
+| `PLAYWRIGHT_PORT=3085 pnpm test:route-smoke` | Passed | 85 tests; route worksets and held/reference/deferred shells remain intact. |
+| `PLAYWRIGHT_PORT=3086 pnpm test:workflow-gate` | Passed | 10 tests. |
+| `PLAYWRIGHT_PORT=3087 pnpm test:workflow-api` | Passed | 13 tests; typed recommendation review paths still fail closed and release only after gates pass. |
+| `PLAYWRIGHT_PORT=3088 pnpm test:governance-non-bypass` | Passed | 3 tests. |
+| `PLAYWRIGHT_PORT=3089 pnpm exec playwright test tests/p0-acceptance.spec.ts` | Passed | 11 tests. |
+| `pnpm lint` | Passed | ESLint completed cleanly. |
+| `git diff --check` | Passed | No whitespace errors. |
+| `pnpm build` | Passed with warnings | Existing Turbopack tracing warnings remain in `lib/document-storage-adapter.ts`; no build failure. |
+| Screenshot capture | Passed | Captured real content states after selector waits under `artifacts/phase2-rbac-payload-hardening/`. |
+
+### Screenshot Proof
+
+| Artifact | Status | Notes |
+| --- | --- | --- |
+| `artifacts/phase2-rbac-payload-hardening/compliance-release-desktop.png` | Captured | Desktop Compliance Release screen after waiting for `Compliance release controls client visibility`. |
+| `artifacts/phase2-rbac-payload-hardening/export-preview-mobile.png` | Captured | Mobile Export Approval modal after waiting for `Export Package Summary`. |
+
+### Residual Risks
+
+- Phase 2 is still demo-providerless RBAC and payload projection hardening, not production IAM or final authorization certification.
+- The new object-target guard closes no-target action allows for the central permission engine; complete production object ownership would still need real identity/provider integration and persisted assignment workflows in later scope.
+- Passing Phase 2 does not claim final MVP readiness, production legal/financial advice suitability, complete audit retention operations, or binary export delivery readiness.
+- `pnpm build` still reports pre-existing broad filesystem tracing warnings in `lib/document-storage-adapter.ts`; this phase did not change that file.
+
 ## LEFT-NAV-USER-GUIDANCE-REWORK QA Addendum
 
 Date: 2026-06-21

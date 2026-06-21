@@ -96,6 +96,10 @@ const objectScopedTypes = new Set<ObjectType>([
   "RECOMMENDATION",
 ]);
 
+function requiresExplicitObjectScope(action: PermissionAction, objectType: ObjectType) {
+  return action !== "VIEW" && objectScopedTypes.has(objectType);
+}
+
 function deny(
   action: PermissionAction,
   subject: PermissionSubject,
@@ -440,6 +444,26 @@ function can(
       subject,
       "DEMO_DENY_INTERNAL_OBJECT_ACCESS",
       "This external or limited role cannot access internal-only objects.",
+    );
+  }
+
+  if (requiresExplicitObjectScope(action, subject.objectType) && !subject.objectId) {
+    return deny(
+      action,
+      subject,
+      "DEMO_DENY_OBJECT_TARGET_REQUIRED",
+      "Object-scoped actions require an explicit target object before route access can become mutation authority.",
+      true,
+    );
+  }
+
+  if (requiresExplicitObjectScope(action, subject.objectType) && !context.objectScope) {
+    return deny(
+      action,
+      subject,
+      "DEMO_DENY_OBJECT_SCOPE_REQUIRED",
+      "Object-scoped actions require an explicit current object scope before mutation authority is granted.",
+      true,
     );
   }
 

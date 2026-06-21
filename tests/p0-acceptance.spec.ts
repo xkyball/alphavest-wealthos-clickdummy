@@ -271,17 +271,24 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
     expect(adminExport.allowed).toBe(false);
     expect(adminExport.reasonCode).toBe("DEMO_DENY_ADMIN_NON_BYPASS");
 
+    const complianceRecommendationId = "recommendation:summit:p0-compliance-release";
     const complianceRelease = permissionEngine.can(
       compliance.actor,
       "RELEASE",
       {
         clientTenantId: compliance.tenant.id,
+        objectId: complianceRecommendationId,
         objectType: "RECOMMENDATION",
         sensitivity: "RESTRICTED",
         visibilityStatus: "COMPLIANCE_VISIBLE",
       },
       {
         clientTenantId: compliance.tenant.id,
+        objectScope: {
+          clientTenantId: compliance.tenant.id,
+          objectIds: [complianceRecommendationId],
+          objectType: "RECOMMENDATION",
+        },
         platformTenantId: demoPlatformTenantId,
       },
       compliance.role,
@@ -336,17 +343,24 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
 
   test("AV-SLICE-P0-06 requires audit persistence for critical gate advancement", () => {
     const compliance = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
+    const auditRecommendationId = "recommendation:summit:p0-audit-release";
     const releaseDecision = permissionEngine.can(
       compliance.actor,
       "RELEASE",
       {
         clientTenantId: compliance.tenant.id,
+        objectId: auditRecommendationId,
         objectType: "RECOMMENDATION",
         sensitivity: "RESTRICTED",
         visibilityStatus: "COMPLIANCE_VISIBLE",
       },
       {
         clientTenantId: compliance.tenant.id,
+        objectScope: {
+          clientTenantId: compliance.tenant.id,
+          objectIds: [auditRecommendationId],
+          objectType: "RECOMMENDATION",
+        },
         platformTenantId: demoPlatformTenantId,
       },
       compliance.role,

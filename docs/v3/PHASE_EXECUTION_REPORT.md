@@ -1,5 +1,82 @@
 # Phase Execution Report
 
+## MVP-FIRST-BUILD-PHASE-2 - RBAC, Object Scope And Payload Visibility Hardening
+
+Date: 2026-06-21
+
+### Phase Completion Report
+
+- Phase: 2
+- Package executed: `BP-03`
+- Task IDs completed: `AV-FB-P2-BP03-T001`, `AV-FB-P2-BP03-T002`, `AV-FB-P2-BP03-T003`, `AV-FB-P2-BP03-T004`, `AV-FB-P2-BP03-T005`, `AV-FB-P2-BP03-T006`
+- Files changed:
+  - `lib/permission-engine.ts`
+  - `tests/permission-engine.spec.ts`
+  - `tests/governance-non-bypass.spec.ts`
+  - `tests/file-export-realism.spec.ts`
+  - `tests/p0-acceptance.spec.ts`
+  - `docs/v3/PHASE_EXECUTION_REPORT.md`
+  - `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- Screenshot artifacts:
+  - `artifacts/phase2-rbac-payload-hardening/compliance-release-desktop.png`
+  - `artifacts/phase2-rbac-payload-hardening/export-preview-mobile.png`
+
+### Implemented Phase 2 Behaviour
+
+- Hardened `permissionEngine.can()` so object-scoped mutation/export/release/review actions on `DOCUMENT`, `DECISION`, `EVIDENCE_RECORD`, `EXPORT_REQUEST` and `RECOMMENDATION` require an explicit target object before route access can become action authority.
+- Preserved route-shell access semantics: `VIEW` without an object target can still support registered shell rendering, while action-level checks now fail closed without object target/scope.
+- Kept existing admin non-bypass and role-specific denials ahead of the new final allow guard, so admin/security attempts still receive the more specific safety denial where applicable.
+- Updated positive permission tests so compliance/advisor approvals prove the allowed path with concrete object IDs and matching object-scope context.
+- Added negative proof that compliance route access alone cannot perform a recommendation release mutation.
+- Added export proof that a compliance role cannot generate an export when no object-scoped export request is selected.
+
+### Validation Commands Run
+
+- `pnpm typecheck` - passed.
+- `PLAYWRIGHT_PORT=3081 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3083 pnpm test:file-export` - passed, 12 tests.
+- `PLAYWRIGHT_PORT=3085 pnpm test:route-smoke` - passed, 85 tests.
+- `PLAYWRIGHT_PORT=3086 pnpm test:workflow-gate` - passed, 10 tests.
+- `PLAYWRIGHT_PORT=3087 pnpm test:workflow-api` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3088 pnpm test:governance-non-bypass` - passed, 3 tests.
+- `PLAYWRIGHT_PORT=3089 pnpm exec playwright test tests/p0-acceptance.spec.ts` - passed, 11 tests.
+- `pnpm lint` - passed.
+- `git diff --check` - passed.
+- `pnpm build` - passed with existing Turbopack tracing warnings in `lib/document-storage-adapter.ts`.
+- Screenshot capture on `http://127.0.0.1:3090` - passed after waiting for real route content selectors.
+
+### Validation Notes
+
+- A first parallel `test:file-export` attempt collided with the already-running Playwright dev server from `test:permissions`; it was rerun sequentially on port `3083` and passed.
+- A first parallel `test:governance-non-bypass` attempt collided with the already-running Playwright dev server from `test:file-export`; it was rerun sequentially on port `3088` and passed.
+- The first screenshot capture showed only the shared loading state. The screenshots were recaptured with `--wait-for-selector` and now show the actual Compliance Release and Export Approval UI states.
+- No Prisma schema, migration, real authentication provider, new API route, screen generation or visual asset generation was added.
+
+### Positive P0 Proof
+
+- Permitted route shell rendering still passes route smoke coverage.
+- Scoped compliance release and advisor approval permissions pass only when target object and object scope are present.
+- Workflow API release/block/request-evidence paths still mutate only through permission, precondition and audit checks.
+- Client/export payload projection tests still reject hidden/internal fields while allowing only client-safe projections.
+
+### Negative P0 Proof
+
+- Compliance route access without a target object receives `DEMO_DENY_OBJECT_TARGET_REQUIRED` and cannot become mutation authority.
+- Missing export request target keeps export generation blocked through the permission gate.
+- Admin/security roles still cannot force release, evidence sufficiency, visibility or export authority.
+- Wrong role/action/object API paths remain fail-closed with no client release.
+
+### Screenshot Proof
+
+| Artifact | Status | Notes |
+| --- | --- | --- |
+| `artifacts/phase2-rbac-payload-hardening/compliance-release-desktop.png` | captured | Desktop proof for the Compliance Release gate and client-visibility control state. |
+| `artifacts/phase2-rbac-payload-hardening/export-preview-mobile.png` | captured | Mobile proof for the Export Approval modal state where approval, generation, download and share remain separate. |
+
+### Exit Gate Decision
+
+`PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
 ## LEFT-NAV-USER-GUIDANCE-REWORK - Navigation Guidance Micro-Task
 
 Date: 2026-06-21

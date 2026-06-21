@@ -158,6 +158,26 @@ test.describe("Phase 18 export package manifest", () => {
     expect(gate.missing).toContain("external_share_approval");
   });
 
+  test("blocks export generation when no object-scoped export request is selected", () => {
+    const session = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
+    const gate = exportService.canGenerateExport({
+      actor: session.actor,
+      approvalComplete: true,
+      auditPersistenceAvailable: true,
+      clientTenantId: session.tenant.id,
+      externalShare: false,
+      payloadClassifications: ["CLIENT_SAFE_SUMMARY"],
+      platformTenantId: demoPlatformTenantId,
+      redactionProfile: "external-limited",
+      role: session.role,
+      targetType: "EXPORT_REQUEST",
+    });
+
+    expect(gate.allowedToGenerate).toBe(false);
+    expect(gate.missing).toContain("permission");
+    expect(gate.reason).toBe("Demo export remains gated until missing controls are complete.");
+  });
+
   test("blocks export generation when audit persistence is unavailable", () => {
     const session = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
     const gate = exportService.canGenerateExport({

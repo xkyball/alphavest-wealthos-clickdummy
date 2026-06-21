@@ -67,17 +67,24 @@ test.describe("Phase 16 demo role-aware permissions", () => {
     expect(principalReleaseDecision.requiresSecondConfirmation).toBe(true);
 
     const complianceSession = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
+    const recommendationId = "recommendation:bennett:phase2-release";
     const complianceReleaseDecision = permissionEngine.can(
       complianceSession.actor,
       "RELEASE",
       {
         clientTenantId: bennettTenantId,
+        objectId: recommendationId,
         objectType: "RECOMMENDATION",
         sensitivity: "RESTRICTED",
         visibilityStatus: "COMPLIANCE_VISIBLE",
       },
       {
         clientTenantId: bennettTenantId,
+        objectScope: {
+          clientTenantId: bennettTenantId,
+          objectIds: [recommendationId],
+          objectType: "RECOMMENDATION",
+        },
         platformTenantId: demoPlatformTenantId,
       },
       complianceSession.role,
@@ -86,6 +93,76 @@ test.describe("Phase 16 demo role-aware permissions", () => {
     expect(complianceReleaseDecision.allowed).toBe(true);
     expect(complianceReleaseDecision.reasonCode).toBe("DEMO_ROLE_AWARE_ALLOW");
     expect(complianceReleaseDecision.requiresComplianceReview).toBe(true);
+  });
+
+  test("requires explicit object target and scope before route access becomes mutation authority", () => {
+    const complianceSession = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
+    const recommendationId = "recommendation:bennett:phase2-scoped-release";
+
+    const routeShellDecision = permissionEngine.can(
+      complianceSession.actor,
+      "VIEW",
+      {
+        clientTenantId: complianceSession.tenant.id,
+        objectType: "RECOMMENDATION",
+        sensitivity: "RESTRICTED",
+        visibilityStatus: "COMPLIANCE_VISIBLE",
+      },
+      {
+        clientTenantId: complianceSession.tenant.id,
+        clientVisibilityState: "COMPLIANCE_VISIBLE",
+        platformTenantId: demoPlatformTenantId,
+      },
+      complianceSession.role,
+    );
+
+    expect(routeShellDecision.allowed).toBe(true);
+
+    const missingTargetRelease = permissionEngine.can(
+      complianceSession.actor,
+      "RELEASE",
+      {
+        clientTenantId: complianceSession.tenant.id,
+        objectType: "RECOMMENDATION",
+        sensitivity: "RESTRICTED",
+        visibilityStatus: "COMPLIANCE_VISIBLE",
+      },
+      {
+        clientTenantId: complianceSession.tenant.id,
+        clientVisibilityState: "COMPLIANCE_VISIBLE",
+        platformTenantId: demoPlatformTenantId,
+      },
+      complianceSession.role,
+    );
+
+    expect(missingTargetRelease.allowed).toBe(false);
+    expect(missingTargetRelease.reasonCode).toBe("DEMO_DENY_OBJECT_TARGET_REQUIRED");
+
+    const scopedRelease = permissionEngine.can(
+      complianceSession.actor,
+      "RELEASE",
+      {
+        clientTenantId: complianceSession.tenant.id,
+        objectId: recommendationId,
+        objectType: "RECOMMENDATION",
+        sensitivity: "RESTRICTED",
+        visibilityStatus: "COMPLIANCE_VISIBLE",
+      },
+      {
+        clientTenantId: complianceSession.tenant.id,
+        clientVisibilityState: "COMPLIANCE_VISIBLE",
+        objectScope: {
+          clientTenantId: complianceSession.tenant.id,
+          objectIds: [recommendationId],
+          objectType: "RECOMMENDATION",
+        },
+        platformTenantId: demoPlatformTenantId,
+      },
+      complianceSession.role,
+    );
+
+    expect(scopedRelease.allowed).toBe(true);
+    expect(scopedRelease.reasonCode).toBe("DEMO_ROLE_AWARE_ALLOW");
   });
 
   test("denies forbidden export and internal-only object access roles", () => {
@@ -165,12 +242,18 @@ test.describe("Phase 16 demo role-aware permissions", () => {
       "APPROVE",
       {
         clientTenantId: bennettTenantId,
+        objectId: "recommendation:bennett:advisor-approval",
         objectType: "RECOMMENDATION",
         sensitivity: "RESTRICTED",
         visibilityStatus: "ADVISOR_VISIBLE",
       },
       {
         clientTenantId: bennettTenantId,
+        objectScope: {
+          clientTenantId: bennettTenantId,
+          objectIds: ["recommendation:bennett:advisor-approval"],
+          objectType: "RECOMMENDATION",
+        },
         platformTenantId: demoPlatformTenantId,
       },
       advisorSession.role,
