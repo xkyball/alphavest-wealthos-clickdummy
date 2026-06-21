@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
+import { DemoActorHandoffBar } from "@/components/demo-actor-handoff-bar";
 import { GlobalSearchBox } from "@/components/global-search-box";
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
 import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
@@ -686,6 +687,7 @@ function ClientShell({ activePageId, children }: { activePageId: string; childre
         <ClientSidebar activePageId={activePageId} />
         <div className="min-w-0">
           <ClientTopBar />
+          <DemoActorHandoffBar />
           <main className="px-4 py-6 md:px-6">
             <ProductGuidanceContent>{children}</ProductGuidanceContent>
           </main>

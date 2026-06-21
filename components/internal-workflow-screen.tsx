@@ -46,6 +46,7 @@ import {
   type DataTableColumn
 } from "@/components/ui";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
+import { DemoActorHandoffBar } from "@/components/demo-actor-handoff-bar";
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
 import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
 import { cn } from "@/lib/cn";
@@ -471,6 +472,7 @@ function InternalShell({ activePageId, children }: { activePageId: string; child
         <InternalSidebar activePageId={activePageId} />
         <div className="min-w-0">
           <InternalTopBar />
+          <DemoActorHandoffBar />
           <main className="px-4 py-6 md:px-6">
             <ProductGuidanceContent>{children}</ProductGuidanceContent>
           </main>

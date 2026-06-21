@@ -42,6 +42,7 @@ import {
   type DataTableColumn
 } from "@/components/ui";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
+import { DemoActorHandoffBar } from "@/components/demo-actor-handoff-bar";
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
 import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
 import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
@@ -303,6 +304,7 @@ function Phase12Shell({ activePageId, children }: { activePageId: string; childr
         <Phase12Sidebar activePageId={activePageId} />
         <div className="min-w-0">
           <Phase12TopBar />
+          <DemoActorHandoffBar />
           <main className="px-4 py-6 md:px-6">
             <ProductGuidanceContent>{children}</ProductGuidanceContent>
           </main>

@@ -27,26 +27,28 @@ test.describe("SCF P10-P14 implementation closure", () => {
 
   test("filters the document table by search, type, status and sensitivity", async ({ page }) => {
     await page.goto("/documents");
+    await page.getByLabel("Tenant context").last().selectOption("bennett");
+    await page.getByLabel("Role context").last().selectOption("compliance_officer");
 
     await expect(page.getByTestId("p10-p14-documents-closure")).toBeVisible();
     await expect(page.getByTestId("p10-document-filter-summary")).toContainText("scoped documents visible");
     const documentTable = page.getByRole("table").last();
 
-    await page.getByTestId("p10-document-search").fill("Tax Return");
-    await expect(documentTable.getByText("Tax Return 2023.pdf")).toBeVisible();
-    await expect(documentTable.getByText("Estate Plan Overview.docx")).toBeHidden();
+    await page.getByTestId("p10-document-search").fill("tax-residency-2026");
+    await expect(documentTable.getByText("bennett-tax-residency-2026.pdf")).toBeVisible();
+    await expect(documentTable.getByText("bennett-source-of-funds-review.pdf")).toBeHidden();
     await expect(page.getByTestId("p10-document-filter-summary")).toContainText("1 of");
 
     await page.getByTestId("p10-document-search").fill("");
-    await page.getByTestId("p10-document-type-filter").selectOption("Estate Planning");
-    await expect(documentTable.getByText("Estate Plan Overview.docx")).toBeVisible();
-    await expect(documentTable.getByText("Tax Return 2023.pdf")).toBeHidden();
+    await page.getByTestId("p10-document-type-filter").selectOption("Source Of Funds");
+    await expect(documentTable.getByText("bennett-source-of-funds-review.pdf")).toBeVisible();
+    await expect(documentTable.getByText("bennett-tax-residency-2026.pdf")).toBeHidden();
 
     await page.getByTestId("p10-document-type-filter").selectOption("all");
-    await page.getByTestId("p10-document-status-filter").selectOption("In Review");
-    await page.getByTestId("p10-document-sensitivity-filter").selectOption("Confidential");
-    await expect(documentTable.getByText("Estate Plan Overview.docx")).toBeVisible();
-    await expect(documentTable.getByText("Portfolio Holdings - Apr 2024.xlsx")).toBeHidden();
+    await page.getByTestId("p10-document-status-filter").selectOption("Needs Clarification");
+    await page.getByTestId("p10-document-sensitivity-filter").selectOption("Highly Restricted");
+    await expect(documentTable.getByText("bennett-ips-risk-addendum.pdf")).toBeVisible();
+    await expect(documentTable.getByText("bennett-q2-statement.pdf")).toBeHidden();
   });
 
   test("renders P10-P14 closure panels on API and proof-adjacent workflows", async ({ page }) => {

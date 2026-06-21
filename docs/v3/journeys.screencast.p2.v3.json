@@ -31,21 +31,29 @@
       "overclaimRisk": "Viewer may confuse denial proof with production authorization.",
       "caveat": "This is deterministic demo permission proof, not real auth.",
       "proofPath": [
-        "tests/permission-engine.spec.ts"
+        "tests/permission-engine.spec.ts",
+        "components/client-intake-screen.tsx",
+        "components/global-search-box.tsx",
+        "app/api/documents/route.ts",
+        "app/api/global-search/route.ts",
+        "prisma/seed.ts",
+        "tests/scf-p10-p14-closure.spec.ts",
+        "tests/dbtf-tables-api.spec.ts"
       ],
       "captionShort": "Principals cannot release recommendations.",
-      "captionLong": "Release authority remains with compliance even when a principal can view client surfaces.",
+      "captionLong": "Compliance researches seeded DB evidence with search, filters and sorting before request-evidence, block, release-gate, audit and principal decision proof.",
       "presenterNotes": [
         "Promote to video only for compliance/investor diligence."
       ],
       "customerSendable": false,
-      "primaryActor": "Principal",
+      "primaryActor": "Compliance Officer",
       "additionalRoles": [
-        "Compliance Officer"
+        "Principal",
+        "Analyst"
       ],
       "tenant": "Bennett Family Office",
-      "startRoute": "/decisions",
-      "endState": "Release attempt is denied in permission proof.",
+      "startRoute": "/documents",
+      "endState": "Compliance evidence research, release block, audit trail and principal decision surfaces are all visible without bypassing release controls.",
       "demoSession": {
         "mode": "demo",
         "defaultRoleKey": "principal",
@@ -60,7 +68,10 @@
       "demoData": [
         "P2-01",
         "J02",
-        "J03"
+        "J03",
+        "bennett-tax-residency-2026.pdf",
+        "bennett-source-of-funds-review.pdf",
+        "bennett-ips-risk-addendum.pdf"
       ],
       "visibilityRules": [
         "No unapproved advice reaches the client",
@@ -79,13 +90,611 @@
       ],
       "riskNotes": [
         "Viewer may confuse denial proof with production authorization.",
-        "This is deterministic demo permission proof, not real auth."
+        "This is deterministic demo permission proof, not real auth.",
+        "Search/filter/sort steps are read-only and scoped; they do not create client visibility."
       ],
       "steps": [
         {
           "step": 1,
-          "role": "Principal",
-          "roleKey": "principal",
+          "role": "Compliance Officer",
+          "roleKey": "compliance_officer",
+          "tenant": "Bennett Family Office",
+          "tenantSlug": "bennett",
+          "route": "/documents",
+          "screen": "Documents",
+          "inputData": [],
+          "action": "ROLE SWITCH: Compliance Officer reviews Bennett evidence rows",
+          "target": null,
+          "expectedVisibleText": [
+            "Documents",
+            "Bennett"
+          ],
+          "expectedStateChange": "Compliance officer is now the active actor for evidence research.",
+          "blockedActions": [
+            "Cross-tenant evidence browsing"
+          ],
+          "clientVisibility": "Internal compliance evidence only",
+          "evidence": "Seeded Bennett document rows visible to compliance",
+          "audit": "Read-only research; no mutation audit expected",
+          "qaAssertion": "Role-scoped document table renders before release review.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-01-01-role-compliance-documents",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/client-intake-screen.tsx",
+            "prisma/seed.ts"
+          ],
+          "id": "P2-01-S01",
+          "title": "ROLE SWITCH: Compliance Officer - Open scoped documents",
+          "caption": "ROLE SWITCH: Compliance Officer. The compliance actor starts with scoped evidence research, not client release.",
+          "navigation": "goto",
+          "dataRefs": [
+            "Bennett Family Office",
+            "compliance_officer"
+          ],
+          "interaction": {
+            "type": "none"
+          }
+        },
+        {
+          "step": 2,
+          "role": "Compliance Officer",
+          "roleKey": "compliance_officer",
+          "tenant": "Bennett Family Office",
+          "tenantSlug": "bennett",
+          "route": "/documents",
+          "screen": "Documents",
+          "inputData": [
+            "Bennett"
+          ],
+          "action": "Fill global search with Bennett",
+          "target": {
+            "placeholder": "Search WealthOS"
+          },
+          "expectedVisibleText": [
+            "Bennett Family Office",
+            "Document"
+          ],
+          "expectedStateChange": "Scoped global results render for Bennett only.",
+          "blockedActions": [
+            "Cross-tenant search leakage"
+          ],
+          "clientVisibility": "Internal scoped search result list",
+          "evidence": "Global search API scope response expected",
+          "audit": "Read-only search; no mutation audit expected",
+          "qaAssertion": "Global search uses active tenant and role.",
+          "pauseMs": 2200,
+          "screenshotName": "p2-01-02-global-search-bennett",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/global-search-box.tsx",
+            "app/api/global-search/route.ts"
+          ],
+          "id": "P2-01-S02",
+          "title": "Documents: Search global scoped rows",
+          "caption": "Compliance researches scoped DB evidence before deciding whether the package can move toward client release.",
+          "navigation": "goto",
+          "dataRefs": [
+            "Bennett Family Office",
+            "Bennett IPS Risk Addendum"
+          ],
+          "interaction": {
+            "type": "fill",
+            "value": "Bennett",
+            "required": true
+          }
+        },
+        {
+          "step": 3,
+          "role": "Compliance Officer",
+          "roleKey": "compliance_officer",
+          "tenant": "Bennett Family Office",
+          "tenantSlug": "bennett",
+          "route": "/documents",
+          "screen": "Documents",
+          "inputData": [
+            "tax-residency-2026"
+          ],
+          "action": "Filter document rows by the 2026 tax-residency file token",
+          "target": {
+            "testId": "p10-document-search"
+          },
+          "expectedVisibleText": [
+            "scoped documents visible",
+            "Hidden or cross-tenant rows are not disclosed"
+          ],
+          "expectedStateChange": "Document table narrows to the 2026 tax residency evidence row.",
+          "blockedActions": [
+            "Reveal hidden client rows"
+          ],
+          "clientVisibility": "Internal scoped document table",
+          "evidence": "Document search UI assertion expected",
+          "audit": "Read-only table search; no mutation audit expected",
+          "qaAssertion": "Search narrows DB-backed document rows.",
+          "pauseMs": 1800,
+          "screenshotName": "p2-01-03-tax-search",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/client-intake-screen.tsx",
+            "tests/scf-p10-p14-closure.spec.ts"
+          ],
+          "id": "P2-01-S03",
+          "title": "Documents: Search tax-residency-2026 evidence",
+          "caption": "The document table search isolates the current tax residency evidence before the compliance release gate.",
+          "navigation": "goto",
+          "dataRefs": [
+            "bennett-tax-residency-2026.pdf",
+            "p10-document-search"
+          ],
+          "interaction": {
+            "type": "fill",
+            "value": "tax-residency-2026",
+            "required": true
+          }
+        },
+        {
+          "step": 4,
+          "role": "Compliance Officer",
+          "roleKey": "compliance_officer",
+          "tenant": "Bennett Family Office",
+          "tenantSlug": "bennett",
+          "route": "/documents",
+          "screen": "Documents",
+          "inputData": [
+            "Tax Residency Certificate"
+          ],
+          "action": "Select Tax Residency Certificate type",
+          "target": {
+            "testId": "p10-document-type-filter"
+          },
+          "expectedVisibleText": [
+            "scoped documents visible",
+            "Hidden or cross-tenant rows are not disclosed"
+          ],
+          "expectedStateChange": "Document table narrows by type.",
+          "blockedActions": [
+            "Ungated document type discovery"
+          ],
+          "clientVisibility": "Internal scoped document table",
+          "evidence": "Document type filter assertion expected",
+          "audit": "Read-only filter; no mutation audit expected",
+          "qaAssertion": "Type filter narrows DB-backed document rows.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-01-04-type-filter-tax",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/client-intake-screen.tsx"
+          ],
+          "id": "P2-01-S04",
+          "title": "Documents: Filter by tax document type",
+          "caption": "Compliance researches scoped DB evidence before deciding whether the package can move toward client release.",
+          "navigation": "goto",
+          "dataRefs": [
+            "p10-document-type-filter",
+            "Tax Residency Certificate"
+          ],
+          "interaction": {
+            "type": "select",
+            "value": "Tax Residency Certificate",
+            "required": true
+          }
+        },
+        {
+          "step": 5,
+          "role": "Compliance Officer",
+          "roleKey": "compliance_officer",
+          "tenant": "Bennett Family Office",
+          "tenantSlug": "bennett",
+          "route": "/documents",
+          "screen": "Documents",
+          "inputData": [
+            "Analyst Review Pending"
+          ],
+          "action": "Select Analyst Review Pending status",
+          "target": {
+            "testId": "p10-document-status-filter"
+          },
+          "expectedVisibleText": [
+            "scoped documents visible",
+            "Hidden or cross-tenant rows are not disclosed"
+          ],
+          "expectedStateChange": "Document table narrows by review status.",
+          "blockedActions": [
+            "Status-based row leakage"
+          ],
+          "clientVisibility": "Internal scoped document table",
+          "evidence": "Document status filter assertion expected",
+          "audit": "Read-only filter; no mutation audit expected",
+          "qaAssertion": "Status filter narrows DB-backed document rows.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-01-05-status-filter-analyst",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/client-intake-screen.tsx"
+          ],
+          "id": "P2-01-S05",
+          "title": "Documents: Filter by analyst review status",
+          "caption": "Compliance researches scoped DB evidence before deciding whether the package can move toward client release.",
+          "navigation": "goto",
+          "dataRefs": [
+            "p10-document-status-filter",
+            "Analyst Review Pending"
+          ],
+          "interaction": {
+            "type": "select",
+            "value": "Analyst Review Pending",
+            "required": true
+          }
+        },
+        {
+          "step": 6,
+          "role": "Compliance Officer",
+          "roleKey": "compliance_officer",
+          "tenant": "Bennett Family Office",
+          "tenantSlug": "bennett",
+          "route": "/documents",
+          "screen": "Documents",
+          "inputData": [
+            "Confidential"
+          ],
+          "action": "Select Confidential sensitivity",
+          "target": {
+            "testId": "p10-document-sensitivity-filter"
+          },
+          "expectedVisibleText": [
+            "scoped documents visible",
+            "Hidden or cross-tenant rows are not disclosed"
+          ],
+          "expectedStateChange": "Document table keeps only confidential scoped rows.",
+          "blockedActions": [
+            "Sensitivity bypass"
+          ],
+          "clientVisibility": "Internal scoped document table",
+          "evidence": "Sensitivity filter assertion expected",
+          "audit": "Read-only filter; no mutation audit expected",
+          "qaAssertion": "Sensitivity filter narrows DB-backed document rows.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-01-06-sensitivity-filter",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/client-intake-screen.tsx"
+          ],
+          "id": "P2-01-S06",
+          "title": "Documents: Filter by confidential sensitivity",
+          "caption": "Compliance researches scoped DB evidence before deciding whether the package can move toward client release.",
+          "navigation": "goto",
+          "dataRefs": [
+            "p10-document-sensitivity-filter",
+            "Confidential"
+          ],
+          "interaction": {
+            "type": "select",
+            "value": "Confidential",
+            "required": true
+          }
+        },
+        {
+          "step": 7,
+          "role": "Compliance Officer",
+          "roleKey": "compliance_officer",
+          "tenant": "Bennett Family Office",
+          "tenantSlug": "bennett",
+          "route": "/documents",
+          "screen": "Documents",
+          "inputData": [
+            "Document Name"
+          ],
+          "action": "Sort by Document Name",
+          "target": {
+            "role": "button",
+            "name": "Sort by Document Name"
+          },
+          "expectedVisibleText": [
+            "scoped documents visible",
+            "Hidden or cross-tenant rows are not disclosed"
+          ],
+          "expectedStateChange": "Document table sort direction changes without widening scope.",
+          "blockedActions": [
+            "Sort reveals hidden rows"
+          ],
+          "clientVisibility": "Internal scoped document table",
+          "evidence": "Sortable header assertion expected",
+          "audit": "Read-only sort; no mutation audit expected",
+          "qaAssertion": "Sortable header changes row ordering only.",
+          "pauseMs": 1800,
+          "screenshotName": "p2-01-07-sort-documents",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/ui/data-table.tsx",
+            "components/client-intake-screen.tsx"
+          ],
+          "id": "P2-01-S07",
+          "title": "Documents: Sort evidence rows by document name",
+          "caption": "Compliance researches scoped DB evidence before deciding whether the package can move toward client release.",
+          "navigation": "goto",
+          "dataRefs": [
+            "Sort by Document Name"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 8,
+          "role": "Compliance Officer",
+          "roleKey": "compliance_officer",
+          "tenant": "Bennett Family Office",
+          "tenantSlug": "bennett",
+          "route": "/documents",
+          "screen": "Documents",
+          "inputData": [
+            "source of funds"
+          ],
+          "action": "Filter source-of-funds evidence",
+          "target": {
+            "testId": "p10-document-search"
+          },
+          "expectedVisibleText": [
+            "scoped documents visible",
+            "Hidden or cross-tenant rows are not disclosed"
+          ],
+          "expectedStateChange": "Source-of-funds row is isolated for compliance review.",
+          "blockedActions": [
+            "Evidence row leakage"
+          ],
+          "clientVisibility": "Internal scoped document table",
+          "evidence": "Source-of-funds review evidence expected",
+          "audit": "Read-only search; no mutation audit expected",
+          "qaAssertion": "Search term isolates source-of-funds document.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-01-08-source-of-funds-search",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "prisma/seed.ts",
+            "components/client-intake-screen.tsx"
+          ],
+          "id": "P2-01-S08",
+          "title": "Documents: Search source-of-funds evidence",
+          "caption": "Compliance researches scoped DB evidence before deciding whether the package can move toward client release.",
+          "navigation": "goto",
+          "dataRefs": [
+            "bennett-source-of-funds-review.pdf"
+          ],
+          "interaction": {
+            "type": "fill",
+            "value": "source of funds",
+            "required": true
+          }
+        },
+        {
+          "step": 9,
+          "role": "Compliance Officer",
+          "roleKey": "compliance_officer",
+          "tenant": "Bennett Family Office",
+          "tenantSlug": "bennett",
+          "route": "/documents",
+          "screen": "Documents",
+          "inputData": [
+            "Restricted"
+          ],
+          "action": "Select Restricted sensitivity",
+          "target": {
+            "testId": "p10-document-sensitivity-filter"
+          },
+          "expectedVisibleText": [
+            "scoped documents visible",
+            "Hidden or cross-tenant rows are not disclosed"
+          ],
+          "expectedStateChange": "Restricted evidence remains compliance-visible only.",
+          "blockedActions": [
+            "Restricted payload client visibility"
+          ],
+          "clientVisibility": "Internal scoped document table",
+          "evidence": "Restricted evidence row stays scoped",
+          "audit": "Read-only filter; no mutation audit expected",
+          "qaAssertion": "Restricted filter does not disclose cross-scope rows.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-01-09-restricted-filter",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/client-intake-screen.tsx"
+          ],
+          "id": "P2-01-S09",
+          "title": "Documents: Filter restricted evidence",
+          "caption": "Compliance researches scoped DB evidence before deciding whether the package can move toward client release.",
+          "navigation": "goto",
+          "dataRefs": [
+            "Restricted"
+          ],
+          "interaction": {
+            "type": "select",
+            "value": "Restricted",
+            "required": true
+          }
+        },
+        {
+          "step": 10,
+          "role": "Compliance Officer",
+          "roleKey": "compliance_officer",
+          "tenant": "Bennett Family Office",
+          "tenantSlug": "bennett",
+          "route": "/documents",
+          "screen": "Documents",
+          "inputData": [
+            "ips risk"
+          ],
+          "action": "Filter IPS risk addendum evidence",
+          "target": {
+            "testId": "p10-document-search"
+          },
+          "expectedVisibleText": [
+            "scoped documents visible",
+            "Hidden or cross-tenant rows are not disclosed"
+          ],
+          "expectedStateChange": "Risk addendum row is isolated before compliance gate.",
+          "blockedActions": [
+            "Advice release from incomplete risk evidence"
+          ],
+          "clientVisibility": "Internal scoped document table",
+          "evidence": "IPS risk addendum evidence expected",
+          "audit": "Read-only search; no mutation audit expected",
+          "qaAssertion": "Risk addendum is visible and flagged for clarification.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-01-10-ips-risk-search",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "prisma/seed.ts"
+          ],
+          "id": "P2-01-S10",
+          "title": "Documents: Search IPS risk addendum",
+          "caption": "Compliance researches scoped DB evidence before deciding whether the package can move toward client release.",
+          "navigation": "goto",
+          "dataRefs": [
+            "bennett-ips-risk-addendum.pdf"
+          ],
+          "interaction": {
+            "type": "fill",
+            "value": "ips risk",
+            "required": true
+          }
+        },
+        {
+          "step": 11,
+          "role": "Compliance Officer",
+          "roleKey": "compliance_officer",
+          "tenant": "Bennett Family Office",
+          "tenantSlug": "bennett",
+          "route": "/documents",
+          "screen": "Documents",
+          "inputData": [
+            "Highly Restricted"
+          ],
+          "action": "Select Highly Restricted sensitivity",
+          "target": {
+            "testId": "p10-document-sensitivity-filter"
+          },
+          "expectedVisibleText": [
+            "scoped documents visible",
+            "Hidden or cross-tenant rows are not disclosed"
+          ],
+          "expectedStateChange": "Highly restricted row remains internal before release.",
+          "blockedActions": [
+            "Highly restricted row client exposure"
+          ],
+          "clientVisibility": "Internal scoped document table",
+          "evidence": "High-sensitivity row remains scoped",
+          "audit": "Read-only filter; no mutation audit expected",
+          "qaAssertion": "Highly restricted filter remains scoped.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-01-11-highly-restricted-filter",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/client-intake-screen.tsx"
+          ],
+          "id": "P2-01-S11",
+          "title": "Documents: Filter highly restricted evidence",
+          "caption": "Compliance researches scoped DB evidence before deciding whether the package can move toward client release.",
+          "navigation": "goto",
+          "dataRefs": [
+            "Highly Restricted"
+          ],
+          "interaction": {
+            "type": "select",
+            "value": "Highly Restricted",
+            "required": true
+          }
+        },
+        {
+          "step": 12,
+          "role": "Compliance Officer",
+          "roleKey": "compliance_officer",
+          "tenant": "Bennett Family Office",
+          "tenantSlug": "bennett",
+          "route": "/documents",
+          "screen": "Documents",
+          "inputData": [
+            "Status"
+          ],
+          "action": "Sort by Status",
+          "target": {
+            "role": "button",
+            "name": "Sort by Status"
+          },
+          "expectedVisibleText": [
+            "scoped documents visible",
+            "Hidden or cross-tenant rows are not disclosed"
+          ],
+          "expectedStateChange": "Compliance can compare review states before gating release.",
+          "blockedActions": [
+            "Release decision without status review"
+          ],
+          "clientVisibility": "Internal scoped document table",
+          "evidence": "Status sort proof expected",
+          "audit": "Read-only sort; no mutation audit expected",
+          "qaAssertion": "Status sort supports release-gate review.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-01-12-sort-status",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/ui/data-table.tsx"
+          ],
+          "id": "P2-01-S12",
+          "title": "Documents: Sort by status before decision",
+          "caption": "Compliance researches scoped DB evidence before deciding whether the package can move toward client release.",
+          "navigation": "goto",
+          "dataRefs": [
+            "Sort by Status"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 13,
+          "role": "Compliance Officer",
+          "roleKey": "compliance_officer",
+          "tenant": "Bennett Family Office",
+          "tenantSlug": "bennett",
+          "route": "/documents",
+          "screen": "Documents",
+          "inputData": [],
+          "action": "Inspect scoped filter summary",
+          "target": null,
+          "expectedVisibleText": [
+            "Hidden or cross-tenant rows are not disclosed",
+            "DB-backed saved view"
+          ],
+          "expectedStateChange": "Compliance evidence research is complete and still internal.",
+          "blockedActions": [
+            "Client visibility before compliance release"
+          ],
+          "clientVisibility": "Internal scoped document table",
+          "evidence": "Read-only evidence research complete",
+          "audit": "No mutation audit expected",
+          "qaAssertion": "Filter summary states hidden rows are not disclosed.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-01-13-filter-summary",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/client-intake-screen.tsx"
+          ],
+          "id": "P2-01-S13",
+          "title": "Documents: Confirm search evidence remains internal",
+          "caption": "Compliance researches scoped DB evidence before deciding whether the package can move toward client release.",
+          "navigation": "goto",
+          "dataRefs": [
+            "Hidden or cross-tenant rows are not disclosed"
+          ],
+          "interaction": {
+            "type": "none"
+          }
+        },
+        {
+          "step": 14,
+          "role": "Compliance Officer",
+          "roleKey": "compliance_officer",
           "tenant": "Bennett Family Office",
           "tenantSlug": "bennett",
           "route": "/compliance",
@@ -107,13 +716,13 @@
           "audit": "compliance.queue.view expected",
           "qaAssertion": "Compliance heading and metrics render.",
           "pauseMs": 1600,
-          "screenshotName": "p2-01-01-compliance-queue",
+          "screenshotName": "p2-01-14-compliance-queue",
           "manualOrStatic": false,
           "sourceProof": [
             "docs/v3/SCREEN_CATALOGUE_V3.md#038"
           ],
-          "id": "P2-01-S01",
-          "title": "Compliance Queue: Set role and inspect queue",
+          "id": "P2-01-S14",
+          "title": "ROLE CONTINUES: Compliance Officer - Compliance Queue: Set role and inspect queue",
           "caption": "Compliance checks the proof before client release. If something is missing, the package stays blocked instead of becoming unchecked advice.",
           "navigation": "goto",
           "dataRefs": [
@@ -127,9 +736,9 @@
           }
         },
         {
-          "step": 2,
-          "role": "Principal",
-          "roleKey": "principal",
+          "step": 15,
+          "role": "Compliance Officer",
+          "roleKey": "compliance_officer",
           "tenant": "Bennett Family Office",
           "tenantSlug": "bennett",
           "route": "/compliance/demo/review",
@@ -153,12 +762,12 @@
           "audit": "compliance.review expected",
           "qaAssertion": "Release gates not satisfied state is visible.",
           "pauseMs": 1800,
-          "screenshotName": "p2-01-02-review-gates",
+          "screenshotName": "p2-01-15-review-gates",
           "manualOrStatic": false,
           "sourceProof": [
             "docs/v3/USER_JOURNEY_PLAYBOOK_V3.md#journey-2"
           ],
-          "id": "P2-01-S02",
+          "id": "P2-01-S15",
           "title": "Compliance Review Detail: Inspect evidence checklist",
           "caption": "Compliance checks the proof before client release. If something is missing, the package stays blocked instead of becoming unchecked advice.",
           "navigation": "goto",
@@ -174,9 +783,9 @@
           }
         },
         {
-          "step": 3,
-          "role": "Principal",
-          "roleKey": "principal",
+          "step": 16,
+          "role": "Compliance Officer",
+          "roleKey": "compliance_officer",
           "tenant": "Bennett Family Office",
           "tenantSlug": "bennett",
           "route": "/compliance/demo/review",
@@ -202,12 +811,12 @@
           "audit": "compliance.request_evidence expected",
           "qaAssertion": "Request-evidence path is available before release.",
           "pauseMs": 1800,
-          "screenshotName": "p2-01-03-request-evidence",
+          "screenshotName": "p2-01-16-request-evidence",
           "manualOrStatic": false,
           "sourceProof": [
             "components/decisions-governance-screen.tsx"
           ],
-          "id": "P2-01-S03",
+          "id": "P2-01-S16",
           "title": "Compliance Review Detail: Click Request Evidence",
           "caption": "The team asks for missing information before the work moves forward. This keeps weak or incomplete advice away from the client.",
           "navigation": "goto",
@@ -223,9 +832,9 @@
           }
         },
         {
-          "step": 4,
-          "role": "Principal",
-          "roleKey": "principal",
+          "step": 17,
+          "role": "Compliance Officer",
+          "roleKey": "compliance_officer",
           "tenant": "Bennett Family Office",
           "tenantSlug": "bennett",
           "route": "/compliance/demo/review",
@@ -248,12 +857,12 @@
           "audit": "compliance.block expected",
           "qaAssertion": "Block path is visible.",
           "pauseMs": 1800,
-          "screenshotName": "p2-01-04-block-action",
+          "screenshotName": "p2-01-17-block-action",
           "manualOrStatic": false,
           "sourceProof": [
             "docs/v3/PAGE_SPECS_V3.md"
           ],
-          "id": "P2-01-S04",
+          "id": "P2-01-S17",
           "title": "Compliance Review Detail: Click Block",
           "caption": "Compliance blocks the package because proof is missing or risk is too high. That protects the client from unchecked advice.",
           "navigation": "goto",
@@ -269,9 +878,9 @@
           }
         },
         {
-          "step": 5,
-          "role": "Principal",
-          "roleKey": "principal",
+          "step": 18,
+          "role": "Compliance Officer",
+          "roleKey": "compliance_officer",
           "tenant": "Bennett Family Office",
           "tenantSlug": "bennett",
           "route": "/compliance/demo/block?state=block",
@@ -279,32 +888,29 @@
           "inputData": [
             "Block reason: required evidence incomplete"
           ],
-          "action": "Click Request Evidence",
-          "target": {
-            "testId": "j02-confirm-request-evidence",
-            "name": "Request Evidence"
-          },
+          "action": "Inspect blocked request evidence state",
+          "target": null,
           "expectedVisibleText": [
             "Status: Blocked",
             "Requested Evidence"
           ],
-          "expectedStateChange": "Request sent; release remains blocked",
+          "expectedStateChange": "Release remains blocked after evidence has already been requested",
           "blockedActions": [
             "Release"
           ],
           "clientVisibility": "Invisible to client",
           "evidence": "Evidence request audit expected",
           "audit": "compliance.block.request_evidence expected",
-          "qaAssertion": "Blocked status and evidence list render.",
+          "qaAssertion": "Blocked status and requested evidence list render while the request action remains unavailable.",
           "pauseMs": 2200,
-          "screenshotName": "p2-01-05-blocked-request-evidence",
+          "screenshotName": "p2-01-18-blocked-request-evidence",
           "manualOrStatic": false,
           "sourceProof": [
             "components/decisions-governance-screen.tsx"
           ],
-          "id": "P2-01-S05",
-          "title": "Block Or Request Evidence: Click Request Evidence",
-          "caption": "The team asks for missing information before the work moves forward. This keeps weak or incomplete advice away from the client.",
+          "id": "P2-01-S18",
+          "title": "Block Or Request Evidence: Inspect disabled request state",
+          "caption": "The evidence request has already been recorded, so the request action stays unavailable while the release remains blocked.",
           "navigation": "goto",
           "dataRefs": [
             "fixture-j02-compliance-release-block",
@@ -313,14 +919,13 @@
             "Block reason: required evidence incomplete"
           ],
           "interaction": {
-            "type": "click",
-            "required": true
+            "type": "none"
           }
         },
         {
-          "step": 6,
-          "role": "Principal",
-          "roleKey": "principal",
+          "step": 19,
+          "role": "Compliance Officer",
+          "roleKey": "compliance_officer",
           "tenant": "Bennett Family Office",
           "tenantSlug": "bennett",
           "route": "/compliance/demo/release?state=release",
@@ -329,30 +934,27 @@
             "CR-2025-0407-0012",
             "Approved release data"
           ],
-          "action": "Click Release to client",
-          "target": {
-            "testId": "j02-release-client",
-            "name": "Release to client"
-          },
+          "action": "Inspect disabled release gate",
+          "target": null,
           "expectedVisibleText": [],
-          "expectedStateChange": "Target state client-visible release",
+          "expectedStateChange": "Release remains blocked until confirmation and gate conditions are satisfied.",
           "blockedActions": [
             "Silent release"
           ],
           "clientVisibility": "Allowed only after release gate",
           "evidence": "Release evidence linked",
           "audit": "compliance.release expected",
-          "qaAssertion": "Release confirmation controls render.",
+          "qaAssertion": "Release gate renders without allowing bypass.",
           "pauseMs": 2400,
-          "screenshotName": "p2-01-06-release-confirmation",
+          "screenshotName": "p2-01-19-release-confirmation",
           "manualOrStatic": false,
           "sourceProof": [
             "lib/workflow-gate.ts",
             "docs/v3/DATA_MODEL_V3.md#no-unapproved-advice-gate-as-data-rule"
           ],
-          "id": "P2-01-S06",
-          "title": "Release To Client: Click Release to client",
-          "caption": "Compliance releases the package only after the checks are satisfied. This is the step that can make approved content client-visible.",
+          "id": "P2-01-S19",
+          "title": "Release To Client: Inspect disabled release gate",
+          "caption": "The release control is visible but unavailable until the gate conditions are satisfied; this is inspected, not clicked.",
           "navigation": "goto",
           "dataRefs": [
             "fixture-j02-compliance-release-block",
@@ -361,14 +963,13 @@
             "Approved release data"
           ],
           "interaction": {
-            "type": "click",
-            "required": true
+            "type": "none"
           }
         },
         {
-          "step": 7,
-          "role": "Principal",
-          "roleKey": "principal",
+          "step": 20,
+          "role": "Compliance Officer",
+          "roleKey": "compliance_officer",
           "tenant": "Bennett Family Office",
           "tenantSlug": "bennett",
           "route": "/compliance/demo/audit",
@@ -394,12 +995,12 @@
           "audit": "audit.export_controlled expected",
           "qaAssertion": "Audit route remains internal-only.",
           "pauseMs": 1800,
-          "screenshotName": "p2-01-07-compliance-audit",
+          "screenshotName": "p2-01-20-compliance-audit",
           "manualOrStatic": false,
           "sourceProof": [
             "docs/v3/SCREEN_CATALOGUE_V3.md#042"
           ],
-          "id": "P2-01-S07",
+          "id": "P2-01-S20",
           "title": "Audit Exception Log: Inspect audit table",
           "caption": "Compliance checks the proof before client release. If something is missing, the package stays blocked instead of becoming unchecked advice.",
           "navigation": "goto",
@@ -415,7 +1016,7 @@
           }
         },
         {
-          "step": 8,
+          "step": 21,
           "role": "Principal",
           "roleKey": "principal",
           "tenant": "Bennett Family Office",
@@ -439,14 +1040,14 @@
           "audit": "client.view expected",
           "qaAssertion": "Blocked review never appears as client decision.",
           "pauseMs": 1800,
-          "screenshotName": "p2-01-08-client-release-check",
+          "screenshotName": "p2-01-21-client-release-check",
           "manualOrStatic": false,
           "sourceProof": [
             "lib/visibility-engine.ts"
           ],
-          "id": "P2-01-S08",
-          "title": "Decision List: Switch to client role and inspect decisions",
-          "caption": "The client reviews a released decision here. The evidence trail shows why the decision is ready to act on.",
+          "id": "P2-01-S21",
+          "title": "ROLE SWITCH: Principal - Decision List: Switch to client role and inspect decisions",
+          "caption": "ROLE SWITCH: Principal. The principal can inspect client-side decision surfaces, but cannot bypass compliance release.",
           "navigation": "goto",
           "dataRefs": [
             "fixture-j02-compliance-release-block",
@@ -459,7 +1060,7 @@
           }
         },
         {
-          "step": 9,
+          "step": 22,
           "role": "Principal",
           "roleKey": "principal",
           "tenant": "Bennett Family Office",
@@ -483,12 +1084,12 @@
           "audit": "decision.list.view expected",
           "qaAssertion": "Only released decisions appear.",
           "pauseMs": 1600,
-          "screenshotName": "p2-01-09-decision-list",
+          "screenshotName": "p2-01-22-decision-list",
           "manualOrStatic": false,
           "sourceProof": [
             "lib/decisions-governance-demo-data.ts"
           ],
-          "id": "P2-01-S09",
+          "id": "P2-01-S22",
           "title": "Decision List: Set role and inspect decision list",
           "caption": "The client reviews a released decision here. The evidence trail shows why the decision is ready to act on.",
           "navigation": "goto",
@@ -504,7 +1105,7 @@
           }
         },
         {
-          "step": 10,
+          "step": 23,
           "role": "Principal",
           "roleKey": "principal",
           "tenant": "Bennett Family Office",
@@ -530,12 +1131,12 @@
           "audit": "decision.open expected",
           "qaAssertion": "Compliance release banner is present.",
           "pauseMs": 2200,
-          "screenshotName": "p2-01-10-decision-room",
+          "screenshotName": "p2-01-23-decision-room",
           "manualOrStatic": false,
           "sourceProof": [
             "components/decisions-governance-screen.tsx"
           ],
-          "id": "P2-01-S10",
+          "id": "P2-01-S23",
           "title": "Digital Decision Room: Inspect option cards",
           "caption": "The client reviews a released decision here. The evidence trail shows why the decision is ready to act on.",
           "navigation": "goto",
@@ -551,7 +1152,7 @@
           }
         },
         {
-          "step": 11,
+          "step": 24,
           "role": "Principal",
           "roleKey": "principal",
           "tenant": "Bennett Family Office",
@@ -576,12 +1177,12 @@
           "audit": "decision.accepted expected",
           "qaAssertion": "Accept is available only on released decision route.",
           "pauseMs": 2000,
-          "screenshotName": "p2-01-11-decision-accept",
+          "screenshotName": "p2-01-24-decision-accept",
           "manualOrStatic": false,
           "sourceProof": [
             "docs/v3/PAGE_SPECS_V3.md"
           ],
-          "id": "P2-01-S11",
+          "id": "P2-01-S24",
           "title": "Digital Decision Room: Click Accept Option 1",
           "caption": "The client reviews a released decision here. The evidence trail shows why the decision is ready to act on.",
           "navigation": "goto",
@@ -598,7 +1199,7 @@
           }
         },
         {
-          "step": 12,
+          "step": 25,
           "role": "Principal",
           "roleKey": "principal",
           "tenant": "Bennett Family Office",
@@ -626,12 +1227,12 @@
           "audit": "decision.alternative expected",
           "qaAssertion": "Decision provides exit options.",
           "pauseMs": 1800,
-          "screenshotName": "p2-01-12-decision-alternatives",
+          "screenshotName": "p2-01-25-decision-alternatives",
           "manualOrStatic": false,
           "sourceProof": [
             "docs/v3/USER_JOURNEY_PLAYBOOK_V3.md#journey-3"
           ],
-          "id": "P2-01-S12",
+          "id": "P2-01-S25",
           "title": "Digital Decision Room: Inspect request more information, defer and reject",
           "caption": "The client reviews a released decision here. The evidence trail shows why the decision is ready to act on.",
           "navigation": "goto",
@@ -648,7 +1249,7 @@
           }
         },
         {
-          "step": 13,
+          "step": 26,
           "role": "Principal",
           "roleKey": "principal",
           "tenant": "Bennett Family Office",
@@ -661,7 +1262,7 @@
           "action": "Open success route",
           "target": null,
           "expectedVisibleText": [
-            "Evidence Package Created"
+            "Decision Submitted"
           ],
           "expectedStateChange": "Decision immutable and review scheduled",
           "blockedActions": [
@@ -672,12 +1273,12 @@
           "audit": "decision.submitted expected",
           "qaAssertion": "Evidence Package Created is visible.",
           "pauseMs": 2000,
-          "screenshotName": "p2-01-13-decision-success",
+          "screenshotName": "p2-01-26-decision-success",
           "manualOrStatic": false,
           "sourceProof": [
             "components/decisions-governance-screen.tsx"
           ],
-          "id": "P2-01-S13",
+          "id": "P2-01-S26",
           "title": "Decision Submitted: Open success route",
           "caption": "The client reviews a released decision here. The evidence trail shows why the decision is ready to act on.",
           "navigation": "goto",
@@ -692,7 +1293,7 @@
           }
         },
         {
-          "step": 14,
+          "step": 27,
           "role": "Principal",
           "roleKey": "principal",
           "tenant": "Bennett Family Office",
@@ -717,12 +1318,12 @@
           "audit": "evidence.open expected",
           "qaAssertion": "Evidence link/control renders.",
           "pauseMs": 1800,
-          "screenshotName": "p2-01-14-view-evidence-link",
+          "screenshotName": "p2-01-27-view-evidence-link",
           "manualOrStatic": false,
           "sourceProof": [
             "lib/evidence-service.ts"
           ],
-          "id": "P2-01-S14",
+          "id": "P2-01-S27",
           "title": "Decision Submitted: Click View Evidence Record",
           "caption": "The client reviews a released decision here. The evidence trail shows why the decision is ready to act on.",
           "navigation": "goto",
@@ -738,7 +1339,7 @@
           }
         },
         {
-          "step": 15,
+          "step": 28,
           "role": "Principal",
           "roleKey": "principal",
           "tenant": "Bennett Family Office",
@@ -766,12 +1367,12 @@
           "audit": "evidence.view/download expected",
           "qaAssertion": "Restricted evidence remains role-scoped.",
           "pauseMs": 2000,
-          "screenshotName": "p2-01-15-evidence-detail",
+          "screenshotName": "p2-01-28-evidence-detail",
           "manualOrStatic": false,
           "sourceProof": [
             "components/decisions-governance-screen.tsx"
           ],
-          "id": "P2-01-S15",
+          "id": "P2-01-S28",
           "title": "Evidence Record Detail: Inspect evidence and click Download if allowed",
           "caption": "The package is prepared for download only after review. Scope, redaction and evidence keep the shared material controlled.",
           "navigation": "goto",
@@ -788,7 +1389,7 @@
           }
         },
         {
-          "step": 16,
+          "step": 29,
           "role": "Principal",
           "roleKey": "principal",
           "tenant": "Bennett Family Office",
@@ -816,15 +1417,15 @@
           "audit": "No audit event claimed for route/static steps.",
           "qaAssertion": "Decision List renders without spec chrome or unsafe advice claims.",
           "pauseMs": 1400,
-          "screenshotName": "p2-01-16-decision-list",
-          "manualOrStatic": true,
+          "screenshotName": "p2-01-29-decision-list",
+          "manualOrStatic": false,
           "sourceProof": [
             "docs/v3/DEMO_JOURNEY_OPPORTUNITY_BACKLOG_V3.json"
           ],
-          "id": "P2-01-S16"
+          "id": "P2-01-S29"
         },
         {
-          "step": 17,
+          "step": 30,
           "role": "Principal",
           "roleKey": "principal",
           "tenant": "Bennett Family Office",
@@ -852,12 +1453,12 @@
           "audit": "No audit event claimed for route/static steps.",
           "qaAssertion": "Release To Client renders without spec chrome or unsafe advice claims.",
           "pauseMs": 1400,
-          "screenshotName": "p2-01-17-release-to-client",
-          "manualOrStatic": true,
+          "screenshotName": "p2-01-30-release-to-client",
+          "manualOrStatic": false,
           "sourceProof": [
             "docs/v3/DEMO_JOURNEY_OPPORTUNITY_BACKLOG_V3.json"
           ],
-          "id": "P2-01-S17"
+          "id": "P2-01-S30"
         }
       ]
     },
@@ -1909,7 +2510,7 @@
     },
     {
       "id": "P2-06",
-      "name": "Low Confidence Extraction Requires Human Review",
+      "name": "Multi Role Evidence Review And Compliance Handoff",
       "portfolioLayer": "P2",
       "candidateId": "P2-06",
       "legacyJourneyIds": [
@@ -1927,10 +2528,17 @@
       "caveat": "Low-confidence extraction is a demo-state route; human review is the claim, not autonomous AI accuracy.",
       "proofPath": [
         "docs/v3/DATA_MODEL_V3.md",
-        "docs/v3/DEMO_JOURNEY_UNIVERSE_AUDIT_V3.md"
+        "docs/v3/DEMO_JOURNEY_UNIVERSE_AUDIT_V3.md",
+        "components/client-intake-screen.tsx",
+        "components/global-search-box.tsx",
+        "components/internal-workflow-screen.tsx",
+        "components/decisions-governance-screen.tsx",
+        "prisma/seed.ts",
+        "tests/scf-p04-p06-flow-ui.spec.ts",
+        "tests/scf-p10-p14-closure.spec.ts"
       ],
-      "captionShort": "Low-confidence extraction stays human-reviewed.",
-      "captionLong": "Document extraction can be shown as an assistive input flow where uncertain data is held for review.",
+      "captionShort": "Role changes are explicit across upload, review, approval, compliance and principal decision visibility.",
+      "captionLong": "This multi-role journey shows exactly when responsibility moves from Family CFO to Analyst to Advisor to Compliance Officer to Principal.",
       "presenterNotes": [
         "Use this to answer AI-safety questions, not as an ML-performance proof."
       ],
@@ -1948,16 +2556,19 @@
           "expected mutation context"
         ]
       },
-      "primaryActor": "Analyst",
+      "primaryActor": "Family CFO",
       "additionalRoles": [
-        "Family CFO"
+        "Analyst",
+        "Senior Wealth Advisor",
+        "Compliance Officer",
+        "Principal"
       ],
       "tenant": "Morgan Family Office",
-      "startRoute": "/documents/extraction-review",
-      "endState": "Low-confidence fields remain pending review.",
+      "startRoute": "/portal",
+      "endState": "Family CFO upload intent, analyst evidence review, advisor approval, compliance block and principal decision visibility are shown as separate role-owned steps.",
       "demoSession": {
         "mode": "demo",
-        "defaultRoleKey": "analyst",
+        "defaultRoleKey": "family_cfo",
         "defaultTenantSlug": "morgan"
       },
       "queryParams": {},
@@ -1968,7 +2579,10 @@
       ],
       "demoData": [
         "P2-06",
-        "J04"
+        "J04",
+        "morgan-tax-residency-2026.pdf",
+        "morgan-source-of-funds-review.pdf",
+        "morgan-ips-risk-addendum.pdf"
       ],
       "visibilityRules": [
         "No unapproved advice reaches the client",
@@ -1988,95 +2602,87 @@
       ],
       "riskNotes": [
         "Viewer may assume AI extraction is autonomous or final.",
-        "Low-confidence extraction is a demo-state route; human review is the claim, not autonomous AI accuracy."
+        "Low-confidence extraction is a demo-state route; human review is the claim, not autonomous AI accuracy.",
+        "Every role switch is modeled as an explicit step title and caption to avoid ambiguous actor ownership."
       ],
       "steps": [
         {
           "step": 1,
-          "role": "Analyst",
-          "roleKey": "analyst",
+          "role": "Family CFO",
+          "roleKey": "family_cfo",
           "tenant": "Morgan Family Office",
           "tenantSlug": "morgan",
           "route": "/portal",
           "screen": "Client Web Dashboard",
-          "inputData": [
-            "Missing documents"
+          "inputData": [],
+          "action": "ROLE SWITCH: Family CFO inspects open actions",
+          "target": null,
+          "expectedVisibleText": [
+            "Client Web Dashboard"
           ],
-          "action": "Click Upload missing documents if exposed",
-          "target": {
-            "testId": "j04-portal-upload",
-            "name": "Upload"
-          },
-          "expectedVisibleText": [],
-          "expectedStateChange": "Document intake intent starts",
+          "expectedStateChange": "Family CFO owns the client-side source-material step.",
           "blockedActions": [
-            "Advice output"
+            "Advice approval"
           ],
-          "clientVisibility": "Safe missing-doc state",
-          "evidence": "document.intent expected",
-          "audit": "document.intent expected",
-          "qaAssertion": "Missing documents are client-visible but not advice.",
+          "clientVisibility": "Safe client action list",
+          "evidence": "Open upload action visible",
+          "audit": "portal.view expected",
+          "qaAssertion": "Dashboard renders without internal notes.",
           "pauseMs": 1600,
-          "screenshotName": "p2-06-01-portal-missing-docs",
+          "screenshotName": "p2-06-01-role-family-cfo-portal",
           "manualOrStatic": false,
           "sourceProof": [
-            "docs/v3/USER_JOURNEY_PLAYBOOK_V3.md#journey-4"
+            "components/client-intake-screen.tsx"
           ],
           "id": "P2-06-S01",
-          "title": "Client Web Dashboard: Click Upload missing documents if exposed",
-          "caption": "The document is uploaded so the team can review the source material. The file still needs checking before it supports a decision.",
+          "title": "ROLE SWITCH: Family CFO - Open client dashboard",
+          "caption": "ROLE SWITCH: Family CFO. The client-side office uploads and submits source material, but does not validate it as advice.",
           "navigation": "goto",
           "dataRefs": [
-            "fixture-j04-document-upload-verification",
-            "Q1 2024 Financial Statements.pdf",
-            "PortfolioReport.exe",
-            "Missing documents"
+            "Morgan Family Office",
+            "Family CFO"
           ],
           "interaction": {
-            "type": "click",
-            "required": true
+            "type": "none"
           }
         },
         {
           "step": 2,
-          "role": "Analyst",
-          "roleKey": "analyst",
+          "role": "Family CFO",
+          "roleKey": "family_cfo",
           "tenant": "Morgan Family Office",
           "tenantSlug": "morgan",
           "route": "/documents",
           "screen": "Documents List",
-          "inputData": [
-            "Search/filter optional"
-          ],
+          "inputData": [],
           "action": "Click Upload Document",
           "target": {
             "testId": "j04-open-upload-document",
             "name": "Upload Document"
           },
-          "expectedVisibleText": [],
-          "expectedStateChange": "Upload route selected or reachable",
+          "expectedVisibleText": [
+            "Documents"
+          ],
+          "expectedStateChange": "Upload route is selected by client-side office role.",
           "blockedActions": [
             "Restricted document leak"
           ],
           "clientVisibility": "Scoped documents only",
-          "evidence": "Document rows show evidence links",
+          "evidence": "document.intent expected",
           "audit": "documents.open expected",
-          "qaAssertion": "Restricted docs remain scoped.",
+          "qaAssertion": "Upload intent is role-scoped.",
           "pauseMs": 1600,
-          "screenshotName": "p2-06-02-documents-list",
+          "screenshotName": "p2-06-02-family-cfo-upload-intent",
           "manualOrStatic": false,
           "sourceProof": [
             "components/client-intake-screen.tsx"
           ],
           "id": "P2-06-S02",
-          "title": "Documents List: Click Upload Document",
-          "caption": "The document is uploaded so the team can review the source material. The file still needs checking before it supports a decision.",
+          "title": "Family CFO: Open document upload",
+          "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
           "navigation": "goto",
           "dataRefs": [
-            "fixture-j04-document-upload-verification",
-            "Q1 2024 Financial Statements.pdf",
-            "PortfolioReport.exe",
-            "Search/filter optional"
+            "j04-open-upload-document"
           ],
           "interaction": {
             "type": "click",
@@ -2085,95 +2691,79 @@
         },
         {
           "step": 3,
-          "role": "Analyst",
-          "roleKey": "analyst",
+          "role": "Family CFO",
+          "roleKey": "family_cfo",
           "tenant": "Morgan Family Office",
           "tenantSlug": "morgan",
           "route": "/documents/upload",
           "screen": "Document Upload",
-          "inputData": [
-            "Document type Financial Statement",
-            "File Q1 2024 Financial Statements.pdf",
-            "Note Q1 upload for review"
-          ],
-          "action": "Inspect upload form and click Upload Document if exposed",
-          "target": {
-            "testId": "j04-upload-document",
-            "name": "Upload Document"
-          },
+          "inputData": [],
+          "action": "Inspect upload form controls",
+          "target": null,
           "expectedVisibleText": [
-            "Extraction Review"
+            "Upload",
+            "Document"
           ],
-          "expectedStateChange": "Target state uploaded/extraction pending",
+          "expectedStateChange": "Upload form is visible; source material is not yet verified.",
           "blockedActions": [
             "Unsupported file continue"
           ],
           "clientVisibility": "Upload status safe to client",
-          "evidence": "document.upload expected",
-          "audit": "document.upload expected",
-          "qaAssertion": "Allowed file upload state is visible.",
-          "pauseMs": 2000,
-          "screenshotName": "p2-06-03-document-upload",
+          "evidence": "document.upload expected after valid file",
+          "audit": "No mutation in inspection step",
+          "qaAssertion": "Upload form is visible for allowed role.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-06-03-family-cfo-upload-form",
           "manualOrStatic": false,
           "sourceProof": [
-            "docs/v3/PAGE_SPECS_V3.md"
+            "components/client-intake-screen.tsx"
           ],
           "id": "P2-06-S03",
-          "title": "Document Upload: Inspect upload form and click Upload Document if exposed",
-          "caption": "The document is uploaded so the team can review the source material. The file still needs checking before it supports a decision.",
+          "title": "Family CFO: Inspect upload form",
+          "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
           "navigation": "goto",
           "dataRefs": [
-            "fixture-j04-document-upload-verification",
-            "Q1 2024 Financial Statements.pdf",
-            "PortfolioReport.exe",
-            "Document type Financial Statement",
-            "File Q1 2024 Financial Statements.pdf",
-            "Note Q1 upload for review"
+            "Document Upload"
           ],
           "interaction": {
-            "type": "click",
-            "required": true
+            "type": "none"
           }
         },
         {
           "step": 4,
-          "role": "Analyst",
-          "roleKey": "analyst",
+          "role": "Family CFO",
+          "roleKey": "family_cfo",
           "tenant": "Morgan Family Office",
           "tenantSlug": "morgan",
-          "route": "/documents/upload",
-          "screen": "Document Upload",
-          "inputData": [
-            "Blocked file PortfolioReport.exe"
-          ],
-          "action": "Inspect blocked upload row",
+          "route": "/documents/verification-pending",
+          "screen": "Verification Pending",
+          "inputData": [],
+          "action": "Inspect pending verification state",
           "target": null,
           "expectedVisibleText": [
-            "File type not allowed"
+            "Verification Pending",
+            "Human Review"
           ],
-          "expectedStateChange": "Upload is blocked",
+          "expectedStateChange": "Source material waits for human review.",
           "blockedActions": [
-            "Continue blocked file"
+            "Automatic advice output"
           ],
-          "clientVisibility": "Safe error visible",
-          "evidence": "Blocked upload evidence expected",
-          "audit": "document.upload_blocked expected",
-          "qaAssertion": "Unsupported file cannot continue.",
-          "pauseMs": 1800,
-          "screenshotName": "p2-06-04-blocked-upload",
+          "clientVisibility": "Safe verification status only",
+          "evidence": "verification pending evidence expected",
+          "audit": "document.pending expected",
+          "qaAssertion": "Human review remains required.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-06-04-family-cfo-verification-pending",
           "manualOrStatic": false,
           "sourceProof": [
             "components/client-intake-screen.tsx"
           ],
           "id": "P2-06-S04",
-          "title": "Document Upload: Inspect blocked upload row",
-          "caption": "The document is uploaded so the team can review the source material. The file still needs checking before it supports a decision.",
+          "title": "Family CFO: Inspect verification pending handoff",
+          "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
           "navigation": "goto",
           "dataRefs": [
-            "fixture-j04-document-upload-verification",
-            "Q1 2024 Financial Statements.pdf",
-            "PortfolioReport.exe",
-            "Blocked file PortfolioReport.exe"
+            "Verification Pending"
           ],
           "interaction": {
             "type": "none"
@@ -2185,48 +2775,40 @@
           "roleKey": "analyst",
           "tenant": "Morgan Family Office",
           "tenantSlug": "morgan",
-          "route": "/documents/extraction-review",
-          "screen": "Extraction Review",
-          "inputData": [
-            "Statement Date",
-            "Account Number",
-            "Net Investment Change"
+          "route": "/documents",
+          "screen": "Documents List",
+          "inputData": [],
+          "action": "ROLE SWITCH: Analyst begins evidence review",
+          "target": null,
+          "expectedVisibleText": [
+            "Documents",
+            "Morgan"
           ],
-          "action": "Click Confirm and Finalize if exposed",
-          "target": {
-            "testId": "j04-confirm-finalize",
-            "name": "Confirm & Finalize"
-          },
-          "expectedVisibleText": [],
-          "expectedStateChange": "Target state analyst_review_pending",
+          "expectedStateChange": "Analyst is now the active review actor.",
           "blockedActions": [
-            "Final evidence claim"
+            "Client self-approval"
           ],
-          "clientVisibility": "Draft extraction only",
-          "evidence": "Evidence placeholder expected",
-          "audit": "extraction.confirm expected",
-          "qaAssertion": "AI draft is not final evidence.",
-          "pauseMs": 2000,
-          "screenshotName": "p2-06-05-extraction-review",
+          "clientVisibility": "Internal review rows only",
+          "evidence": "Analyst document rows visible",
+          "audit": "Read-only review; no mutation audit expected",
+          "qaAssertion": "Analyst can inspect seeded evidence rows.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-06-05-role-analyst-documents",
           "manualOrStatic": false,
           "sourceProof": [
-            "docs/v3/DATA_MODEL_V3.md#documentextraction"
+            "components/client-intake-screen.tsx",
+            "prisma/seed.ts"
           ],
           "id": "P2-06-S05",
-          "title": "Extraction Review: Click Confirm and Finalize if exposed",
-          "caption": "The document is captured for review, not treated as automatically correct. Unclear details stay pending until a human checks them.",
+          "title": "ROLE SWITCH: Analyst - Open DB document list",
+          "caption": "ROLE SWITCH: Analyst. The analyst reviews extracted evidence, filters DB rows and prepares the package for advisor review.",
           "navigation": "goto",
           "dataRefs": [
-            "fixture-j04-document-upload-verification",
-            "Q1 2024 Financial Statements.pdf",
-            "PortfolioReport.exe",
-            "Statement Date",
-            "Account Number",
-            "Net Investment Change"
+            "analyst",
+            "Morgan"
           ],
           "interaction": {
-            "type": "click",
-            "required": true
+            "type": "none"
           }
         },
         {
@@ -2235,45 +2817,42 @@
           "roleKey": "analyst",
           "tenant": "Morgan Family Office",
           "tenantSlug": "morgan",
-          "route": "/documents/verification-pending",
-          "screen": "Verification Pending",
-          "inputData": [
-            "Submitted May 21 2025",
-            "Expected review 2-3 days"
-          ],
-          "action": "Open verification pending route",
-          "target": null,
+          "route": "/documents",
+          "screen": "Documents List",
+          "inputData": [],
+          "action": "Fill global search with Morgan",
+          "target": {
+            "placeholder": "Search WealthOS"
+          },
           "expectedVisibleText": [
-            "Verification Pending",
-            "Human Review"
+            "scoped documents visible",
+            "Hidden or cross-tenant rows are not disclosed"
           ],
-          "expectedStateChange": "Analyst review task created as target",
+          "expectedStateChange": "Analyst sees tenant-scoped search results.",
           "blockedActions": [
-            "Final validation"
+            "Cross-tenant search leakage"
           ],
-          "clientVisibility": "Pending status only",
-          "evidence": "review.pending expected",
-          "audit": "document.review_pending expected",
-          "qaAssertion": "No final validation is implied.",
-          "pauseMs": 1800,
-          "screenshotName": "p2-06-06-verification-pending",
+          "clientVisibility": "Internal scoped search panel",
+          "evidence": "Global search API scope response expected",
+          "audit": "Read-only search; no mutation audit expected",
+          "qaAssertion": "Global search respects analyst scope.",
+          "pauseMs": 2200,
+          "screenshotName": "p2-06-06-analyst-global-search",
           "manualOrStatic": false,
           "sourceProof": [
-            "docs/v3/SCREEN_CATALOGUE_V3.md#030"
+            "components/global-search-box.tsx"
           ],
           "id": "P2-06-S06",
-          "title": "Verification Pending: Open verification pending route",
-          "caption": "The document is captured for review, not treated as automatically correct. Unclear details stay pending until a human checks them.",
+          "title": "Analyst: Search scoped Morgan rows",
+          "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
           "navigation": "goto",
           "dataRefs": [
-            "fixture-j04-document-upload-verification",
-            "Q1 2024 Financial Statements.pdf",
-            "PortfolioReport.exe",
-            "Submitted May 21 2025",
-            "Expected review 2-3 days"
+            "Morgan 2026 Tax Residency Certificate"
           ],
           "interaction": {
-            "type": "none"
+            "type": "fill",
+            "value": "Morgan",
+            "required": true
           }
         },
         {
@@ -2282,46 +2861,41 @@
           "roleKey": "analyst",
           "tenant": "Morgan Family Office",
           "tenantSlug": "morgan",
-          "route": "/documents/verification-pending",
-          "screen": "Verification Pending",
-          "inputData": [
-            "Needs clarification"
-          ],
-          "action": "Click View Details if exposed",
+          "route": "/documents",
+          "screen": "Documents List",
+          "inputData": [],
+          "action": "Filter source-of-funds evidence",
           "target": {
-            "testId": "j04-view-details",
-            "name": "View Details"
+            "testId": "p10-document-search"
           },
           "expectedVisibleText": [
-            "Needs Clarification",
-            "View Details"
+            "scoped documents visible",
+            "Hidden or cross-tenant rows are not disclosed"
           ],
-          "expectedStateChange": "More-info path remains available",
+          "expectedStateChange": "Analyst isolates source-of-funds evidence.",
           "blockedActions": [
-            "Silent rejection"
+            "Evidence row leakage"
           ],
-          "clientVisibility": "Safe clarification",
-          "evidence": "clarification evidence expected",
-          "audit": "document.clarification_open expected",
-          "qaAssertion": "Human review can request additional evidence.",
+          "clientVisibility": "Internal scoped table",
+          "evidence": "Source-of-funds evidence row visible",
+          "audit": "Read-only search; no mutation audit expected",
+          "qaAssertion": "Document search narrows rows.",
           "pauseMs": 1600,
-          "screenshotName": "p2-06-07-clarification-path",
+          "screenshotName": "p2-06-07-analyst-source-search",
           "manualOrStatic": false,
           "sourceProof": [
-            "docs/v3/USER_JOURNEY_PLAYBOOK_V3.md#journey-4"
+            "components/client-intake-screen.tsx"
           ],
           "id": "P2-06-S07",
-          "title": "Verification Pending: Click View Details if exposed",
-          "caption": "The document is captured for review, not treated as automatically correct. Unclear details stay pending until a human checks them.",
+          "title": "Analyst: Search source-of-funds evidence",
+          "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
           "navigation": "goto",
           "dataRefs": [
-            "fixture-j04-document-upload-verification",
-            "Q1 2024 Financial Statements.pdf",
-            "PortfolioReport.exe",
-            "Needs clarification"
+            "morgan-source-of-funds-review.pdf"
           ],
           "interaction": {
-            "type": "click",
+            "type": "fill",
+            "value": "source of funds",
             "required": true
           }
         },
@@ -2331,35 +2905,693 @@
           "roleKey": "analyst",
           "tenant": "Morgan Family Office",
           "tenantSlug": "morgan",
+          "route": "/documents",
+          "screen": "Documents List",
+          "inputData": [],
+          "action": "Select Source Of Funds type",
+          "target": {
+            "testId": "p10-document-type-filter"
+          },
+          "expectedVisibleText": [
+            "scoped documents visible",
+            "Hidden or cross-tenant rows are not disclosed"
+          ],
+          "expectedStateChange": "Source-of-funds document type is isolated.",
+          "blockedActions": [
+            "Ungated document type discovery"
+          ],
+          "clientVisibility": "Internal scoped table",
+          "evidence": "Document type filter assertion expected",
+          "audit": "Read-only filter; no mutation audit expected",
+          "qaAssertion": "Type filter narrows rows.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-06-08-analyst-type-filter",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/client-intake-screen.tsx"
+          ],
+          "id": "P2-06-S08",
+          "title": "Analyst: Filter by source document type",
+          "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
+          "navigation": "goto",
+          "dataRefs": [
+            "Source Of Funds"
+          ],
+          "interaction": {
+            "type": "select",
+            "value": "Source Of Funds",
+            "required": true
+          }
+        },
+        {
+          "step": 9,
+          "role": "Analyst",
+          "roleKey": "analyst",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/documents",
+          "screen": "Documents List",
+          "inputData": [],
+          "action": "Sort by Updated",
+          "target": {
+            "role": "button",
+            "name": "Sort by Updated"
+          },
+          "expectedVisibleText": [
+            "scoped documents visible",
+            "Hidden or cross-tenant rows are not disclosed"
+          ],
+          "expectedStateChange": "Analyst compares newest evidence without widening scope.",
+          "blockedActions": [
+            "Sort reveals hidden rows"
+          ],
+          "clientVisibility": "Internal scoped table",
+          "evidence": "Sortable updated header expected",
+          "audit": "Read-only sort; no mutation audit expected",
+          "qaAssertion": "Sort remains scoped.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-06-09-analyst-sort-updated",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/ui/data-table.tsx"
+          ],
+          "id": "P2-06-S09",
+          "title": "Analyst: Sort review rows by updated date",
+          "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
+          "navigation": "goto",
+          "dataRefs": [
+            "Sort by Updated"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 10,
+          "role": "Analyst",
+          "roleKey": "analyst",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
           "route": "/documents/extraction-review?state=low-confidence",
           "screen": "Extraction Review",
           "inputData": [],
-          "action": "Inspect route state",
+          "action": "Inspect extraction confidence",
           "target": null,
-          "interaction": {
-            "type": "none"
-          },
-          "navigation": "goto",
-          "dataRefs": [],
-          "caption": "The document is captured for review, not treated as automatically correct. Unclear details stay pending until a human checks them.",
           "expectedVisibleText": [
             "Extraction"
           ],
-          "expectedStateChange": "Route/static demo state is visible; no production workflow claim is made.",
+          "expectedStateChange": "Low-confidence extraction requires human review.",
           "blockedActions": [
-            "Unapproved advice release"
+            "Treat extraction as final advice"
           ],
-          "clientVisibility": "Controlled by demo route state and caveat",
-          "evidence": "Route/static evidence only unless linked to a handler proof.",
-          "audit": "No audit event claimed for route/static steps.",
-          "qaAssertion": "Extraction Review renders without spec chrome or unsafe advice claims.",
-          "pauseMs": 1400,
-          "screenshotName": "p2-06-08-extraction-review",
-          "manualOrStatic": true,
+          "clientVisibility": "Internal extraction review only",
+          "evidence": "extraction review expected",
+          "audit": "document.extraction_review expected",
+          "qaAssertion": "Low confidence stays human-reviewed.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-06-10-analyst-extraction-review",
+          "manualOrStatic": false,
           "sourceProof": [
-            "docs/v3/DEMO_JOURNEY_OPPORTUNITY_BACKLOG_V3.json"
+            "components/client-intake-screen.tsx"
           ],
-          "id": "P2-06-S08"
+          "id": "P2-06-S10",
+          "title": "Analyst: Open extraction review",
+          "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
+          "navigation": "goto",
+          "dataRefs": [
+            "low confidence"
+          ],
+          "interaction": {
+            "type": "none"
+          }
+        },
+        {
+          "step": 11,
+          "role": "Analyst",
+          "roleKey": "analyst",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/documents/extraction-review",
+          "screen": "Extraction Review",
+          "inputData": [],
+          "action": "Click Confirm & Finalize",
+          "target": {
+            "testId": "j04-confirm-finalize",
+            "name": "Confirm & Finalize"
+          },
+          "expectedVisibleText": [],
+          "expectedStateChange": "Reviewed extraction moves to verification pending.",
+          "blockedActions": [
+            "Automatic release"
+          ],
+          "clientVisibility": "Still internal review",
+          "evidence": "document.review expected",
+          "audit": "document.confirm_finalize expected",
+          "qaAssertion": "Human finalization is explicit.",
+          "pauseMs": 2000,
+          "screenshotName": "p2-06-11-analyst-confirm-finalize",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/client-intake-screen.tsx"
+          ],
+          "id": "P2-06-S11",
+          "title": "Analyst: Confirm and finalize reviewed extraction",
+          "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
+          "navigation": "goto",
+          "dataRefs": [
+            "j04-confirm-finalize"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 12,
+          "role": "Senior Wealth Advisor",
+          "roleKey": "senior_wealth_advisor",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/advisor-approval",
+          "screen": "Advisor Approval Queue",
+          "inputData": [],
+          "action": "ROLE SWITCH: Advisor reviews internal package",
+          "target": null,
+          "expectedVisibleText": [
+            "Advisor",
+            "Release to Client"
+          ],
+          "expectedStateChange": "Advisor owns internal approval, not release.",
+          "blockedActions": [
+            "Client release by advisor"
+          ],
+          "clientVisibility": "Blocked until compliance",
+          "evidence": "advisor queue proof expected",
+          "audit": "advisor.queue.view expected",
+          "qaAssertion": "Advisor queue is internal only.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-06-12-role-advisor-queue",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/internal-workflow-screen.tsx"
+          ],
+          "id": "P2-06-S12",
+          "title": "ROLE SWITCH: Senior Advisor - Open advisor queue",
+          "caption": "ROLE SWITCH: Senior Wealth Advisor. Advisor approval is internal only and still cannot release to the client.",
+          "navigation": "goto",
+          "dataRefs": [
+            "senior_wealth_advisor"
+          ],
+          "interaction": {
+            "type": "none"
+          }
+        },
+        {
+          "step": 13,
+          "role": "Senior Wealth Advisor",
+          "roleKey": "senior_wealth_advisor",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/advisor-approval/demo",
+          "screen": "Advisor Approval Detail",
+          "inputData": [],
+          "action": "Click Approve",
+          "target": {
+            "testId": "j01-approve-advisor",
+            "name": "Approve"
+          },
+          "expectedVisibleText": [],
+          "expectedStateChange": "Advisor approval is saved, but compliance release is still required.",
+          "blockedActions": [
+            "Advisor-only release"
+          ],
+          "clientVisibility": "Still blocked until compliance",
+          "evidence": "advisor.approve expected",
+          "audit": "advisor.approve expected",
+          "qaAssertion": "Advisor approval does not release to client.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-06-13-advisor-approve",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/internal-workflow-screen.tsx"
+          ],
+          "id": "P2-06-S13",
+          "title": "Senior Advisor: Approve internal package",
+          "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
+          "navigation": "goto",
+          "dataRefs": [
+            "j01-approve-advisor"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 14,
+          "role": "Senior Wealth Advisor",
+          "roleKey": "senior_wealth_advisor",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/advisor-approval/demo",
+          "screen": "Advisor Approval Detail",
+          "inputData": [],
+          "action": "Inspect blocked release note",
+          "target": null,
+          "expectedVisibleText": [
+            "Compliance",
+            "Release"
+          ],
+          "expectedStateChange": "Advisor approval remains internal-only.",
+          "blockedActions": [
+            "Release to client"
+          ],
+          "clientVisibility": "Blocked without compliance release",
+          "evidence": "negative release proof expected",
+          "audit": "No release mutation expected",
+          "qaAssertion": "Advisor cannot replace compliance.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-06-14-advisor-release-blocked",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "tests/scf-p04-p06-flow-ui.spec.ts"
+          ],
+          "id": "P2-06-S14",
+          "title": "Senior Advisor: Confirm release is still blocked",
+          "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
+          "navigation": "goto",
+          "dataRefs": [
+            "Advisor approval alone is not enough"
+          ],
+          "interaction": {
+            "type": "none"
+          }
+        },
+        {
+          "step": 15,
+          "role": "Compliance Officer",
+          "roleKey": "compliance_officer",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/compliance",
+          "screen": "Compliance Queue",
+          "inputData": [],
+          "action": "ROLE SWITCH: Compliance owns release gate",
+          "target": null,
+          "expectedVisibleText": [
+            "Compliance Queue"
+          ],
+          "expectedStateChange": "Compliance takes over release decision.",
+          "blockedActions": [
+            "Client visibility before release"
+          ],
+          "clientVisibility": "Internal compliance queue only",
+          "evidence": "Queue evidence preview",
+          "audit": "compliance.queue.view expected",
+          "qaAssertion": "Compliance queue renders.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-06-15-role-compliance-queue",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/internal-workflow-screen.tsx"
+          ],
+          "id": "P2-06-S15",
+          "title": "ROLE SWITCH: Compliance Officer - Open compliance queue",
+          "caption": "ROLE SWITCH: Compliance Officer. Compliance owns the release gate and can request evidence or block release.",
+          "navigation": "goto",
+          "dataRefs": [
+            "compliance_officer"
+          ],
+          "interaction": {
+            "type": "none"
+          }
+        },
+        {
+          "step": 16,
+          "role": "Compliance Officer",
+          "roleKey": "compliance_officer",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/compliance/demo/review",
+          "screen": "Compliance Review Detail",
+          "inputData": [],
+          "action": "Inspect release gate checklist",
+          "target": null,
+          "expectedVisibleText": [
+            "Compliance Review Detail",
+            "Release Gates Summary"
+          ],
+          "expectedStateChange": "Compliance reviews evidence before release.",
+          "blockedActions": [
+            "Release without complete gates"
+          ],
+          "clientVisibility": "Internal compliance detail",
+          "evidence": "Release gates summary expected",
+          "audit": "compliance.review.view expected",
+          "qaAssertion": "Release gates render.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-06-16-compliance-review-gates",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/internal-workflow-screen.tsx"
+          ],
+          "id": "P2-06-S16",
+          "title": "Compliance Officer: Inspect release gates",
+          "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
+          "navigation": "goto",
+          "dataRefs": [
+            "Release Gates Summary"
+          ],
+          "interaction": {
+            "type": "none"
+          }
+        },
+        {
+          "step": 17,
+          "role": "Compliance Officer",
+          "roleKey": "compliance_officer",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/compliance/demo/review",
+          "screen": "Compliance Review Detail",
+          "inputData": [],
+          "action": "Click Request Evidence",
+          "target": {
+            "testId": "j02-request-evidence",
+            "name": "Request Evidence"
+          },
+          "expectedVisibleText": [
+            "Release gates not satisfied",
+            "Request Evidence"
+          ],
+          "expectedStateChange": "Evidence request is opened before release.",
+          "blockedActions": [
+            "Client release with missing evidence"
+          ],
+          "clientVisibility": "Invisible to client",
+          "evidence": "Evidence request audit expected",
+          "audit": "compliance.request_evidence expected",
+          "qaAssertion": "Request evidence control is available.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-06-17-compliance-request-evidence",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/internal-workflow-screen.tsx"
+          ],
+          "id": "P2-06-S17",
+          "title": "Compliance Officer: Request more evidence",
+          "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
+          "navigation": "goto",
+          "dataRefs": [
+            "j02-request-evidence"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 18,
+          "role": "Compliance Officer",
+          "roleKey": "compliance_officer",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/compliance/demo/review",
+          "screen": "Compliance Review Detail",
+          "inputData": [],
+          "action": "Click Block",
+          "target": {
+            "testId": "j02-block-release",
+            "name": "Block"
+          },
+          "expectedVisibleText": [],
+          "expectedStateChange": "Compliance blocks release while evidence remains incomplete.",
+          "blockedActions": [
+            "Release despite missing proof"
+          ],
+          "clientVisibility": "Invisible to client",
+          "evidence": "Block reason expected",
+          "audit": "compliance.block expected",
+          "qaAssertion": "Block action is explicit.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-06-18-compliance-block",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/internal-workflow-screen.tsx"
+          ],
+          "id": "P2-06-S18",
+          "title": "Compliance Officer: Block release",
+          "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
+          "navigation": "goto",
+          "dataRefs": [
+            "j02-block-release"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 19,
+          "role": "Compliance Officer",
+          "roleKey": "compliance_officer",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/compliance/demo/block?state=block",
+          "screen": "Block Or Request Evidence",
+          "inputData": [],
+          "action": "Inspect blocked request state",
+          "target": null,
+          "expectedVisibleText": [
+            "Status: Blocked",
+            "Requested Evidence"
+          ],
+          "expectedStateChange": "Release remains blocked after evidence request.",
+          "blockedActions": [
+            "Release"
+          ],
+          "clientVisibility": "Invisible to client",
+          "evidence": "Evidence request audit expected",
+          "audit": "compliance.block.request_evidence expected",
+          "qaAssertion": "Blocked status and requested evidence list render.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-06-19-compliance-blocked-state",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/decisions-governance-screen.tsx"
+          ],
+          "id": "P2-06-S19",
+          "title": "Compliance Officer: Inspect blocked evidence state",
+          "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
+          "navigation": "goto",
+          "dataRefs": [
+            "Status: Blocked"
+          ],
+          "interaction": {
+            "type": "none"
+          }
+        },
+        {
+          "step": 20,
+          "role": "Compliance Officer",
+          "roleKey": "compliance_officer",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/compliance/demo/audit",
+          "screen": "Compliance Audit Trail",
+          "inputData": [],
+          "action": "Inspect audit table",
+          "target": null,
+          "expectedVisibleText": [
+            "Audit"
+          ],
+          "expectedStateChange": "Request and block are visible in audit trail.",
+          "blockedActions": [
+            "Audit mutation"
+          ],
+          "clientVisibility": "Internal audit only",
+          "evidence": "Audit lineage visible",
+          "audit": "audit.view expected",
+          "qaAssertion": "Audit table renders.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-06-20-compliance-audit",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/decisions-governance-screen.tsx"
+          ],
+          "id": "P2-06-S20",
+          "title": "Compliance Officer: Inspect audit trail",
+          "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
+          "navigation": "goto",
+          "dataRefs": [
+            "Audit"
+          ],
+          "interaction": {
+            "type": "none"
+          }
+        },
+        {
+          "step": 21,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/decisions",
+          "screen": "Decisions List",
+          "inputData": [],
+          "action": "ROLE SWITCH: Principal inspects safe decision surface",
+          "target": null,
+          "expectedVisibleText": [
+            "Decisions"
+          ],
+          "expectedStateChange": "Principal sees decision surface after controlled handoff.",
+          "blockedActions": [
+            "Compliance bypass"
+          ],
+          "clientVisibility": "Released/safe decisions only",
+          "evidence": "decision list expected",
+          "audit": "decision.view expected",
+          "qaAssertion": "Principal route has no release bypass.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-06-21-role-principal-decisions",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/decisions-governance-screen.tsx"
+          ],
+          "id": "P2-06-S21",
+          "title": "ROLE SWITCH: Principal - Open decision list",
+          "caption": "ROLE SWITCH: Principal. The principal sees only released or safe decision surfaces and cannot bypass compliance.",
+          "navigation": "goto",
+          "dataRefs": [
+            "principal"
+          ],
+          "interaction": {
+            "type": "none"
+          }
+        },
+        {
+          "step": 22,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/decisions/demo?state=approval",
+          "screen": "Decision Detail",
+          "inputData": [],
+          "action": "Click Request More Information",
+          "target": {
+            "testId": "j03-request-more-information",
+            "name": "Request More Information"
+          },
+          "expectedVisibleText": [],
+          "expectedStateChange": "Principal can request information but not bypass compliance.",
+          "blockedActions": [
+            "Principal release"
+          ],
+          "clientVisibility": "Decision response only",
+          "evidence": "decision.more_info expected",
+          "audit": "decision.more_info expected",
+          "qaAssertion": "Principal response stays within decision surface.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-06-22-principal-more-info",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/decisions-governance-screen.tsx"
+          ],
+          "id": "P2-06-S22",
+          "title": "Principal: Request more information instead of accepting",
+          "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
+          "navigation": "goto",
+          "dataRefs": [
+            "j03-request-more-information"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 23,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/decisions/demo/success",
+          "screen": "Decision Submitted",
+          "inputData": [],
+          "action": "Click View Evidence Record",
+          "target": {
+            "testId": "j03-view-evidence-record",
+            "name": "View Evidence Record"
+          },
+          "expectedVisibleText": [
+            "Decision Submitted"
+          ],
+          "expectedStateChange": "Evidence record is reachable from submitted decision.",
+          "blockedActions": [
+            "Download hidden evidence"
+          ],
+          "clientVisibility": "Submitted decision visible",
+          "evidence": "decision evidence linked",
+          "audit": "evidence.view expected",
+          "qaAssertion": "Evidence link is explicit.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-06-23-principal-view-evidence",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/decisions-governance-screen.tsx"
+          ],
+          "id": "P2-06-S23",
+          "title": "Principal: Open submitted decision evidence",
+          "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
+          "navigation": "goto",
+          "dataRefs": [
+            "j03-view-evidence-record"
+          ],
+          "interaction": {
+            "type": "click",
+            "required": true
+          }
+        },
+        {
+          "step": 24,
+          "role": "Principal",
+          "roleKey": "principal",
+          "tenant": "Morgan Family Office",
+          "tenantSlug": "morgan",
+          "route": "/evidence/demo",
+          "screen": "Evidence Record",
+          "inputData": [],
+          "action": "Inspect evidence download control",
+          "target": null,
+          "expectedVisibleText": [
+            "Evidence"
+          ],
+          "expectedStateChange": "Evidence is visible only through controlled route.",
+          "blockedActions": [
+            "Hidden evidence export"
+          ],
+          "clientVisibility": "Controlled evidence view",
+          "evidence": "evidence.view expected",
+          "audit": "evidence.view expected",
+          "qaAssertion": "Evidence screen renders with controls.",
+          "pauseMs": 1600,
+          "screenshotName": "p2-06-24-principal-evidence",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/decisions-governance-screen.tsx"
+          ],
+          "id": "P2-06-S24",
+          "title": "Principal: Inspect evidence vault control",
+          "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
+          "navigation": "goto",
+          "dataRefs": [
+            "Evidence"
+          ],
+          "interaction": {
+            "type": "none"
+          }
         }
       ]
     },

@@ -1124,6 +1124,66 @@ async function seedStructureAndDocuments() {
         createdAt: seedDate,
         updatedAt: seedDate,
       },
+      {
+        id: documentId(tenant.slug, "p2-tax-residency-2026"),
+        clientTenantId: tenantId(tenant.slug),
+        engagementId: engagementId(tenant.slug),
+        uploadedByUserId: userId(`${tenant.slug}:cfo`),
+        documentType: "tax_residency_certificate",
+        title: `${tenant.displayName} 2026 Tax Residency Certificate`,
+        status: DocumentStatus.ANALYST_REVIEW_PENDING,
+        fileName: `${tenant.slug}-tax-residency-2026.pdf`,
+        mimeType: "application/pdf",
+        fileSizeBytes: 384000 + index,
+        storageKey: `demo/${tenant.slug}/tax-residency-2026.pdf`,
+        checksum: createHash("sha256").update(`${tenant.slug}:p2-tax-residency-2026`).digest("hex"),
+        source: "client",
+        sensitivity: Sensitivity.CONFIDENTIAL,
+        clientVisible: false,
+        retentionPolicy: "tax_records_7y",
+        createdAt: date(-7),
+        updatedAt: date(-7),
+      },
+      {
+        id: documentId(tenant.slug, "p2-source-of-funds"),
+        clientTenantId: tenantId(tenant.slug),
+        engagementId: engagementId(tenant.slug),
+        uploadedByUserId: userId(`${tenant.slug}:external`),
+        documentType: "source_of_funds",
+        title: `${tenant.displayName} Source of Funds Review`,
+        status: tenant.slug === "northbridge" ? DocumentStatus.NEEDS_CLARIFICATION : DocumentStatus.AI_EXTRACTED,
+        fileName: `${tenant.slug}-source-of-funds-review.pdf`,
+        mimeType: "application/pdf",
+        fileSizeBytes: 618000 + index,
+        storageKey: `demo/${tenant.slug}/source-of-funds-review.pdf`,
+        checksum: createHash("sha256").update(`${tenant.slug}:p2-source-of-funds`).digest("hex"),
+        source: "external_advisor",
+        sensitivity: Sensitivity.RESTRICTED,
+        clientVisible: false,
+        retentionPolicy: "source_of_funds_7y",
+        createdAt: date(-6),
+        updatedAt: date(-6),
+      },
+      {
+        id: documentId(tenant.slug, "p2-ips-risk-addendum"),
+        clientTenantId: tenantId(tenant.slug),
+        engagementId: engagementId(tenant.slug),
+        uploadedByUserId: userId("analyst"),
+        documentType: "ips_risk_addendum",
+        title: `${tenant.displayName} IPS Risk Addendum`,
+        status: tenant.slug === "bennett" ? DocumentStatus.NEEDS_CLARIFICATION : DocumentStatus.VERIFIED,
+        fileName: `${tenant.slug}-ips-risk-addendum.pdf`,
+        mimeType: "application/pdf",
+        fileSizeBytes: 472000 + index,
+        storageKey: `demo/${tenant.slug}/ips-risk-addendum.pdf`,
+        checksum: createHash("sha256").update(`${tenant.slug}:p2-ips-risk-addendum`).digest("hex"),
+        source: "analyst_review",
+        sensitivity: Sensitivity.HIGHLY_RESTRICTED,
+        clientVisible: false,
+        retentionPolicy: "advice_evidence_7y",
+        createdAt: date(-5),
+        updatedAt: date(-5),
+      },
     ]),
   });
 
@@ -1149,31 +1209,105 @@ async function seedStructureAndDocuments() {
         changeReason: "External advisor upload",
         createdAt: seedDate,
       },
+      {
+        id: stableId(`document-version:${tenant.slug}:p2-tax-residency-2026:1`),
+        documentId: documentId(tenant.slug, "p2-tax-residency-2026"),
+        versionNumber: 1,
+        storageKey: `demo/${tenant.slug}/tax-residency-2026.pdf`,
+        checksum: createHash("sha256").update(`${tenant.slug}:p2-tax-residency-2026:v1`).digest("hex"),
+        createdByUserId: userId(`${tenant.slug}:cfo`),
+        changeReason: "Complex journey tax residency proof",
+        createdAt: date(-7),
+      },
+      {
+        id: stableId(`document-version:${tenant.slug}:p2-source-of-funds:1`),
+        documentId: documentId(tenant.slug, "p2-source-of-funds"),
+        versionNumber: 1,
+        storageKey: `demo/${tenant.slug}/source-of-funds-review.pdf`,
+        checksum: createHash("sha256").update(`${tenant.slug}:p2-source-of-funds:v1`).digest("hex"),
+        createdByUserId: userId(`${tenant.slug}:external`),
+        changeReason: "Complex journey source-of-funds review",
+        createdAt: date(-6),
+      },
+      {
+        id: stableId(`document-version:${tenant.slug}:p2-ips-risk-addendum:1`),
+        documentId: documentId(tenant.slug, "p2-ips-risk-addendum"),
+        versionNumber: 1,
+        storageKey: `demo/${tenant.slug}/ips-risk-addendum.pdf`,
+        checksum: createHash("sha256").update(`${tenant.slug}:p2-ips-risk-addendum:v1`).digest("hex"),
+        createdByUserId: userId("analyst"),
+        changeReason: "Complex journey IPS risk addendum",
+        createdAt: date(-5),
+      },
     ]),
   });
 
   await prisma.documentExtraction.createMany({
-    data: demoTenants.map((tenant) => ({
-      id: stableId(`document-extraction:${tenant.slug}:statement`),
-      documentId: documentId(tenant.slug, "statement"),
-      extractionStatus: tenant.slug === "northbridge" ? "low_confidence" : "completed",
-      confidenceScore: new Prisma.Decimal(tenant.slug === "northbridge" ? "61.20" : "91.30"),
-      extractedFieldsJson: {
-        portfolioValueBand: "50m-100m",
-        statementDate: "2026-06-01",
-        currency: tenant.slug === "summit" ? "USD" : "ZAR",
+    data: demoTenants.flatMap((tenant) => [
+      {
+        id: stableId(`document-extraction:${tenant.slug}:statement`),
+        documentId: documentId(tenant.slug, "statement"),
+        extractionStatus: tenant.slug === "northbridge" ? "low_confidence" : "completed",
+        confidenceScore: new Prisma.Decimal(tenant.slug === "northbridge" ? "61.20" : "91.30"),
+        extractedFieldsJson: {
+          portfolioValueBand: "50m-100m",
+          statementDate: "2026-06-01",
+          currency: tenant.slug === "summit" ? "USD" : "ZAR",
+        },
+        lowConfidenceFieldsJson:
+          tenant.slug === "northbridge"
+            ? {
+                ownershipSource: "requires analyst confirmation",
+              }
+            : {},
+        modelVersion: "rules-demo-2026.06",
+        isClientVisible: false,
+        createdAt: seedDate,
+        updatedAt: seedDate,
       },
-      lowConfidenceFieldsJson:
-        tenant.slug === "northbridge"
-          ? {
-              ownershipSource: "requires analyst confirmation",
-            }
-          : {},
-      modelVersion: "rules-demo-2026.06",
-      isClientVisible: false,
-      createdAt: seedDate,
-      updatedAt: seedDate,
-    })),
+      {
+        id: stableId(`document-extraction:${tenant.slug}:p2-source-of-funds`),
+        documentId: documentId(tenant.slug, "p2-source-of-funds"),
+        extractionStatus: tenant.slug === "northbridge" ? "low_confidence" : "completed",
+        confidenceScore: new Prisma.Decimal(tenant.slug === "northbridge" ? "58.40" : "88.60"),
+        extractedFieldsJson: {
+          fundingSource: "external advisor review",
+          reviewPeriod: "2026-Q2",
+          riskSignal: tenant.slug === "northbridge" ? "requires specialist check" : "standard review",
+        },
+        lowConfidenceFieldsJson:
+          tenant.slug === "northbridge"
+            ? {
+                fundingSource: "source chain incomplete",
+              }
+            : {},
+        modelVersion: "rules-demo-2026.06",
+        isClientVisible: false,
+        createdAt: date(-6),
+        updatedAt: date(-6),
+      },
+      {
+        id: stableId(`document-extraction:${tenant.slug}:p2-ips-risk-addendum`),
+        documentId: documentId(tenant.slug, "p2-ips-risk-addendum"),
+        extractionStatus: tenant.slug === "bennett" ? "low_confidence" : "completed",
+        confidenceScore: new Prisma.Decimal(tenant.slug === "bennett" ? "63.10" : "90.20"),
+        extractedFieldsJson: {
+          policyArea: "IPS risk controls",
+          reviewPeriod: "2026-Q2",
+          requiresComplianceRelease: true,
+        },
+        lowConfidenceFieldsJson:
+          tenant.slug === "bennett"
+            ? {
+                riskTolerance: "pending compliance clarification",
+              }
+            : {},
+        modelVersion: "rules-demo-2026.06",
+        isClientVisible: false,
+        createdAt: date(-5),
+        updatedAt: date(-5),
+      },
+    ]),
   });
 
   await prisma.documentReview.createMany({
@@ -1197,6 +1331,33 @@ async function seedStructureAndDocuments() {
         status: tenant.slug === "morgan" ? ReviewStatus.REQUEST_MORE_DATA : ReviewStatus.IN_REVIEW,
         notes: tenant.slug === "morgan" ? "Statement lacks account ownership confirmation." : "Extraction in progress.",
         createdAt: seedDate,
+      },
+      {
+        id: stableId(`document-review:${tenant.slug}:p2-tax-residency-2026`),
+        documentId: documentId(tenant.slug, "p2-tax-residency-2026"),
+        reviewerUserId: userId("analyst"),
+        reviewType: "Tax residency validation",
+        status: ReviewStatus.IN_REVIEW,
+        notes: "Complex journey seeded row for document search, filter and review.",
+        createdAt: date(-7),
+      },
+      {
+        id: stableId(`document-review:${tenant.slug}:p2-source-of-funds`),
+        documentId: documentId(tenant.slug, "p2-source-of-funds"),
+        reviewerUserId: userId("analyst"),
+        reviewType: "Source-of-funds review",
+        status: tenant.slug === "northbridge" ? ReviewStatus.REQUEST_MORE_DATA : ReviewStatus.IN_REVIEW,
+        notes: tenant.slug === "northbridge" ? "Source chain requires external specialist confirmation." : "Source review available for advisor handoff.",
+        createdAt: date(-6),
+      },
+      {
+        id: stableId(`document-review:${tenant.slug}:p2-ips-risk-addendum`),
+        documentId: documentId(tenant.slug, "p2-ips-risk-addendum"),
+        reviewerUserId: userId("compliance"),
+        reviewType: "IPS compliance review",
+        status: tenant.slug === "bennett" ? ReviewStatus.REQUEST_MORE_DATA : ReviewStatus.IN_REVIEW,
+        notes: tenant.slug === "bennett" ? "Risk addendum requires compliance clarification before release." : "Risk addendum ready for compliance review.",
+        createdAt: date(-5),
       },
     ]),
   });

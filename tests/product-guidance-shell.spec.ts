@@ -13,6 +13,27 @@ test.describe("AlphaVest product guidance shell", () => {
     await expect(topbar.getByText(/clickdummy|prototype|screen catalogue/i)).toHaveCount(0);
   });
 
+  test("demo actor handoff makes role changes visible in the app chrome", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.removeItem("alphavest.demoSession.v1");
+    });
+    await page.goto("/documents");
+
+    const handoff = page.getByTestId("demo-actor-handoff");
+    await expect(handoff).toContainText("Active actor");
+    await expect(page.getByTestId("demo-actor-handoff-current")).toContainText("Compliance Officer");
+
+    await page.getByLabel("Role context").last().selectOption("analyst");
+    await expect(handoff).toContainText("Role handoff");
+    await expect(handoff).toContainText("Analyst");
+    await expect(page.getByTestId("demo-actor-handoff-current")).toContainText("Analyst");
+
+    await page.getByLabel("Role context").last().selectOption("principal");
+    await expect(handoff).toContainText("Role handoff");
+    await expect(handoff).toContainText("Principal");
+    await expect(page.getByTestId("demo-actor-handoff-current")).toContainText("Principal");
+  });
+
   test("workbench guidance explains purpose and next controlled step", async ({ page }) => {
     await page.goto("/workbench");
 
