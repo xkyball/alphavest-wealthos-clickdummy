@@ -4,6 +4,12 @@ import { createDemoSession } from "../lib/demo-session";
 import { dummyAuthSessionCookieName } from "../lib/dummy-auth-session";
 import { navigationGroupsForRole, productiveNavigationPageIds, uxNavigationPolicyForPageId } from "../lib/navigation";
 import {
+  eligibleUxPageContracts,
+  protectedUxPageContracts,
+  uxPageContractIntegrity,
+  uxPageContracts,
+} from "../lib/ux-page-contract";
+import {
   groupedImplementationScreenRoutes,
   routeImplementationAccessDecision,
   routeScopeForPageId,
@@ -157,6 +163,48 @@ test.describe("UX-NAV route policy navigation", () => {
     await expect(guidance.getByTestId("ux-nav-flow-rail")).toBeVisible();
     await expect(guidance.getByTestId("ux-nav-primary-next-step")).toHaveCount(1);
     await expect(page.getByText("034 · Workbench").first()).toBeVisible();
+  });
+});
+
+test.describe("UX-PAGE page type contract", () => {
+  test("materializes page type and page job for every registered route", () => {
+    expect(uxPageContractIntegrity.totalCount).toBe(71);
+    expect(uxPageContractIntegrity.missingPageIds).toEqual([]);
+    expect(uxPageContractIntegrity.duplicatePageIds).toEqual([]);
+
+    for (const contract of uxPageContracts) {
+      expect(contract.pageType, `${contract.pageId} page type`).toBeTruthy();
+      expect(contract.pageJob, `${contract.pageId} page job`).toContain(" ");
+      expect(contract.allowedTreatment, `${contract.pageId} allowed treatment`).toContain(" ");
+      expect(contract.forbiddenTreatment, `${contract.pageId} forbidden treatment`).toContain("No");
+      expect(contract.routePolicyLabels, `${contract.pageId} policy labels`).toEqual(
+        expect.arrayContaining(["NO_ROUTE_RECLASSIFICATION", "NO_SCREEN_GENERATION"]),
+      );
+    }
+  });
+
+  test("applies productive contracts only to MVP and MVP support routes", () => {
+    expect(uxPageContractIntegrity.eligibleCount).toBe(56);
+
+    for (const contract of eligibleUxPageContracts) {
+      expect(["MVP", "MVP_SUPPORT"], `${contract.pageId} scope`).toContain(contract.routeScope);
+      expect(["P1", "Reference", "Hold"], `${contract.pageId} page type`).not.toContain(contract.pageType);
+      expect(contract.productiveUxEligible, `${contract.pageId} productive eligibility`).toBe(true);
+      expect(contract.primaryCtaRule, `${contract.pageId} CTA rule`).not.toContain("No productive MVP CTA");
+    }
+  });
+
+  test("keeps P1, reference and hold routes out of productive page type work", () => {
+    expect(uxPageContractIntegrity.protectedCount).toBe(15);
+
+    for (const contract of protectedUxPageContracts) {
+      expect(["P1_AFTER_MVP", "REFERENCE_ONLY", "HOLD_PENDING_DECISION"], `${contract.pageId} protected scope`).toContain(
+        contract.routeScope,
+      );
+      expect(contract.productiveUxEligible, `${contract.pageId} productive eligibility`).toBe(false);
+      expect(contract.allowedTreatment, `${contract.pageId} allowed treatment`).toMatch(/Deferred|Reference|Hold/);
+      expect(contract.forbiddenTreatment, `${contract.pageId} forbidden treatment`).toMatch(/No MVP|No productive/);
+    }
   });
 });
 

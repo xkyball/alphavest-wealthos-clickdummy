@@ -6039,3 +6039,38 @@ Source of truth:
 
 - UX-NAV completion intentionally does not implement UX-HUB, UX-PAGE, UX-COMPLEXITY, UX-DENSITY, UX-CTA, UX-INTERACTION, UX-SAFETY or UX-POLICY.
 - The unrelated local change in `docs/v3/journeys.screencast.p2.v3.json` remains outside this workstream and was not staged.
+
+## UX-PAGE-001 QA Addendum
+
+Date: 2026-06-21
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+
+| Area | QA result | Evidence |
+| --- | --- | --- |
+| Page-type contract coverage | Passed | `uxPageContractIntegrity.totalCount` is asserted as 71 in `tests/route-smoke.spec.ts`. |
+| MVP/MVP_SUPPORT eligibility | Passed | Route-smoke asserts 56 productive-eligible contracts and restricts them to `MVP` / `MVP_SUPPORT`. |
+| P1/Reference/Hold protection | Passed | Route-smoke asserts 15 protected contracts remain non-productive with deferred/reference/hold allowed treatment. |
+| No route reclassification | Passed | Contract is derived from existing route registry and route policy; no route IDs, paths or scopes changed. |
+| No new scope engine | Passed | `lib/ux-page-contract.ts` reads `uxRoutePolicyForRoute` and `routeScopeForPageId`; it does not replace permission, visibility or workflow engines. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | `tsc --noEmit` completed successfully. |
+| `pnpm lint` | Passed | ESLint completed with existing warnings from prior UX-HUB extraction. |
+| `PLAYWRIGHT_PORT=3345 pnpm test:route-smoke` | Passed | 96 tests, including new UX-PAGE contract assertions. |
+
+### Safety Proof
+
+- Route presence, page type, page job, density and CTA rules remain UX metadata only.
+- P1, Reference and Hold routes are still non-productive.
+- Client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing control layers.
+
+### QA Limits
+
+- `UX-PAGE-001` did not refactor rendered page layouts; later `UX-PAGE-002` and onward own workbench/detail layout changes.
+- No screenshot was captured because this slice changed metadata/tests/reports only.

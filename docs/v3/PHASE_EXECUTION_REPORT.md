@@ -7921,3 +7921,49 @@ Completed the remaining UX-NAV tasks after the initial navigation pass. This add
 ### Exit Gate Decision
 
 `UX_NAV_ALL_TASKS_COMPLETED_WITH_ROUTE_POLICY_AND_SCREENSHOT_PROOF`
+
+## UX-PAGE-001 Addendum - Page Type Contract Materialized
+
+Date: 2026-06-21
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+
+### Scope
+
+Completed `UX-PAGE-001` by adding a derived page-type contract layer for all registered routes. This is a metadata and proof slice only; it does not create routes, reclassify routes, generate screens/images, elevate P1/Hold/Reference routes or replace permission, visibility, workflow, evidence, audit or export engines.
+
+### Changed Files
+
+- `lib/ux-page-contract.ts`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Implementation Notes
+
+- Added a materialized contract for page type, density tier, page job, allowed treatment, forbidden treatment, CTA rule, P0 obligation and productive eligibility.
+- Derived the contract from `screenRoutes`, `routeScopeForPageId` and `uxRoutePolicyForRoute` so route policy remains the source and no product scope engine is introduced.
+- Added route-smoke proof that all 71 routes have contracts, 56 MVP/MVP_SUPPORT contracts are productive-eligible and 15 protected P1/Reference/Hold contracts remain non-productive.
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with existing warnings from prior UX-HUB extraction.
+- `PLAYWRIGHT_PORT=3345 pnpm test:route-smoke` - passed, 96 tests.
+
+### Positive Acceptance
+
+- Every eligible MVP and MVP_SUPPORT route now has a clear page type and page job contract.
+- Later UX-PAGE through UX-POLICY tasks can cite one contract artifact without changing route scope.
+
+### Negative Acceptance
+
+- P1, Reference and Hold routes remain out of productive MVP page-type work.
+- No route label, page job, density tier, CTA rule or status text is treated as behavior proof.
+
+### Exit Gate Decision
+
+`UX_PAGE_001_COMPLETED_WITH_ROUTE_POLICY_CONTRACT_PROOF`
