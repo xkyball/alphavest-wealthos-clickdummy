@@ -52,6 +52,7 @@ import { ProductGuidanceContent } from "@/components/product-guidance-panel";
 import { RouteContextChip } from "@/components/route-context-chip";
 import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
+import { UxHubPage } from "@/components/ux-hub-page";
 import { cn } from "@/lib/cn";
 import {
   blueprintRows,
@@ -836,81 +837,10 @@ function CallTriggerMatrixPage({ title }: { title: string }) {
 }
 
 function ExportNewPage({ title }: { title: string }) {
-  const { snapshot } = useExportWorkflowSnapshot();
-  const currentExport = snapshot?.current;
-
   return (
     <div>
-      <PageLead badge="Draft" description="Start a permission-scoped export with type, tenant and scope controls." icon={Download} title={title} />
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_20rem]">
-        <div className="space-y-5">
-          <Card>
-            <WizardStepper steps={exportWizardSteps} />
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Select Export Type</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                {exportTypes.map((item) => (
-                  <button
-                    className={cn("rounded-md border p-5 text-left", item.selected ? "border-alphavest-gold bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-charcoal/45")}
-                    data-testid={item.title === "Data Extract" ? "j08-select-data-extract" : undefined}
-                    key={item.id}
-                    onClick={() => {
-                      if (item.title === "Data Extract") {
-                        void runScreencastDemoAction("j08.selectDataExtract", "/export/demo/scope");
-                      }
-                    }}
-                    type="button"
-                  >
-                    <FileText aria-hidden="true" className="size-7 text-alphavest-gold" />
-                    <h3 className="mt-5 font-semibold text-alphavest-ivory">{item.title}</h3>
-                    <p className="mt-2 text-sm leading-6 text-alphavest-muted">{item.detail}</p>
-                    <span className={cn("mt-5 grid size-5 place-items-center rounded-full border", item.selected ? "border-alphavest-gold bg-alphavest-gold text-alphavest-navy" : "border-alphavest-border")}>{item.selected ? <Check aria-hidden="true" className="size-3" /> : null}</span>
-                  </button>
-                ))}
-              </div>
-              <StatePanel className="mt-4" detail="Export permission is required to configure and run exports. This demo state keeps the permission block visible." state="blocked" title="Export permission required" />
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Define Scope</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-2">
-                <FieldPill label="Tenant" value="Select tenant" />
-                <FieldPill label="Scope" value="Select scope" />
-              </div>
-              <p className="mt-4 rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-4 text-sm leading-6 text-alphavest-muted">Exports are restricted to the active tenant. Cross-tenant exports are not permitted.</p>
-            </CardContent>
-          </Card>
-        </div>
-        <Card>
-          <CardHeader>
-            <CardTitle>Export Summary</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <KeyValueList
-              items={[
-                { label: "Status", value: <Badge tone="gold">{currentExport?.status ?? "Draft"}</Badge> },
-                { label: "Export type", value: currentExport?.exportType ?? "Data Extract" },
-                { label: "Tenant", value: currentExport?.tenant ?? "Select tenant" },
-                { label: "Scope", value: `${snapshot?.summary.included ?? 0} selected / ${snapshot?.summary.blocked ?? 0} blocked` },
-                { label: "Schedule", value: "Run now" }
-              ]}
-            />
-            <StatePanel
-              className="mt-5"
-              detail={currentExport ? "Latest export request is loaded from the tenant-scoped ExportRequest table." : "No export request is active for this tenant yet."}
-              state={currentExport ? "loading" : "restricted"}
-              title={currentExport ? "DB-backed export draft" : "Permission required"}
-            />
-          </CardContent>
-        </Card>
-      </div>
+      <PageLead badge="Hub" description="Orient export lifecycle work before scope, redaction, preview and delivery controls." icon={Download} title={title} />
+      <UxHubPage pageId="054" />
     </div>
   );
 }

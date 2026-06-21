@@ -44,6 +44,7 @@ import { RouteContextChip } from "@/components/route-context-chip";
 import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
 import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
+import { UxHubPage } from "@/components/ux-hub-page";
 import {
   Badge,
   Card,
@@ -733,7 +734,8 @@ function SafeClientBanner({ children = "No unapproved advice reaches the client.
 function PortalPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="019">
-      <PortalPageContent title={title} />
+      <ScreenTitle>{title}</ScreenTitle>
+      <UxHubPage pageId="019" />
     </ClientShell>
   );
 }
@@ -921,77 +923,7 @@ function MobileHomePage({ title }: { title: string }) {
       <main className="av-surface av-surface-mobile px-4 py-5">
         <ScreenTitle>{title}</ScreenTitle>
         <div className="mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-[41rem] flex-col border-x border-alphavest-border/60 bg-alphavest-midnight/84 px-5 py-6 shadow-2xl sm:px-6 sm:py-7">
-          <div className="flex items-center justify-between">
-            <AlphaVestLogo compact />
-            <div className="flex items-center gap-3">
-              <button className="relative text-alphavest-muted" type="button">
-                <Bell aria-hidden="true" className="size-5" />
-                <span className="absolute -right-2 -top-2 rounded-full bg-alphavest-gold px-1.5 text-[0.65rem] font-bold text-alphavest-navy">2</span>
-              </button>
-              <span className="grid size-10 place-items-center rounded-full border border-alphavest-border text-sm font-semibold">CO</span>
-            </div>
-          </div>
-          <section className="mt-6">
-            <p className="font-display text-2xl text-alphavest-ivory">Good morning, Christopher</p>
-            <p className="text-sm text-alphavest-muted">Principal · Main Household</p>
-          </section>
-          <Card className="mt-4">
-            <CardContent className="p-4">
-              <div className="flex gap-4">
-                <IconTile><Shield aria-hidden="true" className="size-5" /></IconTile>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-gold">Next Step Today</p>
-                  <p className="mt-2 text-base font-semibold text-alphavest-ivory">Complete compliance to unlock recommendations</p>
-                  <p className="mt-1 text-sm text-alphavest-muted">Recommendations are blocked while compliance items are pending.</p>
-                </div>
-              </div>
-              <button className={primaryButtonClass + " mt-4 w-full"} type="button">Continue compliance <ChevronRight aria-hidden="true" className="size-4" /></button>
-            </CardContent>
-          </Card>
-          <section className="mt-5">
-            <div className="mb-2 flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-muted">Priority Actions</p>
-              <button className="text-sm text-alphavest-gold" type="button">View all</button>
-            </div>
-            <div className="overflow-hidden rounded-md border border-alphavest-border">
-              {mobilePriorityActions.map((action) => (
-                <div className="flex items-center gap-3 border-b border-alphavest-border bg-alphavest-panel/40 p-3 last:border-0" key={action.label}>
-                  <IconTile><FileText aria-hidden="true" className="size-5" /></IconTile>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-alphavest-ivory">{action.label}</p>
-                    <p className="text-sm text-alphavest-muted">{action.detail}</p>
-                  </div>
-                  <Badge tone={toneFor(action.badge)}>{action.badge}</Badge>
-                  <ChevronRight aria-hidden="true" className="size-4 text-alphavest-muted" />
-                </div>
-              ))}
-            </div>
-          </section>
-          <Card className="mt-5">
-            <CardContent className="flex items-center gap-4 p-4">
-              <ProgressRing label="" size="small" value={0} />
-              <div className="flex-1">
-                <p className="font-semibold text-alphavest-ivory">Recommendations blocked</p>
-                <p className="text-sm text-alphavest-muted">Complete compliance to enable personalized recommendations for your household.</p>
-              </div>
-              <ChevronRight aria-hidden="true" className="size-4 text-alphavest-muted" />
-            </CardContent>
-          </Card>
-          <section className="mt-5 grid grid-cols-4 gap-2">
-            {mobileQuickActions.map(({ icon: TileIcon, label }) => {
-              return (
-                <button className="rounded-md border border-alphavest-border bg-alphavest-panel/40 p-3 text-xs text-alphavest-ivory" key={label} type="button">
-                  <TileIcon aria-hidden="true" className="mx-auto mb-2 size-5 text-alphavest-gold" />
-                  {label}
-                </button>
-              );
-            })}
-          </section>
-          <nav className="mt-auto grid grid-cols-5 border-t border-alphavest-border pt-3 text-center text-xs text-alphavest-muted">
-            {["Home", "Portfolio", "Tasks", "Documents", "More"].map((item, index) => (
-              <span className={index === 0 ? "text-alphavest-gold" : ""} key={item}>{item}</span>
-            ))}
-          </nav>
+          <UxHubPage pageId="020" />
         </div>
       </main>
     </DemoSessionProvider>
@@ -1448,7 +1380,8 @@ const relationshipColumns: Array<DataTableColumn<(typeof relationshipRows)[numbe
 function EntitiesPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="024">
-      <EntitiesPageContent title={title} />
+      <ScreenTitle>{title}</ScreenTitle>
+      <UxHubPage pageId="024" />
     </ClientShell>
   );
 }

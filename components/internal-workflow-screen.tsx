@@ -50,6 +50,7 @@ import { DemoActorHandoffBar } from "@/components/demo-actor-handoff-bar";
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
 import { RouteContextChip } from "@/components/route-context-chip";
 import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
+import { UxHubPage } from "@/components/ux-hub-page";
 import { cn } from "@/lib/cn";
 import {
   recommendationReviewDemoTargets,
@@ -717,34 +718,7 @@ function WorkbenchPage({ title }: { title: string }) {
   return (
     <InternalShell activePageId="034">
       <ScreenTitle>{title}</ScreenTitle>
-      <div className="mx-auto grid max-w-[112rem] gap-5 2xl:grid-cols-[1fr_22rem]">
-        <section className="min-w-0 space-y-5">
-          <PageHeading subtitle="Internal only. Not client-released." title={title} />
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-            {workbenchMetrics.map((metric) => (
-              <Card key={metric.label}>
-                <p className="text-sm font-semibold text-alphavest-ivory">{metric.label}</p>
-                <div className="mt-3 flex items-center gap-4">
-                  {metric.value.endsWith("%") ? <ProgressRing label={metric.status} value={Number(metric.value.replace("%", ""))} /> : <p className="text-3xl font-semibold text-alphavest-ivory">{metric.value}</p>}
-                  <p className="text-sm leading-6 text-alphavest-muted">{metric.detail}</p>
-                </div>
-              </Card>
-            ))}
-          </div>
-          <div className="grid gap-5 xl:grid-cols-3">
-            <QueueCard rows={clientQueue} title="Client Queue" />
-            <TriggerQueueCard />
-            <DraftsCard />
-          </div>
-          <div className="grid gap-5 xl:grid-cols-3">
-            <SimpleListCard rows={missingInfoTasks.map((row) => [row.client, row.item, row.due])} title="Missing Information Tasks" />
-            <DataQualityCard />
-            <ReadinessCard />
-          </div>
-          <InternalGuard />
-        </section>
-        <WorkbenchDrawer />
-      </div>
+      <UxHubPage pageId="034" />
     </InternalShell>
   );
 }

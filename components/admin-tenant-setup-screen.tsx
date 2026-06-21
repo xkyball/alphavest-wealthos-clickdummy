@@ -25,6 +25,7 @@ import { useDemoSession } from "@/components/demo-session-provider";
 import { PageHeader } from "@/components/page-header";
 import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
+import { UxHubPage } from "@/components/ux-hub-page";
 import {
   Badge,
   Card,
@@ -1363,13 +1364,13 @@ export function AdminTenantSetupScreen({ route, visualState }: AdminTenantSetupS
       return <ExportTemplatesPage />;
     }
     if (route.pageId === "013") {
-      return <TenantsPage />;
+      return <UxHubPage pageId="013" />;
     }
     if (route.pageId === "014") {
       return <CreateTenantPage />;
     }
     if (route.pageId === "015") {
-      return <TenantSetupPage />;
+      return <UxHubPage pageId="015" />;
     }
     if (route.pageId === "016") {
       return <TenantTeamPage />;

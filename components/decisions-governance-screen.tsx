@@ -47,6 +47,7 @@ import { ProductGuidanceContent } from "@/components/product-guidance-panel";
 import { RouteContextChip } from "@/components/route-context-chip";
 import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
 import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
+import { UxHubPage } from "@/components/ux-hub-page";
 import { cn } from "@/lib/cn";
 import {
   recommendationReviewDemoTargets,
@@ -672,43 +673,7 @@ function DecisionsListPage({ title }: { title: string }) {
   return (
     <Phase12Shell activePageId="043">
       <ScreenTitle>{title}</ScreenTitle>
-      <div className="mx-auto max-w-[104rem] space-y-5">
-        <PageHeading
-          action={<button className={secondaryButtonClass} type="button"><ShieldCheck aria-hidden="true" className="size-4" />Learn about Decisions</button>}
-          subtitle="Review and act on decisions that require your attention."
-          title={title}
-        />
-        <ScfP07P09TrustPanel mode="decision" />
-        <div className="grid gap-3 lg:grid-cols-[1fr_repeat(4,10rem)_auto]">
-          <label className="relative min-w-0">
-            <Search aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-            <input className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm outline-none focus:border-alphavest-gold" placeholder="Search decisions..." />
-          </label>
-          {["Status", "Approval Stage", "Category", "Needs Action"].map((filter) => (
-            <button className="flex h-11 items-center justify-between rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted" key={filter} type="button">{filter}<ChevronDown aria-hidden="true" className="size-4" /></button>
-          ))}
-          <button className={secondaryButtonClass} type="button"><Filter aria-hidden="true" className="size-4" />Filters</button>
-        </div>
-        <div className="grid gap-3 md:grid-cols-4">
-          {decisionsMetrics.map((metric) => (
-            <Card key={metric.label}>
-              <div className="flex items-center gap-4">
-                <IconTile tone={toneFor(metric.label)}><FileCheck2 aria-hidden="true" className="size-5" /></IconTile>
-                <div>
-                  <p className="text-3xl font-semibold text-alphavest-ivory">{metric.value}</p>
-                  <p className="text-sm text-alphavest-muted">{metric.label}</p>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-        <DataTable columns={decisionColumns} getRowId={(row) => row.title} rows={decisionRows} />
-        <div className="grid gap-5 lg:grid-cols-3">
-          <StatePanel detail="There are no decisions that match the current filters." state="empty" title="No decisions found" />
-          <StatePanel detail="Rows are being prepared for this workspace." state="loading" title="Loading decisions" />
-          <StatePanel detail="You do not have permission to view restricted decisions." state="restricted" title="Restricted" />
-        </div>
-      </div>
+      <UxHubPage pageId="043" />
     </Phase12Shell>
   );
 }

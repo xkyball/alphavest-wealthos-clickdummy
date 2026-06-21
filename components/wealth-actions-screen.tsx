@@ -34,6 +34,7 @@ import { AuditTimeline, Badge, Card, CardContent, CardHeader, CardTitle, StatePa
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
 import { RouteContextChip } from "@/components/route-context-chip";
+import { UxHubPage } from "@/components/ux-hub-page";
 import { cn } from "@/lib/cn";
 import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import type { ScreenRoute } from "@/lib/route-registry";
@@ -274,76 +275,11 @@ function SafeGateBanner() {
   );
 }
 
-function WealthMapPage({ title, visualState }: { title: string; visualState?: VisualState }) {
-  const [drawerOpen, setDrawerOpen] = useState(visualState === "drawer");
-
+function WealthMapPage({ title }: { title: string; visualState?: VisualState }) {
   return (
     <WealthShell activePageId="031">
       <ScreenTitle>{title}</ScreenTitle>
-      <div className={cn("av-page-wide grid gap-5", drawerOpen ? "xl:grid-cols-[minmax(0,1fr)_25rem]" : "")}>
-        <section className="min-w-0 space-y-5">
-          <PageHeading
-            action={<div className="flex flex-wrap gap-3"><button className={secondaryButtonClass} type="button">Reset view</button><button className={secondaryButtonClass} onClick={() => setDrawerOpen(true)} type="button">Open selected node</button><button className={primaryButtonClass} type="button"><Plus aria-hidden="true" className="size-4" />Add node</button></div>}
-            subtitle="Real-time view of connected wealth, entities, assets and relationship gaps."
-            title={title}
-          />
-          <div className="grid gap-3 xl:grid-cols-[repeat(5,minmax(0,1fr))_minmax(12rem,1.2fr)]">
-            {wealthMapFilters.map((filter) => (
-              <button className="flex h-14 items-center justify-between rounded-md border border-alphavest-border bg-alphavest-panel/70 px-3 text-left" key={filter.label} type="button">
-                <span>
-                  <span className="block text-xs text-alphavest-muted">{filter.label}</span>
-                  <span className="mt-1 block text-sm font-semibold text-alphavest-ivory">{filter.value}</span>
-                </span>
-                <ChevronDown aria-hidden="true" className="size-4 text-alphavest-subtle" />
-              </button>
-            ))}
-            <label className="relative min-w-0">
-              <span className="sr-only">Filter nodes</span>
-              <input className="h-14 w-full rounded-md border border-alphavest-border bg-alphavest-panel/70 pl-4 pr-11 text-sm outline-none focus:border-alphavest-gold" placeholder="Filter nodes..." />
-              <Filter aria-hidden="true" className="absolute right-4 top-1/2 size-4 -translate-y-1/2 text-alphavest-muted" />
-            </label>
-          </div>
-          <Card className="p-0">
-            <div className="flex flex-wrap gap-2 border-b border-alphavest-border/60 p-3">
-              {wealthMapLegend.map((item) => (
-                <span className="inline-flex items-center gap-2 rounded-full border border-alphavest-border/70 bg-alphavest-navy/35 px-3 py-1.5 text-xs text-alphavest-muted" key={item.label}>
-                  <span className={cn("size-2 rounded-full", dotClass(item.tone))} />
-                  {item.label}
-                </span>
-              ))}
-            </div>
-            <div className="av-graph-grid relative min-h-[32rem] overflow-hidden rounded-b-md pb-20 lg:min-h-[36rem]">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(90,167,216,0.08),transparent_34rem)]" />
-              <svg aria-hidden="true" className="absolute inset-0 z-0 size-full">
-                {wealthMapConnections.map((connection) => (
-                  <line
-                    key={`${connection.from.join("-")}-${connection.to.join("-")}`}
-                    stroke={connection.kind === "conflict" ? "#ef5b5b" : connection.kind === "restricted" ? "#a78bfa" : "#758396"}
-                    strokeDasharray={connection.kind === "normal" ? undefined : "6 6"}
-                    strokeOpacity={connection.kind === "normal" ? 0.55 : 0.85}
-                    strokeWidth={connection.kind === "normal" ? 1.2 : 1.6}
-                    x1={`${connection.from[0]}%`}
-                    x2={`${connection.to[0]}%`}
-                    y1={`${connection.from[1]}%`}
-                    y2={`${connection.to[1]}%`}
-                  />
-                ))}
-              </svg>
-              {wealthMapNodes.map((node) => (
-                <WealthNode key={node.id} node={node} />
-              ))}
-              <div className="absolute bottom-4 left-4 z-20 flex items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-panel/85 p-2">
-                <button className="grid size-9 place-items-center rounded border border-alphavest-border text-alphavest-gold" type="button"><Network aria-hidden="true" className="size-4" /></button>
-                <button className="grid size-9 place-items-center rounded border border-alphavest-border text-alphavest-muted" type="button">−</button>
-                <span className="px-4 text-sm font-semibold text-alphavest-ivory">100%</span>
-                <button className="grid size-9 place-items-center rounded border border-alphavest-border text-alphavest-muted" type="button">+</button>
-              </div>
-            </div>
-          </Card>
-          <SafeGateBanner />
-        </section>
-        {drawerOpen ? <WealthMapDrawer onClose={() => setDrawerOpen(false)} /> : null}
-      </div>
+      <UxHubPage pageId="031" />
     </WealthShell>
   );
 }
