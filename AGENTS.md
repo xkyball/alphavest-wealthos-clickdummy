@@ -23,6 +23,13 @@ Important: the images are not pixel-perfect contracts. They show design directio
 ## Clean UI rule
 Do not implement spec panels, route labels, filenames, annotation rails, dev notes, callout legends or explanatory documentation as app UI. Only implement actual application UI.
 
+## Navigation mapping rule
+For tasks, prompts or tests that still refer to the old left-navigation groups
+or route-catalogue menu, read `docs/v3/LEFT_NAV_OLD_TO_NEW_MAPPING.md` before
+editing navigation. The route registry remains authoritative for route IDs,
+paths and worksets; the mapping only translates older navigation language to
+the current task-oriented sidebar presentation.
+
 ## Product rules
 - Digital first.
 - Human reviewed.
