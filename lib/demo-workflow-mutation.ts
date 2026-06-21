@@ -441,6 +441,39 @@ function hasAcceptedEvidence(record: { status: EvidenceStatus }) {
   return record.status === EvidenceStatus.VALIDATED || record.status === EvidenceStatus.RELEASED;
 }
 
+function isEvidenceScopedToRecommendation(
+  record: {
+    items: Array<{
+      sourceObjectId: string;
+      sourceObjectType: ObjectType;
+    }>;
+    relatedObjectId: string;
+    relatedObjectType: ObjectType;
+  },
+  targetId: string,
+) {
+  const directlyScoped = record.relatedObjectType === ObjectType.RECOMMENDATION && record.relatedObjectId === targetId;
+  const itemScoped = record.items.some(
+    (item) => item.sourceObjectType === ObjectType.RECOMMENDATION && item.sourceObjectId === targetId,
+  );
+
+  return directlyScoped || itemScoped;
+}
+
+function acceptedScopedEvidenceRecords<
+  T extends {
+    items: Array<{
+      sourceObjectId: string;
+      sourceObjectType: ObjectType;
+    }>;
+    relatedObjectId: string;
+    relatedObjectType: ObjectType;
+    status: EvidenceStatus;
+  },
+>(records: T[], targetId: string) {
+  return records.filter((record) => hasAcceptedEvidence(record) && isEvidenceScopedToRecommendation(record, targetId));
+}
+
 function isRecord(value: Prisma.JsonValue | null | undefined): value is Prisma.JsonObject {
   return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }
@@ -476,16 +509,7 @@ function evaluateComplianceReleasePreconditions(input: {
   payloadReady: boolean;
   targetId: string;
 }) {
-  const selectedEvidence =
-    input.evidenceRecords.find((record) => {
-      const directlyScoped =
-        record.relatedObjectType === ObjectType.RECOMMENDATION && record.relatedObjectId === input.targetId;
-      const itemScoped = record.items.some(
-        (item) => item.sourceObjectType === ObjectType.RECOMMENDATION && item.sourceObjectId === input.targetId,
-      );
-
-      return hasAcceptedEvidence(record) && (directlyScoped || itemScoped);
-    }) ?? null;
+  const selectedEvidence = acceptedScopedEvidenceRecords(input.evidenceRecords, input.targetId)[0] ?? null;
 
   const preconditions: ComplianceReleasePreconditions = {
     advisorApproval: input.advisorApprovalStatus === ReviewStatus.APPROVED,
@@ -787,11 +811,11 @@ export async function runRecommendationReviewWorkflowMutation(
     }
 
     if (input.action === "rebuild_with_evidence") {
-      const acceptedEvidenceRecords = evidenceRecords.filter((record) => hasAcceptedEvidence(record));
+      const acceptedEvidenceRecords = acceptedScopedEvidenceRecords(evidenceRecords, input.targetId);
 
       if (!input.evidenceIds?.length || acceptedEvidenceRecords.length === 0) {
         throw new RecommendationReviewWorkflowError(
-          "Accepted scoped evidence is required before rebuilding an internal draft.",
+          "Accepted evidence scoped to this recommendation is required before rebuilding an internal draft.",
         );
       }
 

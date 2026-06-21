@@ -1,5 +1,56 @@
 # Implementation QA Report
 
+## MVP-FIRST-BUILD-PHASE-4 Implementation QA Addendum
+
+Date: 2026-06-21
+
+### Executive Decision
+
+`MVP_FIRST_BUILD_PHASE_4_QA_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Source of truth lock | Passed | Used `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md` Phase 4 / `BP-05` and `BP-06` as the operative source. |
+| Internal AI draft boundary | Passed | Internal draft state remains represented through recommendation status/payload markers without schema migration or client-visible AI content. |
+| Unsupported-claim rejection | Passed | Existing analyst rejection path remains persisted/audited and keeps recommendation, advisor and compliance states blocked for rebuild/review. |
+| Evidence-linked rebuild | Passed | Rebuild now requires accepted evidence scoped to the same recommendation, not merely any accepted evidence record passed by ID. |
+| AI draft leakage negative | Passed | Release preconditions reject active internal draft markers through `payload_ready`; client/export projection suites continue to exclude internal draft/rationale fields. |
+| Advisor approval separation | Passed | Advisor approval persists audit and review state while compliance remains pending, `releasedAt` remains null and `clientVisible` remains false. |
+| Audit expectation | Passed | Advisor approval, reject and rebuild API paths assert persisted audit events for the relevant action family. |
+| No forbidden scope | Passed | No Prisma schema/migration, new API route, production auth provider, generated screen image or visual asset generation was added. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Failed then passed | Initial new-test JSON null typing was corrected to `Prisma.JsonNull`; rerun passed. |
+| `PLAYWRIGHT_PORT=3110 pnpm test:workflow-api` | Failed then passed after fix | Initial wrong-scope fixture still had an evidence item linking it to the target recommendation; setup now removes that link before asserting denial. |
+| `PLAYWRIGHT_PORT=3111 pnpm test:workflow-api` | Passed | 13 API tests, including wrong-scope rebuild, internal draft release block and advisor-not-release audit proof. |
+| `PLAYWRIGHT_PORT=3112 pnpm test:workflow-gate` | Passed | 11 service-level gate tests. |
+| `PLAYWRIGHT_PORT=3113 pnpm test:file-export` | Passed | 12 export/redaction tests. |
+| `PLAYWRIGHT_PORT=3114 pnpm test:permissions` | Passed | 8 permission and deny-audit tests. |
+| `pnpm lint` | Failed then passed | Initial run failed on missing local `test-results`; recreated the expected artifact directory and reran successfully. |
+| `pnpm db:validate` | Passed | Prisma schema remained valid; no schema or migration was changed. |
+| `pnpm build` | Passed with warnings | Existing Turbopack tracing warnings remain in `lib/document-storage-adapter.ts`. |
+| Screenshot capture | Passed | Captured three viewport screenshots under `artifacts/phase4-ai-draft-advisor-gates/`. |
+
+### Screenshot Proof
+
+| Artifact | Status | Notes |
+| --- | --- | --- |
+| `artifacts/phase4-ai-draft-advisor-gates/signals-ai-draft-internal.png` | Captured | Internal AI Draft signal card and low-confidence warning. |
+| `artifacts/phase4-ai-draft-advisor-gates/advisor-approval-no-client-release.png` | Captured | Advisor Approval Detail keeps client visibility blocked before approval. |
+| `artifacts/phase4-ai-draft-advisor-gates/compliance-release-client-visibility-gate.png` | Captured | Compliance Release modal states that advisor approval alone is insufficient. |
+
+### Residual Risks
+
+- Phase 4 is still a demo-data/providerless recommendation-review implementation, not production AI generation, production authentication, final suitability, legal or tax advice.
+- The implementation uses existing schema fields and JSON markers; no new `AiDraft` model or migration was authorized or created.
+- Screenshot proof verifies visible state boundaries, not full visual acceptance across every viewport.
+- `pnpm build` still reports pre-existing broad filesystem tracing warnings in `lib/document-storage-adapter.ts`; this phase did not alter that file.
+
 ## GUIDED-PRODUCT-UX-REWORK QA Addendum
 
 Date: 2026-06-21

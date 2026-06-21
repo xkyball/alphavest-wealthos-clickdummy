@@ -1,5 +1,72 @@
 # Phase Execution Report
 
+## MVP-FIRST-BUILD-PHASE-4 - Internal AI Draft And Advisor Approval Gates
+
+Date: 2026-06-21
+
+### Phase Completion Report
+
+- Phase: 4
+- Packages executed: `BP-05`, `BP-06`
+- Task IDs completed: `AV-FB-P4-BP05-T001`, `AV-FB-P4-BP05-T002`, `AV-FB-P4-BP05-T003`, `AV-FB-P4-BP05-T004`, `AV-FB-P4-BP06-T001`, `AV-FB-P4-BP06-T002`, `AV-FB-P4-BP06-T003`
+- Source of truth: `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md`
+- Files changed:
+  - `lib/demo-workflow-mutation.ts`
+  - `tests/demo-workflow-api.spec.ts`
+  - `docs/v3/PHASE_EXECUTION_REPORT.md`
+  - `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- Screenshot artifacts:
+  - `artifacts/phase4-ai-draft-advisor-gates/signals-ai-draft-internal.png`
+  - `artifacts/phase4-ai-draft-advisor-gates/advisor-approval-no-client-release.png`
+  - `artifacts/phase4-ai-draft-advisor-gates/compliance-release-client-visibility-gate.png`
+
+### Implemented Phase 4 Behaviour
+
+- Added a shared scoped-evidence helper for recommendation review workflow mutations so accepted evidence must be directly linked to the target recommendation or linked through a scoped evidence item.
+- Hardened `rebuild_with_evidence` so an analyst cannot rebuild an internal draft with accepted evidence from another recommendation scope.
+- Reused the same scoped-evidence rule for compliance release precondition selection to keep rebuild and release evidence semantics aligned.
+- Added API negative proof that accepted-but-wrong-scope evidence returns a blocked, no-mutation, no-client-release response for `rebuild_with_evidence`.
+- Added API negative proof that a recommendation carrying an active `aiDraftInternalOnly` internal draft marker remains blocked from compliance release even when advisor approval, accepted evidence and a draft payload are present.
+- Expanded advisor approval API proof to assert the compliance review remains pending, `releasedAt` remains null, `clientVisible` remains false and the advisor approval audit event is persisted.
+
+### Validation Commands Run
+
+- `pnpm typecheck` - first run failed on Prisma JSON null typing in the new test update; fixed with `Prisma.JsonNull` and reran successfully.
+- `PLAYWRIGHT_PORT=3110 pnpm test:workflow-api` - first run failed because the wrong-scope fixture still had a pre-existing scoped evidence item; fixed the test setup to remove that link and reran.
+- `PLAYWRIGHT_PORT=3111 pnpm test:workflow-api` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3112 pnpm test:workflow-gate` - passed, 11 tests.
+- `PLAYWRIGHT_PORT=3113 pnpm test:file-export` - passed, 12 tests.
+- `PLAYWRIGHT_PORT=3114 pnpm test:permissions` - passed, 8 tests.
+- `pnpm lint` - first run failed because the local `test-results` directory was absent; recreated the expected artifact directory and reran successfully.
+- `pnpm db:validate` - passed.
+- `pnpm build` - passed with existing Turbopack tracing warnings in `lib/document-storage-adapter.ts`.
+
+### Positive P0 Proof
+
+- Analyst review/rebuild remains an internal recommendation-review workflow path with persisted mutation and audit proof.
+- Evidence-backed rebuild works only with accepted, scoped evidence and keeps the recommendation unreleased.
+- Advisor approval persists as a human-review state and moves the item toward compliance review without setting client visibility.
+- Existing workflow-gate, permission and export tests continue to prove internal draft/rationale payloads are excluded from client/export surfaces.
+
+### Negative P0 Proof
+
+- Accepted evidence scoped to another recommendation cannot rebuild the internal draft.
+- Active internal AI draft markers keep compliance release blocked through `payload_ready`.
+- Advisor approval alone does not set `clientVisible`, does not set compliance `releasedAt` and does not create a client release.
+- Client/API/export payload tests continue to block AI Draft, internal rationale, compliance notes and unreleased recommendation/evidence classifications.
+
+### Screenshot Proof
+
+| Artifact | Status | Notes |
+| --- | --- | --- |
+| `artifacts/phase4-ai-draft-advisor-gates/signals-ai-draft-internal.png` | captured | Signal Review AI Draft card with low-confidence internal warning. |
+| `artifacts/phase4-ai-draft-advisor-gates/advisor-approval-no-client-release.png` | captured | Advisor Approval Detail shows the no-client-visibility gate before advisor action. |
+| `artifacts/phase4-ai-draft-advisor-gates/compliance-release-client-visibility-gate.png` | captured | Compliance Release modal shows advisor approval alone is insufficient and release remains pending until completion. |
+
+### Exit Gate Decision
+
+`PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
 ## GUIDED-PRODUCT-UX-REWORK - Uploaded Prompt Implementation
 
 Date: 2026-06-21

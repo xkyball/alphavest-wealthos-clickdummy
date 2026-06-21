@@ -6,6 +6,7 @@ import {
   ComplianceStatus,
   EvidenceStatus,
   ObjectType,
+  Prisma,
   PrismaClient,
   RecommendationStatus,
   ReviewStatus,
@@ -300,6 +301,35 @@ test.describe("demo workflow API", () => {
       expect(blockedBody.mutated).toBe(false);
       expect(blockedBody.noClientRelease).toBe(true);
 
+      await prisma.evidenceItem.deleteMany({
+        where: { evidenceRecordId: demoTargets.northbridge.evidenceId },
+      });
+      await prisma.evidenceRecord.update({
+        data: {
+          relatedObjectId: demoTargets.morgan.recommendationId,
+          status: EvidenceStatus.VALIDATED,
+          visibilityStatus: VisibilityStatus.REDACTED,
+        },
+        where: { id: demoTargets.northbridge.evidenceId },
+      });
+
+      const wrongScopeResponse = await request.post("/api/demo-workflow", {
+        data: {
+          action: "rebuild_with_evidence",
+          actorRole: "analyst",
+          evidenceIds: [demoTargets.northbridge.evidenceId],
+          reason: "Attempt rebuild with accepted evidence scoped to another recommendation.",
+          targetId: demoTargets.northbridge.recommendationId,
+          workflowType: "recommendation-review",
+        },
+      });
+      const wrongScopeBody = await wrongScopeResponse.json();
+
+      expect(wrongScopeResponse.status(), JSON.stringify(wrongScopeBody)).toBe(409);
+      expect(wrongScopeBody.error).toContain("Accepted evidence scoped to this recommendation is required");
+      expect(wrongScopeBody.mutated).toBe(false);
+      expect(wrongScopeBody.noClientRelease).toBe(true);
+
       const reason = "Rebuilt after accepted liquidity evidence review.";
       const response = await request.post("/api/demo-workflow", {
         data: {
@@ -370,11 +400,27 @@ test.describe("demo workflow API", () => {
       expect(body.result.reloadedState.recommendation.status).toBe(RecommendationStatus.ADVISOR_APPROVED);
       expect(body.result.reloadedState.recommendation.clientVisible).toBe(false);
 
-      const recommendation = await prisma.recommendation.findUniqueOrThrow({
-        where: { id: demoTargets.northbridge.recommendationId },
-      });
+      const [recommendation, complianceReview, audit] = await Promise.all([
+        prisma.recommendation.findUniqueOrThrow({
+          where: { id: demoTargets.northbridge.recommendationId },
+        }),
+        prisma.complianceReview.findFirstOrThrow({
+          where: {
+            targetId: demoTargets.northbridge.recommendationId,
+            targetType: ObjectType.RECOMMENDATION,
+          },
+        }),
+        prisma.auditEvent.findUniqueOrThrow({
+          where: { id: body.result.auditEventId },
+        }),
+      ]);
 
       expect(recommendation.clientVisible).toBe(false);
+      expect(complianceReview.status).toBe(ComplianceStatus.PENDING);
+      expect(complianceReview.releasedAt).toBeNull();
+      expect(audit.eventType).toBe("recommendation_review.advisor_approve");
+      expect(audit.result).toBe(AuditResult.SUCCESS);
+      expect(audit.nextState).toBe(RecommendationStatus.ADVISOR_APPROVED);
     });
 
     test("compliance release fails before prerequisites and persists after gates pass", async ({ request }) => {
@@ -449,6 +495,37 @@ test.describe("demo workflow API", () => {
       expect(missingEvidenceBody.releasePreconditions.evidenceProvided).toBe(false);
 
       await prisma.recommendation.update({
+        data: {
+          assumptionsJson: {
+            aiDraftInternalOnly: true,
+            evidenceBackedRebuild: true,
+            phase4RebuildEvidenceIds: [demoTargets.summit.evidenceId],
+          },
+          clientSummaryDraft:
+            "Internal draft rebuilt with accepted evidence. Compliance release remains required.",
+        },
+        where: { id: demoTargets.summit.recommendationId },
+      });
+
+      const internalDraftBlockedResponse = await request.post("/api/demo-workflow", {
+        data: {
+          action: "compliance_release",
+          actorRole: "compliance_officer",
+          confirmationText: "RELEASE TO CLIENT",
+          evidenceIds: [demoTargets.summit.evidenceId],
+          reason: "Attempt release while internal draft marker remains active.",
+          targetId: demoTargets.summit.recommendationId,
+          workflowType: "recommendation-review",
+        },
+      });
+      const internalDraftBlockedBody = await internalDraftBlockedResponse.json();
+
+      expect(internalDraftBlockedResponse.status(), JSON.stringify(internalDraftBlockedBody)).toBe(409);
+      expect(internalDraftBlockedBody.noClientRelease).toBe(true);
+      expect(internalDraftBlockedBody.gateMissing).toContain("payload_ready");
+      expect(internalDraftBlockedBody.releasePreconditions.payloadReady).toBe(false);
+
+      await prisma.recommendation.update({
         data: { clientSummaryDraft: null },
         where: { id: demoTargets.summit.recommendationId },
       });
@@ -475,6 +552,7 @@ test.describe("demo workflow API", () => {
 
       await prisma.recommendation.update({
         data: {
+          assumptionsJson: Prisma.JsonNull,
           clientSummaryDraft:
             "Compliance-ready client summary for a released liquidity governance next step.",
         },
