@@ -5433,3 +5433,41 @@ Date: 2026-06-21
 
 - This pass adds product UI proof for existing gates; it does not claim production authentication, production advice, malware scanning or full regulated release readiness.
 - Existing Turbopack tracing warnings in `lib/document-storage-adapter.ts` remain outside this phase.
+
+## CODEX-P07-P09 App Trust Flow QA Addendum
+
+Date: 2026-06-21
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| P07 client-safe recommendation projection | Implemented | Client portal renders released summary, hidden internal fields and unreleased-content blocked state from `visibilityEngine`. |
+| P07 decision submitted/released states | Implemented | Decision routes render submitted/internal vs released/client-safe projection from `visibilityEngine`. |
+| P08 governance non-bypass | Implemented | Governance and admin routes render admin advice-payload denial, cross-tenant denial and export non-bypass decisions from `permissionEngine`. |
+| P09 export scope/redaction/approval | Implemented | Export routes render selected scope, forbidden payloads and approval-before-generation step separation from `exportService`. |
+| Product UI cleanliness | Passed | Added product-facing trust panels, not contract/spec panels or route labels. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | TypeScript completed with `tsc --noEmit`. |
+| `pnpm lint` | Failed then passed | Initial run hit the known missing `test-results` directory; after `mkdir -p test-results`, ESLint passed. |
+| `pnpm db:validate` | Passed | Prisma schema validation completed successfully. |
+| `pnpm build` | Passed with warnings | Production build completed; existing Turbopack tracing warnings remain around `lib/document-storage-adapter.ts`. |
+| `pnpm exec playwright test tests/scf-p07-p09-trust-ui.spec.ts tests/permission-engine.spec.ts tests/file-export-realism.spec.ts --workers=1` | Failed then passed | Initial UI assertion used normalized reason-code text; corrected to the visible underscore reason codes and reran successfully, 26 tests. |
+
+### Screenshot Proof
+
+| Screenshot | Status | Notes |
+| --- | --- | --- |
+| `artifacts/codex-p07-p09-app-implementation/p07-client-visibility-projection.png` | Captured | Client projection on `/portal`. |
+| `artifacts/codex-p07-p09-app-implementation/p07-decision-state-projection.png` | Captured | Decision state projection on `/decisions`. |
+| `artifacts/codex-p07-p09-app-implementation/p08-governance-non-bypass.png` | Captured | Governance non-bypass on `/admin/roles` after closing the confirmation modal. |
+| `artifacts/codex-p07-p09-app-implementation/p09-export-redaction-lifecycle.png` | Captured | Export lifecycle on `/export/demo/redaction`. |
+
+### Residual Risks
+
+- This pass does not introduce production authentication, production advice, real export binary generation or production RBAC.
+- Screenshot proof is representative route evidence, not full visual acceptance across every route and viewport.

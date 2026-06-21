@@ -292,6 +292,54 @@ Date: 2026-06-21
 
 `PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
 
+## CODEX-P07-P09 Client Visibility / Governance / Export App Implementation
+
+Date: 2026-06-21
+
+### Scope
+
+Executed `CODEX PHASE PROMPT - P07-P09` from `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md` as direct app implementation. This pass extends the application with runtime-backed product UI for client-safe projections, decision submitted/released states, role/access governance non-bypass and export scope/redaction/approval lifecycle controls.
+
+### Completed Tasks
+
+- Added a shared P07-P09 runtime model that derives UI state from `visibilityEngine`, `permissionEngine` and `exportService`.
+- Added a reusable `ScfP07P09TrustPanel` product component for trust-flow gates without spec panels, route labels or documentation-only UI.
+- Added P07 client-safe projection proof to the client portal, including hidden internal fields and unreleased-content fail-closed state.
+- Added P07 decision state projection proof to decision list, room and submitted/success surfaces.
+- Added P08 governance non-bypass proof to governance users, access requests, admin platform and admin role surfaces.
+- Added P09 export lifecycle proof to export scope, redaction, preview and download surfaces.
+- Added Playwright UI coverage for the new P07-P09 panels across portal, decisions, governance/admin and export routes.
+
+### Changed Files
+
+- `lib/screen-trust-flow.ts`
+- `components/scf-p07-p09-trust-panel.tsx`
+- `components/client-intake-screen.tsx`
+- `components/decisions-governance-screen.tsx`
+- `components/admin-tenant-setup-screen.tsx`
+- `components/communication-export-ops-screen.tsx`
+- `tests/scf-p07-p09-trust-ui.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm db:validate` - passed.
+- `pnpm build` - passed with existing Turbopack tracing warnings around `lib/document-storage-adapter.ts`.
+- `pnpm exec playwright test tests/scf-p07-p09-trust-ui.spec.ts tests/permission-engine.spec.ts tests/file-export-realism.spec.ts --workers=1` - failed then passed after correcting visible reason-code assertions, 26 tests.
+- `pnpm lint` - failed then passed after recreating the missing `test-results` directory.
+
+### P0 Impact
+
+This phase improves proof slices for client-safe projection, decision state visibility, cross-tenant/object non-bypass and export forbidden-payload controls. It does not claim production authentication, production advice, real export binaries or full regulated release readiness.
+
+### Blockers / Deferred / Hold Items
+
+- Export remains metadata/control-state oriented; real binary package generation is still outside this phase.
+- Production authentication and production RBAC are not introduced; demo session and demo-data-first rules remain active.
+- Existing Turbopack tracing warnings around document storage remain outside this phase if they recur during build.
+
 ## CODEX-P04-P06 - Evidence / Advisory / Compliance App Flow Implementation
 
 Date: 2026-06-21

@@ -44,6 +44,7 @@ import {
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
 import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
+import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { cn } from "@/lib/cn";
 import {
   recommendationReviewDemoTargets,
@@ -673,6 +674,7 @@ function DecisionsListPage({ title }: { title: string }) {
           subtitle="Review and act on decisions that require your attention."
           title={title}
         />
+        <ScfP07P09TrustPanel mode="decision" />
         <div className="grid gap-3 lg:grid-cols-[1fr_repeat(4,10rem)_auto]">
           <label className="relative min-w-0">
             <Search aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
@@ -718,6 +720,7 @@ function DecisionRoomPage({ title }: { title: string }) {
           subtitle={`${decisionRoom.decisionId} - ${decisionRoom.client}`}
           title={title}
         />
+        <ScfP07P09TrustPanel mode="decision" />
         <div className="grid gap-5 xl:grid-cols-[1fr_18rem]">
           <section className="min-w-0 space-y-5">
             <StatePanel detail="Until released, this decision and related materials are confidential and not visible to the client. No unapproved advice reaches the client." state="restricted" title="Content is client-visible only after Compliance Release" />
@@ -875,6 +878,7 @@ function DecisionSuccessPage({ title }: { title: string }) {
             <Badge tone="green">Audit persisted</Badge>
           </CardContent>
         </Card>
+        <ScfP07P09TrustPanel mode="decision" />
         <div className="grid gap-5 lg:grid-cols-3">
           <Card>
             <CardHeader><CardTitle>Persisted Audit Record</CardTitle></CardHeader>
@@ -1145,6 +1149,7 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
           subtitle="Manage platform access, roles and user permissions."
           title={title}
         />
+        <ScfP07P09TrustPanel mode="governance" />
         <div className="grid gap-3 md:grid-cols-5">
           {governanceMetrics.map((metric) => (
             <Card key={metric.label}>
@@ -1325,6 +1330,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
           subtitle="Review and take action on access requests across the organization."
           title={title}
         />
+        <ScfP07P09TrustPanel mode="governance" />
         <div className="flex flex-wrap gap-2">
           {["All 24", "Pending 8", "Approved 11", "Denied 3", "Escalated 2"].map((item, index) => <Badge key={item} tone={index === 0 ? "gold" : toneFor(item)}>{item}</Badge>)}
           <button className={secondaryButtonClass + " ml-auto"} type="button"><Filter aria-hidden="true" className="size-4" />Filters</button>

@@ -40,6 +40,7 @@ import type { LucideIcon } from "lucide-react";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
 import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
+import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import {
   Badge,
   Card,
@@ -568,6 +569,7 @@ function PortalPage({ title }: { title: string }) {
             </Card>
           </div>
           <SafeClientBanner>Your privacy and security are our priority. No unapproved advice reaches the client.</SafeClientBanner>
+          <ScfP07P09TrustPanel mode="visibility" />
         </section>
         <aside className="space-y-5">
           <Card>

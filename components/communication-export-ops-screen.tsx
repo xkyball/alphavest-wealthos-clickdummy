@@ -49,6 +49,7 @@ import {
 } from "@/components/ui";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
+import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { cn } from "@/lib/cn";
 import {
   auditHistoryEvents,
@@ -730,6 +731,7 @@ function ExportScopePage({ title }: { title: string }) {
   return (
     <div>
       <PageLead description="Select permitted objects, recipients and date range before redaction review." icon={Folder} title={title} />
+      <ScfP07P09TrustPanel mode="export" />
       <Card>
         <div className="grid gap-4 md:grid-cols-3">
           <FieldPill label="Date range" value="May 1 - May 21, 2025" />
@@ -799,6 +801,9 @@ function ExportRedactionPage({ title }: { title: string }) {
     <div>
       <PageLead badge="Pending" description="Configure mandatory redaction before external or client-facing export release." icon={Eye} title={title} />
       <StatePanel detail="All sensitive fields must be redacted before export to client or external recipients." state="blocked" title="Redaction is mandatory for external exports" />
+      <div className="mt-5">
+        <ScfP07P09TrustPanel mode="export" />
+      </div>
       <div className="mt-5 grid gap-5 2xl:grid-cols-[20rem_minmax(0,1fr)_24rem]">
         <Card>
           <CardHeader>
@@ -886,6 +891,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
   return (
     <div>
       <PageLead badge="Approval required" description="Validate package contents, policy checks, approvers and blocking warnings before export release." icon={PackageCheck} title={title} />
+      <ScfP07P09TrustPanel mode="export" />
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1fr)]">
         <Card>
           <CardHeader>
@@ -1009,6 +1015,7 @@ function ExportDownloadPage({ title }: { title: string }) {
   return (
     <div>
       <PageLead badge="Completed" description="Download securely or create a time-limited external share after export approval." icon={Download} title={title} />
+      <ScfP07P09TrustPanel mode="export" />
       <StatePanel
         className="mb-5"
         detail="The metadata-only export package is approved for controlled delivery. Download and share actions do not imply client acceptance or downstream advice execution."

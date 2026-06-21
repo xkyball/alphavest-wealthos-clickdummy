@@ -22,6 +22,7 @@ import { useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { useDemoSession } from "@/components/demo-session-provider";
 import { PageHeader } from "@/components/page-header";
+import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import {
   Badge,
   Card,
@@ -318,6 +319,7 @@ function PlatformSettingsPage({ onConfirm, route }: { onConfirm: () => void; rou
       <AuditBanner action={<button className={secondaryButtonClass} type="button">View audit log</button>}>
         {platformSettings.auditBanner}. Changes require approval and are logged for compliance.
       </AuditBanner>
+      <ScfP07P09TrustPanel mode="governance" />
       <ReleaseScopeControlPanel />
       <section className="grid gap-5 xl:grid-cols-[1fr_0.85fr]">
         <Card>
@@ -534,6 +536,7 @@ function RolesPage({ onPermissionModal, route }: { onPermissionModal: () => void
           </CardContent>
         </Card>
       </section>
+      <ScfP07P09TrustPanel mode="governance" />
       <PermissionBoundaryPanel route={route} />
     </div>
   );
