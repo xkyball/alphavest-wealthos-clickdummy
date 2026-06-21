@@ -9,7 +9,7 @@ import {
   phase0SourceHierarchyMarkers,
 } from "../lib/source-reality-gate";
 
-test.describe("Mega-journey Phase 0 source reality gate", () => {
+test.describe("First Build source reality gate", () => {
   test("keeps route worksets, API universe and Prisma shape executable", () => {
     const snapshot = buildPhase0SourceRealitySnapshot();
 
@@ -29,9 +29,9 @@ test.describe("Mega-journey Phase 0 source reality gate", () => {
       expect(planText).toContain(marker);
     }
 
-    expect(planText).toContain("No code change, no test execution");
-    expect(planText).toContain("no `main` target truth");
-    expect(planText).toContain("CODEX_EXECUTION_REQUIRES_EXPLICIT_HANDOFF_OR_USER_CONFIRMATION");
+    expect(planText).toContain("Implementation gate status");
+    expect(planText).toContain("Codex may execute?");
+    expect(planText).toContain("Allowed Task Inventory");
   });
 
   test("keeps P0 gate labels mapped before acceptance claims", () => {
@@ -43,8 +43,8 @@ test.describe("Mega-journey Phase 0 source reality gate", () => {
       expect(planText.toLowerCase()).toContain(gate.toLowerCase());
     }
 
-    expect(planText).toContain("Presence is not readiness proof");
-    expect(planText).toContain("No existing test slice overclaimed as full P0 proof");
+    expect(planText).toContain("Treating presence as readiness proof");
+    expect(planText).toContain("P0 negative proof");
   });
 
   test("tracks executable test inventory without treating count as readiness", () => {
@@ -54,4 +54,3 @@ test.describe("Mega-journey Phase 0 source reality gate", () => {
     expect(specFiles.length).toBeGreaterThanOrEqual(17);
   });
 });
-

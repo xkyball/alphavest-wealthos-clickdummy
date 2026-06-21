@@ -1,32 +1,36 @@
 # Copy-Paste Codex Start Commands
 
-## Generic phase start
+## Generic First Build task start
 
-Replace `<PHASE>` with `00`–`19`.
+Replace `<TASK_ID>` with an allowed task ID from
+`ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md`.
 
 ```text
 Read AGENTS.md first.
 
-PHASE_TO_RUN: <PHASE>
+FIRST_BUILD_TASK_ID: <TASK_ID>
 
-Follow CODEX_MASTER_TASK.md and docs/v3/CODEX_TASKS_DETAILED_V3.md.
-Implement only the selected phase.
+Follow ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md as the only source of truth.
+Implement only the selected allowed task ID and its package boundaries.
 ```
 
 ## Codex cloud CLI variant
 
 ```bash
-codex cloud exec --env <ENV_ID> "$(cat CODEX_START_PHASE_MASTER_PROMPT.md | sed 's/<SET_PHASE_NUMBER_HERE>/00/g')"
+codex cloud exec --env <ENV_ID> "$(cat CODEX_START_PHASE_MASTER_PROMPT.md | sed 's/<SET_TASK_ID_HERE>/AV-FB-P0-BP00-T001/g')"
 ```
 
 ## Recommended first run for empty repo
 
-Use Phase 00, then continue phase-by-phase.
+Use the BP-00 source hierarchy task first, then continue through the handoff's
+allowed task inventory.
 
 ```text
-PHASE_TO_RUN: 00
+FIRST_BUILD_TASK_ID: AV-FB-P0-BP00-T001
 ```
 
 ## Recommended first run for existing repo
 
-Start with Phase 00 as repo intake, but instruct Codex not to overwrite existing code. It should produce `docs/v3/REPO_INTAKE_REPORT.md` first.
+Start with `AV-FB-P0-BP00-T001` as the source hierarchy and target-codebase
+baseline. Do not overwrite existing code unless the selected handoff task
+explicitly authorizes the touched files.

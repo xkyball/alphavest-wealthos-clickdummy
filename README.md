@@ -239,19 +239,16 @@ pnpm smoke:phase13
 
 ## Source Of Truth
 
-Before each implementation phase, read:
+Before implementation, read:
 
 - `AGENTS.md`
-- `CODEX_MASTER_TASK.md`
-- `docs/v3/CODEX_TASKS_DETAILED_V3.md`
-- `docs/v3/PHASE_MODEL_V3.md`
-- `docs/v3/TECHNICAL_IMPLEMENTATION_SEQUENCE_V3.md`
-- `docs/v3/DESIGN_SYSTEM_AND_VISUAL_RULES_V3.md`
-- `docs/v3/SCREEN_CATALOGUE_V3.md`
-- `docs/v3/VISUAL_ASSET_MANIFEST_V3.md`
-- `docs/v3/QUALITY_GATES_AND_TEST_PLAN_V3.md`
+- `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md`
 
-The broader implementation guardrails in `docs/v3/PAGEFLOW_USERFLOW_MAPPING_V3.md` and `docs/v3/DATA_MODEL_V3.md` also apply when later phases begin feature work.
+`ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md` is the only operative
+source of truth for task scope, execution order, package boundaries, stop rules,
+validation duties and proof obligations. Older V3 phase plans, task definitions,
+minimum-path prompts and previous final handoffs are historical reference only
+unless the First Build handoff explicitly permits their use.
 
 ## Product Guardrails
 
@@ -264,7 +261,7 @@ The broader implementation guardrails in `docs/v3/PAGEFLOW_USERFLOW_MAPPING_V3.m
 - Evidence is created by default for important actions.
 - Sensitive actions create audit events.
 
-## Phase Reports
+## First Build Phase Reports
 
 After each phase, update:
 

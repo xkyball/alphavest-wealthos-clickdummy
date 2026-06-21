@@ -3,17 +3,17 @@
 ## Current mission
 Build AlphaVest WealthOS as a demo-data-first web application using Next.js, React, TypeScript, Tailwind CSS, PostgreSQL, Prisma and Docker Compose.
 
-## Mandatory source-of-truth files
-Read these before implementation:
+## Mandatory source of truth
+Read this before implementation:
 
-- `CODEX_MASTER_TASK.md`
-- `docs/v3/CODEX_TASKS_DETAILED_V3.md`
-- `docs/v3/SCREEN_CATALOGUE_V3.md`
-- `docs/v3/DESIGN_SYSTEM_AND_VISUAL_RULES_V3.md`
-- `docs/v3/TECHNICAL_IMPLEMENTATION_SEQUENCE_V3.md`
-- `docs/v3/PAGEFLOW_USERFLOW_MAPPING_V3.md`
-- `docs/v3/DATA_MODEL_V3.md`
-- `docs/v3/QUALITY_GATES_AND_TEST_PLAN_V3.md`
+- `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md`
+
+This handoff is the only operative source of truth for implementation scope,
+task IDs, execution order, package boundaries, stop rules, validation duties,
+and proof obligations. Older V3 phase plans, task catalogues, start prompts,
+minimum-path prompts, final task masters and previous handoff artefacts remain
+historical reference only unless the First Build handoff explicitly permits
+their use.
 
 ## Visual source of truth
 Use `public/reference/page_ui_v3/clean_pages/` as page-level UI design reference.
@@ -34,7 +34,7 @@ Do not implement spec panels, route labels, filenames, annotation rails, dev not
 - Sensitive actions create audit events.
 
 ## Early implementation rule
-Do not start with real authentication. Use a demo session, role switcher and tenant switcher first. Permission and security functions must exist early but may return permissive/demo results until later phases.
+Do not start with real authentication. Use a demo session, role switcher and tenant switcher first. Permission and security functions must exist early but may return permissive/demo results until the First Build handoff authorizes a stricter implementation task.
 
 ## Engineering rules
 - Use TypeScript strictly.
@@ -47,7 +47,7 @@ Do not start with real authentication. Use a demo session, role switcher and ten
 - Run build/lint/tests when available.
 - Keep changes phase-scoped and commit-ready.
 
-## Required reporting after each phase
+## Required reporting after each First Build phase
 Produce or update:
 
 - `docs/v3/PHASE_EXECUTION_REPORT.md`
