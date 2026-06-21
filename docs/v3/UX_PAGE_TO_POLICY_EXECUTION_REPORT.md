@@ -234,6 +234,113 @@ No-P1/Hold/Reference-elevation confirmation: `UX-DENSITY-001` only materializes 
 
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
 
+## Completed Slice: UX-DENSITY-002
+
+Task: `UX-DENSITY-002` - Apply D1 Calm Executive to client-facing views.
+
+Mission Card: apply a calm, premium, client-safe D1 treatment to `019 /portal` and `020 /mobile` while preserving fail-closed visibility, hidden internal payloads and one safe next step.
+
+Evidence Intake:
+- Task-master `UX-DENSITY-002` target routes: `019`, `020`.
+- Route Policy Matrix rows `019` and `020`: D1 Calm Executive, `CLIENT_SAFE_ONLY`, no AI Draft, internal rationale, compliance notes, unreleased evidence or unredacted export payload.
+- Existing implementation finding: `UxHubPage` owns both portal and mobile hub content; a D1 branch there is narrower than rebuilding route pages.
+
+Problem Architecture: the D1 views need calm orientation and a premium density level, but must not turn client-facing views into internal workbenches or create multiple competing next actions.
+
+Double Diamond:
+- Discover: the D1 hub already had safe content, but the queue/card structure was closer to a productive hub than a calm executive page.
+- Define: use three state cards, a released source summary and one next-step panel for D1 only.
+- Develop: added a D1 rendering branch in `UxHubPage`, kept mobile explicitly single-column and enabled `Card` to pass through `data-*`/accessibility props for proof.
+- Deliver: targeted D1 route-smoke, full route-smoke, P0 safety tests and screenshots for `/portal` and `/mobile`.
+
+Psycho-Logic + Map/Model: client users need a clear answer to "what is safe to see and what should I do next?" The unsafe trap is making the page feel like an operations queue; the safe move is calm state explanation plus one next-step panel.
+
+Reframing Matrix:
+- Page-as-card-wall: rejected by removing multi-link queue treatment from D1.
+- Page-as-client-safe state: kept with Released/Hidden/Next Action cards.
+- Page-as-workbench: rejected for `019`/`020`.
+- Page-as-gate: constrained by visible fail-closed and no-internal-leakage copy.
+
+TRIZ: improved calmness and reduced action clutter while preserving safety by moving supporting paths into explanatory text, not extra CTA panels.
+
+SIT Closed World: reused `UxHubPage`, `uxHubDefinitions`, route policy density and existing links; no new routes, images, APIs or product scope engine.
+
+Zwicky + CCA:
+- Variant A: per-route bespoke portal and mobile layouts. Rejected for duplication.
+- Variant B: D1 branch in shared hub component. Chosen.
+- Variant C: CSS-only density tweak. Rejected because it would not reduce action ambiguity.
+
+SCAMPER: substituted a queue wall with one next-step panel, combined visibility caveats into the panel, adapted mobile to a single-column executive layout and removed redundant D1 workbench density.
+
+Harvard / BATNA: objective criteria are the two D1 route rows and P0 client visibility obligations. BATNA remains stop/report if client-safe copy or route policy cannot be preserved.
+
+MESOs:
+- Option A: D1-only shared branch in `UxHubPage`. Chosen.
+- Option B: defer mobile because it is a separate route. Rejected because `020` is explicitly in scope.
+
+Measurement Plan:
+- `pnpm typecheck`
+- `pnpm lint`
+- `PLAYWRIGHT_PORT=3427 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-DENSITY calm executive"`
+- `PLAYWRIGHT_PORT=3422 pnpm test:permissions`
+- `PLAYWRIGHT_PORT=3423 pnpm test:workflow-gate`
+- `PLAYWRIGHT_PORT=3428 pnpm test:route-smoke`
+- Screenshot proof under `artifacts/ux-page-to-policy/UX-DENSITY-002/`
+
+Ethics/Fairness: client users receive clear released/hidden state messaging without false reassurance, hidden advice, dark-pattern CTA pressure or implied evidence sufficiency.
+
+Adversarial QA: mobile initially compressed D1 cards under desktop breakpoints during visual review; the final implementation keeps `020` single-column so safety copy remains readable.
+
+Learning Log: later D2-D4 tasks should not rely on viewport breakpoints alone when the route shell has constrained width.
+
+Route-policy rows cited:
+- `019` `/portal` - D1 Calm Executive, client-safe only.
+- `020` `/mobile` - D1 Calm Executive, client-safe only.
+
+Changed files:
+- `components/ui/card.tsx`
+- `components/ux-hub-page.tsx`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-DENSITY-002/2026-06-21-UX-DENSITY-002-portal-calm-executive.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-002/2026-06-21-UX-DENSITY-002-mobile-calm-executive.png`
+
+Implementation summary:
+- Added a D1 Calm Executive branch to `UxHubPage`.
+- D1 views render three state cards and exactly one next-step panel.
+- Mobile D1 uses a single-column layout to preserve readability inside the mobile shell.
+- Extended `Card` to pass through standard HTML/data attributes so shared UI surfaces can be tested and remain accessible.
+
+Validation:
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with existing warnings.
+- `PLAYWRIGHT_PORT=3427 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-DENSITY calm executive"` - passed, 2 tests.
+- `PLAYWRIGHT_PORT=3422 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3423 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3428 pnpm test:route-smoke` - passed, 175 tests.
+
+Screenshot/proof:
+- `artifacts/ux-page-to-policy/UX-DENSITY-002/2026-06-21-UX-DENSITY-002-portal-calm-executive.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-002/2026-06-21-UX-DENSITY-002-mobile-calm-executive.png`
+
+Positive acceptance:
+- `/portal` and `/mobile` render D1 calm executive density with 3 state cards, one released summary and one next-step panel.
+- Client-facing views keep page job, status context and primary next step above supporting content.
+
+Negative/P0 acceptance:
+- D1 views do not expose AI Draft, internal rationale, compliance notes, unreleased evidence or unredacted export payload.
+- No route, route scope, payload authority, evidence sufficiency, advice release, audit/export lifecycle or RBAC behavior changed.
+
+No-generation confirmation: no screen generation, state-screen generation, image generation or generated product assets.
+
+No-route-reclassification confirmation: route IDs, paths, scopes, page types and policy rows remain unchanged.
+
+No-P1/Hold/Reference-elevation confirmation: `UX-DENSITY-002` only touches MVP D1 routes `019` and `020`.
+
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
+
 ## Completed Slice: UX-COMPLEXITY-004
 
 Task: `UX-COMPLEXITY-004` - Remove dead-end and duplicate CTA clusters.

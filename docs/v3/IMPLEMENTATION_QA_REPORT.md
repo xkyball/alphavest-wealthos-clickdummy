@@ -6492,3 +6492,46 @@ Source of truth:
 ### QA Limits
 
 - This slice establishes the shared density contract. The visual refinements for D1 calm executive, D2 productive workbench, D3 dense operations and D4 focused detail remain assigned to `UX-DENSITY-002` through `UX-DENSITY-005`.
+
+## UX-DENSITY-002 QA Addendum
+
+Date: 2026-06-21
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+
+| Area | QA result | Evidence |
+| --- | --- | --- |
+| D1 calm executive density | Passed | Route-smoke verifies `/portal` and `/mobile` render D1 calm executive metadata, 3 state cards and exactly one next-step panel. |
+| Client-safe visibility | Passed | D1 copy preserves released/hidden state and no-internal-leakage caveats. |
+| Mobile readability | Passed | Visual review caught and fixed compressed mobile columns; final screenshot is single-column. |
+| Route Policy Matrix preservation | Passed | No route registry, scope, page-type or route-policy metadata changed. |
+| P0 safety | Passed | Permissions, workflow gate and full route smoke remain green. |
+| Screenshot proof | Passed | Two screenshots captured under `artifacts/ux-page-to-policy/UX-DENSITY-002/`. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | `tsc --noEmit` completed successfully. |
+| `pnpm lint` | Passed | Existing warnings remain. |
+| `PLAYWRIGHT_PORT=3427 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-DENSITY calm executive"` | Passed | 2 tests. |
+| `PLAYWRIGHT_PORT=3422 pnpm test:permissions` | Passed | 8 tests. |
+| `PLAYWRIGHT_PORT=3423 pnpm test:workflow-gate` | Passed | 13 tests. |
+| `PLAYWRIGHT_PORT=3428 pnpm test:route-smoke` | Passed | 175 tests. |
+
+### Screenshot Proof
+
+- `artifacts/ux-page-to-policy/UX-DENSITY-002/2026-06-21-UX-DENSITY-002-portal-calm-executive.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-002/2026-06-21-UX-DENSITY-002-mobile-calm-executive.png`
+
+### Safety Proof
+
+- D1 layout is client-facing orientation only.
+- One next-step panel does not imply evidence sufficiency, advice release, audit persistence, export approval/download/share or broader RBAC payload authority.
+- Internal rationale, compliance notes, AI Draft, unreleased evidence and unredacted export payload remain excluded from client-facing D1 surfaces.
+
+### QA Limits
+
+- This slice applies D1 to `019` and `020` only. D2, D3 and D4 route-specific applications remain for the next density tasks.

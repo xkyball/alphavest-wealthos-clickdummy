@@ -435,6 +435,30 @@ test.describe("UX-DENSITY tier contract", () => {
   }
 });
 
+test.describe("UX-DENSITY calm executive client views", () => {
+  for (const path of ["/portal", "/mobile"]) {
+    test(`${path} applies D1 calm executive density without client leakage`, async ({ page }) => {
+      await page.setViewportSize({ height: 1000, width: 1440 });
+      await authenticateRouteSmokePage(page);
+      await page.goto(path);
+
+      const calmSurface = page.locator('[data-ux-d1-calm-executive="true"]');
+      await expect(calmSurface).toBeVisible();
+      await expect(calmSurface).toHaveAttribute("data-ux-density-tier", "D1");
+      await expect(calmSurface).toHaveAttribute("data-ux-density-pattern", "calm-executive");
+
+      await expect(page.getByTestId("ux-d1-state-card")).toHaveCount(3);
+      await expect(page.getByTestId("ux-d1-next-step-panel")).toHaveCount(1);
+      await expect(page.getByTestId("ux-d1-source-summary")).toBeVisible();
+      await expect(page.getByTestId("ux-hub-queue")).toHaveCount(0);
+
+      await expect(calmSurface).toContainText(/released|Released/);
+      await expect(calmSurface).toContainText(/hidden|Hidden|internal/i);
+      await expect(calmSurface).toContainText(/not expose|must not leak|hidden/i);
+    });
+  }
+});
+
 test.describe("locked route workset preservation", () => {
   test("all registered routes are classified exactly once", () => {
     expect(routeWorksetIntegrity.counts).toEqual(lockedRouteWorksetCounts);

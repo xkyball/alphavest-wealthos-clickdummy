@@ -6,6 +6,7 @@ import { Badge, Card, CardContent, CardHeader, CardTitle, type BadgeTone } from 
 import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
 import { cn } from "@/lib/cn";
 import { uxHubDefinitionForPageId, type UxHubTone } from "@/lib/ux-hub";
+import { uxDensityForPageId } from "@/lib/ux-density";
 
 type UxHubPageProps = {
   pageId: string;
@@ -32,8 +33,120 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
     return null;
   }
 
+  const density = uxDensityForPageId(pageId);
+
+  if (density.tier === "D1") {
+    const isMobileClientHub = pageId === "020";
+
+    return (
+      <section
+        className="mx-auto w-full max-w-[88rem] space-y-4"
+        data-testid="ux-hub-page"
+        data-ux-d1-calm-executive="true"
+        data-ux-density-pattern={density.pattern}
+        data-ux-density-tier={density.tier}
+      >
+        <div className={cn("grid gap-4", !isMobileClientHub && "xl:grid-cols-[minmax(0,1fr)_22rem]")}>
+          <div className="space-y-4">
+            <div className="rounded-md border border-alphavest-border bg-alphavest-panel/72 p-5" data-ux-content-tier="must-see">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">{hub.eyebrow}</p>
+              <div className={cn("mt-4 flex flex-col gap-4", !isMobileClientHub && "lg:flex-row lg:items-end lg:justify-between")}>
+                <div className="min-w-0">
+                  <h2 className="font-display text-3xl text-alphavest-ivory">{hub.title}</h2>
+                  <p className="mt-3 max-w-3xl text-sm leading-6 text-alphavest-muted">{hub.summary}</p>
+                </div>
+                <Link
+                  className={cn(
+                    "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md bg-alphavest-gold px-4 text-sm font-semibold text-alphavest-navy transition hover:bg-alphavest-gold-soft",
+                    isMobileClientHub && "w-full"
+                  )}
+                  data-testid="ux-hub-primary-next-work"
+                  href={hub.primaryAction.href}
+                >
+                  {hub.primaryAction.label}
+                  <ArrowRight aria-hidden="true" className="size-4" />
+                </Link>
+              </div>
+              <div className="mt-5 flex flex-wrap gap-2">
+                {hub.statusStrip.map((item) => (
+                  <Badge key={item} tone="muted">
+                    {item}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            <div className={cn("grid gap-3", !isMobileClientHub && "md:grid-cols-3")} data-ux-content-tier="secondary">
+              {hub.priorityCards.map((card) => (
+                <Card
+                  className={cn("border p-4", toneClasses[card.tone])}
+                  data-testid="ux-d1-state-card"
+                  key={card.label}
+                >
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] opacity-80">{card.label}</p>
+                  <p className="mt-2 text-2xl font-semibold text-alphavest-ivory">{card.value}</p>
+                  <p className="mt-2 text-sm leading-6 text-alphavest-muted">{card.detail}</p>
+                </Card>
+              ))}
+            </div>
+
+            <Card className="p-4" data-ux-content-tier="secondary" data-testid="ux-d1-source-summary">
+              <div className={cn("flex flex-col gap-3", !isMobileClientHub && "sm:flex-row sm:items-center sm:justify-between")}>
+                <div>
+                  <p className="font-display text-xl text-alphavest-ivory">Released Source Summary</p>
+                  <p className="mt-1 text-sm leading-6 text-alphavest-muted">Client-facing inputs are summarized only after release, redaction and visibility checks.</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {hub.sourceSummaries.map((summary) => (
+                    <Badge key={summary} tone="muted">
+                      {summary}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          <aside className="space-y-4">
+            <Card className="border-alphavest-gold/45 bg-alphavest-gold/10 p-4" data-testid="ux-d1-next-step-panel">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">One safe next step</p>
+              <Link
+                className="mt-4 block rounded-md border border-alphavest-gold/55 bg-alphavest-gold/10 p-4 transition hover:border-alphavest-gold"
+                href={hub.primaryAction.href}
+              >
+                <span className="flex items-center justify-between gap-3 text-sm font-semibold text-alphavest-gold-soft">
+                  {hub.primaryAction.label}
+                  <ArrowRight aria-hidden="true" className="size-4" />
+                </span>
+                <span className="mt-2 block text-sm leading-6 text-alphavest-muted">{hub.primaryAction.detail}</span>
+              </Link>
+              <div className="mt-4 rounded-md border border-alphavest-gold/35 bg-alphavest-navy/35 p-3 text-sm leading-6 text-alphavest-gold-soft">
+                <div className="flex gap-3">
+                  <ShieldCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
+                  <p>{hub.safetyNote}</p>
+                </div>
+              </div>
+              <div className="mt-4 space-y-2">
+                {hub.queue.slice(0, 2).map((item) => (
+                  <p className="text-sm leading-6 text-alphavest-muted" key={`${item.href}-${item.label}-d1-support`}>
+                    <span className="font-semibold text-alphavest-ivory">{item.label}:</span> {item.detail}
+                  </p>
+                ))}
+              </div>
+            </Card>
+          </aside>
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <section className="mx-auto w-full max-w-[104rem] space-y-5" data-testid="ux-hub-page">
+    <section
+      className="mx-auto w-full max-w-[104rem] space-y-5"
+      data-testid="ux-hub-page"
+      data-ux-density-pattern={density.pattern}
+      data-ux-density-tier={density.tier}
+    >
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <div className="space-y-5">
           <div className="rounded-md border border-alphavest-border bg-alphavest-panel/72 p-5" data-ux-content-tier="must-see">

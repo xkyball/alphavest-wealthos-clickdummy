@@ -8607,3 +8607,65 @@ Completed `UX-DENSITY-001` by centralizing D1-D4 density tier contracts and expo
 ### Exit Gate Decision
 
 `UX_DENSITY_001_COMPLETED_WITH_D1_D4_CONTRACT_AND_P0_PROOF`
+
+## UX-DENSITY-002 Addendum - D1 Calm Executive Applied
+
+Date: 2026-06-21
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+
+### Scope
+
+Completed `UX-DENSITY-002` for route rows `019` and `020`. The client portal and mobile client home now use a D1 Calm Executive hub treatment with three client-safe state cards, a released source summary and one safe next-step panel.
+
+### Changed Files
+
+- `components/ui/card.tsx`
+- `components/ux-hub-page.tsx`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-DENSITY-002/2026-06-21-UX-DENSITY-002-portal-calm-executive.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-002/2026-06-21-UX-DENSITY-002-mobile-calm-executive.png`
+
+### Route-Policy Rows Cited
+
+- `019`, `020`.
+
+### Implementation Notes
+
+- Added D1-only rendering in `UxHubPage`.
+- Reduced D1 client-facing hub density from workbench queue treatment to calm state cards and one next-step panel.
+- Kept mobile D1 single-column to avoid compressed text in the constrained mobile shell.
+- Updated `Card` to pass standard HTML/data attributes for accessible/testable shared UI surfaces.
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with existing warnings.
+- `PLAYWRIGHT_PORT=3427 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-DENSITY calm executive"` - passed, 2 tests.
+- `PLAYWRIGHT_PORT=3422 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3423 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3428 pnpm test:route-smoke` - passed, 175 tests.
+
+### Screenshot Proof
+
+- `artifacts/ux-page-to-policy/UX-DENSITY-002/2026-06-21-UX-DENSITY-002-portal-calm-executive.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-002/2026-06-21-UX-DENSITY-002-mobile-calm-executive.png`
+
+### Positive Acceptance
+
+- D1 client views show 3 state cards and exactly one next-step panel.
+- Released/hidden state and client-safe constraints remain visible.
+
+### Negative Acceptance
+
+- Client-facing UI still does not expose AI Draft, internal rationale, compliance notes, unreleased evidence or unredacted export payload.
+- No route, route class, P1/Reference/Hold status or policy row changed.
+
+### Exit Gate Decision
+
+`UX_DENSITY_002_COMPLETED_WITH_D1_CLIENT_SAFE_CALM_EXECUTIVE_PROOF`
