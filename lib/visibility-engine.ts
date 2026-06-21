@@ -182,6 +182,15 @@ function projectRecommendationPayload(
     {
       platformTenantId,
       clientTenantId,
+      ...(payload.objectId
+        ? {
+            objectScope: {
+              clientTenantId: payload.clientTenantId,
+              objectIds: [payload.objectId],
+              objectType: "RECOMMENDATION" as const,
+            },
+          }
+        : {}),
       sensitivity: payload.sensitivity,
       clientVisibilityState: payload.visibilityStatus,
     },
@@ -269,6 +278,11 @@ function projectDocumentPayload(
     {
       platformTenantId,
       clientTenantId,
+      objectScope: {
+        clientTenantId: payload.clientTenantId,
+        objectIds: [payload.id],
+        objectType: "DOCUMENT",
+      },
       sensitivity: payload.sensitivity,
       clientVisibilityState:
         payload.evidenceVisibilityStatus === "CLIENT_VISIBLE" || payload.evidenceVisibilityStatus === "REDACTED"

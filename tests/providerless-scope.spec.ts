@@ -3,6 +3,10 @@ import { expect, test } from "@playwright/test";
 import {
   createDemoSession,
   demoPlatformTenantId,
+  demoTenants,
+  resolveDemoTenantMembership,
+  resolveRole,
+  requireDemoSession,
   tryCreateDemoSession,
 } from "../lib/demo-session";
 import { permissionEngine } from "../lib/permission-engine";
@@ -15,6 +19,13 @@ test.describe("Mega-journey Phase 1 providerless scope gate", () => {
 
     expect(mapped.session.actor.key).toBe("bennett:principal");
     expect(mapped.session.actor.roleKey).toBe("principal");
+    expect(mapped.session.tenantMembership).toEqual({
+      actorId: mapped.session.actor.id,
+      roleKey: "principal",
+      scope: "TENANT",
+      tenantId: mapped.session.tenant.id,
+      tenantSlug: "bennett",
+    });
     expect(mapped.session.tenant.slug).toBe("bennett");
     expect(mapped.session.role.key).toBe("principal");
 
@@ -29,6 +40,19 @@ test.describe("Mega-journey Phase 1 providerless scope gate", () => {
       issues: ["valid_role_key_required", "valid_tenant_slug_required"],
       ok: false,
     });
+  });
+
+  test("requires explicit actor role and tenant membership before strict providerless use", () => {
+    expect(() => requireDemoSession({ roleKey: "anonymous", tenantSlug: "bennett" })).toThrow(
+      /valid_role_key_required/,
+    );
+
+    const bennett = demoTenants.find((tenant) => tenant.slug === "bennett");
+    const morganPrincipal = createDemoSession({ roleKey: "principal", tenantSlug: "morgan" });
+    const principalRole = resolveRole("principal");
+    if (!bennett) throw new Error("Bennett tenant missing.");
+
+    expect(resolveDemoTenantMembership(morganPrincipal.actor, principalRole, bennett)).toBeUndefined();
   });
 
   test("keeps demo UI fallback separate from strict providerless acceptance", () => {
@@ -119,5 +143,56 @@ test.describe("Mega-journey Phase 1 providerless scope gate", () => {
     expect(routeLevel.allowed).toBe(true);
     expect(payloadLevel.allowed).toBe(true);
     expect(payloadLevel.reasonCode).toBe("DEMO_ROLE_AWARE_ALLOW");
+  });
+
+  test("fails closed when object-scoped payload access targets the wrong object", () => {
+    const analyst = createDemoSession({ roleKey: "analyst", tenantSlug: "bennett" });
+    const decision = permissionEngine.can(
+      analyst.actor,
+      "VIEW",
+      {
+        clientTenantId: analyst.tenant.id,
+        objectId: "document:bennett:outside-scope",
+        objectType: "DOCUMENT",
+        visibilityStatus: "INTERNAL_ONLY",
+      },
+      {
+        clientTenantId: analyst.tenant.id,
+        objectScope: {
+          clientTenantId: analyst.tenant.id,
+          objectIds: ["document:bennett:current-scope"],
+          objectType: "DOCUMENT",
+        },
+        platformTenantId: demoPlatformTenantId,
+      },
+      analyst.role,
+    );
+
+    expect(decision.allowed).toBe(false);
+    expect(decision.reasonCode).toBe("DEMO_DENY_OBJECT_SCOPE_MISMATCH");
+    expect(decision.requiresAudit).toBe(true);
+  });
+
+  test("fails closed when object-scoped payload access has no current object scope", () => {
+    const analyst = createDemoSession({ roleKey: "analyst", tenantSlug: "bennett" });
+    const decision = permissionEngine.can(
+      analyst.actor,
+      "VIEW",
+      {
+        clientTenantId: analyst.tenant.id,
+        objectId: "recommendation:bennett:current",
+        objectType: "RECOMMENDATION",
+        visibilityStatus: "COMPLIANCE_VISIBLE",
+      },
+      {
+        clientTenantId: analyst.tenant.id,
+        platformTenantId: demoPlatformTenantId,
+      },
+      analyst.role,
+    );
+
+    expect(decision.allowed).toBe(false);
+    expect(decision.reasonCode).toBe("DEMO_DENY_OBJECT_SCOPE_REQUIRED");
+    expect(decision.requiresAudit).toBe(true);
   });
 });

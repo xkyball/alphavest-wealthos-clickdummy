@@ -60,9 +60,18 @@ export type DemoActor = {
 export type DemoSession = {
   actor: DemoActor;
   role: DemoRole;
+  tenantMembership: DemoTenantMembership;
   tenant: DemoTenant;
   sessionLabel: string;
   mode: "demo";
+};
+
+export type DemoTenantMembership = {
+  actorId: UUID;
+  roleKey: DemoRoleKey;
+  scope: RoleScope;
+  tenantId: UUID;
+  tenantSlug: DemoTenantSlug;
 };
 
 export type DemoSessionDraft = {
@@ -73,7 +82,9 @@ export type DemoSessionDraft = {
 export type DemoSessionIssue =
   | "valid_role_key_required"
   | "valid_tenant_slug_required"
-  | "mapped_actor_required";
+  | "mapped_actor_required"
+  | "actor_role_context_mismatch"
+  | "actor_tenant_membership_required";
 
 export type DemoSessionResolution =
   | {
@@ -357,10 +368,20 @@ export function createDemoSession(draft: DemoSessionDraft): DemoSession {
   const tenant = resolveTenant(draft.tenantSlug);
   const role = resolveRole(draft.roleKey);
   const actor = resolveActorForRole(role.key, tenant.slug);
+  const tenantMembership =
+    resolveDemoTenantMembership(actor, role, tenant) ??
+    ({
+      actorId: actor.id,
+      roleKey: role.key,
+      scope: role.scope,
+      tenantId: tenant.id,
+      tenantSlug: tenant.slug,
+    } satisfies DemoTenantMembership);
 
   return {
     actor,
     role,
+    tenantMembership,
     tenant,
     sessionLabel: "Demo session",
     mode: "demo",
@@ -401,11 +422,17 @@ export function tryCreateDemoSession(draft: DemoSessionDraft): DemoSessionResolu
     return { issues: ["mapped_actor_required"], ok: false };
   }
 
+  const tenantMembership = resolveDemoTenantMembership(actor, role, tenant);
+  if (!tenantMembership) {
+    return { issues: ["actor_tenant_membership_required"], ok: false };
+  }
+
   return {
     ok: true,
     session: {
       actor,
       role,
+      tenantMembership,
       tenant,
       sessionLabel: "Demo session",
       mode: "demo",
@@ -444,4 +471,30 @@ export function resolveActorForRole(roleKey: DemoRoleKey, tenantSlug: DemoTenant
 
   const internalActorKey = roleToInternalActorKey[roleKey];
   return demoActors.find((actor) => actor.key === internalActorKey) ?? internalActors[0];
+}
+
+export function resolveDemoTenantMembership(
+  actor: DemoActor,
+  role: DemoRole,
+  tenant: DemoTenant,
+): DemoTenantMembership | undefined {
+  if (actor.roleKey !== role.key) {
+    return undefined;
+  }
+
+  if (!role.internal && actor.tenantSlug !== tenant.slug) {
+    return undefined;
+  }
+
+  if (actor.tenantSlug && actor.tenantSlug !== tenant.slug) {
+    return undefined;
+  }
+
+  return {
+    actorId: actor.id,
+    roleKey: role.key,
+    scope: role.scope,
+    tenantId: tenant.id,
+    tenantSlug: tenant.slug,
+  };
 }

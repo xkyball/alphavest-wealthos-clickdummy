@@ -1,4 +1,10 @@
-import { demoTenants, type DemoActor, type DemoRole, type DemoRoleKey } from "@/lib/demo-session";
+import {
+  demoTenants,
+  resolveDemoTenantMembership,
+  type DemoActor,
+  type DemoRole,
+  type DemoRoleKey,
+} from "@/lib/demo-session";
 import type {
   ObjectType,
   PermissionAction,
@@ -22,6 +28,11 @@ export type PermissionContext = {
   clientTenantId?: UUID;
   entityScopeId?: UUID;
   engagementId?: UUID;
+  objectScope?: {
+    clientTenantId?: UUID;
+    objectIds: UUID[];
+    objectType: ObjectType;
+  };
   sensitivity?: Sensitivity;
   workflowState?: WorkflowStatus | string;
   clientVisibilityState?: VisibilityStatus;
@@ -77,6 +88,13 @@ const forbiddenExportRoles = new Set<DemoRoleKey>([
   "trustee",
 ]);
 const externallyScopedRoles = new Set<DemoRoleKey>(["external_advisor", "next_gen", "trustee"]);
+const objectScopedTypes = new Set<ObjectType>([
+  "DECISION",
+  "DOCUMENT",
+  "EVIDENCE_RECORD",
+  "EXPORT_REQUEST",
+  "RECOMMENDATION",
+]);
 
 function deny(
   action: PermissionAction,
@@ -131,6 +149,18 @@ function can(
     context.sensitivity === "RESTRICTED" ||
     context.sensitivity === "HIGHLY_RESTRICTED";
   const evidenceSufficiencyAction = action === "APPROVE" && subject.objectType === "EVIDENCE_RECORD";
+  const tenant = demoTenants.find((candidate) => candidate.id === context.clientTenantId);
+  const actorMembership = role && tenant ? resolveDemoTenantMembership(actor, role, tenant) : undefined;
+
+  if (role && actor.roleKey !== role.key) {
+    return deny(
+      action,
+      subject,
+      "DEMO_DENY_ACTOR_ROLE_CONTEXT_MISMATCH",
+      "Mapped demo actor role does not match the requested current role context.",
+      true,
+    );
+  }
 
   if (crossTenant) {
     return deny(
@@ -160,6 +190,62 @@ function can(
       "Mapped client actor tenant does not match the requested action context.",
       true,
     );
+  }
+
+  if (role && tenant && !actorMembership) {
+    return deny(
+      action,
+      subject,
+      "DEMO_DENY_ACTOR_TENANT_MEMBERSHIP_REQUIRED",
+      "Mapped demo actor must have an explicit tenant membership for the requested tenant context.",
+      true,
+    );
+  }
+
+  if (subject.objectId && objectScopedTypes.has(subject.objectType)) {
+    if (!context.objectScope) {
+      return deny(
+        action,
+        subject,
+        "DEMO_DENY_OBJECT_SCOPE_REQUIRED",
+        "Object-scoped payloads require an explicit current object scope before access or mutation.",
+        true,
+      );
+    }
+
+    if (context.objectScope.objectType !== subject.objectType) {
+      return deny(
+        action,
+        subject,
+        "DEMO_DENY_OBJECT_SCOPE_TYPE_MISMATCH",
+        "Object scope type does not match the requested payload object type.",
+        true,
+      );
+    }
+
+    if (
+      context.objectScope.clientTenantId &&
+      subject.clientTenantId &&
+      context.objectScope.clientTenantId !== subject.clientTenantId
+    ) {
+      return deny(
+        action,
+        subject,
+        "DEMO_DENY_OBJECT_SCOPE_TENANT_MISMATCH",
+        "Object scope tenant does not match the requested payload tenant.",
+        true,
+      );
+    }
+
+    if (!context.objectScope.objectIds.includes(subject.objectId)) {
+      return deny(
+        action,
+        subject,
+        "DEMO_DENY_OBJECT_SCOPE_MISMATCH",
+        "Requested object is outside the current object scope.",
+        true,
+      );
+    }
   }
 
   if (

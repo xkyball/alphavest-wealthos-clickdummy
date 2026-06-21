@@ -160,6 +160,11 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
     },
     {
       clientTenantId: session.tenant.id,
+      objectScope: {
+        clientTenantId: session.tenant.id,
+        objectIds: [input.action === "accept_sufficiency" ? evidenceRecord.id : document.id],
+        objectType: permissionObjectType,
+      },
       platformTenantId: demoPlatformTenantId,
       sensitivity: document.sensitivity,
       workflowState: document.status,

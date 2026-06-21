@@ -1,5 +1,76 @@
 # Phase Execution Report
 
+## MVP-FIRST-BUILD-PHASE-1 - Providerless Context And Governance Baseline
+
+Date: 2026-06-21
+
+### Phase Completion Report
+
+- Phase: 1
+- Packages executed: `BP-01`, `BP-02`
+- Task IDs completed: `AV-FB-P1-BP01-T001`, `AV-FB-P1-BP01-T002`, `AV-FB-P1-BP01-T003`, `AV-FB-P1-BP01-T004`, `AV-FB-P1-BP01-T005`, `AV-FB-P1-BP02-T001`, `AV-FB-P1-BP02-T002`, `AV-FB-P1-BP02-T003`, `AV-FB-P1-BP02-T004`
+- Files changed:
+  - `app/api/documents/route.ts`
+  - `components/client-intake-screen.tsx`
+  - `lib/demo-session.ts`
+  - `lib/demo-workflow-mutation.ts`
+  - `lib/document-upload-service.ts`
+  - `lib/evidence-review-service.ts`
+  - `lib/export-service.ts`
+  - `lib/permission-engine.ts`
+  - `lib/visibility-engine.ts`
+  - `tests/document-upload-api.spec.ts`
+  - `tests/p0-api-contract.spec.ts`
+  - `tests/providerless-scope.spec.ts`
+  - `docs/v3/PHASE_EXECUTION_REPORT.md`
+  - `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- Tests added/updated:
+  - Extended `tests/providerless-scope.spec.ts` with explicit tenant membership, strict providerless failure and object-scope mismatch/required denials.
+  - Extended `tests/document-upload-api.spec.ts` to prove document listing requires an explicit mapped role and no longer falls back to `analyst`.
+  - Updated `tests/p0-api-contract.spec.ts` to keep invalid tenant proof explicit after document list role hardening.
+
+### Implemented Phase 1 Behaviour
+
+- Added explicit demo tenant membership to `DemoSession`, backed by `resolveDemoTenantMembership()`.
+- Preserved the UI-only `createDemoSession()` fallback while routing strict execution paths through `requireDemoSession()`.
+- Hardened `runDemoWorkflowMutation()` and typed recommendation review so unknown role/tenant input cannot silently execute under a default providerless actor.
+- Added object-scope enforcement in `permissionEngine.can()` for `DOCUMENT`, `DECISION`, `EVIDENCE_RECORD`, `EXPORT_REQUEST` and `RECOMMENDATION` payloads.
+- Passed object scope through workflow mutation, document upload, evidence review, export permission checks and document/recommendation visibility projection.
+- Removed the implicit `analyst` fallback from `GET /api/documents`; tenant and role must now both be explicit and mapped.
+- Updated the client intake document fetch to include the current demo session role key.
+- Kept admin/security governance authority separate from release, evidence sufficiency, visibility and export bypass paths; existing non-bypass tests remain green.
+
+### Validation Commands Run
+
+- `pnpm typecheck` - passed.
+- `PLAYWRIGHT_PORT=3043 pnpm test:providerless-scope` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3045 pnpm test:permissions` - passed, 7 tests.
+- `PLAYWRIGHT_PORT=3046 pnpm test:workflow-api` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3047 pnpm test:workflow-gate` - passed, 10 tests.
+- `PLAYWRIGHT_PORT=3048 pnpm test:route-smoke` - passed, 85 tests.
+- `PLAYWRIGHT_PORT=3049 pnpm playwright test tests/document-upload-api.spec.ts` - passed, 7 tests.
+- `PLAYWRIGHT_PORT=3050 pnpm playwright test tests/p0-api-contract.spec.ts` - passed, 5 tests.
+- `pnpm lint` - passed.
+- `git diff --check` - passed.
+- `pnpm exec playwright screenshot --viewport-size=1440,1100 http://127.0.0.1:3051/documents/upload artifacts/phase1-providerless-scope/documents-upload-desktop.png` - passed.
+- `pnpm exec playwright screenshot --viewport-size=390,1200 http://127.0.0.1:3051/documents/upload artifacts/phase1-providerless-scope/documents-upload-mobile.png` - passed.
+
+### Validation Notes
+
+- A first parallel attempt to run `test:permissions` collided with the already-started providerless Playwright dev server on port `3043`; it was rerun sequentially on port `3045` and passed.
+- No Prisma schema, migration, real authentication provider, new API route or generated screen/image asset was added.
+
+### Screenshot Proof
+
+| Artifact | Status | Notes |
+| --- | --- | --- |
+| `artifacts/phase1-providerless-scope/documents-upload-desktop.png` | captured | Desktop proof for the document upload surface after session-role fetch hardening. |
+| `artifacts/phase1-providerless-scope/documents-upload-mobile.png` | captured | Mobile proof for the same surface after session-role fetch hardening. |
+
+### Exit Gate Decision
+
+`PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
 ## MVP-FIRST-BUILD-PHASE-0 - Guardrails and Source Discipline
 
 Date: 2026-06-21

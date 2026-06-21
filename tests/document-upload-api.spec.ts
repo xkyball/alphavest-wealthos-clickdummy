@@ -106,7 +106,7 @@ test.describe("document upload multipart API", () => {
 
     expect(exportCountAfter).toBe(exportCountBefore);
 
-    const reload = await request.get("/api/documents?tenantSlug=morgan");
+    const reload = await request.get("/api/documents?tenantSlug=morgan&roleKey=analyst");
     const reloadBody = await reload.json();
     const reloadedDocument = reloadBody.documents.find((item: { id: string }) => item.id === document.id);
 
@@ -198,14 +198,14 @@ test.describe("document upload multipart API", () => {
     expect(evidenceRecord.relatedObjectId).toBe(document.id);
     expect(evidenceRecord.visibilityStatus).toBe("INTERNAL_ONLY");
 
-    const summitReload = await request.get("/api/documents?tenantSlug=summit");
+    const summitReload = await request.get("/api/documents?tenantSlug=summit&roleKey=analyst");
     const summitReloadBody = await summitReload.json();
     const summitDocument = summitReloadBody.documents.find((item: { id: string }) => item.id === document.id);
 
     expect(summitReload.ok(), JSON.stringify(summitReloadBody)).toBe(true);
     expect(summitDocument?.fileName).toBe(fileName);
 
-    const morganReload = await request.get("/api/documents?tenantSlug=morgan");
+    const morganReload = await request.get("/api/documents?tenantSlug=morgan&roleKey=analyst");
     const morganReloadBody = await morganReload.json();
     const leakedDocument = morganReloadBody.documents.find((item: { id: string }) => item.id === document.id);
     const exportCountAfter = await prisma.exportRequest.count({
@@ -218,13 +218,31 @@ test.describe("document upload multipart API", () => {
   });
 
   test("rejects invalid document tenant queries without falling back to another tenant", async ({ request }) => {
-    const response = await request.get("/api/documents?tenantSlug=unknown");
+    const response = await request.get("/api/documents?tenantSlug=unknown&roleKey=analyst");
     const body = await response.json();
 
     expect(response.status(), JSON.stringify(body)).toBe(400);
     expect(body.ok).toBe(false);
     expect(body.documents).toEqual([]);
     expect(body.issues).toContain("valid_tenant_slug_required");
+  });
+
+  test("rejects document queries without an explicit mapped role", async ({ request }) => {
+    const missingRole = await request.get("/api/documents?tenantSlug=morgan");
+    const missingRoleBody = await missingRole.json();
+
+    expect(missingRole.status(), JSON.stringify(missingRoleBody)).toBe(400);
+    expect(missingRoleBody.ok).toBe(false);
+    expect(missingRoleBody.documents).toEqual([]);
+    expect(missingRoleBody.issues).toEqual(["valid_role_key_required"]);
+
+    const invalidRole = await request.get("/api/documents?tenantSlug=morgan&roleKey=pretend_role");
+    const invalidRoleBody = await invalidRole.json();
+
+    expect(invalidRole.status(), JSON.stringify(invalidRoleBody)).toBe(400);
+    expect(invalidRoleBody.ok).toBe(false);
+    expect(invalidRoleBody.documents).toEqual([]);
+    expect(invalidRoleBody.issues).toEqual(["valid_role_key_required"]);
   });
 
   test("rejects upload requests with invalid role or tenant metadata", async ({ request }) => {

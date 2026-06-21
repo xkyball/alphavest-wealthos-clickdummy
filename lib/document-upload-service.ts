@@ -212,6 +212,11 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
     },
     {
       clientTenantId,
+      objectScope: {
+        clientTenantId,
+        objectIds: [uploadAttemptId],
+        objectType: "DOCUMENT",
+      },
       platformTenantId: demoPlatformTenantId,
       workflowState: "AWAITING_INFO",
     },

@@ -183,6 +183,7 @@ function toDocumentRows(documents: PersistedUploadDocument[], entityLabel: strin
 function usePersistedUploadDocuments() {
   const { session } = useDemoSession();
   const tenantSlug = session.tenant.slug;
+  const roleKey = session.role.key;
   const [documents, setDocuments] = useState<PersistedUploadDocument[]>([]);
   const [loadState, setLoadState] = useState<"idle" | "loading" | "ready" | "error">("idle");
 
@@ -191,7 +192,10 @@ function usePersistedUploadDocuments() {
     setDocuments([]);
 
     try {
-      const response = await fetch(`/api/documents?tenantSlug=${encodeURIComponent(tenantSlug)}`, { cache: "no-store" });
+      const response = await fetch(
+        `/api/documents?tenantSlug=${encodeURIComponent(tenantSlug)}&roleKey=${encodeURIComponent(roleKey)}`,
+        { cache: "no-store" },
+      );
       const body = (await response.json()) as { documents?: PersistedUploadDocument[] };
 
       if (!response.ok) {
@@ -203,7 +207,7 @@ function usePersistedUploadDocuments() {
     } catch {
       setLoadState("error");
     }
-  }, [tenantSlug]);
+  }, [roleKey, tenantSlug]);
 
   useEffect(() => {
     queueMicrotask(() => {

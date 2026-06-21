@@ -217,6 +217,15 @@ function canGenerateExport(input: {
     {
       platformTenantId: input.platformTenantId,
       clientTenantId: input.clientTenantId,
+      ...(input.targetId
+        ? {
+            objectScope: {
+              clientTenantId: input.clientTenantId,
+              objectIds: [input.targetId],
+              objectType: "EXPORT_REQUEST" as const,
+            },
+          }
+        : {}),
     },
     input.role
   );

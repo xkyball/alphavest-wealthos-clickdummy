@@ -10,20 +10,26 @@ function tenantSlugFromUrl(request: Request): DemoTenantSlug | undefined {
   return demoTenants.some((tenant) => tenant.slug === value) ? (value as DemoTenantSlug) : undefined;
 }
 
-function roleKeyFromUrl(request: Request): DemoRoleKey {
+function roleKeyFromUrl(request: Request): DemoRoleKey | undefined {
   const value = new URL(request.url).searchParams.get("roleKey");
 
-  return demoRoles.some((role) => role.key === value) ? (value as DemoRoleKey) : "analyst";
+  return demoRoles.some((role) => role.key === value) ? (value as DemoRoleKey) : undefined;
 }
 
 export async function GET(request: Request) {
   const tenantSlug = tenantSlugFromUrl(request);
-  if (!tenantSlug) {
+  const roleKey = roleKeyFromUrl(request);
+  const issues = [
+    ...(!tenantSlug ? ["valid_tenant_slug_required"] : []),
+    ...(!roleKey ? ["valid_role_key_required"] : []),
+  ];
+
+  if (!tenantSlug || !roleKey) {
     return NextResponse.json(
       {
         documents: [],
         error: "Documents are not available for this scope.",
-        issues: ["valid_tenant_slug_required"],
+        issues,
         mutated: false,
         noClientRelease: true,
         ok: false,
@@ -33,7 +39,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const documents = await listUploadedDocuments(prismaClient(), tenantSlug, roleKeyFromUrl(request));
+    const documents = await listUploadedDocuments(prismaClient(), tenantSlug, roleKey);
 
     return NextResponse.json({ documents, ok: true });
   } catch {

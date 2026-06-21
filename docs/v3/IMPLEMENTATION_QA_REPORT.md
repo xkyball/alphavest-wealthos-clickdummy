@@ -1,5 +1,54 @@
 # Implementation QA Report
 
+## MVP-FIRST-BUILD-PHASE-1 Implementation QA Addendum
+
+Date: 2026-06-21
+
+### Executive Decision
+
+`MVP_FIRST_BUILD_PHASE_1_QA_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Source of truth lock | Passed | Phase 1 used `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md` as the operative source. |
+| Providerless actor resolution | Passed | `tryCreateDemoSession()`/`requireDemoSession()` fail closed for unknown role/tenant while `createDemoSession()` remains UI fallback only. |
+| Tenant membership | Passed | `DemoSession` now carries explicit tenant membership and tests prove cross-tenant client actor mismatch is denied. |
+| Object-scope context | Passed | Permission checks now deny missing or mismatched object scope for documents, decisions, evidence, exports and recommendations. |
+| Admin governance baseline | Passed | Admin/security governance actions keep audit and second-confirmation semantics without bypassing release, sufficiency, visibility or export gates. |
+| Document API fail-closed | Passed | `GET /api/documents` requires explicit tenant and role; invalid/missing role returns empty no-release payload instead of defaulting to analyst. |
+| No schema/auth expansion | Passed | No Prisma schema, migration, real auth provider, new API route or generated visual asset was added. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | TypeScript completed cleanly. |
+| `PLAYWRIGHT_PORT=3043 pnpm test:providerless-scope` | Passed | 8 tests, including new tenant membership and object-scope denials. |
+| `PLAYWRIGHT_PORT=3045 pnpm test:permissions` | Passed | 7 tests; first parallel attempt failed only because another Next dev server was already active on port `3043`. |
+| `PLAYWRIGHT_PORT=3046 pnpm test:workflow-api` | Passed | 13 tests; strict workflow mutation still preserves typed review and fail-closed behavior. |
+| `PLAYWRIGHT_PORT=3047 pnpm test:workflow-gate` | Passed | 10 tests. |
+| `PLAYWRIGHT_PORT=3048 pnpm test:route-smoke` | Passed | 85 tests; no route workset regression. |
+| `PLAYWRIGHT_PORT=3049 pnpm playwright test tests/document-upload-api.spec.ts` | Passed | 7 tests; document listing role hardening verified. |
+| `PLAYWRIGHT_PORT=3050 pnpm playwright test tests/p0-api-contract.spec.ts` | Passed | 5 tests; P0 fail-closed API contract remains intact. |
+| `pnpm lint` | Passed | ESLint completed cleanly. |
+| `git diff --check` | Passed | No whitespace errors. |
+| Screenshot capture | Passed | Desktop and mobile screenshots captured for `/documents/upload` because `components/client-intake-screen.tsx` was touched. |
+
+### Screenshot Proof
+
+| Artifact | Status | Notes |
+| --- | --- | --- |
+| `artifacts/phase1-providerless-scope/documents-upload-desktop.png` | Captured | Desktop UI proof for the session-role document fetch hardening. |
+| `artifacts/phase1-providerless-scope/documents-upload-mobile.png` | Captured | Mobile UI proof for the same route. |
+
+### Residual Risks
+
+- Phase 1 implements providerless demo context and admin governance baseline only; it is not production authentication or full RBAC.
+- Object-scope enforcement is now central for permission checks that provide `objectId`; later phases still need broader user-role assignment UX and persistence semantics beyond the existing demo baseline.
+- Passing Phase 1 does not prove final MVP readiness, complete client release lifecycle, production audit retention or legal/financial advice suitability.
+
 ## MVP-FIRST-BUILD-PHASE-0 Implementation QA Addendum
 
 Date: 2026-06-21

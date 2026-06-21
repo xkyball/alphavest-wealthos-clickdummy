@@ -23,7 +23,7 @@ test.describe("Phase 10 P0 API fail-closed contract", () => {
   });
 
   test("invalid document list scope returns an empty no-release payload", async ({ request }) => {
-    const response = await request.get("/api/documents?tenantSlug=unknown");
+    const response = await request.get("/api/documents?tenantSlug=unknown&roleKey=analyst");
     const body = await response.json();
 
     expect(response.status(), JSON.stringify(body)).toBe(400);

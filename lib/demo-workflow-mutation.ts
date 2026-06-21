@@ -12,9 +12,9 @@ import {
 } from "@prisma/client";
 
 import {
-  createDemoSession,
   demoPlatformTenantId,
   demoTenants,
+  requireDemoSession,
   type DemoRoleKey,
   type DemoTenantSlug,
 } from "@/lib/demo-session";
@@ -145,7 +145,7 @@ class RecommendationReviewWorkflowError extends Error {
 
 type DemoWorkflowMutationHelpers = {
   permission: Awaited<ReturnType<typeof permissionEngine.can>>;
-  session: ReturnType<typeof createDemoSession>;
+  session: ReturnType<typeof requireDemoSession>;
 };
 
 export type DemoWorkflowMutationResult<T extends Record<string, unknown>> = T & {
@@ -167,16 +167,17 @@ export async function runDemoWorkflowMutation<T extends Record<string, unknown>>
     helpers: DemoWorkflowMutationHelpers,
   ) => Promise<T>,
 ): Promise<DemoWorkflowMutationResult<T>> {
-  const session = createDemoSession({
+  const session = requireDemoSession({
     roleKey: input.actorRoleKey,
     tenantSlug: input.tenantSlug,
   });
+  const permissionObjectType = input.permissionObjectType ?? (input.targetType as DomainObjectType);
   const permission = await permissionEngine.can(
     session.actor,
     input.permissionAction,
     {
       objectId: input.targetId,
-      objectType: input.permissionObjectType ?? (input.targetType as DomainObjectType),
+      objectType: permissionObjectType,
       sensitivity: input.sensitivity ?? "CONFIDENTIAL",
       clientTenantId: input.clientTenantId,
       visibilityStatus: input.visibilityStatus ?? "COMPLIANCE_VISIBLE",
@@ -185,6 +186,11 @@ export async function runDemoWorkflowMutation<T extends Record<string, unknown>>
     {
       platformTenantId: input.platformTenantId ?? demoPlatformTenantId,
       clientTenantId: input.clientTenantId,
+      objectScope: {
+        clientTenantId: input.clientTenantId,
+        objectIds: [input.targetId],
+        objectType: permissionObjectType,
+      },
       workflowState: input.workflowState,
     },
     session.role,
@@ -609,7 +615,7 @@ export async function runRecommendationReviewWorkflowMutation(
   }
 
   const tenantSlug = tenantSlugForId(recommendation.clientTenantId);
-  const session = createDemoSession({
+  const session = requireDemoSession({
     roleKey: input.actorRoleKey,
     tenantSlug,
   });
@@ -627,6 +633,11 @@ export async function runRecommendationReviewWorkflowMutation(
     },
     {
       clientTenantId: recommendation.clientTenantId,
+      objectScope: {
+        clientTenantId: recommendation.clientTenantId,
+        objectIds: [input.targetId],
+        objectType: "RECOMMENDATION",
+      },
       platformTenantId: demoPlatformTenantId,
       workflowState: "COMPLIANCE_PENDING",
     },
