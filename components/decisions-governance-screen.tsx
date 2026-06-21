@@ -733,8 +733,10 @@ function DecisionRoomPage({ title }: { title: string }) {
                 <CardHeader><CardTitle>Situation Summary</CardTitle></CardHeader>
                 <CardContent>
                   <p className="text-sm leading-6 text-alphavest-muted">{decisionRoom.summary}</p>
-                  <div className="mt-4 grid gap-3 sm:grid-cols-5">
-                    {["Current allocation: see analysis", "Target allocation: option 1", "Impact: +0.35% return", "Turnover: 18%", "Recommendation: option 1"].map((item) => <Badge key={item} tone="gold">{item}</Badge>)}
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {["Current allocation: see analysis", "Target allocation: option 1", "Impact: +0.35% return", "Turnover: 18%", "Recommendation: option 1"].map((item) => (
+                      <Badge className="h-auto min-h-[var(--status-chip-height)] max-w-full whitespace-normal py-1 leading-4" key={item} tone="gold">{item}</Badge>
+                    ))}
                   </div>
                 </CardContent>
               </Card>

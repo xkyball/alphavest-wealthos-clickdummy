@@ -1,5 +1,65 @@
 # Implementation QA Report
 
+## MVP-FIRST-BUILD-PHASES-1-4 Implementation QA Addendum
+
+Date: 2026-06-21
+
+### Executive Decision
+
+`MVP_FIRST_BUILD_PHASES_1_4_QA_PASSED_WITH_SCREENSHOT_PROOF`
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Source of truth lock | Passed | Used `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md` Phases 1-4 / `BP-01` through `BP-06` as the operative source. |
+| Providerless current user | Passed | `pnpm test:providerless-scope` proves deterministic actor, tenant, role and object-scope resolution without anonymous strict fallback. |
+| Tenant/object isolation | Passed | Permission tests deny cross-tenant, missing tenant context, wrong object and missing object scope. |
+| Admin non-bypass | Passed | Governance tests allow policy management but deny release, evidence sufficiency, visibility and export bypass attempts with audit coverage. |
+| Route/action/payload separation | Passed | Route smoke and permission tests prove route shell availability does not grant mutation or payload visibility. |
+| Evidence lifecycle | Passed | Upload API and browser flow prove multipart persistence, tenant reload, invalid upload fail-closed behavior and upload-not-sufficiency. |
+| Internal AI/rules draft boundary | Passed | Workflow API tests keep analyst draft/rebuild internal and block AI Draft/internal rationale/compliance note leakage. |
+| Advisor not release | Passed | Workflow gate/API tests prove advisor approval persists but does not set client visibility or compliance release. |
+| Screenshot proof | Passed | Captured Admin/Tenant, Document Upload, Internal Workflow and Decisions/Governance screenshots after waiting for real page content. |
+| Visual QA remediation | Passed | Screenshot review found a Decision Room summary-chip overlap; `components/decisions-governance-screen.tsx` was fixed and recaptured. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm test:providerless-scope` | Passed | 8 providerless scope tests. |
+| `pnpm test:permissions` | Passed | 8 permission, visibility and deny-audit tests. |
+| `pnpm test:workflow-gate` | Passed | 11 evidence/advice gate tests. |
+| `pnpm test:workflow-api` | Passed | 15 API workflow tests including typed recommendation review. |
+| `pnpm test:file-export` | Passed | 13 export/redaction tests, relevant for AI/internal leakage negatives. |
+| `pnpm test:document-upload-api` | Passed | 8 multipart upload/API tests after adding the missing package script. |
+| `pnpm test:document-upload-flow` | Passed | 4 browser upload lifecycle tests after adding the missing package script. |
+| `pnpm test:route-smoke` | Passed | 85 registered route/workset tests. |
+| `pnpm test:governance-non-bypass` | Passed | 3 governance non-bypass and audit persistence tests. |
+| `pnpm typecheck` | Passed | TypeScript completed cleanly after the script and visual fix. |
+| `pnpm lint` | Passed | ESLint completed cleanly. |
+| `pnpm db:validate` | Passed | Prisma schema remained valid; no schema or migration was changed. |
+| `pnpm build` | Passed with warnings | Existing Turbopack tracing warnings remain in `lib/document-storage-adapter.ts`. |
+| `PLAYWRIGHT_SKIP_WEB_SERVER=1 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3020 pnpm exec playwright test tests/route-smoke.spec.ts -g "044 /decisions/demo"` | Passed | Targeted post-fix route smoke for the recaptured Decision Room. |
+| Initial parallel focused test run | Failed then rerun | Parallel Playwright webservers collided on `127.0.0.1:3020`; rerun sequentially, no assertion failure. |
+| Screenshot capture | Passed | Captured four screenshots under `artifacts/phase1-4-screenshots/`. |
+
+### Screenshot Proof
+
+| Artifact | Status | Notes |
+| --- | --- | --- |
+| `artifacts/phase1-4-screenshots/phase1-2-admin-tenant-setup.png` | Captured | Tenant setup/admin governance with visible gate guidance. |
+| `artifacts/phase1-4-screenshots/phase3-document-upload.png` | Captured | Document upload screen explicitly states upload is not evidence sufficiency. |
+| `artifacts/phase1-4-screenshots/phase4-internal-workflow.png` | Captured | Internal workbench shows advisor/compliance separation and client release lock. |
+| `artifacts/phase1-4-screenshots/phase3-4-decisions-governance.png` | Captured | Decision room visibility warning and corrected summary-chip layout. |
+
+### Residual Risks
+
+- Phases 1-4 are validated against the demo-data First Build implementation, not production authentication, production audit immutability or real client/advice delivery.
+- Evidence upload uses the existing local demo storage adapter and Prisma seed/test data; this does not certify production object-storage custody.
+- Screenshot proof is representative for the four Phase 1-4 surfaces and one desktop viewport; it is not full human visual acceptance across every route and viewport.
+- The existing Turbopack filesystem tracing warnings in `lib/document-storage-adapter.ts` are still outside this Phase 1-4 scope.
+
 ## All Routes Soft Unlock QA Addendum
 
 Date: 2026-06-21

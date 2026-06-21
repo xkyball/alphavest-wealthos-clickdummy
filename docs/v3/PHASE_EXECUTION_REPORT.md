@@ -1,5 +1,70 @@
 # Phase Execution Report
 
+## MVP-FIRST-BUILD-PHASES-1-4 - Providerless Scope, Governance, Evidence And Internal Review
+
+Date: 2026-06-21
+
+### Phase Completion Report
+
+- Phase: 1-4 executed together.
+- Packages executed: `BP-01`, `BP-02`, `BP-03`, `BP-04`, `BP-05`, `BP-06`.
+- Task IDs completed: `AV-FB-P1-BP01-T001`, `AV-FB-P1-BP01-T002`, `AV-FB-P1-BP01-T003`, `AV-FB-P1-BP01-T004`, `AV-FB-P1-BP01-T005`, `AV-FB-P1-BP02-T001`, `AV-FB-P1-BP02-T002`, `AV-FB-P1-BP02-T003`, `AV-FB-P1-BP02-T004`, `AV-FB-P2-BP03-T001`, `AV-FB-P2-BP03-T002`, `AV-FB-P2-BP03-T003`, `AV-FB-P2-BP03-T004`, `AV-FB-P2-BP03-T005`, `AV-FB-P2-BP03-T006`, `AV-FB-P3-BP04-T001`, `AV-FB-P3-BP04-T002`, `AV-FB-P3-BP04-T003`, `AV-FB-P3-BP04-T004`, `AV-FB-P3-BP04-T005`, `AV-FB-P4-BP05-T001`, `AV-FB-P4-BP05-T002`, `AV-FB-P4-BP05-T003`, `AV-FB-P4-BP05-T004`, `AV-FB-P4-BP06-T001`, `AV-FB-P4-BP06-T002`, `AV-FB-P4-BP06-T003`.
+- Source of truth: `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md`.
+- Files changed:
+  - `package.json`
+  - `components/decisions-governance-screen.tsx`
+  - `docs/v3/PHASE_EXECUTION_REPORT.md`
+  - `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+  - `artifacts/phase1-4-screenshots/phase1-2-admin-tenant-setup.png`
+  - `artifacts/phase1-4-screenshots/phase3-document-upload.png`
+  - `artifacts/phase1-4-screenshots/phase4-internal-workflow.png`
+  - `artifacts/phase1-4-screenshots/phase3-4-decisions-governance.png`
+- Tests added/updated: added `test:document-upload-api` and `test:document-upload-flow` scripts so Phase 3 validation commands are executable through package scripts.
+- Validation commands run:
+  - `pnpm test:providerless-scope` - passed, 8 tests.
+  - `pnpm test:permissions` - passed, 8 tests.
+  - `pnpm test:workflow-gate` - passed, 11 tests.
+  - `pnpm test:workflow-api` - passed, 15 tests.
+  - `pnpm test:file-export` - passed, 13 tests.
+  - `pnpm test:document-upload-api` - passed, 8 tests.
+  - `pnpm test:document-upload-flow` - passed, 4 tests.
+  - `pnpm test:route-smoke` - passed, 85 tests.
+  - `pnpm test:governance-non-bypass` - passed, 3 tests.
+  - `pnpm typecheck` - passed.
+  - `pnpm lint` - passed.
+  - `pnpm db:validate` - passed.
+  - `pnpm build` - passed with existing Turbopack tracing warnings in `lib/document-storage-adapter.ts`.
+  - `PLAYWRIGHT_SKIP_WEB_SERVER=1 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3020 pnpm exec playwright test tests/route-smoke.spec.ts -g "044 /decisions/demo"` - passed, 1 test after the Decision Room visual fix.
+- Validation result: passed for all focused Phase 1-4 checks after rerunning initial port-collision failures sequentially.
+- Positive acceptance proven: mapped demo actors resolve deterministic tenant/role/object context; governance role management remains allowed within policy; scoped document upload creates persisted document/evidence/audit rows; analyst review, evidence rebuild and advisor approval progress through real workflow API state.
+- Negative P0 acceptance proven: unknown/wrong tenant/wrong object requests fail closed; admin cannot force release, sufficiency, visibility or export; upload success does not unlock release/export/client visibility; AI Draft/internal rationale/compliance notes remain internal; advisor approval alone does not release or make content client-visible.
+- Stop rules triggered: no.
+- Blockers: none for Phases 1-4.
+- Deviations from handoff: no scope expansion. `package.json` was updated because the handoff-required `pnpm test:document-upload-api` command was missing.
+- Confirmation that formerly blocked/P1/hold/DNC scope was either untouched or touched only through explicit task ID, positive proof, negative proof and validation: no formerly blocked/P1/hold/DNC task family was implemented in this Phase 1-4 run.
+
+### Implemented / Verified Behaviour
+
+- Verified existing providerless scope semantics in `components/demo-session-provider.tsx`, `components/demo-session-panel.tsx`, `components/top-bar.tsx`, `lib/demo-session.ts` and `lib/permission-engine.ts` through the providerless and permission suites.
+- Verified route access, action permission, object scope and payload visibility are independent gates in `lib/permission-engine.ts`, `lib/visibility-engine.ts`, `app/[...segments]/page.tsx` and the route registry.
+- Verified admin governance remains non-bypass in `lib/permission-engine.ts`, `lib/demo-workflow-mutation.ts` and `lib/audit-service.ts`, including denied audit persistence for forced evidence sufficiency.
+- Verified Phase 3 upload/evidence lifecycle through the real multipart API, tenant-scoped document reload and browser upload flow.
+- Verified Phase 4 internal draft, unsupported claim rejection, evidence-linked rebuild and advisor-not-release semantics through the typed recommendation review workflow API.
+- Fixed the visible Decision Room summary chip overlap discovered during screenshot QA by allowing long chips to wrap within the card.
+
+### Screenshot Proof
+
+| Artifact | Status | Notes |
+| --- | --- | --- |
+| `artifacts/phase1-4-screenshots/phase1-2-admin-tenant-setup.png` | captured | Tenant setup/admin governance route with downstream gate guidance and activation blocked by incomplete items. |
+| `artifacts/phase1-4-screenshots/phase3-document-upload.png` | captured | Document upload surface with upload-not-sufficiency guidance and persisted upload area. |
+| `artifacts/phase1-4-screenshots/phase4-internal-workflow.png` | captured | Internal workflow workbench showing internal-only/advisor/compliance separation and blocked publish gate. |
+| `artifacts/phase1-4-screenshots/phase3-4-decisions-governance.png` | captured | Digital Decision Room after layout fix, with compliance-release visibility warning and non-overlapping summary chips. |
+
+### Exit Gate Decision
+
+`PHASES_1_4_IMPLEMENTED_AND_VALIDATED_WITH_SCREENSHOT_PROOF`
+
 ## ALL-ROUTES-SOFT-UNLOCK - UI Access With Safety Boundaries
 
 Date: 2026-06-21
