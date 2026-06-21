@@ -26,12 +26,17 @@ type DataTableProps<T> = {
 };
 
 const stateCopy: Record<ComponentState, { detail: string; title: string }> = {
+  "audit-unavailable": { title: "Audit unavailable", detail: "This table cannot complete a critical action until audit persistence is available." },
   blocked: { title: "Access blocked", detail: "This table is gated until the required workflow checks pass." },
+  denied: { title: "Permission denied", detail: "The current actor cannot view this table or perform this action." },
   empty: { title: "No records", detail: "There are no matching records for the current filters." },
   error: { title: "Unable to load", detail: "The table could not load the requested demo records." },
+  hidden: { title: "Hidden", detail: "Payload is hidden until route, role and visibility gates allow it." },
   loading: { title: "Loading records", detail: "Rows are being prepared for this workspace." },
+  redacted: { title: "Redacted", detail: "Sensitive fields are redacted for this actor and workflow state." },
   restricted: { title: "Restricted", detail: "Only permitted roles can view these rows." },
-  success: { title: "State complete", detail: "The requested state is complete for this workflow view." }
+  success: { title: "State complete", detail: "The requested state is complete for this workflow view." },
+  validation: { title: "Validation required", detail: "Complete the required inputs before continuing." }
 };
 
 export function DataTable<T>({

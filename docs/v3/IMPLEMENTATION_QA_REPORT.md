@@ -1,5 +1,57 @@
 # Implementation QA Report
 
+## UI Clickflow Phase 01-05 QA Addendum
+
+Date: 2026-06-21
+
+### Executive Decision
+
+`UI_CLICKFLOW_PHASE_01_05_QA_PASSED_WITH_SCOPED_PROOF_LIMITS`
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Source of truth lock | Passed | Used `ALPHAVEST_UI_CLICKFLOW_PAGEFLOW_STATE_VISIBILITY_INTERACTION_CODEX_TASK_PACK.md` as the operative task pack. |
+| Phase scope | Passed | Covered Phase 01 through Phase 05 only; later Phase 06+ work remains untouched. |
+| Shared UI guards | Passed | `lib/ui-clickflow-guards.ts` now centralizes UI state mapping, action guards, client projection summary, evidence UI state and advisor/compliance UI state over existing services. |
+| Route/action separation | Passed | Route shell, payload visibility and object-scoped mutation authority are evaluated separately. The first focused run caught an over-broad expectation, and the implementation was corrected to use explicit object-scoped action permission. |
+| Shared state taxonomy | Passed | `StatePanel` and `DataTable` support denied, hidden, redacted, validation and audit-unavailable states. |
+| Access/foundation flows | Passed | Phase 02 proof covers own-tenant route access, wrong-tenant denial and role confirmation route availability. |
+| Upload/evidence flows | Passed | Phase 03 proof keeps uploaded evidence review-pending and blocks upload-to-sufficiency shortcut. |
+| Internal draft boundary | Passed | Phase 04 proof keeps AI/rules drafts internal and cleanly hidden from client projection. |
+| Advisor/compliance gates | Passed | Phase 05 proof separates advisor approval, compliance release, audit persistence and client visibility. |
+| Forbidden scope | Passed | No Prisma migration, API route, route-scope reclassification, screen generation, generated state image, production auth, autonomous advice, client-visible AI draft or P1/HOLD promotion was added. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm exec playwright test tests/ui-clickflow-phase01-05.spec.ts --workers=1` | Passed | 5 tests after correcting the route/action authority implementation. |
+| `pnpm exec playwright test tests/permission-engine.spec.ts tests/workflow-gate.spec.ts tests/evidence-service.spec.ts tests/client-visibility-proof.spec.ts tests/ui-clickflow-phase01-05.spec.ts --workers=1` | Passed | 35 tests across adjacent Control-Layer services plus the new UI clickflow proof. |
+| `pnpm typecheck` | Passed | TypeScript completed cleanly. |
+| `pnpm lint` | Passed | ESLint completed cleanly. |
+| `pnpm db:validate` | Passed | Prisma schema remained valid. |
+
+### P0 Proof Status
+
+| Proof Area | Status | Notes |
+| --- | --- | --- |
+| Route shell versus action authority | Passed | Concrete object-scoped release action can be enabled for compliance while advisor release remains denied. |
+| Payload visibility | Passed | Own tenant payload is visible; wrong tenant payload is denied. |
+| Validation state | Passed | Missing validation maps to `VALIDATION_FAILED_STATE`. |
+| Audit unavailable | Passed | Critical compliance action maps to `AUDIT_UNAVAILABLE_STATE` when audit persistence is unavailable. |
+| Upload not sufficiency | Passed | Upload-only evidence maps to gated state and cannot support compliance release. |
+| AI draft internal only | Passed | Internal analyst can inspect draft payload; client projection remains hidden and clean. |
+| Advisor not release | Passed | Advisor approval does not satisfy compliance release or client visibility gates. |
+| Released-only client visibility | Passed within Phase 05 scope | Fully released compliance state passes client visibility gate; broader decision-room UI remains Phase 06. |
+
+### Residual Risks
+
+- This QA pass proves the shared UI clickflow guard layer and deterministic service-level behavior. It is not a full visual/browser clickthrough acceptance run for every route in the atlas.
+- Existing modal/drawer lifecycle proof remains in the current confirmation lifecycle harness; no new modal/drawer implementation was added.
+- Phase 06 client decision room, Phase 07 governance-negative UI, Phase 08 export UI, Phase 09 P1/HOLD/SPEC guards and later offboarding work remain outside this implementation.
+
 ## E2E-WS-00 - E2E-WS-05 Journey Proof QA Addendum
 
 Date: 2026-06-21

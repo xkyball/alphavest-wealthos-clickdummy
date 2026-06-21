@@ -5,6 +5,7 @@ export * from "@/components/ui/data-table";
 export * from "@/components/ui/drawer";
 export * from "@/components/ui/evidence-list";
 export * from "@/components/ui/filter-bar";
+export * from "@/components/ui/guarded-action-button";
 export * from "@/components/ui/kanban";
 export * from "@/components/ui/metric-card";
 export * from "@/components/ui/modal";

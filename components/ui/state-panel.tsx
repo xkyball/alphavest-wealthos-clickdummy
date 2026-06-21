@@ -1,8 +1,19 @@
-import { AlertTriangle, Ban, CheckCircle2, EyeOff, FileSearch, LoaderCircle } from "lucide-react";
+import { AlertTriangle, Ban, CheckCircle2, EyeOff, FileSearch, LoaderCircle, ShieldAlert } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
 
-export type ComponentState = "blocked" | "empty" | "error" | "loading" | "restricted" | "success";
+export type ComponentState =
+  | "audit-unavailable"
+  | "blocked"
+  | "denied"
+  | "empty"
+  | "error"
+  | "hidden"
+  | "loading"
+  | "redacted"
+  | "restricted"
+  | "success"
+  | "validation";
 
 type StatePanelProps = {
   className?: string;
@@ -12,12 +23,17 @@ type StatePanelProps = {
 };
 
 const stateMeta: Record<ComponentState, { icon: LucideIcon; style: string }> = {
+  "audit-unavailable": { icon: ShieldAlert, style: "border-alphavest-red/35 bg-alphavest-red/10 text-alphavest-red" },
   blocked: { icon: Ban, style: "border-alphavest-red/35 bg-alphavest-red/10 text-alphavest-red" },
+  denied: { icon: Ban, style: "border-alphavest-red/35 bg-alphavest-red/10 text-alphavest-red" },
   empty: { icon: FileSearch, style: "border-alphavest-border bg-alphavest-charcoal/55 text-alphavest-muted" },
   error: { icon: AlertTriangle, style: "border-alphavest-red/35 bg-alphavest-red/10 text-alphavest-red" },
+  hidden: { icon: EyeOff, style: "border-alphavest-gold/40 bg-alphavest-gold/10 text-alphavest-gold-soft" },
   loading: { icon: LoaderCircle, style: "border-alphavest-blue/35 bg-alphavest-blue/10 text-alphavest-blue" },
+  redacted: { icon: EyeOff, style: "border-alphavest-gold/40 bg-alphavest-gold/10 text-alphavest-gold-soft" },
   restricted: { icon: EyeOff, style: "border-alphavest-gold/40 bg-alphavest-gold/10 text-alphavest-gold-soft" },
-  success: { icon: CheckCircle2, style: "border-alphavest-green/35 bg-alphavest-green/10 text-alphavest-green" }
+  success: { icon: CheckCircle2, style: "border-alphavest-green/35 bg-alphavest-green/10 text-alphavest-green" },
+  validation: { icon: AlertTriangle, style: "border-alphavest-gold/40 bg-alphavest-gold/10 text-alphavest-gold-soft" }
 };
 
 export function StatePanel({ className, detail, state, title }: StatePanelProps) {
