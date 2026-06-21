@@ -51,6 +51,7 @@ import { ProductGuidanceContent } from "@/components/product-guidance-panel";
 import { RouteContextChip } from "@/components/route-context-chip";
 import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
+import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
 import { cn } from "@/lib/cn";
 import {
   recommendationReviewDemoTargets,
@@ -904,6 +905,23 @@ function TriggerDetailPage({ title }: { title: string }) {
       <div className="mx-auto grid max-w-[112rem] gap-5 2xl:grid-cols-[1fr_24rem]">
         <section className="min-w-0 space-y-5">
           <ScfP04P06FlowPanel mode="advisory" />
+          <UxDetailStandardPanel
+            actionLabel="Route to advisor review"
+            actionState="Routing is allowed only after analyst review; it does not create client-visible advice."
+            evidenceItems={["Beneficial ownership signal", "Related documents", "Open data gaps"]}
+            facts={[
+              { label: "Severity", value: triggerDetail.severity },
+              { label: "Source", value: triggerDetail.source },
+              { label: "Analyst", value: triggerDetail.analyst },
+              { label: "Related object", value: triggerDetail.relatedTo },
+            ]}
+            objectTitle={triggerDetail.title}
+            objectType="Trigger detail"
+            routeId="035"
+            safetyNote="Visual routing controls are not behavior proof; downstream advisor and compliance gates still apply."
+            status={triggerDetail.status}
+            timelineItems={["Signal detected", "Analyst review open", "Escalation pending"]}
+          />
           <Card>
             <CardContent className="space-y-5">
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -1186,6 +1204,23 @@ function AdvisorDetailPage({ title }: { title: string }) {
             title={title}
           />
           <ScfP04P06FlowPanel mode="advisory" />
+          <UxDetailStandardPanel
+            actionLabel="Approve for compliance queue"
+            actionState="Advisor approval records advisor review only; compliance release remains required before client visibility."
+            evidenceItems={["Reviewed documents", "Client objective", "Recommendation rationale"]}
+            facts={[
+              { label: "Client", value: selectedApproval.client },
+              { label: "Package", value: selectedApproval.packageType },
+              { label: "Analyst", value: selectedApproval.analyst },
+              { label: "Created", value: selectedApproval.created },
+            ]}
+            objectTitle={selectedApproval.recommendationId}
+            objectType="Advisor approval detail"
+            routeId="037"
+            safetyNote="No unapproved advice reaches the client; AI draft content remains internal until all release gates pass."
+            status={selectedApproval.status}
+            timelineItems={["Analyst submitted", "Advisor reviewing", "Compliance not released"]}
+          />
           <Card>
             <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
               {[
@@ -1349,6 +1384,23 @@ function ComplianceReviewPage({ title }: { title: string }) {
             title={title}
           />
           <ScfP04P06FlowPanel mode="compliance" />
+          <UxDetailStandardPanel
+            actionLabel="Release, block or request evidence"
+            actionState="Release is disabled until evidence, policy, reviewer and approver prerequisites pass."
+            evidenceItems={["Evidence completeness", "Policy checks", "Audit references"]}
+            facts={[
+              { label: "Review ID", value: complianceReview.id },
+              { label: "Classification", value: complianceReview.classification },
+              { label: "Due", value: complianceReview.due },
+              { label: "Policy", value: complianceReview.policy },
+            ]}
+            objectTitle={complianceReview.title}
+            objectType="Compliance review detail"
+            routeId="039"
+            safetyNote="Advisor approval is not compliance release; compliance release is not client acceptance."
+            status="Release gates not satisfied"
+            timelineItems={["Auto-classification completed", "Reviewer assigned", "Policy exception open"]}
+          />
           <div className="grid gap-5 xl:grid-cols-2 2xl:grid-cols-[0.85fr_0.9fr_0.9fr]">
             <Card>
               <CardHeader><CardTitle>Output Classification</CardTitle></CardHeader>
@@ -1476,6 +1528,23 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
         </aside>
         <section className={cn("min-w-0 space-y-5", modalOpen ? "opacity-45" : "")}>
           <PageHeading badge={<Badge tone="green">Approved</Badge>} subtitle="Review ID: CR-2025-0407-0012" title="Compliance review" />
+          <UxDetailStandardPanel
+            actionLabel="Confirm release to client"
+            actionState="Release requires explicit confirmation and audit persistence before any client visibility changes."
+            evidenceItems={["Release checklist", "Client-safe preview candidate", "Evidence and audit references"]}
+            facts={[
+              { label: "Review ID", value: "CR-2025-0407-0012" },
+              { label: "Client", value: "James & Olivia Bennett" },
+              { label: "Prepared by", value: "Daniel Carter" },
+              { label: "Status", value: "Approved for release review" },
+            ]}
+            objectTitle="Retirement Income Plan"
+            objectType="Release confirmation detail"
+            routeId="040"
+            safetyNote="Advisor approval alone is not enough; explicit compliance release controls client visibility."
+            status="Release action pending"
+            timelineItems={["Compliance checklist reviewed", "Confirmation required", "Audit write pending"]}
+          />
           <Card><CardHeader><CardTitle>Advice package</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">{[["Advice package", "Retirement Income Plan"], ["Client", "James & Olivia Bennett"], ["Prepared by", "Daniel Carter"], ["Last updated", "7 May 2025, 10:42 AM"]].map(([label, value]) => <InfoRow key={label} label={label} value={value} />)}</CardContent></Card>
           <InternalGuard />
         </section>

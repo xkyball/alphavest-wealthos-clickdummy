@@ -48,6 +48,7 @@ import { RouteContextChip } from "@/components/route-context-chip";
 import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
 import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
+import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
 import { cn } from "@/lib/cn";
 import {
   recommendationReviewDemoTargets,
@@ -417,6 +418,23 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
             title={complianceBlockReview.reviewTitle}
           />
           <ScfP04P06FlowPanel mode="compliance" />
+          <UxDetailStandardPanel
+            actionLabel="Request evidence or keep blocked"
+            actionState="The advice object remains blocked until requested evidence is received, reviewed and released."
+            evidenceItems={["Missing evidence checklist", "Requested evidence items", "Block reason"]}
+            facts={[
+              { label: "Review ID", value: complianceBlockReview.id },
+              { label: "Client", value: complianceBlockReview.client },
+              { label: "Advisor", value: complianceBlockReview.advisor },
+              { label: "Owner", value: complianceBlockReview.owner },
+            ]}
+            objectTitle={complianceBlockReview.reviewTitle}
+            objectType="Compliance block detail"
+            routeId="041"
+            safetyNote="Block and request-evidence states are controls; they do not complete release or client acceptance."
+            status="Blocked"
+            timelineItems={complianceBlockReview.timeline.slice(0, 3).map((item) => item.title)}
+          />
           <div className="rounded-md border border-alphavest-border bg-alphavest-panel/70 p-4">
             <p className="text-sm text-alphavest-muted">Advice content is blocked and cannot be viewed by the client.</p>
           </div>
@@ -690,6 +708,23 @@ function DecisionRoomPage({ title }: { title: string }) {
           title={title}
         />
         <ScfP07P09TrustPanel mode="decision" />
+        <UxDetailStandardPanel
+          actionLabel="Accept, defer, reject or request more information"
+          actionState="Decision actions are recorded only within the released decision workflow and do not bypass evidence or compliance controls."
+          evidenceItems={["Linked documents", "Approvals", "Decision options"]}
+          facts={[
+            { label: "Decision ID", value: decisionRoom.decisionId },
+            { label: "Client", value: decisionRoom.client },
+            { label: "Owner", value: decisionRoom.owner },
+            { label: "Due", value: decisionRoom.dueDate },
+          ]}
+          objectTitle={decisionRoom.title}
+          objectType="Decision detail"
+          routeId="044"
+          safetyNote="Decision submission is not client acceptance; compliance and evidence controls remain authoritative."
+          status="Ready to decide"
+          timelineItems={["Released package available", "Decision review open", "Audit persistence required"]}
+        />
         <div className="grid gap-5 xl:grid-cols-[1fr_18rem]">
           <section className="min-w-0 space-y-5">
             <StatePanel detail="Until released, this decision and related materials are confidential and not visible to the client. No unapproved advice reaches the client." state="restricted" title="Content is client-visible only after Compliance Release" />
@@ -848,6 +883,23 @@ function DecisionSuccessPage({ title }: { title: string }) {
           </CardContent>
         </Card>
         <ScfP07P09TrustPanel mode="decision" />
+        <UxDetailStandardPanel
+          actionLabel="Review submitted decision and linked evidence"
+          actionState="The submitted state records decision evidence; it does not expand client acceptance or release authority."
+          evidenceItems={["Persisted audit record", "Evidence package queued", "Review schedule"]}
+          facts={[
+            { label: "Decision ID", value: decisionSuccess.decisionId },
+            { label: "Client", value: decisionSuccess.client },
+            { label: "Submitted by", value: decisionSuccess.submittedBy },
+            { label: "Audit event", value: decisionSuccess.auditEventId },
+          ]}
+          objectTitle={decisionSuccess.type}
+          objectType="Decision submitted detail"
+          routeId="045"
+          safetyNote="Evidence sufficiency still requires review and release gates after submission."
+          status="Recorded for review"
+          timelineItems={["Decision submitted", "Audit persisted", "Evidence package queued"]}
+        />
         <div className="grid gap-5 lg:grid-cols-3">
           <Card>
             <CardHeader><CardTitle>Persisted Audit Record</CardTitle></CardHeader>
@@ -1003,6 +1055,23 @@ function EvidenceRecordDetailPage({ title }: { title: string }) {
           title={title}
         />
         <ScfP04P06FlowPanel mode="evidence" />
+        <UxDetailStandardPanel
+          actionLabel="Inspect controlled evidence"
+          actionState="Open, download or share actions remain role-scoped and must not imply evidence sufficiency."
+          evidenceItems={["Evidence summary", "Access permissions", "Linked decisions"]}
+          facts={[
+            { label: "Evidence ID", value: evidenceRecord.evidenceId },
+            { label: "Client", value: evidenceRecord.client },
+            { label: "Version", value: evidenceRecord.version },
+            { label: "Owner", value: evidenceRecord.owner },
+          ]}
+          objectTitle={evidenceRecord.title}
+          objectType="Evidence record detail"
+          routeId="047"
+          safetyNote="Upload, storage or download visibility is not evidence sufficiency or compliance acceptance."
+          status="Verified"
+          timelineItems={evidenceTimeline.slice(0, 3).map((item) => item.title)}
+        />
         <div className="grid gap-5 xl:grid-cols-[1fr_18rem]">
           <section className="space-y-5">
             <Card>

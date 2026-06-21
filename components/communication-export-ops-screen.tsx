@@ -53,6 +53,7 @@ import { RouteContextChip } from "@/components/route-context-chip";
 import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
+import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
 import { cn } from "@/lib/cn";
 import {
   blueprintRows,
@@ -1023,6 +1024,23 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
     <div>
       <PageLead badge="Approval required" description="Validate package contents, policy checks, approvers and blocking warnings before export release." icon={PackageCheck} title={title} />
       <ScfP07P09TrustPanel mode="export" />
+      <UxDetailStandardPanel
+        actionLabel="Approve export package"
+        actionState="Approval is separate from generation, download, share and client acceptance."
+        evidenceItems={["Export package summary", "Included scoped objects", "Policy checks"]}
+        facts={[
+          { label: "Export", value: currentExport?.id.slice(0, 8) ?? "EXP-2025" },
+          { label: "Type", value: currentExport?.exportType ?? "Regulatory submission" },
+          { label: "Included", value: `${snapshot?.summary.included ?? 0} objects` },
+          { label: "Binary", value: currentExport?.binaryStatus ?? "Metadata-only" },
+        ]}
+        objectTitle={currentExport?.fileName ?? "Controlled export package"}
+        objectType="Export preview detail"
+        routeId="057"
+        safetyNote="Preview is inspection only; it is not approval, download, share or downstream advice execution."
+        status="Approval required"
+        timelineItems={timeline.slice(0, 3).map((item) => item.title)}
+      />
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1fr)]">
         <Card>
           <CardHeader>
@@ -1156,6 +1174,23 @@ function ExportDownloadPage({ title }: { title: string }) {
     <div>
       <PageLead badge="Completed" description="Download securely or create a time-limited external share after export approval." icon={Download} title={title} />
       <ScfP07P09TrustPanel mode="export" />
+      <UxDetailStandardPanel
+        actionLabel="Download or create secure share"
+        actionState="Delivery actions are available only after approval and remain audited separately."
+        evidenceItems={["Security and compliance", "Download package", "Secure share"]}
+        facts={[
+          { label: "Export", value: currentExport?.id.slice(0, 8) ?? "EXP-2025" },
+          { label: "Tenant", value: currentExport?.tenant ?? "Client Comms Portfolio Summary" },
+          { label: "Format", value: "ZIP manifest package" },
+          { label: "Binary", value: currentExport?.binaryStatus ?? "Metadata-only" },
+        ]}
+        objectTitle={currentExport?.fileName ?? "Watermarked export package"}
+        objectType="Export delivery detail"
+        routeId="058"
+        safetyNote="Download and share do not imply client acceptance and must remain separated from preview and approval."
+        status="Approved for controlled delivery"
+        timelineItems={timeline.slice(0, 3).map((item) => item.title)}
+      />
       <StatePanel
         className="mb-5"
         detail="The metadata-only export package is approved for controlled delivery. Download and share actions do not imply client acceptance or downstream advice execution."

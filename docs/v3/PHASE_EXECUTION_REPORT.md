@@ -8035,3 +8035,77 @@ Completed `UX-PAGE-002` by adding a route-scoped workbench triad for the target 
 ### Exit Gate Decision
 
 `UX_PAGE_002_COMPLETED_WITH_WORKBENCH_TRIAD_AND_P0_PROOF`
+
+## UX-PAGE-003 Addendum - Focused Detail Standard Applied
+
+Date: 2026-06-21
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+
+### Scope
+
+Completed `UX-PAGE-003` by adding a shared focused-detail section to representative detail routes. The section contains object header, key facts, evidence/timeline and gated action rail. It is rendered inside the detail pages themselves and does not create routes, reclassify routes, generate screens/images or change permission, visibility, evidence, audit, compliance or export engines.
+
+### Changed Files
+
+- `components/ux-detail-standard-panel.tsx`
+- `components/internal-workflow-screen.tsx`
+- `components/decisions-governance-screen.tsx`
+- `components/communication-export-ops-screen.tsx`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-trigger-detail.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-advisor-approval-detail.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-compliance-review-detail.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-decision-detail.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-evidence-detail.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-export-preview-detail.png`
+
+### Route-Policy Rows Cited
+
+- `035`, `037`, `039`, `040`, `041`, `044`, `045`, `047`, `057`, `058`.
+
+### Implementation Notes
+
+- Added `UxDetailStandardPanel` as a shared focused-detail UI component.
+- Applied it to trigger, advisor approval, compliance review/release/block, decision, decision submitted, evidence record and export preview/download details.
+- Included route-specific P0 safety copy in each gated action rail.
+- Added route-smoke proof for object header, key facts, evidence/timeline and gated action rail.
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with existing warnings from prior UX-HUB extraction.
+- `PLAYWRIGHT_PORT=3353 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-PAGE detail standard"` - passed, 10 tests.
+- `PLAYWRIGHT_PORT=3354 pnpm test:route-smoke` - passed, 121 tests.
+- `PLAYWRIGHT_PORT=3355 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3356 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3357 pnpm test:file-export` - passed, 14 tests.
+
+### Screenshot Proof
+
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-trigger-detail.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-advisor-approval-detail.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-compliance-review-detail.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-decision-detail.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-evidence-detail.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-export-preview-detail.png`
+
+### Positive Acceptance
+
+- Detail routes now expose a consistent object header, facts, evidence/timeline and gated action rail.
+- Detail screenshot proof exists for trigger, advisor approval, compliance, decision, evidence and export.
+
+### Negative Acceptance
+
+- Action rails do not grant authority or collapse approval/release/download/share states.
+- No P1, Reference or Hold route was promoted.
+- No route presence, status or button visibility is treated as behavior proof.
+
+### Exit Gate Decision
+
+`UX_PAGE_003_COMPLETED_WITH_FOCUSED_DETAIL_AND_P0_PROOF`

@@ -112,6 +112,130 @@ No-P1/Hold/Reference-elevation confirmation: protected contracts remain non-prod
 
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and tests.
 
+## Completed Slice: UX-PAGE-003
+
+Task: `UX-PAGE-003` - Standardize detail pages with object header, evidence/timeline and gated action rail.
+
+Mission Card: standardize eligible detail routes with an object header, key facts, evidence/timeline section and gated action rail while preserving D4 focused-detail policy, RBAC payload boundaries, advice boundary, evidence sufficiency, compliance release and export lifecycle separation.
+
+Evidence Intake:
+- Task-master `UX-PAGE-003` detail-page contract and proof requirement.
+- Route Policy Matrix detail rows: `035`, `037`, `039`, `040`, `041`, `044`, `045`, `047`, `057`, `058`.
+- Existing implementation finding: detail pages already had local facts, timelines and actions, but the structure was inconsistent across workflow, decision/evidence and export surfaces.
+
+Problem Architecture: detail pages need a repeatable decision surface, but adding a visual action rail must not imply permission, release, sufficiency, acceptance, download/share or workflow completion.
+
+Double Diamond:
+- Discover: facts, evidence and actions existed in different locations per detail page.
+- Define: add a shared detail standard directly to representative detail pages.
+- Develop: implement a reusable detail panel and populate it with route-specific object facts and P0 safety copy.
+- Deliver: detail panel, route-smoke tests and six screenshot proofs.
+
+Psycho-Logic + Map/Model: a detail page should reduce decision anxiety by answering "what object is this, what facts matter, what proof exists, what action is gated?" The map trap is treating the action rail as authority; the copy keeps authority in control layers.
+
+Reframing Matrix:
+- Detail-as-document dump: rejected.
+- Detail-as-object decision surface: kept.
+- Detail-as-gate-completion claim: rejected.
+- Detail-as-audit handoff: kept with explicit evidence/timeline structure.
+
+TRIZ: improve decision clarity without weakening gates by putting evidence and action state in one visible structure while repeating non-overclaim safety boundaries.
+
+SIT Closed World: reused existing page data, panels, route IDs, tests and route paths; no new route, screen generation, schema, API or policy engine was added.
+
+Zwicky + CCA:
+- Variant A: full bespoke redesign of each detail route. Rejected as too broad for one task.
+- Variant B: shared detail standard inserted into target detail pages. Chosen.
+- Variant C: metadata-only detail contract. Rejected because `UX-PAGE-003` explicitly requires rendered detail screenshots.
+
+SCAMPER: combined object facts, evidence/timeline and action state; substituted scattered detail cards with a standard detail section; eliminated hidden safety ambiguity by adding route-specific safety notes.
+
+Harvard / BATNA: objective criteria are D4 focused detail, RBAC payload criticality and P0 obligations. BATNA remains stop/report if any action would require unauthorized behavior changes.
+
+MESOs:
+- Option A: representative detail pages with shared component and tests. Chosen.
+- Option B: every support detail page including profile/entity support. Deferred because PAGE-003 proof targets trigger/advisor/compliance/decision/evidence/export detail and support expansion would risk scope creep.
+
+Measurement Plan:
+- `pnpm typecheck`
+- `pnpm lint`
+- `PLAYWRIGHT_PORT=3353 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-PAGE detail standard"`
+- `PLAYWRIGHT_PORT=3354 pnpm test:route-smoke`
+- `PLAYWRIGHT_PORT=3355 pnpm test:permissions`
+- `PLAYWRIGHT_PORT=3356 pnpm test:workflow-gate`
+- `PLAYWRIGHT_PORT=3357 pnpm test:file-export`
+- Screenshot proof under `artifacts/ux-page-to-policy/UX-PAGE-003/`
+
+Ethics/Fairness: no deceptive action state, no dark pattern, no client-visible AI draft, no upload-to-sufficiency shortcut, no admin bypass and no export preview-to-download collapse.
+
+Adversarial QA: action rails could overclaim authority; every rail includes state/safety copy and the safety test suites remain green.
+
+Learning Log: `UX-PAGE-004` should now protect P1/Reference/Hold routes from this productive detail treatment unless explicitly allowed as guard-only proof.
+
+Route-policy rows cited:
+- `035` `/workbench/triggers/:id`, `037` `/advisor-approval/:id`.
+- `039` `/compliance/:id/review`, `040` `/compliance/:id/release`, `041` `/compliance/:id/block`.
+- `044` `/decisions/:id`, `045` `/decisions/:id/success`.
+- `047` `/evidence/:id`.
+- `057` `/export/:id/preview`, `058` `/export/:id/download`.
+
+Changed files:
+- `components/ux-detail-standard-panel.tsx`
+- `components/internal-workflow-screen.tsx`
+- `components/decisions-governance-screen.tsx`
+- `components/communication-export-ops-screen.tsx`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-trigger-detail.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-advisor-approval-detail.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-compliance-review-detail.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-decision-detail.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-evidence-detail.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-export-preview-detail.png`
+
+Implementation summary:
+- Added `UxDetailStandardPanel` with object header, key facts, evidence basis, audit/timeline and gated action rail.
+- Inserted the panel into trigger, advisor approval, compliance review/release/block, decision, submitted decision, evidence record and export preview/download details.
+- Added route-smoke coverage for 10 detail paths.
+
+Validation:
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with existing warnings from prior UX-HUB extraction.
+- `PLAYWRIGHT_PORT=3353 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-PAGE detail standard"` - passed, 10 tests.
+- `PLAYWRIGHT_PORT=3354 pnpm test:route-smoke` - passed, 121 tests.
+- `PLAYWRIGHT_PORT=3355 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3356 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3357 pnpm test:file-export` - passed, 14 tests.
+
+Screenshot/proof:
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-trigger-detail.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-advisor-approval-detail.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-compliance-review-detail.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-decision-detail.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-evidence-detail.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-export-preview-detail.png`
+
+Positive acceptance:
+- Representative detail pages now show object header, key facts, evidence/timeline and gated action rail above their detail content.
+- The route-smoke suite proves the structure on trigger, advisor, compliance, decision, evidence and export detail routes.
+
+Negative/P0 acceptance:
+- Advisor approval remains separate from compliance release.
+- Compliance release remains separate from client acceptance.
+- Evidence upload/download/visibility remains separate from evidence sufficiency.
+- Export preview remains separate from approval, download and share.
+- Route/action/payload permissions remain governed by existing controls.
+
+No-generation confirmation: no screen generation, state-screen generation, image generation or generated product assets.
+
+No-route-reclassification confirmation: no route IDs, paths, scopes or policy classifications changed.
+
+No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route received productive detail treatment.
+
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
+
 ## Completed Slice: UX-PAGE-002
 
 Task: `UX-PAGE-002` - Split workbench pages into queue / selected context / action rail.

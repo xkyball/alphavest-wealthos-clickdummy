@@ -6121,3 +6121,52 @@ Source of truth:
 
 - `UX-PAGE-002` does not migrate every page body into bespoke page layouts; it applies the shared workbench split required by the task without broad route rewrites.
 - Later `UX-PAGE-003` owns object detail page standardization.
+
+## UX-PAGE-003 QA Addendum
+
+Date: 2026-06-21
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+
+| Area | QA result | Evidence |
+| --- | --- | --- |
+| Focused detail structure | Passed | Route-smoke verifies object header, key facts, evidence/timeline and gated action rail on 10 detail paths. |
+| Route Policy Matrix preservation | Passed | Detail treatment is applied only to MVP detail rows cited by `UX-PAGE-003`; route registry and classifications are unchanged. |
+| Advice/compliance safety | Passed | Advisor approval copy remains distinct from compliance release; `test:workflow-gate` remains green. |
+| Evidence/export safety | Passed | Evidence sufficiency and export lifecycle separation tests remain green. |
+| Screenshot proof | Passed | Six representative screenshots captured under `artifacts/ux-page-to-policy/UX-PAGE-003/`. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | `tsc --noEmit` completed successfully. |
+| `pnpm lint` | Passed | ESLint completed with existing warnings from prior UX-HUB extraction. |
+| `PLAYWRIGHT_PORT=3353 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-PAGE detail standard"` | Passed | 10 detail-route tests. |
+| `PLAYWRIGHT_PORT=3354 pnpm test:route-smoke` | Passed | 121 tests. |
+| `PLAYWRIGHT_PORT=3355 pnpm test:permissions` | Passed | 8 tests; command reseeded demo DB as part of existing test flow. |
+| `PLAYWRIGHT_PORT=3356 pnpm test:workflow-gate` | Passed | 13 tests. |
+| `PLAYWRIGHT_PORT=3357 pnpm test:file-export` | Passed | 14 tests. |
+
+### Screenshot Proof
+
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-trigger-detail.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-advisor-approval-detail.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-compliance-review-detail.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-decision-detail.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-evidence-detail.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-003/2026-06-21-UX-PAGE-003-export-preview-detail.png`
+
+### Safety Proof
+
+- Advisor approval does not create compliance release.
+- Compliance release does not create client acceptance.
+- Evidence visibility/download does not create evidence sufficiency.
+- Export preview, approval, download and share remain separate states.
+- Action rails remain UX guidance and do not bypass RBAC payload checks.
+
+### QA Limits
+
+- `UX-PAGE-003` standardizes the representative MVP detail routes required by the task proof. It does not expand productive treatment to P1, Reference or Hold routes.

@@ -244,6 +244,36 @@ test.describe("UX-PAGE workbench structure", () => {
   }
 });
 
+test.describe("UX-PAGE detail standard", () => {
+  const uxPage003Routes = [
+    "/workbench/triggers/demo",
+    "/advisor-approval/demo",
+    "/compliance/demo/review",
+    "/compliance/demo/release",
+    "/compliance/demo/block",
+    "/decisions/demo",
+    "/decisions/demo/success",
+    "/evidence/demo",
+    "/export/demo/preview",
+    "/export/demo/download",
+  ];
+
+  for (const path of uxPage003Routes) {
+    test(`${path} renders object header, evidence timeline and gated action rail`, async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 1100 });
+      await authenticateRouteSmokePage(page);
+      await page.goto(path);
+
+      const detailStandard = page.getByTestId("ux-page-detail-standard").first();
+      await expect(detailStandard).toBeVisible();
+      await expect(detailStandard.getByTestId("ux-page-detail-object-header")).toHaveCount(1);
+      await expect(detailStandard.getByTestId("ux-page-detail-key-facts")).toHaveCount(1);
+      await expect(detailStandard.getByTestId("ux-page-detail-evidence-timeline")).toHaveCount(1);
+      await expect(detailStandard.getByTestId("ux-page-detail-gated-action-rail")).toHaveCount(1);
+    });
+  }
+});
+
 test.describe("locked route workset preservation", () => {
   test("all registered routes are classified exactly once", () => {
     expect(routeWorksetIntegrity.counts).toEqual(lockedRouteWorksetCounts);
