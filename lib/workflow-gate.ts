@@ -1,5 +1,5 @@
 import type { PermissionDecision } from "@/lib/permission-engine";
-import { evidenceService } from "@/lib/evidence-service";
+import { evidenceService, type EvidenceSufficiencyDecision } from "@/lib/evidence-service";
 import type { DataQualityGate } from "@/lib/data-quality-service";
 import type {
   ComplianceStatus,
@@ -51,6 +51,14 @@ export type SuitabilityIpsAdviceCandidate = ClientVisibilityCandidate & {
   mandateEvidenceStatus: EvidenceStatus;
   riskProfileStatus: SuitabilityStatus;
   suitabilityStatus: SuitabilityStatus;
+};
+
+export type ComplianceReleaseCandidate = {
+  advisorApprovalStatus: ReviewStatus;
+  auditPersistenceAvailable: boolean;
+  compliancePermission: Pick<PermissionDecision, "allowed" | "reasonCode">;
+  evidenceDecision: EvidenceSufficiencyDecision;
+  payloadReady: boolean;
 };
 
 export function canBecomeClientVisible(candidate: ClientVisibilityCandidate): WorkflowGateResult {
@@ -174,8 +182,45 @@ export function canPassHighRiskCommitteeGate(candidate: HighRiskCommitteeCandida
   };
 }
 
+export function canPassComplianceReleaseGate(candidate: ComplianceReleaseCandidate): WorkflowGateResult {
+  const missing: string[] = [];
+
+  if (candidate.advisorApprovalStatus !== "APPROVED") {
+    missing.push("advisor_approval");
+  }
+
+  if (!candidate.evidenceDecision.sufficient) {
+    missing.push(...candidate.evidenceDecision.missing);
+    missing.push("evidence_sufficiency");
+  }
+
+  if (!candidate.payloadReady) {
+    missing.push("payload_ready");
+  }
+
+  if (!candidate.compliancePermission.allowed) {
+    missing.push("permission_check");
+  }
+
+  if (!candidate.auditPersistenceAvailable) {
+    missing.push("audit_persistence");
+  }
+
+  const uniqueMissing = [...new Set(missing)];
+
+  return {
+    gateName: "NO_UNAPPROVED_ADVICE",
+    passed: uniqueMissing.length === 0,
+    missing: uniqueMissing,
+    blockedReason: uniqueMissing.length > 0
+      ? "Compliance release requires advisor approval, scoped sufficient evidence, client-safe payload, permission and audit persistence."
+      : undefined,
+  };
+}
+
 export const workflowGate = {
   canBecomeClientVisible,
   canReleaseAdviceWithSuitabilityIps,
   canPassHighRiskCommitteeGate,
+  canPassComplianceReleaseGate,
 };

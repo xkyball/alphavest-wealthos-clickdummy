@@ -16,13 +16,13 @@ import {
   runDemoWorkflowMutation,
 } from "../lib/demo-workflow-mutation";
 
-test.describe("First Build Phase 6 audit persistence", () => {
+test.describe("SCF-P06 critical gate audit persistence", () => {
   let prisma: PrismaClient;
 
   test.beforeAll(() => {
     const connectionString = process.env.DATABASE_URL;
     if (!connectionString) {
-      throw new Error("DATABASE_URL is required for Phase 6 audit persistence tests.");
+      throw new Error("DATABASE_URL is required for SCF-P06 audit persistence tests.");
     }
 
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
@@ -51,7 +51,7 @@ test.describe("First Build Phase 6 audit persistence", () => {
     ).toThrow(AuditMinimumFieldsError);
   });
 
-  test("writes Phase 6 audit metadata for critical successful mutations", async () => {
+  test("writes SCF-P06 audit metadata for critical successful mutations", async () => {
     const compliance = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
 
     const result = await runDemoWorkflowMutation(

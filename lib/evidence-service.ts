@@ -33,6 +33,22 @@ export type EvidenceSufficiencyDecision = {
   sufficient: boolean;
 };
 
+export type EvidenceLifecycleStage =
+  | "NEEDS_EVIDENCE"
+  | "UPLOAD_RECEIVED"
+  | "REVIEW_PENDING"
+  | "LINKED_NOT_SUFFICIENT"
+  | "SUFFICIENT_FOR_SCOPED_GATE";
+
+export type EvidenceLifecycleDecision = {
+  canEnterReviewQueue: boolean;
+  canSupportComplianceRelease: boolean;
+  stage: EvidenceLifecycleStage;
+  statusLabel: string;
+  missing: string[];
+  noUploadToReleaseShortcut: true;
+};
+
 const sufficientEvidenceStatuses = new Set<EvidenceStatus>(["VALIDATED", "RELEASED"]);
 
 function hasSufficientEvidenceStatus(status: EvidenceStatus) {
@@ -107,8 +123,66 @@ function evaluateEvidenceSufficiency(input: EvidenceSufficiencyInput): EvidenceS
   };
 }
 
+function evaluateEvidenceLifecycle(input: EvidenceSufficiencyInput & { uploaded?: boolean }): EvidenceLifecycleDecision {
+  if (!input.uploaded) {
+    return {
+      canEnterReviewQueue: false,
+      canSupportComplianceRelease: false,
+      missing: ["source_document_upload"],
+      noUploadToReleaseShortcut: true,
+      stage: "NEEDS_EVIDENCE",
+      statusLabel: "Evidence requested",
+    };
+  }
+
+  const sufficiency = evaluateEvidenceSufficiency(input);
+
+  if (input.status === "CREATED") {
+    return {
+      canEnterReviewQueue: true,
+      canSupportComplianceRelease: false,
+      missing: sufficiency.missing,
+      noUploadToReleaseShortcut: true,
+      stage: "UPLOAD_RECEIVED",
+      statusLabel: "Upload received, review pending",
+    };
+  }
+
+  if (!input.reviewed) {
+    return {
+      canEnterReviewQueue: true,
+      canSupportComplianceRelease: false,
+      missing: sufficiency.missing,
+      noUploadToReleaseShortcut: true,
+      stage: "REVIEW_PENDING",
+      statusLabel: "Evidence review pending",
+    };
+  }
+
+  if (!sufficiency.sufficient) {
+    return {
+      canEnterReviewQueue: true,
+      canSupportComplianceRelease: false,
+      missing: sufficiency.missing,
+      noUploadToReleaseShortcut: true,
+      stage: "LINKED_NOT_SUFFICIENT",
+      statusLabel: "Linked evidence is not sufficient",
+    };
+  }
+
+  return {
+    canEnterReviewQueue: true,
+    canSupportComplianceRelease: true,
+    missing: [],
+    noUploadToReleaseShortcut: true,
+    stage: "SUFFICIENT_FOR_SCOPED_GATE",
+    statusLabel: "Evidence sufficient for scoped gate",
+  };
+}
+
 export const evidenceService = {
   createEvidenceRecordDraft,
+  evaluateEvidenceLifecycle,
   evaluateEvidenceSufficiency,
   hasSufficientEvidenceStatus,
 };

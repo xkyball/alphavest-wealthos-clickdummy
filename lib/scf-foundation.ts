@@ -1,6 +1,6 @@
 import type { RouteScopeLabel } from "@/lib/route-registry";
 
-export type ScfFoundationPhaseId = "P00" | "P01" | "P02" | "P03";
+export type ScfFoundationPhaseId = "P00" | "P01" | "P02" | "P03" | "P04" | "P05" | "P06";
 
 export type ScfFoundationTaskId =
   | "SCF-P00-T001"
@@ -10,7 +10,15 @@ export type ScfFoundationTaskId =
   | "SCF-P02-T001"
   | "SCF-P02-T002"
   | "SCF-P03-T001"
-  | "SCF-P03-T002";
+  | "SCF-P03-T002"
+  | "SCF-P04-T001"
+  | "SCF-P04-T002"
+  | "SCF-P04-T003"
+  | "SCF-P05-T001"
+  | "SCF-P05-T002"
+  | "SCF-P05-T003"
+  | "SCF-P06-T001"
+  | "SCF-P06-T002";
 
 export type ScfDecisionQueueKey =
   | "implement"
@@ -60,6 +68,36 @@ export const scfFoundationPhases: Array<{
       "Route access, action permission, object scope and payload visibility are separate",
     ],
   },
+  {
+    id: "P04",
+    name: "Primary Customer Need Flow: Evidence Request -> Upload -> Review",
+    tasks: ["SCF-P04-T001", "SCF-P04-T002", "SCF-P04-T003"],
+    acceptance: [
+      "Evidence request leads to upload and review queue",
+      "Upload success remains upload-only and insufficient evidence blocks release",
+      "Reviewer can mark scoped evidence sufficiency explicitly",
+    ],
+  },
+  {
+    id: "P05",
+    name: "Advisory Signal Flow: Signal -> Analyst -> Internal Draft -> Advisor",
+    tasks: ["SCF-P05-T001", "SCF-P05-T002", "SCF-P05-T003"],
+    acceptance: [
+      "Analyst classification creates internal-only workflow items",
+      "Client, API and export projections do not expose internal drafts or rationale",
+      "Advisor approval creates compliance-pending state without client release",
+    ],
+  },
+  {
+    id: "P06",
+    name: "Compliance Release / Block / Request Evidence",
+    tasks: ["SCF-P06-T001", "SCF-P06-T002"],
+    acceptance: [
+      "Compliance release passes only with advisor, evidence, payload, permission and audit gates",
+      "Block and request-evidence states remain fail-closed for client visibility",
+      "Critical gate actions produce actor, role, target, previous, next, result and reason audit rows",
+    ],
+  },
 ];
 
 export const scfDecisionQueues: Record<ScfDecisionQueueKey, number> = {
@@ -91,6 +129,7 @@ export const scfProofCommandBaseline = [
   "pnpm test:permissions",
   "pnpm test:providerless-scope",
   "pnpm test:route-smoke",
+  "pnpm exec playwright test tests/document-upload-api.spec.ts tests/document-upload-flow.spec.ts tests/workflow-gate.spec.ts tests/demo-workflow-api.spec.ts tests/phase6-audit-persistence.spec.ts",
 ] as const;
 
 export const scfDoNotImplementRegister: ScfDoNotImplementEntry[] = [

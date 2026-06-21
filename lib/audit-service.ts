@@ -26,7 +26,8 @@ export type CriticalAuditActionFamily =
   | "review"
   | "upload";
 
-export const firstBuildAuditContract = "FIRST_BUILD_PHASE_6_BP09";
+export const scfCriticalGateAuditContract = "SCF-P04-P06-CRITICAL-GATE-AUDIT";
+export const firstBuildAuditContract = scfCriticalGateAuditContract;
 
 export type AuditPersistencePolicyInput = {
   action: PermissionAction;

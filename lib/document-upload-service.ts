@@ -316,7 +316,7 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
       nextState: DocumentStatus.UPLOADED,
       platformTenantId: demoPlatformTenantId,
       previousState: DocumentStatus.EMPTY,
-      reason: "Phase 6 upload audit persistence must be available before document, evidence and extraction rows are created.",
+      reason: "SCF-P04/P06 upload audit persistence must be available before document, evidence and extraction rows are created.",
       result: AuditResult.SUCCESS,
       targetId: uploadId,
       targetType: ObjectType.DOCUMENT,
@@ -352,7 +352,7 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
     });
     const version = await tx.documentVersion.create({
       data: {
-        changeReason: "Phase P1 real multipart demo upload.",
+        changeReason: "SCF-P04 real multipart demo upload.",
         checksum,
         createdByUserId: session.actor.id,
         documentId: document.id,
@@ -377,7 +377,7 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
         lowConfidenceFieldsJson: {
           reason: "Awaiting deterministic demo extraction review.",
         },
-        modelVersion: "phase-p1-demo-extraction-queue",
+        modelVersion: "scf-p04-demo-extraction-queue",
       },
     });
     const evidenceRecord = await tx.evidenceRecord.create({
@@ -422,7 +422,7 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
             nextState: DocumentStatus.UPLOADED,
             platformTenantId: demoPlatformTenantId,
             previousState: DocumentStatus.EMPTY,
-            reason: "Phase 6 upload audit persistence confirmed before document, evidence and extraction rows were created.",
+            reason: "SCF-P04/P06 upload audit persistence confirmed before document, evidence and extraction rows were created.",
             result: AuditResult.SUCCESS,
             targetId: document.id,
             targetType: ObjectType.DOCUMENT,
@@ -441,7 +441,7 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
         nextState: DocumentStatus.UPLOADED,
         platformTenantId: demoPlatformTenantId,
         previousState: DocumentStatus.EMPTY,
-        reason: "Phase P1 real multipart demo upload persisted document, version, extraction, evidence and audit rows.",
+        reason: "SCF-P04 upload persisted document, version, extraction, evidence and audit rows without evidence sufficiency or client release.",
         result: AuditResult.SUCCESS,
         targetId: document.id,
         targetType: ObjectType.DOCUMENT,

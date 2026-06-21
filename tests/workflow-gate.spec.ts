@@ -9,7 +9,12 @@ import {
   releasableSuitabilityIpsCandidate,
   suitabilityGateCandidate,
 } from "../lib/suitability-ips-demo-data";
-import { canBecomeClientVisible, canPassHighRiskCommitteeGate, canReleaseAdviceWithSuitabilityIps } from "../lib/workflow-gate";
+import {
+  canBecomeClientVisible,
+  canPassComplianceReleaseGate,
+  canPassHighRiskCommitteeGate,
+  canReleaseAdviceWithSuitabilityIps,
+} from "../lib/workflow-gate";
 
 test.describe("Evidence sufficiency lifecycle", () => {
   test("treats upload-created evidence as review-pending, not release-ready", () => {
@@ -109,6 +114,75 @@ test.describe("Evidence sufficiency lifecycle", () => {
     expect(internalOnlyEvidence.sufficient).toBe(false);
     expect(internalOnlyEvidence.missing).toContain("client_safe_visibility");
     expect(internalOnlyEvidence.releaseImpact).toBe("RELEASE_BLOCKED_NEEDS_EVIDENCE");
+  });
+
+  test("models the SCF-P04 evidence request to upload to review queue without upload-to-release", () => {
+    const requested = evidenceService.evaluateEvidenceLifecycle({
+      relatedObjectType: "DOCUMENT",
+      requiredObjectType: "DOCUMENT",
+      status: "PLACEHOLDER",
+      visibilityStatus: "INTERNAL_ONLY",
+    });
+    const uploaded = evidenceService.evaluateEvidenceLifecycle({
+      accepted: false,
+      current: true,
+      relatedObjectId: "doc-1",
+      relatedObjectType: "DOCUMENT",
+      requiredObjectId: "doc-1",
+      requiredObjectType: "DOCUMENT",
+      reviewed: false,
+      status: "CREATED",
+      uploaded: true,
+      visibilityStatus: "INTERNAL_ONLY",
+    });
+
+    expect(requested.stage).toBe("NEEDS_EVIDENCE");
+    expect(requested.canEnterReviewQueue).toBe(false);
+    expect(requested.canSupportComplianceRelease).toBe(false);
+    expect(requested.noUploadToReleaseShortcut).toBe(true);
+
+    expect(uploaded.stage).toBe("UPLOAD_RECEIVED");
+    expect(uploaded.canEnterReviewQueue).toBe(true);
+    expect(uploaded.canSupportComplianceRelease).toBe(false);
+    expect(uploaded.missing).toContain("evidence_review");
+    expect(uploaded.noUploadToReleaseShortcut).toBe(true);
+  });
+});
+
+test.describe("SCF-P06 compliance release gate", () => {
+  test("passes only with advisor approval, sufficient evidence, payload, permission and audit", () => {
+    const sufficientEvidence = evidenceService.evaluateEvidenceSufficiency({
+      accepted: true,
+      current: true,
+      relatedObjectId: "rec-1",
+      relatedObjectType: "RECOMMENDATION",
+      requiredObjectId: "rec-1",
+      requiredObjectType: "RECOMMENDATION",
+      reviewed: true,
+      status: "RELEASED",
+      visibilityStatus: "CLIENT_VISIBLE",
+    });
+    const passed = canPassComplianceReleaseGate({
+      advisorApprovalStatus: "APPROVED",
+      auditPersistenceAvailable: true,
+      compliancePermission: { allowed: true, reasonCode: "DEMO_ALLOWED" },
+      evidenceDecision: sufficientEvidence,
+      payloadReady: true,
+    });
+    const auditBlocked = canPassComplianceReleaseGate({
+      advisorApprovalStatus: "APPROVED",
+      auditPersistenceAvailable: false,
+      compliancePermission: { allowed: true, reasonCode: "DEMO_ALLOWED" },
+      evidenceDecision: sufficientEvidence,
+      payloadReady: true,
+    });
+
+    expect(passed.passed).toBe(true);
+    expect(passed.missing).toEqual([]);
+
+    expect(auditBlocked.passed).toBe(false);
+    expect(auditBlocked.missing).toEqual(["audit_persistence"]);
+    expect(auditBlocked.blockedReason).toContain("Compliance release requires");
   });
 });
 

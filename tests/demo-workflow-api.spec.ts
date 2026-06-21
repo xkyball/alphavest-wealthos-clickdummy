@@ -16,6 +16,7 @@ import {
 import { expect, test } from "@playwright/test";
 
 import { stableId } from "../lib/stable-id";
+import { scfCriticalGateAuditContract } from "../lib/audit-service";
 
 const demoTargets = {
   morgan: {
@@ -279,7 +280,7 @@ test.describe("demo workflow API", () => {
     expect(audit.nextState).toBe(DecisionStatus.ACCEPTED);
     expect(audit.result).toBe(AuditResult.SUCCESS);
     expect(audit.actorRoleKey).toBe("principal");
-    expect(metadata?.auditContract).toBe("FIRST_BUILD_PHASE_6_BP09");
+    expect(metadata?.auditContract).toBe(scfCriticalGateAuditContract);
     expect(metadata?.criticalActionFamily).toBe("review");
     expect(metadata?.failClosedOnAuditPersistence).toBe(true);
     expect(metadata?.phasePackage).toBe("BP-09");

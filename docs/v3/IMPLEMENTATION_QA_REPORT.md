@@ -5202,3 +5202,47 @@ Date: 2026-06-21
 - Historical report sections still mention older soft-unlock work; those entries are superseded audit history, not current SCF task authority.
 - Build continues to pass with existing `lib/document-storage-adapter.ts` Turbopack tracing warnings.
 - Future SCF phases must provide explicit unlock prompts before turning registered-only routes into implementation work.
+
+## SCF-P04-P06 Evidence / Signal / Compliance QA Addendum
+
+Date: 2026-06-21
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| SCF task authority | Passed | `lib/scf-foundation.ts` now includes P04, P05 and P06 task IDs and proof command coverage. |
+| Evidence lifecycle | Passed | Evidence lifecycle states distinguish request, upload received, review pending, linked insufficient and scoped sufficient states. |
+| Upload-not-sufficiency | Passed | Upload creates document/version/extraction/evidence/audit rows but keeps `clientVisible=false`, evidence `CREATED` and release/export locked. |
+| Internal draft boundary | Passed | Typed recommendation review keeps internal drafts, rationale and analyst notes out of client/export projections until compliance release. |
+| Advisor-not-release | Passed | Advisor approval changes recommendation state to advisor-approved and compliance-pending only; client visibility remains false. |
+| Compliance release gate | Passed | Release requires advisor approval, accepted scoped evidence, payload readiness, permission and audit persistence. |
+| Critical audit persistence | Passed | Critical gate metadata uses `SCF-P04-P06-CRITICAL-GATE-AUDIT` and preserves actor/role/target/previous/next/result/reason fields. |
+| Visual proof | Passed | Screenshots captured under `artifacts/scf-p04-p06/` for upload, advisor approval and compliance release. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | TypeScript completed with `tsc --noEmit`. |
+| `pnpm exec playwright test tests/workflow-gate.spec.ts tests/p0-acceptance.spec.ts --workers=1` | Failed then passed | Initial failure was a proof-command substring assertion; rerun passed, 26 tests. |
+| `pnpm exec playwright test tests/document-upload-api.spec.ts tests/demo-workflow-api.spec.ts tests/phase6-audit-persistence.spec.ts --workers=1` | Passed | 27 tests. |
+| `pnpm lint` | Passed | ESLint completed cleanly. |
+| `pnpm db:validate` | Passed | Prisma schema validates. |
+| `git diff --check` | Passed | No whitespace errors. |
+| `pnpm build` | Passed with warnings | Existing Turbopack tracing warnings in `lib/document-storage-adapter.ts`. |
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| SCF-P04 evidence request/upload/review | implemented + tested | Upload and review gates are explicit; upload-only cannot release. |
+| SCF-P05 signal/internal/advisor flow | implemented + tested | Analyst/advisor path remains internal until compliance release. |
+| SCF-P06 compliance/audit gate | implemented + tested | Release/block/request evidence and audit fail-closed cases are covered. |
+| Production auth/storage/OCR/advice | not claimed | Demo-data-first constraints remain active. |
+| Full P0 closure | not claimed | This phase closes the P04-P06 safety spine, not all remaining SCF phases. |
+
+### Residual Risks
+
+- Existing `lib/document-storage-adapter.ts` Turbopack tracing warnings are outside this phase.
+- Later SCF phases still need client-safe projection, export lifecycle and final P0 closure work.

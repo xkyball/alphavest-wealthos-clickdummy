@@ -292,6 +292,82 @@ Date: 2026-06-21
 
 `PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
 
+## SCF-P04-P06 - Evidence / Signal / Compliance Gate Implementation
+
+Date: 2026-06-21
+
+### Scope
+
+Implemented phases P04 through P06 from `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md` as one coherent safety spine. This pass completes the primary evidence request/upload/review path, the internal-only signal/advisor path, and the compliance release/block/request-evidence path with explicit sufficiency and audit-persistence gates. It does not elevate P1, Reference or Hold routes.
+
+### Source Artefacts Used
+
+- `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`
+- `lib/evidence-service.ts`
+- `lib/evidence-review-service.ts`
+- `lib/document-upload-service.ts`
+- `lib/workflow-gate.ts`
+- `lib/demo-workflow-mutation.ts`
+- Existing P0, upload, workflow, audit and route tests.
+
+### Completed Tasks
+
+- Extended SCF phase metadata through `SCF-P06-T002`, including P04/P05/P06 task IDs and proof command coverage.
+- Added an evidence lifecycle decision that separates `NEEDS_EVIDENCE`, upload received, review pending, linked-not-sufficient and scoped sufficient states.
+- Preserved upload-only semantics: multipart upload persists document/version/extraction/evidence/audit rows but never unlocks sufficiency, release, export or client visibility.
+- Added a centralized compliance release gate requiring advisor approval, scoped sufficient evidence, client-safe payload, permission and audit persistence.
+- Rebased critical audit metadata to `SCF-P04-P06-CRITICAL-GATE-AUDIT` while keeping the existing exported compatibility alias.
+- Added SCF audit metadata to typed recommendation-review actions, including actor, role, target, previous state, next state, result, reason and critical action family.
+- Updated tests for evidence lifecycle, compliance release preconditions, upload audit contract, typed review workflow and audit-persistence fail-closed behavior.
+
+### Changed Files
+
+- `lib/scf-foundation.ts`
+- `lib/evidence-service.ts`
+- `lib/workflow-gate.ts`
+- `lib/audit-service.ts`
+- `lib/document-upload-service.ts`
+- `lib/evidence-review-service.ts`
+- `lib/demo-workflow-mutation.ts`
+- `tests/workflow-gate.spec.ts`
+- `tests/p0-acceptance.spec.ts`
+- `tests/document-upload-api.spec.ts`
+- `tests/demo-workflow-api.spec.ts`
+- `tests/phase6-audit-persistence.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm exec playwright test tests/workflow-gate.spec.ts tests/p0-acceptance.spec.ts --workers=1` - first run exposed an assertion issue; fixed and reran successfully, 26 tests.
+- `pnpm exec playwright test tests/document-upload-api.spec.ts tests/demo-workflow-api.spec.ts tests/phase6-audit-persistence.spec.ts --workers=1` - passed, 27 tests.
+- `pnpm lint` - passed.
+- `pnpm db:validate` - passed.
+- `git diff --check` - passed.
+- `pnpm build` - passed with existing Turbopack tracing warnings around `lib/document-storage-adapter.ts`.
+
+### Screenshots
+
+- `artifacts/scf-p04-p06/scf-p04-document-upload.png`
+- `artifacts/scf-p04-p06/scf-p05-advisor-approval.png`
+- `artifacts/scf-p04-p06/scf-p06-compliance-release.png`
+
+### P0 Impact
+
+This pass strengthens `P0_UPLOAD_NOT_SUFFICIENCY_GATE`, `P0_EVIDENCE_SUFFICIENCY_GATE`, `P0_ADVISOR_NOT_RELEASE_GATE`, `P0_COMPLIANCE_RELEASE_GATE`, `P0_AI_DRAFT_INTERNAL_ONLY_GATE` and `P0_AUDIT_PERSISTENCE_GATE`. It does not claim production authentication, production advice, malware scanning, real OCR extraction, external communication or final full-P0 closure.
+
+### Blockers / Deferred / Hold Items
+
+- Document upload remains local demo storage; no malware scanning or production storage is claimed.
+- Evidence review and recommendation review are deterministic demo flows backed by Prisma rows, not production workflow orchestration.
+- P1, Reference and Hold routes remain registered-only and outside MVP implementation navigation.
+- Existing Turbopack tracing warnings in `lib/document-storage-adapter.ts` remain outside this phase scope.
+
+### Exit Gate Decision
+
+`PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
 ## SCF-P00-P03 - Foundation / Source / Scope / Providerless Boundary
 
 Date: 2026-06-21

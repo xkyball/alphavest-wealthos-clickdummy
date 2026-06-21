@@ -10,6 +10,7 @@ import {
 import { expect, test } from "@playwright/test";
 
 import { createDemoSession } from "../lib/demo-session";
+import { scfCriticalGateAuditContract } from "../lib/audit-service";
 
 test.describe("document upload multipart API", () => {
   let prisma: PrismaClient;
@@ -30,7 +31,7 @@ test.describe("document upload multipart API", () => {
   });
 
   test("stores multipart document bytes, domain rows, extraction, evidence and audit", async ({ request }) => {
-    const fileName = "phase-p1-upload-proof.pdf";
+    const fileName = "scf-p04-upload-proof.pdf";
     const morganSession = createDemoSession({ roleKey: "family_cfo", tenantSlug: "morgan" });
     const exportCountBefore = await prisma.exportRequest.count({
       where: { clientTenantId: morganSession.tenant.id },
@@ -100,7 +101,7 @@ test.describe("document upload multipart API", () => {
     expect(audit.eventType).toBe("document.upload.created");
     expect(audit.nextState).toBe("UPLOADED");
     expect((audit.metadataJson as { auditContract?: string; criticalActionFamily?: string } | null)?.auditContract).toBe(
-      "FIRST_BUILD_PHASE_6_BP09",
+      scfCriticalGateAuditContract,
     );
     expect((audit.metadataJson as { auditContract?: string; criticalActionFamily?: string } | null)?.criticalActionFamily).toBe(
       "upload",
@@ -219,7 +220,7 @@ test.describe("document upload multipart API", () => {
   });
 
   test("reloads uploaded documents only for the active tenant", async ({ request }) => {
-    const fileName = "phase-p1-summit-tenant-upload-proof.pdf";
+    const fileName = "scf-p04-summit-tenant-upload-proof.pdf";
     const summitSession = createDemoSession({ roleKey: "family_cfo", tenantSlug: "summit" });
     const exportCountBefore = await prisma.exportRequest.count({
       where: { clientTenantId: summitSession.tenant.id },
