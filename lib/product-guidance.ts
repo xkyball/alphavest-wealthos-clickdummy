@@ -9,6 +9,7 @@ import {
   type ScreenRoute,
 } from "@/lib/route-registry";
 import { uxFlowStepsForPageId, uxRoutePolicyForRoute, type UxFlowStep } from "@/lib/ux-route-policy";
+import type { UxDensityTier } from "@/lib/ux-route-policy";
 
 export type ProductGuidanceLink = {
   href: string;
@@ -17,6 +18,7 @@ export type ProductGuidanceLink = {
 
 export type ProductGuidance = {
   area: string;
+  densityTier?: UxDensityTier;
   gateHint: string;
   nextStep?: ProductGuidanceLink;
   primaryAction?: ProductGuidanceLink;
@@ -289,6 +291,7 @@ export function productGuidanceForRoute(route: ScreenRoute): ProductGuidance {
 
   return {
     area: baseGuidance.area,
+    densityTier: policy.densityTier,
     gateHint: baseGuidance.gateHint,
     nextStep: override.nextStep,
     primaryAction: baseGuidance.primaryAction,

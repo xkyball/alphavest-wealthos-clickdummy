@@ -38,6 +38,8 @@ export function UxSupportDensityStrip({ className, pageId }: UxSupportDensityStr
       aria-label="Support page density"
       className={cn("rounded-md border border-alphavest-border/70 bg-alphavest-panel/68 p-3", className)}
       data-testid="ux-complexity-support-density"
+      data-ux-density-pattern={density.pattern}
+      data-ux-density-tier={density.tier}
     >
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_13rem_minmax(14rem,0.42fr)]">
         <div className="min-w-0 rounded-md border border-alphavest-border/55 bg-alphavest-charcoal/35 p-3" data-testid="ux-complexity-support-job">

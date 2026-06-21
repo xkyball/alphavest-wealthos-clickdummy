@@ -6447,3 +6447,48 @@ Source of truth:
 ### QA Limits
 
 - This slice improves support/context density. It does not implement the later D1-D4 layout-density system, which begins at `UX-DENSITY-001`.
+
+## UX-DENSITY-001 QA Addendum
+
+Date: 2026-06-21
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+
+| Area | QA result | Evidence |
+| --- | --- | --- |
+| D1-D4 density contract | Passed | Route-smoke verifies central contracts and representative D1, D2, D3 and D4 route metadata. |
+| Gate visibility | Passed | Page job, status context, primary next step and safety caveats remain visible on screenshot representatives. |
+| Route Policy Matrix preservation | Passed | No route registry, scope, page-type or route-policy metadata changed. |
+| P0 safety | Passed | Permissions, workflow gate, export lifecycle and full route smoke remain green. |
+| Screenshot proof | Passed | Four representative screenshots captured under `artifacts/ux-page-to-policy/UX-DENSITY-001/`. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | `tsc --noEmit` completed successfully. |
+| `pnpm lint` | Passed | Existing warnings remain. |
+| `PLAYWRIGHT_PORT=3413 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-DENSITY tier contract"` | Passed | 5 tests. |
+| `PLAYWRIGHT_PORT=3414 pnpm test:permissions` | Passed | 8 tests. |
+| `PLAYWRIGHT_PORT=3416 pnpm test:workflow-gate` | Passed | 13 tests after a prior parallel port-collision rerun. |
+| `PLAYWRIGHT_PORT=3417 pnpm test:file-export` | Passed | 14 tests. |
+| `PLAYWRIGHT_PORT=3418 pnpm test:route-smoke` | Passed | 173 tests. |
+
+### Screenshot Proof
+
+- `artifacts/ux-page-to-policy/UX-DENSITY-001/2026-06-21-UX-DENSITY-001-d1-portal.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-001/2026-06-21-UX-DENSITY-001-d2-actions.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-001/2026-06-21-UX-DENSITY-001-d3-export-redaction.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-001/2026-06-21-UX-DENSITY-001-d4-evidence-detail.png`
+
+### Safety Proof
+
+- Density markers are orientation and layout proof only.
+- Client visibility, advice boundary, upload/evidence, audit/export and RBAC decisions remain in existing safety engines.
+- Export redaction still separates preview, approval, download and share; evidence detail still separates upload/download visibility from sufficiency and compliance acceptance.
+
+### QA Limits
+
+- This slice establishes the shared density contract. The visual refinements for D1 calm executive, D2 productive workbench, D3 dense operations and D4 focused detail remain assigned to `UX-DENSITY-002` through `UX-DENSITY-005`.

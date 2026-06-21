@@ -10,6 +10,7 @@ import {
   uxPageContracts,
 } from "../lib/ux-page-contract";
 import { uxContentHierarchyForPageType } from "../lib/ux-content-hierarchy";
+import { uxDensityTierContracts } from "../lib/ux-density";
 import { uxComplexity005SupportPageIds } from "../lib/ux-support-density";
 import {
   groupedImplementationScreenRoutes,
@@ -399,6 +400,37 @@ test.describe("UX-COMPLEXITY support density", () => {
       await expect(strip.getByTestId("ux-complexity-support-status")).toBeVisible();
       await expect(strip.getByTestId("ux-complexity-support-next-step")).toBeVisible();
       await expect(strip.getByTestId("ux-complexity-support-safety")).toContainText("not gate-completion proof");
+    });
+  }
+});
+
+test.describe("UX-DENSITY tier contract", () => {
+  test("defines D1-D4 density layout patterns", () => {
+    expect(Object.keys(uxDensityTierContracts).sort()).toEqual(["D1", "D2", "D3", "D4"]);
+
+    for (const contract of Object.values(uxDensityTierContracts)) {
+      expect(contract.pattern).toMatch(/^[a-z-]+$/);
+      expect(contract.description.length).toBeGreaterThan(20);
+      expect(contract.shellClassName.length).toBeGreaterThan(0);
+    }
+  });
+
+  const representatives = [
+    { path: "/portal", pattern: "calm-executive", tier: "D1" },
+    { path: "/actions", pattern: "productive-workbench", tier: "D2" },
+    { path: "/export/demo/redaction", pattern: "dense-operations", tier: "D3" },
+    { path: "/evidence/demo", pattern: "focused-detail", tier: "D4" },
+  ];
+
+  for (const representative of representatives) {
+    test(`${representative.path} exposes ${representative.tier} density metadata`, async ({ page }) => {
+      await page.setViewportSize({ height: 1000, width: 1440 });
+      await authenticateRouteSmokePage(page);
+      await page.goto(representative.path);
+
+      const densitySurface = page.locator(`[data-ux-density-tier="${representative.tier}"]`).first();
+      await expect(densitySurface).toBeVisible();
+      await expect(densitySurface).toHaveAttribute("data-ux-density-pattern", representative.pattern);
     });
   }
 });

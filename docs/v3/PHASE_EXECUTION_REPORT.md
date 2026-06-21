@@ -8533,3 +8533,77 @@ Completed `UX-COMPLEXITY-005` by adding compact page job, status, next-step and 
 ### Exit Gate Decision
 
 `UX_COMPLEXITY_005_COMPLETED_WITH_SUPPORT_DENSITY_AND_P0_PROOF`
+
+## UX-DENSITY-001 Addendum - Density Tier Contract Materialized
+
+Date: 2026-06-21
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+
+### Scope
+
+Completed `UX-DENSITY-001` by centralizing D1-D4 density tier contracts and exposing route-policy-derived density metadata on existing support, workbench, priority and detail patterns. This establishes the density system for later D1-D4 application tasks without creating routes, reclassifying routes or weakening safety gates.
+
+### Changed Files
+
+- `lib/ux-density.ts`
+- `lib/product-guidance.ts`
+- `lib/ux-support-density.ts`
+- `components/product-guidance-panel.tsx`
+- `components/ux-support-density-strip.tsx`
+- `components/ux-detail-standard-panel.tsx`
+- `components/ux-complexity-priority-panel.tsx`
+- `components/communication-export-ops-screen.tsx`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-DENSITY-001/2026-06-21-UX-DENSITY-001-d1-portal.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-001/2026-06-21-UX-DENSITY-001-d2-actions.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-001/2026-06-21-UX-DENSITY-001-d3-export-redaction.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-001/2026-06-21-UX-DENSITY-001-d4-evidence-detail.png`
+
+### Route-Policy Rows Cited
+
+- `019`, `032`, `056`, `047`.
+
+### Implementation Notes
+
+- Added `uxDensityTierContracts`, `uxDensityForRoute` and `uxDensityForPageId`.
+- Propagated density tiers from route policy into product guidance and support density.
+- Marked shared support, workbench, priority and detail surfaces with `data-ux-density-tier` and `data-ux-density-pattern`.
+- Added D1-D4 route-smoke proof using existing registered routes.
+- Kept `/admin/roles` unchanged when current route policy maps it outside the D3 representative proof; `/export/demo/redaction` provides D3 proof without route reclassification.
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with existing warnings.
+- `PLAYWRIGHT_PORT=3413 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-DENSITY tier contract"` - passed, 5 tests.
+- `PLAYWRIGHT_PORT=3414 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3416 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3417 pnpm test:file-export` - passed, 14 tests.
+- `PLAYWRIGHT_PORT=3418 pnpm test:route-smoke` - passed, 173 tests.
+
+### Screenshot Proof
+
+- `artifacts/ux-page-to-policy/UX-DENSITY-001/2026-06-21-UX-DENSITY-001-d1-portal.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-001/2026-06-21-UX-DENSITY-001-d2-actions.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-001/2026-06-21-UX-DENSITY-001-d3-export-redaction.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-001/2026-06-21-UX-DENSITY-001-d4-evidence-detail.png`
+
+### Positive Acceptance
+
+- D1-D4 density tiers are centrally mapped and visible on representative route surfaces.
+- Above-the-fold page job, status context and constrained next step remain present.
+
+### Negative Acceptance
+
+- Density does not change action authority, payload visibility, evidence sufficiency, advice release, audit persistence, export lifecycle or RBAC.
+- No route, route class, P1/Reference/Hold status or policy row changed.
+
+### Exit Gate Decision
+
+`UX_DENSITY_001_COMPLETED_WITH_D1_D4_CONTRACT_AND_P0_PROOF`

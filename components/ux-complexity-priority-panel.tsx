@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/cn";
+import { uxDensityForPageId } from "@/lib/ux-density";
 
 type ComplexityItem = {
   detail: string;
@@ -13,6 +14,7 @@ export type UxComplexityPriorityPanelProps = {
   actionState: string;
   className?: string;
   priorityItems: ComplexityItem[];
+  routeId?: string;
   safetyNote: string;
   summaryItems: ComplexityItem[];
   title: string;
@@ -23,14 +25,19 @@ export function UxComplexityPriorityPanel({
   actionState,
   className,
   priorityItems,
+  routeId,
   safetyNote,
   summaryItems,
   title,
 }: UxComplexityPriorityPanelProps) {
+  const density = routeId ? uxDensityForPageId(routeId) : null;
+
   return (
     <section
       className={cn("grid gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-panel/72 p-4 xl:grid-cols-[1fr_1.25fr_0.9fr]", className)}
       data-testid="ux-complexity-priority-panel"
+      data-ux-density-pattern={density?.pattern}
+      data-ux-density-tier={density?.tier}
     >
       <div data-testid="ux-complexity-summary-strip" data-ux-content-tier="must-see">
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">{title}</p>

@@ -7,6 +7,7 @@ import { useDemoSession } from "@/components/demo-session-provider";
 import { UxSupportDensityStrip } from "@/components/ux-support-density-strip";
 import { WizardStepper } from "@/components/ui/wizard-stepper";
 import { cn } from "@/lib/cn";
+import { uxDensityTierContracts } from "@/lib/ux-density";
 import { productGuidanceForPathname, type ProductGuidanceLink } from "@/lib/product-guidance";
 
 const primaryActionClass =
@@ -28,12 +29,15 @@ export function ProductGuidancePanel() {
   const pathname = usePathname();
   const { session } = useDemoSession();
   const guidance = productGuidanceForPathname(pathname);
+  const density = guidance.densityTier ? uxDensityTierContracts[guidance.densityTier] : null;
   const hasActions = guidance.primaryAction || guidance.nextStep || guidance.relatedRoutes.length > 0;
 
   return (
     <section
       aria-label="Product workflow guidance"
       className="mb-4 rounded-md border border-alphavest-border/75 bg-alphavest-panel/72 p-3 shadow-[0_18px_50px_rgba(0,0,0,0.18)] md:mb-5 md:p-5"
+      data-ux-density-pattern={density?.pattern}
+      data-ux-density-tier={density?.tier}
       data-testid="product-guidance"
       data-ux-content-tier="must-see"
     >

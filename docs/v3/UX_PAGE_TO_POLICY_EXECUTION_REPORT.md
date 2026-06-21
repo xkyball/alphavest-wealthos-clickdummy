@@ -112,6 +112,128 @@ No-P1/Hold/Reference-elevation confirmation: protected contracts remain non-prod
 
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and tests.
 
+## Completed Slice: UX-DENSITY-001
+
+Task: `UX-DENSITY-001` - Introduce density tier mapping D1-D4 into layout patterns.
+
+Mission Card: materialize D1-D4 density tiers from the Route Policy Matrix into existing page/layout patterns without changing routes, route scope, action authority, payload visibility or safety gates.
+
+Evidence Intake:
+- Task-master `UX-DENSITY-001` target scope: all eligible routes.
+- Route Policy Matrix labels: `CONTROLLED_PREMIUM_WORKBENCH_HYBRID`, `NO_SCREEN_GENERATION`.
+- Representative proof routes: `019` `/portal` as D1, `032` `/actions` as D2, `056` `/export/demo/redaction` as D3 and `047` `/evidence/demo` as D4.
+- Existing implementation finding: density data already exists in UX route policy; the narrowest safe move is to expose it through shared non-authorizing UI metadata and tests.
+
+Problem Architecture: density needs to become a consistent route contract, but visual density must not hide gate caveats or imply release, approval, sufficiency, download/share or RBAC authority.
+
+Double Diamond:
+- Discover: support and complexity slices created consistent page-job surfaces, but no central D1-D4 layout contract existed.
+- Define: derive a reusable density contract from existing route policy, then attach it to shared support, workbench, priority and detail surfaces.
+- Develop: added `uxDensityTierContracts` and route lookup helpers, then surfaced tier/pattern markers on existing UI components.
+- Deliver: route-smoke proof, safety tests and D1-D4 screenshots.
+
+Psycho-Logic + Map/Model: users need the page to feel appropriately calm, productive, dense or focused without mistaking density for permission. The safe move is to make density visible as orientation while keeping all gate copy and disabled/recovery states intact.
+
+Reframing Matrix:
+- Page-as-style-only: rejected because it lacks policy proof.
+- Page-as-job: kept by using page-job and density metadata together.
+- Page-as-gate: constrained by visible caveats and existing safety tests.
+- Page-as-route-contract: kept through route-policy-derived density mapping.
+
+TRIZ: improved density consistency without weakening safety by separating visual/layout metadata from authorization logic.
+
+SIT Closed World: reused `uxRoutePolicyForRoute`, route registry, product guidance, support density, priority and detail components; no new routes, assets, APIs, schemas or product scope engine were introduced.
+
+Zwicky + CCA:
+- Variant A: hard-code classes page by page. Rejected as drift-prone.
+- Variant B: create a new product scope engine. Rejected by task card.
+- Variant C: central density contract plus existing component markers. Kept.
+
+SCAMPER: substituted ad hoc density with tier contracts, combined density with existing support/workbench/detail surfaces and eliminated one-off route styling.
+
+Harvard / BATNA: objective criteria are the Route Policy Matrix density rows and the task card. BATNA remains stop/report if a route would require reclassification or new scope.
+
+MESOs:
+- Option A: metadata-only contract and representative UI markers. Chosen for `UX-DENSITY-001`.
+- Option B: broad visual restyling of every page. Deferred to the specific D1-D4 tasks.
+
+Measurement Plan:
+- `pnpm typecheck`
+- `pnpm lint`
+- `PLAYWRIGHT_PORT=3413 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-DENSITY tier contract"`
+- `PLAYWRIGHT_PORT=3414 pnpm test:permissions`
+- `PLAYWRIGHT_PORT=3416 pnpm test:workflow-gate`
+- `PLAYWRIGHT_PORT=3417 pnpm test:file-export`
+- `PLAYWRIGHT_PORT=3418 pnpm test:route-smoke`
+- D1-D4 screenshot proof under `artifacts/ux-page-to-policy/UX-DENSITY-001/`
+
+Ethics/Fairness: no density treatment hides safety gates, creates dark patterns, overclaims upload/evidence sufficiency or makes disabled export/advice paths appear available.
+
+Adversarial QA: density could make a dense operations page look operationally complete; export, workflow, permission and route-smoke tests remain green and export redaction still states approval/download/share are separate blocked stages.
+
+Learning Log: `UX-DENSITY-002` through `UX-DENSITY-005` can now apply route-specific D1-D4 visual refinements from a single policy-derived contract instead of inventing local classifications.
+
+Route-policy rows cited:
+- `019` `/portal` - D1 calm executive representative.
+- `032` `/actions` - D2 productive workbench representative.
+- `056` `/export/:id/redaction` - D3 dense operations representative.
+- `047` `/evidence/:id` - D4 focused detail representative.
+
+Changed files:
+- `lib/ux-density.ts`
+- `lib/product-guidance.ts`
+- `lib/ux-support-density.ts`
+- `components/product-guidance-panel.tsx`
+- `components/ux-support-density-strip.tsx`
+- `components/ux-detail-standard-panel.tsx`
+- `components/ux-complexity-priority-panel.tsx`
+- `components/communication-export-ops-screen.tsx`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-DENSITY-001/2026-06-21-UX-DENSITY-001-d1-portal.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-001/2026-06-21-UX-DENSITY-001-d2-actions.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-001/2026-06-21-UX-DENSITY-001-d3-export-redaction.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-001/2026-06-21-UX-DENSITY-001-d4-evidence-detail.png`
+
+Implementation summary:
+- Added a central D1-D4 density contract and route lookup helpers.
+- Exposed density tier and pattern metadata on existing support, workbench, priority and detail surfaces.
+- Added route-smoke regression proof for D1-D4 representatives.
+- Chose `/export/demo/redaction` as the D3 proof route without reclassifying `/admin/roles` or any other route.
+
+Validation:
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with existing warnings.
+- `PLAYWRIGHT_PORT=3413 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-DENSITY tier contract"` - passed, 5 tests.
+- `PLAYWRIGHT_PORT=3414 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3416 pnpm test:workflow-gate` - passed, 13 tests after rerun from a prior parallel port collision.
+- `PLAYWRIGHT_PORT=3417 pnpm test:file-export` - passed, 14 tests.
+- `PLAYWRIGHT_PORT=3418 pnpm test:route-smoke` - passed, 173 tests.
+
+Screenshot/proof:
+- `artifacts/ux-page-to-policy/UX-DENSITY-001/2026-06-21-UX-DENSITY-001-d1-portal.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-001/2026-06-21-UX-DENSITY-001-d2-actions.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-001/2026-06-21-UX-DENSITY-001-d3-export-redaction.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-001/2026-06-21-UX-DENSITY-001-d4-evidence-detail.png`
+
+Positive acceptance:
+- D1-D4 density patterns are centrally defined and rendered on representative existing route surfaces.
+- First-viewport page job, status context and constrained next step remain visible.
+
+Negative/P0 acceptance:
+- Density metadata does not alter client visibility, advice boundary, evidence sufficiency, audit/export lifecycle, RBAC, payload visibility, compliance release or admin governance.
+- No P1, Reference or Hold route was promoted.
+
+No-generation confirmation: no screen generation, state-screen generation, image generation or generated product assets.
+
+No-route-reclassification confirmation: route IDs, paths, scopes, page types and route-policy rows remain unchanged.
+
+No-P1/Hold/Reference-elevation confirmation: `UX-DENSITY-001` only materializes density metadata on eligible existing surfaces.
+
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
+
 ## Completed Slice: UX-COMPLEXITY-004
 
 Task: `UX-COMPLEXITY-004` - Remove dead-end and duplicate CTA clusters.

@@ -3,6 +3,7 @@ import {
   screenRoutes,
   type ScreenRoute,
 } from "@/lib/route-registry";
+import { uxDensityForRoute } from "@/lib/ux-density";
 import { uxRoutePolicyForRoute } from "@/lib/ux-route-policy";
 
 export const uxComplexity005SupportPageIds = [
@@ -41,8 +42,10 @@ export type UxSupportDensity = {
   job: string;
   nextStep: string;
   pageId: UxComplexity005SupportPageId;
+  pattern: string;
   safety: string;
   status: string;
+  tier: string;
 };
 
 const supportPageIdSet = new Set<string>(uxComplexity005SupportPageIds);
@@ -126,6 +129,7 @@ export function uxSupportDensityForPageId(pageId: string): UxSupportDensity | nu
   }
 
   const policy = uxRoutePolicyForRoute(route);
+  const density = uxDensityForRoute(route);
   const next = nextStepForPageId(pageId);
 
   return {
@@ -133,7 +137,9 @@ export function uxSupportDensityForPageId(pageId: string): UxSupportDensity | nu
     job: route.title,
     nextStep: next.nextStep,
     pageId,
+    pattern: density.pattern,
     safety: policy.safetyReminder,
     status: statusForRoute(route),
+    tier: density.tier,
   };
 }

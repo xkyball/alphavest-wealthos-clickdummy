@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/cn";
+import { uxDensityForPageId } from "@/lib/ux-density";
 
 type UxDetailFact = {
   label: string;
@@ -34,10 +35,14 @@ export function UxDetailStandardPanel({
   status,
   timelineItems,
 }: UxDetailStandardPanelProps) {
+  const density = uxDensityForPageId(routeId);
+
   return (
     <section
       className={cn("grid gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-panel/72 p-4 xl:grid-cols-[1.1fr_1.2fr_0.9fr]", className)}
       data-testid="ux-page-detail-standard"
+      data-ux-density-pattern={density.pattern}
+      data-ux-density-tier={density.tier}
     >
       <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-4" data-testid="ux-page-detail-object-header" data-ux-content-tier="must-see">
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">{routeId} · {objectType}</p>

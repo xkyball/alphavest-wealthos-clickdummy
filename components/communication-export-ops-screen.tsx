@@ -979,6 +979,7 @@ function ExportRedactionPage({ title }: { title: string }) {
           { detail: "External client redacted view selected", label: "Redaction profile", value: "Active" },
         ]}
         safetyNote="Redaction summary is not approval; preview, approval, download and share remain separate export steps."
+        routeId="056"
         summaryItems={[
           { detail: "Marked redactions in preview", label: "Redactions", value: "12" },
           { detail: "Items visible after external redaction", label: "External visible", value: "16" },
