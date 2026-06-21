@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { AppShell } from "@/components/app-shell";
+import { useDemoSession } from "@/components/demo-session-provider";
 import { PageHeader } from "@/components/page-header";
 import {
   Badge,
@@ -58,8 +59,11 @@ import {
   tenantWizardSteps
 } from "@/lib/admin-tenant-setup-demo-data";
 import { cn } from "@/lib/cn";
+import { demoPlatformTenantId } from "@/lib/demo-session";
+import { permissionEngine } from "@/lib/permission-engine";
 import type { ScreenRoute } from "@/lib/route-registry";
 import { runScreencastDemoAction } from "@/lib/screencast-demo-client";
+import { buildScopeControlSnapshot, type ScopeControlRow, type StaticWorkspaceControl } from "@/lib/scope-control";
 import type { VisualState } from "@/lib/visual-contract";
 
 type AdminTenantSetupScreenProps = {
@@ -74,6 +78,9 @@ const primaryButtonClass =
 
 const secondaryButtonClass =
   "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/60 px-4 text-sm font-semibold text-alphavest-ivory transition hover:border-alphavest-gold/60 hover:text-alphavest-gold-soft";
+
+const staticButtonClass =
+  "inline-flex h-[var(--button-height)] cursor-not-allowed items-center justify-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/40 px-4 text-sm font-semibold text-alphavest-subtle opacity-75";
 
 function statusTone(status: string): BadgeTone {
   const normalized = status.toLowerCase();
@@ -165,12 +172,153 @@ function AuditBanner({ action, children }: { action?: React.ReactNode; children:
   );
 }
 
-function PlatformSettingsPage({ onConfirm }: { onConfirm: () => void }) {
+function scopeTone(status: ScopeControlRow["status"]): BadgeTone {
+  if (status === "active") return "green";
+  if (status === "reference") return "blue";
+  if (status === "static") return "gold";
+  return "red";
+}
+
+function ReleaseScopeControlPanel() {
+  const snapshot = buildScopeControlSnapshot();
+  const worksetColumns: Array<DataTableColumn<ScopeControlRow>> = [
+    { key: "label", header: "Workset", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.label}</span> },
+    { key: "count", header: "Routes", render: (row) => String(row.count) },
+    { key: "status", header: "State", render: (row) => <Badge tone={scopeTone(row.status)}>{row.status}</Badge> },
+    { key: "treatment", header: "Runtime treatment", render: (row) => row.treatment },
+  ];
+  const controlColumns: Array<DataTableColumn<StaticWorkspaceControl>> = [
+    { key: "location", header: "Surface", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.location}</span> },
+    { key: "name", header: "Control", render: (row) => row.name },
+    { key: "treatment", header: "Treatment", render: (row) => row.treatment },
+  ];
+
+  return (
+    <section className="space-y-5" data-testid="release-scope-control">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {snapshot.metrics.map((metric) => (
+          <MetricCard detail={metric.detail} key={metric.label} label={metric.label} value={metric.value} />
+        ))}
+      </div>
+      <div className="grid gap-5 2xl:grid-cols-[1.05fr_0.95fr]">
+        <Card>
+          <CardHeader>
+            <CardTitle>Release Scope Control</CardTitle>
+            <CardDescription>Workspace availability is controlled before route shells become action or payload authority.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DataTable compact columns={worksetColumns} getRowId={(row) => row.label} rows={snapshot.worksetRows} />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Static Control Treatment</CardTitle>
+            <CardDescription>Visible controls that are not backed by behavior are disabled or clearly static.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <DataTable compact columns={controlColumns} getRowId={(row) => row.id} rows={snapshot.staticControls} />
+            <StatePanel
+              detail={`${snapshot.guardedRouteCount} registered-only routes remain blocked from product actions. Static controls remain visible only where they cannot imply mutation, filtering or release authority.`}
+              state="restricted"
+              title="No false affordance"
+            />
+          </CardContent>
+        </Card>
+      </div>
+    </section>
+  );
+}
+
+function PermissionBoundaryPanel({ route }: { route: ScreenRoute }) {
+  const { session } = useDemoSession();
+  const objectId = `${route.pageId}-${route.objectType.toLowerCase()}-selected`;
+  const boundary = permissionEngine.evaluateRouteBoundary(
+    session.actor,
+    session.role,
+    route,
+    {
+      clientTenantId: session.tenant.id,
+      objectId,
+      objectScopeIds: [],
+      platformTenantId: demoPlatformTenantId,
+    },
+  );
+  const rows = [
+    {
+      label: "Route shell",
+      state: boundary.routeShellAccessible ? "Available" : "Registered only",
+      allowed: boundary.routeShellAccessible,
+      detail: `${boundary.routeScope} / ${boundary.routeAccessMode}`,
+    },
+    {
+      label: "Action authority",
+      state: boundary.actionDecision.allowed ? "Allowed" : "Denied",
+      allowed: boundary.actionDecision.allowed,
+      detail: boundary.actionDecision.reason,
+    },
+    {
+      label: "Payload visibility",
+      state: boundary.payloadDecision.allowed ? "Allowed" : "Denied",
+      allowed: boundary.payloadDecision.allowed,
+      detail: boundary.payloadDecision.reason,
+    },
+  ];
+
+  return (
+    <div data-testid="permission-boundary-panel">
+      <Card>
+        <CardHeader>
+          <CardTitle>Permission Boundary</CardTitle>
+          <CardDescription>Route shell, action authority and payload visibility are evaluated separately for the current tenant and role.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {rows.map((row) => (
+            <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-4" key={row.label}>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-sm font-semibold text-alphavest-ivory">{row.label}</p>
+                <Badge tone={row.allowed ? "green" : "red"}>{row.state}</Badge>
+              </div>
+              <p className="mt-2 text-sm leading-6 text-alphavest-muted">{row.detail}</p>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function SessionScopePanel() {
+  const { session } = useDemoSession();
+
+  return (
+    <div data-testid="mapped-session-scope">
+      <Card>
+        <CardHeader>
+          <CardTitle>Mapped Session Scope</CardTitle>
+          <CardDescription>Current user context is resolved to actor, tenant, role and membership before access is evaluated.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <FieldGrid
+            fields={[
+              { label: "Actor", value: session.actor.displayName },
+              { label: "Role", value: session.role.label },
+              { label: "Tenant", value: session.tenant.displayName },
+              { label: "Membership", value: `${session.tenantMembership.tenantSlug} / ${session.tenantMembership.scope}` },
+            ]}
+          />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function PlatformSettingsPage({ onConfirm, route }: { onConfirm: () => void; route: ScreenRoute }) {
   return (
     <div className="space-y-5">
       <AuditBanner action={<button className={secondaryButtonClass} type="button">View audit log</button>}>
         {platformSettings.auditBanner}. Changes require approval and are logged for compliance.
       </AuditBanner>
+      <ReleaseScopeControlPanel />
       <section className="grid gap-5 xl:grid-cols-[1fr_0.85fr]">
         <Card>
           <CardHeader>
@@ -208,6 +356,7 @@ function PlatformSettingsPage({ onConfirm }: { onConfirm: () => void }) {
           Save changes
         </button>
       </ActionBar>
+      <PermissionBoundaryPanel route={route} />
     </div>
   );
 }
@@ -308,12 +457,15 @@ function AdviceBoundaryPage() {
   );
 }
 
-function RolesPage({ onPermissionModal }: { onPermissionModal: () => void }) {
+function RolesPage({ onPermissionModal, route }: { onPermissionModal: () => void; route: ScreenRoute }) {
   return (
     <div className="space-y-5">
       <ActionBar>
         <SearchShell placeholder="Search roles, permissions..." />
-        <button className={primaryButtonClass} type="button"><Plus aria-hidden="true" className="size-4" />New role template</button>
+        <button aria-disabled="true" className={staticButtonClass} disabled title="Role template creation requires governed lifecycle wiring." type="button">
+          <Plus aria-hidden="true" className="size-4" />
+          New role template
+        </button>
       </ActionBar>
       <section className="grid gap-5 xl:grid-cols-[0.78fr_1.22fr]">
         <Card>
@@ -382,6 +534,7 @@ function RolesPage({ onPermissionModal }: { onPermissionModal: () => void }) {
           </CardContent>
         </Card>
       </section>
+      <PermissionBoundaryPanel route={route} />
     </div>
   );
 }
@@ -568,9 +721,14 @@ function TenantsPage() {
         <CardContent className="grid gap-3 md:grid-cols-[1fr_0.75fr_0.75fr_0.75fr_auto]">
           <SearchShell placeholder="Search tenants..." />
           {["All jurisdictions", "All tiers", "All statuses"].map((filter) => (
-            <button className={secondaryButtonClass} key={filter} type="button">{filter}</button>
+            <button aria-disabled="true" className={staticButtonClass} disabled key={filter} title="Tenant filters are static until scoped row filtering is implemented." type="button">
+              {filter}
+            </button>
           ))}
-          <button className={secondaryButtonClass} type="button"><Filter aria-hidden="true" className="size-4" />Filters</button>
+          <button aria-disabled="true" className={staticButtonClass} disabled title="Tenant filters are static until scoped row filtering is implemented." type="button">
+            <Filter aria-hidden="true" className="size-4" />
+            Filters
+          </button>
         </CardContent>
       </Card>
       <Card>
@@ -580,6 +738,7 @@ function TenantsPage() {
         </CardHeader>
         <CardContent><DataTable columns={columns} getRowId={(row) => row.name} rows={tenantRows} /></CardContent>
       </Card>
+      <SessionScopePanel />
     </div>
   );
 }
@@ -794,10 +953,14 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
             <CardTitle>User Access</CardTitle>
             <CardDescription>Manage users, assign roles and control access across the organization.</CardDescription>
           </div>
-          <button className={secondaryButtonClass} type="button"><SlidersHorizontal aria-hidden="true" className="size-4" />Filters</button>
+          <button aria-disabled="true" className={staticButtonClass} disabled title="User filters are static until scoped row filtering is implemented." type="button">
+            <SlidersHorizontal aria-hidden="true" className="size-4" />
+            Filters
+          </button>
         </CardHeader>
         <CardContent><DataTable columns={columns} getRowId={(row) => row.name} rows={tenantUsers} /></CardContent>
       </Card>
+      <SessionScopePanel />
     </div>
   );
 }
@@ -963,13 +1126,13 @@ export function AdminTenantSetupScreen({ route, visualState }: AdminTenantSetupS
 
   function renderPage() {
     if (route.pageId === "007") {
-      return <PlatformSettingsPage onConfirm={() => setConfirmationKind("platform")} />;
+      return <PlatformSettingsPage onConfirm={() => setConfirmationKind("platform")} route={route} />;
     }
     if (route.pageId === "008") {
       return <AdviceBoundaryPage />;
     }
     if (route.pageId === "009") {
-      return <RolesPage onPermissionModal={() => setPermissionModalOpen(true)} />;
+      return <RolesPage onPermissionModal={() => setPermissionModalOpen(true)} route={route} />;
     }
     if (route.pageId === "010") {
       return <SecurityPage onConfirm={() => setConfirmationKind("security")} />;

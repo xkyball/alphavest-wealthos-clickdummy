@@ -5294,6 +5294,57 @@ Date: 2026-06-21
 - Existing `lib/document-storage-adapter.ts` Turbopack tracing warnings are outside this phase.
 - Historical UI Phase 07/08/09 report sections remain as old implementation history, not current SCF task authority.
 
+## CODEX-P01-P03 App Scope Control QA Addendum
+
+Date: 2026-06-21
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| P01 workset visibility | Passed | `/admin/platform` now renders release-scope metrics from runtime route/workset data. |
+| P02 static-control cleanup | Passed | Global search, tenant filters, role creation and user filters are disabled/static instead of implying live search, filtering or mutation. |
+| P02 registered-only guidance | Passed | P1/Reference/Hold guidance uses product-safe scope labels and no registered-only self-action link. |
+| P03 mapped session context | Passed | Tenant user administration shows the resolved actor, tenant, role and membership context from the demo session. |
+| P03 boundary separation | Passed | `permissionEngine.evaluateRouteBoundary()` returns separate route shell, action authority and payload visibility decisions. |
+| Providerless foundation | Passed | Strict demo-session tests prove mapped actor/tenant/role membership and unknown/wrong tenant fail-closed behavior. |
+| Route/action/payload separation | Passed | Permission, providerless and UI tests prove route access does not become mutation or payload authority. |
+| Screenshot proof | Passed | Four screenshots captured under `artifacts/codex-p01-p03-app-implementation/`. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | TypeScript completed with `tsc --noEmit`. |
+| `pnpm exec playwright test tests/providerless-scope.spec.ts tests/permission-engine.spec.ts tests/p0-acceptance.spec.ts tests/scf-scope-control-ui.spec.ts --workers=1` | Passed | 34 tests, including providerless boundary, permission, P0 and new app UI proof. |
+| `PLAYWRIGHT_PORT=3203 pnpm exec playwright test tests/route-smoke.spec.ts tests/navigation-shell.spec.ts tests/product-guidance-shell.spec.ts --workers=1` | Passed | 99 tests. |
+| `pnpm lint` | Passed | ESLint completed successfully. |
+| `pnpm db:validate` | Passed | Prisma schema validation completed successfully. |
+| Screenshot capture on local server port `3210` | Passed | Captured four route screenshots under `artifacts/codex-p01-p03-app-implementation/`. |
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| P01 release scope control | implemented + tested | Workset and queue-derived scope state is visible in app admin UI. |
+| P02 static/registered-only cleanup | implemented + tested | False affordances are disabled and registered-only guidance is product-safe. |
+| P03 providerless boundary | implemented + tested | Session scope and route/action/payload boundaries are visible and tested. |
+| P04+ product flow work | not executed | Outside this user-requested P01-P03 pass. |
+
+### Screenshot Proof
+
+| Screenshot | Status | Notes |
+| --- | --- | --- |
+| `artifacts/codex-p01-p03-app-implementation/p01-p02-release-scope-control.png` | Captured | P01/P02 release scope and static-control surface. |
+| `artifacts/codex-p01-p03-app-implementation/p03-permission-boundary-denied.png` | Captured | P03 permission boundary denial. |
+| `artifacts/codex-p01-p03-app-implementation/p03-mapped-session-scope.png` | Captured | P03 mapped session scope. |
+| `artifacts/codex-p01-p03-app-implementation/p02-registered-only-guidance.png` | Captured | P02 registered-only route guidance. |
+
+### Residual Risks
+
+- This pass does not claim production authentication, production advice or later P04+ evidence/advice/release flow implementation.
+- Screenshot proof is representative route evidence, not full human visual acceptance across all routes and viewports.
+
 ## SCF-P01-P06 Mastertask / Subtask QA Addendum
 
 Date: 2026-06-21

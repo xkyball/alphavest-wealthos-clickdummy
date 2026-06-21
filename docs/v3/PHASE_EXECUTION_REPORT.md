@@ -292,6 +292,50 @@ Date: 2026-06-21
 
 `PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
 
+## CODEX-P01-P03 - App Scope Control Implementation
+
+Date: 2026-06-21
+
+### Scope
+
+Executed `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md` P01 through P03 directly against the app codebase. This pass implements visible release-scope control, static-control treatment, registered-only route guidance and route/action/payload boundary evaluation. It does not implement P04 or later evidence/advice/release workflows.
+
+### Phase Report
+
+| Report Field | Required Content |
+| --- | --- |
+| Phase ID | P01, P02, P03 |
+| Completed Task IDs | `SCF-P01-T001`, `SCF-P01-T002`, `SCF-P02-T001`, `SCF-P02-T002`, `SCF-P03-T001`, `SCF-P03-T002` |
+| Completed Subtask IDs | Exact Detail Plan IDs `SCF-P01-T001-S01`, `SCF-P01-T001-S02`, `SCF-P01-T001-S03`, `SCF-P01-T002-S01`, `SCF-P01-T002-S02`, `SCF-P01-T002-S03`, `SCF-P02-T001-S01`, `SCF-P02-T001-S02`, `SCF-P02-T001-S03`, `SCF-P02-T001-S04`, `SCF-P02-T002-S01`, `SCF-P02-T002-S02`, `SCF-P02-T002-S03`, `SCF-P02-T002-S04`, `SCF-P03-T001-S01`, `SCF-P03-T001-S02`, `SCF-P03-T001-S03`, `SCF-P03-T001-S04`, `SCF-P03-T001-S05`, `SCF-P03-T002-S01`, `SCF-P03-T002-S02`, `SCF-P03-T002-S03`, `SCF-P03-T002-S04`, `SCF-P03-T002-S05`. |
+| Files changed | `components/admin-tenant-setup-screen.tsx`, `components/top-bar.tsx`, `lib/scope-control.ts`, `lib/permission-engine.ts`, `lib/product-guidance.ts`, `lib/scf-foundation.ts`, `tests/scf-scope-control-ui.spec.ts`, `tests/providerless-scope.spec.ts`, `tests/p0-acceptance.spec.ts`, `docs/v3/PHASE_EXECUTION_REPORT.md`, `docs/v3/IMPLEMENTATION_QA_REPORT.md` |
+| Files inspected only | `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`, `AGENTS.md`, `components/demo-session-provider.tsx`, `lib/demo-session.ts`, `lib/route-registry.ts`, `lib/visibility-engine.ts`, `components/app-shell.tsx`, `components/route-skeleton-page.tsx`, `tests/permission-engine.spec.ts`, `tests/route-smoke.spec.ts`, `tests/navigation-shell.spec.ts`, `tests/product-guidance-shell.spec.ts` |
+| Tests run | `pnpm typecheck` - passed; `pnpm exec playwright test tests/providerless-scope.spec.ts tests/permission-engine.spec.ts tests/p0-acceptance.spec.ts tests/scf-scope-control-ui.spec.ts --workers=1` - passed with 34 tests; `PLAYWRIGHT_PORT=3203 pnpm exec playwright test tests/route-smoke.spec.ts tests/navigation-shell.spec.ts tests/product-guidance-shell.spec.ts --workers=1` - passed with 99 tests; `pnpm lint` - passed; `pnpm db:validate` - passed. |
+| Proofs produced | Release Scope Control panel on `/admin/platform`; static disabled workspace controls in the top bar, tenant directory, role templates and tenant users; mapped actor/tenant/role/membership panel on `/tenants/demo/users`; route/action/payload boundary evaluation in `permissionEngine.evaluateRouteBoundary`; UI proof in `tests/scf-scope-control-ui.spec.ts`; screenshot proof under `artifacts/codex-p01-p03-app-implementation/`. |
+| Positive acceptance result | PASS: worksets are visible as runtime release scope; static controls are disabled; mapped demo user sees tenant/role/membership context; permitted actors retain scoped route/action access. |
+| Negative acceptance result | PASS: P1/Reference/Hold routes stay registered-only; registered-only guidance has no self-action link; route shell no longer implies action or payload authority; object payload access denies outside current object scope. |
+| Stop rules triggered | No blocking stop rule. No P1/Hold/Reference route was elevated, no production authentication was added, no new API/schema/migration was introduced. |
+| Deviations | P01-P03 were executed together at user request instead of stopping after each phase; scope stayed within the listed P01-P03 tasks/subtasks. |
+| Blockers | None for P01-P03. Production authentication and later P04+ flow implementation remain outside this pass. |
+| Next recommended phase | P04 Primary Customer Need Flow, only when explicitly requested. |
+
+### Implementation Notes
+
+- Added `lib/scope-control.ts` as app runtime data for workset metrics, guarded route treatment and static workspace controls.
+- Added the `/admin/platform` Release Scope Control panel with first-build, registered-only and static-control visibility.
+- Disabled false-affordance controls that were visible but not backed by scoped search/filter/creation behavior.
+- Added `permissionEngine.evaluateRouteBoundary()` to evaluate route shell, action authority and payload visibility independently.
+- Added Permission Boundary panels on platform/role routes and a Mapped Session Scope panel on tenant administration routes.
+- Removed registered-only self-action guidance links and replaced internal wording with product-safe `P1 / later`, `Reference only` and `Held / not MVP` labels.
+
+### Screenshot Proof
+
+| Screenshot | Route | Phase Coverage |
+| --- | --- | --- |
+| `artifacts/codex-p01-p03-app-implementation/p01-p02-release-scope-control.png` | `/admin/platform` | P01/P02 release scope metrics, guarded worksets and static control treatment. |
+| `artifacts/codex-p01-p03-app-implementation/p03-permission-boundary-denied.png` | `/admin/roles` | P03 route shell/action/payload boundary with Compliance Officer action denial. |
+| `artifacts/codex-p01-p03-app-implementation/p03-mapped-session-scope.png` | `/tenants/demo/users` | P03 mapped actor, tenant, role and membership context. |
+| `artifacts/codex-p01-p03-app-implementation/p02-registered-only-guidance.png` | `/communication` | P02 registered-only P1 guidance without product-action self-link. |
+
 ## SCF-P01-P06 - Mastertask / Subtask Completion Implementation
 
 Date: 2026-06-21

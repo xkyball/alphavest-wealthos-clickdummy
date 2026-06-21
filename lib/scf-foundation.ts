@@ -52,14 +52,24 @@ export type ScfDoNotImplementEntry = {
 };
 
 export type ScfMasterTaskDetail = {
+  apiDependencies?: string;
   dependencyOrder: string;
+  dod?: string;
   id: ScfFoundationTaskId;
   implementationIntent: string;
   negativeAcceptance: string;
+  nonGoals?: string;
   phase: ScfFoundationPhaseId;
   positiveAcceptance: string;
   proofRequired: string;
+  safetyDependencies?: string;
+  schemaDependencies?: string;
+  sourceAffordanceIds?: string;
+  sourceCapabilityIds?: string;
+  sourceFlowIds?: string;
+  sourceOrphanIds?: string;
   sourceRouteIds: string;
+  sourceThreadIds?: string;
   status: "blocked" | "implementation_candidate";
   subtaskCount: 3 | 4 | 5;
   targetAreas: string[];
@@ -67,6 +77,7 @@ export type ScfMasterTaskDetail = {
   taskPriority: "P0" | "P1" | "Hold";
   taskType: string;
   testObligation: string;
+  uxStateDependencies?: string;
 };
 
 export type ScfSubtaskDetail = {

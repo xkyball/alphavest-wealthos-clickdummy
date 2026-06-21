@@ -47,8 +47,11 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
             <span className="sr-only">Search</span>
             <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
             <input
-              className="h-10 w-full rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-9 text-sm text-alphavest-ivory outline-none transition placeholder:text-alphavest-subtle focus:border-alphavest-gold"
-              placeholder="Search workspace..."
+              aria-disabled="true"
+              className="h-10 w-full cursor-not-allowed rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-9 text-sm text-alphavest-subtle outline-none transition placeholder:text-alphavest-subtle"
+              disabled
+              placeholder="Search pending scoped indexing"
+              title="Search is disabled until scoped row filtering is implemented."
               type="search"
             />
           </label>

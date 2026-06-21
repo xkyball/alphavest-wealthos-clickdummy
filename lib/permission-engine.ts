@@ -13,6 +13,7 @@ import type {
   VisibilityStatus,
   WorkflowStatus,
 } from "@/lib/domain-types";
+import { routeImplementationAccessDecision, type ScreenRoute } from "@/lib/route-registry";
 
 export type PermissionSubject = {
   objectType: ObjectType;
@@ -46,6 +47,14 @@ export type PermissionDecision = {
   requiresSecondConfirmation: boolean;
   requiresComplianceReview: boolean;
   demoMode: true;
+};
+
+export type RouteBoundaryEvaluation = {
+  actionDecision: PermissionDecision;
+  payloadDecision: PermissionDecision;
+  routeAccessMode: "FIRST_BUILD" | "REGISTERED_ONLY";
+  routeShellAccessible: boolean;
+  routeScope: string;
 };
 
 const auditActions = new Set<PermissionAction>([
@@ -471,8 +480,8 @@ function can(
     allowed: true,
     reasonCode: "DEMO_ROLE_AWARE_ALLOW",
     reason: role
-      ? `${role.label} is allowed by the Phase 16 demo role policy.`
-      : `${actor.displayName} is allowed by the Phase 16 demo role policy.`,
+      ? `${role.label} is allowed by the current demo role policy.`
+      : `${actor.displayName} is allowed by the current demo role policy.`,
     requiresAudit: auditActions.has(action) || highSensitivity,
     requiresSecondConfirmation: secondConfirmationActions.has(action),
     requiresComplianceReview: complianceActions.has(action) || evidenceSufficiencyAction,
@@ -480,6 +489,59 @@ function can(
   };
 }
 
+function evaluateRouteBoundary(
+  actor: DemoActor,
+  role: DemoRole,
+  route: ScreenRoute,
+  context: PermissionContext & { objectId?: UUID; objectScopeIds?: UUID[] },
+): RouteBoundaryEvaluation {
+  const routeAccess = routeImplementationAccessDecision(route);
+  const actionSubject: PermissionSubject = {
+    clientTenantId: context.clientTenantId,
+    objectType: route.objectType,
+    visibilityStatus: route.clientVisibilitySensitive ? "INTERNAL_ONLY" : undefined,
+  };
+  const payloadSubject: PermissionSubject = {
+    ...actionSubject,
+    objectId: context.objectId,
+  };
+  const routeShellBlockedDecision = deny(
+    route.permissionAction,
+    actionSubject,
+    "DEMO_DENY_ROUTE_SCOPE_REGISTERED_ONLY",
+    "This route is registered for continuity but is not enabled for product action in the current release.",
+    true,
+  );
+  const actionDecision = routeAccess.implementationShellAccessible
+    ? can(actor, route.permissionAction, actionSubject, context, role)
+    : routeShellBlockedDecision;
+  const payloadDecision = can(
+    actor,
+    "VIEW",
+    payloadSubject,
+    {
+      ...context,
+      objectScope: context.objectId
+        ? {
+            clientTenantId: context.clientTenantId,
+            objectIds: context.objectScopeIds ?? [],
+            objectType: route.objectType,
+          }
+        : context.objectScope,
+    },
+    role,
+  );
+
+  return {
+    actionDecision,
+    payloadDecision,
+    routeAccessMode: routeAccess.accessMode,
+    routeScope: routeAccess.routeScope,
+    routeShellAccessible: routeAccess.implementationShellAccessible,
+  };
+}
+
 export const permissionEngine = {
   can,
+  evaluateRouteBoundary,
 };

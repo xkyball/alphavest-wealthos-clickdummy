@@ -182,24 +182,32 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
   },
   "052": {
     area: "Registered-only communication",
-    gateHint: "SCF registered-only route: message delivery and client visibility remain held outside MVP implementation.",
+    gateHint: "P1 / later: not part of the current MVP workflow. Message delivery and client visibility remain held outside this release.",
   },
   "061": {
     area: "Reference-only workspace",
-    gateHint: "SCF reference-only route: internal operating map only, not lifecycle or release proof.",
+    gateHint: "Reference only: internal orientation surface, not product workflow proof.",
   },
   "070": {
     area: "Held committee review",
-    gateHint: "SCF held route: committee implementation remains blocked; committee approval still cannot release advice to the client.",
+    gateHint: "Held / not MVP: requires scope and safety unlock before product workflow use.",
   },
 };
 
 const tierGateHints: Record<RouteScopeLabel, string> = {
   MVP: "MVP workflow route: action authority still depends on role, object, evidence and release gates.",
   MVP_SUPPORT: "MVP support route: setup/context support only; safety gates still control downstream actions.",
-  P1_AFTER_MVP: "SCF deferred route: registered for smoke coverage only; no MVP product task or release authority.",
-  REFERENCE_ONLY: "SCF reference-only route: registered for reference coverage only, not lifecycle proof.",
-  HOLD_PENDING_DECISION: "SCF held route: implementation remains blocked while regulated actions fail closed.",
+  P1_AFTER_MVP: "P1 / later: not part of the current MVP workflow. No product task or release authority is exposed.",
+  REFERENCE_ONLY: "Reference only: internal orientation surface, not product workflow proof.",
+  HOLD_PENDING_DECISION: "Held / not MVP: requires scope and safety unlock before product workflow use.",
+};
+
+const guidanceTierLabels: Record<RouteScopeLabel, string> = {
+  HOLD_PENDING_DECISION: "Held / not MVP",
+  MVP: routeScopeLabels.MVP,
+  MVP_SUPPORT: routeScopeLabels.MVP_SUPPORT,
+  P1_AFTER_MVP: "P1 / later",
+  REFERENCE_ONLY: "Reference only",
 };
 
 function areaForRoute(route: ScreenRoute) {
@@ -228,7 +236,6 @@ function routeFromPathname(pathname: string) {
 export function productGuidanceForRoute(route: ScreenRoute): ProductGuidance {
   const tier = routeScopeForPageId(route.pageId);
   const override = guidanceOverrides[route.pageId] ?? {};
-  const currentPath = routeToSmokePath(route.route);
 
   return {
     area: override.area ?? areaForRoute(route),
@@ -240,10 +247,7 @@ export function productGuidanceForRoute(route: ScreenRoute): ProductGuidance {
     routeId: route.pageId,
     shortTitle: override.shortTitle ?? route.title,
     tier,
-    tierLabel: routeScopeLabels[tier],
-    ...(!override.primaryAction && tier !== "MVP" && tier !== "MVP_SUPPORT"
-      ? { primaryAction: { href: currentPath, label: routeScopeLabels[tier] } }
-      : {}),
+    tierLabel: guidanceTierLabels[tier],
   };
 }
 

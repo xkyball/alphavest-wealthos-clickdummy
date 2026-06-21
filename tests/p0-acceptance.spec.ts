@@ -642,15 +642,22 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
 
   test("SCF release phase plan authorizes task and phase execution", () => {
     const agents = readWorkspaceText("AGENTS.md");
+    const promptPack = readWorkspaceText("ALPHAVEST_SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK.md");
     const releasePlan = readWorkspaceText("ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_RELEASE_PHASE_PLAN.md");
     const detailPlan = readWorkspaceText("ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md");
     const handoff = readWorkspaceText("ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md");
     const packagePlan = readWorkspaceText("ALPHAVEST_MVP_FIRST_BUILD_PACKAGE_PLAN.md");
 
+    expect(agents).toContain("ALPHAVEST_SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK.md");
     expect(agents).toContain("ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_RELEASE_PHASE_PLAN.md");
     expect(agents).toContain("ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md");
-    expect(agents).toContain("operative release source of truth for AlphaVest task and phase execution");
-    expect(agents).toMatch(/read through the release-plan\s+authorization layer/);
+    expect(agents).toMatch(/operative Codex\s+execution source of truth/);
+    expect(agents).toMatch(/Codex Prompt\s+Pack and release-plan authorization layer/);
+    expect(promptPack).toContain("SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK_ACCEPTED_FOR_PHASED_CODEX_EXECUTION");
+    expect(promptPack).toContain("CODEX-P01");
+    expect(promptPack).toContain("CODEX-P02");
+    expect(promptPack).toContain("CODEX-P03");
+    expect(promptPack).toContain("SCF-P03-T001-S01, SCF-P03-T001-S02");
     expect(releasePlan).toContain("SCREEN_CAPABILITY_E2E_IMPLEMENTATION_RELEASE_PHASE_PLAN_ACCEPTED_WITH_CODEX_PACK_DEPENDENCY");
     expect(releasePlan).toContain("Freigegeben ist nur, was in der Implementation Release Master Task Matrix");
     expect(releasePlan).toContain("AUTHORIZED_FOR_IMPLEMENTATION");
@@ -670,7 +677,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
     expect(packagePlan).not.toContain("FIRST_BUILD_PACKAGE_PLAN_MAX_OVERRIDE_UNLOCKED");
   });
 
-  test("SCF-P01/P02/P03/P04/P05/P06 master tasks and subtasks are represented as executable contracts", () => {
+  test("SCF-P01/P02/P03/P04/P05/P06 master tasks and subtasks are represented as executable task records", () => {
     const phases = ["P01", "P02", "P03", "P04", "P05", "P06"] as const;
     const masterTasks = scfMasterTasksForPhases([...phases]);
     const subtasks = scfSubtasksForPhases([...phases]);

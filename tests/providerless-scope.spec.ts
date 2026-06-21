@@ -10,8 +10,34 @@ import {
   tryCreateDemoSession,
 } from "../lib/demo-session";
 import { permissionEngine } from "../lib/permission-engine";
+import { screenRoutes } from "../lib/route-registry";
 
 test.describe("Mega-journey Phase 1 providerless scope gate", () => {
+  test("evaluates route shell, action authority and payload scope separately", () => {
+    const mapped = tryCreateDemoSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
+    expect(mapped.ok).toBe(true);
+    if (!mapped.ok) throw new Error("Expected mapped demo session.");
+    const documentsRoute = screenRoutes.find((route) => route.pageId === "027");
+    if (!documentsRoute) throw new Error("Documents route missing.");
+
+    const denied = permissionEngine.evaluateRouteBoundary(
+      mapped.session.actor,
+      mapped.session.role,
+      documentsRoute,
+      {
+        clientTenantId: mapped.session.tenant.id,
+        objectId: "document:bennett:not-in-current-scope",
+        objectScopeIds: ["document:bennett:current-scope"],
+        platformTenantId: demoPlatformTenantId,
+      },
+    );
+
+    expect(denied.routeShellAccessible).toBe(true);
+    expect(denied.actionDecision.allowed).toBe(true);
+    expect(denied.payloadDecision.allowed).toBe(false);
+    expect(denied.payloadDecision.reasonCode).toBe("DEMO_DENY_OBJECT_SCOPE_MISMATCH");
+  });
+
   test("resolves mapped demo actor, tenant and role without allowing unknown fallback in strict paths", () => {
     const mapped = tryCreateDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
     expect(mapped.ok).toBe(true);
