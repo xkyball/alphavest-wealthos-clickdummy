@@ -21,7 +21,6 @@ import {
   MoreHorizontal,
   Network,
   Plus,
-  Search,
   ShieldCheck,
   SlidersHorizontal,
   Upload,
@@ -30,6 +29,7 @@ import {
   X
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { GlobalSearchBox } from "@/components/global-search-box";
 import { AuditTimeline, Badge, Card, CardContent, CardHeader, CardTitle, StatePanel, type BadgeTone } from "@/components/ui";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
@@ -185,19 +185,7 @@ function WealthTopBar() {
   return (
     <header className="av-topbar sticky top-0 z-20 px-4 py-3 md:px-6">
       <div className="flex min-h-12 flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-        <label className="relative min-w-0 xl:w-[34rem]">
-          <span className="sr-only">Search</span>
-          <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-          <input
-            aria-disabled="true"
-            className="h-10 w-full cursor-not-allowed rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-10 text-sm text-alphavest-subtle outline-none transition placeholder:text-alphavest-subtle"
-            disabled
-            placeholder="Global search pending scoped indexing"
-            title="Global search is disabled until a scoped DB-backed search index exists."
-            type="search"
-          />
-          <span className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-alphavest-border px-1.5 py-0.5 text-xs text-alphavest-subtle md:block">static</span>
-        </label>
+        <GlobalSearchBox className="xl:w-[34rem]" />
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
           <label className="relative">
             <span className="sr-only">Tenant context</span>

@@ -18,7 +18,7 @@ import {
   UserPlus,
   XCircle
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { useDemoSession } from "@/components/demo-session-provider";
 import { PageHeader } from "@/components/page-header";
@@ -62,6 +62,7 @@ import {
 } from "@/lib/admin-tenant-setup-demo-data";
 import { cn } from "@/lib/cn";
 import { demoPlatformTenantId } from "@/lib/demo-session";
+import type { AdminTenantSnapshot } from "@/lib/admin-tenant-readmodel-service";
 import { permissionEngine } from "@/lib/permission-engine";
 import type { ScreenRoute } from "@/lib/route-registry";
 import { runScreencastDemoAction } from "@/lib/screencast-demo-client";
@@ -108,6 +109,46 @@ function statusTone(status: string): BadgeTone {
 
 function StatusBadge({ status }: { status: string }) {
   return <Badge tone={statusTone(status)}>{status}</Badge>;
+}
+
+function useAdminTenantSnapshot() {
+  const [snapshot, setSnapshot] = useState<AdminTenantSnapshot | null>(null);
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoadState("loading");
+
+      try {
+        const response = await fetch("/api/admin-tenants", { cache: "no-store" });
+        const body = (await response.json()) as { snapshot?: AdminTenantSnapshot | null };
+
+        if (!response.ok) {
+          throw new Error("Admin tenant snapshot failed.");
+        }
+
+        if (!cancelled) {
+          setSnapshot(body.snapshot ?? null);
+          setLoadState("ready");
+        }
+      } catch {
+        if (!cancelled) {
+          setSnapshot(null);
+          setLoadState("error");
+        }
+      }
+    }
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return { loadState, snapshot };
 }
 
 function ActionBar({ children }: { children: React.ReactNode }) {
@@ -706,7 +747,23 @@ function ExportTemplatesPage() {
 }
 
 function TenantsPage() {
-  type TenantRow = (typeof tenantRows)[number];
+  const { loadState, snapshot } = useAdminTenantSnapshot();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const rows = snapshot?.tenantRows.length ? snapshot.tenantRows : tenantRows;
+  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+  const statusOptions = Array.from(new Set(rows.map((row) => row.status))).sort();
+  const filteredRows = rows.filter((row) => {
+    const matchesSearch =
+      normalizedSearchTerm.length === 0 ||
+      [row.name, row.jurisdiction, row.tier, row.owner, row.onboarding, row.status].some((value) =>
+        String(value).toLowerCase().includes(normalizedSearchTerm),
+      );
+    const matchesStatus = statusFilter === "all" || row.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
+  type TenantRow = (typeof rows)[number];
   const columns: Array<DataTableColumn<TenantRow>> = [
     { key: "name", header: "Tenant", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}</span> },
     { key: "jurisdiction", header: "Jurisdiction", render: (row) => row.jurisdiction },
@@ -719,18 +776,33 @@ function TenantsPage() {
   return (
     <div className="space-y-5">
       <ActionBar>
+        <StatusChip label={loadState === "error" ? "DB snapshot unavailable" : "DB tenant rows"} status={loadState === "error" ? "FAILED" : "ACTIVE"} />
         <button className={secondaryButtonClass} type="button"><Download aria-hidden="true" className="size-4" />Export CSV</button>
         <button className={primaryButtonClass} data-testid="j06-new-tenant" onClick={() => { void runScreencastDemoAction("j06.newTenant", "/tenants/new"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add Tenant</button>
       </ActionBar>
       <Card>
-        <CardContent className="grid gap-3 md:grid-cols-[1fr_0.75fr_0.75fr_0.75fr_auto]">
-          <SearchShell placeholder="Search tenants..." />
-          {["All jurisdictions", "All tiers", "All statuses"].map((filter) => (
-            <button aria-disabled="true" className={staticButtonClass} disabled key={filter} title="Tenant filters are static until scoped row filtering is implemented." type="button">
-              {filter}
-            </button>
-          ))}
-          <button aria-disabled="true" className={staticButtonClass} disabled title="Tenant filters are static until scoped row filtering is implemented." type="button">
+        <CardContent className="grid gap-3 md:grid-cols-[1fr_0.75fr_auto]">
+          <label className="block">
+            <span className="sr-only">Search tenants</span>
+            <input
+              className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition placeholder:text-alphavest-subtle focus:border-alphavest-gold"
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Search DB tenants..."
+              type="search"
+              value={searchTerm}
+            />
+          </label>
+          <select
+            className="h-11 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+            onChange={(event) => setStatusFilter(event.target.value)}
+            value={statusFilter}
+          >
+            <option value="all">All statuses</option>
+            {statusOptions.map((status) => (
+              <option key={status} value={status}>{status}</option>
+            ))}
+          </select>
+          <button className={secondaryButtonClass} type="button">
             <Filter aria-hidden="true" className="size-4" />
             Filters
           </button>
@@ -741,7 +813,14 @@ function TenantsPage() {
           <CardTitle>Tenant Directory</CardTitle>
           <CardDescription>Tenant data is isolated and inaccessible across tenants.</CardDescription>
         </CardHeader>
-        <CardContent><DataTable columns={columns} getRowId={(row) => row.name} rows={tenantRows} /></CardContent>
+        <CardContent>
+          <DataTable
+            columns={columns}
+            emptyMessage={loadState === "error" ? "Tenant rows could not be loaded from the DB." : "No DB tenants match this filter."}
+            getRowId={(row) => String("id" in row ? row.id : row.name)}
+            rows={filteredRows}
+          />
+        </CardContent>
       </Card>
       <SessionScopePanel />
     </div>
@@ -749,6 +828,9 @@ function TenantsPage() {
 }
 
 function CreateTenantPage() {
+  const { snapshot } = useAdminTenantSnapshot();
+  const morgan = snapshot?.tenantRows.find((row) => row.name.includes("Morgan")) ?? snapshot?.tenantRows[0];
+
   return (
     <div className="space-y-5">
       <WizardStepper steps={tenantWizardSteps.create.map((step) => ({ ...step }))} />
@@ -761,10 +843,10 @@ function CreateTenantPage() {
           <CardContent className="space-y-5">
             <FieldGrid
               fields={[
-                { label: "Family office name", value: "Northbridge Family Office" },
-                { label: "Jurisdiction", value: "Cayman Islands" },
-                { label: "Operating tier", value: "Premier" },
-                { label: "Primary owner", value: "Alexandra Morgan" },
+                { label: "Family office name", value: morgan?.name ?? "Morgan Family Office" },
+                { label: "Jurisdiction", value: morgan?.jurisdiction ?? "United Kingdom" },
+                { label: "Operating tier", value: morgan?.tier ?? "Signature" },
+                { label: "Primary owner", value: morgan?.owner ?? "Unassigned" },
                 { label: "Entity type", value: "Single Family Office" },
                 { label: "Base currency", value: "USD - US Dollar" },
                 { label: "Time zone", value: "(UTC-05:00) Eastern Time" },
@@ -772,7 +854,7 @@ function CreateTenantPage() {
               ]}
             />
             <ActionBar>
-              <button className={secondaryButtonClass} type="button">Save draft</button>
+              <button className={secondaryButtonClass} onClick={() => { void runScreencastDemoAction("j06.newTenant"); }} type="button">Save draft</button>
               <button className={primaryButtonClass} data-testid="j06-continue-tenant" onClick={() => { void runScreencastDemoAction("j06.continueTenant", "/tenants/demo/setup"); }} type="button">Continue to team setup <ArrowRight aria-hidden="true" className="size-4" /></button>
             </ActionBar>
           </CardContent>
@@ -780,7 +862,12 @@ function CreateTenantPage() {
         <Card>
           <CardHeader><CardTitle>Setup Progress</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            {["Tenant details: In progress", "Team setup: Locked", "Policy assignment: Locked", "Review and confirm: Locked"].map((item) => (
+            {[
+              `Tenant details: ${morgan?.status ?? "Draft"}`,
+              `Team setup: ${morgan?.activeUsers ?? 0} active assignments`,
+              `Policy assignment: ${morgan?.activePolicies ?? 0} active policies`,
+              `Review and confirm: ${morgan?.readiness ?? 0}% ready`,
+            ].map((item) => (
               <div className="flex items-center gap-3 text-sm text-alphavest-muted" key={item}>
                 <LockKeyhole aria-hidden="true" className="size-4 text-alphavest-gold-soft" />
                 {item}
@@ -795,7 +882,10 @@ function CreateTenantPage() {
 }
 
 function TenantSetupPage() {
-  type ChecklistRow = (typeof tenantSetupChecklist)[number];
+  const { snapshot } = useAdminTenantSnapshot();
+  const rows = snapshot?.setupChecklist.length ? snapshot.setupChecklist : tenantSetupChecklist;
+  const metrics = snapshot?.metrics;
+  type ChecklistRow = (typeof rows)[number];
   const columns: Array<DataTableColumn<ChecklistRow>> = [
     { key: "item", header: "Item", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.item}</span> },
     { key: "owner", header: "Owner", render: (row) => row.owner },
@@ -814,13 +904,13 @@ function TenantSetupPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
-              <MetricCard detail="Checklist items" label="Total items" value="16" />
-              <MetricCard detail="Ready" label="Completed" status="ACTIVE" value="13" />
-              <MetricCard detail="Needs attention" label="Missing" status="FAILED" value="2" />
-              <MetricCard detail="Blocked dependency" label="Blocked" status="PENDING" value="1" />
-              <MetricCard detail="Nearly ready" label="Setup complete" status="PROCESSING" value="81%" />
+              <MetricCard detail="DB tenant rows" label="Total tenants" value={String(metrics?.total ?? 4)} />
+              <MetricCard detail="Completed onboarding" label="Completed" status="ACTIVE" value={String(metrics?.completed ?? 0)} />
+              <MetricCard detail="Needs attention" label="In progress" status="PENDING" value={String(metrics?.inProgress ?? 0)} />
+              <MetricCard detail="Readiness below threshold" label="Blocked" status="FAILED" value={String(metrics?.blocked ?? 0)} />
+              <MetricCard detail="DB-derived readiness" label="Setup complete" status="PROCESSING" value={`${metrics?.readiness ?? 0}%`} />
             </div>
-            <DataTable columns={columns} getRowId={(row) => row.item} rows={tenantSetupChecklist} />
+            <DataTable columns={columns} getRowId={(row) => row.item} rows={rows} />
             <AuditBanner>All required items must be completed and unblocked to activate this tenant.</AuditBanner>
           </CardContent>
         </Card>
@@ -828,7 +918,14 @@ function TenantSetupPage() {
           <Card>
             <CardHeader><CardTitle>Activation Gate</CardTitle></CardHeader>
             <CardContent className="space-y-3">
-              {["Required items completed: 13 / 16", "No blocked items: 1 blocked", "Policies configured: 4 / 6", "Team assignments complete", "Security enabled", "Integrations connected: 2 / 3"].map((item, index) => (
+              {[
+                `Required items completed: ${rows.filter((row) => row.readiness === "Ready").length} / ${rows.length}`,
+                `No blocked items: ${metrics?.blocked ?? 0} blocked`,
+                `Policies configured: ${snapshot?.tenantRows[0]?.activePolicies ?? 0}`,
+                `Team assignments: ${snapshot?.teamRows.length ?? 0}`,
+                "Security enabled",
+                "Integrations connected: deferred",
+              ].map((item, index) => (
                 <div className="flex items-center justify-between gap-3 text-sm" key={item}>
                   <span className="text-alphavest-muted">{item}</span>
                   {index >= 3 && index !== 5 ? <CheckCircle2 className="size-4 text-alphavest-green" /> : <XCircle className="size-4 text-alphavest-red" />}
@@ -845,7 +942,9 @@ function TenantSetupPage() {
 }
 
 function TenantTeamPage() {
-  type Assignment = (typeof teamAssignments)[number];
+  const { snapshot } = useAdminTenantSnapshot();
+  const rows = snapshot?.teamRows.length ? snapshot.teamRows : teamAssignments;
+  type Assignment = (typeof rows)[number];
   const columns: Array<DataTableColumn<Assignment>> = [
     { key: "role", header: "Role", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.role}</span> },
     { key: "assignee", header: "Assignee", render: (row) => row.assignee },
@@ -867,13 +966,13 @@ function TenantTeamPage() {
             <CardTitle>Role Assignments</CardTitle>
             <CardDescription>Required roles must be filled before activating a pilot.</CardDescription>
           </CardHeader>
-          <CardContent><DataTable columns={columns} getRowId={(row) => row.role} rows={teamAssignments} /></CardContent>
+          <CardContent><DataTable columns={columns} getRowId={(row) => String("id" in row ? row.id : row.role)} rows={rows} /></CardContent>
         </Card>
         <div className="space-y-5">
           <StatePanel detail="A Compliance Owner must be assigned before a pilot can be activated." state="blocked" title="Pilot cannot proceed" />
           <Card>
             <CardHeader><CardTitle>Team Summary</CardTitle></CardHeader>
-            <CardContent><FieldGrid fields={[{ label: "Total team members", value: "4" }, { label: "Active assignments", value: "3" }, { label: "Unassigned roles", value: "1" }, { label: "Average workload", value: "59%" }]} /></CardContent>
+            <CardContent><FieldGrid fields={[{ label: "Total team members", value: String(rows.length) }, { label: "Active assignments", value: String(rows.filter((row) => row.status === "Active").length) }, { label: "Unassigned roles", value: String(Math.max(0, 4 - rows.length)) }, { label: "Average workload", value: "DB scoped" }]} /></CardContent>
           </Card>
         </div>
       </section>
@@ -921,7 +1020,9 @@ function TenantPoliciesPage() {
 }
 
 function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
-  type TenantUser = (typeof tenantUsers)[number];
+  const { loadState, snapshot } = useAdminTenantSnapshot();
+  const rows = snapshot?.userRows.length ? snapshot.userRows : tenantUsers;
+  type TenantUser = (typeof rows)[number];
   const columns: Array<DataTableColumn<TenantUser>> = [
     { key: "name", header: "User", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}</span> },
     { key: "invite", header: "Invite", render: (row) => row.invite },
@@ -946,11 +1047,11 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
         </button>
       </ActionBar>
       <section className="grid gap-4 md:grid-cols-5">
-        <MetricCard detail="Tenant members" label="Total users" value="28" />
-        <MetricCard detail="Can access workspace" label="Active" status="ACTIVE" value="19" />
-        <MetricCard detail="Invitation sent" label="Invited" status="SCHEDULED" value="4" />
-        <MetricCard detail="Awaiting confirmation" label="Pending" status="PENDING" value="3" />
-        <MetricCard detail="Access removed" label="Revoked" status="FAILED" value="2" />
+        <MetricCard detail="Tenant members" label="Total users" value={String(rows.length)} />
+        <MetricCard detail="Can access workspace" label="Active" status="ACTIVE" value={String(rows.filter((row) => row.status === "Active").length)} />
+        <MetricCard detail="Invitation sent" label="Invited" status="SCHEDULED" value={String(rows.filter((row) => row.invite === "Invited").length)} />
+        <MetricCard detail="Awaiting confirmation" label="Pending" status="PENDING" value={String(rows.filter((row) => row.status !== "Active").length)} />
+        <MetricCard detail="Access removed" label="Revoked" status="FAILED" value={String(rows.filter((row) => row.status === "Revoked").length)} />
       </section>
       <Card>
         <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -958,12 +1059,19 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
             <CardTitle>User Access</CardTitle>
             <CardDescription>Manage users, assign roles and control access across the organization.</CardDescription>
           </div>
-          <button aria-disabled="true" className={staticButtonClass} disabled title="User filters are static until scoped row filtering is implemented." type="button">
+          <button className={secondaryButtonClass} type="button">
             <SlidersHorizontal aria-hidden="true" className="size-4" />
             Filters
           </button>
         </CardHeader>
-        <CardContent><DataTable columns={columns} getRowId={(row) => row.name} rows={tenantUsers} /></CardContent>
+        <CardContent>
+          <DataTable
+            columns={columns}
+            emptyMessage={loadState === "error" ? "Tenant users could not be loaded from the DB." : "No tenant user assignments found."}
+            getRowId={(row) => String("id" in row ? row.id : row.name)}
+            rows={rows}
+          />
+        </CardContent>
       </Card>
       <SessionScopePanel />
     </div>

@@ -1,5 +1,75 @@
 # Implementation QA Report
 
+## MAX-UNLOCKED DBTF Follow-up QA Addendum
+
+Date: 2026-06-21
+
+### Executive Decision
+
+`MAX_UNLOCKED_SEARCH_ADMIN_EXPORT_OPS_QA_PASSED_WITH_LIMITS`
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| User scope unlock honored | Passed | Implemented the explicitly named static/deferred surfaces without inventing missing DBTF-P11+ phase authority. |
+| Global search | Passed | `/api/global-search` returns tenant/role-scoped DB results and fails closed on invalid scope. |
+| Admin/Tenant wizards | Passed | Tenant directory, setup, team and user access views prefer DB-backed snapshot rows; J06 remains the write path. |
+| Export wizard | Passed | Export pages prefer `ExportRequest` lifecycle/scope/audit state and retain metadata-only package boundary. |
+| Ops/SLA metrics | Passed | Queue, SLA, breach and escalation data derive from `QueueItem`, `DataQualityIssue` and `ReviewSchedule`; route IDs 059/060 are reachable as MVP support. |
+| No overclaiming | Passed | No production auth, no Prisma migration, no real ZIP generation and no client release/advice execution were added. |
+| Regression | Passed | Focused DBTF API suite expanded to 15 tests and passed. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | TypeScript completed cleanly. |
+| `pnpm lint` | Passed | ESLint completed cleanly. |
+| `pnpm test:dbtf` | Passed | 15 tests covering existing DBTF APIs plus global search, J06 admin snapshot, J08 export snapshot and Ops/SLA metrics. |
+| `pnpm db:validate` | Passed | Prisma schema remained valid. |
+| `pnpm build` | Passed with warnings | Existing Turbopack tracing warnings remain in `lib/document-storage-adapter.ts`. |
+| Screenshot capture | Passed | Captured global search, admin tenants and ops queues under `artifacts/max-unlocked-db-backed/`. |
+
+### Residual Risks
+
+- This follow-up proves DB-backed MVP readmodels and existing demo-workflow write visibility, not a full production admin/export/ops platform.
+- Export remains metadata/control-state only; real binary generation and external delivery are still deferred.
+- Screenshots prove representative reachable surfaces, not full journey acceptance.
+
+## DBTF-P11-P15 Blocker QA Addendum
+
+Date: 2026-06-21
+
+### Executive Decision
+
+`DBTF_P11_P15_BLOCKED_UNSUPPORTED_PHASE_RANGE_WITH_REGRESSION_PROOF`
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Source of truth lock | Passed | The operative DBTF prompt pack was inspected directly before any edit. |
+| Requested phase availability | Blocked | `DBTF-P11`, `DBTF-P12`, `DBTF-P13`, `DBTF-P14` and `DBTF-P15` are not defined in the DBTF prompt pack. |
+| No invented scope | Passed | No DBTF phase bodies, task IDs, APIs, services, routes, Prisma changes or UI changes were invented for the missing range. |
+| Broad SCF separation | Passed | SCF P11-P14 references were recognized as a different artefact family and not treated as DBTF implementation authority. |
+| Existing DBTF regression | Passed | The focused DBTF suite still passes for the implemented P00-P10 functionality. |
+| Screenshot proof | Not applicable | No authorized DBTF-P11-P15 UI implementation exists, so no new screenshots were created. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `rg -n "CODEX PHASE PROMPT.*DBTF-P\|DBTF-P11\|DBTF-P15" ALPHAVEST_DB_BACKED_TABLES_FORMS_CODEX_PROMPT_PACK.md` | Passed | Showed DBTF phase prompts only for P00-P10 and no DBTF-P11/P15 prompt bodies. |
+| `pnpm test:dbtf` | Passed | 11 focused DBTF tests for current implemented P00-P10 behaviour. |
+| `pnpm db:seed` | Passed | Run inside the focused DBTF regression flow to restore deterministic demo rows after persistence tests. |
+
+### QA Conclusion
+
+- The correct outcome is a documented blocker, not implementation.
+- `DBTF-P11+` work requires a new explicit source-of-truth addendum before code changes.
+- Current DBTF implementation remains valid through P10 with the existing focused regression suite.
+
 ## DBTF-P04-P10 Implementation QA Addendum
 
 Date: 2026-06-21

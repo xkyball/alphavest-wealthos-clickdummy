@@ -1,5 +1,139 @@
 # Phase Execution Report
 
+## MAX-UNLOCKED DBTF Follow-up - Search, Admin/Tenant, Export And Ops/SLA DB Backing
+
+Date: 2026-06-21
+
+### Phase / Scope Report
+
+- User scope unlock: implement the previously static global search plus the partly static/deferred Admin/Tenant Wizards, Export Wizard and Ops/SLA metrics where the current model supports it.
+- Relationship to DBTF: this is not an invented `DBTF-P11+` phase. It is a focused follow-up implementation against the user's explicit unlock after the DBTF-P11-P15 blocker report.
+- Result: `IMPLEMENTED_WITH_DOCUMENTED_LIMITS`.
+- No Prisma schema migration was added.
+- No production auth was added.
+- No real ZIP/binary export generation was claimed; export remains metadata/control-state backed by `ExportRequest`.
+- No advice execution or client release authority was added.
+
+### Implemented Behaviour
+
+- Global search:
+  - Added `/api/global-search` and `lib/global-search-service.ts`.
+  - Search now reads tenant/role-scoped DB rows across tenants, documents, family members, entities, export requests, queue items, data-quality issues and audit events.
+  - Topbar search is active in client intake, internal workflow, wealth actions and communication/export/ops shells.
+- Admin/Tenant:
+  - Added `/api/admin-tenants` and `lib/admin-tenant-readmodel-service.ts`.
+  - Tenant directory, setup checklist, team assignments and tenant-user access now prefer DB-backed snapshot rows.
+  - J06 workflow mutations remain the write path; the snapshot exposes their resulting tenant state and audit proof.
+- Export:
+  - Added `/api/export-workflow` and `lib/export-workflow-readmodel-service.ts`.
+  - Export setup, scope, preview and download pages now prefer the current tenant `ExportRequest` lifecycle, scope JSON, generated metadata state and export audit timeline.
+  - Existing J08 actions remain the mutation path and still separate approval, generation metadata, download and share.
+- Ops/SLA:
+  - Added `/api/ops-sla` and `lib/ops-sla-readmodel-service.ts`.
+  - Queue overview, SLA metrics, breach rows, escalation summary and unit health now derive from `QueueItem`, `DataQualityIssue` and `ReviewSchedule` rows.
+  - Route IDs `059` and `060` were moved from deferred registration to `MVP_SUPPORT` so the implemented Ops/SLA screens are actually reachable. Other P1/Hold routes remain unchanged.
+
+### Files Changed
+
+- `app/api/admin-tenants/route.ts`
+- `app/api/export-workflow/route.ts`
+- `app/api/global-search/route.ts`
+- `app/api/ops-sla/route.ts`
+- `components/admin-tenant-setup-screen.tsx`
+- `components/client-intake-screen.tsx`
+- `components/communication-export-ops-screen.tsx`
+- `components/global-search-box.tsx`
+- `components/internal-workflow-screen.tsx`
+- `components/top-bar.tsx`
+- `components/wealth-actions-screen.tsx`
+- `lib/admin-tenant-readmodel-service.ts`
+- `lib/export-workflow-readmodel-service.ts`
+- `lib/global-search-service.ts`
+- `lib/ops-sla-readmodel-service.ts`
+- `lib/route-registry.ts`
+- `lib/screencast-demo-client.ts`
+- `tests/dbtf-tables-api.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Validation Commands Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `pnpm test:dbtf` - passed, 15 tests.
+- `pnpm db:validate` - passed.
+- `pnpm build` - passed with existing Turbopack tracing warnings in `lib/document-storage-adapter.ts`.
+
+### Remaining Limits
+
+- Admin/Tenant dynamic creation remains demo-workflow backed and fixture-oriented; no broad production admin API was introduced.
+- Export package delivery is metadata/control-state only; no real export archive or external delivery channel was implemented.
+- Ops/SLA metrics are DB-derived from current MVP rows, not a full operations analytics warehouse.
+- Browser screenshot proof was captured under `artifacts/max-unlocked-db-backed/`.
+
+## DBTF-P11-P15 - Unsupported Prompt Range Blocker
+
+Date: 2026-06-21
+
+### Phase / Stop-Rule Report
+
+- Requested phase range: `DBTF-P11`, `DBTF-P12`, `DBTF-P13`, `DBTF-P14` and `DBTF-P15`.
+- Source of truth inspected: `ALPHAVEST_DB_BACKED_TABLES_FORMS_CODEX_PROMPT_PACK.md`.
+- Highest DBTF planning source inspected: `ALPHAVEST_DB_BACKED_TABLES_FORMS_REALITY_REBASE_PLAN.md`.
+- Result: `BLOCKED_UNSUPPORTED_DBTF_PHASE_RANGE`.
+- Reason: the operative DBTF prompt pack defines `DBTF-P00` through `DBTF-P10` and a final DBTF QA prompt only. It does not define `DBTF-P11`, `DBTF-P12`, `DBTF-P13`, `DBTF-P14` or `DBTF-P15`.
+- Work performed before stop: source verification, existing report verification and focused DBTF regression validation.
+- Files changed in this reporting pass:
+  - `docs/v3/PHASE_EXECUTION_REPORT.md`
+  - `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- Files inspected only:
+  - `ALPHAVEST_DB_BACKED_TABLES_FORMS_CODEX_PROMPT_PACK.md`
+  - `ALPHAVEST_DB_BACKED_TABLES_FORMS_REALITY_REBASE_PLAN.md`
+  - `ALPHAVEST_SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK.md`
+  - `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_RELEASE_PHASE_PLAN.md`
+  - `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`
+  - `AGENTS.md`
+  - `package.json`
+- DB/Seed changes: none.
+- API/Service changes: none.
+
+### Source Evidence
+
+- The DBTF prompt index ends at `DBTF-P10` for proof/regression/rebase summary.
+- The DBTF phase prompt headings are present only for `DBTF-P00` through `DBTF-P10`.
+- The pack's own acceptance criteria state that it provides `DBTF-P00` to `DBTF-P10` phase prompts.
+- The final DBTF learning note says the safest execution order is `DBTF-P00` through `DBTF-P10`.
+- The broad SCF artefacts do include P11-P14 concepts, but those are not `DBTF-P11` through `DBTF-P15` and cannot be used to invent DBTF phases.
+
+### Validation Commands Run
+
+- `pnpm test:dbtf` - passed, 11 tests.
+- `pnpm db:seed` - passed as part of the focused DBTF regression flow; deterministic seed summary reported 4 client tenants, 27 users, 11 roles, 12 documents, 4 recommendations, 4 evidence records and 13 audit events.
+
+### Proofs Produced
+
+- Report proof: this blocker section records that the requested phase IDs are not present in the DBTF source of truth.
+- Regression proof: the focused DBTF suite still passes for the implemented P00-P10 surface.
+- Seed proof: deterministic demo data was restored after the DBTF persistence tests.
+- Screenshot proof: not produced for this blocker because no authorized DBTF-P11-P15 UI implementation exists.
+
+### Acceptance Results
+
+- Positive acceptance: PASS for source verification and honest stop-rule reporting.
+- Negative acceptance: PASS because unsupported phases were not invented, no P1/Hold/Reference/broad SCF scope was promoted and no blind API/schema/screen work was performed.
+
+### Stop Rules Triggered
+
+- `BLOCKED_UNSUPPORTED_DBTF_PHASE_RANGE`: requested `DBTF-P11` through `DBTF-P15` are not defined in the operative DBTF prompt pack.
+- `BLOCKED_TARGET_NOT_FOUND`: no DBTF phase prompt bodies, task IDs or subtask IDs exist for the requested range.
+
+### Deviations / Blockers / Next
+
+- Deviations: user requested real implementation, but the source-of-truth phase range is absent; reporting-only stop is required by the prompt pack.
+- Blockers: a new source-of-truth addendum is required before any `DBTF-P11+` implementation can be executed.
+- Remaining TODOs: decide whether to create a DBTF extension prompt pack/addendum or treat DBTF as complete after P10 plus Final QA.
+- Next recommended phase: DBTF Final QA only, or author a new explicit `DBTF-P11+` source artefact before implementation.
+
 ## DBTF-P04-P10 - Row Actions, DB-Backed Forms, Wizard Lifecycle, Metrics And Proof
 
 Date: 2026-06-21

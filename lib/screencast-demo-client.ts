@@ -39,9 +39,18 @@ export async function runScreencastDemoAction(actionId: string, nextRoute?: stri
     throw new Error(body?.error ?? `Screencast demo action failed with HTTP ${response.status}.`);
   }
 
+  const body = (await response.json()) as {
+    result?: {
+      auditEventId?: string;
+      message?: string;
+    };
+  };
+
   if (nextRoute) {
     window.location.assign(nextRoute);
   }
+
+  return body;
 }
 
 export async function runRecommendationReviewWorkflowAction(

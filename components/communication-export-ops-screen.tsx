@@ -26,7 +26,6 @@ import {
   PackageCheck,
   Plus,
   RefreshCw,
-  Search,
   Settings,
   ShieldCheck,
   Table2,
@@ -48,6 +47,7 @@ import {
   type DataTableColumn
 } from "@/components/ui";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
+import { GlobalSearchBox } from "@/components/global-search-box";
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
 import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
@@ -79,6 +79,8 @@ import {
   workflowBadges
 } from "@/lib/communication-export-ops-demo-data";
 import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import type { ExportWorkflowSnapshot } from "@/lib/export-workflow-readmodel-service";
+import type { OpsSlaSnapshot } from "@/lib/ops-sla-readmodel-service";
 import type { ScreenRoute } from "@/lib/route-registry";
 import { runScreencastDemoAction } from "@/lib/screencast-demo-client";
 import type { VisualState } from "@/lib/visual-contract";
@@ -202,6 +204,94 @@ function useDbtfAuditEvents() {
   return { loadState, rows };
 }
 
+function useExportWorkflowSnapshot() {
+  const { session } = useDemoSession();
+  const [snapshot, setSnapshot] = useState<ExportWorkflowSnapshot | null>(null);
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoadState("loading");
+
+      try {
+        const response = await fetch(
+          `/api/export-workflow?tenantSlug=${encodeURIComponent(session.tenant.slug)}&roleKey=${encodeURIComponent(session.role.key)}`,
+          { cache: "no-store" },
+        );
+        const body = (await response.json()) as { snapshot?: ExportWorkflowSnapshot | null };
+
+        if (!response.ok) {
+          throw new Error("Export snapshot failed.");
+        }
+
+        if (!cancelled) {
+          setSnapshot(body.snapshot ?? null);
+          setLoadState("ready");
+        }
+      } catch {
+        if (!cancelled) {
+          setSnapshot(null);
+          setLoadState("error");
+        }
+      }
+    }
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [session.role.key, session.tenant.slug]);
+
+  return { loadState, snapshot };
+}
+
+function useOpsSlaSnapshot() {
+  const { session } = useDemoSession();
+  const [snapshot, setSnapshot] = useState<OpsSlaSnapshot | null>(null);
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoadState("loading");
+
+      try {
+        const response = await fetch(
+          `/api/ops-sla?tenantSlug=${encodeURIComponent(session.tenant.slug)}&roleKey=${encodeURIComponent(session.role.key)}`,
+          { cache: "no-store" },
+        );
+        const body = (await response.json()) as { snapshot?: OpsSlaSnapshot | null };
+
+        if (!response.ok) {
+          throw new Error("Ops/SLA snapshot failed.");
+        }
+
+        if (!cancelled) {
+          setSnapshot(body.snapshot ?? null);
+          setLoadState("ready");
+        }
+      } catch {
+        if (!cancelled) {
+          setSnapshot(null);
+          setLoadState("error");
+        }
+      }
+    }
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [session.role.key, session.tenant.slug]);
+
+  return { loadState, snapshot };
+}
+
 function ScreenTitle({ children }: { children: React.ReactNode }) {
   return <h1 className="sr-only">{children}</h1>;
 }
@@ -313,19 +403,7 @@ function Phase13TopBar() {
   return (
     <header className="av-topbar sticky top-0 z-20 px-4 py-3 md:px-6">
       <div className="flex min-h-12 flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-        <label className="relative min-w-0 xl:w-[34rem]">
-          <span className="sr-only">Search WealthOS</span>
-          <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-          <input
-            aria-disabled="true"
-            className="h-10 w-full cursor-not-allowed rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-10 text-sm text-alphavest-subtle outline-none transition placeholder:text-alphavest-subtle"
-            disabled
-            placeholder="Global search pending scoped indexing"
-            title="Global search is disabled until a scoped DB-backed search index exists."
-            type="search"
-          />
-          <span className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-alphavest-border px-1.5 py-0.5 text-xs text-alphavest-subtle md:block">static</span>
-        </label>
+        <GlobalSearchBox className="xl:w-[34rem]" />
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
           <label className="relative">
             <span className="sr-only">Tenant context</span>
@@ -756,6 +834,9 @@ function CallTriggerMatrixPage({ title }: { title: string }) {
 }
 
 function ExportNewPage({ title }: { title: string }) {
+  const { snapshot } = useExportWorkflowSnapshot();
+  const currentExport = snapshot?.current;
+
   return (
     <div>
       <PageLead badge="Draft" description="Start a permission-scoped export with type, tenant and scope controls." icon={Download} title={title} />
@@ -812,14 +893,19 @@ function ExportNewPage({ title }: { title: string }) {
           <CardContent>
             <KeyValueList
               items={[
-                { label: "Status", value: <Badge tone="gold">Draft</Badge> },
-                { label: "Export type", value: "Data Extract" },
-                { label: "Tenant", value: "Not selected" },
-                { label: "Scope", value: "Not selected" },
+                { label: "Status", value: <Badge tone="gold">{currentExport?.status ?? "Draft"}</Badge> },
+                { label: "Export type", value: currentExport?.exportType ?? "Data Extract" },
+                { label: "Tenant", value: currentExport?.tenant ?? "Select tenant" },
+                { label: "Scope", value: `${snapshot?.summary.included ?? 0} selected / ${snapshot?.summary.blocked ?? 0} blocked` },
                 { label: "Schedule", value: "Run now" }
               ]}
             />
-            <StatePanel className="mt-5" detail="Request export permission before running exports." state="restricted" title="Permission required" />
+            <StatePanel
+              className="mt-5"
+              detail={currentExport ? "Latest export request is loaded from the tenant-scoped ExportRequest table." : "No export request is active for this tenant yet."}
+              state={currentExport ? "loading" : "restricted"}
+              title={currentExport ? "DB-backed export draft" : "Permission required"}
+            />
           </CardContent>
         </Card>
       </div>
@@ -828,7 +914,10 @@ function ExportNewPage({ title }: { title: string }) {
 }
 
 function ExportScopePage({ title }: { title: string }) {
-  const availableColumns: Array<DataTableColumn<(typeof exportScopeItems)[number]>> = [
+  const { snapshot } = useExportWorkflowSnapshot();
+  const scopeRows = snapshot?.scopeItems.length ? snapshot.scopeItems : exportScopeItems;
+  const summary = snapshot?.summary ?? exportScopeSummary;
+  const availableColumns: Array<DataTableColumn<(typeof scopeRows)[number]>> = [
     { key: "name", header: "Name", render: (row) => <span className={cn("font-semibold", row.selected ? "text-alphavest-ivory" : "text-alphavest-muted")}>{row.name}</span> },
     { key: "type", header: "Type", render: (row) => row.type },
     { key: "access", header: "Access", render: (row) => <Badge tone={toneFor(row.access)}>{row.access}</Badge> }
@@ -852,24 +941,24 @@ function ExportScopePage({ title }: { title: string }) {
             <CardTitle>Available Scope</CardTitle>
           </CardHeader>
           <CardContent>
-            <DataTable compact columns={availableColumns} getRowId={(row) => row.id} rows={exportScopeItems} />
+            <DataTable compact columns={availableColumns} getRowId={(row) => row.id} rows={scopeRows} />
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <CardTitle>Selected Scope</CardTitle>
-              <p className="mt-1 text-sm text-alphavest-muted">{exportScopeSummary.included} included, {exportScopeSummary.invalidSelected} invalid selected.</p>
+              <p className="mt-1 text-sm text-alphavest-muted">{summary.included} included, {summary.invalidSelected} invalid selected.</p>
             </div>
             <button className={secondaryButtonClass} data-testid="j08-clear-scope" onClick={() => { void runScreencastDemoAction("j08.clearScope", "/export/demo/redaction"); }} type="button">Clear all</button>
           </CardHeader>
           <CardContent>
-            <DataTable compact columns={availableColumns} getRowId={(row) => `${row.id}-selected`} rows={exportScopeItems.filter((item) => item.selected)} />
-            <StatePanel className="mt-4" detail={`${exportScopeSummary.blocked} restricted or not-permitted objects are excluded. Limited items remain in scope only after redaction review.`} state="restricted" title="Object-level permission checks" />
+            <DataTable compact columns={availableColumns} getRowId={(row) => `${row.id}-selected`} rows={scopeRows.filter((item) => item.selected)} />
+            <StatePanel className="mt-4" detail={`${summary.blocked} restricted or not-permitted objects are excluded. Limited items remain in scope only after redaction review.`} state="restricted" title="Object-level permission checks" />
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              <FieldPill label="Included" value={`${exportScopeSummary.included} objects`} />
-              <FieldPill label="Limited" value={`${exportScopeSummary.limitedIncluded} reviewed`} />
-              <FieldPill label="Blocked" value={`${exportScopeSummary.blocked} excluded`} />
+              <FieldPill label="Included" value={`${summary.included} objects`} />
+              <FieldPill label="Limited" value={`${summary.limitedIncluded} reviewed`} />
+              <FieldPill label="Blocked" value={`${summary.blocked} excluded`} />
             </div>
           </CardContent>
         </Card>
@@ -994,6 +1083,9 @@ function ExportRedactionPage({ title }: { title: string }) {
 
 function ExportPreviewPage({ title, visualState }: { title: string; visualState?: VisualState }) {
   const [modalOpen, setModalOpen] = useState(visualState === "approval");
+  const { snapshot } = useExportWorkflowSnapshot();
+  const currentExport = snapshot?.current;
+  const timeline = snapshot?.timeline.length ? snapshot.timeline : exportTimeline;
 
   return (
     <div>
@@ -1007,11 +1099,11 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
           <CardContent>
             <KeyValueList
               items={[
-                { label: "Purpose", value: "Regulatory submission" },
+                { label: "Purpose", value: currentExport?.exportType ?? "Regulatory submission" },
                 { label: "Format", value: "Encrypted archive" },
-                { label: "Estimated size", value: "92.4 MB" },
-                { label: "Record count", value: "4,321" },
-                { label: "Binary status", value: <Badge tone="gold">Metadata-only</Badge> },
+                { label: "Estimated size", value: currentExport?.generatedFileDocumentId ? "Manifest metadata stored" : "Pending generation" },
+                { label: "Record count", value: `${snapshot?.summary.included ?? 0} scoped objects` },
+                { label: "Binary status", value: <Badge tone="gold">{currentExport?.binaryStatus ?? "Metadata-only"}</Badge> },
                 { label: "Classification", value: <Badge tone="red">Confidential</Badge> }
               ]}
             />
@@ -1024,14 +1116,20 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {["Clients", "Accounts", "Entities", "Evidence records", "Audit trail"].map((item, index) => (
+              {[
+                ["Selected objects", snapshot?.summary.included ?? 0],
+                ["Excluded objects", snapshot?.summary.blocked ?? 0],
+                ["Limited/redaction items", snapshot?.summary.limitedIncluded ?? 0],
+                ["Audit events", timeline.length],
+                ["Active request", snapshot?.summary.activeRequestCount ?? 0],
+              ].map(([item, count]) => (
                 <div className="flex items-center justify-between rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" key={item}>
                   <span className="text-sm font-semibold text-alphavest-ivory">{item}</span>
-                  <span className="text-sm text-alphavest-muted">{[1248, 15, 26, 12, 84][index]} records</span>
+                  <span className="text-sm text-alphavest-muted">{count} records</span>
                 </div>
               ))}
             </div>
-            <AuditTimeline items={exportTimeline.slice(0, 4)} />
+            <AuditTimeline items={timeline.slice(0, 4)} />
           </CardContent>
         </Card>
         <Card>
@@ -1118,6 +1216,9 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
 
 function ExportDownloadPage({ title }: { title: string }) {
   const [modalOpen, setModalOpen] = useState(false);
+  const { snapshot } = useExportWorkflowSnapshot();
+  const currentExport = snapshot?.current;
+  const timeline = snapshot?.timeline.length ? snapshot.timeline : exportTimeline;
 
   return (
     <div>
@@ -1138,12 +1239,12 @@ function ExportDownloadPage({ title }: { title: string }) {
             <CardContent>
               <KeyValueList
                 items={[
-                  { label: "Export", value: "EXP-2025-05-21-0087" },
-                  { label: "Source", value: "Client Comms Portfolio Summary" },
-                  { label: "Requested by", value: "Alex Bennett" },
-                  { label: "Prepared", value: "May 21, 2025 09:42" },
+                  { label: "Export", value: currentExport?.id.slice(0, 8) ?? "EXP-2025-05-21-0087" },
+                  { label: "Source", value: currentExport?.tenant ?? "Client Comms Portfolio Summary" },
+                  { label: "Requested by", value: "Demo workflow actor" },
+                  { label: "Prepared", value: currentExport?.requestedAt.slice(0, 16).replace("T", " ") ?? "May 21, 2025 09:42" },
                   { label: "Format", value: "ZIP manifest package" },
-                  { label: "Binary status", value: <Badge tone="gold">Metadata-only</Badge> },
+                  { label: "Binary status", value: <Badge tone="gold">{currentExport?.binaryStatus ?? "Metadata-only"}</Badge> },
                   { label: "Watermark", value: <Badge tone="green">Enabled</Badge> },
                   { label: "Classification", value: <Badge tone="red">Confidential</Badge> }
                 ]}
@@ -1172,8 +1273,8 @@ function ExportDownloadPage({ title }: { title: string }) {
             <CardContent>
               <div className="flex flex-wrap items-center justify-between gap-4 rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-4">
                 <div>
-                  <p className="font-semibold text-alphavest-ivory">Watermarked export package</p>
-                  <p className="text-sm text-alphavest-muted">8.7 MB metadata-only manifest package, delivery action pending</p>
+                  <p className="font-semibold text-alphavest-ivory">{currentExport?.fileName ?? "Watermarked export package"}</p>
+                  <p className="text-sm text-alphavest-muted">{currentExport?.lifecycleStage ?? "Metadata-only manifest package"}, delivery action controlled</p>
                 </div>
                 <button className={secondaryButtonClass} data-testid="j08-download-export" onClick={() => { void runScreencastDemoAction("j08.downloadExport"); }} type="button">
                   <Download aria-hidden="true" className="size-4" />
@@ -1203,7 +1304,7 @@ function ExportDownloadPage({ title }: { title: string }) {
               <CardTitle>Export Status Timeline</CardTitle>
             </CardHeader>
             <CardContent>
-              <AuditTimeline items={exportTimeline} />
+              <AuditTimeline items={timeline} />
             </CardContent>
           </Card>
         </div>
@@ -1229,7 +1330,10 @@ function ExportDownloadPage({ title }: { title: string }) {
 }
 
 function OpsQueuesPage({ title }: { title: string }) {
-  const columns: Array<DataTableColumn<(typeof queueRows)[number]>> = [
+  const { loadState, snapshot } = useOpsSlaSnapshot();
+  const rows = snapshot?.queueRows.length ? snapshot.queueRows : queueRows;
+  const metrics = snapshot?.metrics.length ? snapshot.metrics : opsMetrics;
+  const columns: Array<DataTableColumn<(typeof rows)[number]>> = [
     { key: "queue", header: "Queue", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.queue}</span> },
     { key: "owner", header: "Owner", render: (row) => row.owner },
     {
@@ -1254,13 +1358,13 @@ function OpsQueuesPage({ title }: { title: string }) {
     <div>
       <PageLead description="Monitor workloads, manage backlogs and meet SLA commitments." icon={Gauge} title={title} />
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
-        {opsMetrics.map((metric) => (
+        {metrics.map((metric) => (
           <Card key={metric.label}>
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-sm text-alphavest-muted">{metric.label}</p>
                 <p className="mt-3 text-3xl font-semibold text-alphavest-ivory">{metric.value}</p>
-                <p className={cn("mt-2 text-sm", toneFor(metric.tone) === "red" ? "text-alphavest-red" : "text-alphavest-muted")}>{metric.delta} vs yesterday</p>
+              <p className={cn("mt-2 text-sm", toneFor(metric.tone) === "red" ? "text-alphavest-red" : "text-alphavest-muted")}>{metric.delta}</p>
               </div>
               <IconTile tone={metric.tone as BadgeTone}>
                 <Calendar aria-hidden="true" className="size-5" />
@@ -1284,7 +1388,12 @@ function OpsQueuesPage({ title }: { title: string }) {
           </div>
         </CardHeader>
         <CardContent>
-          <DataTable columns={columns} getRowId={(row) => row.id} rows={queueRows} />
+          <DataTable
+            columns={columns}
+            emptyMessage={loadState === "error" ? "Ops queues could not be loaded from the DB." : "No tenant-scoped queue rows are open."}
+            getRowId={(row) => row.id}
+            rows={rows}
+          />
         </CardContent>
       </Card>
       <Card className="mt-5">
@@ -1311,7 +1420,18 @@ function OpsQueuesPage({ title }: { title: string }) {
 }
 
 function SlaEscalationPage({ title }: { title: string }) {
-  const columns: Array<DataTableColumn<(typeof breachRows)[number]>> = [
+  const { loadState, snapshot } = useOpsSlaSnapshot();
+  const rows = snapshot?.breachRows.length ? snapshot.breachRows : breachRows;
+  const metrics = snapshot?.slaMetrics.length ? snapshot.slaMetrics : slaMetrics;
+  const escalationSummary = snapshot?.escalationSummary;
+  const unitHealth = snapshot?.unitHealth.length ? snapshot.unitHealth : [
+    { label: "Private Wealth", value: 95 },
+    { label: "Institutional", value: 92 },
+    { label: "Operations", value: 90 },
+    { label: "Advisory", value: 89 },
+    { label: "Platform Services", value: 96 },
+  ];
+  const columns: Array<DataTableColumn<(typeof rows)[number]>> = [
     { key: "id", header: "ID", render: (row) => row.id },
     { key: "service", header: "Service", render: (row) => row.service },
     { key: "obligation", header: "Obligation", render: (row) => row.obligation },
@@ -1328,7 +1448,7 @@ function SlaEscalationPage({ title }: { title: string }) {
     <div>
       <PageLead description="Monitor service levels, manage breaches and drive timely resolution." icon={LineChart} title={title} />
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-        {slaMetrics.map((metric) => (
+        {metrics.map((metric) => (
           <Card key={metric.label}>
             <p className="text-sm text-alphavest-muted">{metric.label}</p>
             <div className="mt-4 flex items-center justify-between gap-4">
@@ -1348,7 +1468,12 @@ function SlaEscalationPage({ title }: { title: string }) {
             <button className={primaryButtonClass} type="button">Create Escalation</button>
           </CardHeader>
           <CardContent>
-            <DataTable columns={columns} getRowId={(row) => row.id} rows={breachRows} />
+            <DataTable
+              columns={columns}
+              emptyMessage={loadState === "error" ? "SLA rows could not be loaded from the DB." : "No active SLA breaches for this tenant."}
+              getRowId={(row) => row.id}
+              rows={rows}
+            />
           </CardContent>
         </Card>
         <div className="space-y-5">
@@ -1359,11 +1484,11 @@ function SlaEscalationPage({ title }: { title: string }) {
             <CardContent>
               <KeyValueList
                 items={[
-                  { label: "Total", value: <Badge tone="red">12</Badge> },
-                  { label: "L1", value: "7" },
-                  { label: "L2", value: "4" },
-                  { label: "L3", value: "1" },
-                  { label: "Auto", value: "5" }
+                  { label: "Total", value: <Badge tone="red">{escalationSummary?.total ?? 12}</Badge> },
+                  { label: "L1", value: String(escalationSummary?.l1 ?? 7) },
+                  { label: "L2", value: String(escalationSummary?.l2 ?? 4) },
+                  { label: "L3", value: String(escalationSummary?.l3 ?? 1) },
+                  { label: "Auto", value: String(escalationSummary?.auto ?? 5) }
                 ]}
               />
             </CardContent>
@@ -1373,13 +1498,13 @@ function SlaEscalationPage({ title }: { title: string }) {
               <CardTitle>SLA Health by Unit</CardTitle>
             </CardHeader>
             <CardContent>
-              {["Private Wealth", "Institutional", "Operations", "Advisory", "Platform Services"].map((unit, index) => (
-                <div className="mb-4" key={unit}>
+              {unitHealth.map((unit) => (
+                <div className="mb-4" key={unit.label}>
                   <div className="mb-1 flex justify-between text-sm">
-                    <span className="text-alphavest-muted">{unit}</span>
-                    <span className="text-alphavest-ivory">{[95, 92, 90, 89, 96][index]}%</span>
+                    <span className="text-alphavest-muted">{unit.label}</span>
+                    <span className="text-alphavest-ivory">{unit.value}%</span>
                   </div>
-                  <ProgressBar tone={index === 3 ? "gold" : "green"} value={[95, 92, 90, 89, 96][index]} />
+                  <ProgressBar tone={unit.value < 90 ? "gold" : "green"} value={unit.value} />
                 </div>
               ))}
             </CardContent>

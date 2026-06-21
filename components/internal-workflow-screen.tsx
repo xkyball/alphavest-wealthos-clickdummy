@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { GlobalSearchBox } from "@/components/global-search-box";
 import {
   AuditTimeline,
   Badge,
@@ -416,16 +417,7 @@ function InternalTopBar() {
   return (
     <header className="av-topbar sticky top-0 z-20 px-4 py-3 md:px-6">
       <div className="flex min-h-12 flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-        <label className="relative min-w-0 xl:w-[34rem]">
-          <span className="sr-only">Search internal workspace</span>
-          <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-          <input
-            className="h-10 w-full rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-10 text-sm text-alphavest-ivory outline-none transition placeholder:text-alphavest-subtle focus:border-alphavest-gold"
-            placeholder="Search workflow..."
-            type="search"
-          />
-          <span className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-alphavest-border px-1.5 py-0.5 text-xs text-alphavest-subtle md:block">cmd K</span>
-        </label>
+        <GlobalSearchBox className="xl:w-[34rem]" placeholder="Search internal workspace..." />
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
           <label className="relative">
             <span className="sr-only">Tenant context</span>

@@ -235,4 +235,68 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(body.metrics.cards.some((card: { label: string; value: string }) => card.label === "Documents linked" && card.value.includes("/"))).toBe(true);
     expect(body.safety.noClientRelease).toBe(true);
   });
+
+  test("runs tenant-scoped global search without cross-tenant leakage", async ({ request }) => {
+    const response = await request.get("/api/global-search?tenantSlug=bennett&roleKey=family_cfo&q=Bennett");
+    const body = await response.json();
+
+    expect(response.ok(), JSON.stringify(body)).toBe(true);
+    expect(body.ok).toBe(true);
+    expect(body.safety.scoped).toBe(true);
+    expect(body.results.length).toBeGreaterThan(0);
+    expect(body.results.every((row: { label: string; description: string }) => `${row.label} ${row.description}`.toLowerCase().includes("bennett"))).toBe(true);
+
+    const invalidResponse = await request.get("/api/global-search?tenantSlug=unknown&roleKey=family_cfo&q=Bennett");
+    const invalidBody = await invalidResponse.json();
+
+    expect(invalidResponse.status(), JSON.stringify(invalidBody)).toBe(400);
+    expect(invalidBody.results).toEqual([]);
+    expect(invalidBody.safety.hiddenRowsDisclosed).toBe(false);
+  });
+
+  test("surfaces J06 tenant wizard mutations in the admin tenant snapshot", async ({ request }) => {
+    const mutationResponse = await request.post("/api/demo-workflow", { data: { actionId: "j06.continueTenant" } });
+    const mutationBody = await mutationResponse.json();
+
+    expect(mutationResponse.ok(), JSON.stringify(mutationBody)).toBe(true);
+    expect(mutationBody.result.tenantRows).toBeGreaterThan(0);
+
+    const snapshotResponse = await request.get("/api/admin-tenants");
+    const snapshotBody = await snapshotResponse.json();
+
+    expect(snapshotResponse.ok(), JSON.stringify(snapshotBody)).toBe(true);
+    expect(snapshotBody.snapshot.tenantRows.some((row: { name: string; status: string }) => row.name.includes("Morgan") && row.status === "Onboarding")).toBe(true);
+    expect(snapshotBody.snapshot.auditProof.some((event: { eventType: string }) => event.eventType === "screencast.tenant.details_saved")).toBe(true);
+  });
+
+  test("surfaces J08 export wizard lifecycle from ExportRequest rows", async ({ request }) => {
+    for (const actionId of ["j08.selectDataExtract", "j08.clearScope", "j08.confirmApproval"]) {
+      const response = await request.post("/api/demo-workflow", { data: { actionId } });
+      const body = await response.json();
+
+      expect(response.ok(), `${actionId}: ${JSON.stringify(body)}`).toBe(true);
+    }
+
+    const response = await request.get("/api/export-workflow?tenantSlug=summit&roleKey=principal");
+    const body = await response.json();
+
+    expect(response.ok(), JSON.stringify(body)).toBe(true);
+    expect(body.safety.noClientRelease).toBe(true);
+    expect(body.snapshot.current.status).toBe("Generated");
+    expect(body.snapshot.current.realFileGenerated).toBe(false);
+    expect(body.snapshot.summary.included).toBeGreaterThan(0);
+    expect(body.snapshot.timeline.some((item: { title: string }) => item.title.toLowerCase().includes("approved"))).toBe(true);
+  });
+
+  test("derives Ops/SLA metrics from queue and data-quality rows", async ({ request }) => {
+    const response = await request.get("/api/ops-sla?tenantSlug=summit&roleKey=client_success&asOf=2026-06-17T12:00:00.000Z");
+    const body = await response.json();
+
+    expect(response.ok(), JSON.stringify(body)).toBe(true);
+    expect(body.ok).toBe(true);
+    expect(body.safety.noAdviceExecution).toBe(true);
+    expect(body.snapshot.metrics.some((metric: { label: string; value: string }) => metric.label === "SLA Met" && metric.value.endsWith("%"))).toBe(true);
+    expect(body.snapshot.queueRows.length).toBeGreaterThan(0);
+    expect(body.snapshot.breachRows.every((row: { client: string }) => row.client.includes("Summit"))).toBe(true);
+  });
 });

@@ -1,0 +1,124 @@
+"use client";
+
+import { Search } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+
+import { useDemoSession } from "@/components/demo-session-provider";
+import { cn } from "@/lib/cn";
+
+type GlobalSearchResult = {
+  description: string;
+  href: string;
+  id: string;
+  label: string;
+  status: string;
+  type: string;
+};
+
+type GlobalSearchBoxProps = {
+  className?: string;
+  placeholder?: string;
+};
+
+export function GlobalSearchBox({ className, placeholder = "Search WealthOS..." }: GlobalSearchBoxProps) {
+  const { session } = useDemoSession();
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<GlobalSearchResult[]>([]);
+  const [state, setState] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const trimmedQuery = query.trim();
+  const searchUrl = useMemo(() => {
+    const params = new URLSearchParams({
+      q: trimmedQuery,
+      roleKey: session.role.key,
+      tenantSlug: session.tenant.slug,
+    });
+
+    return `/api/global-search?${params.toString()}`;
+  }, [session.role.key, session.tenant.slug, trimmedQuery]);
+
+  useEffect(() => {
+    if (trimmedQuery.length < 2) {
+      return;
+    }
+
+    const controller = new AbortController();
+    const handle = window.setTimeout(() => {
+      setState("loading");
+      fetch(searchUrl, { cache: "no-store", signal: controller.signal })
+        .then(async (response) => {
+          const body = (await response.json()) as { results?: GlobalSearchResult[] };
+
+          if (!response.ok) {
+            throw new Error("Global search failed.");
+          }
+
+          setResults(body.results ?? []);
+          setState("ready");
+        })
+        .catch((error: unknown) => {
+          if (error instanceof DOMException && error.name === "AbortError") {
+            return;
+          }
+          setResults([]);
+          setState("error");
+        });
+    }, 160);
+
+    return () => {
+      controller.abort();
+      window.clearTimeout(handle);
+    };
+  }, [searchUrl, trimmedQuery.length]);
+
+  const hasPanel = trimmedQuery.length >= 2;
+  const visibleResults = hasPanel ? results : [];
+  const visibleState = hasPanel ? state : "idle";
+
+  return (
+    <div className={cn("relative min-w-0", className)}>
+      <label className="block">
+        <span className="sr-only">Global search</span>
+        <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-5 size-4 -translate-y-1/2 text-alphavest-subtle" />
+        <input
+          className="h-10 w-full rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-10 text-sm text-alphavest-ivory outline-none transition placeholder:text-alphavest-subtle focus:border-alphavest-gold"
+          onChange={(event) => setQuery(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && results[0]) {
+              window.location.assign(results[0].href);
+            }
+          }}
+          placeholder={placeholder}
+          type="search"
+          value={query}
+        />
+        <span className="pointer-events-none absolute right-3 top-5 hidden -translate-y-1/2 rounded border border-alphavest-border px-1.5 py-0.5 text-xs text-alphavest-subtle md:block">
+          DB
+        </span>
+      </label>
+      {hasPanel ? (
+        <div className="absolute left-0 right-0 top-12 z-40 overflow-hidden rounded-md border border-alphavest-border bg-alphavest-panel shadow-2xl">
+          {visibleState === "loading" ? <p className="p-4 text-sm text-alphavest-muted">Searching scoped DB rows...</p> : null}
+          {visibleState === "error" ? <p className="p-4 text-sm text-alphavest-red">Search failed closed for this scope.</p> : null}
+          {visibleState === "ready" && visibleResults.length === 0 ? <p className="p-4 text-sm text-alphavest-muted">No tenant-scoped rows found.</p> : null}
+          {visibleResults.map((result) => (
+            <a
+              className="block border-b border-alphavest-border/55 px-4 py-3 text-sm transition last:border-0 hover:bg-alphavest-charcoal/70"
+              href={result.href}
+              key={result.id}
+            >
+              <span className="flex items-center justify-between gap-3">
+                <span className="min-w-0 font-semibold text-alphavest-ivory">{result.label}</span>
+                <span className="shrink-0 rounded border border-alphavest-border px-2 py-0.5 text-xs text-alphavest-gold-soft">
+                  {result.type}
+                </span>
+              </span>
+              <span className="mt-1 block truncate text-xs text-alphavest-muted">
+                {result.status} - {result.description}
+              </span>
+            </a>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}

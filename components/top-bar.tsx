@@ -1,7 +1,8 @@
 "use client";
 
-import { Bell, ChevronDown, Menu, RotateCcw, Search, ShieldCheck, UserRound } from "lucide-react";
+import { Bell, ChevronDown, Menu, RotateCcw, ShieldCheck, UserRound } from "lucide-react";
 import { useDemoSession } from "@/components/demo-session-provider";
+import { GlobalSearchBox } from "@/components/global-search-box";
 import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 
 type TopBarProps = {
@@ -43,18 +44,7 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
         </div>
 
         <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center lg:justify-end">
-          <label className="relative hidden min-w-56 sm:block">
-            <span className="sr-only">Search</span>
-            <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-            <input
-              aria-disabled="true"
-              className="h-10 w-full cursor-not-allowed rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-9 text-sm text-alphavest-subtle outline-none transition placeholder:text-alphavest-subtle"
-              disabled
-              placeholder="Search pending scoped indexing"
-              title="Search is disabled until scoped row filtering is implemented."
-              type="search"
-            />
-          </label>
+          <GlobalSearchBox className="hidden min-w-56 sm:block" />
 
           <div className="grid gap-2 sm:grid-cols-2 lg:flex">
             <label className="grid gap-1 text-[0.66rem] font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">
