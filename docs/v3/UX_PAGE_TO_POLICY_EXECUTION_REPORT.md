@@ -236,6 +236,108 @@ No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route rece
 
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
 
+## Completed Slice: UX-PAGE-004
+
+Task: `UX-PAGE-004` - Keep P1, Reference and Hold routes out of productive MVP page-type work.
+
+Mission Card: prove and document that routes `052`, `053`, `059`, `060`, `061`, `062`, `063`, `064`, `065`, `066`, `067`, `068`, `069`, `070`, `071` remain non-productive registered-only/deferred/reference/hold surfaces after UX-PAGE work.
+
+Evidence Intake:
+- Task-master `UX-PAGE-004` and Route Policy Matrix §11 protection register.
+- Existing implementation finding: route registry, navigation policy, skeleton guards and page contract already model protected route non-productivity.
+- Gap: after PAGE-002/PAGE-003, tests did not explicitly prove protected routes did not receive new workbench/detail productive surfaces.
+
+Problem Architecture: protected routes can look like product UI because they are registered and smoke-tested. The critical distinction is guard visibility without MVP CTA, workbench triad or focused detail action rail.
+
+Double Diamond:
+- Discover: 15 protected routes remain route-smoke reachable.
+- Define: prove no protected route receives productive PAGE surfaces.
+- Develop: add a no-elevation route-smoke assertion across all 15 protected routes.
+- Deliver: test proof, screenshots and reports.
+
+Psycho-Logic + Map/Model: users should understand that a visible registered route is not a promise of active MVP capability. The safe map model is "registered for continuity, locked for product work."
+
+Reframing Matrix:
+- Protected-as-product: rejected.
+- Protected-as-guard: kept.
+- Protected-as-reference: kept only for reference rows.
+- Protected-as-future promise: rejected unless explicitly marked deferred.
+
+TRIZ: preserve route visibility for catalogue/smoke continuity while preventing route visibility from increasing task eligibility.
+
+SIT Closed World: reused existing route workset registry, guard skeleton and route-smoke tests; no new routes, screen generation or route reclassification.
+
+Zwicky + CCA:
+- Variant A: remove protected routes. Rejected because route smoke requires registered continuity.
+- Variant B: add guard/no-surface regression. Chosen.
+- Variant C: implement richer deferred screens. Rejected as forbidden P1/Hold/Reference elevation.
+
+SCAMPER: added no-surface proof, combined it with existing route workset preservation, and eliminated ambiguity caused by newly added UX-PAGE productive surfaces.
+
+Harvard / BATNA: objective criteria are the protection register and task card. BATNA is stop/report, never implementing held/P1/reference features.
+
+MESOs:
+- Option A: tests and screenshots only. Chosen because existing guard UI already satisfies allowed treatment.
+- Option B: edit each protected component. Rejected as unnecessary and risky.
+
+Measurement Plan:
+- `pnpm typecheck`
+- `pnpm lint`
+- `PLAYWRIGHT_PORT=3359 pnpm exec playwright test tests/route-smoke.spec.ts -g "deferred, reference and held routes do not receive productive UX-PAGE surfaces"`
+- `PLAYWRIGHT_PORT=3360 pnpm test:route-smoke`
+- Screenshot proof under `artifacts/ux-page-to-policy/UX-PAGE-004/`
+
+Ethics/Fairness: no fake MVP readiness, no future-work bait, no hidden product CTA, no client-visible behavior or safety finalization.
+
+Adversarial QA: a protected route could accidentally receive PAGE-002/PAGE-003 UI; the new test asserts those test IDs are absent and that `Product action locked` is disabled.
+
+Learning Log: the next workstream starts `UX-COMPLEXITY-001`; complexity work must only target productive MVP/MVP_SUPPORT pages unless a protected guard clarity fix is explicitly required.
+
+Route-policy rows cited:
+- P1 deferred: `052`, `053`, `059`, `060`, `068`.
+- Reference-only: `061`, `062`, `063`.
+- Hold-blocked: `064`, `065`, `066`, `067`, `069`, `070`, `071`.
+
+Changed files:
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-PAGE-004/2026-06-21-UX-PAGE-004-p1-deferred-communication.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-004/2026-06-21-UX-PAGE-004-reference-service-blueprint.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-004/2026-06-21-UX-PAGE-004-hold-kyc-review.png`
+
+Implementation summary:
+- Added route-smoke regression that all 15 protected routes have no `ux-page-workbench-triad`, no `ux-page-detail-standard` and a disabled `Product action locked` button.
+- Preserved existing registered-only guard screens.
+
+Validation:
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with existing warnings from prior UX-HUB extraction.
+- `PLAYWRIGHT_PORT=3359 pnpm exec playwright test tests/route-smoke.spec.ts -g "deferred, reference and held routes do not receive productive UX-PAGE surfaces"` - passed, 1 test covering 15 routes.
+- `PLAYWRIGHT_PORT=3360 pnpm test:route-smoke` - passed, 122 tests.
+
+Screenshot/proof:
+- `artifacts/ux-page-to-policy/UX-PAGE-004/2026-06-21-UX-PAGE-004-p1-deferred-communication.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-004/2026-06-21-UX-PAGE-004-reference-service-blueprint.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-004/2026-06-21-UX-PAGE-004-hold-kyc-review.png`
+
+Positive acceptance:
+- Protected routes remain accessible as registered-only guard/reference/deferred surfaces.
+- Navigation/productive UX surfaces stay excluded from protected routes.
+
+Negative/P0 acceptance:
+- No protected route received an MVP CTA, PAGE-002 workbench triad or PAGE-003 detail standard.
+- No protected route was elevated into MVP/MVP_SUPPORT scope or productive navigation.
+
+No-generation confirmation: no screen generation, state-screen generation, image generation or generated product assets.
+
+No-route-reclassification confirmation: route IDs, paths, scopes and policy labels remain unchanged.
+
+No-P1/Hold/Reference-elevation confirmation: all 15 protected routes are covered by no-elevation regression.
+
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain unchanged.
+
 ## Completed Slice: UX-PAGE-002
 
 Task: `UX-PAGE-002` - Split workbench pages into queue / selected context / action rail.

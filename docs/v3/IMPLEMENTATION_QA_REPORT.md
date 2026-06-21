@@ -6170,3 +6170,45 @@ Source of truth:
 ### QA Limits
 
 - `UX-PAGE-003` standardizes the representative MVP detail routes required by the task proof. It does not expand productive treatment to P1, Reference or Hold routes.
+
+## UX-PAGE-004 QA Addendum
+
+Date: 2026-06-21
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+
+| Area | QA result | Evidence |
+| --- | --- | --- |
+| P1 no-elevation | Passed | P1 deferred routes remain outside productive UX-PAGE surfaces and show disabled `Product action locked`. |
+| Reference no-product-task | Passed | Reference routes have no workbench triad or focused-detail standard. |
+| Hold no-scope-unlock | Passed | Hold routes remain guard-only with no productive PAGE surfaces. |
+| Route preservation | Passed | Full route-smoke still covers all 71 registered routes. |
+| Screenshot proof | Passed | P1, Reference and Hold screenshots captured under `artifacts/ux-page-to-policy/UX-PAGE-004/`. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | `tsc --noEmit` completed successfully. |
+| `pnpm lint` | Passed | ESLint completed with existing warnings from prior UX-HUB extraction. |
+| `PLAYWRIGHT_PORT=3359 pnpm exec playwright test tests/route-smoke.spec.ts -g "deferred, reference and held routes do not receive productive UX-PAGE surfaces"` | Passed | Covers all 15 protected routes. |
+| `PLAYWRIGHT_PORT=3360 pnpm test:route-smoke` | Passed | 122 tests. |
+
+### Screenshot Proof
+
+- `artifacts/ux-page-to-policy/UX-PAGE-004/2026-06-21-UX-PAGE-004-p1-deferred-communication.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-004/2026-06-21-UX-PAGE-004-reference-service-blueprint.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-004/2026-06-21-UX-PAGE-004-hold-kyc-review.png`
+
+### Safety Proof
+
+- P1 routes remain deferred and not active in the MVP release.
+- Reference routes remain internal orientation surfaces, not product workflows.
+- Hold routes remain blocked until later explicit scope, safety and visual decisions unlock them.
+- No protected route inherited PAGE-002 workbench triads or PAGE-003 detail action rails.
+
+### QA Limits
+
+- `UX-PAGE-004` intentionally does not redesign protected routes beyond guard proof. Richer P1/Hold/Reference UI remains forbidden without later explicit authorization.

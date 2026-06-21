@@ -353,6 +353,30 @@ test.describe("locked route workset preservation", () => {
     }
   });
 
+  test("deferred, reference and held routes do not receive productive UX-PAGE surfaces", async ({ page }) => {
+    const p1ProtectedPageIds = new Set<string>(routeWorksetPageIds.P1_AFTER_MVP);
+    const referenceProtectedPageIds = new Set<string>(routeWorksetPageIds.REFERENCE_ONLY);
+    const holdProtectedPageIds = new Set<string>(routeWorksetPageIds.HOLD_PENDING_DECISION);
+    const excludedRoutes = routeSmokeList.filter((route) => {
+      return (
+        p1ProtectedPageIds.has(route.pageId) ||
+        referenceProtectedPageIds.has(route.pageId) ||
+        holdProtectedPageIds.has(route.pageId)
+      );
+    });
+
+    expect(excludedRoutes).toHaveLength(15);
+
+    for (const route of excludedRoutes) {
+      await authenticateRouteSmokePage(page);
+      await page.goto(route.path);
+
+      await expect(page.getByTestId("ux-page-workbench-triad"), `${route.pageId} workbench triad`).toHaveCount(0);
+      await expect(page.getByTestId("ux-page-detail-standard"), `${route.pageId} detail standard`).toHaveCount(0);
+      await expect(page.getByRole("button", { name: "Product action locked" }), `${route.pageId} locked action`).toBeDisabled();
+    }
+  });
+
   test("deferred, reference and held requests render registered-only guard screens", async ({ page }) => {
     const registeredOnlyScreens = [
       {

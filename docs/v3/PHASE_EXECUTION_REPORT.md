@@ -8109,3 +8109,63 @@ Completed `UX-PAGE-003` by adding a shared focused-detail section to representat
 ### Exit Gate Decision
 
 `UX_PAGE_003_COMPLETED_WITH_FOCUSED_DETAIL_AND_P0_PROOF`
+
+## UX-PAGE-004 Addendum - Protected Routes Kept Non-Productive
+
+Date: 2026-06-21
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+
+### Scope
+
+Completed `UX-PAGE-004` by adding explicit no-elevation proof for P1, Reference and Hold routes after the productive PAGE-002/PAGE-003 UI work. This is a guard/regression slice only; it does not implement held/P1/reference features, delete routes, reclassify routes or add product CTAs.
+
+### Changed Files
+
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-PAGE-004/2026-06-21-UX-PAGE-004-p1-deferred-communication.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-004/2026-06-21-UX-PAGE-004-reference-service-blueprint.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-004/2026-06-21-UX-PAGE-004-hold-kyc-review.png`
+
+### Route-Policy Rows Cited
+
+- P1 deferred: `052`, `053`, `059`, `060`, `068`.
+- Reference-only: `061`, `062`, `063`.
+- Hold-blocked: `064`, `065`, `066`, `067`, `069`, `070`, `071`.
+
+### Implementation Notes
+
+- Added route-smoke proof that protected routes do not render `ux-page-workbench-triad` or `ux-page-detail-standard`.
+- Added assertion that protected routes expose only disabled `Product action locked` CTA treatment.
+- Preserved existing registered-only route guard rendering.
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with existing warnings from prior UX-HUB extraction.
+- `PLAYWRIGHT_PORT=3359 pnpm exec playwright test tests/route-smoke.spec.ts -g "deferred, reference and held routes do not receive productive UX-PAGE surfaces"` - passed.
+- `PLAYWRIGHT_PORT=3360 pnpm test:route-smoke` - passed, 122 tests.
+
+### Screenshot Proof
+
+- `artifacts/ux-page-to-policy/UX-PAGE-004/2026-06-21-UX-PAGE-004-p1-deferred-communication.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-004/2026-06-21-UX-PAGE-004-reference-service-blueprint.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-004/2026-06-21-UX-PAGE-004-hold-kyc-review.png`
+
+### Positive Acceptance
+
+- Protected routes remain smoke-reachable as guard/reference/deferred surfaces.
+- Primary productive UX-PAGE structures remain absent from all protected routes.
+
+### Negative Acceptance
+
+- No protected route exposes MVP CTA, workbench triad, focused-detail action rail, scope unlock or client-visible behavior.
+
+### Exit Gate Decision
+
+`UX_PAGE_004_COMPLETED_WITH_NO_ELEVATION_PROOF`
