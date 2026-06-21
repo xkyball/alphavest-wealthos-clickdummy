@@ -7967,3 +7967,71 @@ Completed `UX-PAGE-001` by adding a derived page-type contract layer for all reg
 ### Exit Gate Decision
 
 `UX_PAGE_001_COMPLETED_WITH_ROUTE_POLICY_CONTRACT_PROOF`
+
+## UX-PAGE-002 Addendum - Workbench Triad Applied
+
+Date: 2026-06-21
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+
+### Scope
+
+Completed `UX-PAGE-002` by adding a route-scoped workbench triad for the target MVP workbench routes: priority queue, selected context and action rail. The change is an orientation and layout-pattern slice only; it does not create routes, reclassify routes, generate screens/images, elevate protected routes or grant action/payload/release/export authority.
+
+### Changed Files
+
+- `lib/product-guidance.ts`
+- `components/product-guidance-panel.tsx`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-PAGE-002/2026-06-21-UX-PAGE-002-documents-workbench-triad.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-002/2026-06-21-UX-PAGE-002-compliance-workbench-triad.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-002/2026-06-21-UX-PAGE-002-export-scope-workbench-triad.png`
+
+### Route-Policy Rows Cited
+
+- `027-030`: document queue/upload/review/verification workbench routes.
+- `033`, `036`, `038`, `046`: signal, advisor approval, compliance and evidence workbench routes.
+- `048-051`: governance users, roles, access requests and audit history.
+- `054-056`: export creation, scope and redaction lifecycle routes.
+
+### Implementation Notes
+
+- Added `ProductGuidanceWorkbenchStructure` and scoped it to the exact `UX-PAGE-002` route IDs.
+- Rendered `data-testid="ux-page-workbench-triad"` with one priority queue, one selected context and one action rail.
+- Kept copy explicit that visible status is orientation and not gate-completion proof.
+- Reused the shared product guidance component instead of creating route-specific one-off layouts.
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with existing warnings from prior UX-HUB extraction.
+- `PLAYWRIGHT_PORT=3347 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-PAGE workbench structure"` - passed, 15 tests.
+- `PLAYWRIGHT_PORT=3348 pnpm test:route-smoke` - passed, 111 tests.
+- `PLAYWRIGHT_PORT=3349 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3350 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3351 pnpm test:file-export` - passed, 14 tests.
+
+### Screenshot Proof
+
+- `artifacts/ux-page-to-policy/UX-PAGE-002/2026-06-21-UX-PAGE-002-documents-workbench-triad.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-002/2026-06-21-UX-PAGE-002-compliance-workbench-triad.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-002/2026-06-21-UX-PAGE-002-export-scope-workbench-triad.png`
+
+### Positive Acceptance
+
+- All scoped workbench routes render the queue / selected context / action rail split.
+- The split is visible above page content and backed by route-smoke proof.
+
+### Negative Acceptance
+
+- The triad does not claim evidence sufficiency, compliance release, export approval, download/share, advisor approval authority, admin bypass or audit persistence.
+- No P1, Reference or Hold route was promoted into productive workbench treatment.
+
+### Exit Gate Decision
+
+`UX_PAGE_002_COMPLETED_WITH_WORKBENCH_TRIAD_AND_P0_PROOF`

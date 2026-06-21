@@ -28,6 +28,14 @@ export type ProductGuidance = {
   steps: UxFlowStep[];
   tier: RouteScopeLabel | "ROOT";
   tierLabel: string;
+  workbenchStructure?: ProductGuidanceWorkbenchStructure;
+};
+
+export type ProductGuidanceWorkbenchStructure = {
+  actionRail: string;
+  context: string;
+  queue: string;
+  safety: string;
 };
 
 type GuidanceOverride = Partial<
@@ -213,6 +221,24 @@ const guidanceTierLabels: Record<RouteScopeLabel, string> = {
   REFERENCE_ONLY: "Reference only",
 };
 
+const uxPage002WorkbenchRouteIds = new Set([
+  "027",
+  "028",
+  "029",
+  "030",
+  "033",
+  "036",
+  "038",
+  "046",
+  "048",
+  "049",
+  "050",
+  "051",
+  "054",
+  "055",
+  "056",
+]);
+
 function areaForRoute(route: ScreenRoute) {
   const groupLabel = navigationGroupLabels[route.navigationGroup];
 
@@ -236,24 +262,45 @@ function routeFromPathname(pathname: string) {
   return matchRouteBySegments(normalized.split("/").filter(Boolean)) ?? null;
 }
 
+function workbenchStructureForRoute(route: ScreenRoute, guidance: Pick<ProductGuidance, "area" | "gateHint" | "primaryAction" | "shortTitle" | "tierLabel">) {
+  if (!uxPage002WorkbenchRouteIds.has(route.pageId)) return undefined;
+
+  return {
+    actionRail: guidance.primaryAction
+      ? `Next allowed action: ${guidance.primaryAction.label}.`
+      : "No productive action is exposed until route and role prerequisites are clear.",
+    context: `${guidance.shortTitle} is selected inside ${guidance.area}; route scope is ${guidance.tierLabel}.`,
+    queue: `Priority queue for ${guidance.shortTitle}; visible status is orientation, not gate-completion proof.`,
+    safety: guidance.gateHint,
+  } satisfies ProductGuidanceWorkbenchStructure;
+}
+
 export function productGuidanceForRoute(route: ScreenRoute): ProductGuidance {
   const tier = routeScopeForPageId(route.pageId);
   const policy = uxRoutePolicyForRoute(route);
   const override = guidanceOverrides[route.pageId] ?? {};
-
-  return {
+  const baseGuidance = {
     area: override.area ?? areaForRoute(route),
     gateHint: override.gateHint ?? tierGateHints[tier],
-    nextStep: override.nextStep,
     primaryAction: override.primaryAction,
+    shortTitle: override.shortTitle ?? route.title,
+    tierLabel: guidanceTierLabels[tier],
+  };
+
+  return {
+    area: baseGuidance.area,
+    gateHint: baseGuidance.gateHint,
+    nextStep: override.nextStep,
+    primaryAction: baseGuidance.primaryAction,
     purpose: override.purpose ?? route.purpose,
     relatedRoutes: override.relatedRoutes ?? [],
     routePolicyLabels: policy.routePolicyLabels,
     routeId: route.pageId,
-    shortTitle: override.shortTitle ?? route.title,
+    shortTitle: baseGuidance.shortTitle,
     steps: uxFlowStepsForPageId(route.pageId),
     tier,
-    tierLabel: guidanceTierLabels[tier],
+    tierLabel: baseGuidance.tierLabel,
+    workbenchStructure: workbenchStructureForRoute(route, baseGuidance),
   };
 }
 

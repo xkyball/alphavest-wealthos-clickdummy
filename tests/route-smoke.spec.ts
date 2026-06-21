@@ -208,6 +208,42 @@ test.describe("UX-PAGE page type contract", () => {
   });
 });
 
+test.describe("UX-PAGE workbench structure", () => {
+  const uxPage002Routes = [
+    "/documents",
+    "/documents/upload",
+    "/documents/extraction-review",
+    "/documents/verification-pending",
+    "/signals",
+    "/advisor-approval",
+    "/compliance",
+    "/evidence",
+    "/governance/users",
+    "/governance/roles",
+    "/governance/access-requests",
+    "/governance/audit-history",
+    "/export/new",
+    "/export/demo/scope",
+    "/export/demo/redaction",
+  ];
+
+  for (const path of uxPage002Routes) {
+    test(`${path} renders queue, selected context and action rail above page content`, async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 1100 });
+      await authenticateRouteSmokePage(page);
+      await page.goto(path);
+
+      const guidance = page.getByTestId("product-guidance").first();
+      const triad = guidance.getByTestId("ux-page-workbench-triad");
+      await expect(triad).toBeVisible();
+      await expect(triad.getByTestId("ux-page-queue")).toHaveCount(1);
+      await expect(triad.getByTestId("ux-page-selected-context")).toHaveCount(1);
+      await expect(triad.getByTestId("ux-page-action-rail")).toHaveCount(1);
+      await expect(triad.getByText("not gate-completion proof")).toBeVisible();
+    });
+  }
+});
+
 test.describe("locked route workset preservation", () => {
   test("all registered routes are classified exactly once", () => {
     expect(routeWorksetIntegrity.counts).toEqual(lockedRouteWorksetCounts);

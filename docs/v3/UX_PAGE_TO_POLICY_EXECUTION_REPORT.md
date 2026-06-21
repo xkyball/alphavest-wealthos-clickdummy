@@ -111,3 +111,116 @@ No-route-reclassification confirmation: route count and route scope are unchange
 No-P1/Hold/Reference-elevation confirmation: protected contracts remain non-productive and route-smoke verifies the protected count.
 
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and tests.
+
+## Completed Slice: UX-PAGE-002
+
+Task: `UX-PAGE-002` - Split workbench pages into queue / selected context / action rail.
+
+Mission Card: apply the workbench triad only to the scoped Route Policy Matrix workbench routes without changing route scope, action authority, evidence sufficiency, compliance release, export lifecycle or admin governance gates.
+
+Evidence Intake:
+- Task-master `UX-PAGE-002` target rows: `027-030`, `033`, `036`, `038`, `046`, `048-051`, `054-056`.
+- Route Policy Matrix page types and P0 obligations for document upload/review, signal triage, advisor approval, compliance, evidence, governance and export lifecycle routes.
+- Existing implementation finding: shared `ProductGuidancePanel` already renders above-the-fold route job, gate hint and flow context, making it the narrowest safe place for a non-authorizing workbench structure.
+
+Problem Architecture: the routes need clearer workbench orientation, but the UI must not imply that queue visibility, selected context or action rail text completes gates or grants authority.
+
+Double Diamond:
+- Discover: workbench routes had page job/gate hints, but no consistent triad separating priority queue, selected context and action rail.
+- Define: add a consistent workbench orientation layer for the exact target routes.
+- Develop: derive route-specific triad copy from existing product guidance and route policy; keep it non-mutating and non-authorizing.
+- Deliver: shared workbench triad with route-smoke coverage and screenshot proof.
+
+Psycho-Logic + Map/Model: users need an immediate answer to "what should I look at, what is selected, what can I safely do next?" The map trap is making visual structure feel like permission; the safe move is to state the triad while repeating that visible status is orientation, not gate-completion proof.
+
+Reframing Matrix:
+- Page-as-card-wall: rejected.
+- Page-as-workbench: kept for scoped MVP routes.
+- Page-as-gate: constrained by explicit safety copy and existing tests.
+- Page-as-handoff: kept for export/advisor/compliance transitions without changing authority.
+
+TRIZ: improve clarity and reduce layout ambiguity while preserving hard safety gates by adding structure around existing guidance rather than adding new actions.
+
+SIT Closed World: reused `productGuidanceForRoute`, `ProductGuidancePanel`, route IDs and route-smoke authentication; no new route, generated screen, image, schema, API or product scope engine was introduced.
+
+Zwicky + CCA:
+- Variant A: rewrite every target page body. Rejected as high blast radius.
+- Variant B: add page-specific one-off triads. Rejected as inconsistent and hard to prove.
+- Variant C: shared guidance triad scoped by route ID. Kept for narrow policy-aligned proof.
+
+SCAMPER: combined page-job guidance with workbench structure, substituted card-wall ambiguity with queue/context/action rail, eliminated duplicate per-page layout work and rearranged safety copy into the action rail.
+
+Harvard / BATNA: objective criteria are the Route Policy Matrix rows and task card. BATNA remains stop/report if a route needs behavior changes beyond UX orientation.
+
+MESOs:
+- Option A: shared triad in product guidance. Chosen.
+- Option B: per-route content migration into new local page layouts. Deferred to later detail/complexity tasks where explicitly required.
+
+Measurement Plan:
+- `pnpm typecheck`
+- `pnpm lint`
+- `PLAYWRIGHT_PORT=3347 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-PAGE workbench structure"`
+- `PLAYWRIGHT_PORT=3348 pnpm test:route-smoke`
+- `PLAYWRIGHT_PORT=3349 pnpm test:permissions`
+- `PLAYWRIGHT_PORT=3350 pnpm test:workflow-gate`
+- `PLAYWRIGHT_PORT=3351 pnpm test:file-export`
+- Screenshot proof under `artifacts/ux-page-to-policy/UX-PAGE-002/`
+
+Ethics/Fairness: no coercive CTA, no hidden gate weakening, no client-visible AI draft, no admin bypass and no claim that upload, preview or visible queue status is sufficient proof.
+
+Adversarial QA: the triad could be mistaken for workflow completion; route-smoke verifies the explicit "not gate-completion proof" copy on all target routes.
+
+Learning Log: later `UX-PAGE-003` detail work should continue using shared non-authorizing patterns and only move into page bodies where object-detail structure is explicitly required.
+
+Route-policy rows cited:
+- `027` `/documents`, `028` `/documents/upload`, `029` `/documents/extraction-review`, `030` `/documents/verification-pending`.
+- `033` `/signals`, `036` `/advisor-approval`, `038` `/compliance`, `046` `/evidence`.
+- `048` `/governance/users`, `049` `/governance/roles`, `050` `/governance/access-requests`, `051` `/governance/audit-history`.
+- `054` `/export/new`, `055` `/export/:id/scope`, `056` `/export/:id/redaction`.
+
+Changed files:
+- `lib/product-guidance.ts`
+- `components/product-guidance-panel.tsx`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-PAGE-002/2026-06-21-UX-PAGE-002-documents-workbench-triad.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-002/2026-06-21-UX-PAGE-002-compliance-workbench-triad.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-002/2026-06-21-UX-PAGE-002-export-scope-workbench-triad.png`
+
+Implementation summary:
+- Added route-scoped workbench structure metadata for the `UX-PAGE-002` target routes.
+- Rendered a consistent priority queue, selected context and action rail inside the shared product guidance panel.
+- Kept the action rail descriptive and non-mutating; no new CTA authority or workflow behavior was introduced.
+- Added route-smoke coverage across all 15 target routes.
+
+Validation:
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with existing warnings from the prior UX-HUB extraction.
+- `PLAYWRIGHT_PORT=3347 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-PAGE workbench structure"` - passed, 15 tests.
+- `PLAYWRIGHT_PORT=3348 pnpm test:route-smoke` - passed, 111 tests.
+- `PLAYWRIGHT_PORT=3349 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3350 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3351 pnpm test:file-export` - passed, 14 tests.
+
+Screenshot/proof:
+- `artifacts/ux-page-to-policy/UX-PAGE-002/2026-06-21-UX-PAGE-002-documents-workbench-triad.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-002/2026-06-21-UX-PAGE-002-compliance-workbench-triad.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-002/2026-06-21-UX-PAGE-002-export-scope-workbench-triad.png`
+
+Positive acceptance:
+- All scoped workbench routes render a queue / selected context / action rail triad above page content.
+- The triad is derived from existing route guidance and route policy metadata.
+
+Negative/P0 acceptance:
+- The triad explicitly says visible status is orientation, not gate-completion proof.
+- No route, route scope, permission, payload, compliance release, upload sufficiency, advisor approval, audit persistence or export lifecycle behavior changed.
+
+No-generation confirmation: no screen generation, state-screen generation, image generation or generated assets.
+
+No-route-reclassification confirmation: route IDs, paths, scopes and page-type policy remain unchanged.
+
+No-P1/Hold/Reference-elevation confirmation: `UX-PAGE-002` only targets scoped MVP workbench routes and does not elevate protected routes.
+
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and tests.

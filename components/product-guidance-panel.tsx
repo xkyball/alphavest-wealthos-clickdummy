@@ -94,6 +94,23 @@ export function ProductGuidancePanel() {
               <WizardStepper steps={guidance.steps} />
             </div>
           ) : null}
+          {guidance.workbenchStructure ? (
+            <div className="mt-4 grid gap-3 lg:grid-cols-3" data-testid="ux-page-workbench-triad">
+              <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/40 p-3" data-testid="ux-page-queue">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Priority Queue</p>
+                <p className="mt-2 text-sm leading-6 text-alphavest-muted">{guidance.workbenchStructure.queue}</p>
+              </div>
+              <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/40 p-3" data-testid="ux-page-selected-context">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Selected Context</p>
+                <p className="mt-2 text-sm leading-6 text-alphavest-muted">{guidance.workbenchStructure.context}</p>
+              </div>
+              <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3" data-testid="ux-page-action-rail">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold-soft">Action Rail</p>
+                <p className="mt-2 text-sm leading-6 text-alphavest-muted">{guidance.workbenchStructure.actionRail}</p>
+                <p className="mt-2 text-xs leading-5 text-alphavest-gold-soft">{guidance.workbenchStructure.safety}</p>
+              </div>
+            </div>
+          ) : null}
           <div className="mt-3 hidden flex-wrap gap-1.5 md:flex">
             {guidance.routePolicyLabels.slice(0, 4).map((label) => (
               <span

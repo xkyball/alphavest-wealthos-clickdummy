@@ -6074,3 +6074,50 @@ Source of truth:
 
 - `UX-PAGE-001` did not refactor rendered page layouts; later `UX-PAGE-002` and onward own workbench/detail layout changes.
 - No screenshot was captured because this slice changed metadata/tests/reports only.
+
+## UX-PAGE-002 QA Addendum
+
+Date: 2026-06-21
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+
+| Area | QA result | Evidence |
+| --- | --- | --- |
+| Workbench triad coverage | Passed | Route-smoke verifies queue, selected context and action rail on all 15 `UX-PAGE-002` target paths. |
+| Route Policy Matrix preservation | Passed | The route ID set is scoped to the task rows and does not change route registry, route scope or page-type policy. |
+| P0 non-overclaim | Passed | Route-smoke checks the visible copy `not gate-completion proof`. |
+| Safety gates | Passed | `test:permissions`, `test:workflow-gate` and `test:file-export` remain green after the UI orientation change. |
+| Screenshot proof | Passed | Three screenshots captured under `artifacts/ux-page-to-policy/UX-PAGE-002/`. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | `tsc --noEmit` completed successfully. |
+| `pnpm lint` | Passed | ESLint completed with existing warnings from prior UX-HUB extraction. |
+| `PLAYWRIGHT_PORT=3347 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-PAGE workbench structure"` | Passed | 15 target-route tests. |
+| `PLAYWRIGHT_PORT=3348 pnpm test:route-smoke` | Passed | 111 tests. |
+| `PLAYWRIGHT_PORT=3349 pnpm test:permissions` | Passed | 8 tests; command reseeded demo DB as part of existing test flow. |
+| `PLAYWRIGHT_PORT=3350 pnpm test:workflow-gate` | Passed | 13 tests. |
+| `PLAYWRIGHT_PORT=3351 pnpm test:file-export` | Passed | 14 tests. |
+
+### Screenshot Proof
+
+- `artifacts/ux-page-to-policy/UX-PAGE-002/2026-06-21-UX-PAGE-002-documents-workbench-triad.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-002/2026-06-21-UX-PAGE-002-compliance-workbench-triad.png`
+- `artifacts/ux-page-to-policy/UX-PAGE-002/2026-06-21-UX-PAGE-002-export-scope-workbench-triad.png`
+
+### Safety Proof
+
+- Queue/context/action-rail visibility is orientation only.
+- Upload success remains separate from evidence sufficiency.
+- Advisor approval remains separate from compliance release.
+- Export preview, approval, download and share remain separated by existing controls.
+- Governance/admin visibility does not bypass route/action/payload permissions.
+
+### QA Limits
+
+- `UX-PAGE-002` does not migrate every page body into bespoke page layouts; it applies the shared workbench split required by the task without broad route rewrites.
+- Later `UX-PAGE-003` owns object detail page standardization.
