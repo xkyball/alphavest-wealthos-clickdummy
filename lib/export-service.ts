@@ -61,6 +61,8 @@ export type ExportStepSeparationDecision = {
   canDownload: boolean;
   canGenerate: boolean;
   canShare: boolean;
+  stage: "draft" | "preview" | "approved" | "generated" | "downloaded" | "shared";
+  allowedNextActions: Array<"preview" | "approve" | "generate" | "download" | "share">;
   missing: string[];
 };
 
@@ -140,17 +142,33 @@ function evaluateExportStepSeparation(input: ExportStepSeparationInput): ExportS
   const canGenerate = canApprove && input.approved;
   const canDownload = canGenerate && input.generated;
   const canShare = canDownload && input.downloaded;
+  const stage =
+    input.shared ? "shared" :
+    input.downloaded ? "downloaded" :
+    input.generated ? "generated" :
+    input.approved ? "approved" :
+    input.previewed ? "preview" :
+    "draft";
+  const allowedNextActions: ExportStepSeparationDecision["allowedNextActions"] = [];
 
   if (!input.previewed) missing.push("preview_required_before_approval");
   if (!input.approved) missing.push("approval_required_before_generation");
   if (!input.generated) missing.push("generation_required_before_download");
   if (!input.downloaded) missing.push("download_required_before_share");
 
+  if (!input.previewed) allowedNextActions.push("preview");
+  if (canApprove && !input.approved) allowedNextActions.push("approve");
+  if (canGenerate && !input.generated) allowedNextActions.push("generate");
+  if (canDownload && !input.downloaded) allowedNextActions.push("download");
+  if (canShare && !input.shared) allowedNextActions.push("share");
+
   return {
     canApprove,
     canDownload,
     canGenerate,
     canShare,
+    stage,
+    allowedNextActions,
     missing,
   };
 }
@@ -240,8 +258,16 @@ function canGenerateExport(input: {
     missing.push("redaction_profile");
   }
 
+  if (!input.approvalComplete) {
+    missing.push("approval");
+  }
+
   if (input.externalShare && !input.approvalComplete) {
     missing.push("external_share_approval");
+  }
+
+  if (!input.targetId) {
+    missing.push("selected_export_request");
   }
 
   if (input.auditPersistenceAvailable === false) {

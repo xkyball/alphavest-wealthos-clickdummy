@@ -406,6 +406,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
 
     expect(previewOnly.allowedToGenerate).toBe(false);
     expect(previewOnly.status).toBe("APPROVAL_REQUIRED");
+    expect(previewOnly.missing).toContain("approval");
     expect(previewOnly.missing).toContain("external_share_approval");
 
     const approved = exportService.canGenerateExport({

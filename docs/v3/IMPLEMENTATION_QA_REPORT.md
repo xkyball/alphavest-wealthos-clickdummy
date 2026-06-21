@@ -1,5 +1,59 @@
 # Implementation QA Report
 
+## MVP-FIRST-BUILD-PHASE-7 Implementation QA Addendum
+
+Date: 2026-06-21
+
+### Executive Decision
+
+`MVP_FIRST_BUILD_PHASE_7_QA_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Source of truth lock | Passed | Used `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md` Phase 7 / `BP-10` as the operative source. |
+| Export scope selection | Passed | Export generation now requires a concrete export request target and existing permission/object-scope checks remain active. |
+| Redaction profile | Passed | Package generation still requires a non-empty redaction profile and records the chosen profile in the manifest. |
+| Forbidden payload exclusion | Passed | Forbidden payload classifications are blocked and also serialized into manifest controls for inspection when present. |
+| Preview/approval/generation/download/share separation | Passed | Export lifecycle decisions now return stage plus next allowed actions; API proof covers generated, downloaded and share-eligible states. |
+| Audit fail-closed | Passed | Export generation remains blocked when audit persistence is unavailable. |
+| Safe package generation | Passed | Manifest remains metadata-only, watermarked, redacted and `realBinaryGenerated=false`; no binary ZIP delivery is claimed. |
+| No forbidden scope | Passed | No Prisma schema/migration, new API route, production auth provider, screen generation or visual asset generation was added. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | TypeScript completed cleanly after implementation. |
+| `PLAYWRIGHT_PORT=3131 pnpm test:file-export` | Passed | 13 export/redaction/package lifecycle tests. |
+| `PLAYWRIGHT_PORT=3132 pnpm test:workflow-api` and `PLAYWRIGHT_PORT=3133 pnpm test:permissions` | Failed then rerun | Parallel Playwright run collided with the `3134` web server started by the P0 grep run; no assertion failure. |
+| `PLAYWRIGHT_PORT=3136 pnpm test:workflow-api` | Passed | 14 API tests including J08 lifecycle assertions. |
+| `PLAYWRIGHT_PORT=3137 pnpm test:permissions` | Passed | 8 permission and deny-audit tests. |
+| `PLAYWRIGHT_PORT=3134 pnpm exec playwright test tests/p0-acceptance.spec.ts --grep "AV-SLICE-P0-07|AV-SLICE-P0-06"` | Passed | 2 P0 export/audit assertions. |
+| `PLAYWRIGHT_PORT=3138 pnpm exec playwright test tests/phase8-export-workflow-api.spec.ts` | Passed | Existing J08 audit-fail-closed and share-before-download tests passed. |
+| `pnpm db:validate` | Passed | Prisma schema remained valid; no schema or migration was changed. |
+| `pnpm lint` | Failed then passed | Initial `ENOENT` for missing local `test-results`; recreated the directory and reran successfully. |
+| `pnpm build` | Passed with warnings | Existing Turbopack tracing warnings remain in `lib/document-storage-adapter.ts`. |
+| `PLAYWRIGHT_PORT=3140 pnpm test:playwright` | Passed | Full Playwright suite passed, 247 tests. |
+| Screenshot capture | Passed | Captured four export-state screenshots under `artifacts/mvp-first-build-phase7-export/`. |
+
+### Screenshot Proof
+
+| Artifact | Status | Notes |
+| --- | --- | --- |
+| `artifacts/mvp-first-build-phase7-export/phase7-export-scope-controls.png` | Captured | Export scope selection and blocked object boundary. |
+| `artifacts/mvp-first-build-phase7-export/phase7-export-redaction-forbidden-payloads.png` | Captured | Forbidden payload families are visibly blocked on redaction review. |
+| `artifacts/mvp-first-build-phase7-export/phase7-export-preview-approval-separation.png` | Captured | Preview/approval package controls show separate stages. |
+| `artifacts/mvp-first-build-phase7-export/phase7-export-download-share-separation.png` | Captured | Download/share delivery view preserves separate action boundaries. |
+
+### Residual Risks
+
+- Export package generation is still metadata-only and explicitly records `realBinaryGenerated=false`; this phase does not claim operational binary ZIP generation.
+- J08 remains a demo workflow backed by providerless demo sessions and seed data; it is not production authentication or production external delivery.
+- Screenshot proof covers representative export states, not full human visual acceptance across every route and viewport.
+- Build warnings in `lib/document-storage-adapter.ts` are pre-existing broad filesystem tracing warnings and were not changed by Phase 7.
+
 ## MVP-FIRST-BUILD-PHASE-6 Implementation QA Addendum
 
 Date: 2026-06-21

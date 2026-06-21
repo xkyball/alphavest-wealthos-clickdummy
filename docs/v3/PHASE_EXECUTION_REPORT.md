@@ -1,5 +1,82 @@
 # Phase Execution Report
 
+## MVP-FIRST-BUILD-PHASE-7 - Export Redaction And Safe Package Generation
+
+Date: 2026-06-21
+
+### Phase Completion Report
+
+- Phase: 7
+- Package executed: `BP-10`
+- Task IDs completed: `AV-FB-P7-BP10-T001`, `AV-FB-P7-BP10-T002`, `AV-FB-P7-BP10-T003`, `AV-FB-P7-BP10-T004`
+- Source of truth: `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md`
+- Files changed:
+  - `app/api/demo-workflow/route.ts`
+  - `lib/export-service.ts`
+  - `lib/export-package-service.ts`
+  - `lib/communication-export-ops-demo-data.ts`
+  - `tests/file-export-realism.spec.ts`
+  - `tests/demo-workflow-api.spec.ts`
+  - `tests/p0-acceptance.spec.ts`
+  - `docs/v3/PHASE_EXECUTION_REPORT.md`
+  - `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- Screenshot artifacts:
+  - `artifacts/mvp-first-build-phase7-export/phase7-export-scope-controls.png`
+  - `artifacts/mvp-first-build-phase7-export/phase7-export-redaction-forbidden-payloads.png`
+  - `artifacts/mvp-first-build-phase7-export/phase7-export-preview-approval-separation.png`
+  - `artifacts/mvp-first-build-phase7-export/phase7-export-download-share-separation.png`
+
+### Implemented Phase 7 Behaviour
+
+- Hardened `exportService.canGenerateExport` so generation requires explicit approval and a concrete export request target in addition to permission, audit, data-quality, redaction and forbidden-payload checks.
+- Extended export step separation to return an inspectable lifecycle stage and allowed next actions for preview, approval, generation, download and share.
+- Extended export package manifests with `2026.06.first-build-phase7`, audit persistence confirmation, payload classifications, forbidden payload classifications and serialized lifecycle flags.
+- Preserved the metadata-only export boundary with `realBinaryGenerated=false`; no real ZIP/binary delivery, new API route, Prisma schema or migration was added.
+- Propagated the Phase 7 lifecycle contract through the existing J08 `/api/demo-workflow` actions so approval, download and share return auditable lifecycle metadata.
+- Updated export UI demo data so visible export controls and forbidden payload checks match the stricter service contract.
+
+### Validation Commands Run
+
+- `pnpm typecheck` - passed after implementation.
+- `PLAYWRIGHT_PORT=3131 pnpm test:file-export` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3132 pnpm test:workflow-api` and `PLAYWRIGHT_PORT=3133 pnpm test:permissions` - first parallel run failed before assertions because another Next dev server was already running on `3134`.
+- `PLAYWRIGHT_PORT=3136 pnpm test:workflow-api` - passed, 14 tests.
+- `PLAYWRIGHT_PORT=3137 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3134 pnpm exec playwright test tests/p0-acceptance.spec.ts --grep "AV-SLICE-P0-07|AV-SLICE-P0-06"` - passed, 2 tests.
+- `PLAYWRIGHT_PORT=3138 pnpm exec playwright test tests/phase8-export-workflow-api.spec.ts` - passed, 2 tests.
+- `pnpm db:validate` - passed.
+- `pnpm lint` - first run failed because local `test-results` was missing; recreated the expected artifact directory and reran successfully.
+- `pnpm build` - passed with existing Turbopack tracing warnings in `lib/document-storage-adapter.ts`.
+- `PLAYWRIGHT_PORT=3140 pnpm test:playwright` - passed, 247 tests.
+- Screenshot capture through local Next server on port `3139` - captured four export screenshots under `artifacts/mvp-first-build-phase7-export/`.
+
+### Positive P0 Proof
+
+- Approved scoped exports now produce a metadata-only package manifest with audit confirmation, redaction profile, selected object count and lifecycle stage `generated`.
+- J08 API approval returns manifest version `2026.06.first-build-phase7` and lifecycle metadata showing approval and generation are complete while download/share remain separate next steps.
+- Download and share actions continue as separate workflow actions with independent lifecycle metadata and audit-backed responses.
+- Client-safe export payload classifications are serialized into the manifest when allowed.
+
+### Negative P0 Proof
+
+- Export generation now fails without approval, without an export request target, without audit persistence, with data-quality blockers, or with forbidden payload classifications.
+- Forbidden payload families `AI_DRAFT`, `INTERNAL_RATIONALE`, `COMPLIANCE_NOTES`, `UNRELEASED_EVIDENCE`, `UNRELEASED_RECOMMENDATION` and hidden fields remain blocked from package manifests.
+- Preview does not approve; approval does not imply download/share; share remains blocked before download in the existing J08 API workflow proof.
+- Admin/export non-bypass and object-scope permission checks remain covered by the permission suite.
+
+### Screenshot Proof
+
+| Artifact | Status | Notes |
+| --- | --- | --- |
+| `artifacts/mvp-first-build-phase7-export/phase7-export-scope-controls.png` | captured | Export scope page with selected/blocked object scope state. |
+| `artifacts/mvp-first-build-phase7-export/phase7-export-redaction-forbidden-payloads.png` | captured | Redaction page showing forbidden payload families as blocked. |
+| `artifacts/mvp-first-build-phase7-export/phase7-export-preview-approval-separation.png` | captured | Preview/approval page showing step separation and package controls. |
+| `artifacts/mvp-first-build-phase7-export/phase7-export-download-share-separation.png` | captured | Download/share page showing delivery actions remain separate from approval. |
+
+### Exit Gate Decision
+
+`PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
 ## MVP-FIRST-BUILD-PHASE-6 - Decision Record And Audit Persistence
 
 Date: 2026-06-21

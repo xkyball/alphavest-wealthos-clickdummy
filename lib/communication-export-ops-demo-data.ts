@@ -151,19 +151,19 @@ export const previewPolicyChecks = [
 ];
 
 export const exportPackageControls = [
-  { label: "Preview", state: "Complete", detail: "Package contents reviewed before approval." },
+  { label: "Preview", state: "Complete", detail: "Package contents reviewed; preview does not approve or generate the package." },
   { label: "Data quality", state: "Pass", detail: "Active high-severity blockers stop export generation and sharing." },
-  { label: "Approval", state: "Required", detail: "Compliance approval is separate from generation." },
-  { label: "Generation", state: "Metadata-only", detail: "Manifest created; real binary generation remains deferred." },
-  { label: "Download", state: "Separate", detail: "Download is blocked until approval and generation complete." },
-  { label: "Share", state: "Separate", detail: "External share requires a time-limited link and audit event." }
+  { label: "Approval", state: "Required", detail: "Compliance approval is required before generation and does not download or share." },
+  { label: "Generation", state: "Metadata-only", detail: "Manifest records Phase 7 controls; real binary generation remains deferred." },
+  { label: "Download", state: "Separate", detail: "Download is available only after approval and metadata generation." },
+  { label: "Share", state: "Separate", detail: "External share requires download, a time-limited link and its own audit event." }
 ];
 
 export const exportForbiddenPayloadChecks = [
-  { label: "AI draft", state: "Excluded" },
-  { label: "Internal rationale", state: "Excluded" },
-  { label: "Compliance notes", state: "Excluded" },
-  { label: "Unreleased evidence", state: "Excluded" }
+  { label: "AI draft", state: "Blocked" },
+  { label: "Internal rationale", state: "Blocked" },
+  { label: "Compliance notes", state: "Blocked" },
+  { label: "Unreleased evidence", state: "Blocked" }
 ];
 
 export const exportTimeline = [

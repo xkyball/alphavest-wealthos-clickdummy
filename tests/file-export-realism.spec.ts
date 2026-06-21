@@ -68,9 +68,16 @@ test.describe("Phase 18 export package manifest", () => {
 
     expect(result.valid).toBe(true);
     expect(result.issues).toEqual([]);
-    expect(result.manifest.manifestVersion).toBe("2026.06.phase18");
+    expect(result.manifest.manifestVersion).toBe("2026.06.first-build-phase7");
     expect(result.manifest.realBinaryGenerated).toBe(false);
     expect(result.manifest.controls.approved).toBe(true);
+    expect(result.manifest.controls.auditPersistenceConfirmed).toBe(true);
+    expect(result.manifest.controls.lifecycle.stage).toBe("generated");
+    expect(result.manifest.controls.lifecycle.approved).toBe(true);
+    expect(result.manifest.controls.lifecycle.downloaded).toBe(false);
+    expect(result.manifest.controls.lifecycle.allowedNextActions).toEqual(["download"]);
+    expect(result.manifest.controls.payloadClassifications).toEqual([]);
+    expect(result.manifest.controls.forbiddenPayloads).toEqual([]);
     expect(result.manifest.controls.watermark).toBe(true);
     expect(result.manifest.storageKey).toBe(file.storageKey);
   });
@@ -135,6 +142,17 @@ test.describe("Phase 18 export package manifest", () => {
     expect(result.issues).toContain("forbidden_payload:AI_DRAFT");
     expect(result.issues).toContain("forbidden_payload:COMPLIANCE_NOTES");
     expect(result.issues).toContain("forbidden_payload:UNRELEASED_EVIDENCE");
+    expect(result.manifest.controls.payloadClassifications).toEqual([
+      "CLIENT_SAFE_SUMMARY",
+      "AI_DRAFT",
+      "COMPLIANCE_NOTES",
+      "UNRELEASED_EVIDENCE",
+    ]);
+    expect(result.manifest.controls.forbiddenPayloads).toEqual([
+      "AI_DRAFT",
+      "COMPLIANCE_NOTES",
+      "UNRELEASED_EVIDENCE",
+    ]);
   });
 
   test("keeps export preview separate from approval and download/share", () => {
@@ -155,6 +173,7 @@ test.describe("Phase 18 export package manifest", () => {
 
     expect(gate.allowedToGenerate).toBe(false);
     expect(gate.status).toBe("APPROVAL_REQUIRED");
+    expect(gate.missing).toContain("approval");
     expect(gate.missing).toContain("external_share_approval");
   });
 
@@ -175,6 +194,7 @@ test.describe("Phase 18 export package manifest", () => {
 
     expect(gate.allowedToGenerate).toBe(false);
     expect(gate.missing).toContain("permission");
+    expect(gate.missing).toContain("selected_export_request");
     expect(gate.reason).toBe("Demo export remains gated until missing controls are complete.");
   });
 
@@ -295,6 +315,8 @@ test.describe("Phase 18 export package manifest", () => {
     expect(previewOnly.canGenerate).toBe(false);
     expect(previewOnly.canDownload).toBe(false);
     expect(previewOnly.canShare).toBe(false);
+    expect(previewOnly.stage).toBe("preview");
+    expect(previewOnly.allowedNextActions).toEqual(["approve"]);
     expect(previewOnly.missing).toEqual([
       "approval_required_before_generation",
       "generation_required_before_download",
@@ -311,6 +333,8 @@ test.describe("Phase 18 export package manifest", () => {
 
     expect(generatedButNotDownloaded.canDownload).toBe(true);
     expect(generatedButNotDownloaded.canShare).toBe(false);
+    expect(generatedButNotDownloaded.stage).toBe("generated");
+    expect(generatedButNotDownloaded.allowedNextActions).toEqual(["download"]);
     expect(generatedButNotDownloaded.missing).toEqual(["download_required_before_share"]);
 
     const downloaded = exportService.evaluateExportStepSeparation({
@@ -322,7 +346,47 @@ test.describe("Phase 18 export package manifest", () => {
     });
 
     expect(downloaded.canShare).toBe(true);
+    expect(downloaded.stage).toBe("downloaded");
+    expect(downloaded.allowedNextActions).toEqual(["share"]);
     expect(downloaded.missing).toEqual([]);
+  });
+
+  test("records approval without collapsing approved, generated, downloaded and shared stages", () => {
+    const file = fileMetadataService.prepareDemoFileMetadata({
+      category: "exports",
+      checksumSeed: "summit:export-package:approval-stage",
+      fileName: "EXP-2026-06-16-0087-redacted.zip",
+      fileSizeBytes: 9123840,
+      mimeType: "application/zip",
+      tenantSlug: "summit",
+    });
+    const result = exportPackageService.buildExportPackageManifest({
+      approvalRequired: true,
+      approved: true,
+      auditPersistenceAvailable: true,
+      expiresAt: new Date("2026-06-23T12:00:00.000Z"),
+      exportRequestId: "68c2dd2e-2322-526f-8a48-2fdadf996c40",
+      externalShare: false,
+      file,
+      packageStage: "approved",
+      payloadClassifications: ["CLIENT_SAFE_SUMMARY", "RELEASED_EVIDENCE_SUMMARY"],
+      redactionProfile: "external-limited",
+      selectedObjectCount: 3,
+      tenantSlug: "summit",
+      watermark: true,
+    });
+
+    expect(result.valid).toBe(true);
+    expect(result.manifest.controls.packageStage).toBe("approved");
+    expect(result.manifest.controls.lifecycle).toMatchObject({
+      approved: true,
+      downloaded: false,
+      generated: false,
+      previewed: true,
+      shared: false,
+      stage: "approved",
+    });
+    expect(result.manifest.controls.lifecycle.allowedNextActions).toEqual(["generate"]);
   });
 
   test("requires explicit external share stage controls in package manifests", () => {

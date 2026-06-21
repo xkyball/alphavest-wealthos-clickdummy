@@ -2540,6 +2540,8 @@ async function runJ08ConfirmApproval(
       evidenceRecordId: summitEvidenceRecordId,
       metadataJson: {
         approvalRequired: true,
+        firstBuildPhase7ExportSafety: true,
+        lifecycleStage: "generated",
         generatedFileIsMetadataOnly: true,
         redactionProfile: "external-limited",
       },
@@ -2686,10 +2688,13 @@ async function runJ08ConfirmApproval(
             },
             blockedItemIncluded: false,
             dataQualityGate,
+            exportLifecycle: exportPackage.manifest.controls.lifecycle,
             highSeverityDataQualityBlockers: dataQualitySnapshot.highSeverityOpenCount,
             exportGate,
             generatedFileIsMetadataOnly: true,
             package: exportPackage.manifest,
+            firstBuildPhase7ExportSafety: true,
+            metadataOnlyExportBoundary: true,
             phase18FileRealismDeferred: true,
             redactionProfile: "external-limited",
             selectedObjects: [
@@ -2719,6 +2724,7 @@ async function runJ08ConfirmApproval(
         documentId: generatedDocument.id,
         evidenceItemId: evidenceItem.id,
         exportGate,
+        exportLifecycle: exportPackage.manifest.controls.lifecycle,
         exportManifestVersion: exportPackage.manifest.manifestVersion,
         exportRows: exportRequest.count,
         highSeverityDataQualityBlockers: dataQualitySnapshot.highSeverityOpenCount,
@@ -2744,6 +2750,8 @@ async function runJ08DownloadExport(prisma: PrismaClient, actionId: DemoWorkflow
       evidenceRecordId: summitEvidenceRecordId,
       metadataJson: {
         downloadWatermarked: true,
+        firstBuildPhase7ExportSafety: true,
+        lifecycleStage: "downloaded",
         generatedFileIsMetadataOnly: true,
       },
       nextState: ExportStatus.DOWNLOADED,
@@ -2777,6 +2785,15 @@ async function runJ08DownloadExport(prisma: PrismaClient, actionId: DemoWorkflow
       if (!stepDecision.canDownload) {
         throw new Error(`J08 download blocked: ${stepDecision.missing.join(", ")}`);
       }
+      const exportLifecycle = {
+        approved: Boolean(currentExport.approvedByUserId),
+        downloaded: false,
+        generated: Boolean(currentExport.generatedFileDocumentId),
+        previewed: true,
+        shared: false,
+        allowedNextActions: stepDecision.allowedNextActions,
+        stage: stepDecision.stage,
+      };
 
       const dataQualitySnapshot = await dataQualityService.buildDataQualitySnapshot(tx, {
         clientTenantId: summitTenantId,
@@ -2793,8 +2810,10 @@ async function runJ08DownloadExport(prisma: PrismaClient, actionId: DemoWorkflow
             dataQualityGate,
             downloadedAt: now.toISOString(),
             downloadWatermarked: true,
+            exportLifecycle,
             generatedFileDocumentId: currentExport.generatedFileDocumentId,
             generatedFileIsMetadataOnly: true,
+            firstBuildPhase7ExportSafety: true,
             highSeverityDataQualityBlockers: dataQualitySnapshot.highSeverityOpenCount,
             phase18FileRealismDeferred: true,
             redactionProfile: currentExport.redactionProfile,
@@ -2819,6 +2838,7 @@ async function runJ08DownloadExport(prisma: PrismaClient, actionId: DemoWorkflow
         clientVisible: false,
         evidenceItemId: evidenceItem.id,
         exportRows: exportRequest.count,
+        exportLifecycle,
         highSeverityDataQualityBlockers: dataQualitySnapshot.highSeverityOpenCount,
         message: "Export download recorded with watermark and audit proof.",
       };
@@ -2842,6 +2862,8 @@ async function runJ08ShareExport(prisma: PrismaClient, actionId: DemoWorkflowAct
       evidenceRecordId: summitEvidenceRecordId,
       metadataJson: {
         externalShareApprovalRequired: true,
+        firstBuildPhase7ExportSafety: true,
+        lifecycleStage: "shared",
         shareToken,
       },
       nextState: "SHARE_CREATED",
@@ -2875,6 +2897,15 @@ async function runJ08ShareExport(prisma: PrismaClient, actionId: DemoWorkflowAct
       if (!stepDecision.canShare) {
         throw new Error(`J08 share blocked: ${stepDecision.missing.join(", ")}`);
       }
+      const exportLifecycle = {
+        approved: Boolean(currentExport.approvedByUserId),
+        downloaded: currentExport.status === ExportStatus.DOWNLOADED,
+        generated: Boolean(currentExport.generatedFileDocumentId),
+        previewed: true,
+        shared: false,
+        allowedNextActions: stepDecision.allowedNextActions,
+        stage: stepDecision.stage,
+      };
 
       const dataQualitySnapshot = await dataQualityService.buildDataQualitySnapshot(tx, {
         clientTenantId: summitTenantId,
@@ -2911,8 +2942,10 @@ async function runJ08ShareExport(prisma: PrismaClient, actionId: DemoWorkflowAct
             },
             dataQualityGate,
             exportGate,
+            exportLifecycle,
             generatedFileDocumentId: currentExport.generatedFileDocumentId,
             generatedFileIsMetadataOnly: true,
+            firstBuildPhase7ExportSafety: true,
             highSeverityDataQualityBlockers: dataQualitySnapshot.highSeverityOpenCount,
             phase18FileRealismDeferred: true,
             redactionProfile: currentExport.redactionProfile,
@@ -2937,6 +2970,7 @@ async function runJ08ShareExport(prisma: PrismaClient, actionId: DemoWorkflowAct
         clientVisible: false,
         evidenceItemId: evidenceItem.id,
         exportRows: exportRequest.count,
+        exportLifecycle,
         expiresAt: expiryDate.toISOString(),
         highSeverityDataQualityBlockers: dataQualitySnapshot.highSeverityOpenCount,
         message: "Export share link recorded with expiry and audit proof.",

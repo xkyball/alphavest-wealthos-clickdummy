@@ -116,6 +116,43 @@ test.describe("demo workflow API", () => {
       expect(response.ok(), `${actionId}: ${JSON.stringify(body)}`).toBe(true);
       expect(body.actionId).toBe(actionId);
       expect(body.result).toBeTruthy();
+
+      if (actionId === "j08.confirmApproval") {
+        expect(body.result.exportManifestVersion).toBe("2026.06.first-build-phase7");
+        expect(body.result.exportLifecycle).toMatchObject({
+          approved: true,
+          downloaded: false,
+          generated: true,
+          previewed: true,
+          shared: false,
+          stage: "generated",
+        });
+        expect(body.result.exportLifecycle.allowedNextActions).toEqual(["download"]);
+      }
+
+      if (actionId === "j08.downloadExport") {
+        expect(body.result.exportLifecycle).toMatchObject({
+          approved: true,
+          downloaded: false,
+          generated: true,
+          previewed: true,
+          shared: false,
+          stage: "generated",
+        });
+        expect(body.result.exportLifecycle.allowedNextActions).toEqual(["download"]);
+      }
+
+      if (actionId === "j08.shareExport") {
+        expect(body.result.exportLifecycle).toMatchObject({
+          approved: true,
+          downloaded: true,
+          generated: true,
+          previewed: true,
+          shared: false,
+          stage: "downloaded",
+        });
+        expect(body.result.exportLifecycle.allowedNextActions).toEqual(["share"]);
+      }
     }
   });
 
