@@ -640,14 +640,23 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
     expect(scfProofCommandBaseline.join(" ")).toContain("tests/file-export-realism.spec.ts");
   });
 
-  test("SCF detail plan supersedes previous max override as task and phase authority", () => {
+  test("SCF release phase plan authorizes task and phase execution", () => {
     const agents = readWorkspaceText("AGENTS.md");
+    const releasePlan = readWorkspaceText("ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_RELEASE_PHASE_PLAN.md");
     const detailPlan = readWorkspaceText("ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md");
     const handoff = readWorkspaceText("ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md");
     const packagePlan = readWorkspaceText("ALPHAVEST_MVP_FIRST_BUILD_PACKAGE_PLAN.md");
 
+    expect(agents).toContain("ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_RELEASE_PHASE_PLAN.md");
     expect(agents).toContain("ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md");
-    expect(agents).toContain("operative source of truth for AlphaVest tasks and phases");
+    expect(agents).toContain("operative release source of truth for AlphaVest task and phase execution");
+    expect(agents).toMatch(/read through the release-plan\s+authorization layer/);
+    expect(releasePlan).toContain("SCREEN_CAPABILITY_E2E_IMPLEMENTATION_RELEASE_PHASE_PLAN_ACCEPTED_WITH_CODEX_PACK_DEPENDENCY");
+    expect(releasePlan).toContain("Freigegeben ist nur, was in der Implementation Release Master Task Matrix");
+    expect(releasePlan).toContain("AUTHORIZED_FOR_IMPLEMENTATION");
+    expect(releasePlan).toContain("HOLD_BLOCKED_NOT_AUTHORIZED");
+    expect(releasePlan).toContain("SCF-P01-T001, SCF-P01-T002");
+    expect(releasePlan).toContain("SCF-P06-T001, SCF-P06-T002");
     expect(detailPlan).toContain("SOLE_TASK_AND_PHASE_SOURCE_OF_TRUTH");
     expect(detailPlan).toContain("Phasen: `P00` bis `P14`");
     expect(detailPlan).toContain("Tasks: alle `SCF-Pxx-Txxx`");

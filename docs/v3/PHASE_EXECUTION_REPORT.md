@@ -302,6 +302,7 @@ Revalidated and completed phases P01 through P06 from `ALPHAVEST_SCREEN_CAPABILI
 
 ### Source Artefacts Used
 
+- `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_RELEASE_PHASE_PLAN.md`
 - `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`
 - `lib/scf-foundation.ts`
 - `lib/route-registry.ts`
@@ -320,6 +321,7 @@ Revalidated and completed phases P01 through P06 from `ALPHAVEST_SCREEN_CAPABILI
 - Preserved existing P03 providerless/current-user and route/action/object/payload boundaries.
 - Revalidated existing P04 upload/evidence lifecycle, P05 internal signal/advisor-not-release flow, and P06 compliance/audit fail-closed behavior.
 - Added P0 acceptance coverage that fails if any P01-P06 mastertask/subtask contract is missing or not bound to proof.
+- Updated the P0 source-of-truth assertion so P01-P06 execution is now guarded by the release-plan authorization layer while the detail plan remains the direct predecessor/detail source.
 
 ### Changed Files
 
@@ -339,6 +341,8 @@ Revalidated and completed phases P01 through P06 from `ALPHAVEST_SCREEN_CAPABILI
 - `pnpm build` - passed with existing Turbopack tracing warnings in `lib/document-storage-adapter.ts`.
 - `git diff --check` - passed.
 - Screenshot capture through local Next server on port `3188` - captured four SCF P01-P06 proof screenshots under `artifacts/scf-p01-p06/`.
+- Release-plan reverify: `pnpm typecheck`, `pnpm lint`, `pnpm db:validate`, `pnpm exec playwright test tests/p0-acceptance.spec.ts --workers=1`, providerless/route/navigation Playwright suite, P04-P06 permission/workflow/upload/audit Playwright suite, `pnpm build` and `git diff --check` - passed after updating the stale source-of-truth assertion.
+- Screenshot capture through local Next server on port `3189` - captured four SCF P01-P06 release reverify screenshots under `artifacts/scf-p01-p06-release-reverify/`.
 
 ### Screenshot Proof
 
@@ -348,6 +352,10 @@ Revalidated and completed phases P01 through P06 from `ALPHAVEST_SCREEN_CAPABILI
 | `artifacts/scf-p01-p06/scf-p03-providerless-boundary.png` | `/admin/platform` | P03 providerless scenario boundary and second-confirmation guard for sensitive settings. |
 | `artifacts/scf-p01-p06/scf-p04-evidence-upload-review.png` | `/documents/upload` | P04 document upload, scoped intake, review and sufficiency messaging. |
 | `artifacts/scf-p01-p06/scf-p05-p06-advisor-compliance-gates.png` | `/compliance/demo/release` | P05/P06 advisor-not-release, compliance release and audit/evidence gate surface. |
+| `artifacts/scf-p01-p06-release-reverify/scf-p01-p02-scope-register.png` | `/committee/reviews` | Release-plan reverify for P01/P02 scope normalization and held-route guard. |
+| `artifacts/scf-p01-p06-release-reverify/scf-p03-providerless-boundary.png` | `/admin/platform` | Release-plan reverify for P03 providerless platform boundary. |
+| `artifacts/scf-p01-p06-release-reverify/scf-p04-evidence-upload-review.png` | `/documents/upload` | Release-plan reverify for P04 upload/evidence intake. |
+| `artifacts/scf-p01-p06-release-reverify/scf-p05-p06-advisor-compliance-gates.png` | `/compliance/demo/release` | Release-plan reverify for P05/P06 compliance release guard. |
 
 ### Completion Status Labels Inventory
 

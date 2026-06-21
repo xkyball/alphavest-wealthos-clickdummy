@@ -6,30 +6,38 @@ Build AlphaVest WealthOS as a demo-data-first web application using Next.js, Rea
 ## Mandatory source of truth
 Read this before implementation:
 
+- `ALPHAVEST_SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK.md`
 - `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_RELEASE_PHASE_PLAN.md`
 - `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`
 
+`ALPHAVEST_SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK.md` is the operative Codex
+execution source of truth from this point forward. It owns the phased Codex
+prompt sequence, phase entry/exit instructions, validation-discovery rules,
+reporting templates, Do-Not-Implement register and stop-after-phase workflow
+for implementation turns.
+
 `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_RELEASE_PHASE_PLAN.md` is the
-operative release source of truth for AlphaVest task and phase execution from
-this point forward. It owns implementation authorization, release sequencing,
-`AUTHORIZED_*` labels, non-goals, forbidden work, prompt-pack / handoff
-dependency and stop rules.
+highest authorization source inside the prompt-pack hierarchy. It owns release
+authorization, `AUTHORIZED_*` labels, non-goals, forbidden work, prompt-pack /
+handoff dependency and stop rules. The Codex Prompt Pack must not be used to
+override the release plan's authorization boundaries.
 
 `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md` remains the
 direct predecessor and detailed task/subtask source for phase IDs `P00` through
 `P14`, `SCF-Pxx-Txxx` task IDs, dependencies, acceptance criteria, proof
-obligations and QA-before-Codex gates. It must be read through the release-plan
-authorization layer and must not be treated as broader implementation approval
-where the release plan says work is deferred, held, reference-only or not
-authorized.
+obligations and QA-before-Codex gates. It must be read through the Codex Prompt
+Pack and release-plan authorization layer and must not be treated as broader
+implementation approval where either says work is deferred, held,
+reference-only or not authorized.
 
 Older First-Build, MVP, V3, minimum-path, journey, package-plan, final-task,
 task-master, prompt-pack and previous handoff artefacts are historical or
 supporting references only for task/phase work. They must not define task
 scope, reorder phases, revive BP/AV-FB task IDs, add new task IDs, bypass the
-release plan's hold/defer/static decisions, or override its proof gates.
+prompt pack or release plan's hold/defer/static decisions, or override their
+proof gates.
 When a product or safety rule from an older artefact is stricter and does not
-conflict with the release plan, keep the stricter safety rule.
+conflict with the prompt pack or release plan, keep the stricter safety rule.
 
 ## Visual source of truth
 Use `public/reference/page_ui_v3/clean_pages/` as page-level UI design reference.
@@ -61,7 +69,7 @@ and active-parent behavior.
 - Sensitive actions create audit events.
 
 ## Early implementation rule
-Do not start with real authentication. Use a demo session, role switcher and tenant switcher first. Permission and security functions must exist early but may return permissive/demo results until `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_RELEASE_PHASE_PLAN.md` or a derived QA-passed prompt pack/handoff authorizes a stricter implementation task.
+Do not start with real authentication. Use a demo session, role switcher and tenant switcher first. Permission and security functions must exist early but may return permissive/demo results until `ALPHAVEST_SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK.md` or a later QA-passed handoff authorizes a stricter implementation task.
 
 ## Engineering rules
 - Use TypeScript strictly.

@@ -5303,6 +5303,7 @@ Date: 2026-06-21
 | Gate | Status | Notes |
 | --- | --- | --- |
 | SCF task authority | Passed | P01-P06 mastertask details are represented as typed repo data in `lib/scf-foundation.ts`. |
+| Release authorization authority | Passed | P0 acceptance now asserts `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_RELEASE_PHASE_PLAN.md` as the operative execution authorization layer while keeping the detail plan as direct predecessor/detail source. |
 | Mastertask coverage | Passed | All 14 P01-P06 mastertasks are covered from `SCF-P01-T001` through `SCF-P06-T002`. |
 | Subtask coverage | Passed | The P01-P06 Detailed Subtask Register is represented as 64 generated subtask contracts. |
 | P01 normalization | Passed | Workset ownership and queue split remain testable through foundation assertions. |
@@ -5312,6 +5313,7 @@ Date: 2026-06-21
 | P05 internal draft/advisor boundary | Passed | Internal draft and advisor approval do not create client visibility. |
 | P06 compliance/audit gate | Passed | Compliance release requires advisor/evidence/payload/permission/audit gates; audit outage fails closed. |
 | Visual proof | Passed | Four screenshots captured under `artifacts/scf-p01-p06/` for held scope, providerless platform guard, upload/evidence intake and compliance release. |
+| Release reverify visual proof | Passed | Four screenshots captured under `artifacts/scf-p01-p06-release-reverify/` after the release-plan authority test update. |
 
 ### Commands And Results
 
@@ -5319,13 +5321,16 @@ Date: 2026-06-21
 | --- | --- | --- |
 | `pnpm typecheck` | Passed | TypeScript completed with `tsc --noEmit`. |
 | `pnpm exec playwright test tests/p0-acceptance.spec.ts --workers=1` | Failed then passed | Initial failure captured P01/P02 subtask naming nuance; rerun passed, 14 tests. |
+| `pnpm exec playwright test tests/p0-acceptance.spec.ts --workers=1` | Failed then passed | Release-plan reverify first exposed the stale detail-plan authority assertion; assertion was updated to the release-plan hierarchy and rerun passed, 14 tests. |
 | `pnpm exec playwright test tests/providerless-scope.spec.ts tests/route-smoke.spec.ts tests/navigation-shell.spec.ts --workers=1` | Passed | 101 tests. |
 | `pnpm exec playwright test tests/permission-engine.spec.ts tests/workflow-gate.spec.ts tests/document-upload-api.spec.ts tests/document-upload-flow.spec.ts tests/demo-workflow-api.spec.ts tests/phase6-audit-persistence.spec.ts --workers=1` | Failed then passed | Parallel attempt hit `EADDRINUSE` on port 3020; sequential rerun passed, 52 tests. |
+| `pnpm exec playwright test tests/permission-engine.spec.ts tests/workflow-gate.spec.ts tests/document-upload-api.spec.ts tests/document-upload-flow.spec.ts tests/demo-workflow-api.spec.ts tests/phase6-audit-persistence.spec.ts --workers=1` | Passed | Release-plan reverify rerun passed, 52 tests. |
 | `pnpm lint` | Passed | ESLint completed successfully. |
 | `pnpm db:validate` | Passed | Prisma schema validated successfully. |
 | `pnpm build` | Passed with warnings | Production build completed; existing Turbopack tracing warnings remain around `lib/document-storage-adapter.ts`. |
 | `git diff --check` | Passed | No whitespace errors. |
 | Screenshot capture on port `3188` | Passed | Four screenshots captured under `artifacts/scf-p01-p06/`. |
+| Screenshot capture on port `3189` | Passed | Four release reverify screenshots captured under `artifacts/scf-p01-p06-release-reverify/`. |
 
 ### Completion Status Labels Inventory
 
