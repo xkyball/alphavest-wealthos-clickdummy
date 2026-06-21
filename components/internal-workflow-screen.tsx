@@ -46,6 +46,7 @@ import {
 } from "@/components/ui";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
+import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
 import { cn } from "@/lib/cn";
 import {
   recommendationReviewDemoTargets,
@@ -602,6 +603,7 @@ function SignalsPage({ title }: { title: string }) {
             subtitle="Triggers are review points, not advice. Analyst judgment and firm policies apply."
             title={title}
           />
+          <ScfP04P06FlowPanel mode="advisory" />
           <StatePanel detail="Low confidence due to incomplete beneficial owner and purpose-of-wire data. Request additional information before routing." state="restricted" title="Low confidence due to incomplete data" />
           <div className="grid gap-3 md:grid-cols-5">
             {[
@@ -931,6 +933,7 @@ function TriggerDetailPage({ title }: { title: string }) {
       <ScreenTitle>{title}</ScreenTitle>
       <div className="mx-auto grid max-w-[112rem] gap-5 2xl:grid-cols-[1fr_24rem]">
         <section className="min-w-0 space-y-5">
+          <ScfP04P06FlowPanel mode="advisory" />
           <Card>
             <CardContent className="space-y-5">
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -1212,6 +1215,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
             subtitle="Internal only. Advisor approval sends the package to compliance; client visibility remains blocked."
             title={title}
           />
+          <ScfP04P06FlowPanel mode="advisory" />
           <Card>
             <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
               {[
@@ -1304,6 +1308,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
             </CardContent>
           </Card>
           <StatePanel detail="Once approved by advisor, the recommendation is queued for compliance review. Until then, client visibility remains blocked." state="blocked" title="Compliance pending" />
+          <ScfP04P06FlowPanel mode="compliance" />
         </aside>
       </div>
     </InternalShell>
@@ -1331,6 +1336,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
           subtitle="Review and action pending compliance items."
           title={title}
         />
+        <ScfP04P06FlowPanel mode="compliance" />
         <div className="grid gap-3 md:grid-cols-5">
           {complianceMetrics.map((metric) => (
             <Card key={metric.label}>
@@ -1372,6 +1378,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
             subtitle={`${complianceReview.id} - ${complianceReview.client}`}
             title={title}
           />
+          <ScfP04P06FlowPanel mode="compliance" />
           <div className="grid gap-5 xl:grid-cols-2 2xl:grid-cols-[0.85fr_0.9fr_0.9fr]">
             <Card>
               <CardHeader><CardTitle>Output Classification</CardTitle></CardHeader>
@@ -1495,6 +1502,7 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
         <aside className="space-y-4">
           <Card><CardHeader><CardTitle>Review progress</CardTitle></CardHeader><CardContent className="space-y-3">{["Advice validation", "Risk & suitability", "Product & fee review", "Disclosures", "Documents", "Overall review"].map((item) => <p className="flex items-center gap-2 text-sm text-alphavest-muted" key={item}><CheckCircle2 aria-hidden="true" className="size-4 text-alphavest-green" />{item}</p>)}</CardContent></Card>
           <StatePanel detail="Demo checklist is marked ready for release review; client visibility still requires the explicit release action and audit proof." state="success" title="Review decision marked approved" />
+          <ScfP04P06FlowPanel mode="audit" />
         </aside>
         <section className={cn("min-w-0 space-y-5", modalOpen ? "opacity-45" : "")}>
           <PageHeading badge={<Badge tone="green">Approved</Badge>} subtitle="Review ID: CR-2025-0407-0012" title="Compliance review" />

@@ -292,6 +292,51 @@ Date: 2026-06-21
 
 `PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
 
+## CODEX-P04-P06 - Evidence / Advisory / Compliance App Flow Implementation
+
+Date: 2026-06-21
+
+### Scope
+
+Implemented the user-requested `CODEX PHASE PROMPT - P04-P06` pass directly in the application codebase. This pass extends the existing Evidence, Advisory Signal, Advisor Approval, Compliance Release and Audit surfaces with shared runtime gate state derived from `evidenceService`, `workflowGate` and `auditService`.
+
+### Completed Mastertasks
+
+| Task | Status | Implementation proof |
+| --- | --- | --- |
+| `SCF-P04-T001` Evidence request states | Implemented | Evidence lifecycle panel shows request, upload received, review queue and not-sufficient states. |
+| `SCF-P04-T002` Upload UX/API validation proof | Implemented | Upload UI now surfaces upload-only safety beside existing `/api/documents/upload` validation and reload-proof list. |
+| `SCF-P04-T003` Review/link/sufficiency | Implemented | Extraction Review and Evidence Vault show sufficiency preconditions; existing review API remains the action path. |
+| `SCF-P05-T001` Signal classification | Implemented | Signals and trigger detail routes show internal classification boundary before routing. |
+| `SCF-P05-T002` Internal draft boundary | Implemented | Advisory panel states AI/rules draft and rationale are hidden from client projection. |
+| `SCF-P05-T003` Advisor approval != release | Implemented | Advisor detail shows compliance-pending boundary and existing approval action keeps client visibility blocked. |
+| `SCF-P06-T001` Compliance release/block/request evidence | Implemented | Compliance queue, review, release and block routes show release prerequisites and blocked missing-state reasons. |
+| `SCF-P06-T002` Critical audit persistence | Implemented | Audit gate panel exposes persisted-audit requirement and fail-closed audit-unavailable state. |
+
+### Changed Files
+
+- `lib/screen-capability-flow.ts`
+- `components/scf-p04-p06-flow-panel.tsx`
+- `components/client-intake-screen.tsx`
+- `components/internal-workflow-screen.tsx`
+- `components/decisions-governance-screen.tsx`
+- `tests/scf-p04-p06-flow-ui.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm exec playwright test tests/scf-p04-p06-flow-ui.spec.ts --workers=1` - passed, 3 tests.
+
+### Screenshot Proof
+
+Screenshots for this implementation pass were captured under `artifacts/codex-p04-p06-app-implementation/`.
+
+### Exit Gate Decision
+
+`CODEX_P04_P06_APP_IMPLEMENTATION_READY_FOR_REVIEW`
+
 ## CODEX-P01-P03 - App Scope Control Implementation
 
 Date: 2026-06-21

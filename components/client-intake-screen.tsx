@@ -39,6 +39,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
+import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
 import {
   Badge,
   Card,
@@ -1205,6 +1206,7 @@ function DocumentsPageContent({ title }: { title: string }) {
       <ScreenTitle>{title}</ScreenTitle>
       <div className="space-y-5">
         <SectionTitle action={<div className="flex gap-3"><button className={secondaryButtonClass} type="button"><Plus aria-hidden="true" className="size-4" />New Folder</button><button className={primaryButtonClass} data-testid="j04-open-upload-document" onClick={() => { void runScreencastDemoAction("j04.openUploadDocument", "/documents/upload"); }} type="button"><Upload aria-hidden="true" className="size-4" />Upload Document</button></div>} icon={Folder} subtitle="Securely manage and access client documents and evidence." title={title} />
+        <ScfP04P06FlowPanel mode="evidence" />
         {persistedRows.length > 0 ? (
           <Card>
             <CardHeader>
@@ -1475,6 +1477,7 @@ function DocumentUploadPage({ title }: { title: string }) {
       <div className="space-y-5">
         <SectionTitle subtitle="Securely upload documents to your AlphaVest workspace." title={title} />
         <SafeClientBanner>Document uploads are scoped to permitted client roles, entities and assets.</SafeClientBanner>
+        <ScfP04P06FlowPanel mode="evidence" />
         <DocumentUploadForm />
       </div>
     </ClientShell>
@@ -1595,6 +1598,7 @@ function ExtractionReviewPage({ title }: { title: string }) {
       <div className="space-y-5">
         <SectionTitle action={<div className="flex gap-3"><button className={secondaryButtonClass} type="button">Save Draft</button><button className={primaryButtonClass} data-testid="j04-confirm-finalize" onClick={() => { void runScreencastDemoAction("j04.confirmFinalize", "/documents/verification-pending"); }} type="button"><Check aria-hidden="true" className="size-4" />Confirm & Finalize</button></div>} subtitle="Review AI-extracted data. This is a draft and not final evidence." title={title} />
         <SafeClientBanner>AI Draft Mode: extracted data requires human review. Not final. Not evidence.</SafeClientBanner>
+        <ScfP04P06FlowPanel mode="evidence" />
         <div className="grid gap-5 xl:grid-cols-[0.9fr_0.84fr_20rem]">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between"><CardTitle>2024_Q4_Brokerage_Statement.pdf</CardTitle><Badge>Page 1 of 4</Badge></CardHeader>

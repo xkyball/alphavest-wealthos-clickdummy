@@ -43,6 +43,7 @@ import {
 } from "@/components/ui";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
+import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
 import { cn } from "@/lib/cn";
 import {
   recommendationReviewDemoTargets,
@@ -409,6 +410,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
             subtitle={`${complianceBlockReview.id} - ${complianceBlockReview.client} - advisor ${complianceBlockReview.advisor}`}
             title={complianceBlockReview.reviewTitle}
           />
+          <ScfP04P06FlowPanel mode="compliance" />
           <div className="rounded-md border border-alphavest-border bg-alphavest-panel/70 p-4">
             <p className="text-sm text-alphavest-muted">Advice content is blocked and cannot be viewed by the client.</p>
           </div>
@@ -563,6 +565,7 @@ function ComplianceAuditPage({ title }: { title: string }) {
       <div className="mx-auto grid max-w-[112rem] gap-5 2xl:grid-cols-[1fr_20rem]">
         <section className="min-w-0 space-y-5">
           <PageHeading subtitle="Compliance decision, exception and resolution activity for audit review." title={title} />
+          <ScfP04P06FlowPanel mode="audit" />
           <div className="grid gap-3 md:grid-cols-4">
             {complianceAuditMetrics.map((metric) => (
               <Card key={metric.label}>
@@ -955,6 +958,7 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
           subtitle="Secure, role-based repository for client evidence and attestations."
           title={title}
         />
+        <ScfP04P06FlowPanel mode="evidence" />
         <div className="flex flex-wrap gap-2 border-b border-alphavest-border/70">
           {["All Evidence", "By Category", "Expiring Soon 12", "Needs Review 5"].map((tab, index) => (
             <span className={cn("px-3 pb-3 text-sm font-semibold", index === 0 ? "border-b-2 border-alphavest-gold text-alphavest-gold" : "text-alphavest-muted")} key={tab}>{tab}</span>
@@ -1025,6 +1029,7 @@ function EvidenceRecordDetailPage({ title }: { title: string }) {
           subtitle="Complete evidence record with provenance, access and audit information."
           title={title}
         />
+        <ScfP04P06FlowPanel mode="evidence" />
         <div className="grid gap-5 xl:grid-cols-[1fr_18rem]">
           <section className="space-y-5">
             <Card>

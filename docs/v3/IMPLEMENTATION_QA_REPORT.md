@@ -5396,3 +5396,40 @@ Date: 2026-06-21
 
 - Existing `lib/document-storage-adapter.ts` Turbopack tracing warnings are outside this phase.
 - Later SCF phases P10-P14 remain future work unless specifically executed.
+
+## CODEX-P04-P06 App Flow QA Addendum
+
+Date: 2026-06-21
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| P04 evidence lifecycle | Passed | Upload and review surfaces render request, upload-only, review queue and explicit not-sufficient states from runtime gate data. |
+| P04 upload-not-sufficiency | Passed | The UI states that upload success never unlocks release; existing upload API proof remains intact. |
+| P05 signal/internal draft boundary | Passed | Signal and Advisor routes render internal-only draft and no-client-leakage reasons. |
+| P05 advisor-not-release | Passed | Advisor detail keeps approval separate from compliance release and client visibility. |
+| P06 compliance gate | Passed | Compliance queue/review/release/block surfaces render advisor/evidence/payload/permission/audit prerequisites. |
+| P06 audit fail-closed | Passed | Audit route renders the critical audit contract and audit-persistence missing state. |
+| Product UI cleanliness | Passed | Added product-facing workflow panels, not spec panels or route labels. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | `tsc --noEmit` completed successfully. |
+| `pnpm exec playwright test tests/scf-p04-p06-flow-ui.spec.ts --workers=1` | Failed then passed | Initial failure showed `Card` does not forward `data-testid`; wrapper was moved to a DOM `div` and rerun passed, 3 tests. |
+
+### Screenshot Proof
+
+| Screenshot | Status | Notes |
+| --- | --- | --- |
+| `artifacts/codex-p04-p06-app-implementation/p04-evidence-lifecycle-upload.png` | Captured | Evidence lifecycle on `/documents/upload`. |
+| `artifacts/codex-p04-p06-app-implementation/p05-advisory-boundary-signals.png` | Captured | Advisory signal boundary on `/signals`. |
+| `artifacts/codex-p04-p06-app-implementation/p06-compliance-release-gate.png` | Captured | Compliance release gate on `/compliance`. |
+| `artifacts/codex-p04-p06-app-implementation/p06-audit-persistence-gate.png` | Captured | Audit persistence gate on `/compliance/demo/audit`. |
+
+### Residual Risks
+
+- This pass adds product UI proof for existing gates; it does not claim production authentication, production advice, malware scanning or full regulated release readiness.
+- Existing Turbopack tracing warnings in `lib/document-storage-adapter.ts` remain outside this phase.
