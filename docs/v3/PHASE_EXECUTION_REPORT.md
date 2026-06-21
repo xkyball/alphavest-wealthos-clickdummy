@@ -7407,3 +7407,87 @@ Executed WS-00 through WS-05 as a real implementation pass for the generic Wealt
 ### Exit Gate Decision
 
 `WCL_WS00_WS05_IMPLEMENTED_WITH_SEQUENTIAL_VALIDATION_PASS`
+
+## WCL-WS06-WS12 - Client Visibility / Export Safety / Monitoring / Offboarding / Fail-Closed / P0 Proof
+
+Date: 2026-06-21
+
+Source of truth: `/Users/chris/Downloads/ALPHAVEST_WEALTHOS_CONTROL_LAYER_33_SYSTEM_PROCESS_CODEX_TASK_PACK.md`
+
+### Scope
+
+Executed WS-06 through WS-12 as a real implementation pass over existing Control-Layer, workflow, upload, monitoring and export seams. This pass stayed inside existing routes and services, added no new Prisma migration, no new screen/state/image generation and no new product route.
+
+### Completed Workstreams / Tasks
+
+- WS-06 / WCL-SP-005: Added client visibility projection wrappers for recommendation, decision and document payloads, with hidden internal fields and fail-closed unreleased states.
+- WS-07 / WCL-SP-021..WCL-SP-024: Added export safety orchestration over existing export scope, lifecycle, redaction, approval, package manifest, audit and data-quality release gates.
+- WS-08 / WCL-SP-025..WCL-SP-027: Added monitoring guard output and wired `/api/review-monitoring` to prove internal-only monitoring, no automatic advice and no client release.
+- WS-09 / WCL-SP-029..WCL-SP-032: Added spec-level offboarding/deactivation/retention control contract with residual access denial and optional final-export safety.
+- WS-10 / WCL-SP-033: Added a standardized fail-closed API error envelope and applied it to existing demo workflow, document upload and review monitoring error paths.
+- WS-11: Added P0 fixture matrix helpers for reproducible positive/negative actor and scope tests.
+- WS-12: Ran final validation and updated implementation/QA reports.
+
+### Changed Files
+
+- `app/api/demo-workflow/route.ts`
+- `app/api/documents/upload/route.ts`
+- `app/api/review-monitoring/route.ts`
+- `lib/control-layer/client-visibility.ts`
+- `lib/control-layer/error-envelope.ts`
+- `lib/control-layer/export-safety.ts`
+- `lib/control-layer/monitoring-guard.ts`
+- `lib/control-layer/offboarding-service.ts`
+- `package.json`
+- `tests/client-visibility-projection.spec.ts`
+- `tests/control-layer-p0-fixtures.spec.ts`
+- `tests/export-safety.spec.ts`
+- `tests/fail-closed-error-envelope.spec.ts`
+- `tests/fixtures/control-layer-fixtures.ts`
+- `tests/offboarding-control.spec.ts`
+- `tests/review-monitoring-service.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### DB / Seed / API / Service Changes
+
+- DB/schema: no Prisma schema change and no migration.
+- Seed: no seed source change. P0 proof fixtures are test helpers only.
+- API: no new API route. Existing `/api/demo-workflow`, `/api/documents/upload` and `/api/review-monitoring` now use standardized fail-closed safety envelopes on error paths.
+- Services: added Control-Layer wrapper services for visibility projection, export safety, monitoring guard, offboarding control and fail-closed errors.
+
+### Tests And Checks Run
+
+- `pnpm db:validate` - passed.
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `pnpm exec playwright test tests/client-visibility-projection.spec.ts tests/export-safety.spec.ts tests/offboarding-control.spec.ts tests/fail-closed-error-envelope.spec.ts tests/control-layer-p0-fixtures.spec.ts` - passed, 9 tests.
+- `pnpm test:workflow-api` - passed, 15 tests.
+- `pnpm exec playwright test tests/client-visibility-projection.spec.ts tests/export-safety.spec.ts tests/offboarding-control.spec.ts tests/fail-closed-error-envelope.spec.ts tests/control-layer-p0-fixtures.spec.ts tests/file-export-realism.spec.ts tests/data-quality-service.spec.ts tests/review-monitoring-service.spec.ts tests/demo-workflow-api.spec.ts tests/document-upload-api.spec.ts` - first run failed because structured validation issues were flattened; after preserving structured issues in the fail-closed envelope, rerun passed, 54 tests.
+- `pnpm phase:check` - passed. Build completed with existing Turbopack document-storage tracing warnings.
+
+### Positive Acceptance
+
+- Released client-safe recommendation payloads project only allowed client fields.
+- Export generation is allowed only when scope, redaction, approval, audit, data-quality and package controls align.
+- Review monitoring remains internal-only and exposes no automatic advice or client-release path.
+- Offboarding control returns access revocation, residual access denial, retention/legal-hold proof and blocked/ready final-export status.
+- Existing API error paths now return fail-closed metadata with `mutated: false`, no advice execution and no client release.
+
+### Negative Acceptance
+
+- Submitted but unreleased decision payloads fail closed for client actors.
+- Forbidden internal export payloads and preview-only export lifecycle states block generation/download/share.
+- Data-quality blockers and review/trigger states produce monitoring-only proof labels.
+- Offboarding blocks when affected users, retention, audit correlation or final-export controls are missing.
+- Malformed workflow/upload/monitoring requests fail closed without silent state advancement.
+
+### Stop Rules / Deviations / Blockers
+
+- No stop rule was triggered for WS-06 through WS-12.
+- No new route/API, Prisma migration, screen/state/image generation, P1/Hold/Reference promotion, production auth rebuild or autonomous advice path was introduced.
+- `pnpm phase:check` still reports existing Turbopack warnings around `lib/document-storage-adapter.ts`; this is pre-existing/out-of-scope for this control-layer pass and does not fail the build.
+
+### Exit Gate Decision
+
+`WCL_WS06_WS12_IMPLEMENTED_WITH_VALIDATION_PASS`

@@ -1,6 +1,8 @@
 import { execFileSync } from "node:child_process";
 import { expect, test } from "@playwright/test";
 
+import { evaluateMonitoringGuard } from "../lib/control-layer/monitoring-guard";
+
 test.describe("Phase D review calendar and rebalance monitoring", () => {
   test.beforeAll(() => {
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
@@ -21,6 +23,32 @@ test.describe("Phase D review calendar and rebalance monitoring", () => {
     expect(body.rebalance.overdue).toBeGreaterThan(0);
     expect(body.rebalance.clientVisible).toBe(0);
     expect(body.rebalance.rows.every((row: { clientVisible: boolean }) => row.clientVisible === false)).toBe(true);
+    expect(body.monitoringGuard.status).toBe("MONITORING_ONLY");
+    expect(body.monitoringGuard.noAutomaticAdvice).toBe(true);
+    expect(body.monitoringGuard.clientVisible).toBe(false);
+  });
+
+  test("WS-08 monitoring guard creates internal triggers without automatic advice or release", () => {
+    const guard = evaluateMonitoringGuard({
+      dataQualityGate: {
+        gateName: "DATA_QUALITY_READY",
+        missing: ["missing_source_evidence", "risk_profile"],
+        passed: false,
+      },
+      reviewDue: true,
+      triggerCreated: true,
+    });
+
+    expect(guard.clientVisible).toBe(false);
+    expect(guard.internalTriggerOnly).toBe(true);
+    expect(guard.noAdviceExecution).toBe(true);
+    expect(guard.noAutomaticAdvice).toBe(true);
+    expect(guard.noClientRelease).toBe(true);
+    expect(guard.status).toBe("BLOCKED_FOR_REVIEW");
+    expect(guard.blockingIssues).toContain("missing_source_evidence");
+    expect(guard.proofLabels).toContain("WCL-DATA-QUALITY-BLOCK");
+    expect(guard.proofLabels).toContain("WCL-REVIEW-DUE");
+    expect(guard.proofLabels).toContain("WCL-INTERNAL-TRIGGER-CREATED");
   });
 
   test("GET /api/review-monitoring rejects invalid asOf values without advice execution", async ({ request }) => {

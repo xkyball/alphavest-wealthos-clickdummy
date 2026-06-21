@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { Sensitivity } from "@prisma/client";
 
+import { failClosedJson } from "@/lib/control-layer/error-envelope";
 import {
   DocumentUploadAuditUnavailableError,
   DocumentUploadPermissionError,
@@ -43,13 +44,11 @@ export async function POST(request: Request) {
   try {
     formData = await request.formData();
   } catch {
-    return NextResponse.json(
+    return failClosedJson(
       {
         error: "Invalid multipart upload request.",
         issues: ["multipart_form_data_required"],
-        mutated: false,
-        noClientRelease: true,
-        ok: false,
+        reasonCode: "INVALID_REQUEST",
       },
       { status: 400 },
     );
@@ -64,26 +63,22 @@ export async function POST(request: Request) {
   ];
 
   if (!(file instanceof File)) {
-    return NextResponse.json(
+    return failClosedJson(
       {
         error: "Invalid document upload.",
         issues: ["file_required"],
-        mutated: false,
-        noClientRelease: true,
-        ok: false,
+        reasonCode: "INVALID_REQUEST",
       },
       { status: 400 },
     );
   }
 
   if (metadataIssues.length > 0) {
-    return NextResponse.json(
+    return failClosedJson(
       {
         error: "Invalid document upload.",
         issues: metadataIssues,
-        mutated: false,
-        noClientRelease: true,
-        ok: false,
+        reasonCode: "INVALID_REQUEST",
       },
       { status: 400 },
     );
@@ -92,13 +87,11 @@ export async function POST(request: Request) {
   const resolvedRoleKey = parsedRoleKey;
   const resolvedTenantSlug = parsedTenantSlug;
   if (!resolvedRoleKey || !resolvedTenantSlug) {
-    return NextResponse.json(
+    return failClosedJson(
       {
         error: "Invalid document upload.",
         issues: metadataIssues,
-        mutated: false,
-        noClientRelease: true,
-        ok: false,
+        reasonCode: "INVALID_REQUEST",
       },
       { status: 400 },
     );
@@ -131,26 +124,22 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     if (error instanceof DocumentUploadValidationError) {
-      return NextResponse.json(
+      return failClosedJson(
         {
           error: "Invalid document upload.",
           issues: error.issues,
-          mutated: false,
-          noClientRelease: true,
-          ok: false,
+          reasonCode: "INVALID_REQUEST",
         },
         { status: 400 },
       );
     }
 
     if (error instanceof DocumentUploadPermissionError) {
-      return NextResponse.json(
+      return failClosedJson(
         {
           auditEventId: error.auditEventId,
           error: "Document upload denied.",
-          mutated: false,
-          noClientRelease: true,
-          ok: false,
+          reasonCode: "PERMISSION_DENIED",
           reason: error.reason,
         },
         { status: 403 },
@@ -158,25 +147,21 @@ export async function POST(request: Request) {
     }
 
     if (error instanceof DocumentUploadAuditUnavailableError) {
-      return NextResponse.json(
+      return failClosedJson(
         {
           auditPersistenceRequired: true,
           error: error.message,
-          mutated: false,
-          noClientRelease: true,
-          ok: false,
           reasonCode: "AUDIT_PERSISTENCE_UNAVAILABLE",
         },
         { status: 409 },
       );
     }
 
-    return NextResponse.json(
+    return failClosedJson(
       {
         error: "Unable to upload document.",
-        mutated: false,
-        noClientRelease: true,
-        ok: false,
+        reasonCode: "SAFE_ERROR",
+        retryAllowed: true,
       },
       { status: 500 },
     );

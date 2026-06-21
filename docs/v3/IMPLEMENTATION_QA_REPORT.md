@@ -5698,5 +5698,47 @@ Source of truth: `/Users/chris/Downloads/ALPHAVEST_WEALTHOS_CONTROL_LAYER_33_SYS
 
 ### QA Limits
 
-- WS-06 through WS-12 were not executed in this pass.
+- WS-06 through WS-12 were not executed in the WS-00 through WS-05 pass; this is superseded by the WCL-WS06-WS12 QA addendum below.
 - This run did not add production authentication, production advice, new routes, new APIs, screen generation, image generation, Prisma migrations or export binary generation.
+
+## WCL-WS06-WS12 QA Addendum
+
+Date: 2026-06-21
+
+Source of truth: `/Users/chris/Downloads/ALPHAVEST_WEALTHOS_CONTROL_LAYER_33_SYSTEM_PROCESS_CODEX_TASK_PACK.md`
+
+| Area | QA result | Evidence |
+| --- | --- | --- |
+| WS-06 Client Visibility Projection | Implemented and tested | `lib/control-layer/client-visibility.ts`; `tests/client-visibility-projection.spec.ts` covers released visible payloads and unreleased fail-closed states. |
+| WS-07 Export Safety | Implemented and tested | `lib/control-layer/export-safety.ts`; `tests/export-safety.spec.ts` plus existing `tests/file-export-realism.spec.ts` cover scope, redaction, approval, audit, data-quality and package controls. |
+| WS-08 Monitoring / No-Auto-Advice | Implemented and wired | `lib/control-layer/monitoring-guard.ts` is returned by `/api/review-monitoring`; `tests/review-monitoring-service.spec.ts` proves internal-only monitoring and no automatic advice/client release. |
+| WS-09 Offboarding Control Contract | Implemented as spec-level service | `lib/control-layer/offboarding-service.ts`; `tests/offboarding-control.spec.ts` covers residual access denial, retention/legal-hold proof and blocked final export. |
+| WS-10 Fail-Closed Error Envelope | Implemented and applied | `lib/control-layer/error-envelope.ts`; applied to `/api/demo-workflow`, `/api/documents/upload` and `/api/review-monitoring`; `tests/fail-closed-error-envelope.spec.ts` plus API regressions passed. |
+| WS-11 P0 Fixture Matrix | Implemented and tested | `tests/fixtures/control-layer-fixtures.ts`; `tests/control-layer-p0-fixtures.spec.ts`. |
+| WS-12 Final Validation | Passed | `pnpm phase:check` passed and focused Playwright control/API suite passed 54 tests. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm db:validate` | Passed | Prisma schema is valid; no migration introduced. |
+| `pnpm typecheck` | Passed | `tsc --noEmit` completed successfully. |
+| `pnpm lint` | Passed | ESLint completed successfully. |
+| `pnpm exec playwright test tests/client-visibility-projection.spec.ts tests/export-safety.spec.ts tests/offboarding-control.spec.ts tests/fail-closed-error-envelope.spec.ts tests/control-layer-p0-fixtures.spec.ts` | Passed | 9 focused WCL tests. |
+| `pnpm test:workflow-api` | Passed | 15 tests after preserving structured validation issues in the fail-closed envelope. |
+| `pnpm exec playwright test tests/client-visibility-projection.spec.ts tests/export-safety.spec.ts tests/offboarding-control.spec.ts tests/fail-closed-error-envelope.spec.ts tests/control-layer-p0-fixtures.spec.ts tests/file-export-realism.spec.ts tests/data-quality-service.spec.ts tests/review-monitoring-service.spec.ts tests/demo-workflow-api.spec.ts tests/document-upload-api.spec.ts` | Failed then passed | Initial failure exposed flattened validation issue objects; rerun passed 54 tests after envelope correction. |
+| `pnpm phase:check` | Passed with warnings | Typecheck, lint, Prisma validate and build passed; existing Turbopack tracing warnings remain around `lib/document-storage-adapter.ts`. |
+
+### Safety Proof
+
+- Client visibility: only released client-safe payloads are projected; unreleased/submitted states remain hidden.
+- Export: generation/download/share remains blocked until selected scope, redaction, approval, audit persistence, data-quality and package manifest controls align.
+- Monitoring: review and rebalance signals create internal proof only; no client visibility, no automatic advice execution and no release unlock.
+- Offboarding: deactivation contract denies residual access and requires retention/audit proof before ready state.
+- Fail-closed API: error paths keep `mutated: false`, `noAdviceExecution: true`, `noClientRelease: true` and `silentStateAdvance: false`.
+
+### QA Limits
+
+- Offboarding remains a control contract service by task-pack design; no production offboarding route, schema or workflow screen was created.
+- This pass does not add production authentication, real export binary generation, autonomous advice, client-visible AI drafts, manual visibility override or admin bypass.
+- Existing Turbopack document-storage tracing warnings are outside WS-06 through WS-12 and remain documented but non-blocking.

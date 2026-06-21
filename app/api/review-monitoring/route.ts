@@ -2,6 +2,8 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
 
+import { failClosedJson } from "@/lib/control-layer/error-envelope";
+import { evaluateMonitoringGuard } from "@/lib/control-layer/monitoring-guard";
 import { getReviewMonitoringSnapshot, reviewMonitoringDefaultAsOf } from "@/lib/review-monitoring-service";
 
 export const dynamic = "force-dynamic";
@@ -36,16 +38,16 @@ function parseAsOf(request: Request) {
 export async function GET(request: Request) {
   const prisma = prismaClient();
   if (!prisma) {
-    return NextResponse.json(
+    return failClosedJson(
       {
         error: "DATABASE_URL is required for review monitoring snapshots.",
         issues: ["database_url_required"],
-        mutated: false,
-        noAdviceExecution: true,
-        noClientRelease: true,
-        ok: false,
+        reasonCode: "DATABASE_URL_REQUIRED",
+        retryAllowed: true,
         safety: {
+          failClosed: true,
           releaseUnlocked: false,
+          silentStateAdvance: false,
           snapshotGenerated: false,
         },
       },
@@ -55,23 +57,26 @@ export async function GET(request: Request) {
 
   const parsedAsOf = parseAsOf(request);
   if (!parsedAsOf.ok) {
-    return NextResponse.json(
+    return failClosedJson(
       {
         error: "Review monitoring is not available for this query.",
         issues: [parsedAsOf.issue],
-        mutated: false,
-        noAdviceExecution: true,
-        noClientRelease: true,
-        ok: false,
+        reasonCode: "INVALID_REQUEST",
       },
       { status: 400 },
     );
   }
 
   const snapshot = await getReviewMonitoringSnapshot(prisma, parsedAsOf.value);
+  const monitoringGuard = evaluateMonitoringGuard({
+    reviewDue: snapshot.reviews.dueSoon > 0 || snapshot.reviews.overdue > 0,
+    triggerCreated: snapshot.rebalance.total > 0,
+  });
+
   return NextResponse.json({
     ...snapshot,
     clientVisible: false,
+    monitoringGuard,
     mutated: false,
     noAdviceExecution: true,
     noClientRelease: true,

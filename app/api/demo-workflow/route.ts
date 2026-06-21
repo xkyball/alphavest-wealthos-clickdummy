@@ -25,6 +25,7 @@ import {
 } from "@prisma/client";
 import { NextResponse } from "next/server";
 
+import { failClosedJson } from "@/lib/control-layer/error-envelope";
 import { parseDemoWorkflowRequestBody } from "@/lib/demo-workflow-validation";
 import { dataQualityService } from "@/lib/data-quality-service";
 import { exportPackageService } from "@/lib/export-package-service";
@@ -4073,13 +4074,11 @@ async function runDemoWorkflowAction(
 export async function POST(request: Request) {
   const prisma = prismaClient();
   if (!prisma) {
-    return NextResponse.json(
+    return failClosedJson(
       {
         error: "DATABASE_URL is required for demo workflow actions.",
-        mutated: false,
-        noAdviceExecution: true,
-        noClientRelease: true,
-        ok: false,
+        reasonCode: "DATABASE_URL_REQUIRED",
+        retryAllowed: true,
       },
       { status: 503 }
     );
@@ -4088,14 +4087,11 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => undefined);
   const parsedBody = parseDemoWorkflowRequestBody(body);
   if (!parsedBody.ok) {
-    return NextResponse.json(
+    return failClosedJson(
       {
         error: "Invalid demo workflow request.",
         issues: parsedBody.issues,
-        mutated: false,
-        noAdviceExecution: true,
-        noClientRelease: true,
-        ok: false,
+        reasonCode: "INVALID_REQUEST",
       },
       { status: 400 },
     );
@@ -4124,7 +4120,7 @@ export async function POST(request: Request) {
         workflowType: "recommendation-review",
       });
     } catch (error) {
-      return NextResponse.json(
+      return failClosedJson(
         {
           action: parsedValue.action,
           error:
@@ -4132,10 +4128,7 @@ export async function POST(request: Request) {
               ? error.message
               : "Recommendation review workflow action failed.",
           gateMissing: error instanceof RecommendationReviewWorkflowError ? error.details?.gateMissing : undefined,
-          mutated: false,
-          noAdviceExecution: true,
-          noClientRelease: true,
-          ok: false,
+          reasonCode: "SAFE_ERROR",
           releasePreconditions:
             error instanceof RecommendationReviewWorkflowError
               ? error.details?.releasePreconditions
@@ -4148,13 +4141,10 @@ export async function POST(request: Request) {
   }
 
   if (!("actionId" in parsedValue)) {
-    return NextResponse.json(
+    return failClosedJson(
       {
         error: "Invalid demo workflow request.",
-        mutated: false,
-        noAdviceExecution: true,
-        noClientRelease: true,
-        ok: false,
+        reasonCode: "INVALID_REQUEST",
       },
       { status: 400 },
     );
@@ -4181,29 +4171,22 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     if (error instanceof AuditPersistenceUnavailableError) {
-      return NextResponse.json(
+      return failClosedJson(
         {
           actionId,
           auditPersistenceRequired: true,
           error: error.message,
-          mutated: false,
-          noAdviceExecution: true,
-          noClientRelease: true,
-          ok: false,
           reasonCode: "AUDIT_PERSISTENCE_UNAVAILABLE",
         },
         { status: 409 },
       );
     }
 
-    return NextResponse.json(
+    return failClosedJson(
       {
         actionId,
         error: "Demo workflow action failed.",
-        mutated: false,
-        noAdviceExecution: true,
-        noClientRelease: true,
-        ok: false,
+        reasonCode: "SAFE_ERROR",
       },
       { status: 409 },
     );
