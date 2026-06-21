@@ -355,6 +355,30 @@ test.describe("UX-COMPLEXITY content priority hierarchy", () => {
   }
 });
 
+test.describe("UX-COMPLEXITY CTA clusters", () => {
+  const ctaRoutes = [
+    "/actions",
+    "/actions?state=drawer",
+    "/evidence/demo",
+    "/governance/access-requests?state=drawer",
+    "/export/demo/redaction",
+  ];
+
+  for (const path of ctaRoutes) {
+    test(`${path} exposes one primary CTA with contextual secondary actions`, async ({ page }) => {
+      await page.setViewportSize({ height: 900, width: 1440 });
+      await authenticateRouteSmokePage(page);
+      await page.goto(path);
+
+      const cluster = page.getByTestId("ux-complexity-cta-cluster").first();
+      await expect(cluster).toBeVisible();
+      await expect(cluster.locator('[data-ux-primary-cta="true"]')).toHaveCount(1);
+      await expect(cluster.locator('[data-ux-secondary-cta="true"]').first()).toBeVisible();
+      await expect(cluster.getByTestId("ux-complexity-cta-blocked-reason")).toBeVisible();
+    });
+  }
+});
+
 test.describe("locked route workset preservation", () => {
   test("all registered routes are classified exactly once", () => {
     expect(routeWorksetIntegrity.counts).toEqual(lockedRouteWorksetCounts);

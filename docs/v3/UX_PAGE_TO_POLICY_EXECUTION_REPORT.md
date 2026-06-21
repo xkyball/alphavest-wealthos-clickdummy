@@ -112,6 +112,125 @@ No-P1/Hold/Reference-elevation confirmation: protected contracts remain non-prod
 
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and tests.
 
+## Completed Slice: UX-COMPLEXITY-004
+
+Task: `UX-COMPLEXITY-004` - Remove dead-end and duplicate CTA clusters.
+
+Mission Card: consolidate competing CTA groups on priority-flow surfaces into one primary next step, contextual secondary actions and visible blocked reasons while preserving all Route Policy Matrix P0 obligations.
+
+Evidence Intake:
+- Task-master `UX-COMPLEXITY-004` row: priority flow routes `MJ-001`, `MJ-002`, `MJ-003`, `MJ-005`, `MJ-006`, `MJ-010`; route policy `VISUAL_NOT_BEHAVIOUR_PROOF`, `STATUS_CHIP_NOT_GATE_PROOF`, no safety weakening.
+- Route Policy Matrix rows cited: `032` `/actions`, `046` `/evidence`, `047` `/evidence/demo`, `050` `/governance/access-requests`, `056` `/export/:id/redaction`.
+- Existing implementation finding: several screens exposed parallel button clusters where blocked gates require a single obvious next step plus contextual alternatives.
+
+Problem Architecture: users could read adjacent buttons as equivalent workflow paths, especially where evidence sufficiency, access approval or export release require sequencing.
+
+Double Diamond:
+- Discover: action, evidence, governance and export surfaces had duplicate or competing CTA clusters.
+- Define: one primary CTA per page state, secondary contextual actions and disabled/recovery copy must remain visible.
+- Develop: add a shared `UxCtaCluster` and apply it only to touched priority route states.
+- Deliver: route-smoke assertions, P0 regression tests and screenshot proof.
+
+Psycho-Logic + Map/Model: the pressure is to click the most powerful-looking button. The safe design move is to make the next legal step primary and make blocked steps explicit instead of visually equal.
+
+Reframing Matrix:
+- Page-as-button-row: rejected.
+- Page-as-job: kept with one primary CTA.
+- Page-as-gate: kept by blocked reasons and existing workflow tests.
+- Page-as-handoff: kept for access/export states without collapsing lifecycle steps.
+
+TRIZ: improve speed and orientation without weakening gates by reducing CTA ambiguity while adding blocked-reason proof.
+
+SIT Closed World: reused existing screen components, route states, test harness and safety copy patterns; no route, generated screen, image, schema or API was introduced.
+
+Zwicky + CCA:
+- Variant A: remove all secondary buttons. Rejected because recovery/context actions would disappear.
+- Variant B: keep current clusters and add labels. Rejected as too weak for sequencing.
+- Variant C: shared cluster with primary, secondary and blocked reason. Kept.
+
+SCAMPER: combined duplicate clusters, substituted disabled reasons for dead-end buttons, modified button hierarchy and eliminated the strongest unsafe parallel affordances.
+
+Harvard / BATNA: objective criteria are Route Policy Matrix P0 obligations and task-card validation commands. BATNA remains stop/report if a CTA requires behavior not authorized in UX scope.
+
+MESOs:
+- Option A: consolidate only `/actions`. Rejected as too narrow for priority-flow proof.
+- Option B: consolidate representative action, evidence, governance and export route states. Chosen.
+
+Measurement Plan:
+- `pnpm typecheck`
+- `pnpm lint`
+- `PLAYWRIGHT_PORT=3394 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-COMPLEXITY CTA clusters"`
+- `PLAYWRIGHT_PORT=3395 pnpm test:workflow-gate`
+- `PLAYWRIGHT_PORT=3396 pnpm test:file-export`
+- `PLAYWRIGHT_PORT=3397 pnpm test:permissions`
+- `PLAYWRIGHT_PORT=3398 pnpm test:route-smoke`
+- Screenshot proof under `artifacts/ux-page-to-policy/UX-COMPLEXITY-004/`
+
+Ethics/Fairness: no dark pattern, no hidden approval path, no deceptive release or sufficiency claim and no admin bypass.
+
+Adversarial QA: blocked steps could be mistaken for completed gates; route-smoke now verifies the CTA cluster and blocked reason, and P0 tests keep evidence, workflow, export and RBAC boundaries intact.
+
+Learning Log: later `UX-CTA-*` tasks can deepen route-specific CTA chains, but this complexity slice should remain a hierarchy consolidation, not a workflow-authority change.
+
+Route-policy rows cited:
+- `032` `/actions` - MVP support route; one primary CTA, no support route authority expansion.
+- `046` `/evidence` and `047` `/evidence/demo` - evidence routes; upload/download/share UI is not sufficiency or compliance release.
+- `050` `/governance/access-requests` - admin non-bypass and RBAC payload negative proof required.
+- `056` `/export/:id/redaction` - export preview/redaction does not approve, download or share.
+
+Changed files:
+- `components/ux-cta-cluster.tsx`
+- `components/wealth-actions-screen.tsx`
+- `components/decisions-governance-screen.tsx`
+- `components/communication-export-ops-screen.tsx`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-004/2026-06-21-UX-COMPLEXITY-004-actions-page-cta.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-004/2026-06-21-UX-COMPLEXITY-004-actions-drawer-cta.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-004/2026-06-21-UX-COMPLEXITY-004-evidence-detail-cta.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-004/2026-06-21-UX-COMPLEXITY-004-access-request-drawer-cta.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-004/2026-06-21-UX-COMPLEXITY-004-export-redaction-cta.png`
+
+Implementation summary:
+- Added a shared CTA cluster with testable primary/secondary markers and visible blocked-reason copy.
+- Replaced duplicate/parallel CTA groups on Action Board, Action Drawer, Evidence Record Detail, Evidence Quick Actions, Access Requests drawer and Export Redaction.
+- Kept blocked actions visible as disabled/contextual rather than hiding safety-relevant next-step constraints.
+
+Validation:
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with existing warnings.
+- `PLAYWRIGHT_PORT=3394 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-COMPLEXITY CTA clusters"` - passed, 5 tests.
+- `PLAYWRIGHT_PORT=3395 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3396 pnpm test:file-export` - passed, 14 tests.
+- `PLAYWRIGHT_PORT=3397 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3398 pnpm test:route-smoke` - passed, 142 tests.
+- Initial parallel Playwright attempts hit a Next dev-server port collision; rerun sequentially on fresh ports and passed.
+
+Screenshot/proof:
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-004/2026-06-21-UX-COMPLEXITY-004-actions-page-cta.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-004/2026-06-21-UX-COMPLEXITY-004-actions-drawer-cta.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-004/2026-06-21-UX-COMPLEXITY-004-evidence-detail-cta.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-004/2026-06-21-UX-COMPLEXITY-004-access-request-drawer-cta.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-004/2026-06-21-UX-COMPLEXITY-004-export-redaction-cta.png`
+
+Positive acceptance:
+- Touched route states expose one clear primary CTA, contextual secondary actions and blocked/recovery reason copy.
+- Primary job and next step stay visible above supporting content on representative screenshots.
+
+Negative/P0 acceptance:
+- CTA hierarchy does not imply evidence sufficiency, compliance release, export approval/download/share, audit persistence, advice readiness or admin bypass.
+- No P1, Reference or Hold route was promoted.
+
+No-generation confirmation: no screen generation, state-screen generation, image generation or generated assets.
+
+No-route-reclassification confirmation: route IDs, paths, scopes, page types and policy labels remain unchanged.
+
+No-P1/Hold/Reference-elevation confirmation: `UX-COMPLEXITY-004` only touched scoped MVP/MVP_SUPPORT route states.
+
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
+
 ## Completed Slice: UX-PAGE-003
 
 Task: `UX-PAGE-003` - Standardize detail pages with object header, evidence/timeline and gated action rail.

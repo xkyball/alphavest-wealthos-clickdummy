@@ -6,19 +6,15 @@ import {
   Bell,
   Building2,
   Calendar,
-  Check,
   CheckCircle2,
   ChevronDown,
   ClipboardCheck,
-  Clock3,
   FileText,
-  Filter,
   Folder,
   Home,
   Landmark,
   LockKeyhole,
   MessageSquare,
-  MoreHorizontal,
   Network,
   Plus,
   ShieldCheck,
@@ -35,6 +31,7 @@ import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-p
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
 import { UxComplexityPriorityPanel } from "@/components/ux-complexity-priority-panel";
 import { RouteContextChip } from "@/components/route-context-chip";
+import { UxCtaCluster } from "@/components/ux-cta-cluster";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
 import { cn } from "@/lib/cn";
@@ -484,7 +481,13 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
       <div className={cn("mx-auto grid max-w-[118rem] gap-5", drawerOpen ? "2xl:grid-cols-[1fr_30rem]" : "")}>
         <section className="min-w-0 space-y-5">
           <PageHeading
-            action={<div className="flex flex-wrap gap-3"><button className={secondaryButtonClass} type="button"><Filter aria-hidden="true" className="size-4" />Filters</button><button className={secondaryButtonClass} onClick={() => setDrawerOpen(true)} type="button">Open selected action</button><button className={primaryButtonClass} type="button"><Plus aria-hidden="true" className="size-4" />New action</button></div>}
+            action={
+              <UxCtaCluster
+                blockedReason="New action is secondary; selected blocked work must be opened first because evidence is missing."
+                primary={{ label: "Open selected action", onClick: () => setDrawerOpen(true) }}
+                secondary={[{ label: "Filters" }, { disabled: true, label: "New action" }]}
+              />
+            }
             subtitle="Track and advance actions through the workflow."
             title={title}
           />
@@ -669,12 +672,14 @@ function ActionDrawer({ onClose }: { onClose: () => void }) {
         <StatePanel detail="Client approval evidence is missing. This action cannot be marked ready for advisor or client release yet." state="blocked" title="Blocked by missing evidence" />
         <section>
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-gold">Available actions</p>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <button className={primaryButtonClass} data-testid="j05-mark-ready" onClick={() => { void runScreencastDemoAction("j05.markReady"); }} type="button"><Check aria-hidden="true" className="size-4" />Mark Ready</button>
-            <button className={secondaryButtonClass} data-testid="j05-request-info" onClick={() => { void runScreencastDemoAction("j05.requestInfo"); }} type="button"><MessageSquare aria-hidden="true" className="size-4" />Request Info</button>
-            <button className={secondaryButtonClass} type="button"><Clock3 aria-hidden="true" className="size-4" />Update Due Date</button>
-            <button className={secondaryButtonClass} type="button"><MoreHorizontal aria-hidden="true" className="size-4" />More Actions</button>
-          </div>
+          <UxCtaCluster
+            blockedReason="Mark Ready stays blocked until client approval evidence is present; do not use drawer actions as readiness proof."
+            primary={{ label: "Request Info", onClick: () => { void runScreencastDemoAction("j05.requestInfo"); }, testId: "j05-request-info" }}
+            secondary={[
+              { label: "Update Due Date" },
+              { disabled: true, label: "Mark Ready", testId: "j05-mark-ready" },
+            ]}
+          />
         </section>
       </div>
     </aside>

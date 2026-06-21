@@ -8388,3 +8388,75 @@ Completed `UX-COMPLEXITY-003` by defining Must-see, Secondary and Tertiary respo
 ### Exit Gate Decision
 
 `UX_COMPLEXITY_003_COMPLETED_WITH_CONTENT_TIER_HIERARCHY_AND_P0_PROOF`
+
+## UX-COMPLEXITY-004 Addendum - CTA Cluster Consolidation
+
+Date: 2026-06-21
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+
+### Scope
+
+Completed `UX-COMPLEXITY-004` by replacing duplicate/dead-end CTA clusters on representative priority-flow route states with one primary CTA, secondary contextual actions and visible blocked-reason copy. This is a UX hierarchy refactor only; it does not change workflow authority, route scope, permissions, evidence sufficiency, compliance release or export lifecycle behavior.
+
+### Changed Files
+
+- `components/ux-cta-cluster.tsx`
+- `components/wealth-actions-screen.tsx`
+- `components/decisions-governance-screen.tsx`
+- `components/communication-export-ops-screen.tsx`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-004/2026-06-21-UX-COMPLEXITY-004-actions-page-cta.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-004/2026-06-21-UX-COMPLEXITY-004-actions-drawer-cta.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-004/2026-06-21-UX-COMPLEXITY-004-evidence-detail-cta.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-004/2026-06-21-UX-COMPLEXITY-004-access-request-drawer-cta.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-004/2026-06-21-UX-COMPLEXITY-004-export-redaction-cta.png`
+
+### Route-Policy Rows Cited
+
+- `032`, `046`, `047`, `050`, `056`.
+
+### Implementation Notes
+
+- Added `UxCtaCluster` with testable primary/secondary CTA markers.
+- Consolidated Action Board and Action Drawer CTA rows into one primary selected-action path with contextual blocked actions.
+- Changed Evidence Record Detail from parallel Open/Download/Share affordances to Open primary, Download secondary and Share disabled until sufficiency/release/payload checks pass.
+- Changed Access Requests drawer from equal Escalate/Deny/Approve buttons to Approve primary with contextual alternatives and explicit policy/SOD/audit constraint.
+- Added Export Redaction CTA hierarchy stating redaction review is not preview, approval, download or share.
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with existing warnings.
+- `PLAYWRIGHT_PORT=3394 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-COMPLEXITY CTA clusters"` - passed, 5 tests.
+- `PLAYWRIGHT_PORT=3395 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3396 pnpm test:file-export` - passed, 14 tests.
+- `PLAYWRIGHT_PORT=3397 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3398 pnpm test:route-smoke` - passed, 142 tests.
+
+### Screenshot Proof
+
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-004/2026-06-21-UX-COMPLEXITY-004-actions-page-cta.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-004/2026-06-21-UX-COMPLEXITY-004-actions-drawer-cta.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-004/2026-06-21-UX-COMPLEXITY-004-evidence-detail-cta.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-004/2026-06-21-UX-COMPLEXITY-004-access-request-drawer-cta.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-004/2026-06-21-UX-COMPLEXITY-004-export-redaction-cta.png`
+
+### Positive Acceptance
+
+- Touched route states show one primary CTA and visible recovery/blocking context.
+- Secondary actions remain available for context without becoming competing workflow paths.
+
+### Negative Acceptance
+
+- No hidden gate, evidence need, audit state, RBAC warning, export separation or compliance boundary was weakened.
+- No route, route class, P1/Reference/Hold status, payload boundary or release authority changed.
+
+### Exit Gate Decision
+
+`UX_COMPLEXITY_004_COMPLETED_WITH_CTA_CLUSTER_CONSOLIDATION_AND_P0_PROOF`

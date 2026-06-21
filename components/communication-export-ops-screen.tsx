@@ -55,6 +55,7 @@ import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
 import { UxComplexityPriorityPanel } from "@/components/ux-complexity-priority-panel";
+import { UxCtaCluster } from "@/components/ux-cta-cluster";
 import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
 import { cn } from "@/lib/cn";
 import {
@@ -956,6 +957,17 @@ function ExportRedactionPage({ title }: { title: string }) {
       <StatePanel detail="All sensitive fields must be redacted before export to client or external recipients." state="blocked" title="Redaction is mandatory for external exports" />
       <div className="mt-5">
         <ScfP07P09TrustPanel mode="export" />
+      </div>
+      <div className="mt-5">
+        <UxCtaCluster
+          blockedReason="Preview, approval, download and share remain separate export lifecycle steps; redaction review does not release the package."
+          primary={{ label: "Review mandatory redactions" }}
+          secondary={[
+            { label: "Inspect payload checks" },
+            { disabled: true, label: "Approve export" },
+            { disabled: true, label: "Download package" },
+          ]}
+        />
       </div>
       <UxComplexityPriorityPanel
         className="mt-5"

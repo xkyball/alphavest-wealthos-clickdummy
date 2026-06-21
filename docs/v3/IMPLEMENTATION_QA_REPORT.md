@@ -6355,3 +6355,49 @@ Source of truth:
 ### QA Limits
 
 - This slice establishes shared hierarchy semantics and representative proof. It does not complete later density-tier layout work or CTA-state consolidation.
+
+## UX-COMPLEXITY-004 QA Addendum
+
+Date: 2026-06-21
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+
+| Area | QA result | Evidence |
+| --- | --- | --- |
+| CTA hierarchy | Passed | Route-smoke verifies one primary CTA, secondary actions and blocked reason on five touched route states. |
+| Gate visibility | Passed | Evidence, access-request and export blocked reasons remain visible where previously competing actions existed. |
+| Route Policy Matrix preservation | Passed | No route registry, scope, page-type or route-policy metadata changed. |
+| P0 safety | Passed | Permissions, workflow gate, export lifecycle and full route smoke remain green. |
+| Screenshot proof | Passed | Five screenshots captured under `artifacts/ux-page-to-policy/UX-COMPLEXITY-004/`. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | `tsc --noEmit` completed successfully. |
+| `pnpm lint` | Passed | Existing warnings remain. |
+| `PLAYWRIGHT_PORT=3394 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-COMPLEXITY CTA clusters"` | Passed | 5 tests. |
+| `PLAYWRIGHT_PORT=3395 pnpm test:workflow-gate` | Passed | 13 tests. |
+| `PLAYWRIGHT_PORT=3396 pnpm test:file-export` | Passed | 14 tests. |
+| `PLAYWRIGHT_PORT=3397 pnpm test:permissions` | Passed | 8 tests. |
+| `PLAYWRIGHT_PORT=3398 pnpm test:route-smoke` | Passed | 142 tests. |
+
+### Screenshot Proof
+
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-004/2026-06-21-UX-COMPLEXITY-004-actions-page-cta.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-004/2026-06-21-UX-COMPLEXITY-004-actions-drawer-cta.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-004/2026-06-21-UX-COMPLEXITY-004-evidence-detail-cta.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-004/2026-06-21-UX-COMPLEXITY-004-access-request-drawer-cta.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-004/2026-06-21-UX-COMPLEXITY-004-export-redaction-cta.png`
+
+### Safety Proof
+
+- One primary CTA is hierarchy proof only, not behavior proof.
+- Disabled or secondary actions do not override evidence sufficiency, compliance release, export approval/download/share, RBAC or audit requirements.
+- Admin/governance access approval still depends on policy/SOD checks and audit logging.
+
+### QA Limits
+
+- This slice removes duplicate CTA ambiguity on representative priority routes. Full route-specific lifecycle copy chains remain for later `UX-CTA-*` tasks.

@@ -50,6 +50,7 @@ import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
 import { UxComplexityPriorityPanel } from "@/components/ux-complexity-priority-panel";
+import { UxCtaCluster } from "@/components/ux-cta-cluster";
 import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
 import { cn } from "@/lib/cn";
 import {
@@ -1083,7 +1084,16 @@ function EvidenceRecordDetailPage({ title }: { title: string }) {
       <ScreenTitle>{title}</ScreenTitle>
       <div className="mx-auto max-w-[112rem] space-y-5">
         <PageHeading
-          action={<div className="flex flex-wrap gap-3"><button className={secondaryButtonClass} type="button">Open</button><button className={secondaryButtonClass} data-testid="j03-download-evidence" onClick={() => { void runScreencastDemoAction("j03.downloadEvidence"); }} type="button">Download</button><button className={primaryButtonClass} type="button">Share</button></div>}
+          action={
+            <UxCtaCluster
+              blockedReason="Share remains blocked until evidence sufficiency, compliance release and payload visibility checks pass."
+              primary={{ label: "Open" }}
+              secondary={[
+                { label: "Download", onClick: () => { void runScreencastDemoAction("j03.downloadEvidence"); }, testId: "j03-download-evidence" },
+                { disabled: true, label: "Share" },
+              ]}
+            />
+          }
           badge={<Badge tone="green">Verified</Badge>}
           subtitle="Complete evidence record with provenance, access and audit information."
           title={title}
@@ -1177,8 +1187,17 @@ function EvidenceRecordDetailPage({ title }: { title: string }) {
             </Card>
             <Card>
               <CardHeader><CardTitle>Quick Actions</CardTitle></CardHeader>
-              <CardContent className="space-y-2">
-                {["Revoke Access", "Add to Collection", "Create New Version", "Request Review"].map((item) => <button className={secondaryButtonClass + " w-full justify-start"} key={item} type="button">{item}</button>)}
+              <CardContent>
+                <UxCtaCluster
+                  blockedReason="Revoke access and create-version actions are secondary and cannot prove evidence sufficiency or access authority."
+                  className="[&_button]:w-full [&_button]:justify-start"
+                  primary={{ label: "Request Review" }}
+                  secondary={[
+                    { label: "Add to Collection" },
+                    { disabled: true, label: "Revoke Access" },
+                    { disabled: true, label: "Create New Version" },
+                  ]}
+                />
               </CardContent>
             </Card>
           </aside>
@@ -1429,7 +1448,17 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
       </div>
       <Drawer
         description="Review access request, policy checks and decision."
-        footer={<div className="grid gap-3 sm:grid-cols-3"><button className={secondaryButtonClass} onClick={() => setDrawerOpen(false)} type="button">Escalate</button><button className={destructiveButtonClass} onClick={() => setDrawerOpen(false)} type="button">Deny</button><button className={primaryButtonClass} data-testid="j07-approve-access" onClick={() => { void runScreencastDemoAction("j07.approveAccess", "/governance/audit-history?state=drawer"); }} type="button">Approve</button></div>}
+        footer={
+          <UxCtaCluster
+            blockedReason="Approval remains constrained by visible policy and SOD checks plus audit logging; escalation and denial are contextual alternatives."
+            className="w-full"
+            primary={{ label: "Approve", onClick: () => { void runScreencastDemoAction("j07.approveAccess", "/governance/audit-history?state=drawer"); }, testId: "j07-approve-access" }}
+            secondary={[
+              { label: "Escalate", onClick: () => setDrawerOpen(false) },
+              { label: "Deny", onClick: () => setDrawerOpen(false) },
+            ]}
+          />
+        }
         onClose={() => setDrawerOpen(false)}
         open={drawerOpen}
         title="AR-2025-0612"
