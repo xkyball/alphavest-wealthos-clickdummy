@@ -10,7 +10,7 @@ import {
   uxPageContracts,
 } from "../lib/ux-page-contract";
 import { uxContentHierarchyForPageType } from "../lib/ux-content-hierarchy";
-import { uxDensityTierContracts } from "../lib/ux-density";
+import { uxDensityForPageId, uxDensityTierContracts } from "../lib/ux-density";
 import { uxComplexity005SupportPageIds } from "../lib/ux-support-density";
 import {
   groupedImplementationScreenRoutes,
@@ -457,6 +457,53 @@ test.describe("UX-DENSITY calm executive client views", () => {
       await expect(calmSurface).toContainText(/not expose|must not leak|hidden/i);
     });
   }
+});
+
+test.describe("UX-DENSITY productive workbench routes", () => {
+  const d2WorkbenchRoutes = [
+    "/documents",
+    "/documents/upload",
+    "/documents/extraction-review",
+    "/documents/verification-pending",
+    "/signals",
+    "/workbench",
+    "/advisor-approval",
+    "/compliance",
+    "/evidence",
+  ];
+
+  for (const path of d2WorkbenchRoutes) {
+    test(`${path} applies D2 queue context action rail density`, async ({ page }) => {
+      await page.setViewportSize({ height: 1000, width: 1440 });
+      await authenticateRouteSmokePage(page);
+      await page.goto(path);
+
+      const d2Surface = page.locator('[data-ux-d2-productive-workbench="true"]').first();
+      await expect(d2Surface).toBeVisible();
+      await expect(d2Surface).toHaveAttribute("data-ux-density-tier", "D2");
+      await expect(d2Surface).toHaveAttribute("data-ux-density-pattern", "productive-workbench");
+
+      const triad = page.getByTestId("ux-page-workbench-triad").first();
+      await expect(triad).toBeVisible();
+      await expect(triad.getByTestId("ux-page-queue")).toBeVisible();
+      await expect(triad.getByTestId("ux-page-selected-context")).toBeVisible();
+      await expect(triad.getByTestId("ux-page-action-rail")).toBeVisible();
+      await expect(triad.getByTestId("ux-page-action-rail")).toContainText(/gate|authority|selected|visible status|release/i);
+    });
+  }
+
+  test("keeps D4 detail routes in the related range out of D2 workbench coercion", async ({ page }) => {
+    await page.setViewportSize({ height: 1000, width: 1440 });
+    await authenticateRouteSmokePage(page);
+
+    expect(uxDensityForPageId("039").tier).toBe("D4");
+    expect(uxDensityForPageId("047").tier).toBe("D4");
+
+    for (const path of ["/compliance/demo/review", "/evidence/demo"]) {
+      await page.goto(path);
+      await expect(page.locator('[data-ux-d2-productive-workbench="true"]')).toHaveCount(0);
+    }
+  });
 });
 
 test.describe("locked route workset preservation", () => {

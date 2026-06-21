@@ -36,6 +36,7 @@ export function ProductGuidancePanel() {
     <section
       aria-label="Product workflow guidance"
       className="mb-4 rounded-md border border-alphavest-border/75 bg-alphavest-panel/72 p-3 shadow-[0_18px_50px_rgba(0,0,0,0.18)] md:mb-5 md:p-5"
+      data-ux-d2-productive-workbench={density?.tier === "D2" && guidance.workbenchStructure ? "true" : undefined}
       data-ux-density-pattern={density?.pattern}
       data-ux-density-tier={density?.tier}
       data-testid="product-guidance"
@@ -101,7 +102,13 @@ export function ProductGuidancePanel() {
             </div>
           ) : null}
           {guidance.workbenchStructure ? (
-            <div className="mt-4 grid gap-3 lg:grid-cols-3" data-testid="ux-page-workbench-triad" data-ux-content-tier="secondary">
+            <div
+              className={cn("mt-4 grid gap-3 lg:grid-cols-3", density?.tier === "D2" && "gap-2 md:grid-cols-3")}
+              data-testid="ux-page-workbench-triad"
+              data-ux-content-tier="secondary"
+              data-ux-density-pattern={density?.pattern}
+              data-ux-density-tier={density?.tier}
+            >
               <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/40 p-3" data-testid="ux-page-queue">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Priority Queue</p>
                 <p className="mt-2 text-sm leading-6 text-alphavest-muted">{guidance.workbenchStructure.queue}</p>
@@ -114,6 +121,9 @@ export function ProductGuidancePanel() {
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold-soft">Action Rail</p>
                 <p className="mt-2 text-sm leading-6 text-alphavest-muted">{guidance.workbenchStructure.actionRail}</p>
                 <p className="mt-2 text-xs leading-5 text-alphavest-gold-soft">{guidance.workbenchStructure.safety}</p>
+                {density?.tier === "D2" ? (
+                  <p className="mt-2 text-xs leading-5 text-alphavest-gold-soft">D2 workbench density is orientation only; route gates and action authority still decide what can proceed.</p>
+                ) : null}
               </div>
             </div>
           ) : null}

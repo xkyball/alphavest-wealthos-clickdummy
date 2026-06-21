@@ -140,6 +140,8 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
     );
   }
 
+  const renderD2WorkbenchTriad = density.tier === "D2" && pageId === "034";
+
   return (
     <section
       className="mx-auto w-full max-w-[104rem] space-y-5"
@@ -173,6 +175,31 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
               ))}
             </div>
           </div>
+
+          {renderD2WorkbenchTriad ? (
+            <div
+              className="grid gap-2 md:grid-cols-3"
+              data-testid="ux-page-workbench-triad"
+              data-ux-content-tier="secondary"
+              data-ux-d2-productive-workbench="true"
+              data-ux-density-pattern={density.pattern}
+              data-ux-density-tier={density.tier}
+            >
+              <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/40 p-3" data-testid="ux-page-queue">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Priority Queue</p>
+                <p className="mt-2 text-sm leading-6 text-alphavest-muted">{hub.queue[0]?.detail ?? hub.summary}</p>
+              </div>
+              <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/40 p-3" data-testid="ux-page-selected-context">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Selected Context</p>
+                <p className="mt-2 text-sm leading-6 text-alphavest-muted">{hub.sourceSummaries[0] ?? "Selected work remains route-scoped."}</p>
+              </div>
+              <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3" data-testid="ux-page-action-rail">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold-soft">Action Rail</p>
+                <p className="mt-2 text-sm leading-6 text-alphavest-muted">{hub.primaryAction.detail}</p>
+                <p className="mt-2 text-xs leading-5 text-alphavest-gold-soft">Route visibility is orientation only; advice, evidence and release gates still decide authority.</p>
+              </div>
+            </div>
+          ) : null}
 
           <div className="grid gap-4 md:grid-cols-3" data-ux-content-tier="secondary">
             {hub.priorityCards.map((card) => (

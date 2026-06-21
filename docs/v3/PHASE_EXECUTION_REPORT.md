@@ -8669,3 +8669,70 @@ Completed `UX-DENSITY-002` for route rows `019` and `020`. The client portal and
 ### Exit Gate Decision
 
 `UX_DENSITY_002_COMPLETED_WITH_D1_CLIENT_SAFE_CALM_EXECUTIVE_PROOF`
+
+## UX-DENSITY-003 Addendum - D2 Productive Workbench Applied
+
+Date: 2026-06-21
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+
+### Scope
+
+Completed `UX-DENSITY-003` for the current D2 workbench surfaces in the task range. D2 routes now expose a testable queue / selected context / action rail density marker, and D4 detail routes in the related range remain outside D2 productive workbench treatment.
+
+### Changed Files
+
+- `components/product-guidance-panel.tsx`
+- `components/ux-hub-page.tsx`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-DENSITY-003/2026-06-21-UX-DENSITY-003-documents-d2-workbench.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-003/2026-06-21-UX-DENSITY-003-signals-d2-workbench.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-003/2026-06-21-UX-DENSITY-003-consultant-workbench-d2.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-003/2026-06-21-UX-DENSITY-003-compliance-d2-workbench.png`
+
+### Route-Policy Rows Cited
+
+- `027-030`, `033`, `034`, `036`, `038`, `046`; D4 preservation proof for `039`, `047`.
+
+### Implementation Notes
+
+- Added `data-ux-d2-productive-workbench` to D2 workbench guidance surfaces.
+- Added D2 density metadata to the workbench triad itself.
+- Added explicit route gate/action authority copy in D2 action rails.
+- Added queue/context/action rail triad to the consultant workbench hub `034`.
+- Did not reclassify `038 /compliance`; the slice follows current route-policy code and records no metadata change.
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with existing warnings.
+- `PLAYWRIGHT_PORT=3433 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-DENSITY productive workbench"` - passed, 10 tests.
+- `PLAYWRIGHT_PORT=3434 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3435 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3436 pnpm test:route-smoke` - passed, 185 tests.
+
+### Screenshot Proof
+
+- `artifacts/ux-page-to-policy/UX-DENSITY-003/2026-06-21-UX-DENSITY-003-documents-d2-workbench.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-003/2026-06-21-UX-DENSITY-003-signals-d2-workbench.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-003/2026-06-21-UX-DENSITY-003-consultant-workbench-d2.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-003/2026-06-21-UX-DENSITY-003-compliance-d2-workbench.png`
+
+### Positive Acceptance
+
+- D2 productive routes show queue, selected context and action rail in the first viewport.
+- The action rail explicitly says route gates and action authority still decide what can proceed.
+
+### Negative Acceptance
+
+- D4 detail routes in the related range are not marked as D2 productive workbench.
+- Advice, evidence, compliance release and RBAC gates remain unchanged.
+
+### Exit Gate Decision
+
+`UX_DENSITY_003_COMPLETED_WITH_D2_WORKBENCH_AND_D4_NON_COERCION_PROOF`

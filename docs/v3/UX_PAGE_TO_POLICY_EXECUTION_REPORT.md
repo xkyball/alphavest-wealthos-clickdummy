@@ -234,6 +234,117 @@ No-P1/Hold/Reference-elevation confirmation: `UX-DENSITY-001` only materializes 
 
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
 
+## Completed Slice: UX-DENSITY-003
+
+Task: `UX-DENSITY-003` - Apply D2 Productive Workbench to analyst/advisor/compliance work routes.
+
+Mission Card: apply D2 queue / selected context / action rail density to the current productive workbench routes without pulling D4 detail routes into workbench density or changing route classifications.
+
+Evidence Intake:
+- Task-master `UX-DENSITY-003` related routes: `027-030`, `033-040`, `046-047`.
+- Current route-policy implementation marks `027-030`, `033`, `034`, `036`, `038` and `046` as D2 workbench surfaces; `039` and `047` remain D4 detail surfaces.
+- Existing implementation finding: `ProductGuidancePanel` already owns queue/context/action rail for most work routes; `UxHubPage` needed a D2 triad for `034 /workbench`.
+
+Problem Architecture: D2 workbench routes need dense, productive orientation, but the density layer must not imply advice release, evidence sufficiency, compliance release or broader payload authority.
+
+Double Diamond:
+- Discover: D2 guidance existed, but it lacked a route-wide testable D2 productive marker and `034 /workbench` had hub cards without an explicit triad.
+- Define: expose D2 metadata on the existing workbench triads and add a focused triad for the consultant workbench hub.
+- Develop: added D2 proof markers and an explicit gate/authority note in action rails.
+- Deliver: targeted D2 route-smoke, permissions, workflow-gate, full route-smoke and screenshots.
+
+Psycho-Logic + Map/Model: operators need to see the queue, selected item context and permitted next action without believing that visible status is authorization. The safe move is to make action authority text explicit in every D2 action rail.
+
+Reframing Matrix:
+- Page-as-card-wall: rejected.
+- Page-as-productive-workbench: kept for current D2 routes.
+- Page-as-detail decision: preserved for D4 detail routes.
+- Page-as-gate: constrained through explicit gate/authority text.
+
+TRIZ: increased productive density and reduced ambiguity while preserving safety by adding proof semantics and gate copy, not by enabling actions.
+
+SIT Closed World: reused `ProductGuidancePanel`, `UxHubPage`, route policy helpers and existing routes; no route, schema, image, API or scope engine was added.
+
+Zwicky + CCA:
+- Variant A: restyle all related routes as D2. Rejected because D4 detail routes would be coerced.
+- Variant B: test current D2 route-policy surfaces and preserve D4. Chosen.
+- Variant C: delay `034 /workbench` to a later hub task. Rejected because it is in this task's related route set.
+
+SCAMPER: combined D2 density markers with existing workbench triads, adapted the workbench hub into queue/context/action rail and clarified action authority copy.
+
+Harvard / BATNA: objective criteria are the task card and current no-reclassification constraint. BATNA is stop/report if D2 would require changing route class.
+
+MESOs:
+- Option A: add a new D2 wrapper component. Rejected as unnecessary.
+- Option B: annotate and tighten existing shared surfaces. Chosen.
+
+Measurement Plan:
+- `pnpm typecheck`
+- `pnpm lint`
+- `PLAYWRIGHT_PORT=3433 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-DENSITY productive workbench"`
+- `PLAYWRIGHT_PORT=3434 pnpm test:permissions`
+- `PLAYWRIGHT_PORT=3435 pnpm test:workflow-gate`
+- `PLAYWRIGHT_PORT=3436 pnpm test:route-smoke`
+- Screenshot proof under `artifacts/ux-page-to-policy/UX-DENSITY-003/`
+
+Ethics/Fairness: D2 density does not pressure users into release, approval or sufficiency; the action rail states gates and authority still decide what can proceed.
+
+Adversarial QA: the task range includes D4 detail routes; tests prove `/compliance/demo/review` and `/evidence/demo` do not receive D2 productive workbench markers.
+
+Learning Log: later D3/D4 work should explicitly separate current route-policy code from matrix prose where they differ, and avoid hidden route reclassification inside UX density work.
+
+Route-policy rows cited:
+- D2 applied/proved: `027`, `028`, `029`, `030`, `033`, `034`, `036`, `038`, `046`.
+- D4 preserved from D2 coercion: `039`, `047`.
+
+Changed files:
+- `components/product-guidance-panel.tsx`
+- `components/ux-hub-page.tsx`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-DENSITY-003/2026-06-21-UX-DENSITY-003-documents-d2-workbench.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-003/2026-06-21-UX-DENSITY-003-signals-d2-workbench.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-003/2026-06-21-UX-DENSITY-003-consultant-workbench-d2.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-003/2026-06-21-UX-DENSITY-003-compliance-d2-workbench.png`
+
+Implementation summary:
+- Added D2 productive workbench markers to existing workbench guidance.
+- Added explicit D2 gate/authority copy to action rails.
+- Added a D2 workbench triad for `034 /workbench`.
+- Added route-smoke proof across D2 routes and D4 non-coercion proof.
+
+Validation:
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with existing warnings.
+- `PLAYWRIGHT_PORT=3433 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-DENSITY productive workbench"` - passed, 10 tests.
+- `PLAYWRIGHT_PORT=3434 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3435 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3436 pnpm test:route-smoke` - passed, 185 tests.
+
+Screenshot/proof:
+- `artifacts/ux-page-to-policy/UX-DENSITY-003/2026-06-21-UX-DENSITY-003-documents-d2-workbench.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-003/2026-06-21-UX-DENSITY-003-signals-d2-workbench.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-003/2026-06-21-UX-DENSITY-003-consultant-workbench-d2.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-003/2026-06-21-UX-DENSITY-003-compliance-d2-workbench.png`
+
+Positive acceptance:
+- D2 workbench routes expose queue, selected context and action rail density.
+- First viewport keeps page job, status context and constrained next action visible.
+
+Negative/P0 acceptance:
+- D2 density does not weaken advice boundary, AI Draft internal-only, upload/evidence sufficiency, compliance release or RBAC gates.
+- D4 detail routes in the related range are not coerced into D2 productive workbench treatment.
+
+No-generation confirmation: no screen generation, state-screen generation, image generation or generated product assets.
+
+No-route-reclassification confirmation: no route ID, path, scope, page type or density classification was changed.
+
+No-P1/Hold/Reference-elevation confirmation: `UX-DENSITY-003` touches only current productive MVP/MVP-support surfaces in the related range.
+
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
+
 ## Completed Slice: UX-DENSITY-002
 
 Task: `UX-DENSITY-002` - Apply D1 Calm Executive to client-facing views.
