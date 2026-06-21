@@ -18,7 +18,6 @@ import {
   File,
   FileCheck2,
   FileText,
-  Filter,
   Folder,
   Landmark,
   LayoutDashboard,
@@ -59,14 +58,11 @@ import {
 import { cn } from "@/lib/cn";
 import {
   clientWorkspace,
-  documentRows,
   entityDetail,
   entityDocuments,
   entityParticipants,
-  entityRows,
   entityWizardSteps,
   extractionFields,
-  familyMembers,
   governancePreferences,
   keyFamilyMembers,
   missingDocuments,
@@ -128,25 +124,48 @@ type PersistedUploadDocument = {
   evidenceRecordId: string | null;
   evidenceStatus: string | null;
   evidenceVisibilityStatus: string | null;
-  extractionStatus: string | null;
-  fileName: string;
-  fileSizeBytes: number;
+  extractionStatus?: string | null;
+  fileName?: string;
+  fileSizeBytes?: number;
   id: string;
-  mimeType: string;
+  mimeType?: string;
   sensitivity: string;
   status: string;
-  storageKey: string;
+  storageKey?: string;
   title: string;
   uploadedAt: string;
 };
 
 type DocumentTableRow = {
   entity: string;
+  id: string;
   name: string;
   sensitivity: string;
   status: string;
   type: string;
   updated: string;
+};
+
+type FamilyMemberTableRow = {
+  governance: string;
+  id: string;
+  name: string;
+  relationship: string;
+  role: string;
+  sensitivity: string;
+  status: string;
+  year: string;
+};
+
+type EntityTableRow = {
+  id: string;
+  jurisdiction: string;
+  missingDocs: string;
+  name: string;
+  ownership: string;
+  risk: string;
+  status: string;
+  type: string;
 };
 
 function formatBytes(bytes: number) {
@@ -181,11 +200,10 @@ function isPersistedUploadDocument(value: unknown): value is PersistedUploadDocu
   const candidate = value as Partial<PersistedUploadDocument>;
   return (
     typeof candidate.documentType === "string" &&
-    typeof candidate.fileName === "string" &&
-    typeof candidate.fileSizeBytes === "number" &&
     typeof candidate.id === "string" &&
     typeof candidate.sensitivity === "string" &&
     typeof candidate.status === "string" &&
+    typeof candidate.title === "string" &&
     typeof candidate.uploadedAt === "string"
   );
 }
@@ -193,7 +211,8 @@ function isPersistedUploadDocument(value: unknown): value is PersistedUploadDocu
 function toDocumentRows(documents: PersistedUploadDocument[], entityLabel: string): DocumentTableRow[] {
   return documents.map((document) => ({
     entity: entityLabel,
-    name: document.fileName,
+    id: document.id,
+    name: document.fileName ?? document.title,
     sensitivity: labelFromEnum(document.sensitivity),
     status: labelFromEnum(document.status),
     type: labelFromEnum(document.documentType),
@@ -214,7 +233,7 @@ function usePersistedUploadDocuments() {
 
     try {
       const response = await fetch(
-        `/api/documents?tenantSlug=${encodeURIComponent(tenantSlug)}&roleKey=${encodeURIComponent(roleKey)}`,
+        `/api/documents?tenantSlug=${encodeURIComponent(tenantSlug)}&roleKey=${encodeURIComponent(roleKey)}&source=all`,
         { cache: "no-store" },
       );
       const body = (await response.json()) as { documents?: PersistedUploadDocument[] };
@@ -237,6 +256,108 @@ function usePersistedUploadDocuments() {
   }, [refresh]);
 
   return { documents, loadState, refresh };
+}
+
+function sortByKey<T>(rows: T[], key: keyof T, direction: "asc" | "desc") {
+  return [...rows].sort((left, right) => {
+    const leftValue = String(left[key] ?? "");
+    const rightValue = String(right[key] ?? "");
+    const result = leftValue.localeCompare(rightValue, "en", { numeric: true, sensitivity: "base" });
+
+    return direction === "desc" ? -result : result;
+  });
+}
+
+function useDbtfFamilyMembers() {
+  const { session } = useDemoSession();
+  const tenantSlug = session.tenant.slug;
+  const roleKey = session.role.key;
+  const [rows, setRows] = useState<FamilyMemberTableRow[]>([]);
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoadState("loading");
+
+      try {
+        const response = await fetch(
+          `/api/family-members?tenantSlug=${encodeURIComponent(tenantSlug)}&roleKey=${encodeURIComponent(roleKey)}`,
+          { cache: "no-store" },
+        );
+        const body = (await response.json()) as { familyMembers?: FamilyMemberTableRow[] };
+
+        if (!response.ok) {
+          throw new Error("Family member reload failed.");
+        }
+
+        if (!cancelled) {
+          setRows(body.familyMembers ?? []);
+          setLoadState("ready");
+        }
+      } catch {
+        if (!cancelled) {
+          setRows([]);
+          setLoadState("error");
+        }
+      }
+    }
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [roleKey, tenantSlug]);
+
+  return { loadState, rows };
+}
+
+function useDbtfEntities() {
+  const { session } = useDemoSession();
+  const tenantSlug = session.tenant.slug;
+  const roleKey = session.role.key;
+  const [rows, setRows] = useState<EntityTableRow[]>([]);
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoadState("loading");
+
+      try {
+        const response = await fetch(
+          `/api/entities?tenantSlug=${encodeURIComponent(tenantSlug)}&roleKey=${encodeURIComponent(roleKey)}`,
+          { cache: "no-store" },
+        );
+        const body = (await response.json()) as { entities?: EntityTableRow[] };
+
+        if (!response.ok) {
+          throw new Error("Entity reload failed.");
+        }
+
+        if (!cancelled) {
+          setRows(body.entities ?? []);
+          setLoadState("ready");
+        }
+      } catch {
+        if (!cancelled) {
+          setRows([]);
+          setLoadState("error");
+        }
+      }
+    }
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [roleKey, tenantSlug]);
+
+  return { loadState, rows };
 }
 
 function toneFor(value: string): BadgeTone {
@@ -364,8 +485,11 @@ function ClientTopBar() {
           <span className="sr-only">Search</span>
           <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
           <input
-            className="h-10 w-full rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-10 text-sm text-alphavest-ivory outline-none transition placeholder:text-alphavest-subtle focus:border-alphavest-gold"
-            placeholder="Search clients, entities, documents..."
+            aria-disabled="true"
+            className="h-10 w-full cursor-not-allowed rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-10 text-sm text-alphavest-subtle outline-none transition placeholder:text-alphavest-subtle"
+            disabled
+            placeholder="Global search pending scoped indexing"
+            title="Global search is disabled until a scoped DB-backed search index exists."
             type="search"
           />
         </label>
@@ -806,36 +930,94 @@ const familySummaryColumns: Array<DataTableColumn<(typeof keyFamilyMembers)[numb
 function FamilyMembersPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="022">
+      <FamilyMembersPageContent title={title} />
+    </ClientShell>
+  );
+}
+
+function FamilyMembersPageContent({ title }: { title: string }) {
+  const { loadState, rows } = useDbtfFamilyMembers();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortKey, setSortKey] = useState<keyof FamilyMemberTableRow>("name");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+  const filteredRows = sortByKey(
+    rows.filter((row) =>
+      normalizedSearchTerm.length === 0
+        ? true
+        : [row.name, row.relationship, row.role, row.governance, row.status, row.sensitivity].some((value) =>
+            value.toLowerCase().includes(normalizedSearchTerm),
+          ),
+    ),
+    sortKey,
+    sortDirection,
+  );
+  const selected = filteredRows[0];
+
+  function toggleSort(key: string) {
+    const nextKey = key as keyof FamilyMemberTableRow;
+
+    if (sortKey === nextKey) {
+      setSortDirection((current) => (current === "asc" ? "desc" : "asc"));
+      return;
+    }
+
+    setSortKey(nextKey);
+    setSortDirection("asc");
+  }
+
+  return (
+    <>
       <ScreenTitle>{title}</ScreenTitle>
       <div className="space-y-5">
         <SectionTitle
           action={<div className="flex flex-wrap gap-3"><button className={secondaryButtonClass} data-testid="j09-family-map" onClick={() => { void runScreencastDemoAction("j09.openFamilyMap", "/relationships"); }} type="button"><Network aria-hidden="true" className="size-4" />Family Map</button><button className={primaryButtonClass} data-testid="j09-add-member" onClick={() => { void runScreencastDemoAction("j09.addMember"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add Member</button></div>}
-          count="22"
+          count={String(rows.length)}
           subtitle="Maintain family member profiles, relationships and governance roles."
           title={title}
         />
-        <SafeClientBanner>Data shown based on your access: Family CFO.</SafeClientBanner>
+        <SafeClientBanner>Family rows are loaded from tenant-scoped seeded DB records. Detail editing remains read-only until the DBTF form phase.</SafeClientBanner>
         <div className="grid gap-5 2xl:grid-cols-[0.9fr_1.15fr]">
           <Card>
             <CardHeader className="grid gap-3 md:grid-cols-[1fr_auto]">
               <div className="relative">
                 <Search aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-                <input className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm outline-none focus:border-alphavest-gold" placeholder="Search members" />
+                <input
+                  className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm outline-none focus:border-alphavest-gold"
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  placeholder="Search DB-backed members"
+                  value={searchTerm}
+                />
               </div>
-              <button className={secondaryButtonClass} type="button"><Filter aria-hidden="true" className="size-4" />Filters</button>
+              <div className="flex h-11 items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted">
+                <ShieldCheck aria-hidden="true" className="size-4" />
+                Tenant scoped
+              </div>
             </CardHeader>
-            <CardContent><DataTable columns={familyMemberColumns} getRowId={(row) => row.name} rows={familyMembers} /></CardContent>
+            <CardContent>
+              <DataTable
+                columns={familyMemberColumns}
+                emptyMessage={loadState === "error" ? "Family members could not be loaded from the DB." : "No DB-backed family members match this search."}
+                getRowId={(row) => row.id}
+                onSortChange={toggleSort}
+                rows={filteredRows}
+                sortDirection={sortDirection}
+                sortKey={String(sortKey)}
+              />
+            </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-start justify-between">
               <div className="flex gap-4">
-                <span className="grid size-16 place-items-center rounded-full border border-alphavest-border bg-alphavest-gold/15 text-xl font-semibold text-alphavest-gold">EH</span>
+                <span className="grid size-16 place-items-center rounded-full border border-alphavest-border bg-alphavest-gold/15 text-xl font-semibold text-alphavest-gold">
+                  {(selected?.name ?? "DB").split(" ").map((part) => part.charAt(0)).slice(0, 2).join("")}
+                </span>
                 <div>
-                  <CardTitle>Eleanor Harbor</CardTitle>
-                  <CardDescription>1955 (Age 69) · Female · Matriarch</CardDescription>
+                  <CardTitle>{selected?.name ?? "No DB-backed member selected"}</CardTitle>
+                  <CardDescription>{selected ? `${selected.year} · ${selected.relationship} · ${selected.role}` : "Tenant-scoped family rows are empty."}</CardDescription>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <Badge tone="red">Trustee / Beneficiary conflict exists</Badge>
-                    <Badge tone="blue">Sensitive information</Badge>
+                    {selected ? <Badge tone={toneFor(selected.status)}>{selected.status}</Badge> : null}
+                    {selected ? <Badge tone="blue">{selected.sensitivity}</Badge> : null}
                   </div>
                 </div>
               </div>
@@ -844,35 +1026,35 @@ function FamilyMembersPage({ title }: { title: string }) {
             <CardContent className="space-y-5">
               <div className="grid gap-3 md:grid-cols-2">
                 {[
-                  ["First Name", "Eleanor"],
-                  ["Middle Name", "Marianne"],
-                  ["Last Name", "Harbor"],
-                  ["Preferred Name", "Ellie"],
-                  ["Date of Birth", "06/14/1955"],
-                  ["Nationality", "American"],
-                  ["Email", "eleanor.harbor@gmail.com"],
-                  ["Phone", "(415) ***-**72"]
+                  ["Name", selected?.name ?? "n/a"],
+                  ["Relationship", selected?.relationship ?? "n/a"],
+                  ["Role", selected?.role ?? "n/a"],
+                  ["Governance", selected?.governance ?? "n/a"],
+                  ["Birth Year", selected?.year ?? "n/a"],
+                  ["Sensitivity", selected?.sensitivity ?? "n/a"],
+                  ["Status", selected?.status ?? "n/a"],
+                  ["Source", "FamilyMember DB row"]
                 ].map(([label, value]) => <FieldBox key={label} label={label} value={value} />)}
               </div>
-              <StatePanel detail="Eleanor is a Trustee and also named as a Beneficiary in Harbor Family Trust." state="blocked" title="Trustee / Beneficiary conflict detected" />
+              <StatePanel detail="Edit and save behaviour is intentionally held for DBTF-P05 form persistence; this DBTF-P02 view is a DB-backed read model." state="restricted" title="Read-only DB-backed detail" />
               <div className="flex justify-end gap-3">
                 <button className={secondaryButtonClass} type="button">Cancel</button>
-                <button className={primaryButtonClass} data-testid="j09-save-family-changes" onClick={() => { void runScreencastDemoAction("j09.saveFamilyChanges", "/relationships"); }} type="button">Save Changes</button>
+                <button className={primaryButtonClass} data-testid="j09-save-family-changes" disabled title="Held for DBTF-P05 form persistence" type="button">Save Changes</button>
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
-    </ClientShell>
+    </>
   );
 }
 
-const familyMemberColumns: Array<DataTableColumn<(typeof familyMembers)[number]>> = [
-  { key: "name", header: "Name", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}<span className="ml-2 text-xs text-alphavest-muted">{row.year}</span></span> },
-  { key: "role", header: "Family Role", render: (row) => <Badge tone="blue">{row.role}</Badge> },
-  { key: "relationship", header: "Relationship", render: (row) => row.relationship },
+const familyMemberColumns: Array<DataTableColumn<FamilyMemberTableRow>> = [
+  { key: "name", header: "Name", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}<span className="ml-2 text-xs text-alphavest-muted">{row.year}</span></span>, sortable: true },
+  { key: "role", header: "Family Role", render: (row) => <Badge tone="blue">{row.role}</Badge>, sortable: true },
+  { key: "relationship", header: "Relationship", render: (row) => row.relationship, sortable: true },
   { key: "governance", header: "Governance", render: (row) => row.governance },
-  { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge> }
+  { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge>, sortable: true }
 ];
 
 function RelationshipsPage({ title }: { title: string }) {
@@ -989,11 +1171,59 @@ const relationshipColumns: Array<DataTableColumn<(typeof relationshipRows)[numbe
 function EntitiesPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="024">
+      <EntitiesPageContent title={title} />
+    </ClientShell>
+  );
+}
+
+function EntitiesPageContent({ title }: { title: string }) {
+  const { loadState, rows } = useDbtfEntities();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [jurisdictionFilter, setJurisdictionFilter] = useState("all");
+  const [riskFilter, setRiskFilter] = useState("all");
+  const [sortKey, setSortKey] = useState<keyof EntityTableRow>("name");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+  const typeOptions = Array.from(new Set(rows.map((row) => row.type))).sort();
+  const jurisdictionOptions = Array.from(new Set(rows.map((row) => row.jurisdiction))).sort();
+  const riskOptions = Array.from(new Set(rows.map((row) => row.risk))).sort();
+  const filteredRows = sortByKey(
+    rows.filter((row) => {
+      const matchesSearch =
+        normalizedSearchTerm.length === 0 ||
+        [row.name, row.type, row.jurisdiction, row.ownership, row.missingDocs, row.risk, row.status].some((value) =>
+          value.toLowerCase().includes(normalizedSearchTerm),
+        );
+      const matchesType = typeFilter === "all" || row.type === typeFilter;
+      const matchesJurisdiction = jurisdictionFilter === "all" || row.jurisdiction === jurisdictionFilter;
+      const matchesRisk = riskFilter === "all" || row.risk === riskFilter;
+
+      return matchesSearch && matchesType && matchesJurisdiction && matchesRisk;
+    }),
+    sortKey,
+    sortDirection,
+  );
+
+  function toggleSort(key: string) {
+    const nextKey = key as keyof EntityTableRow;
+
+    if (sortKey === nextKey) {
+      setSortDirection((current) => (current === "asc" ? "desc" : "asc"));
+      return;
+    }
+
+    setSortKey(nextKey);
+    setSortDirection("asc");
+  }
+
+  return (
+    <>
       <ScreenTitle>{title}</ScreenTitle>
       <div className="space-y-5">
         <SectionTitle
           action={<button className={primaryButtonClass} data-testid="j05-create-entity" onClick={() => { void runScreencastDemoAction("j05.createEntity", "/entities/new"); }} type="button"><Plus aria-hidden="true" className="size-4" />Create Entity</button>}
-          count="24"
+          count={String(rows.length)}
           subtitle="View and manage entities across organizational and investment structures."
           title={title}
         />
@@ -1002,21 +1232,39 @@ function EntitiesPage({ title }: { title: string }) {
             <div className="grid gap-3 md:grid-cols-5">
               <div className="relative md:col-span-2">
                 <Search aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-                <input className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm outline-none focus:border-alphavest-gold" placeholder="Search entities..." />
+                <input
+                  className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm outline-none focus:border-alphavest-gold"
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  placeholder="Search DB-backed entities..."
+                  value={searchTerm}
+                />
               </div>
-              {["All Types", "All Jurisdictions", "All Ownership"].map((item) => <FilterSelect key={item} label={item} />)}
+              <DbtfSelect label="All Types" onChange={setTypeFilter} options={typeOptions} value={typeFilter} />
+              <DbtfSelect label="All Jurisdictions" onChange={setJurisdictionFilter} options={jurisdictionOptions} value={jurisdictionFilter} />
+              <DbtfSelect label="All Risk" onChange={setRiskFilter} options={riskOptions} value={riskFilter} />
             </div>
-            <button className={secondaryButtonClass} type="button"><Filter aria-hidden="true" className="size-4" />More Filters</button>
+            <div className="flex h-11 items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted">
+              <ShieldCheck aria-hidden="true" className="size-4" />
+              Tenant scoped
+            </div>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="grid gap-3 md:grid-cols-5">
-              <MetricCard detail="Total Entities" label="Entities" value="24" />
-              <MetricCard detail="High Risk" label="High Risk" status="FAILED" value="7" />
-              <MetricCard detail="Missing Documents" label="Missing Docs" status="PENDING" value="11" />
-              <MetricCard detail="Awaiting Review" label="Review" status="PROCESSING" value="3" />
-              <MetricCard detail="Complete" label="Completion" status="ACTIVE" value="87%" />
+              <MetricCard detail="Tenant DB rows" label="Entities" value={String(rows.length)} />
+              <MetricCard detail="DB-derived current filter" label="Visible" value={String(filteredRows.length)} />
+              <MetricCard detail="Seeded high-risk rows" label="High Risk" status="FAILED" value={String(rows.filter((row) => row.risk.toLowerCase().includes("high")).length)} />
+              <MetricCard detail="Rows needing evidence" label="Evidence" status="PENDING" value={String(rows.filter((row) => row.missingDocs !== "All good").length)} />
+              <MetricCard detail="No static entity arrays" label="Source" status="ACTIVE" value="DB" />
             </div>
-            <DataTable columns={entityColumns} getRowId={(row) => row.name} rows={entityRows} />
+            <DataTable
+              columns={entityColumns}
+              emptyMessage={loadState === "error" ? "Entities could not be loaded from the DB." : "No DB-backed entities match this search and filter set."}
+              getRowId={(row) => row.id}
+              onSortChange={toggleSort}
+              rows={filteredRows}
+              sortDirection={sortDirection}
+              sortKey={String(sortKey)}
+            />
           </CardContent>
         </Card>
         <div className="grid gap-4 lg:grid-cols-3">
@@ -1025,16 +1273,37 @@ function EntitiesPage({ title }: { title: string }) {
           <StatePanel detail="You do not have permission to view restricted entities." state="restricted" title="Access restricted" />
         </div>
       </div>
-    </ClientShell>
+    </>
   );
 }
 
-function FilterSelect({ label }: { label: string }) {
+function DbtfSelect({
+  label,
+  onChange,
+  options,
+  value,
+}: {
+  label: string;
+  onChange: (value: string) => void;
+  options: string[];
+  value: string;
+}) {
   return (
-    <button className="flex h-11 items-center justify-between gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-left text-sm text-alphavest-ivory" type="button">
-      <span className="truncate">{label}</span>
-      <ChevronDown aria-hidden="true" className="size-4 text-alphavest-subtle" />
-    </button>
+    <label className="grid gap-1 text-xs font-semibold text-alphavest-muted">
+      <span>{label}</span>
+      <select
+        className="h-11 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm font-normal text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+        onChange={(event) => onChange(event.target.value)}
+        value={value}
+      >
+        <option value="all">{label}</option>
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }
 
@@ -1073,13 +1342,13 @@ function DocumentFilterSelect({
   );
 }
 
-const entityColumns: Array<DataTableColumn<(typeof entityRows)[number]>> = [
-  { key: "name", header: "Entity", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}</span> },
-  { key: "type", header: "Type", render: (row) => <Badge>{row.type}</Badge> },
-  { key: "jurisdiction", header: "Jurisdiction", render: (row) => row.jurisdiction },
+const entityColumns: Array<DataTableColumn<EntityTableRow>> = [
+  { key: "name", header: "Entity", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}</span>, sortable: true },
+  { key: "type", header: "Type", render: (row) => <Badge>{row.type}</Badge>, sortable: true },
+  { key: "jurisdiction", header: "Jurisdiction", render: (row) => row.jurisdiction, sortable: true },
   { key: "ownership", header: "Ownership", render: (row) => row.ownership },
   { key: "docs", header: "Missing Documents", render: (row) => <Badge tone={toneFor(row.missingDocs)}>{row.missingDocs}</Badge> },
-  { key: "risk", header: "Risk", render: (row) => <Badge tone={toneFor(row.risk)}>{row.risk}</Badge> }
+  { key: "risk", header: "Risk", render: (row) => <Badge tone={toneFor(row.risk)}>{row.risk}</Badge>, sortable: true }
 ];
 
 function CreateEntityPage({ title }: { title: string }) {
@@ -1240,28 +1509,46 @@ function DocumentsPageContent({ title }: { title: string }) {
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sensitivityFilter, setSensitivityFilter] = useState("all");
+  const [sortKey, setSortKey] = useState<keyof DocumentTableRow>("updated");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const persistedRows = toDocumentRows(documents, session.tenant.displayName);
-  const rows: DocumentTableRow[] = [...persistedRows, ...documentRows];
+  const rows: DocumentTableRow[] = persistedRows;
   const typeOptions = Array.from(new Set(rows.map((row) => row.type))).sort();
   const statusOptions = Array.from(new Set(rows.map((row) => row.status))).sort();
   const sensitivityOptions = Array.from(new Set(rows.map((row) => row.sensitivity))).sort();
   const normalizedSearchTerm = searchTerm.trim().toLowerCase();
-  const filteredRows = rows.filter((row) => {
-    const matchesSearch =
-      normalizedSearchTerm.length === 0 ||
-      [row.entity, row.name, row.sensitivity, row.status, row.type, row.updated].some((value) =>
-        value.toLowerCase().includes(normalizedSearchTerm),
-      );
-    const matchesType = typeFilter === "all" || row.type === typeFilter;
-    const matchesStatus = statusFilter === "all" || row.status === statusFilter;
-    const matchesSensitivity = sensitivityFilter === "all" || row.sensitivity === sensitivityFilter;
+  const filteredRows = sortByKey(
+    rows.filter((row) => {
+      const matchesSearch =
+        normalizedSearchTerm.length === 0 ||
+        [row.entity, row.name, row.sensitivity, row.status, row.type, row.updated].some((value) =>
+          value.toLowerCase().includes(normalizedSearchTerm),
+        );
+      const matchesType = typeFilter === "all" || row.type === typeFilter;
+      const matchesStatus = statusFilter === "all" || row.status === statusFilter;
+      const matchesSensitivity = sensitivityFilter === "all" || row.sensitivity === sensitivityFilter;
 
-    return matchesSearch && matchesType && matchesStatus && matchesSensitivity;
-  });
+      return matchesSearch && matchesType && matchesStatus && matchesSensitivity;
+    }),
+    sortKey,
+    sortDirection,
+  );
   const scopedRowSummary =
     filteredRows.length === rows.length
       ? `${rows.length} scoped documents visible`
       : `${filteredRows.length} of ${rows.length} scoped documents visible`;
+
+  function toggleSort(key: string) {
+    const nextKey = key as keyof DocumentTableRow;
+
+    if (sortKey === nextKey) {
+      setSortDirection((current) => (current === "asc" ? "desc" : "asc"));
+      return;
+    }
+
+    setSortKey(nextKey);
+    setSortDirection("asc");
+  }
 
   return (
     <>
@@ -1270,17 +1557,6 @@ function DocumentsPageContent({ title }: { title: string }) {
         <SectionTitle action={<div className="flex gap-3"><button className={secondaryButtonClass} type="button"><Plus aria-hidden="true" className="size-4" />New Folder</button><button className={primaryButtonClass} data-testid="j04-open-upload-document" onClick={() => { void runScreencastDemoAction("j04.openUploadDocument", "/documents/upload"); }} type="button"><Upload aria-hidden="true" className="size-4" />Upload Document</button></div>} icon={Folder} subtitle="Securely manage and access client documents and evidence." title={title} />
         <ScfP04P06FlowPanel mode="evidence" />
         <ScfP10P14ClosurePanel mode="documents" />
-        {persistedRows.length > 0 ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Workspace Uploads</CardTitle>
-              <CardDescription>Recently uploaded documents for this workspace.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <DataTable columns={documentColumns} getRowId={(row) => row.name} rows={persistedRows} />
-            </CardContent>
-          </Card>
-        ) : null}
         <Card>
           <CardHeader className="space-y-4">
             <div className="grid gap-3 lg:grid-cols-[1fr_auto]">
@@ -1296,7 +1572,10 @@ function DocumentsPageContent({ title }: { title: string }) {
                   value={searchTerm}
                 />
               </div>
-              <button className={secondaryButtonClass} type="button">Saved Views</button>
+              <div className="flex h-11 items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted">
+                <ShieldCheck aria-hidden="true" className="size-4" />
+                DB-backed saved view
+              </div>
             </div>
             <div className="grid gap-3 md:grid-cols-5">
               <DocumentFilterSelect label="Types" onChange={setTypeFilter} options={typeOptions} testId="p10-document-type-filter" value={typeFilter} />
@@ -1320,11 +1599,14 @@ function DocumentsPageContent({ title }: { title: string }) {
               columns={documentColumns}
               emptyMessage={
                 loadState === "error"
-                  ? "Persisted uploads could not be loaded; static demo rows remain visible."
+                  ? "Documents could not be loaded from the DB."
                   : "No scoped documents match the current search and filters."
               }
-              getRowId={(row) => row.name}
+              getRowId={(row) => row.id}
+              onSortChange={toggleSort}
               rows={filteredRows}
+              sortDirection={sortDirection}
+              sortKey={String(sortKey)}
             />
           </CardContent>
         </Card>
@@ -1348,12 +1630,12 @@ function DocumentsPage({ title }: { title: string }) {
 }
 
 const documentColumns: Array<DataTableColumn<DocumentTableRow>> = [
-  { key: "name", header: "Document Name", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}</span> },
-  { key: "type", header: "Type", render: (row) => row.type },
-  { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge> },
-  { key: "sensitivity", header: "Sensitivity", render: (row) => <Badge tone={toneFor(row.sensitivity)}>{row.sensitivity}</Badge> },
+  { key: "name", header: "Document Name", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}</span>, sortable: true },
+  { key: "type", header: "Type", render: (row) => row.type, sortable: true },
+  { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge>, sortable: true },
+  { key: "sensitivity", header: "Sensitivity", render: (row) => <Badge tone={toneFor(row.sensitivity)}>{row.sensitivity}</Badge>, sortable: true },
   { key: "entity", header: "Linked Entity", render: (row) => row.entity },
-  { key: "updated", header: "Updated", render: (row) => row.updated }
+  { key: "updated", header: "Updated", render: (row) => row.updated, sortable: true }
 ];
 
 function DocumentUploadForm() {
@@ -1544,8 +1826,8 @@ function DocumentUploadForm() {
           ) : null}
           {latestDocument ? (
             <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4">
-              <p className="text-sm font-semibold text-alphavest-ivory">{latestDocument.fileName}</p>
-              <p className="mt-1 text-xs text-alphavest-muted">{formatBytes(latestDocument.fileSizeBytes)} · {labelFromEnum(latestDocument.status)}</p>
+              <p className="text-sm font-semibold text-alphavest-ivory">{latestDocument.fileName ?? latestDocument.title}</p>
+              <p className="mt-1 text-xs text-alphavest-muted">{latestDocument.fileSizeBytes ? formatBytes(latestDocument.fileSizeBytes) : "Size hidden"} · {labelFromEnum(latestDocument.status)}</p>
               <p className="mt-2 text-xs text-alphavest-muted">Extraction: {latestDocument.extractionStatus ?? "pending"}</p>
             </div>
           ) : (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowRight,
   Bell,
@@ -53,7 +53,6 @@ import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
 import { cn } from "@/lib/cn";
 import {
-  auditHistoryEvents,
   blueprintRows,
   blueprintStages,
   breachRows,
@@ -87,6 +86,20 @@ import type { VisualState } from "@/lib/visual-contract";
 type CommunicationExportOpsScreenProps = {
   route: ScreenRoute;
   visualState?: VisualState;
+};
+
+type AuditEventTableRow = {
+  action: string;
+  actor: string;
+  after: string;
+  before: string;
+  id: string;
+  lineage: string[];
+  object: string;
+  result: string;
+  role: string;
+  source: string;
+  timestamp: string;
 };
 
 type NavItem = {
@@ -141,6 +154,52 @@ function toneFor(value: string): BadgeTone {
   }
 
   return "muted";
+}
+
+function useDbtfAuditEvents() {
+  const { session } = useDemoSession();
+  const tenantSlug = session.tenant.slug;
+  const roleKey = session.role.key;
+  const [rows, setRows] = useState<AuditEventTableRow[]>([]);
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoadState("loading");
+
+      try {
+        const response = await fetch(
+          `/api/audit-events?tenantSlug=${encodeURIComponent(tenantSlug)}&roleKey=${encodeURIComponent(roleKey)}`,
+          { cache: "no-store" },
+        );
+        const body = (await response.json()) as { auditEvents?: AuditEventTableRow[] };
+
+        if (!response.ok) {
+          throw new Error("Audit event reload failed.");
+        }
+
+        if (!cancelled) {
+          setRows(body.auditEvents ?? []);
+          setLoadState("ready");
+        }
+      } catch {
+        if (!cancelled) {
+          setRows([]);
+          setLoadState("error");
+        }
+      }
+    }
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [roleKey, tenantSlug]);
+
+  return { loadState, rows };
 }
 
 function ScreenTitle({ children }: { children: React.ReactNode }) {
@@ -258,11 +317,14 @@ function Phase13TopBar() {
           <span className="sr-only">Search WealthOS</span>
           <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
           <input
-            className="h-10 w-full rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-10 text-sm text-alphavest-ivory outline-none transition placeholder:text-alphavest-subtle focus:border-alphavest-gold"
-            placeholder="Search operations..."
+            aria-disabled="true"
+            className="h-10 w-full cursor-not-allowed rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-10 text-sm text-alphavest-subtle outline-none transition placeholder:text-alphavest-subtle"
+            disabled
+            placeholder="Global search pending scoped indexing"
+            title="Global search is disabled until a scoped DB-backed search index exists."
             type="search"
           />
-          <span className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-alphavest-border px-1.5 py-0.5 text-xs text-alphavest-subtle md:block">cmd K</span>
+          <span className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-alphavest-border px-1.5 py-0.5 text-xs text-alphavest-subtle md:block">static</span>
         </label>
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
           <label className="relative">
@@ -370,8 +432,23 @@ function KeyValueList({ items }: { items: Array<{ label: string; value: React.Re
 
 function AuditHistoryPage({ title, visualState }: { title: string; visualState?: VisualState }) {
   const [drawerOpen, setDrawerOpen] = useState(visualState === "drawer");
-  const selected = auditHistoryEvents[0];
-  const columns: Array<DataTableColumn<(typeof auditHistoryEvents)[number]>> = [
+  const { loadState, rows } = useDbtfAuditEvents();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [resultFilter, setResultFilter] = useState("all");
+  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+  const resultOptions = Array.from(new Set(rows.map((row) => row.result))).sort();
+  const filteredRows = rows.filter((row) => {
+    const matchesSearch =
+      normalizedSearchTerm.length === 0 ||
+      [row.timestamp, row.actor, row.role, row.object, row.action, row.source, row.result].some((value) =>
+        value.toLowerCase().includes(normalizedSearchTerm),
+      );
+    const matchesResult = resultFilter === "all" || row.result === resultFilter;
+
+    return matchesSearch && matchesResult;
+  });
+  const selected = filteredRows[0] ?? rows[0];
+  const columns: Array<DataTableColumn<AuditEventTableRow>> = [
     { key: "timestamp", header: "Timestamp", render: (row) => row.timestamp },
     {
       key: "actor",
@@ -394,16 +471,39 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
       <PageLead description="Access-event review with filters, export controls and event lineage." icon={LockKeyhole} title={title} />
       <StatePanel detail="Audit immutability depends on the retention and persistence gates; this view does not prove those gates by itself." state="restricted" title="Audit persistence gate" />
       <div className="mt-5 grid gap-4 md:grid-cols-4">
-        <FieldPill label="Date range" value="May 14 - May 21, 2025" />
-        <FieldPill label="Actor" value="All actors" />
-        <FieldPill label="Event type" value="All event types" />
-        <FieldPill label="Status" value="All statuses" />
+        <label className="grid gap-1 text-xs font-semibold text-alphavest-muted md:col-span-2">
+          <span>Search DB audit events</span>
+          <input
+            className="h-11 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm font-normal text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+            onChange={(event) => setSearchTerm(event.target.value)}
+            placeholder="Search actor, object or action"
+            value={searchTerm}
+          />
+        </label>
+        <label className="grid gap-1 text-xs font-semibold text-alphavest-muted">
+          <span>Result</span>
+          <select
+            className="h-11 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm font-normal text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+            onChange={(event) => setResultFilter(event.target.value)}
+            value={resultFilter}
+          >
+            <option value="all">All results</option>
+            {resultOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </label>
+        <FieldPill label="Scope" value="Tenant DB audit rows" />
       </div>
       <Card className="mt-5">
         <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <CardTitle>Access Events</CardTitle>
-            <p className="mt-1 text-sm text-alphavest-muted">Showing 1-25 of 1,248 demo audit-event rows.</p>
+            <p className="mt-1 text-sm text-alphavest-muted">
+              Showing {filteredRows.length} of {rows.length} tenant-scoped DB audit-event rows.
+            </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <button className={secondaryButtonClass} type="button">
@@ -417,7 +517,12 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
           </div>
         </CardHeader>
         <CardContent>
-          <DataTable columns={columns} getRowId={(row) => row.id} rows={auditHistoryEvents} />
+          <DataTable
+            columns={columns}
+            emptyMessage={loadState === "error" ? "Audit events could not be loaded from the DB." : "No DB audit events match this filter."}
+            getRowId={(row) => row.id}
+            rows={filteredRows}
+          />
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             <StatePanel detail="No matching access changes for the saved filter." state="empty" title="Empty filter state" />
             <StatePanel detail="Audit event rows are loading; sealed retention proof remains a separate gate." state="loading" title="Loading state" />
@@ -425,10 +530,10 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
           </div>
         </CardContent>
       </Card>
-      <Drawer description="Selected event lineage and before/after access state." onClose={() => setDrawerOpen(false)} open={drawerOpen} title="Event Details">
+      <Drawer description="Selected event lineage and before/after access state." onClose={() => setDrawerOpen(false)} open={drawerOpen && Boolean(selected)} title="Event Details">
         <div className="space-y-5">
           <div className="flex items-center justify-between gap-3">
-            <Badge tone={toneFor(selected.result)}>{selected.result}</Badge>
+            <Badge tone={toneFor(selected?.result ?? "pending")}>{selected?.result ?? "No event"}</Badge>
             <button
               className={secondaryButtonClass}
               data-testid="j07-export-audit"
@@ -443,17 +548,17 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
           </div>
           <KeyValueList
             items={[
-              { label: "Event", value: selected.id },
-              { label: "Action", value: selected.action },
-              { label: "Object", value: selected.object },
-              { label: "Source", value: selected.source },
-              { label: "Actor", value: selected.actor }
+              { label: "Event", value: selected?.id ?? "n/a" },
+              { label: "Action", value: selected?.action ?? "n/a" },
+              { label: "Object", value: selected?.object ?? "n/a" },
+              { label: "Source", value: selected?.source ?? "n/a" },
+              { label: "Actor", value: selected?.actor ?? "n/a" }
             ]}
           />
           <div>
             <h3 className="text-sm font-semibold text-alphavest-ivory">Lineage</h3>
             <ol className="mt-3 space-y-3">
-              {selected.lineage.map((item) => (
+              {(selected?.lineage ?? []).map((item) => (
                 <li className="flex items-center gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/55 p-3 text-sm text-alphavest-muted" key={item}>
                   <CheckCircle2 aria-hidden="true" className="size-4 text-alphavest-green" />
                   {item}
@@ -464,12 +569,12 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
           <div className="grid gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
             <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/60 p-4">
               <p className="text-xs uppercase tracking-[0.12em] text-alphavest-subtle">Before</p>
-              <p className="mt-2 font-semibold text-alphavest-ivory">{selected.before}</p>
+              <p className="mt-2 font-semibold text-alphavest-ivory">{selected?.before ?? "n/a"}</p>
             </div>
             <ArrowRight aria-hidden="true" className="mx-auto size-5 text-alphavest-gold" />
             <div className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-4">
               <p className="text-xs uppercase tracking-[0.12em] text-alphavest-green">After</p>
-              <p className="mt-2 font-semibold text-alphavest-ivory">{selected.after}</p>
+              <p className="mt-2 font-semibold text-alphavest-ivory">{selected?.after ?? "n/a"}</p>
             </div>
           </div>
         </div>

@@ -8,6 +8,7 @@ export type DataTableColumn<T> = {
   render: (row: T) => React.ReactNode;
   className?: string;
   mobileHidden?: boolean;
+  sortable?: boolean;
 };
 
 type DataTableProps<T> = {
@@ -18,6 +19,9 @@ type DataTableProps<T> = {
   mobileCardTitle?: (row: T) => React.ReactNode;
   responsiveMode?: "cards" | "table";
   rows: T[];
+  onSortChange?: (key: string) => void;
+  sortDirection?: "asc" | "desc";
+  sortKey?: string;
   state?: ComponentState | "ready";
 };
 
@@ -36,8 +40,11 @@ export function DataTable<T>({
   emptyMessage,
   getRowId,
   mobileCardTitle,
+  onSortChange,
   responsiveMode = "cards",
   rows,
+  sortDirection,
+  sortKey,
   state = "ready"
 }: DataTableProps<T>) {
   if (state !== "ready") {
@@ -63,7 +70,21 @@ export function DataTable<T>({
                 )}
                 key={column.key}
               >
-                {column.header}
+                {column.sortable && onSortChange ? (
+                  <button
+                    aria-label={`Sort by ${column.header}${sortKey === column.key ? `, currently ${sortDirection}` : ""}`}
+                    className="inline-flex max-w-full items-center gap-1 text-left uppercase"
+                    onClick={() => onSortChange(column.key)}
+                    type="button"
+                  >
+                    <span className="truncate">{column.header}</span>
+                    <span aria-hidden="true" className="text-[0.68rem] text-alphavest-subtle">
+                      {sortKey === column.key ? (sortDirection === "desc" ? "desc" : "asc") : ""}
+                    </span>
+                  </button>
+                ) : (
+                  column.header
+                )}
               </th>
             ))}
             <th className="min-h-12 w-14 border-b border-alphavest-border/70 px-5">

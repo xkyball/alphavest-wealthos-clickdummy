@@ -1,5 +1,64 @@
 # Phase Execution Report
 
+## DBTF-P00-P03 - DB-Backed Tables And Honest Read Models
+
+Date: 2026-06-21
+
+### Phase Completion Report
+
+- Phase: `DBTF-P00`, `DBTF-P01`, `DBTF-P02` and `DBTF-P03` executed together as a focused real implementation pass.
+- Source of truth: `ALPHAVEST_DB_BACKED_TABLES_FORMS_CODEX_PROMPT_PACK.md` plus `ALPHAVEST_DB_BACKED_TABLES_FORMS_REALITY_REBASE_PLAN.md`.
+- Scope completed: DB-backed read models for Documents, Family Members, Entities and Audit History; tenant/role scoped API routes; real search/filter/sort over returned DB rows; global search and held form persistence marked static instead of simulated.
+- Files changed in this reporting pass:
+  - `ALPHAVEST_DB_BACKED_TABLES_FORMS_REALITY_REBASE_PLAN.md`
+  - `app/api/audit-events/route.ts`
+  - `app/api/documents/route.ts`
+  - `app/api/entities/route.ts`
+  - `app/api/family-members/route.ts`
+  - `components/client-intake-screen.tsx`
+  - `components/communication-export-ops-screen.tsx`
+  - `components/ui/data-table.tsx`
+  - `components/wealth-actions-screen.tsx`
+  - `lib/dbtf-table-service.ts`
+  - `lib/document-upload-service.ts`
+  - `package.json`
+  - `tests/dbtf-tables-api.spec.ts`
+
+### Implemented Behaviour
+
+- `Documents` now loads DB-backed rows through `/api/documents?source=all` with tenant/role context, query filtering, type/status/sensitivity filters and sortable table headers.
+- `Family Members` now loads tenant-scoped `FamilyMember` rows through `/api/family-members`; the detail panel is explicitly read-only and save is held for `DBTF-P05`.
+- `Entities` now loads tenant-scoped `Entity` rows through `/api/entities`; table filters and metrics are derived from DB rows rather than static arrays.
+- `Audit History` now loads tenant-scoped `AuditEvent` rows through `/api/audit-events` and shows DB lineage details in the drawer.
+- Shared table headers only advertise sorting when backed by a real sort handler; global top-bar search on affected shells is static until a scoped index exists.
+
+### Validation Commands Run
+
+- `pnpm db:validate` - passed.
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `pnpm test:dbtf` - passed, 5 tests.
+
+### Screenshot Proof
+
+| Artifact | Status | Notes |
+| --- | --- | --- |
+| `artifacts/dbtf-p00-p03-screenshots/documents-db-backed.png` | captured | Documents list loaded from DB/API with DB-backed saved-view copy. |
+| `artifacts/dbtf-p00-p03-screenshots/family-members-db-backed.png` | captured | Family members list loaded from tenant-scoped DB rows, no workspace-provider error. |
+| `artifacts/dbtf-p00-p03-screenshots/entities-db-backed.png` | captured | Entity table and metrics derived from tenant-scoped DB rows. |
+| `artifacts/dbtf-p00-p03-screenshots/audit-history-db-backed.png` | captured | Audit history table/drawer loaded from DB audit events. |
+
+### Exit Gate Decision
+
+`DBTF_P00_P03_IMPLEMENTED_WITH_DB_BACKED_TABLES_AND_SCREENSHOT_PROOF`
+
+### Residual Risks / TODOs
+
+- This phase intentionally does not implement DB-backed form mutation/persistence for `DBTF-P05`; read-side surfaces now expose that boundary where relevant.
+- Some existing journey buttons such as create/add flows remain route/action entry points for later DBTF phases; they are not claimed as completed form persistence.
+- Global search is deliberately static until scoped indexing is implemented.
+- Screenshot proof is representative desktop proof for the four affected surfaces, not a full viewport matrix.
+
 ## MVP-FIRST-BUILD-PHASES-5-12 - Compliance, Client Projection, Audit, Export, P0 And Max-Unlocked Support
 
 Date: 2026-06-21

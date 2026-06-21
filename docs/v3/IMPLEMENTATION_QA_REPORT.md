@@ -1,5 +1,50 @@
 # Implementation QA Report
 
+## DBTF-P00-P03 Implementation QA Addendum
+
+Date: 2026-06-21
+
+### Executive Decision
+
+`DBTF_P00_P03_QA_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Source of truth lock | Passed | Used the DBTF prompt pack and Reality Rebase Plan as operative scope for P00-P03. |
+| Seeded DB inventory | Passed | Focused tests reseed the demo database and assert documents, family members, entities and audit events through API routes. |
+| Static-data replacement | Passed | Targeted table surfaces now fetch tenant/role scoped DB rows instead of importing static demo arrays for the primary row models. |
+| Tenant isolation | Passed | API tests prove invalid scope fails closed and entity rows do not leak cross-tenant records. |
+| Table controls | Passed | Search/filter/sort operate against API-backed rows; sortable affordance is only shown for real sort handlers. |
+| Honest UI boundaries | Passed | Global search is static pending scoped indexing; family-member save is disabled pending DBTF-P05 form persistence. |
+| Screenshot proof | Passed | Four representative screenshots captured under `artifacts/dbtf-p00-p03-screenshots/`. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm db:validate` | Passed | Prisma schema remained valid; no schema or migration was required for P00-P03. |
+| `pnpm typecheck` | Passed | TypeScript completed cleanly. |
+| `pnpm lint` | Passed | ESLint completed cleanly. |
+| `pnpm test:dbtf` | Passed | 5 focused API tests for documents, family members, entities, audit events and invalid scope fail-closed behavior. |
+| Screenshot capture | Passed | Documents, Family Members, Entities and Audit History screenshots were captured from the local app. |
+
+### Screenshot Proof
+
+| Artifact | Status | Notes |
+| --- | --- | --- |
+| `artifacts/dbtf-p00-p03-screenshots/documents-db-backed.png` | Captured | DB-backed document rows and table controls. |
+| `artifacts/dbtf-p00-p03-screenshots/family-members-db-backed.png` | Captured | Tenant-scoped family-member DB rows. |
+| `artifacts/dbtf-p00-p03-screenshots/entities-db-backed.png` | Captured | Tenant-scoped entity rows and metrics. |
+| `artifacts/dbtf-p00-p03-screenshots/audit-history-db-backed.png` | Captured | DB-backed audit-event rows and detail payload. |
+
+### Residual Risks
+
+- P00-P03 prove DB-backed read models and focused API isolation; they do not claim DB-backed create/edit form persistence, bulk actions or production audit immutability.
+- The API routes use the existing demo-session tenant/role contract and seeded demo data; this is not production authentication.
+- Broader screen and journey suites were not rerun in this pass beyond the focused DBTF API suite plus typecheck/lint/schema validation.
+
 ## MVP-FIRST-BUILD-PHASES-5-12 Implementation QA Addendum
 
 Date: 2026-06-21

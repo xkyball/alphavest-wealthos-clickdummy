@@ -60,6 +60,15 @@ export type ProjectedUploadedDocumentListItem = {
   visibilityState: string;
 };
 
+type UploadedDocumentListOptions = {
+  q?: string;
+  sensitivity?: string;
+  sort?: string;
+  source?: "all" | "uploads";
+  status?: string;
+  type?: string;
+};
+
 export type UploadDocumentInput = {
   auditPersistenceAvailable?: boolean;
   documentType: string;
@@ -482,8 +491,10 @@ export async function listUploadedDocuments(
   prisma: PrismaClient,
   tenantSlug: DemoTenantSlug = "morgan",
   roleKey: DemoRoleKey = "analyst",
+  options: UploadedDocumentListOptions = {},
 ) {
   const session = requireDemoSession({ roleKey, tenantSlug });
+  const query = options.q?.trim();
   const documents = await prisma.document.findMany({
     include: {
       extractions: {
@@ -496,7 +507,19 @@ export async function listUploadedDocuments(
     take: 12,
     where: {
       clientTenantId: session.tenant.id,
-      source: "multipart_upload",
+      ...(options.source === "all" ? {} : { source: "multipart_upload" }),
+      ...(query
+        ? {
+            OR: [
+              { documentType: { contains: query, mode: "insensitive" } },
+              { fileName: { contains: query, mode: "insensitive" } },
+              { title: { contains: query, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+      ...(options.sensitivity && options.sensitivity !== "all" ? { sensitivity: options.sensitivity as Sensitivity } : {}),
+      ...(options.status && options.status !== "all" ? { status: options.status as DocumentStatus } : {}),
+      ...(options.type && options.type !== "all" ? { documentType: options.type } : {}),
     },
   });
   const evidenceRecords = await prisma.evidenceRecord.findMany({
@@ -512,7 +535,7 @@ export async function listUploadedDocuments(
     evidenceRecords.map((record) => [record.relatedObjectId, record]),
   );
 
-  return documents.map((document) => {
+  const projectedDocuments = documents.map((document) => {
     const mappedDocument = mapDocument({
       ...document,
       evidenceRecords: evidenceRecordByDocumentId.has(document.id)
@@ -524,6 +547,23 @@ export async function listUploadedDocuments(
 
     return projectDocumentForRole(mappedDocument, roleKey, tenantSlug);
   });
+
+  if (options.sort === "name") {
+    return [...projectedDocuments].sort((left, right) =>
+      String(left.fileName ?? left.title ?? "").localeCompare(String(right.fileName ?? right.title ?? ""), "en", {
+        numeric: true,
+        sensitivity: "base",
+      }),
+    );
+  }
+
+  if (options.sort === "status") {
+    return [...projectedDocuments].sort((left, right) =>
+      String(left.status ?? "").localeCompare(String(right.status ?? ""), "en", { sensitivity: "base" }),
+    );
+  }
+
+  return projectedDocuments;
 }
 
 export const documentUploadLimits = {

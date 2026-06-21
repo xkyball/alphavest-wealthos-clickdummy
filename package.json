@@ -38,6 +38,7 @@
     "screencast:seed-journey": "tsx scripts/screencast/seed-journey.ts",
     "screencast:mp4": "tsx scripts/screencast/render-mp4.ts",
     "test:data-quality": "playwright test tests/data-quality-service.spec.ts",
+    "test:dbtf": "playwright test tests/dbtf-tables-api.spec.ts",
     "test:document-upload-api": "playwright test tests/document-upload-api.spec.ts",
     "test:document-upload-flow": "playwright test tests/document-upload-flow.spec.ts",
     "test:file-export": "playwright test tests/file-export-realism.spec.ts",

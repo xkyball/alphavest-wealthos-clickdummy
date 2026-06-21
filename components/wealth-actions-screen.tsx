@@ -189,11 +189,14 @@ function WealthTopBar() {
           <span className="sr-only">Search</span>
           <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
           <input
-            className="h-10 w-full rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-10 text-sm text-alphavest-ivory outline-none transition placeholder:text-alphavest-subtle focus:border-alphavest-gold"
-            placeholder="Search wealth map..."
+            aria-disabled="true"
+            className="h-10 w-full cursor-not-allowed rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-10 text-sm text-alphavest-subtle outline-none transition placeholder:text-alphavest-subtle"
+            disabled
+            placeholder="Global search pending scoped indexing"
+            title="Global search is disabled until a scoped DB-backed search index exists."
             type="search"
           />
-          <span className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-alphavest-border px-1.5 py-0.5 text-xs text-alphavest-subtle md:block">⌘ K</span>
+          <span className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-alphavest-border px-1.5 py-0.5 text-xs text-alphavest-subtle md:block">static</span>
         </label>
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
           <label className="relative">

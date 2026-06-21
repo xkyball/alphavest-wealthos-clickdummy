@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
-import { listUploadedDocuments } from "@/lib/document-upload-service";
-import { prismaClient } from "@/lib/prisma";
+import { listDbtfEntities } from "@/lib/dbtf-table-service";
 import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { prismaClient } from "@/lib/prisma";
 
 function tenantSlugFromUrl(request: Request): DemoTenantSlug | undefined {
   const value = new URL(request.url).searchParams.get("tenantSlug");
@@ -20,53 +20,35 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const tenantSlug = tenantSlugFromUrl(request);
   const roleKey = roleKeyFromUrl(request);
-  const issues = [
-    ...(!tenantSlug ? ["valid_tenant_slug_required"] : []),
-    ...(!roleKey ? ["valid_role_key_required"] : []),
-  ];
 
   if (!tenantSlug || !roleKey) {
     return NextResponse.json(
       {
-        documents: [],
-        error: "Documents are not available for this scope.",
-        issues,
-        mutated: false,
-        noAdviceExecution: true,
-        noClientRelease: true,
+        entities: [],
+        error: "Entities are not available for this scope.",
         ok: false,
-        safety: {
-          hiddenRowsDisclosed: false,
-          releaseUnlocked: false,
-          scoped: false,
-        },
+        safety: { hiddenRowsDisclosed: false, scoped: false },
       },
       { status: 400 },
     );
   }
 
   try {
-    const documents = await listUploadedDocuments(prismaClient(), tenantSlug, roleKey, {
+    const entities = await listDbtfEntities(prismaClient(), tenantSlug, roleKey, {
+      jurisdiction: url.searchParams.get("jurisdiction") ?? undefined,
       q: url.searchParams.get("q") ?? undefined,
-      sensitivity: url.searchParams.get("sensitivity") ?? undefined,
+      risk: url.searchParams.get("risk") ?? undefined,
       sort: url.searchParams.get("sort") ?? undefined,
-      source: url.searchParams.get("source") === "all" ? "all" : "uploads",
-      status: url.searchParams.get("status") ?? undefined,
       type: url.searchParams.get("type") ?? undefined,
     });
 
     return NextResponse.json({
-      documents,
-      mutated: false,
-      noAdviceExecution: true,
-      noClientRelease: true,
+      entities,
       ok: true,
       safety: {
         hiddenRowsDisclosed: false,
-        releaseUnlocked: false,
-        returnedRows: documents.length,
+        returnedRows: entities.length,
         roleKey,
-        scope: "tenant-role-document-list",
         scoped: true,
         tenantSlug,
       },
@@ -74,17 +56,10 @@ export async function GET(request: Request) {
   } catch {
     return NextResponse.json(
       {
-        documents: [],
-        error: "Documents are not available for this scope.",
-        mutated: false,
-        noAdviceExecution: true,
-        noClientRelease: true,
+        entities: [],
+        error: "Entities are not available for this scope.",
         ok: false,
-        safety: {
-          hiddenRowsDisclosed: false,
-          releaseUnlocked: false,
-          scoped: false,
-        },
+        safety: { hiddenRowsDisclosed: false, scoped: false },
       },
       { status: 500 },
     );
