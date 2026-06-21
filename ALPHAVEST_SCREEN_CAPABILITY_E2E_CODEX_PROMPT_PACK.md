@@ -2123,3 +2123,35 @@ After all authorized phase prompts P00–P14 have been executed and reported, co
 ```text
 SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK_ACCEPTED_FOR_PHASED_CODEX_EXECUTION
 ```
+
+---
+
+## 37. P10-P14 Implementation Closure Addendum
+
+**Generated:** 2026-06-21
+
+**Source lock:** `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`
+
+**Status:** `P10_P14_IMPLEMENTED_WITH_QA_GATED_P14_DERIVATION`
+
+### Implemented Scope
+
+- `SCF-P10-T001`, `SCF-P10-T002`, `SCF-P10-T003`: document search/filter/table behavior, form/upload lifecycle coverage and modal/drawer lifecycle proof surfaces.
+- `SCF-P11-T001`, `SCF-P11-T002`: existing API hardening and Prisma/schema alignment proof without blind new routes or migrations.
+- `SCF-P12-T001`, `SCF-P12-T002`: P0 positive/negative closure represented in executable tests.
+- `SCF-P13-T001`, `SCF-P13-T002`: proof package and QA report addenda created.
+- `SCF-P14-T001`, `SCF-P14-T002`: derivative prompt-pack and rebased-handoff artifacts created as QA-gated summaries only.
+
+### Explicit Non-scope
+
+- `P15` is not present in the detail plan and is not authorized.
+- P1-after-MVP, Hold and Reference-only routes remain blocked.
+- This addendum does not authorize new implementation beyond the detail plan.
+
+### Proof Anchor
+
+Primary proof package: `docs/proof/SCF_P10_P14_PROOF_PACKAGE.md`
+
+Focused proof command:
+
+`pnpm exec playwright test tests/scf-p10-p14-closure.spec.ts tests/p0-acceptance.spec.ts tests/p0-api-contract.spec.ts tests/document-upload-api.spec.ts tests/interaction-lifecycle.spec.ts tests/confirmation-lifecycle.spec.ts --workers=1`

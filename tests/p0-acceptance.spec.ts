@@ -31,6 +31,7 @@ import {
   scfProofCommandBaseline,
   scfSubtasksForPhases,
 } from "../lib/scf-foundation";
+import { scfP10P14ProofPackage } from "../lib/scf-p10-p14-proof";
 import { visibilityEngine } from "../lib/visibility-engine";
 import { canBecomeClientVisible } from "../lib/workflow-gate";
 
@@ -633,11 +634,23 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
       "SCF-P08-T002",
       "SCF-P09-T001",
       "SCF-P09-T002",
+      "SCF-P10-T001",
+      "SCF-P10-T002",
+      "SCF-P10-T003",
+      "SCF-P11-T001",
+      "SCF-P11-T002",
+      "SCF-P12-T001",
+      "SCF-P12-T002",
+      "SCF-P13-T001",
+      "SCF-P13-T002",
+      "SCF-P14-T001",
+      "SCF-P14-T002",
     ]);
     expect(scfProofCommandBaseline).toContain("pnpm test:permissions");
     expect(scfProofCommandBaseline.join(" ")).toContain("tests/demo-workflow-api.spec.ts");
     expect(scfProofCommandBaseline.join(" ")).toContain("tests/client-visibility-proof.spec.ts");
     expect(scfProofCommandBaseline.join(" ")).toContain("tests/file-export-realism.spec.ts");
+    expect(scfProofCommandBaseline.join(" ")).toContain("tests/scf-p10-p14-closure.spec.ts");
   });
 
   test("SCF release phase plan authorizes task and phase execution", () => {
@@ -727,6 +740,46 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
     expect(masterTasks.find((task) => task.id === "SCF-P06-T002")?.testObligation).toContain(
       "phase6-audit-persistence.spec.ts",
     );
+  });
+
+  test("SCF-P10/P11/P12/P13/P14 master tasks and subtasks are represented as executable closure records", () => {
+    const phases = ["P10", "P11", "P12", "P13", "P14"] as const;
+    const masterTasks = scfMasterTasksForPhases([...phases]);
+    const subtasks = scfSubtasksForPhases([...phases]);
+
+    expect(masterTasks.map((task) => task.id)).toEqual([
+      "SCF-P10-T001",
+      "SCF-P10-T002",
+      "SCF-P10-T003",
+      "SCF-P11-T001",
+      "SCF-P11-T002",
+      "SCF-P12-T001",
+      "SCF-P12-T002",
+      "SCF-P13-T001",
+      "SCF-P13-T002",
+      "SCF-P14-T001",
+      "SCF-P14-T002",
+    ]);
+    expect(masterTasks).toHaveLength(11);
+    expect(subtasks).toHaveLength(47);
+    expect(scfP10P14ProofPackage.masterTaskCount).toBe(11);
+    expect(scfP10P14ProofPackage.subtaskCount).toBe(47);
+    expect(scfP10P14ProofPackage.unsupportedRequestedPhases).toEqual(["P15"]);
+    expect(scfP10P14ProofPackage.p14TaskStatuses).toEqual([
+      { id: "SCF-P14-T001", status: "blocked_until_QA" },
+      { id: "SCF-P14-T002", status: "blocked_until_QA" },
+    ]);
+
+    for (const task of masterTasks) {
+      const taskSubtasks = subtasks.filter((subtask) => subtask.parentTaskId === task.id);
+
+      expect(scfFoundationTaskIds()).toContain(task.id);
+      expect(taskSubtasks).toHaveLength(task.subtaskCount);
+      expect(task.targetAreas.length).toBeGreaterThan(0);
+      expect(task.positiveAcceptance).toBeTruthy();
+      expect(task.negativeAcceptance).toBeTruthy();
+      expect(task.proofRequired).toBeTruthy();
+    }
   });
 
   test("AV-FB-P8-BP11-T001..T014 map final P0 proof, commands and report obligations", () => {

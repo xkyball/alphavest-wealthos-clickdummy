@@ -37,7 +37,18 @@ export async function GET(request: Request) {
   const prisma = prismaClient();
   if (!prisma) {
     return NextResponse.json(
-      { error: "DATABASE_URL is required for review monitoring snapshots." },
+      {
+        error: "DATABASE_URL is required for review monitoring snapshots.",
+        issues: ["database_url_required"],
+        mutated: false,
+        noAdviceExecution: true,
+        noClientRelease: true,
+        ok: false,
+        safety: {
+          releaseUnlocked: false,
+          snapshotGenerated: false,
+        },
+      },
       { status: 503 },
     );
   }

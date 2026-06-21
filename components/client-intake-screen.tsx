@@ -41,6 +41,7 @@ import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-p
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
 import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
 import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
+import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
 import {
   Badge,
   Card,
@@ -1037,6 +1038,41 @@ function FilterSelect({ label }: { label: string }) {
   );
 }
 
+function DocumentFilterSelect({
+  label,
+  onChange,
+  options,
+  testId,
+  value,
+}: {
+  label: string;
+  onChange: (value: string) => void;
+  options: string[];
+  testId: string;
+  value: string;
+}) {
+  return (
+    <label className="grid gap-1 text-xs font-semibold text-alphavest-muted">
+      <span>{label}</span>
+      <select
+        className="h-11 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm font-normal text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+        data-testid={testId}
+        onChange={(event) => {
+          onChange(event.target.value);
+        }}
+        value={value}
+      >
+        <option value="all">All {label}</option>
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
 const entityColumns: Array<DataTableColumn<(typeof entityRows)[number]>> = [
   { key: "name", header: "Entity", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}</span> },
   { key: "type", header: "Type", render: (row) => <Badge>{row.type}</Badge> },
@@ -1200,8 +1236,32 @@ function EntityDetailPage({ title }: { title: string }) {
 function DocumentsPageContent({ title }: { title: string }) {
   const { session } = useDemoSession();
   const { documents, loadState } = usePersistedUploadDocuments();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sensitivityFilter, setSensitivityFilter] = useState("all");
   const persistedRows = toDocumentRows(documents, session.tenant.displayName);
   const rows: DocumentTableRow[] = [...persistedRows, ...documentRows];
+  const typeOptions = Array.from(new Set(rows.map((row) => row.type))).sort();
+  const statusOptions = Array.from(new Set(rows.map((row) => row.status))).sort();
+  const sensitivityOptions = Array.from(new Set(rows.map((row) => row.sensitivity))).sort();
+  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+  const filteredRows = rows.filter((row) => {
+    const matchesSearch =
+      normalizedSearchTerm.length === 0 ||
+      [row.entity, row.name, row.sensitivity, row.status, row.type, row.updated].some((value) =>
+        value.toLowerCase().includes(normalizedSearchTerm),
+      );
+    const matchesType = typeFilter === "all" || row.type === typeFilter;
+    const matchesStatus = statusFilter === "all" || row.status === statusFilter;
+    const matchesSensitivity = sensitivityFilter === "all" || row.sensitivity === sensitivityFilter;
+
+    return matchesSearch && matchesType && matchesStatus && matchesSensitivity;
+  });
+  const scopedRowSummary =
+    filteredRows.length === rows.length
+      ? `${rows.length} scoped documents visible`
+      : `${filteredRows.length} of ${rows.length} scoped documents visible`;
 
   return (
     <>
@@ -1209,6 +1269,7 @@ function DocumentsPageContent({ title }: { title: string }) {
       <div className="space-y-5">
         <SectionTitle action={<div className="flex gap-3"><button className={secondaryButtonClass} type="button"><Plus aria-hidden="true" className="size-4" />New Folder</button><button className={primaryButtonClass} data-testid="j04-open-upload-document" onClick={() => { void runScreencastDemoAction("j04.openUploadDocument", "/documents/upload"); }} type="button"><Upload aria-hidden="true" className="size-4" />Upload Document</button></div>} icon={Folder} subtitle="Securely manage and access client documents and evidence." title={title} />
         <ScfP04P06FlowPanel mode="evidence" />
+        <ScfP10P14ClosurePanel mode="documents" />
         {persistedRows.length > 0 ? (
           <Card>
             <CardHeader>
@@ -1225,20 +1286,45 @@ function DocumentsPageContent({ title }: { title: string }) {
             <div className="grid gap-3 lg:grid-cols-[1fr_auto]">
               <div className="relative">
                 <Search aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-                <input className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm outline-none focus:border-alphavest-gold" placeholder="Search documents by name or keyword..." />
+                <input
+                  className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm outline-none focus:border-alphavest-gold"
+                  data-testid="p10-document-search"
+                  onChange={(event) => {
+                    setSearchTerm(event.target.value);
+                  }}
+                  placeholder="Search documents by name or keyword..."
+                  value={searchTerm}
+                />
               </div>
               <button className={secondaryButtonClass} type="button">Saved Views</button>
             </div>
             <div className="grid gap-3 md:grid-cols-5">
-              {["All Types", "All Statuses", "All Sensitivities", "All Entities", "Accessible to Me"].map((item) => <FilterSelect key={item} label={item} />)}
+              <DocumentFilterSelect label="Types" onChange={setTypeFilter} options={typeOptions} testId="p10-document-type-filter" value={typeFilter} />
+              <DocumentFilterSelect label="Statuses" onChange={setStatusFilter} options={statusOptions} testId="p10-document-status-filter" value={statusFilter} />
+              <DocumentFilterSelect label="Sensitivities" onChange={setSensitivityFilter} options={sensitivityOptions} testId="p10-document-sensitivity-filter" value={sensitivityFilter} />
+              <button aria-disabled="true" className="flex h-11 items-center justify-between gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-left text-sm text-alphavest-muted" type="button">
+                <span className="truncate">Scoped Entities</span>
+                <ShieldCheck aria-hidden="true" className="size-4 text-alphavest-subtle" />
+              </button>
+              <button aria-disabled="true" className="flex h-11 items-center justify-between gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-left text-sm text-alphavest-muted" type="button">
+                <span className="truncate">Accessible to Me</span>
+                <Shield aria-hidden="true" className="size-4 text-alphavest-subtle" />
+              </button>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
+            <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 py-2 text-sm text-alphavest-muted" data-testid="p10-document-filter-summary">
+              {scopedRowSummary}. Hidden or cross-tenant rows are not disclosed.
+            </div>
             <DataTable
               columns={documentColumns}
-              emptyMessage={loadState === "error" ? "Persisted uploads could not be loaded; static demo rows remain visible." : undefined}
+              emptyMessage={
+                loadState === "error"
+                  ? "Persisted uploads could not be loaded; static demo rows remain visible."
+                  : "No scoped documents match the current search and filters."
+              }
               getRowId={(row) => row.name}
-              rows={rows}
+              rows={filteredRows}
             />
           </CardContent>
         </Card>

@@ -10,7 +10,12 @@ export type ScfFoundationPhaseId =
   | "P06"
   | "P07"
   | "P08"
-  | "P09";
+  | "P09"
+  | "P10"
+  | "P11"
+  | "P12"
+  | "P13"
+  | "P14";
 
 export type ScfFoundationTaskId =
   | "SCF-P00-T001"
@@ -34,7 +39,18 @@ export type ScfFoundationTaskId =
   | "SCF-P08-T001"
   | "SCF-P08-T002"
   | "SCF-P09-T001"
-  | "SCF-P09-T002";
+  | "SCF-P09-T002"
+  | "SCF-P10-T001"
+  | "SCF-P10-T002"
+  | "SCF-P10-T003"
+  | "SCF-P11-T001"
+  | "SCF-P11-T002"
+  | "SCF-P12-T001"
+  | "SCF-P12-T002"
+  | "SCF-P13-T001"
+  | "SCF-P13-T002"
+  | "SCF-P14-T001"
+  | "SCF-P14-T002";
 
 export type ScfDecisionQueueKey =
   | "implement"
@@ -70,7 +86,7 @@ export type ScfMasterTaskDetail = {
   sourceOrphanIds?: string;
   sourceRouteIds: string;
   sourceThreadIds?: string;
-  status: "blocked" | "implementation_candidate";
+  status: "blocked" | "blocked_until_QA" | "implementation_candidate" | "plan_only";
   subtaskCount: 3 | 4 | 5;
   targetAreas: string[];
   taskName: string;
@@ -185,6 +201,52 @@ export const scfFoundationPhases: Array<{
       "Forbidden payload assertions cover client views and export packages",
     ],
   },
+  {
+    id: "P10",
+    name: "UI Interaction Completeness",
+    tasks: ["SCF-P10-T001", "SCF-P10-T002", "SCF-P10-T003"],
+    acceptance: [
+      "Search, sort, filters and tables change visible data instead of acting as decoration",
+      "Forms and wizards validate input masks and fail closed on invalid or unsafe payloads",
+      "Drawers, modals and confirmations have accessible lifecycle, cancel and completion states",
+    ],
+  },
+  {
+    id: "P11",
+    name: "API / Schema / Persistence Hardening",
+    tasks: ["SCF-P11-T001", "SCF-P11-T002"],
+    acceptance: [
+      "Existing APIs fail closed with scope, no-mutation and no-client-release metadata",
+      "Schema and Prisma usage stay aligned with current data model without blind migrations",
+    ],
+  },
+  {
+    id: "P12",
+    name: "P0 Positive / Negative Test Closure",
+    tasks: ["SCF-P12-T001", "SCF-P12-T002"],
+    acceptance: [
+      "E2E-001 positive path has executable proof",
+      "E2E-002, E2E-003 and E2E-004 negative safety paths are closed by tests",
+    ],
+  },
+  {
+    id: "P13",
+    name: "Proof Package and QA",
+    tasks: ["SCF-P13-T001", "SCF-P13-T002"],
+    acceptance: [
+      "Route, capability, flow and task proof package exists",
+      "SCF implementation QA excludes blocked, held and reference-only items",
+    ],
+  },
+  {
+    id: "P14",
+    name: "Codex Prompt Pack / Rebased Final Handoff Derivation",
+    tasks: ["SCF-P14-T001", "SCF-P14-T002"],
+    acceptance: [
+      "Prompt pack derivation is based only on QA-proven scope",
+      "Optional rebased handoff does not elevate P1, Hold or Reference-only surfaces",
+    ],
+  },
 ];
 
 export const scfDecisionQueues: Record<ScfDecisionQueueKey, number> = {
@@ -218,6 +280,7 @@ export const scfProofCommandBaseline = [
   "pnpm test:route-smoke",
   "pnpm exec playwright test tests/document-upload-api.spec.ts tests/document-upload-flow.spec.ts tests/workflow-gate.spec.ts tests/demo-workflow-api.spec.ts tests/phase6-audit-persistence.spec.ts",
   "pnpm exec playwright test tests/client-visibility-proof.spec.ts tests/governance-non-bypass.spec.ts tests/permission-engine.spec.ts tests/file-export-realism.spec.ts tests/phase8-export-workflow-api.spec.ts tests/p0-acceptance.spec.ts --workers=1",
+  "pnpm exec playwright test tests/scf-p10-p14-closure.spec.ts tests/p0-api-contract.spec.ts tests/interaction-lifecycle.spec.ts tests/confirmation-lifecycle.spec.ts --workers=1",
 ] as const;
 
 export const scfDoNotImplementRegister: ScfDoNotImplementEntry[] = [
@@ -492,6 +555,295 @@ export const scfP01P06MasterTaskDetails: ScfMasterTaskDetail[] = [
     proofRequired: "Audit persistence is a prerequisite for safety proof.",
     status: "implementation_candidate",
     subtaskCount: 5,
+  },
+  {
+    id: "SCF-P07-T001",
+    phase: "P07",
+    taskName: "Client-safe Recommendation Visibility Projection implementieren",
+    taskType: "Visibility/Safety",
+    taskPriority: "P0",
+    sourceRouteIds: "019,020,036-045,054-058",
+    targetAreas: ["lib/visibility-engine.ts", "components/client-intake-screen.tsx", "components/decisions-governance-screen.tsx"],
+    implementationIntent: "Projiziere released decisions als client-safe summary und halte interne Drafts, rationale und unreleased evidence verborgen.",
+    positiveAcceptance: "Released decisions project only client-safe summaries.",
+    negativeAcceptance: "Submitted but unreleased decisions remain internal and fail closed for client roles.",
+    testObligation: "client-visibility-proof.spec.ts; p0-acceptance.spec.ts",
+    dependencyOrder: "SCF-P06-T002",
+    proofRequired: "Client projection removes internal fields and is negatively tested.",
+    status: "implementation_candidate",
+    subtaskCount: 5,
+  },
+  {
+    id: "SCF-P07-T002",
+    phase: "P07",
+    taskName: "Decision Record Closure und Client Payload Guard schließen",
+    taskType: "Visibility/API",
+    taskPriority: "P0",
+    sourceRouteIds: "019,020,036-045,048-051,054-058",
+    targetAreas: ["lib/visibility-engine.ts", "lib/demo-workflow-mutation.ts", "tests/client-visibility-proof.spec.ts"],
+    implementationIntent: "Binde decision lifecycle states an fail-closed client payload projection.",
+    positiveAcceptance: "Client-safe decision records are visible only after release.",
+    negativeAcceptance: "AI drafts, compliance notes and internal rationale never enter client payloads.",
+    testObligation: "client-visibility-proof.spec.ts; demo-workflow-api.spec.ts",
+    dependencyOrder: "SCF-P07-T001",
+    proofRequired: "Decision closure is represented in code, tests and UI proof.",
+    status: "implementation_candidate",
+    subtaskCount: 5,
+  },
+  {
+    id: "SCF-P08-T001",
+    phase: "P08",
+    taskName: "Governed Role / Access Request Flow implementieren",
+    taskType: "Governance/Safety",
+    taskPriority: "P0",
+    sourceRouteIds: "007-018,048-051",
+    targetAreas: ["lib/permission-engine.ts", "components/admin-tenant-setup-screen.tsx", "components/decisions-governance-screen.tsx"],
+    implementationIntent: "Access changes require scoped role authority, audit intent and sensitive-action confirmation.",
+    positiveAcceptance: "Governed access changes require scoped roles, audit and second confirmation where sensitive.",
+    negativeAcceptance: "Admin and security roles cannot bypass release, export, visibility or evidence gates.",
+    testObligation: "governance-non-bypass.spec.ts; permission-engine.spec.ts",
+    dependencyOrder: "SCF-P07-T002",
+    proofRequired: "Governance non-bypass is represented in UI and negative tests.",
+    status: "implementation_candidate",
+    subtaskCount: 5,
+  },
+  {
+    id: "SCF-P08-T002",
+    phase: "P08",
+    taskName: "Cross-tenant Denial und Payload Non-leakage härten",
+    taskType: "Governance/API",
+    taskPriority: "P0",
+    sourceRouteIds: "001-071",
+    targetAreas: ["lib/permission-engine.ts", "lib/demo-session.ts", "tests/providerless-scope.spec.ts"],
+    implementationIntent: "Cross-tenant object and payload access denies without row-count or payload leakage.",
+    positiveAcceptance: "Scoped users can access permitted tenant objects.",
+    negativeAcceptance: "Cross-tenant object and payload access denies without leaking row details.",
+    testObligation: "providerless-scope.spec.ts; permission-engine.spec.ts",
+    dependencyOrder: "SCF-P08-T001",
+    proofRequired: "Cross-tenant denial is tested across route, action, object and payload layers.",
+    status: "implementation_candidate",
+    subtaskCount: 5,
+  },
+  {
+    id: "SCF-P09-T001",
+    phase: "P09",
+    taskName: "Export Scope / Redaction / Approval Flow implementieren",
+    taskType: "Export/Safety",
+    taskPriority: "P0",
+    sourceRouteIds: "048-051",
+    targetAreas: ["lib/export-service.ts", "components/communication-export-ops-screen.tsx", "tests/file-export-realism.spec.ts"],
+    implementationIntent: "Approved exports contain only scoped, redacted, released client-safe content.",
+    positiveAcceptance: "Approved exports contain only scoped, redacted, released client-safe content.",
+    negativeAcceptance: "Preview-only, unredacted or internal payloads block generation, download and share.",
+    testObligation: "file-export-realism.spec.ts; phase8-export-workflow-api.spec.ts",
+    dependencyOrder: "SCF-P08-T002",
+    proofRequired: "Export approval and redaction gates are executable and negatively tested.",
+    status: "implementation_candidate",
+    subtaskCount: 5,
+  },
+  {
+    id: "SCF-P09-T002",
+    phase: "P09",
+    taskName: "Forbidden Export Payload Assertions schließen",
+    taskType: "Export/API",
+    taskPriority: "P0",
+    sourceRouteIds: "019,020,048-051,054-058",
+    targetAreas: ["lib/export-service.ts", "lib/visibility-engine.ts", "tests/file-export-realism.spec.ts"],
+    implementationIntent: "Blocke internal rationale, AI drafts, compliance notes and unreleased evidence from export packages.",
+    positiveAcceptance: "Export packages contain only client-safe released payloads.",
+    negativeAcceptance: "Forbidden payload assertions cover client views and export packages.",
+    testObligation: "file-export-realism.spec.ts; client-visibility-proof.spec.ts",
+    dependencyOrder: "SCF-P09-T001",
+    proofRequired: "Export forbidden payload checks are covered by regression tests.",
+    status: "implementation_candidate",
+    subtaskCount: 5,
+  },
+  {
+    id: "SCF-P10-T001",
+    phase: "P10",
+    taskName: "Search/Sort/Filter/Table Behaviour Work Package",
+    taskType: "UI/Interaction",
+    taskPriority: "P0",
+    sourceRouteIds: "003,027,031,032,033,034,035,036,037,038,039,040,041,042,043,044,045,048,049,050,051",
+    targetAreas: ["components/ui/data-table.tsx", "components/client-intake-screen.tsx", "app/api/documents/route.ts"],
+    implementationIntent: "Schließe sichtbare Search-, Sort-, Filter- und Tabellen-Interaktionen auf Dokumenten-, Advisor-, Compliance- und Exportflächen.",
+    positiveAcceptance: "Search, sort, filters and tables change visible scoped rows.",
+    negativeAcceptance: "Controls expose no hidden rows, cross-tenant records or false mutation claims.",
+    testObligation: "scf-p10-p14-closure.spec.ts; document-upload-api.spec.ts",
+    dependencyOrder: "SCF-P09-T002",
+    proofRequired: "Document list filtering is implemented in UI and scoped API payload metadata.",
+    status: "implementation_candidate",
+    subtaskCount: 5,
+  },
+  {
+    id: "SCF-P10-T002",
+    phase: "P10",
+    taskName: "Forms/Wizards/Input Masks Completion Work Package",
+    taskType: "UI/Form",
+    taskPriority: "P0",
+    sourceRouteIds: "004,005,006,014,028,038,039,048,049,050",
+    targetAreas: ["components/client-intake-screen.tsx", "app/api/documents/upload/route.ts", "components/communication-export-ops-screen.tsx"],
+    implementationIntent: "Schließe Form-, Wizard- und Input-Mask-Verhalten für Tenant, Upload, Compliance Review und Export Scope/Redaction.",
+    positiveAcceptance: "Forms validate required scoped input and keep retry/cancel states visible.",
+    negativeAcceptance: "Invalid, unsupported or insufficient inputs do not mutate release, advice or export state.",
+    testObligation: "document-upload-flow.spec.ts; scf-p10-p14-closure.spec.ts",
+    dependencyOrder: "SCF-P10-T001",
+    proofRequired: "Form and upload paths keep validation, retry and fail-closed states executable.",
+    status: "implementation_candidate",
+    subtaskCount: 5,
+  },
+  {
+    id: "SCF-P10-T003",
+    phase: "P10",
+    taskName: "Drawer/Modal/Confirmation Lifecycle Work Package",
+    taskType: "UI/Lifecycle",
+    taskPriority: "P0",
+    sourceRouteIds: "002,005,007,009,010,014,015,038,039,040,041,048,049,050,051",
+    targetAreas: ["components/ui/modal.tsx", "components/ui/drawer.tsx", "components/internal-workflow-screen.tsx"],
+    implementationIntent: "Schließe Modal-, Drawer- und Confirmation-Lifecycle inklusive Escape, Cancel, focus return und completion states.",
+    positiveAcceptance: "Confirmation lifecycle supports open, cancel, confirm, close and focus recovery.",
+    negativeAcceptance: "Dismissed or incomplete confirmation does not mutate regulated workflow state.",
+    testObligation: "interaction-lifecycle.spec.ts; confirmation-lifecycle.spec.ts; scf-p10-p14-closure.spec.ts",
+    dependencyOrder: "SCF-P10-T002",
+    proofRequired: "Drawer/modal lifecycle is covered by UI tests and product surfaces.",
+    status: "implementation_candidate",
+    subtaskCount: 5,
+  },
+  {
+    id: "SCF-P11-T001",
+    phase: "P11",
+    taskName: "Existing API hardening without blind new routes",
+    taskType: "API/Safety",
+    taskPriority: "P0",
+    sourceRouteIds: "027,028,033-045,048-051",
+    targetAreas: ["app/api/demo-workflow/route.ts", "app/api/documents/route.ts", "app/api/documents/upload/route.ts", "app/api/review-monitoring/route.ts"],
+    implementationIntent: "Harte bestehende APIs mit validierten Inputs, fail-closed Errors, no-mutation flags und scope metadata.",
+    positiveAcceptance: "Existing APIs return scoped, explicit safety metadata.",
+    negativeAcceptance: "Invalid scope, missing database or unsupported payload cannot release, advise, export or leak rows.",
+    testObligation: "p0-api-contract.spec.ts; document-upload-api.spec.ts; review-monitoring-service.spec.ts",
+    dependencyOrder: "SCF-P10-T003",
+    proofRequired: "Existing APIs are hardened without creating blind routes.",
+    status: "implementation_candidate",
+    subtaskCount: 5,
+  },
+  {
+    id: "SCF-P11-T002",
+    phase: "P11",
+    taskName: "Prisma usage and schema alignment planning",
+    taskType: "Schema/Persistence",
+    taskPriority: "P0",
+    sourceRouteIds: "001-071",
+    targetAreas: ["prisma/schema.prisma", "prisma/seed.ts", "lib/document-upload-service.ts", "lib/review-monitoring-service.ts"],
+    implementationIntent: "Verifiziere bestehende Prisma-Modelle gegen Workflow-, Evidence-, Audit-, Export- und Visibility-Verwendung ohne blinde Migration.",
+    positiveAcceptance: "Prisma validation and service usage align with existing schema.",
+    negativeAcceptance: "No new schema route or migration is introduced without source proof.",
+    testObligation: "pnpm db:validate; schema-alignment assertions in scf-p10-p14-closure.spec.ts",
+    dependencyOrder: "SCF-P11-T001",
+    proofRequired: "Schema usage is validated and represented in the proof package.",
+    status: "implementation_candidate",
+    subtaskCount: 5,
+  },
+  {
+    id: "SCF-P12-T001",
+    phase: "P12",
+    taskName: "E2E-001 P0 Test Closure",
+    taskType: "Testing/P0",
+    taskPriority: "P0",
+    sourceRouteIds: "027-045,048-051",
+    targetAreas: ["tests/scf-p10-p14-closure.spec.ts", "tests/p0-acceptance.spec.ts"],
+    implementationIntent: "Schließe positiven Kunden-/Evidence-/Review-/Release-/Export-Proof-Pfad.",
+    positiveAcceptance: "E2E-001 positive path has executable proof.",
+    negativeAcceptance: "Positive proof does not claim P1, Hold or reference-only route completion.",
+    testObligation: "scf-p10-p14-closure.spec.ts; p0-acceptance.spec.ts",
+    dependencyOrder: "SCF-P11-T002",
+    proofRequired: "P0 positive path closure is linked to task and phase evidence.",
+    status: "implementation_candidate",
+    subtaskCount: 5,
+  },
+  {
+    id: "SCF-P12-T002",
+    phase: "P12",
+    taskName: "E2E-002/E2E-003/E2E-004 Negative Safety Test Closure",
+    taskType: "Testing/Safety",
+    taskPriority: "P0",
+    sourceRouteIds: "001-071",
+    targetAreas: ["tests/client-visibility-proof.spec.ts", "tests/governance-non-bypass.spec.ts", "tests/file-export-realism.spec.ts"],
+    implementationIntent: "Schließe negative Safety Tests für client visibility, governance non-bypass und export trust output.",
+    positiveAcceptance: "Negative safety paths are executable and tracked.",
+    negativeAcceptance: "Safety spine and trust output are negative-tested before completion claims.",
+    testObligation: "client-visibility-proof.spec.ts; governance-non-bypass.spec.ts; file-export-realism.spec.ts",
+    dependencyOrder: "SCF-P12-T001",
+    proofRequired: "P0 negative paths are linked to no-release, no-advice and no-export assertions.",
+    status: "implementation_candidate",
+    subtaskCount: 5,
+  },
+  {
+    id: "SCF-P13-T001",
+    phase: "P13",
+    taskName: "Proof Package route/capability/flow/task coverage report",
+    taskType: "Proof/QA",
+    taskPriority: "P0",
+    sourceRouteIds: "001-071",
+    targetAreas: ["docs/proof/SCF_P10_P14_PROOF_PACKAGE.md", "lib/scf-p10-p14-proof.ts"],
+    implementationIntent: "Erzeuge route/capability/flow/task coverage report aus Code-Realität und SCF-Task-Daten.",
+    positiveAcceptance: "Proof package records implemented, tested and intentionally blocked scope.",
+    negativeAcceptance: "Blocked, held and reference-only items are excluded from completion claims.",
+    testObligation: "scf-p10-p14-closure.spec.ts",
+    dependencyOrder: "SCF-P12-T002",
+    proofRequired: "Proof package exists and is backed by executable test assertions.",
+    status: "implementation_candidate",
+    subtaskCount: 3,
+  },
+  {
+    id: "SCF-P13-T002",
+    phase: "P13",
+    taskName: "SCF Implementation Plan QA durchführen",
+    taskType: "Proof/QA",
+    taskPriority: "P0",
+    sourceRouteIds: "001-071",
+    targetAreas: ["docs/v3/IMPLEMENTATION_QA_REPORT.md", "docs/v3/PHASE_EXECUTION_REPORT.md"],
+    implementationIntent: "Führe QA gegen Source Lock, Stop Rules, task scope und proof obligations durch.",
+    positiveAcceptance: "QA report states pass, partial or blocked for each P10-P14 family.",
+    negativeAcceptance: "No Codex handoff elevates blocked items or unsupported P15 scope.",
+    testObligation: "scf-p10-p14-closure.spec.ts; p0-acceptance.spec.ts",
+    dependencyOrder: "SCF-P13-T001",
+    proofRequired: "QA addendum is backed by testable phase/task records.",
+    status: "plan_only",
+    subtaskCount: 3,
+  },
+  {
+    id: "SCF-P14-T001",
+    phase: "P14",
+    taskName: "SCF Codex Prompt Pack ableiten",
+    taskType: "Handoff/Prompt",
+    taskPriority: "P0",
+    sourceRouteIds: "001-071",
+    targetAreas: ["ALPHAVEST_SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK.md", "docs/proof/SCF_P10_P14_PROOF_PACKAGE.md"],
+    implementationIntent: "Leite Prompt-Pack-Addendum nur aus QA-proven P10-P14 scope ab.",
+    positiveAcceptance: "Prompt pack references only implemented or deliberately blocked P10-P14 scope.",
+    negativeAcceptance: "Prompt pack does not authorize P15, P1, Hold, Reference-only or blind API/schema work.",
+    testObligation: "scf-p10-p14-closure.spec.ts",
+    dependencyOrder: "SCF-P13-T002",
+    proofRequired: "Prompt pack derivation is traceable to QA and proof package.",
+    status: "blocked_until_QA",
+    subtaskCount: 3,
+  },
+  {
+    id: "SCF-P14-T002",
+    phase: "P14",
+    taskName: "Rebased Final Handoff optional erstellen",
+    taskType: "Handoff/Optional",
+    taskPriority: "P0",
+    sourceRouteIds: "001-071",
+    targetAreas: ["FINAL_CODEX_IMPLEMENTATION_HANDOFF_REBASED_ON_SCF.md", "docs/proof/SCF_P10_P14_PROOF_PACKAGE.md"],
+    implementationIntent: "Erstelle optionalen rebased handoff nur als QA-gated summary, ohne neue Produktentscheidungen.",
+    positiveAcceptance: "Rebased handoff is source-locked and optional.",
+    negativeAcceptance: "No unsupported P15 or held scope is promoted to implementation.",
+    testObligation: "scf-p10-p14-closure.spec.ts",
+    dependencyOrder: "SCF-P14-T001",
+    proofRequired: "Optional handoff derivation records unsupported P15 and blocked scope honestly.",
+    status: "blocked_until_QA",
+    subtaskCount: 3,
   },
 ];
 

@@ -5471,3 +5471,25 @@ Date: 2026-06-21
 
 - This pass does not introduce production authentication, production advice, real export binary generation or production RBAC.
 - Screenshot proof is representative route evidence, not full visual acceptance across every route and viewport.
+## SCF-P10-P14 QA Addendum
+
+Date: 2026-06-21
+
+Source of truth: `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`
+
+| Area | QA result | Evidence |
+| --- | --- | --- |
+| P10 UI interaction completeness | Implemented | Document search/filter/table behavior changes visible scoped rows and is covered by `tests/scf-p10-p14-closure.spec.ts`. |
+| P10 modal/drawer lifecycle | Covered by regression | Existing `Modal`/`Drawer` lifecycle tests remain in the focused validation set. |
+| P11 existing API hardening | Implemented | `/api/documents` and `/api/review-monitoring` return fail-closed safety metadata; no blind new route was created. |
+| P11 schema alignment | Verified by validation plan | `pnpm db:validate` remains required and no schema migration was introduced. |
+| P12 P0 closure | Implemented | `tests/scf-p10-p14-closure.spec.ts` plus existing P0 suites are mapped in `lib/scf-foundation.ts`. |
+| P13 proof package | Implemented | `docs/proof/SCF_P10_P14_PROOF_PACKAGE.md`. |
+| P14 prompt/handoff derivation | QA-gated derivative only | `ALPHAVEST_SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK.md` addendum and `FINAL_CODEX_IMPLEMENTATION_HANDOFF_REBASED_ON_SCF.md`. |
+| Requested P15 | Not authorized | The detail plan defines `P00` through `P14`; no `P15` or `SCF-P15-*` record exists. |
+
+### QA Limits
+
+- P1-after-MVP, Hold and Reference-only surfaces remain blocked by the Do-Not-Implement register.
+- P14 artefacts are summaries of proven scope, not new implementation authority.
+- Visual screenshots are proof of rendered UI only; behavioral proof remains the Playwright/API test set.

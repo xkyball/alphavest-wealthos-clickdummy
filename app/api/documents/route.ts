@@ -31,8 +31,14 @@ export async function GET(request: Request) {
         error: "Documents are not available for this scope.",
         issues,
         mutated: false,
+        noAdviceExecution: true,
         noClientRelease: true,
         ok: false,
+        safety: {
+          hiddenRowsDisclosed: false,
+          releaseUnlocked: false,
+          scoped: false,
+        },
       },
       { status: 400 },
     );
@@ -41,15 +47,36 @@ export async function GET(request: Request) {
   try {
     const documents = await listUploadedDocuments(prismaClient(), tenantSlug, roleKey);
 
-    return NextResponse.json({ documents, ok: true });
+    return NextResponse.json({
+      documents,
+      mutated: false,
+      noAdviceExecution: true,
+      noClientRelease: true,
+      ok: true,
+      safety: {
+        hiddenRowsDisclosed: false,
+        releaseUnlocked: false,
+        returnedRows: documents.length,
+        roleKey,
+        scope: "tenant-role-document-list",
+        scoped: true,
+        tenantSlug,
+      },
+    });
   } catch {
     return NextResponse.json(
       {
         documents: [],
         error: "Documents are not available for this scope.",
         mutated: false,
+        noAdviceExecution: true,
         noClientRelease: true,
         ok: false,
+        safety: {
+          hiddenRowsDisclosed: false,
+          releaseUnlocked: false,
+          scoped: false,
+        },
       },
       { status: 500 },
     );

@@ -7029,3 +7029,40 @@ This phase improves proof slices for `P0_ROUTE_ACCESS_GATE` and `P0_HOLD_ROUTE_B
 ### Exit Gate Decision
 
 `PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+## SCF-P10-P14 - UI Interaction / API Hardening / P0 Closure / Proof Derivation
+
+Date: 2026-06-21
+
+Source of truth: `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`
+
+Executed `CODEX PHASE PROMPT - P10-P15` against the live app codebase. The source-of-truth defines `P10` through `P14`; `P15` is not present and was not invented.
+
+### Implemented Changes
+
+- Extended `lib/scf-foundation.ts` so the central SCF authority covers P10-P14 master tasks and 47 subtasks.
+- Added `lib/scf-p10-p14-proof.ts` and `components/scf-p10-p14-closure-panel.tsx` for runtime proof data and product-visible closure surfaces.
+- Implemented live document search plus type, status and sensitivity filters in `components/client-intake-screen.tsx`.
+- Added P10-P14 closure surfaces to document, export-scope and governance platform workflows.
+- Hardened `/api/documents` and `/api/review-monitoring` responses with fail-closed no-mutation, no-advice and no-client-release metadata.
+- Added `tests/scf-p10-p14-closure.spec.ts` and extended `tests/p0-acceptance.spec.ts` through `SCF-P14-T002`.
+- Created `docs/proof/SCF_P10_P14_PROOF_PACKAGE.md` and `FINAL_CODEX_IMPLEMENTATION_HANDOFF_REBASED_ON_SCF.md`.
+- Updated `ALPHAVEST_SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK.md` with a P10-P14 closure addendum.
+
+### Validation Run
+
+- Passed: `pnpm typecheck`
+- Passed: `pnpm lint`
+- Passed: `pnpm db:validate`
+- Passed with existing Turbopack storage-tracing warnings: `pnpm build`
+- Passed: `pnpm exec playwright test tests/scf-p10-p14-closure.spec.ts tests/p0-acceptance.spec.ts tests/p0-api-contract.spec.ts tests/document-upload-api.spec.ts tests/interaction-lifecycle.spec.ts tests/confirmation-lifecycle.spec.ts --workers=1`
+
+### Screenshot Proof
+
+- `artifacts/scf-p10-p14/documents-filter-closure.png`
+- `artifacts/scf-p10-p14/export-api-closure.png`
+- `artifacts/scf-p10-p14/governance-proof-closure-panel.png`
+
+### Known Limits
+
+- `P15` is unsupported because the detail plan stops at `P14`.
+- P14 artefacts are derivative and QA-gated; they do not authorize P1-after-MVP, Hold, Reference-only or blind schema/API work.

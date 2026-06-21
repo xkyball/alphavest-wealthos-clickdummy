@@ -23,6 +23,7 @@ import { AppShell } from "@/components/app-shell";
 import { useDemoSession } from "@/components/demo-session-provider";
 import { PageHeader } from "@/components/page-header";
 import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
+import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
 import {
   Badge,
   Card,
@@ -320,6 +321,7 @@ function PlatformSettingsPage({ onConfirm, route }: { onConfirm: () => void; rou
         {platformSettings.auditBanner}. Changes require approval and are logged for compliance.
       </AuditBanner>
       <ScfP07P09TrustPanel mode="governance" />
+      <ScfP10P14ClosurePanel mode="proof" />
       <ReleaseScopeControlPanel />
       <section className="grid gap-5 xl:grid-cols-[1fr_0.85fr]">
         <Card>

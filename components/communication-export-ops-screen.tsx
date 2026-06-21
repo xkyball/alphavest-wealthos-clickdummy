@@ -50,6 +50,7 @@ import {
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
 import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
+import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
 import { cn } from "@/lib/cn";
 import {
   auditHistoryEvents,
@@ -732,6 +733,7 @@ function ExportScopePage({ title }: { title: string }) {
     <div>
       <PageLead description="Select permitted objects, recipients and date range before redaction review." icon={Folder} title={title} />
       <ScfP07P09TrustPanel mode="export" />
+      <ScfP10P14ClosurePanel mode="api" />
       <Card>
         <div className="grid gap-4 md:grid-cols-3">
           <FieldPill label="Date range" value="May 1 - May 21, 2025" />
