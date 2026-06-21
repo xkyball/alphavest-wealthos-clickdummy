@@ -27,7 +27,9 @@ import {
   scfDecisionQueues,
   scfDoNotImplementRegister,
   scfFoundationTaskIds,
+  scfMasterTasksForPhases,
   scfProofCommandBaseline,
+  scfSubtasksForPhases,
 } from "../lib/scf-foundation";
 import { visibilityEngine } from "../lib/visibility-engine";
 import { canBecomeClientVisible } from "../lib/workflow-gate";
@@ -657,6 +659,58 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
     expect(packagePlan).toContain("Historical all-phase/all-task override");
     expect(handoff).not.toContain("All 62 task IDs below are explicitly authorized");
     expect(packagePlan).not.toContain("FIRST_BUILD_PACKAGE_PLAN_MAX_OVERRIDE_UNLOCKED");
+  });
+
+  test("SCF-P01/P02/P03/P04/P05/P06 master tasks and subtasks are represented as executable contracts", () => {
+    const phases = ["P01", "P02", "P03", "P04", "P05", "P06"] as const;
+    const masterTasks = scfMasterTasksForPhases([...phases]);
+    const subtasks = scfSubtasksForPhases([...phases]);
+
+    expect(masterTasks.map((task) => task.id)).toEqual([
+      "SCF-P01-T001",
+      "SCF-P01-T002",
+      "SCF-P02-T001",
+      "SCF-P02-T002",
+      "SCF-P03-T001",
+      "SCF-P03-T002",
+      "SCF-P04-T001",
+      "SCF-P04-T002",
+      "SCF-P04-T003",
+      "SCF-P05-T001",
+      "SCF-P05-T002",
+      "SCF-P05-T003",
+      "SCF-P06-T001",
+      "SCF-P06-T002",
+    ]);
+    expect(masterTasks).toHaveLength(14);
+    expect(subtasks).toHaveLength(64);
+
+    for (const task of masterTasks) {
+      const taskSubtasks = subtasks.filter((subtask) => subtask.parentTaskId === task.id);
+
+      expect(scfFoundationTaskIds()).toContain(task.id);
+      expect(taskSubtasks.map((subtask) => subtask.id)).toEqual(
+        Array.from({ length: task.subtaskCount }, (_, index) => `${task.id}-S${String(index + 1).padStart(2, "0")}`),
+      );
+      expect(task.targetAreas.length).toBeGreaterThan(0);
+      expect(task.positiveAcceptance).toBeTruthy();
+      expect(task.negativeAcceptance).toBeTruthy();
+      expect(task.proofRequired).toBeTruthy();
+      expect(task.testObligation).toBeTruthy();
+      expect(taskSubtasks.at(-1)?.proof).toBe("Proof checklist");
+      expect(taskSubtasks.at(-1)?.notes).toBe("No completion without proof.");
+    }
+
+    expect(masterTasks.find((task) => task.id === "SCF-P02-T002")?.status).toBe("blocked");
+    expect(masterTasks.find((task) => task.id === "SCF-P04-T002")?.testObligation).toContain(
+      "document-upload-api.spec.ts",
+    );
+    expect(masterTasks.find((task) => task.id === "SCF-P05-T002")?.testObligation).toContain(
+      "client-visibility-proof.spec.ts",
+    );
+    expect(masterTasks.find((task) => task.id === "SCF-P06-T002")?.testObligation).toContain(
+      "phase6-audit-persistence.spec.ts",
+    );
   });
 
   test("AV-FB-P8-BP11-T001..T014 map final P0 proof, commands and report obligations", () => {

@@ -5293,3 +5293,50 @@ Date: 2026-06-21
 
 - Existing `lib/document-storage-adapter.ts` Turbopack tracing warnings are outside this phase.
 - Historical UI Phase 07/08/09 report sections remain as old implementation history, not current SCF task authority.
+
+## SCF-P01-P06 Mastertask / Subtask QA Addendum
+
+Date: 2026-06-21
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| SCF task authority | Passed | P01-P06 mastertask details are represented as typed repo data in `lib/scf-foundation.ts`. |
+| Mastertask coverage | Passed | All 14 P01-P06 mastertasks are covered from `SCF-P01-T001` through `SCF-P06-T002`. |
+| Subtask coverage | Passed | The P01-P06 Detailed Subtask Register is represented as 64 generated subtask contracts. |
+| P01 normalization | Passed | Workset ownership and queue split remain testable through foundation assertions. |
+| P02 static/defer/hold cleanup | Passed | P1, Reference and Hold worksets remain registered-only and excluded from implementation navigation. |
+| P03 providerless boundary | Passed | Mapped demo actor, tenant, role and object-scope checks remain fail-closed. |
+| P04 evidence lifecycle | Passed | Upload, reload, review queue and sufficiency rules remain explicit and tested. |
+| P05 internal draft/advisor boundary | Passed | Internal draft and advisor approval do not create client visibility. |
+| P06 compliance/audit gate | Passed | Compliance release requires advisor/evidence/payload/permission/audit gates; audit outage fails closed. |
+| Visual proof | Passed | Four screenshots captured under `artifacts/scf-p01-p06/` for held scope, providerless platform guard, upload/evidence intake and compliance release. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | TypeScript completed with `tsc --noEmit`. |
+| `pnpm exec playwright test tests/p0-acceptance.spec.ts --workers=1` | Failed then passed | Initial failure captured P01/P02 subtask naming nuance; rerun passed, 14 tests. |
+| `pnpm exec playwright test tests/providerless-scope.spec.ts tests/route-smoke.spec.ts tests/navigation-shell.spec.ts --workers=1` | Passed | 101 tests. |
+| `pnpm exec playwright test tests/permission-engine.spec.ts tests/workflow-gate.spec.ts tests/document-upload-api.spec.ts tests/document-upload-flow.spec.ts tests/demo-workflow-api.spec.ts tests/phase6-audit-persistence.spec.ts --workers=1` | Failed then passed | Parallel attempt hit `EADDRINUSE` on port 3020; sequential rerun passed, 52 tests. |
+| `pnpm lint` | Passed | ESLint completed successfully. |
+| `pnpm db:validate` | Passed | Prisma schema validated successfully. |
+| `pnpm build` | Passed with warnings | Production build completed; existing Turbopack tracing warnings remain around `lib/document-storage-adapter.ts`. |
+| `git diff --check` | Passed | No whitespace errors. |
+| Screenshot capture on port `3188` | Passed | Four screenshots captured under `artifacts/scf-p01-p06/`. |
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| SCF-P01-P06 mastertasks | implemented + tested | 14 mastertasks are represented in code and asserted in P0 acceptance. |
+| SCF-P01-P06 subtasks | implemented + tested | 64 subtask contracts are generated and parent-bound. |
+| Runtime safety spine P03-P06 | implemented + tested | Providerless, evidence, internal draft, advisor, compliance and audit gates remain green. |
+| Production auth/advice/export binaries | not claimed | Demo-data-first constraints remain active. |
+
+### Residual Risks
+
+- Existing `lib/document-storage-adapter.ts` Turbopack tracing warnings are outside this phase.
+- Later SCF phases P10-P14 remain future work unless specifically executed.

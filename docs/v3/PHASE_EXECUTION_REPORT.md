@@ -292,6 +292,80 @@ Date: 2026-06-21
 
 `PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
 
+## SCF-P01-P06 - Mastertask / Subtask Completion Implementation
+
+Date: 2026-06-21
+
+### Scope
+
+Revalidated and completed phases P01 through P06 from `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`, including the Master Detailed Task Matrix and Detailed Subtask Register. This pass does not replace the already implemented P00-P03 and P04-P06 runtime work; it closes the missing repo-level contract for the 14 P01-P06 mastertasks and 64 subtasks so task, dependency, target-area, acceptance and proof obligations are executable assertions rather than only Markdown plan text.
+
+### Source Artefacts Used
+
+- `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`
+- `lib/scf-foundation.ts`
+- `lib/route-registry.ts`
+- `lib/permission-engine.ts`
+- `lib/evidence-service.ts`
+- `lib/workflow-gate.ts`
+- `lib/document-upload-service.ts`
+- `lib/demo-workflow-mutation.ts`
+- Existing route, providerless, upload, workflow, audit and P0 acceptance tests.
+
+### Completed Tasks
+
+- Added a typed P01-P06 mastertask detail register with all 14 plan tasks: `SCF-P01-T001` through `SCF-P06-T002`.
+- Added generated subtask detail contracts for the P01-P06 Detailed Subtask Register: 64 subtasks with parent task, dependency, target area, acceptance, proof and notes.
+- Bound P01/P02 source normalization, static-explicit cleanup and Do-Not-Implement treatment to testable foundation assertions instead of loose documentation.
+- Preserved existing P03 providerless/current-user and route/action/object/payload boundaries.
+- Revalidated existing P04 upload/evidence lifecycle, P05 internal signal/advisor-not-release flow, and P06 compliance/audit fail-closed behavior.
+- Added P0 acceptance coverage that fails if any P01-P06 mastertask/subtask contract is missing or not bound to proof.
+
+### Changed Files
+
+- `lib/scf-foundation.ts`
+- `tests/p0-acceptance.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm exec playwright test tests/p0-acceptance.spec.ts --workers=1` - first run exposed a P01/P02 subtask naming nuance; fixed proof binding and reran successfully, 14 tests.
+- `pnpm exec playwright test tests/providerless-scope.spec.ts tests/route-smoke.spec.ts tests/navigation-shell.spec.ts --workers=1` - passed, 101 tests.
+- `pnpm exec playwright test tests/permission-engine.spec.ts tests/workflow-gate.spec.ts tests/document-upload-api.spec.ts tests/document-upload-flow.spec.ts tests/demo-workflow-api.spec.ts tests/phase6-audit-persistence.spec.ts --workers=1` - first parallel attempt hit `EADDRINUSE` on port 3020; rerun sequentially passed, 52 tests.
+- `pnpm lint` - passed.
+- `pnpm db:validate` - passed.
+- `pnpm build` - passed with existing Turbopack tracing warnings in `lib/document-storage-adapter.ts`.
+- `git diff --check` - passed.
+- Screenshot capture through local Next server on port `3188` - captured four SCF P01-P06 proof screenshots under `artifacts/scf-p01-p06/`.
+
+### Screenshot Proof
+
+| Screenshot | Route | Phase Coverage |
+| --- | --- | --- |
+| `artifacts/scf-p01-p06/scf-p01-p02-scope-register.png` | `/committee/reviews` | P01/P02 scope normalization, registered-only held route and blocked client visibility guard. |
+| `artifacts/scf-p01-p06/scf-p03-providerless-boundary.png` | `/admin/platform` | P03 providerless scenario boundary and second-confirmation guard for sensitive settings. |
+| `artifacts/scf-p01-p06/scf-p04-evidence-upload-review.png` | `/documents/upload` | P04 document upload, scoped intake, review and sufficiency messaging. |
+| `artifacts/scf-p01-p06/scf-p05-p06-advisor-compliance-gates.png` | `/compliance/demo/release` | P05/P06 advisor-not-release, compliance release and audit/evidence gate surface. |
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| SCF-P01 task normalization | implemented + tested | Mastertask/subtask traceability and queue split are represented in code/tests. |
+| SCF-P02 static/defer/hold cleanup | implemented + tested | Do-Not-Implement treatment remains enforced and held/P1/reference work is not elevated. |
+| SCF-P03 providerless/object boundary | implemented + tested | Providerless tenant/role/object/payload separation remains green. |
+| SCF-P04 evidence request/upload/review | implemented + tested | Upload-only, review queue and scoped sufficiency behaviors remain green. |
+| SCF-P05 signal/internal/advisor | implemented + tested | Internal-only draft and advisor-not-release boundaries remain green. |
+| SCF-P06 compliance/audit gate | implemented + tested | Release/block/request evidence and audit fail-closed checks remain green. |
+
+### Residual Risks
+
+- This pass does not claim production authentication, production advice, immutable external audit infrastructure or real binary export generation.
+- Existing `lib/document-storage-adapter.ts` Turbopack tracing warnings remain outside this phase.
+- Screenshots are visual proof only; master/subtask completion is enforced by typed register tests and the workflow/API tests above.
+
 ## SCF-P07-P09 - Client Visibility / Governance / Export Trust Output Implementation
 
 Date: 2026-06-21
