@@ -6212,3 +6212,52 @@ Source of truth:
 ### QA Limits
 
 - `UX-PAGE-004` intentionally does not redesign protected routes beyond guard proof. Richer P1/Hold/Reference UI remains forbidden without later explicit authorization.
+
+## UX-COMPLEXITY-001 QA Addendum
+
+Date: 2026-06-21
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+
+| Area | QA result | Evidence |
+| --- | --- | --- |
+| Priority hierarchy | Passed | Route-smoke verifies one summary strip, one priority queue and one action rail on routes `032`, `033`, `039`, `042` and `056`. |
+| Route Policy Matrix preservation | Passed | Implementation is limited to cited MVP/MVP_SUPPORT rows and does not edit route registry or route classification. |
+| P0 non-overclaim | Passed | Action rails repeat route-specific safety limits for signals, compliance, audit and export. |
+| Safety gates | Passed | `test:workflow-gate`, `test:file-export` and full route-smoke remain green after the layout change. |
+| Screenshot proof | Passed | Five after screenshots captured under `artifacts/ux-page-to-policy/UX-COMPLEXITY-001/`. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | Initial invalid signal-title reference was fixed to use the existing signal ID; rerun passed. |
+| `pnpm lint` | Passed | ESLint completed with existing warnings from prior UX-HUB extraction. |
+| `PLAYWRIGHT_PORT=3362 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-COMPLEXITY priority hierarchy"` | Passed | 5 scoped route tests. |
+| `PLAYWRIGHT_PORT=3365 pnpm test:workflow-gate` | Passed | 13 tests. |
+| `PLAYWRIGHT_PORT=3366 pnpm test:file-export` | Passed | 14 tests. |
+| `PLAYWRIGHT_PORT=3367 pnpm test:route-smoke` | Passed | 127 tests. |
+
+### Screenshot Proof
+
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-001/2026-06-21-UX-COMPLEXITY-001-actions-after.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-001/2026-06-21-UX-COMPLEXITY-001-signals-after.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-001/2026-06-21-UX-COMPLEXITY-001-compliance-review-after.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-001/2026-06-21-UX-COMPLEXITY-001-compliance-audit-after.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-001/2026-06-21-UX-COMPLEXITY-001-export-redaction-after.png`
+
+### Safety Proof
+
+- Priority hierarchy is orientation only.
+- Signal triage still does not create client-safe advice.
+- Compliance review still does not create compliance release.
+- Audit visibility still does not prove audit persistence.
+- Export redaction summary still does not approve, download or share exports.
+- Admin/governance visibility does not bypass route, action or payload permissions.
+
+### QA Limits
+
+- This slice reduces overload on the five `UX-COMPLEXITY-001` target rows. It does not move secondary/tertiary content into drawers or tabs; that belongs to later `UX-COMPLEXITY-002` and `UX-INTERACTION-*` tasks.
+- Before/after proof is documented as implementation audit plus after screenshots; no generated reference screens or images were created.

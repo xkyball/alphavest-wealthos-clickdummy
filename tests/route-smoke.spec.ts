@@ -274,6 +274,30 @@ test.describe("UX-PAGE detail standard", () => {
   }
 });
 
+test.describe("UX-COMPLEXITY priority hierarchy", () => {
+  const uxComplexity001Routes = [
+    "/actions",
+    "/signals",
+    "/compliance/demo/review",
+    "/compliance/demo/audit",
+    "/export/demo/redaction",
+  ];
+
+  for (const path of uxComplexity001Routes) {
+    test(`${path} renders summary strip, priority queue and action rail`, async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 1100 });
+      await authenticateRouteSmokePage(page);
+      await page.goto(path);
+
+      const panel = page.getByTestId("ux-complexity-priority-panel").first();
+      await expect(panel).toBeVisible();
+      await expect(panel.getByTestId("ux-complexity-summary-strip")).toHaveCount(1);
+      await expect(panel.getByTestId("ux-complexity-priority-queue")).toHaveCount(1);
+      await expect(panel.getByTestId("ux-complexity-action-rail")).toHaveCount(1);
+    });
+  }
+});
+
 test.describe("locked route workset preservation", () => {
   test("all registered routes are classified exactly once", () => {
     expect(routeWorksetIntegrity.counts).toEqual(lockedRouteWorksetCounts);

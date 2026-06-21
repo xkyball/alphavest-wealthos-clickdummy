@@ -49,6 +49,7 @@ import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
 import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
+import { UxComplexityPriorityPanel } from "@/components/ux-complexity-priority-panel";
 import { cn } from "@/lib/cn";
 import {
   recommendationReviewDemoTargets,
@@ -590,6 +591,22 @@ function ComplianceAuditPage({ title }: { title: string }) {
         <section className="min-w-0 space-y-5">
           <PageHeading subtitle="Compliance decision, exception and resolution activity for audit review." title={title} />
           <ScfP04P06FlowPanel mode="audit" />
+          <UxComplexityPriorityPanel
+            actionLabel="Review critical audit exceptions"
+            actionState="Export and column controls remain secondary until critical audit fields and persistence are reviewed."
+            priorityItems={[
+              { detail: "Actor, role, tenant, target and reason required", label: "Audit persistence gate", value: "Critical" },
+              { detail: "Highest severity exceptions first", label: "Open exceptions", value: "27" },
+              { detail: "Controlled export requires audit confirmation", label: "Export controlled", value: "Locked" },
+            ]}
+            safetyNote="Audit visibility is not audit persistence; critical actions still require persisted audit rows."
+            summaryItems={[
+              { detail: "Rows in current audit view", label: "Results", value: "12,842" },
+              { detail: "Exceptions still unresolved", label: "Open", value: "27" },
+              { detail: "Export must remain controlled", label: "Download", value: "No" },
+            ]}
+            title="Audit complexity reduction"
+          />
           <div className="grid gap-3 md:grid-cols-4">
             {complianceAuditMetrics.map((metric) => (
               <Card key={metric.label}>

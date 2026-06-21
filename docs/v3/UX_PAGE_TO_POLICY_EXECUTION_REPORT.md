@@ -338,6 +338,126 @@ No-P1/Hold/Reference-elevation confirmation: all 15 protected routes are covered
 
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain unchanged.
 
+## Completed Slice: UX-COMPLEXITY-001
+
+Task: `UX-COMPLEXITY-001` - Reduce card-wall overload into summary + priority queue + action rail.
+
+Mission Card: reduce overload on MVP workbench/support routes `032`, `033`, `039`, `042` and `056` by adding a visible summary strip, priority queue and non-authorizing action rail without changing route scope, route classification, evidence sufficiency, compliance release, export approval, audit persistence or admin authority.
+
+Evidence Intake:
+- Task-master `UX-COMPLEXITY-001` and Route Policy Matrix rows `032`, `033`, `039`, `042`, `056`.
+- Current implementation finding: these routes already had functional cards, workflow panels or detail surfaces, but priority and next-step hierarchy competed with dense supporting cards.
+- P0 policy findings: visual hierarchy cannot prove behavior; status chips, upload state, export preview, audit visibility and compliance review copy must not be treated as gate proof.
+
+Problem Architecture: these routes need faster operator orientation, but a clearer action rail must not imply approval, release, sufficiency, download/share or audit persistence.
+
+Double Diamond:
+- Discover: dense routes mixed status, metrics, cards and actions without one stable priority layer.
+- Define: introduce one route-scoped priority layer above supporting detail.
+- Develop: add shared summary + priority queue + action rail component and apply it to the five scoped rows.
+- Deliver: route-smoke proof, safety test proof, screenshots and reports.
+
+Psycho-Logic + Map/Model: users under decision pressure need the page to answer "what matters now?" before asking them to inspect cards. The safe map model is priority orientation first, gate proof still held by the underlying workflow/control layers.
+
+Reframing Matrix:
+- Page-as-card-wall: rejected.
+- Page-as-priority-console: kept.
+- Page-as-gate-proof: rejected.
+- Page-as-handoff: kept where compliance/export/audit copy clarifies the next constrained step.
+
+TRIZ: improve scan speed and reduce visual overload while preserving strict safety by adding a hierarchy layer that repeats, rather than replaces, gate limits.
+
+SIT Closed World: reused existing route pages, route data, workflow state, trust panels, detail panels and test harnesses; no route, image, screen, API, Prisma migration or product scope engine was introduced.
+
+Zwicky + CCA:
+- Variant A: rewrite each page body deeply. Rejected as broad and risky.
+- Variant B: add a shared priority panel to scoped dense pages. Chosen.
+- Variant C: hide secondary content in workflows/drawers. Deferred to later `UX-COMPLEXITY-002` / `UX-INTERACTION-*` tasks.
+
+SCAMPER: combined metrics into a summary strip, rearranged urgent items into a priority queue, substituted duplicate CTA clusters with one constrained action rail and preserved existing safety panels.
+
+Harvard / BATNA: objective criteria are Route Policy Matrix rows and P0 obligations. BATNA is stop/report if clarity would require behavior or policy change.
+
+MESOs:
+- Option A: shared component applied to five high-overload routes. Chosen as smallest coherent slice.
+- Option B: page-specific redesigns. Rejected for this task because it would increase blast radius before density/interaction tasks.
+
+Measurement Plan:
+- `pnpm typecheck`
+- `pnpm lint`
+- `PLAYWRIGHT_PORT=3362 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-COMPLEXITY priority hierarchy"`
+- `PLAYWRIGHT_PORT=3365 pnpm test:workflow-gate`
+- `PLAYWRIGHT_PORT=3366 pnpm test:file-export`
+- `PLAYWRIGHT_PORT=3367 pnpm test:route-smoke`
+- Screenshot proof under `artifacts/ux-page-to-policy/UX-COMPLEXITY-001/`
+
+Ethics/Fairness: no dark-pattern urgency, no false proof, no hidden client-visible advice, no admin bypass and no overclaim that visual order completes compliance/evidence/export/audit obligations.
+
+Adversarial QA: priority panels could be misread as workflow completion; each action rail includes route-specific safety copy and tests prove the panel structure without granting behavior authority.
+
+Learning Log: later `UX-COMPLEXITY-002` can move secondary details into drawers/tabs, but workflows themselves must stay outside drawers and safety gates must remain visible.
+
+Route-policy rows cited:
+- `032` `/actions`
+- `033` `/signals`
+- `039` `/compliance/demo/review`
+- `042` `/compliance/demo/audit`
+- `056` `/export/demo/redaction`
+
+Changed files:
+- `components/ux-complexity-priority-panel.tsx`
+- `components/wealth-actions-screen.tsx`
+- `components/internal-workflow-screen.tsx`
+- `components/decisions-governance-screen.tsx`
+- `components/communication-export-ops-screen.tsx`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-001/2026-06-21-UX-COMPLEXITY-001-actions-after.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-001/2026-06-21-UX-COMPLEXITY-001-signals-after.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-001/2026-06-21-UX-COMPLEXITY-001-compliance-review-after.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-001/2026-06-21-UX-COMPLEXITY-001-compliance-audit-after.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-001/2026-06-21-UX-COMPLEXITY-001-export-redaction-after.png`
+
+Implementation summary:
+- Added `UxComplexityPriorityPanel` as a shared non-authorizing hierarchy layer.
+- Applied it to actions, signals, compliance review, compliance audit and export redaction.
+- Added route-smoke proof that each scoped route renders one summary strip, one priority queue and one action rail.
+- Kept existing compliance, export, audit, workflow and permission engines unchanged.
+
+Validation:
+- `pnpm typecheck` - passed after replacing an invalid signal title reference with the existing signal ID.
+- `pnpm lint` - passed with existing warnings from prior UX-HUB extraction.
+- `PLAYWRIGHT_PORT=3362 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-COMPLEXITY priority hierarchy"` - passed, 5 tests.
+- `PLAYWRIGHT_PORT=3365 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3366 pnpm test:file-export` - passed, 14 tests.
+- `PLAYWRIGHT_PORT=3367 pnpm test:route-smoke` - passed, 127 tests.
+- A first parallel safety rerun hit a Next dev-server port collision with the targeted Playwright server; it was rerun sequentially on fresh ports and passed.
+
+Screenshot/proof:
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-001/2026-06-21-UX-COMPLEXITY-001-actions-after.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-001/2026-06-21-UX-COMPLEXITY-001-signals-after.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-001/2026-06-21-UX-COMPLEXITY-001-compliance-review-after.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-001/2026-06-21-UX-COMPLEXITY-001-compliance-audit-after.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-001/2026-06-21-UX-COMPLEXITY-001-export-redaction-after.png`
+
+Positive acceptance:
+- The scoped routes now expose summary, priority queue and next constrained action above supporting content.
+- The primary page job and safety note are visible before the card-heavy supporting sections.
+
+Negative/P0 acceptance:
+- Priority hierarchy does not claim evidence sufficiency, compliance release, export approval/download/share, audit persistence, advice readiness or admin bypass.
+- No P1, Reference or Hold route was promoted.
+
+No-generation confirmation: no screen generation, state-screen generation, image generation or generated product assets.
+
+No-route-reclassification confirmation: route IDs, paths, scopes, page types and policy labels remain unchanged.
+
+No-P1/Hold/Reference-elevation confirmation: `UX-COMPLEXITY-001` only touched scoped MVP/MVP_SUPPORT productive routes.
+
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
+
 ## Completed Slice: UX-PAGE-002
 
 Task: `UX-PAGE-002` - Split workbench pages into queue / selected context / action rail.

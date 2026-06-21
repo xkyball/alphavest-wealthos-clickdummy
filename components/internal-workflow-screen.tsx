@@ -52,6 +52,7 @@ import { RouteContextChip } from "@/components/route-context-chip";
 import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
+import { UxComplexityPriorityPanel } from "@/components/ux-complexity-priority-panel";
 import { cn } from "@/lib/cn";
 import {
   recommendationReviewDemoTargets,
@@ -603,6 +604,22 @@ function SignalsPage({ title }: { title: string }) {
           />
           <ScfP04P06FlowPanel mode="advisory" />
           <StatePanel detail="Low confidence due to incomplete beneficial owner and purpose-of-wire data. Request additional information before routing." state="restricted" title="Low confidence due to incomplete data" />
+          <UxComplexityPriorityPanel
+            actionLabel="Request data before routing"
+            actionState="The selected signal cannot become advice until missing elements are reviewed and routed through advisor/compliance gates."
+            priorityItems={[
+              { detail: selectedSignal.client, label: selectedSignal.id, value: selectedSignal.severity },
+              { detail: selectedSignal.missingElements.join(", "), label: "Missing elements", value: selectedSignal.dataCompleteness },
+              { detail: selectedSignal.source, label: "Source quality", value: selectedSignal.confidence },
+            ]}
+            safetyNote="Signal priority does not prove recommendation quality or client visibility."
+            summaryItems={[
+              { detail: "High-priority signal queue", label: "High", value: "5" },
+              { detail: "Selected signal status", label: "Status", value: selectedSignal.status },
+              { detail: "Advice boundary", label: "Client visible", value: "No" },
+            ]}
+            title="Signal triage hierarchy"
+          />
           <div className="grid gap-3 md:grid-cols-5">
             {[
               ["Signal ID", selectedSignal.id],
@@ -1400,6 +1417,22 @@ function ComplianceReviewPage({ title }: { title: string }) {
             safetyNote="Advisor approval is not compliance release; compliance release is not client acceptance."
             status="Release gates not satisfied"
             timelineItems={["Auto-classification completed", "Reviewer assigned", "Policy exception open"]}
+          />
+          <UxComplexityPriorityPanel
+            actionLabel="Request evidence or block release"
+            actionState="Release stays blocked while evidence completeness and policy checks are unresolved."
+            priorityItems={[
+              { detail: complianceReview.client, label: complianceReview.title, value: complianceReview.classification },
+              { detail: complianceReview.evidenceComplete, label: "Evidence completeness", value: "Incomplete" },
+              { detail: complianceReview.policy, label: "Policy exception", value: "Open" },
+            ]}
+            safetyNote="Compliance card hierarchy does not complete release; the release action remains separately gated."
+            summaryItems={[
+              { detail: "Current review state", label: "Gate", value: "Blocked" },
+              { detail: complianceReview.due, label: "Due", value: "P0" },
+              { detail: "Advisor approval is not release", label: "Boundary", value: "Held" },
+            ]}
+            title="Compliance review hierarchy"
           />
           <div className="grid gap-5 xl:grid-cols-2 2xl:grid-cols-[0.85fr_0.9fr_0.9fr]">
             <Card>

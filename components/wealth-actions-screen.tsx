@@ -33,6 +33,7 @@ import { GlobalSearchBox } from "@/components/global-search-box";
 import { AuditTimeline, Badge, Card, CardContent, CardHeader, CardTitle, StatePanel, type BadgeTone } from "@/components/ui";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
+import { UxComplexityPriorityPanel } from "@/components/ux-complexity-priority-panel";
 import { RouteContextChip } from "@/components/route-context-chip";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { cn } from "@/lib/cn";
@@ -463,6 +464,22 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
             action={<div className="flex flex-wrap gap-3"><button className={secondaryButtonClass} type="button"><Filter aria-hidden="true" className="size-4" />Filters</button><button className={secondaryButtonClass} onClick={() => setDrawerOpen(true)} type="button">Open selected action</button><button className={primaryButtonClass} type="button"><Plus aria-hidden="true" className="size-4" />New action</button></div>}
             subtitle="Track and advance actions through the workflow."
             title={title}
+          />
+          <UxComplexityPriorityPanel
+            actionLabel="Open selected action"
+            actionState="Selected action review stays blocked until missing client approval evidence is resolved."
+            priorityItems={[
+              { detail: selectedAction.object, label: selectedAction.title, value: selectedAction.priority },
+              { detail: "Client approval evidence missing", label: "Evidence blocker", value: selectedAction.evidenceState },
+              { detail: selectedAction.due, label: "Next due item", value: selectedAction.stage },
+            ]}
+            safetyNote="Action board priority is orientation only; readiness still requires evidence, audit and workflow gates."
+            summaryItems={[
+              { detail: "Work that needs attention first", label: "Blocked", value: "1" },
+              { detail: "Visible on the board", label: "Active actions", value: "22" },
+              { detail: "Must stay evidence-backed", label: "Client visible", value: "0" },
+            ]}
+            title="Actions complexity reduction"
           />
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
             {actionMetrics.map((metric) => (

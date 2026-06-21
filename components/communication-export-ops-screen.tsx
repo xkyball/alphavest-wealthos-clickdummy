@@ -54,6 +54,7 @@ import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
+import { UxComplexityPriorityPanel } from "@/components/ux-complexity-priority-panel";
 import { cn } from "@/lib/cn";
 import {
   blueprintRows,
@@ -933,6 +934,23 @@ function ExportRedactionPage({ title }: { title: string }) {
       <div className="mt-5">
         <ScfP07P09TrustPanel mode="export" />
       </div>
+      <UxComplexityPriorityPanel
+        className="mt-5"
+        actionLabel="Review mandatory redactions"
+        actionState="Preview and approval remain blocked until forbidden internal payload checks pass."
+        priorityItems={[
+          { detail: "Must be blocked from external package", label: "Internal advisor memo", value: "Blocked" },
+          { detail: "Needs reviewer confirmation", label: "Tax residency notes", value: "Pending" },
+          { detail: "External client redacted view selected", label: "Redaction profile", value: "Active" },
+        ]}
+        safetyNote="Redaction summary is not approval; preview, approval, download and share remain separate export steps."
+        summaryItems={[
+          { detail: "Marked redactions in preview", label: "Redactions", value: "12" },
+          { detail: "Items visible after external redaction", label: "External visible", value: "16" },
+          { detail: "Forbidden payload checks", label: "Internal payload", value: "Blocked" },
+        ]}
+        title="Redaction complexity reduction"
+      />
       <div className="mt-5 grid gap-5 2xl:grid-cols-[20rem_minmax(0,1fr)_24rem]">
         <Card>
           <CardHeader>

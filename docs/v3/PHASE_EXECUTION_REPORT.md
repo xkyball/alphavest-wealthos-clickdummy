@@ -8169,3 +8169,76 @@ Completed `UX-PAGE-004` by adding explicit no-elevation proof for P1, Reference 
 ### Exit Gate Decision
 
 `UX_PAGE_004_COMPLETED_WITH_NO_ELEVATION_PROOF`
+
+## UX-COMPLEXITY-001 Addendum - Priority Hierarchy Applied
+
+Date: 2026-06-21
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+
+### Scope
+
+Completed `UX-COMPLEXITY-001` by adding a shared summary strip, priority queue and non-authorizing action rail to the scoped dense MVP/MVP_SUPPORT routes. The implementation reduces card-wall overload while preserving all underlying permission, compliance, evidence, export and audit gates.
+
+### Changed Files
+
+- `components/ux-complexity-priority-panel.tsx`
+- `components/wealth-actions-screen.tsx`
+- `components/internal-workflow-screen.tsx`
+- `components/decisions-governance-screen.tsx`
+- `components/communication-export-ops-screen.tsx`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-001/2026-06-21-UX-COMPLEXITY-001-actions-after.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-001/2026-06-21-UX-COMPLEXITY-001-signals-after.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-001/2026-06-21-UX-COMPLEXITY-001-compliance-review-after.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-001/2026-06-21-UX-COMPLEXITY-001-compliance-audit-after.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-001/2026-06-21-UX-COMPLEXITY-001-export-redaction-after.png`
+
+### Route-Policy Rows Cited
+
+- `032`, `033`, `039`, `042`, `056`.
+
+### Implementation Notes
+
+- Added `UxComplexityPriorityPanel`.
+- Applied the panel to `/actions`, `/signals`, `/compliance/demo/review`, `/compliance/demo/audit` and `/export/demo/redaction`.
+- Kept action rails descriptive and constrained; no approval, release, download, share, evidence-sufficiency or admin authority was added.
+- Preserved existing workbench/detail panels and safety copy.
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with existing warnings from prior UX-HUB extraction.
+- `PLAYWRIGHT_PORT=3362 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-COMPLEXITY priority hierarchy"` - passed, 5 tests.
+- `PLAYWRIGHT_PORT=3365 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3366 pnpm test:file-export` - passed, 14 tests.
+- `PLAYWRIGHT_PORT=3367 pnpm test:route-smoke` - passed, 127 tests.
+- Initial parallel safety rerun hit a Next dev-server port collision; rerun sequentially on fresh ports passed.
+
+### Screenshot Proof
+
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-001/2026-06-21-UX-COMPLEXITY-001-actions-after.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-001/2026-06-21-UX-COMPLEXITY-001-signals-after.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-001/2026-06-21-UX-COMPLEXITY-001-compliance-review-after.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-001/2026-06-21-UX-COMPLEXITY-001-compliance-audit-after.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-001/2026-06-21-UX-COMPLEXITY-001-export-redaction-after.png`
+
+### Positive Acceptance
+
+- The scoped routes now expose a summary strip, priority queue and one constrained action rail above supporting content.
+- The page job and next safe step are visible before dense supporting cards.
+
+### Negative Acceptance
+
+- The priority layer does not claim workflow completion, evidence sufficiency, compliance release, export approval/download/share, audit persistence, advice readiness or admin bypass.
+- No route IDs, paths, scopes or classifications changed.
+- No P1, Reference or Hold route was elevated.
+
+### Exit Gate Decision
+
+`UX_COMPLEXITY_001_COMPLETED_WITH_PRIORITY_HIERARCHY_AND_P0_PROOF`
