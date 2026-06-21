@@ -236,6 +236,129 @@ No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route rece
 
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
 
+## Completed Slice: UX-COMPLEXITY-002
+
+Task: `UX-COMPLEXITY-002` - Move secondary/tertiary detail into drawers/tabs without hiding safety gates.
+
+Mission Card: move secondary context on routes `031`, `046`, `048`, `050` and `051` into tabs/drawer context while preserving visible safety gates for wealth-map context, evidence visibility, RBAC, governance access review and audit persistence.
+
+Evidence Intake:
+- Task-master `UX-COMPLEXITY-002` target rows: `031`, `046`, `048`, `050`, `051`.
+- Route Policy Matrix drawer rule: drawers can show secondary context but must not become complete workflow, release or export approval surfaces.
+- Existing implementation finding: `046`, `048`, `050` and `051` already used real drawers; `031` is now a standalone hub, so the narrow dependency fix was in `components/ux-hub-page.tsx`.
+- Existing lifecycle-spec finding: `tests/interaction-lifecycle.spec.ts` still expects the old Wealth Map fake drawer on `/wealth-map?state=drawer`; the new UX-HUB implementation intentionally replaced that surface. The current proof is the new route-smoke drawer/tab test.
+
+Problem Architecture: secondary details were either stacked in drawers or mixed into dense hub context. The safe design move is to tab contextual detail while leaving safety gates outside the tabbed content.
+
+Double Diamond:
+- Discover: target routes had secondary facts, linked documents, access detail, lineage and handoff context competing with primary work.
+- Define: keep gate prerequisites and safety warnings visible, move non-primary detail into tabs.
+- Develop: add shared `UxSecondaryContextTabs` and apply it to existing drawers plus the `031` hub.
+- Deliver: route-smoke proof, P0 safety tests, screenshots and reports.
+
+Psycho-Logic + Map/Model: when detail overload rises, users can mistake surrounding facts for permission to act. The safe model is "context in tabs, gate outside tabs."
+
+Reframing Matrix:
+- Detail-as-workflow: rejected.
+- Detail-as-context: kept in tabs/drawers.
+- Gate-as-hidden-tab: rejected.
+- Gate-as-visible-page constraint: kept.
+
+TRIZ: reduce detail overload without weakening safety gates by separating secondary context from visible prerequisites.
+
+SIT Closed World: reused existing drawers, hub definitions, route state and smoke tests; no new routes, generated screens/images, APIs, schema changes or product-scope engine.
+
+Zwicky + CCA:
+- Variant A: rewrite each route layout deeply. Rejected as too broad.
+- Variant B: add shared tabs inside current drawers/context zones. Chosen.
+- Variant C: convert workflows into drawer workflows. Rejected by Route Policy Matrix.
+
+SCAMPER: rearranged facts/linked docs/access/lineage into tabs, combined repeated drawer section chrome, and kept gate panels outside the tab body.
+
+Harvard / BATNA: objective criteria are the Route Policy Matrix drawer rule and P0 safety obligations. BATNA is documenting stale lifecycle-spec expectations rather than reintroducing old fake drawers.
+
+MESOs:
+- Option A: target only `046`, `048`, `050`, `051`. Rejected because task explicitly includes `031`.
+- Option B: include narrow `031` hub dependency fix plus existing drawers. Chosen.
+
+Measurement Plan:
+- `pnpm typecheck`
+- `pnpm lint`
+- `PLAYWRIGHT_PORT=3370 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-COMPLEXITY secondary context drawers and tabs"`
+- `PLAYWRIGHT_PORT=3378 pnpm test:permissions`
+- `PLAYWRIGHT_PORT=3379 pnpm test:workflow-gate`
+- `PLAYWRIGHT_PORT=3380 pnpm test:file-export`
+- `PLAYWRIGHT_PORT=3381 pnpm test:route-smoke`
+- Screenshot proof under `artifacts/ux-page-to-policy/UX-COMPLEXITY-002/`
+
+Ethics/Fairness: no hidden safety prerequisite, no workflow-in-drawer deception, no claim that drawer/tab visibility proves lifecycle behavior, evidence sufficiency, audit persistence or export approval.
+
+Adversarial QA: a drawer tab could hide a gate; the new component carries a visible safety note and the page-level P0 panels remain outside tab content.
+
+Learning Log: `UX-COMPLEXITY-003` can formalize Must-see / Secondary / Tertiary hierarchy using this tab pattern while keeping safety content in the Must-see layer.
+
+Route-policy rows cited:
+- `031` `/wealth-map`
+- `046` `/evidence`
+- `048` `/governance/users`
+- `050` `/governance/access-requests`
+- `051` `/governance/audit-history`
+
+Changed files:
+- `components/ux-secondary-context-tabs.tsx`
+- `components/ux-hub-page.tsx`
+- `components/wealth-actions-screen.tsx`
+- `components/decisions-governance-screen.tsx`
+- `components/communication-export-ops-screen.tsx`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-002/2026-06-21-UX-COMPLEXITY-002-wealth-map-secondary-tabs.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-002/2026-06-21-UX-COMPLEXITY-002-evidence-drawer-tabs.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-002/2026-06-21-UX-COMPLEXITY-002-governance-users-drawer-tabs.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-002/2026-06-21-UX-COMPLEXITY-002-access-requests-drawer-tabs.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-002/2026-06-21-UX-COMPLEXITY-002-audit-history-drawer-tabs.png`
+
+Implementation summary:
+- Added shared accessible secondary-context tab component.
+- Added real `031` hub secondary context tabs as a narrow dependency fix because Wealth Map is now a standalone hub page.
+- Converted Evidence, Governance Users, Access Requests and Audit History drawer secondary details into tabbed context.
+- Kept visibility, sensitive-access, policy/SOD and audit-persistence safety panels visible outside hidden tab content.
+
+Validation:
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with existing warnings.
+- `PLAYWRIGHT_PORT=3370 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-COMPLEXITY secondary context drawers and tabs"` - passed, 5 tests.
+- `PLAYWRIGHT_PORT=3378 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3379 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3380 pnpm test:file-export` - passed, 14 tests.
+- `PLAYWRIGHT_PORT=3381 pnpm test:route-smoke` - passed, 132 tests.
+- `PLAYWRIGHT_PORT=3371 pnpm exec playwright test tests/interaction-lifecycle.spec.ts` - stopped after stale/blocked failures; the spec still expects old Wealth Map fake drawer behavior and left a dev server running, which was killed before rerunning P0 tests.
+
+Screenshot/proof:
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-002/2026-06-21-UX-COMPLEXITY-002-wealth-map-secondary-tabs.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-002/2026-06-21-UX-COMPLEXITY-002-evidence-drawer-tabs.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-002/2026-06-21-UX-COMPLEXITY-002-governance-users-drawer-tabs.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-002/2026-06-21-UX-COMPLEXITY-002-access-requests-drawer-tabs.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-002/2026-06-21-UX-COMPLEXITY-002-audit-history-drawer-tabs.png`
+
+Positive acceptance:
+- Secondary context on the scoped routes is presented through tabs/drawers.
+- Primary job, next-step surfaces and required safety notes remain visible.
+
+Negative/P0 acceptance:
+- Tabs do not hide required gates, evidence needs, audit state, RBAC warnings or export/compliance boundaries.
+- No drawer became a complete workflow, release surface, export approval surface or behavior proof.
+
+No-generation confirmation: no screen generation, state-screen generation, image generation or generated product assets.
+
+No-route-reclassification confirmation: route IDs, paths, scopes, page types and policy labels remain unchanged.
+
+No-P1/Hold/Reference-elevation confirmation: `UX-COMPLEXITY-002` touched only scoped MVP/MVP_SUPPORT target rows.
+
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed P0 tests.
+
 ## Completed Slice: UX-PAGE-004
 
 Task: `UX-PAGE-004` - Keep P1, Reference and Hold routes out of productive MVP page-type work.

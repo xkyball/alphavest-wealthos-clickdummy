@@ -55,6 +55,7 @@ import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
 import { UxComplexityPriorityPanel } from "@/components/ux-complexity-priority-panel";
+import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
 import { cn } from "@/lib/cn";
 import {
   blueprintRows,
@@ -629,37 +630,59 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
               Export events
             </button>
           </div>
-          <KeyValueList
-            items={[
-              { label: "Event", value: selected?.id ?? "n/a" },
-              { label: "Action", value: selected?.action ?? "n/a" },
-              { label: "Object", value: selected?.object ?? "n/a" },
-              { label: "Source", value: selected?.source ?? "n/a" },
-              { label: "Actor", value: selected?.actor ?? "n/a" }
+          <UxSecondaryContextTabs
+            safetyNote="Event tabs are selected-row context only; audit persistence and retention gates remain visible on the main page."
+            tabs={[
+              {
+                content: (
+                  <KeyValueList
+                    items={[
+                      { label: "Event", value: selected?.id ?? "n/a" },
+                      { label: "Action", value: selected?.action ?? "n/a" },
+                      { label: "Object", value: selected?.object ?? "n/a" },
+                      { label: "Source", value: selected?.source ?? "n/a" },
+                      { label: "Actor", value: selected?.actor ?? "n/a" }
+                    ]}
+                  />
+                ),
+                id: "event",
+                label: "Event",
+              },
+              {
+                content: (
+                  <ol className="space-y-3">
+                    {(selected?.lineage ?? []).map((item) => (
+                      <li className="flex items-center gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/55 p-3 text-sm text-alphavest-muted" key={item}>
+                        <CheckCircle2 aria-hidden="true" className="size-4 text-alphavest-green" />
+                        {item}
+                      </li>
+                    ))}
+                  </ol>
+                ),
+                id: "lineage",
+                label: "Lineage",
+              },
+              {
+                content: (
+                  <div className="grid gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+                    <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/60 p-4">
+                      <p className="text-xs uppercase tracking-[0.12em] text-alphavest-subtle">Before</p>
+                      <p className="mt-2 font-semibold text-alphavest-ivory">{selected?.before ?? "n/a"}</p>
+                    </div>
+                    <ArrowRight aria-hidden="true" className="mx-auto size-5 text-alphavest-gold" />
+                    <div className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-4">
+                      <p className="text-xs uppercase tracking-[0.12em] text-alphavest-green">After</p>
+                      <p className="mt-2 font-semibold text-alphavest-ivory">{selected?.after ?? "n/a"}</p>
+                    </div>
+                  </div>
+                ),
+                id: "before-after",
+                label: "Before / after",
+                tone: "warning",
+              },
             ]}
+            title="Secondary audit-event context"
           />
-          <div>
-            <h3 className="text-sm font-semibold text-alphavest-ivory">Lineage</h3>
-            <ol className="mt-3 space-y-3">
-              {(selected?.lineage ?? []).map((item) => (
-                <li className="flex items-center gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/55 p-3 text-sm text-alphavest-muted" key={item}>
-                  <CheckCircle2 aria-hidden="true" className="size-4 text-alphavest-green" />
-                  {item}
-                </li>
-              ))}
-            </ol>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
-            <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/60 p-4">
-              <p className="text-xs uppercase tracking-[0.12em] text-alphavest-subtle">Before</p>
-              <p className="mt-2 font-semibold text-alphavest-ivory">{selected?.before ?? "n/a"}</p>
-            </div>
-            <ArrowRight aria-hidden="true" className="mx-auto size-5 text-alphavest-gold" />
-            <div className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-4">
-              <p className="text-xs uppercase tracking-[0.12em] text-alphavest-green">After</p>
-              <p className="mt-2 font-semibold text-alphavest-ivory">{selected?.after ?? "n/a"}</p>
-            </div>
-          </div>
         </div>
       </Drawer>
     </div>

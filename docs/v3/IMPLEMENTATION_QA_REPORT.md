@@ -6261,3 +6261,52 @@ Source of truth:
 
 - This slice reduces overload on the five `UX-COMPLEXITY-001` target rows. It does not move secondary/tertiary content into drawers or tabs; that belongs to later `UX-COMPLEXITY-002` and `UX-INTERACTION-*` tasks.
 - Before/after proof is documented as implementation audit plus after screenshots; no generated reference screens or images were created.
+
+## UX-COMPLEXITY-002 QA Addendum
+
+Date: 2026-06-21
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+
+| Area | QA result | Evidence |
+| --- | --- | --- |
+| Secondary tabs/drawers | Passed | Route-smoke verifies tablist, safety note and active panel on `031`, `046`, `048`, `050`, `051`. |
+| Gate visibility | Passed | Evidence visibility, sensitive access, policy/SOD and audit-persistence gates remain outside hidden tab bodies. |
+| Route Policy Matrix preservation | Passed | The change uses existing routes and scopes; no route registry or classification edits. |
+| P0 safety | Passed | Permissions, workflow gate, export lifecycle and full route smoke remain green. |
+| Screenshot proof | Passed | Five screenshots captured under `artifacts/ux-page-to-policy/UX-COMPLEXITY-002/`. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | `tsc --noEmit` completed successfully. |
+| `pnpm lint` | Passed | Existing warnings remain. |
+| `PLAYWRIGHT_PORT=3370 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-COMPLEXITY secondary context drawers and tabs"` | Passed | 5 scoped route tests. |
+| `PLAYWRIGHT_PORT=3378 pnpm test:permissions` | Passed | 8 tests. |
+| `PLAYWRIGHT_PORT=3379 pnpm test:workflow-gate` | Passed | 13 tests. |
+| `PLAYWRIGHT_PORT=3380 pnpm test:file-export` | Passed | 14 tests. |
+| `PLAYWRIGHT_PORT=3381 pnpm test:route-smoke` | Passed | 132 tests. |
+| `PLAYWRIGHT_PORT=3371 pnpm exec playwright test tests/interaction-lifecycle.spec.ts` | Blocked / stale | Existing lifecycle spec expects the old Wealth Map fake drawer; it timed out and left a dev server on 3371, which was killed before P0 reruns. |
+
+### Screenshot Proof
+
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-002/2026-06-21-UX-COMPLEXITY-002-wealth-map-secondary-tabs.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-002/2026-06-21-UX-COMPLEXITY-002-evidence-drawer-tabs.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-002/2026-06-21-UX-COMPLEXITY-002-governance-users-drawer-tabs.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-002/2026-06-21-UX-COMPLEXITY-002-access-requests-drawer-tabs.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-002/2026-06-21-UX-COMPLEXITY-002-audit-history-drawer-tabs.png`
+
+### Safety Proof
+
+- Drawer/tab presence is not behavior proof.
+- Evidence drawer tabs do not prove evidence sufficiency.
+- Governance drawer tabs do not expand RBAC or sensitive-action authority.
+- Access request tabs do not hide policy/SOD checks.
+- Audit history tabs do not prove persistence or retention.
+
+### QA Limits
+
+- `UX-COMPLEXITY-002` does not solve the older `tests/interaction-lifecycle.spec.ts` expectation that `/wealth-map?state=drawer` renders a legacy fake drawer. Current accepted proof is the new route-smoke secondary-tab coverage against the standalone Hub implementation.

@@ -298,6 +298,31 @@ test.describe("UX-COMPLEXITY priority hierarchy", () => {
   }
 });
 
+test.describe("UX-COMPLEXITY secondary context drawers and tabs", () => {
+  const uxComplexity002Routes = [
+    "/wealth-map?state=drawer",
+    "/evidence?state=drawer",
+    "/governance/users?state=drawer",
+    "/governance/access-requests?state=drawer",
+    "/governance/audit-history?state=drawer",
+  ];
+
+  for (const path of uxComplexity002Routes) {
+    test(`${path} keeps secondary context in tabs with visible safety notes`, async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 1100 });
+      await authenticateRouteSmokePage(page);
+      await page.goto(path);
+
+      const tabs = page.getByTestId("ux-complexity-secondary-tabs").first();
+      await expect(tabs).toBeVisible();
+      await expect(tabs.getByTestId("ux-complexity-secondary-tablist")).toBeVisible();
+      expect(await tabs.getByTestId("ux-complexity-secondary-tab").count()).toBeGreaterThan(1);
+      await expect(tabs.getByTestId("ux-complexity-secondary-safety-note")).toBeVisible();
+      await expect(tabs.getByTestId("ux-complexity-secondary-active-panel")).toBeVisible();
+    });
+  }
+});
+
 test.describe("locked route workset preservation", () => {
   test("all registered routes are classified exactly once", () => {
     expect(routeWorksetIntegrity.counts).toEqual(lockedRouteWorksetCounts);

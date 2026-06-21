@@ -8242,3 +8242,77 @@ Completed `UX-COMPLEXITY-001` by adding a shared summary strip, priority queue a
 ### Exit Gate Decision
 
 `UX_COMPLEXITY_001_COMPLETED_WITH_PRIORITY_HIERARCHY_AND_P0_PROOF`
+
+## UX-COMPLEXITY-002 Addendum - Secondary Context Tabs Applied
+
+Date: 2026-06-21
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+
+### Scope
+
+Completed `UX-COMPLEXITY-002` by moving secondary details for the scoped target rows into tabbed drawer/context surfaces. Gate and safety information remains visible outside tabbed content. A narrow `031` hub dependency fix was required because Wealth Map is now implemented as a standalone `UxHubPage`, not the legacy local drawer.
+
+### Changed Files
+
+- `components/ux-secondary-context-tabs.tsx`
+- `components/ux-hub-page.tsx`
+- `components/wealth-actions-screen.tsx`
+- `components/decisions-governance-screen.tsx`
+- `components/communication-export-ops-screen.tsx`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-002/2026-06-21-UX-COMPLEXITY-002-wealth-map-secondary-tabs.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-002/2026-06-21-UX-COMPLEXITY-002-evidence-drawer-tabs.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-002/2026-06-21-UX-COMPLEXITY-002-governance-users-drawer-tabs.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-002/2026-06-21-UX-COMPLEXITY-002-access-requests-drawer-tabs.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-002/2026-06-21-UX-COMPLEXITY-002-audit-history-drawer-tabs.png`
+
+### Route-Policy Rows Cited
+
+- `031`, `046`, `048`, `050`, `051`.
+
+### Implementation Notes
+
+- Added `UxSecondaryContextTabs` with accessible tab buttons, active panel and always-visible safety note.
+- Added `031` Wealth Map hub secondary context tabs without restoring the old fake drawer.
+- Converted Evidence Vault drawer details into Summary / Linked documents / Access tabs while keeping controlled visibility visible.
+- Converted Governance Users and Access Requests drawer context into tabs while keeping sensitive access and policy/SOD checks visible.
+- Converted Audit History event details into Event / Lineage / Before-after tabs while keeping audit persistence gate visible on the main page.
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with existing warnings.
+- `PLAYWRIGHT_PORT=3370 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-COMPLEXITY secondary context drawers and tabs"` - passed, 5 tests.
+- `PLAYWRIGHT_PORT=3378 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3379 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3380 pnpm test:file-export` - passed, 14 tests.
+- `PLAYWRIGHT_PORT=3381 pnpm test:route-smoke` - passed, 132 tests.
+- `PLAYWRIGHT_PORT=3371 pnpm exec playwright test tests/interaction-lifecycle.spec.ts` - stopped after stale lifecycle failures; existing spec still expects the old Wealth Map drawer and is not the current UX-COMPLEXITY-002 proof.
+
+### Screenshot Proof
+
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-002/2026-06-21-UX-COMPLEXITY-002-wealth-map-secondary-tabs.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-002/2026-06-21-UX-COMPLEXITY-002-evidence-drawer-tabs.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-002/2026-06-21-UX-COMPLEXITY-002-governance-users-drawer-tabs.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-002/2026-06-21-UX-COMPLEXITY-002-access-requests-drawer-tabs.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-002/2026-06-21-UX-COMPLEXITY-002-audit-history-drawer-tabs.png`
+
+### Positive Acceptance
+
+- Target routes expose secondary/tertiary detail as tabs/drawer context.
+- Primary work context and safety notes remain visible and test-backed.
+
+### Negative Acceptance
+
+- No safety gate, evidence need, audit state, RBAC warning, export separation or compliance boundary was hidden inside a tab.
+- Drawers/tabs are still context surfaces, not complete workflows or proof of lifecycle behavior.
+
+### Exit Gate Decision
+
+`UX_COMPLEXITY_002_COMPLETED_WITH_SECONDARY_CONTEXT_TABS_AND_P0_PROOF`

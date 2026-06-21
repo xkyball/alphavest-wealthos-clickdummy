@@ -36,6 +36,7 @@ import { ProductGuidanceContent } from "@/components/product-guidance-panel";
 import { UxComplexityPriorityPanel } from "@/components/ux-complexity-priority-panel";
 import { RouteContextChip } from "@/components/route-context-chip";
 import { UxHubPage } from "@/components/ux-hub-page";
+import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
 import { cn } from "@/lib/cn";
 import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import type { ScreenRoute } from "@/lib/route-registry";
@@ -391,62 +392,84 @@ function WealthMapDrawer({ onClose }: { onClose: () => void }) {
         <Badge tone="gold">Relationships {selectedWealthNode.relationships}</Badge>
         <Badge tone="blue">Documents {selectedWealthNode.documents}</Badge>
       </div>
-      <div className="mt-5 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-4">
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
-          {[
-            ["Estimated value", selectedWealthNode.value],
-            ["Last updated", wealthWorkspace.lastUpdated],
-            ["Purpose", selectedWealthNode.purpose],
-            ["Settlor", selectedWealthNode.settlor],
-            ["Trustee", selectedWealthNode.trustee],
-            ["Jurisdiction", selectedWealthNode.jurisdiction]
-          ].map(([label, value]) => (
-            <div key={label}>
-              <p className="text-xs text-alphavest-muted">{label}</p>
-              <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{value}</p>
-            </div>
-          ))}
-        </div>
+      <div className="mt-5">
+        <UxSecondaryContextTabs
+          safetyNote="This drawer is secondary context only; full workflows and final gates stay on the target workbench/detail route."
+          tabs={[
+            {
+              content: (
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+                  {[
+                    ["Estimated value", selectedWealthNode.value],
+                    ["Last updated", wealthWorkspace.lastUpdated],
+                    ["Purpose", selectedWealthNode.purpose],
+                    ["Settlor", selectedWealthNode.settlor],
+                    ["Trustee", selectedWealthNode.trustee],
+                    ["Jurisdiction", selectedWealthNode.jurisdiction]
+                  ].map(([label, value]) => (
+                    <div key={label}>
+                      <p className="text-xs text-alphavest-muted">{label}</p>
+                      <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{value}</p>
+                    </div>
+                  ))}
+                </div>
+              ),
+              id: "facts",
+              label: "Facts",
+            },
+            {
+              content: (
+                <div className="space-y-3">
+                  {wealthMapAlerts.map((alert) => (
+                    <div className={cn("rounded-md border p-3", alert.tone === "red" && "border-alphavest-red/35 bg-alphavest-red/10", alert.tone === "gold" && "border-alphavest-gold/35 bg-alphavest-gold/10", alert.tone === "blue" && "border-alphavest-blue/35 bg-alphavest-blue/10")} key={alert.title}>
+                      <div className="flex items-start gap-3">
+                        <AlertTriangle aria-hidden="true" className={cn("mt-0.5 size-4 shrink-0", alert.tone === "red" ? "text-alphavest-red" : alert.tone === "gold" ? "text-alphavest-gold" : "text-alphavest-blue")} />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-alphavest-ivory">{alert.title}</p>
+                          <p className="mt-1 text-xs text-alphavest-muted">{alert.detail}</p>
+                        </div>
+                        <button
+                          className="text-xs font-semibold text-alphavest-gold"
+                          data-testid={alert.action === "View details" ? "j05-view-details" : undefined}
+                          onClick={() => {
+                            if (alert.action === "View details") {
+                              void runScreencastDemoAction("j05.viewDetails", "/actions?state=drawer");
+                            }
+                          }}
+                          type="button"
+                        >
+                          {alert.action}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ),
+              id: "alerts",
+              label: "Alerts",
+              tone: "warning",
+            },
+            {
+              content: (
+                <div className="space-y-3">
+                  {wealthMapDecisions.map((decision) => (
+                    <div className="flex items-start justify-between gap-3 border-b border-alphavest-border/45 pb-3 last:border-0" key={decision.title}>
+                      <div>
+                        <p className="text-sm font-semibold text-alphavest-ivory">{decision.title}</p>
+                        <p className="mt-1 text-xs text-alphavest-muted">{decision.status} · {decision.due}</p>
+                      </div>
+                      <span className="grid size-8 shrink-0 place-items-center rounded-full border border-alphavest-border text-xs text-alphavest-muted">{decision.owner}</span>
+                    </div>
+                  ))}
+                </div>
+              ),
+              id: "related-decisions",
+              label: "Related decisions",
+            },
+          ]}
+          title="Secondary wealth-map context"
+        />
       </div>
-      <div className="mt-4 space-y-3">
-        {wealthMapAlerts.map((alert) => (
-          <div className={cn("rounded-md border p-3", alert.tone === "red" && "border-alphavest-red/35 bg-alphavest-red/10", alert.tone === "gold" && "border-alphavest-gold/35 bg-alphavest-gold/10", alert.tone === "blue" && "border-alphavest-blue/35 bg-alphavest-blue/10")} key={alert.title}>
-            <div className="flex items-start gap-3">
-              <AlertTriangle aria-hidden="true" className={cn("mt-0.5 size-4 shrink-0", alert.tone === "red" ? "text-alphavest-red" : alert.tone === "gold" ? "text-alphavest-gold" : "text-alphavest-blue")} />
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-alphavest-ivory">{alert.title}</p>
-                <p className="mt-1 text-xs text-alphavest-muted">{alert.detail}</p>
-              </div>
-              <button
-                className="text-xs font-semibold text-alphavest-gold"
-                data-testid={alert.action === "View details" ? "j05-view-details" : undefined}
-                onClick={() => {
-                  if (alert.action === "View details") {
-                    void runScreencastDemoAction("j05.viewDetails", "/actions?state=drawer");
-                  }
-                }}
-                type="button"
-              >
-                {alert.action}
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-      <Card className="mt-4">
-        <CardHeader><CardTitle className="text-xl">Related decisions</CardTitle></CardHeader>
-        <CardContent className="space-y-3">
-          {wealthMapDecisions.map((decision) => (
-            <div className="flex items-start justify-between gap-3 border-b border-alphavest-border/45 pb-3 last:border-0" key={decision.title}>
-              <div>
-                <p className="text-sm font-semibold text-alphavest-ivory">{decision.title}</p>
-                <p className="mt-1 text-xs text-alphavest-muted">{decision.status} · {decision.due}</p>
-              </div>
-              <span className="grid size-8 shrink-0 place-items-center rounded-full border border-alphavest-border text-xs text-alphavest-muted">{decision.owner}</span>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
       <StatePanel className="mt-4" detail="You can see the structure and connections, but sensitive data is hidden due to object-level permissions." state="restricted" title="Restricted entities in this map are masked" />
     </aside>
   );

@@ -50,6 +50,7 @@ import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
 import { UxComplexityPriorityPanel } from "@/components/ux-complexity-priority-panel";
+import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
 import { cn } from "@/lib/cn";
 import {
   recommendationReviewDemoTargets,
@@ -1030,30 +1031,46 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
       >
         <div className="space-y-5">
           <StatePanel detail="Internal and advisor visibility only. Not shared with client." state="restricted" title="Controlled visibility" />
-          <Card>
-            <CardHeader><CardTitle>Summary</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
-              <InfoRow label="Client / Account" value="Johnson Family" />
-              <InfoRow label="Category" value="Suitability" />
-              <InfoRow label="Evidence Type" value="Form assessment" />
-              <InfoRow label="Date Completed" value="May 13, 2025" />
-              <InfoRow label="Next Review" value="May 13, 2026" />
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader><CardTitle>Linked Documents</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
-              {["Investment policy statement", "Client profile - Johnson Family"].map((item) => <p className="text-sm text-alphavest-muted" key={item}>{item}</p>)}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader><CardTitle>Access</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
-              <InfoRow label="Owners" value="AC, SL, +1" />
-              <InfoRow label="Internal roles" value="Advisors, Compliance" />
-              <InfoRow label="Client visibility" value="Advisors and internal only" />
-            </CardContent>
-          </Card>
+          <UxSecondaryContextTabs
+            safetyNote="Drawer tabs expose evidence context only; they do not prove evidence sufficiency or compliance acceptance."
+            tabs={[
+              {
+                content: (
+                  <div className="space-y-3">
+                    <InfoRow label="Client / Account" value="Johnson Family" />
+                    <InfoRow label="Category" value="Suitability" />
+                    <InfoRow label="Evidence Type" value="Form assessment" />
+                    <InfoRow label="Date Completed" value="May 13, 2025" />
+                    <InfoRow label="Next Review" value="May 13, 2026" />
+                  </div>
+                ),
+                id: "summary",
+                label: "Summary",
+              },
+              {
+                content: (
+                  <div className="space-y-3">
+                    {["Investment policy statement", "Client profile - Johnson Family"].map((item) => <p className="text-sm text-alphavest-muted" key={item}>{item}</p>)}
+                  </div>
+                ),
+                id: "linked-documents",
+                label: "Linked documents",
+              },
+              {
+                content: (
+                  <div className="space-y-3">
+                    <InfoRow label="Owners" value="AC, SL, +1" />
+                    <InfoRow label="Internal roles" value="Advisors, Compliance" />
+                    <InfoRow label="Client visibility" value="Advisors and internal only" />
+                  </div>
+                ),
+                id: "access",
+                label: "Access",
+                tone: "warning",
+              },
+            ]}
+            title="Secondary evidence context"
+          />
         </div>
       </Drawer>
     </Phase12Shell>
@@ -1232,23 +1249,41 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
         title="Invite New User"
       >
         <div className="space-y-5">
-          <Field label="Full Name" value="Alex Morgan" />
-          <Field label="Email Address" value="alex.morgan@example.test" />
-          <Card>
-            <CardHeader><CardTitle>Assign Roles</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
-              {["Investment Manager", "Analyst"].map((role, index) => (
-                <div className={cn("rounded-md border p-4", index === 0 ? "border-alphavest-gold bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35")} key={role}>
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="font-semibold text-alphavest-ivory">{role}</p>
-                    <Badge tone={index === 0 ? "gold" : "muted"}>{index === 0 ? "Sensitive" : "Optional"}</Badge>
-                  </div>
-                  <p className="mt-1 text-sm text-alphavest-muted">{index === 0 ? "Can manage investments, view performance and execute transactions." : "Can view data, run reports and perform analysis."}</p>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
           <StatePanel detail="This role grants access to sensitive investment and transaction capabilities. Changes are monitored and audited." state="restricted" title="Sensitive access" />
+          <UxSecondaryContextTabs
+            safetyNote="Role details are secondary drawer context; invitation and access authority remain constrained by RBAC and audit logging."
+            tabs={[
+              {
+                content: (
+                  <div className="space-y-4">
+                    <Field label="Full Name" value="Alex Morgan" />
+                    <Field label="Email Address" value="alex.morgan@example.test" />
+                  </div>
+                ),
+                id: "identity",
+                label: "Identity",
+              },
+              {
+                content: (
+                  <div className="space-y-3">
+                    {["Investment Manager", "Analyst"].map((role, index) => (
+                      <div className={cn("rounded-md border p-4", index === 0 ? "border-alphavest-gold bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35")} key={role}>
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="font-semibold text-alphavest-ivory">{role}</p>
+                          <Badge tone={index === 0 ? "gold" : "muted"}>{index === 0 ? "Sensitive" : "Optional"}</Badge>
+                        </div>
+                        <p className="mt-1 text-sm text-alphavest-muted">{index === 0 ? "Can manage investments, view performance and execute transactions." : "Can view data, run reports and perform analysis."}</p>
+                      </div>
+                    ))}
+                  </div>
+                ),
+                id: "roles",
+                label: "Roles",
+                tone: "warning",
+              },
+            ]}
+            title="Secondary user-invite context"
+          />
         </div>
       </Drawer>
     </Phase12Shell>
@@ -1401,19 +1436,29 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
       >
         <div className="space-y-5">
           <Badge tone="gold">Pending</Badge>
-          <Card>
-            <CardHeader><CardTitle>Request Reason</CardTitle></CardHeader>
-            <CardContent><p className="text-sm leading-6 text-alphavest-muted">Need visibility into client performance to prepare quarterly review materials for the investment committee.</p></CardContent>
-          </Card>
-          <Card>
-            <CardHeader><CardTitle>Requested Access</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
-              <InfoRow label="Access Type" value="View" />
-              <InfoRow label="Resource" value="Client Performance" />
-              <InfoRow label="Permissions" value="View performance, returns and holdings summary" />
-              <InfoRow label="Justification" value="Prepare quarterly analysis" />
-            </CardContent>
-          </Card>
+          <UxSecondaryContextTabs
+            safetyNote="These tabs hold secondary request context; approval authority still depends on the visible policy and SOD checks below."
+            tabs={[
+              {
+                content: <p className="text-sm leading-6 text-alphavest-muted">Need visibility into client performance to prepare quarterly review materials for the investment committee.</p>,
+                id: "reason",
+                label: "Reason",
+              },
+              {
+                content: (
+                  <div className="space-y-3">
+                    <InfoRow label="Access Type" value="View" />
+                    <InfoRow label="Resource" value="Client Performance" />
+                    <InfoRow label="Permissions" value="View performance, returns and holdings summary" />
+                    <InfoRow label="Justification" value="Prepare quarterly analysis" />
+                  </div>
+                ),
+                id: "requested-access",
+                label: "Requested access",
+              },
+            ]}
+            title="Secondary access-request context"
+          />
           <Card>
             <CardHeader><CardTitle>Policy and SOD Checks</CardTitle></CardHeader>
             <CardContent className="space-y-3">

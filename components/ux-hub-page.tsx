@@ -3,6 +3,7 @@
 import { ArrowRight, CheckCircle2, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { Badge, Card, CardContent, CardHeader, CardTitle, type BadgeTone } from "@/components/ui";
+import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
 import { cn } from "@/lib/cn";
 import { uxHubDefinitionForPageId, type UxHubTone } from "@/lib/ux-hub";
 
@@ -87,6 +88,60 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
               ))}
             </CardContent>
           </Card>
+
+          {pageId === "031" ? (
+            <UxSecondaryContextTabs
+              safetyNote="Wealth-map tabs are context only; full workflows, gate changes and release decisions stay on the linked workbench/detail routes."
+              tabs={[
+                {
+                  content: (
+                    <div className="grid gap-3 md:grid-cols-3">
+                      {hub.sourceSummaries.map((summary) => (
+                        <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-4 text-sm leading-6 text-alphavest-muted" key={summary}>
+                          {summary}
+                        </div>
+                      ))}
+                    </div>
+                  ),
+                  id: "map-signals",
+                  label: "Map signals",
+                },
+                {
+                  content: (
+                    <div className="space-y-3">
+                      {hub.priorityCards.map((card) => (
+                        <div className="rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/55 p-4" key={card.label}>
+                          <div className="flex items-start justify-between gap-3">
+                            <p className="text-sm font-semibold text-alphavest-ivory">{card.label}</p>
+                            <Badge tone={badgeToneByCardTone[card.tone]}>{card.value}</Badge>
+                          </div>
+                          <p className="mt-2 text-sm leading-6 text-alphavest-muted">{card.detail}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ),
+                  id: "drawer-context",
+                  label: "Drawer context",
+                },
+                {
+                  content: (
+                    <div className="space-y-3">
+                      {hub.queue.map((item) => (
+                        <Link className="block rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/55 p-4 text-sm transition hover:border-alphavest-gold/60" href={item.href} key={`${item.href}-tab`}>
+                          <span className="font-semibold text-alphavest-ivory">{item.label}</span>
+                          <span className="mt-2 block leading-6 text-alphavest-muted">{item.detail}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  ),
+                  id: "handoffs",
+                  label: "Handoffs",
+                  tone: "warning",
+                },
+              ]}
+              title="Secondary wealth-map context"
+            />
+          ) : null}
         </div>
 
         <aside className="space-y-5">
