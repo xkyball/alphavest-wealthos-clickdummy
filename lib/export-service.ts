@@ -25,6 +25,13 @@ export type ExportProjectionDecision = {
   payloadClassifications: ExportPayloadClassification[];
 };
 
+export type ExportPayloadInspection = {
+  clean: boolean;
+  forbiddenFields: string[];
+  missing: string[];
+  payloadClassifications: ExportPayloadClassification[];
+};
+
 export type ExportScopeAccess = "Allowed" | "Limited" | "Restricted" | "Not permitted";
 
 export type ExportScopeCandidate = {
@@ -87,6 +94,57 @@ const forbiddenClientExportPayloads = new Set<ExportPayloadClassification>([
 
 function forbiddenExportPayloads(payloadClassifications: ExportPayloadClassification[] = []) {
   return payloadClassifications.filter((classification) => forbiddenClientExportPayloads.has(classification));
+}
+
+const safeClientSummaryFields = new Set(["clientSummary"]);
+const safeReleasedRecordFields = new Set(["decisionState", "documentType", "id", "releasedAt", "status", "title", "uploadedAt"]);
+const exportFieldClassifications: Record<string, ExportPayloadClassification> = {
+  aiDraft: "AI_DRAFT",
+  clientSummaryDraft: "AI_DRAFT",
+  complianceNotes: "COMPLIANCE_NOTES",
+  complianceReviewNotes: "COMPLIANCE_NOTES",
+  evidenceRecordId: "UNRELEASED_EVIDENCE",
+  evidenceStatus: "UNRELEASED_EVIDENCE",
+  evidenceVisibilityStatus: "UNRELEASED_EVIDENCE",
+  internalNotes: "INTERNAL_RATIONALE",
+  internalRationale: "INTERNAL_RATIONALE",
+  storageKey: "HIDDEN_FIELD",
+  summaryInternal: "INTERNAL_RATIONALE",
+};
+
+function inspectClientExportPayload(payload: Record<string, unknown>): ExportPayloadInspection {
+  const missing: string[] = [];
+  const forbiddenFields: string[] = [];
+  const payloadClassifications: ExportPayloadClassification[] = [];
+
+  for (const key of Object.keys(payload)) {
+    if (safeClientSummaryFields.has(key)) {
+      payloadClassifications.push("CLIENT_SAFE_SUMMARY");
+      continue;
+    }
+
+    if (safeReleasedRecordFields.has(key)) {
+      payloadClassifications.push("RELEASED_EVIDENCE_SUMMARY");
+      continue;
+    }
+
+    const classification = exportFieldClassifications[key] ?? "HIDDEN_FIELD";
+    payloadClassifications.push(classification);
+    forbiddenFields.push(key);
+    missing.push(`forbidden_projection_field:${key}`);
+  }
+
+  if (Object.keys(payload).length === 0) {
+    missing.push("client_safe_payload");
+    payloadClassifications.push("HIDDEN_FIELD");
+  }
+
+  return {
+    clean: missing.length === 0 && forbiddenExportPayloads(payloadClassifications).length === 0,
+    forbiddenFields,
+    missing,
+    payloadClassifications: [...new Set(payloadClassifications)],
+  };
 }
 
 function evaluateExportScope(items: ExportScopeCandidate[]): ExportScopeDecision {
@@ -175,38 +233,19 @@ function evaluateExportStepSeparation(input: ExportStepSeparationInput): ExportS
 
 function canUseClientProjectionForExport(projection: ExportProjectionInput): ExportProjectionDecision {
   const missing: string[] = [];
-  const payloadClassifications: ExportPayloadClassification[] = [];
-  const payloadKeys = Object.keys(projection.payload);
+  const inspection = inspectClientExportPayload(projection.payload);
 
   if (!projection.visible) {
     missing.push("client_safe_projection_visible");
-    payloadClassifications.push("UNRELEASED_RECOMMENDATION");
+    inspection.payloadClassifications.push("UNRELEASED_RECOMMENDATION");
   }
 
-  if (payloadKeys.length === 0) {
-    missing.push("client_safe_payload");
-    payloadClassifications.push("HIDDEN_FIELD");
-  }
-
-  for (const key of payloadKeys) {
-    if (key === "clientSummary") {
-      payloadClassifications.push("CLIENT_SAFE_SUMMARY");
-      continue;
-    }
-
-    if (key === "title" || key === "documentType" || key === "status" || key === "uploadedAt") {
-      payloadClassifications.push("RELEASED_EVIDENCE_SUMMARY");
-      continue;
-    }
-
-    missing.push(`forbidden_projection_field:${key}`);
-    payloadClassifications.push("HIDDEN_FIELD");
-  }
+  missing.push(...inspection.missing);
 
   return {
-    allowed: missing.length === 0 && forbiddenExportPayloads(payloadClassifications).length === 0,
+    allowed: missing.length === 0 && forbiddenExportPayloads(inspection.payloadClassifications).length === 0,
     missing,
-    payloadClassifications: [...new Set(payloadClassifications)],
+    payloadClassifications: [...new Set(inspection.payloadClassifications)],
   };
 }
 
@@ -304,4 +343,5 @@ export const exportService = {
   canGenerateExport,
   canUseClientProjectionForExport,
   forbiddenExportPayloads,
+  inspectClientExportPayload,
 };

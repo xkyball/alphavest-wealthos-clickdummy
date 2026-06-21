@@ -5246,3 +5246,50 @@ Date: 2026-06-21
 
 - Existing `lib/document-storage-adapter.ts` Turbopack tracing warnings are outside this phase.
 - Later SCF phases still need client-safe projection, export lifecycle and final P0 closure work.
+
+## SCF-P07-P09 Client Visibility / Governance / Export QA Addendum
+
+Date: 2026-06-21
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| SCF task authority | Passed | `lib/scf-foundation.ts` now includes P07, P08 and P09 task IDs and proof command coverage. |
+| Client-safe recommendation projection | Passed | Released recommendation projections expose only `clientSummary`; internal draft, rationale, compliance notes and assumptions remain hidden. |
+| Client-safe decision projection | Passed | Submitted decisions remain internal; released decisions expose only ID, title, released state, released timestamp and client-safe summary. |
+| Forbidden client payload fields | Passed | `visibilityEngine.assertClientProjectionClean` detects forbidden fields in client-visible payloads. |
+| Governance access lifecycle | Passed | Sensitive access assignment can proceed only through governed roles with audit and second confirmation. |
+| Admin/security non-bypass | Passed | Admin and security roles still cannot force evidence sufficiency, visibility release, advice payload access or export generation. |
+| Cross-tenant/object denial | Passed | Existing permission and visibility tests continue to fail closed for cross-tenant client access. |
+| Export forbidden payload assertions | Passed | Export inspection classifies AI draft, internal rationale, compliance notes, unreleased evidence and hidden fields before generation. |
+| Export lifecycle separation | Passed | Preview, approval, generation, download and share remain separate controlled steps. |
+| Visual proof | Passed | Screenshots captured under `artifacts/scf-p07-p09/` for client visibility, governance access and export approval. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | TypeScript completed with `tsc --noEmit`. |
+| `pnpm exec playwright test tests/client-visibility-proof.spec.ts tests/file-export-realism.spec.ts tests/governance-non-bypass.spec.ts tests/p0-acceptance.spec.ts --workers=1` | Passed | 39 tests. |
+| `pnpm exec playwright test tests/permission-engine.spec.ts tests/phase8-export-workflow-api.spec.ts --workers=1` | Passed | 10 tests. |
+| `pnpm lint` | Failed then passed | Initial run failed because `test-results` was absent; rerun after recreating the artifact directory passed. |
+| `pnpm db:validate` | Passed | Prisma schema validates. |
+| `git diff --check` | Passed | No whitespace errors. |
+| `pnpm build` | Passed with warnings | Existing Turbopack tracing warnings in `lib/document-storage-adapter.ts`. |
+| Screenshot capture on port `3187` | Passed | Three screenshots captured under `artifacts/scf-p07-p09/`. |
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| SCF-P07 visibility and decision projection | implemented + tested | Client roles only see released safe summaries. |
+| SCF-P08 governance and cross-tenant safety | implemented + tested | Governed role changes are separated from safety-gate bypass authority. |
+| SCF-P09 export trust output | implemented + tested | Export payloads are classified and blocked before package generation when unsafe. |
+| Production auth/advice/export binaries | not claimed | Demo-data-first constraints remain active. |
+| Full P0 closure | not claimed | Later SCF phases still remain. |
+
+### Residual Risks
+
+- Existing `lib/document-storage-adapter.ts` Turbopack tracing warnings are outside this phase.
+- Historical UI Phase 07/08/09 report sections remain as old implementation history, not current SCF task authority.

@@ -2,7 +2,11 @@ import { expect, test } from "@playwright/test";
 
 import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
 import { exportService } from "../lib/export-service";
-import { visibilityEngine, type RecommendationVisibilityPayload } from "../lib/visibility-engine";
+import {
+  visibilityEngine,
+  type DecisionVisibilityPayload,
+  type RecommendationVisibilityPayload,
+} from "../lib/visibility-engine";
 
 const forbiddenClientPayloadFields = [
   "clientSummaryDraft",
@@ -29,6 +33,29 @@ function recommendationPayload(
     sensitivity: "RESTRICTED",
     summaryInternal: "Analyst-only working summary.",
     visibilityStatus: "ADVISOR_VISIBLE",
+    ...overrides,
+  };
+}
+
+function decisionPayload(overrides: Partial<DecisionVisibilityPayload> = {}): DecisionVisibilityPayload {
+  const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+
+  return {
+    aiDraft: "AI Draft: client-facing decision language still requires human release.",
+    assumptionsJson: { source: "decision-workbench", visibility: "internal" },
+    clientSummary: "Proceed with the reviewed governance update.",
+    clientTenantId: principal.tenant.id,
+    clientVisible: false,
+    complianceNotes: "Compliance-only decision notes.",
+    decisionState: "SUBMITTED",
+    evidenceRecordId: "ed6ecbad-2016-5cfd-9c91-c47189afaa0d",
+    id: "decision:bennett:governance-update",
+    internalRationale: "Internal decision rationale.",
+    releasedAt: null,
+    sensitivity: "RESTRICTED",
+    submittedAt: "2026-06-21T08:30:00.000Z",
+    title: "Governance update decision",
+    visibilityStatus: "COMPLIANCE_VISIBLE",
     ...overrides,
   };
 }
@@ -100,6 +127,83 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
     expect(projection.payload).toEqual({ clientSummary: payload.clientSummary });
     expectNoForbiddenClientFields(projection.payload);
     expect(projection.hiddenFields).toEqual([...forbiddenClientPayloadFields]);
+
+    const safety = visibilityEngine.assertClientProjectionClean(projection);
+    expect(safety.clean).toBe(true);
+    expect(safety.forbiddenFieldsPresent).toEqual([]);
+  });
+
+  test("keeps submitted decisions internal and releases only client-safe decision summaries", () => {
+    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const analyst = createDemoSession({ roleKey: "analyst", tenantSlug: "bennett" });
+    const submitted = decisionPayload({ clientTenantId: principal.tenant.id });
+
+    const submittedClientProjection = visibilityEngine.projectDecisionPayload(
+      principal.actor,
+      principal.role,
+      submitted,
+      demoPlatformTenantId,
+      principal.tenant.id,
+    );
+
+    expect(submittedClientProjection.visible).toBe(false);
+    expect(submittedClientProjection.reasonCode).toBe("DEMO_CLIENT_DECISION_FAIL_CLOSED");
+    expect(submittedClientProjection.payload).toEqual({});
+    expect(submittedClientProjection.hiddenFields).toEqual([
+      "clientSummary",
+      "aiDraft",
+      "internalRationale",
+      "complianceNotes",
+      "evidenceRecordId",
+      "assumptionsJson",
+    ]);
+
+    const internalProjection = visibilityEngine.projectDecisionPayload(
+      analyst.actor,
+      analyst.role,
+      submitted,
+      demoPlatformTenantId,
+      analyst.tenant.id,
+    );
+
+    expect(internalProjection.visible).toBe(true);
+    expect(internalProjection.reasonCode).toBe("DEMO_INTERNAL_DECISION_PROJECTION");
+    expect(internalProjection.payload.aiDraft).toBe(submitted.aiDraft);
+    expect(internalProjection.payload.internalRationale).toBe(submitted.internalRationale);
+
+    const releasedClientProjection = visibilityEngine.projectDecisionPayload(
+      principal.actor,
+      principal.role,
+      decisionPayload({
+        clientTenantId: principal.tenant.id,
+        clientVisible: true,
+        decisionState: "RELEASED",
+        releasedAt: "2026-06-21T09:15:00.000Z",
+        visibilityStatus: "CLIENT_VISIBLE",
+      }),
+      demoPlatformTenantId,
+      principal.tenant.id,
+    );
+
+    expect(releasedClientProjection.visible).toBe(true);
+    expect(releasedClientProjection.reasonCode).toBe("DEMO_CLIENT_DECISION_SAFE_PROJECTION");
+    expect(releasedClientProjection.payload).toEqual({
+      clientSummary: "Proceed with the reviewed governance update.",
+      decisionState: "RELEASED",
+      id: "decision:bennett:governance-update",
+      releasedAt: "2026-06-21T09:15:00.000Z",
+      title: "Governance update decision",
+    });
+
+    const safety = visibilityEngine.assertClientProjectionClean(releasedClientProjection);
+    expect(safety.clean).toBe(true);
+    expect(safety.hiddenFields).toEqual([
+      "aiDraft",
+      "internalRationale",
+      "complianceNotes",
+      "evidenceRecordId",
+      "assumptionsJson",
+    ]);
   });
 
   test("projects document payloads as redacted/fail-closed for client roles", () => {
@@ -305,6 +409,6 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
 
     expect(unsafeProjection.allowed).toBe(false);
     expect(unsafeProjection.missing).toContain("forbidden_projection_field:complianceNotes");
-    expect(unsafeProjection.payloadClassifications).toContain("HIDDEN_FIELD");
+    expect(unsafeProjection.payloadClassifications).toContain("COMPLIANCE_NOTES");
   });
 });

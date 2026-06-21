@@ -625,9 +625,17 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
       "SCF-P05-T003",
       "SCF-P06-T001",
       "SCF-P06-T002",
+      "SCF-P07-T001",
+      "SCF-P07-T002",
+      "SCF-P08-T001",
+      "SCF-P08-T002",
+      "SCF-P09-T001",
+      "SCF-P09-T002",
     ]);
     expect(scfProofCommandBaseline).toContain("pnpm test:permissions");
     expect(scfProofCommandBaseline.join(" ")).toContain("tests/demo-workflow-api.spec.ts");
+    expect(scfProofCommandBaseline.join(" ")).toContain("tests/client-visibility-proof.spec.ts");
+    expect(scfProofCommandBaseline.join(" ")).toContain("tests/file-export-realism.spec.ts");
   });
 
   test("SCF detail plan supersedes previous max override as task and phase authority", () => {

@@ -292,6 +292,79 @@ Date: 2026-06-21
 
 `PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
 
+## SCF-P07-P09 - Client Visibility / Governance / Export Trust Output Implementation
+
+Date: 2026-06-21
+
+### Scope
+
+Implemented phases P07 through P09 from `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md` as one coherent trust-output pass. This closes the client-safe projection surface for recommendation and decision records, the governed access/non-bypass lifecycle, and the export scope/redaction/approval payload assertions. It does not unlock held, reference-only or P1-after-MVP routes.
+
+### Source Artefacts Used
+
+- `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`
+- `lib/visibility-engine.ts`
+- `lib/permission-engine.ts`
+- `lib/export-service.ts`
+- `lib/export-package-service.ts`
+- Existing client visibility, governance non-bypass, export lifecycle and P0 acceptance tests.
+
+### Completed Tasks
+
+- Extended SCF phase metadata through `SCF-P09-T002`, including P07/P08/P09 task IDs and proof command coverage.
+- Added an explicit decision-record projection path: submitted decisions remain internal for client roles; released decisions project only ID, title, state, release timestamp and client-safe summary.
+- Added a client projection safety assertion helper that detects forbidden fields in client-visible payloads.
+- Added field-level export payload inspection so AI drafts, internal rationale, compliance notes, unreleased evidence and hidden fields are classified before package generation.
+- Preserved governed access changes as allowed only through explicit access roles with audit and second confirmation while admin/security roles remain unable to bypass release, export, visibility or evidence sufficiency gates.
+- Updated P0 acceptance coverage so the repo-level SCF task authority now covers P00-P09 and includes P07-P09 proof commands.
+
+### Changed Files
+
+- `lib/scf-foundation.ts`
+- `lib/visibility-engine.ts`
+- `lib/export-service.ts`
+- `tests/client-visibility-proof.spec.ts`
+- `tests/file-export-realism.spec.ts`
+- `tests/governance-non-bypass.spec.ts`
+- `tests/p0-acceptance.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm exec playwright test tests/client-visibility-proof.spec.ts tests/file-export-realism.spec.ts tests/governance-non-bypass.spec.ts tests/p0-acceptance.spec.ts --workers=1` - passed, 39 tests.
+- `pnpm exec playwright test tests/permission-engine.spec.ts tests/phase8-export-workflow-api.spec.ts --workers=1` - passed, 10 tests.
+- `pnpm lint` - failed once because local `test-results` was absent, then passed after recreating the artifact directory.
+- `pnpm db:validate` - passed.
+- `git diff --check` - passed.
+- `pnpm build` - passed with existing Turbopack tracing warnings in `lib/document-storage-adapter.ts`.
+- Screenshot capture through local Next server on port `3187` - captured three SCF P07-P09 proof screenshots under `artifacts/scf-p07-p09/`.
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| SCF-P07 client visibility projection | implemented + tested | Recommendation and decision projections are fail-closed and client-safe after release. |
+| SCF-P08 governance access lifecycle | implemented + tested | Governed access assignment is permitted with audit/second confirmation; admin/security non-bypass remains enforced. |
+| SCF-P09 export trust output | implemented + tested | Forbidden payload classifications block unsafe export/client payloads before package generation. |
+| Production auth/advice/export binaries | not claimed | Demo-data-first constraints and metadata-only export boundaries remain active. |
+| Full P0 closure | not claimed | This phase closes P07-P09 safety contracts, not all remaining SCF phases. |
+
+### Screenshot Proof
+
+| Artifact | Status | Notes |
+| --- | --- | --- |
+| `artifacts/scf-p07-p09/scf-p07-client-safe-visibility.png` | captured | Client portal route showing client-safe gate guidance and controlled workspace context. |
+| `artifacts/scf-p07-p09/scf-p08-governance-access-lifecycle.png` | captured | Governance access request drawer showing policy/SOD review before approval. |
+| `artifacts/scf-p07-p09/scf-p09-export-trust-output.png` | captured | Export approval modal showing approval, generation, download and share separation. |
+
+### Residual Risks
+
+- Historical UI Phase 07/08/09 sections remain in this report as older implementation history; current SCF P07-P09 task authority is the detail plan and this addendum.
+- Existing `lib/document-storage-adapter.ts` Turbopack tracing warnings are outside this phase.
+- Screenshots are visual proof only; payload safety proof comes from the typed engine tests above.
+
 ## SCF-P04-P06 - Evidence / Signal / Compliance Gate Implementation
 
 Date: 2026-06-21

@@ -62,6 +62,52 @@ export type RecommendationPayloadProjection = {
   hiddenFields: string[];
 };
 
+export type DecisionVisibilityPayload = {
+  id: UUID;
+  clientTenantId?: UUID;
+  sensitivity?: Sensitivity;
+  visibilityStatus: VisibilityStatus;
+  clientVisible: boolean;
+  decisionState: "DRAFT" | "SUBMITTED" | "RELEASED" | "BLOCKED" | "ARCHIVED";
+  title: string;
+  clientSummary?: string | null;
+  submittedAt?: string | null;
+  releasedAt?: string | null;
+  aiDraft?: string | null;
+  internalRationale?: string | null;
+  complianceNotes?: string | null;
+  evidenceRecordId?: UUID | null;
+  assumptionsJson?: unknown;
+};
+
+export type DecisionPayloadProjection = {
+  visible: boolean;
+  reasonCode: string;
+  reason: string;
+  permission: PermissionDecision;
+  payload: {
+    id?: UUID;
+    title?: string;
+    decisionState?: DecisionVisibilityPayload["decisionState"];
+    clientSummary?: string;
+    submittedAt?: string;
+    releasedAt?: string;
+    aiDraft?: string;
+    internalRationale?: string;
+    complianceNotes?: string;
+    evidenceRecordId?: UUID;
+    assumptionsJson?: unknown;
+  };
+  hiddenFields: string[];
+};
+
+export type ClientProjectionSafetyReport = {
+  clean: boolean;
+  forbiddenFieldsPresent: string[];
+  hiddenFields: string[];
+  missing: string[];
+};
+
 export type DocumentVisibilityPayload = {
   id: UUID;
   clientTenantId?: UUID;
@@ -106,6 +152,27 @@ const internalRecommendationFields = [
   "complianceNotes",
   "assumptionsJson",
 ] as const;
+
+const internalDecisionFields = [
+  "aiDraft",
+  "internalRationale",
+  "complianceNotes",
+  "evidenceRecordId",
+  "assumptionsJson",
+] as const;
+
+const forbiddenClientProjectionFields = new Set<string>([
+  ...internalRecommendationFields,
+  ...internalDecisionFields,
+  "checksum",
+  "evidenceStatus",
+  "evidenceVisibilityStatus",
+  "extractionStatus",
+  "fileName",
+  "fileSizeBytes",
+  "mimeType",
+  "storageKey",
+]);
 
 const internalDocumentFields = [
   "fileName",
@@ -163,6 +230,35 @@ function presentInternalFields(payload: RecommendationVisibilityPayload) {
 
 function presentDocumentInternalFields(payload: DocumentVisibilityPayload) {
   return internalDocumentFields.filter((field) => payload[field] !== undefined && payload[field] !== null);
+}
+
+function presentDecisionInternalFields(payload: DecisionVisibilityPayload) {
+  return internalDecisionFields.filter((field) => payload[field] !== undefined && payload[field] !== null);
+}
+
+function assertClientProjectionClean(projection: {
+  visible: boolean;
+  payload: Record<string, unknown>;
+  hiddenFields?: string[];
+}): ClientProjectionSafetyReport {
+  const payloadKeys = Object.keys(projection.payload);
+  const forbiddenFieldsPresent = payloadKeys.filter((key) => forbiddenClientProjectionFields.has(key));
+  const missing: string[] = [];
+
+  if (!projection.visible) {
+    missing.push("client_projection_visible");
+  }
+
+  if (forbiddenFieldsPresent.length > 0) {
+    missing.push("forbidden_client_payload_fields");
+  }
+
+  return {
+    clean: missing.length === 0,
+    forbiddenFieldsPresent,
+    hiddenFields: projection.hiddenFields ?? [],
+    missing,
+  };
 }
 
 function projectRecommendationPayload(
@@ -380,13 +476,115 @@ function projectDocumentPayload(
   };
 }
 
+function projectDecisionPayload(
+  actor: DemoActor,
+  role: DemoRole,
+  payload: DecisionVisibilityPayload,
+  platformTenantId: UUID,
+  clientTenantId?: UUID
+): DecisionPayloadProjection {
+  const permission = permissionEngine.can(
+    actor,
+    "VIEW",
+    {
+      objectType: "DECISION",
+      objectId: payload.id,
+      clientTenantId: payload.clientTenantId,
+      sensitivity: payload.sensitivity,
+      visibilityStatus: payload.visibilityStatus,
+    },
+    {
+      platformTenantId,
+      clientTenantId,
+      objectScope: {
+        clientTenantId: payload.clientTenantId,
+        objectIds: [payload.id],
+        objectType: "DECISION",
+      },
+      sensitivity: payload.sensitivity,
+      clientVisibilityState: payload.visibilityStatus,
+    },
+    role,
+  );
+  const hiddenFields = presentDecisionInternalFields(payload);
+
+  if (!permission.allowed) {
+    return {
+      visible: false,
+      reasonCode: permission.reasonCode,
+      reason: permission.reason,
+      permission,
+      payload: {},
+      hiddenFields: ["clientSummary", ...hiddenFields],
+    };
+  }
+
+  if (!role.internal) {
+    const clientSafeReleased =
+      payload.clientVisible &&
+      payload.visibilityStatus === "CLIENT_VISIBLE" &&
+      payload.decisionState === "RELEASED";
+
+    if (!clientSafeReleased) {
+      return {
+        visible: false,
+        reasonCode: "DEMO_CLIENT_DECISION_FAIL_CLOSED",
+        reason: "Client-side demo roles can only receive released, client-visible decision records.",
+        permission,
+        payload: {},
+        hiddenFields: ["clientSummary", ...hiddenFields],
+      };
+    }
+
+    return {
+      visible: true,
+      reasonCode: "DEMO_CLIENT_DECISION_SAFE_PROJECTION",
+      reason: "Client-side demo decision payload includes only released client-safe fields.",
+      permission,
+      payload: {
+        id: payload.id,
+        title: payload.title,
+        decisionState: payload.decisionState,
+        ...(payload.clientSummary ? { clientSummary: payload.clientSummary } : {}),
+        ...(payload.releasedAt ? { releasedAt: payload.releasedAt } : {}),
+      },
+      hiddenFields,
+    };
+  }
+
+  return {
+    visible: true,
+    reasonCode: "DEMO_INTERNAL_DECISION_PROJECTION",
+    reason: "Internal demo role can view scoped decision record payload.",
+    permission,
+    payload: {
+      id: payload.id,
+      title: payload.title,
+      decisionState: payload.decisionState,
+      ...(payload.clientSummary ? { clientSummary: payload.clientSummary } : {}),
+      ...(payload.submittedAt ? { submittedAt: payload.submittedAt } : {}),
+      ...(payload.releasedAt ? { releasedAt: payload.releasedAt } : {}),
+      ...(payload.aiDraft ? { aiDraft: payload.aiDraft } : {}),
+      ...(payload.internalRationale ? { internalRationale: payload.internalRationale } : {}),
+      ...(payload.complianceNotes ? { complianceNotes: payload.complianceNotes } : {}),
+      ...(payload.evidenceRecordId ? { evidenceRecordId: payload.evidenceRecordId } : {}),
+      ...(payload.assumptionsJson !== undefined && payload.assumptionsJson !== null
+        ? { assumptionsJson: payload.assumptionsJson }
+        : {}),
+    },
+    hiddenFields: [],
+  };
+}
+
 function clientRelease(candidate: ClientVisibilityCandidate): WorkflowGateResult {
   return canBecomeClientVisible(candidate);
 }
 
 export const visibilityEngine = {
   canView,
+  assertClientProjectionClean,
   canBecomeClientVisible: clientRelease,
+  projectDecisionPayload,
   projectDocumentPayload,
   projectRecommendationPayload,
 };

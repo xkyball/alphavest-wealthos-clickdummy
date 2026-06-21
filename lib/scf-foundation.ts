@@ -1,6 +1,16 @@
 import type { RouteScopeLabel } from "@/lib/route-registry";
 
-export type ScfFoundationPhaseId = "P00" | "P01" | "P02" | "P03" | "P04" | "P05" | "P06";
+export type ScfFoundationPhaseId =
+  | "P00"
+  | "P01"
+  | "P02"
+  | "P03"
+  | "P04"
+  | "P05"
+  | "P06"
+  | "P07"
+  | "P08"
+  | "P09";
 
 export type ScfFoundationTaskId =
   | "SCF-P00-T001"
@@ -18,7 +28,13 @@ export type ScfFoundationTaskId =
   | "SCF-P05-T002"
   | "SCF-P05-T003"
   | "SCF-P06-T001"
-  | "SCF-P06-T002";
+  | "SCF-P06-T002"
+  | "SCF-P07-T001"
+  | "SCF-P07-T002"
+  | "SCF-P08-T001"
+  | "SCF-P08-T002"
+  | "SCF-P09-T001"
+  | "SCF-P09-T002";
 
 export type ScfDecisionQueueKey =
   | "implement"
@@ -98,6 +114,36 @@ export const scfFoundationPhases: Array<{
       "Critical gate actions produce actor, role, target, previous, next, result and reason audit rows",
     ],
   },
+  {
+    id: "P07",
+    name: "Client-safe Visibility Projection & Decision Record Closure",
+    tasks: ["SCF-P07-T001", "SCF-P07-T002"],
+    acceptance: [
+      "Released decisions project only client-safe summaries",
+      "Submitted but unreleased decisions remain internal and fail closed for client roles",
+      "AI drafts, internal rationale, compliance notes and unreleased evidence stay out of client payloads",
+    ],
+  },
+  {
+    id: "P08",
+    name: "Role / Access Request Governance & Cross-tenant Denial",
+    tasks: ["SCF-P08-T001", "SCF-P08-T002"],
+    acceptance: [
+      "Governed access changes require scoped roles, audit and second confirmation where sensitive",
+      "Admin and security roles cannot bypass release, export, visibility or evidence sufficiency gates",
+      "Cross-tenant object and payload access denies without leaking row details",
+    ],
+  },
+  {
+    id: "P09",
+    name: "Export Scope / Redaction / Approval Trust Output",
+    tasks: ["SCF-P09-T001", "SCF-P09-T002"],
+    acceptance: [
+      "Approved exports contain only scoped, redacted, released client-safe content",
+      "Preview-only, unredacted or internal payloads block generation, download and share",
+      "Forbidden payload assertions cover client views and export packages",
+    ],
+  },
 ];
 
 export const scfDecisionQueues: Record<ScfDecisionQueueKey, number> = {
@@ -130,6 +176,7 @@ export const scfProofCommandBaseline = [
   "pnpm test:providerless-scope",
   "pnpm test:route-smoke",
   "pnpm exec playwright test tests/document-upload-api.spec.ts tests/document-upload-flow.spec.ts tests/workflow-gate.spec.ts tests/demo-workflow-api.spec.ts tests/phase6-audit-persistence.spec.ts",
+  "pnpm exec playwright test tests/client-visibility-proof.spec.ts tests/governance-non-bypass.spec.ts tests/permission-engine.spec.ts tests/file-export-realism.spec.ts tests/phase8-export-workflow-api.spec.ts tests/p0-acceptance.spec.ts --workers=1",
 ] as const;
 
 export const scfDoNotImplementRegister: ScfDoNotImplementEntry[] = [

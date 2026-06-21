@@ -155,6 +155,41 @@ test.describe("Phase 18 export package manifest", () => {
     ]);
   });
 
+  test("classifies forbidden client/export payload fields before package generation", () => {
+    const inspection = exportService.inspectClientExportPayload({
+      clientSummary: "Released client-safe summary.",
+      complianceNotes: "Internal compliance-only review note.",
+      evidenceRecordId: "evidence:summit:unreleased",
+      internalRationale: "Internal model rationale.",
+    });
+
+    expect(inspection.clean).toBe(false);
+    expect(inspection.forbiddenFields).toEqual(["complianceNotes", "evidenceRecordId", "internalRationale"]);
+    expect(inspection.missing).toEqual([
+      "forbidden_projection_field:complianceNotes",
+      "forbidden_projection_field:evidenceRecordId",
+      "forbidden_projection_field:internalRationale",
+    ]);
+    expect(inspection.payloadClassifications).toEqual([
+      "CLIENT_SAFE_SUMMARY",
+      "COMPLIANCE_NOTES",
+      "UNRELEASED_EVIDENCE",
+      "INTERNAL_RATIONALE",
+    ]);
+
+    const blockedProjection = exportService.canUseClientProjectionForExport({
+      payload: {
+        clientSummary: "Released client-safe summary.",
+        complianceNotes: "Internal compliance-only review note.",
+      },
+      visible: true,
+    });
+
+    expect(blockedProjection.allowed).toBe(false);
+    expect(blockedProjection.missing).toContain("forbidden_projection_field:complianceNotes");
+    expect(blockedProjection.payloadClassifications).toEqual(["CLIENT_SAFE_SUMMARY", "COMPLIANCE_NOTES"]);
+  });
+
   test("keeps export preview separate from approval and download/share", () => {
     const session = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
     const gate = exportService.canGenerateExport({

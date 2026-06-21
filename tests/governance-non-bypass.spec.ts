@@ -164,6 +164,26 @@ test.describe("MVP Phase 2 governance non-bypass permissions", () => {
     expect(adminExport.allowed).toBe(false);
     expect(adminExport.reasonCode).toBe("DEMO_DENY_ADMIN_NON_BYPASS");
     expect(adminExport.requiresSecondConfirmation).toBe(true);
+
+    const governedAccessAssignment = permissionEngine.can(
+      security.actor,
+      "ASSIGN",
+      {
+        clientTenantId: security.tenant.id,
+        objectType: "ROLE",
+        sensitivity: "RESTRICTED",
+        visibilityStatus: "INTERNAL_ONLY",
+      },
+      {
+        clientTenantId: security.tenant.id,
+        platformTenantId: demoPlatformTenantId,
+      },
+      security.role,
+    );
+
+    expect(governedAccessAssignment.allowed).toBe(true);
+    expect(governedAccessAssignment.requiresAudit).toBe(true);
+    expect(governedAccessAssignment.requiresSecondConfirmation).toBe(true);
   });
 
   test("keeps admin and security roles out of internal advice payload visibility", () => {
