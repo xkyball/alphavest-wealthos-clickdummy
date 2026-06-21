@@ -12,11 +12,11 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
   const { session, setRole, setTenant, resetSession } = useDemoSession();
 
   return (
-    <header className="av-topbar sticky top-0 z-20 px-4 py-3 md:px-6">
+    <header className="av-topbar sticky top-0 z-40 px-4 py-3 md:px-6">
       <div className="av-page flex min-h-12 flex-col gap-3 lg:flex-row lg:items-center lg:justify-end 2xl:justify-between">
         <div className="flex min-w-0 items-center justify-between gap-3 2xl:flex-1 2xl:justify-start">
           <button
-            className="grid size-10 place-items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/70 text-alphavest-muted transition hover:border-alphavest-gold hover:text-alphavest-gold lg:hidden"
+            className="relative z-50 grid size-10 place-items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/70 text-alphavest-muted transition hover:border-alphavest-gold hover:text-alphavest-gold lg:hidden"
             onClick={onOpenNavigation}
             type="button"
           >
@@ -24,18 +24,18 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
             <span className="sr-only">Open navigation</span>
           </button>
           <div className="hidden min-w-0 flex-1 items-center gap-3 2xl:flex">
-          <div className="grid size-10 place-items-center rounded-full border border-alphavest-gold/40 bg-alphavest-gold/10 text-alphavest-gold">
-            <ShieldCheck aria-hidden="true" className="size-5" />
+            <div className="grid size-10 place-items-center rounded-full border border-alphavest-gold/40 bg-alphavest-gold/10 text-alphavest-gold">
+              <ShieldCheck aria-hidden="true" className="size-5" />
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-alphavest-ivory">
+                {session.sessionLabel}
+              </p>
+              <p className="text-xs text-alphavest-muted">
+                Real authentication deferred; context is demo-local
+              </p>
+            </div>
           </div>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-alphavest-ivory">
-              {session.sessionLabel}
-            </p>
-            <p className="text-xs text-alphavest-muted">
-              Real authentication deferred; context is demo-local
-            </p>
-          </div>
-        </div>
           <div className="min-w-0 text-right lg:hidden">
             <p className="truncate text-sm font-semibold text-alphavest-ivory">{session.tenant.displayName}</p>
             <p className="text-xs text-alphavest-muted">{session.role.label}</p>

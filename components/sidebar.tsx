@@ -2,7 +2,7 @@
 
 import { CircleCheck, X } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { navigationGroups } from "@/lib/navigation";
+import { isActiveNavigationItem, navigationGroups } from "@/lib/navigation";
 import { cn } from "@/lib/cn";
 
 function AlphaVestMark() {
@@ -30,40 +30,80 @@ function NavigationContent({ onNavigate }: { onNavigate?: () => void }) {
     <>
       <AlphaVestMark />
 
-      <nav className="grid gap-3 pb-1 sm:grid-cols-2 md:grid-cols-3 lg:min-h-0 lg:flex lg:flex-1 lg:flex-col lg:gap-5 lg:overflow-y-auto lg:pr-1">
+      <nav
+        aria-label="Primary navigation"
+        className="grid gap-4 pb-1 sm:grid-cols-2 md:grid-cols-3 lg:min-h-0 lg:flex lg:flex-1 lg:flex-col lg:gap-4 lg:overflow-y-auto lg:pr-1"
+      >
         {navigationGroups.map((group) => {
           const GroupIcon = group.icon;
+          const groupActive = group.items.some((item) => isActiveNavigationItem(pathname, item));
 
           return (
-            <div className="min-w-0" key={group.label}>
-              <div className="mb-2 flex items-center gap-2 px-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-alphavest-subtle">
+            <section
+              aria-label={group.label}
+              className={cn(
+                "min-w-0 rounded-md border px-2.5 py-2.5",
+                group.tier === "support"
+                  ? "border-alphavest-border/35 bg-alphavest-charcoal/30"
+                  : "border-transparent bg-transparent"
+              )}
+              key={group.label}
+            >
+              <div
+                className={cn(
+                  "mb-1 flex items-center gap-2 text-[0.66rem] font-semibold uppercase tracking-[0.14em] transition",
+                  groupActive ? "text-alphavest-gold-soft" : "text-alphavest-subtle"
+                )}
+              >
                 <GroupIcon aria-hidden="true" className="size-3.5" />
-                <p>{group.label}</p>
+                <p className="truncate">{group.label}</p>
               </div>
-              <div className="space-y-1">
+              <p
+                className={cn(
+                  "mb-2 line-clamp-2 text-[0.68rem] leading-4",
+                  group.tier === "support" ? "text-alphavest-subtle" : "text-alphavest-muted"
+                )}
+              >
+                {group.description}
+              </p>
+              <div className="space-y-1" data-navigation-tier={group.tier}>
                 {group.items.map((item) => {
                   const Icon = item.icon;
-                  const active = pathname === item.href;
+                  const active = isActiveNavigationItem(pathname, item);
 
                   return (
                     <a
-                      className={[
-                        "flex h-9 items-center gap-3 rounded-md border px-3 text-xs transition",
+                      aria-current={active ? "page" : undefined}
+                      className={cn(
+                        "group flex min-h-9 items-start gap-3 rounded-md border text-xs transition",
+                        item.tier === "secondary" ? "ml-2 px-2.5 py-1.5" : "px-3 py-2",
                         active
                           ? "border-alphavest-gold/55 bg-alphavest-gold/12 text-alphavest-gold-soft"
-                          : "border-transparent text-alphavest-muted hover:border-alphavest-border hover:bg-alphavest-panel-soft/70 hover:text-alphavest-ivory"
-                      ].join(" ")}
+                          : "border-transparent text-alphavest-muted hover:border-alphavest-border hover:bg-alphavest-panel-soft/70 hover:text-alphavest-ivory",
+                        item.tier === "secondary" &&
+                          !active &&
+                          "text-alphavest-subtle hover:text-alphavest-muted"
+                      )}
+                      data-navigation-item-tier={item.tier}
                       href={item.href}
                       key={item.label}
                       onClick={onNavigate}
                     >
-                      <Icon aria-hidden="true" className="size-4 shrink-0" />
-                      <span className="truncate">{item.label}</span>
+                      <Icon
+                        aria-hidden="true"
+                        className={cn("mt-0.5 shrink-0", item.tier === "secondary" ? "size-3.5 opacity-70" : "size-4")}
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate font-medium">{item.label}</span>
+                        <span className="block line-clamp-2 text-[0.66rem] leading-4 text-alphavest-subtle group-hover:text-alphavest-muted">
+                          {item.description}
+                        </span>
+                      </span>
                     </a>
                   );
                 })}
               </div>
-            </div>
+            </section>
           );
         })}
       </nav>
@@ -91,7 +131,7 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
     <>
       <aside className="alpha-panel hidden w-full flex-col gap-7 border-x-0 border-t-0 p-4 lg:flex lg:h-screen lg:min-h-0 lg:w-[var(--sidebar-width)] lg:overflow-y-auto lg:border-y-0 lg:border-l-0 lg:p-5 lg:overscroll-contain lg:pb-6">
         <NavigationContent />
-    </aside>
+      </aside>
 
       <div
         aria-hidden={!mobileOpen}
@@ -104,8 +144,8 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
       <aside
         aria-label="Mobile navigation"
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-[min(21rem,calc(100vw-1.5rem))] flex-col gap-6 overflow-y-auto border-r border-alphavest-border bg-alphavest-panel p-4 shadow-2xl transition-transform lg:hidden",
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
+          "fixed inset-y-0 left-0 z-50 w-[min(21rem,calc(100vw-1.5rem))] flex-col gap-6 overflow-y-auto border-r border-alphavest-border bg-alphavest-panel p-4 shadow-2xl transition-transform lg:hidden",
+          mobileOpen ? "flex translate-x-0" : "hidden -translate-x-full"
         )}
       >
         <div className="flex justify-end">

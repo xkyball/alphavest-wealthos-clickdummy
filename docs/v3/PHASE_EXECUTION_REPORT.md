@@ -1,5 +1,104 @@
 # Phase Execution Report
 
+## LEFT-NAV-USER-GUIDANCE-REWORK - Navigation Guidance Micro-Task
+
+Date: 2026-06-21
+
+### Phase Completion Report
+
+- Phase: interposed navigation-guidance micro-task after the earlier left-menu homogenization pass.
+- Packages executed: none from `BP-00` through `BP-11`; this executed the uploaded `ALPHAVEST_LEFT_NAV_USER_GUIDANCE_REWORK_CODEX_PROMPT_ENGINE_PROOF.md` within First Build stop rules.
+- Task IDs completed: `ALPHAVEST_LEFT_NAV_USER_GUIDANCE_REWORK`.
+- Files changed:
+  - `lib/navigation.ts`
+  - `components/sidebar.tsx`
+  - `components/top-bar.tsx`
+  - `tests/navigation-shell.spec.ts`
+  - `docs/v3/PHASE_EXECUTION_REPORT.md`
+  - `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- Screenshot artifacts:
+  - `artifacts/left-nav-user-guidance-rework/desktop-evidence-templates.png`
+  - `artifacts/left-nav-user-guidance-rework/mobile-drawer-open.png`
+
+### Implemented Navigation Behaviour
+
+- Replaced the previous registry-section sidebar presentation with explicit workflow sections: `Home`, `Client & Evidence`, `Advisory Work`, `Compliance & Release`, `Decisions & Audit`, `Governance`, `Export` and muted `Setup`.
+- Reduced primary navigation from a broad route catalogue to 22 workflow entry points, with 10 secondary/support entries.
+- Folded detail, success and setup-adjacent routes into parent navigation entries through `activePageIds` and `activeRoutePatterns`.
+- Preserved route registry truth: page IDs, route paths, worksets, route smoke semantics, APIs, Prisma schema and visual assets were not changed.
+- Added group descriptions and item descriptions for information scent while keeping labels compact and user-facing.
+- Kept P1, reference-only and held routes out of the MVP sidebar presentation; direct URLs and exclusion shells remain route-smoke covered.
+- Retained mobile drawer open/close behaviour and active link semantics through `aria-current="page"`.
+
+### Validation Commands Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `PLAYWRIGHT_PORT=3072 pnpm test:route-smoke` - passed, 85 tests.
+- `PLAYWRIGHT_PORT=3071 pnpm exec playwright test tests/navigation-shell.spec.ts` - environment/port failure because another Next dev server was already running on `3072`.
+- `PLAYWRIGHT_PORT=3075 pnpm exec playwright test tests/navigation-shell.spec.ts` - passed, 7 tests.
+- `pnpm build` - passed with existing Turbopack tracing warnings in `lib/document-storage-adapter.ts`.
+- `PLAYWRIGHT_PORT=3076 pnpm test:playwright` - failed outside this micro-task: 224 passed, 9 failed. The passing set includes all 7 `tests/navigation-shell.spec.ts` tests and the full route-smoke suite; failures were existing/broader document-upload-flow, stale API-universe guardrail and UI-state copy expectations.
+
+### Stop Rules / Scope Preservation
+
+- No route ID, route path, route workset, `screenRoutes` registry entry, Prisma schema, migration, API route, generated screen image, visual reference asset or safety/permission engine was changed.
+- Direct route access is preserved; `tests/route-smoke.spec.ts` still proves 71 registered route smoke entries and P1/reference/held exclusion shells.
+- The implementation intentionally did not harmonize older screen-specific sidebars on some product routes because the uploaded prompt targets the global left navigation presentation.
+
+### Exit Gate Decision
+
+`LEFT_NAV_USER_GUIDANCE_REWORK_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
+## LEFT-MENU-HOMOGENIZATION - Navigation Shell Micro-Task
+
+Date: 2026-06-21
+
+### Phase Completion Report
+
+- Phase: interposed navigation-shell micro-task between First Build guardrails and route/navigation shell work.
+- Packages executed: none from `BP-00` through `BP-11`; this was the uploaded left-menu homogenization prompt constrained to global navigation presentation.
+- Task IDs completed: `ALPHAVEST_LEFT_MENU_HOMOGENIZATION`.
+- Files changed:
+  - `lib/navigation.ts`
+  - `components/sidebar.tsx`
+  - `components/top-bar.tsx`
+  - `tests/navigation-shell.spec.ts`
+  - `docs/v3/PHASE_EXECUTION_REPORT.md`
+  - `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- Screenshot artifacts:
+  - `artifacts/left-menu-homogenization/desktop-global-shell.png`
+  - `artifacts/left-menu-homogenization/mobile-global-shell.png`
+  - `artifacts/left-menu-homogenization/mobile-navigation-open.png`
+
+### Implemented Navigation Behaviour
+
+- Replaced direct `groupedImplementationScreenRoutes` catalogue rendering with an explicit presentation model that preserves route IDs and route paths while grouping the global sidebar into `Access & Setup`, `Platform & Tenant`, `Client Workspace`, `Advisory Workflow`, `Decisions & Governance` and `Export Control`.
+- Added compact human-readable labels for noisy route titles and marked dynamic/detail routes as compact secondary rows.
+- Added route-pattern active matching for dynamic routes, active group emphasis and `aria-current="page"` on the active navigation link.
+- Added a `Primary navigation` landmark and a dedicated navigation-shell Playwright test.
+- Kept P1, reference-only and held routes out of the global primary MVP navigation while direct URL handling and route smoke coverage remain unchanged.
+- Fixed the global mobile shell so the menu button is no longer pointer-covered by page content and the drawer is only displayed when open.
+
+### Validation Commands Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `PLAYWRIGHT_PORT=3067 pnpm exec playwright test tests/navigation-shell.spec.ts` - passed, 5 tests.
+- `PLAYWRIGHT_PORT=3068 pnpm test:route-smoke` - passed, 85 tests.
+- `pnpm build` - passed with existing Turbopack tracing warnings in `lib/document-storage-adapter.ts`.
+- `PLAYWRIGHT_PORT=3069 pnpm test:playwright` - failed outside this micro-task: 223 passed, 8 failed. The passing set includes all 5 `tests/navigation-shell.spec.ts` tests and the full route-smoke suite; failures were broader/non-slice upload-flow, stale API-universe guardrail and UI-state copy expectations.
+
+### Stop Rules / Scope Preservation
+
+- No route path, page ID, `screenRoutes` entry, route scope workset, Prisma schema, migration, API route, generated visual asset or safety gate was changed.
+- `tests/route-smoke.spec.ts` still proves all 71 registered routes and the locked P1/reference/held exclusion shells.
+- Full-suite residual failures are documented in the QA report and were not fixed here because they are outside the uploaded left-menu prompt boundary.
+
+### Exit Gate Decision
+
+`LEFT_MENU_HOMOGENIZATION_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
 ## MVP-FIRST-BUILD-PHASE-1 - Providerless Context And Governance Baseline
 
 Date: 2026-06-21

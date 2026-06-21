@@ -1,5 +1,112 @@
 # Implementation QA Report
 
+## LEFT-NAV-USER-GUIDANCE-REWORK QA Addendum
+
+Date: 2026-06-21
+
+### Executive Decision
+
+`LEFT_NAV_USER_GUIDANCE_REWORK_QA_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
+### Current-State Audit
+
+| Audit Point | Result |
+| --- | --- |
+| Previous implementation | The prior pass moved the sidebar away from direct registry rendering into grouped global navigation and fixed mobile open/close layering. |
+| Remaining primary overload | The sidebar still exposed too many implementation routes as equally weighted entries and therefore still felt like a screen catalogue. |
+| Route-like labels | Labels such as detail/success/state-style routes still created weak information scent or appeared as implementation artifacts. |
+| Weak intent groups | Groups like `Access & Setup`, `Platform & Tenant` and broad route buckets described source structure more than user intent. |
+| Detail/state competition | Dynamic detail routes and state routes were still visible as competing rows instead of being folded into their parent work area. |
+| Active location | Active route marking existed, but parent-oriented active state needed to carry detail and success routes. |
+| Mobile guidance | Mobile drawer behaviour worked, but the content model still needed the same task-oriented hierarchy as desktop. |
+| P1/reference/hold | P1, reference-only and held routes remained excluded from core MVP navigation and stayed route-smoke covered. |
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Source of truth lock | Passed | Used the uploaded guidance prompt plus `AGENTS.md` and `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md`. |
+| Route registry preservation | Passed | No route ID, path, page ID, workset, route smoke list or implementation access decision was edited. |
+| Task-oriented IA | Passed | Sidebar sections now communicate the product loop from client/evidence to workbench, approval, compliance, decisions, governance and export. |
+| Progressive disclosure | Passed | Detail, success and setup-adjacent routes are folded into parent entries or muted support entries. |
+| Active state and accessibility | Passed | Active links use parent-aware route-pattern matching and expose `aria-current="page"` in one `Primary navigation` landmark. |
+| Mobile shell | Passed | Mobile drawer still opens, closes and closes after route navigation. |
+| P1/reference/hold boundary | Passed | P1, reference-only and held routes remain out of the global MVP navigation while direct URLs remain smoke-covered. |
+| No forbidden scope | Passed | No Prisma, migration, API, screen generation, visual asset generation or safety-policy change was made. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | TypeScript completed cleanly. |
+| `pnpm lint` | Passed | ESLint completed cleanly. |
+| `PLAYWRIGHT_PORT=3072 pnpm test:route-smoke` | Passed | 85 tests; all 71 registered route smoke entries and locked workset boundaries still pass. |
+| `PLAYWRIGHT_PORT=3071 pnpm exec playwright test tests/navigation-shell.spec.ts` | Environment failure | Port conflict with an already-running Next dev server on `3072`; rerun separately. |
+| `PLAYWRIGHT_PORT=3075 pnpm exec playwright test tests/navigation-shell.spec.ts` | Passed | 7 navigation-shell tests covering landmark, active route, workflow sections, parent highlighting, important links, P1/reference/hold exclusion and mobile behaviour. |
+| `pnpm build` | Passed with warnings | Existing Turbopack tracing warnings remain in `lib/document-storage-adapter.ts`; no build failure. |
+| Screenshot capture | Passed | Desktop and mobile-open screenshots captured under `artifacts/left-nav-user-guidance-rework/`. |
+| `PLAYWRIGHT_PORT=3076 pnpm test:playwright` | Failed outside slice | 224 passed, 9 failed. All 7 navigation-shell tests passed in the full run. Failures were three `document-upload-flow` expectations, one stale API-universe expectation and five `ui-state-boundaries` expectations. |
+
+### Screenshot Proof
+
+| Artifact | Status | Notes |
+| --- | --- | --- |
+| `artifacts/left-nav-user-guidance-rework/desktop-evidence-templates.png` | Captured | Desktop global AppShell with task-oriented sidebar and active setup/support route. |
+| `artifacts/left-nav-user-guidance-rework/mobile-drawer-open.png` | Captured | Open mobile drawer with guided groups and close control. |
+
+### Residual Risks
+
+- Some individual product routes still render older screen-specific sidebars/topbars; this task only changes the global `components/sidebar.tsx` navigation system.
+- `pnpm test:playwright` still has 9 broader failures outside the navigation slice. They were documented but not fixed to avoid widening the prompt scope.
+- Passing route and navigation tests does not claim final MVP readiness, complete lifecycle proof or visual acceptance for every product screen.
+
+## LEFT-MENU-HOMOGENIZATION QA Addendum
+
+Date: 2026-06-21
+
+### Executive Decision
+
+`LEFT_MENU_HOMOGENIZATION_QA_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Source of truth lock | Passed | Used the uploaded prompt plus `AGENTS.md` and `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md`; `full-workflow` remained target truth. |
+| Route registry preservation | Passed | No route ID, path, page ID, workset, route smoke list or implementation access decision was edited. |
+| Navigation IA | Passed | Global sidebar now uses workflow-oriented presentation sections rather than raw registry group labels. |
+| Label and hierarchy cleanup | Passed | Primary labels are shorter; dynamic/detail routes render as secondary rows with hidden decorative detail badges. |
+| Active state and accessibility | Passed | Active links use route-pattern matching and expose `aria-current="page"`; the global sidebar exposes `aria-label="Primary navigation"`. |
+| Mobile shell | Passed | Mobile drawer opens/closes from the global topbar and closes after route navigation; topbar z-index/pointer layering was corrected. |
+| P1/reference/hold boundary | Passed | P1, reference-only and held routes remain out of the global MVP navigation while direct URLs remain smoke-covered. |
+| No forbidden scope | Passed | No Prisma, migration, API, screen generation, visual asset generation or safety policy change was made. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | TypeScript completed cleanly. |
+| `pnpm lint` | Passed | ESLint completed cleanly. |
+| `PLAYWRIGHT_PORT=3067 pnpm exec playwright test tests/navigation-shell.spec.ts` | Passed | 5 navigation-shell tests covering desktop landmark, dynamic active route, important links, P1/reference/hold exclusion and mobile open/close/navigation. |
+| `PLAYWRIGHT_PORT=3068 pnpm test:route-smoke` | Passed | 85 tests; all 71 registered routes and locked route workset boundaries still pass. |
+| `pnpm build` | Passed with warnings | Existing Turbopack tracing warnings remain in `lib/document-storage-adapter.ts`; no build failure. |
+| Screenshot capture | Passed | Desktop, mobile closed and mobile-open screenshots captured under `artifacts/left-menu-homogenization/`. |
+| `PLAYWRIGHT_PORT=3069 pnpm test:playwright` | Failed outside slice | 223 passed, 8 failed. The new navigation-shell tests passed inside the full run. Failures were three `document-upload-flow` text expectations, one stale `foundation-guardrails` API-universe expectation including `app/api/documents/review/route.ts`, and four `ui-state-boundaries` copy expectations. |
+
+### Screenshot Proof
+
+| Artifact | Status | Notes |
+| --- | --- | --- |
+| `artifacts/left-menu-homogenization/desktop-global-shell.png` | Captured | Desktop global AppShell with grouped sidebar and active `Evidence templates` state. |
+| `artifacts/left-menu-homogenization/mobile-global-shell.png` | Captured | Mobile global AppShell without sidebar overlay. |
+| `artifacts/left-menu-homogenization/mobile-navigation-open.png` | Captured | Open mobile drawer with readable grouped navigation and close control. |
+
+### Residual Risks
+
+- This task only homogenizes the global `components/sidebar.tsx` shell. Some product areas still render their own screen-specific sidebars/topbars; harmonizing those would be a separate scoped task.
+- The full Playwright suite has 8 broader/non-slice failures unrelated to the sidebar implementation. They were reported but not corrected to avoid widening the uploaded prompt scope.
+- Passing navigation and route-smoke tests does not claim full MVP readiness, safety lifecycle completion or visual acceptance for every product-specific shell.
+
 ## MVP-FIRST-BUILD-PHASE-1 Implementation QA Addendum
 
 Date: 2026-06-21
