@@ -1,19 +1,43 @@
 # ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md
 
-## 0. max Override — All Phases And Tasks Authorized
+## 0. Current Supersession — Task And Phase Authority
+
+**Supersession generated:** 2026-06-21
+**Supersession status:** `SUPERSEDED_FOR_TASKS_AND_PHASES_BY_SCF_DETAIL_PLAN`
+
+This handoff is no longer the operative source of truth for AlphaVest task IDs,
+phase IDs, task scope, phase order, package order, dependencies, acceptance
+criteria, proof obligations or stop rules. For all task and phase decisions,
+use `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`.
+
+The previous `BP-*`, `AV-FB-*`, First-Build package, unlock and register
+language below is historical/supporting context only. It must not create,
+revive, reorder or authorize tasks or phases when it differs from the SCF
+detail plan. Product and safety guardrails in this file remain supporting
+references only where they are stricter and do not conflict with the SCF detail
+plan.
+
+## 0. Historical max Override — Superseded For Tasks And Phases
 
 **Override generated:** 2026-06-21
 **Override mode:** `max`
-**Override status:** `ALL_PHASES_AND_TASKS_AUTHORIZED_WITH_PROOF_GATES`
+**Override status:** `HISTORICAL_ALL_PHASES_AND_TASKS_AUTHORIZATION_SUPERSEDED`
 
 This section intentionally overrules every narrower authorization boundary in this handoff that previously limited execution to Phase 0 through Phase 8, `BP-00` through `BP-11`, or excluded `CONDITIONAL_SUPPORT`, `P1`, `HOLD`, `DO_NOT_CREATE`, `BP-12`, `BP-P1-*`, `BP-HOLD-*` or `BP-DNC-*` task families.
 
-Under this override, Codex may execute every AlphaVest phase, package, task register, route task, support task, P1 task, hold task and do-not-create-derived task in the `full-workflow` target codebase, including phases beyond Phase 8 and including `BP-12`, `BP-P1-*`, `BP-HOLD-*` and `BP-DNC-*`, provided each task is implemented with explicit positive proof, negative proof, validation commands and updated phase/QA reporting.
+Historically, this override allowed execution across AlphaVest phase, package
+and task-register families. It must not be used for future task or phase
+authority after the SCF detail plan supersession. Future Codex runs must derive
+task and phase scope from
+`ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`.
 
 Safety-critical implementation remains proof-gated rather than free-form: new screens, state screens, visual assets, API routes, Prisma schema changes, migrations, external communication flows, client-visible release flows and regulated-advice-adjacent flows are now authorized when required by an unlocked task, but each such change must be explicitly named in the task/report, validated, and fail closed for demo data, role/tenant/object scope, audit, evidence sufficiency, compliance release and client visibility. This override does not authorize real client data, production financial/legal/tax advice, uncontrolled external sends, silent admin bypass, or untested release shortcuts.
 
 **Generated:** 2026-06-21  
-**Mode:** Final executable implementation handoff with `max` all-task override. This artefact now authorizes Codex implementation across all AlphaVest phase/task families in `full-workflow`, including previously blocked or conditional registers, subject to explicit proof gates and reporting.
+**Mode:** Historical implementation handoff. This artefact no longer authorizes
+task or phase execution; it is superseded by
+`ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md` for all
+task/phase authority.
 **Target repository:** `https://github.com/xkyball/alphavest-wealthos-clickdummy/tree/full-workflow`  
 **Target branch:** `full-workflow`
 
@@ -25,16 +49,20 @@ Safety-critical implementation remains proof-gated rather than free-form: new sc
 **Implementation gate status:** `ALL_PHASES_AND_TASKS_IMPLEMENTATION_AUTHORIZED_WITH_PROOF_GATES`
 **Artefact creation status:** `IMPLEMENTATION_NOT_STARTED_IN_ARTEFACT`
 
-This handoff is the final execution protocol for Codex after the `max` override above. Codex may execute all AlphaVest phase/task families against the `full-workflow` target codebase, including task IDs and registers that were previously conditional, P1, held or do-not-create. Every executed task still requires source-grounded implementation, positive/negative proof, validation duties and updated reporting.
+This handoff was the final execution protocol for Codex after the `max`
+override above. It has since been superseded for task and phase authority by
+`ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`. Future
+execution must use the SCF detail plan's `P00` through `P14` phase model and
+`SCF-Pxx-Txxx` tasks.
 
 | Summary Item | Count / Decision |
 | --- | --- |
-| Allowed phases | All AlphaVest phases in this handoff family, including Phase 0 through Phase 12 and later repo-local phase/task registers |
-| Allowed task specifications | All existing and newly materialized AlphaVest task specifications in `full-workflow` |
-| Allowed source packages | All AlphaVest package families, including `BP-00` through `BP-12`, `BP-P1-*`, `BP-HOLD-*` and `BP-DNC-*` |
-| Blocked registers | No register is blocked by category after the `max` override; item-level safety proof gates still apply |
+| Historical phases | Previous handoff-family phases, superseded by SCF `P00` through `P14` |
+| Historical task specifications | Previous BP/AV-FB task specifications, superseded by `SCF-Pxx-Txxx` tasks |
+| Historical source packages | Previous `BP-00` through `BP-12`, `BP-P1-*`, `BP-HOLD-*` and `BP-DNC-*` families |
+| Current blocked/register truth | Use the SCF detail plan's Implement/Static/Hide/Remove/Defer/Hold treatment |
 | Target repo / branch | `xkyball/alphavest-wealthos-clickdummy` / `full-workflow` |
-| Codex may execute? | Yes, across all phase/task families after source preflight |
+| Codex may execute from this file? | No. Use the SCF detail plan and its Detail-QA gate. |
 | Screen/state/image generation | Authorized when required by an unlocked task and validated |
 | Prisma migrations | Authorized when required by an unlocked task and validated |
 | New API routes by default | Authorized when required by an unlocked task and validated |
@@ -42,20 +70,30 @@ This handoff is the final execution protocol for Codex after the `max` override 
 
 ## 2. Source-of-Truth Lock
 
-This file is the only operative source of truth for AlphaVest First Build implementation. It supersedes older phase plans, task definitions, minimum-path prompt packs, previous final task masters, previous implementation handoffs and V3 task catalogues for execution authority. External artefacts may be consulted only as historical context or target-code evidence when this handoff explicitly permits them; they must not define task scope, reorder work, add task IDs or override stop rules. `full-workflow` is the target code reality. `main` is false-gap only.
+This file is no longer the operative source of truth for AlphaVest tasks or
+phases. `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`
+supersedes it for task IDs, phase IDs, task scope, phase order, dependencies,
+acceptance, proof, stop rules and QA-before-Codex gating. This file may be
+consulted only as historical/supporting context for safety and product
+guardrails where it does not conflict with the SCF detail plan. `full-workflow`
+is the target code reality. `main` is false-gap only.
 
 | Rank | Source | Role | Allowed Use | Forbidden Use |
 | --- | --- | --- | --- | --- |
-| 1 | `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md` | Sole operative source of truth | Task IDs, phases, package boundaries, target areas, dependencies, validation plan, P0 obligations, stop rules and non-task registers. | Delegating execution authority to older phases, task definitions, previous handoffs, minimum-path prompts or V3 catalogues. |
+| 1 | `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md` | Sole task/phase source of truth | Phase IDs, task IDs, task/subtask scope, dependencies, acceptance criteria, proof obligations, stop rules and QA-before-Codex gate. | Delegating task or phase authority to this handoff, older phases, previous task definitions, minimum-path prompts or V3 catalogues. |
+| Reference only | `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md` | Historical/supporting guardrail reference | Product/safety guardrails only where stricter and non-conflicting with the SCF detail plan. | Defining task IDs, phase order, package order, scope, proof gates or execution authority. |
 | Reference only | Live GitHub repo / branch `full-workflow` | Target branch reality | Verify current files/routes/APIs/schema/tests during Codex execution. | Treating presence as readiness proof or overriding this handoff. |
 | Reference only | `main` branch / older snapshots / previous task packs | False-gap and historical context only | Block old absence claims if this handoff permits that check. | Target truth, implementation scope, task creation or phase authority. |
 
-## 3. Implementation Authorization Boundary
+## 3. Historical Implementation Authorization Boundary
 
-| Boundary Area | Codex May Do | Codex Must Not Do | Stop Rule |
+The table below is retained as historical guardrail context only. It is not
+task or phase authorization after the SCF detail plan supersession.
+
+| Boundary Area | Historical Rule | Codex Must Not Do | Stop Rule |
 | --- | --- | --- | --- |
-| Allowed task IDs | Execute any AlphaVest task ID or register in this handoff family; materialize missing IDs when unlocking a previously blocked family. | Silently implement unlabeled work without a task/report entry. | If a task family is ambiguous, create or update the task entry before coding. |
-| Allowed packages | Execute all AlphaVest packages including `BP-00` through `BP-12`, `BP-P1-*`, `BP-HOLD-*` and `BP-DNC-*`. | Treat unlock as permission to bypass proof, safety, audit or validation. | Any safety-critical package without positive and negative proof triggers STOP_AND_REPORT. |
+| Historical task IDs | Previous AlphaVest task IDs/registers are superseded by `SCF-Pxx-Txxx`. | Silently implement unlabeled work without a task/report entry. | If SCF task scope is ambiguous, stop and report before coding. |
+| Historical packages | Previous `BP-*` package families are historical only. | Treat old unlock language as permission to bypass proof, safety, audit or validation. | Any safety-critical work without positive and negative proof triggers STOP_AND_REPORT. |
 | Target codebase | Use `full-workflow` branch/snapshot as implementation target. | Use `main` as target truth or create `main`-derived tasks. | Target branch/source mismatch triggers STOP_AND_REPORT. |
 | Files and architecture | Modify only primary/secondary targets allowed by package/task. | Invent architecture when target file/area is missing. | Missing required file/area triggers source-refresh report. |
 | UI/visuals | Implement screens, states, feedback and visual assets when an unlocked task requires them. | Ship generated visuals without review/proof or claim visual acceptance from presence alone. | Visual work without screenshots or visual QA evidence triggers STOP_AND_REPORT. |
@@ -64,9 +102,11 @@ This file is the only operative source of truth for AlphaVest First Build implem
 | Safety | Implement fail-closed RBAC, visibility, evidence, audit, advice-boundary and export controls. | Allow anonymous production access, silent admin bypass, AI Draft leakage, upload-to-release, advisor-as-release or preview-as-approval without explicit task proof. | Any safety contradiction triggers STOP_AND_REPORT. |
 | Tests | Add/update positive and negative P0 tests required by task scope. | Claim current tests already prove all P0 gates. | Missing/failed P0 negative proof for safety-critical changes blocks completion. |
 
-## 4. Allowed Task Inventory
+## 4. Historical Task Inventory
 
-All 62 task IDs below are explicitly authorized for Codex execution only inside this handoff. Every row inherits `IMPLEMENTATION_AUTHORIZED_WITH_CONSTRAINTS`, `P0_POSITIVE_REQUIRED` where applicable, and `P0_NEGATIVE_REQUIRED` for safety-critical tasks.
+The 62 task IDs below are historical only and are superseded by the SCF detail
+plan's `SCF-Pxx-Txxx` task register. They must not be used as the current
+source of task authority, phase ordering or execution scope.
 
 | Phase | Package | Task ID | Task Title | Task Type | Allowed? | Primary Target Files / Areas | Required Tests | Validation Commands | Stop Rules |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -133,7 +173,10 @@ All 62 task IDs below are explicitly authorized for Codex execution only inside 
 | 8 | BP-11 | AV-FB-P8-BP11-T013 | Specify P0-NEG-012 — Main false-gap block | P0_TEST_TASK | ALLOWED_TASK | task-pack QA; source preflight | P0-NEG-012 | Relevant package commands plus pnpm test:phase-d | Negative proof cannot be linked to any accepted package or target surface. |
 | 8 | BP-11 | AV-FB-P8-BP11-T014 | Specify final validation command and proof report pack | VALIDATION_TASK | ALLOWED_TASK | package.json scripts; playwright.config.ts; tests/* | All P0 gates | pnpm typecheck; pnpm lint; pnpm db:validate; pnpm build; pnpm test:playwright; pnpm test:permissions; pnpm test:workflow-gate; pnpm test:workflow-api; pnpm test:route-smoke; pnpm test:data-quality; pnpm test:file-export; pnpm test:phase-d | Command script is missing or cannot be mapped to proof obligation. |
 
-## 5. Phase Execution Order
+## 5. Historical Phase Execution Order
+
+The phase order below is historical only. Current phase order is the SCF detail
+plan's `P00` through `P14` dependency map and execution sequencing rules.
 
 | Phase | Source Package(s) | Phase Name | Phase Goal | Execution Allowed? | Required Before Start | Required Completion Proof |
 | --- | --- | --- | --- | --- | --- | --- |

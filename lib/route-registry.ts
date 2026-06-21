@@ -88,9 +88,9 @@ export type ScreenRoute = {
 export type RouteImplementationAccessDecision = {
   routeScope: RouteScopeLabel;
   implementationShellAccessible: boolean;
-  accessMode: "FIRST_BUILD" | "SOFT_UNLOCKED";
+  accessMode: "FIRST_BUILD" | "REGISTERED_ONLY";
   exclusionReason?: "P1_DEFERRED" | "REFERENCE_ONLY_NO_PRODUCT_TASK" | "HOLD_PENDING_SCOPE_UNLOCK";
-  safetyBoundary: "FULL_FIRST_BUILD_SCOPE" | "UI_ONLY_NO_RELEASE_OR_ADVICE_UNLOCK";
+  safetyBoundary: "FULL_FIRST_BUILD_SCOPE" | "SCF_DO_NOT_IMPLEMENT_REGISTER";
 };
 
 export const navigationGroupLabels: Record<NavigationGroupKey, string> = {
@@ -1380,16 +1380,16 @@ export function routeImplementationAccessDecision(
   }
 
   return {
-    accessMode: "SOFT_UNLOCKED",
+    accessMode: "REGISTERED_ONLY",
     routeScope,
-    implementationShellAccessible: true,
+    implementationShellAccessible: false,
     exclusionReason:
       routeScope === "P1_AFTER_MVP"
         ? "P1_DEFERRED"
         : routeScope === "REFERENCE_ONLY"
           ? "REFERENCE_ONLY_NO_PRODUCT_TASK"
           : "HOLD_PENDING_SCOPE_UNLOCK",
-    safetyBoundary: "UI_ONLY_NO_RELEASE_OR_ADVICE_UNLOCK"
+    safetyBoundary: "SCF_DO_NOT_IMPLEMENT_REGISTER"
   };
 }
 

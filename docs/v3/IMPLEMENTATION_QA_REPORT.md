@@ -5123,3 +5123,82 @@ Date: 2026-06-21
 
 - The unlock makes tasks executable; it does not implement all newly unlocked work.
 - Future task runs must materialize missing task IDs before coding formerly blocked or DNC-derived work.
+
+## SCF-TASK-PHASE-SOURCE-OF-TRUTH-REALIGNMENT QA Addendum
+
+Date: 2026-06-21
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| SCF detail plan authority | Passed | `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md` now carries `SOLE_TASK_AND_PHASE_SOURCE_OF_TRUTH`. |
+| AGENTS entrypoint | Passed | `AGENTS.md` now requires the SCF detail plan before implementation and blocks older artefacts from defining task/phase authority. |
+| First-Build handoff downgrade | Passed | `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md` is marked superseded for tasks and phases. |
+| Package plan downgrade | Passed | `ALPHAVEST_MVP_FIRST_BUILD_PACKAGE_PLAN.md` is marked historical for package/phase execution. |
+| Product implementation scope | Passed | No product UI, route, API, schema, seed, image or test implementation was changed. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `git diff --check` | Passed | No whitespace errors. |
+| `rg -n "SOLE_TASK_AND_PHASE_SOURCE_OF_TRUTH|SUPERSEDED_FOR_TASKS_AND_PHASES_BY_SCF_DETAIL_PLAN|Sole task/phase source of truth" AGENTS.md ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md ALPHAVEST_MVP_FIRST_BUILD_PACKAGE_PLAN.md` | Passed | Authority labels found in the expected source files. |
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| SCF task/phase source authority | implemented | Future tasks and phases must use the SCF detail plan. |
+| First-Build task/phase authority | superseded | Historical/supporting reference only. |
+| Product implementation | not changed | This pass was docs/source-authority only. |
+
+### Residual Risks
+
+- `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md` still says
+  Detail QA is required before Codex implementation or a derived prompt pack.
+- Existing implementation reports still contain historical entries from older
+  handoff systems; those entries are audit history, not current task/phase
+  authority.
+
+## SCF-P00-P03 Foundation Implementation QA Addendum
+
+Date: 2026-06-21
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| SCF task/phase authority | Passed | P00-P03 identifiers, acceptance text and proof command baseline are represented in `lib/scf-foundation.ts`. |
+| Baseline counts | Passed | Route workset counts remain 31 MVP, 25 MVP support, 5 P1, 3 Reference and 7 Hold across 71 registered routes. |
+| Decision queues | Passed | SCF queue counts are codified as 363 implement, 80 static-explicit, 26 defer, 11 reference-only and 42 hold. |
+| Do-Not-Implement cleanup | Passed | P1, Reference and Hold routes are registered-only and excluded from implementation navigation. |
+| Held route behavior | Passed | Committee held routes render the route guard instead of product implementation UI. |
+| Providerless boundary | Passed | Existing providerless scope tests remain green and now run alongside SCF route/task assertions. |
+| Visual proof | Passed with note | Screenshots were captured for navigation, held-route guard and providerless upload context. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | TypeScript completed with `tsc --noEmit`. |
+| `pnpm exec playwright test tests/providerless-scope.spec.ts tests/route-smoke.spec.ts tests/p0-acceptance.spec.ts tests/navigation-shell.spec.ts tests/committee-review-routes.spec.ts` | Passed | 116 tests. |
+| `pnpm lint` | Failed then passed | Initial run failed because `test-results` was absent; rerun after creating the directory passed. |
+| `pnpm db:validate` | Passed | Prisma schema validates. |
+| `git diff --check` | Passed | No whitespace errors. |
+| `pnpm build` | Passed with warnings | Existing Turbopack tracing warnings in `lib/document-storage-adapter.ts`. |
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| SCF P00-P03 foundation | implemented + tested | Source-of-truth, baseline, route scope and providerless boundary assertions exist in code/tests. |
+| P1/Reference/Hold implementation | blocked by register | Routes remain direct-smokeable but not implementation navigation/product surfaces. |
+| Production authorization | not claimed | Demo providerless context remains bounded to the current implementation contract. |
+| Full P0 closure | not claimed | This phase improves foundation proof only. |
+
+### Residual Risks
+
+- Historical report sections still mention older soft-unlock work; those entries are superseded audit history, not current SCF task authority.
+- Build continues to pass with existing `lib/document-storage-adapter.ts` Turbopack tracing warnings.
+- Future SCF phases must provide explicit unlock prompts before turning registered-only routes into implementation work.

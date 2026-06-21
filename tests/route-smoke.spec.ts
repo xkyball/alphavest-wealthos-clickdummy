@@ -9,6 +9,7 @@ import {
   routeWorksetPageIds,
   screenRoutes
 } from "../lib/route-registry";
+import { scfDoNotImplementRegister } from "../lib/scf-foundation";
 
 const lockedRouteWorksetCounts = {
   MVP: 31,
@@ -53,37 +54,35 @@ test.describe("locked route workset preservation", () => {
     expect(routeSmokeList).toHaveLength(71);
   });
 
-  test("P1, reference and held routes are explicitly soft-unlocked into implementation navigation", () => {
+  test("P1, reference and held routes stay outside implementation navigation", () => {
     const implementationPageIds = new Set(
       groupedImplementationScreenRoutes.flatMap((group) => group.routes.map((route) => route.pageId))
     );
 
-    const softUnlockedPageIds = [
+    const doNotImplementPageIds = [
       ...routeWorksetPageIds.P1_AFTER_MVP,
       ...routeWorksetPageIds.REFERENCE_ONLY,
       ...routeWorksetPageIds.HOLD_PENDING_DECISION
     ];
 
-    for (const pageId of softUnlockedPageIds) {
-      expect(implementationPageIds.has(pageId), `${pageId} should be soft-unlocked`).toBe(true);
+    for (const pageId of doNotImplementPageIds) {
+      expect(implementationPageIds.has(pageId), `${pageId} should not be implementation navigation`).toBe(false);
     }
   });
 
-  test("route access decisions preserve route provenance while soft-unlocking every route shell", () => {
+  test("route access decisions preserve SCF provenance without elevating held worksets", () => {
     for (const route of screenRoutes) {
       const decision = routeImplementationAccessDecision(route);
-
-      expect(decision.implementationShellAccessible, `${route.pageId} implementation access`).toBe(
-        true
-      );
 
       if (mvpPageIds.has(route.pageId) || mvpSupportPageIds.has(route.pageId)) {
         expect(decision.accessMode).toBe("FIRST_BUILD");
         expect(decision.exclusionReason).toBeUndefined();
+        expect(decision.implementationShellAccessible, `${route.pageId} implementation access`).toBe(true);
         expect(decision.safetyBoundary).toBe("FULL_FIRST_BUILD_SCOPE");
       } else {
-        expect(decision.accessMode).toBe("SOFT_UNLOCKED");
-        expect(decision.safetyBoundary).toBe("UI_ONLY_NO_RELEASE_OR_ADVICE_UNLOCK");
+        expect(decision.accessMode).toBe("REGISTERED_ONLY");
+        expect(decision.implementationShellAccessible, `${route.pageId} implementation access`).toBe(false);
+        expect(decision.safetyBoundary).toBe("SCF_DO_NOT_IMPLEMENT_REGISTER");
         if (p1PageIds.has(route.pageId)) {
           expect(decision.exclusionReason).toBe("P1_DEFERRED");
         } else if (referencePageIds.has(route.pageId)) {
@@ -92,6 +91,19 @@ test.describe("locked route workset preservation", () => {
           expect(decision.exclusionReason).toBe("HOLD_PENDING_SCOPE_UNLOCK");
         }
       }
+    }
+  });
+
+  test("SCF Do-Not-Implement register covers every non-MVP workset route", () => {
+    const registeredDniPageIds = new Set(scfDoNotImplementRegister.flatMap((entry) => entry.pageIds));
+    const expectedPageIds = [
+      ...routeWorksetPageIds.P1_AFTER_MVP,
+      ...routeWorksetPageIds.REFERENCE_ONLY,
+      ...routeWorksetPageIds.HOLD_PENDING_DECISION
+    ];
+
+    for (const pageId of expectedPageIds) {
+      expect(registeredDniPageIds.has(pageId), `${pageId} should be in the SCF DNI register`).toBe(true);
     }
   });
 
@@ -112,43 +124,34 @@ test.describe("locked route workset preservation", () => {
     }
   });
 
-  test("deferred, reference and held requests render soft-unlocked product screens", async ({ page }) => {
-    const softUnlockedScreens = [
+  test("deferred, reference and held requests render registered-only guard screens", async ({ page }) => {
+    const registeredOnlyScreens = [
       {
         path: "/communication",
-        routeHeading: "Communication Centre",
-        routeHeadingLevel: 2,
-        productText: "Release gate required"
+        guardHeading: "Deferred Workspace",
+        productText: "not active in the current release"
       },
       {
         path: "/service-blueprint",
-        routeHeading: "Service Blueprint",
-        routeHeadingLevel: 2,
-        productText: "End-to-end service blueprint"
+        guardHeading: "Reference Workspace",
+        productText: "not treated as product implementation"
       },
       {
         path: "/kyc/demo/review",
-        routeHeading: "KYC / AML Review",
-        routeHeadingLevel: 2,
-        productText: "No client release from KYC review"
+        guardHeading: "Held Workspace",
+        productText: "held until a later explicit scope"
       },
       {
         path: "/committee/reviews",
-        routeHeading: "Committee Review Queue",
-        routeHeadingLevel: 1,
-        productText: "Second review required"
+        guardHeading: "Held Workspace",
+        productText: "held until a later explicit scope"
       }
     ];
 
-    for (const route of softUnlockedScreens) {
+    for (const route of registeredOnlyScreens) {
       await page.goto(route.path);
 
-      await expect(
-        page.getByRole("main").getByRole("heading", { level: route.routeHeadingLevel, name: route.routeHeading })
-      ).toBeVisible();
-      await expect(page.getByRole("heading", { name: "Deferred Workspace" })).toHaveCount(0);
-      await expect(page.getByRole("heading", { name: "Reference Workspace" })).toHaveCount(0);
-      await expect(page.getByRole("heading", { name: "Held Workspace" })).toHaveCount(0);
+      await expect(page.getByRole("main").getByRole("heading", { name: route.guardHeading })).toBeVisible();
       await expect(page.getByText(route.productText)).toBeVisible();
     }
   });

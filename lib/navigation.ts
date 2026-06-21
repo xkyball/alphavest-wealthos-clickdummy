@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import {
+  isRouteImplementationShellAccessible,
   routePatternToSegments,
   routeScopeForPageId,
   routeToSmokePath,
@@ -289,9 +290,9 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
     ]
   },
   {
-    key: "soft_unlock",
-    label: "Soft-unlocked routes",
-    description: "Extended route access with UI-only safety boundaries still in force.",
+    key: "registered_only",
+    label: "Registered-only routes",
+    description: "Routes kept in the registry for smoke coverage while excluded from MVP implementation navigation.",
     icon: ClipboardList,
     tier: "support",
     items: [
@@ -479,6 +480,10 @@ function routeForPageId(pageId: string) {
 
 function navigationItemForDefinition(definition: NavigationItemDefinition): NavigationItem {
   const route = routeForPageId(definition.pageId);
+  if (!isRouteImplementationShellAccessible(route)) {
+    throw new Error(`Navigation page ${definition.pageId} is registered-only and cannot appear in implementation navigation.`);
+  }
+
   const activePageIds = [...new Set([definition.pageId, ...(definition.activePageIds ?? [])])];
   const activeRoutePatterns = activePageIds.map((pageId) => routeForPageId(pageId).route);
 
@@ -496,14 +501,22 @@ function navigationItemForDefinition(definition: NavigationItemDefinition): Navi
   };
 }
 
-export const navigationGroups: NavigationGroup[] = navigationDefinitions.map((group) => ({
-  key: group.key,
-  label: group.label,
-  description: group.description,
-  icon: group.icon,
-  tier: group.tier ?? "core",
-  items: group.items.map(navigationItemForDefinition)
-}));
+export const navigationGroups: NavigationGroup[] = navigationDefinitions
+  .map((group) => {
+    const items = group.items
+      .filter((item) => isRouteImplementationShellAccessible(routeForPageId(item.pageId)))
+      .map(navigationItemForDefinition);
+
+    return {
+      key: group.key,
+      label: group.label,
+      description: group.description,
+      icon: group.icon,
+      tier: group.tier ?? "core",
+      items
+    };
+  })
+  .filter((group) => group.items.length > 0);
 
 function normalizePathname(pathname: string) {
   const path = pathname.split("?")[0]?.split("#")[0] ?? "/";

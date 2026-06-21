@@ -22,6 +22,13 @@ import {
   routeScopeForPageId,
   routeWorksetIntegrity,
 } from "../lib/route-registry";
+import {
+  scfBaselineCounts,
+  scfDecisionQueues,
+  scfDoNotImplementRegister,
+  scfFoundationTaskIds,
+  scfProofCommandBaseline,
+} from "../lib/scf-foundation";
 import { visibilityEngine } from "../lib/visibility-engine";
 import { canBecomeClientVisible } from "../lib/workflow-gate";
 
@@ -541,7 +548,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
     }
   });
 
-  test("AV-SLICE-P0-09 preserves route worksets while applying the explicit soft unlock", () => {
+  test("SCF-P00/P01/P02 preserves route worksets and Do-Not-Implement boundaries", () => {
     expect(routeWorksetIntegrity.counts).toEqual({
       HOLD_PENDING_DECISION: 7,
       MVP: 31,
@@ -556,68 +563,83 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
     for (const pageId of ["052", "053", "059", "060", "068"]) {
       expect(routeScopeForPageId(pageId)).toBe("P1_AFTER_MVP");
       expect(routeImplementationAccessDecision({ pageId })).toEqual({
-        accessMode: "SOFT_UNLOCKED",
+        accessMode: "REGISTERED_ONLY",
         exclusionReason: "P1_DEFERRED",
-        implementationShellAccessible: true,
+        implementationShellAccessible: false,
         routeScope: "P1_AFTER_MVP",
-        safetyBoundary: "UI_ONLY_NO_RELEASE_OR_ADVICE_UNLOCK",
+        safetyBoundary: "SCF_DO_NOT_IMPLEMENT_REGISTER",
       });
     }
 
     for (const pageId of ["061", "062", "063"]) {
       expect(routeScopeForPageId(pageId)).toBe("REFERENCE_ONLY");
       expect(routeImplementationAccessDecision({ pageId })).toEqual({
-        accessMode: "SOFT_UNLOCKED",
+        accessMode: "REGISTERED_ONLY",
         exclusionReason: "REFERENCE_ONLY_NO_PRODUCT_TASK",
-        implementationShellAccessible: true,
+        implementationShellAccessible: false,
         routeScope: "REFERENCE_ONLY",
-        safetyBoundary: "UI_ONLY_NO_RELEASE_OR_ADVICE_UNLOCK",
+        safetyBoundary: "SCF_DO_NOT_IMPLEMENT_REGISTER",
       });
     }
 
     for (const pageId of ["064", "065", "066", "067", "069", "070", "071"]) {
       expect(routeScopeForPageId(pageId)).toBe("HOLD_PENDING_DECISION");
       expect(routeImplementationAccessDecision({ pageId })).toEqual({
-        accessMode: "SOFT_UNLOCKED",
+        accessMode: "REGISTERED_ONLY",
         exclusionReason: "HOLD_PENDING_SCOPE_UNLOCK",
-        implementationShellAccessible: true,
+        implementationShellAccessible: false,
         routeScope: "HOLD_PENDING_DECISION",
-        safetyBoundary: "UI_ONLY_NO_RELEASE_OR_ADVICE_UNLOCK",
+        safetyBoundary: "SCF_DO_NOT_IMPLEMENT_REGISTER",
       });
     }
+
+    expect(scfBaselineCounts.registeredRoutes).toBe(71);
+    expect(scfBaselineCounts.routeWorksets).toEqual(routeWorksetIntegrity.counts);
+    expect(scfDecisionQueues).toEqual({
+      defer: 26,
+      hold: 42,
+      implement: 363,
+      referenceOnly: 11,
+      staticExplicit: 80,
+    });
+    expect(scfDoNotImplementRegister.map((entry) => entry.id)).toEqual([
+      "DNI-P1-001",
+      "DNI-REF-001",
+      "DNI-HOLD-001",
+      "DNI-STATIC-001",
+    ]);
+    expect(scfFoundationTaskIds()).toEqual([
+      "SCF-P00-T001",
+      "SCF-P00-T002",
+      "SCF-P01-T001",
+      "SCF-P01-T002",
+      "SCF-P02-T001",
+      "SCF-P02-T002",
+      "SCF-P03-T001",
+      "SCF-P03-T002",
+    ]);
+    expect(scfProofCommandBaseline).toContain("pnpm test:permissions");
   });
 
-  test("max override unlocks all phase and task registers with proof gates", () => {
+  test("SCF detail plan supersedes previous max override as task and phase authority", () => {
+    const agents = readWorkspaceText("AGENTS.md");
+    const detailPlan = readWorkspaceText("ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md");
     const handoff = readWorkspaceText("ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md");
-    const softUnlock = readWorkspaceText("ALPHAVEST_ALL_ROUTES_SOFT_UNLOCK_HANDOFF.md");
     const packagePlan = readWorkspaceText("ALPHAVEST_MVP_FIRST_BUILD_PACKAGE_PLAN.md");
-    const firstBuildTaskIds = [...handoff.matchAll(/AV-FB-P\d+-BP\d+-T\d+/g)].map((match) => match[0]);
 
-    expect(new Set(firstBuildTaskIds).size).toBeGreaterThanOrEqual(62);
-    expect(handoff).toContain("ALL_PHASES_AND_TASKS_AUTHORIZED_WITH_PROOF_GATES");
-    expect(handoff).toContain("overrules every narrower authorization boundary");
-    expect(handoff).toContain("Allowed phases | All AlphaVest phases in this handoff family");
-    expect(handoff).toContain("No register is blocked by category after the `max` override");
-    expect(handoff).toContain("`BP-12`, `BP-P1-*`, `BP-HOLD-*` and `BP-DNC-*`");
-    expect(handoff).toContain("Screen/state/image generation | Authorized when required by an unlocked task and validated");
-    expect(handoff).toContain("Prisma migrations | Authorized when required by an unlocked task and validated");
-    expect(handoff).toContain("New API routes by default | Authorized when required by an unlocked task and validated");
-    expect(handoff).toContain("BP-P1-* may be promoted/executed with task IDs, proof and reports");
-    expect(handoff).toContain("BP-HOLD-* and held routes may be promoted/executed with task IDs, proof and reports");
-    expect(handoff).toContain("New API routes may be created when task-required and tested");
-    expect(handoff).toContain("Prisma migrations may be created when task-required and validated");
-    expect(handoff).toContain("Routes 064–067 and 069–071 require task proof before release/advice scope.");
-
-    expect(softUnlock).toContain("This amendment authorizes a UI-only soft unlock");
-    expect(softUnlock).toContain("It does not reclassify the route worksets");
-
-    expect(packagePlan).toContain("FIRST_BUILD_PACKAGE_PLAN_MAX_OVERRIDE_UNLOCKED");
-    expect(packagePlan).toContain("Active all-phase/all-task override: Section 0");
-    expect(packagePlan).toContain("| 9-12 and later repo-local registers | `BP-12`, `BP-P1-*`, `BP-HOLD-*`, `BP-DNC-*`, newly materialized AlphaVest task IDs | `EXECUTABLE_BY_MAX_OVERRIDE_WITH_PROOF_GATES` |");
-    expect(packagePlan).toContain("| `CONDITIONAL_SUPPORT` | `EXECUTABLE_BY_MAX_OVERRIDE_WITH_PROOF_GATES` |");
-    expect(packagePlan).toContain("| `P1` | `EXECUTABLE_BY_MAX_OVERRIDE_WITH_PROOF_GATES` |");
-    expect(packagePlan).toContain("| `HOLD` | `EXECUTABLE_BY_MAX_OVERRIDE_WITH_PROOF_GATES` |");
-    expect(packagePlan).toContain("| `DO_NOT_CREATE` | `EXECUTABLE_WHEN_MATERIALIZED_WITH_PROOF`, except `main` false-gap task creation remains forbidden |");
+    expect(agents).toContain("ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md");
+    expect(agents).toContain("operative source of truth for AlphaVest tasks and phases");
+    expect(detailPlan).toContain("SOLE_TASK_AND_PHASE_SOURCE_OF_TRUTH");
+    expect(detailPlan).toContain("Phasen: `P00` bis `P14`");
+    expect(detailPlan).toContain("Tasks: alle `SCF-Pxx-Txxx`");
+    expect(handoff).toContain("SUPERSEDED_FOR_TASKS_AND_PHASES_BY_SCF_DETAIL_PLAN");
+    expect(handoff).toContain("Codex may execute from this file? | No");
+    expect(packagePlan).toContain("SUPERSEDED_FOR_TASKS_AND_PHASES_BY_SCF_DETAIL_PLAN");
+    expect(packagePlan).toContain("Sole task/phase source of truth");
+    expect(packagePlan).toContain("This table is retained as historical context only");
+    expect(packagePlan).toContain("Historical all-phase/all-task override");
+    expect(handoff).not.toContain("All 62 task IDs below are explicitly authorized");
+    expect(packagePlan).not.toContain("FIRST_BUILD_PACKAGE_PLAN_MAX_OVERRIDE_UNLOCKED");
   });
 
   test("AV-FB-P8-BP11-T001..T014 map final P0 proof, commands and report obligations", () => {

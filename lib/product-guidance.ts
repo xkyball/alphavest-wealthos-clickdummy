@@ -181,25 +181,25 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
     relatedRoutes: [linkForPageId("055", "Review scope"), linkForPageId("056", "Review redaction")],
   },
   "052": {
-    area: "Soft-unlocked communication",
-    gateHint: "Soft-unlocked: route UI is visible, but message delivery and client visibility remain gated.",
+    area: "Registered-only communication",
+    gateHint: "SCF registered-only route: message delivery and client visibility remain held outside MVP implementation.",
   },
   "061": {
-    area: "Soft-unlocked reference",
-    gateHint: "Soft-unlocked: reference UI is visible as an operating map, not as lifecycle or release proof.",
+    area: "Reference-only workspace",
+    gateHint: "SCF reference-only route: internal operating map only, not lifecycle or release proof.",
   },
   "070": {
-    area: "Soft-unlocked committee review",
-    gateHint: "Soft-unlocked: committee UI is visible, but committee approval still cannot release advice to the client.",
+    area: "Held committee review",
+    gateHint: "SCF held route: committee implementation remains blocked; committee approval still cannot release advice to the client.",
   },
 };
 
 const tierGateHints: Record<RouteScopeLabel, string> = {
   MVP: "MVP workflow route: action authority still depends on role, object, evidence and release gates.",
   MVP_SUPPORT: "MVP support route: setup/context support only; safety gates still control downstream actions.",
-  P1_AFTER_MVP: "Soft-unlocked P1 route: UI is visible, while release, export and advice authority remain gated.",
-  REFERENCE_ONLY: "Soft-unlocked reference route: visible as an operating map, not lifecycle proof.",
-  HOLD_PENDING_DECISION: "Soft-unlocked held route: UI is visible, while regulated actions remain fail-closed.",
+  P1_AFTER_MVP: "SCF deferred route: registered for smoke coverage only; no MVP product task or release authority.",
+  REFERENCE_ONLY: "SCF reference-only route: registered for reference coverage only, not lifecycle proof.",
+  HOLD_PENDING_DECISION: "SCF held route: implementation remains blocked while regulated actions fail closed.",
 };
 
 function areaForRoute(route: ScreenRoute) {

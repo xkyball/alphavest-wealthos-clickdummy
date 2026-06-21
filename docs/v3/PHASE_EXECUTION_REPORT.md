@@ -292,6 +292,130 @@ Date: 2026-06-21
 
 `PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
 
+## SCF-P00-P03 - Foundation / Source / Scope / Providerless Boundary
+
+Date: 2026-06-21
+
+### Scope
+
+Implemented phases P00 through P03 from `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md` as the operative SCF task/phase source. This pass turns the foundation plan into repo-enforced state for baseline counts, SCF decision queues, Do-Not-Implement route treatment and providerless route/action/object/payload boundary checks. Older soft-unlock semantics are superseded for current task execution.
+
+### Source Artefacts Used
+
+- `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`
+- `AGENTS.md`
+- Existing route registry, navigation shell, product guidance and Playwright acceptance tests.
+
+### Completed Tasks
+
+- Added `lib/scf-foundation.ts` with P00-P03 phase/task identifiers, SCF queue counts, baseline proof commands and the Do-Not-Implement register.
+- Rebased non-MVP route treatment to `REGISTERED_ONLY` with `SCF_DO_NOT_IMPLEMENT_REGISTER` safety boundary.
+- Removed P1, Reference and Hold worksets from implementation navigation while preserving direct route smoke coverage.
+- Updated route guidance copy so registered-only, reference-only and held routes are no longer described as soft-unlocked implementation UI.
+- Extended P0, route-smoke, navigation and committee route tests to assert SCF authority, counts, workset treatment and held-route guard behavior.
+- Captured representative screenshots under `artifacts/scf-p00-p03/`.
+
+### Changed Files
+
+- `lib/scf-foundation.ts`
+- `lib/route-registry.ts`
+- `lib/navigation.ts`
+- `lib/product-guidance.ts`
+- `tests/route-smoke.spec.ts`
+- `tests/p0-acceptance.spec.ts`
+- `tests/navigation-shell.spec.ts`
+- `tests/committee-review-routes.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm exec playwright test tests/providerless-scope.spec.ts tests/route-smoke.spec.ts tests/p0-acceptance.spec.ts tests/navigation-shell.spec.ts tests/committee-review-routes.spec.ts` - passed, 116 tests.
+- `pnpm lint` - first run failed because `test-results` was absent; passed after recreating the artifact directory.
+- `pnpm db:validate` - passed.
+- `git diff --check` - passed.
+- `pnpm build` - passed with existing Turbopack tracing warnings around `lib/document-storage-adapter.ts`.
+
+### Screenshots
+
+- `artifacts/scf-p00-p03/scf-foundation-navigation.png`
+- `artifacts/scf-p00-p03/scf-held-route-guard.png`
+- `artifacts/scf-p00-p03/scf-providerless-upload-context.png`
+
+### P0 Impact
+
+This pass strengthens `P0_ROUTE_ACCESS_GATE`, `P0_HOLD_ROUTE_BLOCK_GATE`, `P0_PROVIDERLESS_SCOPE_GATE` and `P0_SOURCE_OF_TRUTH_GATE`. It does not claim full P0 completion, production authentication, production authorization or client-release readiness.
+
+### Blockers / Deferred / Hold Items
+
+- P1 routes remain registered-only and deferred.
+- Reference routes remain non-product reference surfaces.
+- Held routes remain blocked from MVP implementation until a dedicated SCF unlock prompt exists.
+- Existing Turbopack warnings in `lib/document-storage-adapter.ts` remain outside this phase scope.
+
+### Exit Gate Decision
+
+`PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
+## SCF-TASK-PHASE-SOURCE-OF-TRUTH-REALIGNMENT
+
+Date: 2026-06-21
+
+### Scope
+
+Realigned AlphaVest task and phase authority so
+`ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md` is the only
+operative source of truth for tasks, phases, task IDs, phase order,
+dependencies, acceptance criteria, proof obligations and stop rules. No product
+UI, route, API, schema, seed or test implementation was changed.
+
+### Source Artefacts Used
+
+- `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`
+- `AGENTS.md`
+- `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md`
+- `ALPHAVEST_MVP_FIRST_BUILD_PACKAGE_PLAN.md`
+
+### Completed Tasks
+
+- Added explicit `SOLE_TASK_AND_PHASE_SOURCE_OF_TRUTH` authority to the SCF
+  detail plan.
+- Updated `AGENTS.md` so future implementation starts from the SCF detail plan.
+- Marked the First-Build handoff as superseded for task and phase authority.
+- Marked the package plan as historical for package/phase execution.
+
+### Changed Files
+
+- `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`
+- `AGENTS.md`
+- `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md`
+- `ALPHAVEST_MVP_FIRST_BUILD_PACKAGE_PLAN.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `git diff --check`
+- `rg -n "SOLE_TASK_AND_PHASE_SOURCE_OF_TRUTH|SUPERSEDED_FOR_TASKS_AND_PHASES_BY_SCF_DETAIL_PLAN|Sole task/phase source of truth" AGENTS.md ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md ALPHAVEST_MVP_FIRST_BUILD_PACKAGE_PLAN.md`
+
+### P0 Impact
+
+This is documentation/source-authority realignment only. It does not claim P0
+feature closure, route capability, UI acceptance, API readiness, schema
+readiness or implementation completion.
+
+### Blockers / Deferred / Hold Items
+
+- The SCF detail plan still requires Detail QA before Codex implementation
+  starts from it.
+- Older safety guardrails remain supporting references only where stricter and
+  non-conflicting with the SCF detail plan.
+
+### Exit Gate Decision
+
+`SOURCE_OF_TRUTH_REALIGNMENT_COMPLETE_DOCS_ONLY`
+
 ## MAX-ALL-PHASE-ALL-TASK-UNLOCK - Handoff Authority Override
 
 Date: 2026-06-21

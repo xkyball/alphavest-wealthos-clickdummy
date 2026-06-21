@@ -6,14 +6,21 @@ Build AlphaVest WealthOS as a demo-data-first web application using Next.js, Rea
 ## Mandatory source of truth
 Read this before implementation:
 
-- `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md`
+- `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`
 
-This handoff is the only operative source of truth for implementation scope,
-task IDs, execution order, package boundaries, stop rules, validation duties,
-and proof obligations. Older V3 phase plans, task catalogues, start prompts,
-minimum-path prompts, final task masters and previous handoff artefacts remain
-historical reference only unless the First Build handoff explicitly permits
-their use.
+`ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md` is the only
+operative source of truth for AlphaVest tasks and phases. It owns phase IDs
+`P00` through `P14`, `SCF-Pxx-Txxx` task IDs, task/subtask scope, dependencies,
+execution order, acceptance criteria, proof obligations, QA-before-Codex gates
+and stop rules.
+
+Older First-Build, MVP, V3, minimum-path, journey, package-plan, final-task,
+task-master, prompt-pack and previous handoff artefacts are historical or
+supporting references only for task/phase work. They must not define task
+scope, reorder phases, revive BP/AV-FB task IDs, add new task IDs, bypass the
+SCF detail plan's hold/defer/static decisions, or override its proof gates.
+When a product or safety rule from an older artefact is stricter and does not
+conflict with the SCF detail plan, keep the stricter safety rule.
 
 ## Visual source of truth
 Use `public/reference/page_ui_v3/clean_pages/` as page-level UI design reference.
@@ -45,7 +52,7 @@ and active-parent behavior.
 - Sensitive actions create audit events.
 
 ## Early implementation rule
-Do not start with real authentication. Use a demo session, role switcher and tenant switcher first. Permission and security functions must exist early but may return permissive/demo results until the First Build handoff authorizes a stricter implementation task.
+Do not start with real authentication. Use a demo session, role switcher and tenant switcher first. Permission and security functions must exist early but may return permissive/demo results until `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md` or a derived QA-passed prompt pack/handoff authorizes a stricter implementation task.
 
 ## Engineering rules
 - Use TypeScript strictly.
@@ -58,7 +65,7 @@ Do not start with real authentication. Use a demo session, role switcher and ten
 - Run build/lint/tests when available.
 - Keep changes phase-scoped and commit-ready.
 
-## Required reporting after each First Build phase
+## Required reporting after each SCF phase
 Produce or update:
 
 - `docs/v3/PHASE_EXECUTION_REPORT.md`

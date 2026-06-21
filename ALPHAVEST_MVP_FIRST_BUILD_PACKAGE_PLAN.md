@@ -1,21 +1,27 @@
 # ALPHAVEST_MVP_FIRST_BUILD_PACKAGE_PLAN.md
 
-Status: `FIRST_BUILD_PACKAGE_PLAN_MAX_OVERRIDE_UNLOCKED`
+Status: `SUPERSEDED_FOR_TASKS_AND_PHASES_BY_SCF_DETAIL_PLAN`
 
-This file is a Phase 0 implementation artefact for `BP-00`. It does not replace
-`ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md`; it makes the handoff's
-package order locally explicit and testable.
+This file is a historical Phase 0 implementation artefact for the old `BP-00`
+package model. It no longer defines operative task or phase order. For all
+AlphaVest task and phase work, use
+`ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`.
 
 ## Operative Source
 
-- Sole source of truth: `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md`
-- Active all-phase/all-task override: Section 0 of `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md`
+- Sole task/phase source of truth: `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`
+- Active phase model: `P00` through `P14` in `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`
+- Active task model: `SCF-Pxx-Txxx` tasks and subtasks in `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`
+- Historical all-phase/all-task override: Section 0 of `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md`
 - Explicit soft-unlock amendment: `ALPHAVEST_ALL_ROUTES_SOFT_UNLOCK_HANDOFF.md`
 - Target branch reality: `full-workflow`
 - Non-target truth: `main`, older V3 phase plans, older final task masters and
   previous implementation handoffs
 
-## Package Execution Lock
+## Historical Package Execution Lock
+
+This table is retained as historical context only. It must not be used for new
+task or phase execution after the SCF detail plan supersession.
 
 | Phase | Executable Packages | Status |
 | --- | --- | --- |
@@ -40,7 +46,7 @@ package order locally explicit and testable.
 | `HOLD` | `EXECUTABLE_BY_MAX_OVERRIDE_WITH_PROOF_GATES` |
 | `DO_NOT_CREATE` | `EXECUTABLE_WHEN_MATERIALIZED_WITH_PROOF`, except `main` false-gap task creation remains forbidden |
 
-## Phase 0 Completion Criteria
+## Historical Phase 0 Completion Criteria
 
 - `AV-FB-P0-BP00-T001` through `AV-FB-P0-BP00-T004` are documented.
 - `full-workflow` remains the target source.

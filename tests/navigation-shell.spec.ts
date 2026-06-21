@@ -75,28 +75,16 @@ test.describe("AlphaVest navigation shell", () => {
     }
   });
 
-  test("soft-unlocked P1, reference and held routes appear in support navigation", async ({ page }) => {
+  test("P1, reference and held routes do not appear in implementation navigation", async ({ page }) => {
     await page.goto("/admin/evidence-templates");
 
     const primaryNavigation = page.getByRole("navigation", { name: "Primary navigation" });
 
-    await expect(primaryNavigation.getByRole("region", { name: "Soft-unlocked routes" })).toBeVisible();
-    await expect(primaryNavigation.getByRole("link", { name: "Communication Centre" })).toHaveAttribute(
-      "href",
-      "/communication"
-    );
-    await expect(primaryNavigation.getByRole("link", { name: "Service Blueprint" })).toHaveAttribute(
-      "href",
-      "/service-blueprint"
-    );
-    await expect(primaryNavigation.getByRole("link", { name: "KYC / AML Review" })).toHaveAttribute(
-      "href",
-      "/kyc/demo/review"
-    );
-    await expect(primaryNavigation.getByRole("link", { name: "Committee Review Queue" })).toHaveAttribute(
-      "href",
-      "/committee/reviews"
-    );
+    await expect(primaryNavigation.getByRole("region", { name: "Registered-only routes" })).toHaveCount(0);
+    await expect(primaryNavigation.getByRole("link", { name: "Communication Centre" })).toHaveCount(0);
+    await expect(primaryNavigation.getByRole("link", { name: "Service Blueprint" })).toHaveCount(0);
+    await expect(primaryNavigation.getByRole("link", { name: "KYC / AML Review" })).toHaveCount(0);
+    await expect(primaryNavigation.getByRole("link", { name: "Committee Review Queue" })).toHaveCount(0);
     await expect(primaryNavigation.getByRole("link", { name: "Trigger Detail", exact: true })).toHaveCount(0);
     await expect(primaryNavigation.getByRole("link", { name: "Decision Submitted", exact: true })).toHaveCount(0);
   });
