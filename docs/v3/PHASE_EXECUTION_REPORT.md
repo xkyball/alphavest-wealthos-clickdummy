@@ -1,5 +1,82 @@
 # Phase Execution Report
 
+## MVP-FIRST-BUILD-PHASE-8 - P0 Test Completion And Validation
+
+Date: 2026-06-21
+
+### Phase Completion Report
+
+- Phase: 8
+- Package executed: `BP-11`
+- Task IDs completed: `AV-FB-P8-BP11-T001`, `AV-FB-P8-BP11-T002`, `AV-FB-P8-BP11-T003`, `AV-FB-P8-BP11-T004`, `AV-FB-P8-BP11-T005`, `AV-FB-P8-BP11-T006`, `AV-FB-P8-BP11-T007`, `AV-FB-P8-BP11-T008`, `AV-FB-P8-BP11-T009`, `AV-FB-P8-BP11-T010`, `AV-FB-P8-BP11-T011`, `AV-FB-P8-BP11-T012`, `AV-FB-P8-BP11-T013`, `AV-FB-P8-BP11-T014`
+- Source of truth: `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md`
+- Files changed:
+  - `tests/demo-workflow-api.spec.ts`
+  - `tests/p0-acceptance.spec.ts`
+  - `docs/v3/PHASE_EXECUTION_REPORT.md`
+  - `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+  - `docs/v3/FINAL_MVP_FIRST_BUILD_IMPLEMENTATION_REPORT.md`
+- Screenshot artifacts:
+  - `artifacts/mvp-first-build-phase8-p0/phase8-compliance-release-gate.png`
+  - `artifacts/mvp-first-build-phase8-p0/phase8-decision-audit-proof.png`
+  - `artifacts/mvp-first-build-phase8-p0/phase8-export-controlled-boundary.png`
+
+### Implemented Phase 8 Behaviour
+
+- Added a First Build P0 positive spine to `tests/demo-workflow-api.spec.ts` that drives the existing API path from analyst review through evidence-backed rebuild, advisor approval, compliance release, client-safe projection, decision audit and controlled export boundary.
+- The positive spine asserts that AI/internal/compliance fields do not leak into the released client projection and that advisor approval remains non-release until compliance release succeeds.
+- The same spine uses the real J08 export sequence (`selectDataExtract`, `clearScope`, `confirmApproval`) so export proof preserves scope, redaction, approval and generation separation.
+- Added a BP-11 mapping test to `tests/p0-acceptance.spec.ts` that verifies all `AV-FB-P8-BP11-T001..T014` task IDs, required final validation scripts and report obligations remain present in the operative handoff/package contract.
+- Preserved existing negative P0 proof slices for AI draft internal-only, advisor-not-release, admin non-bypass, upload-not-sufficiency, evidence sufficiency, export redaction/lifecycle, API fail-closed, audit fail-closed, payload visibility, held routes and main false-gap blocking.
+- No new route, Prisma schema, migration, production auth provider, screen generation or visual reference generation was added.
+
+### Validation Commands Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `pnpm db:validate` - passed.
+- `pnpm build` - passed with existing Turbopack tracing warnings in `lib/document-storage-adapter.ts`.
+- `PLAYWRIGHT_PORT=3143 pnpm test:playwright` - passed, 249 tests.
+- `PLAYWRIGHT_PORT=3144 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3145 pnpm test:workflow-gate` - passed, 11 tests.
+- `PLAYWRIGHT_PORT=3141 pnpm test:workflow-api` - first run exposed a skipped J08 setup step in the new test; fixed to use the real scope/redaction sequence, then passed, 15 tests.
+- `PLAYWRIGHT_PORT=3146 pnpm test:route-smoke` - passed, 85 tests.
+- `PLAYWRIGHT_PORT=3147 pnpm test:data-quality` - passed, 3 tests.
+- `PLAYWRIGHT_PORT=3148 pnpm test:file-export` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3149 pnpm test:phase-d` - passed, 4 tests.
+- `PLAYWRIGHT_PORT=3142 pnpm exec playwright test tests/p0-acceptance.spec.ts` - passed, 12 tests.
+- Screenshot capture through local Next server on port `3150` - captured three Phase 8 proof screenshots under `artifacts/mvp-first-build-phase8-p0/`.
+
+### Positive P0 Proof
+
+- A mapped analyst can submit review and rebuild a recommendation with accepted scoped evidence while client visibility remains blocked.
+- Advisor approval marks approval complete but still does not release the recommendation to the client.
+- Compliance release requires the explicit release phrase, accepted scoped evidence and safe payload preconditions before client visibility becomes true.
+- The released client projection contains only `clientSummary`; it excludes `clientSummaryDraft`, `internalRationale` and `complianceNotes`.
+- Decision submission writes a success audit event and remains tied to the accepted client-safe decision path.
+- Export approval proof uses the real export setup sequence and confirms metadata-only export generation remains controlled and non-client-release.
+
+### Negative P0 Proof
+
+- Existing P0 acceptance tests continue to prove AI draft/internal-only redaction, advisor-not-release, admin non-bypass and upload-not-sufficiency boundaries.
+- Evidence sufficiency remains scoped to reviewed, current, linked and client-safe evidence.
+- Export tests continue to block forbidden payloads and keep preview, approval, generation, download and share as separate lifecycle steps.
+- API and audit failure tests continue to fail closed without client release or unsafe mutation.
+- Route smoke tests preserve held routes `064-067` and `069-071` as registered but excluded from MVP implementation scope.
+- The new BP-11 mapping test keeps main-derived false-gap claims blocked by the First Build handoff contract.
+
+### Screenshot Proof
+
+| Artifact | Status | Notes |
+| --- | --- | --- |
+| `artifacts/mvp-first-build-phase8-p0/phase8-compliance-release-gate.png` | captured | Compliance release page showing approved review state while release authority remains controlled. |
+| `artifacts/mvp-first-build-phase8-p0/phase8-decision-audit-proof.png` | captured | Decision submitted page showing persisted audit record and evidence package queued. |
+| `artifacts/mvp-first-build-phase8-p0/phase8-export-controlled-boundary.png` | captured | Export approval modal showing generation, download and share remain separate controlled steps. |
+
+### Exit Gate Decision
+
+`PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
 ## MVP-FIRST-BUILD-PHASE-7 - Export Redaction And Safe Package Generation
 
 Date: 2026-06-21

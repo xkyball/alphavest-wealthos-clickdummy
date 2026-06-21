@@ -1,4 +1,4 @@
-import { readdirSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 
 import { expect, test } from "@playwright/test";
@@ -24,6 +24,42 @@ import {
 } from "../lib/route-registry";
 import { visibilityEngine } from "../lib/visibility-engine";
 import { canBecomeClientVisible } from "../lib/workflow-gate";
+
+const firstBuildBp11TaskIds = [
+  "AV-FB-P8-BP11-T001",
+  "AV-FB-P8-BP11-T002",
+  "AV-FB-P8-BP11-T003",
+  "AV-FB-P8-BP11-T004",
+  "AV-FB-P8-BP11-T005",
+  "AV-FB-P8-BP11-T006",
+  "AV-FB-P8-BP11-T007",
+  "AV-FB-P8-BP11-T008",
+  "AV-FB-P8-BP11-T009",
+  "AV-FB-P8-BP11-T010",
+  "AV-FB-P8-BP11-T011",
+  "AV-FB-P8-BP11-T012",
+  "AV-FB-P8-BP11-T013",
+  "AV-FB-P8-BP11-T014",
+] as const;
+
+const firstBuildFinalValidationScripts = [
+  "typecheck",
+  "lint",
+  "db:validate",
+  "build",
+  "test:playwright",
+  "test:permissions",
+  "test:workflow-gate",
+  "test:workflow-api",
+  "test:route-smoke",
+  "test:data-quality",
+  "test:file-export",
+  "test:phase-d",
+] as const;
+
+function readWorkspaceText(relativePath: string) {
+  return readFileSync(path.join(process.cwd(), relativePath), "utf8");
+}
 
 function apiRouteFiles(relativePath: string) {
   const absolutePath = path.join(process.cwd(), relativePath);
@@ -543,5 +579,29 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
         routeScope: "HOLD_PENDING_DECISION",
       });
     }
+  });
+
+  test("AV-FB-P8-BP11-T001..T014 map final P0 proof, commands and report obligations", () => {
+    const handoff = readWorkspaceText("ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md");
+    const packageJson = JSON.parse(readWorkspaceText("package.json")) as {
+      scripts: Record<string, string>;
+    };
+
+    for (const taskId of firstBuildBp11TaskIds) {
+      expect(handoff, `${taskId} present in handoff`).toContain(taskId);
+    }
+
+    for (const scriptName of firstBuildFinalValidationScripts) {
+      expect(packageJson.scripts, `${scriptName} script exists`).toHaveProperty(scriptName);
+      expect(handoff, `${scriptName} mapped in handoff`).toContain(`pnpm ${scriptName}`);
+    }
+
+    expect(handoff).toContain("## Final MVP First Build Implementation Report");
+    expect(handoff).toContain("P0 positive proof summary");
+    expect(handoff).toContain("P0 negative proof summary");
+    expect(handoff).toContain("Non-task scope untouched proof");
+    expect(handoff).toContain("Any failed command or missing P0 proof blocks completion.");
+    expect(handoff).toContain("Routes 064–067 and 069–071 do not silently enter MVP task scope.");
+    expect(handoff).toContain("main-derived absence claims do not become target gaps/tasks.");
   });
 });

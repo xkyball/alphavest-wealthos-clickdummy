@@ -1,5 +1,60 @@
 # Implementation QA Report
 
+## MVP-FIRST-BUILD-PHASE-8 Implementation QA Addendum
+
+Date: 2026-06-21
+
+### Executive Decision
+
+`MVP_FIRST_BUILD_PHASE_8_QA_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Source of truth lock | Passed | Used `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md` Phase 8 / `BP-11` as the operative source. |
+| Positive MVP spine | Passed | New API test covers analyst review, evidence rebuild, advisor approval, compliance release, client-safe projection, decision audit and export boundary. |
+| Negative P0 proof map | Passed | Existing negative P0 tests remain mapped and passing for AI/internal leakage, advisor-not-release, admin non-bypass, upload/evidence insufficiency, export redaction/lifecycle, fail-closed and route-scope blockers. |
+| Validation command map | Passed | New P0 acceptance assertion checks every BP-11 task ID and every final validation script against the handoff/package contract. |
+| Export sequence realism | Passed | The positive spine uses the real J08 setup sequence before approval instead of bypassing scope/redaction prerequisites. |
+| Route and source-scope guardrails | Passed | Route-smoke and BP-11 mapping preserve held route exclusions and block main-derived false-gap promotion. |
+| Screenshot proof | Passed | Captured representative compliance release, decision audit and export boundary screenshots. |
+| No forbidden scope | Passed | No Prisma schema/migration, new API route, production auth provider, generated screen image or route expansion was added. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | TypeScript completed cleanly. |
+| `pnpm lint` | Passed | ESLint completed cleanly. |
+| `pnpm db:validate` | Passed | Prisma schema remained valid; no schema or migration was changed. |
+| `pnpm build` | Passed with warnings | Existing Turbopack tracing warnings remain in `lib/document-storage-adapter.ts`. |
+| `PLAYWRIGHT_PORT=3143 pnpm test:playwright` | Passed | Full suite passed, 249 tests. |
+| `PLAYWRIGHT_PORT=3144 pnpm test:permissions` | Passed | 8 permission and deny-audit tests. |
+| `PLAYWRIGHT_PORT=3145 pnpm test:workflow-gate` | Passed | 11 workflow/evidence/advice gate tests. |
+| `PLAYWRIGHT_PORT=3141 pnpm test:workflow-api` | Failed then fixed and passed | First run exposed that the new positive spine skipped J08 scope/redaction setup; corrected to execute the real export sequence, then 15 tests passed. |
+| `PLAYWRIGHT_PORT=3146 pnpm test:route-smoke` | Passed | 85 route and workset preservation tests. |
+| `PLAYWRIGHT_PORT=3147 pnpm test:data-quality` | Passed | 3 data-quality gate tests. |
+| `PLAYWRIGHT_PORT=3148 pnpm test:file-export` | Passed | 13 file/export/redaction lifecycle tests. |
+| `PLAYWRIGHT_PORT=3149 pnpm test:phase-d` | Passed | 4 review-monitoring API tests. |
+| `PLAYWRIGHT_PORT=3142 pnpm exec playwright test tests/p0-acceptance.spec.ts` | Passed | 12 P0 acceptance/mapping tests. |
+| Screenshot capture | Passed | Captured three Phase 8 screenshots under `artifacts/mvp-first-build-phase8-p0/`. |
+
+### Screenshot Proof
+
+| Artifact | Status | Notes |
+| --- | --- | --- |
+| `artifacts/mvp-first-build-phase8-p0/phase8-compliance-release-gate.png` | Captured | Compliance release gate with approved review but controlled release boundary. |
+| `artifacts/mvp-first-build-phase8-p0/phase8-decision-audit-proof.png` | Captured | Decision submitted state with persisted audit and evidence package queue. |
+| `artifacts/mvp-first-build-phase8-p0/phase8-export-controlled-boundary.png` | Captured | Export approval confirmation showing approval, generation, download and share remain separated. |
+
+### Residual Risks
+
+- The final proof pack validates the demo-data First Build path, not production authentication, production custody or external client delivery.
+- Export remains metadata-only and explicitly does not claim real binary ZIP generation or external sharing completion.
+- Screenshot proof is representative for the P0 proof path; it is not a full visual acceptance pass for every route and viewport.
+- Build warnings in `lib/document-storage-adapter.ts` are pre-existing broad filesystem tracing warnings and were not changed by Phase 8.
+
 ## MVP-FIRST-BUILD-PHASE-7 Implementation QA Addendum
 
 Date: 2026-06-21

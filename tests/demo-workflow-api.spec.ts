@@ -350,6 +350,159 @@ test.describe("demo workflow API", () => {
       execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
     });
 
+    test("First Build P0 positive spine reaches client-safe release, decision audit and export boundary", async ({ request }) => {
+      const submitReviewResponse = await request.post("/api/demo-workflow", {
+        data: {
+          action: "submit_review",
+          actorRole: "analyst",
+          reason: "First Build P0 analyst review started.",
+          targetId: demoTargets.summit.recommendationId,
+          workflowType: "recommendation-review",
+        },
+      });
+      const submitReviewBody = await submitReviewResponse.json();
+
+      expect(submitReviewResponse.ok(), JSON.stringify(submitReviewBody)).toBe(true);
+      expect(submitReviewBody.noClientRelease).toBe(true);
+      expect(submitReviewBody.result.reloadedState.recommendation.status).toBe(
+        RecommendationStatus.ANALYST_REVIEWED,
+      );
+      expect(submitReviewBody.result.reloadedState.recommendation.clientVisible).toBe(false);
+
+      const rebuildResponse = await request.post("/api/demo-workflow", {
+        data: {
+          action: "rebuild_with_evidence",
+          actorRole: "analyst",
+          evidenceIds: [demoTargets.summit.evidenceId],
+          reason: "First Build P0 rebuild with accepted scoped evidence.",
+          targetId: demoTargets.summit.recommendationId,
+          workflowType: "recommendation-review",
+        },
+      });
+      const rebuildBody = await rebuildResponse.json();
+
+      expect(rebuildResponse.ok(), JSON.stringify(rebuildBody)).toBe(true);
+      expect(rebuildBody.noClientRelease).toBe(true);
+      expect(rebuildBody.result.gateMissing).toEqual(["advisor_approval", "compliance_release"]);
+      expect(rebuildBody.result.reloadedState.complianceReview.evidenceComplete).toBe(true);
+      expect(rebuildBody.result.reloadedState.recommendation.clientVisible).toBe(false);
+
+      const advisorResponse = await request.post("/api/demo-workflow", {
+        data: {
+          action: "advisor_approve",
+          actorRole: "senior_wealth_advisor",
+          reason: "First Build P0 advisor approval after evidence-backed rebuild.",
+          targetId: demoTargets.summit.recommendationId,
+          workflowType: "recommendation-review",
+        },
+      });
+      const advisorBody = await advisorResponse.json();
+
+      expect(advisorResponse.ok(), JSON.stringify(advisorBody)).toBe(true);
+      expect(advisorBody.noClientRelease).toBe(true);
+      expect(advisorBody.result.reloadedState.advisorApproval.status).toBe(ReviewStatus.APPROVED);
+      expect(advisorBody.result.reloadedState.recommendation.status).toBe(
+        RecommendationStatus.ADVISOR_APPROVED,
+      );
+      expect(advisorBody.result.reloadedState.recommendation.clientVisible).toBe(false);
+
+      const clientSafeSummary = "First Build P0 client-safe released summary.";
+      await prisma.recommendation.update({
+        data: {
+          assumptionsJson: Prisma.JsonNull,
+          clientSummaryDraft: clientSafeSummary,
+        },
+        where: { id: demoTargets.summit.recommendationId },
+      });
+
+      const releaseResponse = await request.post("/api/demo-workflow", {
+        data: {
+          action: "compliance_release",
+          actorRole: "compliance_officer",
+          confirmationText: "RELEASE TO CLIENT",
+          evidenceIds: [demoTargets.summit.evidenceId],
+          reason: "First Build P0 compliance release after advisor, evidence, payload and audit gates.",
+          targetId: demoTargets.summit.recommendationId,
+          workflowType: "recommendation-review",
+        },
+      });
+      const releaseBody = await releaseResponse.json();
+
+      expect(releaseResponse.ok(), JSON.stringify(releaseBody)).toBe(true);
+      expect(releaseBody.noClientRelease).toBe(false);
+      expect(releaseBody.result.gatePassed).toBe(true);
+      expect(releaseBody.result.gateMissing).toEqual([]);
+      expect(releaseBody.result.clientProjection.visible).toBe(true);
+      expect(releaseBody.result.clientProjection.payload).toEqual({
+        clientSummary: clientSafeSummary,
+      });
+      expect(releaseBody.result.clientProjection.payload).not.toHaveProperty("clientSummaryDraft");
+      expect(releaseBody.result.clientProjection.payload).not.toHaveProperty("internalRationale");
+      expect(releaseBody.result.clientProjection.payload).not.toHaveProperty("complianceNotes");
+      expect(releaseBody.result.releasePreconditions).toMatchObject({
+        advisorApproval: true,
+        auditReady: true,
+        compliancePermission: true,
+        evidenceAccepted: true,
+        evidenceProvided: true,
+        evidenceScoped: true,
+        payloadReady: true,
+        selectedEvidenceRecordId: demoTargets.summit.evidenceId,
+      });
+
+      const decisionResponse = await request.post("/api/demo-workflow", {
+        data: { actionId: "j03.acceptOption" },
+      });
+      const decisionBody = await decisionResponse.json();
+
+      expect(decisionResponse.ok(), JSON.stringify(decisionBody)).toBe(true);
+      expect(decisionBody.noClientRelease).toBe(false);
+      expect(decisionBody.result.gatePassed).toBe(true);
+      expect(decisionBody.result.decisionRows).toBe(1);
+
+      for (const actionId of ["j08.selectDataExtract", "j08.clearScope"] as const) {
+        const exportSetupResponse = await request.post("/api/demo-workflow", {
+          data: { actionId },
+        });
+        const exportSetupBody = await exportSetupResponse.json();
+
+        expect(exportSetupResponse.ok(), `${actionId}: ${JSON.stringify(exportSetupBody)}`).toBe(true);
+        expect(exportSetupBody.noClientRelease).toBe(true);
+      }
+
+      const exportApprovalResponse = await request.post("/api/demo-workflow", {
+        data: { actionId: "j08.confirmApproval" },
+      });
+      const exportApprovalBody = await exportApprovalResponse.json();
+
+      expect(exportApprovalResponse.ok(), JSON.stringify(exportApprovalBody)).toBe(true);
+      expect(exportApprovalBody.noClientRelease).toBe(true);
+      expect(exportApprovalBody.result.exportManifestVersion).toBe("2026.06.first-build-phase7");
+      expect(exportApprovalBody.result.exportLifecycle).toMatchObject({
+        approved: true,
+        downloaded: false,
+        generated: true,
+        previewed: true,
+        shared: false,
+        stage: "generated",
+      });
+      expect(exportApprovalBody.result.exportGate.allowedToGenerate).toBe(true);
+      expect(exportApprovalBody.result.realFileGenerated).toBe(false);
+
+      const [releaseAudit, decisionAudit, exportAudit] = await Promise.all([
+        prisma.auditEvent.findUniqueOrThrow({ where: { id: releaseBody.result.auditEventId } }),
+        prisma.auditEvent.findUniqueOrThrow({ where: { id: decisionBody.result.auditEventId } }),
+        prisma.auditEvent.findUniqueOrThrow({ where: { id: exportApprovalBody.result.auditEventId } }),
+      ]);
+
+      expect(releaseAudit.result).toBe(AuditResult.SUCCESS);
+      expect(releaseAudit.eventType).toBe("recommendation_review.compliance_release");
+      expect(decisionAudit.result).toBe(AuditResult.SUCCESS);
+      expect(decisionAudit.eventType).toBe("screencast.decision.accepted");
+      expect(exportAudit.result).toBe(AuditResult.SUCCESS);
+      expect(exportAudit.eventType).toBe("screencast.export.approved_generated");
+    });
+
     test("submit review persists analyst review state and reload proof", async ({ request }) => {
       const response = await request.post("/api/demo-workflow", {
         data: {
