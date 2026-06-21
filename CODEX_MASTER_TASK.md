@@ -1,18 +1,31 @@
-# CODEX_MASTER_TASK — Superseded
+# CODEX_MASTER_TASK
 
-Read `AGENTS.md` first.
+Read `AGENTS.md` first. `AGENTS.md` owns the current source-of-truth routing.
 
-`ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md` is the only operative
-source of truth for AlphaVest implementation. This file is retained only as a
-compatibility pointer for older prompts that still mention `CODEX_MASTER_TASK.md`.
+## Active Workstream Sources
 
-Do not use this file to select phases, define task scope, derive implementation
-order, or override stop rules. Execute only the BP-00 through BP-11 task
-boundaries, validation duties, proof obligations and exclusions stated in:
+- UX refactoring: `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md` and `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`.
+- DB-backed tables/forms: `ALPHAVEST_DB_BACKED_TABLES_FORMS_CODEX_PROMPT_PACK.md`.
+- E2E Journey Proof 25: `ALPHAVEST_E2E_JOURNEY_PROOF_25_CODEX_TASK_PACK.md`.
+- Broad SCF work outside focused workstreams: `ALPHAVEST_SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK.md`, bounded by `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_RELEASE_PHASE_PLAN.md` and `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`.
 
-```text
-ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md
-```
+## UX Refactoring Lock
 
-Older V3 phase plans and task definitions are historical reference only unless
-the First Build handoff explicitly permits their use.
+For UX navigation, page-type, density, CTA, interaction, safety or route-policy
+work, read the UX matrix first and then the UX task master.
+
+The repository-level override
+`UX_IMPLEMENTATION_HANDOFF_MISSING_POLICY_OVERRIDDEN` makes the UX route policy
+matrix and UX task master sufficient for scoped UX execution. A later
+`ALPHAVEST_UX_REFACTORING_IMPLEMENTATION_HANDOFF.md` may still be derived, but
+its absence is not a blocker.
+
+Execute only a named UX task/workstream from the task master, cite the matching
+route-policy rows, and preserve all route-scope, no-generation and P0 safety
+proof rules.
+
+## Historical Sources
+
+Older First-Build, BP/AV-FB, MVP, minimum-path, V3 and previous handoff/task
+files are supporting references only unless `AGENTS.md` or an active workstream
+source explicitly elevates them.

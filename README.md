@@ -239,16 +239,19 @@ pnpm smoke:phase13
 
 ## Source Of Truth
 
-Before implementation, read:
+Before implementation, read `AGENTS.md` first. It routes work to the active
+source package for the selected workstream.
 
-- `AGENTS.md`
-- `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md`
+Current active workstream sources:
 
-`ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md` is the only operative
-source of truth for task scope, execution order, package boundaries, stop rules,
-validation duties and proof obligations. Older V3 phase plans, task definitions,
-minimum-path prompts and previous final handoffs are historical reference only
-unless the First Build handoff explicitly permits their use.
+- UX refactoring: `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md` and `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`. Repository override `UX_IMPLEMENTATION_HANDOFF_MISSING_POLICY_OVERRIDDEN` makes the imported UX matrix and task master sufficient for scoped UX execution; `ALPHAVEST_UX_REFACTORING_IMPLEMENTATION_HANDOFF.md` is optional convenience output, not a blocker.
+- DB-backed tables/forms: `ALPHAVEST_DB_BACKED_TABLES_FORMS_CODEX_PROMPT_PACK.md` plus `ALPHAVEST_DB_BACKED_TABLES_FORMS_REALITY_REBASE_PLAN.md`.
+- E2E Journey Proof 25: `ALPHAVEST_E2E_JOURNEY_PROOF_25_CODEX_TASK_PACK.md`.
+- Broad SCF work outside focused workstreams: `ALPHAVEST_SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK.md`, bounded by `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_RELEASE_PHASE_PLAN.md` and `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`.
+
+Older First-Build, BP/AV-FB, MVP, minimum-path, V3 and previous handoff/task
+files are supporting references only unless `AGENTS.md` or an active workstream
+source explicitly elevates them.
 
 ## Product Guardrails
 

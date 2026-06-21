@@ -6,11 +6,37 @@ Build AlphaVest WealthOS as a demo-data-first web application using Next.js, Rea
 ## Mandatory source of truth
 Read this before implementation:
 
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md` when the task is about UX route policy, navigation model, sidebar/app shell, topbar context, page headers, page type, density, CTA rules, drawers/modals, interaction states, UX safety policy or route-scope treatment.
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md` when the task mentions UX refactoring, `UX-NAV`, `UX-HUB`, `UX-PAGE`, `UX-COMPLEXITY`, `UX-DENSITY`, `UX-CTA`, `UX-INTERACTION`, `UX-SAFETY`, `UX-POLICY`, or derives a UX implementation handoff.
 - `ALPHAVEST_DB_BACKED_TABLES_FORMS_CODEX_PROMPT_PACK.md` when the task is about DB-backed tables, lists, cards, search, filters, sorting, pagination, row actions, forms, input masks, wizards, seed data, metrics, charts, gauges or the DBTF phase sequence.
 - `ALPHAVEST_E2E_JOURNEY_PROOF_25_CODEX_TASK_PACK.md` when the task is about the 25 canonical journeys, CJ-001 through CJ-025, E2E journey proofs, journey proof fixtures/harnesses, canonical path coverage, or the E2E proof workstream sequence.
 - `ALPHAVEST_SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK.md`
 - `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_RELEASE_PHASE_PLAN.md`
 - `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`
+
+`ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md` is the binding route-policy guardrail
+for later UX Codex work. It owns route-by-route UX eligibility, density tier,
+page-type treatment, CTA policy, route-scope preservation, P1/Reference/Hold
+treatment, client/internal visibility expectations and no-generation rules for
+UX work. It is not an implementation command and does not authorize route
+reclassification, P1/Hold/Reference elevation, screen generation,
+state-screen generation, image generation, client-visible advice expansion,
+admin bypass or blind API/schema/migration work.
+
+`ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md` is the operative UX task-master
+source for UX refactoring planning and scoped execution. For UX
+navigation, hub, page, complexity, density, CTA, interaction, safety and policy
+tasks, it supersedes broader SCF/UI-clickflow artefacts only as the active UX
+task layer. The repository-level override
+`UX_IMPLEMENTATION_HANDOFF_MISSING_POLICY_OVERRIDDEN` means
+`ALPHAVEST_UX_REFACTORING_IMPLEMENTATION_HANDOFF.md` is no longer required
+before UX task execution; it may be created later as a derived convenience
+handoff, but its absence is not a blocker. Codex may execute only named UX
+tasks/workstreams from the task master, must cite the matching route-policy
+rows, and must preserve all route-scope, no-generation and P0 safety proof
+rules. When UX tasks also touch DBTF, E2E, control-layer, API, schema, RBAC,
+visibility, evidence, audit or export behavior, read the relevant source above
+as well and keep the stricter safety rule.
 
 `ALPHAVEST_E2E_JOURNEY_PROOF_25_CODEX_TASK_PACK.md` is the operative Codex
 source of truth for the E2E Journey Proof 25 workstream. For journey-proof
@@ -57,7 +83,7 @@ implementation approval where either says work is deferred, held,
 reference-only or not authorized.
 
 Older First-Build, MVP, V3, minimum-path, journey, package-plan, final-task,
-task-master, prompt-pack and previous handoff artefacts are historical or
+legacy task-master, prompt-pack and previous handoff artefacts are historical or
 supporting references only for task/phase work. They must not define task
 scope, reorder phases, revive BP/AV-FB task IDs, add new task IDs, bypass the
 prompt pack or release plan's hold/defer/static decisions, or override their
@@ -74,6 +100,10 @@ Important: the images are not pixel-perfect contracts. They show design directio
 Do not implement spec panels, route labels, filenames, annotation rails, dev notes, callout legends or explanatory documentation as app UI. Only implement actual application UI.
 
 ## Navigation mapping rule
+For UX refactoring tasks, apply `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md` before
+navigation edits and use `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md` only
+within its named UX task/workstream boundaries.
+
 For tasks, prompts or tests that still refer to old left-navigation groups,
 route-catalogue menu labels, or legacy sidebar wording, read and apply
 `docs/v3/LEFT_NAV_OLD_TO_NEW_MAPPING.md` before editing navigation, changing

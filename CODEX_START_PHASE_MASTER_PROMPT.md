@@ -1,37 +1,46 @@
 # CODEX_START_PHASE_MASTER_PROMPT
 
-Read AGENTS.md first.
+Read `AGENTS.md` first.
 
-FIRST_BUILD_TASK_ID: <SET_TASK_ID_HERE>
+WORKSTREAM: <SET_WORKSTREAM_HERE>
+TASK_OR_PHASE_ID: <SET_TASK_OR_PHASE_ID_HERE>
 
-You are working in the existing linked AlphaVest WealthOS repository. The handoff pack has been copied into the repository root.
+You are working in the existing linked AlphaVest WealthOS repository on branch
+`full-workflow`. Use the current repository files as target code reality and do
+not derive implementation scope from `main`.
 
-First read:
+## Required Source Routing
 
-- AGENTS.md
-- ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md
+- For `UX_REFACTORING`, first read:
+  - `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+  - `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- For `DBTF`, first read:
+  - `ALPHAVEST_DB_BACKED_TABLES_FORMS_CODEX_PROMPT_PACK.md`
+  - `ALPHAVEST_DB_BACKED_TABLES_FORMS_REALITY_REBASE_PLAN.md`
+- For `E2E_JOURNEY_PROOF_25`, first read:
+  - `ALPHAVEST_E2E_JOURNEY_PROOF_25_CODEX_TASK_PACK.md`
+- For broad `SCF`, first read:
+  - `ALPHAVEST_SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK.md`
+  - `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_RELEASE_PHASE_PLAN.md`
+  - `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`
 
-If the selected task explicitly includes screen implementation, inspect the corresponding images in:
+## UX Override Rule
 
-```text
-public/reference/page_ui_v3/clean_pages/
-```
+For `UX_REFACTORING`, the repository-level override
+`UX_IMPLEMENTATION_HANDOFF_MISSING_POLICY_OVERRIDDEN` means
+`ALPHAVEST_UX_REFACTORING_IMPLEMENTATION_HANDOFF.md` is not required before
+task execution. Use the route policy matrix and UX task master as the operative
+UX sources, and execute only the selected named UX task/workstream.
 
-Important:
+## General Rules
 
-- Implement only the selected allowed task ID from the First Build handoff.
-- Do not jump ahead or promote blocked, P1, hold or do-not-create items.
-- Do not implement real authentication unless the selected handoff task explicitly authorizes it.
+- Implement only the selected workstream and task/phase ID.
+- Preserve route scope, P1/Reference/Hold treatment and no-generation rules.
+- Do not implement real authentication unless the selected source explicitly authorizes it.
 - Use demo data and role/tenant switchers for early testability.
-- Follow the AlphaVest visual design strictly when the selected task permits UI work, but normalize layouts and spacing for consistency.
-- Do not copy filenames, prompt metadata, route labels, dev notes or annotation content into the UI.
+- Do not copy filenames, prompt metadata, route labels, dev notes or annotation content into app UI.
 - Keep the product rule: No unapproved advice reaches the client.
 
-Before changing code, summarise the task plan and files likely to change.
-
-After implementation, run available build/lint/test commands and update:
-
-```text
-docs/v3/PHASE_EXECUTION_REPORT.md
-docs/v3/IMPLEMENTATION_QA_REPORT.md
-```
+Before changing code, summarize the task plan and likely touched files. After
+implementation, run available build/lint/test commands and update the reports
+required by the selected workstream.
