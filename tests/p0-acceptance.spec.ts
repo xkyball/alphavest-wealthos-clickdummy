@@ -587,6 +587,39 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
     }
   });
 
+  test("max override unlocks all phase and task registers with proof gates", () => {
+    const handoff = readWorkspaceText("ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md");
+    const softUnlock = readWorkspaceText("ALPHAVEST_ALL_ROUTES_SOFT_UNLOCK_HANDOFF.md");
+    const packagePlan = readWorkspaceText("ALPHAVEST_MVP_FIRST_BUILD_PACKAGE_PLAN.md");
+    const firstBuildTaskIds = [...handoff.matchAll(/AV-FB-P\d+-BP\d+-T\d+/g)].map((match) => match[0]);
+
+    expect(new Set(firstBuildTaskIds).size).toBeGreaterThanOrEqual(62);
+    expect(handoff).toContain("ALL_PHASES_AND_TASKS_AUTHORIZED_WITH_PROOF_GATES");
+    expect(handoff).toContain("overrules every narrower authorization boundary");
+    expect(handoff).toContain("Allowed phases | All AlphaVest phases in this handoff family");
+    expect(handoff).toContain("No register is blocked by category after the `max` override");
+    expect(handoff).toContain("`BP-12`, `BP-P1-*`, `BP-HOLD-*` and `BP-DNC-*`");
+    expect(handoff).toContain("Screen/state/image generation | Authorized when required by an unlocked task and validated");
+    expect(handoff).toContain("Prisma migrations | Authorized when required by an unlocked task and validated");
+    expect(handoff).toContain("New API routes by default | Authorized when required by an unlocked task and validated");
+    expect(handoff).toContain("BP-P1-* may be promoted/executed with task IDs, proof and reports");
+    expect(handoff).toContain("BP-HOLD-* and held routes may be promoted/executed with task IDs, proof and reports");
+    expect(handoff).toContain("New API routes may be created when task-required and tested");
+    expect(handoff).toContain("Prisma migrations may be created when task-required and validated");
+    expect(handoff).toContain("Routes 064–067 and 069–071 require task proof before release/advice scope.");
+
+    expect(softUnlock).toContain("This amendment authorizes a UI-only soft unlock");
+    expect(softUnlock).toContain("It does not reclassify the route worksets");
+
+    expect(packagePlan).toContain("FIRST_BUILD_PACKAGE_PLAN_MAX_OVERRIDE_UNLOCKED");
+    expect(packagePlan).toContain("Active all-phase/all-task override: Section 0");
+    expect(packagePlan).toContain("| 9-12 and later repo-local registers | `BP-12`, `BP-P1-*`, `BP-HOLD-*`, `BP-DNC-*`, newly materialized AlphaVest task IDs | `EXECUTABLE_BY_MAX_OVERRIDE_WITH_PROOF_GATES` |");
+    expect(packagePlan).toContain("| `CONDITIONAL_SUPPORT` | `EXECUTABLE_BY_MAX_OVERRIDE_WITH_PROOF_GATES` |");
+    expect(packagePlan).toContain("| `P1` | `EXECUTABLE_BY_MAX_OVERRIDE_WITH_PROOF_GATES` |");
+    expect(packagePlan).toContain("| `HOLD` | `EXECUTABLE_BY_MAX_OVERRIDE_WITH_PROOF_GATES` |");
+    expect(packagePlan).toContain("| `DO_NOT_CREATE` | `EXECUTABLE_WHEN_MATERIALIZED_WITH_PROOF`, except `main` false-gap task creation remains forbidden |");
+  });
+
   test("AV-FB-P8-BP11-T001..T014 map final P0 proof, commands and report obligations", () => {
     const handoff = readWorkspaceText("ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md");
     const packageJson = JSON.parse(readWorkspaceText("package.json")) as {
@@ -605,9 +638,9 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
     expect(handoff).toContain("## Final MVP First Build Implementation Report");
     expect(handoff).toContain("P0 positive proof summary");
     expect(handoff).toContain("P0 negative proof summary");
-    expect(handoff).toContain("Non-task scope untouched proof");
+    expect(handoff).toContain("Former non-task register execution proof");
     expect(handoff).toContain("Any failed command or missing P0 proof blocks completion.");
-    expect(handoff).toContain("Routes 064–067 and 069–071 do not silently enter MVP task scope.");
+    expect(handoff).toContain("Routes 064–067 and 069–071 require task proof before release/advice scope.");
     expect(handoff).toContain("main-derived absence claims do not become target gaps/tasks.");
   });
 });

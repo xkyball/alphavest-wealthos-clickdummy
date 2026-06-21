@@ -1,5 +1,87 @@
 # Phase Execution Report
 
+## MVP-FIRST-BUILD-PHASES-5-12 - Compliance, Client Projection, Audit, Export, P0 And Max-Unlocked Support
+
+Date: 2026-06-21
+
+### Phase Completion Report
+
+- Phase: 5-12 executed together against the First Build handoff and Section 0 max override.
+- Packages executed/validated: `BP-07`, `BP-08`, `BP-09`, `BP-10`, `BP-11`, `BP-12`, `BP-P1-*`, `BP-HOLD-*`, `BP-DNC-*`.
+- Source of truth: `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md`.
+- Task/register families completed or revalidated: compliance release/block/request-evidence, fail-closed client projection, decision/audit persistence, redacted export package lifecycle, final P0 acceptance map, data-quality release blocking, review monitoring, scoped client communication/mobile, external/scoped access, KYC/Suitability/IPS held routes, rebalance monitoring and committee review routes.
+- Files changed in this reporting pass:
+  - `docs/v3/PHASE_EXECUTION_REPORT.md`
+  - `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+  - `artifacts/phase5-12-screenshots/*.png`
+- Previously dirty files in scope and revalidated without reverting user work:
+  - `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md`
+  - `ALPHAVEST_MVP_FIRST_BUILD_PACKAGE_PLAN.md`
+  - `tests/p0-acceptance.spec.ts`
+- Validation result: passed after rerunning Playwright suites sequentially where parallel local webservers collided on `127.0.0.1:3020`.
+
+### Implemented / Verified Behaviour
+
+- Phase 5 / `BP-07`: compliance release, block and evidence-request gates remain explicit; advisor approval alone does not release client visibility.
+- Phase 5 / `BP-08`: client-facing projection remains fail-closed and strips internal AI draft, rationale, compliance note and unreleased recommendation payloads.
+- Phase 6 / `BP-09`: decision progression and critical deny/advance paths require audit persistence; simulated audit failure fails closed before mutation.
+- Phase 7 / `BP-10`: export lifecycle separates scope, redaction, preview, approval, generation, download and external share. Redaction and object scope are mandatory for client/external packages.
+- Phase 8 / `BP-11`: P0 positive and negative acceptance assertions cover the MVP spine, route/register proof map and Section 0 max override gates.
+- Phase 9 / `BP-12`: open high-severity data-quality issues block compliance release and export approval; non-high issues may pass conditional support only when the release gate proves no high-severity blockers.
+- Phase 10 / `BP-P1-*`: review monitoring and communication/mobile routes are implemented as scoped, audited demo workflows with no automatic advice execution and no unapproved client send.
+- Phase 11 / `BP-HOLD-*`: KYC, Suitability and IPS held routes render product surfaces with internal-only compliance/evidence gates and blocked client release states.
+- Phase 12 / `BP-HOLD-*` and `BP-DNC-*`: rebalance monitoring and committee review routes render product surfaces while preserving no-auto-rebalance, peer/dissent/evidence gates and `clientVisible=false` boundaries.
+
+### Validation Commands Run
+
+- `pnpm test:workflow-api` - passed, 15 tests.
+- `pnpm test:workflow-gate` - passed, 11 tests.
+- `pnpm test:file-export` - passed, 13 tests.
+- `pnpm test:data-quality` - passed, 3 tests.
+- `pnpm test:phase9` - passed, 4 tests.
+- `pnpm test:phase-d` - passed, 4 tests.
+- `pnpm test:permissions` - passed, 8 tests.
+- `pnpm test:route-smoke` - passed, 85 tests.
+- `pnpm test:phase10` - passed, 18 tests.
+- `pnpm test:document-upload-api` - passed, 8 tests.
+- `pnpm test:document-upload-flow` - passed, 4 tests.
+- `pnpm db:validate` - passed.
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `pnpm build` - passed with existing Turbopack tracing warnings in `lib/document-storage-adapter.ts`.
+
+### Screenshot Proof
+
+| Artifact | Status | Notes |
+| --- | --- | --- |
+| `artifacts/phase5-12-screenshots/contact-sheet-phase5-10.png` | captured | Compliance release/block/audit, export redaction/preview, mobile and communication proof surfaces. |
+| `artifacts/phase5-12-screenshots/contact-sheet-phase11-12.png` | captured | KYC, Suitability, IPS, review calendar, rebalance monitoring and committee proof surfaces. |
+| `artifacts/phase5-12-screenshots/phase5-compliance-release.png` | captured | Release checklist and client-visible preview remain compliance controlled. |
+| `artifacts/phase5-12-screenshots/phase5-compliance-block.png` | captured | Block/request-evidence state says no unapproved advice reaches the client. |
+| `artifacts/phase5-12-screenshots/phase6-compliance-audit.png` | captured | Audit/exception log for sensitive decisions and workflow actions. |
+| `artifacts/phase5-12-screenshots/phase7-export-redaction.png` | captured | Export redaction controls before approval. |
+| `artifacts/phase5-12-screenshots/phase7-export-preview.png` | captured | Approval remains separate from generation/download/share. |
+| `artifacts/phase5-12-screenshots/phase8-client-mobile.png` | captured | Mobile client view shows blocked recommendations and required next step. |
+| `artifacts/phase5-12-screenshots/phase10-communication.png` | captured | Communication workflow remains approval/release gated. |
+| `artifacts/phase5-12-screenshots/phase11-kyc-review.png` | captured | KYC review route remains internal and blocks client release. |
+| `artifacts/phase5-12-screenshots/phase11-suitability-profile.png` | captured | Suitability route blocks client visibility while prerequisites are incomplete. |
+| `artifacts/phase5-12-screenshots/phase11-ips-demo.png` | captured | IPS mandate route keeps draft mandate unreleased. |
+| `artifacts/phase5-12-screenshots/phase12-review-calendar.png` | captured | Review calendar is operational monitoring, not advice release. |
+| `artifacts/phase5-12-screenshots/phase12-rebalance-monitoring.png` | captured | Rebalance route is monitoring only; no automatic execution is implied. |
+| `artifacts/phase5-12-screenshots/phase12-committee-queue.png` | captured | Committee queue shows peer/dissent/evidence/client-visibility gates. |
+| `artifacts/phase5-12-screenshots/phase12-committee-detail.png` | captured | Committee detail keeps high-risk decision pending committee evidence and votes. |
+
+### Exit Gate Decision
+
+`PHASES_5_12_IMPLEMENTED_AND_VALIDATED_WITH_SCREENSHOT_PROOF`
+
+### Residual Risks / TODOs
+
+- This is a demo-data First Build implementation, not production authentication, immutable production audit, production KYC/sanctions, real external advisor integration, trading/rebalance execution or regulated advice delivery.
+- Screenshot proof is representative desktop proof for key Phase 5-12 surfaces, not exhaustive human visual acceptance for every viewport.
+- Existing Turbopack tracing warnings in `lib/document-storage-adapter.ts` remain outside this phase scope and should be handled in a separate storage-adapter hardening task.
+- Two initial validation attempts failed only because concurrent Playwright webservers collided on `127.0.0.1:3020`; the same suites passed when rerun sequentially.
+
 ## MVP-FIRST-BUILD-PHASES-1-4 - Providerless Scope, Governance, Evidence And Internal Review
 
 Date: 2026-06-21
@@ -118,6 +200,7 @@ Date: 2026-06-21
 - `pnpm lint` - passed.
 - `pnpm db:validate` - passed.
 - `pnpm build` - passed with existing Turbopack tracing warnings in `lib/document-storage-adapter.ts`.
+- `pnpm build` - passed with existing Turbopack tracing warnings in `lib/document-storage-adapter.ts`.
 - `pnpm test:permissions` - passed, 8 tests.
 - `pnpm test:workflow-gate` - passed, 11 tests.
 - `pnpm test:workflow-api` - passed, 15 tests.
@@ -208,6 +291,50 @@ Date: 2026-06-21
 ### Exit Gate Decision
 
 `PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
+## MAX-ALL-PHASE-ALL-TASK-UNLOCK - Handoff Authority Override
+
+Date: 2026-06-21
+
+### Scope
+
+Applied the user-requested `max` override to `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md` so all AlphaVest phase/task/register families are allowed for implementation, including Phase 9-12, `BP-12`, `BP-P1-*`, `BP-HOLD-*` and `BP-DNC-*`.
+
+### Completed Tasks
+
+- Added Section 0 to the First Build handoff as the active all-phase/all-task authorization boundary.
+- Converted previously non-executable register families into proof-gated execution sources.
+- Updated the Package Plan so it no longer blocks `CONDITIONAL_SUPPORT`, `P1`, `HOLD` or `DO_NOT_CREATE` by category.
+- Updated P0 acceptance assertions so the repository now protects the `max` unlock contract.
+
+### Changed Files
+
+- `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md`
+- `ALPHAVEST_MVP_FIRST_BUILD_PACKAGE_PLAN.md`
+- `tests/p0-acceptance.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### Tests And Checks Run
+
+- `PLAYWRIGHT_PORT=3168 pnpm exec playwright test tests/p0-acceptance.spec.ts -g "max override"` - passed, 1 test.
+- `PLAYWRIGHT_PORT=3169 pnpm exec playwright test tests/p0-acceptance.spec.ts` - passed, 13 tests.
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `pnpm db:validate` - passed.
+
+### P0 Impact
+
+This unlock changes implementation authorization only. It does not prove any newly unlocked task is complete. Every formerly blocked/P1/hold/DNC-derived task still requires explicit task materialization, positive proof, negative proof, validation commands and report updates before it can be claimed as implemented.
+
+### Blockers / Deferred / Hold Items
+
+- `main` remains false-gap source only and is still forbidden as target truth.
+- Real client data, production financial/legal/tax advice, uncontrolled external sends, silent admin bypass and untested release shortcuts remain forbidden.
+
+### Exit Gate Decision
+
+`MAX_OVERRIDE_APPLIED_FOCUSED_VALIDATION_PASSED`
 
 ## MVP-FIRST-BUILD-PHASE-7 - Export Redaction And Safe Package Generation
 

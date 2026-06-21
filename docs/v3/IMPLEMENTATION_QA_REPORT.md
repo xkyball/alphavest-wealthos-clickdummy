@@ -1,5 +1,68 @@
 # Implementation QA Report
 
+## MVP-FIRST-BUILD-PHASES-5-12 Implementation QA Addendum
+
+Date: 2026-06-21
+
+### Executive Decision
+
+`MVP_FIRST_BUILD_PHASES_5_12_QA_PASSED_WITH_SCREENSHOT_PROOF`
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Source of truth lock | Passed | Used `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md` Phase 5-12 and Section 0 max override as operative scope. |
+| Compliance release / block / evidence request | Passed | Workflow API and gate tests prove release is compliance controlled and block/request-evidence states do not leak advice. |
+| Client projection fail-closed | Passed | Permission and P0 tests prove only released, client-safe fields project to client roles. |
+| Decision and audit persistence | Passed | Critical advance/deny paths require audit persistence; simulated audit failure fails closed before mutation. |
+| Export redaction lifecycle | Passed | Export tests prove redaction, object scope, preview, approval, generation, download and share remain separate. |
+| Data-quality release blocking | Passed | Phase 9 and data-quality tests prove active high-severity issues block client release and export approval. |
+| Review monitoring no-auto-advice | Passed | Review-monitoring API returns `mutated=false`, `noAdviceExecution=true` and `noClientRelease=true`. |
+| Rebalance no-auto-execution | Passed | Phase D tests and screenshots prove rebalance trigger handling remains monitoring/routing, not trading execution. |
+| KYC / Suitability / IPS held-route safety | Passed | Route smoke and workflow API tests keep these routes internal, evidence-gated and not client-visible. |
+| Committee review safety | Passed | Committee routes preserve advisor-not-release, peer review, dissent, evidence and client-visibility gates. |
+| Communication/mobile scope | Passed | Visible screens show approval/release gating; client mobile keeps recommendations blocked until compliance prerequisites pass. |
+| Screenshot proof | Passed | Captured 14 route screenshots plus two contact sheets under `artifacts/phase5-12-screenshots/`. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm test:workflow-api` | Passed | 15 workflow/API tests, including compliance release/block/request-evidence and KYC/Suitability/IPS actions. |
+| `pnpm test:workflow-gate` | Passed | 11 evidence, suitability/IPS and committee gate tests. |
+| `pnpm test:file-export` | Passed | 13 export/redaction/lifecycle tests. |
+| `pnpm test:data-quality` | Passed | 3 data-quality release-readiness tests. |
+| `pnpm test:phase9` | Passed | 4 support-hardening tests for data-quality release/export blocking and internal review monitoring. |
+| `pnpm test:phase-d` | Passed | 4 review calendar and rebalance monitoring tests. |
+| `pnpm test:permissions` | Passed | 8 permission, object-scope, projection and deny-audit tests. |
+| `pnpm test:route-smoke` | Passed | 85 registered route/workset tests. |
+| `pnpm test:phase10` | Passed | 18 P0 acceptance and API fail-closed tests. |
+| `pnpm test:document-upload-api` | Passed | 8 multipart upload/API tests retained for evidence lifecycle regression coverage. |
+| `pnpm test:document-upload-flow` | Passed | 4 browser upload flow tests retained for upload-not-release regression coverage. |
+| `pnpm db:validate` | Passed | Prisma schema remained valid. |
+| `pnpm typecheck` | Passed | TypeScript completed cleanly. |
+| `pnpm lint` | Passed | ESLint completed cleanly. |
+| `pnpm build` | Passed with warnings | Existing Turbopack tracing warnings remain in `lib/document-storage-adapter.ts`. |
+| Initial parallel Playwright runs | Failed then rerun | `workflow-gate`, `file-export`, `data-quality`, `phase9`, `route-smoke` and `document-upload-api` hit `EADDRINUSE` only when started concurrently on `127.0.0.1:3020`; affected suites passed when rerun sequentially. |
+| Screenshot capture | Passed | Captured 14 full-page screenshots and two contact sheets. |
+
+### Screenshot Proof
+
+| Artifact | Status | Notes |
+| --- | --- | --- |
+| `artifacts/phase5-12-screenshots/contact-sheet-phase5-10.png` | Captured | Compliance, export, mobile and communication proof overview. |
+| `artifacts/phase5-12-screenshots/contact-sheet-phase11-12.png` | Captured | KYC, Suitability, IPS, review, rebalance and committee proof overview. |
+| `artifacts/phase5-12-screenshots/*.png` | Captured | 14 full-page route screenshots retained for detailed inspection. |
+
+### Residual Risks
+
+- Phase 5-12 validation proves the demo-data First Build implementation, not production auth, production audit immutability, real KYC/sanctions providers, external advisor identity federation, client delivery infrastructure, trading execution or regulated advice.
+- Communication/mobile proof is scoped to visible demo UI and current gate tests; no real outbound message delivery was implemented or claimed.
+- Rebalance remains monitoring/routing only; no order management, portfolio trading or execution integration exists.
+- Existing Turbopack tracing warnings in `lib/document-storage-adapter.ts` remain a known build-warning risk outside this phase scope.
+- Screenshot proof is representative desktop evidence; it is not full cross-device human visual sign-off for every route and state.
+
 ## MVP-FIRST-BUILD-PHASES-1-4 Implementation QA Addendum
 
 Date: 2026-06-21
@@ -4799,6 +4862,7 @@ Date: 2026-06-20
 | `pnpm typecheck` | Passed | TypeScript completed with `tsc --noEmit`. |
 | `pnpm lint` | Passed | ESLint completed cleanly. |
 | `pnpm db:validate` | Passed | Prisma schema validates. |
+| `pnpm build` | Passed with warnings | Existing Turbopack tracing warnings in `lib/document-storage-adapter.ts`. |
 | `pnpm build` | Passed with warnings | Existing Turbopack dynamic file-tracing warnings around `lib/document-storage-adapter.ts`; build completed. |
 | `pnpm test:playwright` | Passed | 177 tests passed. |
 | `pnpm test:permissions` | Passed | 7 tests passed. |
@@ -5021,3 +5085,41 @@ Date: 2026-06-20
 - Document/evidence projection is bounded to the existing upload/list API and does not claim a generalized document entitlement engine.
 - Export package generation remains metadata/control oriented; binary E7 export remains later scope.
 - Existing Turbopack tracing warnings around `lib/document-storage-adapter.ts` remain outside this Phase 6 scope.
+
+## MAX-ALL-PHASE-ALL-TASK-UNLOCK QA Addendum
+
+Date: 2026-06-21
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Handoff override authority | Passed | `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md` now contains Section 0 `max` override with `ALL_PHASES_AND_TASKS_AUTHORIZED_WITH_PROOF_GATES`. |
+| Former category blocks | Passed | `BP-12`, `BP-P1-*`, `BP-HOLD-*` and `BP-DNC-*` are no longer category-blocked; they require task IDs, positive proof, negative proof and validation. |
+| Package plan alignment | Passed | `ALPHAVEST_MVP_FIRST_BUILD_PACKAGE_PLAN.md` now records `FIRST_BUILD_PACKAGE_PLAN_MAX_OVERRIDE_UNLOCKED`. |
+| Safety limits preserved | Passed | `main` false-gap tasks, real client data, production advice, uncontrolled sends, silent admin bypass and untested release shortcuts remain forbidden. |
+| Visual/API/schema unlock | Passed | Screens, state screens, visual assets, new APIs and Prisma migrations are authorized only when task-required and validated. |
+| Visual proof | Not applicable | This change is documentation/test authorization only; no app UI changed and no new screenshot was meaningful for this pass. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `PLAYWRIGHT_PORT=3168 pnpm exec playwright test tests/p0-acceptance.spec.ts -g "max override"` | Passed | 1 focused P0 acceptance guard. |
+| `PLAYWRIGHT_PORT=3169 pnpm exec playwright test tests/p0-acceptance.spec.ts` | Passed | 13 P0 acceptance assertions. |
+| `pnpm typecheck` | Passed | TypeScript completed with `tsc --noEmit`. |
+| `pnpm lint` | Passed | ESLint completed cleanly. |
+| `pnpm db:validate` | Passed | Prisma schema validates. |
+
+### Completion Status Labels Inventory
+
+| Item | Completion Status Label | Notes |
+| --- | --- | --- |
+| All-task authorization override | implemented | Section 0 is active and overrules narrower previous locks. |
+| Former non-task register conversion | implemented | Registers are executable task sources with proof gates. |
+| Newly unlocked task completion | not claimed | Actual implementation of Phase 9-12/BP-12/P1/HOLD/DNC tasks remains future task work. |
+
+### Residual Risks
+
+- The unlock makes tasks executable; it does not implement all newly unlocked work.
+- Future task runs must materialize missing task IDs before coding formerly blocked or DNC-derived work.

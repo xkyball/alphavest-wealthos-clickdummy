@@ -1,6 +1,6 @@
 # ALPHAVEST_MVP_FIRST_BUILD_PACKAGE_PLAN.md
 
-Status: `FIRST_BUILD_PACKAGE_PLAN_LOCKED`
+Status: `FIRST_BUILD_PACKAGE_PLAN_MAX_OVERRIDE_UNLOCKED`
 
 This file is a Phase 0 implementation artefact for `BP-00`. It does not replace
 `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md`; it makes the handoff's
@@ -9,6 +9,7 @@ package order locally explicit and testable.
 ## Operative Source
 
 - Sole source of truth: `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md`
+- Active all-phase/all-task override: Section 0 of `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md`
 - Explicit soft-unlock amendment: `ALPHAVEST_ALL_ROUTES_SOFT_UNLOCK_HANDOFF.md`
 - Target branch reality: `full-workflow`
 - Non-target truth: `main`, older V3 phase plans, older final task masters and
@@ -27,22 +28,23 @@ package order locally explicit and testable.
 | 6 | `BP-09` | `LOCKED_UNTIL_PREDECESSORS_PASSED` |
 | 7 | `BP-10` | `LOCKED_UNTIL_PREDECESSORS_PASSED` |
 | 8 | `BP-11` | `LOCKED_UNTIL_PREDECESSORS_PASSED` |
+| 9-12 and later repo-local registers | `BP-12`, `BP-P1-*`, `BP-HOLD-*`, `BP-DNC-*`, newly materialized AlphaVest task IDs | `EXECUTABLE_BY_MAX_OVERRIDE_WITH_PROOF_GATES` |
 
-## Non-Executable Registers
+## Former Non-Executable Registers
 
 | Register | Phase 0 Decision |
 | --- | --- |
-| `BLOCKED` | `DO_NOT_EXECUTE` |
-| `CONDITIONAL_SUPPORT` | `DO_NOT_EXECUTE_WITHOUT_EXPLICIT_UNLOCK` |
-| `P1` | `DEFERRED` |
-| `HOLD` | `DO_NOT_PROMOTE` |
-| `DO_NOT_CREATE` | `FORBIDDEN` |
+| `BLOCKED` | `EXECUTABLE_AFTER_SOURCE_VERIFICATION` |
+| `CONDITIONAL_SUPPORT` | `EXECUTABLE_BY_MAX_OVERRIDE_WITH_PROOF_GATES` |
+| `P1` | `EXECUTABLE_BY_MAX_OVERRIDE_WITH_PROOF_GATES` |
+| `HOLD` | `EXECUTABLE_BY_MAX_OVERRIDE_WITH_PROOF_GATES` |
+| `DO_NOT_CREATE` | `EXECUTABLE_WHEN_MATERIALIZED_WITH_PROOF`, except `main` false-gap task creation remains forbidden |
 
 ## Phase 0 Completion Criteria
 
 - `AV-FB-P0-BP00-T001` through `AV-FB-P0-BP00-T004` are documented.
 - `full-workflow` remains the target source.
 - `main` remains false-gap warning only.
-- No screens, state-screen images, visual replacements, Prisma migrations or new
-  API routes are created.
+- Screens, state-screen images, visual replacements, Prisma migrations and new
+  API routes are created only when task-required, proof-gated and validated.
 - Required validation commands are run and reported.
