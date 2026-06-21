@@ -7,9 +7,21 @@ Build AlphaVest WealthOS as a demo-data-first web application using Next.js, Rea
 Read this before implementation:
 
 - `ALPHAVEST_DB_BACKED_TABLES_FORMS_CODEX_PROMPT_PACK.md` when the task is about DB-backed tables, lists, cards, search, filters, sorting, pagination, row actions, forms, input masks, wizards, seed data, metrics, charts, gauges or the DBTF phase sequence.
+- `ALPHAVEST_E2E_JOURNEY_PROOF_25_CODEX_TASK_PACK.md` when the task is about the 25 canonical journeys, CJ-001 through CJ-025, E2E journey proofs, journey proof fixtures/harnesses, canonical path coverage, or the E2E proof workstream sequence.
 - `ALPHAVEST_SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK.md`
 - `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_RELEASE_PHASE_PLAN.md`
 - `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`
+
+`ALPHAVEST_E2E_JOURNEY_PROOF_25_CODEX_TASK_PACK.md` is the operative Codex
+source of truth for the E2E Journey Proof 25 workstream. For journey-proof
+tasks it supersedes broader SCF and older journey/handoff artefacts as the
+active task-card, workstream, stop-rule and reporting contract. It does not by
+itself authorize immediate implementation: each execution turn must follow the
+relevant E2E workstream or `E2E-CJ-*` task card, verify the target files and
+Control-Layer dependencies first, and preserve its bans on new screens,
+state-screen/image generation, Prisma migrations, new API routes without
+`API_DECISION_REQUIRED`, `main`-derived work, P1/HOLD elevation, autonomous
+advice, admin bypass or client-visible AI drafts.
 
 `ALPHAVEST_DB_BACKED_TABLES_FORMS_CODEX_PROMPT_PACK.md` is the operative Codex
 execution source of truth for focused DBTF work. For DBTF tasks it supersedes
