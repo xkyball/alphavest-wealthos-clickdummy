@@ -1,4 +1,6 @@
 import type { ComponentState } from "@/components/ui/state-panel";
+import { evaluateExportSafety } from "@/lib/control-layer/export-safety";
+import { evaluateOffboardingControl } from "@/lib/control-layer/offboarding-service";
 import type { DemoActor, DemoRole, DemoSession } from "@/lib/demo-session";
 import { demoPlatformTenantId } from "@/lib/demo-session";
 import type {
@@ -12,8 +14,9 @@ import type {
   VisibilityStatus,
 } from "@/lib/domain-types";
 import { evidenceService, type EvidenceSufficiencyInput } from "@/lib/evidence-service";
+import type { ExportPayloadClassification } from "@/lib/export-service";
 import { permissionEngine, type PermissionDecision } from "@/lib/permission-engine";
-import type { ScreenRoute } from "@/lib/route-registry";
+import { routeImplementationAccessDecision, type ScreenRoute } from "@/lib/route-registry";
 import { visibilityEngine, type DecisionVisibilityPayload, type RecommendationVisibilityPayload } from "@/lib/visibility-engine";
 import { workflowGate, type WorkflowGateResult } from "@/lib/workflow-gate";
 
@@ -25,6 +28,13 @@ export type UiClickflowState =
   | "DISABLED_GATED_ACTION_STATE"
   | "CLIENT_VISIBILITY_HIDDEN_STATE"
   | "REDACTED_INTERNAL_ONLY_STATE"
+  | "EXPORT_PENDING_STATE"
+  | "EXPORT_REDACTION_PENDING_STATE"
+  | "EXPORT_FAILED_STATE"
+  | "P1_DEFERRED_STATE"
+  | "INTERNAL_ONLY_GUARD_STATE"
+  | "HOLD_BLOCKED_STATE"
+  | "REFERENCE_ONLY_STATE"
   | "BLOCKED_STATE"
   | "VALIDATION_FAILED_STATE"
   | "AUDIT_UNAVAILABLE_STATE"
@@ -70,6 +80,36 @@ export type AdvisorComplianceUiState = {
   uiState: UiClickflowState;
 };
 
+export type ClientDecisionRoomUiState = {
+  clientProjection: UiPayloadProjection;
+  clientVisibility: WorkflowGateResult;
+  releasedOnly: boolean;
+  uiState: UiClickflowState;
+};
+
+export type ExportUiState = {
+  exportSafety: ReturnType<typeof evaluateExportSafety>;
+  forbiddenPayloads: ExportPayloadClassification[];
+  previewIsApproval: false;
+  uiState: UiClickflowState;
+};
+
+export type DeferredRouteUiState = {
+  action: UiActionGuard;
+  productiveActionsEnabled: false;
+  reasonCode: string;
+  routeScope: string;
+  routeShellAccessible: boolean;
+  uiState: UiClickflowState;
+};
+
+export type OffboardingUiState = {
+  control: ReturnType<typeof evaluateOffboardingControl>;
+  guardOnly: true;
+  productiveActionsEnabled: false;
+  uiState: UiClickflowState;
+};
+
 const uiStateToComponentState: Record<UiClickflowState, ComponentState> = {
   AUDIT_UNAVAILABLE_STATE: "audit-unavailable",
   BLOCKED_STATE: "blocked",
@@ -77,8 +117,15 @@ const uiStateToComponentState: Record<UiClickflowState, ComponentState> = {
   DISABLED_GATED_ACTION_STATE: "restricted",
   EMPTY_STATE: "empty",
   ERROR_STATE: "error",
+  EXPORT_FAILED_STATE: "export-failed",
+  EXPORT_PENDING_STATE: "export-pending",
+  EXPORT_REDACTION_PENDING_STATE: "export-redaction",
+  HOLD_BLOCKED_STATE: "hold-blocked",
+  INTERNAL_ONLY_GUARD_STATE: "internal-only",
   LOADING_STATE: "loading",
+  P1_DEFERRED_STATE: "p1-deferred",
   PERMISSION_DENIED_STATE: "denied",
+  REFERENCE_ONLY_STATE: "reference-only",
   REDACTED_INTERNAL_ONLY_STATE: "redacted",
   SUCCESS_STATE: "success",
   VALIDATION_FAILED_STATE: "validation",
@@ -388,6 +435,111 @@ export function evaluateAdvisorComplianceUi(input: {
     complianceAction,
     complianceRelease,
     uiState: complianceRelease.passed ? "SUCCESS_STATE" : complianceAction.uiState,
+  };
+}
+
+export function evaluateClientDecisionRoomUi(input: {
+  advisorApprovalStatus: ReviewStatus;
+  compliancePermission: PermissionDecision;
+  complianceStatus: ComplianceStatus;
+  containsAiDraft?: boolean;
+  containsInternalRationale?: boolean;
+  evidenceStatus: EvidenceStatus;
+  payload: RecommendationVisibilityPayload;
+  recommendationStatus: RecommendationStatus;
+  session: DemoSession;
+}): ClientDecisionRoomUiState {
+  const clientProjection = projectRecommendationForUi({
+    payload: input.payload,
+    session: input.session,
+  });
+  const clientVisibility = workflowGate.canBecomeClientVisible({
+    advisorApprovalStatus: input.advisorApprovalStatus,
+    complianceStatus: input.complianceStatus,
+    containsAiDraft: input.containsAiDraft,
+    containsInternalRationale: input.containsInternalRationale,
+    evidenceStatus: input.evidenceStatus,
+    permission: input.compliancePermission,
+    recommendationStatus: input.recommendationStatus,
+  });
+  const releasedOnly = clientVisibility.passed && clientProjection.visible && clientProjection.cleanForClient;
+
+  return {
+    clientProjection,
+    clientVisibility,
+    releasedOnly,
+    uiState: releasedOnly ? "SUCCESS_STATE" : "CLIENT_VISIBILITY_HIDDEN_STATE",
+  };
+}
+
+export function evaluateExportUiState(input: Parameters<typeof evaluateExportSafety>[0]): ExportUiState {
+  const exportSafety = evaluateExportSafety(input);
+  const forbiddenPayloads = input.payloadClassifications
+    ? input.payloadClassifications.filter((classification) =>
+        ["AI_DRAFT", "INTERNAL_RATIONALE", "COMPLIANCE_NOTES", "UNRELEASED_EVIDENCE", "UNRELEASED_RECOMMENDATION", "HIDDEN_FIELD"].includes(
+          classification,
+        ),
+      )
+    : [];
+  const uiState: UiClickflowState =
+    input.auditPersistenceAvailable === false
+      ? "AUDIT_UNAVAILABLE_STATE"
+      : exportSafety.packageResult && !exportSafety.packageResult.valid
+        ? "EXPORT_FAILED_STATE"
+        : forbiddenPayloads.length > 0 || !exportSafety.scopeDecision.valid
+          ? "REDACTED_INTERNAL_ONLY_STATE"
+          : exportSafety.exportGate.allowedToGenerate
+            ? "SUCCESS_STATE"
+            : exportSafety.lifecycle.stage === "preview" || exportSafety.exportGate.missing.includes("approval")
+              ? "EXPORT_REDACTION_PENDING_STATE"
+              : "EXPORT_PENDING_STATE";
+
+  return {
+    exportSafety,
+    forbiddenPayloads,
+    previewIsApproval: false,
+    uiState,
+  };
+}
+
+export function evaluateDeferredRouteUiState(route: ScreenRoute): DeferredRouteUiState {
+  const decision = routeImplementationAccessDecision(route);
+  const uiState: UiClickflowState =
+    decision.exclusionReason === "P1_DEFERRED"
+      ? "P1_DEFERRED_STATE"
+      : decision.exclusionReason === "HOLD_PENDING_SCOPE_UNLOCK"
+        ? "HOLD_BLOCKED_STATE"
+        : decision.exclusionReason === "REFERENCE_ONLY_NO_PRODUCT_TASK"
+          ? "REFERENCE_ONLY_STATE"
+          : "SUCCESS_STATE";
+
+  return {
+    action: buildUiActionGuard({
+      hidden: !decision.implementationShellAccessible,
+      permission: {
+        allowed: decision.implementationShellAccessible,
+        reason: decision.implementationShellAccessible
+          ? "Route is inside current implementation scope."
+          : "Route is registered only and cannot expose productive action in this phase.",
+        reasonCode: decision.exclusionReason ?? "UI_ROUTE_IMPLEMENTATION_SCOPE_ALLOWED",
+      },
+    }),
+    productiveActionsEnabled: false,
+    reasonCode: decision.exclusionReason ?? "UI_ROUTE_IMPLEMENTATION_SCOPE_ALLOWED",
+    routeScope: decision.routeScope,
+    routeShellAccessible: decision.implementationShellAccessible,
+    uiState,
+  };
+}
+
+export function evaluateOffboardingUiState(
+  input: Parameters<typeof evaluateOffboardingControl>[0],
+): OffboardingUiState {
+  return {
+    control: evaluateOffboardingControl(input),
+    guardOnly: true,
+    productiveActionsEnabled: false,
+    uiState: "P1_DEFERRED_STATE",
   };
 }
 

@@ -8,9 +8,16 @@ export type ComponentState =
   | "denied"
   | "empty"
   | "error"
+  | "export-failed"
+  | "export-pending"
+  | "export-redaction"
   | "hidden"
+  | "hold-blocked"
+  | "internal-only"
   | "loading"
+  | "p1-deferred"
   | "redacted"
+  | "reference-only"
   | "restricted"
   | "success"
   | "validation";
@@ -28,9 +35,16 @@ const stateMeta: Record<ComponentState, { icon: LucideIcon; style: string }> = {
   denied: { icon: Ban, style: "border-alphavest-red/35 bg-alphavest-red/10 text-alphavest-red" },
   empty: { icon: FileSearch, style: "border-alphavest-border bg-alphavest-charcoal/55 text-alphavest-muted" },
   error: { icon: AlertTriangle, style: "border-alphavest-red/35 bg-alphavest-red/10 text-alphavest-red" },
+  "export-failed": { icon: AlertTriangle, style: "border-alphavest-red/35 bg-alphavest-red/10 text-alphavest-red" },
+  "export-pending": { icon: FileSearch, style: "border-alphavest-blue/35 bg-alphavest-blue/10 text-alphavest-blue" },
+  "export-redaction": { icon: EyeOff, style: "border-alphavest-gold/40 bg-alphavest-gold/10 text-alphavest-gold-soft" },
   hidden: { icon: EyeOff, style: "border-alphavest-gold/40 bg-alphavest-gold/10 text-alphavest-gold-soft" },
+  "hold-blocked": { icon: Ban, style: "border-alphavest-red/35 bg-alphavest-red/10 text-alphavest-red" },
+  "internal-only": { icon: ShieldAlert, style: "border-alphavest-gold/40 bg-alphavest-gold/10 text-alphavest-gold-soft" },
   loading: { icon: LoaderCircle, style: "border-alphavest-blue/35 bg-alphavest-blue/10 text-alphavest-blue" },
+  "p1-deferred": { icon: ShieldAlert, style: "border-alphavest-gold/40 bg-alphavest-gold/10 text-alphavest-gold-soft" },
   redacted: { icon: EyeOff, style: "border-alphavest-gold/40 bg-alphavest-gold/10 text-alphavest-gold-soft" },
+  "reference-only": { icon: FileSearch, style: "border-alphavest-border bg-alphavest-charcoal/55 text-alphavest-muted" },
   restricted: { icon: EyeOff, style: "border-alphavest-gold/40 bg-alphavest-gold/10 text-alphavest-gold-soft" },
   success: { icon: CheckCircle2, style: "border-alphavest-green/35 bg-alphavest-green/10 text-alphavest-green" },
   validation: { icon: AlertTriangle, style: "border-alphavest-gold/40 bg-alphavest-gold/10 text-alphavest-gold-soft" }

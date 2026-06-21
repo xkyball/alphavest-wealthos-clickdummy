@@ -1,5 +1,74 @@
 # Phase Execution Report
 
+## UI Clickflow Phase 06-10 - Client Visibility, Governance Safety, Export Separation And Guard-Only Routes
+
+Date: 2026-06-21
+
+### Phase / Scope Report
+
+- Source of truth: `ALPHAVEST_UI_CLICKFLOW_PAGEFLOW_STATE_VISIBILITY_INTERACTION_CODEX_TASK_PACK.md`.
+- Requested scope: execute Phase 06 through Phase 15 together as real implementation.
+- Executable UIF phase scope found in source: Phase 06 through Phase 10 only. Phase 11 through Phase 15 are not defined in the active UIF task pack.
+- Result: `UI_CLICKFLOW_PHASE_06_10_IMPLEMENTED_WITH_PHASE10_REGRESSION_BLOCKER`.
+- Product-code boundary: no new API route, no Prisma migration, no route scope reclassification, no new screen, no generated state-screen/image, no production auth, no P1/HOLD/SPEC productive activation, no autonomous advice and no client-visible AI draft.
+
+### Implemented Work
+
+- Added Phase 06 client decision-room evaluator for fail-closed client projection and released-only safe content.
+- Added Phase 07 governance-negative proof coverage for wrong-tenant denial, admin non-bypass release/export/evidence denial and audit unavailable state.
+- Added Phase 08 export UI evaluator over existing export safety controls, preserving preview/approval/generation/download/share separation and forbidden-payload blocking.
+- Added Phase 09 route guard evaluator for P1 deferred, held, reference and offboarding guard-only states.
+- Expanded shared `StatePanel`/`DataTable` state taxonomy for export, P1, internal-only, held and reference states.
+- Added `tests/ui-clickflow-phase06-10.spec.ts`.
+- Added detailed execution report at `docs/v3/ALPHAVEST_UI_CLICKFLOW_PHASE_06_10_IMPLEMENTATION_REPORT.md`.
+
+### Changed Files
+
+- `components/ui/data-table.tsx`
+- `components/ui/state-panel.tsx`
+- `lib/ui-clickflow-guards.ts`
+- `tests/ui-clickflow-phase06-10.spec.ts`
+- `docs/v3/ALPHAVEST_UI_CLICKFLOW_PHASE_06_10_IMPLEMENTATION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### DB / Seed / API / Service Changes
+
+- Prisma schema changes: none.
+- Prisma migrations: none.
+- Seed changes: none.
+- New API routes: none.
+- Route registry changes: none.
+- New product screens: none.
+- Existing service changes: none; existing Control-Layer/export/offboarding services are consumed by the UI facade.
+
+### Validation Commands Run
+
+- `pnpm exec playwright test tests/ui-clickflow-phase06-10.spec.ts --workers=1` - passed, 5 tests.
+- `pnpm exec playwright test tests/ui-clickflow-phase01-05.spec.ts tests/ui-clickflow-phase06-10.spec.ts tests/export-safety.spec.ts tests/offboarding-control.spec.ts tests/file-export-realism.spec.ts --workers=1` - passed, 28 tests.
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `pnpm db:validate` - passed.
+- `pnpm exec playwright test tests/ui-clickflow-phase01-05.spec.ts tests/ui-clickflow-phase06-10.spec.ts tests/export-safety.spec.ts tests/offboarding-control.spec.ts tests/file-export-realism.spec.ts tests/p0-acceptance.spec.ts --workers=1` - failed, 41/43 tests passed; see Phase 10 blocker below.
+
+### Positive / Negative Acceptance
+
+- Positive acceptance: PASS for released-only client decision-room content, allowed compliance evidence sufficiency, safe export generation state and safe offboarding control result staying guard-only.
+- Negative acceptance: PASS for unreleased client visibility hidden state, admin release/export/evidence non-bypass, wrong-tenant denial, preview-not-approval, forbidden export payload blocking, audit unavailable hold and P1/HOLD/REFERENCE route guard-only state.
+
+### Phase 10 Regression Blocker
+
+- `tests/p0-acceptance.spec.ts:502` fails because the older P0 API universe expects only five API routes while the current repo includes additional DBTF/API routes.
+- `tests/p0-acceptance.spec.ts:554` fails because the older route workset count expects `MVP_SUPPORT: 25` and `P1_AFTER_MVP: 5`, while current `lib/route-registry.ts` reports `MVP_SUPPORT: 27` and `P1_AFTER_MVP: 3`.
+- This phase did not add API routes or reclassify routes; the failing baseline was not changed silently.
+
+### Stop Rules / Deviations / Blockers / Next
+
+- Stop rules triggered: Phase 11-15 are blocked because the active UIF task pack defines no Phase 11-15 rows.
+- Stop rules preserved: P1/HOLD/SPEC routes remain guard-only; no MVP/productive activation was added.
+- Known gap: full Phase 10 acceptance remains blocked until the stale P0 regression baseline is explicitly rebased or scoped.
+- Next recommended phase: resolve the `p0-acceptance` route/API universe mismatch as a dedicated regression-baseline task before claiming full Phase 10 green.
+
 ## UI Clickflow Phase 01-05 - Shared Guards, Pageflow State And Advisor/Compliance UI Proof
 
 Date: 2026-06-21
