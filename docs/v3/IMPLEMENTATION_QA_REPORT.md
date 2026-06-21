@@ -1,5 +1,58 @@
 # Implementation QA Report
 
+## E2E-WS-00 - E2E-WS-05 Journey Proof QA Addendum
+
+Date: 2026-06-21
+
+### Executive Decision
+
+`E2E_WS_00_05_QA_PASSED_AS_CONTROL_LAYER_PROOF_HARNESS`
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Source of truth lock | Passed | Used `ALPHAVEST_E2E_JOURNEY_PROOF_25_CODEX_TASK_PACK.md` as operative task-card/workstream contract. |
+| Repo/source reality | Passed | WS-00 proof asserts required target files and repo validation scripts exist before journey claims. |
+| No forbidden scope | Passed | No new API route, Prisma migration, screen, state-screen/image generation, production auth, P1/HOLD elevation, autonomous advice or client-visible AI draft was added. |
+| Shared fixtures | Passed | E2E-HAR-001 through E2E-HAR-009 fixture/helper files now exist for actor, object, evidence, workflow, visibility/export, audit, fail-closed and redaction assertions. |
+| Foundation journeys | Passed | CJ-001 through CJ-003 have positive and negative actor/tenant/context proof coverage. |
+| Document/evidence journeys | Passed | CJ-004, CJ-005 and CJ-025 prove upload-only intake, no sufficiency shortcut, and stale/wrong-scope evidence blocking. |
+| Internal workflow/advice boundary | Passed | CJ-006 through CJ-008 prove internal trigger/draft behavior, AI/internal-rationale no-leak and unsupported-claim blocking. |
+| Advisor/compliance gates | Passed | CJ-009 and CJ-010 prove advisor-not-release and compliance release preconditions including audit persistence. |
+| Deferred/Hold integrity | Passed | CJ-011 and later journey groups were not promoted; only non-mutating fixture continuity was added for later workstreams. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm exec playwright test tests/e2e/e2e-journey-proof-ws00-ws05.spec.ts` | Passed | 12 tests; service/fixture harness does not require a dev server. |
+| `PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm test:e2e-journey-proof` | Passed | Package-script entrypoint for the same WS-00..05 harness. |
+| `pnpm typecheck` | Passed | TypeScript completed cleanly. |
+| `pnpm lint` | Passed | ESLint completed cleanly. |
+| `pnpm db:validate` | Passed | Prisma schema remained valid; no migration was added. |
+
+### P0 Proof Status
+
+| Proof Area | Status | Notes |
+| --- | --- | --- |
+| Actor context denial | Passed | Unknown demo role is denied with `WCL_ACTOR_CONTEXT_DENIED` and audit-required semantics. |
+| Tenant/setup authority | Passed | Admin assignment requires audit/second confirmation; principal cannot assign tenant roles. |
+| Payload visibility | Passed | Wrong-tenant projection returns no payload; client source projection hides internal evidence/storage fields. |
+| Upload not sufficiency | Passed | Uploaded-only lifecycle can enter review but cannot support compliance release. |
+| Evidence sufficiency | Passed | Only reviewed/current/scoped/client-safe evidence passes; stale/wrong-scope records block release/export. |
+| AI draft internal-only | Passed | Internal analyst projection can see draft; client projection receives no draft payload. |
+| Unsupported claim rejection | Passed | Revision-requested unsupported draft cannot advance to client visibility. |
+| Advisor approval not release | Passed | Advisor approval leaves `recommendation_released_to_client` and `compliance_release` missing. |
+| Compliance release preconditions | Passed | Release requires advisor approval, sufficient evidence, client-safe payload, permission and audit persistence. |
+
+### Residual Risks
+
+- This pass is a deterministic proof harness over existing Control-Layer services, not a production auth or new workflow implementation.
+- No database mutation path was added for the E2E fixture matrix; DB-backed proof remains covered by existing focused API suites and later E2E phases where required.
+- `CJ-011` client decision-room proof, governance negative spine, export redaction lifecycle, P1 guards, held guards and offboarding control remain later workstreams.
+- Broader full Playwright regression and production-release acceptance were not run; this QA is scoped to WS-00..05 plus typecheck/lint/db validation.
+
 ## MAX-UNLOCKED DBTF Follow-up QA Addendum
 
 Date: 2026-06-21

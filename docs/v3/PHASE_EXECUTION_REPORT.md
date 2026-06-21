@@ -1,5 +1,97 @@
 # Phase Execution Report
 
+## E2E-WS-00 - E2E-WS-05 Journey Proof Harness Implementation
+
+Date: 2026-06-21
+
+### Phase / Scope Report
+
+- Source of truth: `ALPHAVEST_E2E_JOURNEY_PROOF_25_CODEX_TASK_PACK.md`.
+- Requested scope: execute `E2E-WS-00`, `E2E-WS-01`, `E2E-WS-02`, `E2E-WS-03`, `E2E-WS-04` and `E2E-WS-05` together as implementation.
+- Result: `E2E_WS_00_05_IMPLEMENTED_AS_CONTROL_LAYER_PROOF_HARNESS`.
+- Implementation form: deterministic Playwright/TypeScript proof harness using existing Control-Layer services and engines.
+- Product-code boundary: no new API route, no Prisma migration, no new screen, no state-screen/image generation, no production auth, no P1/HOLD elevation, no autonomous advice and no client-visible AI draft.
+
+### Implemented Workstreams And Tasks
+
+- `E2E-WS-00`: repo/source reality and validation-script baseline proof in `tests/e2e/e2e-journey-proof-ws00-ws05.spec.ts`.
+- `E2E-WS-01`: shared deterministic fixture matrix for actors, object scope, evidence, workflow, visibility/export preview and fail-closed/redaction/audit helpers.
+- `E2E-HAR-001`: `tests/fixtures/e2e-actors.ts`.
+- `E2E-HAR-002`: `tests/fixtures/e2e-object-scope.ts`.
+- `E2E-HAR-003`: `tests/fixtures/e2e-evidence.ts`.
+- `E2E-HAR-004`: `tests/fixtures/e2e-workflow.ts`.
+- `E2E-HAR-005`: `tests/fixtures/e2e-visibility.ts`.
+- `E2E-HAR-006`: `tests/fixtures/e2e-export.ts`.
+- `E2E-HAR-007`: `tests/helpers/e2e-audit-correlation.ts`.
+- `E2E-HAR-008`: `tests/helpers/e2e-fail-closed.ts`.
+- `E2E-HAR-009`: `tests/helpers/e2e-redaction.ts`.
+- `E2E-WS-02`: `E2E-CJ-001`, `E2E-CJ-002` and `E2E-CJ-003` proof cases.
+- `E2E-WS-03`: `E2E-CJ-004`, `E2E-CJ-005` and `E2E-CJ-025` proof cases.
+- `E2E-WS-04`: `E2E-CJ-006`, `E2E-CJ-007` and `E2E-CJ-008` proof cases.
+- `E2E-WS-05`: `E2E-CJ-009` and `E2E-CJ-010` proof cases.
+
+### Journey Proof Coverage
+
+| Journey | Status | Proof |
+| --- | --- | --- |
+| `CJ-001` | Implemented proof | Valid mapped actor context is resolved; unknown role is denied with audit-required fail-closed actor context. |
+| `CJ-002` | Implemented proof | Admin role assignment authority requires audit and second confirmation; client role cannot assign tenant roles. |
+| `CJ-003` | Implemented proof | Document/context payload is tenant scoped; wrong-tenant client gets no payload; client source projection hides internal evidence/storage fields. |
+| `CJ-004` | Implemented proof | Upload lifecycle stays upload-only and review-pending; no release/sufficiency shortcut. |
+| `CJ-005` | Implemented proof | Only reviewed, current, scoped, client-safe evidence becomes sufficient; stale/wrong-scope evidence blocks release/export. |
+| `CJ-006` | Implemented proof | Analyst can create scoped internal triggers with audit; trigger/draft state does not create client advice/release. |
+| `CJ-007` | Implemented proof | AI/rules draft is visible to internal analyst projection only; client projection returns no payload and workflow gate blocks leakage. |
+| `CJ-008` | Implemented proof | Unsupported claim rejection remains blocked from advisor/client progression and has critical audit correlation proof. |
+| `CJ-009` | Implemented proof | Advisor approval alone leaves compliance release and client visibility gates missing. |
+| `CJ-010` | Implemented proof | Compliance release passes only with advisor approval, sufficient evidence, payload readiness, permission and audit persistence. |
+| `CJ-011` | Not in requested range | Deferred to `E2E-WS-06`; only non-mutating fixture support was added. |
+| `CJ-012` to `CJ-025` | Not in requested range | No implementation claim except `CJ-025` upload/error fail-closed coverage required by `E2E-WS-03`. |
+
+### Changed Files
+
+- `package.json` - added `test:e2e-journey-proof` script.
+- `tests/e2e/e2e-journey-proof-ws00-ws05.spec.ts` - added bundled WS-00..05 proof suite.
+- `tests/fixtures/e2e-actors.ts` - actor/tenant/role fixture matrix.
+- `tests/fixtures/e2e-object-scope.ts` - tenant/object ID fixture matrix.
+- `tests/fixtures/e2e-evidence.ts` - document/evidence lifecycle fixture matrix.
+- `tests/fixtures/e2e-workflow.ts` - recommendation/advisor/compliance workflow fixture matrix.
+- `tests/fixtures/e2e-visibility.ts` - internal and released recommendation projection fixtures.
+- `tests/fixtures/e2e-export.ts` - preview-only export fixture for later WS continuity.
+- `tests/helpers/e2e-audit-correlation.ts` - audit correlation helper.
+- `tests/helpers/e2e-fail-closed.ts` - fail-closed envelope helper.
+- `tests/helpers/e2e-redaction.ts` - client-payload forbidden-field helper.
+- `docs/v3/PHASE_EXECUTION_REPORT.md` - this report entry.
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md` - QA addendum.
+
+### DB / Seed / API / Service Changes
+
+- Prisma schema changes: none.
+- Prisma migrations: none.
+- Seed changes: none.
+- New API routes: none.
+- Existing service hardening: none required; existing `permission-engine`, `visibility-engine`, `evidence-service` and `workflow-gate` were used as proof targets.
+
+### Validation Commands Run
+
+- `PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm exec playwright test tests/e2e/e2e-journey-proof-ws00-ws05.spec.ts` - passed, 12 tests.
+- `PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm test:e2e-journey-proof` - passed, 12 tests.
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `pnpm db:validate` - passed.
+
+### Positive / Negative Acceptance
+
+- Positive acceptance: PASS for deterministic actor/tenant context, scoped upload/evidence lifecycle, internal trigger/draft projection, advisor gate and compliance release preconditions.
+- Negative acceptance: PASS for unknown actor denial, client role assignment denial, wrong-tenant payload denial, upload-not-sufficiency, stale/wrong-scope evidence blocking, AI draft/internal rationale blocking, advisor-not-release and audit-required compliance release.
+
+### Stop Rules / Deviations / Blockers / Next
+
+- Stop rules triggered: none for WS-00..05.
+- Deviations: implementation is proof-harness scoped rather than new product feature code because the task pack explicitly requires existing APIs/services/engines to be hardened/proven first and forbids new routes/schema/screens.
+- Known gap: `CJ-011` client decision-room visibility remains a later `E2E-WS-06` implementation, although fixture continuity was prepared.
+- Known gap: P1/HOLD/SPEC tracks remain untouched.
+- Next recommended phase: `E2E-WS-06` Client Visibility and Decision Room Proof.
+
 ## MAX-UNLOCKED DBTF Follow-up - Search, Admin/Tenant, Export And Ops/SLA DB Backing
 
 Date: 2026-06-21
