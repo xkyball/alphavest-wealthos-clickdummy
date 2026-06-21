@@ -32,6 +32,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { AuditTimeline, Badge, Card, CardContent, CardHeader, CardTitle, StatePanel, type BadgeTone } from "@/components/ui";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
+import { ProductGuidanceContent } from "@/components/product-guidance-panel";
 import { cn } from "@/lib/cn";
 import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import type { ScreenRoute } from "@/lib/route-registry";
@@ -250,7 +251,9 @@ function WealthShell({ activePageId, children }: { activePageId: string; childre
         <WealthSidebar activePageId={activePageId} />
         <div className="min-w-0">
           <WealthTopBar />
-          <main className="px-4 py-6 md:px-6">{children}</main>
+          <main className="px-4 py-6 md:px-6">
+            <ProductGuidanceContent>{children}</ProductGuidanceContent>
+          </main>
         </div>
       </div>
     </DemoSessionProvider>

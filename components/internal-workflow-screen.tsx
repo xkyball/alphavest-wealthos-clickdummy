@@ -45,6 +45,7 @@ import {
   type DataTableColumn
 } from "@/components/ui";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
+import { ProductGuidanceContent } from "@/components/product-guidance-panel";
 import { cn } from "@/lib/cn";
 import {
   recommendationReviewDemoTargets,
@@ -477,7 +478,9 @@ function InternalShell({ activePageId, children }: { activePageId: string; child
         <InternalSidebar activePageId={activePageId} />
         <div className="min-w-0">
           <InternalTopBar />
-          <main className="px-4 py-6 md:px-6">{children}</main>
+          <main className="px-4 py-6 md:px-6">
+            <ProductGuidanceContent>{children}</ProductGuidanceContent>
+          </main>
         </div>
       </div>
     </DemoSessionProvider>

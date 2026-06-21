@@ -18,8 +18,8 @@ export function RouteDemoContextCard({ roleFamily }: RouteDemoContextCardProps) 
           <UserRound aria-hidden="true" className="size-5" />
         </div>
         <div>
-          <CardTitle>Demo Context</CardTitle>
-          <CardDescription>Role and tenant are switchable in the top bar.</CardDescription>
+          <CardTitle>Scenario Context</CardTitle>
+          <CardDescription>Tenant and role are controlled scenario inputs in the top bar.</CardDescription>
         </div>
       </CardHeader>
 
@@ -47,7 +47,7 @@ export function RouteDemoContextCard({ roleFamily }: RouteDemoContextCardProps) 
 
         <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-3">
           <span className="text-sm text-alphavest-muted">Permission mode</span>
-          <StatusChip label="Demo active" status="ACTIVE" />
+          <StatusChip label="Scenario active" status="ACTIVE" />
         </div>
       </CardContent>
     </Card>

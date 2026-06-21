@@ -10,6 +10,21 @@ The route registry remains the source of truth for route IDs, route paths and
 worksets. This mapping is only for sidebar presentation and active-parent
 orientation.
 
+## How to Use This Mapping
+
+1. Translate the old task wording into the current sidebar target before editing
+   navigation, shell layout or tests.
+2. Keep direct routes direct. If an older task names a detail, success, block,
+   review or held route, use the route itself and only use this document to
+   decide the expected active parent.
+3. Use `lib/route-registry.ts` for route IDs, paths, worksets and route state.
+   Use `lib/navigation.ts` plus this document for global sidebar presentation.
+4. Do not restore historical group labels, route-catalogue labels, spec panels,
+   filename labels or annotation rails as product UI.
+5. When a legacy route family has its own sidebar or topbar, preserve that route
+   family's identity while keeping the main content structure aligned with the
+   shared guidance/product-content pattern.
+
 ## Current Navigation Rule
 
 - Do not reintroduce raw route-catalogue groups into the sidebar.
@@ -20,10 +35,25 @@ orientation.
 - If a task needs route IDs, use `lib/route-registry.ts`; if it needs visible
   sidebar placement, use `lib/navigation.ts` and this mapping.
 
+## Current Shell Behavior
+
+The current product navigation is intentionally not a one-to-one copy of the
+old route catalogue.
+
+| Shell / route family | Current behavior | Task interpretation |
+| --- | --- | --- |
+| Global `AppShell` pages | Use the current task-oriented left navigation from `lib/navigation.ts`. | Old group names should be translated through this mapping before expectations are written. |
+| Legacy product shell families | May keep a family-specific sidebar or topbar to preserve route context. | Do not treat family-specific chrome as permission to reintroduce the old global route catalogue. |
+| Main product area | Uses the shared guidance/product-content structure where implemented. | Guidance is shell context; the product page below remains the work surface. |
+| Desktop and tablet | Guidance appears before the product content. | Tests can assert guidance before page work surface where the shared shell applies. |
+| Mobile | Product content appears first and guidance follows below it. | Mobile tests should not expect guidance to precede the route content. |
+| Decisions/Governance legacy sidebar | Uses a primary-navigation landmark and active-parent state for folded route families. | Historical `Decisions & Governance` wording maps to the visible active parent, not to a restored catalogue. |
+
 ## Former Group to Current Group Mapping
 
 | Former group / older wording | Current sidebar group | Current intent |
 | --- | --- | --- |
+| `Route catalogue`, `route-catalogue`, `old left nav` | Current task-oriented sidebar | Historical navigation vocabulary only; translate before implementation. |
 | `Access & Setup`, `access` | `Setup` | Demo-local onboarding and identity setup, visually secondary. |
 | `Platform & Tenant`, `platform`, `tenant_setup` | `Setup` plus selected `Governance` entries | Operational setup is secondary; advice boundary and security sit under governance. |
 | `Client Workspace`, `client_workspace`, `wealth_actions` | `Home` and `Client & Evidence` | Client context, documents, evidence, relationships, entities, wealth map and actions. |
@@ -33,6 +63,38 @@ orientation.
 | `Communication`, `P1`, `Later` | Not shown in core sidebar | Deferred/P1 routes remain direct-route/exclusion-shell only. |
 | `Reference` | Not shown in core sidebar | Reference-only routes remain direct-route/exclusion-shell only. |
 | `Held`, `KYC`, `Suitability`, `IPS`, `Committee` | Not shown in core sidebar | Held routes remain direct-route/exclusion-shell only. |
+
+## Old Label Aliases
+
+Use this table when older tickets use short labels without page IDs.
+
+| Older label / alias | Current target |
+| --- | --- |
+| `Home`, `Portal`, `Client dashboard` | `Home` -> `Client portal` |
+| `Mobile home`, `Mobile portal` | `Home` -> `Mobile client view` |
+| `Client`, `Client profile`, `Wealth map`, `Family`, `Entities`, `Actions` | `Client & Evidence` -> `Client profile` |
+| `Documents`, `Document list`, `Client files` | `Client & Evidence` -> `Document library` |
+| `Upload`, `Intake`, `Extraction`, `Verification pending` | `Client & Evidence` -> `Evidence intake` |
+| `Evidence`, `Evidence record`, `Vault` | `Client & Evidence` -> `Evidence vault` |
+| `Signal`, `Signals`, `Signal review` | `Advisory Work` -> `Signal review` |
+| `Workbench`, `Trigger`, `Trigger detail` | `Advisory Work` -> `Workbench` |
+| `Advisor approval`, `Approval queue`, `Approval detail` | `Advisory Work` -> `Advisor approval` |
+| `Compliance queue` | `Compliance & Release` -> `Compliance queue` |
+| `Compliance review`, `Review detail` | `Compliance & Release` -> `Compliance review` |
+| `Release`, `Block`, `Request evidence`, `Compliance audit` | `Compliance & Release` -> `Release controls` |
+| `Decision list` | `Decisions & Audit` -> `Decision list` |
+| `Decision room`, `Decision submitted`, `Submission success` | `Decisions & Audit` -> `Decision room` |
+| `Users`, `Governance users` | `Governance` -> `Governance users` |
+| `Roles`, `Role management` | `Governance` -> `Roles` |
+| `Access requests` | `Governance` -> `Access requests` |
+| `Access audit`, `Audit history` | `Decisions & Audit` -> `Audit history` |
+| `Create export`, `New export` | `Export` -> `New export` |
+| `Export scope` | `Export` -> `Scope selection` |
+| `Export redaction` | `Export` -> `Redaction` |
+| `Export preview` | `Export` -> `Preview` |
+| `Export download`, `Share export` | `Export` -> `Download / share` |
+| `Ops`, `Monitoring`, `SLA`, `Escalation`, `Communication centre` | Direct-route/P1 only, not core sidebar |
+| `KYC`, `AML`, `Source of wealth`, `Suitability`, `IPS`, `Committee review` | Held/direct-route only, not core sidebar |
 
 ## Page ID to Current Sidebar Parent
 
@@ -91,6 +153,25 @@ orientation.
 | "Open Platform & Tenant -> Advice Boundary" | `Governance` -> `Advice boundary`. |
 | "Open Platform & Tenant -> Security" | `Governance` -> `Security`. |
 
+## Detail and State Route Parent Rules
+
+| Route family / example | Expected parent in current navigation language |
+| --- | --- |
+| `/workbench/triggers/demo` | `Advisory Work` -> `Workbench` |
+| `/advisor-approval/demo` | `Advisory Work` -> `Advisor approval` |
+| `/compliance/demo/review` | `Compliance & Release` -> `Compliance review` |
+| `/compliance/demo/release` | `Compliance & Release` -> `Release controls` |
+| `/compliance/demo/block` | `Compliance & Release` -> `Release controls` |
+| `/compliance/demo/audit` | `Compliance & Release` -> `Release controls` in workflow language; `Decisions & Audit` -> `Audit history` when the task is audit-history oriented. |
+| `/decisions/demo` | `Decisions & Audit` -> `Decision room` |
+| `/decisions/demo/success` | `Decisions & Audit` -> `Decision room` |
+| `/evidence/demo` | `Client & Evidence` -> `Evidence vault` |
+| `/exports/demo/scope` | `Export` -> `Scope selection` |
+| `/exports/demo/redaction` | `Export` -> `Redaction` |
+| `/exports/demo/preview` | `Export` -> `Preview` |
+| `/exports/demo/download` | `Export` -> `Download / share` |
+| `/tenants/demo/users` | `Setup` -> `Tenant setup` |
+
 ## Maintenance Notes
 
 - Update this document whenever `navigationDefinitions` in `lib/navigation.ts`
@@ -99,3 +180,5 @@ orientation.
   or changing navigation guidance tests.
 - Do not use this mapping to modify route worksets. Route scope remains locked
   in `lib/route-registry.ts`.
+- Keep this document referenced from `AGENTS.md` so historical tasks translate
+  old navigation language before implementation begins.

@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
+import { ProductGuidanceContent } from "@/components/product-guidance-panel";
 import {
   Badge,
   Card,
@@ -366,35 +367,44 @@ function ClientTopBar() {
           />
         </label>
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-          <label className="relative">
-            <span className="sr-only">Tenant context</span>
-            <select
-              className="h-10 w-full appearance-none rounded-md border border-alphavest-border bg-alphavest-charcoal/70 py-0 pl-3 pr-8 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold sm:w-64"
-              onChange={(event) => setTenant(event.target.value as DemoTenantSlug)}
-              value={session.tenant.slug}
-            >
-              {demoTenants.map((item) => (
-                <option key={item.slug} value={item.slug}>
-                  {item.displayName}
-                </option>
-              ))}
-            </select>
-            <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
+          <p className="max-w-56 text-xs leading-5 text-alphavest-muted">
+            Controlled scenario context; production auth is not claimed
+          </p>
+          <label className="grid gap-1 text-[0.66rem] font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">
+            <span>Tenant context</span>
+            <span className="relative block">
+              <select
+                aria-label="Tenant context"
+                className="h-10 w-full appearance-none rounded-md border border-alphavest-border bg-alphavest-charcoal/70 py-0 pl-3 pr-8 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold sm:w-64"
+                onChange={(event) => setTenant(event.target.value as DemoTenantSlug)}
+                value={session.tenant.slug}
+              >
+                {demoTenants.map((item) => (
+                  <option key={item.slug} value={item.slug}>
+                    {item.displayName}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
+            </span>
           </label>
-          <label className="relative">
-            <span className="sr-only">Role context</span>
-            <select
-              className="h-10 w-full appearance-none rounded-md border border-alphavest-border bg-alphavest-charcoal/70 py-0 pl-3 pr-8 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold sm:w-56"
-              onChange={(event) => setRole(event.target.value as DemoRoleKey)}
-              value={session.role.key}
-            >
-              {demoRoles.map((item) => (
-                <option key={item.key} value={item.key}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
-            <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
+          <label className="grid gap-1 text-[0.66rem] font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">
+            <span>Scenario role</span>
+            <span className="relative block">
+              <select
+                aria-label="Role context"
+                className="h-10 w-full appearance-none rounded-md border border-alphavest-border bg-alphavest-charcoal/70 py-0 pl-3 pr-8 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold sm:w-56"
+                onChange={(event) => setRole(event.target.value as DemoRoleKey)}
+                value={session.role.key}
+              >
+                {demoRoles.map((item) => (
+                  <option key={item.key} value={item.key}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
+            </span>
           </label>
           <button className="relative grid size-10 place-items-center rounded-full border border-alphavest-border text-alphavest-muted" type="button">
             <Bell aria-hidden="true" className="size-4" />
@@ -418,7 +428,7 @@ function ClientShell({ activePageId, children }: { activePageId: string; childre
         <div className="min-w-0">
           <ClientTopBar />
           <main className="px-4 py-6 md:px-6">
-            <div className="av-page">{children}</div>
+            <ProductGuidanceContent>{children}</ProductGuidanceContent>
           </main>
         </div>
       </div>

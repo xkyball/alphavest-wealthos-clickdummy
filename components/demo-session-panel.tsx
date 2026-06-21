@@ -145,14 +145,14 @@ export function DemoSessionPanel() {
         <div className="flex items-start justify-between gap-4 border-b border-alphavest-border/60 pb-4">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.08em] text-alphavest-gold">
-              Demo context
+              Scenario context
             </p>
             <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">
               {session.actor.displayName}
             </h2>
           </div>
           <span className="rounded-full border border-alphavest-blue/30 bg-alphavest-blue/10 px-3 py-1 text-xs font-semibold text-alphavest-blue">
-            {session.mode}
+            Controlled scenario
           </span>
         </div>
 

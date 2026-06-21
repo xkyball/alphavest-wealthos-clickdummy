@@ -1,5 +1,61 @@
 # Phase Execution Report
 
+## GUIDED-PRODUCT-UX-REWORK - Uploaded Prompt Implementation
+
+Date: 2026-06-21
+
+### Completion Report
+
+- Source executed: `ALPHAVEST_GUIDED_PRODUCT_UX_REWORK_CODEX_PROMPT_ENGINE_PROOF.md`
+- Phase/package: interposed UX implementation prompt, not a First Build numbered phase package.
+- Files changed:
+  - `components/app-shell.tsx`
+  - `components/client-intake-screen.tsx`
+  - `components/communication-export-ops-screen.tsx`
+  - `components/decisions-governance-screen.tsx`
+  - `components/demo-session-panel.tsx`
+  - `components/internal-workflow-screen.tsx`
+  - `components/kyc-aml-workflow-screen.tsx`
+  - `components/product-guidance-panel.tsx`
+  - `components/route-demo-context-card.tsx`
+  - `components/top-bar.tsx`
+  - `components/wealth-actions-screen.tsx`
+  - `lib/product-guidance.ts`
+  - `tests/navigation-shell.spec.ts`
+  - `tests/product-guidance-shell.spec.ts`
+  - `docs/v3/GUIDED_PRODUCT_UX_REWORK_REPORT.md`
+  - `docs/v3/PHASE_EXECUTION_REPORT.md`
+  - `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- Screenshot artifacts:
+  - `artifacts/guided-product-ux-rework/workbench-guidance-desktop.png`
+  - `artifacts/guided-product-ux-rework/document-upload-guidance-desktop.png`
+  - `artifacts/guided-product-ux-rework/export-guidance-desktop.png`
+  - `artifacts/guided-product-ux-rework/mobile-content-first-guidance.png`
+
+### Implemented Behaviour
+
+- Added route-registry-backed product guidance for purpose, gate hints, primary actions, next steps and related routes.
+- Introduced a shared `ProductGuidanceContent` Main-area wrapper used by global and legacy shell families for consistent guidance/content placement.
+- Preserved legacy Sidebar/Topbar family structure to avoid route, workflow and visual-reference churn.
+- Added accessible current-state support to the Decisions/Governance legacy sidebar so success/detail states remain folded into their parent navigation item.
+- Reworded topbar/session context toward controlled scenario context without claiming production authentication.
+- Added explicit no-overclaim guidance for upload, workbench drafts, compliance release, exports, P1, reference and held routes.
+- Added responsive ordering: desktop/tablet guidance first; mobile route identity first with guidance below.
+
+### Validation Commands Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `PLAYWRIGHT_PORT=3104 pnpm exec playwright test tests/product-guidance-shell.spec.ts` - passed, 6 tests.
+- `PLAYWRIGHT_PORT=3105 pnpm test:route-smoke` - passed, 85 tests.
+- `PLAYWRIGHT_PORT=3107 pnpm exec playwright test tests/navigation-shell.spec.ts` - passed, 7 tests.
+- `PLAYWRIGHT_PORT=3106 pnpm test:playwright` - passed, 244 tests.
+- `pnpm build` - passed with existing Turbopack tracing warnings in `lib/document-storage-adapter.ts`.
+
+### Exit Gate Decision
+
+`GUIDED_PRODUCT_UX_REWORK_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
 ## MVP-FIRST-BUILD-PHASE-3 - Evidence Upload-To-Sufficiency Lifecycle
 
 Date: 2026-06-21

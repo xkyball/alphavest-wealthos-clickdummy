@@ -52,7 +52,7 @@ test.describe("AlphaVest navigation shell", () => {
     await page.goto("/decisions/demo/success");
 
     const primaryNavigation = page.getByRole("navigation", { name: "Primary navigation" });
-    await expect(primaryNavigation.getByRole("link", { name: "Decision room" })).toHaveAttribute(
+    await expect(primaryNavigation.getByRole("link", { name: "Decisions" })).toHaveAttribute(
       "aria-current",
       "page"
     );

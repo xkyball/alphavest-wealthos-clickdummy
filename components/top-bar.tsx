@@ -32,7 +32,7 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
                 {session.sessionLabel}
               </p>
               <p className="text-xs text-alphavest-muted">
-                Real authentication deferred; context is demo-local
+                Controlled scenario context; production auth is not claimed
               </p>
             </div>
           </div>
@@ -54,10 +54,12 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
           </label>
 
           <div className="grid gap-2 sm:grid-cols-2 lg:flex">
-            <label className="relative">
-              <span className="sr-only">Tenant context</span>
+            <label className="grid gap-1 text-[0.66rem] font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">
+              <span>Tenant context</span>
+              <span className="relative block">
               <UserRound aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-gold" />
               <select
+                aria-label="Tenant context"
                 className="h-10 w-full appearance-none rounded-md border border-alphavest-border bg-alphavest-charcoal/70 py-0 pl-9 pr-8 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold lg:w-60"
                 onChange={(event) => setTenant(event.target.value as DemoTenantSlug)}
                 value={session.tenant.slug}
@@ -69,12 +71,15 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
                 ))}
               </select>
               <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
+              </span>
             </label>
 
-            <label className="relative">
-              <span className="sr-only">Role context</span>
+            <label className="grid gap-1 text-[0.66rem] font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">
+              <span>Scenario role</span>
+              <span className="relative block">
               <ShieldCheck aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-gold" />
               <select
+                aria-label="Role context"
                 className="h-10 w-full appearance-none rounded-md border border-alphavest-border bg-alphavest-charcoal/70 py-0 pl-9 pr-8 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold lg:w-52"
                 onChange={(event) => setRole(event.target.value as DemoRoleKey)}
                 value={session.role.key}
@@ -86,17 +91,18 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
                 ))}
               </select>
               <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
+              </span>
             </label>
           </div>
 
           <button
             className="grid size-10 place-items-center rounded-full border border-alphavest-border bg-alphavest-charcoal/70 text-alphavest-muted transition hover:border-alphavest-gold hover:text-alphavest-gold"
             onClick={resetSession}
-            title="Reset demo session"
+            title="Reset scenario context"
             type="button"
           >
             <RotateCcw aria-hidden="true" className="size-4" />
-            <span className="sr-only">Reset demo session</span>
+            <span className="sr-only">Reset scenario context</span>
           </button>
 
           <button

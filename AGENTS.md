@@ -24,11 +24,15 @@ Important: the images are not pixel-perfect contracts. They show design directio
 Do not implement spec panels, route labels, filenames, annotation rails, dev notes, callout legends or explanatory documentation as app UI. Only implement actual application UI.
 
 ## Navigation mapping rule
-For tasks, prompts or tests that still refer to the old left-navigation groups
-or route-catalogue menu, read `docs/v3/LEFT_NAV_OLD_TO_NEW_MAPPING.md` before
-editing navigation. The route registry remains authoritative for route IDs,
-paths and worksets; the mapping only translates older navigation language to
-the current task-oriented sidebar presentation.
+For tasks, prompts or tests that still refer to old left-navigation groups,
+route-catalogue menu labels, or legacy sidebar wording, read and apply
+`docs/v3/LEFT_NAV_OLD_TO_NEW_MAPPING.md` before editing navigation, changing
+shell layout, or writing navigation tests. Treat that file as the translation
+contract from old task language to the current task-oriented navigation; do not
+reintroduce old sidebar labels simply because a historical task uses them. The
+route registry remains authoritative for route IDs, paths and worksets; the
+mapping only translates older navigation language to the current presentation
+and active-parent behavior.
 
 ## Product rules
 - Digital first.

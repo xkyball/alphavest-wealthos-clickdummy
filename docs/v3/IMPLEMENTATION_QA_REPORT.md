@@ -1,5 +1,54 @@
 # Implementation QA Report
 
+## GUIDED-PRODUCT-UX-REWORK QA Addendum
+
+Date: 2026-06-21
+
+### Executive Decision
+
+`GUIDED_PRODUCT_UX_REWORK_QA_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Uploaded prompt execution | Passed | Implemented the guided product UX layer as a real UI slice, not as a planning-only response. |
+| Route/source preservation | Passed | No route IDs, paths, worksets or `screenRoutes` entries changed. |
+| Shared Main structure | Passed | Global and legacy shell families now use `ProductGuidanceContent` for a unified guidance/content structure. |
+| No-overclaim guidance | Passed | Upload, draft, compliance release, export, P1, reference and held states all carry explicit boundary copy. |
+| Topbar scenario context | Passed | Global/client topbars expose tenant and role as controlled scenario context and avoid clickdummy/prototype wording. |
+| Legacy navigation current state | Passed | Decisions/Governance legacy sidebar exposes `Primary navigation` and current parent state for folded success/detail routes. |
+| Mobile route identity | Passed | Mobile keeps route content before guidance so existing route identity remains first-viewport visible. |
+| No forbidden scope | Passed | No Prisma, migration, API route, production auth provider, screen generation or visual reference asset change. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | TypeScript completed cleanly. |
+| `pnpm lint` | Passed | ESLint completed cleanly. |
+| `PLAYWRIGHT_PORT=3104 pnpm exec playwright test tests/product-guidance-shell.spec.ts` | Passed | 6 focused product guidance tests. |
+| `PLAYWRIGHT_PORT=3105 pnpm test:route-smoke` | Passed | 85 tests, including locked workset and mobile route identity checks. |
+| `PLAYWRIGHT_PORT=3107 pnpm exec playwright test tests/navigation-shell.spec.ts` | Passed | 7 navigation tests after legacy Decisions/Governance active-state accessibility fix. |
+| `PLAYWRIGHT_PORT=3106 pnpm test:playwright` | Passed | 244 tests. |
+| `pnpm build` | Passed with warnings | Existing Turbopack tracing warnings remain in `lib/document-storage-adapter.ts`. |
+| Screenshot capture | Passed | Captured four screenshots under `artifacts/guided-product-ux-rework/`. |
+
+### Screenshot Proof
+
+| Artifact | Status | Notes |
+| --- | --- | --- |
+| `artifacts/guided-product-ux-rework/workbench-guidance-desktop.png` | Captured | Desktop Workbench product guidance. |
+| `artifacts/guided-product-ux-rework/document-upload-guidance-desktop.png` | Captured | Desktop upload guidance with sufficiency boundary. |
+| `artifacts/guided-product-ux-rework/export-guidance-desktop.png` | Captured | Desktop export guidance with approval/redaction boundary. |
+| `artifacts/guided-product-ux-rework/mobile-content-first-guidance.png` | Captured | Mobile content-first route identity with guidance below. |
+
+### Residual Risks
+
+- This prompt harmonized the Main guidance layer, not the entire legacy Sidebar/Topbar implementations.
+- Mobile intentionally orders content before guidance to preserve existing route identity requirements.
+- `pnpm build` still reports pre-existing broad filesystem tracing warnings in `lib/document-storage-adapter.ts`.
+
 ## MVP-FIRST-BUILD-PHASE-3 Implementation QA Addendum
 
 Date: 2026-06-21

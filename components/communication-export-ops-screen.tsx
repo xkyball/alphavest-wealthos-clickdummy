@@ -48,6 +48,7 @@ import {
   type DataTableColumn
 } from "@/components/ui";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
+import { ProductGuidanceContent } from "@/components/product-guidance-panel";
 import { cn } from "@/lib/cn";
 import {
   auditHistoryEvents,
@@ -311,7 +312,9 @@ function Phase13Shell({ children, route }: { children: React.ReactNode; route: S
           <Phase13Sidebar activePageId={route.pageId} />
           <div className="min-w-0 flex-1">
             <Phase13TopBar />
-            <main className="av-page px-4 py-6 md:px-6 lg:px-8">{children}</main>
+            <main className="px-4 py-6 md:px-6 lg:px-8">
+              <ProductGuidanceContent>{children}</ProductGuidanceContent>
+            </main>
           </div>
         </div>
       </div>

@@ -42,6 +42,7 @@ import {
   type DataTableColumn
 } from "@/components/ui";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
+import { ProductGuidanceContent } from "@/components/product-guidance-panel";
 import { cn } from "@/lib/cn";
 import {
   recommendationReviewDemoTargets,
@@ -197,7 +198,7 @@ function Phase12Sidebar({ activePageId }: { activePageId: string }) {
   return (
     <aside className="hidden min-h-screen border-r border-alphavest-border/60 bg-alphavest-navy/88 p-5 lg:flex lg:w-[var(--sidebar-width)] lg:flex-col">
       <AlphaVestMark />
-      <nav className="mt-8 flex flex-1 flex-col gap-1">
+      <nav aria-label="Primary navigation" className="mt-8 flex flex-1 flex-col gap-1">
         {decisionNav.map((item) => {
           const Icon = item.icon;
           const active = item.pageIds?.includes(activePageId);
@@ -210,6 +211,7 @@ function Phase12Sidebar({ activePageId }: { activePageId: string }) {
                   ? "border-alphavest-gold/45 bg-alphavest-gold/12 text-alphavest-gold-soft"
                   : "border-transparent text-alphavest-muted hover:border-alphavest-border hover:bg-alphavest-panel/65 hover:text-alphavest-ivory"
               )}
+              aria-current={active ? "page" : undefined}
               href={item.href}
               key={item.label}
             >
@@ -299,7 +301,9 @@ function Phase12Shell({ activePageId, children }: { activePageId: string; childr
         <Phase12Sidebar activePageId={activePageId} />
         <div className="min-w-0">
           <Phase12TopBar />
-          <main className="px-4 py-6 md:px-6">{children}</main>
+          <main className="px-4 py-6 md:px-6">
+            <ProductGuidanceContent>{children}</ProductGuidanceContent>
+          </main>
         </div>
       </div>
     </DemoSessionProvider>
