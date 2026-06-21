@@ -455,7 +455,7 @@ function Phase13Shell({ children, route }: { children: React.ReactNode; route: S
           <div className="min-w-0 flex-1">
             <Phase13TopBar />
             <main className="px-4 py-6 md:px-6 lg:px-8">
-              <ProductGuidanceContent>{children}</ProductGuidanceContent>
+              <ProductGuidanceContent hubPageId={route.pageId === "054" ? "054" : undefined}>{children}</ProductGuidanceContent>
             </main>
           </div>
         </div>

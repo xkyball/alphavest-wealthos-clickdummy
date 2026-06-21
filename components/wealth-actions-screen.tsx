@@ -235,7 +235,7 @@ function WealthTopBar() {
   );
 }
 
-function WealthShell({ activePageId, children }: { activePageId: string; children: React.ReactNode }) {
+function WealthShell({ activePageId, children, hubPageId }: { activePageId: string; children: React.ReactNode; hubPageId?: string }) {
   return (
     <DemoSessionProvider>
       <div className="av-surface av-surface-wealth av-shell-grid">
@@ -243,7 +243,7 @@ function WealthShell({ activePageId, children }: { activePageId: string; childre
         <div className="min-w-0">
           <WealthTopBar />
           <main className="px-4 py-6 md:px-6">
-            <ProductGuidanceContent>{children}</ProductGuidanceContent>
+            <ProductGuidanceContent hubPageId={hubPageId}>{children}</ProductGuidanceContent>
           </main>
         </div>
       </div>
@@ -276,7 +276,7 @@ function WealthMapPage({ title, visualState }: { title: string; visualState?: Vi
   const [drawerOpen, setDrawerOpen] = useState(visualState === "drawer");
 
   return (
-    <WealthShell activePageId="031">
+    <WealthShell activePageId="031" hubPageId="031">
       <ScreenTitle>{title}</ScreenTitle>
       <div className={cn("av-page-wide grid gap-5", drawerOpen ? "xl:grid-cols-[minmax(0,1fr)_25rem]" : "")}>
         <section className="min-w-0 space-y-5">

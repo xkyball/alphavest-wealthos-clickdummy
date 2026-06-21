@@ -5993,3 +5993,51 @@ Source of truth:
 
 - UX-NAV intentionally did not implement UX-HUB, UX-PAGE, UX-COMPLEXITY, UX-DENSITY, UX-CTA, UX-INTERACTION, UX-SAFETY or UX-POLICY.
 - The existing generated `next-env.d.ts` dev-server churn was restored and is not part of this workstream.
+
+## UX-HUB QA Addendum
+
+Date: 2026-06-21
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+
+| Area | QA result | Evidence |
+| --- | --- | --- |
+| Dedicated hub migration | Passed | `components/ux-hub-panel.tsx` and `lib/ux-hub.ts` provide a route-policy-backed hub pattern instead of a generic overlay. |
+| Existing route integration | Passed | Routes `013`, `015`, `019`, `020`, `024`, `031`, `034`, `043` and `054` opt into migrated hub guidance through their existing components/shells. |
+| Route Policy Matrix preservation | Passed | `lib/ux-route-policy.ts` keeps hub metadata on registered routes without route reclassification or new routes. |
+| Safe continuation CTAs | Passed | Route smoke asserts each hub primary next-work link avoids final-action words such as confirm, download, share, release and acceptance. |
+| P0 safety obligations | Passed | `pnpm test:permissions` preserves route/action/object separation and admin/client-success non-bypass. |
+| Screenshot proof | Passed | Six representative hub screenshots were captured under `docs/v3/proof/ux-hub/screenshots/`. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | `tsc --noEmit` completed successfully. |
+| `pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-HUB"` | Passed | 9 dedicated UX-HUB migration tests. |
+| `pnpm lint` | Passed | Existing lint suite passed. |
+| `pnpm test:permissions` | Passed | 8 tests; command reseeded demo DB as part of existing test flow. |
+| `PLAYWRIGHT_PORT=3031 pnpm test:route-smoke` | Passed | 99 tests. A prior default-port run hit `EADDRINUSE` on `127.0.0.1:3020`; the isolated rerun passed. |
+| Screenshot capture on `http://127.0.0.1:3337` | Passed | Captured `013`, `019`, `020`, `034`, `043` and `054`. |
+
+### Screenshot Proof
+
+- `docs/v3/proof/ux-hub/screenshots/2026-06-21-ux-hub-013-admin-tenants.png`
+- `docs/v3/proof/ux-hub/screenshots/2026-06-21-ux-hub-019-portal.png`
+- `docs/v3/proof/ux-hub/screenshots/2026-06-21-ux-hub-020-mobile.png`
+- `docs/v3/proof/ux-hub/screenshots/2026-06-21-ux-hub-034-workbench.png`
+- `docs/v3/proof/ux-hub/screenshots/2026-06-21-ux-hub-043-decisions.png`
+- `docs/v3/proof/ux-hub/screenshots/2026-06-21-ux-hub-054-export-new.png`
+
+### Safety Proof
+
+- Hubs expose orientation, priorities and next-work queues only; they do not execute final advice, release, export, download, share or acceptance actions.
+- Hub route visibility remains separate from action authority, payload authority, evidence sufficiency, advisor approval and compliance release.
+- Client-visible states remain governed by existing release and evidence controls.
+
+### QA Limits
+
+- UX-HUB intentionally did not implement UX-PAGE, UX-COMPLEXITY, UX-DENSITY, UX-CTA, UX-INTERACTION, UX-SAFETY or UX-POLICY.
+- Screenshot proof covers representative hub routes, not every hub-route viewport permutation.

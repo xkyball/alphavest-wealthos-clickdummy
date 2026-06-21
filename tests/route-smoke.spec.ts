@@ -114,6 +114,33 @@ test.describe("UX-NAV route policy navigation", () => {
   });
 });
 
+test.describe("UX-HUB separate hub migration", () => {
+  const hubRoutes = [
+    { pageId: "013", path: "/admin/tenants", nextHref: "/tenants/new" },
+    { pageId: "015", path: "/tenants/demo/setup", nextHref: "/tenants/demo/team" },
+    { pageId: "019", path: "/portal", nextHref: "/documents" },
+    { pageId: "020", path: "/mobile", nextHref: "/portal" },
+    { pageId: "024", path: "/entities", nextHref: "/entities/new" },
+    { pageId: "031", path: "/wealth-map", nextHref: "/client/profile" },
+    { pageId: "034", path: "/workbench", nextHref: "/workbench/triggers/demo" },
+    { pageId: "043", path: "/decisions", nextHref: "/decisions/demo" },
+    { pageId: "054", path: "/export/new", nextHref: "/export/demo/scope" },
+  ];
+
+  for (const route of hubRoutes) {
+    test(`${route.pageId} ${route.path} renders migrated hub surface`, async ({ page }) => {
+      await authenticateRouteSmokePage(page);
+      await page.goto(route.path);
+
+      const hub = page.getByTestId("ux-hub-panel");
+      await expect(hub).toBeVisible();
+      const primaryNextWork = hub.getByTestId("ux-hub-primary-next-work");
+      await expect(primaryNextWork).toHaveAttribute("href", route.nextHref);
+      await expect(primaryNextWork).not.toContainText(/confirm|download|share|release|acceptance/i);
+    });
+  }
+});
+
 test.describe("locked route workset preservation", () => {
   test("all registered routes are classified exactly once", () => {
     expect(routeWorksetIntegrity.counts).toEqual(lockedRouteWorksetCounts);

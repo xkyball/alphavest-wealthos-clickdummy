@@ -5,6 +5,7 @@ import { ArrowRight, Compass, LockKeyhole, Route, ShieldCheck } from "lucide-rea
 import { usePathname } from "next/navigation";
 import { useDemoSession } from "@/components/demo-session-provider";
 import { WizardStepper } from "@/components/ui/wizard-stepper";
+import { UxHubPanel } from "@/components/ux-hub-panel";
 import { cn } from "@/lib/cn";
 import { productGuidanceForPathname, type ProductGuidanceLink } from "@/lib/product-guidance";
 
@@ -125,16 +126,19 @@ export function ProductGuidancePanel() {
 export function ProductGuidanceContent({
   children,
   containerClassName = "av-page",
+  hubPageId,
 }: {
   children: React.ReactNode;
   containerClassName?: string;
+  hubPageId?: string;
 }) {
   return (
     <div className={cn(containerClassName, "flex flex-col")}>
       <div className="order-2 sm:order-1">
         <ProductGuidancePanel />
       </div>
-      <div className="order-1 sm:order-2">
+      {hubPageId ? <UxHubPanel pageId={hubPageId} /> : null}
+      <div className="order-1 sm:order-3">
         {children}
       </div>
     </div>

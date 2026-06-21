@@ -8,6 +8,7 @@ import {
   type RouteScopeLabel,
   type ScreenRoute,
 } from "@/lib/route-registry";
+import { uxHubGuidanceForPageId, type UxHubGuidance } from "@/lib/ux-hub";
 import { uxFlowStepsForPageId, uxRoutePolicyForRoute, type UxFlowStep } from "@/lib/ux-route-policy";
 
 export type ProductGuidanceLink = {
@@ -18,6 +19,7 @@ export type ProductGuidanceLink = {
 export type ProductGuidance = {
   area: string;
   gateHint: string;
+  hub: UxHubGuidance | null;
   nextStep?: ProductGuidanceLink;
   primaryAction?: ProductGuidanceLink;
   purpose: string;
@@ -62,6 +64,18 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
     primaryAction: linkForPageId("048", "Review governance users"),
     relatedRoutes: [linkForPageId("049", "Manage roles"), linkForPageId("010", "Review security")],
   },
+  "013": {
+    area: "Platform controls",
+    gateHint: "Tenant directory is setup orientation only; governance authority still depends on scoped role, object and audit controls.",
+    primaryAction: linkForPageId("014", "Create tenant"),
+    relatedRoutes: [linkForPageId("015", "Continue tenant setup"), linkForPageId("050", "Review access requests")],
+  },
+  "015": {
+    area: "Platform controls",
+    gateHint: "Tenant setup is support context only; it does not release advice, approve exports or bypass audit.",
+    primaryAction: linkForPageId("016", "Assign team"),
+    relatedRoutes: [linkForPageId("017", "Review policies"), linkForPageId("018", "Manage users")],
+  },
   "019": {
     area: "Client workspace",
     gateHint: "Client-facing view: only released, client-safe content should be visible here.",
@@ -71,11 +85,29 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
     relatedRoutes: [linkForPageId("021", "Review client profile"), linkForPageId("046", "Open evidence vault")],
     shortTitle: "Client portal",
   },
+  "020": {
+    area: "Client workspace",
+    gateHint: "Mobile client view shows released, redacted client-safe context only.",
+    primaryAction: linkForPageId("019", "Open client portal"),
+    relatedRoutes: [linkForPageId("027", "Review documents"), linkForPageId("046", "Open evidence context")],
+  },
   "021": {
     area: "Client workspace",
     gateHint: "Client facts support advisory work; they do not release advice by themselves.",
     primaryAction: linkForPageId("024", "Open entities"),
     relatedRoutes: [linkForPageId("027", "Open documents"), linkForPageId("031", "Review wealth map")],
+  },
+  "024": {
+    area: "Client workspace",
+    gateHint: "Entity list is support orientation; object mutation still requires explicit scope and authority.",
+    primaryAction: linkForPageId("025", "Create entity"),
+    relatedRoutes: [linkForPageId("026", "Inspect entity"), linkForPageId("031", "Review wealth map")],
+  },
+  "031": {
+    area: "Client workspace",
+    gateHint: "Wealth map context can orient relationships but does not grant release or broader payload authority.",
+    primaryAction: linkForPageId("021", "Review profile"),
+    relatedRoutes: [linkForPageId("024", "Open entities"), linkForPageId("032", "Review actions")],
   },
   "027": {
     area: "Evidence intake",
@@ -244,6 +276,7 @@ export function productGuidanceForRoute(route: ScreenRoute): ProductGuidance {
   return {
     area: override.area ?? areaForRoute(route),
     gateHint: override.gateHint ?? tierGateHints[tier],
+    hub: uxHubGuidanceForPageId(route.pageId),
     nextStep: override.nextStep,
     primaryAction: override.primaryAction,
     purpose: override.purpose ?? route.purpose,
@@ -267,6 +300,7 @@ export function productGuidanceForPathname(pathname: string): ProductGuidance {
   return {
     area: "Design system",
     gateHint: "Shared UI primitives support controlled workflow screens; they are not release proof by themselves.",
+    hub: null,
     primaryAction: linkForPageId("019", "Open client portal"),
     purpose: "Inspect the shared component language used by the AlphaVest workflow implementation.",
     relatedRoutes: [linkForPageId("034", "Open workbench"), linkForPageId("038", "Open compliance queue")],
