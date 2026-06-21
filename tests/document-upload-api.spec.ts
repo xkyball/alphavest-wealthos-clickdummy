@@ -112,6 +112,19 @@ test.describe("document upload multipart API", () => {
 
     expect(reloadedDocument?.fileName).toBe(fileName);
 
+    const uploaderClientReload = await request.get("/api/documents?tenantSlug=morgan&roleKey=family_cfo");
+    const uploaderClientReloadBody = await uploaderClientReload.json();
+    const uploaderClientDocument = uploaderClientReloadBody.documents.find((item: { id?: string }) => item.id === document.id);
+
+    expect(uploaderClientReload.ok(), JSON.stringify(uploaderClientReloadBody)).toBe(true);
+    expect(uploaderClientDocument?.visible).toBe(true);
+    expect(uploaderClientDocument?.reasonCode).toBe("DEMO_CLIENT_SOURCE_DOCUMENT_PROJECTION");
+    expect(uploaderClientDocument?.fileName).toBe(fileName);
+    expect(uploaderClientDocument).not.toHaveProperty("evidenceStatus");
+    expect(uploaderClientDocument).not.toHaveProperty("evidenceVisibilityStatus");
+    expect(uploaderClientDocument).not.toHaveProperty("storageKey");
+    expect(uploaderClientDocument).not.toHaveProperty("checksum");
+
     const blockedClientReload = await request.get("/api/documents?tenantSlug=morgan&roleKey=principal");
     const blockedClientReloadBody = await blockedClientReload.json();
 

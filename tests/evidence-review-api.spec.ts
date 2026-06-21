@@ -188,4 +188,47 @@ test.describe("Phase 3 evidence review and sufficiency API", () => {
     expect(audit.eventType).toBe("document.evidence_review.denied");
     expect(audit.result).toBe(AuditResult.DENIED);
   });
+
+  test("blocks wrong-scope sufficiency acceptance without mutating document or evidence state", async ({ request }) => {
+    const upload = await uploadProofDocument(request, "phase3-wrong-scope-sufficiency-proof.pdf");
+    const response = await request.post("/api/documents/review", {
+      data: {
+        action: "accept_sufficiency",
+        clientSafeAccepted: true,
+        currentAccepted: true,
+        documentId: upload.document.id,
+        notes: "Compliance attempted to accept this evidence for a different scoped object.",
+        relevanceAccepted: true,
+        requiredObjectId: "96705b67-40b2-5fb8-aa69-a3f2c106025e",
+        roleKey: "compliance_officer",
+        scopeAccepted: true,
+        tenantSlug: "morgan",
+      },
+    });
+    const body = await response.json();
+
+    expect(response.status(), JSON.stringify(body)).toBe(409);
+    expect(body.ok).toBe(false);
+    expect(body.mutated).toBe(false);
+    expect(body.noClientRelease).toBe(true);
+    expect(body.decision.sufficient).toBe(false);
+    expect(body.decision.missing).toContain("evidence_object_id_scope");
+
+    const evidence = await prisma.evidenceRecord.findUniqueOrThrow({
+      where: { id: upload.evidenceRecordId },
+    });
+    const document = await prisma.document.findUniqueOrThrow({
+      where: { id: upload.document.id },
+    });
+    const audit = await prisma.auditEvent.findUniqueOrThrow({
+      where: { id: body.auditEventId },
+    });
+
+    expect(document.status).toBe(DocumentStatus.UPLOADED);
+    expect(document.clientVisible).toBe(false);
+    expect(evidence.status).toBe(EvidenceStatus.CREATED);
+    expect(evidence.visibilityStatus).toBe(VisibilityStatus.INTERNAL_ONLY);
+    expect(audit.eventType).toBe("document.evidence_sufficiency.blocked");
+    expect(audit.result).toBe(AuditResult.BLOCKED);
+  });
 });

@@ -169,6 +169,23 @@ function labelFromEnum(value: string) {
     .join(" ");
 }
 
+function isPersistedUploadDocument(value: unknown): value is PersistedUploadDocument {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as Partial<PersistedUploadDocument>;
+  return (
+    typeof candidate.documentType === "string" &&
+    typeof candidate.fileName === "string" &&
+    typeof candidate.fileSizeBytes === "number" &&
+    typeof candidate.id === "string" &&
+    typeof candidate.sensitivity === "string" &&
+    typeof candidate.status === "string" &&
+    typeof candidate.uploadedAt === "string"
+  );
+}
+
 function toDocumentRows(documents: PersistedUploadDocument[], entityLabel: string): DocumentTableRow[] {
   return documents.map((document) => ({
     entity: entityLabel,
@@ -202,7 +219,7 @@ function usePersistedUploadDocuments() {
         throw new Error("Document reload failed.");
       }
 
-      setDocuments(body.documents ?? []);
+      setDocuments((body.documents ?? []).filter(isPersistedUploadDocument));
       setLoadState("ready");
     } catch {
       setLoadState("error");
@@ -1414,6 +1431,17 @@ function DocumentUploadForm() {
             state={uploadState === "error" ? "error" : uploadState === "success" ? "success" : "loading"}
             title={uploadState === "success" ? "Upload complete" : uploadState === "error" ? "Upload failed" : uploadState === "uploading" ? "Uploading" : "Ready"}
           />
+          {uploadState === "error" ? (
+            <button
+              className={secondaryButtonClass + " w-full"}
+              data-testid="retry-upload-document"
+              disabled={!selectedFile}
+              onClick={() => { void submitUpload(); }}
+              type="button"
+            >
+              Retry Upload
+            </button>
+          ) : null}
           {latestDocument ? (
             <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4">
               <p className="text-sm font-semibold text-alphavest-ivory">{latestDocument.fileName}</p>

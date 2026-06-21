@@ -63,6 +63,53 @@ test.describe("Evidence sufficiency lifecycle", () => {
     expect(wrongObject.sufficient).toBe(false);
     expect(wrongObject.missing).toContain("evidence_object_id_scope");
   });
+
+  test("blocks stale, unlinked and internal-only evidence from sufficiency", () => {
+    const staleEvidence = evidenceService.evaluateEvidenceSufficiency({
+      accepted: true,
+      current: false,
+      relatedObjectId: "rec-1",
+      relatedObjectType: "RECOMMENDATION",
+      requiredObjectId: "rec-1",
+      requiredObjectType: "RECOMMENDATION",
+      reviewed: true,
+      status: "VALIDATED",
+      visibilityStatus: "REDACTED",
+    });
+    const unlinkedEvidence = evidenceService.evaluateEvidenceSufficiency({
+      accepted: true,
+      current: true,
+      relatedObjectType: "DOCUMENT",
+      requiredObjectId: "rec-1",
+      requiredObjectType: "RECOMMENDATION",
+      reviewed: true,
+      status: "VALIDATED",
+      visibilityStatus: "REDACTED",
+    });
+    const internalOnlyEvidence = evidenceService.evaluateEvidenceSufficiency({
+      accepted: true,
+      current: true,
+      relatedObjectId: "rec-1",
+      relatedObjectType: "RECOMMENDATION",
+      requiredObjectId: "rec-1",
+      requiredObjectType: "RECOMMENDATION",
+      reviewed: true,
+      status: "VALIDATED",
+      visibilityStatus: "INTERNAL_ONLY",
+    });
+
+    expect(staleEvidence.sufficient).toBe(false);
+    expect(staleEvidence.missing).toContain("evidence_current");
+    expect(staleEvidence.releaseImpact).toBe("RELEASE_BLOCKED_NEEDS_EVIDENCE");
+
+    expect(unlinkedEvidence.sufficient).toBe(false);
+    expect(unlinkedEvidence.missing).toContain("evidence_object_type_scope");
+    expect(unlinkedEvidence.exportImpact).toBe("EXPORT_BLOCKED_NEEDS_EVIDENCE");
+
+    expect(internalOnlyEvidence.sufficient).toBe(false);
+    expect(internalOnlyEvidence.missing).toContain("client_safe_visibility");
+    expect(internalOnlyEvidence.releaseImpact).toBe("RELEASE_BLOCKED_NEEDS_EVIDENCE");
+  });
 });
 
 test.describe("Suitability and IPS advice visibility gate", () => {

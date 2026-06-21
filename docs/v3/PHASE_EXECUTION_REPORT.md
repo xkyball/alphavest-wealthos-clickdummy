@@ -1,5 +1,93 @@
 # Phase Execution Report
 
+## MVP-FIRST-BUILD-PHASE-3 - Evidence Upload-To-Sufficiency Lifecycle
+
+Date: 2026-06-21
+
+### Phase Completion Report
+
+- Phase: 3
+- Package executed: `BP-04`
+- Task IDs completed: `AV-FB-P3-BP04-T001`, `AV-FB-P3-BP04-T002`, `AV-FB-P3-BP04-T003`, `AV-FB-P3-BP04-T004`, `AV-FB-P3-BP04-T005`
+- Files changed:
+  - `components/client-intake-screen.tsx`
+  - `lib/visibility-engine.ts`
+  - `tests/document-upload-api.spec.ts`
+  - `tests/document-upload-flow.spec.ts`
+  - `tests/evidence-review-api.spec.ts`
+  - `tests/workflow-gate.spec.ts`
+  - `tests/foundation-guardrails.spec.ts`
+  - `tests/ui-state-boundaries.spec.ts`
+  - `docs/v3/PHASE_EXECUTION_REPORT.md`
+  - `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- Screenshot artifacts:
+  - `artifacts/phase3-evidence-lifecycle/upload-blocked-retry-desktop.png`
+  - `artifacts/phase3-evidence-lifecycle/upload-success-locked-desktop.png`
+  - `artifacts/phase3-evidence-lifecycle/extraction-review-sufficiency-locked-desktop.png`
+
+### Implemented Phase 3 Behaviour
+
+- Added a visible retry affordance for blocked document uploads without converting failed upload state into evidence sufficiency or release readiness.
+- Hardened persisted upload rendering so hidden/permission-denied document projections cannot crash the upload workspace.
+- Added a client-side source-document projection for `family_cfo` upload context: the uploader can see safe source document metadata while internal evidence status, evidence visibility, storage key and checksum remain hidden.
+- Preserved principal/client fail-closed behaviour for unreleased internal evidence and document payloads.
+- Added wrong-scope sufficiency proof: compliance cannot accept sufficiency when the required object does not match the uploaded/reviewed evidence object.
+- Added workflow-gate proof for stale, unlinked and internal-only evidence blocking sufficiency, release and export preconditions.
+- Extended browser proof so upload success remains separate from extraction review, evidence sufficiency, release, export and client visibility.
+- Updated stale guardrail/UI-boundary tests to match current repo reality and no-overclaim copy without changing product logic.
+
+### Validation Commands Run
+
+- `pnpm typecheck` - passed.
+- `PLAYWRIGHT_PORT=3094 pnpm exec playwright test tests/workflow-gate.spec.ts tests/evidence-review-api.spec.ts tests/document-upload-api.spec.ts` - passed, 22 tests.
+- `PLAYWRIGHT_PORT=3095 pnpm exec playwright test tests/document-upload-flow.spec.ts` - passed, 4 tests.
+- `PLAYWRIGHT_PORT=3096 pnpm test:workflow-api` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3097 pnpm test:permissions` - passed, 8 tests.
+- `pnpm lint` - passed.
+- `pnpm db:validate` - passed.
+- `pnpm build` - passed with existing Turbopack tracing warnings in `lib/document-storage-adapter.ts`.
+- `PLAYWRIGHT_PORT=3099 pnpm exec playwright test tests/phase3-screenshots.tmp.spec.ts` - passed, 1 temporary screenshot-capture test; the temporary spec was removed after capture.
+- `PLAYWRIGHT_PORT=3100 pnpm test:playwright` - initial full run failed, 232 passed / 6 failed, because stale guardrail/UI-copy tests did not match current API universe and current no-overclaim copy.
+- `PLAYWRIGHT_PORT=3102 pnpm exec playwright test tests/foundation-guardrails.spec.ts tests/ui-state-boundaries.spec.ts` - passed, 16 tests after test reality alignment.
+- `PLAYWRIGHT_PORT=3103 pnpm test:playwright` - passed, 238 tests.
+- Final `pnpm typecheck` - passed.
+- Final `pnpm lint` - passed.
+- `git diff --check` - passed.
+
+### Validation Notes
+
+- The first standalone screenshot script against a manually started dev server did not hydrate file input state because Next dev blocked `127.0.0.1` HMR as a cross-origin dev resource. Screenshot capture was rerun inside Playwright's normal web-server harness and passed.
+- No Prisma schema, migration, production authentication provider, generated screen image, visual reference asset or new application screen was added.
+- `app/api/documents/review/route.ts` already existed before this phase; the stale foundation guardrail API list was updated to reflect repo reality, not to authorize a new route.
+
+### Positive P0 Proof
+
+- Valid upload stores document bytes/domain rows and creates candidate evidence/audit state without release/export/client visibility unlock.
+- Family CFO upload context can reload safe source document metadata while internal evidence fields remain hidden.
+- Compliance can mark reviewed scoped evidence as accepted only through the review API, with evidence status becoming `VALIDATED` and visibility `REDACTED`.
+- Reviewed, linked, current and scoped evidence satisfies the workflow gate for the correct object.
+- Browser flow proves upload, retry, review and sufficiency acceptance states remain operational after reload and role/tenant switching.
+
+### Negative P0 Proof
+
+- Unsupported upload shows retry and writes no sufficiency/release/client-visibility success state.
+- Principal/client projection remains fail-closed for unreleased/internal document evidence.
+- Analyst cannot accept evidence sufficiency.
+- Wrong-scope sufficiency acceptance returns blocked/no-mutation state and records a blocked audit event.
+- Stale, unlinked, wrong-object-type and internal-only evidence do not satisfy release/export/client-visibility preconditions.
+
+### Screenshot Proof
+
+| Artifact | Status | Notes |
+| --- | --- | --- |
+| `artifacts/phase3-evidence-lifecycle/upload-blocked-retry-desktop.png` | captured | Desktop proof of blocked unsupported upload with retry affordance and no sufficiency success state. |
+| `artifacts/phase3-evidence-lifecycle/upload-success-locked-desktop.png` | captured | Desktop proof of valid upload success copy keeping extraction review, sufficiency, release and client visibility locked. |
+| `artifacts/phase3-evidence-lifecycle/extraction-review-sufficiency-locked-desktop.png` | captured | Desktop proof of compliance sufficiency acceptance showing `Validated`/`Redacted` while release, export and client visibility remain locked. |
+
+### Exit Gate Decision
+
+`PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
 ## MVP-FIRST-BUILD-PHASE-2 - RBAC, Object Scope And Payload Visibility Hardening
 
 Date: 2026-06-21

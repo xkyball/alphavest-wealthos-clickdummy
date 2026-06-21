@@ -58,6 +58,25 @@ test.describe("document upload browser flow", () => {
     await expect(page.locator("p:visible, span:visible, td:visible, article:visible", { hasText: fileName })).toHaveCount(0);
   });
 
+  test("shows retry affordance after a blocked upload without creating sufficiency", async ({ page }) => {
+    const fileName = "playwright-blocked-retry-proof.exe";
+
+    await page.goto("/documents/upload");
+    await page.getByLabel("Tenant context").last().selectOption("morgan");
+    await page.getByLabel("Role context").last().selectOption("family_cfo");
+    await page.getByTestId("document-upload-file-input").setInputFiles({
+      buffer: Buffer.from("unsupported executable payload"),
+      mimeType: "application/x-msdownload",
+      name: fileName,
+    });
+
+    await page.getByTestId("real-upload-document").click();
+    await expect(page.getByText("Upload blocked")).toBeVisible();
+    await expect(page.getByText("supported_file_type_required").first()).toBeVisible();
+    await expect(page.getByTestId("retry-upload-document")).toBeVisible();
+    await expect(page.getByText("Evidence sufficiency, release and client visibility remain locked.")).toHaveCount(0);
+  });
+
   test("accepts scoped evidence from extraction review without client release", async ({ page }) => {
     const fileName = "playwright-phase3-evidence-review-proof.pdf";
 

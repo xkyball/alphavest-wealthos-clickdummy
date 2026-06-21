@@ -12,6 +12,7 @@ type ClientProjectionState =
   | "CLIENT_SAFE"
   | "NO_AVAILABLE_CONTENT"
   | "PERMISSION_DENIED"
+  | "SOURCE_DOCUMENT_AVAILABLE"
   | "INTERNAL_PROJECTION";
 
 export type VisibilitySubject = {
@@ -120,6 +121,8 @@ const internalDocumentFields = [
 
 const clientSafeDocumentEvidenceStatuses = new Set(["VALIDATED", "RELEASED"]);
 const clientSafeDocumentVisibilityStatuses = new Set(["CLIENT_VISIBLE", "REDACTED"]);
+const clientSourceDocumentRoles = new Set(["family_cfo"]);
+const clientSourceDocumentStatuses = new Set(["UPLOADED", "REVIEWED"]);
 
 function canView(
   actor: DemoActor,
@@ -310,6 +313,32 @@ function projectDocumentPayload(
       payload.clientVisible &&
       clientSafeDocumentEvidenceStatuses.has(payload.evidenceStatus ?? "") &&
       clientSafeDocumentVisibilityStatuses.has(payload.evidenceVisibilityStatus ?? "");
+
+    const clientSourceDocument =
+      clientSourceDocumentRoles.has(role.key) &&
+      payload.clientTenantId === clientTenantId &&
+      clientSourceDocumentStatuses.has(payload.status);
+
+    if (clientSourceDocument) {
+      return {
+        visible: true,
+        reasonCode: "DEMO_CLIENT_SOURCE_DOCUMENT_PROJECTION",
+        reason: "Client-side document upload roles can view source document metadata without receiving internal evidence state.",
+        permission,
+        visibilityState: "SOURCE_DOCUMENT_AVAILABLE",
+        payload: {
+          id: payload.id,
+          title: payload.title,
+          documentType: payload.documentType,
+          fileName: payload.fileName,
+          fileSizeBytes: payload.fileSizeBytes,
+          sensitivity: payload.sensitivity,
+          status: payload.status,
+          uploadedAt: payload.uploadedAt,
+        },
+        hiddenFields,
+      };
+    }
 
     if (!clientSafeDocument) {
       return {

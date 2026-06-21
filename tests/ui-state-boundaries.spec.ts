@@ -23,7 +23,7 @@ test.describe("Phase 03 UI state boundaries", () => {
   test("document upload state keeps upload separate from evidence sufficiency", async ({ page }) => {
     await page.goto("/documents/upload");
 
-    await expect(page.getByText("Ready")).toBeVisible();
+    await expect(page.getByText("Ready", { exact: true })).toBeVisible();
     await expect(page.getByText("Select a file to start document intake.")).toBeVisible();
     await expect(page.getByText("Extraction Pipeline")).toBeVisible();
     await expect(page.getByText("Your document will be scanned, validated and queued for human extraction review.")).toBeVisible();
@@ -41,7 +41,7 @@ test.describe("Phase 03 UI state boundaries", () => {
     await page.goto("/export/demo/preview?state=approval");
     await expect(page.getByRole("dialog", { name: "Approve Export Package" })).toBeVisible();
     await expect(page.getByText("Approval confirmation")).toBeVisible();
-    await expect(page.getByText("This demo approval records the approval step only. Download, share and client acceptance remain separate.")).toBeVisible();
+    await expect(page.getByText("This demo approval records the approval step and creates metadata-only package proof. Download, share and client acceptance remain separate.")).toBeVisible();
   });
 
   test("export delivery state does not imply client acceptance", async ({ page }) => {
@@ -68,7 +68,7 @@ test.describe("Phase 05 feedback no-overclaim boundaries", () => {
     await expect(page.getByRole("dialog", { name: "Approve Export Package" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Confirm Export Approval" })).toBeVisible();
     await expect(page.getByText("Generation, download and share remain separate controlled steps.")).toBeVisible();
-    await expect(page.getByText("This demo approval records the approval step only.")).toBeVisible();
+    await expect(page.getByText("This demo approval records the approval step and creates metadata-only package proof.")).toBeVisible();
   });
 
   test("audit-sensitive feedback states audit requirements rather than claiming persistence", async ({ page }) => {
@@ -84,7 +84,8 @@ test.describe("Phase 05 feedback no-overclaim boundaries", () => {
 
     await expect(page.getByText("The decision has been recorded for review. Audit persistence remains a controlled gate.")).toBeVisible();
     await expect(page.getByText("Recorded for Review", { exact: true })).toBeVisible();
-    await expect(page.getByText("Audit gate pending")).toBeVisible();
+    await expect(page.getByText("Persisted Audit Record")).toBeVisible();
+    await expect(page.getByText("Compliance release and evidence controls remain the source of client visibility.")).toBeVisible();
     await expect(page.getByText("Evidence Package Queued")).toBeVisible();
     await expect(page.getByText("Evidence sufficiency still requires review and release gates.")).toBeVisible();
     await expect(page.getByText("immutable audit trail")).toHaveCount(0);
@@ -115,8 +116,9 @@ test.describe("Phase 05 feedback no-overclaim boundaries", () => {
 
     await page.goto("/export/demo/download");
     await expect(page.getByText("Prepared")).toBeVisible();
-    await expect(page.getByText("8.7 MB demo package metadata, delivery action pending")).toBeVisible();
-    await expect(page.getByText("Audit logging still requires confirmation")).toBeVisible();
+    await expect(page.getByText("8.7 MB metadata-only manifest package, delivery action pending")).toBeVisible();
+    await expect(page.getByText("Binary status")).toBeVisible();
+    await expect(page.getByText("Metadata-only", { exact: true })).toBeVisible();
     await expect(page.getByText("downloaded May 21, 2025 09:45")).toHaveCount(0);
     await expect(page.getByText("Demo package scan marked clear")).toHaveCount(0);
   });

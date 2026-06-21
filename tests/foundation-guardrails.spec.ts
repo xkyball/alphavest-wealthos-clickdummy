@@ -64,6 +64,7 @@ test.describe("Phase 01 foundation guardrails", () => {
 
     expect(apiRouteFiles("app/api")).toEqual([
       "app/api/demo-workflow/route.ts",
+      "app/api/documents/review/route.ts",
       "app/api/documents/route.ts",
       "app/api/documents/upload/route.ts",
       "app/api/review-monitoring/route.ts",
