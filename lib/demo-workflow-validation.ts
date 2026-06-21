@@ -19,6 +19,7 @@ export type RecommendationReviewWorkflowRequestInput = {
   confirmationText?: string;
   evidenceIds?: string[];
   reason?: string;
+  simulateAuditPersistenceFailure?: boolean;
   targetId: string;
   workflowType: "recommendation-review";
 };
@@ -196,6 +197,17 @@ export function parseDemoWorkflowRequestBody(body: unknown): ValidationResult<De
     }
 
     if (
+      "simulateAuditPersistenceFailure" in record &&
+      typeof record.simulateAuditPersistenceFailure !== "boolean"
+    ) {
+      issues.push({
+        code: "invalid_audit_persistence_simulation",
+        field: "simulateAuditPersistenceFailure",
+        message: "Audit persistence simulation must be a boolean when provided.",
+      });
+    }
+
+    if (
       evidenceIds !== undefined &&
       (!Array.isArray(evidenceIds) ||
         !evidenceIds.every((evidenceId) => typeof evidenceId === "string" && uuidPattern.test(evidenceId)))
@@ -219,6 +231,9 @@ export function parseDemoWorkflowRequestBody(body: unknown): ValidationResult<De
         ...(confirmationText ? { confirmationText } : {}),
         ...(Array.isArray(evidenceIds) ? { evidenceIds } : {}),
         ...(reason ? { reason } : {}),
+        ...(record.simulateAuditPersistenceFailure === true
+          ? { simulateAuditPersistenceFailure: true }
+          : {}),
         targetId: targetId as string,
         workflowType: "recommendation-review",
       },

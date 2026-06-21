@@ -559,6 +559,41 @@ test.describe("demo workflow API", () => {
         where: { id: demoTargets.summit.recommendationId },
       });
 
+      const auditFailureResponse = await request.post("/api/demo-workflow", {
+        data: {
+          action: "compliance_release",
+          actorRole: "compliance_officer",
+          confirmationText: "RELEASE TO CLIENT",
+          evidenceIds: [demoTargets.summit.evidenceId],
+          reason: "Simulate audit persistence failure before release.",
+          simulateAuditPersistenceFailure: true,
+          targetId: demoTargets.summit.recommendationId,
+          workflowType: "recommendation-review",
+        },
+      });
+      const auditFailureBody = await auditFailureResponse.json();
+
+      expect(auditFailureResponse.status(), JSON.stringify(auditFailureBody)).toBe(409);
+      expect(auditFailureBody.noClientRelease).toBe(true);
+      expect(auditFailureBody.mutated).toBe(false);
+      expect(auditFailureBody.gateMissing).toContain("audit_persistence");
+      expect(auditFailureBody.releasePreconditions.auditReady).toBe(false);
+
+      const auditBlockedRecommendation = await prisma.recommendation.findUniqueOrThrow({
+        where: { id: demoTargets.summit.recommendationId },
+      });
+      const auditBlockedComplianceReview = await prisma.complianceReview.findFirstOrThrow({
+        where: {
+          targetId: demoTargets.summit.recommendationId,
+          targetType: ObjectType.RECOMMENDATION,
+        },
+      });
+
+      expect(auditBlockedRecommendation.clientVisible).toBe(false);
+      expect(auditBlockedRecommendation.status).toBe(RecommendationStatus.ADVISOR_APPROVED);
+      expect(auditBlockedComplianceReview.status).not.toBe(ComplianceStatus.RELEASED);
+      expect(auditBlockedComplianceReview.releasedAt).toBeNull();
+
       const releaseResponse = await request.post("/api/demo-workflow", {
         data: {
           action: "compliance_release",
@@ -576,6 +611,15 @@ test.describe("demo workflow API", () => {
       expect(releaseBody.noClientRelease).toBe(false);
       expect(releaseBody.result.gatePassed).toBe(true);
       expect(releaseBody.result.gateMissing).toEqual([]);
+      expect(releaseBody.result.clientProjection.visible).toBe(true);
+      expect(releaseBody.result.clientProjection.reasonCode).toBe("DEMO_CLIENT_SAFE_PROJECTION");
+      expect(releaseBody.result.clientProjection.payload).toEqual({
+        clientSummary: "Compliance-ready client summary for a released liquidity governance next step.",
+      });
+      expect(releaseBody.result.clientProjection.hiddenFields).toContain("clientSummaryDraft");
+      expect(releaseBody.result.clientProjection.payload).not.toHaveProperty("clientSummaryDraft");
+      expect(releaseBody.result.clientProjection.payload).not.toHaveProperty("internalRationale");
+      expect(releaseBody.result.clientProjection.payload).not.toHaveProperty("complianceNotes");
       expect(releaseBody.result.releasePreconditions).toMatchObject({
         advisorApproval: true,
         auditReady: true,
@@ -699,6 +743,24 @@ test.describe("demo workflow API", () => {
 
       expect(wrongActionResponse.status(), JSON.stringify(wrongActionBody)).toBe(400);
       expect(wrongActionBody.issues?.[0]?.field).toBe("action");
+
+      const invalidAuditSimulationResponse = await request.post("/api/demo-workflow", {
+        data: {
+          action: "compliance_release",
+          actorRole: "compliance_officer",
+          confirmationText: "RELEASE TO CLIENT",
+          simulateAuditPersistenceFailure: "yes",
+          targetId: demoTargets.summit.recommendationId,
+          workflowType: "recommendation-review",
+        },
+      });
+      const invalidAuditSimulationBody = await invalidAuditSimulationResponse.json();
+
+      expect(invalidAuditSimulationResponse.status(), JSON.stringify(invalidAuditSimulationBody)).toBe(400);
+      expect(invalidAuditSimulationBody.issues?.[0]).toMatchObject({
+        code: "invalid_audit_persistence_simulation",
+        field: "simulateAuditPersistenceFailure",
+      });
 
       const wrongObjectResponse = await request.post("/api/demo-workflow", {
         data: {

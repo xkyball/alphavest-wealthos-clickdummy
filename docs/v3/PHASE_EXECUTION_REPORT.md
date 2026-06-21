@@ -1,5 +1,80 @@
 # Phase Execution Report
 
+## MVP-FIRST-BUILD-PHASE-5 - Compliance Release And Client Projection Gates
+
+Date: 2026-06-21
+
+### Phase Completion Report
+
+- Phase: 5
+- Packages executed: `BP-07`, `BP-08`
+- Task IDs completed: `AV-FB-P5-BP07-T001`, `AV-FB-P5-BP07-T002`, `AV-FB-P5-BP07-T003`, `AV-FB-P5-BP07-T004`, `AV-FB-P5-BP08-T001`, `AV-FB-P5-BP08-T002`, `AV-FB-P5-BP08-T003`, `AV-FB-P5-BP08-T004`
+- Source of truth: `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md`
+- Files changed:
+  - `app/api/demo-workflow/route.ts`
+  - `lib/demo-workflow-mutation.ts`
+  - `lib/demo-workflow-validation.ts`
+  - `tests/demo-workflow-api.spec.ts`
+  - `docs/v3/PHASE_EXECUTION_REPORT.md`
+  - `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- Screenshot artifacts:
+  - `artifacts/phase5-compliance-client-projection/compliance-release-gate-desktop.png`
+  - `artifacts/phase5-compliance-client-projection/compliance-block-client-visibility-desktop.png`
+  - `artifacts/phase5-compliance-client-projection/documents-client-safe-workspace-desktop.png`
+  - `artifacts/phase5-compliance-client-projection/client-portal-visible-projection-desktop.png`
+
+### Implemented Phase 5 Behaviour
+
+- Added typed recommendation-review request support for an explicit audit-persistence outage simulation used only by the existing demo workflow API.
+- Hardened compliance release preconditions so unavailable audit persistence contributes `audit_persistence` to `gateMissing`, returns a 409 fail-closed response, skips mutation and keeps `clientVisible=false`.
+- Preserved compliance release as the only implemented client-release path; block and request-evidence states remain client-hidden and audit-sensitive.
+- Added a returned client recommendation projection on successful compliance release, using the existing visibility engine and a client role session.
+- Limited successful client projection payloads to allowlisted `clientSummary` content while hiding `clientSummaryDraft`, internal rationale and compliance notes.
+- Added API negative proof for invalid audit simulation payload shape so malformed requests fail validation before workflow mutation.
+- Kept all work inside existing API routes, schema fields and demo-session boundaries.
+
+### Validation Commands Run
+
+- `pnpm typecheck` - passed.
+- `PLAYWRIGHT_PORT=3116 pnpm test:workflow-api` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3117 pnpm test:workflow-gate` - passed, 11 tests.
+- `PLAYWRIGHT_PORT=3119 pnpm exec playwright test tests/document-upload-api.spec.ts` - passed, 7 tests.
+- `PLAYWRIGHT_PORT=3118 pnpm test:permissions` - environment failure from a parallel local webserver/port conflict; no assertion failure.
+- `PLAYWRIGHT_PORT=3120 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3121 pnpm test:file-export` - passed, 12 tests.
+- `pnpm lint` - passed.
+- `pnpm db:validate` - passed.
+- `pnpm build` - passed with existing Turbopack tracing warnings in `lib/document-storage-adapter.ts`.
+- `PLAYWRIGHT_PORT=3122 pnpm test:playwright` - passed, 244 tests.
+- Screenshot capture through the local Next server on port `3123` - captured four viewport screenshots under `artifacts/phase5-compliance-client-projection/`.
+
+### Positive P0 Proof
+
+- Compliance release succeeds only after advisor approval, accepted scoped evidence, payload readiness, permission and audit-readiness gates align.
+- Successful release returns a visible client-safe recommendation projection produced through the visibility engine.
+- Client projection exposes only `clientSummary`; internal draft, rationale and compliance review fields stay hidden.
+- Existing document and export projection suites continue to prove redacted/fail-closed client payload behavior.
+
+### Negative P0 Proof
+
+- Simulated audit persistence failure blocks compliance release before mutation, with no client release and no `releasedAt`.
+- Advisor approval remains insufficient for release without compliance release and audit-ready preconditions.
+- Malformed audit simulation input fails request validation.
+- Existing permission, workflow-gate, P0 and client-visibility tests continue to block cross-tenant, wrong-role, internal-only and unreleased payload leakage.
+
+### Screenshot Proof
+
+| Artifact | Status | Notes |
+| --- | --- | --- |
+| `artifacts/phase5-compliance-client-projection/compliance-release-gate-desktop.png` | captured | Compliance Release modal shows release preconditions and client-safe preview candidate. |
+| `artifacts/phase5-compliance-client-projection/compliance-block-client-visibility-desktop.png` | captured | Compliance Block / Request Evidence modal shows advice blocked from client visibility. |
+| `artifacts/phase5-compliance-client-projection/documents-client-safe-workspace-desktop.png` | captured | Documents workspace shows document guidance and intake state without sufficiency overclaim. |
+| `artifacts/phase5-compliance-client-projection/client-portal-visible-projection-desktop.png` | captured | Client portal route rendered as additional client-workspace visual proof. |
+
+### Exit Gate Decision
+
+`PHASE_EXIT_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
 ## MVP-FIRST-BUILD-PHASE-4 - Internal AI Draft And Advisor Approval Gates
 
 Date: 2026-06-21

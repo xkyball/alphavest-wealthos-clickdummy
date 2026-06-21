@@ -24,10 +24,12 @@ import {
   type RecommendationReviewWorkflowAction,
 } from "@/lib/demo-workflow-validation";
 import { permissionEngine } from "@/lib/permission-engine";
+import { visibilityEngine, type RecommendationPayloadProjection } from "@/lib/visibility-engine";
 import { workflowGate } from "@/lib/workflow-gate";
 import type {
   ObjectType as DomainObjectType,
   PermissionAction,
+  RecommendationStatus as DomainRecommendationStatus,
   Sensitivity,
   VisibilityStatus as DomainVisibilityStatus,
   WorkflowStatus,
@@ -59,6 +61,7 @@ type DemoWorkflowMutationInput = {
 type RecommendationReviewWorkflowInput = {
   action: RecommendationReviewWorkflowAction;
   actorRoleKey: DemoRoleKey;
+  auditPersistenceAvailable?: boolean;
   confirmationText?: string;
   evidenceIds?: string[];
   reason?: string;
@@ -119,6 +122,7 @@ type RecommendationReviewWorkflowResult = {
     requiresAudit: boolean;
     requiresComplianceReview: boolean;
   };
+  clientProjection: RecommendationPayloadProjection | null;
   releasePreconditions: ComplianceReleasePreconditions | null;
   reloadedState: RecommendationReviewState;
   workflowType: "recommendation-review";
@@ -508,12 +512,13 @@ function evaluateComplianceReleasePreconditions(input: {
   permissionAllowed: boolean;
   payloadReady: boolean;
   targetId: string;
+  auditReady?: boolean;
 }) {
   const selectedEvidence = acceptedScopedEvidenceRecords(input.evidenceRecords, input.targetId)[0] ?? null;
 
   const preconditions: ComplianceReleasePreconditions = {
     advisorApproval: input.advisorApprovalStatus === ReviewStatus.APPROVED,
-    auditReady: true,
+    auditReady: input.auditReady ?? true,
     compliancePermission: input.permissionAllowed,
     evidenceAccepted: Boolean(selectedEvidence),
     evidenceProvided: input.evidenceRecords.length > 0,
@@ -552,6 +557,37 @@ function evaluateComplianceReleasePreconditions(input: {
   }
 
   return preconditions;
+}
+
+function buildClientRecommendationProjection(input: {
+  clientSummaryDraft: string | null;
+  clientTenantId: string;
+  clientVisible: boolean;
+  id: string;
+  status: string;
+  tenantSlug: DemoTenantSlug;
+}) {
+  const clientSession = requireDemoSession({
+    roleKey: "principal",
+    tenantSlug: input.tenantSlug,
+  });
+
+  return visibilityEngine.projectRecommendationPayload(
+    clientSession.actor,
+    clientSession.role,
+    {
+      clientSummary: input.clientSummaryDraft,
+      clientSummaryDraft: input.clientSummaryDraft,
+      clientTenantId: input.clientTenantId,
+      clientVisible: input.clientVisible,
+      objectId: input.id,
+      recommendationStatus: input.status as DomainRecommendationStatus,
+      sensitivity: "CONFIDENTIAL",
+      visibilityStatus: input.clientVisible ? "CLIENT_VISIBLE" : "COMPLIANCE_VISIBLE",
+    },
+    demoPlatformTenantId,
+    input.clientTenantId,
+  );
 }
 
 async function reloadRecommendationReviewState(
@@ -703,6 +739,7 @@ export async function runRecommendationReviewWorkflowMutation(
         action: input.action,
         auditEventId: audit.id,
         auditRows: 1,
+        clientProjection: null,
         clientVisible: reloadedState.recommendation.clientVisible,
         gateMissing: ["permission_check"],
         gatePassed: false,
@@ -963,6 +1000,7 @@ export async function runRecommendationReviewWorkflowMutation(
     if (input.action === "compliance_release") {
       releasePreconditions = evaluateComplianceReleasePreconditions({
         advisorApprovalStatus: advisorApproval.status,
+        auditReady: input.auditPersistenceAvailable !== false,
         evidenceRecords,
         permissionAllowed: permission.allowed,
         payloadReady: hasReleaseReadyPayload(recommendation),
@@ -1049,11 +1087,23 @@ export async function runRecommendationReviewWorkflowMutation(
       },
     });
     const reloadedState = await reloadRecommendationReviewState(tx, input.targetId, input.evidenceIds);
+    const clientProjection =
+      input.action === "compliance_release"
+        ? buildClientRecommendationProjection({
+            clientSummaryDraft: recommendation.clientSummaryDraft,
+            clientTenantId: recommendation.clientTenantId,
+            clientVisible: reloadedState.recommendation.clientVisible,
+            id: recommendation.id,
+            status: reloadedState.recommendation.status,
+            tenantSlug,
+          })
+        : null;
 
     return {
       action: input.action,
       auditEventId: audit.id,
       auditRows: 1,
+      clientProjection,
       clientVisible: reloadedState.recommendation.clientVisible,
       gateMissing,
       gatePassed,

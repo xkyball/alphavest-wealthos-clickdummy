@@ -1,5 +1,60 @@
 # Implementation QA Report
 
+## MVP-FIRST-BUILD-PHASE-5 Implementation QA Addendum
+
+Date: 2026-06-21
+
+### Executive Decision
+
+`MVP_FIRST_BUILD_PHASE_5_QA_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Source of truth lock | Passed | Used `ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md` Phase 5 / `BP-07` and `BP-08` as the operative source. |
+| Compliance release authority | Passed | Client visibility is still released only through the compliance release workflow after gate alignment. |
+| Release preconditions | Passed | Advisor approval, scoped accepted evidence, payload readiness, compliance permission and audit readiness must all pass. |
+| Audit fail-closed behavior | Passed | Simulated audit persistence outage returns 409, sets `audit_persistence` as missing, skips mutation and keeps client visibility blocked. |
+| Client-safe projection | Passed | Successful release returns a visibility-engine projection visible to client role context with only allowlisted `clientSummary`. |
+| Internal field redaction | Passed | Tests assert `clientSummaryDraft`, internal rationale and compliance notes are absent from the client projection payload. |
+| Client leakage negatives | Passed | Full Playwright/P0/client-visibility suites continue to block unreleased, cross-tenant, wrong-role and internal-only payload access. |
+| No forbidden scope | Passed | No Prisma schema/migration, new API route, production auth provider, generated screen image or screen expansion was added. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | TypeScript completed cleanly. |
+| `PLAYWRIGHT_PORT=3116 pnpm test:workflow-api` | Passed | 13 API tests, including audit fail-closed release and client-safe projection assertions. |
+| `PLAYWRIGHT_PORT=3117 pnpm test:workflow-gate` | Passed | 11 service-level gate tests. |
+| `PLAYWRIGHT_PORT=3119 pnpm exec playwright test tests/document-upload-api.spec.ts` | Passed | 7 document API projection/fail-closed tests. |
+| `PLAYWRIGHT_PORT=3118 pnpm test:permissions` | Failed then rerun | Local parallel webserver/port conflict; not an assertion failure. |
+| `PLAYWRIGHT_PORT=3120 pnpm test:permissions` | Passed | 8 permission and deny-audit tests. |
+| `PLAYWRIGHT_PORT=3121 pnpm test:file-export` | Passed | 12 export/redaction tests. |
+| `pnpm lint` | Passed | ESLint completed cleanly. |
+| `pnpm db:validate` | Passed | Prisma schema remained valid; no schema or migration was changed. |
+| `pnpm build` | Passed with warnings | Existing Turbopack tracing warnings remain in `lib/document-storage-adapter.ts`. |
+| `PLAYWRIGHT_PORT=3122 pnpm test:playwright` | Passed | 244 tests. |
+| Screenshot capture | Passed | Captured four viewport screenshots under `artifacts/phase5-compliance-client-projection/`. |
+
+### Screenshot Proof
+
+| Artifact | Status | Notes |
+| --- | --- | --- |
+| `artifacts/phase5-compliance-client-projection/compliance-release-gate-desktop.png` | Captured | Compliance Release modal with release checklist and client-safe preview candidate. |
+| `artifacts/phase5-compliance-client-projection/compliance-block-client-visibility-desktop.png` | Captured | Compliance Block / Request Evidence modal showing blocked client visibility. |
+| `artifacts/phase5-compliance-client-projection/documents-client-safe-workspace-desktop.png` | Captured | Documents workspace with intake guidance and no sufficiency overclaim. |
+| `artifacts/phase5-compliance-client-projection/client-portal-visible-projection-desktop.png` | Captured | Client portal rendered as supporting client-workspace screenshot proof. |
+
+### Residual Risks
+
+- Phase 5 remains demo-data/providerless and does not claim production authentication, final investment/legal/tax advice, production audit immutability or final MVP readiness.
+- Audit persistence failure is exposed through an explicit typed demo simulation flag for testability, not through a production outage injection mechanism.
+- Client projection proof covers the implemented recommendation/document/export demo surfaces and existing test inventory; it is not a complete production visibility certification.
+- Screenshot proof verifies representative visible states, not full visual acceptance across every viewport.
+- `pnpm build` still reports pre-existing broad filesystem tracing warnings in `lib/document-storage-adapter.ts`; this phase did not alter that file.
+
 ## MVP-FIRST-BUILD-PHASE-4 Implementation QA Addendum
 
 Date: 2026-06-21

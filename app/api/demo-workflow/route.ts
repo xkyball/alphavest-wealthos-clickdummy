@@ -4060,6 +4060,8 @@ export async function POST(request: Request) {
       const result = await runRecommendationReviewWorkflowMutation(prisma, {
         action: parsedValue.action,
         actorRoleKey: parsedValue.actorRole as DemoRoleKey,
+        auditPersistenceAvailable:
+          parsedValue.simulateAuditPersistenceFailure === true ? false : undefined,
         confirmationText: parsedValue.confirmationText,
         evidenceIds: parsedValue.evidenceIds,
         reason: parsedValue.reason,
