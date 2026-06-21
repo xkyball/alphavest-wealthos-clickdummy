@@ -7332,3 +7332,78 @@ Executed `CODEX PHASE PROMPT - P10-P15` against the live app codebase. The sourc
 
 - `P15` is unsupported because the detail plan stops at `P14`.
 - P14 artefacts are derivative and QA-gated; they do not authorize P1-after-MVP, Hold, Reference-only or blind schema/API work.
+
+## WCL-WS00-WS05 - Control Layer Foundation / RBAC / Evidence / Workflow / Audit
+
+Date: 2026-06-21
+
+Source of truth: `/Users/chris/Downloads/ALPHAVEST_WEALTHOS_CONTROL_LAYER_33_SYSTEM_PROCESS_CODEX_TASK_PACK.md`
+
+### Scope
+
+Executed WS-00 through WS-05 as a real implementation pass for the generic WealthOS Control Layer spine. This run implemented shared Control-Layer result modules and wired them into existing safety-relevant service seams. No new screens, state-screens, images, Prisma migrations or route-scope reclassifications were created.
+
+### Completed Workstreams / Tasks
+
+- WS-00: Verified current repo scripts and existing target files/services for the control-layer run.
+- WS-01 / WCL-SP-001 / WCL-SP-002 / WCL-SHARED-001 / WCL-SHARED-002: Added typed `ActorContext` and tenant/object `ScopeResolution` modules with fail-closed denial objects.
+- WS-02 / WCL-SP-003 / WCL-SP-004 / WCL-SP-028 / WCL-SHARED-003 / WCL-SHARED-004: Added standardized `ControlPermissionDecision` and generic `VisibilityProjection` result objects.
+- WS-03 / WCL-SP-006..WCL-SP-010 / WCL-SHARED-005: Preserved existing upload/evidence lifecycle and added proof that uploaded/created evidence is not sufficient for release/export.
+- WS-04 / WCL-SP-011..WCL-SP-018 / WCL-SHARED-006: Routed generic and typed workflow mutations through ActorContext, ScopeResolution and ControlPermissionDecision.
+- WS-05 / WCL-SP-019 / WCL-SP-020 / WCL-SHARED-007: Added an `AuditGuard` wrapper result and proved audit persistence/minimum-field fail-closed behavior.
+
+### Changed Files
+
+- `lib/control-layer/actor-context.ts`
+- `lib/control-layer/scope-resolver.ts`
+- `lib/control-layer/permission-decision.ts`
+- `lib/control-layer/visibility-projection.ts`
+- `lib/control-layer/audit-guard.ts`
+- `lib/demo-workflow-mutation.ts`
+- `lib/document-upload-service.ts`
+- `tests/control-layer-actor-scope.spec.ts`
+- `tests/audit-fail-closed.spec.ts`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+### DB / Seed / API / Service Changes
+
+- DB/schema: no Prisma schema change and no migration.
+- Seed: no seed source change.
+- API: no new API route. Existing `/api/demo-workflow` and document upload behavior now passes through control-layer ActorContext/Scope/Permission metadata via service seams.
+- Services: `runDemoWorkflowMutation`, typed recommendation review mutation and `uploadDocument` now use the new ActorContext/Scope/Permission control-layer objects before safety mutations.
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `pnpm db:validate` - passed.
+- `pnpm exec playwright test tests/control-layer-actor-scope.spec.ts tests/audit-fail-closed.spec.ts` - passed, 8 tests.
+- `pnpm test:permissions` - passed, 8 tests.
+- `pnpm test:workflow-gate` - passed, 13 tests.
+- `pnpm test:document-upload-api` - passed, 8 tests.
+- `pnpm test:workflow-api` - first parallel run failed during concurrent `pnpm db:seed` with `users_platformTenantId_fkey`; sequential rerun passed, 15 tests.
+
+### Positive Acceptance
+
+- Mapped actor/tenant/role context resolves deterministically.
+- Compliance release permission can pass only with explicit tenant/object scope.
+- Existing workflow and upload mutations still pass targeted API suites after control-layer wiring.
+- Audit guard allows critical actions only when minimum fields and persistence are available.
+
+### Negative Acceptance
+
+- Unknown actor context returns a fail-closed denial with audit required.
+- Wrong tenant scope is denied before action/payload authority.
+- Upload-created evidence remains review-pending and blocks release/export sufficiency.
+- Audit persistence failure and missing minimum audit fields block critical actions.
+
+### Stop Rules / Deviations / Blockers
+
+- No stop rule was triggered for WS-00 through WS-05.
+- The failed first `test:workflow-api` run was a parallel seed collision, not an implementation failure; the sequential rerun passed.
+- WS-06+ client visibility/export/offboarding/fail-closed API envelope work remains future task-pack scope.
+
+### Exit Gate Decision
+
+`WCL_WS00_WS05_IMPLEMENTED_WITH_SEQUENTIAL_VALIDATION_PASS`

@@ -18,12 +18,15 @@ import {
   type DemoRoleKey,
   type DemoTenantSlug,
 } from "@/lib/demo-session";
+import { requireActorContext } from "@/lib/control-layer/actor-context";
+import { evaluateControlPermission } from "@/lib/control-layer/permission-decision";
+import { resolveTenantObjectScope } from "@/lib/control-layer/scope-resolver";
 import { auditService, AuditPersistenceRequiredError } from "@/lib/audit-service";
 import {
   recommendationReviewConfirmationText,
   type RecommendationReviewWorkflowAction,
 } from "@/lib/demo-workflow-validation";
-import { permissionEngine } from "@/lib/permission-engine";
+import type { PermissionDecision } from "@/lib/permission-engine";
 import { visibilityEngine, type RecommendationPayloadProjection } from "@/lib/visibility-engine";
 import { workflowGate } from "@/lib/workflow-gate";
 import type {
@@ -148,7 +151,7 @@ class RecommendationReviewWorkflowError extends Error {
 }
 
 type DemoWorkflowMutationHelpers = {
-  permission: Awaited<ReturnType<typeof permissionEngine.can>>;
+  permission: PermissionDecision;
   session: ReturnType<typeof requireDemoSession>;
 };
 
@@ -171,34 +174,43 @@ export async function runDemoWorkflowMutation<T extends Record<string, unknown>>
     helpers: DemoWorkflowMutationHelpers,
   ) => Promise<T>,
 ): Promise<DemoWorkflowMutationResult<T>> {
-  const session = requireDemoSession({
+  const actorContext = requireActorContext({
     roleKey: input.actorRoleKey,
     tenantSlug: input.tenantSlug,
   });
+  const session = actorContext.session;
   const permissionObjectType = input.permissionObjectType ?? (input.targetType as DomainObjectType);
-  const permission = await permissionEngine.can(
-    session.actor,
-    input.permissionAction,
-    {
-      objectId: input.targetId,
-      objectType: permissionObjectType,
-      sensitivity: input.sensitivity ?? "CONFIDENTIAL",
-      clientTenantId: input.clientTenantId,
-      visibilityStatus: input.visibilityStatus ?? "COMPLIANCE_VISIBLE",
-      workflowState: input.workflowState,
-    },
-    {
-      platformTenantId: input.platformTenantId ?? demoPlatformTenantId,
-      clientTenantId: input.clientTenantId,
-      objectScope: {
-        clientTenantId: input.clientTenantId,
-        objectIds: [input.targetId],
-        objectType: permissionObjectType,
-      },
-      workflowState: input.workflowState,
-    },
-    session.role,
-  );
+  const subject = {
+    objectId: input.targetId,
+    objectType: permissionObjectType,
+    sensitivity: input.sensitivity ?? "CONFIDENTIAL",
+    clientTenantId: input.clientTenantId,
+    visibilityStatus: input.visibilityStatus ?? "COMPLIANCE_VISIBLE",
+    workflowState: input.workflowState,
+  } as const;
+  const scopeResolution = resolveTenantObjectScope(actorContext, {
+    allowedObjectIds: [input.targetId],
+    clientTenantId: input.clientTenantId,
+    objectId: input.targetId,
+    objectType: permissionObjectType,
+    requireObjectScope: true,
+  });
+  const permission = scopeResolution.allowed
+    ? evaluateControlPermission({
+        action: input.permissionAction,
+        actorContext,
+        objectScope: scopeResolution.objectScope,
+        subject,
+      })
+    : {
+        allowed: false,
+        demoMode: true as const,
+        reason: scopeResolution.reason,
+        reasonCode: scopeResolution.reasonCode,
+        requiresAudit: true,
+        requiresComplianceReview: false,
+        requiresSecondConfirmation: true,
+      };
   const platformTenantId = input.platformTenantId ?? demoPlatformTenantId;
 
   return prisma.$transaction(async (tx) => {
@@ -246,6 +258,7 @@ export async function runDemoWorkflowMutation<T extends Record<string, unknown>>
             demoMode: true,
             noRealAuth: true,
             permission,
+            scopeResolution,
             ...(input.metadataJson ?? {}),
           },
           nextState: input.previousState,
@@ -326,6 +339,7 @@ export async function runDemoWorkflowMutation<T extends Record<string, unknown>>
           demoMode: true,
           noRealAuth: true,
           permission,
+          scopeResolution,
           ...(input.metadataJson ?? {}),
         },
         nextState: input.nextState,
@@ -675,34 +689,42 @@ export async function runRecommendationReviewWorkflowMutation(
   }
 
   const tenantSlug = tenantSlugForId(recommendation.clientTenantId);
-  const session = requireDemoSession({
+  const actorContext = requireActorContext({
     roleKey: input.actorRoleKey,
     tenantSlug,
   });
+  const session = actorContext.session;
   const permissionAction = typedActionPermission(input.action);
-  const permission = permissionEngine.can(
-    session.actor,
-    permissionAction,
-    {
-      clientTenantId: recommendation.clientTenantId,
-      objectId: input.targetId,
-      objectType: "RECOMMENDATION",
-      sensitivity: "CONFIDENTIAL",
-      visibilityStatus: "COMPLIANCE_VISIBLE",
-      workflowState: "COMPLIANCE_PENDING",
-    },
-    {
-      clientTenantId: recommendation.clientTenantId,
-      objectScope: {
-        clientTenantId: recommendation.clientTenantId,
-        objectIds: [input.targetId],
-        objectType: "RECOMMENDATION",
-      },
-      platformTenantId: demoPlatformTenantId,
-      workflowState: "COMPLIANCE_PENDING",
-    },
-    session.role,
-  );
+  const scopeResolution = resolveTenantObjectScope(actorContext, {
+    allowedObjectIds: [input.targetId],
+    clientTenantId: recommendation.clientTenantId,
+    objectId: input.targetId,
+    objectType: "RECOMMENDATION",
+    requireObjectScope: true,
+  });
+  const permission = scopeResolution.allowed
+    ? evaluateControlPermission({
+        action: permissionAction,
+        actorContext,
+        objectScope: scopeResolution.objectScope,
+        subject: {
+          clientTenantId: recommendation.clientTenantId,
+          objectId: input.targetId,
+          objectType: "RECOMMENDATION",
+          sensitivity: "CONFIDENTIAL",
+          visibilityStatus: "COMPLIANCE_VISIBLE",
+          workflowState: "COMPLIANCE_PENDING",
+        },
+      })
+    : {
+        allowed: false,
+        demoMode: true as const,
+        reason: scopeResolution.reason,
+        reasonCode: scopeResolution.reasonCode,
+        requiresAudit: true,
+        requiresComplianceReview: false,
+        requiresSecondConfirmation: true,
+      };
   const roleAllowed = expectedTypedRole(input.action) === input.actorRoleKey;
   const deniedReason = roleAllowed
     ? permission.reason
@@ -737,6 +759,7 @@ export async function runRecommendationReviewWorkflowMutation(
             noRealAuth: true,
             permission,
             roleAllowed,
+            scopeResolution,
             workflowType: "recommendation-review",
           },
           nextState: recommendation.status,
@@ -1107,6 +1130,7 @@ export async function runRecommendationReviewWorkflowMutation(
           releasePreconditions,
           noRealAuth: true,
           permission,
+          scopeResolution,
           workflowType: "recommendation-review",
         },
         nextState: typedActionNextState(input.action),

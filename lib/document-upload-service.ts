@@ -12,9 +12,11 @@ import {
 } from "@prisma/client";
 
 import { requireDemoSession, demoPlatformTenantId, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { requireActorContext } from "@/lib/control-layer/actor-context";
+import { evaluateControlPermission } from "@/lib/control-layer/permission-decision";
+import { resolveTenantObjectScope } from "@/lib/control-layer/scope-resolver";
 import { localDocumentStorageAdapter } from "@/lib/document-storage-adapter";
 import { auditService, AuditPersistenceRequiredError } from "@/lib/audit-service";
-import { permissionEngine } from "@/lib/permission-engine";
 import { stableId } from "@/lib/stable-id";
 import { visibilityEngine } from "@/lib/visibility-engine";
 
@@ -213,32 +215,41 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
   const roleKey = input.roleKey;
   const sensitivity = input.sensitivity ?? Sensitivity.CONFIDENTIAL;
   const fileName = validateUploadInput(input);
-  const session = requireDemoSession({ roleKey, tenantSlug });
+  const actorContext = requireActorContext({ roleKey, tenantSlug });
+  const session = actorContext.session;
   const clientTenantId = session.tenant.id;
   const uploadAttemptId = stableId(`document-upload-attempt:${tenantSlug}:${roleKey}:${fileName}`);
-  const permission = permissionEngine.can(
-    session.actor,
-    "UPLOAD",
-    {
-      clientTenantId,
-      objectId: uploadAttemptId,
-      objectType: "DOCUMENT",
-      sensitivity,
-      visibilityStatus: "INTERNAL_ONLY",
-      workflowState: "AWAITING_INFO",
-    },
-    {
-      clientTenantId,
-      objectScope: {
-        clientTenantId,
-        objectIds: [uploadAttemptId],
-        objectType: "DOCUMENT",
-      },
-      platformTenantId: demoPlatformTenantId,
-      workflowState: "AWAITING_INFO",
-    },
-    session.role,
-  );
+  const uploadSubject = {
+    clientTenantId,
+    objectId: uploadAttemptId,
+    objectType: "DOCUMENT" as const,
+    sensitivity,
+    visibilityStatus: "INTERNAL_ONLY" as const,
+    workflowState: "AWAITING_INFO" as const,
+  };
+  const scopeResolution = resolveTenantObjectScope(actorContext, {
+    allowedObjectIds: [uploadAttemptId],
+    clientTenantId,
+    objectId: uploadAttemptId,
+    objectType: "DOCUMENT",
+    requireObjectScope: true,
+  });
+  const permission = scopeResolution.allowed
+    ? evaluateControlPermission({
+        action: "UPLOAD",
+        actorContext,
+        objectScope: scopeResolution.objectScope,
+        subject: uploadSubject,
+      })
+    : {
+        allowed: false,
+        demoMode: true as const,
+        reason: scopeResolution.reason,
+        reasonCode: scopeResolution.reasonCode,
+        requiresAudit: true,
+        requiresComplianceReview: false,
+        requiresSecondConfirmation: true,
+      };
 
   if (!permission.allowed || !uploadRoleAllowlist.has(roleKey)) {
     const reason = !uploadRoleAllowlist.has(roleKey)
@@ -295,6 +306,7 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
           noRealAuth: true,
           permission,
           roleAllowlist: [...uploadRoleAllowlist],
+          scopeResolution,
         },
         nextState: DocumentStatus.EMPTY,
         platformTenantId: demoPlatformTenantId,
@@ -444,6 +456,7 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
           mimeType: input.file.type,
           noRealAuth: true,
           permission,
+          scopeResolution,
           storageKey: storedObject.storageKey,
           versionId: version.id,
         },

@@ -5659,3 +5659,44 @@ Source of truth: `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`
 - P1-after-MVP, Hold and Reference-only surfaces remain blocked by the Do-Not-Implement register.
 - P14 artefacts are summaries of proven scope, not new implementation authority.
 - Visual screenshots are proof of rendered UI only; behavioral proof remains the Playwright/API test set.
+
+## WCL-WS00-WS05 QA Addendum
+
+Date: 2026-06-21
+
+Source of truth: `/Users/chris/Downloads/ALPHAVEST_WEALTHOS_CONTROL_LAYER_33_SYSTEM_PROCESS_CODEX_TASK_PACK.md`
+
+| Area | QA result | Evidence |
+| --- | --- | --- |
+| WS-00 repo/source baseline | Passed | `tests/control-layer-actor-scope.spec.ts` verifies required package scripts; target service files exist and were edited in place. |
+| WS-01 Actor/Tenant/Scope | Implemented and tested | `lib/control-layer/actor-context.ts`, `lib/control-layer/scope-resolver.ts`; unknown actor and wrong-tenant negatives pass. |
+| WS-02 RBAC/Payload Visibility | Implemented and tested | `lib/control-layer/permission-decision.ts`, `lib/control-layer/visibility-projection.ts`; route/action/object separation remains covered by `pnpm test:permissions`. |
+| WS-03 Document/Evidence Control | Preserved and reinforced | Existing `document-upload-service` path still passes `pnpm test:document-upload-api`; upload-created evidence remains not sufficient. |
+| WS-04 Workflow/Advice Boundary | Implemented through service seams | `runDemoWorkflowMutation` and typed recommendation review mutation use ActorContext/Scope/ControlPermission; `pnpm test:workflow-gate` and sequential `pnpm test:workflow-api` passed. |
+| WS-05 Audit Fail-Closed | Implemented and tested | `lib/control-layer/audit-guard.ts` plus `tests/audit-fail-closed.spec.ts`; audit persistence and minimum fields block critical action. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | `tsc --noEmit` completed successfully after all patches. |
+| `pnpm lint` | Passed | ESLint completed successfully. |
+| `pnpm db:validate` | Passed | Prisma schema is valid; no migration introduced. |
+| `pnpm exec playwright test tests/control-layer-actor-scope.spec.ts tests/audit-fail-closed.spec.ts` | Passed | 8 focused WCL tests. |
+| `pnpm test:permissions` | Passed | 8 tests. |
+| `pnpm test:workflow-gate` | Passed | 13 tests. |
+| `pnpm test:document-upload-api` | Passed | 8 tests. |
+| `pnpm test:workflow-api` | Failed then passed | Parallel run failed during concurrent seed with `users_platformTenantId_fkey`; sequential rerun passed 15 tests. |
+
+### Safety Proof
+
+- RBAC: Permission decisions remain route/action/object-scoped; admin non-bypass tests remain green.
+- Visibility: Generic projection object supports visible/redacted/hidden fields; existing client projection suites remain green.
+- Evidence: Upload-created evidence cannot satisfy release/export gates.
+- Workflow/advice boundary: Advisor approval and compliance release remain separated by workflow gates.
+- Audit: Critical action guard blocks on missing minimum fields or unavailable audit persistence.
+
+### QA Limits
+
+- WS-06 through WS-12 were not executed in this pass.
+- This run did not add production authentication, production advice, new routes, new APIs, screen generation, image generation, Prisma migrations or export binary generation.
