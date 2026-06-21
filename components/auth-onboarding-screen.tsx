@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, Modal, StatePanel, StatusChip, WizardStepper } from "@/components/ui";
 import {
   authSecurityFeatures,
@@ -68,6 +68,56 @@ const primaryButtonClass =
 
 const secondaryButtonClass =
   "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/50 px-5 text-sm font-semibold text-alphavest-ivory transition hover:border-alphavest-gold/60 hover:text-alphavest-gold-soft";
+
+const dummyAuthStorageKey = "alphavest.dummyAuth.v1";
+
+type DummyAuthStorage = {
+  email: string;
+  inviteToken?: string;
+  nextStep?: string;
+};
+
+type DummyAuthResponse = {
+  ok: boolean;
+  challengeId?: string;
+  error?: string;
+  nextStep?: "mfa_required" | "invite_acceptance_required" | "denied";
+  reasonCode?: string;
+  result?: {
+    accepted?: boolean;
+    session?: {
+      displayName: string;
+      email: string;
+      roleName?: string;
+      tenantName?: string;
+    };
+  };
+  safeMessage?: string;
+  user?: {
+    displayName: string;
+    email: string;
+    inviteToken?: string;
+    roleName?: string;
+    tenantName?: string;
+  };
+};
+
+function readDummyAuthStorage(): DummyAuthStorage {
+  if (typeof window === "undefined") {
+    return { email: invitedUser.email };
+  }
+
+  try {
+    const stored = window.localStorage.getItem(dummyAuthStorageKey);
+    return stored ? { email: invitedUser.email, ...JSON.parse(stored) } : { email: invitedUser.email };
+  } catch {
+    return { email: invitedUser.email };
+  }
+}
+
+function writeDummyAuthStorage(value: DummyAuthStorage) {
+  window.localStorage.setItem(dummyAuthStorageKey, JSON.stringify(value));
+}
 
 function AlphaVestMark({ compact = false }: { compact?: boolean }) {
   return (
@@ -200,6 +250,37 @@ function PageStepper({ pageId }: { pageId: AuthOnboardingPageId }) {
 }
 
 function LoginPage() {
+  const [email, setEmail] = useState(invitedUser.email);
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [message, setMessage] = useState("Dummy provider checks DB users and role assignments before continuing.");
+
+  async function startLogin() {
+    setStatus("submitting");
+    setMessage("Checking DB-backed dummy provider access...");
+
+    const response = await fetch("/api/auth/dummy", {
+      body: JSON.stringify({ action: "start_login", email }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    });
+    const body = (await response.json()) as DummyAuthResponse;
+
+    if (!response.ok || !body.ok || !body.nextStep) {
+      setStatus("error");
+      setMessage(body.safeMessage ?? body.error ?? "Dummy provider could not continue this sign-in.");
+      return;
+    }
+
+    writeDummyAuthStorage({
+      email,
+      inviteToken: body.user?.inviteToken,
+      nextStep: body.nextStep,
+    });
+    setStatus("success");
+    setMessage(body.nextStep === "mfa_required" ? "DB user found. MFA challenge created." : "Invitation found. Continue onboarding.");
+    window.location.href = body.nextStep === "mfa_required" ? "/mfa" : "/onboarding/invite";
+  }
+
   return (
     <AuthCanvas>
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
@@ -214,7 +295,18 @@ function LoginPage() {
             </div>
           </CardHeader>
           <CardContent className="space-y-5">
-            <FieldShell icon="mail" label="Email address" value={invitedUser.email} />
+            <label className="block">
+              <span className="text-sm font-semibold text-alphavest-ivory">Email address</span>
+              <span className="mt-2 flex h-[var(--field-height)] items-center gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-4 text-sm text-alphavest-muted">
+                <Mail aria-hidden="true" className="size-4 shrink-0 text-alphavest-gold-soft" />
+                <input
+                  aria-label="Email address"
+                  className="min-w-0 flex-1 bg-transparent text-alphavest-ivory outline-none placeholder:text-alphavest-subtle"
+                  onChange={(event) => setEmail(event.target.value)}
+                  value={email}
+                />
+              </span>
+            </label>
             <FieldShell actionIcon={<Eye aria-hidden="true" className="size-4 text-alphavest-muted" />} icon="lock" label="Password" value="demo-password" />
             <div className="flex items-center justify-between gap-3 text-sm">
               <label className="flex items-center gap-3 text-alphavest-muted">
@@ -223,10 +315,15 @@ function LoginPage() {
               </label>
               <span className="font-semibold text-alphavest-gold-soft">Forgot password?</span>
             </div>
-            <Link className={cn(primaryButtonClass, "w-full")} href="/mfa">
+            <button className={cn(primaryButtonClass, "w-full")} disabled={status === "submitting"} onClick={() => void startLogin()} type="button">
               <LockKeyhole aria-hidden="true" className="size-4" />
-              Sign in
-            </Link>
+              {status === "submitting" ? "Checking access" : "Sign in"}
+            </button>
+            <StatePanel
+              detail={message}
+              state={status === "error" ? "blocked" : status === "success" ? "success" : "restricted"}
+              title="Dummy provider"
+            />
             <div className="flex items-center gap-4 text-xs uppercase text-alphavest-subtle">
               <span className="h-px flex-1 bg-alphavest-border" />
               or
@@ -251,6 +348,37 @@ function LoginPage() {
 }
 
 function MfaPage() {
+  const [email, setEmail] = useState(invitedUser.email);
+  const [code, setCode] = useState("123456");
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [message, setMessage] = useState("Use the demo code 123456. The verification writes a DB audit event.");
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      setEmail(readDummyAuthStorage().email);
+    });
+  }, []);
+
+  async function verifyMfa() {
+    setStatus("submitting");
+    const response = await fetch("/api/auth/dummy", {
+      body: JSON.stringify({ action: "verify_mfa", code, email }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    });
+    const body = (await response.json()) as DummyAuthResponse;
+
+    if (!response.ok || !body.ok) {
+      setStatus("error");
+      setMessage(body.error ?? "MFA verification failed.");
+      return;
+    }
+
+    setStatus("success");
+    setMessage("MFA verified. Session context has been issued from DB role and tenant scope.");
+    window.location.href = "/portal";
+  }
+
   return (
     <AuthCanvas compactHeader>
       <div className="grid gap-6 lg:grid-cols-[0.7fr_1.35fr_0.95fr]">
@@ -293,23 +421,29 @@ function MfaPage() {
               </div>
               <div className="p-4">
                 <p className="text-sm text-alphavest-gold-soft">Open your authenticator app and enter the 6-digit code.</p>
-                <div className="mt-4 grid grid-cols-6 gap-2">
-                  {Array.from({ length: 6 }).map((_, index) => (
-                    <div className="grid aspect-square place-items-center rounded-md border border-alphavest-border bg-alphavest-navy/50 text-lg text-alphavest-muted" key={index}>
-                      {index === 0 ? "|" : "-"}
-                    </div>
-                  ))}
-                </div>
+                <input
+                  aria-label="MFA code"
+                  className="mt-4 h-12 w-full rounded-md border border-alphavest-border bg-alphavest-navy/50 px-4 text-center text-lg tracking-[0.3em] text-alphavest-ivory outline-none focus:border-alphavest-gold"
+                  inputMode="numeric"
+                  maxLength={6}
+                  onChange={(event) => setCode(event.target.value)}
+                  value={code}
+                />
               </div>
             </div>
             <label className="flex items-center gap-3 text-sm text-alphavest-muted">
               <span className="grid size-5 place-items-center rounded border border-alphavest-border bg-alphavest-navy/45" />
               Trust this device for 30 days
             </label>
-            <Link className={cn(primaryButtonClass, "w-full")} href="/onboarding/invite">
+            <button className={cn(primaryButtonClass, "w-full")} disabled={status === "submitting"} onClick={() => void verifyMfa()} type="button">
               <LockKeyhole aria-hidden="true" className="size-4" />
-              Verify
-            </Link>
+              {status === "submitting" ? "Verifying" : "Verify"}
+            </button>
+            <StatePanel
+              detail={message}
+              state={status === "error" ? "blocked" : status === "success" ? "success" : "restricted"}
+              title={`MFA for ${email}`}
+            />
             <button className={cn(secondaryButtonClass, "w-full justify-between")} type="button">
               <span>Send push notification</span>
               <ChevronRight aria-hidden="true" className="size-4" />
@@ -344,6 +478,14 @@ function MfaPage() {
 }
 
 function InvitePage() {
+  const [storedInvite, setStoredInvite] = useState<DummyAuthStorage>({ email: invitedUser.email });
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      setStoredInvite(readDummyAuthStorage());
+    });
+  }, []);
+
   return (
     <AuthCanvas>
       <PageStepper pageId="003" />
@@ -375,7 +517,7 @@ function InvitePage() {
             <Link className={cn(primaryButtonClass, "w-full justify-between")} href="/onboarding/identity">
               <span className="flex items-center gap-2">
                 <LockKeyhole aria-hidden="true" className="size-4" />
-                Accept invitation
+                Continue secure setup
               </span>
               <ArrowRight aria-hidden="true" className="size-4" />
             </Link>
@@ -394,6 +536,11 @@ function InvitePage() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
+            <StatePanel
+              detail={storedInvite.inviteToken ? `${storedInvite.email} has a DB-backed invite token ready for acceptance.` : `${storedInvite.email} can continue only after a valid DB invite is present.`}
+              state={storedInvite.inviteToken ? "success" : "restricted"}
+              title="DB invitation context"
+            />
             {["Verify your identity", "Set up your account", "Access your workspace"].map((item, index) => (
               <div className="flex gap-3" key={item}>
                 <div className="grid size-7 shrink-0 place-items-center rounded-full border border-alphavest-border text-xs text-alphavest-ivory">
@@ -598,10 +745,44 @@ function ConsentPage() {
 function RoleConfirmationPage() {
   const allowed = roleBoundaries.filter((item) => item.allowed);
   const denied = roleBoundaries.filter((item) => !item.allowed);
+  const [invite, setInvite] = useState<DummyAuthStorage>({ email: invitedUser.email });
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [message, setMessage] = useState("Role acceptance activates pending DB user roles and writes consent plus audit proof.");
   const scopes: Array<{ icon: AuthIconName; label: string; value: string }> = [
     { icon: "building", label: "Organization", value: invitedUser.tenant },
     { icon: "users", label: "Team", value: invitedUser.team }
   ];
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      setInvite(readDummyAuthStorage());
+    });
+  }, []);
+
+  async function acceptInvite() {
+    setStatus("submitting");
+    const response = await fetch("/api/auth/dummy", {
+      body: JSON.stringify({
+        action: "accept_invite",
+        consentAccepted: true,
+        email: invite.email,
+        token: invite.inviteToken,
+      }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    });
+    const body = (await response.json()) as DummyAuthResponse;
+
+    if (!response.ok || !body.ok) {
+      setStatus("error");
+      setMessage(body.error ?? "Invitation could not be accepted.");
+      return;
+    }
+
+    setStatus("success");
+    setMessage("Invitation accepted. User, role assignment, consent and audit state are now active in the DB.");
+    window.location.href = "/portal";
+  }
 
   return (
     <AuthCanvas compactHeader>
@@ -694,6 +875,11 @@ function RoleConfirmationPage() {
                 I have read and understood the role limitations and will use access responsibly.
               </label>
             </div>
+            <StatePanel
+              detail={message}
+              state={status === "error" ? "blocked" : status === "success" ? "success" : "restricted"}
+              title="DB-backed activation"
+            />
           </div>
 
           <div className="flex justify-between gap-3 border-t border-alphavest-border/60 pt-5 lg:col-span-3">
@@ -701,10 +887,10 @@ function RoleConfirmationPage() {
               <ArrowLeft aria-hidden="true" className="size-4" />
               Back
             </Link>
-            <Link className={cn(primaryButtonClass, "min-w-64")} href="/portal">
+            <button className={cn(primaryButtonClass, "min-w-64")} disabled={status === "submitting"} onClick={() => void acceptInvite()} type="button">
               <LockKeyhole aria-hidden="true" className="size-4" />
-              Confirm and continue
-            </Link>
+              {status === "submitting" ? "Activating access" : "Confirm and continue"}
+            </button>
           </div>
         </CardContent>
       </Card>

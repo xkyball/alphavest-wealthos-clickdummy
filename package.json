@@ -41,6 +41,7 @@
     "test:dbtf": "playwright test tests/dbtf-tables-api.spec.ts",
     "test:document-upload-api": "playwright test tests/document-upload-api.spec.ts",
     "test:document-upload-flow": "playwright test tests/document-upload-flow.spec.ts",
+    "test:dummy-auth": "playwright test tests/dummy-auth-provider.spec.ts",
     "test:e2e-journey-proof": "playwright test tests/e2e/e2e-journey-proof-ws00-ws05.spec.ts",
     "test:client-visibility": "playwright test tests/client-visibility-projection.spec.ts",
     "test:control-layer-p0": "playwright test tests/control-layer-p0-fixtures.spec.ts",

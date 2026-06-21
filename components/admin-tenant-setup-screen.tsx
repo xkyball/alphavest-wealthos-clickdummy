@@ -18,6 +18,7 @@ import {
   UserPlus,
   XCircle
 } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { useDemoSession } from "@/components/demo-session-provider";
@@ -61,7 +62,7 @@ import {
   tenantWizardSteps
 } from "@/lib/admin-tenant-setup-demo-data";
 import { cn } from "@/lib/cn";
-import { demoPlatformTenantId } from "@/lib/demo-session";
+import { demoPlatformTenantId, demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import type { AdminTenantSnapshot } from "@/lib/admin-tenant-readmodel-service";
 import { permissionEngine } from "@/lib/permission-engine";
 import type { ScreenRoute } from "@/lib/route-registry";
@@ -1173,7 +1174,68 @@ function PermissionChangeModal({ onClose, open }: { onClose: () => void; open: b
   );
 }
 
+type InviteApiResponse = {
+  error?: string;
+  ok: boolean;
+  reasonCode?: string;
+  result?: {
+    inviteToken: string;
+    user: {
+      email: string;
+      roleName?: string;
+      tenantName?: string;
+    };
+  };
+};
+
 function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolean }) {
+  const [email, setEmail] = useState("alex.morgan@claritycapital.com");
+  const [displayName, setDisplayName] = useState("Alex Morgan");
+  const [roleKey, setRoleKey] = useState<DemoRoleKey>("analyst");
+  const [tenantSlug, setTenantSlug] = useState<DemoTenantSlug>("summit");
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [message, setMessage] = useState("Invitation creates a DB user, pending role assignment and audit event.");
+  const [inviteToken, setInviteToken] = useState<string | null>(null);
+
+  async function sendInvitation() {
+    setStatus("submitting");
+    setInviteToken(null);
+    setMessage("Creating DB-backed invitation...");
+
+    const response = await fetch("/api/admin-tenants", {
+      body: JSON.stringify({
+        action: "invite_user",
+        actorRoleKey: "admin",
+        displayName,
+        email,
+        roleKey,
+        tenantSlug,
+      }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    });
+    const body = (await response.json()) as InviteApiResponse;
+
+    if (!response.ok || !body.ok || !body.result) {
+      setStatus("error");
+      setMessage(body.error ?? "Invitation could not be created.");
+      return;
+    }
+
+    window.localStorage.setItem(
+      "alphavest.dummyAuth.v1",
+      JSON.stringify({
+        email: body.result.user.email,
+        inviteToken: body.result.inviteToken,
+        nextStep: "invite_acceptance_required",
+      }),
+    );
+    setInviteToken(body.result.inviteToken);
+    setStatus("success");
+    setMessage(`${body.result.user.email} is now invited for ${body.result.user.roleName ?? roleKey} in ${body.result.user.tenantName ?? tenantSlug}.`);
+    void runScreencastDemoAction("j06.sendInvitation", "/onboarding/invite");
+  }
+
   return (
     <Drawer
       description="Send an invitation and assign access."
@@ -1184,12 +1246,11 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
             className={primaryButtonClass}
             data-testid="j06-send-invitation"
             onClick={() => {
-              void runScreencastDemoAction("j06.sendInvitation", "/onboarding/invite");
-              onClose();
+              void sendInvitation();
             }}
             type="button"
           >
-            <Send aria-hidden="true" className="size-4" />Send invitation
+            <Send aria-hidden="true" className="size-4" />{status === "submitting" ? "Sending" : "Send invitation"}
           </button>
         </div>
       }
@@ -1198,15 +1259,60 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
       title="Invite User"
     >
       <div className="space-y-4">
-        <FieldGrid
-          fields={[
-            { label: "Email address", value: "name@firm.com" },
-            { label: "Role", value: "Select a role" },
-            { label: "Scope", value: "Select scope" },
-            { label: "Expiry", value: "7 days" }
-          ]}
-        />
+        <label className="block">
+          <span className="text-sm font-semibold text-alphavest-ivory">Email address</span>
+          <input
+            className="mt-2 h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+            onChange={(event) => setEmail(event.target.value)}
+            value={email}
+          />
+        </label>
+        <label className="block">
+          <span className="text-sm font-semibold text-alphavest-ivory">Display name</span>
+          <input
+            className="mt-2 h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+            onChange={(event) => setDisplayName(event.target.value)}
+            value={displayName}
+          />
+        </label>
+        <div className="grid gap-3 md:grid-cols-2">
+          <label className="block">
+            <span className="text-sm font-semibold text-alphavest-ivory">Role</span>
+            <select
+              className="mt-2 h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+              onChange={(event) => setRoleKey(event.target.value as DemoRoleKey)}
+              value={roleKey}
+            >
+              {demoRoles.map((role) => (
+                <option key={role.key} value={role.key}>{role.label}</option>
+              ))}
+            </select>
+          </label>
+          <label className="block">
+            <span className="text-sm font-semibold text-alphavest-ivory">Tenant scope</span>
+            <select
+              className="mt-2 h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+              onChange={(event) => setTenantSlug(event.target.value as DemoTenantSlug)}
+              value={tenantSlug}
+            >
+              {demoTenants.map((tenant) => (
+                <option key={tenant.slug} value={tenant.slug}>{tenant.displayName}</option>
+              ))}
+            </select>
+          </label>
+        </div>
         <StatePanel detail="Roles with elevated permissions require additional confirmation before activation." state="restricted" title="Sensitive roles" />
+        <StatePanel
+          detail={message}
+          state={status === "error" ? "blocked" : status === "success" ? "success" : "restricted"}
+          title="DB-backed invitation"
+        />
+        {inviteToken ? (
+          <Link className={cn(secondaryButtonClass, "w-full justify-between")} data-testid="dummy-invite-link" href="/onboarding/invite">
+            Continue invite acceptance
+            <ArrowRight aria-hidden="true" className="size-4" />
+          </Link>
+        ) : null}
         <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-4">
           <p className="text-sm font-semibold text-alphavest-ivory">Message</p>
           <p className="mt-2 text-sm text-alphavest-muted">Add a personal invitation note in the production workflow.</p>
