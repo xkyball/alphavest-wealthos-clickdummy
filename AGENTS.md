@@ -6,12 +6,26 @@ Build AlphaVest WealthOS as a demo-data-first web application using Next.js, Rea
 ## Mandatory source of truth
 Read this before implementation:
 
+- `ALPHAVEST_DB_BACKED_TABLES_FORMS_CODEX_PROMPT_PACK.md` when the task is about DB-backed tables, lists, cards, search, filters, sorting, pagination, row actions, forms, input masks, wizards, seed data, metrics, charts, gauges or the DBTF phase sequence.
 - `ALPHAVEST_SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK.md`
 - `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_RELEASE_PHASE_PLAN.md`
 - `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`
 
+`ALPHAVEST_DB_BACKED_TABLES_FORMS_CODEX_PROMPT_PACK.md` is the operative Codex
+execution source of truth for focused DBTF work. For DBTF tasks it supersedes
+the broader SCF prompt pack as the active phase sequence and scope boundary.
+Its highest planning source is
+`ALPHAVEST_DB_BACKED_TABLES_FORMS_REALITY_REBASE_PLAN.md`; if that file is
+missing, report it as a blocker before doing DBTF feature edits. DBTF work must
+stay limited to DB-backed tables/lists/boards/card-lists, search/filter/sort/
+pagination, row actions and RBAC row filtering, forms/input masks/wizards, seed
+data, data-derived metrics/charts/gauges and focused tests. It does not
+authorize broad AlphaVest implementation, full advice/compliance/export
+architecture, new screens, screen/image/state-screen generation, production auth
+rebuilds, blind APIs, blind Prisma migrations or P1/Hold/Reference promotion.
+
 `ALPHAVEST_SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK.md` is the operative Codex
-execution source of truth from this point forward. It owns the phased Codex
+execution source of truth for broad SCF work outside the DBTF focus. It owns the phased Codex
 prompt sequence, phase entry/exit instructions, validation-discovery rules,
 reporting templates, Do-Not-Implement register and stop-after-phase workflow
 for implementation turns.
@@ -90,3 +104,15 @@ Produce or update:
 - list of changed files
 - tests run
 - unresolved risks / TODOs
+
+## Required reporting after each DBTF phase
+Produce or update the DBTF phase report required by
+`ALPHAVEST_DB_BACKED_TABLES_FORMS_CODEX_PROMPT_PACK.md`, including:
+
+- Phase ID `DBTF-Pxx`
+- completed workstream/task/subtask IDs
+- changed and inspected files
+- DB/seed/API/service changes
+- tests run and proof produced
+- positive and negative acceptance result
+- stop rules, deviations, blockers and next recommended phase
