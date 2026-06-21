@@ -4,6 +4,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { AuditResult, PrismaClient, UserStatus } from "@prisma/client";
 import { expect, test } from "@playwright/test";
 
+import { dummyAuthSessionCookieName } from "../lib/dummy-auth-session";
 import { dummyAuthMfaCode } from "../lib/dummy-auth-service";
 
 test.describe("Dummy DB auth provider, MFA and invitations", () => {
@@ -22,6 +23,25 @@ test.describe("Dummy DB auth provider, MFA and invitations", () => {
 
   test.afterAll(async () => {
     await prisma?.$disconnect();
+  });
+
+  test("requires a dummy auth session cookie before app routes render", async ({ page }) => {
+    await page.goto("/portal");
+    await expect(page).toHaveURL(/\/login\?returnTo=%2Fportal/);
+
+    await page.context().addCookies([
+      {
+        httpOnly: true,
+        name: dummyAuthSessionCookieName,
+        sameSite: "Lax",
+        url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3100",
+        value: "av-session-playwright-authenticated",
+      },
+    ]);
+
+    await page.goto("/portal");
+    await expect(page).toHaveURL(/\/portal$/);
+    await expect(page.getByRole("heading", { name: "Client Web Dashboard" })).toBeVisible();
   });
 
   test("denies unknown email without disclosing hidden rows", async ({ request }) => {
@@ -99,8 +119,10 @@ test.describe("Dummy DB auth provider, MFA and invitations", () => {
       },
     });
     const acceptBody = await acceptResponse.json();
+    const acceptCookie = acceptResponse.headers()["set-cookie"] ?? "";
 
     expect(acceptResponse.ok(), JSON.stringify(acceptBody)).toBe(true);
+    expect(acceptCookie).toContain(dummyAuthSessionCookieName);
     expect(acceptBody.result.accepted).toBe(true);
     expect(acceptBody.result.session.status).toBe(UserStatus.ACTIVE);
 
@@ -145,8 +167,10 @@ test.describe("Dummy DB auth provider, MFA and invitations", () => {
       data: { action: "verify_mfa", code: dummyAuthMfaCode, email },
     });
     const successBody = await successResponse.json();
+    const successCookie = successResponse.headers()["set-cookie"] ?? "";
 
     expect(successResponse.ok(), JSON.stringify(successBody)).toBe(true);
+    expect(successCookie).toContain(dummyAuthSessionCookieName);
     expect(successBody.result.sessionToken).toContain("av-session-");
     expect(successBody.result.session.email).toBe(email);
 

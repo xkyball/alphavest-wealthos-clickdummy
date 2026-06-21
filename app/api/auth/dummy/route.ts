@@ -6,7 +6,20 @@ import {
   startDummyProviderLogin,
   verifyDummyMfa,
 } from "@/lib/dummy-auth-service";
+import { dummyAuthSessionCookieName, dummyAuthSessionMaxAgeSeconds } from "@/lib/dummy-auth-session";
 import { prismaClient } from "@/lib/prisma";
+
+function setDummySessionCookie(response: NextResponse, sessionToken: string) {
+  response.cookies.set(dummyAuthSessionCookieName, sessionToken, {
+    httpOnly: true,
+    maxAge: dummyAuthSessionMaxAgeSeconds,
+    path: "/",
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+  });
+
+  return response;
+}
 
 function errorResponse(error: unknown) {
   if (error instanceof DummyAuthError) {
@@ -62,7 +75,7 @@ export async function POST(request: Request) {
     if (action === "verify_mfa") {
       const result = await verifyDummyMfa(prisma, payload);
 
-      return NextResponse.json({
+      return setDummySessionCookie(NextResponse.json({
         ok: true,
         result,
         safety: {
@@ -70,13 +83,14 @@ export async function POST(request: Request) {
           noClientRelease: true,
           productionAuthClaim: false,
         },
-      });
+      }), result.sessionToken);
     }
 
     if (action === "accept_invite") {
       const result = await acceptDummyInvite(prisma, payload);
+      const sessionToken = `av-session-${result.session.userId}`;
 
-      return NextResponse.json({
+      return setDummySessionCookie(NextResponse.json({
         ok: true,
         result,
         safety: {
@@ -84,7 +98,7 @@ export async function POST(request: Request) {
           noClientRelease: true,
           productionAuthClaim: false,
         },
-      });
+      }), sessionToken);
     }
 
     return NextResponse.json(

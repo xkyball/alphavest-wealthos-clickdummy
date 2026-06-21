@@ -6,7 +6,7 @@ Date: 2026-06-21
 
 ### Executive Decision
 
-`DUMMY_DB_AUTH_MFA_INVITE_QA_PASSED_WITH_DEMO_PROVIDER_LIMITS`
+`DUMMY_DB_AUTH_MFA_INVITE_QA_PASSED_WITH_MANDATORY_DEMO_LOGIN_GUARD`
 
 ### Quality Gate Review
 
@@ -15,8 +15,10 @@ Date: 2026-06-21
 | Source of truth lock | Passed | Used the DBTF/SCF prompt-pack boundary plus explicit user instruction for the focused dummy auth implementation. |
 | DB-backed provider identity | Passed | Dummy provider accepts only existing DB users with role context or DB invitations. Unknown email is denied without hidden-row disclosure. |
 | MFA proof | Passed | Known active DB user receives MFA challenge; wrong code is denied; deterministic demo code verifies and writes audit proof. |
+| Mandatory app login | Passed | `proxy.ts` redirects unauthenticated app-page visits to `/login?returnTo=...` and allows app pages after a valid demo session cookie exists. |
 | Admin invitation | Passed | Admin actor can create an invited DB user, pending role assignment and invitation audit event through `/api/admin-tenants`. |
 | Invite acceptance | Passed | Acceptance requires consent, activates the user and role assignment, creates consent proof and writes an audit event. |
+| Cookie issuance | Passed | Successful MFA verification and invite acceptance both set the HTTP-only dummy session cookie. |
 | Admin UX | Passed | Tenant user invitation drawer now captures email, display name, role and tenant scope and calls the real invite endpoint. |
 | Auth UX | Passed | Login, MFA, invite and role confirmation screens call the focused dummy-provider API. |
 | Forbidden scope | Passed | No Prisma migration, production IdP, production-auth claim, advice release, export bypass or P1/HOLD promotion was added. |
@@ -28,9 +30,9 @@ Date: 2026-06-21
 | --- | --- | --- |
 | `pnpm lint` | Passed | ESLint completed cleanly. |
 | `pnpm typecheck` | Passed | TypeScript completed cleanly. |
-| `pnpm build` | Passed | Build completed; existing Turbopack broad-file-trace warning remains in `lib/document-storage-adapter.ts`. |
+| `pnpm build` | Passed | Build completed with `proxy.ts`; existing Turbopack broad-file-trace warning remains in `lib/document-storage-adapter.ts`. |
 | `pnpm db:validate` | Passed | Prisma schema remained unchanged and valid. |
-| `PLAYWRIGHT_SKIP_WEB_SERVER=1 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3100 pnpm test:dummy-auth` | Passed | 4 tests covering unknown email, invite creation/acceptance, MFA and non-admin denial. |
+| `PLAYWRIGHT_PORT=3217 pnpm test:dummy-auth` | Passed | 5 tests on a fresh server covering mandatory login, unknown email, invite creation/acceptance, MFA and non-admin denial. |
 | `PLAYWRIGHT_SKIP_WEB_SERVER=1 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3100 pnpm test:permissions` | Passed | 8 adjacent permission-engine tests. |
 | Screenshot capture | Passed | Produced `login-dummy-provider.png` and `admin-user-invite-drawer.png`. |
 
@@ -39,19 +41,22 @@ Date: 2026-06-21
 | Proof Area | Status | Notes |
 | --- | --- | --- |
 | Existing DB user login | Passed | `cfo.bennett@example.demo` reaches MFA only after DB user and role context resolve. |
+| Mandatory page guard | Passed | `/portal` redirects to `/login?returnTo=%2Fportal` without cookie and renders with `alphavest_dummy_auth_session=av-session-*`. |
 | Unknown email privacy | Passed | Unknown email returns a generic denial and `hiddenRowsDisclosed: false`. |
 | MFA denial | Passed | Wrong code returns `DUMMY_AUTH_MFA_INVALID_CODE`. |
 | MFA success | Passed | Demo code returns session context, updates `lastLoginAt` and writes `auth.dummy.mfa.verified`. |
+| MFA cookie | Passed | Successful MFA response includes the dummy session cookie. |
 | Admin invite success | Passed | Admin actor creates an invited user plus pending `UserRole`. |
 | Non-admin invite denial | Passed | `next_gen` actor receives `DUMMY_INVITE_ACTOR_DENIED`. |
 | Consent gate | Passed | Invite acceptance without consent is blocked with `DUMMY_INVITE_CONSENT_REQUIRED`. |
 | Invite activation | Passed | Accepted invite activates `User`, `UserRole`, consent record and audit proof. |
+| Invite cookie | Passed | Successful invite acceptance response includes the dummy session cookie. |
 
 ### Residual Risks
 
 - MFA is deterministic demo MFA, not a real TOTP/WebAuthn/recovery-code implementation.
 - Invitation tokens are deterministic demo tokens derived from existing IDs, not one-time expiring production secrets.
-- Session token output is a demo token only and is not wired as a hardened cookie/session store.
+- Session token output is now enforced as an HTTP-only demo cookie for app-page access, but it is still not a signed production session store.
 - Full production auth, external IdP federation and account recovery remain explicitly outside this implementation.
 
 ## UI Clickflow Phase 06-10 QA Addendum

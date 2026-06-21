@@ -8,7 +8,7 @@ Date: 2026-06-21
 
 - Source of truth: `ALPHAVEST_DB_BACKED_TABLES_FORMS_CODEX_PROMPT_PACK.md`, `ALPHAVEST_SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK.md`, release-plan boundary and explicit user instruction for a complete dummy-provider implementation.
 - Requested scope: implement DB-backed dummy authentication with MFA, admin user invitation and invitation acceptance.
-- Result: `DUMMY_DB_AUTH_MFA_INVITE_IMPLEMENTED_WITH_DEMO_PROVIDER_BOUNDARY`.
+- Result: `DUMMY_DB_AUTH_MFA_INVITE_IMPLEMENTED_WITH_MANDATORY_DEMO_LOGIN_GUARD`.
 - Scope classification: focused implementation touching auth/onboarding/admin user-management paths; it does not claim production authentication readiness.
 - Product-code boundary: no Prisma schema change, no Prisma migration, no production IdP, no client-visible advice release, no export/compliance bypass and no P1/HOLD promotion.
 
@@ -16,8 +16,11 @@ Date: 2026-06-21
 
 - Added `lib/dummy-auth-service.ts` as the DB-backed provider service for login start, MFA verification, admin invitation and invite acceptance.
 - Added `/api/auth/dummy` for focused dummy-provider actions: `start_login`, `verify_mfa` and `accept_invite`.
+- Added `proxy.ts` as the app-route auth boundary: unauthenticated non-auth pages redirect to `/login?returnTo=...`; authenticated visits to `/login` and `/` redirect to `/portal`.
+- Added `lib/dummy-auth-session.ts` for the shared demo session cookie name, max age and token-shape guard.
 - Extended `/api/admin-tenants` with the `invite_user` action, backed by permission checks, user/role creation and audit events.
 - Reworked the auth login, MFA, invite and role-confirmation screens so they call the dummy provider instead of only navigating statically.
+- Set the HTTP-only demo session cookie after successful MFA verification or invite acceptance.
 - Reworked the admin tenant user invitation drawer so admins can invite a real DB user with email, display name, role and tenant scope.
 - Added `tests/dummy-auth-provider.spec.ts` and the `pnpm test:dummy-auth` script.
 - Produced screenshot proof at `artifacts/dummy-auth-provider/login-dummy-provider.png` and `artifacts/dummy-auth-provider/admin-user-invite-drawer.png`.
@@ -25,6 +28,8 @@ Date: 2026-06-21
 ### Changed Files
 
 - `lib/dummy-auth-service.ts`
+- `lib/dummy-auth-session.ts`
+- `proxy.ts`
 - `app/api/auth/dummy/route.ts`
 - `app/api/admin-tenants/route.ts`
 - `components/auth-onboarding-screen.tsx`
@@ -42,6 +47,7 @@ Date: 2026-06-21
 - New API route: `/api/auth/dummy`, explicitly scoped to the demo dummy provider.
 - Existing API route extension: `/api/admin-tenants` now supports `POST { action: "invite_user" }`.
 - Service changes: new `dummy-auth-service` creates and reads `User`, `UserRole`, `ConsentRecord` and `AuditEvent` records through existing Prisma models.
+- Route guard changes: `proxy.ts` enforces the demo auth session cookie before app pages render while leaving `/login`, `/mfa`, `/onboarding/*`, API routes and static assets available.
 - Security behavior: unknown email, missing role context, wrong MFA code, missing invite consent and non-admin invite attempts are denied without hidden-row disclosure.
 
 ### Validation Commands Run
@@ -50,7 +56,7 @@ Date: 2026-06-21
 - `pnpm typecheck` - passed.
 - `pnpm build` - passed; existing Turbopack broad-file-trace warning remains in `lib/document-storage-adapter.ts`.
 - `pnpm db:validate` - passed.
-- `PLAYWRIGHT_SKIP_WEB_SERVER=1 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3100 pnpm test:dummy-auth` - passed, 4 tests.
+- `PLAYWRIGHT_PORT=3217 pnpm test:dummy-auth` - passed, 5 tests on a fresh server, including mandatory-login route guard proof.
 - `PLAYWRIGHT_SKIP_WEB_SERVER=1 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3100 pnpm test:permissions` - passed, 8 tests.
 - Screenshot capture for `/login` and `/tenants/summit/users` invitation drawer - passed.
 
@@ -58,6 +64,7 @@ Date: 2026-06-21
 
 - Positive acceptance: PASS for existing DB email plus configured role producing MFA challenge, successful dummy MFA producing a session token, admin invitation creating DB user plus pending role, and invite acceptance activating user, role, consent and audit state.
 - Negative acceptance: PASS for unknown email denial, wrong MFA code denial, non-admin invite denial and consent-missing invite acceptance denial.
+- Mandatory login acceptance: PASS for `/portal` redirecting to `/login?returnTo=%2Fportal` without a demo session cookie and rendering only after a valid `av-session-*` demo cookie exists.
 - Admin UX acceptance: PASS for real invite form controls and a DB-backed invitation state panel.
 - Onboarding UX acceptance: PASS for login, MFA and invite/role-confirmation screens calling the focused dummy auth API.
 
@@ -65,7 +72,7 @@ Date: 2026-06-21
 
 - Preserved stop rules: no production auth rebuild, no external IdP, no Prisma migration and no compliance/advice/export boundary change.
 - Explicit deviation: a new focused API route was added because the user explicitly requested a complete dummy-provider implementation; it is bounded by safety metadata and tests and is not a blind production-auth route.
-- Known gap: this creates demo-grade MFA with a deterministic code (`123456`) and does not implement device binding, TOTP enrollment, recovery codes or real provider federation.
+- Known gap: this creates demo-grade MFA and a demo cookie guard with a deterministic code (`123456`); it does not implement device binding, TOTP enrollment, recovery codes, signed production sessions or real provider federation.
 - Next recommended phase: add an admin audit/log viewer slice for dummy auth events and, when authorized, replace deterministic MFA with a real enrollment ceremony behind the same service boundary.
 
 ## UI Clickflow Phase 06-10 - Client Visibility, Governance Safety, Export Separation And Guard-Only Routes
