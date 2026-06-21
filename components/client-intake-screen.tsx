@@ -40,7 +40,6 @@ import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-p
 import { DemoActorHandoffBar } from "@/components/demo-actor-handoff-bar";
 import { GlobalSearchBox } from "@/components/global-search-box";
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
-import { UxHubPanel } from "@/components/ux-hub-panel";
 import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
 import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
@@ -681,7 +680,7 @@ function ClientTopBar() {
   );
 }
 
-function ClientShell({ activePageId, children, hubPageId }: { activePageId: string; children: React.ReactNode; hubPageId?: string }) {
+function ClientShell({ activePageId, children }: { activePageId: string; children: React.ReactNode }) {
   return (
     <DemoSessionProvider>
       <div className="av-surface av-surface-client av-shell-grid">
@@ -690,7 +689,7 @@ function ClientShell({ activePageId, children, hubPageId }: { activePageId: stri
           <ClientTopBar />
           <DemoActorHandoffBar />
           <main className="px-4 py-6 md:px-6">
-            <ProductGuidanceContent hubPageId={hubPageId}>{children}</ProductGuidanceContent>
+            <ProductGuidanceContent>{children}</ProductGuidanceContent>
           </main>
         </div>
       </div>
@@ -731,7 +730,7 @@ function SafeClientBanner({ children = "No unapproved advice reaches the client.
 
 function PortalPage({ title }: { title: string }) {
   return (
-    <ClientShell activePageId="019" hubPageId="019">
+    <ClientShell activePageId="019">
       <PortalPageContent title={title} />
     </ClientShell>
   );
@@ -919,7 +918,6 @@ function MobileHomePage({ title }: { title: string }) {
     <DemoSessionProvider>
       <main className="av-surface av-surface-mobile px-4 py-5">
         <ScreenTitle>{title}</ScreenTitle>
-        <UxHubPanel pageId="020" />
         <div className="mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-[41rem] flex-col border-x border-alphavest-border/60 bg-alphavest-midnight/84 px-5 py-6 shadow-2xl sm:px-6 sm:py-7">
           <div className="flex items-center justify-between">
             <AlphaVestLogo compact />
@@ -1447,7 +1445,7 @@ const relationshipColumns: Array<DataTableColumn<(typeof relationshipRows)[numbe
 
 function EntitiesPage({ title }: { title: string }) {
   return (
-    <ClientShell activePageId="024" hubPageId="024">
+    <ClientShell activePageId="024">
       <EntitiesPageContent title={title} />
     </ClientShell>
   );

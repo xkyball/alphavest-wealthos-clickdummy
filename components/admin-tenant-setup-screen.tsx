@@ -1380,10 +1380,8 @@ export function AdminTenantSetupScreen({ route, visualState }: AdminTenantSetupS
     return <TenantUsersPage onInvite={() => setInviteDrawerOpen(true)} />;
   }
 
-  const hubPageId = route.pageId === "013" || route.pageId === "015" ? route.pageId : undefined;
-
   return (
-    <AppShell hubPageId={hubPageId}>
+    <AppShell>
       <div className="space-y-6">
         <PageHeader description={route.purpose} title={route.title} />
         {renderPage()}

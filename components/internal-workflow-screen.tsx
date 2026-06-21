@@ -465,7 +465,7 @@ function InternalTopBar() {
   );
 }
 
-function InternalShell({ activePageId, children, hubPageId }: { activePageId: string; children: React.ReactNode; hubPageId?: string }) {
+function InternalShell({ activePageId, children }: { activePageId: string; children: React.ReactNode }) {
   return (
     <DemoSessionProvider>
       <div className="av-surface av-surface-internal av-shell-grid">
@@ -474,7 +474,7 @@ function InternalShell({ activePageId, children, hubPageId }: { activePageId: st
           <InternalTopBar />
           <DemoActorHandoffBar />
           <main className="px-4 py-6 md:px-6">
-            <ProductGuidanceContent hubPageId={hubPageId}>{children}</ProductGuidanceContent>
+            <ProductGuidanceContent>{children}</ProductGuidanceContent>
           </main>
         </div>
       </div>
@@ -713,7 +713,7 @@ function SignalsPage({ title }: { title: string }) {
 
 function WorkbenchPage({ title }: { title: string }) {
   return (
-    <InternalShell activePageId="034" hubPageId="034">
+    <InternalShell activePageId="034">
       <ScreenTitle>{title}</ScreenTitle>
       <div className="mx-auto grid max-w-[112rem] gap-5 2xl:grid-cols-[1fr_22rem]">
         <section className="min-w-0 space-y-5">

@@ -297,7 +297,7 @@ function Phase12TopBar() {
   );
 }
 
-function Phase12Shell({ activePageId, children, hubPageId }: { activePageId: string; children: React.ReactNode; hubPageId?: string }) {
+function Phase12Shell({ activePageId, children }: { activePageId: string; children: React.ReactNode }) {
   return (
     <DemoSessionProvider>
       <div className="av-surface av-surface-internal av-shell-grid">
@@ -306,7 +306,7 @@ function Phase12Shell({ activePageId, children, hubPageId }: { activePageId: str
           <Phase12TopBar />
           <DemoActorHandoffBar />
           <main className="px-4 py-6 md:px-6">
-            <ProductGuidanceContent hubPageId={hubPageId}>{children}</ProductGuidanceContent>
+            <ProductGuidanceContent>{children}</ProductGuidanceContent>
           </main>
         </div>
       </div>
@@ -668,7 +668,7 @@ const decisionColumns: Array<DataTableColumn<(typeof decisionRows)[number]>> = [
 
 function DecisionsListPage({ title }: { title: string }) {
   return (
-    <Phase12Shell activePageId="043" hubPageId="043">
+    <Phase12Shell activePageId="043">
       <ScreenTitle>{title}</ScreenTitle>
       <div className="mx-auto max-w-[104rem] space-y-5">
         <PageHeading

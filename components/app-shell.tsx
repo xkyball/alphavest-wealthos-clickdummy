@@ -8,10 +8,9 @@ import { ProductGuidanceContent } from "@/components/product-guidance-panel";
 
 type AppShellProps = {
   children: React.ReactNode;
-  hubPageId?: string;
 };
 
-export function AppShell({ children, hubPageId }: AppShellProps) {
+export function AppShell({ children }: AppShellProps) {
   const [navigationOpen, setNavigationOpen] = useState(false);
 
   return (
@@ -21,7 +20,7 @@ export function AppShell({ children, hubPageId }: AppShellProps) {
         <div className="min-w-0">
           <TopBar onOpenNavigation={() => setNavigationOpen(true)} />
           <main className="min-w-0 px-4 py-5 md:px-6 lg:px-8 lg:py-7">
-            <ProductGuidanceContent hubPageId={hubPageId}>{children}</ProductGuidanceContent>
+            <ProductGuidanceContent>{children}</ProductGuidanceContent>
           </main>
         </div>
       </div>

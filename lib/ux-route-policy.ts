@@ -82,7 +82,7 @@ const workspaceByPageId = new Map<string, UxWorkspaceKey>(
 );
 
 const detailPageIds = new Set(["035", "037", "039", "040", "041", "042", "044", "045", "047", "057", "058"]);
-const hubPageIds = new Set(["013", "015", "019", "020", "024", "031", "034", "038", "043", "048", "054"]);
+const hubPageIds = new Set(["019", "020", "034", "038", "043", "048", "054"]);
 const modalPageIds = new Set(["002", "005", "007", "009", "010", "040", "041", "045", "049", "057", "058"]);
 const d1PageIds = new Set(["019", "020", "061", "062", "063"]);
 const d4PageIds = detailPageIds;
