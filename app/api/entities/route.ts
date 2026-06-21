@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { DbtfPermissionError, DbtfValidationError, saveDbtfEntityWizard } from "@/lib/dbtf-form-service";
 import { listDbtfEntities } from "@/lib/dbtf-table-service";
 import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import { prismaClient } from "@/lib/prisma";
@@ -64,4 +65,69 @@ export async function GET(request: Request) {
       { status: 500 },
     );
   }
+}
+
+export async function POST(request: Request) {
+  const body = await request.json().catch(() => undefined);
+  const payload = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
+  const parsedRoleKey = roleKeyFromValue(payload.roleKey);
+  const parsedTenantSlug = tenantSlugFromValue(payload.tenantSlug);
+  const mode = payload.action === "submit" ? "submit" : "save_draft";
+
+  if (!parsedTenantSlug || !parsedRoleKey) {
+    return NextResponse.json(
+      {
+        entity: null,
+        error: "Entity wizard is not available for this scope.",
+        mutated: false,
+        ok: false,
+        safety: { hiddenRowsDisclosed: false, scoped: false },
+      },
+      { status: 400 },
+    );
+  }
+
+  try {
+    const result = await saveDbtfEntityWizard(prismaClient(), parsedTenantSlug, parsedRoleKey, payload, mode);
+
+    return NextResponse.json({ ok: true, result, safety: { noClientRelease: true, scoped: true } });
+  } catch (error) {
+    if (error instanceof DbtfValidationError) {
+      return NextResponse.json(
+        { error: "Invalid entity wizard submission.", issues: error.issues, mutated: false, ok: false },
+        { status: 400 },
+      );
+    }
+
+    if (error instanceof DbtfPermissionError) {
+      return NextResponse.json(
+        {
+          auditEventId: error.auditEventId,
+          error: "Entity wizard submission denied.",
+          mutated: false,
+          noClientRelease: true,
+          ok: false,
+          reason: error.reason,
+        },
+        { status: 403 },
+      );
+    }
+
+    return NextResponse.json(
+      { error: "Entity wizard submission could not be saved.", mutated: false, ok: false },
+      { status: 500 },
+    );
+  }
+}
+
+function tenantSlugFromValue(value: unknown): DemoTenantSlug | undefined {
+  return typeof value === "string" && demoTenants.some((tenant) => tenant.slug === value)
+    ? (value as DemoTenantSlug)
+    : undefined;
+}
+
+function roleKeyFromValue(value: unknown): DemoRoleKey | undefined {
+  return typeof value === "string" && demoRoles.some((role) => role.key === value)
+    ? (value as DemoRoleKey)
+    : undefined;
 }

@@ -1,5 +1,56 @@
 # Implementation QA Report
 
+## DBTF-P04-P10 Implementation QA Addendum
+
+Date: 2026-06-21
+
+### Executive Decision
+
+`DBTF_P04_P10_QA_PASSED_WITH_DOCUMENTED_LIMITATIONS`
+
+### Quality Gate Review
+
+| Gate | Status | Notes |
+| --- | --- | --- |
+| Source of truth lock | Passed | Used the DBTF prompt pack and Reality Rebase Plan as operative scope for P04-P10. |
+| Row actions and RBAC | Passed | Family-member row saves require scoped role permission; limited `next_gen` mutation is denied with no mutation success. |
+| Profile form persistence | Passed | `/api/profile` validates, saves, reloads `UserProfile`, audits save/submit and returns no-client-release safety. |
+| Family edit persistence | Passed | `/api/family-members` PATCH validates, saves scoped `FamilyMember` fields, reloads and audits. |
+| Entity wizard lifecycle | Passed | `/api/entities` POST validates required fields, saves draft/submitted entity records and blocks invalid submit. |
+| Seed coverage | Passed | Existing deterministic seed covers required P04-P10 states; `pnpm db:seed` was rerun for deterministic proof data. |
+| Metric derivation | Passed | `/api/dashboard-metrics` derives readiness/evidence/action/compliance values from tenant-scoped DB rows. |
+| Focused tests | Passed | `pnpm test:dbtf` now covers 11 positive/negative cases across DB-backed tables, forms, RBAC, wizard and metrics. |
+| Static/defer discipline | Passed | Admin/export/ops wizard and metric surfaces were not promoted beyond authorized focus; global search remains static. |
+| Screenshot proof | Passed | Four screenshots captured under `artifacts/dbtf-p04-p10-screenshots/` after waiting for DBTF selector text. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm db:validate` | Passed | Prisma schema remained valid; no schema migration was added. |
+| `pnpm typecheck` | Passed | TypeScript completed cleanly. |
+| `pnpm lint` | Passed | ESLint completed cleanly. |
+| `pnpm test:dbtf` | Passed | 11 focused API tests, including validation, denied mutation, reload and metric derivation. |
+| `pnpm db:seed` | Passed | Restored deterministic demo rows after mutation tests for clean screenshot proof. |
+| `pnpm build` | Passed with warnings | Existing Turbopack tracing warnings remain in `lib/document-storage-adapter.ts`. |
+| Screenshot capture | Passed | CLI Playwright captured four full-page screenshots with route-specific DBTF wait selectors. |
+
+### Screenshot Proof
+
+| Artifact | Status | Notes |
+| --- | --- | --- |
+| `artifacts/dbtf-p04-p10-screenshots/portal-db-metrics.png` | Captured | Shows DB-derived readiness and evidence metric copy. |
+| `artifacts/dbtf-p04-p10-screenshots/profile-db-form.png` | Captured | Shows controlled profile form and DB-backed profile status. |
+| `artifacts/dbtf-p04-p10-screenshots/family-member-db-edit.png` | Captured | Shows controlled family-member edit/save panel. |
+| `artifacts/dbtf-p04-p10-screenshots/entity-wizard-db-backed.png` | Captured | Shows DB-backed wizard lifecycle and required field validation state. |
+
+### Residual Risks
+
+- This pass proves focused DBTF behaviour, not production identity, production audit immutability, full export architecture or regulated advice release.
+- Entity wizard persistence is intentionally limited to the core entity record; participants, ownership and evidence attachment remain later scope.
+- Broader Playwright/regression suites were not rerun after the focused DBTF pass; this QA relies on schema/type/lint plus focused DBTF tests.
+- Existing Turbopack tracing warnings in `lib/document-storage-adapter.ts` remain a known build-warning risk outside this DBTF scope.
+
 ## DBTF-P00-P03 Implementation QA Addendum
 
 Date: 2026-06-21

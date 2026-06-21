@@ -61,15 +61,12 @@ import {
   entityDetail,
   entityDocuments,
   entityParticipants,
-  entityWizardSteps,
   extractionFields,
   governancePreferences,
-  keyFamilyMembers,
   missingDocuments,
   mobilePriorityActions,
   portalActions,
   portalDecisions,
-  profileFields,
   relationshipNodes,
   relationshipRows,
   verificationEvidence
@@ -154,6 +151,7 @@ type FamilyMemberTableRow = {
   role: string;
   sensitivity: string;
   status: string;
+  taxResidency: string;
   year: string;
 };
 
@@ -166,6 +164,48 @@ type EntityTableRow = {
   risk: string;
   status: string;
   type: string;
+};
+
+type DbtfClientProfile = {
+  countryOfResidence: string;
+  dateOfBirth: string;
+  firstName: string;
+  id: string;
+  lastName: string;
+  phone: string;
+  relationshipLabel: string;
+  sensitivity: string;
+  source: string;
+  updatedAt: string;
+};
+
+type DbtfDashboardMetrics = {
+  cards: Array<{ label: string; tone: BadgeTone; value: string }>;
+  evidenceCoverage: number;
+  readiness: number;
+};
+
+type ProfileFormState = {
+  countryOfResidence: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  relationshipLabel: string;
+};
+
+type FamilyMemberFormState = {
+  displayName: string;
+  relationshipType: string;
+  taxResidency: string;
+};
+
+type EntityWizardFormState = {
+  entityType: string;
+  jurisdiction: string;
+  name: string;
+  ownerSummary: string;
+  registrationNumber: string;
+  riskRating: string;
 };
 
 function formatBytes(bytes: number) {
@@ -268,6 +308,98 @@ function sortByKey<T>(rows: T[], key: keyof T, direction: "asc" | "desc") {
   });
 }
 
+function useDbtfDashboardMetrics() {
+  const { session } = useDemoSession();
+  const tenantSlug = session.tenant.slug;
+  const roleKey = session.role.key;
+  const [metrics, setMetrics] = useState<DbtfDashboardMetrics | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      const response = await fetch(
+        `/api/dashboard-metrics?tenantSlug=${encodeURIComponent(tenantSlug)}&roleKey=${encodeURIComponent(roleKey)}`,
+        { cache: "no-store" },
+      );
+      const body = (await response.json()) as { metrics?: DbtfDashboardMetrics };
+
+      if (!cancelled) {
+        setMetrics(response.ok ? body.metrics ?? null : null);
+      }
+    }
+
+    void load().catch(() => {
+      if (!cancelled) {
+        setMetrics(null);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [roleKey, tenantSlug]);
+
+  return metrics;
+}
+
+function useDbtfClientProfile() {
+  const { session } = useDemoSession();
+  const tenantSlug = session.tenant.slug;
+  const roleKey = session.role.key;
+  const [profile, setProfile] = useState<DbtfClientProfile | null>(null);
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
+
+  const refresh = useCallback(async () => {
+    setLoadState("loading");
+
+    try {
+      const response = await fetch(
+        `/api/profile?tenantSlug=${encodeURIComponent(tenantSlug)}&roleKey=${encodeURIComponent(roleKey)}`,
+        { cache: "no-store" },
+      );
+      const body = (await response.json()) as { profile?: DbtfClientProfile };
+
+      if (!response.ok || !body.profile) {
+        throw new Error("Profile reload failed.");
+      }
+
+      setProfile(body.profile);
+      setLoadState("ready");
+    } catch {
+      setProfile(null);
+      setLoadState("error");
+    }
+  }, [roleKey, tenantSlug]);
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      void refresh();
+    });
+  }, [refresh]);
+
+  const save = useCallback(
+    async (form: ProfileFormState, action: "save_draft" | "submit_review") => {
+      const response = await fetch("/api/profile", {
+        body: JSON.stringify({ ...form, action, roleKey, tenantSlug }),
+        headers: { "Content-Type": "application/json" },
+        method: "PATCH",
+      });
+      const body = (await response.json()) as { issues?: string[]; result?: { profile?: DbtfClientProfile } };
+
+      if (!response.ok || !body.result?.profile) {
+        throw new Error(body.issues?.join(", ") || "Profile save failed.");
+      }
+
+      setProfile(body.result.profile);
+      return body.result.profile;
+    },
+    [roleKey, tenantSlug],
+  );
+
+  return { loadState, profile, refresh, save };
+}
+
 function useDbtfFamilyMembers() {
   const { session } = useDemoSession();
   const tenantSlug = session.tenant.slug;
@@ -275,43 +407,53 @@ function useDbtfFamilyMembers() {
   const [rows, setRows] = useState<FamilyMemberTableRow[]>([]);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
 
-  useEffect(() => {
-    let cancelled = false;
+  const refresh = useCallback(async () => {
+    setLoadState("loading");
 
-    async function load() {
-      setLoadState("loading");
+    try {
+      const response = await fetch(
+        `/api/family-members?tenantSlug=${encodeURIComponent(tenantSlug)}&roleKey=${encodeURIComponent(roleKey)}`,
+        { cache: "no-store" },
+      );
+      const body = (await response.json()) as { familyMembers?: FamilyMemberTableRow[] };
 
-      try {
-        const response = await fetch(
-          `/api/family-members?tenantSlug=${encodeURIComponent(tenantSlug)}&roleKey=${encodeURIComponent(roleKey)}`,
-          { cache: "no-store" },
-        );
-        const body = (await response.json()) as { familyMembers?: FamilyMemberTableRow[] };
-
-        if (!response.ok) {
-          throw new Error("Family member reload failed.");
-        }
-
-        if (!cancelled) {
-          setRows(body.familyMembers ?? []);
-          setLoadState("ready");
-        }
-      } catch {
-        if (!cancelled) {
-          setRows([]);
-          setLoadState("error");
-        }
+      if (!response.ok) {
+        throw new Error("Family member reload failed.");
       }
+
+      setRows(body.familyMembers ?? []);
+      setLoadState("ready");
+    } catch {
+      setRows([]);
+      setLoadState("error");
     }
-
-    void load();
-
-    return () => {
-      cancelled = true;
-    };
   }, [roleKey, tenantSlug]);
 
-  return { loadState, rows };
+  useEffect(() => {
+    queueMicrotask(() => {
+      void refresh();
+    });
+  }, [refresh]);
+
+  const save = useCallback(
+    async (id: string, form: FamilyMemberFormState) => {
+      const response = await fetch("/api/family-members", {
+        body: JSON.stringify({ ...form, id, roleKey, tenantSlug }),
+        headers: { "Content-Type": "application/json" },
+        method: "PATCH",
+      });
+      const body = (await response.json()) as { issues?: string[] };
+
+      if (!response.ok) {
+        throw new Error(body.issues?.join(", ") || "Family member save failed.");
+      }
+
+      await refresh();
+    },
+    [refresh, roleKey, tenantSlug],
+  );
+
+  return { loadState, refresh, rows, save };
 }
 
 function useDbtfEntities() {
@@ -597,6 +739,24 @@ function SafeClientBanner({ children = "No unapproved advice reaches the client.
 function PortalPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="019">
+      <PortalPageContent title={title} />
+    </ClientShell>
+  );
+}
+
+function PortalPageContent({ title }: { title: string }) {
+  const metrics = useDbtfDashboardMetrics();
+  const readiness = metrics?.readiness ?? clientWorkspace.readiness;
+  const evidenceCoverage = metrics?.evidenceCoverage ?? clientWorkspace.evidenceComplete;
+  const metricCards = metrics?.cards ?? [
+    { label: "DB readiness", tone: "green" as BadgeTone, value: `${clientWorkspace.readiness}%` },
+    { label: "Documents linked", tone: "blue" as BadgeTone, value: "loading" },
+    { label: "Open actions", tone: "gold" as BadgeTone, value: "loading" },
+    { label: "Compliance pending", tone: "red" as BadgeTone, value: "loading" },
+  ];
+
+  return (
+    <>
       <ScreenTitle>{title}</ScreenTitle>
       <div className="grid gap-5 xl:grid-cols-[1fr_22rem]">
         <section className="space-y-5">
@@ -605,16 +765,16 @@ function PortalPage({ title }: { title: string }) {
             <p className="mt-1 text-sm text-alphavest-muted">Here is your wealth governance dashboard.</p>
           </div>
           <div className="grid gap-4 lg:grid-cols-3">
-            <Card className="lg:col-span-1">
+            <Card className="lg:col-span-3">
               <CardHeader>
                 <CardTitle>WealthOS Readiness Score</CardTitle>
               </CardHeader>
-              <CardContent className="flex flex-col gap-6 sm:flex-row sm:items-center">
-                <ProgressRing label="Good" value={clientWorkspace.readiness} />
-                <div>
-                  <p className="text-sm text-alphavest-muted">Your overall readiness is</p>
-                  <p className="mt-2 text-4xl font-semibold text-alphavest-gold">{clientWorkspace.readiness}<span className="text-xl text-alphavest-muted"> /100</span></p>
-                  <p className="mt-3 text-sm leading-6 text-alphavest-muted">Complete a few items to strengthen resilience and governance.</p>
+              <CardContent className="flex flex-col gap-6 md:flex-row md:items-center">
+                <ProgressRing label="DB" value={readiness} />
+                <div className="min-w-0">
+                  <p className="text-sm text-alphavest-muted">DB-derived readiness is</p>
+                  <p className="mt-2 text-4xl font-semibold text-alphavest-gold">{readiness}<span className="text-xl text-alphavest-muted"> /100</span></p>
+                  <p className="mt-3 text-sm leading-6 text-alphavest-muted">Computed from tenant-scoped documents, evidence, actions and compliance records.</p>
                 </div>
               </CardContent>
             </Card>
@@ -662,11 +822,11 @@ function PortalPage({ title }: { title: string }) {
             <Card>
               <CardHeader><CardTitle>Evidence Status</CardTitle></CardHeader>
               <CardContent className="flex items-center gap-5">
-                <ProgressRing label="Complete" size="small" value={clientWorkspace.evidenceComplete} />
+                <ProgressRing label="DB" size="small" value={evidenceCoverage} />
                 <div className="space-y-2 text-sm text-alphavest-muted">
-                  <p><span className="text-alphavest-green">●</span> Complete 68%</p>
-                  <p><span className="text-alphavest-gold">●</span> In progress 20%</p>
-                  <p><span className="text-alphavest-red">●</span> Missing 12%</p>
+                  {metricCards.map((card) => (
+                    <p className="break-words" key={card.label}><span className={card.tone === "red" ? "text-alphavest-red" : card.tone === "gold" ? "text-alphavest-gold" : "text-alphavest-green"}>●</span> {card.label} {card.value}</p>
+                  ))}
                 </div>
               </CardContent>
             </Card>
@@ -731,7 +891,7 @@ function PortalPage({ title }: { title: string }) {
           </Card>
         </aside>
       </div>
-    </ClientShell>
+    </>
   );
 }
 
@@ -847,24 +1007,96 @@ function MobileHomePage({ title }: { title: string }) {
 function ClientProfilePage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="021">
+      <ClientProfilePageContent title={title} />
+    </ClientShell>
+  );
+}
+
+function ClientProfilePageContent({ title }: { title: string }) {
+  const { loadState, profile, save } = useDbtfClientProfile();
+  const family = useDbtfFamilyMembers();
+  const [form, setForm] = useState<ProfileFormState>({
+    countryOfResidence: "",
+    firstName: "",
+    lastName: "",
+    phone: "",
+    relationshipLabel: "",
+  });
+  const [message, setMessage] = useState("Loaded from UserProfile DB row.");
+  const [issues, setIssues] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (profile) {
+      queueMicrotask(() => {
+        setForm({
+          countryOfResidence: profile.countryOfResidence,
+          firstName: profile.firstName,
+          lastName: profile.lastName,
+          phone: profile.phone,
+          relationshipLabel: profile.relationshipLabel,
+        });
+        setIssues([]);
+        setMessage("Loaded from UserProfile DB row.");
+      });
+    }
+  }, [profile]);
+
+  async function submit(action: "save_draft" | "submit_review") {
+    setSaving(true);
+    setIssues([]);
+
+    try {
+      const savedProfile = await save(form, action);
+      setMessage(action === "submit_review" ? `Submitted ${savedProfile.firstName} ${savedProfile.lastName} for review.` : `Saved ${savedProfile.firstName} ${savedProfile.lastName} to the DB.`);
+    } catch (error) {
+      setIssues(error instanceof Error ? error.message.split(", ").filter(Boolean) : ["profile_save_failed"]);
+      setMessage("Profile save failed closed. No client release was changed.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function updateField(key: keyof ProfileFormState, value: string) {
+    setForm((current) => ({ ...current, [key]: value }));
+  }
+
+  const completedSections = [form.firstName, form.lastName, form.countryOfResidence, form.relationshipLabel].filter(Boolean).length;
+
+  return (
+    <>
       <ScreenTitle>{title}</ScreenTitle>
       <div className="space-y-5">
         <SectionTitle
-          action={<div className="flex gap-3"><button className={secondaryButtonClass} type="button">Save Draft</button><button className={primaryButtonClass} data-testid="j09-submit-profile" onClick={() => { void runScreencastDemoAction("j09.submitProfile", "/client/family-members"); }} type="button"><Send aria-hidden="true" className="size-4" />Submit for Review</button></div>}
+          action={
+            <div className="flex flex-wrap gap-3">
+              <button className={secondaryButtonClass} data-testid="dbtf-profile-save-draft" disabled={saving || loadState !== "ready"} onClick={() => { void submit("save_draft"); }} type="button">
+                Save Draft
+              </button>
+              <button className={primaryButtonClass} data-testid="j09-submit-profile" disabled={saving || loadState !== "ready"} onClick={() => { void submit("submit_review"); }} type="button">
+                <Send aria-hidden="true" className="size-4" />Submit for Review
+              </button>
+            </div>
+          }
           subtitle="Maintain the family profile, goals and governance preferences that guide our partnership."
           title={title}
         />
-        <StatePanel detail="This profile is in draft. Please review all sections and submit for review." state="restricted" title="Draft profile" />
+        <StatePanel detail={message} state={issues.length > 0 || loadState === "error" ? "restricted" : "success"} title={loadState === "loading" ? "Loading DB profile" : issues.length > 0 ? "Profile validation failed" : "DB-backed profile"} />
+        {issues.length > 0 ? <SafeClientBanner>{issues.join(", ")}</SafeClientBanner> : null}
         <div className="grid gap-5 xl:grid-cols-[1.1fr_0.75fr_0.72fr]">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Family Profile</CardTitle>
-              <button className={secondaryButtonClass} type="button">Edit</button>
+              <Badge tone="blue">{profile?.source ?? "UserProfile"}</Badge>
             </CardHeader>
-            <CardContent className="grid gap-3 md:grid-cols-3">
-              {profileFields.map((field) => <FieldBox key={field.label} label={field.label} value={field.value} />)}
+            <CardContent className="grid gap-3">
+              <FormField label="First Name" onChange={(value) => updateField("firstName", value)} required value={form.firstName} />
+              <FormField label="Last Name" onChange={(value) => updateField("lastName", value)} required value={form.lastName} />
+              <FormField label="Relationship" onChange={(value) => updateField("relationshipLabel", value)} required value={form.relationshipLabel} />
+              <FormField label="Country of Residence" onChange={(value) => updateField("countryOfResidence", value)} required value={form.countryOfResidence} />
+              <FormField label="Phone" onChange={(value) => updateField("phone", value)} value={form.phone} />
               <div className="md:col-span-3">
-                <FieldBox label="Family Overview" value="Multi-generational family focused on preserving capital, supporting education and creating long-term impact through strategic philanthropy." />
+                <FieldBox label="Persistence" value={`Reloaded ${profile?.updatedAt ? formatUploadDate(profile.updatedAt) : "from DB"}; save writes to UserProfile and audit log.`} />
               </div>
             </CardContent>
           </Card>
@@ -887,11 +1119,11 @@ function ClientProfilePage({ title }: { title: string }) {
             <CardHeader><CardTitle>Review Summary</CardTitle></CardHeader>
             <CardContent className="space-y-3 text-sm">
               {[
-                ["Profile Status", "Draft"],
-                ["Sections Completed", "4 / 6"],
-                ["Needs Review", "2"],
-                ["Blocked", "1"],
-                ["Last Submitted", "May 12, 2025"]
+                ["Profile Status", loadState === "ready" ? "DB-backed draft" : loadState],
+                ["Sections Completed", `${completedSections} / 4`],
+                ["Validation Issues", String(issues.length)],
+                ["Family Rows", String(family.rows.length)],
+                ["Last Reload", profile?.updatedAt ? formatUploadDate(profile.updatedAt) : "n/a"]
               ].map(([label, value]) => (
                 <div className="flex justify-between gap-4 border-b border-alphavest-border/45 pb-3 last:border-0" key={label}>
                   <span className="text-alphavest-muted">{label}</span>
@@ -904,10 +1136,10 @@ function ClientProfilePage({ title }: { title: string }) {
         </div>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between"><CardTitle>Key Family Members</CardTitle><button className={secondaryButtonClass} type="button">Manage</button></CardHeader>
-          <CardContent><DataTable columns={familySummaryColumns} getRowId={(row) => row.name} rows={keyFamilyMembers} /></CardContent>
+          <CardContent><DataTable columns={familySummaryColumns} emptyMessage="No DB-backed family members loaded." getRowId={(row) => row.id} rows={family.rows.slice(0, 4)} /></CardContent>
         </Card>
       </div>
-    </ClientShell>
+    </>
   );
 }
 
@@ -920,11 +1152,25 @@ function FieldBox({ label, value }: { label: string; value: string }) {
   );
 }
 
-const familySummaryColumns: Array<DataTableColumn<(typeof keyFamilyMembers)[number]>> = [
+function FormField({ className, label, onChange, required = false, value }: { className?: string; label: string; onChange: (value: string) => void; required?: boolean; value: string }) {
+  return (
+    <label className={cn("grid min-w-0 gap-1 text-sm", className)}>
+      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">{label}{required ? " *" : ""}</span>
+      <input
+        className="h-11 w-full min-w-0 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold"
+        onChange={(event) => onChange(event.target.value)}
+        required={required}
+        value={value}
+      />
+    </label>
+  );
+}
+
+const familySummaryColumns: Array<DataTableColumn<FamilyMemberTableRow>> = [
   { key: "name", header: "Name", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}</span> },
   { key: "role", header: "Role", render: (row) => row.role },
-  { key: "generation", header: "Generation", render: (row) => row.generation },
-  { key: "involvement", header: "Involvement", render: (row) => <Badge tone={toneFor(row.involvement)}>{row.involvement}</Badge> }
+  { key: "relationship", header: "Relationship", render: (row) => row.relationship },
+  { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge> }
 ];
 
 function FamilyMembersPage({ title }: { title: string }) {
@@ -936,10 +1182,18 @@ function FamilyMembersPage({ title }: { title: string }) {
 }
 
 function FamilyMembersPageContent({ title }: { title: string }) {
-  const { loadState, rows } = useDbtfFamilyMembers();
+  const { loadState, rows, save } = useDbtfFamilyMembers();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortKey, setSortKey] = useState<keyof FamilyMemberTableRow>("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [familyForm, setFamilyForm] = useState<FamilyMemberFormState>({
+    displayName: "",
+    relationshipType: "",
+    taxResidency: "",
+  });
+  const [formMessage, setFormMessage] = useState("Select a DB-backed member to edit allowed fields.");
+  const [formIssues, setFormIssues] = useState<string[]>([]);
+  const [savingFamilyMember, setSavingFamilyMember] = useState(false);
   const normalizedSearchTerm = searchTerm.trim().toLowerCase();
   const filteredRows = sortByKey(
     rows.filter((row) =>
@@ -954,6 +1208,20 @@ function FamilyMembersPageContent({ title }: { title: string }) {
   );
   const selected = filteredRows[0];
 
+  useEffect(() => {
+    if (selected) {
+      queueMicrotask(() => {
+        setFamilyForm({
+          displayName: selected.name,
+          relationshipType: selected.relationship,
+          taxResidency: selected.taxResidency,
+        });
+        setFormIssues([]);
+        setFormMessage("Loaded from FamilyMember DB row.");
+      });
+    }
+  }, [selected]);
+
   function toggleSort(key: string) {
     const nextKey = key as keyof FamilyMemberTableRow;
 
@@ -966,6 +1234,25 @@ function FamilyMembersPageContent({ title }: { title: string }) {
     setSortDirection("asc");
   }
 
+  async function saveSelectedMember() {
+    if (!selected) {
+      return;
+    }
+
+    setSavingFamilyMember(true);
+    setFormIssues([]);
+
+    try {
+      await save(selected.id, familyForm);
+      setFormMessage(`Saved ${familyForm.displayName} and reloaded tenant-scoped family rows.`);
+    } catch (error) {
+      setFormIssues(error instanceof Error ? error.message.split(", ").filter(Boolean) : ["family_member_save_failed"]);
+      setFormMessage("Family member save failed closed. No client release was changed.");
+    } finally {
+      setSavingFamilyMember(false);
+    }
+  }
+
   return (
     <>
       <ScreenTitle>{title}</ScreenTitle>
@@ -976,7 +1263,7 @@ function FamilyMembersPageContent({ title }: { title: string }) {
           subtitle="Maintain family member profiles, relationships and governance roles."
           title={title}
         />
-        <SafeClientBanner>Family rows are loaded from tenant-scoped seeded DB records. Detail editing remains read-only until the DBTF form phase.</SafeClientBanner>
+        <SafeClientBanner>Family rows are loaded from tenant-scoped seeded DB records. Allowed edits persist to FamilyMember and create audit events.</SafeClientBanner>
         <div className="grid gap-5 2xl:grid-cols-[0.9fr_1.15fr]">
           <Card>
             <CardHeader className="grid gap-3 md:grid-cols-[1fr_auto]">
@@ -1025,21 +1312,17 @@ function FamilyMembersPageContent({ title }: { title: string }) {
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="grid gap-3 md:grid-cols-2">
-                {[
-                  ["Name", selected?.name ?? "n/a"],
-                  ["Relationship", selected?.relationship ?? "n/a"],
-                  ["Role", selected?.role ?? "n/a"],
-                  ["Governance", selected?.governance ?? "n/a"],
-                  ["Birth Year", selected?.year ?? "n/a"],
-                  ["Sensitivity", selected?.sensitivity ?? "n/a"],
-                  ["Status", selected?.status ?? "n/a"],
-                  ["Source", "FamilyMember DB row"]
-                ].map(([label, value]) => <FieldBox key={label} label={label} value={value} />)}
+                <FormField label="Display Name" onChange={(value) => setFamilyForm((current) => ({ ...current, displayName: value }))} required value={familyForm.displayName} />
+                <FormField label="Relationship" onChange={(value) => setFamilyForm((current) => ({ ...current, relationshipType: value }))} required value={familyForm.relationshipType} />
+                <FormField label="Tax Residency" onChange={(value) => setFamilyForm((current) => ({ ...current, taxResidency: value }))} required value={familyForm.taxResidency} />
+                <FieldBox label="Source" value="FamilyMember DB row" />
+                <FieldBox label="Sensitivity" value={selected?.sensitivity ?? "n/a"} />
+                <FieldBox label="Status" value={selected?.status ?? "n/a"} />
               </div>
-              <StatePanel detail="Edit and save behaviour is intentionally held for DBTF-P05 form persistence; this DBTF-P02 view is a DB-backed read model." state="restricted" title="Read-only DB-backed detail" />
+              <StatePanel detail={formIssues.length > 0 ? formIssues.join(", ") : formMessage} state={formIssues.length > 0 ? "restricted" : "success"} title="DB-backed family edit" />
               <div className="flex justify-end gap-3">
-                <button className={secondaryButtonClass} type="button">Cancel</button>
-                <button className={primaryButtonClass} data-testid="j09-save-family-changes" disabled title="Held for DBTF-P05 form persistence" type="button">Save Changes</button>
+                <button className={secondaryButtonClass} onClick={() => selected && setFamilyForm({ displayName: selected.name, relationshipType: selected.relationship, taxResidency: selected.taxResidency })} type="button">Reset</button>
+                <button className={primaryButtonClass} data-testid="j09-save-family-changes" disabled={!selected || savingFamilyMember} onClick={() => { void saveSelectedMember(); }} type="button">Save Changes</button>
               </div>
             </CardContent>
           </Card>
@@ -1354,10 +1637,91 @@ const entityColumns: Array<DataTableColumn<EntityTableRow>> = [
 function CreateEntityPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="025">
+      <CreateEntityPageContent title={title} />
+    </ClientShell>
+  );
+}
+
+function CreateEntityPageContent({ title }: { title: string }) {
+  const { session } = useDemoSession();
+  const [form, setForm] = useState<EntityWizardFormState>({
+    entityType: "COMPANY",
+    jurisdiction: "",
+    name: "",
+    ownerSummary: "",
+    registrationNumber: "",
+    riskRating: "Medium",
+  });
+  const [wizardStep, setWizardStep] = useState(0);
+  const [message, setMessage] = useState("Draft fields are not persisted until Save Draft or Submit is pressed.");
+  const [issues, setIssues] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+  const completedRequired = [form.entityType, form.name, form.jurisdiction].filter(Boolean).length;
+  const progress = Math.max(18, Math.round((completedRequired / 4) * 100));
+  const steps = ["Entity Type", "Core Details", "Review"].map((label, index) => ({
+    label,
+    status: index < wizardStep ? "complete" as const : index === wizardStep ? "current" as const : "upcoming" as const,
+  }));
+
+  function updateField(key: keyof EntityWizardFormState, value: string) {
+    setForm((current) => ({ ...current, [key]: value }));
+  }
+
+  async function saveEntity(action: "save_draft" | "submit") {
+    setSaving(true);
+    setIssues([]);
+
+    try {
+      const response = await fetch("/api/entities", {
+        body: JSON.stringify({
+          ...form,
+          action,
+          roleKey: session.role.key,
+          tenantSlug: session.tenant.slug,
+        }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
+      });
+      const body = (await response.json()) as { issues?: string[]; result?: { entity?: { id: string; name: string; status: string } } };
+
+      if (!response.ok || !body.result?.entity) {
+        throw new Error(body.issues?.join(", ") || "entity_wizard_save_failed");
+      }
+
+      setMessage(`${body.result.entity.name} saved as ${body.result.entity.status}. Entity rows will reload from the DB on /entities.`);
+      setWizardStep(action === "submit" ? 2 : Math.max(wizardStep, 1));
+    } catch (error) {
+      setIssues(error instanceof Error ? error.message.split(", ").filter(Boolean) : ["entity_wizard_save_failed"]);
+      setMessage("Entity wizard failed closed. No record was persisted.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function goNext() {
+    const nextIssues = [
+      ...(form.entityType ? [] : ["valid_entity_type_required"]),
+      ...(form.name ? [] : ["legal_name_required"]),
+      ...(form.jurisdiction ? [] : ["jurisdiction_required"]),
+    ];
+
+    if (nextIssues.length > 0) {
+      setIssues(nextIssues);
+      setMessage("Wizard cannot continue until required DB fields are present.");
+      return;
+    }
+
+    setIssues([]);
+    setMessage("Required fields complete. Save draft or submit to persist.");
+    setWizardStep((current) => Math.min(2, current + 1));
+  }
+
+  return (
+    <>
       <ScreenTitle>{title}</ScreenTitle>
       <div className="space-y-5">
         <SectionTitle subtitle="Build a new entity record with ownership, jurisdiction and supporting evidence." title={title} />
-        <WizardStepper steps={entityWizardSteps.map((step) => ({ ...step }))} />
+        <WizardStepper steps={steps} />
         <div className="grid gap-5 xl:grid-cols-[1fr_20rem]">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -1368,18 +1732,30 @@ function CreateEntityPage({ title }: { title: string }) {
               <Badge tone="blue">Draft</Badge>
             </CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-2">
-              {[
-                ["Entity Type", "Private Limited Company"],
-                ["Legal Name", "Apex Growth Holdings Ltd."],
-                ["Trading / Short Name", "Apex Growth Holdings"],
-                ["Jurisdiction", "Cayman Islands"],
-                ["Registration Number", "C-123456"],
-                ["Incorporation Date", "14 May 2024"],
-                ["Registered Address", "89 Nexus Way, Camana Bay, Grand Cayman"],
-                ["Business Purpose", "To acquire, hold and manage long-term strategic investments."]
-              ].map(([label, value]) => (
-                <FieldBox key={label} label={label} value={value} />
-              ))}
+              <label className="grid gap-1 text-sm">
+                <span className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Entity Type *</span>
+                <select
+                  className="h-11 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold"
+                  onChange={(event) => updateField("entityType", event.target.value)}
+                  value={form.entityType}
+                >
+                  {["TRUST", "COMPANY", "FOUNDATION", "PARTNERSHIP", "INDIVIDUAL", "FAMILY_OFFICE", "OTHER"].map((value) => (
+                    <option key={value} value={value}>{labelFromEnum(value)}</option>
+                  ))}
+                </select>
+              </label>
+              <FormField label="Legal Name" onChange={(value) => updateField("name", value)} required value={form.name} />
+              <FormField label="Jurisdiction" onChange={(value) => updateField("jurisdiction", value)} required value={form.jurisdiction} />
+              <FormField label="Registration Number" onChange={(value) => updateField("registrationNumber", value)} value={form.registrationNumber} />
+              <FormField label="Risk Rating" onChange={(value) => updateField("riskRating", value)} value={form.riskRating} />
+              <label className="grid gap-1 text-sm md:col-span-2">
+                <span className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Business Purpose / Owner Summary</span>
+                <textarea
+                  className="min-h-24 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 py-2 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold"
+                  onChange={(event) => updateField("ownerSummary", event.target.value)}
+                  value={form.ownerSummary}
+                />
+              </label>
             </CardContent>
           </Card>
           <Card>
@@ -1387,23 +1763,35 @@ function CreateEntityPage({ title }: { title: string }) {
             <CardContent className="space-y-4">
               <div>
                 <div className="h-2 rounded-full bg-alphavest-border">
-                  <div className="h-2 w-1/3 rounded-full bg-alphavest-gold" />
+                  <div className="h-2 rounded-full bg-alphavest-gold" style={{ width: `${progress}%` }} />
                 </div>
-                <p className="mt-2 text-sm text-alphavest-muted">2 of 6 completed</p>
+                <p className="mt-2 text-sm text-alphavest-muted">{completedRequired} of 4 required DB fields completed</p>
               </div>
-              {["Entity type selected", "Legal name provided", "Jurisdiction requires review", "Participants not added", "Ownership not defined", "Evidence not uploaded"].map((item) => (
+              {[
+                form.entityType ? "Entity type selected" : "Entity type required",
+                form.name ? "Legal name provided" : "Legal name required",
+                form.jurisdiction ? "Jurisdiction provided" : "Jurisdiction required",
+                form.registrationNumber ? "Registration ready for submit" : "Registration needed before submit",
+                "Participants handled in later DBTF scope",
+                "Evidence upload remains separate"
+              ].map((item) => (
                 <div className="flex items-center gap-2 text-sm" key={item}>
-                  {item.includes("requires") || item.includes("not") ? <AlertTriangle aria-hidden="true" className="size-4 text-alphavest-gold" /> : <CheckCircle2 aria-hidden="true" className="size-4 text-alphavest-green" />}
+                  {item.includes("required") || item.includes("needed") || item.includes("later") || item.includes("separate") ? <AlertTriangle aria-hidden="true" className="size-4 text-alphavest-gold" /> : <CheckCircle2 aria-hidden="true" className="size-4 text-alphavest-green" />}
                   <span className="text-alphavest-muted">{item}</span>
                 </div>
               ))}
-              <StatePanel detail="Cayman Islands is classified as a sensitive jurisdiction and requires legal review." state="restricted" title="Review requirement" />
+              <StatePanel detail={issues.length > 0 ? issues.join(", ") : message} state={issues.length > 0 ? "restricted" : "success"} title="DB-backed wizard lifecycle" />
             </CardContent>
           </Card>
         </div>
-        <div className="flex justify-end gap-3"><button className={secondaryButtonClass} type="button">Save Draft</button><button className={primaryButtonClass} data-testid="j05-continue-entity" onClick={() => { void runScreencastDemoAction("j05.continueEntity", "/entities/demo"); }} type="button">Continue</button></div>
+        <div className="flex flex-wrap justify-end gap-3">
+          <button className={secondaryButtonClass} disabled={wizardStep === 0} onClick={() => setWizardStep((current) => Math.max(0, current - 1))} type="button">Back</button>
+          <button className={secondaryButtonClass} data-testid="dbtf-save-entity-draft" disabled={saving} onClick={() => { void saveEntity("save_draft"); }} type="button">Save Draft</button>
+          <button className={secondaryButtonClass} disabled={saving} onClick={goNext} type="button">Continue</button>
+          <button className={primaryButtonClass} data-testid="j05-continue-entity" disabled={saving} onClick={() => { void saveEntity("submit"); }} type="button">Submit Entity</button>
+        </div>
       </div>
-    </ClientShell>
+    </>
   );
 }
 

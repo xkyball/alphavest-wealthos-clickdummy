@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import "dotenv/config";
 import { expect, test } from "@playwright/test";
 
-test.describe("DBTF P00-P03 DB-backed table APIs", () => {
+test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
   test.beforeAll(() => {
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
   });
@@ -65,5 +65,174 @@ test.describe("DBTF P00-P03 DB-backed table APIs", () => {
     expect(body.ok).toBe(false);
     expect(body.entities).toEqual([]);
     expect(body.safety.hiddenRowsDisclosed).toBe(false);
+  });
+
+  test("saves and reloads the DB-backed client profile form", async ({ request }) => {
+    const firstName = `Bennett ${Date.now()}`;
+    const saveResponse = await request.patch("/api/profile", {
+      data: {
+        action: "save_draft",
+        countryOfResidence: "South Africa",
+        firstName,
+        lastName: "Principal",
+        phone: "+27 10 555 0199",
+        relationshipLabel: "Principal",
+        roleKey: "family_cfo",
+        tenantSlug: "bennett",
+      },
+    });
+    const saveBody = await saveResponse.json();
+
+    expect(saveResponse.ok(), JSON.stringify(saveBody)).toBe(true);
+    expect(saveBody.ok).toBe(true);
+    expect(saveBody.result.mutated).toBe(true);
+    expect(saveBody.result.profile.firstName).toBe(firstName);
+
+    const reloadResponse = await request.get("/api/profile?tenantSlug=bennett&roleKey=family_cfo");
+    const reloadBody = await reloadResponse.json();
+
+    expect(reloadResponse.ok(), JSON.stringify(reloadBody)).toBe(true);
+    expect(reloadBody.profile.firstName).toBe(firstName);
+  });
+
+  test("rejects invalid or unauthorized profile edits without mutation success", async ({ request }) => {
+    const invalidResponse = await request.patch("/api/profile", {
+      data: {
+        action: "save_draft",
+        countryOfResidence: "",
+        firstName: "",
+        lastName: "",
+        relationshipLabel: "",
+        roleKey: "family_cfo",
+        tenantSlug: "bennett",
+      },
+    });
+    const invalidBody = await invalidResponse.json();
+
+    expect(invalidResponse.status(), JSON.stringify(invalidBody)).toBe(400);
+    expect(invalidBody.ok).toBe(false);
+    expect(invalidBody.mutated).toBe(false);
+    expect(invalidBody.issues).toContain("first_name_required");
+
+    const deniedResponse = await request.patch("/api/profile", {
+      data: {
+        action: "save_draft",
+        countryOfResidence: "South Africa",
+        firstName: "Denied",
+        lastName: "Next Gen",
+        relationshipLabel: "Next Gen",
+        roleKey: "next_gen",
+        tenantSlug: "bennett",
+      },
+    });
+    const deniedBody = await deniedResponse.json();
+
+    expect(deniedResponse.status(), JSON.stringify(deniedBody)).toBe(403);
+    expect(deniedBody.ok).toBe(false);
+    expect(deniedBody.mutated).toBe(false);
+  });
+
+  test("saves a family member row with RBAC and reload proof", async ({ request }) => {
+    const listResponse = await request.get("/api/family-members?tenantSlug=morgan&roleKey=family_cfo");
+    const listBody = await listResponse.json();
+    const target = listBody.familyMembers.find((row: { relationship: string }) => row.relationship === "Spouse") ?? listBody.familyMembers[0];
+    const nextName = `${target.name} DBTF`;
+    const saveResponse = await request.patch("/api/family-members", {
+      data: {
+        displayName: nextName,
+        id: target.id,
+        relationshipType: target.relationship,
+        roleKey: "family_cfo",
+        taxResidency: target.taxResidency,
+        tenantSlug: "morgan",
+      },
+    });
+    const saveBody = await saveResponse.json();
+
+    expect(saveResponse.ok(), JSON.stringify(saveBody)).toBe(true);
+    expect(saveBody.ok).toBe(true);
+    expect(saveBody.result.mutated).toBe(true);
+
+    const reloadResponse = await request.get("/api/family-members?tenantSlug=morgan&roleKey=family_cfo&q=DBTF");
+    const reloadBody = await reloadResponse.json();
+
+    expect(reloadResponse.ok(), JSON.stringify(reloadBody)).toBe(true);
+    expect(reloadBody.familyMembers.some((row: { name: string }) => row.name === nextName)).toBe(true);
+  });
+
+  test("denies limited-role family row actions", async ({ request }) => {
+    const listResponse = await request.get("/api/family-members?tenantSlug=bennett&roleKey=family_cfo");
+    const listBody = await listResponse.json();
+    const target = listBody.familyMembers[0];
+    const deniedResponse = await request.patch("/api/family-members", {
+      data: {
+        displayName: "Unauthorized Update",
+        id: target.id,
+        relationshipType: target.relationship,
+        roleKey: "next_gen",
+        taxResidency: target.taxResidency,
+        tenantSlug: "bennett",
+      },
+    });
+    const deniedBody = await deniedResponse.json();
+
+    expect(deniedResponse.status(), JSON.stringify(deniedBody)).toBe(403);
+    expect(deniedBody.ok).toBe(false);
+    expect(deniedBody.mutated).toBe(false);
+  });
+
+  test("validates and persists the DB-backed entity wizard lifecycle", async ({ request }) => {
+    const invalidResponse = await request.post("/api/entities", {
+      data: {
+        action: "submit",
+        entityType: "COMPANY",
+        jurisdiction: "",
+        name: "",
+        roleKey: "family_cfo",
+        tenantSlug: "summit",
+      },
+    });
+    const invalidBody = await invalidResponse.json();
+
+    expect(invalidResponse.status(), JSON.stringify(invalidBody)).toBe(400);
+    expect(invalidBody.issues).toContain("legal_name_required");
+
+    const entityName = `Summit DBTF Holdings ${Date.now()}`;
+    const submitResponse = await request.post("/api/entities", {
+      data: {
+        action: "submit",
+        entityType: "COMPANY",
+        jurisdiction: "United States",
+        name: entityName,
+        ownerSummary: "Focused DBTF wizard entity.",
+        registrationNumber: "DBTF-2026",
+        riskRating: "Medium",
+        roleKey: "family_cfo",
+        tenantSlug: "summit",
+      },
+    });
+    const submitBody = await submitResponse.json();
+
+    expect(submitResponse.ok(), JSON.stringify(submitBody)).toBe(true);
+    expect(submitBody.result.mutated).toBe(true);
+    expect(submitBody.result.entity.name).toBe(entityName);
+
+    const listResponse = await request.get(`/api/entities?tenantSlug=summit&roleKey=family_cfo&q=${encodeURIComponent(entityName)}`);
+    const listBody = await listResponse.json();
+
+    expect(listResponse.ok(), JSON.stringify(listBody)).toBe(true);
+    expect(listBody.entities).toHaveLength(1);
+    expect(listBody.entities[0].name).toBe(entityName);
+  });
+
+  test("derives dashboard metrics from tenant-scoped DB rows", async ({ request }) => {
+    const response = await request.get("/api/dashboard-metrics?tenantSlug=bennett&roleKey=compliance_officer");
+    const body = await response.json();
+
+    expect(response.ok(), JSON.stringify(body)).toBe(true);
+    expect(body.ok).toBe(true);
+    expect(body.metrics.readiness).toBeGreaterThanOrEqual(0);
+    expect(body.metrics.cards.some((card: { label: string; value: string }) => card.label === "Documents linked" && card.value.includes("/"))).toBe(true);
+    expect(body.safety.noClientRelease).toBe(true);
   });
 });

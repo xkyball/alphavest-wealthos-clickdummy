@@ -12,6 +12,7 @@ export type DbtfFamilyMemberRow = {
   role: string;
   sensitivity: string;
   status: string;
+  taxResidency: string;
   year: string;
 };
 
@@ -116,6 +117,7 @@ export async function listDbtfFamilyMembers(
     role: row.isPrincipal ? "Principal" : labelFromEnum(row.relationshipType),
     sensitivity: labelFromEnum(row.sensitivity),
     status: row.sensitivity === "RESTRICTED" || row.sensitivity === "HIGHLY_RESTRICTED" ? "Restricted" : "Active",
+    taxResidency: row.taxResidency ?? "Unspecified",
     year: row.dateOfBirth ? String(row.dateOfBirth.getUTCFullYear()) : "n/a",
   }));
 

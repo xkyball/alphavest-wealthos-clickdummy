@@ -1,5 +1,78 @@
 # Phase Execution Report
 
+## DBTF-P04-P10 - Row Actions, DB-Backed Forms, Wizard Lifecycle, Metrics And Proof
+
+Date: 2026-06-21
+
+### Phase Completion Report
+
+- Phase: `DBTF-P04`, `DBTF-P05`, `DBTF-P06`, `DBTF-P07`, `DBTF-P08`, `DBTF-P09` and `DBTF-P10` executed together as a focused DBTF implementation/proof pass.
+- Source of truth: `ALPHAVEST_DB_BACKED_TABLES_FORMS_CODEX_PROMPT_PACK.md` plus `ALPHAVEST_DB_BACKED_TABLES_FORMS_REALITY_REBASE_PLAN.md`.
+- Completed workstream IDs: `WS-03`, `WS-04`, `WS-05`, `WS-06`, `WS-07`, `WS-08`, `WS-09`.
+- Completed task IDs: `DBTF-WS03-T001`, `DBTF-WS04-T001`, `DBTF-WS04-T002`, `DBTF-WS04-T003`, `DBTF-WS05-T001`, `DBTF-WS05-T002`, `DBTF-WS05-T003`, `DBTF-WS06-T001`, `DBTF-WS07-T001`, `DBTF-WS07-T002`, `DBTF-WS07-T003`, `DBTF-WS08-T001`, `DBTF-WS09-T001`.
+- Completed subtask IDs: `DBTF-WS04-T001-S01`, `DBTF-WS04-T001-S02`, `DBTF-WS04-T001-S03`, `DBTF-WS05-T001-S01`, `DBTF-WS05-T001-S02`, `DBTF-WS06-T001-S01`, `DBTF-WS07-T001-S01`, `DBTF-WS08-T001-S01`, `DBTF-WS08-T001-S02`, `DBTF-WS09-T001-S01`.
+- Files changed in this reporting pass:
+  - `app/api/dashboard-metrics/route.ts`
+  - `app/api/entities/route.ts`
+  - `app/api/family-members/route.ts`
+  - `app/api/profile/route.ts`
+  - `components/client-intake-screen.tsx`
+  - `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+  - `docs/v3/PHASE_EXECUTION_REPORT.md`
+  - `lib/dbtf-form-service.ts`
+  - `lib/dbtf-table-service.ts`
+  - `tests/dbtf-tables-api.spec.ts`
+  - `artifacts/dbtf-p04-p10-screenshots/*.png`
+- DB/Seed changes: no Prisma schema or seed file change. Existing deterministic seed already covered profile, family, entity, document, evidence, action, compliance and audit states; `pnpm db:seed` was rerun for deterministic screenshot data.
+
+### Implemented Behaviour
+
+- `DBTF-P04`: focused row action discipline now exists for family-member saves. Allowed roles can save scoped family rows; limited roles receive a 403 response and no mutation success.
+- `DBTF-P05`: `/client/profile` now renders a controlled DB-backed `UserProfile` form. Save Draft and Submit for Review call `/api/profile`, validate required fields, persist, reload and audit.
+- `DBTF-P05`: `/client/family-members` now renders a controlled DB-backed edit panel for the selected `FamilyMember` row, including save/reload and denied-role feedback.
+- `DBTF-P06`: `/entities/new` is now a real focused wizard lifecycle for Entity creation. Continue validates required fields, Save Draft persists draft entities, Submit persists in-review entities and audit events.
+- `DBTF-P07`: focused implementation uses existing deterministic seed coverage rather than adding a migration or artificial seed rows.
+- `DBTF-P08`: `/portal` readiness/evidence metrics now derive from tenant-scoped DB documents, evidence, actions and compliance records through `/api/dashboard-metrics`.
+- `DBTF-P09`: `tests/dbtf-tables-api.spec.ts` now covers table APIs plus form persistence/reload, invalid form validation, RBAC denial, entity wizard validation/persistence and DB-derived metrics.
+- `DBTF-P10`: proof package consolidated here and in the QA report with screenshot artifacts.
+
+### Explicit Static / Deferred Decisions
+
+- Admin tenant/user wizards remain `STATIC_EXPLICIT` / `DEFER_P1`; no broad admin mutation API was invented.
+- Export wizard and export/redaction metrics remain outside this focused DBTF implementation unless backed by existing export services in a later phase.
+- Ops/SLA metrics remain `DEFER_P1` / static-reference; no ops analytics platform was created.
+- Global search remains static pending scoped indexing.
+
+### Validation Commands Run
+
+- `pnpm db:validate` - passed.
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed.
+- `pnpm test:dbtf` - passed, 11 tests.
+- `pnpm db:seed` - passed after tests to restore deterministic screenshot data.
+- `pnpm build` - passed with existing Turbopack tracing warnings in `lib/document-storage-adapter.ts`.
+
+### Screenshot Proof
+
+| Artifact | Status | Notes |
+| --- | --- | --- |
+| `artifacts/dbtf-p04-p10-screenshots/portal-db-metrics.png` | captured | Dashboard readiness/evidence values derived from DB-backed metric API. |
+| `artifacts/dbtf-p04-p10-screenshots/profile-db-form.png` | captured | Controlled `UserProfile` form with save/submit actions. |
+| `artifacts/dbtf-p04-p10-screenshots/family-member-db-edit.png` | captured | Controlled `FamilyMember` edit panel with DB save boundary. |
+| `artifacts/dbtf-p04-p10-screenshots/entity-wizard-db-backed.png` | captured | Entity creation wizard with required field validation and persistence actions. |
+
+### Exit Gate Decision
+
+`DBTF_P04_P10_IMPLEMENTED_AND_VALIDATED_WITH_SCREENSHOT_PROOF`
+
+### Residual Risks / TODOs
+
+- The implemented form/wizard persistence remains demo-data/providerless and is not production authentication or regulated client delivery.
+- Entity wizard participant ownership and evidence upload attachment are explicitly later DBTF scope; the current wizard persists the core entity record and audit event only.
+- Admin, export and ops wizards/metrics were intentionally not implemented where the prompt pack required static/defer rather than blind architecture.
+- Screenshot proof is representative desktop proof for the changed surfaces, not exhaustive visual acceptance across all routes/viewports.
+- Existing Turbopack tracing warnings in `lib/document-storage-adapter.ts` remain outside this DBTF form/table scope.
+
 ## DBTF-P00-P03 - DB-Backed Tables And Honest Read Models
 
 Date: 2026-06-21
