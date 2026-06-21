@@ -6401,3 +6401,49 @@ Source of truth:
 ### QA Limits
 
 - This slice removes duplicate CTA ambiguity on representative priority routes. Full route-specific lifecycle copy chains remain for later `UX-CTA-*` tasks.
+
+## UX-COMPLEXITY-005 QA Addendum
+
+Date: 2026-06-21
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+
+| Area | QA result | Evidence |
+| --- | --- | --- |
+| Support density | Passed | Route-smoke verifies page job, status, next step and safety copy on all 26 scoped routes. |
+| Gate visibility | Passed | Each strip states support status is orientation, not gate-completion proof. |
+| Route Policy Matrix preservation | Passed | No route registry, scope, page-type or route-policy metadata changed. |
+| P0 safety | Passed | Permissions, workflow gate, export lifecycle and full route smoke remain green. |
+| Screenshot proof | Passed | Five representative screenshots captured under `artifacts/ux-page-to-policy/UX-COMPLEXITY-005/`. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | `tsc --noEmit` completed successfully. |
+| `pnpm lint` | Passed | Existing warnings remain. |
+| `PLAYWRIGHT_PORT=3404 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-COMPLEXITY support density"` | Passed | 26 tests after unauthenticated `/login` proof fix. |
+| `PLAYWRIGHT_PORT=3405 pnpm test:permissions` | Passed | 8 tests. |
+| `PLAYWRIGHT_PORT=3408 pnpm test:workflow-gate` | Passed | 13 tests. |
+| `PLAYWRIGHT_PORT=3409 pnpm test:file-export` | Passed | 14 tests. |
+| `PLAYWRIGHT_PORT=3410 pnpm test:route-smoke` | Passed | 168 tests. |
+
+### Screenshot Proof
+
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-005/2026-06-21-UX-COMPLEXITY-005-login-density.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-005/2026-06-21-UX-COMPLEXITY-005-admin-platform-density.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-005/2026-06-21-UX-COMPLEXITY-005-client-profile-density.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-005/2026-06-21-UX-COMPLEXITY-005-wealth-map-density.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-005/2026-06-21-UX-COMPLEXITY-005-actions-density.png`
+
+### Safety Proof
+
+- Support density is orientation only.
+- Next-step links use existing registered routes and do not create new product surface.
+- Admin/setup/client context visibility does not expand RBAC, payload access, evidence sufficiency, advice release, audit persistence or export authority.
+
+### QA Limits
+
+- This slice improves support/context density. It does not implement the later D1-D4 layout-density system, which begins at `UX-DENSITY-001`.

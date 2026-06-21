@@ -10,6 +10,7 @@ import {
   uxPageContracts,
 } from "../lib/ux-page-contract";
 import { uxContentHierarchyForPageType } from "../lib/ux-content-hierarchy";
+import { uxComplexity005SupportPageIds } from "../lib/ux-support-density";
 import {
   groupedImplementationScreenRoutes,
   routeImplementationAccessDecision,
@@ -375,6 +376,29 @@ test.describe("UX-COMPLEXITY CTA clusters", () => {
       await expect(cluster.locator('[data-ux-primary-cta="true"]')).toHaveCount(1);
       await expect(cluster.locator('[data-ux-secondary-cta="true"]').first()).toBeVisible();
       await expect(cluster.getByTestId("ux-complexity-cta-blocked-reason")).toBeVisible();
+    });
+  }
+});
+
+test.describe("UX-COMPLEXITY support density", () => {
+  const supportDensityPaths = screenRoutes
+    .filter((route) => uxComplexity005SupportPageIds.includes(route.pageId as (typeof uxComplexity005SupportPageIds)[number]))
+    .map((route) => routeToSmokePath(route.route));
+
+  for (const path of supportDensityPaths) {
+    test(`${path} exposes page job, status and meaningful next step without safety hiding`, async ({ page }) => {
+      await page.setViewportSize({ height: 1000, width: 1440 });
+      if (path !== "/login") {
+        await authenticateRouteSmokePage(page);
+      }
+      await page.goto(path);
+
+      const strip = page.getByTestId("ux-complexity-support-density").first();
+      await expect(strip).toBeVisible();
+      await expect(strip.getByTestId("ux-complexity-support-job")).toBeVisible();
+      await expect(strip.getByTestId("ux-complexity-support-status")).toBeVisible();
+      await expect(strip.getByTestId("ux-complexity-support-next-step")).toBeVisible();
+      await expect(strip.getByTestId("ux-complexity-support-safety")).toContainText("not gate-completion proof");
     });
   }
 });

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight, Compass, LockKeyhole, Route, ShieldCheck } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useDemoSession } from "@/components/demo-session-provider";
+import { UxSupportDensityStrip } from "@/components/ux-support-density-strip";
 import { WizardStepper } from "@/components/ui/wizard-stepper";
 import { cn } from "@/lib/cn";
 import { productGuidanceForPathname, type ProductGuidanceLink } from "@/lib/product-guidance";
@@ -111,6 +112,9 @@ export function ProductGuidancePanel() {
                 <p className="mt-2 text-xs leading-5 text-alphavest-gold-soft">{guidance.workbenchStructure.safety}</p>
               </div>
             </div>
+          ) : null}
+          {guidance.routeId ? (
+            <UxSupportDensityStrip className="mt-4" pageId={guidance.routeId} />
           ) : null}
           <div className="mt-3 hidden flex-wrap gap-1.5 md:flex" data-ux-content-tier="tertiary">
             {guidance.routePolicyLabels.slice(0, 4).map((label) => (

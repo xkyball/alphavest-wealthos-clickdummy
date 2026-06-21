@@ -34,6 +34,7 @@ import { RouteContextChip } from "@/components/route-context-chip";
 import { UxCtaCluster } from "@/components/ux-cta-cluster";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
+import { UxSupportDensityStrip } from "@/components/ux-support-density-strip";
 import { cn } from "@/lib/cn";
 import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import type { ScreenRoute } from "@/lib/route-registry";
@@ -278,6 +279,7 @@ function WealthMapPage({ title }: { title: string; visualState?: VisualState }) 
   return (
     <WealthShell activePageId="031">
       <ScreenTitle>{title}</ScreenTitle>
+      <UxSupportDensityStrip className="mx-auto mb-5 max-w-[104rem]" pageId="031" />
       <UxHubPage pageId="031" />
     </WealthShell>
   );
@@ -491,6 +493,7 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
             subtitle="Track and advance actions through the workflow."
             title={title}
           />
+          <UxSupportDensityStrip pageId="032" />
           <UxComplexityPriorityPanel
             actionLabel="Open selected action"
             actionState="Selected action review stays blocked until missing client approval evidence is resolved."

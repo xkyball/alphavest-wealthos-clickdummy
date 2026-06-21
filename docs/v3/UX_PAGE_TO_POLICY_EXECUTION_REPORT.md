@@ -231,6 +231,127 @@ No-P1/Hold/Reference-elevation confirmation: `UX-COMPLEXITY-004` only touched sc
 
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
 
+## Completed Slice: UX-COMPLEXITY-005
+
+Task: `UX-COMPLEXITY-005` - Densify sparse support/context pages without making them noisy.
+
+Mission Card: add page job, status and meaningful next-step content to support/context routes `001-018`, `021-026`, `031-032` without new routes, route reclassification, behavior claims or safety weakening.
+
+Evidence Intake:
+- Task-master `UX-COMPLEXITY-005` row: related routes `001-018`, `021-026`, `031-032`; route policy `VISUAL_NOT_BEHAVIOUR_PROOF`, `STATUS_CHIP_NOT_GATE_PROOF`, no safety weakening.
+- Route Policy Matrix rows cited: `001-018`, `021-026`, `031`, `032`.
+- Existing implementation finding: Admin, Auth, Client Context and Wealth support pages had useful content but not one consistent compact "current job / status / next step / safety" strip.
+
+Problem Architecture: sparse support pages can feel premium-but-empty and leave users unsure what the page is for; adding density must not imply that support visibility completes a gate or expands authority.
+
+Double Diamond:
+- Discover: target pages use separate shells, so a page-specific rewrite would fragment proof.
+- Define: add one reusable support-density strip driven by the route registry and UX route policy.
+- Develop: render it in Auth, Admin/Tenant, Product Guidance and Wealth support shells.
+- Deliver: 26-route smoke proof, P0 regression tests and representative screenshots.
+
+Psycho-Logic + Map/Model: users need to answer "what am I doing here and where do I go next?" without reading support UI as permission. The safe move is compact orientation plus explicit "not gate-completion proof" safety copy.
+
+Reframing Matrix:
+- Sparse support page: improved with compact route-policy density.
+- Noisy support dashboard: rejected.
+- Page-as-gate: rejected; support status remains orientation.
+- Page-as-handoff: kept through next-step links to existing routes only.
+
+TRIZ: improve page information density without adding workflow authority by turning existing route metadata into a compact, non-authorizing strip.
+
+SIT Closed World: reused route registry, route policy metadata, existing shells and route-smoke harness; no screen generation, new route, image, API, schema or product scope engine was introduced.
+
+Zwicky + CCA:
+- Variant A: rewrite each support page. Rejected for high blast radius.
+- Variant B: add a shared static card. Rejected because it would drift from policy.
+- Variant C: route-policy-derived `UxSupportDensityStrip`. Kept.
+
+SCAMPER: combined route title, page type status, next route and safety reminder; substituted empty space with compact orientation; eliminated one-off support-page explanations.
+
+Harvard / BATNA: objective criteria are task route list, Route Policy Matrix P0 obligations and green regression tests. BATNA remains stop/report if a page needs behavior not authorized in UX scope.
+
+MESOs:
+- Option A: cover representative pages only. Rejected because the task lists 26 support/context routes.
+- Option B: cover every listed route via shared integration points. Chosen.
+
+Measurement Plan:
+- `pnpm typecheck`
+- `pnpm lint`
+- `PLAYWRIGHT_PORT=3404 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-COMPLEXITY support density"`
+- `PLAYWRIGHT_PORT=3405 pnpm test:permissions`
+- `PLAYWRIGHT_PORT=3408 pnpm test:workflow-gate`
+- `PLAYWRIGHT_PORT=3409 pnpm test:file-export`
+- `PLAYWRIGHT_PORT=3410 pnpm test:route-smoke`
+- Screenshot proof under `artifacts/ux-page-to-policy/UX-COMPLEXITY-005/`
+
+Ethics/Fairness: no misleading status, no hidden gate weakening, no coercive CTA, no admin bypass and no claim that support context equals approval or release.
+
+Adversarial QA: support density could look like gate proof; each strip includes explicit "Visible support status is orientation, not gate-completion proof" copy and is backed by route-smoke assertions.
+
+Learning Log: `UX-DENSITY-*` can now build on a shared route-policy density primitive instead of rediscovering support-page job/status/next-step structure.
+
+Route-policy rows cited:
+- `001-018` setup/auth/admin/tenant support routes.
+- `021-026` client context/profile/family/entity support routes.
+- `031` `/wealth-map` and `032` `/actions` support/context routes.
+
+Changed files:
+- `lib/ux-support-density.ts`
+- `components/ux-support-density-strip.tsx`
+- `components/auth-onboarding-screen.tsx`
+- `components/admin-tenant-setup-screen.tsx`
+- `components/product-guidance-panel.tsx`
+- `components/wealth-actions-screen.tsx`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-005/2026-06-21-UX-COMPLEXITY-005-login-density.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-005/2026-06-21-UX-COMPLEXITY-005-admin-platform-density.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-005/2026-06-21-UX-COMPLEXITY-005-client-profile-density.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-005/2026-06-21-UX-COMPLEXITY-005-wealth-map-density.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-005/2026-06-21-UX-COMPLEXITY-005-actions-density.png`
+
+Implementation summary:
+- Added route-policy-backed support density metadata for all `UX-COMPLEXITY-005` route IDs.
+- Added `UxSupportDensityStrip` with current job, status, meaningful next step and visible safety proof.
+- Integrated the strip into Auth/Onboarding, Admin/Tenant, Product Guidance and Wealth support shells.
+- Added route-smoke coverage for all 26 scoped routes.
+
+Validation:
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with existing warnings.
+- `PLAYWRIGHT_PORT=3404 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-COMPLEXITY support density"` - passed, 26 tests after adjusting `/login` to run unauthenticated.
+- `PLAYWRIGHT_PORT=3405 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3408 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3409 pnpm test:file-export` - passed, 14 tests.
+- `PLAYWRIGHT_PORT=3410 pnpm test:route-smoke` - passed, 168 tests.
+- Initial parallel P0 rerun hit a Next dev-server port collision; workflow/export checks were rerun sequentially on fresh ports and passed.
+
+Screenshot/proof:
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-005/2026-06-21-UX-COMPLEXITY-005-login-density.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-005/2026-06-21-UX-COMPLEXITY-005-admin-platform-density.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-005/2026-06-21-UX-COMPLEXITY-005-client-profile-density.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-005/2026-06-21-UX-COMPLEXITY-005-wealth-map-density.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-005/2026-06-21-UX-COMPLEXITY-005-actions-density.png`
+
+Positive acceptance:
+- All 26 scoped support/context routes expose page job, status, next step and visible safety copy.
+- Sparse support surfaces gain meaningful density without becoming card walls.
+
+Negative/P0 acceptance:
+- Support status is explicitly not gate-completion proof.
+- No route scope, payload authority, evidence sufficiency, advice boundary, compliance release, audit persistence, export lifecycle or admin bypass behavior changed.
+
+No-generation confirmation: no screen generation, state-screen generation, image generation or generated assets.
+
+No-route-reclassification confirmation: route IDs, paths, scopes, page types and policy labels remain unchanged.
+
+No-P1/Hold/Reference-elevation confirmation: `UX-COMPLEXITY-005` only touched scoped MVP/MVP_SUPPORT context routes listed in the task card.
+
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
+
 ## Completed Slice: UX-PAGE-003
 
 Task: `UX-PAGE-003` - Standardize detail pages with object header, evidence/timeline and gated action rail.

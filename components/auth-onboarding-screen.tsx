@@ -27,6 +27,7 @@ import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, Modal, StatePanel, StatusChip, WizardStepper } from "@/components/ui";
+import { UxSupportDensityStrip } from "@/components/ux-support-density-strip";
 import {
   authSecurityFeatures,
   inviteSummary,
@@ -133,7 +134,7 @@ function AlphaVestMark({ compact = false }: { compact?: boolean }) {
   );
 }
 
-function AuthCanvas({ children, compactHeader = false }: { children: React.ReactNode; compactHeader?: boolean }) {
+function AuthCanvas({ children, compactHeader = false, supportPageId }: { children: React.ReactNode; compactHeader?: boolean; supportPageId?: AuthOnboardingPageId }) {
   return (
     <main className="av-surface av-surface-auth relative overflow-hidden px-4 py-8 md:px-8">
       <div
@@ -157,6 +158,7 @@ function AuthCanvas({ children, compactHeader = false }: { children: React.React
             </p>
           ) : null}
         </header>
+        {supportPageId ? <UxSupportDensityStrip className="mx-auto mb-5 max-w-6xl" pageId={supportPageId} /> : null}
         {children}
       </div>
     </main>
@@ -282,7 +284,7 @@ function LoginPage() {
   }
 
   return (
-    <AuthCanvas>
+    <AuthCanvas supportPageId="001">
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
         <Card className="p-6 md:p-8">
           <CardHeader>
@@ -380,7 +382,7 @@ function MfaPage() {
   }
 
   return (
-    <AuthCanvas compactHeader>
+    <AuthCanvas compactHeader supportPageId="002">
       <div className="grid gap-6 lg:grid-cols-[0.7fr_1.35fr_0.95fr]">
         <aside className="hidden rounded-md border border-alphavest-border/40 bg-alphavest-charcoal/35 p-5 text-sm text-alphavest-muted lg:block">
           <h2 className="font-display text-2xl text-alphavest-ivory">Welcome back</h2>
@@ -487,7 +489,7 @@ function InvitePage() {
   }, []);
 
   return (
-    <AuthCanvas>
+    <AuthCanvas supportPageId="003">
       <PageStepper pageId="003" />
       <div className="mx-auto grid max-w-6xl gap-5 lg:grid-cols-[1.35fr_0.65fr]">
         <Card className="p-6 md:p-8">
@@ -564,7 +566,7 @@ function InvitePage() {
 
 function IdentityPage() {
   return (
-    <AuthCanvas compactHeader>
+    <AuthCanvas compactHeader supportPageId="004">
       <PageStepper pageId="004" />
       <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[1.4fr_0.75fr]">
         <Card className="p-6 md:p-8">
@@ -619,7 +621,7 @@ function ConsentPage() {
   const primaryPolicy = policyDocuments[0];
 
   return (
-    <AuthCanvas compactHeader>
+    <AuthCanvas compactHeader supportPageId="005">
       <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[1.08fr_0.92fr]">
         <Card className="p-6 md:p-8">
           <CardHeader>
@@ -785,7 +787,7 @@ function RoleConfirmationPage() {
   }
 
   return (
-    <AuthCanvas compactHeader>
+    <AuthCanvas compactHeader supportPageId="006">
       <PageStepper pageId="006" />
       <Card className="mx-auto max-w-7xl p-6 md:p-8">
         <CardHeader>

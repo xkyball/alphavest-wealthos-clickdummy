@@ -26,6 +26,7 @@ import { PageHeader } from "@/components/page-header";
 import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
+import { UxSupportDensityStrip } from "@/components/ux-support-density-strip";
 import {
   Badge,
   Card,
@@ -1385,6 +1386,7 @@ export function AdminTenantSetupScreen({ route, visualState }: AdminTenantSetupS
     <AppShell>
       <div className="space-y-6">
         <PageHeader description={route.purpose} title={route.title} />
+        <UxSupportDensityStrip pageId={route.pageId} />
         {renderPage()}
       </div>
       <CriticalChangeModal kind={confirmationKind} onClose={() => setConfirmationKind(null)} />

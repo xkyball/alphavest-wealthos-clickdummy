@@ -8460,3 +8460,76 @@ Completed `UX-COMPLEXITY-004` by replacing duplicate/dead-end CTA clusters on re
 ### Exit Gate Decision
 
 `UX_COMPLEXITY_004_COMPLETED_WITH_CTA_CLUSTER_CONSOLIDATION_AND_P0_PROOF`
+
+## UX-COMPLEXITY-005 Addendum - Support Density Applied
+
+Date: 2026-06-21
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+
+### Scope
+
+Completed `UX-COMPLEXITY-005` by adding compact page job, status, next-step and safety context to the support/context route set `001-018`, `021-026`, `031-032`. The change densifies sparse support surfaces while keeping visible status non-authorizing.
+
+### Changed Files
+
+- `lib/ux-support-density.ts`
+- `components/ux-support-density-strip.tsx`
+- `components/auth-onboarding-screen.tsx`
+- `components/admin-tenant-setup-screen.tsx`
+- `components/product-guidance-panel.tsx`
+- `components/wealth-actions-screen.tsx`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-005/2026-06-21-UX-COMPLEXITY-005-login-density.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-005/2026-06-21-UX-COMPLEXITY-005-admin-platform-density.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-005/2026-06-21-UX-COMPLEXITY-005-client-profile-density.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-005/2026-06-21-UX-COMPLEXITY-005-wealth-map-density.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-005/2026-06-21-UX-COMPLEXITY-005-actions-density.png`
+
+### Route-Policy Rows Cited
+
+- `001-018`, `021-026`, `031`, `032`.
+
+### Implementation Notes
+
+- Added `uxSupportDensityForPageId` mapped from route registry and UX route policy.
+- Added `UxSupportDensityStrip` with current job, status, next step and safety copy.
+- Integrated support density into Auth/Onboarding, Admin/Tenant, Product Guidance and Wealth support shells.
+- Kept next steps to existing registered routes only.
+
+### Tests And Checks Run
+
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with existing warnings.
+- `PLAYWRIGHT_PORT=3404 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-COMPLEXITY support density"` - passed, 26 tests.
+- `PLAYWRIGHT_PORT=3405 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3408 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3409 pnpm test:file-export` - passed, 14 tests.
+- `PLAYWRIGHT_PORT=3410 pnpm test:route-smoke` - passed, 168 tests.
+
+### Screenshot Proof
+
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-005/2026-06-21-UX-COMPLEXITY-005-login-density.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-005/2026-06-21-UX-COMPLEXITY-005-admin-platform-density.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-005/2026-06-21-UX-COMPLEXITY-005-client-profile-density.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-005/2026-06-21-UX-COMPLEXITY-005-wealth-map-density.png`
+- `artifacts/ux-page-to-policy/UX-COMPLEXITY-005/2026-06-21-UX-COMPLEXITY-005-actions-density.png`
+
+### Positive Acceptance
+
+- Every scoped support/context route has page job, status, next step and safety copy.
+- Sparse support pages now communicate work purpose without adding noisy card walls.
+
+### Negative Acceptance
+
+- Support density does not change route scope, action authority, payload visibility, advice/release gates, evidence sufficiency, audit persistence or export delivery.
+- Visible support status is explicitly not gate-completion proof.
+
+### Exit Gate Decision
+
+`UX_COMPLEXITY_005_COMPLETED_WITH_SUPPORT_DENSITY_AND_P0_PROOF`
