@@ -757,9 +757,9 @@ function Phase7ClientProjectionPanel({ allowedFields, failClosed, forbiddenField
     <section className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-4" data-testid="ux-phase7-client-projection" data-ux-phase7-task={taskId}>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-green">Phase 7 client-safe projection</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-green">Client-safe projection</p>
           <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{routeLabel}</h2>
-          <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted">Visibility engine output is rendered as a fail-closed client projection, never as an internal payload preview.</p>
+          <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted">Client view stays fail-closed and never exposes internal payloads.</p>
         </div>
         <Badge tone="green">{taskId}</Badge>
       </div>
@@ -781,7 +781,7 @@ function Phase7ClientProjectionPanel({ allowedFields, failClosed, forbiddenField
           <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{failClosed}</p>
         </div>
       </div>
-      <div className="mt-4" data-testid="ux-phase7-recovery"><StatePanel detail={recovery} state="restricted" title="Safe unavailable-content recovery" /></div>
+      <div className="mt-4" data-testid="ux-phase7-recovery"><StatePanel detail={recovery} state="restricted" title="Unavailable content" /></div>
     </section>
   );
 }
@@ -791,7 +791,7 @@ function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pag
     <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Phase 5 detail / split proof</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Detail state</p>
           <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectLabel}</h2>
         </div>
         <Badge tone="gold">{taskId}</Badge>
@@ -2079,7 +2079,7 @@ function DocumentsPage({ title }: { title: string }) {
     <ClientShell activePageId="027">
       <DocumentsPageContent title={title} />
       <Phase7ClientProjectionPanel allowedFields="request title, document type, redacted status and uploaded date only" failClosed="Unreleased evidence requests show safe unavailable state and never expose extraction or evidence internals." forbiddenFields="No unreleased evidence, extraction state, checksum, storage key, AI Draft or compliance notes." recovery="Client can upload requested evidence or wait for human review; sufficiency and release remain internal gates." routeLabel="Client evidence request projection" taskId="UX-CLIENT-PROJECTION-003" visibilityEngineOutput="DEMO_CLIENT_DOCUMENT_SAFE_PROJECTION or DEMO_CLIENT_DOCUMENT_FAIL_CLOSED" />
-      <Phase5DetailSplitPanel decisionSupport="Document hub stays separate from review queue and evidence detail." objectLabel="Document workspace split" objectState="Document intake overview" pageJob="Documents page lists intake status and routes to queue/detail without acting as sufficiency proof." safetyBoundary="Document list context cannot mark evidence sufficient." splitTaskId="UX-PAGE-SPLIT-002" taskId="UX-PAGE-SPLIT-002" />
+      <Phase5DetailSplitPanel decisionSupport="Document hub stays separate from review queue and evidence detail." objectLabel="Document workspace split" objectState="Document intake overview" pageJob="Documents page lists intake status and routes to queue/detail without marking evidence sufficient." safetyBoundary="Document list context cannot mark evidence sufficient." splitTaskId="UX-PAGE-SPLIT-002" taskId="UX-PAGE-SPLIT-002" />
     </ClientShell>
   );
 }

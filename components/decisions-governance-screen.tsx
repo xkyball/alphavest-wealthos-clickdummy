@@ -381,7 +381,7 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, de
     <section className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-4" data-testid="ux-phase6-decision-room" data-ux-phase6-task={taskId}>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-red">Phase 6 decision room safety recheck</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-red">Decision gate</p>
           <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{decisionLabel}</h2>
           <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted" data-testid="ux-phase6-safety-note">{safetyNote}</p>
         </div>
@@ -430,9 +430,9 @@ function Phase7ClientProjectionPanel({ allowedFields, failClosed, forbiddenField
     <section className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-4" data-testid="ux-phase7-client-projection" data-ux-phase7-task={taskId}>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-green">Phase 7 client-safe projection</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-green">Client-safe projection</p>
           <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{routeLabel}</h2>
-          <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted">Visibility engine output is rendered as a fail-closed client projection, never as an internal payload preview.</p>
+          <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted">Client view stays fail-closed and never exposes internal payloads.</p>
         </div>
         <Badge tone="green">{taskId}</Badge>
       </div>
@@ -454,7 +454,7 @@ function Phase7ClientProjectionPanel({ allowedFields, failClosed, forbiddenField
           <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{failClosed}</p>
         </div>
       </div>
-      <div className="mt-4" data-testid="ux-phase7-recovery"><StatePanel detail={recovery} state="restricted" title="Safe unavailable-content recovery" /></div>
+      <div className="mt-4" data-testid="ux-phase7-recovery"><StatePanel detail={recovery} state="restricted" title="Unavailable content" /></div>
     </section>
   );
 }
@@ -464,7 +464,7 @@ function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pag
     <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Phase 5 detail / split proof</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Detail state</p>
           <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectLabel}</h2>
         </div>
         <Badge tone="gold">{taskId}</Badge>
@@ -925,7 +925,7 @@ function DecisionRoomPage({ title }: { title: string }) {
         />
         <ScfP07P09TrustPanel mode="decision" />
         <Phase7ClientProjectionPanel allowedFields="decision id, title, released state, client summary and releasedAt only" failClosed="Submitted or unreleased decisions render as unavailable and hide the decision body." forbiddenFields="No AI Draft, internal rationale, compliance notes, evidence record id, assumptions or manual override." recovery="The client sees safe decision status and can wait for compliance release or request advisor clarification." routeLabel="Client released decision projection" taskId="UX-CLIENT-PROJECTION-002" visibilityEngineOutput="DEMO_CLIENT_DECISION_SAFE_PROJECTION or DEMO_CLIENT_DECISION_FAIL_CLOSED" />
-        <Phase6DecisionRoomPanel audit="Client decision audit must record actor, released package state, selected action and cancel or confirm outcome." blocker="Client decision remains separated from compliance release, evidence controls and client acceptance." cancelLabel="Cancel decision action" confirmLabel="Confirm client decision" decisionLabel="Client decision governance room" evidence="Linked documents, approvals and decision options are visible before action." preconditions="Released package, evidence controls, permission scope and decision audit readiness must all pass." safetyNote="No release, export or advice effect can occur without gate preconditions and audit proof." taskId="UX-DECISION-ROOM-001" />
+        <Phase6DecisionRoomPanel audit="Client decision audit must record actor, released package state, selected action and cancel or confirm outcome." blocker="Client decision remains separated from compliance release, evidence controls and client acceptance." cancelLabel="Cancel decision action" confirmLabel="Confirm client decision" decisionLabel="Client decision governance room" evidence="Linked documents, approvals and decision options are visible before action." preconditions="Released package, evidence controls, permission scope and decision audit readiness must all pass." safetyNote="No release, export or advice effect can occur until gate preconditions pass and an audit record exists." taskId="UX-DECISION-ROOM-001" />
         <UxDetailStandardPanel
           actionLabel="Accept, defer, reject or request more information"
           actionState="Decision actions are recorded only within the released decision workflow and do not bypass evidence or compliance controls."
@@ -1408,7 +1408,7 @@ function EvidenceRecordDetailPage({ title }: { title: string }) {
                     },
                     {
                       disabled: true,
-                      disabledReason: "New versions need evidence review; versioning is not sufficiency proof.",
+                      disabledReason: "New versions need evidence review; versioning cannot mark evidence sufficient.",
                       label: "Create New Version",
                     },
                   ]}

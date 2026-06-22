@@ -156,7 +156,7 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, de
     <section className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-4" data-testid="ux-phase6-decision-room" data-ux-phase6-task={taskId}>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-red">Phase 6 decision room safety recheck</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-red">Decision gate</p>
           <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{decisionLabel}</h2>
           <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted" data-testid="ux-phase6-safety-note">{safetyNote}</p>
         </div>
@@ -205,9 +205,9 @@ function Phase7ClientProjectionPanel({ allowedFields, failClosed, forbiddenField
     <section className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-4" data-testid="ux-phase7-client-projection" data-ux-phase7-task={taskId}>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-green">Phase 7 client-safe projection</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-green">Client-safe projection</p>
           <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{routeLabel}</h2>
-          <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted">Visibility engine output is rendered as a fail-closed client projection, never as an internal payload preview.</p>
+          <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted">Client view stays fail-closed and never exposes internal payloads.</p>
         </div>
         <Badge tone="green">{taskId}</Badge>
       </div>
@@ -229,7 +229,7 @@ function Phase7ClientProjectionPanel({ allowedFields, failClosed, forbiddenField
           <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{failClosed}</p>
         </div>
       </div>
-      <div className="mt-4" data-testid="ux-phase7-recovery"><StatePanel detail={recovery} state="restricted" title="Safe unavailable-content recovery" /></div>
+      <div className="mt-4" data-testid="ux-phase7-recovery"><StatePanel detail={recovery} state="restricted" title="Unavailable content" /></div>
     </section>
   );
 }
@@ -239,7 +239,7 @@ function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pag
     <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Phase 5 detail / split proof</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Detail state</p>
           <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectLabel}</h2>
         </div>
         <Badge tone="gold">{taskId}</Badge>
@@ -1341,7 +1341,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
     <div>
       <PageLead badge="Approval step" description="Inspect preview and record approval before generation or delivery." icon={PackageCheck} title={title} />
       <Phase5DetailSplitPanel decisionSupport="Preview detail distinguishes inspection, approval, generation and delivery." objectLabel="Export preview split" objectState="Preview inspection pending approval" pageJob="Preview page inspects one package without becoming download or share." safetyBoundary="Preview context cannot generate, download or share packages." splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-PAGE-SPLIT-005" />
-      <Phase6DecisionRoomPanel audit="Approval audit must record scoped package, redaction state, actor and cancel or confirm outcome." blocker="Export approval remains blocked until redaction, policy and audit readiness are complete." cancelLabel="Cancel export approval" confirmLabel="Confirm export approval" decisionLabel="Export approval decision room" evidence="Package summary, forbidden payload checks, redaction review and policy checks are visible before decision." preconditions="Scoped package, forbidden payload pass, redaction review and audit readiness must all pass." safetyNote="No release, export or advice effect can occur without gate preconditions and audit proof." taskId="UX-DECISION-ROOM-002" />
+      <Phase6DecisionRoomPanel audit="Approval audit must record scoped package, redaction state, actor and cancel or confirm outcome." blocker="Export approval remains blocked until redaction, policy and audit readiness are complete." cancelLabel="Cancel export approval" confirmLabel="Confirm export approval" decisionLabel="Export approval decision room" evidence="Package summary, forbidden payload checks, redaction review and policy checks are visible before decision." preconditions="Scoped package, forbidden payload pass, redaction review and audit readiness must all pass." safetyNote="No release, export or advice effect can occur until gate preconditions pass and an audit record exists." taskId="UX-DECISION-ROOM-002" />
       <ScfP07P09TrustPanel mode="export" />
       <UxDetailStandardPanel
         actionLabel="Approve export package only"
@@ -1471,7 +1471,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
         open={modalOpen}
         title="Approve Export Package"
       >
-        <StatePanel detail="This demo approval records the approval step and creates metadata-only package proof. Download, share and client acceptance remain separate." state="restricted" title="Approval confirmation" />
+        <StatePanel detail="Approval state records the approval step. Download, share and client acceptance remain separate." state="restricted" title="Approval confirmation" />
         <label className="mt-4 flex items-start gap-3 text-sm leading-6 text-alphavest-muted">
           <span className="mt-1 grid size-5 shrink-0 place-items-center rounded border border-alphavest-gold bg-alphavest-gold text-alphavest-navy">
             <Check aria-hidden="true" className="size-3" />

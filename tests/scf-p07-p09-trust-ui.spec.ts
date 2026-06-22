@@ -20,7 +20,7 @@ test.describe("SCF P07-P09 client visibility, governance and export controls", (
     await authenticate(page);
     await page.goto("/client/home");
 
-    await expect(page.getByText("Phase 7 client-safe projection")).toBeVisible();
+    await expect(page.getByText("Client-safe projection")).toBeVisible();
     await expect(page.getByText("Client projection stays separated from internal review and release gates.")).toBeVisible();
     await expect(page.getByText("Client projection cannot expose internal payloads.")).toBeVisible();
     await expect(page.getByText("No internal payload, manual override, unreleased evidence, AI Draft, compliance notes or storage keys.")).toBeVisible();

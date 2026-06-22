@@ -354,7 +354,7 @@ test.describe("UX-DECISION-ROOM phase 6 safety-critical decision rooms", () => {
       await expect(panel.getByTestId("ux-phase6-evidence")).toContainText(/evidence|checks|documents|votes|trigger|package/i);
       await expect(panel.getByTestId("ux-phase6-audit")).toContainText(/audit.*record|record.*audit/i);
       await expect(panel.getByTestId("ux-phase6-blocker")).toContainText(/blocked|remains|cannot|incomplete/i);
-      await expect(panel.getByTestId("ux-phase6-safety-note")).toContainText(/No release, export or advice effect can occur without gate preconditions and audit proof/i);
+      await expect(panel.getByTestId("ux-phase6-safety-note")).toContainText(/No release, export or advice effect can occur until gate preconditions pass and an audit record exists/i);
       await expect(panel.getByTestId("ux-phase6-confirm")).toHaveCount(1);
       await expect(panel.getByTestId("ux-phase6-confirm")).toBeDisabled();
       await expect(panel.getByTestId("ux-phase6-cancel")).toHaveCount(1);
@@ -1117,7 +1117,7 @@ test.describe("UX-CTA disabled blocked recovery copy", () => {
       expected: [
         "Share needs evidence sufficiency, release and payload checks first.",
         "Revocation needs a scoped access decision and persisted audit event.",
-        "New versions need evidence review; versioning is not sufficiency proof.",
+        "New versions need evidence review; versioning cannot mark evidence sufficient.",
       ],
     },
     {

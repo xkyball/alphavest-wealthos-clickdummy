@@ -23,7 +23,7 @@ test.describe("Phase 03 UI state boundaries", () => {
   test("client-facing routes fail closed for unreleased recommendation states", async ({ page }) => {
     await page.goto("/client/home");
 
-    await expect(page.getByText("Phase 7 client-safe projection")).toBeVisible();
+    await expect(page.getByText("Client-safe projection")).toBeVisible();
     await expect(page.getByText("Released client-safe state only")).toBeVisible();
     await expect(page.getByText("Client projection cannot expose internal payloads.")).toBeVisible();
     await expect(page.getByText("No internal payload, manual override, unreleased evidence, AI Draft, compliance notes or storage keys.")).toBeVisible();
@@ -60,7 +60,7 @@ test.describe("Phase 03 UI state boundaries", () => {
     await page.goto("/export/demo/approval?state=approval");
     await expect(page.getByRole("dialog", { name: "Approve Export Package" })).toBeVisible();
     await expect(page.getByText("Approval confirmation")).toBeVisible();
-    await expect(page.getByText("This demo approval records the approval step and creates metadata-only package proof. Download, share and client acceptance remain separate.")).toBeVisible();
+    await expect(page.getByText("Approval state records the approval step. Download, share and client acceptance remain separate.")).toBeVisible();
   });
 
   test("export delivery state does not imply client acceptance", async ({ page }) => {
@@ -89,7 +89,7 @@ test.describe("Phase 05 feedback no-overclaim boundaries", () => {
     await expect(page.getByRole("dialog", { name: "Approve Export Package" })).toBeVisible();
     await expect(page.getByTestId("j08-confirm-approval")).toBeVisible();
     await expect(page.getByText("Generation, download and share remain separate controlled steps.")).toBeVisible();
-    await expect(page.getByText("This demo approval records the approval step and creates metadata-only package proof.")).toBeVisible();
+    await expect(page.getByText("Approval state records the approval step.")).toBeVisible();
   });
 
   test("audit-sensitive feedback states audit requirements rather than claiming persistence", async ({ page }) => {
