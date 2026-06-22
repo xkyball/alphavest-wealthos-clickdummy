@@ -1,7 +1,20 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
+
+async function authenticate(page: Page) {
+  await page.context().addCookies([
+    {
+      httpOnly: true,
+      name: "alphavest_dummy_auth_session",
+      sameSite: "Lax",
+      url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3020",
+      value: "av-session-playwright-authenticated",
+    },
+  ]);
+}
 
 test.describe("SCF P07-P09 client visibility, governance and export controls", () => {
   test("renders P07 client-safe visibility projection on the client portal", async ({ page }) => {
+    await authenticate(page);
     await page.goto("/portal");
 
     const visibilityGate = page.getByTestId("p07-p09-visibility-trust").first();
@@ -13,6 +26,7 @@ test.describe("SCF P07-P09 client visibility, governance and export controls", (
   });
 
   test("renders P07 decision submitted/released projection on decision surfaces", async ({ page }) => {
+    await authenticate(page);
     await page.goto("/decisions");
 
     const decisionGate = page.getByTestId("p07-p09-decision-trust").first();
@@ -26,20 +40,23 @@ test.describe("SCF P07-P09 client visibility, governance and export controls", (
   });
 
   test("renders P08 governance non-bypass controls on governance and admin surfaces", async ({ page }) => {
+    await authenticate(page);
     await page.goto("/governance/users");
 
     const governanceGate = page.getByTestId("p07-p09-governance-trust").first();
-    await expect(governanceGate.getByText("Governance Non-Bypass")).toBeVisible();
-    await expect(governanceGate.getByText("Admin cannot force advice")).toBeVisible();
-    await expect(governanceGate.getByText("Cross-tenant rows")).toBeVisible();
-    await expect(governanceGate.getByText("Export non-bypass")).toBeVisible();
-    await expect(governanceGate.getByText("DEMO DENY ADMIN ADVICE PAYLOAD NON BYPASS").first()).toBeVisible();
+    await expect(governanceGate.getByText("Governance action gate").first()).toBeVisible();
+    await expect(governanceGate.getByText("Advice payload", { exact: true })).toBeVisible();
+    await expect(governanceGate.getByText("Tenant scope", { exact: true })).toBeVisible();
+    await expect(governanceGate.getByText("Controlled export", { exact: true })).toBeVisible();
+    await expect(governanceGate.getByText("Advice payload blocked").first()).toBeVisible();
+    await expect(governanceGate).not.toContainText(/DEMO_DENY|DEMO DENY/);
 
     await page.goto("/admin/platform");
-    await expect(page.getByTestId("p07-p09-governance-trust").first().getByText("Governance Non-Bypass")).toBeVisible();
+    await expect(page.getByTestId("p07-p09-governance-trust").first().getByText("Governance action gate").first()).toBeVisible();
   });
 
   test("renders P09 export scope, redaction and approval lifecycle controls", async ({ page }) => {
+    await authenticate(page);
     await page.goto("/export/demo/redaction");
 
     const exportGate = page.getByTestId("p07-p09-export-trust").first();

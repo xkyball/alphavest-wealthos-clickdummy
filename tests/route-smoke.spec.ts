@@ -828,6 +828,48 @@ test.describe("UX-CTA AI draft internal-only chain", () => {
   });
 });
 
+test.describe("UX-CTA governance admin non-bypass chain", () => {
+  const governancePageIds = ["009", "048", "049", "050", "051"] as const;
+
+  test("maps admin and governance routes to scoped non-bypass CTA states", () => {
+    for (const pageId of governancePageIds) {
+      const route = screenRoutes.find((candidate) => candidate.pageId === pageId);
+      expect(route, `${pageId} route`).toBeDefined();
+
+      const guidance = productGuidanceForRoute(route!);
+      expect(guidance.ctaState.state, `${pageId} CTA state`).toBe("guarded");
+      expect(guidance.ctaState.primaryAction?.label, `${pageId} primary label`).not.toMatch(
+        /admin override|force release|release to client|evidence sufficient|approve export|download ready|suppress audit/i,
+      );
+      expect(`${guidance.gateHint} ${guidance.ctaState.blockedReason}`, `${pageId} safety copy`).toMatch(
+        /cannot|does not|separate|scoped|audit|bypass/i,
+      );
+    }
+  });
+
+  const governanceScreens = [
+    { path: "/admin/roles?state=permission", required: "Confirm scoped permission change" },
+    { path: "/governance/users?state=invite", required: "Send scoped invitation" },
+    { path: "/governance/roles?state=confirm", required: "Confirm scoped role change" },
+    { path: "/governance/access-requests?state=approval", required: "Approve access request" },
+    { path: "/governance/audit-history?state=drawer", required: "Export audit events" },
+  ];
+
+  for (const { path, required } of governanceScreens) {
+    test(`${path} keeps admin authority bounded`, async ({ page }) => {
+      await page.setViewportSize({ height: 1000, width: 1440 });
+      await authenticateRouteSmokePage(page);
+      await page.goto(path);
+
+      await expect(page.getByText(required).first()).toBeVisible();
+      await expect(page.locator("body")).toContainText(/cannot|does not|separate|scoped|controlled|audit/i);
+      await expect(page.locator("body")).not.toContainText(
+        /admin override|release to client|release ready|client visibility unlocked|download ready|audit suppressed/i,
+      );
+    });
+  }
+});
+
 test.describe("locked route workset preservation", () => {
   test("all registered routes are classified exactly once", () => {
     expect(routeWorksetIntegrity.counts).toEqual(lockedRouteWorksetCounts);

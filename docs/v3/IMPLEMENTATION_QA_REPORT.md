@@ -6867,3 +6867,19 @@ Date: 2026-06-22
 Commands: `pnpm typecheck`, `pnpm lint`, focused route-smoke on `UX-CTA AI draft`, `pnpm test:workflow-gate`, `pnpm test:workflow-api`, `pnpm test:file-export`, `pnpm test:permissions` all passed. Lint retains 27 existing warnings and 0 errors.
 
 Safety proof: AI/rules draft actions remain internal, advisor approval remains separate from compliance release, and no client visibility, release, export, audit persistence or RBAC authority is implied by static CTA copy.
+
+## UX-CTA-005 QA Addendum
+
+Date: 2026-06-22
+
+| Area | QA result | Evidence |
+| --- | --- | --- |
+| Governance/admin CTA scope | Passed | Route-smoke validates `009`, `048`, `049`, `050`, `051` scoped non-bypass CTA states. |
+| Visible proof-code cleanup | Passed | Focused governance P08 trust test verifies user-facing guard labels and no `DEMO_DENY` reason-code badges. |
+| Admin non-bypass | Passed | Permission tests continue to deny admin export/advice/payload bypass. |
+| P0 safety | Passed | Workflow-gate, workflow-api, file-export and permissions tests passed serially. |
+| Screenshot proof | Passed | Six screenshots under `artifacts/ux-page-to-policy/UX-CTA-005/`. |
+
+Commands: `pnpm typecheck`, `pnpm lint`, focused route-smoke on `UX-CTA governance`, focused SCF trust UI on `P08 governance`, `pnpm test:workflow-gate`, `pnpm test:workflow-api`, `pnpm test:file-export`, `pnpm test:permissions` all passed. Lint retains 27 existing warnings and 0 errors.
+
+Safety proof: admin and governance CTAs remain bounded to access administration. They do not release advice, prove evidence sufficiency, approve export/download/share, unlock client visibility, suppress audit or expand RBAC payload authority.

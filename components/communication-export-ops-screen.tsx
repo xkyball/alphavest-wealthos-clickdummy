@@ -560,7 +560,7 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
   return (
     <div>
       <PageLead description="Access-event review with filters, export controls and event lineage." icon={LockKeyhole} title={title} />
-      <StatePanel detail="Audit immutability depends on the retention and persistence gates; this view does not prove those gates by itself." state="restricted" title="Audit persistence gate" />
+      <StatePanel detail="Audit review is read-only here; persistence, retention and controlled export remain separate gates." state="restricted" title="Audit persistence gate" />
       <UxDenseOperationsPanel
         actions={
           <>
@@ -570,7 +570,7 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
             </button>
             <button className={secondaryButtonClass} type="button">
               <Download aria-hidden="true" className="size-4" />
-              Export events
+              Export audit events
             </button>
           </>
         }
@@ -579,7 +579,7 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
         description="Access-event rows remain filterable and sortable while selected-event lineage stays in the drawer."
         pageId="051"
         resultLabel={`Showing ${filteredRows.length} of ${rows.length} tenant-scoped DB audit-event rows`}
-        safetyNote="Audit visibility does not prove audit persistence; retention, export and access-change gates remain separate."
+        safetyNote="Audit visibility does not prove audit persistence; controlled export and access-change gates remain separate."
         title="Access-event operations"
       >
         <div className="grid gap-4 rounded-md border border-alphavest-border/70 bg-alphavest-panel/55 p-3 md:grid-cols-4">
@@ -639,7 +639,7 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
               type="button"
             >
               <Download aria-hidden="true" className="size-4" />
-              Export events
+              Export audit events
             </button>
           </div>
           <UxSecondaryContextTabs

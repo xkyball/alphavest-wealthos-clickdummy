@@ -1156,7 +1156,7 @@ function PermissionChangeModal({ onClose, open }: { onClose: () => void; open: b
           <button className={secondaryButtonClass} onClick={onClose} type="button">Cancel</button>
           <button className={primaryButtonClass} onClick={onClose} type="button">
             <LockKeyhole aria-hidden="true" className="size-4" />
-            Confirm changes
+            Confirm scoped permission change
           </button>
         </>
       }
@@ -1170,7 +1170,7 @@ function PermissionChangeModal({ onClose, open }: { onClose: () => void; open: b
             {change}
           </div>
         ))}
-        <StatePanel detail="Permission changes may impact separation of duties and require administrator approval." state="restricted" title="Review carefully" />
+        <StatePanel detail="Permission change is scoped to this role template. It cannot release advice, mark evidence sufficient, approve export, or bypass audit." state="restricted" title="Scoped permission change" />
       </div>
     </Modal>
   );

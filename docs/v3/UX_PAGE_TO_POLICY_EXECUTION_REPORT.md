@@ -1969,6 +1969,61 @@ No-route-reclassification confirmation: route IDs, paths, worksets and scopes re
 No-P1/Hold/Reference-elevation confirmation: no protected route was touched or elevated.
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
 
+## Completed Slice: UX-CTA-005
+
+Task: `UX-CTA-005` - Implement governance/admin non-bypass CTA behaviour.
+
+Mission Card: constrain admin and governance CTAs on routes `009`, `048-051` and adjacent compliance gates `038-040` so access administration never implies advice release, evidence sufficiency, export approval, audit suppression or payload authority.
+
+Evidence Intake:
+- Task-master `UX-CTA-005`; Route Policy Matrix rows `009`, `038-040`, `048-051`.
+- Route Policy Matrix `SAFE-POL-001`, `SAFE-POL-002`, `SAFE-POL-005`, `CTA-POL-003`, `CTA-POL-005`, `CTA-POL-007`.
+- Existing permission tests already prove admin export/advice non-bypass; UI needed clearer scoped labels and less proof-code/explanatory surface copy.
+
+Method artifacts: Discover found generic `Approve`, `Export`, `Save Changes` and visible reason-code proof text on governance pages. Define kept permission/workflow behavior unchanged and tightened labels, blocked reasons and recovery wording. Develop reused product guidance, existing drawers/modals and trust panels. Deliver includes six screenshots plus focused governance and P0 validation.
+
+Changed files:
+- `components/admin-tenant-setup-screen.tsx`
+- `components/decisions-governance-screen.tsx`
+- `components/communication-export-ops-screen.tsx`
+- `lib/product-guidance.ts`
+- `lib/screen-trust-flow.ts`
+- `tests/route-smoke.spec.ts`
+- `tests/scf-p07-p09-trust-ui.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-CTA-005/*.png`
+
+Validation:
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with 27 existing warnings, 0 errors.
+- `PLAYWRIGHT_PORT=3506 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-CTA governance"` - passed, 6 tests.
+- `PLAYWRIGHT_PORT=3505 pnpm exec playwright test tests/scf-p07-p09-trust-ui.spec.ts -g "P08 governance"` - passed, 1 test.
+- `PLAYWRIGHT_PORT=3496 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3497 pnpm test:workflow-api` - passed, 15 tests.
+- `PLAYWRIGHT_PORT=3498 pnpm test:file-export` - passed, 14 tests.
+- `PLAYWRIGHT_PORT=3499 pnpm test:permissions` - passed, 8 tests.
+
+Screenshot/proof:
+- `artifacts/ux-page-to-policy/UX-CTA-005/2026-06-22-UX-CTA-005-admin-roles-scoped-permission.png`
+- `artifacts/ux-page-to-policy/UX-CTA-005/2026-06-22-UX-CTA-005-governance-users-scoped-invite.png`
+- `artifacts/ux-page-to-policy/UX-CTA-005/2026-06-22-UX-CTA-005-governance-roles-scoped-change.png`
+- `artifacts/ux-page-to-policy/UX-CTA-005/2026-06-22-UX-CTA-005-access-request-policy-checked.png`
+- `artifacts/ux-page-to-policy/UX-CTA-005/2026-06-22-UX-CTA-005-audit-history-controlled-export.png`
+- `artifacts/ux-page-to-policy/UX-CTA-005/2026-06-22-UX-CTA-005-compliance-release-boundary.png`
+
+Positive acceptance: admin/governance pages now expose scoped access, role, permission and audit CTAs with one guarded primary action per state.
+
+Negative/P0 acceptance: focused route-smoke rejects admin override, release-ready, client-visibility-unlocked, download-ready and audit-suppressed claims; P0 workflow, export and permission tests remain green.
+
+Deviation note: an attempted full `tests/scf-p07-p09-trust-ui.spec.ts` run still contains stale non-governance expectations for legacy visibility/decision panel placements. The task-scoped P08 governance test was updated and passed.
+
+No-generation confirmation: no screen, state-screen, image or generated product asset was created.
+No-route-reclassification confirmation: route IDs, paths, worksets and scopes remain unchanged.
+No-P1/Hold/Reference-elevation confirmation: no protected route was touched or elevated.
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
+
 ## Completed Slice: UX-CTA-004
 
 Task: `UX-CTA-004` - Implement AI draft rejection/rebuild CTA chain as internal-only.

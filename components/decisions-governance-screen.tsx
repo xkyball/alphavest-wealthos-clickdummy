@@ -1241,7 +1241,7 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
               }}
               type="button"
             >
-              <Plus aria-hidden="true" className="size-4" />Invite User
+              <Plus aria-hidden="true" className="size-4" />Invite scoped user
             </button>
           }
           subtitle="Manage platform access, roles and user permissions."
@@ -1258,7 +1258,7 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
           ))}
         </div>
         <UxDenseOperationsPanel
-          actions={<button className={secondaryButtonClass} type="button"><Download aria-hidden="true" className="size-4" />Export</button>}
+          actions={<button className={secondaryButtonClass} type="button"><Download aria-hidden="true" className="size-4" />Export user list</button>}
           controls={["Search user", "Role", "Status", "MFA", "Entity access", "Last active"]}
           description="User access stays in a compact operations table so role, MFA and entity scope can be compared without admin bypass."
           pageId="048"
@@ -1280,13 +1280,13 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
       </div>
       <Drawer
         description="Invite a user and assign scoped roles."
-        footer={<div className="grid gap-3 sm:grid-cols-2"><button className={secondaryButtonClass} onClick={() => setDrawerOpen(false)} type="button">Cancel</button><button className={primaryButtonClass} data-testid="j07-send-invitation" onClick={() => { void runScreencastDemoAction("j07.sendInvitation", "/governance/roles?state=confirm"); }} type="button"><Send aria-hidden="true" className="size-4" />Send Invitation</button></div>}
+        footer={<div className="grid gap-3 sm:grid-cols-2"><button className={secondaryButtonClass} onClick={() => setDrawerOpen(false)} type="button">Cancel</button><button className={primaryButtonClass} data-testid="j07-send-invitation" onClick={() => { void runScreencastDemoAction("j07.sendInvitation", "/governance/roles?state=confirm"); }} type="button"><Send aria-hidden="true" className="size-4" />Send scoped invitation</button></div>}
         onClose={() => setDrawerOpen(false)}
         open={drawerOpen}
         title="Invite New User"
       >
         <div className="space-y-5">
-          <StatePanel detail="This role grants access to sensitive investment and transaction capabilities. Changes are monitored and audited." state="restricted" title="Sensitive access" />
+          <StatePanel detail="Role assignment changes access only. It cannot release advice, prove evidence sufficiency, approve exports or suppress audit." state="restricted" title="Sensitive access" />
           <UxSecondaryContextTabs
             safetyNote="Role details are secondary drawer context; invitation and access authority remain constrained by RBAC and audit logging."
             tabs={[
@@ -1345,7 +1345,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
       <ScreenTitle>{title}</ScreenTitle>
       <div className={cn("mx-auto max-w-[104rem] space-y-5", drawerOpen ? "pr-0 xl:pr-[23rem]" : "")}>
         <PageHeading
-          action={<button className={primaryButtonClass} onClick={() => setDrawerOpen(true)} type="button"><Plus aria-hidden="true" className="size-4" />Create Role</button>}
+          action={<button className={primaryButtonClass} onClick={() => setDrawerOpen(true)} type="button"><Plus aria-hidden="true" className="size-4" />Create scoped role</button>}
           subtitle="Define roles and manage permissions across WealthOS."
           title={title}
         />
@@ -1372,13 +1372,13 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
       </div>
       <Drawer
         description="Custom role with sensitive permission changes."
-        footer={<div className="grid gap-3 sm:grid-cols-2"><button className={secondaryButtonClass} onClick={() => setDrawerOpen(false)} type="button">Discard Changes</button><button className={primaryButtonClass} onClick={() => setModalOpen(true)} type="button">Save Changes</button></div>}
+        footer={<div className="grid gap-3 sm:grid-cols-2"><button className={secondaryButtonClass} onClick={() => setDrawerOpen(false)} type="button">Discard changes</button><button className={primaryButtonClass} onClick={() => setModalOpen(true)} type="button">Review scoped changes</button></div>}
         onClose={() => setDrawerOpen(false)}
         open={drawerOpen}
         title="Portfolio Manager"
       >
         <div className="space-y-5">
-          <StatePanel detail="Changes to sensitive permissions require additional confirmation." state="restricted" title="Sensitive permission change" />
+          <StatePanel detail="Sensitive permission changes stay role-scoped and require confirmation plus audit logging." state="restricted" title="Sensitive permission change" />
           {rolePermissions.map((group) => (
             <Card key={group.group}>
               <CardHeader><CardTitle>{group.group}</CardTitle></CardHeader>
@@ -1404,13 +1404,13 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
           </div>
         }
         description="You are about to save changes that modify sensitive permissions."
-        footer={<><button className={secondaryButtonClass} onClick={() => setModalOpen(false)} type="button">Cancel</button><button className={primaryButtonClass} data-testid="j07-save-role-changes" onClick={() => { void runScreencastDemoAction("j07.saveRoleChanges", "/governance/access-requests?state=approval"); }} type="button">Confirm and Save Changes</button></>}
+        footer={<><button className={secondaryButtonClass} onClick={() => setModalOpen(false)} type="button">Cancel</button><button className={primaryButtonClass} data-testid="j07-save-role-changes" onClick={() => { void runScreencastDemoAction("j07.saveRoleChanges", "/governance/access-requests?state=approval"); }} type="button">Confirm scoped role change</button></>}
         onClose={() => setModalOpen(false)}
         open={modalOpen}
         title="Confirm Sensitive Permission Changes"
       >
         <div className="space-y-4">
-          <StatePanel detail="This action may impact data access, transactions and client privacy." state="restricted" title="Second confirmation required" />
+          <StatePanel detail="This role change cannot release advice, mark evidence sufficient, approve export or bypass audit persistence." state="restricted" title="Second confirmation required" />
           <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4 text-sm text-alphavest-muted">
             <p>3 sensitive permissions modified.</p>
             <p>Affects 7 users across 2 teams.</p>
@@ -1479,7 +1479,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
       <ScreenTitle>{title}</ScreenTitle>
       <div className={cn("mx-auto max-w-[104rem] space-y-5", drawerOpen ? "pr-0 xl:pr-[23rem]" : "")}>
         <PageHeading
-          action={<button className={primaryButtonClass} onClick={() => setDrawerOpen(true)} type="button">Review Selected Request</button>}
+          action={<button className={primaryButtonClass} onClick={() => setDrawerOpen(true)} type="button">Review policy-checked request</button>}
           subtitle="Review and take action on access requests across the organization."
           title={title}
         />
@@ -1508,12 +1508,12 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
         description="Review access request, policy checks and decision."
         footer={
           <UxCtaCluster
-            blockedReason="Approval remains constrained by visible policy and SOD checks plus audit logging; escalation and denial are contextual alternatives."
+            blockedReason="Access approval remains constrained by visible policy, SOD and audit checks; it cannot release advice, prove evidence sufficiency or approve export."
             className="w-full"
-            primary={{ label: "Approve", onClick: () => { void runScreencastDemoAction("j07.approveAccess", "/governance/audit-history?state=drawer"); }, testId: "j07-approve-access" }}
+            primary={{ label: "Approve access request", onClick: () => { void runScreencastDemoAction("j07.approveAccess", "/governance/audit-history?state=drawer"); }, testId: "j07-approve-access" }}
             secondary={[
-              { label: "Escalate", onClick: () => setDrawerOpen(false) },
-              { label: "Deny", onClick: () => setDrawerOpen(false) },
+              { label: "Escalate request", onClick: () => setDrawerOpen(false) },
+              { label: "Deny request", onClick: () => setDrawerOpen(false) },
             ]}
           />
         }

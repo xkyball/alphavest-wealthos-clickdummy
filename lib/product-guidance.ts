@@ -80,6 +80,12 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
     primaryAction: linkForPageId("048", "Review governance users"),
     relatedRoutes: [linkForPageId("049", "Manage roles"), linkForPageId("010", "Review security")],
   },
+  "009": {
+    area: "Platform controls",
+    gateHint: "Role administration is scoped configuration only; it cannot release advice, approve exports or suppress audit.",
+    primaryAction: linkForPageId("048", "Review governance users"),
+    relatedRoutes: [linkForPageId("049", "Review role changes"), linkForPageId("050", "Review access requests")],
+  },
   "013": {
     area: "Tenant setup",
     gateHint: "Tenant setup prepares context only; it does not expand permissions or client visibility.",
@@ -258,9 +264,30 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
   "048": {
     area: "Governance",
     gateHint: "Governance controls access, but admin authority does not bypass release, evidence or export gates.",
-    nextStep: linkForPageId("049", "Review roles"),
-    primaryAction: linkForPageId("049", "Review roles"),
-    relatedRoutes: [linkForPageId("050", "Review access requests"), linkForPageId("008", "Open advice boundary")],
+    nextStep: linkForPageId("049", "Review scoped roles"),
+    primaryAction: linkForPageId("049", "Review scoped roles"),
+    relatedRoutes: [linkForPageId("050", "Review policy-checked requests"), linkForPageId("051", "Open audit history")],
+  },
+  "049": {
+    area: "Governance",
+    gateHint: "Role edits require confirmation and audit; they cannot force release, sufficiency, export approval or visibility.",
+    nextStep: linkForPageId("050", "Review access requests"),
+    primaryAction: linkForPageId("050", "Review access requests"),
+    relatedRoutes: [linkForPageId("048", "Review governance users"), linkForPageId("051", "Open audit history")],
+  },
+  "050": {
+    area: "Governance",
+    gateHint: "Access approval is role-scoped only; policy, SOD and audit gates still control the action.",
+    nextStep: linkForPageId("051", "Open audit history"),
+    primaryAction: linkForPageId("051", "Open audit history"),
+    relatedRoutes: [linkForPageId("049", "Review roles"), linkForPageId("008", "Open advice boundary")],
+  },
+  "051": {
+    area: "Governance",
+    gateHint: "Audit visibility supports review only; persistence, retention and export controls remain separate.",
+    nextStep: linkForPageId("048", "Review governance users"),
+    primaryAction: linkForPageId("048", "Review governance users"),
+    relatedRoutes: [linkForPageId("050", "Review access requests"), linkForPageId("042", "Review compliance audit")],
   },
   "054": {
     area: "Export",

@@ -9110,3 +9110,42 @@ No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route was 
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
 
 Exit Gate Decision: `UX_CTA_004_COMPLETED_WITH_AI_DRAFT_INTERNAL_ONLY_CTA_PROOF`
+
+## UX-CTA-005 Addendum - Governance Admin Non-Bypass CTA Behaviour
+
+Date: 2026-06-22
+
+Status: Completed and validated.
+
+Task IDs: `UX-CTA-005`
+
+Route-policy rows cited:
+- Route Policy Matrix rows `009`, `038-040`, `048-051`.
+- `SAFE-POL-001` route access is not action permission.
+- `SAFE-POL-002` action permission is not payload visibility.
+- `SAFE-POL-005` admin authority cannot bypass advice/compliance/evidence/audit/export gates.
+- `CTA-POL-003`, `CTA-POL-005`, `CTA-POL-007`.
+
+Completed `UX-CTA-005` by turning governance/admin CTAs into scoped access, role, permission, audit and controlled-export actions. Removed visible governance proof-code wording from the trust panel and replaced generic `Approve`, `Export` and save labels with bounded action labels. No route, permission engine, API, workflow state or release behavior changed.
+
+Changed files: `components/admin-tenant-setup-screen.tsx`, `components/decisions-governance-screen.tsx`, `components/communication-export-ops-screen.tsx`, `lib/product-guidance.ts`, `lib/screen-trust-flow.ts`, `tests/route-smoke.spec.ts`, `tests/scf-p07-p09-trust-ui.spec.ts`, reports and `artifacts/ux-page-to-policy/UX-CTA-005/*.png`.
+
+Validation: `pnpm typecheck` passed; `pnpm lint` passed with 27 existing warnings; focused route-smoke on `UX-CTA governance` passed 6 tests; focused SCF P08 governance trust test passed 1 test; `pnpm test:workflow-gate` passed 13; `pnpm test:workflow-api` passed 15; `pnpm test:file-export` passed 14; `pnpm test:permissions` passed 8.
+
+Proof artifacts: `artifacts/ux-page-to-policy/UX-CTA-005/` contains six screenshots for admin roles, governance users, governance roles, access requests, audit history and compliance release boundary.
+
+Positive acceptance: governance/admin surfaces expose bounded CTAs and recovery copy for scoped user, role, permission, request and audit actions.
+
+Negative/P0 acceptance: no UI proof claims admin override, release-ready status, client visibility unlock, download readiness or audit suppression; existing P0 permission/export/workflow gates remain green.
+
+Deviation note: initial parallel validation collided on Playwright web servers and was rerun serially. A full legacy SCF trust UI suite still has stale non-governance expectations outside this task; the task-scoped P08 governance regression passed.
+
+No-generation confirmation: no screen generation, state-screen generation, image generation or generated product assets.
+
+No-route-reclassification confirmation: route IDs, paths, worksets and route scopes remain unchanged.
+
+No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route was elevated.
+
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
+
+Exit Gate Decision: `UX_CTA_005_COMPLETED_WITH_ADMIN_NON_BYPASS_CTA_PROOF`
