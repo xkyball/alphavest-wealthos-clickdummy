@@ -26,7 +26,7 @@ test.describe("UXP2-002 filter affordance pruning", () => {
 
     await expect(page.getByRole("button", { name: "Open selected action" })).toBeEnabled();
     await expect(page.getByRole("button", { name: "Filters" }).first()).toHaveCount(0);
-    await expect(page.getByText("Action board filters are not wired in this release.")).toBeVisible();
+    await expect(page.getByTestId("ux-cta-disabled-reason").filter({ hasText: "Action board filters are not wired in this release." })).toBeVisible();
     await expect(page.getByRole("button", { name: "Priority filter is static in this action board" })).toHaveCount(0);
     await expect(page.getByLabel("Priority filter is static in this action board")).toBeVisible();
     await expect(page.getByRole("button", { name: "Board grouping is fixed to workflow stage" })).toHaveCount(0);

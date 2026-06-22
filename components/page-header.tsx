@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight, LockKeyhole, RotateCcw } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { A11yStatusProofPanel } from "@/components/ui/a11y-status";
+import { DisabledControlReason, disabledControlReasonId } from "@/components/ui/disabled-control-reason";
 import { StatusChip, type StatusChipStatus } from "@/components/ui/status-chip";
 import { WizardStepper, type WizardStep } from "@/components/ui/wizard-stepper";
 import { cn } from "@/lib/cn";
@@ -44,6 +45,7 @@ function routeForPathname(pathname: string) {
 function HeaderAction({ action, primary = false, recovery = false }: { action: PageHeaderAction; primary?: boolean; recovery?: boolean }) {
   const hasLifecycle = Boolean(action.href || action.onClick);
   const disabledReason = action.disabledReason ?? (!hasLifecycle ? defaultUnwiredActionReason : undefined);
+  const disabledReasonId = disabledReason ? disabledControlReasonId(`page-header-${action.label}`) : undefined;
   const className = cn(
     "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold transition",
     primary
@@ -55,9 +57,12 @@ function HeaderAction({ action, primary = false, recovery = false }: { action: P
   if (disabledReason) {
     return (
       <span
+        aria-describedby={disabledReasonId}
         aria-label={`${action.label}: ${disabledReason}`}
         className={className}
         data-ux-cta-kind={primary ? "primary" : recovery ? "recovery" : "secondary"}
+        data-ux-disabled-message="accessible"
+        data-ux-disabled-reason={disabledReason}
         data-ux-interactive="false"
         data-ux-primary-cta={primary ? "true" : undefined}
         data-ux-secondary-cta={!primary ? "true" : undefined}
@@ -67,6 +72,7 @@ function HeaderAction({ action, primary = false, recovery = false }: { action: P
         <LockKeyhole aria-hidden="true" className="size-4" />
         {action.label}
         {recovery ? <RotateCcw aria-hidden="true" className="size-4" /> : null}
+        <DisabledControlReason id={disabledReasonId} reason={disabledReason} />
       </span>
     );
   }

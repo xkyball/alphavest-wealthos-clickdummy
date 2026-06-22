@@ -2,6 +2,7 @@
 
 import { MoreHorizontal } from "lucide-react";
 import { useMemo, useState } from "react";
+import { DisabledControlReason, disabledControlReasonId } from "@/components/ui/disabled-control-reason";
 import { StatePanel, type ComponentState } from "@/components/ui/state-panel";
 import { cn } from "@/lib/cn";
 
@@ -107,13 +108,18 @@ export function DataTable<T>({
 
   function RowAction({ row }: { row: T }) {
     const actionLabel = rowActionLabel?.(row) ?? `Open row action for ${getRowId(row)}`;
+    const disabledReason = onRowAction ? undefined : rowActionUnavailableLabel;
+    const disabledReasonId = disabledReason ? disabledControlReasonId(`row-action-${getRowId(row)}`) : undefined;
 
     return (
       <button
+        aria-describedby={disabledReason ? disabledReasonId : undefined}
         aria-label={onRowAction ? actionLabel : rowActionUnavailableLabel}
         className="ml-auto grid size-8 place-items-center rounded-md border border-transparent text-alphavest-subtle transition enabled:hover:border-alphavest-border enabled:hover:text-alphavest-ivory disabled:cursor-not-allowed disabled:opacity-45"
         data-testid="ux-data-table-row-action"
         data-ux-affordance="row-action"
+        data-ux-disabled-message={disabledReason ? "accessible" : undefined}
+        data-ux-disabled-reason={disabledReason}
         data-ux-interactive={onRowAction ? "true" : "false"}
         data-ux-row-action-state={onRowAction ? "enabled" : "disabled"}
         disabled={!onRowAction}
@@ -122,6 +128,7 @@ export function DataTable<T>({
         type="button"
       >
         <MoreHorizontal aria-hidden="true" className="size-4" />
+        {disabledReason ? <DisabledControlReason id={disabledReasonId} reason={disabledReason} /> : null}
       </button>
     );
   }

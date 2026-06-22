@@ -4,9 +4,9 @@
 
 | Field | Value |
 | --- | --- |
-| Register status | `PHASE_2_REGISTER_UPDATED_UXP2_009` |
+| Register status | `PHASE_2_REGISTER_UPDATED_UXP2_010` |
 | Phase | Phase 2 - Fake Affordance Pruning |
-| Last updated | 2026-06-22 by `UXP2-009` |
+| Last updated | 2026-06-22 by `UXP2-010` |
 | Product authority | None |
 | Route scope authority | None |
 
@@ -33,6 +33,7 @@ This register records visible affordances touched by Phase 2 and the action take
 | `UXP2-007` | Buttons and CTAs across MVP/MVP_SUPPORT screen components | Header CTAs, topbar notification buttons, board add/new actions, auth alternate actions, admin setup CTAs, advisor/compliance secondary CTAs, communication/export operation CTAs | `components/ux-cta-cluster.tsx`, `components/page-header.tsx`, `components/top-bar.tsx`, `components/auth-onboarding-screen.tsx`, `components/wealth-actions-screen.tsx`, `components/admin-tenant-setup-screen.tsx`, `components/internal-workflow-screen.tsx`, `components/client-intake-screen.tsx`, `components/decisions-governance-screen.tsx`, `components/communication-export-ops-screen.tsx`, `components/committee-review-screen.tsx`, `components/ui/filter-bar.tsx`, `components/ui/kanban.tsx` | Dummy buttons removed or rendered as static non-interactive labels; handler-backed buttons and links kept | Buttons must only appear where a real lifecycle exists. Held or unavailable actions may remain visible as text/status, not as fake product controls. | `tests/button-cta-lifecycle-pruning.spec.ts` |
 | `UXP2-008` | Reference routes `061-063` (`/service-blueprint`, `/roadmap`, `/states`) | Reference page primary CTA/status, product-guidance next-step links and reference skeleton controls | `components/route-skeleton-page.tsx`, `components/page-header.tsx`, `components/product-guidance-panel.tsx`, `lib/route-registry.ts`, `lib/product-guidance.ts` | Product controls removed from reference shells; remaining `Reference only` affordance is static non-interactive status with explicit reference-scope proof attributes | Reference-only routes are registered context, not product task surfaces. They must expose no primary button/link, mutation, export, release, next-step or workflow-unlocking control. | `tests/reference-product-control-pruning.spec.ts`, `tests/reference-only-copy-cleanup.spec.ts`, `tests/state-copy-cleanup.spec.ts`; route-smoke source updated, execution deferred |
 | `UXP2-009` | P1/HOLD routes `052`, `053`, `059`, `060`, `068`, `064-067`, `069-071` | Deferred/Held primary CTA/status, product-guidance next-step links and registered-only route skeleton controls | `components/route-skeleton-page.tsx`, `components/page-header.tsx`, `components/product-guidance-panel.tsx`, `lib/route-registry.ts`, `lib/product-guidance.ts` | P1/HOLD product controls clarified as non-interactive; remaining `Deferred`/`Held` affordances are static status only, with no primary button/link or next-step CTA | P1/HOLD routes have no MVP unlock, no safety/action lifecycle and no route/product authority in this phase. Defensive copy remains visible so users understand why the route exists but cannot act. | `tests/p1-hold-defensive-noninteractive.spec.ts`, `tests/hold-route-copy-cleanup.spec.ts`; route-smoke source already aligned, execution deferred |
+| `UXP2-010` | Disabled buttons/controls across MVP/MVP_SUPPORT shared primitives and action-board controls | Header disabled statuses, CTA cluster disabled actions, global search lock, table row actions, static filters, guarded actions and kanban add-status controls | `components/ui/disabled-control-reason.tsx`, `components/page-header.tsx`, `components/ux-cta-cluster.tsx`, `components/global-search-box.tsx`, `components/ui/data-table.tsx`, `components/ui/filter-bar.tsx`, `components/ui/guarded-action-button.tsx`, `components/ui/kanban.tsx`, `components/wealth-actions-screen.tsx` | Retained disabled/static controls now expose consistent `data-ux-disabled-reason`, `data-ux-disabled-message`, `aria-describedby` and screenreader reason text; static controls remain non-focusable | Disabled controls must be understandable without implying a working lifecycle or trapping keyboard users. No new API, schema, route or product behavior was added. | `tests/disabled-control-a11y-messaging.spec.ts`; route-smoke execution deferred |
 
 ## Acceptance Notes
 
@@ -47,4 +48,5 @@ This register records visible affordances touched by Phase 2 and the action take
 - Button and CTA affordances touched in UXP2-007 are either lifecycle-backed controls or static text/status; dummy buttons were removed.
 - Reference route product controls touched in UXP2-008 are absent as buttons/links; only static locked status and blocked guidance remain.
 - P1/HOLD route product controls touched in UXP2-009 are absent as buttons/links; only static `Deferred`/`Held` status and blocked guidance remain.
+- Disabled controls touched in UXP2-010 expose understandable reason messaging through visible or screenreader-accessible text and do not add focus traps.
 - Full route-smoke is deferred until after UXP3-015 per execution instruction.

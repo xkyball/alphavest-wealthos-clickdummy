@@ -26,6 +26,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { GlobalSearchBox } from "@/components/global-search-box";
 import { AuditTimeline, Badge, Card, CardContent, CardHeader, CardTitle, StatePanel, type BadgeTone } from "@/components/ui";
+import { DisabledControlReason, disabledControlReasonId } from "@/components/ui/disabled-control-reason";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
 import { UxComplexityPriorityPanel } from "@/components/ux-complexity-priority-panel";
@@ -525,14 +526,51 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
           </div>
           <div className="flex flex-col gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-panel/55 p-3 md:flex-row md:items-center md:justify-between">
             <div className="flex flex-wrap gap-2">
-              {["Priority", "Owner", "Due date", "Evidence state", "Workflow stage"].map((filter) => (
-                <span aria-label={`${filter} filter is static in this action board`} className="flex h-10 items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted opacity-65" data-ux-affordance="static-control-note" data-ux-interactive="false" key={filter} role="status">
-                  {filter}
-                  <ChevronDown aria-hidden="true" className="size-4" />
-                </span>
-              ))}
+              {["Priority", "Owner", "Due date", "Evidence state", "Workflow stage"].map((filter) => {
+                const disabledReason = "Action board filters are not wired in this release.";
+                const disabledReasonId = disabledControlReasonId(`action-${filter}-filter`);
+
+                return (
+                  <span
+                    aria-describedby={disabledReasonId}
+                    aria-label={`${filter} filter is static in this action board`}
+                    className="flex h-10 items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted opacity-65"
+                    data-ux-affordance="static-control-note"
+                    data-ux-disabled-message="accessible"
+                    data-ux-disabled-reason={disabledReason}
+                    data-ux-interactive="false"
+                    key={filter}
+                    role="status"
+                    title={disabledReason}
+                  >
+                    {filter}
+                    <ChevronDown aria-hidden="true" className="size-4" />
+                    <DisabledControlReason id={disabledReasonId} reason={disabledReason} />
+                  </span>
+                );
+              })}
             </div>
-            <span aria-label="Board grouping is fixed to workflow stage" className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false" role="status">Group: Workflow Stage</span>
+            {(() => {
+              const disabledReason = "Board grouping is fixed to workflow stage in this release.";
+              const disabledReasonId = disabledControlReasonId("action-board-grouping");
+
+              return (
+                <span
+                  aria-describedby={disabledReasonId}
+                  aria-label="Board grouping is fixed to workflow stage"
+                  className={secondaryButtonClass}
+                  data-ux-affordance="static-control-note"
+                  data-ux-disabled-message="accessible"
+                  data-ux-disabled-reason={disabledReason}
+                  data-ux-interactive="false"
+                  role="status"
+                  title={disabledReason}
+                >
+                  Group: Workflow Stage
+                  <DisabledControlReason id={disabledReasonId} reason={disabledReason} />
+                </span>
+              );
+            })()}
           </div>
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             {actionColumns.map((column) => (

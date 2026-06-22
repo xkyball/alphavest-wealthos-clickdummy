@@ -4,6 +4,7 @@ import { Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { useDemoSession } from "@/components/demo-session-provider";
+import { disabledControlReasonId } from "@/components/ui/disabled-control-reason";
 import { cn } from "@/lib/cn";
 
 type GlobalSearchResult = {
@@ -29,6 +30,7 @@ export function GlobalSearchBox({ className, disabledReason, placeholder = "Sear
   const trimmedQuery = query.trim();
   const disabled = Boolean(disabledReason);
   const descriptionId = "global-search-state";
+  const disabledReasonId = disabledReason ? disabledControlReasonId("global-search") : undefined;
   const resultPanelId = "global-search-results";
   const searchUrl = useMemo(() => {
     const params = new URLSearchParams({
@@ -85,12 +87,14 @@ export function GlobalSearchBox({ className, disabledReason, placeholder = "Sear
         <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-5 size-4 -translate-y-1/2 text-alphavest-subtle" />
         <input
           aria-controls={resultPanelId}
-          aria-describedby={descriptionId}
+          aria-describedby={disabledReasonId ? `${descriptionId} ${disabledReasonId}` : descriptionId}
           aria-expanded={hasPanel}
           className={cn(
             "h-10 w-full rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-10 text-sm text-alphavest-ivory outline-none transition placeholder:text-alphavest-subtle focus:border-alphavest-gold",
             disabled ? "cursor-not-allowed opacity-70" : "",
           )}
+          data-ux-disabled-message={disabledReason ? "visible" : undefined}
+          data-ux-disabled-reason={disabledReason}
           disabled={disabled}
           onChange={(event) => setQuery(event.target.value)}
           onKeyDown={(event) => {
@@ -111,7 +115,7 @@ export function GlobalSearchBox({ className, disabledReason, placeholder = "Sear
         {disabledReason ?? "Searches scoped demo database rows for the selected tenant and role."}
       </p>
       {disabledReason ? (
-        <p className="mt-1 text-xs text-alphavest-muted">
+        <p className="mt-1 text-xs text-alphavest-muted" data-testid="ux-disabled-control-reason" data-ux-disabled-reason={disabledReason} id={disabledReasonId}>
           {disabledReason}
         </p>
       ) : null}

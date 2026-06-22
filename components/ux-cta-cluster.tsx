@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { DisabledControlReason, disabledControlReasonId } from "@/components/ui/disabled-control-reason";
 import { cn } from "@/lib/cn";
 
 type UxCtaAction = {
@@ -44,8 +45,10 @@ function CtaButton({
   const hasLifecycle = Boolean(action.href || action.onClick);
   const disabled = Boolean(action.disabled || !hasLifecycle);
   const disabledReason = action.disabledReason ?? (!hasLifecycle ? defaultUnwiredReason : undefined);
-  const reasonId = disabledReason ? `${action.testId ?? action.label.replace(/\W+/g, "-").toLowerCase()}-reason` : undefined;
+  const reasonId = disabledReason ? disabledControlReasonId(action.testId ?? action.label) : undefined;
   const dataAttrs = {
+    "data-ux-disabled-message": disabledReason ? "visible" : undefined,
+    "data-ux-disabled-reason": disabledReason,
     "data-ux-primary-cta": kind === "primary" ? "true" : undefined,
     "data-ux-recovery-cta": kind === "recovery" ? "true" : undefined,
     "data-ux-secondary-cta": kind === "secondary" ? "true" : undefined,
@@ -82,8 +85,8 @@ function CtaButton({
         </button>
       )}
       {disabledReason ? (
-        <p className="max-w-[18rem] text-xs leading-5 text-alphavest-muted" data-testid="ux-cta-disabled-reason" id={reasonId}>
-          {disabledReason}
+        <p className="max-w-[18rem]">
+          <DisabledControlReason id={reasonId} reason={disabledReason} testId="ux-cta-disabled-reason" visible />
         </p>
       ) : null}
     </div>

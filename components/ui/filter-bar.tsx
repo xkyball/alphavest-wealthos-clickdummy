@@ -1,5 +1,6 @@
 import { Search, SlidersHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { DisabledControlReason, disabledControlReasonId } from "@/components/ui/disabled-control-reason";
 
 type FilterOption = {
   label: string;
@@ -46,20 +47,29 @@ export function FilterBar({ filters = [], mobilePlaceholder, placeholder = "Sear
         </label>
 
         <div className="flex flex-wrap gap-2">
-          {filters.map((filter) => (
-            <span
-              aria-label={`${filter.label} filter is not wired in this release`}
-              className="inline-flex h-[var(--field-height)] items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-midnight/70 px-3 text-sm text-alphavest-muted opacity-65"
-              data-ux-affordance="blocked-filter-button"
-              data-ux-interactive="false"
-              key={filter.value}
-              role="status"
-              title="This filter button is not wired in this release."
-            >
-              <SlidersHorizontal aria-hidden="true" className="size-4" />
-              {filter.label}
-            </span>
-          ))}
+          {filters.map((filter) => {
+            const disabledReason = "This filter button is not wired in this release.";
+            const disabledReasonId = disabledControlReasonId(`filter-${filter.value}`);
+
+            return (
+              <span
+                aria-describedby={disabledReasonId}
+                aria-label={`${filter.label} filter is not wired in this release`}
+                className="inline-flex h-[var(--field-height)] items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-midnight/70 px-3 text-sm text-alphavest-muted opacity-65"
+                data-ux-affordance="blocked-filter-button"
+                data-ux-disabled-message="accessible"
+                data-ux-disabled-reason={disabledReason}
+                data-ux-interactive="false"
+                key={filter.value}
+                role="status"
+                title={disabledReason}
+              >
+                <SlidersHorizontal aria-hidden="true" className="size-4" />
+                {filter.label}
+                <DisabledControlReason id={disabledReasonId} reason={disabledReason} />
+              </span>
+            );
+          })}
         </div>
       </div>
     </div>
