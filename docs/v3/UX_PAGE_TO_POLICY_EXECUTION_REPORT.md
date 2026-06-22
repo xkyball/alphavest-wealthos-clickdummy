@@ -229,6 +229,118 @@ No-P1/Hold/Reference-elevation confirmation: protected routes remain non-product
 
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
 
+## Completed Slice: UX-CTA-002
+
+Task: `UX-CTA-002` - Implement MJ-001 setup-to-release CTA chain.
+
+Mission Card: connect the MJ-001 setup-to-release route sequence with guarded primary CTAs, blocked reasons and recovery paths without implying gate completion, client acceptance, evidence sufficiency, export approval or admin bypass.
+
+Evidence Intake:
+- Task-master `UX-CTA-002` related routes: `001/013/014 -> 015/018/027-030/033-045 -> 019/020/045`.
+- Route Policy Matrix `CTA-POL-001` through `CTA-POL-006`, `CTA-POL-008`, `NAV-POL-004` and `NAV-POL-006`.
+- Existing implementation finding: `ProductGuidance` is the narrowest global place to model page-state next links; local workflow APIs and gates already enforce P0 behavior.
+
+Problem Architecture: MJ-001 needs a clear setup-to-release handoff chain, but route-to-route navigation must not suggest completed setup, sufficient evidence, approved advice, compliance release or client acceptance.
+
+Double Diamond:
+- Discover: setup, evidence, advisory, compliance and decision routes had useful local CTAs but not one coherent MJ-001 chain.
+- Define: implement route-to-route primary CTA links in guidance only.
+- Develop: mapped tenant setup, evidence intake, advisory review, compliance review and decision/client endpoint transitions.
+- Deliver: route-smoke contract coverage, P0 safety validation and six screenshots.
+
+Psycho-Logic + Map/Model: the decision pressure is knowing the next handoff. The map trap is treating "next" as "done"; the safe move is a guarded chain with blocked reason and recovery at every step.
+
+Reframing Matrix:
+- Page-as-checklist: rejected when it implies completion.
+- Page-as-chain: kept as navigation/handoff.
+- Page-as-gate: kept only through non-authorizing blocked copy.
+- Page-as-client endpoint: constrained to client-safe/released projection language.
+
+TRIZ: increase progression clarity while preserving hard gate separation by making the next link explicit and leaving all mutation semantics in existing workflow services/tests.
+
+SIT Closed World: reused route registry, existing smoke paths, `ProductGuidance`, route policy and tests. No route, screen, API, schema, image or state-screen was added.
+
+Zwicky + CCA:
+- Variant A: add a new journey engine. Rejected as out of scope.
+- Variant B: add route-specific ProductGuidance overrides. Chosen for narrowness.
+- Variant C: rewrite each page body. Rejected for blast radius.
+
+SCAMPER: combined scattered next-step intent into one chain, substituted over-broad labels with guarded labels, rearranged evidence/advisory/compliance handoffs and eliminated explanatory demo text from the chain surface.
+
+Harvard / BATNA: objective criteria are route policy CTA rules and P0 tests. BATNA remains stop/report if actual gate mutation changes are required.
+
+MESOs:
+- Option A: metadata-only CTA chain. Chosen.
+- Option B: workflow behavior change. Rejected; not authorized by this UX task.
+
+Measurement Plan:
+- `pnpm typecheck`
+- `pnpm lint`
+- `PLAYWRIGHT_PORT=3470 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-CTA MJ-001"`
+- `PLAYWRIGHT_PORT=3471 pnpm test:workflow-gate`
+- `PLAYWRIGHT_PORT=3472 pnpm test:workflow-api`
+- `PLAYWRIGHT_PORT=3473 pnpm test:file-export`
+- `PLAYWRIGHT_PORT=3474 pnpm test:permissions`
+- Screenshot proof under `artifacts/ux-page-to-policy/UX-CTA-002/`
+
+Ethics/Fairness: no deceptive progress claims, no client-visible draft, no pressure CTA and no hidden bypass.
+
+Adversarial QA: MJ-001 could overclaim release or acceptance. Tests reject labels for evidence sufficiency, client acceptance, release complete, download readiness and admin override.
+
+Learning Log: later CTA tasks should refine specialized subchains while preserving the MJ-001 handoff spine.
+
+Route-policy rows cited:
+- Setup: `013`, `014`, `015`, `018`.
+- Evidence: `027`, `028`, `029`, `030`, `046`.
+- Advisory/approval/compliance/decision: `033` through `045`.
+- Client-safe endpoints: `019`, `020`, `045`.
+
+Changed files:
+- `lib/product-guidance.ts`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-CTA-002/2026-06-22-UX-CTA-002-tenant-directory.png`
+- `artifacts/ux-page-to-policy/UX-CTA-002/2026-06-22-UX-CTA-002-create-tenant.png`
+- `artifacts/ux-page-to-policy/UX-CTA-002/2026-06-22-UX-CTA-002-document-upload.png`
+- `artifacts/ux-page-to-policy/UX-CTA-002/2026-06-22-UX-CTA-002-trigger-detail.png`
+- `artifacts/ux-page-to-policy/UX-CTA-002/2026-06-22-UX-CTA-002-release-controls.png`
+- `artifacts/ux-page-to-policy/UX-CTA-002/2026-06-22-UX-CTA-002-decision-submitted.png`
+
+Validation:
+- `pnpm typecheck` - passed after narrowing the route test map key type.
+- `pnpm lint` - passed with 27 existing warnings, 0 errors.
+- `PLAYWRIGHT_PORT=3470 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-CTA MJ-001"` - passed, 7 tests.
+- `PLAYWRIGHT_PORT=3471 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3472 pnpm test:workflow-api` - passed, 15 tests.
+- `PLAYWRIGHT_PORT=3473 pnpm test:file-export` - passed, 14 tests.
+- `PLAYWRIGHT_PORT=3474 pnpm test:permissions` - passed, 8 tests.
+
+Screenshot/proof:
+- `artifacts/ux-page-to-policy/UX-CTA-002/2026-06-22-UX-CTA-002-tenant-directory.png`
+- `artifacts/ux-page-to-policy/UX-CTA-002/2026-06-22-UX-CTA-002-create-tenant.png`
+- `artifacts/ux-page-to-policy/UX-CTA-002/2026-06-22-UX-CTA-002-document-upload.png`
+- `artifacts/ux-page-to-policy/UX-CTA-002/2026-06-22-UX-CTA-002-trigger-detail.png`
+- `artifacts/ux-page-to-policy/UX-CTA-002/2026-06-22-UX-CTA-002-release-controls.png`
+- `artifacts/ux-page-to-policy/UX-CTA-002/2026-06-22-UX-CTA-002-decision-submitted.png`
+
+Positive acceptance:
+- MJ-001 route IDs `013`, `014`, `015`, `018`, `027-030`, `033-045` map to guarded primary next-step links.
+- Six representative MJ-001 pages render one guarded primary CTA and blocked reason.
+
+Negative/P0 acceptance:
+- No CTA label claims evidence sufficiency, release completion, client acceptance, download readiness or admin override.
+- Workflow, export and permission tests still prove P0 gates remain behavioral and fail-closed.
+
+No-generation confirmation: no screen generation, state-screen generation, image generation or generated product assets.
+
+No-route-reclassification confirmation: route IDs, paths, worksets and route scopes remain unchanged.
+
+No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route was touched or elevated.
+
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
+
 ## Completed Slice: UX-DENSITY-005
 
 Task: `UX-DENSITY-005` - Apply D4 Focused Detail to object decision routes.

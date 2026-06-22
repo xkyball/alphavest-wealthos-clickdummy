@@ -685,6 +685,76 @@ test.describe("UX-CTA one-primary page-state pattern", () => {
   }
 });
 
+test.describe("UX-CTA MJ-001 setup-to-release chain", () => {
+  const routeByPageId = new Map<string, (typeof screenRoutes)[number]>(screenRoutes.map((route) => [route.pageId, route]));
+  const expectedPrimaryHrefs: Record<string, string> = {
+    "013": "/tenants/new",
+    "014": "/tenants/demo/setup",
+    "015": "/tenants/demo/users",
+    "018": "/documents",
+    "027": "/documents/upload",
+    "028": "/documents/extraction-review",
+    "029": "/documents/verification-pending",
+    "030": "/signals",
+    "033": "/workbench",
+    "034": "/advisor-approval",
+    "035": "/advisor-approval",
+    "036": "/advisor-approval/demo",
+    "037": "/compliance",
+    "038": "/compliance/demo/review",
+    "039": "/compliance/demo/release",
+    "040": "/decisions",
+    "041": "/documents/upload",
+    "042": "/decisions",
+    "043": "/decisions/demo",
+    "044": "/decisions/demo/success",
+    "045": "/portal",
+  };
+
+  test("maps MJ-001 primary CTAs from setup through released client-safe endpoint", () => {
+    for (const [pageId, href] of Object.entries(expectedPrimaryHrefs)) {
+      const route = routeByPageId.get(pageId);
+      expect(route, `${pageId} registered route`).toBeDefined();
+      const guidance = productGuidanceForRoute(route!);
+
+      expect(guidance.ctaState.primaryAction?.href, `${pageId} primary href`).toBe(href);
+      expect(guidance.ctaState.state, `${pageId} guarded state`).toBe("guarded");
+      expect(guidance.ctaState.blockedReason, `${pageId} blocked reason`).toMatch(
+        /blocked|bypass|client-safe|does not|internal|separate|sufficiency|release|gates|audit|authority/i,
+      );
+      expect(guidance.ctaState.primaryAction?.label, `${pageId} primary label`).not.toMatch(
+        /evidence sufficient|client accepted|release complete|download ready|admin override/i,
+      );
+    }
+  });
+
+  const mj001ProofRoutes = [
+    "/admin/tenants",
+    "/tenants/new",
+    "/documents/upload",
+    "/workbench/triggers/demo",
+    "/compliance/demo/release",
+    "/decisions/demo/success",
+  ];
+
+  for (const path of mj001ProofRoutes) {
+    test(`${path} renders the MJ-001 guarded CTA state`, async ({ page }) => {
+      await page.setViewportSize({ height: 1000, width: 1440 });
+      await authenticateRouteSmokePage(page);
+      await page.goto(path);
+
+      const guidance = page.getByTestId("product-guidance").first();
+      const actions = guidance.getByTestId("ux-nav-next-actions");
+      await expect(actions).toBeVisible();
+      await expect(actions).toHaveAttribute("data-ux-cta-state", "guarded");
+      await expect(actions.locator('[data-ux-primary-cta="true"]')).toHaveCount(1);
+      await expect(actions.getByTestId("ux-cta-blocked-reason")).toBeVisible();
+      await expect(actions).not.toContainText(/evidence sufficient|client accepted|release complete|download ready|admin override/i);
+      await expect(guidance).not.toContainText(/route policy|Workflow step|gate-completion proof|visual proof|complexity reduction/i);
+    });
+  }
+});
+
 test.describe("locked route workset preservation", () => {
   test("all registered routes are classified exactly once", () => {
     expect(routeWorksetIntegrity.counts).toEqual(lockedRouteWorksetCounts);

@@ -6786,3 +6786,53 @@ Source of truth:
 
 - This slice standardizes the global page-state CTA contract. Later `UX-CTA-002` through `UX-CTA-007` still need route-specific chain refinements.
 - Lint still reports 27 existing unused-code warnings outside this slice; there are no lint errors.
+
+## UX-CTA-002 QA Addendum
+
+Date: 2026-06-22
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+- `docs/v3/ALPHAVEST_SURFACE_COPY_HANDBOOK_RULE.md`
+
+| Area | QA result | Evidence |
+| --- | --- | --- |
+| MJ-001 route chain | Passed | Route-smoke validates primary CTA hrefs for setup, evidence, advisory, compliance and decision route IDs. |
+| One primary state | Passed | Six UI checks assert one guarded primary CTA on representative MJ-001 pages. |
+| Safety overclaim prevention | Passed | Tests reject evidence-sufficiency, release-complete, client-accepted, download-ready and admin-override labels. |
+| Route Policy preservation | Passed | No route IDs, paths, worksets or route scopes changed. |
+| P0 safety | Passed | Workflow API, workflow-gate, file-export and permission tests passed. |
+| Screenshot proof | Passed | Six screenshots captured under `artifacts/ux-page-to-policy/UX-CTA-002/`. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | `tsc --noEmit` completed successfully after test-map type narrowing. |
+| `pnpm lint` | Passed | 27 existing warnings, 0 errors. |
+| `PLAYWRIGHT_PORT=3470 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-CTA MJ-001"` | Passed | 7 tests. |
+| `PLAYWRIGHT_PORT=3471 pnpm test:workflow-gate` | Passed | 13 tests. |
+| `PLAYWRIGHT_PORT=3472 pnpm test:workflow-api` | Passed | 15 tests. |
+| `PLAYWRIGHT_PORT=3473 pnpm test:file-export` | Passed | 14 tests. |
+| `PLAYWRIGHT_PORT=3474 pnpm test:permissions` | Passed | 8 tests. |
+
+### Screenshot Proof
+
+- `artifacts/ux-page-to-policy/UX-CTA-002/2026-06-22-UX-CTA-002-tenant-directory.png`
+- `artifacts/ux-page-to-policy/UX-CTA-002/2026-06-22-UX-CTA-002-create-tenant.png`
+- `artifacts/ux-page-to-policy/UX-CTA-002/2026-06-22-UX-CTA-002-document-upload.png`
+- `artifacts/ux-page-to-policy/UX-CTA-002/2026-06-22-UX-CTA-002-trigger-detail.png`
+- `artifacts/ux-page-to-policy/UX-CTA-002/2026-06-22-UX-CTA-002-release-controls.png`
+- `artifacts/ux-page-to-policy/UX-CTA-002/2026-06-22-UX-CTA-002-decision-submitted.png`
+
+### Safety Proof
+
+- CTA chain is navigation guidance only and does not mutate workflow state.
+- Release, evidence sufficiency, client acceptance, audit persistence, export and RBAC gates remain behavior-backed by existing services and tests.
+- Setup routes remain MVP support and do not expand payload/action authority.
+
+### QA Limits
+
+- This slice maps MJ-001 route handoffs. It does not implement new workflow behavior.
+- Lint still reports 27 existing unused-code warnings outside this slice; there are no lint errors.

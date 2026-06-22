@@ -8995,3 +8995,60 @@ No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route was 
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
 
 Exit Gate Decision: `UX_CTA_001_COMPLETED_WITH_ONE_PRIMARY_PAGE_STATE_PROOF`
+
+## UX-CTA-002 Addendum - MJ-001 Setup-To-Release CTA Chain
+
+Date: 2026-06-22
+
+Status: Completed and validated.
+
+Task IDs: `UX-CTA-002`
+
+Route-policy rows cited:
+- Route Policy Matrix `CTA-POL-001` through `CTA-POL-006`, `CTA-POL-008`.
+- Route Policy Matrix `NAV-POL-004` and `NAV-POL-006`.
+- Setup/evidence/advisory/compliance/decision/client endpoint route rows `013`, `014`, `015`, `018`, `027-030`, `033-045`, `019`, `020`.
+
+Completed `UX-CTA-002` by mapping MJ-001 from tenant setup through evidence intake, advisory review, advisor approval, compliance review, decision submission and client-safe endpoint as guarded primary CTA navigation. The implementation changes only next-step guidance metadata and test coverage; it does not mutate workflow state or change gate behavior.
+
+Changed files:
+- `lib/product-guidance.ts`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+Proof artifacts:
+- `artifacts/ux-page-to-policy/UX-CTA-002/2026-06-22-UX-CTA-002-tenant-directory.png`
+- `artifacts/ux-page-to-policy/UX-CTA-002/2026-06-22-UX-CTA-002-create-tenant.png`
+- `artifacts/ux-page-to-policy/UX-CTA-002/2026-06-22-UX-CTA-002-document-upload.png`
+- `artifacts/ux-page-to-policy/UX-CTA-002/2026-06-22-UX-CTA-002-trigger-detail.png`
+- `artifacts/ux-page-to-policy/UX-CTA-002/2026-06-22-UX-CTA-002-release-controls.png`
+- `artifacts/ux-page-to-policy/UX-CTA-002/2026-06-22-UX-CTA-002-decision-submitted.png`
+
+Validation:
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with 27 existing warnings and 0 errors.
+- `PLAYWRIGHT_PORT=3470 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-CTA MJ-001"` - passed, 7 tests.
+- `PLAYWRIGHT_PORT=3471 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3472 pnpm test:workflow-api` - passed, 15 tests.
+- `PLAYWRIGHT_PORT=3473 pnpm test:file-export` - passed, 14 tests.
+- `PLAYWRIGHT_PORT=3474 pnpm test:permissions` - passed, 8 tests.
+
+Positive acceptance:
+- MJ-001 route transitions now expose guarded one-primary next-step guidance.
+- Setup-to-release screenshots cover tenant setup, evidence upload, trigger detail, compliance release handoff and decision submission.
+
+Negative/P0 acceptance:
+- No CTA claims evidence sufficiency, release completion, client acceptance, download readiness or admin override.
+- P0 workflow, export and permission tests still pass.
+
+No-generation confirmation: no screen generation, state-screen generation, image generation or generated product assets.
+
+No-route-reclassification confirmation: route IDs, paths, worksets and route scopes remain unchanged.
+
+No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route was elevated.
+
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
+
+Exit Gate Decision: `UX_CTA_002_COMPLETED_WITH_MJ001_SETUP_TO_RELEASE_CTA_PROOF`
