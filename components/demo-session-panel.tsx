@@ -145,14 +145,14 @@ export function DemoSessionPanel() {
         <div className="flex items-start justify-between gap-4 border-b border-alphavest-border/60 pb-4">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.08em] text-alphavest-gold">
-              Scenario context
+              Session context
             </p>
             <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">
               {session.actor.displayName}
             </h2>
           </div>
           <span className="rounded-full border border-alphavest-blue/30 bg-alphavest-blue/10 px-3 py-1 text-xs font-semibold text-alphavest-blue">
-            Controlled scenario
+            Active context
           </span>
         </div>
 
@@ -166,7 +166,7 @@ export function DemoSessionPanel() {
             <dd className="mt-1 font-semibold text-alphavest-ivory">{session.role.label}</dd>
           </div>
           <div className="rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-3">
-            <dt className="text-alphavest-muted">Permission mode</dt>
+            <dt className="text-alphavest-muted">Access state</dt>
             <dd className="mt-1 font-semibold text-alphavest-ivory">{derived.permission.reasonCode}</dd>
           </div>
         </dl>
@@ -195,12 +195,12 @@ export function DemoSessionPanel() {
           />
           <GateMetric
             icon={ShieldCheck}
-            label="Audit draft"
+            label="Audit state"
             value={derived.auditDraft.result}
           />
           <GateMetric
             icon={Archive}
-            label="Evidence draft"
+            label="Evidence state"
             value={derived.evidenceDraft.status}
           />
           <GateMetric

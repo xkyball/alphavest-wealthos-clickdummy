@@ -630,9 +630,6 @@ function ClientTopBar() {
         <GlobalSearchBox className="xl:w-[28rem]" />
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
           <RouteContextChip />
-          <p className="max-w-56 text-xs leading-5 text-alphavest-muted">
-            Controlled scenario context; production auth is not claimed
-          </p>
           <label className="grid gap-1 text-[0.66rem] font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">
             <span>Tenant context</span>
             <span className="relative block">
@@ -652,7 +649,7 @@ function ClientTopBar() {
             </span>
           </label>
           <label className="grid gap-1 text-[0.66rem] font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">
-            <span>Scenario role</span>
+            <span>Role context</span>
             <span className="relative block">
               <select
                 aria-label="Role context"
