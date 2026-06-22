@@ -28,8 +28,8 @@
       ],
       "currentRealityLabel": "test-proven",
       "proofLevel": "PL5",
-      "overclaimRisk": "Viewer may confuse denial proof with production authorization.",
-      "caveat": "This is deterministic demo permission proof, not real auth.",
+      "overclaimRisk": "Viewer may confuse denial proof with production authorization. Login is DB-backed dummy auth and can be mistaken for production authentication.",
+      "caveat": "DB-backed dummy auth and MFA are shown for demo proof; This is deterministic demo permission proof, not production identity-provider authentication.",
       "proofPath": [
         "tests/permission-engine.spec.ts",
         "components/client-intake-screen.tsx",
@@ -41,8 +41,9 @@
         "tests/dbtf-tables-api.spec.ts"
       ],
       "captionShort": "Principals cannot release recommendations.",
-      "captionLong": "Compliance researches seeded DB evidence with search, filters and sorting before request-evidence, block, release-gate, audit and principal decision proof.",
+      "captionLong": "DB-backed dummy auth and MFA now start the clip before the core journey. Compliance researches seeded DB evidence with search, filters and sorting before request-evidence, block, release-gate, audit and principal decision proof.",
       "presenterNotes": [
+        "State clearly that login/MFA is DB-backed dummy auth for demo proof, not production authentication.",
         "Promote to video only for compliance/investor diligence."
       ],
       "customerSendable": false,
@@ -52,20 +53,25 @@
         "Analyst"
       ],
       "tenant": "Bennett Family Office",
-      "startRoute": "/documents",
+      "startRoute": "/login",
       "endState": "Compliance evidence research, release block, audit trail and principal decision surfaces are all visible without bypassing release controls.",
       "demoSession": {
         "mode": "demo",
-        "defaultRoleKey": "principal",
+        "defaultRoleKey": "compliance_officer",
         "defaultTenantSlug": "bennett"
       },
       "queryParams": {},
       "preconditions": [
+        "Seeded DB dummy auth user exists: naledi.compliance@alphavest.demo.",
+        "Dummy MFA code 123456 is accepted only for eligible DB users.",
         "Demo session mode is active",
         "No real customer data is used",
         "This is deterministic demo permission proof, not real auth."
       ],
       "demoData": [
+        "naledi.compliance@alphavest.demo",
+        "auth.dummy.mfa.challenge.created",
+        "auth.dummy.mfa.verified",
         "P2-01",
         "J02",
         "J03",
@@ -74,6 +80,7 @@
         "bennett-ips-risk-addendum.pdf"
       ],
       "visibilityRules": [
+        "Workspace journey starts only after DB-backed dummy auth and MFA are shown in the clip.",
         "No unapproved advice reaches the client",
         "Client visibility is controlled by compliance and route-specific caveats"
       ],
@@ -85,10 +92,12 @@
         "tests/permission-engine.spec.ts"
       ],
       "auditExpectations": [
+        "Dummy auth login challenge and MFA verification write audit proof before workflow actions.",
         "test-proven",
         "PL5"
       ],
       "riskNotes": [
+        "DB-backed dummy auth is demo proof and must not be described as production identity-provider authentication.",
         "Viewer may confuse denial proof with production authorization.",
         "This is deterministic demo permission proof, not real auth.",
         "Search/filter/sort steps are read-only and scoped; they do not create client visibility."
@@ -96,6 +105,149 @@
       "steps": [
         {
           "step": 1,
+          "id": "P2-01-S01",
+          "title": "AUTH: DB dummy provider email check",
+          "role": "Compliance Officer",
+          "tenant": "Bennett Family Office",
+          "route": "/login",
+          "screen": "Authentication Login",
+          "inputData": [
+            "naledi.compliance@alphavest.demo",
+            "DB-backed dummy provider",
+            "No production identity-provider claim"
+          ],
+          "action": "Fill DB-backed dummy auth email",
+          "target": {
+            "label": "Email address"
+          },
+          "interaction": {
+            "type": "fill",
+            "value": "naledi.compliance@alphavest.demo",
+            "required": true
+          },
+          "navigation": "goto",
+          "dataRefs": [
+            "app/api/auth/dummy/route.ts",
+            "lib/dummy-auth-service.ts"
+          ],
+          "caption": "AUTH: Compliance Officer. The journey starts with DB-backed dummy provider login for naledi.compliance@alphavest.demo; this is demo auth, not production identity proof.",
+          "expectedVisibleText": [
+            "Authentication Login",
+            "Dummy provider"
+          ],
+          "expectedStateChange": "Email is entered into the DB-backed dummy auth login form.",
+          "blockedActions": [
+            "Unknown emails are denied without exposing hidden rows."
+          ],
+          "clientVisibility": "No client advice or sensitive workspace payload is visible before login.",
+          "evidence": "Login form targets /api/auth/dummy start_login.",
+          "audit": "Successful start_login creates a dummy auth challenge audit event.",
+          "qaAssertion": "The login screen is visible and accepts the seeded DB user email.",
+          "pauseMs": 420,
+          "screenshotName": "p2-01-01-auth-login-email",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/auth-onboarding-screen.tsx",
+            "app/api/auth/dummy/route.ts",
+            "lib/dummy-auth-service.ts"
+          ]
+        },
+        {
+          "step": 2,
+          "id": "P2-01-S02",
+          "title": "AUTH: Start dummy provider sign-in",
+          "role": "Compliance Officer",
+          "tenant": "Bennett Family Office",
+          "route": "/login",
+          "screen": "Authentication Login",
+          "inputData": [
+            "naledi.compliance@alphavest.demo",
+            "MFA challenge expected"
+          ],
+          "action": "Click Sign in",
+          "target": {
+            "role": "button",
+            "name": "Sign in"
+          },
+          "interaction": {
+            "type": "click",
+            "required": true
+          },
+          "navigation": "continue",
+          "dataRefs": [
+            "User",
+            "AuditEvent",
+            "auth.dummy.mfa.challenge.created"
+          ],
+          "caption": "AUTH: The seeded DB user starts sign-in. WealthOS creates a dummy MFA challenge before the workspace flow continues.",
+          "expectedVisibleText": [
+            "Multi-Factor Authentication"
+          ],
+          "expectedStateChange": "Dummy auth storage receives the email and the app redirects to MFA.",
+          "blockedActions": [
+            "No workspace route is used as proof of authentication before the challenge."
+          ],
+          "clientVisibility": "Still no client advice release; this is authentication setup.",
+          "evidence": "The sign-in button calls /api/auth/dummy and redirects to /mfa only for eligible DB users.",
+          "audit": "auth.dummy.mfa.challenge.created is written for active seeded users.",
+          "qaAssertion": "Clicking Sign in reaches the MFA screen, proving the new login path is part of the screencast.",
+          "pauseMs": 520,
+          "screenshotName": "p2-01-02-auth-mfa-challenge",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/auth-onboarding-screen.tsx",
+            "tests/dummy-auth-provider.spec.ts"
+          ]
+        },
+        {
+          "step": 3,
+          "id": "P2-01-S03",
+          "title": "AUTH: Verify dummy MFA",
+          "role": "Compliance Officer",
+          "tenant": "Bennett Family Office",
+          "route": "/mfa",
+          "screen": "Multi-Factor Authentication",
+          "inputData": [
+            "naledi.compliance@alphavest.demo",
+            "123456"
+          ],
+          "action": "Click Verify with seeded dummy MFA code",
+          "target": {
+            "role": "button",
+            "name": "Verify"
+          },
+          "interaction": {
+            "type": "click",
+            "required": true
+          },
+          "navigation": "continue",
+          "dataRefs": [
+            "User.lastLoginAt",
+            "auth.dummy.mfa.verified"
+          ],
+          "caption": "AUTH: The dummy MFA code is verified from the DB-backed provider. The clip can now enter the role-owned journey without claiming production auth.",
+          "expectedVisibleText": [
+            "Client Web Dashboard"
+          ],
+          "expectedStateChange": "Dummy MFA verification writes lastLoginAt and redirects to the client portal.",
+          "blockedActions": [
+            "Wrong MFA code is denied by the provider test harness."
+          ],
+          "clientVisibility": "Post-login portal shell is visible, but compliance release gates still control advice visibility.",
+          "evidence": "MFA verification uses the accepted demo code and DB user context.",
+          "audit": "auth.dummy.mfa.verified is written with SUCCESS.",
+          "qaAssertion": "The MFA verify button redirects to the post-auth portal state.",
+          "pauseMs": 650,
+          "screenshotName": "p2-01-03-auth-mfa-verified",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/auth-onboarding-screen.tsx",
+            "lib/dummy-auth-service.ts",
+            "tests/dummy-auth-provider.spec.ts"
+          ]
+        },
+        {
+          "step": 4,
           "role": "Compliance Officer",
           "roleKey": "compliance_officer",
           "tenant": "Bennett Family Office",
@@ -124,7 +276,7 @@
             "components/client-intake-screen.tsx",
             "prisma/seed.ts"
           ],
-          "id": "P2-01-S01",
+          "id": "P2-01-S04",
           "title": "ROLE SWITCH: Compliance Officer - Open scoped documents",
           "caption": "ROLE SWITCH: Compliance Officer. The compliance actor starts with scoped evidence research, not client release.",
           "navigation": "goto",
@@ -137,7 +289,7 @@
           }
         },
         {
-          "step": 2,
+          "step": 5,
           "role": "Compliance Officer",
           "roleKey": "compliance_officer",
           "tenant": "Bennett Family Office",
@@ -170,7 +322,7 @@
             "components/global-search-box.tsx",
             "app/api/global-search/route.ts"
           ],
-          "id": "P2-01-S02",
+          "id": "P2-01-S05",
           "title": "Documents: Search global scoped rows",
           "caption": "Compliance researches scoped DB evidence before deciding whether the package can move toward client release.",
           "navigation": "goto",
@@ -185,7 +337,7 @@
           }
         },
         {
-          "step": 3,
+          "step": 6,
           "role": "Compliance Officer",
           "roleKey": "compliance_officer",
           "tenant": "Bennett Family Office",
@@ -218,7 +370,7 @@
             "components/client-intake-screen.tsx",
             "tests/scf-p10-p14-closure.spec.ts"
           ],
-          "id": "P2-01-S03",
+          "id": "P2-01-S06",
           "title": "Documents: Search tax-residency-2026 evidence",
           "caption": "The document table search isolates the current tax residency evidence before the compliance release gate.",
           "navigation": "goto",
@@ -233,7 +385,7 @@
           }
         },
         {
-          "step": 4,
+          "step": 7,
           "role": "Compliance Officer",
           "roleKey": "compliance_officer",
           "tenant": "Bennett Family Office",
@@ -265,7 +417,7 @@
           "sourceProof": [
             "components/client-intake-screen.tsx"
           ],
-          "id": "P2-01-S04",
+          "id": "P2-01-S07",
           "title": "Documents: Filter by tax document type",
           "caption": "Compliance researches scoped DB evidence before deciding whether the package can move toward client release.",
           "navigation": "goto",
@@ -280,7 +432,7 @@
           }
         },
         {
-          "step": 5,
+          "step": 8,
           "role": "Compliance Officer",
           "roleKey": "compliance_officer",
           "tenant": "Bennett Family Office",
@@ -312,7 +464,7 @@
           "sourceProof": [
             "components/client-intake-screen.tsx"
           ],
-          "id": "P2-01-S05",
+          "id": "P2-01-S08",
           "title": "Documents: Filter by analyst review status",
           "caption": "Compliance researches scoped DB evidence before deciding whether the package can move toward client release.",
           "navigation": "goto",
@@ -327,7 +479,7 @@
           }
         },
         {
-          "step": 6,
+          "step": 9,
           "role": "Compliance Officer",
           "roleKey": "compliance_officer",
           "tenant": "Bennett Family Office",
@@ -359,7 +511,7 @@
           "sourceProof": [
             "components/client-intake-screen.tsx"
           ],
-          "id": "P2-01-S06",
+          "id": "P2-01-S09",
           "title": "Documents: Filter by confidential sensitivity",
           "caption": "Compliance researches scoped DB evidence before deciding whether the package can move toward client release.",
           "navigation": "goto",
@@ -374,7 +526,7 @@
           }
         },
         {
-          "step": 7,
+          "step": 10,
           "role": "Compliance Officer",
           "roleKey": "compliance_officer",
           "tenant": "Bennett Family Office",
@@ -408,7 +560,7 @@
             "components/ui/data-table.tsx",
             "components/client-intake-screen.tsx"
           ],
-          "id": "P2-01-S07",
+          "id": "P2-01-S10",
           "title": "Documents: Sort evidence rows by document name",
           "caption": "Compliance researches scoped DB evidence before deciding whether the package can move toward client release.",
           "navigation": "goto",
@@ -421,7 +573,7 @@
           }
         },
         {
-          "step": 8,
+          "step": 11,
           "role": "Compliance Officer",
           "roleKey": "compliance_officer",
           "tenant": "Bennett Family Office",
@@ -454,7 +606,7 @@
             "prisma/seed.ts",
             "components/client-intake-screen.tsx"
           ],
-          "id": "P2-01-S08",
+          "id": "P2-01-S11",
           "title": "Documents: Search source-of-funds evidence",
           "caption": "Compliance researches scoped DB evidence before deciding whether the package can move toward client release.",
           "navigation": "goto",
@@ -468,7 +620,7 @@
           }
         },
         {
-          "step": 9,
+          "step": 12,
           "role": "Compliance Officer",
           "roleKey": "compliance_officer",
           "tenant": "Bennett Family Office",
@@ -500,7 +652,7 @@
           "sourceProof": [
             "components/client-intake-screen.tsx"
           ],
-          "id": "P2-01-S09",
+          "id": "P2-01-S12",
           "title": "Documents: Filter restricted evidence",
           "caption": "Compliance researches scoped DB evidence before deciding whether the package can move toward client release.",
           "navigation": "goto",
@@ -514,7 +666,7 @@
           }
         },
         {
-          "step": 10,
+          "step": 13,
           "role": "Compliance Officer",
           "roleKey": "compliance_officer",
           "tenant": "Bennett Family Office",
@@ -546,7 +698,7 @@
           "sourceProof": [
             "prisma/seed.ts"
           ],
-          "id": "P2-01-S10",
+          "id": "P2-01-S13",
           "title": "Documents: Search IPS risk addendum",
           "caption": "Compliance researches scoped DB evidence before deciding whether the package can move toward client release.",
           "navigation": "goto",
@@ -560,7 +712,7 @@
           }
         },
         {
-          "step": 11,
+          "step": 14,
           "role": "Compliance Officer",
           "roleKey": "compliance_officer",
           "tenant": "Bennett Family Office",
@@ -592,7 +744,7 @@
           "sourceProof": [
             "components/client-intake-screen.tsx"
           ],
-          "id": "P2-01-S11",
+          "id": "P2-01-S14",
           "title": "Documents: Filter highly restricted evidence",
           "caption": "Compliance researches scoped DB evidence before deciding whether the package can move toward client release.",
           "navigation": "goto",
@@ -606,7 +758,7 @@
           }
         },
         {
-          "step": 12,
+          "step": 15,
           "role": "Compliance Officer",
           "roleKey": "compliance_officer",
           "tenant": "Bennett Family Office",
@@ -639,7 +791,7 @@
           "sourceProof": [
             "components/ui/data-table.tsx"
           ],
-          "id": "P2-01-S12",
+          "id": "P2-01-S15",
           "title": "Documents: Sort by status before decision",
           "caption": "Compliance researches scoped DB evidence before deciding whether the package can move toward client release.",
           "navigation": "goto",
@@ -652,7 +804,7 @@
           }
         },
         {
-          "step": 13,
+          "step": 16,
           "role": "Compliance Officer",
           "roleKey": "compliance_officer",
           "tenant": "Bennett Family Office",
@@ -680,7 +832,7 @@
           "sourceProof": [
             "components/client-intake-screen.tsx"
           ],
-          "id": "P2-01-S13",
+          "id": "P2-01-S16",
           "title": "Documents: Confirm search evidence remains internal",
           "caption": "Compliance researches scoped DB evidence before deciding whether the package can move toward client release.",
           "navigation": "goto",
@@ -692,7 +844,7 @@
           }
         },
         {
-          "step": 14,
+          "step": 17,
           "role": "Compliance Officer",
           "roleKey": "compliance_officer",
           "tenant": "Bennett Family Office",
@@ -721,7 +873,7 @@
           "sourceProof": [
             "docs/v3/SCREEN_CATALOGUE_V3.md#038"
           ],
-          "id": "P2-01-S14",
+          "id": "P2-01-S17",
           "title": "ROLE CONTINUES: Compliance Officer - Compliance Queue: Set role and inspect queue",
           "caption": "Compliance checks the proof before client release. If something is missing, the package stays blocked instead of becoming unchecked advice.",
           "navigation": "goto",
@@ -736,7 +888,7 @@
           }
         },
         {
-          "step": 15,
+          "step": 18,
           "role": "Compliance Officer",
           "roleKey": "compliance_officer",
           "tenant": "Bennett Family Office",
@@ -767,7 +919,7 @@
           "sourceProof": [
             "docs/v3/USER_JOURNEY_PLAYBOOK_V3.md#journey-2"
           ],
-          "id": "P2-01-S15",
+          "id": "P2-01-S18",
           "title": "Compliance Review Detail: Inspect evidence checklist",
           "caption": "Compliance checks the proof before client release. If something is missing, the package stays blocked instead of becoming unchecked advice.",
           "navigation": "goto",
@@ -783,7 +935,7 @@
           }
         },
         {
-          "step": 16,
+          "step": 19,
           "role": "Compliance Officer",
           "roleKey": "compliance_officer",
           "tenant": "Bennett Family Office",
@@ -816,7 +968,7 @@
           "sourceProof": [
             "components/decisions-governance-screen.tsx"
           ],
-          "id": "P2-01-S16",
+          "id": "P2-01-S19",
           "title": "Compliance Review Detail: Click Request Evidence",
           "caption": "The team asks for missing information before the work moves forward. This keeps weak or incomplete advice away from the client.",
           "navigation": "goto",
@@ -832,7 +984,7 @@
           }
         },
         {
-          "step": 17,
+          "step": 20,
           "role": "Compliance Officer",
           "roleKey": "compliance_officer",
           "tenant": "Bennett Family Office",
@@ -862,7 +1014,7 @@
           "sourceProof": [
             "docs/v3/PAGE_SPECS_V3.md"
           ],
-          "id": "P2-01-S17",
+          "id": "P2-01-S20",
           "title": "Compliance Review Detail: Click Block",
           "caption": "Compliance blocks the package because proof is missing or risk is too high. That protects the client from unchecked advice.",
           "navigation": "goto",
@@ -878,7 +1030,7 @@
           }
         },
         {
-          "step": 18,
+          "step": 21,
           "role": "Compliance Officer",
           "roleKey": "compliance_officer",
           "tenant": "Bennett Family Office",
@@ -908,7 +1060,7 @@
           "sourceProof": [
             "components/decisions-governance-screen.tsx"
           ],
-          "id": "P2-01-S18",
+          "id": "P2-01-S21",
           "title": "Block Or Request Evidence: Inspect disabled request state",
           "caption": "The evidence request has already been recorded, so the request action stays unavailable while the release remains blocked.",
           "navigation": "goto",
@@ -923,7 +1075,7 @@
           }
         },
         {
-          "step": 19,
+          "step": 22,
           "role": "Compliance Officer",
           "roleKey": "compliance_officer",
           "tenant": "Bennett Family Office",
@@ -952,7 +1104,7 @@
             "lib/workflow-gate.ts",
             "docs/v3/DATA_MODEL_V3.md#no-unapproved-advice-gate-as-data-rule"
           ],
-          "id": "P2-01-S19",
+          "id": "P2-01-S22",
           "title": "Release To Client: Inspect disabled release gate",
           "caption": "The release control is visible but unavailable until the gate conditions are satisfied; this is inspected, not clicked.",
           "navigation": "goto",
@@ -967,7 +1119,7 @@
           }
         },
         {
-          "step": 20,
+          "step": 23,
           "role": "Compliance Officer",
           "roleKey": "compliance_officer",
           "tenant": "Bennett Family Office",
@@ -1000,7 +1152,7 @@
           "sourceProof": [
             "docs/v3/SCREEN_CATALOGUE_V3.md#042"
           ],
-          "id": "P2-01-S20",
+          "id": "P2-01-S23",
           "title": "Audit Exception Log: Inspect audit table",
           "caption": "Compliance checks the proof before client release. If something is missing, the package stays blocked instead of becoming unchecked advice.",
           "navigation": "goto",
@@ -1016,7 +1168,7 @@
           }
         },
         {
-          "step": 21,
+          "step": 24,
           "role": "Principal",
           "roleKey": "principal",
           "tenant": "Bennett Family Office",
@@ -1045,7 +1197,7 @@
           "sourceProof": [
             "lib/visibility-engine.ts"
           ],
-          "id": "P2-01-S21",
+          "id": "P2-01-S24",
           "title": "ROLE SWITCH: Principal - Decision List: Switch to client role and inspect decisions",
           "caption": "ROLE SWITCH: Principal. The principal can inspect client-side decision surfaces, but cannot bypass compliance release.",
           "navigation": "goto",
@@ -1060,7 +1212,7 @@
           }
         },
         {
-          "step": 22,
+          "step": 25,
           "role": "Principal",
           "roleKey": "principal",
           "tenant": "Bennett Family Office",
@@ -1089,7 +1241,7 @@
           "sourceProof": [
             "lib/decisions-governance-demo-data.ts"
           ],
-          "id": "P2-01-S22",
+          "id": "P2-01-S25",
           "title": "Decision List: Set role and inspect decision list",
           "caption": "The client reviews a released decision here. The evidence trail shows why the decision is ready to act on.",
           "navigation": "goto",
@@ -1105,7 +1257,7 @@
           }
         },
         {
-          "step": 23,
+          "step": 26,
           "role": "Principal",
           "roleKey": "principal",
           "tenant": "Bennett Family Office",
@@ -1136,7 +1288,7 @@
           "sourceProof": [
             "components/decisions-governance-screen.tsx"
           ],
-          "id": "P2-01-S23",
+          "id": "P2-01-S26",
           "title": "Digital Decision Room: Inspect option cards",
           "caption": "The client reviews a released decision here. The evidence trail shows why the decision is ready to act on.",
           "navigation": "goto",
@@ -1152,7 +1304,7 @@
           }
         },
         {
-          "step": 24,
+          "step": 27,
           "role": "Principal",
           "roleKey": "principal",
           "tenant": "Bennett Family Office",
@@ -1182,7 +1334,7 @@
           "sourceProof": [
             "docs/v3/PAGE_SPECS_V3.md"
           ],
-          "id": "P2-01-S24",
+          "id": "P2-01-S27",
           "title": "Digital Decision Room: Click Accept Option 1",
           "caption": "The client reviews a released decision here. The evidence trail shows why the decision is ready to act on.",
           "navigation": "goto",
@@ -1199,7 +1351,7 @@
           }
         },
         {
-          "step": 25,
+          "step": 28,
           "role": "Principal",
           "roleKey": "principal",
           "tenant": "Bennett Family Office",
@@ -1232,7 +1384,7 @@
           "sourceProof": [
             "docs/v3/USER_JOURNEY_PLAYBOOK_V3.md#journey-3"
           ],
-          "id": "P2-01-S25",
+          "id": "P2-01-S28",
           "title": "Digital Decision Room: Inspect request more information, defer and reject",
           "caption": "The client reviews a released decision here. The evidence trail shows why the decision is ready to act on.",
           "navigation": "goto",
@@ -1249,7 +1401,7 @@
           }
         },
         {
-          "step": 26,
+          "step": 29,
           "role": "Principal",
           "roleKey": "principal",
           "tenant": "Bennett Family Office",
@@ -1278,7 +1430,7 @@
           "sourceProof": [
             "components/decisions-governance-screen.tsx"
           ],
-          "id": "P2-01-S26",
+          "id": "P2-01-S29",
           "title": "Decision Submitted: Open success route",
           "caption": "The client reviews a released decision here. The evidence trail shows why the decision is ready to act on.",
           "navigation": "goto",
@@ -1293,7 +1445,7 @@
           }
         },
         {
-          "step": 27,
+          "step": 30,
           "role": "Principal",
           "roleKey": "principal",
           "tenant": "Bennett Family Office",
@@ -1323,7 +1475,7 @@
           "sourceProof": [
             "lib/evidence-service.ts"
           ],
-          "id": "P2-01-S27",
+          "id": "P2-01-S30",
           "title": "Decision Submitted: Click View Evidence Record",
           "caption": "The client reviews a released decision here. The evidence trail shows why the decision is ready to act on.",
           "navigation": "goto",
@@ -1339,7 +1491,7 @@
           }
         },
         {
-          "step": 28,
+          "step": 31,
           "role": "Principal",
           "roleKey": "principal",
           "tenant": "Bennett Family Office",
@@ -1372,7 +1524,7 @@
           "sourceProof": [
             "components/decisions-governance-screen.tsx"
           ],
-          "id": "P2-01-S28",
+          "id": "P2-01-S31",
           "title": "Evidence Record Detail: Inspect evidence and click Download if allowed",
           "caption": "The package is prepared for download only after review. Scope, redaction and evidence keep the shared material controlled.",
           "navigation": "goto",
@@ -1389,7 +1541,7 @@
           }
         },
         {
-          "step": 29,
+          "step": 32,
           "role": "Principal",
           "roleKey": "principal",
           "tenant": "Bennett Family Office",
@@ -1422,10 +1574,10 @@
           "sourceProof": [
             "docs/v3/DEMO_JOURNEY_OPPORTUNITY_BACKLOG_V3.json"
           ],
-          "id": "P2-01-S29"
+          "id": "P2-01-S32"
         },
         {
-          "step": 30,
+          "step": 33,
           "role": "Principal",
           "roleKey": "principal",
           "tenant": "Bennett Family Office",
@@ -1458,7 +1610,7 @@
           "sourceProof": [
             "docs/v3/DEMO_JOURNEY_OPPORTUNITY_BACKLOG_V3.json"
           ],
-          "id": "P2-01-S30"
+          "id": "P2-01-S33"
         }
       ]
     },
@@ -2524,8 +2676,8 @@
       ],
       "currentRealityLabel": "route-static",
       "proofLevel": "PL2",
-      "overclaimRisk": "Viewer may assume AI extraction is autonomous or final.",
-      "caveat": "Low-confidence extraction is a demo-state route; human review is the claim, not autonomous AI accuracy.",
+      "overclaimRisk": "Viewer may assume AI extraction is autonomous or final. Login is DB-backed dummy auth and can be mistaken for production authentication.",
+      "caveat": "DB-backed dummy auth and MFA are shown for demo proof; Low-confidence extraction is a demo-state route; human review is the claim, not autonomous AI accuracy.",
       "proofPath": [
         "docs/v3/DATA_MODEL_V3.md",
         "docs/v3/DEMO_JOURNEY_UNIVERSE_AUDIT_V3.md",
@@ -2538,8 +2690,9 @@
         "tests/scf-p10-p14-closure.spec.ts"
       ],
       "captionShort": "Role changes are explicit across upload, review, approval, compliance and principal decision visibility.",
-      "captionLong": "This multi-role journey shows exactly when responsibility moves from Family CFO to Analyst to Advisor to Compliance Officer to Principal.",
+      "captionLong": "DB-backed dummy auth and MFA now start the clip before the core journey. This multi-role journey shows exactly when responsibility moves from Family CFO to Analyst to Advisor to Compliance Officer to Principal.",
       "presenterNotes": [
+        "State clearly that login/MFA is DB-backed dummy auth for demo proof, not production authentication.",
         "Use this to answer AI-safety questions, not as an ML-performance proof."
       ],
       "customerSendable": false,
@@ -2564,7 +2717,7 @@
         "Principal"
       ],
       "tenant": "Morgan Family Office",
-      "startRoute": "/portal",
+      "startRoute": "/login",
       "endState": "Family CFO upload intent, analyst evidence review, advisor approval, compliance block and principal decision visibility are shown as separate role-owned steps.",
       "demoSession": {
         "mode": "demo",
@@ -2573,11 +2726,16 @@
       },
       "queryParams": {},
       "preconditions": [
+        "Seeded DB dummy auth user exists: cfo.morgan@example.demo.",
+        "Dummy MFA code 123456 is accepted only for eligible DB users.",
         "Demo session mode is active",
         "No real customer data is used",
         "Low-confidence extraction is a demo-state route; human review is the claim, not autonomous AI accuracy."
       ],
       "demoData": [
+        "cfo.morgan@example.demo",
+        "auth.dummy.mfa.challenge.created",
+        "auth.dummy.mfa.verified",
         "P2-06",
         "J04",
         "morgan-tax-residency-2026.pdf",
@@ -2585,6 +2743,7 @@
         "morgan-ips-risk-addendum.pdf"
       ],
       "visibilityRules": [
+        "Workspace journey starts only after DB-backed dummy auth and MFA are shown in the clip.",
         "No unapproved advice reaches the client",
         "Client visibility is controlled by compliance and route-specific caveats"
       ],
@@ -2597,10 +2756,12 @@
         "docs/v3/DEMO_JOURNEY_UNIVERSE_AUDIT_V3.md"
       ],
       "auditExpectations": [
+        "Dummy auth login challenge and MFA verification write audit proof before workflow actions.",
         "route-static",
         "PL2"
       ],
       "riskNotes": [
+        "DB-backed dummy auth is demo proof and must not be described as production identity-provider authentication.",
         "Viewer may assume AI extraction is autonomous or final.",
         "Low-confidence extraction is a demo-state route; human review is the claim, not autonomous AI accuracy.",
         "Every role switch is modeled as an explicit step title and caption to avoid ambiguous actor ownership."
@@ -2608,6 +2769,149 @@
       "steps": [
         {
           "step": 1,
+          "id": "P2-06-S01",
+          "title": "AUTH: DB dummy provider email check",
+          "role": "Family CFO",
+          "tenant": "Morgan Family Office",
+          "route": "/login",
+          "screen": "Authentication Login",
+          "inputData": [
+            "cfo.morgan@example.demo",
+            "DB-backed dummy provider",
+            "No production identity-provider claim"
+          ],
+          "action": "Fill DB-backed dummy auth email",
+          "target": {
+            "label": "Email address"
+          },
+          "interaction": {
+            "type": "fill",
+            "value": "cfo.morgan@example.demo",
+            "required": true
+          },
+          "navigation": "goto",
+          "dataRefs": [
+            "app/api/auth/dummy/route.ts",
+            "lib/dummy-auth-service.ts"
+          ],
+          "caption": "AUTH: Family CFO. The journey starts with DB-backed dummy provider login for cfo.morgan@example.demo; this is demo auth, not production identity proof.",
+          "expectedVisibleText": [
+            "Authentication Login",
+            "Dummy provider"
+          ],
+          "expectedStateChange": "Email is entered into the DB-backed dummy auth login form.",
+          "blockedActions": [
+            "Unknown emails are denied without exposing hidden rows."
+          ],
+          "clientVisibility": "No client advice or sensitive workspace payload is visible before login.",
+          "evidence": "Login form targets /api/auth/dummy start_login.",
+          "audit": "Successful start_login creates a dummy auth challenge audit event.",
+          "qaAssertion": "The login screen is visible and accepts the seeded DB user email.",
+          "pauseMs": 420,
+          "screenshotName": "p2-06-01-auth-login-email",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/auth-onboarding-screen.tsx",
+            "app/api/auth/dummy/route.ts",
+            "lib/dummy-auth-service.ts"
+          ]
+        },
+        {
+          "step": 2,
+          "id": "P2-06-S02",
+          "title": "AUTH: Start dummy provider sign-in",
+          "role": "Family CFO",
+          "tenant": "Morgan Family Office",
+          "route": "/login",
+          "screen": "Authentication Login",
+          "inputData": [
+            "cfo.morgan@example.demo",
+            "MFA challenge expected"
+          ],
+          "action": "Click Sign in",
+          "target": {
+            "role": "button",
+            "name": "Sign in"
+          },
+          "interaction": {
+            "type": "click",
+            "required": true
+          },
+          "navigation": "continue",
+          "dataRefs": [
+            "User",
+            "AuditEvent",
+            "auth.dummy.mfa.challenge.created"
+          ],
+          "caption": "AUTH: The seeded DB user starts sign-in. WealthOS creates a dummy MFA challenge before the workspace flow continues.",
+          "expectedVisibleText": [
+            "Multi-Factor Authentication"
+          ],
+          "expectedStateChange": "Dummy auth storage receives the email and the app redirects to MFA.",
+          "blockedActions": [
+            "No workspace route is used as proof of authentication before the challenge."
+          ],
+          "clientVisibility": "Still no client advice release; this is authentication setup.",
+          "evidence": "The sign-in button calls /api/auth/dummy and redirects to /mfa only for eligible DB users.",
+          "audit": "auth.dummy.mfa.challenge.created is written for active seeded users.",
+          "qaAssertion": "Clicking Sign in reaches the MFA screen, proving the new login path is part of the screencast.",
+          "pauseMs": 520,
+          "screenshotName": "p2-06-02-auth-mfa-challenge",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/auth-onboarding-screen.tsx",
+            "tests/dummy-auth-provider.spec.ts"
+          ]
+        },
+        {
+          "step": 3,
+          "id": "P2-06-S03",
+          "title": "AUTH: Verify dummy MFA",
+          "role": "Family CFO",
+          "tenant": "Morgan Family Office",
+          "route": "/mfa",
+          "screen": "Multi-Factor Authentication",
+          "inputData": [
+            "cfo.morgan@example.demo",
+            "123456"
+          ],
+          "action": "Click Verify with seeded dummy MFA code",
+          "target": {
+            "role": "button",
+            "name": "Verify"
+          },
+          "interaction": {
+            "type": "click",
+            "required": true
+          },
+          "navigation": "continue",
+          "dataRefs": [
+            "User.lastLoginAt",
+            "auth.dummy.mfa.verified"
+          ],
+          "caption": "AUTH: The dummy MFA code is verified from the DB-backed provider. The clip can now enter the role-owned journey without claiming production auth.",
+          "expectedVisibleText": [
+            "Client Web Dashboard"
+          ],
+          "expectedStateChange": "Dummy MFA verification writes lastLoginAt and redirects to the client portal.",
+          "blockedActions": [
+            "Wrong MFA code is denied by the provider test harness."
+          ],
+          "clientVisibility": "Post-login portal shell is visible, but compliance release gates still control advice visibility.",
+          "evidence": "MFA verification uses the accepted demo code and DB user context.",
+          "audit": "auth.dummy.mfa.verified is written with SUCCESS.",
+          "qaAssertion": "The MFA verify button redirects to the post-auth portal state.",
+          "pauseMs": 650,
+          "screenshotName": "p2-06-03-auth-mfa-verified",
+          "manualOrStatic": false,
+          "sourceProof": [
+            "components/auth-onboarding-screen.tsx",
+            "lib/dummy-auth-service.ts",
+            "tests/dummy-auth-provider.spec.ts"
+          ]
+        },
+        {
+          "step": 4,
           "role": "Family CFO",
           "roleKey": "family_cfo",
           "tenant": "Morgan Family Office",
@@ -2634,7 +2938,7 @@
           "sourceProof": [
             "components/client-intake-screen.tsx"
           ],
-          "id": "P2-06-S01",
+          "id": "P2-06-S04",
           "title": "ROLE SWITCH: Family CFO - Open client dashboard",
           "caption": "ROLE SWITCH: Family CFO. The client-side office uploads and submits source material, but does not validate it as advice.",
           "navigation": "goto",
@@ -2647,7 +2951,7 @@
           }
         },
         {
-          "step": 2,
+          "step": 5,
           "role": "Family CFO",
           "roleKey": "family_cfo",
           "tenant": "Morgan Family Office",
@@ -2677,7 +2981,7 @@
           "sourceProof": [
             "components/client-intake-screen.tsx"
           ],
-          "id": "P2-06-S02",
+          "id": "P2-06-S05",
           "title": "Family CFO: Open document upload",
           "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
           "navigation": "goto",
@@ -2690,7 +2994,7 @@
           }
         },
         {
-          "step": 3,
+          "step": 6,
           "role": "Family CFO",
           "roleKey": "family_cfo",
           "tenant": "Morgan Family Office",
@@ -2718,7 +3022,7 @@
           "sourceProof": [
             "components/client-intake-screen.tsx"
           ],
-          "id": "P2-06-S03",
+          "id": "P2-06-S06",
           "title": "Family CFO: Inspect upload form",
           "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
           "navigation": "goto",
@@ -2730,7 +3034,7 @@
           }
         },
         {
-          "step": 4,
+          "step": 7,
           "role": "Family CFO",
           "roleKey": "family_cfo",
           "tenant": "Morgan Family Office",
@@ -2758,7 +3062,7 @@
           "sourceProof": [
             "components/client-intake-screen.tsx"
           ],
-          "id": "P2-06-S04",
+          "id": "P2-06-S07",
           "title": "Family CFO: Inspect verification pending handoff",
           "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
           "navigation": "goto",
@@ -2770,7 +3074,7 @@
           }
         },
         {
-          "step": 5,
+          "step": 8,
           "role": "Analyst",
           "roleKey": "analyst",
           "tenant": "Morgan Family Office",
@@ -2799,7 +3103,7 @@
             "components/client-intake-screen.tsx",
             "prisma/seed.ts"
           ],
-          "id": "P2-06-S05",
+          "id": "P2-06-S08",
           "title": "ROLE SWITCH: Analyst - Open DB document list",
           "caption": "ROLE SWITCH: Analyst. The analyst reviews extracted evidence, filters DB rows and prepares the package for advisor review.",
           "navigation": "goto",
@@ -2812,7 +3116,7 @@
           }
         },
         {
-          "step": 6,
+          "step": 9,
           "role": "Analyst",
           "roleKey": "analyst",
           "tenant": "Morgan Family Office",
@@ -2842,7 +3146,7 @@
           "sourceProof": [
             "components/global-search-box.tsx"
           ],
-          "id": "P2-06-S06",
+          "id": "P2-06-S09",
           "title": "Analyst: Search scoped Morgan rows",
           "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
           "navigation": "goto",
@@ -2856,7 +3160,7 @@
           }
         },
         {
-          "step": 7,
+          "step": 10,
           "role": "Analyst",
           "roleKey": "analyst",
           "tenant": "Morgan Family Office",
@@ -2886,7 +3190,7 @@
           "sourceProof": [
             "components/client-intake-screen.tsx"
           ],
-          "id": "P2-06-S07",
+          "id": "P2-06-S10",
           "title": "Analyst: Search source-of-funds evidence",
           "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
           "navigation": "goto",
@@ -2900,7 +3204,7 @@
           }
         },
         {
-          "step": 8,
+          "step": 11,
           "role": "Analyst",
           "roleKey": "analyst",
           "tenant": "Morgan Family Office",
@@ -2930,7 +3234,7 @@
           "sourceProof": [
             "components/client-intake-screen.tsx"
           ],
-          "id": "P2-06-S08",
+          "id": "P2-06-S11",
           "title": "Analyst: Filter by source document type",
           "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
           "navigation": "goto",
@@ -2944,7 +3248,7 @@
           }
         },
         {
-          "step": 9,
+          "step": 12,
           "role": "Analyst",
           "roleKey": "analyst",
           "tenant": "Morgan Family Office",
@@ -2975,7 +3279,7 @@
           "sourceProof": [
             "components/ui/data-table.tsx"
           ],
-          "id": "P2-06-S09",
+          "id": "P2-06-S12",
           "title": "Analyst: Sort review rows by updated date",
           "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
           "navigation": "goto",
@@ -2988,7 +3292,7 @@
           }
         },
         {
-          "step": 10,
+          "step": 13,
           "role": "Analyst",
           "roleKey": "analyst",
           "tenant": "Morgan Family Office",
@@ -3015,7 +3319,7 @@
           "sourceProof": [
             "components/client-intake-screen.tsx"
           ],
-          "id": "P2-06-S10",
+          "id": "P2-06-S13",
           "title": "Analyst: Open extraction review",
           "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
           "navigation": "goto",
@@ -3027,7 +3331,7 @@
           }
         },
         {
-          "step": 11,
+          "step": 14,
           "role": "Analyst",
           "roleKey": "analyst",
           "tenant": "Morgan Family Office",
@@ -3055,7 +3359,7 @@
           "sourceProof": [
             "components/client-intake-screen.tsx"
           ],
-          "id": "P2-06-S11",
+          "id": "P2-06-S14",
           "title": "Analyst: Confirm and finalize reviewed extraction",
           "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
           "navigation": "goto",
@@ -3068,7 +3372,7 @@
           }
         },
         {
-          "step": 12,
+          "step": 15,
           "role": "Senior Wealth Advisor",
           "roleKey": "senior_wealth_advisor",
           "tenant": "Morgan Family Office",
@@ -3079,8 +3383,8 @@
           "action": "ROLE SWITCH: Advisor reviews internal package",
           "target": null,
           "expectedVisibleText": [
-            "Advisor",
-            "Release to Client"
+            "Advisor Approval Queue",
+            "Open compliance queue"
           ],
           "expectedStateChange": "Advisor owns internal approval, not release.",
           "blockedActions": [
@@ -3096,7 +3400,7 @@
           "sourceProof": [
             "components/internal-workflow-screen.tsx"
           ],
-          "id": "P2-06-S12",
+          "id": "P2-06-S15",
           "title": "ROLE SWITCH: Senior Advisor - Open advisor queue",
           "caption": "ROLE SWITCH: Senior Wealth Advisor. Advisor approval is internal only and still cannot release to the client.",
           "navigation": "goto",
@@ -3108,7 +3412,7 @@
           }
         },
         {
-          "step": 13,
+          "step": 16,
           "role": "Senior Wealth Advisor",
           "roleKey": "senior_wealth_advisor",
           "tenant": "Morgan Family Office",
@@ -3136,7 +3440,7 @@
           "sourceProof": [
             "components/internal-workflow-screen.tsx"
           ],
-          "id": "P2-06-S13",
+          "id": "P2-06-S16",
           "title": "Senior Advisor: Approve internal package",
           "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
           "navigation": "goto",
@@ -3149,7 +3453,7 @@
           }
         },
         {
-          "step": 14,
+          "step": 17,
           "role": "Senior Wealth Advisor",
           "roleKey": "senior_wealth_advisor",
           "tenant": "Morgan Family Office",
@@ -3177,7 +3481,7 @@
           "sourceProof": [
             "tests/scf-p04-p06-flow-ui.spec.ts"
           ],
-          "id": "P2-06-S14",
+          "id": "P2-06-S17",
           "title": "Senior Advisor: Confirm release is still blocked",
           "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
           "navigation": "goto",
@@ -3189,7 +3493,7 @@
           }
         },
         {
-          "step": 15,
+          "step": 18,
           "role": "Compliance Officer",
           "roleKey": "compliance_officer",
           "tenant": "Morgan Family Office",
@@ -3216,7 +3520,7 @@
           "sourceProof": [
             "components/internal-workflow-screen.tsx"
           ],
-          "id": "P2-06-S15",
+          "id": "P2-06-S18",
           "title": "ROLE SWITCH: Compliance Officer - Open compliance queue",
           "caption": "ROLE SWITCH: Compliance Officer. Compliance owns the release gate and can request evidence or block release.",
           "navigation": "goto",
@@ -3228,7 +3532,7 @@
           }
         },
         {
-          "step": 16,
+          "step": 19,
           "role": "Compliance Officer",
           "roleKey": "compliance_officer",
           "tenant": "Morgan Family Office",
@@ -3256,7 +3560,7 @@
           "sourceProof": [
             "components/internal-workflow-screen.tsx"
           ],
-          "id": "P2-06-S16",
+          "id": "P2-06-S19",
           "title": "Compliance Officer: Inspect release gates",
           "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
           "navigation": "goto",
@@ -3268,7 +3572,7 @@
           }
         },
         {
-          "step": 17,
+          "step": 20,
           "role": "Compliance Officer",
           "roleKey": "compliance_officer",
           "tenant": "Morgan Family Office",
@@ -3299,7 +3603,7 @@
           "sourceProof": [
             "components/internal-workflow-screen.tsx"
           ],
-          "id": "P2-06-S17",
+          "id": "P2-06-S20",
           "title": "Compliance Officer: Request more evidence",
           "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
           "navigation": "goto",
@@ -3312,7 +3616,7 @@
           }
         },
         {
-          "step": 18,
+          "step": 21,
           "role": "Compliance Officer",
           "roleKey": "compliance_officer",
           "tenant": "Morgan Family Office",
@@ -3340,7 +3644,7 @@
           "sourceProof": [
             "components/internal-workflow-screen.tsx"
           ],
-          "id": "P2-06-S18",
+          "id": "P2-06-S21",
           "title": "Compliance Officer: Block release",
           "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
           "navigation": "goto",
@@ -3353,7 +3657,7 @@
           }
         },
         {
-          "step": 19,
+          "step": 22,
           "role": "Compliance Officer",
           "roleKey": "compliance_officer",
           "tenant": "Morgan Family Office",
@@ -3381,7 +3685,7 @@
           "sourceProof": [
             "components/decisions-governance-screen.tsx"
           ],
-          "id": "P2-06-S19",
+          "id": "P2-06-S22",
           "title": "Compliance Officer: Inspect blocked evidence state",
           "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
           "navigation": "goto",
@@ -3393,7 +3697,7 @@
           }
         },
         {
-          "step": 20,
+          "step": 23,
           "role": "Compliance Officer",
           "roleKey": "compliance_officer",
           "tenant": "Morgan Family Office",
@@ -3420,7 +3724,7 @@
           "sourceProof": [
             "components/decisions-governance-screen.tsx"
           ],
-          "id": "P2-06-S20",
+          "id": "P2-06-S23",
           "title": "Compliance Officer: Inspect audit trail",
           "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
           "navigation": "goto",
@@ -3432,7 +3736,7 @@
           }
         },
         {
-          "step": 21,
+          "step": 24,
           "role": "Principal",
           "roleKey": "principal",
           "tenant": "Morgan Family Office",
@@ -3459,7 +3763,7 @@
           "sourceProof": [
             "components/decisions-governance-screen.tsx"
           ],
-          "id": "P2-06-S21",
+          "id": "P2-06-S24",
           "title": "ROLE SWITCH: Principal - Open decision list",
           "caption": "ROLE SWITCH: Principal. The principal sees only released or safe decision surfaces and cannot bypass compliance.",
           "navigation": "goto",
@@ -3471,7 +3775,7 @@
           }
         },
         {
-          "step": 22,
+          "step": 25,
           "role": "Principal",
           "roleKey": "principal",
           "tenant": "Morgan Family Office",
@@ -3499,7 +3803,7 @@
           "sourceProof": [
             "components/decisions-governance-screen.tsx"
           ],
-          "id": "P2-06-S22",
+          "id": "P2-06-S25",
           "title": "Principal: Request more information instead of accepting",
           "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
           "navigation": "goto",
@@ -3512,7 +3816,7 @@
           }
         },
         {
-          "step": 23,
+          "step": 26,
           "role": "Principal",
           "roleKey": "principal",
           "tenant": "Morgan Family Office",
@@ -3526,7 +3830,8 @@
             "name": "View Evidence Record"
           },
           "expectedVisibleText": [
-            "Decision Submitted"
+            "Evidence Record Detail",
+            "Evidence Lifecycle Gate"
           ],
           "expectedStateChange": "Evidence record is reachable from submitted decision.",
           "blockedActions": [
@@ -3542,7 +3847,7 @@
           "sourceProof": [
             "components/decisions-governance-screen.tsx"
           ],
-          "id": "P2-06-S23",
+          "id": "P2-06-S26",
           "title": "Principal: Open submitted decision evidence",
           "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
           "navigation": "goto",
@@ -3555,7 +3860,7 @@
           }
         },
         {
-          "step": 24,
+          "step": 27,
           "role": "Principal",
           "roleKey": "principal",
           "tenant": "Morgan Family Office",
@@ -3582,7 +3887,7 @@
           "sourceProof": [
             "components/decisions-governance-screen.tsx"
           ],
-          "id": "P2-06-S24",
+          "id": "P2-06-S27",
           "title": "Principal: Inspect evidence vault control",
           "caption": "The multi-role journey makes each handoff explicit: upload, analyst review, advisor approval, compliance gate, then principal decision visibility.",
           "navigation": "goto",
