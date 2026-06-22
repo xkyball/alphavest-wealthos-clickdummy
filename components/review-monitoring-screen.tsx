@@ -131,6 +131,57 @@ type Phase5DetailSplitPanelProps = {
   taskId: string;
 };
 
+
+
+type Phase6DecisionRoomPanelProps = {
+  audit: string;
+  blocker: string;
+  cancelLabel: string;
+  confirmLabel: string;
+  decisionLabel: string;
+  evidence: string;
+  preconditions: string;
+  safetyNote: string;
+  taskId: string;
+};
+
+function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, decisionLabel, evidence, preconditions, safetyNote, taskId }: Phase6DecisionRoomPanelProps) {
+  return (
+    <section className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-4" data-testid="ux-phase6-decision-room" data-ux-phase6-task={taskId}>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-red">Phase 6 decision room safety recheck</p>
+          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{decisionLabel}</h2>
+          <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted" data-testid="ux-phase6-safety-note">{safetyNote}</p>
+        </div>
+        <Badge tone="red">{taskId}</Badge>
+      </div>
+      <div className="mt-4 grid gap-3 lg:grid-cols-4">
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase6-preconditions">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Preconditions</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{preconditions}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase6-evidence">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Evidence</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{evidence}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase6-audit">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Audit</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{audit}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3" data-testid="ux-phase6-blocker">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-red">Blocker</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{blocker}</p>
+        </div>
+      </div>
+      <div className="mt-4 flex flex-wrap gap-3">
+        <button className={primaryButtonClass} data-testid="ux-phase6-confirm" disabled type="button">{confirmLabel}</button>
+        <button className={secondaryButtonClass} data-testid="ux-phase6-cancel" type="button">{cancelLabel}</button>
+      </div>
+    </section>
+  );
+}
+
 function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pageJob, safetyBoundary, splitTaskId, taskId }: Phase5DetailSplitPanelProps) {
   return (
     <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
@@ -398,6 +449,7 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
         />
         <Phase4WorkbenchPanel activeTask="Rebalance trigger RB-77 selected" blocker="Monitoring trigger is internal review state only and cannot execute advice automatically." context="Reviewer confirms stale evidence, drift and suitability prerequisites before advisory routing." primaryAction="Route to advisory review" queueLabel="Rebalance monitoring queue" safetyNote="UX-WORKBENCH-005: monitoring does not create client release, rebalance execution or advice approval." taskId="UX-WORKBENCH-005" />
         <Phase5DetailSplitPanel decisionSupport="Monitoring detail separates rebalance trigger review from execution or client advice." objectLabel="Rebalance trigger split" objectState="Internal trigger blocked" pageJob="Monitoring detail reviews one trigger without becoming rebalance execution." safetyBoundary="Monitoring detail cannot execute trades, approve advice or release content." splitTaskId="UX-PAGE-SPLIT-008" taskId="UX-PAGE-SPLIT-008" />
+        <Phase6DecisionRoomPanel audit="Monitoring audit must record trigger, due state, reviewer routing and cancel or confirm outcome." blocker="Rebalance review remains blocked because monitoring state cannot execute trades or publish client advice." cancelLabel="Cancel monitoring decision" confirmLabel="Confirm rebalance review route" decisionLabel="Rebalance review decision room" evidence="Trigger proof path, due state, client visibility flag and audit action path are visible before decision." preconditions="Human review route, evidence freshness, suitability context and compliance boundary must all pass." safetyNote="No release, export or advice effect can occur without gate preconditions and audit proof." taskId="UX-DECISION-ROOM-005" />
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <MetricCard detail="Rebalance trigger rows in demo monitoring scope." label="Triggers" status="PROCESSING" value={String(rebalanceTriggerRows.length)} />
           <MetricCard detail="Blocked actions require human review before any recommendation path." label="Blocked" status="FAILED" value={String(blockedCount)} />

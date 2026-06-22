@@ -58,6 +58,56 @@ function toneFor(value: string): BadgeTone {
   return "muted";
 }
 
+
+type Phase6DecisionRoomPanelProps = {
+  audit: string;
+  blocker: string;
+  cancelLabel: string;
+  confirmLabel: string;
+  decisionLabel: string;
+  evidence: string;
+  preconditions: string;
+  safetyNote: string;
+  taskId: string;
+};
+
+function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, decisionLabel, evidence, preconditions, safetyNote, taskId }: Phase6DecisionRoomPanelProps) {
+  return (
+    <section className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-4" data-testid="ux-phase6-decision-room" data-ux-phase6-task={taskId}>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-red">Phase 6 decision room safety recheck</p>
+          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{decisionLabel}</h2>
+          <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted" data-testid="ux-phase6-safety-note">{safetyNote}</p>
+        </div>
+        <Badge tone="red">{taskId}</Badge>
+      </div>
+      <div className="mt-4 grid gap-3 lg:grid-cols-4">
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase6-preconditions">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Preconditions</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{preconditions}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase6-evidence">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Evidence</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{evidence}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase6-audit">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Audit</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{audit}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3" data-testid="ux-phase6-blocker">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-red">Blocker</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{blocker}</p>
+        </div>
+      </div>
+      <div className="mt-4 flex flex-wrap gap-3">
+        <button className={primaryButtonClass} data-testid="ux-phase6-confirm" disabled type="button">{confirmLabel}</button>
+        <button className={secondaryButtonClass} data-testid="ux-phase6-cancel" type="button">{cancelLabel}</button>
+      </div>
+    </section>
+  );
+}
+
 function ProofStrip() {
   return (
     <div className="grid gap-3 lg:grid-cols-4">
@@ -260,6 +310,7 @@ function DetailPage({ title }: { title: string }) {
           eyebrow="Phase E · E-04"
           title={title}
         />
+        <Phase6DecisionRoomPanel audit="Committee audit must record votes, dissent state, evidence state and cancel or confirm outcome." blocker="Committee approval remains blocked until all votes are present, dissent is resolved and evidence is complete." cancelLabel="Cancel committee decision" confirmLabel="Confirm committee approval" decisionLabel="Committee review decision room" evidence="Vote coverage, dissent items and linked evidence labels are visible before decision." preconditions="All votes must be present, dissent must be resolved, evidence must be complete and compliance downstream gate acknowledged." safetyNote="No release, export or advice effect can occur without gate preconditions and audit proof." taskId="UX-DECISION-ROOM-004" />
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <MetricCard detail={selectedCommitteeReview.advisorApproval} label="Advisor gate" status="COMPLETED" value="Approved" />
           <MetricCard detail="Three peer votes required for this high-risk package." label="Votes" status="PENDING" value={`${voteProgress}/3`} />

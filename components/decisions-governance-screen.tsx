@@ -362,6 +362,57 @@ type Phase5DetailSplitPanelProps = {
   taskId: string;
 };
 
+
+
+type Phase6DecisionRoomPanelProps = {
+  audit: string;
+  blocker: string;
+  cancelLabel: string;
+  confirmLabel: string;
+  decisionLabel: string;
+  evidence: string;
+  preconditions: string;
+  safetyNote: string;
+  taskId: string;
+};
+
+function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, decisionLabel, evidence, preconditions, safetyNote, taskId }: Phase6DecisionRoomPanelProps) {
+  return (
+    <section className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-4" data-testid="ux-phase6-decision-room" data-ux-phase6-task={taskId}>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-red">Phase 6 decision room safety recheck</p>
+          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{decisionLabel}</h2>
+          <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted" data-testid="ux-phase6-safety-note">{safetyNote}</p>
+        </div>
+        <Badge tone="red">{taskId}</Badge>
+      </div>
+      <div className="mt-4 grid gap-3 lg:grid-cols-4">
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase6-preconditions">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Preconditions</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{preconditions}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase6-evidence">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Evidence</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{evidence}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase6-audit">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Audit</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{audit}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3" data-testid="ux-phase6-blocker">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-red">Blocker</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{blocker}</p>
+        </div>
+      </div>
+      <div className="mt-4 flex flex-wrap gap-3">
+        <button className={primaryButtonClass} data-testid="ux-phase6-confirm" disabled type="button">{confirmLabel}</button>
+        <button className={secondaryButtonClass} data-testid="ux-phase6-cancel" type="button">{cancelLabel}</button>
+      </div>
+    </section>
+  );
+}
+
 function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pageJob, safetyBoundary, splitTaskId, taskId }: Phase5DetailSplitPanelProps) {
   return (
     <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
@@ -827,6 +878,7 @@ function DecisionRoomPage({ title }: { title: string }) {
           title={title}
         />
         <ScfP07P09TrustPanel mode="decision" />
+        <Phase6DecisionRoomPanel audit="Client decision audit must record actor, released package state, selected action and cancel or confirm outcome." blocker="Client decision remains separated from compliance release, evidence controls and client acceptance." cancelLabel="Cancel decision action" confirmLabel="Confirm client decision" decisionLabel="Client decision governance room" evidence="Linked documents, approvals and decision options are visible before action." preconditions="Released package, evidence controls, permission scope and decision audit readiness must all pass." safetyNote="No release, export or advice effect can occur without gate preconditions and audit proof." taskId="UX-DECISION-ROOM-001" />
         <UxDetailStandardPanel
           actionLabel="Accept, defer, reject or request more information"
           actionState="Decision actions are recorded only within the released decision workflow and do not bypass evidence or compliance controls."

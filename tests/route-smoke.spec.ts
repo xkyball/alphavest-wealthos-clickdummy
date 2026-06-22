@@ -326,6 +326,48 @@ test.describe("UX-WORKBENCH phase 4 active task workbenches", () => {
   }
 });
 
+
+
+test.describe("UX-DECISION-ROOM phase 6 safety-critical decision rooms", () => {
+  const phase6Routes = [
+    { path: "/compliance/reviews/demo/decision-room", taskId: "UX-DECISION-ROOM-001" },
+    { path: "/export/demo/approval", taskId: "UX-DECISION-ROOM-002" },
+    { path: "/ips/demo/decision-room", taskId: "UX-DECISION-ROOM-003" },
+    { path: "/committee/reviews/demo/decision-room", taskId: "UX-DECISION-ROOM-004" },
+    { path: "/reviews/demo", taskId: "UX-DECISION-ROOM-005" },
+  ];
+
+  test("covers every Phase 6 decision-room task exactly", () => {
+    expect(new Set(phase6Routes.map((route) => route.taskId))).toEqual(new Set([
+      "UX-DECISION-ROOM-001",
+      "UX-DECISION-ROOM-002",
+      "UX-DECISION-ROOM-003",
+      "UX-DECISION-ROOM-004",
+      "UX-DECISION-ROOM-005",
+    ]));
+  });
+
+  for (const route of phase6Routes) {
+    test(route.taskId + " " + route.path + " exposes preconditions, evidence, audit, blocker and safe controls", async ({ page }) => {
+      await page.setViewportSize({ height: 1200, width: 1440 });
+      await authenticateRouteSmokePage(page);
+      await page.goto(route.path);
+
+      const panel = page.locator('[data-testid="ux-phase6-decision-room"][data-ux-phase6-task="' + route.taskId + '"]').first();
+      await expect(panel).toBeVisible();
+      await expect(panel.getByTestId("ux-phase6-preconditions")).toContainText(/must|pass|required|complete/i);
+      await expect(panel.getByTestId("ux-phase6-evidence")).toContainText(/evidence|checks|documents|votes|trigger|package/i);
+      await expect(panel.getByTestId("ux-phase6-audit")).toContainText(/audit.*record|record.*audit/i);
+      await expect(panel.getByTestId("ux-phase6-blocker")).toContainText(/blocked|remains|cannot|incomplete/i);
+      await expect(panel.getByTestId("ux-phase6-safety-note")).toContainText(/No release, export or advice effect can occur without gate preconditions and audit proof/i);
+      await expect(panel.getByTestId("ux-phase6-confirm")).toHaveCount(1);
+      await expect(panel.getByTestId("ux-phase6-confirm")).toBeDisabled();
+      await expect(panel.getByTestId("ux-phase6-cancel")).toHaveCount(1);
+    });
+  }
+});
+
+
 test.describe("UX-PAGE detail standard", () => {
 
 test.describe("UX-DETAIL / UX-PAGE-SPLIT phase 5 object review", () => {
