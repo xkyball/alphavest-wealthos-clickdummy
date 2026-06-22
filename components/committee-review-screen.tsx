@@ -15,6 +15,7 @@ import {
 
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/page-header";
+import { UxHubPage } from "@/components/ux-hub-page";
 import {
   AuditTimeline,
   Badge,
@@ -136,6 +137,7 @@ function QueuePage({ title }: { title: string }) {
           eyebrow="Phase E · E-03"
           title={title}
         />
+        <UxHubPage pageId="070" />
         <ProofStrip />
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <MetricCard detail="High-risk packages waiting for committee votes." label="Pending review" status="PENDING" value={String(pendingCount)} />

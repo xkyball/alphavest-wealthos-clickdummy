@@ -13,6 +13,7 @@ import { uxContentHierarchyForPageType } from "../lib/ux-content-hierarchy";
 import { uxDensityForPageId, uxDensityTierContracts } from "../lib/ux-density";
 import { uxComplexity005SupportPageIds } from "../lib/ux-support-density";
 import { productGuidanceForRoute } from "../lib/product-guidance";
+import { uxHubDefinitionForPageId } from "../lib/ux-hub";
 import {
   groupedImplementationScreenRoutes,
   routeImplementationAccessDecision,
@@ -127,12 +128,11 @@ test.describe("UX-NAV route policy navigation", () => {
   });
 
   test("preserves route policy page types from the matrix for hub and workbench navigation", () => {
-    for (const pageId of ["007", "013", "015", "019", "020", "024", "031", "034", "043", "052", "054", "059", "064", "068", "070"]) {
+    for (const pageId of ["007", "013", "015", "019", "020", "024", "031", "033", "034", "043", "046", "048", "052", "054", "059", "064", "068", "070"]) {
       expect(uxNavigationPolicyForPageId(pageId).pageType, `${pageId} should be a hub`).toBe("Hub");
     }
 
     expect(uxNavigationPolicyForPageId("038").pageType).toBe("Workbench");
-    expect(uxNavigationPolicyForPageId("048").pageType).toBe("Workbench");
   });
 
   test("journey rails keep later gates blocked until prerequisites pass", () => {
@@ -222,7 +222,6 @@ test.describe("UX-PAGE workbench structure", () => {
     "/advisory",
     "/advisor/reviews",
     "/compliance/reviews",
-    "/evidence",
     "/governance",
     "/governance/roles/demo",
     "/governance/access-requests/demo",
@@ -244,6 +243,54 @@ test.describe("UX-PAGE workbench structure", () => {
       await expect(triad.getByTestId("ux-page-selected-context")).toHaveCount(1);
       await expect(triad.getByTestId("ux-page-action-rail")).toHaveCount(1);
       await expect(triad.getByText("Controls stay blocked until the required gate passes.")).toBeVisible();
+    });
+  }
+});
+
+test.describe("UX-HUB phase 3 orientation hubs", () => {
+  const phase3HubRoutes = [
+    { path: "/client/home", taskId: "UX-HUB-001", pageId: "019" },
+    { path: "/advisory", taskId: "UX-HUB-002", pageId: "033" },
+    { path: "/evidence", taskId: "UX-HUB-003", pageId: "046" },
+    { path: "/compliance/reviews", taskId: "UX-HUB-004", pageId: "038", proofOnly: true },
+    { path: "/export/new", taskId: "UX-HUB-005", pageId: "054" },
+    { path: "/governance", taskId: "UX-HUB-006", pageId: "048" },
+    { path: "/kyc/reviews", taskId: "UX-HUB-007", pageId: "064" },
+    { path: "/reviews", taskId: "UX-HUB-007", pageId: "068" },
+    { path: "/committee/reviews", taskId: "UX-HUB-007", pageId: "070" },
+    { path: "/communication/demo/context", taskId: "UX-HUB-005", pageId: "052" },
+    { path: "/ops", taskId: "UX-HUB-007", pageId: "059" },
+  ];
+
+  test("defines Phase 3 hub contracts with summary, priority, queue and safety guidance", () => {
+    for (const route of phase3HubRoutes) {
+      const hub = uxHubDefinitionForPageId(route.pageId);
+
+      expect(hub, `${route.taskId} ${route.pageId} hub definition`).toBeTruthy();
+      expect(hub?.summary, `${route.taskId} summary`).toContain(" ");
+      expect(hub?.priorityCards, `${route.taskId} priority cards`).toHaveLength(3);
+      expect(hub?.queue.length, `${route.taskId} queue links`).toBeGreaterThanOrEqual(3);
+      expect(hub?.safetyNote, `${route.taskId} safety note`).toMatch(/cannot|must not|No|not/i);
+      if (!route.proofOnly) {
+        expect(uxNavigationPolicyForPageId(route.pageId).pageType, `${route.taskId} page type`).toBe("Hub");
+      }
+    }
+  });
+
+  for (const route of phase3HubRoutes) {
+    test(`${route.taskId} ${route.path} renders a focused orientation hub`, async ({ page }) => {
+      await page.setViewportSize({ height: 1100, width: 1440 });
+      await authenticateRouteSmokePage(page);
+      await page.goto(route.path);
+
+      const hub = page.getByTestId("ux-hub-page").first();
+      await expect(hub).toBeVisible();
+      await expect(hub).toHaveAttribute("data-ux-hub-task", "phase-3");
+      await expect(hub.getByTestId("ux-hub-summary")).toBeVisible();
+      await expect(hub.locator('[data-ux-hub-priority-card="true"]')).toHaveCount(3);
+      await expect(hub.getByTestId("ux-hub-primary-next-work")).toHaveCount(1);
+      expect(await hub.getByTestId("ux-hub-next-link").count()).toBeGreaterThan(2);
+      await expect(hub.getByTestId("ux-hub-safety-note")).toBeVisible();
     });
   }
 });
@@ -281,7 +328,6 @@ test.describe("UX-PAGE detail standard", () => {
 test.describe("UX-COMPLEXITY priority hierarchy", () => {
   const uxComplexity001Routes = [
     "/actions",
-    "/advisory",
     "/compliance/reviews/demo/decision-room",
     "/compliance/reviews/demo/audit",
     "/export/demo/redaction",

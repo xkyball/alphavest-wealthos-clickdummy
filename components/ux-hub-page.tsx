@@ -42,6 +42,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
       <section
         className="mx-auto w-full max-w-[88rem] space-y-4"
         data-testid="ux-hub-page"
+        data-ux-hub-task="phase-3"
         data-ux-d1-calm-executive="true"
         data-ux-density-pattern={density.pattern}
         data-ux-density-tier={density.tier}
@@ -53,7 +54,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
               <div className={cn("mt-4 flex flex-col gap-4", !isMobileClientHub && "lg:flex-row lg:items-end lg:justify-between")}>
                 <div className="min-w-0">
                   <h2 className="font-display text-3xl text-alphavest-ivory">{hub.title}</h2>
-                  <p className="sr-only">{hub.summary}</p>
+                  <p className="mt-2 max-w-3xl text-sm leading-6 text-alphavest-muted" data-testid="ux-hub-summary">{hub.summary}</p>
                 </div>
                 <Link
                   className={cn(
@@ -81,6 +82,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
                 <Card
                   className={cn("border p-4", toneClasses[card.tone])}
                   data-testid="ux-d1-state-card"
+                  data-ux-hub-priority-card="true"
                   key={card.label}
                 >
                   <p className="text-xs font-semibold uppercase tracking-[0.12em] opacity-80">{card.label}</p>
@@ -111,6 +113,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">One safe next step</p>
               <Link
                 className="mt-4 block rounded-md border border-alphavest-gold/55 bg-alphavest-gold/10 p-4 transition hover:border-alphavest-gold"
+                data-testid="ux-hub-next-link"
                 href={hub.primaryAction.href}
               >
                 <span className="flex items-center justify-between gap-3 text-sm font-semibold text-alphavest-gold-soft">
@@ -119,17 +122,17 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
                 </span>
                 <span className="sr-only">{hub.primaryAction.detail}</span>
               </Link>
-              <div className="mt-4 rounded-md border border-alphavest-gold/35 bg-alphavest-navy/35 p-3 text-sm leading-6 text-alphavest-gold-soft">
+              <div className="mt-4 rounded-md border border-alphavest-gold/35 bg-alphavest-navy/35 p-3 text-sm leading-6 text-alphavest-gold-soft" data-testid="ux-hub-safety-note">
                 <div className="flex gap-3">
                   <ShieldCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
                   <p>{hub.safetyNote}</p>
                 </div>
               </div>
               <div className="mt-4 space-y-2">
-                {hub.queue.slice(0, 2).map((item) => (
-                  <p className="text-sm leading-6 text-alphavest-muted" key={`${item.href}-${item.label}-d1-support`}>
+                  {hub.queue.slice(0, 2).map((item) => (
+                  <Link className="block rounded-md border border-alphavest-border/55 bg-alphavest-navy/30 p-3 text-sm leading-6 text-alphavest-muted transition hover:border-alphavest-gold/55" data-testid="ux-hub-next-link" href={item.href} key={`${item.href}-${item.label}-d1-support`}>
                     <span className="font-semibold text-alphavest-ivory">{item.label}:</span> {item.detail}
-                  </p>
+                  </Link>
                 ))}
               </div>
             </Card>
@@ -145,6 +148,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
     <section
       className="mx-auto w-full max-w-[104rem] space-y-5"
       data-testid="ux-hub-page"
+      data-ux-hub-task="phase-3"
       data-ux-density-pattern={density.pattern}
       data-ux-density-tier={density.tier}
     >
@@ -155,11 +159,12 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
             <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div className="min-w-0">
                 <h2 className="font-display text-3xl text-alphavest-ivory">{hub.title}</h2>
-                <p className="sr-only">{hub.summary}</p>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-alphavest-muted" data-testid="ux-hub-summary">{hub.summary}</p>
               </div>
               <Link
                 className="inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md bg-alphavest-gold px-4 text-sm font-semibold text-alphavest-navy transition hover:bg-alphavest-gold-soft"
                 data-testid="ux-hub-primary-next-work"
+                data-ux-hub-next-step="primary"
                 href={hub.primaryAction.href}
               >
                 {hub.primaryAction.label}
@@ -202,7 +207,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
 
           <div className="grid gap-4 md:grid-cols-3" data-ux-content-tier="secondary">
             {hub.priorityCards.map((card) => (
-              <Card className={cn("border", toneClasses[card.tone])} key={card.label}>
+              <Card className={cn("border", toneClasses[card.tone])} data-testid="ux-hub-priority-card" data-ux-hub-priority-card="true" key={card.label}>
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] opacity-80">{card.label}</p>
                 <p className="mt-3 text-3xl font-semibold text-alphavest-ivory">{card.value}</p>
                 <p className="mt-3 text-sm leading-6 text-alphavest-muted">{card.detail}</p>
@@ -293,6 +298,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
             <CardContent className="space-y-3" data-testid="ux-hub-queue">
               <Link
                 className="block rounded-md border border-alphavest-gold/55 bg-alphavest-gold/10 p-4 transition hover:border-alphavest-gold"
+                data-testid="ux-hub-next-link"
                 href={hub.primaryAction.href}
               >
                 <span className="flex items-center justify-between gap-3 text-sm font-semibold text-alphavest-gold-soft">
@@ -304,6 +310,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
               {hub.queue.map((item) => (
                 <Link
                   className="block rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-4 transition hover:border-alphavest-gold/60"
+                  data-testid="ux-hub-next-link"
                   href={item.href}
                   key={`${item.href}-${item.label}`}
                 >
@@ -317,7 +324,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
             </CardContent>
           </Card>
 
-          <div className="rounded-md border border-alphavest-gold/40 bg-alphavest-gold/10 p-4 text-sm leading-6 text-alphavest-gold-soft" data-ux-content-tier="must-see">
+          <div className="rounded-md border border-alphavest-gold/40 bg-alphavest-gold/10 p-4 text-sm leading-6 text-alphavest-gold-soft" data-testid="ux-hub-safety-note" data-ux-content-tier="must-see">
             <div className="flex gap-3">
               <ShieldCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
               <p>{hub.safetyNote}</p>

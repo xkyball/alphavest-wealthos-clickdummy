@@ -34,6 +34,7 @@ import {
 } from "@/components/ui";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
+import { UxHubPage } from "@/components/ux-hub-page";
 import { cn } from "@/lib/cn";
 import {
   amlChecks,
@@ -290,6 +291,7 @@ function KycReviewPage({ title }: { title: string }) {
     <KycShell activePageId="064">
       <ScreenTitle>{title}</ScreenTitle>
       <div className="space-y-5">
+        <UxHubPage pageId="064" />
         <PageHeading
           action={
             <>

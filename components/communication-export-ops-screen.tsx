@@ -712,6 +712,7 @@ function CommunicationCentrePage({ title }: { title: string }) {
   return (
     <div>
       <PageLead description="Design, approve and deliver compliant communications with preview, release and evidence logging." icon={MessageSquare} title={title} />
+      <UxHubPage pageId="052" />
       <div className="rounded-md border border-alphavest-gold/45 bg-alphavest-gold/10 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3 text-sm font-semibold text-alphavest-gold-soft">
@@ -1450,6 +1451,7 @@ function OpsQueuesPage({ title }: { title: string }) {
   return (
     <div>
       <PageLead description="Monitor workloads, manage backlogs and meet SLA commitments." icon={Gauge} title={title} />
+      <UxHubPage pageId="059" />
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
         {metrics.map((metric) => (
           <Card key={metric.label}>

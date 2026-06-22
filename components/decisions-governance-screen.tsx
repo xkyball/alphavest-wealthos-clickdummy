@@ -1003,6 +1003,7 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
     <Phase12Shell activePageId="046">
       <ScreenTitle>{title}</ScreenTitle>
       <div className={cn("mx-auto max-w-[104rem] space-y-5", drawerOpen ? "pr-0 xl:pr-[23rem]" : "")}>
+        <UxHubPage pageId="046" />
         <PageHeading
           action={<button className={primaryButtonClass} onClick={() => setDrawerOpen(true)} type="button">Open Selected Evidence</button>}
           badge={<ShieldCheck aria-hidden="true" className="size-5 text-alphavest-gold" />}
@@ -1244,6 +1245,7 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
     <Phase12Shell activePageId="048">
       <ScreenTitle>{title}</ScreenTitle>
       <div className={cn("mx-auto max-w-[104rem] space-y-5", drawerOpen ? "pr-0 xl:pr-[23rem]" : "")}>
+        <UxHubPage pageId="048" />
         <PageHeading
           action={
             <button

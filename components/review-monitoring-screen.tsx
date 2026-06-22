@@ -19,6 +19,7 @@ import {
 
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/page-header";
+import { UxHubPage } from "@/components/ux-hub-page";
 import {
   Badge,
   Card,
@@ -190,6 +191,7 @@ function ReviewCalendarPage({ title }: { title: string }) {
           eyebrow="Phase D · J16"
           title={title}
         />
+        <UxHubPage pageId="068" />
         <ProofStrip />
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <MetricCard detail="Reviews with a due date inside the next 14 days." label="Due soon" status="SCHEDULED" value={String(dueSoonCount)} />
