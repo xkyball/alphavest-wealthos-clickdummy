@@ -200,6 +200,91 @@ No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route was 
 
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
 
+## Completed Slice: UX-DENSITY-006
+
+Task: `UX-DENSITY-006` - Enforce above-the-fold status/page-job/next-step rule.
+
+Mission Card: ensure every eligible MVP/MVP_SUPPORT app-shell route shows product job, route status, current gate and exactly one primary next step in the first desktop viewport, without surfacing task/proof/policy explanation in the visible product UI.
+
+Evidence Intake:
+- Task-master target: all MVP and flow-relevant support routes.
+- Route Policy Matrix rule cited: `NAV-POL-004` requires page header/page guidance to show page job, status/gate and one primary next step.
+- Existing implementation finding: `ProductGuidancePanel` already carried the right structure for many routes, but routes without overrides could lack a primary next step and there was no all-route above-fold regression proof.
+
+Problem Architecture: users need immediate orientation and next action, but visible UI must not imply gate completion, route-policy proof or permission expansion.
+
+Double Diamond:
+- Discover: some routes depended on explicit guidance overrides for primary next-step presence.
+- Define: all productive app-shell routes need a default primary action when no route-specific action is defined.
+- Develop: add a safe same-route/next-flow fallback and test above-fold placement across 50 MVP/MVP_SUPPORT app routes.
+- Deliver: route-smoke proof, D1-D4 screenshot proof and report updates.
+
+Method Artifacts:
+- Psycho-Logic + Map/Model: users need "where am I, what is the status, what can I do next?" The map trap is presenting route/task/proof metadata as product truth.
+- Reframing Matrix: page-as-card-wall rejected; page-as-job kept; page-as-gate kept; page-as-manual rejected for visible UI.
+- TRIZ: improve orientation without weakening gates through non-authorizing guidance and fallback next-step links.
+- SIT Closed World: reused route registry, product guidance, flow steps and existing AppShell.
+- Zwicky + CCA: global fallback chosen; per-page CTA edits rejected; visible policy labels rejected.
+- SCAMPER: added fallback, marked existing UI for proof, eliminated hidden missing-primary cases and rearranged nothing that would hide gates.
+- Harvard/BATNA: objective criteria are `NAV-POL-004` and the UX task card; BATNA is stop/report if a route needs new behavior.
+- MESOs: A shared fallback plus broad regression chosen; B bespoke page edits rejected; C tests-only without implementation rejected.
+
+Measurement Plan:
+- `pnpm typecheck`
+- `pnpm lint`
+- `pnpm visual:contract`
+- `PLAYWRIGHT_PORT=3455 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-DENSITY above-the-fold"`
+- `PLAYWRIGHT_PORT=3456 pnpm test:route-smoke`
+- `PLAYWRIGHT_PORT=3457 pnpm test:permissions`
+- `PLAYWRIGHT_PORT=3458 pnpm test:workflow-gate`
+- `PLAYWRIGHT_PORT=3459 pnpm test:file-export`
+
+Ethics/Fairness: no dark patterns, no false success, no hidden gate weakening, no client-visible AI draft and no claim that a visible next step completes downstream controls.
+
+Adversarial QA: fallback primary actions could be mistaken for authorization; the copy remains "Open/Continue" and existing P0 tests prove permissions, workflow gates and export lifecycle stay separate.
+
+Learning Log: `UX-CTA-001` can now build on a reliable one-primary-next-step surface and should harden blocked/recovery CTA semantics without adding new authority.
+
+Changed files:
+- `components/product-guidance-panel.tsx`
+- `lib/product-guidance.ts`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+Validation:
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with 27 existing warnings and 0 errors after rerunning outside Playwright's `test-results` race.
+- `pnpm visual:contract` - passed, 71 assets/routes checked, 0 failures.
+- `PLAYWRIGHT_PORT=3455 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-DENSITY above-the-fold"` - passed, 50 tests.
+- `PLAYWRIGHT_PORT=3456 pnpm test:route-smoke` - passed, 250 tests.
+- `PLAYWRIGHT_PORT=3457 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3458 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3459 pnpm test:file-export` - passed, 14 tests.
+
+Screenshot/proof:
+- `artifacts/ux-page-to-policy/UX-DENSITY-006/2026-06-22-UX-DENSITY-006-d1-portal-above-fold.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-006/2026-06-22-UX-DENSITY-006-d2-workbench-above-fold.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-006/2026-06-22-UX-DENSITY-006-d3-audit-above-fold.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-006/2026-06-22-UX-DENSITY-006-d4-export-preview-above-fold.png`
+
+Positive acceptance:
+- 50 productive MVP/MVP_SUPPORT app-shell routes show job, status, gate and one primary next step above the fold.
+- Routes without explicit guidance overrides now receive a safe default primary action.
+
+Negative/P0 acceptance:
+- Above-fold guidance does not imply release, evidence sufficiency, export approval/download/share, audit persistence, advice visibility or RBAC expansion.
+- P1, Reference and Hold routes remain excluded from productive next-step proof.
+
+No-generation confirmation: no screen generation, state-screen generation, image generation or generated product assets.
+
+No-route-reclassification confirmation: route IDs, paths, worksets, route scopes and route-policy classifications remain unchanged.
+
+No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route was elevated.
+
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
+
 ## Completed Slice: UX-DENSITY-004
 
 Task: `UX-DENSITY-004` - Apply D3 Dense Operations to governance/export/audit tables.

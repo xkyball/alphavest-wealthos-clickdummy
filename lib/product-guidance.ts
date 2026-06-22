@@ -277,14 +277,34 @@ function workbenchStructureForRoute(route: ScreenRoute, guidance: Pick<ProductGu
   } satisfies ProductGuidanceWorkbenchStructure;
 }
 
+function fallbackPrimaryActionForRoute(route: ScreenRoute, tier: RouteScopeLabel, steps: UxFlowStep[]): ProductGuidanceLink | undefined {
+  if (tier !== "MVP" && tier !== "MVP_SUPPORT") return undefined;
+
+  const routeHref = routeToSmokePath(route.route);
+  const nextOpenStep = steps.find((step) => step.status === "upcoming" && !step.disabledReason);
+
+  if (nextOpenStep) {
+    return {
+      href: nextOpenStep.href,
+      label: `Continue to ${nextOpenStep.label}`,
+    };
+  }
+
+  return {
+    href: routeHref,
+    label: `Open ${route.title}`,
+  };
+}
+
 export function productGuidanceForRoute(route: ScreenRoute): ProductGuidance {
   const tier = routeScopeForPageId(route.pageId);
   const policy = uxRoutePolicyForRoute(route);
   const override = guidanceOverrides[route.pageId] ?? {};
+  const steps = uxFlowStepsForPageId(route.pageId);
   const baseGuidance = {
     area: override.area ?? areaForRoute(route),
     gateHint: override.gateHint ?? tierGateHints[tier],
-    primaryAction: override.primaryAction,
+    primaryAction: override.primaryAction ?? fallbackPrimaryActionForRoute(route, tier, steps),
     shortTitle: override.shortTitle ?? route.title,
     tierLabel: guidanceTierLabels[tier],
   };
@@ -300,7 +320,7 @@ export function productGuidanceForRoute(route: ScreenRoute): ProductGuidance {
     routePolicyLabels: policy.routePolicyLabels,
     routeId: route.pageId,
     shortTitle: baseGuidance.shortTitle,
-    steps: uxFlowStepsForPageId(route.pageId),
+    steps,
     tier,
     tierLabel: baseGuidance.tierLabel,
     workbenchStructure: workbenchStructureForRoute(route, baseGuidance),

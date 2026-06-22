@@ -8879,3 +8879,59 @@ No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route was 
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
 
 Exit Gate Decision: `UX_DENSITY_005_COMPLETED_WITH_D4_FOCUSED_DETAIL_AND_NO_VISIBLE_EXPLANATORY_COPY_PROOF`
+
+## UX-DENSITY-006 Addendum - Above-Fold Job Status Next Step Enforced
+
+Date: 2026-06-22
+
+Status: Completed and validated.
+
+Task IDs: `UX-DENSITY-006`
+
+Route-policy rows cited:
+- Route Policy Matrix `NAV-POL-004`.
+- All MVP/MVP_SUPPORT app-shell routes from `007` through `058` that are productive or flow-relevant and not P1/Reference/Hold.
+
+Completed `UX-DENSITY-006` by materializing the above-fold route job/status/gate/primary-next-step contract on the shared Product Guidance surface. Routes without route-specific guidance now receive a safe fallback primary action for productive MVP/MVP_SUPPORT surfaces only. Visible UI remains product-facing and avoids route/task/proof/policy explanatory language.
+
+Changed files:
+- `components/product-guidance-panel.tsx`
+- `lib/product-guidance.ts`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+Proof artifacts:
+- `artifacts/ux-page-to-policy/UX-DENSITY-006/2026-06-22-UX-DENSITY-006-d1-portal-above-fold.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-006/2026-06-22-UX-DENSITY-006-d2-workbench-above-fold.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-006/2026-06-22-UX-DENSITY-006-d3-audit-above-fold.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-006/2026-06-22-UX-DENSITY-006-d4-export-preview-above-fold.png`
+
+Validation:
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with 27 existing warnings and 0 errors after a sequential rerun.
+- `pnpm visual:contract` - passed, 71 assets/routes checked, 0 failures.
+- `PLAYWRIGHT_PORT=3455 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-DENSITY above-the-fold"` - passed, 50 tests.
+- `PLAYWRIGHT_PORT=3456 pnpm test:route-smoke` - passed, 250 tests.
+- `PLAYWRIGHT_PORT=3457 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3458 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3459 pnpm test:file-export` - passed, 14 tests.
+
+Positive acceptance:
+- Productive app-shell MVP/MVP_SUPPORT routes show job, status, gate and exactly one primary next step above the desktop fold.
+- D1-D4 representative screenshots prove the shared contract across density tiers.
+
+Negative/P0 acceptance:
+- Above-fold guidance does not change permissions, workflow gates, export lifecycle, compliance release, evidence sufficiency, audit persistence or advice visibility.
+- P1/Reference/Hold routes remain excluded.
+
+No-generation confirmation: no screen generation, state-screen generation, image generation or generated product assets.
+
+No-route-reclassification confirmation: route IDs, paths, worksets and route scopes remain unchanged.
+
+No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route was elevated.
+
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
+
+Exit Gate Decision: `UX_DENSITY_006_COMPLETED_WITH_ABOVE_FOLD_NEXT_STEP_PROOF`

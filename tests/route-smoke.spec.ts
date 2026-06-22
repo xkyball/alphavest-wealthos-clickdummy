@@ -589,6 +589,41 @@ test.describe("UX-DENSITY focused detail routes", () => {
   }
 });
 
+test.describe("UX-DENSITY above-the-fold route job", () => {
+  const authAndOnboardingSupportPageIds = new Set(["001", "002", "003", "004", "005", "006"]);
+  const aboveFoldRoutes = routeSmokeList.filter((route) => {
+    const scope = routeScopeForPageId(route.pageId);
+    return (scope === "MVP" || scope === "MVP_SUPPORT") && !authAndOnboardingSupportPageIds.has(route.pageId);
+  });
+
+  for (const route of aboveFoldRoutes) {
+    test(`${route.pageId} ${route.path} shows job, status, gate and primary next step above the fold`, async ({ page }) => {
+      await page.setViewportSize({ height: 1000, width: 1440 });
+      await authenticateRouteSmokePage(page);
+      await page.goto(route.path);
+
+      const guidance = page.getByTestId("product-guidance").first();
+      await expect(guidance).toBeVisible();
+      await expect(guidance).toHaveAttribute("data-ux-density-above-fold", "true");
+      await expect(guidance.getByTestId("ux-density-page-job")).toBeVisible();
+      await expect(guidance.getByTestId("ux-density-status")).toBeVisible();
+      await expect(guidance.getByTestId("ux-nav-gate-guidance")).toBeVisible();
+      await expect(guidance.getByTestId("ux-nav-primary-next-step")).toHaveCount(1);
+      await expect(guidance).not.toContainText(/Workflow step|route policy|gate-completion proof|visual proof|complexity reduction/i);
+
+      for (const locator of [
+        guidance.getByTestId("ux-density-page-job"),
+        guidance.getByTestId("ux-density-status"),
+        guidance.getByTestId("ux-nav-gate-guidance"),
+        guidance.getByTestId("ux-nav-primary-next-step"),
+      ]) {
+        const box = await locator.first().boundingBox();
+        expect(box?.y, `${route.pageId} above-fold contract`).toBeLessThan(420);
+      }
+    });
+  }
+});
+
 test.describe("locked route workset preservation", () => {
   test("all registered routes are classified exactly once", () => {
     expect(routeWorksetIntegrity.counts).toEqual(lockedRouteWorksetCounts);

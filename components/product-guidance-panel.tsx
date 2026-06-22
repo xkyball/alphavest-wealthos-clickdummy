@@ -37,6 +37,7 @@ export function ProductGuidancePanel() {
       aria-label="Product workflow guidance"
       className="mb-4 rounded-md border border-alphavest-border/75 bg-alphavest-panel/72 p-3 shadow-[0_18px_50px_rgba(0,0,0,0.18)] md:mb-5 md:p-5"
       data-ux-d2-productive-workbench={density?.tier === "D2" && guidance.workbenchStructure ? "true" : undefined}
+      data-ux-density-above-fold="true"
       data-ux-density-pattern={density?.pattern}
       data-ux-density-tier={density?.tier}
       data-testid="product-guidance"
@@ -56,8 +57,9 @@ export function ProductGuidancePanel() {
                   ? "border-alphavest-green/35 bg-alphavest-green/10 text-alphavest-green"
                   : guidance.tier === "MVP_SUPPORT" || guidance.tier === "ROOT"
                     ? "border-alphavest-blue/35 bg-alphavest-blue/10 text-alphavest-blue"
-                    : "border-alphavest-gold/35 bg-alphavest-gold/10 text-alphavest-gold-soft"
+                  : "border-alphavest-gold/35 bg-alphavest-gold/10 text-alphavest-gold-soft"
               )}
+              data-testid="ux-density-status"
             >
               {guidance.tierLabel}
             </span>
@@ -65,7 +67,7 @@ export function ProductGuidancePanel() {
 
           <div className="grid gap-2 md:gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.5fr)]">
             <div>
-              <h2 className="font-display text-xl text-alphavest-ivory md:text-3xl">
+              <h2 className="font-display text-xl text-alphavest-ivory md:text-3xl" data-testid="ux-density-page-job">
                 {guidance.shortTitle}
               </h2>
               <p className="sr-only">

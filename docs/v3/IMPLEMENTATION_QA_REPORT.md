@@ -6685,3 +6685,52 @@ Source of truth:
 
 - This slice applies D4 focused detail only to the task-card route set.
 - Lint still reports 27 existing unused-code warnings outside this slice; there are no lint errors.
+
+## UX-DENSITY-006 QA Addendum
+
+Date: 2026-06-22
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+- `docs/v3/ALPHAVEST_SURFACE_COPY_HANDBOOK_RULE.md`
+
+| Area | QA result | Evidence |
+| --- | --- | --- |
+| Above-fold job/status/next step | Passed | Route-smoke verifies 50 MVP/MVP_SUPPORT app-shell routes show page job, status, gate and one primary next step above the desktop fold. |
+| Safe default primary action | Passed | Productive routes without explicit guidance receive a safe `Open` or `Continue` primary action; P1/Reference/Hold routes do not. |
+| No visible explanatory copy | Passed | Above-fold tests reject visible workflow-step, route-policy, proof and complexity-reduction wording. |
+| Route Policy preservation | Passed | No route IDs, paths, worksets or route scopes changed. |
+| P0 safety | Passed | Permissions, workflow-gate, file-export and full route-smoke tests passed after the above-fold change. |
+| Screenshot proof | Passed | Four screenshots captured under `artifacts/ux-page-to-policy/UX-DENSITY-006/`, covering D1-D4 representatives. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | `tsc --noEmit` completed successfully. |
+| `pnpm lint` | Passed | 27 existing warnings, 0 errors after sequential rerun. |
+| `pnpm visual:contract` | Passed | 71 assets/routes checked, 0 failures. |
+| `PLAYWRIGHT_PORT=3455 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-DENSITY above-the-fold"` | Passed | 50 tests. |
+| `PLAYWRIGHT_PORT=3456 pnpm test:route-smoke` | Passed | 250 tests. |
+| `PLAYWRIGHT_PORT=3457 pnpm test:permissions` | Passed | 8 tests. |
+| `PLAYWRIGHT_PORT=3458 pnpm test:workflow-gate` | Passed | 13 tests. |
+| `PLAYWRIGHT_PORT=3459 pnpm test:file-export` | Passed | 14 tests. |
+
+### Screenshot Proof
+
+- `artifacts/ux-page-to-policy/UX-DENSITY-006/2026-06-22-UX-DENSITY-006-d1-portal-above-fold.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-006/2026-06-22-UX-DENSITY-006-d2-workbench-above-fold.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-006/2026-06-22-UX-DENSITY-006-d3-audit-above-fold.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-006/2026-06-22-UX-DENSITY-006-d4-export-preview-above-fold.png`
+
+### Safety Proof
+
+- Above-fold next-step links are navigation guidance only and do not mutate workflow state.
+- The surface does not claim compliance release, evidence sufficiency, export approval/download/share, audit persistence, advice visibility or RBAC payload authority.
+- P1/Reference/Hold routes remain outside productive next-step proof.
+
+### QA Limits
+
+- Auth/onboarding support routes keep their support-density strip contract and are not forced into the app-shell Product Guidance surface.
+- Lint still reports 27 existing unused-code warnings outside this slice; there are no lint errors.
