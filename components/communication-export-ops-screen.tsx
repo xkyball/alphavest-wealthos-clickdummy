@@ -132,9 +132,9 @@ function handleStaticSortChange() {
 const phase13Nav: NavItem[] = [
   { href: "/client/home", icon: Home, label: "Home" },
   { href: "/governance", icon: KeyRound, label: "Governance", pageIds: ["051"], count: 5 },
-  { href: "/communication/:id/context", icon: MessageSquare, label: "Communication", pageIds: ["052", "053"], count: 3 },
+  { href: "/communication/demo/context", icon: MessageSquare, label: "Communication Context", pageIds: ["052", "053"], count: 3 },
   { href: "/export/new", icon: Download, label: "Exports", pageIds: ["054", "055", "056", "057", "058"], count: 2 },
-  { href: "/ops", icon: Gauge, label: "Ops Queues", pageIds: ["059", "060"], count: 18 },
+  { href: "/ops", icon: Gauge, label: "Ops Support", pageIds: ["059", "060"], count: 18 },
   { href: "/service-blueprint", icon: Network, label: "Blueprint", pageIds: ["061"] },
   { href: "/roadmap", icon: GitBranch, label: "Roadmap", pageIds: ["062"] },
   { href: "/states", icon: Table2, label: "States", pageIds: ["063"] },

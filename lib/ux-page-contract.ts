@@ -68,10 +68,12 @@ function p0ObligationForContract(workspace: UxWorkspaceKey, routeScope: RouteSco
 
   if (workspace === "client_workspace") return "Client visibility must fail closed; released/redacted/client-safe content only.";
   if (workspace === "advisory_workbench") return "AI drafts and internal rationale stay internal; no unapproved advice reaches the client.";
-  if (workspace === "approvals") return "Advisor approval must remain separate from compliance release.";
+  if (workspace === "communication") return "Communication context must not generate advice, send client copy, or bypass release.";
   if (workspace === "evidence") return "Upload success must not imply evidence sufficiency.";
+  if (workspace === "elevated_workflows") return "KYC, suitability, committee and review monitoring stay internal until safety, evidence and release gates pass.";
   if (workspace === "compliance") return "Compliance release, block, evidence request, audit, and client visibility remain gated.";
   if (workspace === "governance") return "Admin route access must not bypass RBAC, payload, audit, evidence, release, or export gates.";
+  if (workspace === "ops") return "Operations support must not bypass advice, compliance, evidence, export or client visibility gates.";
   if (workspace === "export") return "Export preview, approval, download/share, and client acceptance remain separate.";
 
   return "Route access, payload visibility, action authority, and audit gates remain separate.";

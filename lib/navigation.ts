@@ -3,16 +3,20 @@ import {
   BadgeCheck,
   Building2,
   BriefcaseBusiness,
+  CalendarClock,
   ClipboardCheck,
   ClipboardList,
   FileCheck2,
   FileSearch,
   FileText,
   FolderOpen,
+  Gauge,
+  Gavel,
   Home,
   KeyRound,
   Landmark,
   LockKeyhole,
+  MessageSquare,
   Scale,
   Settings,
   ShieldCheck,
@@ -225,15 +229,29 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
     ]
   },
   {
-    key: "approvals",
-    icon: BadgeCheck,
+    key: "elevated_workflows",
+    icon: ShieldCheck,
     items: [
       {
-        pageId: "036",
-        activePageIds: ["036", "037"],
-        label: "Advisor approval",
-        description: "Human review before compliance release.",
-        icon: BadgeCheck
+        pageId: "064",
+        activePageIds: ["064", "065", "066", "067"],
+        label: "KYC and suitability",
+        description: "KYC, source-of-wealth, suitability and IPS review gates.",
+        icon: ShieldCheck
+      },
+      {
+        pageId: "068",
+        activePageIds: ["068", "069"],
+        label: "Review monitoring",
+        description: "Review calendar and rebalance monitoring without automatic advice.",
+        icon: CalendarClock
+      },
+      {
+        pageId: "070",
+        activePageIds: ["070", "071"],
+        label: "Committee review",
+        description: "Peer review and decision-room context before downstream release.",
+        icon: Gavel
       }
     ]
   },
@@ -351,6 +369,44 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
         label: "Download / share",
         description: "Download or share the reviewed package.",
         icon: Archive
+      }
+    ]
+  },
+  {
+    key: "communication",
+    icon: MessageSquare,
+    tier: "support",
+    items: [
+      {
+        pageId: "052",
+        label: "Communication context",
+        description: "Message and call context without advice or release authority.",
+        icon: MessageSquare
+      },
+      {
+        pageId: "053",
+        label: "Call trigger matrix",
+        description: "Trigger context that routes work without sending advice.",
+        icon: ClipboardList
+      }
+    ]
+  },
+  {
+    key: "ops",
+    icon: Gauge,
+    tier: "support",
+    items: [
+      {
+        pageId: "059",
+        label: "Ops queues",
+        description: "Support and recovery queue for blocked workflow work.",
+        icon: Gauge
+      },
+      {
+        pageId: "060",
+        label: "SLA escalation",
+        description: "Operational escalation detail without release or approval bypass.",
+        icon: CalendarClock
       }
     ]
   }

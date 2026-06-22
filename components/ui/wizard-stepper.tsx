@@ -21,7 +21,7 @@ export function WizardStepper({ steps }: WizardStepperProps) {
         const isBlocked = step.status === "blocked";
 
         return (
-          <li className="flex min-w-0 flex-1 items-center gap-3" key={step.label}>
+          <li className="flex min-w-0 flex-1 items-center gap-3" key={`${step.href ?? step.label}:${step.status}:${index}`}>
             <div
               className={cn(
                 "grid size-10 shrink-0 place-items-center rounded-full border text-sm font-semibold",

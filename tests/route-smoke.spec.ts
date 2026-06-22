@@ -27,11 +27,11 @@ import { scfDoNotImplementRegister } from "../lib/scf-foundation";
 import { uxFlowStepsForPageId } from "../lib/ux-route-policy";
 
 const lockedRouteWorksetCounts = {
-  MVP: 31,
-  MVP_SUPPORT: 25,
-  P1_AFTER_MVP: 5,
+  MVP: 39,
+  MVP_SUPPORT: 29,
+  P1_AFTER_MVP: 0,
   REFERENCE_ONLY: 3,
-  HOLD_PENDING_DECISION: 7
+  HOLD_PENDING_DECISION: 0
 };
 
 const mvpPageIds = new Set<string>(routeWorksetPageIds.MVP);
@@ -85,9 +85,8 @@ test.describe("UX-NAV route policy navigation", () => {
   });
 
   test("keeps productive navigation to MVP and MVP support routes only", () => {
-    expect(productiveNavigationPageIds).not.toEqual(expect.arrayContaining(["052", "053", "059", "060", "068"]));
+    expect(productiveNavigationPageIds).toEqual(expect.arrayContaining(["052", "053", "059", "060", "064", "068", "070"]));
     expect(productiveNavigationPageIds).not.toEqual(expect.arrayContaining(["061", "062", "063"]));
-    expect(productiveNavigationPageIds).not.toEqual(expect.arrayContaining(["064", "065", "066", "067", "069", "070", "071"]));
 
     for (const pageId of productiveNavigationPageIds) {
       expect(["MVP", "MVP_SUPPORT"]).toContain(routeScopeForPageId(pageId));
@@ -103,11 +102,13 @@ test.describe("UX-NAV route policy navigation", () => {
       "Client Workspace",
       "Evidence",
       "Advisory Workbench",
-      "Approvals",
+      "Elevated Reviews",
       "Compliance",
       "Governance",
       "Decisions",
       "Export",
+      "Communication",
+      "Operations",
     ]);
   });
 
@@ -117,8 +118,8 @@ test.describe("UX-NAV route policy navigation", () => {
     const linkedLabels = groups.filter((group) => group.items.length > 0).map((group) => group.label);
     const lockedLabels = groups.filter((group) => group.lockedReason).map((group) => group.label);
 
-    expect(linkedLabels).toEqual(["Client Workspace", "Evidence", "Decisions"]);
-    expect(lockedLabels).toEqual(["Setup", "Advisory Workbench", "Approvals", "Compliance", "Governance", "Export"]);
+    expect(linkedLabels).toEqual(["Client Workspace", "Evidence", "Decisions", "Communication"]);
+    expect(lockedLabels).toEqual(["Setup", "Advisory Workbench", "Elevated Reviews", "Compliance", "Governance", "Export", "Operations"]);
     for (const group of groups.filter((candidate) => candidate.lockedReason)) {
       expect(group.items).toHaveLength(0);
       expect(group.lockedReason).toContain("client-safe navigation view");
@@ -126,7 +127,7 @@ test.describe("UX-NAV route policy navigation", () => {
   });
 
   test("preserves route policy page types from the matrix for hub and workbench navigation", () => {
-    for (const pageId of ["007", "013", "015", "019", "020", "024", "031", "034", "043", "054"]) {
+    for (const pageId of ["007", "013", "015", "019", "020", "024", "031", "034", "043", "052", "054", "059", "064", "068", "070"]) {
       expect(uxNavigationPolicyForPageId(pageId).pageType, `${pageId} should be a hub`).toBe("Hub");
     }
 
@@ -160,7 +161,7 @@ test.describe("UX-NAV route policy navigation", () => {
   test("renders product context, current gate and one primary next step above the desktop fold", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 1000 });
     await authenticateRouteSmokePage(page);
-    await page.goto("/workbench");
+    await page.goto("/advisory/review-queue");
 
     const guidance = page.getByTestId("product-guidance").first();
     await expect(guidance.getByRole("heading", { name: "Workbench" })).toBeVisible();
@@ -190,7 +191,7 @@ test.describe("UX-PAGE page type contract", () => {
   });
 
   test("applies productive contracts only to MVP and MVP support routes", () => {
-    expect(uxPageContractIntegrity.eligibleCount).toBe(56);
+    expect(uxPageContractIntegrity.eligibleCount).toBe(68);
 
     for (const contract of eligibleUxPageContracts) {
       expect(["MVP", "MVP_SUPPORT"], `${contract.pageId} scope`).toContain(contract.routeScope);
@@ -200,16 +201,14 @@ test.describe("UX-PAGE page type contract", () => {
     }
   });
 
-  test("keeps P1, reference and hold routes out of productive page type work", () => {
-    expect(uxPageContractIntegrity.protectedCount).toBe(15);
+  test("keeps reference routes out of productive page type work", () => {
+    expect(uxPageContractIntegrity.protectedCount).toBe(3);
 
     for (const contract of protectedUxPageContracts) {
-      expect(["P1_AFTER_MVP", "REFERENCE_ONLY", "HOLD_PENDING_DECISION"], `${contract.pageId} protected scope`).toContain(
-        contract.routeScope,
-      );
+      expect(contract.routeScope, `${contract.pageId} protected scope`).toBe("REFERENCE_ONLY");
       expect(contract.productiveUxEligible, `${contract.pageId} productive eligibility`).toBe(false);
-      expect(contract.allowedTreatment, `${contract.pageId} allowed treatment`).toMatch(/Deferred|Reference|Hold/);
-      expect(contract.forbiddenTreatment, `${contract.pageId} forbidden treatment`).toMatch(/No MVP|No productive/);
+      expect(contract.allowedTreatment, `${contract.pageId} allowed treatment`).toMatch(/Reference/);
+      expect(contract.forbiddenTreatment, `${contract.pageId} forbidden treatment`).toMatch(/No productive/);
     }
   });
 });
@@ -218,16 +217,15 @@ test.describe("UX-PAGE workbench structure", () => {
   const uxPage002Routes = [
     "/documents",
     "/documents/upload",
-    "/documents/extraction-review",
-    "/documents/verification-pending",
-    "/signals",
-    "/advisor-approval",
-    "/compliance",
+    "/documents/review-queue",
+    "/documents/demo/review",
+    "/advisory",
+    "/advisor/reviews",
+    "/compliance/reviews",
     "/evidence",
-    "/governance/users",
-    "/governance/roles",
-    "/governance/access-requests",
-    "/governance/audit-history",
+    "/governance",
+    "/governance/roles/demo",
+    "/governance/access-requests/demo",
     "/export/new",
     "/export/demo/scope",
     "/export/demo/redaction",
@@ -252,15 +250,15 @@ test.describe("UX-PAGE workbench structure", () => {
 
 test.describe("UX-PAGE detail standard", () => {
   const uxPage003Routes = [
-    "/workbench/triggers/demo",
-    "/advisor-approval/demo",
-    "/compliance/demo/review",
-    "/compliance/demo/release",
-    "/compliance/demo/block",
+    "/advisory/triggers/demo/review",
+    "/advisor/reviews/demo",
+    "/compliance/reviews/demo/decision-room",
+    "/compliance/reviews/demo/release",
+    "/compliance/reviews/demo/block",
     "/decisions/demo",
     "/decisions/demo/success",
-    "/evidence/demo",
-    "/export/demo/preview",
+    "/evidence/demo/review",
+    "/export/demo/approval",
     "/export/demo/download",
   ];
 
@@ -283,9 +281,9 @@ test.describe("UX-PAGE detail standard", () => {
 test.describe("UX-COMPLEXITY priority hierarchy", () => {
   const uxComplexity001Routes = [
     "/actions",
-    "/signals",
-    "/compliance/demo/review",
-    "/compliance/demo/audit",
+    "/advisory",
+    "/compliance/reviews/demo/decision-room",
+    "/compliance/reviews/demo/audit",
     "/export/demo/redaction",
   ];
 
@@ -308,9 +306,8 @@ test.describe("UX-COMPLEXITY secondary context drawers and tabs", () => {
   const uxComplexity002Routes = [
     "/wealth-map?state=drawer",
     "/evidence?state=drawer",
-    "/governance/users?state=drawer",
-    "/governance/access-requests?state=drawer",
-    "/governance/audit-history?state=drawer",
+    "/governance?state=drawer",
+    "/governance/access-requests/demo?state=drawer",
   ];
 
   for (const path of uxComplexity002Routes) {
@@ -343,7 +340,7 @@ test.describe("UX-COMPLEXITY content priority hierarchy", () => {
   const representativeRoutes = [
     "/wealth-map",
     "/actions",
-    "/compliance/demo/review",
+    "/compliance/reviews/demo/decision-room",
     "/evidence?state=drawer",
   ];
 
@@ -364,8 +361,8 @@ test.describe("UX-COMPLEXITY CTA clusters", () => {
   const ctaRoutes = [
     "/actions",
     "/actions?state=drawer",
-    "/evidence/demo",
-    "/governance/access-requests?state=drawer",
+    "/evidence/demo/review",
+    "/governance/access-requests/demo?state=drawer",
     "/export/demo/redaction",
   ];
 
@@ -419,10 +416,10 @@ test.describe("UX-DENSITY tier contract", () => {
   });
 
   const representatives = [
-    { path: "/portal", pattern: "calm-executive", tier: "D1" },
+    { path: "/client/home", pattern: "calm-executive", tier: "D1" },
     { path: "/actions", pattern: "productive-workbench", tier: "D2" },
     { path: "/export/demo/redaction", pattern: "dense-operations", tier: "D3" },
-    { path: "/evidence/demo", pattern: "focused-detail", tier: "D4" },
+    { path: "/evidence/demo/review", pattern: "focused-detail", tier: "D4" },
   ];
 
   for (const representative of representatives) {
@@ -439,7 +436,7 @@ test.describe("UX-DENSITY tier contract", () => {
 });
 
 test.describe("UX-DENSITY calm executive client views", () => {
-  for (const path of ["/portal", "/mobile"]) {
+  for (const path of ["/client/home"]) {
     test(`${path} applies D1 calm executive density without client leakage`, async ({ page }) => {
       await page.setViewportSize({ height: 1000, width: 1440 });
       await authenticateRouteSmokePage(page);
@@ -466,12 +463,12 @@ test.describe("UX-DENSITY productive workbench routes", () => {
   const d2WorkbenchRoutes = [
     "/documents",
     "/documents/upload",
-    "/documents/extraction-review",
-    "/documents/verification-pending",
-    "/signals",
-    "/workbench",
-    "/advisor-approval",
-    "/compliance",
+    "/documents/review-queue",
+    "/documents/demo/review",
+    "/advisory",
+    "/advisory/review-queue",
+    "/advisor/reviews",
+    "/compliance/reviews",
     "/evidence",
   ];
 
@@ -502,7 +499,7 @@ test.describe("UX-DENSITY productive workbench routes", () => {
     expect(uxDensityForPageId("039").tier).toBe("D4");
     expect(uxDensityForPageId("047").tier).toBe("D4");
 
-    for (const path of ["/compliance/demo/review", "/evidence/demo"]) {
+    for (const path of ["/compliance/reviews/demo/decision-room", "/evidence/demo/review"]) {
       await page.goto(path);
       await expect(page.locator('[data-ux-d2-productive-workbench="true"]')).toHaveCount(0);
     }
@@ -511,11 +508,11 @@ test.describe("UX-DENSITY productive workbench routes", () => {
 
 test.describe("UX-DENSITY dense operations routes", () => {
   const d3OperationsRoutes = [
-    { pageId: "042", path: "/compliance/demo/audit" },
-    { pageId: "048", path: "/governance/users" },
-    { pageId: "049", path: "/governance/roles" },
-    { pageId: "050", path: "/governance/access-requests" },
-    { pageId: "051", path: "/governance/audit-history" },
+    { pageId: "042", path: "/compliance/reviews/demo/audit" },
+    { pageId: "048", path: "/governance" },
+    { pageId: "049", path: "/governance/roles/demo" },
+    { pageId: "050", path: "/governance/access-requests/demo" },
+    { pageId: "051", path: "/governance" },
     { pageId: "055", path: "/export/demo/scope" },
     { pageId: "056", path: "/export/demo/redaction" },
   ];
@@ -532,7 +529,7 @@ test.describe("UX-DENSITY dense operations routes", () => {
   });
 
   for (const route of d3OperationsRoutes) {
-    test(`${route.path} applies D3 table-first operations density`, async ({ page }) => {
+    test(`${route.pageId} ${route.path} applies D3 table-first operations density`, async ({ page }) => {
       expect(uxDensityForPageId(route.pageId).tier).toBe("D3");
 
       await page.setViewportSize({ height: 1000, width: 1440 });
@@ -555,12 +552,12 @@ test.describe("UX-DENSITY dense operations routes", () => {
 
 test.describe("UX-DENSITY focused detail routes", () => {
   const d4DetailRoutes = [
-    { pageId: "035", path: "/workbench/triggers/demo" },
-    { pageId: "037", path: "/advisor-approval/demo" },
-    { pageId: "039", path: "/compliance/demo/review" },
+    { pageId: "035", path: "/advisory/triggers/demo/review" },
+    { pageId: "037", path: "/advisor/reviews/demo" },
+    { pageId: "039", path: "/compliance/reviews/demo/decision-room" },
     { pageId: "044", path: "/decisions/demo" },
-    { pageId: "047", path: "/evidence/demo" },
-    { pageId: "057", path: "/export/demo/preview" },
+    { pageId: "047", path: "/evidence/demo/review" },
+    { pageId: "057", path: "/export/demo/approval" },
     { pageId: "058", path: "/export/demo/download" },
   ];
 
@@ -659,11 +656,11 @@ test.describe("UX-CTA one-primary page-state pattern", () => {
 
   const priorityCtaRoutes = [
     "/documents/upload",
-    "/workbench",
-    "/advisor-approval",
-    "/compliance",
-    "/governance/users",
-    "/export/demo/preview",
+    "/advisory/review-queue",
+    "/advisor/reviews",
+    "/compliance/reviews",
+    "/governance",
+    "/export/demo/approval",
   ];
 
   for (const path of priorityCtaRoutes) {
@@ -694,22 +691,22 @@ test.describe("UX-CTA MJ-001 setup-to-release chain", () => {
     "015": "/tenants/demo/users",
     "018": "/documents",
     "027": "/documents/upload",
-    "028": "/documents/extraction-review",
-    "029": "/documents/verification-pending",
-    "030": "/signals",
-    "033": "/workbench",
-    "034": "/advisor-approval",
-    "035": "/advisor-approval",
-    "036": "/advisor-approval/demo",
-    "037": "/compliance",
-    "038": "/compliance/demo/review",
-    "039": "/compliance/demo/release",
+    "028": "/documents/review-queue",
+    "029": "/documents/demo/review",
+    "030": "/advisory",
+    "033": "/advisory/review-queue",
+    "034": "/advisor/reviews",
+    "035": "/advisor/reviews",
+    "036": "/advisor/reviews/demo",
+    "037": "/compliance/reviews",
+    "038": "/compliance/reviews/demo/decision-room",
+    "039": "/compliance/reviews/demo/release",
     "040": "/decisions",
     "041": "/documents/upload",
     "042": "/decisions",
     "043": "/decisions/demo",
     "044": "/decisions/demo/success",
-    "045": "/portal",
+    "045": "/client/home",
   };
 
   test("maps MJ-001 primary CTAs from setup through released client-safe endpoint", () => {
@@ -733,8 +730,8 @@ test.describe("UX-CTA MJ-001 setup-to-release chain", () => {
     "/admin/tenants",
     "/tenants/new",
     "/documents/upload",
-    "/workbench/triggers/demo",
-    "/compliance/demo/release",
+    "/advisory/triggers/demo/review",
+    "/compliance/reviews/demo/release",
     "/decisions/demo/success",
   ];
 
@@ -760,14 +757,14 @@ test.describe("UX-CTA evidence upload and review chain", () => {
   const routeByPageId = new Map<string, (typeof screenRoutes)[number]>(screenRoutes.map((route) => [route.pageId, route]));
   const evidencePrimaryHrefs: Record<string, string> = {
     "027": "/documents/upload",
-    "028": "/documents/extraction-review",
-    "029": "/documents/verification-pending",
-    "030": "/signals",
-    "038": "/compliance/demo/review",
-    "039": "/compliance/demo/release",
+    "028": "/documents/review-queue",
+    "029": "/documents/demo/review",
+    "030": "/advisory",
+    "038": "/compliance/reviews/demo/decision-room",
+    "039": "/compliance/reviews/demo/release",
     "040": "/decisions",
     "041": "/documents/upload",
-    "047": "/evidence/demo",
+    "047": "/evidence/demo/review",
   };
 
   test("keeps upload and review CTAs separate from evidence sufficiency", () => {
@@ -789,10 +786,10 @@ test.describe("UX-CTA evidence upload and review chain", () => {
   const evidenceProofRoutes = [
     "/documents",
     "/documents/upload",
-    "/documents/extraction-review",
-    "/documents/verification-pending",
-    "/compliance/demo/block",
-    "/evidence/demo",
+    "/documents/review-queue",
+    "/documents/demo/review",
+    "/compliance/reviews/demo/block",
+    "/evidence/demo/review",
   ];
 
   for (const path of evidenceProofRoutes) {
@@ -816,7 +813,7 @@ test.describe("UX-CTA AI draft internal-only chain", () => {
   test("advisor detail exposes reject/rebuild as internal-only without client release", async ({ page }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
     await authenticateRouteSmokePage(page);
-    await page.goto("/advisor-approval/demo");
+    await page.goto("/advisor/reviews/demo");
 
     await expect(page.getByRole("heading", { name: "Internal Draft Recommendation" })).toBeVisible();
     await expect(page.getByText("Internal draft only. Rejection or rebuild keeps client visibility blocked until advisor and compliance gates pass.")).toBeVisible();
@@ -850,10 +847,10 @@ test.describe("UX-CTA governance admin non-bypass chain", () => {
 
   const governanceScreens = [
     { path: "/admin/roles?state=permission", required: "Confirm scoped permission change" },
-    { path: "/governance/users?state=invite", required: "Send scoped invitation" },
-    { path: "/governance/roles?state=confirm", required: "Confirm scoped role change" },
-    { path: "/governance/access-requests?state=approval", required: "Approve access request" },
-    { path: "/governance/audit-history?state=drawer", required: "Export audit events" },
+    { path: "/governance?state=invite", required: "Send scoped invitation" },
+    { path: "/governance/roles/demo?state=confirm", required: "Confirm scoped role change" },
+    { path: "/governance/access-requests/demo?state=approval", required: "Approve access request" },
+    { path: "/governance?state=drawer", required: "Send scoped invitation" },
   ];
 
   for (const { path, required } of governanceScreens) {
@@ -901,7 +898,7 @@ test.describe("UX-CTA export lifecycle separation", () => {
     { path: "/export/new", required: "Start export scope before redaction, preview, approval or delivery." },
     { path: "/export/demo/scope", required: "Scope selection is not preview, approval, download or share" },
     { path: "/export/demo/redaction", required: "Approval blocked until preview" },
-    { path: "/export/demo/preview?state=approval", required: "Generation, download and share remain separate controlled steps." },
+    { path: "/export/demo/approval?state=approval", required: "Generation, download and share remain separate controlled steps." },
     { path: "/export/demo/download", required: "Share after download" },
   ];
 
@@ -947,7 +944,7 @@ test.describe("UX-CTA disabled blocked recovery copy", () => {
       ],
     },
     {
-      path: "/evidence/demo",
+      path: "/evidence/demo/review",
       expected: [
         "Share needs evidence sufficiency, release and payload checks first.",
         "Revocation needs a scoped access decision and persisted audit event.",
@@ -970,7 +967,7 @@ test.describe("UX-CTA disabled blocked recovery copy", () => {
       ],
     },
     {
-      path: "/governance/access-requests?state=drawer",
+      path: "/governance/access-requests/demo?state=drawer",
       expected: [
         "Access approval remains constrained by visible policy, SOD and audit checks; it cannot release advice, prove evidence sufficiency or approve export.",
         "Approve access request",
@@ -1004,7 +1001,7 @@ test.describe("UX-INTERACTION table search sort row-action semantics", () => {
   test("advisor queue search filters rows and row action opens the advisor detail", async ({ page }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
     await authenticateRouteSmokePage(page);
-    await page.goto("/advisor-approval");
+    await page.goto("/advisor/reviews");
 
     await page.getByTestId("ux-interaction-advisor-search").fill("Michael Wong");
     const table = page.getByTestId("ux-data-table").first();
@@ -1013,13 +1010,13 @@ test.describe("UX-INTERACTION table search sort row-action semantics", () => {
     await expect(page.getByRole("button", { name: "Type filter is static in this demo queue" })).toBeDisabled();
     await table.getByTestId("ux-data-table-sort").first().click();
     await table.getByTestId("ux-data-table-row-action").first().click();
-    await expect(page).toHaveURL(/\/advisor-approval\/demo/);
+    await expect(page).toHaveURL(/\/advisor\/reviews\/demo/);
   });
 
   test("compliance queue search filters rows and row action opens review detail", async ({ page }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
     await authenticateRouteSmokePage(page);
-    await page.goto("/compliance");
+    await page.goto("/compliance/reviews");
 
     await page.getByTestId("ux-interaction-compliance-search").fill("CMP-2025-0134");
     const table = page.getByTestId("ux-data-table").first();
@@ -1030,7 +1027,7 @@ test.describe("UX-INTERACTION table search sort row-action semantics", () => {
     await expect(table).toContainText("CMP-2025-0137");
     await table.getByTestId("ux-data-table-sort").first().click();
     await table.getByTestId("ux-data-table-row-action").first().click();
-    await expect(page).toHaveURL(/\/compliance\/demo\/review/);
+    await expect(page).toHaveURL(/\/compliance\/reviews\/[^/]+\/decision-room/);
   });
 
   test("export dense tables do not expose fake controls or enabled row actions", async ({ page }) => {
@@ -1125,7 +1122,7 @@ test.describe("locked route workset preservation", () => {
     }
   });
 
-  test("deferred, reference and held routes do not receive productive UX-PAGE surfaces", async ({ page }) => {
+  test("reference routes do not receive productive UX-PAGE surfaces", async ({ page }) => {
     const p1ProtectedPageIds = new Set<string>(routeWorksetPageIds.P1_AFTER_MVP);
     const referenceProtectedPageIds = new Set<string>(routeWorksetPageIds.REFERENCE_ONLY);
     const holdProtectedPageIds = new Set<string>(routeWorksetPageIds.HOLD_PENDING_DECISION);
@@ -1137,7 +1134,7 @@ test.describe("locked route workset preservation", () => {
       );
     });
 
-    expect(excludedRoutes).toHaveLength(15);
+    expect(excludedRoutes).toHaveLength(3);
 
     for (const route of excludedRoutes) {
       await authenticateRouteSmokePage(page);
@@ -1149,27 +1146,22 @@ test.describe("locked route workset preservation", () => {
     }
   });
 
-  test("deferred, reference and held requests render registered-only guard screens", async ({ page }) => {
+  test("reference requests render registered-only guard screens", async ({ page }) => {
     const registeredOnlyScreens = [
-      {
-        path: "/communication",
-        guardHeading: "Deferred Workspace",
-        productText: "not active in the current release"
-      },
       {
         path: "/service-blueprint",
         guardHeading: "Reference Workspace",
         productText: "not treated as product implementation"
       },
       {
-        path: "/kyc/demo/review",
-        guardHeading: "Held Workspace",
-        productText: "held until a later explicit scope"
+        path: "/roadmap",
+        guardHeading: "Reference Workspace",
+        productText: "not treated as product implementation"
       },
       {
-        path: "/committee/reviews",
-        guardHeading: "Held Workspace",
-        productText: "held until a later explicit scope"
+        path: "/states",
+        guardHeading: "Reference Workspace",
+        productText: "not treated as product implementation"
       }
     ];
 

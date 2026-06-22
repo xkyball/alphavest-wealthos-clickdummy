@@ -327,16 +327,80 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
     relatedRoutes: [linkForPageId("055", "Review scope"), linkForPageId("056", "Review redaction")],
   },
   "052": {
-    area: "Registered-only communication",
-    gateHint: "P1 / later: not part of the current MVP workflow. Message delivery and client visibility remain held outside this release.",
+    area: "Communication context",
+    gateHint: "Communication adds context only. Advice-like copy and client delivery remain release-controlled.",
+    nextStep: linkForPageId("053", "Open call trigger matrix"),
+    primaryAction: linkForPageId("053", "Open call trigger matrix"),
+    relatedRoutes: [linkForPageId("034", "Open advisory workbench"), linkForPageId("038", "Open compliance queue")],
+    shortTitle: "Communication context",
+  },
+  "053": {
+    area: "Communication context",
+    gateHint: "Call triggers can route work, but they cannot send advice or bypass compliance release.",
+    nextStep: linkForPageId("052", "Review communication context"),
+    primaryAction: linkForPageId("052", "Review communication context"),
+    relatedRoutes: [linkForPageId("033", "Open signal review"), linkForPageId("059", "Open ops queue")],
+  },
+  "059": {
+    area: "Operations support",
+    gateHint: "Ops queues support recovery and escalation. They cannot approve advice, release content or export packages.",
+    nextStep: linkForPageId("060", "Open SLA escalation"),
+    primaryAction: linkForPageId("060", "Open SLA escalation"),
+    relatedRoutes: [linkForPageId("038", "Open compliance queue"), linkForPageId("068", "Open review calendar")],
+    shortTitle: "Ops queues",
+  },
+  "060": {
+    area: "Operations support",
+    gateHint: "SLA escalation routes work to owners only; advisory, compliance and export gates stay separate.",
+    nextStep: linkForPageId("059", "Back to ops queues"),
+    primaryAction: linkForPageId("059", "Back to ops queues"),
+    relatedRoutes: [linkForPageId("041", "Open blocked action"), linkForPageId("051", "Review audit history")],
+  },
+  "064": {
+    area: "Elevated reviews",
+    gateHint: "KYC review is internal and evidence-backed; internal risk notes remain hidden from client views.",
+    nextStep: linkForPageId("067", "Open IPS decision room"),
+    primaryAction: linkForPageId("067", "Open IPS decision room"),
+    relatedRoutes: [linkForPageId("028", "Request source evidence"), linkForPageId("038", "Open compliance queue")],
+  },
+  "067": {
+    area: "Elevated reviews",
+    gateHint: "IPS decision context is not final advice or client release. Suitability and compliance gates still apply.",
+    nextStep: linkForPageId("070", "Open committee review"),
+    primaryAction: linkForPageId("070", "Open committee review"),
+    relatedRoutes: [linkForPageId("064", "Back to KYC review"), linkForPageId("038", "Open compliance queue")],
+  },
+  "068": {
+    area: "Review monitoring",
+    gateHint: "Review cadence and rebalance monitoring are operational signals only; they do not create automatic advice.",
+    nextStep: linkForPageId("069", "Open rebalance monitoring"),
+    primaryAction: linkForPageId("069", "Open rebalance monitoring"),
+    relatedRoutes: [linkForPageId("059", "Open ops queue"), linkForPageId("033", "Open signal review")],
+  },
+  "069": {
+    area: "Review monitoring",
+    gateHint: "Rebalance monitoring can create internal follow-up work, not client-visible recommendations.",
+    nextStep: linkForPageId("034", "Open advisory workbench"),
+    primaryAction: linkForPageId("034", "Open advisory workbench"),
+    relatedRoutes: [linkForPageId("068", "Back to review calendar"), linkForPageId("038", "Open compliance queue")],
   },
   "061": {
     area: "Reference-only workspace",
     gateHint: "Read-only context. No product action is available.",
   },
   "070": {
-    area: "Held committee review",
-    gateHint: "Blocked until scope and safety are explicitly unlocked.",
+    area: "Committee review",
+    gateHint: "Committee review is an internal second gate. It cannot bypass advisor approval, evidence or compliance release.",
+    nextStep: linkForPageId("071", "Open committee decision room"),
+    primaryAction: linkForPageId("071", "Open committee decision room"),
+    relatedRoutes: [linkForPageId("036", "Open advisor approval"), linkForPageId("038", "Open compliance queue")],
+  },
+  "071": {
+    area: "Committee review",
+    gateHint: "Committee decisions stay internal until downstream compliance and client-safe projection gates pass.",
+    nextStep: linkForPageId("038", "Open compliance queue"),
+    primaryAction: linkForPageId("038", "Open compliance queue"),
+    relatedRoutes: [linkForPageId("070", "Back to committee queue"), linkForPageId("046", "Open evidence vault")],
   },
 };
 
@@ -432,12 +496,14 @@ function fallbackPrimaryActionForRoute(route: ScreenRoute, tier: RouteScopeLabel
 function ctaBlockedReasonForWorkspace(workspace: UxWorkspaceKey) {
   if (workspace === "client_workspace") return "Only released client-safe content may be visible here.";
   if (workspace === "advisory_workbench") return "Draft work stays internal until advisor review and compliance release pass.";
-  if (workspace === "approvals") return "Advisor approval does not release work to the client.";
+  if (workspace === "communication") return "Communication context cannot send advice or bypass release.";
   if (workspace === "compliance") return "Client visibility stays blocked until compliance release passes.";
   if (workspace === "decisions") return "Decision records require released, evidence-backed context before client use.";
   if (workspace === "evidence") return "Upload and review do not prove evidence sufficiency.";
+  if (workspace === "elevated_workflows") return "Elevated review work stays internal until safety, evidence and release gates pass.";
   if (workspace === "export") return "Preview, approval, download and share stay separate.";
   if (workspace === "governance") return "Admin access cannot bypass evidence, release, audit or export gates.";
+  if (workspace === "ops") return "Ops escalation cannot approve, release or export client-visible work.";
   if (workspace === "setup") return "Setup changes do not bypass downstream gates.";
 
   return "No productive action is available in the current release.";

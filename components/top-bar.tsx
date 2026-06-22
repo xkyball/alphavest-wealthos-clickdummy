@@ -1,10 +1,22 @@
 "use client";
 
 import { Bell, ChevronDown, KeyRound, Menu, RotateCcw, ShieldCheck, UserRound } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { useDemoSession } from "@/components/demo-session-provider";
 import { GlobalSearchBox } from "@/components/global-search-box";
 import { RouteContextChip } from "@/components/route-context-chip";
 import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { matchRouteBySegments, routeScopeForPageId, routeScopeLabels } from "@/lib/route-registry";
+import { uxRoutePolicyForRoute, uxWorkspaceLabels } from "@/lib/ux-route-policy";
+
+function routeForPathname(pathname: string) {
+  const cleanPath = pathname.split("?")[0]?.split("#")[0] ?? "/";
+  const normalized = cleanPath.length > 1 ? cleanPath.replace(/\/+$/, "") : cleanPath;
+
+  if (normalized === "/") return null;
+
+  return matchRouteBySegments(normalized.split("/").filter(Boolean)) ?? null;
+}
 
 type TopBarProps = {
   onOpenNavigation?: () => void;
@@ -12,6 +24,16 @@ type TopBarProps = {
 
 export function TopBar({ onOpenNavigation }: TopBarProps) {
   const { session, setRole, setTenant, resetSession } = useDemoSession();
+  const pathname = usePathname();
+  const currentRoute = routeForPathname(pathname);
+  const currentPolicy = currentRoute ? uxRoutePolicyForRoute(currentRoute) : null;
+  const currentScope = currentRoute ? routeScopeForPageId(currentRoute.pageId) : null;
+  const routeIsClientVisibilitySensitive =
+    currentRoute && "clientVisibilitySensitive" in currentRoute ? Boolean(currentRoute.clientVisibilitySensitive) : false;
+  const visibilityMode = routeIsClientVisibilitySensitive ? "Internal until released" : "Client-safe context";
+  const objectContext = currentRoute
+    ? `${currentRoute.objectType.replaceAll("_", " ").toLowerCase()} · ${currentRoute.permissionAction.toLowerCase()}`
+    : "workspace context";
 
   return (
     <header className="av-topbar sticky top-0 z-40 px-4 py-3 md:px-6">
@@ -49,6 +71,23 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
 
           <div className="hidden items-center gap-2 xl:flex">
             <RouteContextChip />
+            {currentRoute && currentPolicy ? (
+              <span
+                className="inline-flex h-10 max-w-72 items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/62 px-3 text-xs font-semibold text-alphavest-muted"
+                data-testid="ux-nav-object-context"
+                title={`${uxWorkspaceLabels[currentPolicy.workspace]} · ${objectContext}`}
+              >
+                <span className="truncate">{uxWorkspaceLabels[currentPolicy.workspace]} · {objectContext}</span>
+              </span>
+            ) : null}
+            {currentRoute ? (
+              <span
+                className="inline-flex h-10 items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/62 px-3 text-xs font-semibold text-alphavest-muted"
+                data-testid="ux-nav-visibility-mode"
+              >
+                {visibilityMode} · {currentScope ? routeScopeLabels[currentScope] : "Scoped"}
+              </span>
+            ) : null}
             <span className="inline-flex h-10 items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/62 px-3 text-xs font-semibold text-alphavest-muted">
               <KeyRound aria-hidden="true" className="size-3.5 text-alphavest-gold" />
               {session.role.internal ? "Internal actor" : "Client-safe actor"}
