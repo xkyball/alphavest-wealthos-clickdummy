@@ -5,6 +5,7 @@ import { ArrowRight, Compass, LockKeyhole, RotateCcw, ShieldCheck } from "lucide
 import { usePathname } from "next/navigation";
 import { useDemoSession } from "@/components/demo-session-provider";
 import { UxSupportDensityStrip } from "@/components/ux-support-density-strip";
+import { UxDensityProofPanel } from "@/components/ui/card";
 import { Phase8CtaStateProofPanel } from "@/components/ui/state-panel";
 import { WizardStepper } from "@/components/ui/wizard-stepper";
 import { cn } from "@/lib/cn";
@@ -50,6 +51,29 @@ function phase8TaskForPathname(pathname: string, routeId?: string) {
   return "UX-CTA-STATE-008";
 }
 
+function phase9TaskForPathname(pathname: string, routeId?: string) {
+  const cleanPath = pathname.split("?")[0]?.split("#")[0] ?? pathname;
+
+  if (cleanPath.startsWith("/family-office") || cleanPath.startsWith("/client")) return "UX-DENSITY-001";
+  if (
+    cleanPath.startsWith("/advisory") ||
+    cleanPath.startsWith("/documents") ||
+    cleanPath.startsWith("/advisor") ||
+    cleanPath.startsWith("/compliance")
+  ) return "UX-DENSITY-002";
+  if (cleanPath.startsWith("/governance") || cleanPath.startsWith("/reviews") || cleanPath.startsWith("/ops")) return "UX-DENSITY-003";
+  if (
+    cleanPath.startsWith("/export") ||
+    cleanPath.startsWith("/ips") ||
+    cleanPath.startsWith("/committee") ||
+    cleanPath.startsWith("/evidence") ||
+    cleanPath.startsWith("/kyc")
+  ) return "UX-DENSITY-004";
+
+  if (routeId === "044" || routeId === "045") return "UX-DENSITY-001";
+  return "UX-DENSITY-003";
+}
+
 export function ProductGuidancePanel() {
   const pathname = usePathname();
   const { session } = useDemoSession();
@@ -59,6 +83,7 @@ export function ProductGuidancePanel() {
   const recoveryAction = guidance.ctaState.recovery;
   const hasActions = primaryAction || guidance.nextStep || guidance.relatedRoutes.length > 0 || guidance.ctaState.blockedReason;
   const phase8TaskId = phase8TaskForPathname(pathname, guidance.routeId);
+  const phase9TaskId = phase9TaskForPathname(pathname, guidance.routeId);
 
   return (
     <section
@@ -182,6 +207,18 @@ export function ProductGuidancePanel() {
               recoveryLabel={recoveryAction?.label}
               taskId={phase8TaskId}
             />
+            {density ? (
+              <UxDensityProofPanel
+                densityTier={density.tier}
+                hierarchy={density.hierarchy}
+                nextStepLabel={guidance.nextStep?.label ?? primaryAction?.label}
+                pageJob={guidance.shortTitle}
+                pattern={density.pattern}
+                safetyRetention={density.safetyRetention}
+                statusLabel={guidance.tierLabel}
+                taskId={phase9TaskId}
+              />
+            ) : null}
           </div>
         ) : null}
       </div>
