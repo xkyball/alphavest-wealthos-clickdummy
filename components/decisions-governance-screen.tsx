@@ -973,7 +973,100 @@ function DecisionsListPage({ title }: { title: string }) {
   );
 }
 
-function DecisionRoomPage({ title }: { title: string }) {
+type DecisionActionKey = "request_more_information" | "defer" | "reject" | "accept";
+
+const decisionActionCopy: Record<DecisionActionKey, {
+  actionId: "j03.requestMoreInformation" | "j03.deferDecision" | "j03.rejectDecision" | "j03.acceptOption";
+  label: string;
+  nextRoute?: string;
+  tone: "primary" | "secondary" | "destructive";
+}> = {
+  accept: {
+    actionId: "j03.acceptOption",
+    label: "Accept Option 1",
+    nextRoute: "/decisions/demo/success",
+    tone: "primary",
+  },
+  defer: {
+    actionId: "j03.deferDecision",
+    label: "Defer decision",
+    tone: "secondary",
+  },
+  reject: {
+    actionId: "j03.rejectDecision",
+    label: "Reject decision",
+    tone: "destructive",
+  },
+  request_more_information: {
+    actionId: "j03.requestMoreInformation",
+    label: "Request more information",
+    tone: "secondary",
+  },
+};
+
+function DecisionRoomPage({ title, visualState }: { title: string; visualState?: VisualState }) {
+  const [pendingAction, setPendingAction] = useState<DecisionActionKey | null>(visualState === "approval" ? "accept" : null);
+  const [acknowledged, setAcknowledged] = useState(false);
+  const [confirmationText, setConfirmationText] = useState("");
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [message, setMessage] = useState<string | null>(null);
+  const activeAction = pendingAction ? decisionActionCopy[pendingAction] : null;
+  const requiredPhrase = "CONFIRM DECISION";
+  const decisionValid = acknowledged && confirmationText.trim() === requiredPhrase;
+  const lifecycleStatus = status === "submitting" ? "loading" : status;
+  const validationState = decisionValid
+    ? "valid-confirmation"
+    : !acknowledged
+      ? "blocked-acknowledgement-required"
+      : "blocked-exact-phrase-required";
+  const validationMessage = decisionValid
+    ? "Confirmation is valid. Submit can record this client decision action through the existing audited workflow."
+    : !acknowledged
+      ? "Decision action is blocked until acknowledgement is checked and the exact confirmation phrase is typed."
+      : `Decision action is blocked until the confirmation text exactly matches ${requiredPhrase}.`;
+
+  function openDecisionConfirmation(action: DecisionActionKey) {
+    setPendingAction(action);
+    setAcknowledged(false);
+    setConfirmationText("");
+    setStatus("idle");
+    setMessage(null);
+  }
+
+  function resetAndCloseDecision() {
+    setPendingAction(null);
+    setAcknowledged(false);
+    setConfirmationText("");
+    setStatus("idle");
+    setMessage(null);
+  }
+
+  async function submitDecisionAction() {
+    if (!activeAction || !decisionValid || status === "submitting") {
+      return;
+    }
+
+    setStatus("submitting");
+    setMessage("Submitting the audited client decision action. Close and cancel are blocked until the request resolves.");
+
+    try {
+      const body = await runScreencastDemoAction(activeAction.actionId, activeAction.nextRoute);
+      setStatus("success");
+      setMessage(
+        body.result?.auditEventId
+          ? `Audit recorded: ${body.result.auditEventId}. ${activeAction.label} was recorded only through the released decision workflow; compliance release, evidence sufficiency, export/download/share and follow-up advice remain separate controls.`
+          : `${activeAction.label} was recorded only through the released decision workflow; compliance release, evidence sufficiency, export/download/share and follow-up advice remain separate controls.`,
+      );
+    } catch (error) {
+      setStatus("error");
+      setMessage(
+        error instanceof Error
+          ? `${error.message} No decision mutation, release change or client visibility change was completed.`
+          : "Decision action failed without mutation, release change or client visibility change.",
+      );
+    }
+  }
+
   return (
     <Phase12Shell activePageId="044">
       <ScreenTitle>{title}</ScreenTitle>
@@ -1067,7 +1160,7 @@ function DecisionRoomPage({ title }: { title: string }) {
                   className={secondaryButtonClass}
                   data-testid="j03-request-more-information"
                   onClick={() => {
-                    void runScreencastDemoAction("j03.requestMoreInformation");
+                    openDecisionConfirmation("request_more_information");
                   }}
                   type="button"
                 >
@@ -1077,7 +1170,7 @@ function DecisionRoomPage({ title }: { title: string }) {
                   className={secondaryButtonClass}
                   data-testid="j03-defer-decision"
                   onClick={() => {
-                    void runScreencastDemoAction("j03.deferDecision");
+                    openDecisionConfirmation("defer");
                   }}
                   type="button"
                 >
@@ -1087,7 +1180,7 @@ function DecisionRoomPage({ title }: { title: string }) {
                   className={destructiveButtonClass}
                   data-testid="j03-reject-decision"
                   onClick={() => {
-                    void runScreencastDemoAction("j03.rejectDecision");
+                    openDecisionConfirmation("reject");
                   }}
                   type="button"
                 >
@@ -1097,7 +1190,7 @@ function DecisionRoomPage({ title }: { title: string }) {
                   className={primaryButtonClass}
                   data-testid="j03-accept-option"
                   onClick={() => {
-                    void runScreencastDemoAction("j03.acceptOption", "/decisions/demo/success");
+                    openDecisionConfirmation("accept");
                   }}
                   type="button"
                 >
@@ -1127,6 +1220,111 @@ function DecisionRoomPage({ title }: { title: string }) {
             </Card>
           </aside>
         </div>
+        <Modal
+          className="max-w-[48rem]"
+          context={
+            <div className="grid gap-2 text-sm">
+              <p className="font-semibold text-alphavest-ivory">Client decision action</p>
+              <p className="text-alphavest-muted">Decision submission records the selected client decision action only after the released package, permission and audit gates are available.</p>
+            </div>
+          }
+          description="Decision confirmation is required before this action can persist."
+          footer={
+            <>
+              <button className={secondaryButtonClass} disabled={status === "submitting"} onClick={resetAndCloseDecision} type="button">Cancel</button>
+              <button
+                className={activeAction?.tone === "destructive" ? destructiveButtonClass : activeAction?.tone === "primary" ? primaryButtonClass : secondaryButtonClass}
+                data-testid="j03-confirm-decision"
+                data-ux-lifecycle-result={decisionValid ? "submits-audited-client-decision" : "blocked-validation-required"}
+                disabled={!decisionValid || status === "submitting" || status === "success"}
+                onClick={() => {
+                  void submitDecisionAction();
+                }}
+                type="button"
+              >
+                {status === "submitting" ? "Submitting..." : activeAction?.label ?? "Confirm decision"}
+              </button>
+            </>
+          }
+          onClose={status === "submitting" ? undefined : resetAndCloseDecision}
+          open={pendingAction !== null}
+          title="Confirm client decision"
+        >
+          <div
+            className="space-y-4"
+            data-testid="uxp3-decision-confirmation-lifecycle"
+            data-ux-decision-action={pendingAction ?? "none"}
+            data-ux-lifecycle-status={lifecycleStatus}
+            data-ux-lifecycle-validation={validationState}
+            data-ux-no-overclaim="true"
+          >
+            <StatePanel
+              detail="Cancel closes this dialog without calling the workflow API. Invalid input keeps submit disabled."
+              state="restricted"
+              title="Decision confirmation required"
+            />
+            <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">Selected action</p>
+              <p className="mt-2 font-semibold text-alphavest-ivory">{activeAction?.label ?? "No action selected"}</p>
+              <p className="mt-2 text-sm leading-6 text-alphavest-muted">This action records decision state only. It does not create advice, bypass compliance release, prove evidence sufficiency or approve export/download/share.</p>
+            </div>
+            <p className="sr-only" id="decision-confirmation-validation">{validationMessage}</p>
+            <label className="flex items-start gap-3 text-sm text-alphavest-muted">
+              <input
+                aria-describedby="decision-confirmation-validation"
+                checked={acknowledged}
+                className="mt-1"
+                disabled={status === "submitting" || status === "success"}
+                onChange={(event) => setAcknowledged(event.target.checked)}
+                type="checkbox"
+              />
+              <span>I understand this records a client decision action and writes an audit event; it does not bypass compliance, evidence or export controls.</span>
+            </label>
+            <label className="block">
+              <span className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Type {requiredPhrase}</span>
+              <input
+                aria-describedby="decision-confirmation-validation"
+                className={inputClass}
+                data-testid="j03-decision-confirmation"
+                disabled={status === "submitting" || status === "success"}
+                onChange={(event) => setConfirmationText(event.target.value)}
+                value={confirmationText}
+              />
+            </label>
+            {status === "idle" ? (
+              <StatePanel
+                detail={validationMessage}
+                state={decisionValid ? "validation" : "blocked"}
+                testId="j03-decision-validation-state"
+                title={decisionValid ? "Decision confirmation valid" : "Decision confirmation blocked"}
+              />
+            ) : null}
+            {status === "submitting" ? (
+              <StatePanel
+                detail={message ?? "Submitting the audited client decision action."}
+                state="loading"
+                testId="j03-decision-loading-state"
+                title="Decision action submitting"
+              />
+            ) : null}
+            {status === "success" ? (
+              <StatePanel
+                detail={message ?? "Decision action recorded only through the released decision workflow; compliance release, evidence sufficiency, export/download/share and follow-up advice remain separate controls."}
+                state="success"
+                testId="j03-decision-success-state"
+                title="Decision action recorded"
+              />
+            ) : null}
+            {status === "error" ? (
+              <StatePanel
+                detail={message ?? "No decision mutation, release change or client visibility change was completed."}
+                state="blocked"
+                testId="j03-decision-error-state"
+                title="Decision action failed"
+              />
+            ) : null}
+          </div>
+        </Modal>
       </div>
     </Phase12Shell>
   );
@@ -1871,7 +2069,7 @@ export function DecisionsGovernanceScreen({ route, visualState }: DecisionsGover
     case "043":
       return <DecisionsListPage title={route.title} />;
     case "044":
-      return <DecisionRoomPage title={route.title} />;
+      return <DecisionRoomPage title={route.title} visualState={visualState} />;
     case "045":
       return <DecisionSuccessPage title={route.title} />;
     case "046":
