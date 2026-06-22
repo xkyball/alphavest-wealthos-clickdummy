@@ -653,7 +653,15 @@ function ActionDrawer({ onClose }: { onClose: () => void }) {
         <section>
           <div className="mb-3 flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-gold">Related Evidence</p>
-            <button className="text-xs font-semibold text-alphavest-gold" type="button">View all</button>
+            <button
+              aria-label="Related evidence view-all is not wired in this release"
+              className="text-xs font-semibold text-alphavest-gold disabled:cursor-not-allowed disabled:opacity-55"
+              disabled
+              title="Evidence expansion is not wired in this release."
+              type="button"
+            >
+              View all
+            </button>
           </div>
           <div className="overflow-hidden rounded-md border border-alphavest-border/70">
             {selectedActionEvidence.map((item) => (
@@ -671,7 +679,15 @@ function ActionDrawer({ onClose }: { onClose: () => void }) {
         <section>
           <div className="mb-3 flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-gold">Timeline</p>
-            <button className="text-xs font-semibold text-alphavest-gold" type="button">View all</button>
+            <button
+              aria-label="Timeline view-all is not wired in this release"
+              className="text-xs font-semibold text-alphavest-gold disabled:cursor-not-allowed disabled:opacity-55"
+              disabled
+              title="Timeline expansion is not wired in this release."
+              type="button"
+            >
+              View all
+            </button>
           </div>
           <AuditTimeline items={selectedActionTimeline.map((item) => ({ ...item }))} />
         </section>

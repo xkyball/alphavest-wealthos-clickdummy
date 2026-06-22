@@ -4,9 +4,9 @@
 
 | Field | Value |
 | --- | --- |
-| Register status | `PHASE_2_REGISTER_UPDATED_UXP2_005` |
+| Register status | `PHASE_2_REGISTER_UPDATED_UXP2_006` |
 | Phase | Phase 2 - Fake Affordance Pruning |
-| Last updated | 2026-06-22 by `UXP2-005` |
+| Last updated | 2026-06-22 by `UXP2-006` |
 | Product authority | None |
 | Route scope authority | None |
 
@@ -29,6 +29,7 @@ This register records visible affordances touched by Phase 2 and the action take
 | `UXP2-003` | Shared data-table sort headers | Sort buttons on sortable table columns | `components/ui/data-table.tsx` | Kept interactive with ARIA state and visible row reordering proof | Sort headers are authorized only through the shared table lifecycle: click toggles row order locally, marks the active header with `aria-sort`, and leaves row actions disabled where no action lifecycle exists. | `tests/sort-affordance-pruning.spec.ts` |
 | `UXP2-004` | Shared status chips, badges and workflow badges | Status/badge indicators across global route workset | `components/ui/badge.tsx`, `components/ui/status-chip.tsx`, `components/ui/workflow-badge.tsx`, `components/admin-tenant-setup-screen.tsx` | Kept as static indicators with explicit non-interactive metadata | Badge-like elements are informational state labels only; they must not expose button/link/focus affordances or imply direct lifecycle transitions. | `tests/status-badge-affordance-pruning.spec.ts` |
 | `UXP2-005` | Shared cards, KPI cards and dashboard summary cards | Card and metric-card containers across global route workset | `components/ui/card.tsx`, `components/ui/metric-card.tsx` | Kept as static informational regions with explicit non-interactive metadata | Cards/KPIs summarize state only; real actions must remain separate buttons/links with their own lifecycle, audit and safety boundaries. | `tests/card-kpi-affordance-pruning.spec.ts` |
+| `UXP2-006` | Row actions, audit timelines and evidence/timeline list actions | Shared DataTable row actions, audit timeline items, shared evidence list items, ActionDrawer view-all controls, role matrix row/sort actions | `components/ui/data-table.tsx`, `components/ui/audit-timeline.tsx`, `components/ui/evidence-list.tsx`, `components/wealth-actions-screen.tsx`, `components/decisions-governance-screen.tsx` | Real row actions kept with explicit lifecycle state; no-lifecycle row/timeline/evidence actions disabled or marked static | Row, timeline and evidence affordances are safety-sensitive and must not imply navigation, audit, evidence expansion, role governance or release action unless an existing lifecycle is wired. | `tests/row-timeline-affordance-pruning.spec.ts` |
 
 ## Acceptance Notes
 
@@ -39,4 +40,5 @@ This register records visible affordances touched by Phase 2 and the action take
 - Sort controls touched in UXP2-003 remain only where the shared table visibly reorders rows and exposes active sort state.
 - Status and workflow badge controls touched in UXP2-004 remain static state indicators with no focusable control affordance.
 - Card and KPI surfaces touched in UXP2-005 remain static state summaries; actionable flows stay on explicit controls.
+- Row, timeline and evidence affordances touched in UXP2-006 are either wired to an existing lifecycle, disabled with a visible reason, or marked static/non-interactive.
 - Full route-smoke is deferred to the UXP2-010 phase gate per execution instruction.

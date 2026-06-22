@@ -1641,7 +1641,18 @@ function RoleMatrix() {
           <tr>
             {["Role", "Clients", "Accounts", "Investments", "Trading", "Reporting", "Billing"].map((header) => (
               <th className="h-10 border-b border-alphavest-border/70 px-4" key={header}>
-                <button className="text-left uppercase" data-testid="ux-data-table-sort" type="button">{header}</button>
+                <button
+                  aria-label={`Role matrix sorting by ${header} is held until governed role workflow is selected`}
+                  className="text-left uppercase disabled:cursor-not-allowed disabled:opacity-55"
+                  data-testid="ux-data-table-sort"
+                  data-ux-affordance="sort-control"
+                  data-ux-interactive="false"
+                  disabled
+                  title="Role matrix sorting is held until governed role workflow is selected."
+                  type="button"
+                >
+                  {header}
+                </button>
               </th>
             ))}
             <th className="h-10 w-20 border-b border-alphavest-border/70 px-4">
@@ -1656,9 +1667,14 @@ function RoleMatrix() {
               {[row.clients, row.accounts, row.investments, row.trading, row.reporting, row.billing].map((value, valueIndex) => <td className="px-4 py-3" key={`${row.role}-${valueIndex}`}><Badge tone={toneFor(value)}>{value}</Badge></td>)}
               <td className="px-4 py-3 text-right">
                 <button
-                  aria-label={`Open row actions for ${row.role}`}
-                  className="ml-auto grid size-8 place-items-center rounded-md border border-transparent text-alphavest-subtle transition hover:border-alphavest-border hover:text-alphavest-ivory"
+                  aria-label={`Role matrix actions for ${row.role} are held until governed role workflow is selected`}
+                  className="ml-auto grid size-8 place-items-center rounded-md border border-transparent text-alphavest-subtle transition disabled:cursor-not-allowed disabled:opacity-45 enabled:hover:border-alphavest-border enabled:hover:text-alphavest-ivory"
                   data-testid="ux-data-table-row-action"
+                  data-ux-affordance="row-action"
+                  data-ux-interactive="false"
+                  data-ux-row-action-state="disabled"
+                  disabled
+                  title="Role matrix row actions are held until governed role workflow is selected."
                   type="button"
                 >
                   <SlidersHorizontal aria-hidden="true" className="size-4" />

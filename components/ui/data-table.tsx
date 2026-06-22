@@ -113,6 +113,9 @@ export function DataTable<T>({
         aria-label={onRowAction ? actionLabel : rowActionUnavailableLabel}
         className="ml-auto grid size-8 place-items-center rounded-md border border-transparent text-alphavest-subtle transition enabled:hover:border-alphavest-border enabled:hover:text-alphavest-ivory disabled:cursor-not-allowed disabled:opacity-45"
         data-testid="ux-data-table-row-action"
+        data-ux-affordance="row-action"
+        data-ux-interactive={onRowAction ? "true" : "false"}
+        data-ux-row-action-state={onRowAction ? "enabled" : "disabled"}
         disabled={!onRowAction}
         onClick={onRowAction ? () => onRowAction(row) : undefined}
         title={onRowAction ? actionLabel : rowActionUnavailableLabel}

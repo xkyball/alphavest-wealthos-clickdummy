@@ -23,13 +23,21 @@ const resultMeta: Record<AuditTimelineItem["result"], { icon: LucideIcon; style:
 
 export function AuditTimeline({ items }: AuditTimelineProps) {
   return (
-    <ol className="relative space-y-4 border-l border-alphavest-border pl-5" data-testid="ux-phase5-audit-timeline" data-ux-phase5-task="UX-DETAIL-005" data-ux-phase5-detail-support="audit-object-state">
+    <ol
+      aria-label="Audit timeline"
+      className="relative space-y-4 border-l border-alphavest-border pl-5"
+      data-testid="ux-phase5-audit-timeline"
+      data-ux-affordance="static-audit-timeline"
+      data-ux-interactive="false"
+      data-ux-phase5-task="UX-DETAIL-005"
+      data-ux-phase5-detail-support="audit-object-state"
+    >
       {items.map((item) => {
         const meta = resultMeta[item.result];
         const Icon = meta.icon;
 
         return (
-          <li className="relative" key={item.id}>
+          <li className="relative" data-ux-affordance="static-timeline-item" data-ux-interactive="false" key={item.id}>
             <span
               className={cn(
                 "absolute -left-[2rem] grid size-7 place-items-center rounded-full border",
