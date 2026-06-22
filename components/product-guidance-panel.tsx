@@ -127,7 +127,7 @@ export function ProductGuidancePanel() {
                 {guidance.purpose}
               </p>
             </div>
-            <div className="hidden rounded-md border border-alphavest-gold/25 bg-alphavest-gold/10 p-2.5 sm:block md:p-3" data-testid="ux-nav-gate-guidance">
+            <div className="rounded-md border border-alphavest-gold/25 bg-alphavest-gold/10 p-2.5 md:p-3" data-testid="ux-nav-gate-guidance">
               <div className="flex items-center gap-2 text-sm font-semibold text-alphavest-gold-soft">
                 <LockKeyhole aria-hidden="true" className="size-4" />
                 Current gate
@@ -175,7 +175,7 @@ export function ProductGuidancePanel() {
 
         {hasActions ? (
           <div
-            className="hidden min-w-0 flex-col gap-2 sm:flex xl:w-72"
+            className="flex min-w-0 flex-col gap-2 xl:w-72"
             data-testid="ux-nav-next-actions"
             data-ux-content-tier="must-see"
             data-ux-cta-state={guidance.ctaState.state}

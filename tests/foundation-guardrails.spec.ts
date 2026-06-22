@@ -52,11 +52,11 @@ test.describe("Phase 01 foundation guardrails", () => {
 
   test("keeps the route worksets and existing API universe locked", () => {
     expect(routeWorksetIntegrity.counts).toEqual({
-      MVP: 31,
-      MVP_SUPPORT: 25,
-      P1_AFTER_MVP: 5,
+      MVP: 39,
+      MVP_SUPPORT: 29,
+      P1_AFTER_MVP: 0,
       REFERENCE_ONLY: 3,
-      HOLD_PENDING_DECISION: 7,
+      HOLD_PENDING_DECISION: 0,
     });
     expect(routeWorksetIntegrity.missingPageIds).toEqual([]);
     expect(routeWorksetIntegrity.unknownPageIds).toEqual([]);

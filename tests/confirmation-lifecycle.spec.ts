@@ -30,7 +30,7 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
       }
     });
 
-    await page.goto("/compliance/demo/release?state=release");
+    await page.goto("/compliance/reviews/demo/release?state=release");
 
     const releaseDialog = page.getByRole("dialog", { name: "Release to client" });
     await expect(releaseDialog).toBeVisible();
@@ -46,7 +46,7 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
   });
 
   test("valid release confirmation calls the API and shows success feedback", async ({ page }) => {
-    await page.goto("/compliance/demo/release?state=release");
+    await page.goto("/compliance/reviews/demo/release?state=release");
 
     const releaseDialog = page.getByRole("dialog", { name: "Release to client" });
     await expect(releaseDialog).toBeVisible();
@@ -68,7 +68,7 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
   });
 
   test("request evidence confirmation requires controlled reason and phrase before submit", async ({ page }) => {
-    await page.goto("/compliance/demo/block?state=base");
+    await page.goto("/compliance/reviews/demo/block?state=base");
 
     await page.getByRole("button", { name: "Manage Block" }).click();
     const evidenceDialog = page.getByRole("dialog", { name: "Block or Request Evidence" });

@@ -54,7 +54,10 @@ test.describe("Phase 10 P0 API fail-closed contract", () => {
     expect(body.mutated).toBe(false);
     expect(body.noClientRelease).toBe(true);
     expect(body.issues).toEqual(["valid_role_key_required", "valid_tenant_slug_required"]);
-    expect(body.safety).toBeUndefined();
+    expect(body.safety).toMatchObject({
+      failClosed: true,
+      silentStateAdvance: false,
+    });
   });
 
   test("invalid evidence review request fails closed before evidence mutation", async ({ request }) => {

@@ -1087,8 +1087,6 @@ function ExportScopePage({ title }: { title: string }) {
   return (
     <div>
       <PageLead description="Select permitted objects only. Preview, approval, download and share remain unavailable." icon={Folder} title={title} />
-      <ScfP07P09TrustPanel mode="export" />
-      <ScfP10P14ClosurePanel mode="api" />
       <UxDenseOperationsPanel
         className="mt-5"
         controls={["Date range", "Recipients", "Object type", "Access", "Selected only", "Blocked excluded"]}
@@ -1132,6 +1130,10 @@ function ExportScopePage({ title }: { title: string }) {
         </Card>
       </div>
       </UxDenseOperationsPanel>
+      <div className="mt-5 space-y-5">
+        <ScfP07P09TrustPanel mode="export" />
+        <ScfP10P14ClosurePanel mode="api" />
+      </div>
     </div>
   );
 }

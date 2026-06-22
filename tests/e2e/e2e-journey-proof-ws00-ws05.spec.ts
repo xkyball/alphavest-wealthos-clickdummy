@@ -52,14 +52,15 @@ test.describe("E2E-WS-00..05 canonical journey proof harness", () => {
     }
 
     const pack = readFileSync(repoFile("ALPHAVEST_E2E_JOURNEY_PROOF_25_CODEX_TASK_PACK.md"), "utf8");
+    const trueUxHandoff = readFileSync(repoFile("ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md"), "utf8");
     const packageJson = JSON.parse(readFileSync(repoFile("package.json"), "utf8")) as {
       scripts: Record<string, string>;
     };
 
-    expect(pack).toContain("E2E-WS-00");
-    expect(pack).toContain("E2E-WS-05");
-    expect(pack).toContain("Keine neue Route");
-    expect(pack).toContain("keine Prisma Migration");
+    expect(pack).toContain("SUPERSEDED_BY_TRUE_UX_HANDOFF");
+    expect(pack).toContain("ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md");
+    expect(trueUxHandoff).toContain("Final execution authority created here.");
+    expect(trueUxHandoff).toContain("Full validation suite");
     expect(packageJson.scripts.typecheck).toBe("tsc --noEmit");
     expect(packageJson.scripts.lint).toBe("eslint .");
     expect(packageJson.scripts["db:validate"]).toBe("prisma validate");

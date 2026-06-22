@@ -790,17 +790,20 @@ test.describe("UX-DENSITY above-the-fold route job", () => {
       await expect(guidance.getByTestId("ux-density-page-job")).toBeVisible();
       await expect(guidance.getByTestId("ux-density-status")).toBeVisible();
       await expect(guidance.getByTestId("ux-nav-gate-guidance")).toBeVisible();
-      await expect(guidance.getByTestId("ux-nav-primary-next-step")).toHaveCount(1);
+      const primaryNextStep = guidance.getByTestId("ux-nav-primary-next-step");
+      await expect(primaryNextStep).toHaveCount(1);
+      await expect(primaryNextStep).toBeVisible();
       await expect(guidance).not.toContainText(/Workflow step|route policy|gate-completion proof|visual proof|complexity reduction/i);
 
       for (const locator of [
         guidance.getByTestId("ux-density-page-job"),
         guidance.getByTestId("ux-density-status"),
         guidance.getByTestId("ux-nav-gate-guidance"),
-        guidance.getByTestId("ux-nav-primary-next-step"),
+        primaryNextStep,
       ]) {
-        const box = await locator.first().boundingBox();
-        expect(box?.y, `${route.pageId} above-fold contract`).toBeLessThan(420);
+        await expect(locator.first()).toBeVisible();
+        const y = await locator.first().evaluate((element) => element.getBoundingClientRect().y);
+        expect(y, `${route.pageId} above-fold contract`).toBeLessThan(420);
       }
     });
   }

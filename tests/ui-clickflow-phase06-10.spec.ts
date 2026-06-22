@@ -222,11 +222,11 @@ test.describe("UI Clickflow Phase 06-10 guard implementation", () => {
     expect(auditUnavailable.uiState).toBe("AUDIT_UNAVAILABLE_STATE");
   });
 
-  test("Phase 09 keeps P1, held, reference and offboarding routes guard-only", () => {
+  test("Phase 09 reflects True-UX promoted routes while keeping reference and offboarding guard-only", () => {
     const communication = evaluateDeferredRouteUiState(routeByPageId("052"));
     const reviewMonitoring = evaluateDeferredRouteUiState(routeByPageId("068"));
-    const kycHeld = evaluateDeferredRouteUiState(routeByPageId("064"));
-    const committeeHeld = evaluateDeferredRouteUiState(routeByPageId("070"));
+    const kycReview = evaluateDeferredRouteUiState(routeByPageId("064"));
+    const committeeReview = evaluateDeferredRouteUiState(routeByPageId("070"));
     const reference = evaluateDeferredRouteUiState(routeByPageId("061"));
     const offboarding = evaluateOffboardingUiState({
       actorContext: controlLayerActors.summitCompliance,
@@ -261,16 +261,20 @@ test.describe("UI Clickflow Phase 06-10 guard implementation", () => {
       retentionPolicy: "wealthos_retention_7y",
     });
 
-    expect(communication.uiState).toBe("P1_DEFERRED_STATE");
-    expect(reviewMonitoring.uiState).toBe("P1_DEFERRED_STATE");
-    expect(kycHeld.uiState).toBe("HOLD_BLOCKED_STATE");
-    expect(committeeHeld.uiState).toBe("HOLD_BLOCKED_STATE");
-    expect(reference.uiState).toBe("REFERENCE_ONLY_STATE");
-    for (const guard of [communication, reviewMonitoring, kycHeld, committeeHeld, reference]) {
-      expect(guard.routeShellAccessible).toBe(false);
-      expect(guard.productiveActionsEnabled).toBe(false);
-      expect(guard.action.hidden).toBe(true);
+    expect(communication.uiState).toBe("SUCCESS_STATE");
+    expect(reviewMonitoring.uiState).toBe("SUCCESS_STATE");
+    expect(kycReview.uiState).toBe("SUCCESS_STATE");
+    expect(committeeReview.uiState).toBe("SUCCESS_STATE");
+    for (const promoted of [communication, reviewMonitoring, kycReview, committeeReview]) {
+      expect(promoted.routeShellAccessible).toBe(true);
+      expect(promoted.action.hidden).toBe(false);
+      expect(promoted.productiveActionsEnabled).toBe(false);
     }
+
+    expect(reference.uiState).toBe("REFERENCE_ONLY_STATE");
+    expect(reference.routeShellAccessible).toBe(false);
+    expect(reference.productiveActionsEnabled).toBe(false);
+    expect(reference.action.hidden).toBe(true);
 
     expect(offboarding.control.status).toBe("OFFBOARDING_CONTROL_READY");
     expect(offboarding.guardOnly).toBe(true);

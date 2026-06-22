@@ -26,8 +26,8 @@ test.describe("Dummy DB auth provider, MFA and invitations", () => {
   });
 
   test("requires a dummy auth session cookie before app routes render", async ({ page }) => {
-    await page.goto("/portal");
-    await expect(page).toHaveURL(/\/login\?returnTo=%2Fportal/);
+    await page.goto("/client/home");
+    await expect(page).toHaveURL(/\/login\?returnTo=%2Fclient%2Fhome/);
 
     await page.context().addCookies([
       {
@@ -39,8 +39,8 @@ test.describe("Dummy DB auth provider, MFA and invitations", () => {
       },
     ]);
 
-    await page.goto("/portal");
-    await expect(page).toHaveURL(/\/portal$/);
+    await page.goto("/client/home");
+    await expect(page).toHaveURL(/\/client\/home$/);
     await expect(page.getByRole("heading", { name: "Client Web Dashboard" })).toBeVisible();
   });
 

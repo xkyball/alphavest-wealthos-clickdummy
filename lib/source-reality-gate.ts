@@ -4,11 +4,11 @@ import path from "node:path";
 import { routeRegistryCount, routeWorksetIntegrity, type RouteScopeLabel } from "./route-registry";
 
 export const phase0LockedRouteWorksetCounts: Record<RouteScopeLabel, number> = {
-  MVP: 31,
-  MVP_SUPPORT: 25,
-  P1_AFTER_MVP: 5,
+  MVP: 39,
+  MVP_SUPPORT: 29,
+  P1_AFTER_MVP: 0,
   REFERENCE_ONLY: 3,
-  HOLD_PENDING_DECISION: 7,
+  HOLD_PENDING_DECISION: 0,
 };
 
 export const phase0LockedApiRoutes = [

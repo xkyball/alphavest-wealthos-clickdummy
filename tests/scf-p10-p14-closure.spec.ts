@@ -1,5 +1,6 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 
+import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
 import {
   scfDoNotImplementRegister,
   scfFoundationTaskIds,
@@ -8,7 +9,24 @@ import {
 } from "../lib/scf-foundation";
 import { scfP10P14ProofPackage } from "../lib/scf-p10-p14-proof";
 
+async function authenticate(page: Page) {
+  await page.context().addCookies([
+    {
+      httpOnly: true,
+      domain: "127.0.0.1",
+      name: demoAuthSessionCookieName,
+      path: "/",
+      sameSite: "Lax",
+      value: "av-session-playwright-authenticated",
+    },
+  ]);
+}
+
 test.describe("SCF P10-P14 implementation closure", () => {
+  test.beforeEach(async ({ page }) => {
+    await authenticate(page);
+  });
+
   test("represents all P10-P14 master tasks, subtasks and unsupported P15 honestly", () => {
     const taskIds = scfFoundationTaskIds();
     const masterTasks = scfMasterTasksForPhases(["P10", "P11", "P12", "P13", "P14"]);

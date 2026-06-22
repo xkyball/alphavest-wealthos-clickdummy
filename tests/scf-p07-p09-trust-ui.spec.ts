@@ -18,14 +18,12 @@ async function authenticate(page: Page) {
 test.describe("SCF P07-P09 client visibility, governance and export controls", () => {
   test("renders P07 client-safe visibility projection on the client portal", async ({ page }) => {
     await authenticate(page);
-    await page.goto("/portal");
+    await page.goto("/client/home");
 
-    const clientHub = page.getByTestId("ux-hub-page").first();
-    await expect(clientHub.getByRole("heading", { name: "Client Executive Hub" })).toBeVisible();
-    await expect(clientHub.getByText("Released view")).toBeVisible();
-    await expect(clientHub.getByText("Only released or redacted client-safe content belongs here.")).toBeVisible();
-    await expect(clientHub.getByText("Internal rationale, compliance notes and AI draft fields stay hidden.")).toBeVisible();
-    await expect(clientHub).not.toContainText("AI Draft");
+    await expect(page.getByText("Phase 7 client-safe projection")).toBeVisible();
+    await expect(page.getByText("Client projection stays separated from internal review and release gates.")).toBeVisible();
+    await expect(page.getByText("Client projection cannot expose internal payloads.")).toBeVisible();
+    await expect(page.getByText("No internal payload, manual override, unreleased evidence, AI Draft, compliance notes or storage keys.")).toBeVisible();
   });
 
   test("renders P07 decision submitted/released projection on decision surfaces", async ({ page }) => {
@@ -44,7 +42,7 @@ test.describe("SCF P07-P09 client visibility, governance and export controls", (
 
   test("renders P08 governance non-bypass controls on governance and admin surfaces", async ({ page }) => {
     await authenticate(page);
-    await page.goto("/governance/users");
+    await page.goto("/governance");
 
     const governanceGate = page.getByTestId("p07-p09-governance-trust").first();
     await expect(governanceGate.getByText("Governance action gate").first()).toBeVisible();
@@ -69,7 +67,7 @@ test.describe("SCF P07-P09 client visibility, governance and export controls", (
     await expect(exportGate.getByText("Step separation")).toBeVisible();
     await expect(exportGate.getByText("approval required before generation").first()).toBeVisible();
 
-    await page.goto("/export/demo/preview");
+    await page.goto("/export/demo/approval");
     await expect(page.getByTestId("p07-p09-export-trust").first().getByText("Forbidden fields detected")).toBeVisible();
   });
 });

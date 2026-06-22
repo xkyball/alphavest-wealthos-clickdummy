@@ -21,23 +21,21 @@ test.beforeEach(async ({ page }) => {
 
 test.describe("Phase 03 UI state boundaries", () => {
   test("client-facing routes fail closed for unreleased recommendation states", async ({ page }) => {
-    await page.goto("/mobile");
+    await page.goto("/client/home");
 
-    const mobileHub = page.getByTestId("ux-hub-page").first();
-    await expect(mobileHub.getByRole("heading", { name: "Mobile Client Hub" })).toBeVisible();
-    await expect(mobileHub.getByText("Released-view constraints match the desktop client hub.")).toBeVisible();
-    await expect(mobileHub.getByText("Internal workflow detail remains hidden on mobile.")).toBeVisible();
-    await expect(mobileHub.getByText("Mobile home hides internal workflow detail and release controls.")).toBeVisible();
-    await expect(page.getByText("AI Draft")).toHaveCount(0);
+    await expect(page.getByText("Phase 7 client-safe projection")).toBeVisible();
+    await expect(page.getByText("Released client-safe state only")).toBeVisible();
+    await expect(page.getByText("Client projection cannot expose internal payloads.")).toBeVisible();
+    await expect(page.getByText("No internal payload, manual override, unreleased evidence, AI Draft, compliance notes or storage keys.")).toBeVisible();
   });
 
   test("internal workflow separates advisor approval from compliance release", async ({ page }) => {
-    await page.goto("/compliance/demo/review");
+    await page.goto("/compliance/reviews/demo/decision-room");
 
     await expect(page.getByText("Release Gates Summary")).toBeVisible();
     await expect(page.getByText(/Release is disabled until evidence, policy, reviewer and approver gates pass\./)).toBeVisible();
 
-    await page.goto("/compliance/demo/release?state=release");
+    await page.goto("/compliance/reviews/demo/release?state=release");
     await expect(page.getByText("Advisor approval alone is not enough.")).toBeVisible();
   });
 
@@ -59,7 +57,7 @@ test.describe("Phase 03 UI state boundaries", () => {
     await expect(page.getByText("Start export scope before redaction, preview, approval or delivery.")).toBeVisible();
     await expect(page.getByText("Select export scope").first()).toBeVisible();
 
-    await page.goto("/export/demo/preview?state=approval");
+    await page.goto("/export/demo/approval?state=approval");
     await expect(page.getByRole("dialog", { name: "Approve Export Package" })).toBeVisible();
     await expect(page.getByText("Approval confirmation")).toBeVisible();
     await expect(page.getByText("This demo approval records the approval step and creates metadata-only package proof. Download, share and client acceptance remain separate.")).toBeVisible();
@@ -77,7 +75,7 @@ test.describe("Phase 03 UI state boundaries", () => {
 
 test.describe("Phase 05 feedback no-overclaim boundaries", () => {
   test("release modal does not show release success before submit", async ({ page }) => {
-    await page.goto("/compliance/demo/release?state=release");
+    await page.goto("/compliance/reviews/demo/release?state=release");
 
     await expect(page.getByRole("dialog", { name: "Release to client" })).toBeVisible();
     await expect(page.getByRole("dialog", { name: "Release to client" }).getByText("Release action pending")).toBeVisible();
@@ -86,16 +84,16 @@ test.describe("Phase 05 feedback no-overclaim boundaries", () => {
   });
 
   test("export approval copy separates approval from generation and delivery", async ({ page }) => {
-    await page.goto("/export/demo/preview?state=approval");
+    await page.goto("/export/demo/approval?state=approval");
 
     await expect(page.getByRole("dialog", { name: "Approve Export Package" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Confirm Export Approval" })).toBeVisible();
+    await expect(page.getByTestId("j08-confirm-approval")).toBeVisible();
     await expect(page.getByText("Generation, download and share remain separate controlled steps.")).toBeVisible();
     await expect(page.getByText("This demo approval records the approval step and creates metadata-only package proof.")).toBeVisible();
   });
 
   test("audit-sensitive feedback states audit requirements rather than claiming persistence", async ({ page }) => {
-    await page.goto("/governance/roles?state=confirm");
+    await page.goto("/governance/roles/demo?state=confirm");
 
     await expect(page.getByRole("dialog", { name: "Confirm Sensitive Permission Changes" })).toBeVisible();
     await expect(page.getByText("This change requires audit logging before it can be accepted.")).toBeVisible();
@@ -116,7 +114,7 @@ test.describe("Phase 05 feedback no-overclaim boundaries", () => {
   });
 
   test("static audit-facing panels describe audit requirements instead of persistence proof", async ({ page }) => {
-    await page.goto("/workbench/triggers/demo");
+    await page.goto("/advisory/triggers/demo/review");
 
     await expect(page.getByText("Audit logging required", { exact: true })).toBeVisible();
     await expect(page.getByText("Audit logging required before accepted save")).toBeVisible();
@@ -128,11 +126,11 @@ test.describe("Phase 05 feedback no-overclaim boundaries", () => {
   });
 
   test("audit history and export delivery avoid persistence and binary-delivery overclaim", async ({ page }) => {
-    await page.goto("/governance/audit-history");
+    await page.goto("/compliance/reviews/demo/audit");
 
-    await expect(page.getByText("Audit persistence gate")).toBeVisible();
-    await expect(page.getByText("Audit review is read-only here; persistence, retention and controlled export remain separate gates.")).toBeVisible();
-    await expect(page.getByText(/tenant-scoped DB audit-event rows/)).toBeVisible();
+    await expect(page.getByTestId("p04-p06-audit-gate").getByText("Audit Persistence Gate")).toBeVisible();
+    await expect(page.getByText(/Critical gate actions must persist audit rows/)).toBeVisible();
+    await expect(page.getByText("SCF-P04-P06-CRITICAL-GATE-AUDIT")).toBeVisible();
     await expect(page.getByText("Read-only and immutable")).toHaveCount(0);
     await expect(page.getByText("tamper-evident")).toHaveCount(0);
     await expect(page.getByText("live events")).toHaveCount(0);

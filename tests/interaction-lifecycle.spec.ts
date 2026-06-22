@@ -42,7 +42,7 @@ test.describe("Phase 04 interaction lifecycle", () => {
   });
 
   test("compliance block modal has explicit trigger and cancel lifecycle", async ({ page }) => {
-    await page.goto("/compliance/demo/block?state=base");
+    await page.goto("/compliance/reviews/demo/block?state=base");
 
     const blockDialog = page.getByRole("dialog", { name: "Block or Request Evidence" });
     await expect(blockDialog).toHaveCount(0);
@@ -54,7 +54,7 @@ test.describe("Phase 04 interaction lifecycle", () => {
   });
 
   test("governance role confirmation opens from drawer and cancels without mutation", async ({ page }) => {
-    await page.goto("/governance/roles?state=base");
+    await page.goto("/governance/roles/demo?state=base");
 
     const createRoleButton = page.getByRole("button", { name: "Create scoped role" });
     await createRoleButton.click();

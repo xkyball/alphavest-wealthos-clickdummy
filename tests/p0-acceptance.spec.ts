@@ -35,23 +35,6 @@ import { scfP10P14ProofPackage } from "../lib/scf-p10-p14-proof";
 import { visibilityEngine } from "../lib/visibility-engine";
 import { canBecomeClientVisible } from "../lib/workflow-gate";
 
-const firstBuildBp11TaskIds = [
-  "AV-FB-P8-BP11-T001",
-  "AV-FB-P8-BP11-T002",
-  "AV-FB-P8-BP11-T003",
-  "AV-FB-P8-BP11-T004",
-  "AV-FB-P8-BP11-T005",
-  "AV-FB-P8-BP11-T006",
-  "AV-FB-P8-BP11-T007",
-  "AV-FB-P8-BP11-T008",
-  "AV-FB-P8-BP11-T009",
-  "AV-FB-P8-BP11-T010",
-  "AV-FB-P8-BP11-T011",
-  "AV-FB-P8-BP11-T012",
-  "AV-FB-P8-BP11-T013",
-  "AV-FB-P8-BP11-T014",
-] as const;
-
 const firstBuildFinalValidationScripts = [
   "typecheck",
   "lint",
@@ -553,10 +536,10 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
 
   test("SCF-P00/P01/P02 preserves route worksets and Do-Not-Implement boundaries", () => {
     expect(routeWorksetIntegrity.counts).toEqual({
-      HOLD_PENDING_DECISION: 7,
-      MVP: 31,
-      MVP_SUPPORT: 25,
-      P1_AFTER_MVP: 5,
+      HOLD_PENDING_DECISION: 0,
+      MVP: 39,
+      MVP_SUPPORT: 29,
+      P1_AFTER_MVP: 0,
       REFERENCE_ONLY: 3,
     });
     expect(routeWorksetIntegrity.missingPageIds).toEqual([]);
@@ -564,13 +547,13 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
     expect(routeWorksetIntegrity.duplicatePageIds).toEqual([]);
 
     for (const pageId of ["052", "053", "059", "060", "068"]) {
-      expect(routeScopeForPageId(pageId)).toBe("P1_AFTER_MVP");
+      const expectedScope = pageId === "068" ? "MVP" : "MVP_SUPPORT";
+      expect(routeScopeForPageId(pageId)).toBe(expectedScope);
       expect(routeImplementationAccessDecision({ pageId })).toEqual({
-        accessMode: "REGISTERED_ONLY",
-        exclusionReason: "P1_DEFERRED",
-        implementationShellAccessible: false,
-        routeScope: "P1_AFTER_MVP",
-        safetyBoundary: "SCF_DO_NOT_IMPLEMENT_REGISTER",
+        accessMode: "FIRST_BUILD",
+        implementationShellAccessible: true,
+        routeScope: expectedScope,
+        safetyBoundary: "FULL_FIRST_BUILD_SCOPE",
       });
     }
 
@@ -586,13 +569,12 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
     }
 
     for (const pageId of ["064", "065", "066", "067", "069", "070", "071"]) {
-      expect(routeScopeForPageId(pageId)).toBe("HOLD_PENDING_DECISION");
+      expect(routeScopeForPageId(pageId)).toBe("MVP");
       expect(routeImplementationAccessDecision({ pageId })).toEqual({
-        accessMode: "REGISTERED_ONLY",
-        exclusionReason: "HOLD_PENDING_SCOPE_UNLOCK",
-        implementationShellAccessible: false,
-        routeScope: "HOLD_PENDING_DECISION",
-        safetyBoundary: "SCF_DO_NOT_IMPLEMENT_REGISTER",
+        accessMode: "FIRST_BUILD",
+        implementationShellAccessible: true,
+        routeScope: "MVP",
+        safetyBoundary: "FULL_FIRST_BUILD_SCOPE",
       });
     }
 
@@ -653,40 +635,27 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
     expect(scfProofCommandBaseline.join(" ")).toContain("tests/scf-p10-p14-closure.spec.ts");
   });
 
-  test("SCF release phase plan authorizes task and phase execution", () => {
+  test("True UX handoff authorizes task and phase execution while old plans stay superseded", () => {
     const agents = readWorkspaceText("AGENTS.md");
-    const promptPack = readWorkspaceText("ALPHAVEST_SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK.md");
-    const releasePlan = readWorkspaceText("ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_RELEASE_PHASE_PLAN.md");
-    const detailPlan = readWorkspaceText("ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md");
-    const handoff = readWorkspaceText("ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md");
+    const trueUxHandoff = readWorkspaceText("ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md");
+    const taskPack = readWorkspaceText("ALPHAVEST_TRUE_UX_CODEX_TASK_PACK.md");
+    const flowPlan = readWorkspaceText("ALPHAVEST_TRUE_UX_FLOW_REFACTORING_PLAN.md");
+    const routePolicy = readWorkspaceText("ALPHAVEST_TRUE_UX_ROUTE_EVOLUTION_POLICY_MATRIX.md");
+    const firstBuildHandoff = readWorkspaceText("ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md");
     const packagePlan = readWorkspaceText("ALPHAVEST_MVP_FIRST_BUILD_PACKAGE_PLAN.md");
 
-    expect(agents).toContain("ALPHAVEST_SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK.md");
-    expect(agents).toContain("ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_RELEASE_PHASE_PLAN.md");
-    expect(agents).toContain("ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md");
-    expect(agents).toMatch(/operative Codex\s+execution source of truth/);
-    expect(agents).toMatch(/Codex Prompt\s+Pack and release-plan authorization layer/);
-    expect(promptPack).toContain("SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK_ACCEPTED_FOR_PHASED_CODEX_EXECUTION");
-    expect(promptPack).toContain("CODEX-P01");
-    expect(promptPack).toContain("CODEX-P02");
-    expect(promptPack).toContain("CODEX-P03");
-    expect(promptPack).toContain("SCF-P03-T001-S01, SCF-P03-T001-S02");
-    expect(releasePlan).toContain("SCREEN_CAPABILITY_E2E_IMPLEMENTATION_RELEASE_PHASE_PLAN_ACCEPTED_WITH_CODEX_PACK_DEPENDENCY");
-    expect(releasePlan).toContain("Freigegeben ist nur, was in der Implementation Release Master Task Matrix");
-    expect(releasePlan).toContain("AUTHORIZED_FOR_IMPLEMENTATION");
-    expect(releasePlan).toContain("HOLD_BLOCKED_NOT_AUTHORIZED");
-    expect(releasePlan).toContain("SCF-P01-T001, SCF-P01-T002");
-    expect(releasePlan).toContain("SCF-P06-T001, SCF-P06-T002");
-    expect(detailPlan).toContain("SOLE_TASK_AND_PHASE_SOURCE_OF_TRUTH");
-    expect(detailPlan).toContain("Phasen: `P00` bis `P14`");
-    expect(detailPlan).toContain("Tasks: alle `SCF-Pxx-Txxx`");
-    expect(handoff).toContain("SUPERSEDED_FOR_TASKS_AND_PHASES_BY_SCF_DETAIL_PLAN");
-    expect(handoff).toContain("Codex may execute from this file? | No");
-    expect(packagePlan).toContain("SUPERSEDED_FOR_TASKS_AND_PHASES_BY_SCF_DETAIL_PLAN");
-    expect(packagePlan).toContain("Sole task/phase source of truth");
-    expect(packagePlan).toContain("This table is retained as historical context only");
-    expect(packagePlan).toContain("Historical all-phase/all-task override");
-    expect(handoff).not.toContain("All 62 task IDs below are explicitly authorized");
+    expect(agents).toContain("ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md");
+    expect(agents).toMatch(/only operative source of\s+truth/);
+    expect(agents).toContain("ALPHAVEST_TRUE_UX_CODEX_TASK_PACK.md");
+    expect(trueUxHandoff).toContain("TRUE_UX_IMPLEMENTATION_HANDOFF_APPROVED_WITH_CONSTRAINTS");
+    expect(trueUxHandoff).toContain("Execution Order Overview");
+    expect(trueUxHandoff).toContain("Validation Commands");
+    expect(taskPack).toContain("UX-ROUTE-EVO-001-T");
+    expect(flowPlan).toContain("True UX");
+    expect(routePolicy).toContain("Route Evolution");
+    expect(firstBuildHandoff).toContain("SUPERSEDED_BY_TRUE_UX_HANDOFF");
+    expect(packagePlan).toContain("SUPERSEDED_BY_TRUE_UX_HANDOFF");
+    expect(firstBuildHandoff).not.toContain("All 62 task IDs below are explicitly authorized");
     expect(packagePlan).not.toContain("FIRST_BUILD_PACKAGE_PLAN_MAX_OVERRIDE_UNLOCKED");
   });
 
@@ -782,27 +751,28 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
     }
   });
 
-  test("AV-FB-P8-BP11-T001..T014 map final P0 proof, commands and report obligations", () => {
-    const handoff = readWorkspaceText("ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md");
+  test("True UX final validation maps proof commands and keeps First Build final proof superseded", () => {
+    const handoff = readWorkspaceText("ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md");
+    const firstBuildHandoff = readWorkspaceText("ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md");
     const packageJson = JSON.parse(readWorkspaceText("package.json")) as {
       scripts: Record<string, string>;
     };
 
-    for (const taskId of firstBuildBp11TaskIds) {
-      expect(handoff, `${taskId} present in handoff`).toContain(taskId);
-    }
-
     for (const scriptName of firstBuildFinalValidationScripts) {
       expect(packageJson.scripts, `${scriptName} script exists`).toHaveProperty(scriptName);
-      expect(handoff, `${scriptName} mapped in handoff`).toContain(`pnpm ${scriptName}`);
     }
 
-    expect(handoff).toContain("## Final MVP First Build Implementation Report");
-    expect(handoff).toContain("P0 positive proof summary");
-    expect(handoff).toContain("P0 negative proof summary");
-    expect(handoff).toContain("Former non-task register execution proof");
-    expect(handoff).toContain("Any failed command or missing P0 proof blocks completion.");
-    expect(handoff).toContain("Routes 064–067 and 069–071 require task proof before release/advice scope.");
-    expect(handoff).toContain("main-derived absence claims do not become target gaps/tasks.");
+    expect(handoff).toContain("## 25. Validation Commands");
+    expect(handoff).toContain("pnpm lint");
+    expect(handoff).toContain("pnpm typecheck");
+    expect(handoff).toContain("pnpm build");
+    expect(handoff).toContain("pnpm playwright test tests/route-smoke.spec.ts");
+    expect(handoff).toContain("pnpm playwright test tests/permission-engine.spec.ts");
+    expect(handoff).toContain("pnpm playwright test tests/workflow-gate.spec.ts");
+    expect(handoff).toContain("pnpm playwright test tests/true-ux-a11y.spec.ts");
+    expect(handoff).toContain("## 26. Required Proofs");
+    expect(handoff).toContain("No-leakage proof");
+    expect(handoff).toContain("No-generation proof");
+    expect(firstBuildHandoff).toContain("SUPERSEDED_BY_TRUE_UX_HANDOFF");
   });
 });
