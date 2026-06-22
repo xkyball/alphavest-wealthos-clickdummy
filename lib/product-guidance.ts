@@ -106,13 +106,13 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
     gateHint: "User access supports the workflow; role assignment is not evidence sufficiency or release.",
     nextStep: linkForPageId("027", "Open document queue"),
     primaryAction: linkForPageId("027", "Open document queue"),
-    relatedRoutes: [linkForPageId("028", "Upload source document"), linkForPageId("048", "Review governance users")],
+    relatedRoutes: [linkForPageId("028", "Upload source for review"), linkForPageId("048", "Review governance users")],
   },
   "019": {
     area: "Client workspace",
     gateHint: "Client-facing view: only released, client-safe content should be visible here.",
     nextStep: linkForPageId("027", "Open document library"),
-    primaryAction: linkForPageId("028", "Upload evidence source"),
+    primaryAction: linkForPageId("028", "Upload source for review"),
     purpose: "Orient the client workspace and surface only controlled, client-safe work after release gates pass.",
     relatedRoutes: [linkForPageId("021", "Review client profile"), linkForPageId("046", "Open evidence vault")],
     shortTitle: "Client portal",
@@ -126,8 +126,8 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
   "027": {
     area: "Evidence intake",
     gateHint: "Documents feed review. A document row is not reviewed evidence until the evidence lifecycle says so.",
-    nextStep: linkForPageId("028", "Upload source document"),
-    primaryAction: linkForPageId("028", "Upload source document"),
+    nextStep: linkForPageId("028", "Upload source for review"),
+    primaryAction: linkForPageId("028", "Upload source for review"),
     relatedRoutes: [linkForPageId("030", "Open verification queue"), linkForPageId("046", "Open evidence vault")],
   },
   "028": {
@@ -216,8 +216,8 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
   "041": {
     area: "Compliance and release",
     gateHint: "Blocking or requesting evidence keeps client visibility closed until recovery gates pass.",
-    nextStep: linkForPageId("028", "Request evidence upload"),
-    primaryAction: linkForPageId("028", "Request evidence upload"),
+    nextStep: linkForPageId("028", "Request source upload"),
+    primaryAction: linkForPageId("028", "Request source upload"),
     relatedRoutes: [linkForPageId("038", "Back to compliance queue"), linkForPageId("042", "Review audit context")],
   },
   "042": {
@@ -252,7 +252,7 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
     area: "Decisions and evidence",
     gateHint: "Evidence supports traceability. Sufficiency requires reviewed, scoped and current evidence.",
     nextStep: linkForPageId("038", "Open compliance queue"),
-    primaryAction: linkForPageId("028", "Upload evidence source"),
+    primaryAction: linkForPageId("028", "Upload source for review"),
     relatedRoutes: [linkForPageId("029", "Review extraction"), linkForPageId("051", "Open audit history")],
   },
   "048": {

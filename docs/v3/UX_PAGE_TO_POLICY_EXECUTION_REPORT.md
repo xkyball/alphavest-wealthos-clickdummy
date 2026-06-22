@@ -1920,3 +1920,51 @@ No-route-reclassification confirmation: route IDs, paths, scopes and page-type p
 No-P1/Hold/Reference-elevation confirmation: `UX-PAGE-002` only targets scoped MVP workbench routes and does not elevate protected routes.
 
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and tests.
+
+## Completed Slice: UX-CTA-003
+
+Task: `UX-CTA-003` - Implement evidence upload/review CTA chain without sufficiency overclaim.
+
+Mission Card: align evidence upload/review CTAs on routes `027-030`, `038-041` and `047` so upload, review, scoped sufficiency check, compliance recovery and evidence detail actions stay separate and never imply release, export or client visibility.
+
+Evidence Intake:
+- Task-master `UX-CTA-003`; Route Policy Matrix `CTA-POL-003`, `CTA-POL-004`, `CTA-POL-005`, `CTA-POL-006`.
+- Existing upload and evidence tests already prove upload is not sufficiency and review is scoped.
+
+Method artifacts: Discover found upload/review labels still too generic. Define kept behavior unchanged and changed only CTA labels/guidance. Develop replaced evidence-source wording with source-for-review wording and added negative route-smoke proof. Deliver includes screenshots and P0 validation.
+
+Changed files:
+- `lib/product-guidance.ts`
+- `components/client-intake-screen.tsx`
+- `tests/product-guidance-shell.spec.ts`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-CTA-003/*.png`
+
+Validation:
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with 27 existing warnings, 0 errors.
+- `PLAYWRIGHT_PORT=3477 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-CTA evidence"` - passed, 7 tests.
+- `PLAYWRIGHT_PORT=3478 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3479 pnpm test:workflow-api` - passed, 15 tests.
+- `PLAYWRIGHT_PORT=3480 pnpm test:file-export` - passed, 14 tests.
+- `PLAYWRIGHT_PORT=3481 pnpm test:permissions` - passed, 8 tests.
+
+Screenshot/proof:
+- `artifacts/ux-page-to-policy/UX-CTA-003/2026-06-22-UX-CTA-003-documents-queue.png`
+- `artifacts/ux-page-to-policy/UX-CTA-003/2026-06-22-UX-CTA-003-upload-review.png`
+- `artifacts/ux-page-to-policy/UX-CTA-003/2026-06-22-UX-CTA-003-extraction-review.png`
+- `artifacts/ux-page-to-policy/UX-CTA-003/2026-06-22-UX-CTA-003-verification.png`
+- `artifacts/ux-page-to-policy/UX-CTA-003/2026-06-22-UX-CTA-003-compliance-evidence-request.png`
+- `artifacts/ux-page-to-policy/UX-CTA-003/2026-06-22-UX-CTA-003-evidence-detail.png`
+
+Positive acceptance: evidence pages show one primary guarded next step with upload/review language.
+
+Negative/P0 acceptance: tests reject evidence-sufficient, release-ready, client-visible and export-ready claims; workflow/upload/export/permission tests remain green.
+
+No-generation confirmation: no screen, state-screen, image or generated product asset was created.
+No-route-reclassification confirmation: route IDs, paths, worksets and scopes remain unchanged.
+No-P1/Hold/Reference-elevation confirmation: no protected route was touched or elevated.
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.

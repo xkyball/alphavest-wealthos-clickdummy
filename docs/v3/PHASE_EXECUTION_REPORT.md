@@ -9052,3 +9052,25 @@ No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route was 
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
 
 Exit Gate Decision: `UX_CTA_002_COMPLETED_WITH_MJ001_SETUP_TO_RELEASE_CTA_PROOF`
+
+## UX-CTA-003 Addendum - Evidence Upload Review CTA Chain
+
+Date: 2026-06-22
+
+Status: Completed and validated.
+
+Task IDs: `UX-CTA-003`
+
+Completed evidence upload/review CTA chain cleanup for routes `027-030`, `038-041` and `047`. Labels now use source-for-review, extraction review, verification and scoped-check language instead of implying evidence sufficiency. No behavior, API, route or safety gate changed.
+
+Changed files: `lib/product-guidance.ts`, `components/client-intake-screen.tsx`, `tests/product-guidance-shell.spec.ts`, `tests/route-smoke.spec.ts`, reports and `artifacts/ux-page-to-policy/UX-CTA-003/*.png`.
+
+Validation: `pnpm typecheck` passed; `pnpm lint` passed with 27 existing warnings; `PLAYWRIGHT_PORT=3477 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-CTA evidence"` passed 7 tests; `PLAYWRIGHT_PORT=3478 pnpm test:workflow-gate` passed 13; `PLAYWRIGHT_PORT=3479 pnpm test:workflow-api` passed 15; `PLAYWRIGHT_PORT=3480 pnpm test:file-export` passed 14; `PLAYWRIGHT_PORT=3481 pnpm test:permissions` passed 8.
+
+Proof artifacts: `artifacts/ux-page-to-policy/UX-CTA-003/` contains six screenshots for documents queue, upload, extraction review, verification, compliance evidence request and evidence detail.
+
+Positive acceptance: exactly one guarded primary evidence CTA appears in tested states.
+Negative/P0 acceptance: no upload/review CTA claims sufficiency, release, export or client visibility.
+No-generation, no-route-reclassification, no-P1/Hold/Reference-elevation and no-safety-regression confirmed.
+
+Exit Gate Decision: `UX_CTA_003_COMPLETED_WITH_UPLOAD_NOT_SUFFICIENCY_CTA_PROOF`

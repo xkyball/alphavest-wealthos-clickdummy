@@ -2116,8 +2116,8 @@ function DocumentUploadForm() {
             <textarea className="min-h-20 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 py-2 text-alphavest-ivory outline-none focus:border-alphavest-gold" maxLength={500} onChange={(event) => setNotes(event.target.value)} placeholder="Add any notes about this document..." value={notes} />
           </label>
           <StatePanel detail="Your document will be scanned, validated and queued for human extraction review." state="loading" title="Extraction Pipeline" />
-          <button className={primaryButtonClass + " w-full"} data-testid="real-upload-document" disabled={uploadState === "uploading"} onClick={() => { void submitUpload(); }} type="button"><Upload aria-hidden="true" className="size-4" />Upload Document</button>
-          <button className={secondaryButtonClass + " w-full"} data-testid="j04-upload-document" onClick={() => { void runScreencastDemoAction("j04.uploadDocument", "/documents/extraction-review"); }} type="button">Run Demo Journey</button>
+          <button className={primaryButtonClass + " w-full"} data-testid="real-upload-document" disabled={uploadState === "uploading"} onClick={() => { void submitUpload(); }} type="button"><Upload aria-hidden="true" className="size-4" />Upload for review</button>
+          <button className={secondaryButtonClass + " w-full"} data-testid="j04-upload-document" onClick={() => { void runScreencastDemoAction("j04.uploadDocument", "/documents/extraction-review"); }} type="button">Open extraction review</button>
         </CardContent>
       </Card>
       <Card>
@@ -2269,7 +2269,7 @@ function ExtractionReviewActionPanel() {
           onClick={() => { void submitReview("accept_sufficiency"); }}
           type="button"
         >
-          Accept Scoped Evidence
+          Run scoped sufficiency check
         </button>
       </CardContent>
     </Card>

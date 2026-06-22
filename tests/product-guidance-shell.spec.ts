@@ -64,7 +64,7 @@ test.describe("AlphaVest product guidance shell", () => {
     await expect(guidance.getByRole("heading", { name: "Workflow guidance" })).toBeVisible();
     await expect(guidance.getByText("Client portal", { exact: true })).toBeVisible();
     await expect(guidance.getByText("Client-facing view: only released, client-safe content should be visible here.")).toBeVisible();
-    await expect(guidance.getByRole("link", { name: "Upload evidence source" })).toHaveAttribute("href", "/documents/upload");
+    await expect(guidance.getByRole("link", { name: "Upload source for review" })).toHaveAttribute("href", "/documents/upload");
   });
 
   test("compliance and export guidance preserve release, redaction and approval boundaries", async ({ page }) => {

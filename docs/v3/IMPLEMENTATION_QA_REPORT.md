@@ -6836,3 +6836,18 @@ Source of truth:
 
 - This slice maps MJ-001 route handoffs. It does not implement new workflow behavior.
 - Lint still reports 27 existing unused-code warnings outside this slice; there are no lint errors.
+
+## UX-CTA-003 QA Addendum
+
+Date: 2026-06-22
+
+| Area | QA result | Evidence |
+| --- | --- | --- |
+| Evidence CTA chain | Passed | Route-smoke validates `027-030`, `038-041`, `047` primary CTA states. |
+| Upload not sufficiency | Passed | UI labels and tests avoid sufficiency/release/client-visible/export-ready claims. |
+| P0 safety | Passed | Workflow-gate, workflow-api, file-export and permissions tests passed. |
+| Screenshot proof | Passed | Six screenshots under `artifacts/ux-page-to-policy/UX-CTA-003/`. |
+
+Commands: `pnpm typecheck`, `pnpm lint`, focused route-smoke on `UX-CTA evidence`, `pnpm test:workflow-gate`, `pnpm test:workflow-api`, `pnpm test:file-export`, `pnpm test:permissions` all passed. Lint retains 27 existing warnings and 0 errors.
+
+Safety proof: Upload/review CTAs do not mutate gates and do not claim evidence sufficiency, compliance release, export approval/download/share, audit persistence, client visibility or RBAC authority.

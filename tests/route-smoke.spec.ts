@@ -755,6 +755,62 @@ test.describe("UX-CTA MJ-001 setup-to-release chain", () => {
   }
 });
 
+test.describe("UX-CTA evidence upload and review chain", () => {
+  const routeByPageId = new Map<string, (typeof screenRoutes)[number]>(screenRoutes.map((route) => [route.pageId, route]));
+  const evidencePrimaryHrefs: Record<string, string> = {
+    "027": "/documents/upload",
+    "028": "/documents/extraction-review",
+    "029": "/documents/verification-pending",
+    "030": "/signals",
+    "038": "/compliance/demo/review",
+    "039": "/compliance/demo/release",
+    "040": "/decisions",
+    "041": "/documents/upload",
+    "047": "/evidence/demo",
+  };
+
+  test("keeps upload and review CTAs separate from evidence sufficiency", () => {
+    for (const [pageId, href] of Object.entries(evidencePrimaryHrefs)) {
+      const route = routeByPageId.get(pageId);
+      expect(route, `${pageId} registered route`).toBeDefined();
+      const guidance = productGuidanceForRoute(route!);
+
+      expect(guidance.ctaState.primaryAction?.href, `${pageId} evidence primary href`).toBe(href);
+      expect(guidance.ctaState.blockedReason, `${pageId} evidence blocked reason`).toMatch(
+        /sufficiency|release|client visibility|separate|blocked|review|gates/i,
+      );
+      expect(guidance.ctaState.primaryAction?.label, `${pageId} evidence primary label`).not.toMatch(
+        /evidence sufficient|sufficiency accepted|release ready|client visible|export ready/i,
+      );
+    }
+  });
+
+  const evidenceProofRoutes = [
+    "/documents",
+    "/documents/upload",
+    "/documents/extraction-review",
+    "/documents/verification-pending",
+    "/compliance/demo/block",
+    "/evidence/demo",
+  ];
+
+  for (const path of evidenceProofRoutes) {
+    test(`${path} renders evidence CTA without sufficiency overclaim`, async ({ page }) => {
+      await page.setViewportSize({ height: 1000, width: 1440 });
+      await authenticateRouteSmokePage(page);
+      await page.goto(path);
+
+      const guidance = page.getByTestId("product-guidance").first();
+      const actions = guidance.getByTestId("ux-nav-next-actions");
+      await expect(actions).toBeVisible();
+      await expect(actions.locator('[data-ux-primary-cta="true"]')).toHaveCount(1);
+      await expect(actions.getByTestId("ux-cta-blocked-reason")).toBeVisible();
+      await expect(actions).not.toContainText(/evidence sufficient|sufficiency accepted|release ready|client visible|export ready/i);
+      await expect(page.getByText(/Evidence sufficiency complete|Release ready from upload|Client visibility unlocked/i)).toHaveCount(0);
+    });
+  }
+});
+
 test.describe("locked route workset preservation", () => {
   test("all registered routes are classified exactly once", () => {
     expect(routeWorksetIntegrity.counts).toEqual(lockedRouteWorksetCounts);
