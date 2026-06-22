@@ -2118,7 +2118,11 @@ function DocumentUploadForm() {
 
     setSelectedFile(file);
     setUploadState("idle");
-    setMessage(file ? `${file.name} selected.` : "Select a file to start document intake.");
+    setMessage(
+      file
+        ? `${file.name} selected for upload intake only. Evidence sufficiency, release, export and client visibility remain locked.`
+        : "Select a file to start document intake.",
+    );
   }
 
   async function submitUpload() {
@@ -2126,7 +2130,7 @@ function DocumentUploadForm() {
 
     if (!fileForUpload) {
       setUploadState("error");
-      setMessage("Choose a supported document before uploading.");
+      setMessage("Select a supported source file before upload can start. No evidence, audit, release, export or client visibility state changed.");
       return;
     }
 
@@ -2142,7 +2146,7 @@ function DocumentUploadForm() {
     formData.append("tenantSlug", session.tenant.slug);
 
     setUploadState("uploading");
-    setMessage("Uploading the file. Review routing, evidence sufficiency, release and client visibility remain locked until later gates pass.");
+    setMessage("Uploading the file. Review routing, evidence sufficiency, release, export and client visibility remain locked until later gates pass.");
 
     try {
       const response = await fetch("/api/documents/upload", {
@@ -2157,7 +2161,7 @@ function DocumentUploadForm() {
 
       setSelectedFile(null);
       setUploadState("success");
-      setMessage(`${body.result.document.fileName} upload completed. Extraction review is the next step; evidence sufficiency, release and client visibility remain locked.`);
+      setMessage(`${body.result.document.fileName} upload completed. Extraction review is the next step; evidence sufficiency, release, export and client visibility remain locked.`);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -2169,9 +2173,22 @@ function DocumentUploadForm() {
   }
 
   const latestDocument = documents[0];
+  const hasSelectedFile = Boolean(selectedFile);
+  const uploadLifecycleStatus = uploadState === "uploading" ? "loading" : uploadState;
+  const uploadValidationState = hasSelectedFile ? "valid-file-selected" : "blocked-file-required";
+  const uploadValidationMessage = hasSelectedFile
+    ? "Ready to upload this source document for extraction review. Upload creates pending internal evidence and audit only."
+    : "Upload remains blocked until a source file is selected. No evidence, audit, release, export or client visibility changes occur.";
+  const canUpload = hasSelectedFile && uploadState !== "uploading";
 
   return (
-    <div className="grid gap-5 xl:grid-cols-[1fr_0.8fr_22rem]">
+    <div
+      className="grid gap-5 xl:grid-cols-[1fr_0.8fr_22rem]"
+      data-testid="uxp3-document-upload-lifecycle"
+      data-ux-lifecycle-status={uploadLifecycleStatus}
+      data-ux-lifecycle-validation={uploadValidationState}
+      data-ux-no-overclaim="true"
+    >
       <Card>
         <CardHeader><CardTitle>Upload Source</CardTitle></CardHeader>
         <CardContent className="space-y-5">
@@ -2197,8 +2214,11 @@ function DocumentUploadForm() {
             }}
           >
             <input
+              aria-describedby="document-upload-validation"
               className="sr-only"
               data-testid="document-upload-file-input"
+              data-ux-lifecycle-result="selects-upload-file-only"
+              data-ux-lifecycle-trigger="document-upload-file-input"
               onChange={(event) => selectFile(event.target.files)}
               onInput={(event) => selectFile(event.currentTarget.files)}
               ref={fileInputRef}
@@ -2223,6 +2243,14 @@ function DocumentUploadForm() {
               </div>
             </div>
           ) : null}
+          <div
+            className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4 text-sm text-alphavest-muted"
+            data-testid="document-upload-validation-state"
+            data-ux-lifecycle-validation={uploadValidationState}
+            id="document-upload-validation"
+          >
+            {uploadValidationMessage}
+          </div>
           {uploadState === "error" ? (
             <div className="rounded-md border border-alphavest-red/40 bg-alphavest-red/10 p-4">
               <div className="flex items-center justify-between gap-4">
@@ -2261,9 +2289,33 @@ function DocumentUploadForm() {
             <span className="text-alphavest-muted">Notes</span>
             <textarea className="min-h-20 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 py-2 text-alphavest-ivory outline-none focus:border-alphavest-gold" maxLength={500} onChange={(event) => setNotes(event.target.value)} placeholder="Add any notes about this document..." value={notes} />
           </label>
-          <StatePanel detail="The document is queued for validation and human extraction review." state="loading" title="Extraction queued" />
-          <button className={primaryButtonClass + " w-full"} data-testid="real-upload-document" disabled={uploadState === "uploading"} onClick={() => { void submitUpload(); }} type="button"><Upload aria-hidden="true" className="size-4" />Upload for review</button>
-          <button className={secondaryButtonClass + " w-full"} data-testid="j04-upload-document" onClick={() => { void runScreencastDemoAction("j04.uploadDocument", "/documents/review-queue"); }} type="button">Open extraction review</button>
+          <StatePanel
+            detail={hasSelectedFile ? "Upload can create a pending internal review item only. Sufficiency, release, export and client visibility remain locked." : "Select a supported source file before an extraction review item can be queued."}
+            state={hasSelectedFile ? "validation" : "empty"}
+            title={hasSelectedFile ? "Extraction queue pending" : "Upload blocked"}
+          />
+          <button
+            aria-describedby="document-upload-validation"
+            className={cn(primaryButtonClass, "w-full disabled:cursor-not-allowed disabled:opacity-60")}
+            data-testid="real-upload-document"
+            data-ux-lifecycle-result={canUpload ? "submits-upload-for-review" : "blocked-validation-required"}
+            disabled={!canUpload}
+            onClick={() => { void submitUpload(); }}
+            type="button"
+          >
+            <Upload aria-hidden="true" className="size-4" />
+            Upload for review
+          </button>
+          <button
+            className={secondaryButtonClass + " w-full"}
+            data-testid="j04-upload-document"
+            data-ux-lifecycle-result="opens-review-queue-without-release"
+            disabled={uploadState === "uploading"}
+            onClick={() => { void runScreencastDemoAction("j04.uploadDocument", "/documents/review-queue"); }}
+            type="button"
+          >
+            Open extraction review
+          </button>
         </CardContent>
       </Card>
       <Card>

@@ -36,7 +36,7 @@ test.describe("document upload browser flow", () => {
     await page.getByTestId("real-upload-document").click();
     await expect(page.getByText(`${fileName} upload completed.`)).toBeVisible();
     await expect(page.getByText("Extraction review is the next step;")).toBeVisible();
-    await expect(page.getByText("Evidence sufficiency, release and client visibility remain locked.")).toBeVisible();
+    await expect(page.getByText("Evidence sufficiency, release, export and client visibility remain locked.")).toBeVisible();
 
     await page.reload();
     await expect(page.locator("p:visible, span:visible, td:visible, article:visible", { hasText: fileName }).first()).toBeVisible();
@@ -59,7 +59,7 @@ test.describe("document upload browser flow", () => {
 
     await page.getByTestId("real-upload-document").click();
     await expect(page.getByText(`${fileName} upload completed.`)).toBeVisible();
-    await expect(page.getByText("Evidence sufficiency, release and client visibility remain locked.")).toBeVisible();
+    await expect(page.getByText("Evidence sufficiency, release, export and client visibility remain locked.")).toBeVisible();
 
     await page.reload();
     await expect(page.locator("p:visible, span:visible, td:visible, article:visible", { hasText: fileName }).first()).toBeVisible();
@@ -88,7 +88,7 @@ test.describe("document upload browser flow", () => {
     await expect(page.getByText("Upload blocked")).toBeVisible();
     await expect(page.getByText("supported_file_type_required").first()).toBeVisible();
     await expect(page.getByTestId("retry-upload-document")).toBeVisible();
-    await expect(page.getByText("Evidence sufficiency, release and client visibility remain locked.")).toHaveCount(0);
+    await expect(page.getByText("Evidence sufficiency, release, export and client visibility remain locked.")).toHaveCount(0);
   });
 
   test("accepts scoped evidence from extraction review without client release", async ({ page }) => {
