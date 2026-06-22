@@ -6,18 +6,31 @@
 
 | Field | Value |
 | --- | --- |
-| Artefact status | `PHASE_1_RELOCATION_TARGET_READY` |
+| Artefact status | `PHASE_1_RELOCATION_TARGET_UPDATED_UXP1_009` |
 | Scope | Internal UX/manual register for relocated explanations |
 | Product authority | None |
 | Runtime UI authority | None |
 | Source contract | UXP0/UXP1 interaction pruning and content cleanup tasks |
 | Last initialized | 2026-06-22 |
+| Last updated | 2026-06-22 by `UXP1-009` |
+| Covered execution slice | `UXP1-001` through `UXP1-008`, plus seeded cleanup-audit rows |
 
 ## Purpose
 
 This document is the single Phase 1 destination for useful explanation that is removed from product UI because it is manual, proof, roadmap, demo, recovery, implementation, or methodology content.
 
 It preserves context for implementation review without keeping that explanation on operative screens.
+
+## UXP1-009 Consolidation
+
+UXP1-009 consolidates this file as the Phase 1 relocation destination. It does not authorize new product UI, route movement, scope promotion, safety-policy changes, feature behavior, or release claims.
+
+The document now serves four narrow jobs:
+
+- preserve useful explanation removed from product UI;
+- map each relocated explanation to a manual/reference section;
+- record the short product UI replacement left behind;
+- support Phase 1 validation without reintroducing manual/proof text into normal workflow screens.
 
 ## Guardrails
 
@@ -26,6 +39,38 @@ It preserves context for implementation review without keeping that explanation 
 - Product UI should retain only domain content, functional labels, short state copy, direct next-step copy, and safety-critical microcopy.
 - Any UI replacement copy must state only the current state or next action. It must not imply downstream gate completion.
 - Internal proof, roadmap, demo, Engine, task-pack, density, and implementation commentary belongs here or in another internal reference/manual artefact, not in normal product workflow surfaces.
+
+## Phase 1 Coverage
+
+| Task | Coverage Status | Registered Relocation |
+| --- | --- | --- |
+| `UXP1-001` | Covered | Global chrome / topbar |
+| `UXP1-002` | Covered | Page header, CTA, keyboard/status and product guidance support |
+| `UXP1-003` | Covered | Route skeleton / demo context card |
+| `UXP1-004` | Covered | Demo session panel / client topbar |
+| `UXP1-005` | Covered | MVP screen components |
+| `UXP1-006` | Covered | MVP_SUPPORT flow screens |
+| `UXP1-007` | Covered | Reference-only routes `061`, `062`, `063` |
+| `UXP1-008` | Covered | HOLD routes `064-067`, `069-071` and P1 route `068` |
+| `UXP1-009` | Covered | This consolidation section and validation contract |
+
+## Affected Artefact Map
+
+| Artefact | Phase 1 Role |
+| --- | --- |
+| `components/top-bar.tsx` | Global context copy source for UXP1-001. |
+| `components/page-header.tsx` | Header, primary CTA and keyboard/status copy source for UXP1-002. |
+| `components/product-guidance-panel.tsx` | Product guidance and action rail copy source for UXP1-002. |
+| `components/route-skeleton-page.tsx` | Registered-only, reference, P1 and hold shell copy source for UXP1-003, UXP1-007 and UXP1-008. |
+| `components/demo-session-provider.tsx` | Session/context copy source for UXP1-004. |
+| `components/client-intake-screen.tsx` | MVP client/document/evidence copy source for UXP1-005. |
+| `components/decisions-governance-screen.tsx` | MVP governance/decision copy source for UXP1-005. |
+| `components/communication-export-ops-screen.tsx` | MVP export, MVP_SUPPORT ops, and reference-only fallback copy source for UXP1-005 through UXP1-007. |
+| `components/auth-onboarding-screen.tsx` | Access/onboarding support copy source for UXP1-006. |
+| `components/admin-tenant-setup-screen.tsx` | Tenant/admin support copy source for UXP1-006. |
+| `components/wealth-actions-screen.tsx` | Wealth/actions support copy source for UXP1-006. |
+| `components/scf-p10-p14-closure-panel.tsx` | Closure/support copy source for UXP1-006. |
+| `lib/product-guidance.ts` | Protected-scope action suppression and guidance copy source for UXP1-008. |
 
 ## Relocation Register
 
@@ -68,3 +113,23 @@ For each touched UI area:
 - Remaining labels are functional and task-oriented.
 - Remaining safety copy is short, state-bound, and non-overclaiming.
 - Any future update to this document is traceable to a concrete UI cleanup task.
+
+## Validation Contract
+
+Before a Phase 1 cleanup task is considered complete:
+
+- the changed UI copy must either remain functional/state-bound or be represented in the relocation register;
+- every new relocation row must name the route/workset, removed explanation class, manual section, product UI replacement and task status;
+- seeded rows may remain as audit carry-forward, but task-executed rows must use `Relocated in <task-id>`;
+- this document must not introduce product requirements, route eligibility, release authority, feature behavior or acceptance claims;
+- full route-smoke proof is deferred until the Phase 1 completion gate unless the active task explicitly overrides that instruction.
+
+Current UXP1-009 validation state:
+
+| Check | Result |
+| --- | --- |
+| Manual file exists at `docs/ux/ALPHAVEST_UI_MANUAL_RELOCATED_CONTENT.md` | PASS |
+| `UXP1-001` through `UXP1-008` have explicit coverage entries | PASS |
+| `UXP1-009` adds consolidation metadata without product authority | PASS |
+| Product UI changes in UXP1-009 | None |
+| Route scope or capability changes in UXP1-009 | None |
