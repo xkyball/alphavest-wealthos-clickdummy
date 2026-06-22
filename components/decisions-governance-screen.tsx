@@ -2325,6 +2325,51 @@ const accessColumns: Array<DataTableColumn<(typeof accessRequests)[number]>> = [
 
 function AccessRequestsPage({ title, visualState }: { title: string; visualState?: VisualState }) {
   const [drawerOpen, setDrawerOpen] = useState(visualState === "drawer" || visualState === "approval");
+  const [acknowledged, setAcknowledged] = useState(false);
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [message, setMessage] = useState<string | null>(null);
+  const lifecycleStatus = status === "submitting" ? "loading" : status;
+  const validationState = acknowledged ? "valid-scoped-access-review" : "blocked-acknowledgement-required";
+
+  function openAccessRequestDrawer() {
+    setDrawerOpen(true);
+    setAcknowledged(false);
+    setStatus("idle");
+    setMessage(null);
+  }
+
+  function closeAccessRequestDrawer() {
+    setDrawerOpen(false);
+    setAcknowledged(false);
+    setStatus("idle");
+    setMessage(null);
+  }
+
+  async function submitAccessRequestApproval() {
+    if (!acknowledged || status === "submitting") {
+      return;
+    }
+
+    setStatus("submitting");
+    setMessage("Routing the scoped access approval review. Close and cancel are blocked until the workflow returns.");
+
+    try {
+      const body = await runScreencastDemoAction("j07.approveAccess");
+      setStatus("success");
+      setMessage(
+        body.result?.auditEventId
+          ? `Audit recorded: ${body.result.auditEventId}. Scoped access approval review was routed through the existing workflow; access expansion, role activation, release, evidence sufficiency, export/share and client visibility remain separate controls.`
+          : "Scoped access approval review was routed through the existing workflow; access expansion, role activation, release, evidence sufficiency, export/share and client visibility remain separate controls.",
+      );
+    } catch (error) {
+      setStatus("error");
+      setMessage(
+        error instanceof Error
+          ? `${error.message} No access expansion, role activation, release or client visibility change was completed.`
+          : "Access approval workflow failed without access expansion, role activation, release or client visibility change.",
+      );
+    }
+  }
 
   return (
     <Phase12Shell activePageId="050">
@@ -2333,7 +2378,18 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
       <Phase5DetailSplitPanel decisionSupport="Access request detail separates requester, scope, policy and audit consequences." objectLabel="Access request object review" objectState="Policy-checked request pending" pageJob="Access detail reviews one permission request without becoming global admin bypass." safetyBoundary="Access detail cannot expand payload, evidence, release or export authority." splitTaskId="UX-PAGE-SPLIT-006" taskId="UX-PAGE-SPLIT-006" />
       <div className={cn("mx-auto max-w-[104rem] space-y-5", drawerOpen ? "pr-0 xl:pr-[23rem]" : "")}>
         <PageHeading
-          action={<button className={primaryButtonClass} onClick={() => setDrawerOpen(true)} type="button">Review policy-checked request</button>}
+          action={
+            <button
+              className={primaryButtonClass}
+              data-testid="j07-open-access-request-drawer"
+              data-ux-lifecycle-result="opens-access-request-drawer"
+              data-ux-lifecycle-trigger="access-request-drawer"
+              onClick={openAccessRequestDrawer}
+              type="button"
+            >
+              Review policy-checked request
+            </button>
+          }
           subtitle="Review and take action on access requests across the organization."
           title={title}
         />
@@ -2351,7 +2407,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
             compact
             getRowId={(row) => `${row.requester}-${row.access}`}
             onSortChange={handleStaticSortChange}
-            onRowAction={() => setDrawerOpen(true)}
+            onRowAction={openAccessRequestDrawer}
             responsiveMode="table"
             rowActionLabel={(row) => `Review access request from ${row.requester}`}
             rows={accessRequests}
@@ -2363,22 +2419,79 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
       <Drawer
         description="Review access request, policy checks and decision."
         footer={
-          <UxCtaCluster
-            blockedReason="Access approval remains constrained by visible policy, SOD and audit checks; it cannot release advice, prove evidence sufficiency or approve export."
-            className="w-full"
-            primary={{ label: "Approve access request", onClick: () => { void runScreencastDemoAction("j07.approveAccess", "/governance"); }, testId: "j07-approve-access" }}
-            secondary={[
-              { label: "Escalate request", onClick: () => setDrawerOpen(false) },
-              { label: "Deny request", onClick: () => setDrawerOpen(false) },
-            ]}
-          />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <button className={secondaryButtonClass} disabled={status === "submitting"} onClick={closeAccessRequestDrawer} type="button">Cancel review</button>
+            <button className={secondaryButtonClass} disabled={status === "submitting"} onClick={closeAccessRequestDrawer} type="button">Escalate request</button>
+            <button className={destructiveButtonClass} disabled={status === "submitting"} onClick={closeAccessRequestDrawer} type="button">Deny request</button>
+            <button
+              className={primaryButtonClass}
+              data-testid="j07-approve-access"
+              data-ux-lifecycle-result={acknowledged ? "submits-scoped-access-review" : "blocked-validation-required"}
+              disabled={!acknowledged || status === "submitting" || status === "success"}
+              onClick={() => {
+                void submitAccessRequestApproval();
+              }}
+              type="button"
+            >
+              {status === "submitting" ? "Approving..." : "Approve access request"}
+            </button>
+          </div>
         }
-        onClose={() => setDrawerOpen(false)}
+        onClose={status === "submitting" ? undefined : closeAccessRequestDrawer}
         open={drawerOpen}
         title="AR-2025-0612"
       >
-        <div className="space-y-5">
+        <div
+          className="space-y-5"
+          data-testid="uxp3-access-request-drawer-lifecycle"
+          data-ux-lifecycle-status={lifecycleStatus}
+          data-ux-lifecycle-validation={validationState}
+          data-ux-no-overclaim="true"
+        >
           <Badge tone="gold">Pending</Badge>
+          <StatePanel detail="Access approval remains constrained by visible policy, SOD and audit checks. This drawer cannot release advice, prove evidence sufficiency, approve export/share or make content client-visible." state="restricted" title="Scoped access review" />
+          <label className="flex items-start gap-3 text-sm text-alphavest-muted">
+            <input
+              checked={acknowledged}
+              className="mt-1"
+              disabled={status === "submitting" || status === "success"}
+              onChange={(event) => setAcknowledged(event.target.checked)}
+              type="checkbox"
+            />
+            <span>I understand this routes only this scoped access decision; RBAC, SOD, audit, release, evidence and export/share controls remain separate.</span>
+          </label>
+          {status === "idle" ? (
+            <StatePanel
+              detail={acknowledged ? "Scoped access review can be submitted through the existing approval workflow." : "Access approval remains blocked until the scoped access acknowledgement is checked."}
+              state={acknowledged ? "validation" : "blocked"}
+              testId="j07-access-request-validation-state"
+              title={acknowledged ? "Access request valid" : "Access request blocked"}
+            />
+          ) : null}
+          {status === "submitting" ? (
+            <StatePanel
+              detail={message ?? "Routing the scoped access approval review."}
+              state="loading"
+              testId="j07-access-request-loading-state"
+              title="Access request submitting"
+            />
+          ) : null}
+          {status === "success" ? (
+            <StatePanel
+              detail={message ?? "Scoped access approval review was routed through the existing workflow; access expansion, role activation, release, evidence sufficiency, export/share and client visibility remain separate controls."}
+              state="success"
+              testId="j07-access-request-success-state"
+              title="Access request routed"
+            />
+          ) : null}
+          {status === "error" ? (
+            <StatePanel
+              detail={message ?? "Access approval workflow failed without access expansion, role activation, release or client visibility change."}
+              state="error"
+              testId="j07-access-request-error-state"
+              title="Access request failed"
+            />
+          ) : null}
           <UxSecondaryContextTabs
             safetyNote="These tabs hold secondary request context; approval authority still depends on the visible policy and SOD checks below."
             tabs={[
