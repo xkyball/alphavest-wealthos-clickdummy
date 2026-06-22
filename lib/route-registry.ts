@@ -399,7 +399,7 @@ export const screenRoutes = [
   },
   {
     pageId: "019",
-    route: "/portal",
+    route: "/client/home",
     title: "Client Web Dashboard",
     purpose: "Client web dashboard",
     visualMode: "NORMAL_PAGE",
@@ -415,7 +415,7 @@ export const screenRoutes = [
   },
   {
     pageId: "020",
-    route: "/mobile",
+    route: "/client/home",
     title: "Mobile Home",
     purpose: "Mobile home / next step today",
     visualMode: "NORMAL_PAGE",
@@ -560,7 +560,7 @@ export const screenRoutes = [
   },
   {
     pageId: "029",
-    route: "/documents/extraction-review",
+    route: "/documents/review-queue",
     title: "Extraction Review",
     purpose: "Extraction review",
     visualMode: "NORMAL_PAGE",
@@ -576,7 +576,7 @@ export const screenRoutes = [
   },
   {
     pageId: "030",
-    route: "/documents/verification-pending",
+    route: "/documents/:id/review",
     title: "Verification Pending",
     purpose: "Verification pending",
     visualMode: "NORMAL_PAGE",
@@ -625,7 +625,7 @@ export const screenRoutes = [
   },
   {
     pageId: "033",
-    route: "/signals",
+    route: "/advisory",
     title: "Signal Review",
     purpose: "Signal / trigger review",
     visualMode: "NORMAL_PAGE",
@@ -641,7 +641,7 @@ export const screenRoutes = [
   },
   {
     pageId: "034",
-    route: "/workbench",
+    route: "/advisory/review-queue",
     title: "Consultant Workbench",
     purpose: "Consultant workbench",
     visualMode: "NORMAL_PAGE",
@@ -657,7 +657,7 @@ export const screenRoutes = [
   },
   {
     pageId: "035",
-    route: "/workbench/triggers/:id",
+    route: "/advisory/triggers/:id/review",
     title: "Trigger Detail",
     purpose: "Trigger detail / analyst notes",
     visualMode: "NORMAL_PAGE",
@@ -673,7 +673,7 @@ export const screenRoutes = [
   },
   {
     pageId: "064",
-    route: "/kyc/:id/review",
+    route: "/kyc/reviews",
     title: "KYC / AML Review",
     purpose: "KYC / AML evidence and human review",
     visualMode: "NORMAL_PAGE",
@@ -690,7 +690,7 @@ export const screenRoutes = [
   },
   {
     pageId: "065",
-    route: "/kyc/:id/source-of-wealth",
+    route: "/kyc/reviews",
     title: "Source-of-Wealth Review",
     purpose: "Source-of-wealth evidence trail review",
     visualMode: "NORMAL_PAGE",
@@ -707,7 +707,7 @@ export const screenRoutes = [
   },
   {
     pageId: "066",
-    route: "/suitability/:tenantId/profile",
+    route: "/kyc/reviews",
     title: "Suitability Profile",
     purpose: "Suitability profile and advice-readiness gate",
     visualMode: "NORMAL_PAGE",
@@ -724,7 +724,7 @@ export const screenRoutes = [
   },
   {
     pageId: "067",
-    route: "/ips/:tenantId",
+    route: "/ips/:tenantId/decision-room",
     title: "IPS / Mandate",
     purpose: "Investment policy mandate and client-visibility gate",
     visualMode: "NORMAL_PAGE",
@@ -741,7 +741,7 @@ export const screenRoutes = [
   },
   {
     pageId: "068",
-    route: "/reviews/calendar",
+    route: "/reviews",
     title: "Review Calendar",
     purpose: "Review calendar and due review monitoring",
     visualMode: "NORMAL_PAGE",
@@ -758,7 +758,7 @@ export const screenRoutes = [
   },
   {
     pageId: "069",
-    route: "/monitoring/rebalance",
+    route: "/reviews/:id",
     title: "Rebalance Monitoring",
     purpose: "Rebalance trigger monitoring and blocked review actions",
     visualMode: "NORMAL_PAGE",
@@ -775,7 +775,7 @@ export const screenRoutes = [
   },
   {
     pageId: "036",
-    route: "/advisor-approval",
+    route: "/advisor/reviews",
     title: "Advisor Approval Queue",
     purpose: "Advisor approval queue",
     visualMode: "NORMAL_PAGE",
@@ -791,7 +791,7 @@ export const screenRoutes = [
   },
   {
     pageId: "037",
-    route: "/advisor-approval/:id",
+    route: "/advisor/reviews/:id",
     title: "Advisor Approval Detail",
     purpose: "Advisor approval detail",
     visualMode: "NORMAL_PAGE",
@@ -825,7 +825,7 @@ export const screenRoutes = [
   },
   {
     pageId: "071",
-    route: "/committee/reviews/:id",
+    route: "/committee/reviews/:id/decision-room",
     title: "Committee Review Detail",
     purpose: "Committee peer review detail with votes, dissent and evidence states",
     visualMode: "NORMAL_PAGE",
@@ -842,7 +842,7 @@ export const screenRoutes = [
   },
   {
     pageId: "038",
-    route: "/compliance",
+    route: "/compliance/reviews",
     title: "Compliance Queue",
     purpose: "Compliance queue",
     visualMode: "NORMAL_PAGE",
@@ -859,7 +859,7 @@ export const screenRoutes = [
   },
   {
     pageId: "039",
-    route: "/compliance/:id/review",
+    route: "/compliance/reviews/:id/decision-room",
     title: "Compliance Review Detail",
     purpose: "Compliance review detail",
     visualMode: "NORMAL_PAGE",
@@ -876,7 +876,7 @@ export const screenRoutes = [
   },
   {
     pageId: "040",
-    route: "/compliance/:id/release",
+    route: "/compliance/reviews/:id/release",
     title: "Release to Client",
     purpose: "Release to client",
     visualMode: "RELEASE_CONFIRMATION_MODAL_STATE",
@@ -893,7 +893,7 @@ export const screenRoutes = [
   },
   {
     pageId: "041",
-    route: "/compliance/:id/block",
+    route: "/compliance/reviews/:id/block",
     title: "Block or Request Evidence",
     purpose: "Block / request evidence",
     visualMode: "BLOCK_OR_REQUEST_EVIDENCE_MODAL_STATE",
@@ -910,7 +910,7 @@ export const screenRoutes = [
   },
   {
     pageId: "042",
-    route: "/compliance/:id/audit",
+    route: "/compliance/reviews/:id/audit",
     title: "Audit and Exception Log",
     purpose: "Audit / exception log",
     visualMode: "NORMAL_PAGE",
@@ -992,7 +992,7 @@ export const screenRoutes = [
   },
   {
     pageId: "047",
-    route: "/evidence/:id",
+    route: "/evidence/:id/review",
     title: "Evidence Record Detail",
     purpose: "Evidence record detail",
     visualMode: "NORMAL_PAGE",
@@ -1009,7 +1009,7 @@ export const screenRoutes = [
   },
   {
     pageId: "048",
-    route: "/governance/users",
+    route: "/governance",
     title: "Governance Users",
     purpose: "Governance users",
     visualMode: "PAGE_WITH_USER_DRAWER_OR_MODAL",
@@ -1025,7 +1025,7 @@ export const screenRoutes = [
   },
   {
     pageId: "049",
-    route: "/governance/roles",
+    route: "/governance/roles/:id",
     title: "Role Management",
     purpose: "Role management",
     visualMode: "PAGE_WITH_ROLE_DRAWER_AND_SECOND_CONFIRMATION_MODAL",
@@ -1041,7 +1041,7 @@ export const screenRoutes = [
   },
   {
     pageId: "050",
-    route: "/governance/access-requests",
+    route: "/governance/access-requests/:id",
     title: "Access Requests",
     purpose: "Access requests",
     visualMode: "PAGE_WITH_APPROVAL_DRAWER",
@@ -1057,7 +1057,7 @@ export const screenRoutes = [
   },
   {
     pageId: "051",
-    route: "/governance/audit-history",
+    route: "/governance",
     title: "Access Audit History",
     purpose: "Access audit history",
     visualMode: "PAGE_WITH_SIDE_DRAWER",
@@ -1073,7 +1073,7 @@ export const screenRoutes = [
   },
   {
     pageId: "052",
-    route: "/communication",
+    route: "/communication/:id/context",
     title: "Communication Centre",
     purpose: "Communication centre",
     visualMode: "PREVIEW_PAGE_OR_PANEL",
@@ -1154,7 +1154,7 @@ export const screenRoutes = [
   },
   {
     pageId: "057",
-    route: "/export/:id/preview",
+    route: "/export/:id/approval",
     title: "Export Preview",
     purpose: "Export preview",
     visualMode: "PAGE_WITH_APPROVAL_OR_EXPORT_CONFIRMATION_MODAL",
@@ -1188,7 +1188,7 @@ export const screenRoutes = [
   },
   {
     pageId: "059",
-    route: "/ops/queues",
+    route: "/ops",
     title: "Ops Queues",
     purpose: "Ops queues",
     visualMode: "NORMAL_PAGE",
@@ -1204,7 +1204,7 @@ export const screenRoutes = [
   },
   {
     pageId: "060",
-    route: "/ops/sla",
+    route: "/ops/sla/:id",
     title: "SLA and Escalation",
     purpose: "SLA and escalation",
     visualMode: "NORMAL_PAGE",

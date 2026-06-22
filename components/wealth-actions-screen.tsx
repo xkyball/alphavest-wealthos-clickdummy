@@ -71,15 +71,15 @@ type ShellNavItem = {
 };
 
 const shellNav: ShellNavItem[] = [
-  { href: "/portal", icon: Home, label: "Home" },
+  { href: "/client/home", icon: Home, label: "Home" },
   { href: "/client/family-members", icon: UsersRound, label: "Clients" },
   { href: "/entities", icon: Landmark, label: "Entities" },
   { href: "/wealth-map", icon: Network, label: "Live wealth map", pageIds: ["031"] },
   { href: "/documents", icon: Folder, label: "Documents" },
   { href: "/actions", icon: ClipboardCheck, label: "Actions", pageIds: ["032"] },
-  { href: "/advisor-approval", icon: CheckCircle2, label: "Workflows" },
-  { href: "/communication", icon: MessageSquare, label: "Communications" },
-  { href: "/compliance", icon: ShieldCheck, label: "Compliance" },
+  { href: "/advisor/reviews", icon: CheckCircle2, label: "Workflows" },
+  { href: "/communication/:id/context", icon: MessageSquare, label: "Communications" },
+  { href: "/compliance/reviews", icon: ShieldCheck, label: "Compliance" },
   { href: "/evidence", icon: FileText, label: "Evidence" }
 ];
 

@@ -98,15 +98,15 @@ const secondaryButtonClass =
   "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-4 text-sm font-semibold text-alphavest-ivory transition hover:border-alphavest-gold/60 hover:text-alphavest-gold-soft";
 
 const clientNav: NavItem[] = [
-  { href: "/portal", icon: LayoutDashboard, label: "Dashboard", pageIds: ["019"] },
+  { href: "/client/home", icon: LayoutDashboard, label: "Dashboard", pageIds: ["019"] },
   { href: "/client/profile", icon: UserRound, label: "Overview", pageIds: ["021"] },
   { href: "/client/family-members", icon: UsersRound, label: "Family & Entities", pageIds: ["022", "023", "024", "025", "026"] },
   { href: "/relationships", icon: Network, label: "Relationships", pageIds: ["023"] },
   { href: "/entities", icon: Landmark, label: "Entities", pageIds: ["024", "025", "026"] },
   { href: "/documents", icon: Folder, label: "Documents", pageIds: ["027", "028", "029", "030"] },
   { href: "/documents/upload", icon: Upload, label: "Upload", pageIds: ["028"] },
-  { href: "/documents/extraction-review", icon: FileCheck2, label: "Extraction Review", pageIds: ["029"] },
-  { href: "/documents/verification-pending", icon: Clock3, label: "Verification", pageIds: ["030"], count: 3 },
+  { href: "/documents/review-queue", icon: FileCheck2, label: "Extraction Review", pageIds: ["029"] },
+  { href: "/documents/:id/review", icon: Clock3, label: "Verification", pageIds: ["030"], count: 3 },
   { href: "/actions", icon: ClipboardCheck, label: "Tasks", count: 7 },
   { href: "/evidence", icon: ShieldCheck, label: "Evidence" },
   { href: "/settings", icon: SlidersHorizontal, label: "Settings" }
@@ -2117,7 +2117,7 @@ function DocumentUploadForm() {
           </label>
           <StatePanel detail="Your document will be scanned, validated and queued for human extraction review." state="loading" title="Extraction Pipeline" />
           <button className={primaryButtonClass + " w-full"} data-testid="real-upload-document" disabled={uploadState === "uploading"} onClick={() => { void submitUpload(); }} type="button"><Upload aria-hidden="true" className="size-4" />Upload for review</button>
-          <button className={secondaryButtonClass + " w-full"} data-testid="j04-upload-document" onClick={() => { void runScreencastDemoAction("j04.uploadDocument", "/documents/extraction-review"); }} type="button">Open extraction review</button>
+          <button className={secondaryButtonClass + " w-full"} data-testid="j04-upload-document" onClick={() => { void runScreencastDemoAction("j04.uploadDocument", "/documents/review-queue"); }} type="button">Open extraction review</button>
         </CardContent>
       </Card>
       <Card>
@@ -2281,7 +2281,7 @@ function ExtractionReviewPage({ title }: { title: string }) {
     <ClientShell activePageId="029">
       <ScreenTitle>{title}</ScreenTitle>
       <div className="space-y-5">
-        <SectionTitle action={<div className="flex gap-3"><button className={secondaryButtonClass} type="button">Save Draft</button><button className={primaryButtonClass} data-testid="j04-confirm-finalize" onClick={() => { void runScreencastDemoAction("j04.confirmFinalize", "/documents/verification-pending"); }} type="button"><Check aria-hidden="true" className="size-4" />Confirm & Finalize</button></div>} subtitle="Review AI-extracted data. This is a draft and not final evidence." title={title} />
+        <SectionTitle action={<div className="flex gap-3"><button className={secondaryButtonClass} type="button">Save Draft</button><button className={primaryButtonClass} data-testid="j04-confirm-finalize" onClick={() => { void runScreencastDemoAction("j04.confirmFinalize", "/documents/:id/review"); }} type="button"><Check aria-hidden="true" className="size-4" />Confirm & Finalize</button></div>} subtitle="Review AI-extracted data. This is a draft and not final evidence." title={title} />
         <SafeClientBanner>AI Draft Mode: extracted data requires human review. Not final. Not evidence.</SafeClientBanner>
         <ScfP04P06FlowPanel mode="evidence" />
         <div className="grid gap-5 xl:grid-cols-[0.9fr_0.84fr_20rem]">

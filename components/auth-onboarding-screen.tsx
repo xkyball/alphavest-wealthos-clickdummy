@@ -329,7 +329,7 @@ function MfaPage() {
 
     setStatus("success");
     setMessage("MFA verified. Session context has been issued from DB role and tenant scope.");
-    window.location.href = "/portal";
+    window.location.href = "/client/home";
   }
 
   return (
@@ -734,7 +734,7 @@ function RoleConfirmationPage() {
 
     setStatus("success");
     setMessage("Invitation accepted. User, role assignment, consent and audit state are now active in the DB.");
-    window.location.href = "/portal";
+    window.location.href = "/client/home";
   }
 
   return (

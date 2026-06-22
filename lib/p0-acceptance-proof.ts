@@ -22,7 +22,7 @@ export const p0RouteUiStateObligations = [
   {
     obligation: "client visibility fail-closed states",
     proof: "tests/ui-state-boundaries.spec.ts",
-    routes: ["/portal", "/mobile", "/decisions/demo/success"],
+    routes: ["/client/home", "/client/home", "/decisions/demo/success"],
   },
   {
     obligation: "document upload is separate from evidence sufficiency",
@@ -37,7 +37,7 @@ export const p0RouteUiStateObligations = [
   {
     obligation: "audit-sensitive feedback does not claim persistence without proof",
     proof: "tests/ui-state-boundaries.spec.ts",
-    routes: ["/governance/roles", "/decisions/demo/success"],
+    routes: ["/governance/roles/:id", "/decisions/demo/success"],
   },
 ] as const;
 

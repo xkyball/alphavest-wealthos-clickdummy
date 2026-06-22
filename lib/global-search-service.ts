@@ -196,7 +196,7 @@ export async function searchGlobalDb(
     ...queueItems.map((row) => ({
       description: [row.assignedRoleKey, row.priority].filter(Boolean).join(" / ") || "Queue item",
       haystack: [row.queueName, row.assignedRoleKey ?? "", row.priority, String(row.status), row.id],
-      href: "/ops/queues",
+      href: "/ops",
       id: `queue-${row.id}`,
       label: row.queueName,
       status: String(row.status),
@@ -205,7 +205,7 @@ export async function searchGlobalDb(
     ...dataQualityIssues.map((row) => ({
       description: row.description,
       haystack: [row.issueType, row.description, row.severity, String(row.status)],
-      href: "/ops/sla",
+      href: "/ops/sla/:id",
       id: `dq-${row.id}`,
       label: row.issueType,
       status: `${row.severity} / ${String(row.status)}`,
