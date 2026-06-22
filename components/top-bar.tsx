@@ -30,7 +30,7 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
   const currentScope = currentRoute ? routeScopeForPageId(currentRoute.pageId) : null;
   const routeIsClientVisibilitySensitive =
     currentRoute && "clientVisibilitySensitive" in currentRoute ? Boolean(currentRoute.clientVisibilitySensitive) : false;
-  const visibilityMode = routeIsClientVisibilitySensitive ? "Internal until released" : "Client-safe context";
+  const visibilityMode = routeIsClientVisibilitySensitive ? "Internal until released" : "Scoped context";
   const objectContext = currentRoute
     ? `${currentRoute.objectType.replaceAll("_", " ").toLowerCase()} · ${currentRoute.permissionAction.toLowerCase()}`
     : "workspace context";
@@ -53,10 +53,10 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
             </div>
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-alphavest-ivory">
-                {session.sessionLabel}
+                Active context
               </p>
               <p className="text-xs text-alphavest-muted">
-                Controlled scenario context; production auth is not claimed
+                {session.tenant.displayName} · {session.role.label}
               </p>
             </div>
           </div>
@@ -119,7 +119,7 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
             </label>
 
             <label className="grid gap-1 text-[0.66rem] font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">
-              <span>Scenario role</span>
+              <span>Role context</span>
               <span className="relative block">
               <ShieldCheck aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-gold" />
               <select
@@ -142,11 +142,11 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
           <button
             className="grid size-10 place-items-center rounded-full border border-alphavest-border bg-alphavest-charcoal/70 text-alphavest-muted transition hover:border-alphavest-gold hover:text-alphavest-gold"
             onClick={resetSession}
-            title="Reset scenario context"
+            title="Reset role and tenant context"
             type="button"
           >
             <RotateCcw aria-hidden="true" className="size-4" />
-            <span className="sr-only">Reset scenario context</span>
+            <span className="sr-only">Reset role and tenant context</span>
           </button>
 
           <button

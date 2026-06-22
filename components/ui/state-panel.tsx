@@ -80,11 +80,11 @@ export function Phase8CtaStateProofPanel({ blockedReason, primaryLabel, recovery
       data-testid="ux-phase8-cta-state"
       data-ux-phase8-task={taskId}
     >
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-blue">Phase 8 CTA / state / recovery proof</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-blue">Next action state</p>
       <div className="mt-3 grid gap-2">
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2" data-testid="ux-phase8-primary-count">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Primary CTA</p>
-          <p className="mt-1 text-sm font-semibold text-alphavest-ivory">Exactly one primary CTA: {primaryLabel ?? "No productive primary while locked"}</p>
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Next action</p>
+          <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{primaryLabel ?? "Locked until the required gate is resolved"}</p>
         </div>
         <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-2" data-testid="ux-phase8-blocked-reason">
           <p className="text-xs uppercase tracking-[0.12em] text-alphavest-gold">Blocked reason</p>
@@ -95,10 +95,10 @@ export function Phase8CtaStateProofPanel({ blockedReason, primaryLabel, recovery
           <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{recoveryLabel ?? "Recover by resolving the stated gate before continuing."}</p>
         </div>
         <StatePanel
-          detail="This state proof keeps downstream gates unresolved until their required evidence, release, export, share, visibility and permission checks are completed."
+          detail="Evidence, release, export, share, visibility and permission gates remain unresolved until their own checks pass."
           state="restricted"
           testId="ux-phase8-no-overclaim"
-          title="No success overclaim"
+          title="No downstream completion"
         />
       </div>
     </section>

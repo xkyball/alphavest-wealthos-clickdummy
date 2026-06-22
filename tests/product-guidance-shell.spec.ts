@@ -21,12 +21,12 @@ test.beforeEach(async ({ page }) => {
 
 test.describe("AlphaVest product guidance shell", () => {
   test("topbar exposes controlled tenant and role scenario context without clickdummy wording", async ({ page }) => {
+    await page.setViewportSize({ width: 1600, height: 1000 });
     await page.goto("/client/home");
 
     const topbar = page.getByRole("banner");
-    await expect(topbar.getByText("Tenant context")).toBeVisible();
-    await expect(topbar.getByText("Scenario role")).toBeVisible();
-    await expect(topbar.getByText("Controlled scenario context; production auth is not claimed")).toBeVisible();
+    await expect(topbar.getByText("Tenant context", { exact: true })).toBeVisible();
+    await expect(topbar.getByText("Controlled scenario context; production auth is not claimed")).toHaveCount(0);
     await expect(topbar.getByLabel("Tenant context")).toBeVisible();
     await expect(topbar.getByLabel("Role context")).toBeVisible();
     await expect(topbar.getByText(/clickdummy|prototype|screen catalogue/i)).toHaveCount(0);
@@ -98,13 +98,13 @@ test.describe("AlphaVest product guidance shell", () => {
 
   test("support, reference and elevated routes expose current True-UX scope labels", async ({ page }) => {
     await page.goto("/communication/demo/context");
-    await expect(page.getByTestId("product-guidance").getByTestId("ux-density-status").first()).toHaveText("MVP support");
+    await expect(page.getByTestId("product-guidance").getByTestId("ux-density-status").first()).toHaveText("P1 / later");
     await expect(page.getByTestId("product-guidance").getByText("Communication adds context only. Advice-like copy and client delivery remain release-controlled.").first()).toBeVisible();
 
     await page.goto("/service-blueprint");
     await expect(page.getByTestId("product-guidance").getByTestId("ux-density-status").first()).toHaveText("Reference only");
 
     await page.goto("/committee/reviews");
-    await expect(page.getByTestId("product-guidance").getByTestId("ux-density-status").first()).toHaveText("MVP");
+    await expect(page.getByTestId("product-guidance").getByTestId("ux-density-status").first()).toHaveText("Held / not MVP");
   });
 });

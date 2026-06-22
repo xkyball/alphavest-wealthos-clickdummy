@@ -28,11 +28,11 @@ import { scfDoNotImplementRegister } from "../lib/scf-foundation";
 import { uxFlowStepsForPageId } from "../lib/ux-route-policy";
 
 const lockedRouteWorksetCounts = {
-  MVP: 39,
-  MVP_SUPPORT: 29,
-  P1_AFTER_MVP: 0,
+  MVP: 31,
+  MVP_SUPPORT: 25,
+  P1_AFTER_MVP: 5,
   REFERENCE_ONLY: 3,
-  HOLD_PENDING_DECISION: 0
+  HOLD_PENDING_DECISION: 7
 };
 
 const mvpPageIds = new Set<string>(routeWorksetPageIds.MVP);
@@ -86,8 +86,13 @@ test.describe("UX-NAV route policy navigation", () => {
   });
 
   test("keeps productive navigation to MVP and MVP support routes only", () => {
-    expect(productiveNavigationPageIds).toEqual(expect.arrayContaining(["052", "053", "059", "060", "064", "068", "070"]));
-    expect(productiveNavigationPageIds).not.toEqual(expect.arrayContaining(["061", "062", "063"]));
+    expect(productiveNavigationPageIds).not.toEqual(
+      expect.arrayContaining([
+        ...routeWorksetPageIds.P1_AFTER_MVP,
+        ...routeWorksetPageIds.REFERENCE_ONLY,
+        ...routeWorksetPageIds.HOLD_PENDING_DECISION,
+      ]),
+    );
 
     for (const pageId of productiveNavigationPageIds) {
       expect(["MVP", "MVP_SUPPORT"]).toContain(routeScopeForPageId(pageId));
@@ -103,13 +108,10 @@ test.describe("UX-NAV route policy navigation", () => {
       "Client Workspace",
       "Evidence",
       "Advisory Workbench",
-      "Elevated Reviews",
       "Compliance",
       "Governance",
       "Decisions",
       "Export",
-      "Communication",
-      "Operations",
     ]);
   });
 
@@ -119,8 +121,8 @@ test.describe("UX-NAV route policy navigation", () => {
     const linkedLabels = groups.filter((group) => group.items.length > 0).map((group) => group.label);
     const lockedLabels = groups.filter((group) => group.lockedReason).map((group) => group.label);
 
-    expect(linkedLabels).toEqual(["Client Workspace", "Evidence", "Decisions", "Communication"]);
-    expect(lockedLabels).toEqual(["Setup", "Advisory Workbench", "Elevated Reviews", "Compliance", "Governance", "Export", "Operations"]);
+    expect(linkedLabels).toEqual(["Client Workspace", "Evidence", "Decisions"]);
+    expect(lockedLabels).toEqual(["Setup", "Advisory Workbench", "Compliance", "Governance", "Export"]);
     for (const group of groups.filter((candidate) => candidate.lockedReason)) {
       expect(group.items).toHaveLength(0);
       expect(group.lockedReason).toContain("client-safe navigation view");
@@ -128,11 +130,17 @@ test.describe("UX-NAV route policy navigation", () => {
   });
 
   test("preserves route policy page types from the matrix for hub and workbench navigation", () => {
-    for (const pageId of ["007", "013", "015", "019", "020", "024", "031", "033", "034", "043", "046", "048", "052", "054", "059", "064", "068", "070"]) {
+    for (const pageId of ["007", "013", "015", "019", "020", "024", "031", "033", "034", "043", "046", "048", "054"]) {
       expect(uxNavigationPolicyForPageId(pageId).pageType, `${pageId} should be a hub`).toBe("Hub");
     }
 
     expect(uxNavigationPolicyForPageId("038").pageType).toBe("Workbench");
+    for (const pageId of routeWorksetPageIds.P1_AFTER_MVP) {
+      expect(uxNavigationPolicyForPageId(pageId).pageType, `${pageId} should stay deferred`).toBe("P1");
+    }
+    for (const pageId of routeWorksetPageIds.HOLD_PENDING_DECISION) {
+      expect(uxNavigationPolicyForPageId(pageId).pageType, `${pageId} should stay held`).toBe("Hold");
+    }
   });
 
   test("journey rails keep later gates blocked until prerequisites pass", () => {
@@ -191,7 +199,7 @@ test.describe("UX-PAGE page type contract", () => {
   });
 
   test("applies productive contracts only to MVP and MVP support routes", () => {
-    expect(uxPageContractIntegrity.eligibleCount).toBe(68);
+    expect(uxPageContractIntegrity.eligibleCount).toBe(56);
 
     for (const contract of eligibleUxPageContracts) {
       expect(["MVP", "MVP_SUPPORT"], `${contract.pageId} scope`).toContain(contract.routeScope);
@@ -201,14 +209,14 @@ test.describe("UX-PAGE page type contract", () => {
     }
   });
 
-  test("keeps reference routes out of productive page type work", () => {
-    expect(uxPageContractIntegrity.protectedCount).toBe(3);
+  test("keeps deferred, reference and held routes out of productive page type work", () => {
+    expect(uxPageContractIntegrity.protectedCount).toBe(15);
 
     for (const contract of protectedUxPageContracts) {
-      expect(contract.routeScope, `${contract.pageId} protected scope`).toBe("REFERENCE_ONLY");
+      expect(["P1_AFTER_MVP", "REFERENCE_ONLY", "HOLD_PENDING_DECISION"], `${contract.pageId} protected scope`).toContain(contract.routeScope);
       expect(contract.productiveUxEligible, `${contract.pageId} productive eligibility`).toBe(false);
-      expect(contract.allowedTreatment, `${contract.pageId} allowed treatment`).toMatch(/Reference/);
-      expect(contract.forbiddenTreatment, `${contract.pageId} forbidden treatment`).toMatch(/No productive/);
+      expect(["P1", "Reference", "Hold"], `${contract.pageId} page type`).toContain(contract.pageType);
+      expect(contract.forbiddenTreatment, `${contract.pageId} forbidden treatment`).toMatch(/No (productive|MVP)/);
     }
   });
 });
@@ -255,11 +263,6 @@ test.describe("UX-HUB phase 3 orientation hubs", () => {
     { path: "/compliance/reviews", taskId: "UX-HUB-004", pageId: "038", proofOnly: true },
     { path: "/export/new", taskId: "UX-HUB-005", pageId: "054" },
     { path: "/governance", taskId: "UX-HUB-006", pageId: "048" },
-    { path: "/kyc/reviews", taskId: "UX-HUB-007", pageId: "064" },
-    { path: "/reviews", taskId: "UX-HUB-007", pageId: "068" },
-    { path: "/committee/reviews", taskId: "UX-HUB-007", pageId: "070" },
-    { path: "/communication/demo/context", taskId: "UX-HUB-005", pageId: "052" },
-    { path: "/ops", taskId: "UX-HUB-007", pageId: "059" },
   ];
 
   test("defines Phase 3 hub contracts with summary, priority, queue and safety guidance", () => {
@@ -301,8 +304,6 @@ test.describe("UX-WORKBENCH phase 4 active task workbenches", () => {
     { path: "/documents/demo/review", taskId: "UX-WORKBENCH-002" },
     { path: "/advisor/reviews/demo", taskId: "UX-WORKBENCH-003" },
     { path: "/governance/access-requests/demo", taskId: "UX-WORKBENCH-004" },
-    { path: "/reviews/demo", taskId: "UX-WORKBENCH-005" },
-    { path: "/ops/sla/demo", taskId: "UX-WORKBENCH-006" },
   ];
 
   for (const route of phase4WorkbenchRoutes) {
@@ -332,18 +333,12 @@ test.describe("UX-DECISION-ROOM phase 6 safety-critical decision rooms", () => {
   const phase6Routes = [
     { path: "/compliance/reviews/demo/decision-room", taskId: "UX-DECISION-ROOM-001" },
     { path: "/export/demo/approval", taskId: "UX-DECISION-ROOM-002" },
-    { path: "/ips/demo/decision-room", taskId: "UX-DECISION-ROOM-003" },
-    { path: "/committee/reviews/demo/decision-room", taskId: "UX-DECISION-ROOM-004" },
-    { path: "/reviews/demo", taskId: "UX-DECISION-ROOM-005" },
   ];
 
   test("covers every Phase 6 decision-room task exactly", () => {
     expect(new Set(phase6Routes.map((route) => route.taskId))).toEqual(new Set([
       "UX-DECISION-ROOM-001",
       "UX-DECISION-ROOM-002",
-      "UX-DECISION-ROOM-003",
-      "UX-DECISION-ROOM-004",
-      "UX-DECISION-ROOM-005",
     ]));
   });
 
@@ -377,7 +372,6 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT phase 5 object review", () => {
     { path: "/advisory/triggers/demo/review", taskId: "UX-DETAIL-003", splitTaskId: "UX-PAGE-SPLIT-001" },
     { path: "/export/demo/redaction", taskId: "UX-DETAIL-004", splitTaskId: "UX-PAGE-SPLIT-005" },
     { path: "/compliance/reviews/demo/audit", taskId: "UX-DETAIL-005", splitTaskId: "UX-PAGE-SPLIT-006" },
-    { path: "/communication/demo/context", taskId: "UX-DETAIL-006", splitTaskId: "UX-PAGE-SPLIT-008" },
     { path: "/advisory", taskId: "UX-PAGE-SPLIT-001", splitTaskId: "UX-PAGE-SPLIT-001" },
     { path: "/documents/review-queue", taskId: "UX-PAGE-SPLIT-002", splitTaskId: "UX-PAGE-SPLIT-002" },
     { path: "/compliance/reviews", taskId: "UX-PAGE-SPLIT-003", splitTaskId: "UX-PAGE-SPLIT-003" },
@@ -385,7 +379,6 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT phase 5 object review", () => {
     { path: "/export/new", taskId: "UX-PAGE-SPLIT-005", splitTaskId: "UX-PAGE-SPLIT-005" },
     { path: "/governance", taskId: "UX-PAGE-SPLIT-006", splitTaskId: "UX-PAGE-SPLIT-006" },
     { path: "/client/home", taskId: "UX-PAGE-SPLIT-007", splitTaskId: "UX-PAGE-SPLIT-007" },
-    { path: "/kyc/reviews", taskId: "UX-PAGE-SPLIT-008", splitTaskId: "UX-PAGE-SPLIT-008" },
   ];
 
   test("covers every Phase 5 task exactly in route proof inputs", () => {
@@ -395,7 +388,6 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT phase 5 object review", () => {
       "UX-DETAIL-003",
       "UX-DETAIL-004",
       "UX-DETAIL-005",
-      "UX-DETAIL-006",
       "UX-PAGE-SPLIT-001",
       "UX-PAGE-SPLIT-002",
       "UX-PAGE-SPLIT-003",
@@ -403,7 +395,6 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT phase 5 object review", () => {
       "UX-PAGE-SPLIT-005",
       "UX-PAGE-SPLIT-006",
       "UX-PAGE-SPLIT-007",
-      "UX-PAGE-SPLIT-008",
     ]));
   });
 
@@ -423,14 +414,6 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT phase 5 object review", () => {
     });
   }
 
-  test("evidence and audit primitives expose Phase 5 detail metadata", async ({ page }) => {
-    await page.setViewportSize({ height: 1100, width: 1440 });
-    await authenticateRouteSmokePage(page);
-
-    await page.goto("/kyc/reviews");
-    await expect(page.getByTestId("ux-phase5-evidence-list").first()).toHaveAttribute("data-ux-phase5-task", "UX-DETAIL-001");
-    await expect(page.getByTestId("ux-phase5-audit-timeline").first()).toHaveAttribute("data-ux-phase5-task", "UX-DETAIL-005");
-  });
 });
 
   const uxPage003Routes = [
@@ -1308,7 +1291,7 @@ test.describe("locked route workset preservation", () => {
     }
   });
 
-  test("reference routes do not receive productive UX-PAGE surfaces", async ({ page }) => {
+  test("deferred, reference and held routes do not receive productive UX-PAGE surfaces", async ({ page }) => {
     const p1ProtectedPageIds = new Set<string>(routeWorksetPageIds.P1_AFTER_MVP);
     const referenceProtectedPageIds = new Set<string>(routeWorksetPageIds.REFERENCE_ONLY);
     const holdProtectedPageIds = new Set<string>(routeWorksetPageIds.HOLD_PENDING_DECISION);
@@ -1320,7 +1303,7 @@ test.describe("locked route workset preservation", () => {
       );
     });
 
-    expect(excludedRoutes).toHaveLength(3);
+    expect(excludedRoutes).toHaveLength(15);
 
     for (const route of excludedRoutes) {
       await authenticateRouteSmokePage(page);

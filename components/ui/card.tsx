@@ -65,7 +65,7 @@ export function UxDensityProofPanel({
     >
       <div className="mb-2 flex flex-wrap items-center gap-2">
         <span className="rounded-full border border-alphavest-gold/35 bg-alphavest-gold/10 px-2 py-0.5 font-semibold text-alphavest-gold-soft">
-          Phase 9
+          Layout
         </span>
         <span className="rounded-full border border-alphavest-border/70 bg-alphavest-charcoal/55 px-2 py-0.5 font-semibold text-alphavest-ivory">
           {densityTier} · {pattern}
@@ -85,11 +85,11 @@ export function UxDensityProofPanel({
           <dd>{nextStepLabel ?? "Resolve the current gate before any downstream release, export or client-visible claim."}</dd>
         </div>
         <div data-testid="ux-phase9-hierarchy">
-          <dt className="font-semibold text-alphavest-subtle">Density hierarchy</dt>
+          <dt className="font-semibold text-alphavest-subtle">Layout priority</dt>
           <dd>{hierarchy}</dd>
         </div>
         <div data-testid="ux-phase9-safety-retained">
-          <dt className="font-semibold text-alphavest-subtle">Safety retained</dt>
+          <dt className="font-semibold text-alphavest-subtle">Safety state</dt>
           <dd>{safetyRetention}</dd>
         </div>
       </dl>

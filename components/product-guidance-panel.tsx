@@ -79,7 +79,7 @@ export function ProductGuidancePanel() {
   const { session } = useDemoSession();
   const guidance = productGuidanceForPathname(pathname);
   const density = guidance.densityTier ? uxDensityTierContracts[guidance.densityTier] : null;
-  const primaryAction = guidance.ctaState.primaryAction ?? guidance.primaryAction;
+  const primaryAction = guidance.ctaState.primaryAction;
   const recoveryAction = guidance.ctaState.recovery;
   const hasActions = primaryAction || guidance.nextStep || guidance.relatedRoutes.length > 0 || guidance.ctaState.blockedReason;
   const phase8TaskId = phase8TaskForPathname(pathname, guidance.routeId);
