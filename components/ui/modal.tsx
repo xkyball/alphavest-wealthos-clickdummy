@@ -29,6 +29,7 @@ export function Modal({ children, className, context, description, footer, onClo
   const descriptionId = useId();
   const dialogRef = useRef<HTMLElement | null>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+  const closeLifecycle = onClose ? "escape-backdrop-close-button-safe" : "blocked-while-submitting";
 
   useEffect(() => {
     if (!open) {
@@ -103,6 +104,13 @@ export function Modal({ children, className, context, description, footer, onClo
         data-testid="ux-a11y-modal"
         data-ux-a11y-escape={onClose ? "enabled" : "blocked-while-submitting"}
         data-ux-a11y-focus-return="parent-context"
+        data-ux-interaction-lifecycle="modal"
+        data-ux-lifecycle-cancel="no-submit-no-mutation"
+        data-ux-lifecycle-close={closeLifecycle}
+        data-ux-lifecycle-open="controlled-by-owner-state"
+        data-ux-lifecycle-status="owner-handles-validation-loading-success-error-blocked"
+        data-ux-lifecycle-submit="owner-owned-confirmation-only"
+        data-ux-no-overclaim="true"
         data-ux-phase10-tasks="UX-A11Y-001 UX-A11Y-003"
         ref={dialogRef}
         role="dialog"
@@ -131,7 +139,9 @@ export function Modal({ children, className, context, description, footer, onClo
         </div>
         <div className="flex min-h-0 flex-col gap-5 overflow-y-auto px-5 py-5 md:px-6">
           <p aria-live="polite" className="sr-only" data-testid="ux-phase10-modal-status" role="status">
-            Dialog opened. Focus is inside the dialog; use Tab for controls, Escape or Cancel to recover context.
+            {onClose
+              ? "Dialog opened. Focus is inside the dialog; use Tab for controls. Escape, backdrop, Close or Cancel recover context without submitting."
+              : "Dialog opened. Focus is inside the dialog; closing is blocked while the owning workflow is submitting."}
           </p>
           {context ? <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/38 p-4">{context}</div> : null}
           <div>{children}</div>
