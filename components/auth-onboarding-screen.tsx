@@ -569,7 +569,10 @@ function IdentityPage() {
 
 function ConsentPage() {
   const [policyOpen, setPolicyOpen] = useState(false);
+  const [selectedPolicy, setSelectedPolicy] = useState(policyDocuments[0]);
   const primaryPolicy = policyDocuments[0];
+  const policyLifecycleCopy =
+    "Review-only policy modal. Closing this modal does not accept terms, store consent records, create audit events or change role access.";
 
   return (
     <AuthCanvas compactHeader supportPageId="005">
@@ -583,8 +586,13 @@ function ConsentPage() {
             {policyDocuments.map((policy) => (
               <button
                 className="flex w-full flex-col gap-4 rounded-md border border-alphavest-border bg-alphavest-charcoal/40 p-4 text-left transition hover:border-alphavest-gold/50 sm:flex-row sm:items-center"
+                data-ux-lifecycle-trigger="policy-review-modal"
+                data-ux-lifecycle-result="opens-review-only-policy-modal"
                 key={policy.title}
-                onClick={() => setPolicyOpen(true)}
+                onClick={() => {
+                  setSelectedPolicy(policy);
+                  setPolicyOpen(true);
+                }}
                 type="button"
               >
                 <span className="flex w-full items-start gap-4 sm:min-w-0 sm:flex-1">
@@ -642,7 +650,16 @@ function ConsentPage() {
                 ))}
               </ul>
             </div>
-            <button className={cn(primaryButtonClass, "mt-5 w-full")} onClick={() => setPolicyOpen(true)} type="button">
+            <button
+              className={cn(primaryButtonClass, "mt-5 w-full")}
+              data-ux-lifecycle-trigger="policy-review-modal"
+              data-ux-lifecycle-result="opens-review-only-policy-modal"
+              onClick={() => {
+                setSelectedPolicy(primaryPolicy);
+                setPolicyOpen(true);
+              }}
+              type="button"
+            >
               Review policy
             </button>
           </CardContent>
@@ -650,24 +667,25 @@ function ConsentPage() {
       </div>
 
       <Modal
-        description={`${primaryPolicy.version} · POPIA-aligned privacy acknowledgement`}
+        context={<StatePanel detail={policyLifecycleCopy} state="restricted" title="Review-only policy lifecycle" />}
+        description={`${selectedPolicy.version} · Policy acknowledgement review`}
         footer={
           <button className={primaryButtonClass} onClick={() => setPolicyOpen(false)} type="button">
-            Close
+            Close policy review
           </button>
         }
         onClose={() => setPolicyOpen(false)}
         open={policyOpen}
-        title="Privacy Notice"
+        title={selectedPolicy.title}
       >
-        <div className="space-y-4 text-sm leading-6 text-alphavest-muted">
+        <div className="space-y-4 text-sm leading-6 text-alphavest-muted" data-testid="uxp3-consent-policy-modal">
           <p>
-            This notice explains how AlphaVest WealthOS collects, uses, stores and protects personal information for secure wealth management workflows.
+            {selectedPolicy.detail}
           </p>
           <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/40 p-4">
             <h3 className="font-semibold text-alphavest-ivory">Key points</h3>
             <ul className="mt-3 space-y-2">
-              {primaryPolicy.keyPoints.map((point) => (
+              {selectedPolicy.keyPoints.map((point) => (
                 <li className="flex gap-2" key={point}>
                   <Check aria-hidden="true" className="mt-1 size-4 shrink-0 text-alphavest-green" />
                   {point}
@@ -677,16 +695,16 @@ function ConsentPage() {
           </div>
           <dl className="grid gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4 sm:grid-cols-3">
             <div>
-              <dt className="text-xs text-alphavest-subtle">Effective date</dt>
-              <dd className="mt-1 text-alphavest-ivory">15 May 2024</dd>
+              <dt className="text-xs text-alphavest-subtle">Document</dt>
+              <dd className="mt-1 text-alphavest-ivory">{selectedPolicy.title}</dd>
             </div>
             <div>
               <dt className="text-xs text-alphavest-subtle">Version</dt>
-              <dd className="mt-1 text-alphavest-ivory">2.1</dd>
+              <dd className="mt-1 text-alphavest-ivory">{selectedPolicy.version}</dd>
             </div>
             <div>
-              <dt className="text-xs text-alphavest-subtle">Review cycle</dt>
-              <dd className="mt-1 text-alphavest-ivory">Annually</dd>
+              <dt className="text-xs text-alphavest-subtle">Lifecycle</dt>
+              <dd className="mt-1 text-alphavest-ivory">Review only</dd>
             </div>
           </dl>
         </div>
