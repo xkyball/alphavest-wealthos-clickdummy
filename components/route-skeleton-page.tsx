@@ -166,6 +166,9 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
     <AppShell>
       <div
         className="space-y-6"
+        data-ux-deferred-hold-product-controls={
+          routeScope === "P1_AFTER_MVP" || routeScope === "HOLD_PENDING_DECISION" ? "non-interactive" : undefined
+        }
         data-ux-productive-controls={scopeCopy.protectedScope ? "false" : "true"}
         data-ux-reference-product-controls={routeScope === "REFERENCE_ONLY" ? "removed" : undefined}
         data-ux-route-scope={routeScope}

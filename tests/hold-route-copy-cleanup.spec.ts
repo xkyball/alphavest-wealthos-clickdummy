@@ -56,7 +56,8 @@ test.describe("UXP1-008 hold and deferred route cleanup", () => {
       await page.goto(routeToSmokePath(route.route));
 
       await expect(page.getByRole("heading", { name: "Held Workspace" })).toBeVisible();
-      await expect(page.getByRole("button", { name: "Held" })).toBeDisabled();
+      await expect(page.getByRole("button", { name: "Held" })).toHaveCount(0);
+      await expect(page.locator('[data-ux-primary-cta="true"][data-ux-interactive="false"]').filter({ hasText: "Held" })).toBeVisible();
       await expect(page.getByText("Hold Guard")).toBeVisible();
       await expect(page.getByText("No product action, release, export, mutation or client visibility is available from this held route.")).toBeVisible();
       await expect(page.getByText(/Product action locked|Related Workspaces|Continue to|implementation proof|visual proof|gate-completion proof/i)).toHaveCount(0);
@@ -68,7 +69,8 @@ test.describe("UXP1-008 hold and deferred route cleanup", () => {
     await page.goto(routeToSmokePath(routeByPageId("068").route));
 
     await expect(page.getByRole("heading", { name: "Deferred Workspace" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Deferred" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Deferred" })).toHaveCount(0);
+    await expect(page.locator('[data-ux-primary-cta="true"][data-ux-interactive="false"]').filter({ hasText: "Deferred" })).toBeVisible();
     await expect(page.getByText("Deferred Guard")).toBeVisible();
     await expect(page.getByText("No product action, release, export, mutation or client visibility is available from this deferred route.")).toBeVisible();
     await expect(page.getByText(/Open rebalance monitoring|Product action locked|Related Workspaces|Continue to|current release workflow/i)).toHaveCount(0);
