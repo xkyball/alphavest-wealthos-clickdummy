@@ -1,8 +1,26 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 
+import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
 import { routeToSmokePath, screenRoutes } from "../lib/route-registry";
 
 const releaseRoute = screenRoutes.find((route) => route.pageId === "040");
+
+async function authenticate(page: Page) {
+  await page.context().addCookies([
+    {
+      httpOnly: true,
+      domain: "127.0.0.1",
+      name: demoAuthSessionCookieName,
+      path: "/",
+      sameSite: "Lax",
+      value: "av-session-playwright-authenticated",
+    },
+  ]);
+}
+
+test.beforeEach(async ({ page }) => {
+  await authenticate(page);
+});
 
 test.describe("Phase 04 interaction lifecycle", () => {
   test("release confirmation supports cancel and Escape close paths", async ({ page }) => {
@@ -38,7 +56,7 @@ test.describe("Phase 04 interaction lifecycle", () => {
   test("governance role confirmation opens from drawer and cancels without mutation", async ({ page }) => {
     await page.goto("/governance/roles?state=base");
 
-    const createRoleButton = page.getByRole("button", { name: "Create Role" });
+    const createRoleButton = page.getByRole("button", { name: "Create scoped role" });
     await createRoleButton.click();
     const roleDrawer = page.getByRole("complementary", { name: "Portfolio Manager" });
     await expect(roleDrawer).toBeVisible();
@@ -51,7 +69,7 @@ test.describe("Phase 04 interaction lifecycle", () => {
     await createRoleButton.click();
     await expect(roleDrawer).toBeVisible();
 
-    await roleDrawer.getByRole("button", { name: "Save Changes" }).click();
+    await roleDrawer.getByRole("button", { name: "Review scoped changes" }).click();
     const confirmationDialog = page.getByRole("dialog", { name: "Confirm Sensitive Permission Changes" });
     await expect(confirmationDialog).toBeVisible();
 
@@ -60,19 +78,15 @@ test.describe("Phase 04 interaction lifecycle", () => {
     await expect(roleDrawer).toBeVisible();
   });
 
-  test("wealth map and action details close instead of acting as permanent fake drawers", async ({ page }) => {
+  test("wealth map stays a hub and action details close instead of acting as permanent fake drawers", async ({ page }) => {
     await page.goto("/wealth-map?state=drawer");
 
-    const wealthDrawer = page.getByRole("complementary", { name: "Bennett Family Trust" });
-    await expect(wealthDrawer).toBeVisible();
-    await wealthDrawer.getByRole("button", { name: "Close detail drawer" }).click();
-    await expect(wealthDrawer).toBeHidden();
-
-    await page.getByRole("button", { name: "Open selected node" }).click();
-    await expect(wealthDrawer).toBeVisible();
+    const wealthDrawer = page.locator('aside[aria-label="Bennett Family Trust"]');
+    await expect(page.getByTestId("ux-hub-page")).toBeVisible();
+    await expect(wealthDrawer).toHaveCount(0);
 
     await page.goto("/actions?state=drawer");
-    const actionDrawer = page.getByRole("complementary", { name: /Action Details/i });
+    const actionDrawer = page.locator('aside[aria-label="Action Details"]');
     await expect(actionDrawer).toBeVisible();
     await actionDrawer.getByRole("button", { name: "Close action drawer" }).click();
     await expect(actionDrawer).toBeHidden();

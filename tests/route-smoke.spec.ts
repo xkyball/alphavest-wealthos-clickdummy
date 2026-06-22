@@ -1,7 +1,7 @@
 import { expect, type Page, test } from "@playwright/test";
 
 import { createDemoSession } from "../lib/demo-session";
-import { dummyAuthSessionCookieName } from "../lib/dummy-auth-session";
+import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
 import { navigationGroupsForRole, productiveNavigationPageIds, uxNavigationPolicyForPageId } from "../lib/navigation";
 import {
   eligibleUxPageContracts,
@@ -44,9 +44,10 @@ async function authenticateRouteSmokePage(page: Page) {
   await page.context().addCookies([
     {
       httpOnly: true,
-      name: dummyAuthSessionCookieName,
+      domain: "127.0.0.1",
+      name: demoAuthSessionCookieName,
+      path: "/",
       sameSite: "Lax",
-      url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3020",
       value: "av-session-playwright-authenticated",
     },
   ]);

@@ -63,10 +63,20 @@ test.describe("Phase 01 foundation guardrails", () => {
     expect(routeWorksetIntegrity.duplicatePageIds).toEqual([]);
 
     expect(apiRouteFiles("app/api")).toEqual([
+      "app/api/admin-tenants/route.ts",
+      "app/api/audit-events/route.ts",
+      "app/api/auth/dummy/route.ts",
+      "app/api/dashboard-metrics/route.ts",
       "app/api/demo-workflow/route.ts",
       "app/api/documents/review/route.ts",
       "app/api/documents/route.ts",
       "app/api/documents/upload/route.ts",
+      "app/api/entities/route.ts",
+      "app/api/export-workflow/route.ts",
+      "app/api/family-members/route.ts",
+      "app/api/global-search/route.ts",
+      "app/api/ops-sla/route.ts",
+      "app/api/profile/route.ts",
       "app/api/review-monitoring/route.ts",
     ]);
   });

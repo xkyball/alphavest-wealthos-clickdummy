@@ -4,8 +4,8 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { AuditResult, PrismaClient, UserStatus } from "@prisma/client";
 import { expect, test } from "@playwright/test";
 
-import { dummyAuthSessionCookieName } from "../lib/dummy-auth-session";
-import { dummyAuthMfaCode } from "../lib/dummy-auth-service";
+import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { demoAuthMfaCode } from "../lib/demo/demo-auth-provider-service";
 
 test.describe("Dummy DB auth provider, MFA and invitations", () => {
   let prisma: PrismaClient;
@@ -32,7 +32,7 @@ test.describe("Dummy DB auth provider, MFA and invitations", () => {
     await page.context().addCookies([
       {
         httpOnly: true,
-        name: dummyAuthSessionCookieName,
+        name: demoAuthSessionCookieName,
         sameSite: "Lax",
         url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3100",
         value: "av-session-playwright-authenticated",
@@ -122,7 +122,7 @@ test.describe("Dummy DB auth provider, MFA and invitations", () => {
     const acceptCookie = acceptResponse.headers()["set-cookie"] ?? "";
 
     expect(acceptResponse.ok(), JSON.stringify(acceptBody)).toBe(true);
-    expect(acceptCookie).toContain(dummyAuthSessionCookieName);
+    expect(acceptCookie).toContain(demoAuthSessionCookieName);
     expect(acceptBody.result.accepted).toBe(true);
     expect(acceptBody.result.session.status).toBe(UserStatus.ACTIVE);
 
@@ -164,13 +164,13 @@ test.describe("Dummy DB auth provider, MFA and invitations", () => {
     expect(failedBody.reasonCode).toBe("DUMMY_AUTH_MFA_INVALID_CODE");
 
     const successResponse = await request.post("/api/auth/dummy", {
-      data: { action: "verify_mfa", code: dummyAuthMfaCode, email },
+      data: { action: "verify_mfa", code: demoAuthMfaCode, email },
     });
     const successBody = await successResponse.json();
     const successCookie = successResponse.headers()["set-cookie"] ?? "";
 
     expect(successResponse.ok(), JSON.stringify(successBody)).toBe(true);
-    expect(successCookie).toContain(dummyAuthSessionCookieName);
+    expect(successCookie).toContain(demoAuthSessionCookieName);
     expect(successBody.result.sessionToken).toContain("av-session-");
     expect(successBody.result.session.email).toBe(email);
 

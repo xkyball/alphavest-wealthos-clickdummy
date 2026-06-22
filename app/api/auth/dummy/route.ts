@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server";
 
 import {
-  DummyAuthError,
-  acceptDummyInvite,
-  startDummyProviderLogin,
-  verifyDummyMfa,
-} from "@/lib/dummy-auth-service";
-import { dummyAuthSessionCookieName, dummyAuthSessionMaxAgeSeconds } from "@/lib/dummy-auth-session";
+  DemoAuthProviderError,
+  acceptDemoInvite,
+  startDemoProviderLogin,
+  verifyDemoMfa,
+} from "@/lib/demo/demo-auth-provider-service";
+import { demoAuthSessionCookieName, demoAuthSessionMaxAgeSeconds } from "@/lib/demo/demo-auth-session";
 import { prismaClient } from "@/lib/prisma";
 
-function setDummySessionCookie(response: NextResponse, sessionToken: string) {
-  response.cookies.set(dummyAuthSessionCookieName, sessionToken, {
+function setDemoSessionCookie(response: NextResponse, sessionToken: string) {
+  response.cookies.set(demoAuthSessionCookieName, sessionToken, {
     httpOnly: true,
-    maxAge: dummyAuthSessionMaxAgeSeconds,
+    maxAge: demoAuthSessionMaxAgeSeconds,
     path: "/",
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
@@ -22,7 +22,7 @@ function setDummySessionCookie(response: NextResponse, sessionToken: string) {
 }
 
 function errorResponse(error: unknown) {
-  if (error instanceof DummyAuthError) {
+  if (error instanceof DemoAuthProviderError) {
     return NextResponse.json(
       {
         error: error.message,
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
 
   try {
     if (action === "start_login") {
-      const result = await startDummyProviderLogin(prisma, payload);
+      const result = await startDemoProviderLogin(prisma, payload);
 
       return NextResponse.json({
         ...result,
@@ -73,9 +73,9 @@ export async function POST(request: Request) {
     }
 
     if (action === "verify_mfa") {
-      const result = await verifyDummyMfa(prisma, payload);
+      const result = await verifyDemoMfa(prisma, payload);
 
-      return setDummySessionCookie(NextResponse.json({
+      return setDemoSessionCookie(NextResponse.json({
         ok: true,
         result,
         safety: {
@@ -87,10 +87,10 @@ export async function POST(request: Request) {
     }
 
     if (action === "accept_invite") {
-      const result = await acceptDummyInvite(prisma, payload);
+      const result = await acceptDemoInvite(prisma, payload);
       const sessionToken = `av-session-${result.session.userId}`;
 
-      return setDummySessionCookie(NextResponse.json({
+      return setDemoSessionCookie(NextResponse.json({
         ok: true,
         result,
         safety: {

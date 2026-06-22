@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { DummyAuthError, inviteDummyAuthUser } from "@/lib/dummy-auth-service";
+import { DemoAuthProviderError, inviteDemoAuthUser } from "@/lib/demo/demo-auth-provider-service";
 import { getAdminTenantSnapshot } from "@/lib/admin-tenant-readmodel-service";
 import { prismaClient } from "@/lib/prisma";
 
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await inviteDummyAuthUser(prismaClient(), payload);
+    const result = await inviteDemoAuthUser(prismaClient(), payload);
     const snapshot = await getAdminTenantSnapshot(prismaClient());
 
     return NextResponse.json({
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
       snapshot,
     });
   } catch (error) {
-    if (error instanceof DummyAuthError) {
+    if (error instanceof DemoAuthProviderError) {
       return NextResponse.json(
         {
           error: error.message,

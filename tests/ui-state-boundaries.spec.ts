@@ -1,12 +1,15 @@
 import { expect, type Page, test } from "@playwright/test";
 
+import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+
 async function authenticate(page: Page) {
   await page.context().addCookies([
     {
       httpOnly: true,
-      name: "alphavest_dummy_auth_session",
+      domain: "127.0.0.1",
+      name: demoAuthSessionCookieName,
+      path: "/",
       sameSite: "Lax",
-      url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3020",
       value: "av-session-playwright-authenticated",
     },
   ]);
@@ -20,9 +23,11 @@ test.describe("Phase 03 UI state boundaries", () => {
   test("client-facing routes fail closed for unreleased recommendation states", async ({ page }) => {
     await page.goto("/mobile");
 
-    await expect(page.getByText("Recommendations blocked")).toBeVisible();
-    await expect(page.getByText("Recommendations are blocked while compliance items are pending.")).toBeVisible();
-    await expect(page.getByText("Complete compliance to unlock recommendations")).toBeVisible();
+    const mobileHub = page.getByTestId("ux-hub-page").first();
+    await expect(mobileHub.getByRole("heading", { name: "Mobile Client Hub" })).toBeVisible();
+    await expect(mobileHub.getByText("Released-view constraints match the desktop client hub.")).toBeVisible();
+    await expect(mobileHub.getByText("Internal workflow detail remains hidden on mobile.")).toBeVisible();
+    await expect(mobileHub.getByText("Mobile home hides internal workflow detail and release controls.")).toBeVisible();
     await expect(page.getByText("AI Draft")).toHaveCount(0);
   });
 
@@ -75,7 +80,7 @@ test.describe("Phase 05 feedback no-overclaim boundaries", () => {
     await page.goto("/compliance/demo/release?state=release");
 
     await expect(page.getByRole("dialog", { name: "Release to client" })).toBeVisible();
-    await expect(page.getByText("Release action pending")).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Release to client" }).getByText("Release action pending")).toBeVisible();
     await expect(page.getByText("Release has not been completed in this modal state.")).toBeVisible();
     await expect(page.getByText("Released successfully")).toHaveCount(0);
   });
@@ -102,9 +107,9 @@ test.describe("Phase 05 feedback no-overclaim boundaries", () => {
 
     await expect(page.getByText("The decision has been recorded for review. Audit persistence remains a controlled gate.")).toBeVisible();
     await expect(page.getByText("Recorded for Review", { exact: true })).toBeVisible();
-    await expect(page.getByText("Persisted Audit Record")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Persisted Audit Record" })).toBeVisible();
     await expect(page.getByText("Compliance release and evidence controls remain the source of client visibility.")).toBeVisible();
-    await expect(page.getByText("Evidence Package Queued")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Evidence Package Queued" })).toBeVisible();
     await expect(page.getByText("Evidence sufficiency still requires review and release gates.")).toBeVisible();
     await expect(page.getByText("immutable audit trail")).toHaveCount(0);
     await expect(page.getByText("A complete evidence package has been generated for this decision.")).toHaveCount(0);

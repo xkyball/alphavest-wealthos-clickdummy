@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import "dotenv/config";
 import { expect, test } from "@playwright/test";
-import { dummyAuthSessionCookieName } from "../lib/dummy-auth-session";
+import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
 
 test.describe("document upload browser flow", () => {
   test.beforeAll(() => {
@@ -12,9 +12,10 @@ test.describe("document upload browser flow", () => {
     await page.context().addCookies([
       {
         httpOnly: true,
-        name: dummyAuthSessionCookieName,
+        domain: "127.0.0.1",
+        name: demoAuthSessionCookieName,
+        path: "/",
         sameSite: "Lax",
-        url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3020",
         value: "av-session-playwright-authenticated",
       },
     ]);

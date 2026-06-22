@@ -1,9 +1,25 @@
 import { execFileSync } from "node:child_process";
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
+
+import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+
+async function authenticate(page: Page) {
+  await page.context().addCookies([
+    {
+      httpOnly: true,
+      domain: "127.0.0.1",
+      name: demoAuthSessionCookieName,
+      path: "/",
+      sameSite: "Lax",
+      value: "av-session-playwright-authenticated",
+    },
+  ]);
+}
 
 test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
-  test.beforeEach(() => {
+  test.beforeEach(async ({ page }) => {
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
+    await authenticate(page);
   });
 
   test("release confirmation cannot submit while invalid and cancel performs no API mutation", async ({ page }) => {

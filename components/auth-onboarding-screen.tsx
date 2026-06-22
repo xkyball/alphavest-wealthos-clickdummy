@@ -41,6 +41,7 @@ import {
   type AuthOnboardingPageId
 } from "@/lib/auth-onboarding-demo-data";
 import { cn } from "@/lib/cn";
+import { readDemoAuthStorage, writeDemoAuthStorage, type DemoAuthResponse, type DemoAuthStorage } from "@/lib/demo/demo-auth-client";
 
 type AuthOnboardingScreenProps = {
   pageId: AuthOnboardingPageId;
@@ -69,56 +70,6 @@ const primaryButtonClass =
 
 const secondaryButtonClass =
   "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/50 px-5 text-sm font-semibold text-alphavest-ivory transition hover:border-alphavest-gold/60 hover:text-alphavest-gold-soft";
-
-const dummyAuthStorageKey = "alphavest.dummyAuth.v1";
-
-type DummyAuthStorage = {
-  email: string;
-  inviteToken?: string;
-  nextStep?: string;
-};
-
-type DummyAuthResponse = {
-  ok: boolean;
-  challengeId?: string;
-  error?: string;
-  nextStep?: "mfa_required" | "invite_acceptance_required" | "denied";
-  reasonCode?: string;
-  result?: {
-    accepted?: boolean;
-    session?: {
-      displayName: string;
-      email: string;
-      roleName?: string;
-      tenantName?: string;
-    };
-  };
-  safeMessage?: string;
-  user?: {
-    displayName: string;
-    email: string;
-    inviteToken?: string;
-    roleName?: string;
-    tenantName?: string;
-  };
-};
-
-function readDummyAuthStorage(): DummyAuthStorage {
-  if (typeof window === "undefined") {
-    return { email: invitedUser.email };
-  }
-
-  try {
-    const stored = window.localStorage.getItem(dummyAuthStorageKey);
-    return stored ? { email: invitedUser.email, ...JSON.parse(stored) } : { email: invitedUser.email };
-  } catch {
-    return { email: invitedUser.email };
-  }
-}
-
-function writeDummyAuthStorage(value: DummyAuthStorage) {
-  window.localStorage.setItem(dummyAuthStorageKey, JSON.stringify(value));
-}
 
 function AlphaVestMark({ compact = false }: { compact?: boolean }) {
   return (
@@ -265,7 +216,7 @@ function LoginPage() {
       headers: { "content-type": "application/json" },
       method: "POST",
     });
-    const body = (await response.json()) as DummyAuthResponse;
+    const body = (await response.json()) as DemoAuthResponse;
 
     if (!response.ok || !body.ok || !body.nextStep) {
       setStatus("error");
@@ -273,7 +224,7 @@ function LoginPage() {
       return;
     }
 
-    writeDummyAuthStorage({
+    writeDemoAuthStorage({
       email,
       inviteToken: body.user?.inviteToken,
       nextStep: body.nextStep,
@@ -357,7 +308,7 @@ function MfaPage() {
 
   useEffect(() => {
     queueMicrotask(() => {
-      setEmail(readDummyAuthStorage().email);
+      setEmail(readDemoAuthStorage(invitedUser.email).email);
     });
   }, []);
 
@@ -368,7 +319,7 @@ function MfaPage() {
       headers: { "content-type": "application/json" },
       method: "POST",
     });
-    const body = (await response.json()) as DummyAuthResponse;
+    const body = (await response.json()) as DemoAuthResponse;
 
     if (!response.ok || !body.ok) {
       setStatus("error");
@@ -480,11 +431,11 @@ function MfaPage() {
 }
 
 function InvitePage() {
-  const [storedInvite, setStoredInvite] = useState<DummyAuthStorage>({ email: invitedUser.email });
+  const [storedInvite, setStoredInvite] = useState<DemoAuthStorage>({ email: invitedUser.email });
 
   useEffect(() => {
     queueMicrotask(() => {
-      setStoredInvite(readDummyAuthStorage());
+      setStoredInvite(readDemoAuthStorage(invitedUser.email));
     });
   }, []);
 
@@ -747,7 +698,7 @@ function ConsentPage() {
 function RoleConfirmationPage() {
   const allowed = roleBoundaries.filter((item) => item.allowed);
   const denied = roleBoundaries.filter((item) => !item.allowed);
-  const [invite, setInvite] = useState<DummyAuthStorage>({ email: invitedUser.email });
+  const [invite, setInvite] = useState<DemoAuthStorage>({ email: invitedUser.email });
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState("Role acceptance activates pending DB user roles and writes consent plus audit proof.");
   const scopes: Array<{ icon: AuthIconName; label: string; value: string }> = [
@@ -757,7 +708,7 @@ function RoleConfirmationPage() {
 
   useEffect(() => {
     queueMicrotask(() => {
-      setInvite(readDummyAuthStorage());
+      setInvite(readDemoAuthStorage(invitedUser.email));
     });
   }, []);
 
@@ -773,7 +724,7 @@ function RoleConfirmationPage() {
       headers: { "content-type": "application/json" },
       method: "POST",
     });
-    const body = (await response.json()) as DummyAuthResponse;
+    const body = (await response.json()) as DemoAuthResponse;
 
     if (!response.ok || !body.ok) {
       setStatus("error");

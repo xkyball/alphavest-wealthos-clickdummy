@@ -1,12 +1,15 @@
 import { expect, type Page, test } from "@playwright/test";
 
+import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+
 async function authenticate(page: Page) {
   await page.context().addCookies([
     {
       httpOnly: true,
-      name: "alphavest_dummy_auth_session",
+      domain: "127.0.0.1",
+      name: demoAuthSessionCookieName,
+      path: "/",
       sameSite: "Lax",
-      url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3020",
       value: "av-session-playwright-authenticated",
     },
   ]);
@@ -17,17 +20,17 @@ test.describe("SCF P07-P09 client visibility, governance and export controls", (
     await authenticate(page);
     await page.goto("/portal");
 
-    const visibilityGate = page.getByTestId("p07-p09-visibility-trust").first();
-    await expect(visibilityGate.getByText("Client Visibility Projection")).toBeVisible();
-    await expect(visibilityGate.getByText("Released summary")).toBeVisible();
-    await expect(visibilityGate.getByText("Internal fields hidden")).toBeVisible();
-    await expect(visibilityGate.getByText("Unreleased content")).toBeVisible();
-    await expect(visibilityGate.getByText("DEMO_CLIENT_SAFE_PROJECTION").first()).toBeVisible();
+    const clientHub = page.getByTestId("ux-hub-page").first();
+    await expect(clientHub.getByRole("heading", { name: "Client Executive Hub" })).toBeVisible();
+    await expect(clientHub.getByText("Released view")).toBeVisible();
+    await expect(clientHub.getByText("Only released or redacted client-safe content belongs here.")).toBeVisible();
+    await expect(clientHub.getByText("Internal rationale, compliance notes and AI draft fields stay hidden.")).toBeVisible();
+    await expect(clientHub).not.toContainText("AI Draft");
   });
 
   test("renders P07 decision submitted/released projection on decision surfaces", async ({ page }) => {
     await authenticate(page);
-    await page.goto("/decisions");
+    await page.goto("/decisions/demo");
 
     const decisionGate = page.getByTestId("p07-p09-decision-trust").first();
     await expect(decisionGate.getByText("Decision State Projection")).toBeVisible();

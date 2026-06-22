@@ -10,10 +10,10 @@ import {
 import { permissionEngine } from "@/lib/permission-engine";
 import { stableId } from "@/lib/stable-id";
 
-export const dummyAuthProviderId = "dummy-db-provider" as const;
-export const dummyAuthMfaCode = "123456";
+export const demoAuthProviderId = "dummy-db-provider" as const;
+export const demoAuthMfaCode = "123456";
 
-export type DummyAuthUserContext = {
+export type DemoAuthUserContext = {
   email: string;
   displayName: string;
   inviteToken?: string;
@@ -28,35 +28,35 @@ export type DummyAuthUserContext = {
   userRoleId?: string;
 };
 
-export type DummyAuthStartResult =
+export type DemoAuthStartResult =
   | {
       ok: true;
       challengeId: string;
       nextStep: "mfa_required" | "invite_acceptance_required";
-      provider: typeof dummyAuthProviderId;
-      user: DummyAuthUserContext;
+      provider: typeof demoAuthProviderId;
+      user: DemoAuthUserContext;
     }
   | {
       ok: false;
       nextStep: "denied";
-      provider: typeof dummyAuthProviderId;
+      provider: typeof demoAuthProviderId;
       reasonCode: string;
       safeMessage: string;
     };
 
-export type DummyInviteResult = {
+export type DemoAuthInviteResult = {
   inviteToken: string;
   invited: boolean;
-  user: DummyAuthUserContext;
+  user: DemoAuthUserContext;
 };
 
-export type DummyAcceptInviteResult = {
+export type DemoAuthInviteAcceptResult = {
   accepted: boolean;
-  session: DummyAuthUserContext;
+  session: DemoAuthUserContext;
 };
 
-export type DummyMfaResult = {
-  session: DummyAuthUserContext;
+export type DemoAuthMfaResult = {
+  session: DemoAuthUserContext;
   sessionToken: string;
 };
 
@@ -75,7 +75,7 @@ type LoadedUser = Prisma.UserGetPayload<{
 const activeAssignmentStatuses = new Set(["active", "pending", "invited"]);
 const inviteActorRoles = new Set<DemoRoleKey>(["admin", "client_success"]);
 
-export class DummyAuthError extends Error {
+export class DemoAuthProviderError extends Error {
   constructor(
     readonly reasonCode: string,
     message: string,
@@ -125,7 +125,7 @@ function primaryRoleAssignment(user: LoadedUser) {
   return user.userRoles.find((assignment) => activeAssignmentStatuses.has(assignment.status));
 }
 
-function contextForUser(user: LoadedUser, includeInviteToken = false): DummyAuthUserContext {
+function contextForUser(user: LoadedUser, includeInviteToken = false): DemoAuthUserContext {
   const assignment = primaryRoleAssignment(user);
   const slug = tenantSlugFromTenantId(assignment?.clientTenantId);
 
@@ -183,7 +183,7 @@ async function writeAuthAudit(
       clientTenantId: input.clientTenantId ?? undefined,
       eventType: input.eventType,
       metadataJson: {
-        authProvider: dummyAuthProviderId,
+        authProvider: demoAuthProviderId,
         demoMode: true,
         productionAuthClaim: false,
         ...(typeof input.metadataJson === "object" && input.metadataJson ? input.metadataJson : {}),
@@ -199,10 +199,10 @@ async function writeAuthAudit(
   });
 }
 
-export async function startDummyProviderLogin(
+export async function startDemoProviderLogin(
   prisma: PrismaClient,
   input: { email?: unknown },
-): Promise<DummyAuthStartResult> {
+): Promise<DemoAuthStartResult> {
   const email = normalizeEmail(input.email);
   const denied = async (reasonCode: string, reason: string, targetId = stableId(`dummy-auth:unknown:${email || "empty"}`)) => {
     await writeAuthAudit(prisma, {
@@ -216,7 +216,7 @@ export async function startDummyProviderLogin(
     return {
       ok: false as const,
       nextStep: "denied" as const,
-      provider: dummyAuthProviderId,
+      provider: demoAuthProviderId,
       reasonCode,
       safeMessage: "If this email is eligible, the next sign-in step will be shown.",
     };
@@ -258,21 +258,21 @@ export async function startDummyProviderLogin(
     ok: true,
     challengeId: challengeIdFor(user),
     nextStep,
-    provider: dummyAuthProviderId,
+    provider: demoAuthProviderId,
     user: contextForUser(user, nextStep === "invite_acceptance_required"),
   };
 }
 
-export async function verifyDummyMfa(
+export async function verifyDemoMfa(
   prisma: PrismaClient,
   input: { code?: unknown; email?: unknown },
-): Promise<DummyMfaResult> {
+): Promise<DemoAuthMfaResult> {
   const email = normalizeEmail(input.email);
   const code = cleanText(input.code, 12);
   const user = email ? await loadUserByEmail(prisma, email) : null;
 
   if (!user) {
-    throw new DummyAuthError("DUMMY_AUTH_MFA_UNKNOWN_EMAIL", "MFA verification requires a known DB user.", 404);
+    throw new DemoAuthProviderError("DUMMY_AUTH_MFA_UNKNOWN_EMAIL", "MFA verification requires a known DB user.", 404);
   }
 
   const assignment = primaryRoleAssignment(user);
@@ -284,10 +284,10 @@ export async function verifyDummyMfa(
       result: AuditResult.DENIED,
       targetId: user.id,
     });
-    throw new DummyAuthError("DUMMY_AUTH_ROLE_CONTEXT_REQUIRED", "MFA verification requires a configured role.", 403);
+    throw new DemoAuthProviderError("DUMMY_AUTH_ROLE_CONTEXT_REQUIRED", "MFA verification requires a configured role.", 403);
   }
 
-  if (code !== dummyAuthMfaCode) {
+  if (code !== demoAuthMfaCode) {
     await writeAuthAudit(prisma, {
       actorUserId: user.id,
       clientTenantId: assignment.clientTenantId,
@@ -297,7 +297,7 @@ export async function verifyDummyMfa(
       result: AuditResult.DENIED,
       targetId: user.id,
     });
-    throw new DummyAuthError("DUMMY_AUTH_MFA_INVALID_CODE", "MFA verification failed.", 403);
+    throw new DemoAuthProviderError("DUMMY_AUTH_MFA_INVALID_CODE", "MFA verification failed.", 403);
   }
 
   const updated = await prisma.$transaction(async (tx) => {
@@ -339,7 +339,7 @@ export async function verifyDummyMfa(
   };
 }
 
-export async function inviteDummyAuthUser(
+export async function inviteDemoAuthUser(
   prisma: PrismaClient,
   input: {
     actorRoleKey?: unknown;
@@ -348,7 +348,7 @@ export async function inviteDummyAuthUser(
     roleKey?: unknown;
     tenantSlug?: unknown;
   },
-): Promise<DummyInviteResult> {
+): Promise<DemoAuthInviteResult> {
   const parsedActorRole = roleKey(input.actorRoleKey) ?? "admin";
   const parsedRoleKey = roleKey(input.roleKey);
   const parsedTenantSlug = tenantSlug(input.tenantSlug);
@@ -356,17 +356,17 @@ export async function inviteDummyAuthUser(
   const displayName = cleanText(input.displayName) || email;
 
   if (!email || !parsedRoleKey || !parsedTenantSlug) {
-    throw new DummyAuthError("DUMMY_INVITE_INVALID_INPUT", "Invite requires email, role and tenant.", 400);
+    throw new DemoAuthProviderError("DUMMY_INVITE_INVALID_INPUT", "Invite requires email, role and tenant.", 400);
   }
 
   if (!inviteActorRoles.has(parsedActorRole)) {
-    throw new DummyAuthError("DUMMY_INVITE_ACTOR_DENIED", "Actor cannot invite users.", 403);
+    throw new DemoAuthProviderError("DUMMY_INVITE_ACTOR_DENIED", "Actor cannot invite users.", 403);
   }
 
   const tenant = demoTenants.find((candidate) => candidate.slug === parsedTenantSlug);
   const role = demoRoles.find((candidate) => candidate.key === parsedRoleKey);
   if (!tenant || !role) {
-    throw new DummyAuthError("DUMMY_INVITE_SCOPE_NOT_FOUND", "Invite scope could not be resolved.", 404);
+    throw new DemoAuthProviderError("DUMMY_INVITE_SCOPE_NOT_FOUND", "Invite scope could not be resolved.", 404);
   }
 
   const actorSession = {
@@ -396,7 +396,7 @@ export async function inviteDummyAuthUser(
   );
 
   if (!decision.allowed) {
-    throw new DummyAuthError("DUMMY_INVITE_PERMISSION_DENIED", decision.reason, 403);
+    throw new DemoAuthProviderError("DUMMY_INVITE_PERMISSION_DENIED", decision.reason, 403);
   }
 
   const result = await prisma.$transaction(async (tx) => {
@@ -433,7 +433,7 @@ export async function inviteDummyAuthUser(
     });
 
     if (!dbRole) {
-      throw new DummyAuthError("DUMMY_INVITE_ROLE_NOT_SEEDED", "Invite role is not seeded.", 404);
+      throw new DemoAuthProviderError("DUMMY_INVITE_ROLE_NOT_SEEDED", "Invite role is not seeded.", 404);
     }
 
     await tx.userRole.upsert({
@@ -460,7 +460,7 @@ export async function inviteDummyAuthUser(
 
     const reloaded = await loadUserByEmail(tx, email);
     if (!reloaded) {
-      throw new DummyAuthError("DUMMY_INVITE_RELOAD_FAILED", "Invited user could not be reloaded.", 500);
+      throw new DemoAuthProviderError("DUMMY_INVITE_RELOAD_FAILED", "Invited user could not be reloaded.", 500);
     }
 
     await writeAuthAudit(tx, {
@@ -485,22 +485,22 @@ export async function inviteDummyAuthUser(
   };
 }
 
-export async function acceptDummyInvite(
+export async function acceptDemoInvite(
   prisma: PrismaClient,
   input: { consentAccepted?: unknown; email?: unknown; token?: unknown },
-): Promise<DummyAcceptInviteResult> {
+): Promise<DemoAuthInviteAcceptResult> {
   const email = normalizeEmail(input.email);
   const token = cleanText(input.token, 80);
   const consentAccepted = input.consentAccepted === true;
   const user = email ? await loadUserByEmail(prisma, email) : null;
 
   if (!user || token !== inviteTokenFor(user)) {
-    throw new DummyAuthError("DUMMY_INVITE_INVALID_TOKEN", "Invite token is invalid or expired.", 404);
+    throw new DemoAuthProviderError("DUMMY_INVITE_INVALID_TOKEN", "Invite token is invalid or expired.", 404);
   }
 
   const assignment = primaryRoleAssignment(user);
   if (!assignment) {
-    throw new DummyAuthError("DUMMY_INVITE_ROLE_CONTEXT_REQUIRED", "Invite acceptance requires a configured role.", 409);
+    throw new DemoAuthProviderError("DUMMY_INVITE_ROLE_CONTEXT_REQUIRED", "Invite acceptance requires a configured role.", 409);
   }
 
   if (!consentAccepted) {
@@ -512,7 +512,7 @@ export async function acceptDummyInvite(
       result: AuditResult.BLOCKED,
       targetId: user.id,
     });
-    throw new DummyAuthError("DUMMY_INVITE_CONSENT_REQUIRED", "Consent is required before invite acceptance.", 409);
+    throw new DemoAuthProviderError("DUMMY_INVITE_CONSENT_REQUIRED", "Consent is required before invite acceptance.", 409);
   }
 
   const accepted = await prisma.$transaction(async (tx) => {
@@ -568,7 +568,7 @@ export async function acceptDummyInvite(
 
     const reloaded = await loadUserByEmail(tx, email);
     if (!reloaded) {
-      throw new DummyAuthError("DUMMY_INVITE_RELOAD_FAILED", "Accepted user could not be reloaded.", 500);
+      throw new DemoAuthProviderError("DUMMY_INVITE_RELOAD_FAILED", "Accepted user could not be reloaded.", 500);
     }
 
     return reloaded;
