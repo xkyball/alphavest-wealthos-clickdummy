@@ -1041,6 +1041,8 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
         <button
           className={primaryButtonClass}
           data-testid="j06-invite-user"
+          data-ux-lifecycle-result="opens-invite-user-drawer"
+          data-ux-lifecycle-trigger="invite-user-drawer"
           onClick={() => {
             void runScreencastDemoAction("j06.openInvitation");
             onInvite();
@@ -1251,8 +1253,26 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState("Invitation creates a user, pending role assignment and audit event.");
   const [inviteToken, setInviteToken] = useState<string | null>(null);
+  const emailValid = email.trim().includes("@") && email.trim().includes(".");
+  const displayNameValid = displayName.trim().length >= 2;
+  const canSubmit = status !== "submitting" && emailValid && displayNameValid;
+
+  function handleClose() {
+    if (status === "submitting") {
+      return;
+    }
+
+    onClose();
+  }
 
   async function sendInvitation() {
+    if (!emailValid || !displayNameValid) {
+      setStatus("error");
+      setInviteToken(null);
+      setMessage("Enter a valid email address and display name before an invitation can be created.");
+      return;
+    }
+
     setStatus("submitting");
     setInviteToken(null);
     setMessage("Creating invitation...");
@@ -1288,7 +1308,7 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
     setInviteToken(body.result.inviteToken);
     setStatus("success");
     setMessage(`${body.result.user.email} is now invited for ${body.result.user.roleName ?? roleKey} in ${body.result.user.tenantName ?? tenantSlug}.`);
-    void runScreencastDemoAction("j06.sendInvitation", "/onboarding/invite");
+    void runScreencastDemoAction("j06.sendInvitation");
   }
 
   return (
@@ -1296,10 +1316,13 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
       description="Send an invitation and assign access."
       footer={
         <div className="grid grid-cols-2 gap-3">
-          <button className={secondaryButtonClass} onClick={onClose} type="button">Cancel</button>
+          <button className={secondaryButtonClass} disabled={status === "submitting"} onClick={handleClose} type="button">Cancel</button>
           <button
-            className={primaryButtonClass}
+            aria-describedby="invite-user-validation"
+            className={cn(primaryButtonClass, "disabled:cursor-not-allowed disabled:opacity-60")}
             data-testid="j06-send-invitation"
+            data-ux-lifecycle-result={canSubmit ? "submits-db-backed-invitation" : "blocked-validation-required"}
+            disabled={!canSubmit}
             onClick={() => {
               void sendInvitation();
             }}
@@ -1309,24 +1332,38 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
           </button>
         </div>
       }
-      onClose={onClose}
+      onClose={status === "submitting" ? undefined : handleClose}
       open={open}
       title="Invite User"
     >
-      <div className="space-y-4">
+      <div
+        className="space-y-4"
+        data-testid="uxp3-invite-user-drawer-lifecycle"
+        data-ux-lifecycle-status={status}
+        data-ux-lifecycle-validation={canSubmit ? "valid" : "blocked"}
+        data-ux-no-overclaim="true"
+      >
         <label className="block">
           <span className="text-sm font-semibold text-alphavest-ivory">Email address</span>
           <input
+            aria-describedby="invite-user-validation"
             className="mt-2 h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
-            onChange={(event) => setEmail(event.target.value)}
+            onChange={(event) => {
+              setEmail(event.target.value);
+              if (status === "error") setStatus("idle");
+            }}
             value={email}
           />
         </label>
         <label className="block">
           <span className="text-sm font-semibold text-alphavest-ivory">Display name</span>
           <input
+            aria-describedby="invite-user-validation"
             className="mt-2 h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
-            onChange={(event) => setDisplayName(event.target.value)}
+            onChange={(event) => {
+              setDisplayName(event.target.value);
+              if (status === "error") setStatus("idle");
+            }}
             value={displayName}
           />
         </label>
@@ -1357,6 +1394,11 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
           </label>
         </div>
         <StatePanel detail="Roles with elevated permissions require additional confirmation before activation." state="restricted" title="Sensitive roles" />
+        <p className="text-sm text-alphavest-muted" id="invite-user-validation">
+          {canSubmit
+            ? "Ready to create a DB-backed invitation with pending role assignment and audit event."
+            : "Invitation remains blocked until email and display name are valid, and no request is submitting."}
+        </p>
         <StatePanel
           detail={message}
           state={status === "error" ? "blocked" : status === "success" ? "success" : "restricted"}
