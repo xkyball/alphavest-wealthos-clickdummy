@@ -599,7 +599,7 @@ function SecurityPage({ onConfirm }: { onConfirm: () => void }) {
           className={primaryButtonClass}
           data-testid="j10-save-security"
           onClick={() => {
-            void runScreencastDemoAction("j10.saveSecurity", "/admin/evidence-templates");
+            void runScreencastDemoAction("j10.saveSecurity");
             onConfirm();
           }}
           type="button"
@@ -1085,6 +1085,29 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
 function CriticalChangeModal({ kind, onClose }: { kind: ConfirmationKind; onClose: () => void }) {
   const isSecurity = kind === "security";
   const phrase = isSecurity ? "DISABLE MFA" : "I understand the impact of this change";
+  const [confirmationPhrase, setConfirmationPhrase] = useState("");
+  const [blockedMessage, setBlockedMessage] = useState("");
+  const phraseMatches = confirmationPhrase === phrase;
+  const lifecycleCopy = isSecurity
+    ? "Security changes require exact-phrase validation, elevated authorization, audit persistence and backend execution before activation."
+    : "Platform changes require exact-phrase validation, elevated authorization, audit persistence and backend execution before activation.";
+
+  function handleClose() {
+    setConfirmationPhrase("");
+    setBlockedMessage("");
+    onClose();
+  }
+
+  function handleConfirmAttempt() {
+    if (!phraseMatches) {
+      setBlockedMessage("Type the exact phrase before this confirmation can be evaluated.");
+      return;
+    }
+
+    setBlockedMessage(
+      "Blocked in demo: no platform or security setting changed, no audit event was created, and no client visibility or downstream release state changed."
+    );
+  }
 
   return (
     <Modal
@@ -1092,24 +1115,36 @@ function CriticalChangeModal({ kind, onClose }: { kind: ConfirmationKind; onClos
       context={
         <div className="grid gap-2 text-sm">
           <p className="font-semibold text-alphavest-ivory">{isSecurity ? "Security configuration" : "Platform setting"} change</p>
-          <p className="text-alphavest-muted">Sensitive settings remain audited and require second confirmation before activation.</p>
+          <p className="text-alphavest-muted">{lifecycleCopy}</p>
         </div>
       }
       description={isSecurity ? "This change would apply to all users and reduce account security." : "You are about to update a critical platform setting."}
       footer={
         <>
-          <button className={secondaryButtonClass} onClick={onClose} type="button">Cancel</button>
-          <button className={primaryButtonClass} onClick={onClose} type="button">
+          <button className={secondaryButtonClass} onClick={handleClose} type="button">Cancel</button>
+          <button
+            aria-describedby="admin-confirmation-validation"
+            className={cn(primaryButtonClass, "disabled:cursor-not-allowed disabled:opacity-60")}
+            data-ux-lifecycle-result={phraseMatches ? "blocked-no-authorized-mutation" : "blocked-validation-required"}
+            disabled={!phraseMatches}
+            onClick={handleConfirmAttempt}
+            type="button"
+          >
             <LockKeyhole aria-hidden="true" className="size-4" />
             Confirm change
           </button>
         </>
       }
-      onClose={onClose}
+      onClose={handleClose}
       open={kind !== null}
       title={isSecurity ? "Confirm critical security change" : "Confirm critical change"}
     >
-      <div className="space-y-5 text-center">
+      <div
+        className="space-y-5 text-center"
+        data-testid="uxp3-admin-confirmation-lifecycle"
+        data-ux-lifecycle-validation={phraseMatches ? "exact-phrase-matched" : "exact-phrase-required"}
+        data-ux-no-overclaim="true"
+      >
         <div className="mx-auto grid size-20 place-items-center rounded-full border border-alphavest-gold/40 bg-alphavest-gold/10 text-alphavest-gold">
           <AlertTriangle aria-hidden="true" className="size-9" />
         </div>
@@ -1121,21 +1156,38 @@ function CriticalChangeModal({ kind, onClose }: { kind: ConfirmationKind; onClos
         </div>
         <StatePanel
           className="text-left"
-          detail={isSecurity ? "Changing this security setting requires second confirmation." : "Changing this setting requires a second confirmation to proceed."}
+          detail={lifecycleCopy}
           state="restricted"
           title="Second confirmation required"
         />
+        {blockedMessage ? (
+          <StatePanel
+            className="text-left"
+            detail={blockedMessage}
+            state="blocked"
+            title={phraseMatches ? "Mutation blocked" : "Validation required"}
+          />
+        ) : null}
         <div className="mx-auto max-w-lg text-left">
           <label className="block">
             <span className="block text-center text-sm text-alphavest-muted">Type the phrase below to confirm:</span>
             <span className="mt-2 block text-center font-display text-xl text-alphavest-gold-soft">{`"${phrase}"`}</span>
             <input
+              aria-describedby="admin-confirmation-validation"
               className="mt-4 h-12 w-full rounded-md border border-alphavest-border bg-alphavest-navy/45 px-4 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold"
+              onChange={(event) => {
+                setConfirmationPhrase(event.target.value);
+                setBlockedMessage("");
+              }}
               placeholder="Type the exact phrase above"
-              readOnly
-              value=""
+              value={confirmationPhrase}
             />
           </label>
+          <p className="mt-3 text-sm text-alphavest-muted" id="admin-confirmation-validation">
+            {phraseMatches
+              ? "Exact phrase matched. Backend authorization and audit execution are still required before any setting can change."
+              : "Confirm remains blocked until the exact phrase is entered."}
+          </p>
         </div>
       </div>
     </Modal>
