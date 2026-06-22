@@ -1761,6 +1761,51 @@ const userColumns: Array<DataTableColumn<(typeof governanceUsers)[number]>> = [
 
 function GovernanceUsersPage({ title, visualState }: { title: string; visualState?: VisualState }) {
   const [drawerOpen, setDrawerOpen] = useState(visualState === "drawer" || visualState === "invite");
+  const [acknowledged, setAcknowledged] = useState(false);
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [message, setMessage] = useState<string | null>(null);
+  const lifecycleStatus = status === "submitting" ? "loading" : status;
+  const validationState = acknowledged ? "valid-scoped-invite" : "blocked-acknowledgement-required";
+
+  function openGovernanceUserDrawer() {
+    setDrawerOpen(true);
+    setAcknowledged(false);
+    setStatus("idle");
+    setMessage(null);
+  }
+
+  function closeGovernanceUserDrawer() {
+    setDrawerOpen(false);
+    setAcknowledged(false);
+    setStatus("idle");
+    setMessage(null);
+  }
+
+  async function submitGovernanceUserInvite() {
+    if (!acknowledged || status === "submitting") {
+      return;
+    }
+
+    setStatus("submitting");
+    setMessage("Submitting the scoped governance invitation. Close and cancel are blocked until the workflow returns.");
+
+    try {
+      const body = await runScreencastDemoAction("j07.sendInvitation");
+      setStatus("success");
+      setMessage(
+        body.result?.auditEventId
+          ? `Audit recorded: ${body.result.auditEventId}. The invitation was routed through the existing scoped governance workflow; role activation, consent acceptance, evidence sufficiency, release and export/share remain separate controls.`
+          : "The invitation was routed through the existing scoped governance workflow; role activation, consent acceptance, evidence sufficiency, release and export/share remain separate controls.",
+      );
+    } catch (error) {
+      setStatus("error");
+      setMessage(
+        error instanceof Error
+          ? `${error.message} No scoped role activation, access expansion, release or client visibility change was completed.`
+          : "Invitation workflow failed without scoped role activation, access expansion, release or client visibility change.",
+      );
+    }
+  }
 
   return (
     <Phase12Shell activePageId="048">
@@ -1773,9 +1818,10 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
             <button
               className={primaryButtonClass}
               data-testid="j07-invite-user"
+              data-ux-lifecycle-result="opens-governance-user-drawer"
+              data-ux-lifecycle-trigger="governance-user-drawer"
               onClick={() => {
-                void runScreencastDemoAction("j07.inviteUser");
-                setDrawerOpen(true);
+                openGovernanceUserDrawer();
               }}
               type="button"
             >
@@ -1818,13 +1864,77 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
       </div>
       <Drawer
         description="Invite a user and assign scoped roles."
-        footer={<div className="grid gap-3 sm:grid-cols-2"><button className={secondaryButtonClass} onClick={() => setDrawerOpen(false)} type="button">Cancel</button><button className={primaryButtonClass} data-testid="j07-send-invitation" onClick={() => { void runScreencastDemoAction("j07.sendInvitation", "/governance/roles/portfolio-manager"); }} type="button"><Send aria-hidden="true" className="size-4" />Send scoped invitation</button></div>}
-        onClose={() => setDrawerOpen(false)}
+        footer={
+          <div className="grid gap-3 sm:grid-cols-2">
+            <button className={secondaryButtonClass} disabled={status === "submitting"} onClick={closeGovernanceUserDrawer} type="button">Cancel</button>
+            <button
+              className={primaryButtonClass}
+              data-testid="j07-send-invitation"
+              data-ux-lifecycle-result={acknowledged ? "submits-scoped-governance-invite" : "blocked-validation-required"}
+              disabled={!acknowledged || status === "submitting" || status === "success"}
+              onClick={() => {
+                void submitGovernanceUserInvite();
+              }}
+              type="button"
+            >
+              <Send aria-hidden="true" className="size-4" />{status === "submitting" ? "Sending..." : "Send scoped invitation"}
+            </button>
+          </div>
+        }
+        onClose={status === "submitting" ? undefined : closeGovernanceUserDrawer}
         open={drawerOpen}
         title="Invite New User"
       >
-        <div className="space-y-5">
-          <StatePanel detail="Role assignment changes access only. It cannot release advice, prove evidence sufficiency, approve exports or suppress audit." state="restricted" title="Sensitive access" />
+        <div
+          className="space-y-5"
+          data-testid="uxp3-governance-user-drawer-lifecycle"
+          data-ux-lifecycle-status={lifecycleStatus}
+          data-ux-lifecycle-validation={validationState}
+          data-ux-no-overclaim="true"
+        >
+          <StatePanel detail="Role assignment changes access only after scoped governance workflow submission. It cannot release advice, prove evidence sufficiency, approve exports or suppress audit." state="restricted" title="Sensitive access" />
+          <label className="flex items-start gap-3 text-sm text-alphavest-muted">
+            <input
+              checked={acknowledged}
+              className="mt-1"
+              disabled={status === "submitting" || status === "success"}
+              onChange={(event) => setAcknowledged(event.target.checked)}
+              type="checkbox"
+            />
+            <span>I understand this creates only a scoped invitation request; role activation, consent acceptance, audit review, release and export controls remain separate.</span>
+          </label>
+          {status === "idle" ? (
+            <StatePanel
+              detail={acknowledged ? "Scoped invitation can be submitted through the existing governance workflow." : "Invitation remains blocked until the scoped-access acknowledgement is checked."}
+              state={acknowledged ? "validation" : "blocked"}
+              testId="j07-governance-user-validation-state"
+              title={acknowledged ? "Governance invite valid" : "Governance invite blocked"}
+            />
+          ) : null}
+          {status === "submitting" ? (
+            <StatePanel
+              detail={message ?? "Submitting the scoped governance invitation."}
+              state="loading"
+              testId="j07-governance-user-loading-state"
+              title="Governance invite submitting"
+            />
+          ) : null}
+          {status === "success" ? (
+            <StatePanel
+              detail={message ?? "The invitation was routed through the existing scoped governance workflow; role activation, consent acceptance, evidence sufficiency, release and export/share remain separate controls."}
+              state="success"
+              testId="j07-governance-user-success-state"
+              title="Governance invite routed"
+            />
+          ) : null}
+          {status === "error" ? (
+            <StatePanel
+              detail={message ?? "Invitation workflow failed without scoped role activation, access expansion, release or client visibility change."}
+              state="error"
+              testId="j07-governance-user-error-state"
+              title="Governance invite failed"
+            />
+          ) : null}
           <UxSecondaryContextTabs
             safetyNote="Role details are secondary drawer context; invitation and access authority remain constrained by RBAC and audit logging."
             tabs={[
