@@ -1620,6 +1620,17 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
   const releasePhrase = "RELEASE TO CLIENT";
   const releaseValid = acknowledged && confirmationText.trim() === releasePhrase;
   const submitDisabled = !releaseValid || status === "submitting" || status === "success";
+  const lifecycleStatus = status === "submitting" ? "loading" : status;
+  const validationState = releaseValid
+    ? "valid-confirmation"
+    : !acknowledged
+      ? "blocked-acknowledgement-required"
+      : "blocked-exact-phrase-required";
+  const validationMessage = releaseValid
+    ? "Confirmation is valid. Submit can request the existing audited compliance release workflow."
+    : !acknowledged
+      ? "Release is blocked until the compliance acknowledgement is checked and the exact release phrase is entered."
+      : `Release is blocked until the confirmation text exactly matches ${releasePhrase}.`;
 
   function resetAndClose() {
     setAcknowledged(false);
@@ -1635,7 +1646,7 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
     }
 
     setStatus("submitting");
-    setMessage(null);
+    setMessage("Submitting the audited compliance release request. Close and cancel are blocked until the request resolves.");
 
     try {
       const body = await runRecommendationReviewWorkflowAction({
@@ -1649,10 +1660,18 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
       });
 
       setStatus("success");
-      setMessage(body.result?.auditEventId ? `Audit recorded: ${body.result.auditEventId}` : "Release persisted.");
+      setMessage(
+        body.result?.auditEventId
+          ? `Audit recorded: ${body.result.auditEventId}. Compliance release persisted for this reviewed package only; export, download, share and client acceptance remain separate controls.`
+          : "Compliance release persisted for this reviewed package only; export, download, share and client acceptance remain separate controls.",
+      );
     } catch (error) {
       setStatus("error");
-      setMessage(error instanceof Error ? error.message : "Release failed without mutation.");
+      setMessage(
+        error instanceof Error
+          ? `${error.message} No release mutation or client visibility change was completed.`
+          : "Release failed without mutation or client visibility change.",
+      );
     }
   }
 
@@ -1672,6 +1691,7 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
           <button
             className={primaryButtonClass}
             data-testid="j02-release-client"
+            data-ux-lifecycle-result={releaseValid ? "submits-audited-release" : "blocked-validation-required"}
             disabled={submitDisabled}
             onClick={() => {
               void submitRelease();
@@ -1686,7 +1706,13 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
       open={open}
       title="Release to client"
     >
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div
+        className="grid gap-4 xl:grid-cols-2"
+        data-testid="uxp3-compliance-release-lifecycle"
+        data-ux-lifecycle-status={lifecycleStatus}
+        data-ux-lifecycle-validation={validationState}
+        data-ux-no-overclaim="true"
+      >
         <Card>
           <CardHeader><CardTitle>Release checklist</CardTitle></CardHeader>
           <CardContent className="space-y-3">
@@ -1738,8 +1764,10 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
           <CardHeader><CardTitle>Confirm release</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm leading-6 text-alphavest-muted">You must have release permission to continue. Confirm that all information is accurate and compliant.</p>
+            <p className="sr-only" id="release-confirmation-validation">{validationMessage}</p>
             <label className="flex items-start gap-3 text-sm text-alphavest-muted">
               <input
+                aria-describedby="release-confirmation-validation"
                 checked={acknowledged}
                 className="mt-1"
                 disabled={status === "submitting" || status === "success"}
@@ -1751,6 +1779,7 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
             <label className="block">
               <span className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Type {releasePhrase} to release</span>
               <input
+                aria-describedby="release-confirmation-validation"
                 className={inputClass}
                 data-testid="j02-release-confirmation"
                 disabled={status === "submitting" || status === "success"}
@@ -1758,17 +1787,45 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
                 value={confirmationText}
               />
             </label>
+            {status === "idle" ? (
+              <StatePanel
+                detail={validationMessage}
+                state={releaseValid ? "validation" : "blocked"}
+                testId="j02-release-validation-state"
+                title={releaseValid ? "Release confirmation valid" : "Release confirmation blocked"}
+              />
+            ) : null}
+            {status === "submitting" ? (
+              <StatePanel
+                detail={message ?? "Submitting the audited compliance release request."}
+                state="loading"
+                testId="j02-release-loading-state"
+                title="Release request submitting"
+              />
+            ) : null}
             {status === "success" ? (
-              <StatePanel detail={message ?? "Release persisted."} state="success" title="Released successfully" />
+              <StatePanel
+                detail={message ?? "Compliance release persisted for this reviewed package only; export, download, share and client acceptance remain separate controls."}
+                state="success"
+                testId="j02-release-success-state"
+                title="Released successfully"
+              />
             ) : null}
             {status === "error" ? (
-              <StatePanel detail={message ?? "No mutation was completed."} state="blocked" title="Release failed" />
+              <StatePanel
+                detail={message ?? "No release mutation or client visibility change was completed."}
+                state="blocked"
+                testId="j02-release-error-state"
+                title="Release failed"
+              />
             ) : null}
           </CardContent>
         </Card>
       </div>
       <div className="mt-4 rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-4 text-sm text-alphavest-green">
-        Release has not been completed in this modal state. The demo action records only the requested release step after submit.
+        {status === "success"
+          ? "Release completed only through the existing audited workflow. Export, download, share and client acceptance remain separate controls."
+          : "Release has not been completed in this modal state. The demo action records only the requested release step after submit."}
       </div>
     </Modal>
   );

@@ -33,11 +33,20 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
     await page.goto("/compliance/reviews/demo/release?state=release");
 
     const releaseDialog = page.getByRole("dialog", { name: "Release to client" });
+    const lifecycle = page.getByTestId("uxp3-compliance-release-lifecycle");
     await expect(releaseDialog).toBeVisible();
+    await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-status", "idle");
+    await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-validation", "blocked-acknowledgement-required");
+    await expect(lifecycle).toHaveAttribute("data-ux-no-overclaim", "true");
     await expect(page.getByTestId("j02-release-client")).toBeDisabled();
+    await expect(page.getByTestId("j02-release-validation-state")).toContainText(
+      "Release is blocked until the compliance acknowledgement is checked",
+    );
 
     await releaseDialog.locator("input[type='checkbox']").check();
     await page.getByTestId("j02-release-confirmation").fill("CONFIRM");
+    await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-validation", "blocked-exact-phrase-required");
+    await expect(page.getByTestId("j02-release-validation-state")).toContainText("exactly matches RELEASE TO CLIENT");
     await expect(page.getByTestId("j02-release-client")).toBeDisabled();
 
     await releaseDialog.getByRole("button", { name: "Cancel" }).click();
@@ -49,9 +58,13 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
     await page.goto("/compliance/reviews/demo/release?state=release");
 
     const releaseDialog = page.getByRole("dialog", { name: "Release to client" });
+    const lifecycle = page.getByTestId("uxp3-compliance-release-lifecycle");
     await expect(releaseDialog).toBeVisible();
     await releaseDialog.locator("input[type='checkbox']").check();
     await page.getByTestId("j02-release-confirmation").fill("RELEASE TO CLIENT");
+    await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-validation", "valid-confirmation");
+    await expect(page.getByTestId("j02-release-validation-state")).toContainText("Confirmation is valid.");
+    await expect(page.getByTestId("j02-release-client")).toHaveAttribute("data-ux-lifecycle-result", "submits-audited-release");
 
     const responsePromise = page.waitForResponse(
       (response) => response.url().includes("/api/demo-workflow") && response.request().method() === "POST",
@@ -63,8 +76,13 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
 
     expect(response.ok(), JSON.stringify(body)).toBe(true);
     expect(body.result.auditEventId).toBeTruthy();
+    await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-status", "success");
     await expect(releaseDialog.getByText("Released successfully")).toBeVisible();
     await expect(releaseDialog.getByText("Audit recorded:")).toBeVisible();
+    await expect(page.getByTestId("j02-release-success-state")).toContainText(
+      "export, download, share and client acceptance remain separate controls.",
+    );
+    await expect(releaseDialog.getByText(/client accepted|export approved|download ready|share ready/i)).toHaveCount(0);
   });
 
   test("request evidence confirmation requires controlled reason and phrase before submit", async ({ page }) => {
