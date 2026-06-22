@@ -548,6 +548,21 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
   const [message, setMessage] = useState<string | null>(null);
   const requiredPhrase = "REQUEST EVIDENCE";
   const requestEvidenceValid = acknowledged && confirmationText.trim() === requiredPhrase && reason.trim().length >= 12;
+  const lifecycleStatus = status === "submitting" ? "loading" : status;
+  const validationState = requestEvidenceValid
+    ? "valid-confirmation"
+    : !acknowledged
+      ? "blocked-acknowledgement-required"
+      : reason.trim().length < 12
+        ? "blocked-reason-required"
+        : "blocked-exact-phrase-required";
+  const validationMessage = requestEvidenceValid
+    ? "Confirmation is valid. Submit can request evidence through the existing audited workflow while release remains blocked."
+    : !acknowledged
+      ? "Evidence request is blocked until the compliance acknowledgement is checked, a controlled reason is entered and the exact phrase is typed."
+      : reason.trim().length < 12
+        ? "Evidence request is blocked until the reason explains the missing evidence decision with at least 12 characters."
+        : `Evidence request is blocked until the confirmation text exactly matches ${requiredPhrase}.`;
 
   function resetAndClose() {
     setAcknowledged(false);
@@ -564,7 +579,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
     }
 
     setStatus("submitting");
-    setMessage(null);
+    setMessage("Submitting the audited evidence request. Close and cancel are blocked until the request resolves.");
 
     try {
       const body = await runRecommendationReviewWorkflowAction({
@@ -577,10 +592,18 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
       });
 
       setStatus("success");
-      setMessage(body.result?.auditEventId ? `Audit recorded: ${body.result.auditEventId}` : "Evidence request persisted.");
+      setMessage(
+        body.result?.auditEventId
+          ? `Audit recorded: ${body.result.auditEventId}. Evidence request persisted for this review only; evidence sufficiency, release, export/download/share and client acceptance remain separate controls.`
+          : "Evidence request persisted for this review only; evidence sufficiency, release, export/download/share and client acceptance remain separate controls.",
+      );
     } catch (error) {
       setStatus("error");
-      setMessage(error instanceof Error ? error.message : "Evidence request failed without mutation.");
+      setMessage(
+        error instanceof Error
+          ? `${error.message} No release mutation, evidence sufficiency or client visibility change was completed.`
+          : "Evidence request failed without release mutation, evidence sufficiency or client visibility change.",
+      );
     }
   }
 
@@ -661,6 +684,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
             <button
               className={primaryButtonClass}
               data-testid="j02-confirm-request-evidence"
+              data-ux-lifecycle-result={requestEvidenceValid ? "submits-audited-evidence-request" : "blocked-validation-required"}
               disabled={!requestEvidenceValid || status === "submitting" || status === "success"}
               onClick={() => {
                 void submitEvidenceRequest();
@@ -676,7 +700,14 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
         open={modalOpen}
         title={title}
       >
-        <div className="space-y-4">
+        <div
+          className="space-y-4"
+          data-testid="uxp3-block-request-evidence-lifecycle"
+          data-ux-lifecycle-status={lifecycleStatus}
+          data-ux-lifecycle-validation={validationState}
+          data-ux-no-overclaim="true"
+          data-ux-sensitive-action="request_evidence"
+        >
           <div className="grid gap-4 rounded-md border border-alphavest-red/45 bg-alphavest-red/12 p-4 md:grid-cols-[auto_1fr_auto]">
             <IconTile tone="red"><LockKeyhole aria-hidden="true" className="size-5" /></IconTile>
             <div>
@@ -724,8 +755,10 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
           <Card>
             <CardHeader><CardTitle>Confirm evidence request</CardTitle></CardHeader>
             <CardContent className="space-y-4">
+              <p className="sr-only" id="block-request-evidence-validation">{validationMessage}</p>
               <label className="flex items-start gap-3 text-sm text-alphavest-muted">
                 <input
+                  aria-describedby="block-request-evidence-validation"
                   checked={acknowledged}
                   className="mt-1"
                   disabled={status === "submitting" || status === "success"}
@@ -737,6 +770,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
               <label className="block">
                 <span className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Reason</span>
                 <textarea
+                  aria-describedby="block-request-evidence-validation"
                   className={textareaClass}
                   disabled={status === "submitting" || status === "success"}
                   onChange={(event) => setReason(event.target.value)}
@@ -747,6 +781,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
               <label className="block">
                 <span className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Type {requiredPhrase}</span>
                 <input
+                  aria-describedby="block-request-evidence-validation"
                   className={inputClass}
                   data-testid="j02-request-evidence-confirmation"
                   disabled={status === "submitting" || status === "success"}
@@ -754,11 +789,37 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
                   value={confirmationText}
                 />
               </label>
+              {status === "idle" ? (
+                <StatePanel
+                  detail={validationMessage}
+                  state={requestEvidenceValid ? "validation" : "blocked"}
+                  testId="j02-block-request-validation-state"
+                  title={requestEvidenceValid ? "Evidence request confirmation valid" : "Evidence request confirmation blocked"}
+                />
+              ) : null}
+              {status === "submitting" ? (
+                <StatePanel
+                  detail={message ?? "Submitting the audited evidence request."}
+                  state="loading"
+                  testId="j02-block-request-loading-state"
+                  title="Evidence request submitting"
+                />
+              ) : null}
               {status === "success" ? (
-                <StatePanel detail={message ?? "Evidence request persisted."} state="success" title="Evidence request persisted" />
+                <StatePanel
+                  detail={message ?? "Evidence request persisted for this review only; evidence sufficiency, release, export/download/share and client acceptance remain separate controls."}
+                  state="success"
+                  testId="j02-block-request-success-state"
+                  title="Evidence request persisted"
+                />
               ) : null}
               {status === "error" ? (
-                <StatePanel detail={message ?? "No mutation was completed."} state="blocked" title="Evidence request failed" />
+                <StatePanel
+                  detail={message ?? "No release mutation, evidence sufficiency or client visibility change was completed."}
+                  state="blocked"
+                  testId="j02-block-request-error-state"
+                  title="Evidence request failed"
+                />
               ) : null}
             </CardContent>
           </Card>

@@ -90,14 +90,27 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
 
     await page.getByRole("button", { name: "Manage Block" }).click();
     const evidenceDialog = page.getByRole("dialog", { name: "Block or Request Evidence" });
+    const lifecycle = page.getByTestId("uxp3-block-request-evidence-lifecycle");
     await expect(evidenceDialog).toBeVisible();
+    await expect(lifecycle).toHaveAttribute("data-ux-sensitive-action", "request_evidence");
+    await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-status", "idle");
+    await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-validation", "blocked-acknowledgement-required");
     await expect(page.getByTestId("j02-confirm-request-evidence")).toBeDisabled();
+    await expect(page.getByTestId("j02-block-request-validation-state")).toContainText(
+      "Evidence request is blocked until the compliance acknowledgement is checked",
+    );
 
     await evidenceDialog.locator("input[type='checkbox']").check();
     await page.getByTestId("j02-request-evidence-confirmation").fill("REQUEST EVIDENCE");
+    await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-validation", "blocked-reason-required");
     await expect(page.getByTestId("j02-confirm-request-evidence")).toBeDisabled();
 
     await evidenceDialog.getByRole("textbox").first().fill("Compliance needs refreshed source proof before release.");
+    await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-validation", "valid-confirmation");
+    await expect(page.getByTestId("j02-confirm-request-evidence")).toHaveAttribute(
+      "data-ux-lifecycle-result",
+      "submits-audited-evidence-request",
+    );
     const responsePromise = page.waitForResponse(
       (response) => response.url().includes("/api/demo-workflow") && response.request().method() === "POST",
     );
@@ -108,6 +121,39 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
 
     expect(response.ok(), JSON.stringify(body)).toBe(true);
     expect(body.result.auditEventId).toBeTruthy();
-    await expect(evidenceDialog.getByText("Evidence request persisted")).toBeVisible();
+    await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-status", "success");
+    await expect(page.getByTestId("j02-block-request-success-state")).toContainText("Evidence request persisted");
+    await expect(page.getByTestId("j02-block-request-success-state")).toContainText(
+      "evidence sufficiency, release, export/download/share and client acceptance remain separate controls.",
+    );
+    await expect(evidenceDialog.getByText(/client accepted|evidence sufficient|release complete|download ready|share ready/i)).toHaveCount(0);
+  });
+
+  test("compliance block keep-blocked paths close without API mutation", async ({ page }) => {
+    const workflowRequests: string[] = [];
+    page.on("request", (request) => {
+      if (request.url().includes("/api/demo-workflow")) {
+        workflowRequests.push(request.method());
+      }
+    });
+
+    await page.goto("/compliance/reviews/demo/block?state=base");
+    await page.getByRole("button", { name: "Manage Block" }).click();
+
+    const blockDialog = page.getByRole("dialog", { name: "Block or Request Evidence" });
+    const lifecycle = page.getByTestId("uxp3-block-request-evidence-lifecycle");
+    await expect(blockDialog).toBeVisible();
+    await expect(lifecycle).toHaveAttribute("data-ux-sensitive-action", "request_evidence");
+    await expect(page.getByTestId("j02-confirm-request-evidence")).toBeDisabled();
+
+    await blockDialog.getByRole("button", { name: "Cancel" }).click();
+    await expect(blockDialog).toBeHidden();
+    expect(workflowRequests).toEqual([]);
+
+    await page.getByRole("button", { name: "Manage Block" }).click();
+    await expect(blockDialog).toBeVisible();
+    await blockDialog.getByRole("button", { name: "Keep Blocked" }).click();
+    await expect(blockDialog).toBeHidden();
+    expect(workflowRequests).toEqual([]);
   });
 });
