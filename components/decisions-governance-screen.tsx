@@ -1987,13 +1987,100 @@ function Field({ label, value }: { label: string; value: string }) {
 function RoleManagementPage({ title, visualState }: { title: string; visualState?: VisualState }) {
   const [drawerOpen, setDrawerOpen] = useState(visualState === "drawer" || visualState === "confirm");
   const [modalOpen, setModalOpen] = useState(visualState === "confirm");
+  const [drawerAcknowledged, setDrawerAcknowledged] = useState(false);
+  const [confirmationText, setConfirmationText] = useState("");
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [message, setMessage] = useState<string | null>(null);
+  const requiredPhrase = "CONFIRM ROLE CHANGE";
+  const roleChangeValid = drawerAcknowledged && confirmationText.trim() === requiredPhrase;
+  const lifecycleStatus = status === "submitting" ? "loading" : status;
+  const drawerValidation = drawerAcknowledged ? "valid-scoped-role-review" : "blocked-acknowledgement-required";
+  const modalValidation = roleChangeValid
+    ? "valid-second-confirmation"
+    : !drawerAcknowledged
+      ? "blocked-drawer-acknowledgement-required"
+      : "blocked-exact-phrase-required";
+
+  function openRoleDrawer() {
+    setDrawerOpen(true);
+    setModalOpen(false);
+    setDrawerAcknowledged(false);
+    setConfirmationText("");
+    setStatus("idle");
+    setMessage(null);
+  }
+
+  function closeRoleDrawer() {
+    setDrawerOpen(false);
+    setModalOpen(false);
+    setDrawerAcknowledged(false);
+    setConfirmationText("");
+    setStatus("idle");
+    setMessage(null);
+  }
+
+  function openRoleConfirmation() {
+    if (!drawerAcknowledged) {
+      setMessage("Review remains blocked until the scoped-role acknowledgement is checked.");
+      return;
+    }
+
+    setModalOpen(true);
+    setConfirmationText("");
+    setStatus("idle");
+    setMessage(null);
+  }
+
+  function closeRoleConfirmation() {
+    setModalOpen(false);
+    setConfirmationText("");
+    setStatus("idle");
+    setMessage(null);
+  }
+
+  async function submitRoleConfirmation() {
+    if (!roleChangeValid || status === "submitting") {
+      return;
+    }
+
+    setStatus("submitting");
+    setMessage("Checking the existing role-change workflow. Close and cancel are blocked until the request resolves.");
+
+    try {
+      const body = await runScreencastDemoAction("j07.saveRoleChanges");
+      setStatus("success");
+      setMessage(
+        body.result?.auditEventId
+          ? `Audit recorded: ${body.result.auditEventId}. Scoped role-change review was routed through the existing workflow; role activation, access expansion, release, evidence sufficiency and export/share remain separate controls.`
+          : "Scoped role-change review was routed through the existing workflow; role activation, access expansion, release, evidence sufficiency and export/share remain separate controls.",
+      );
+    } catch (error) {
+      setStatus("error");
+      setMessage(
+        error instanceof Error
+          ? `${error.message} No scoped role activation, access expansion, release or client visibility change was completed.`
+          : "Role-change workflow failed without scoped role activation, access expansion, release or client visibility change.",
+      );
+    }
+  }
 
   return (
     <Phase12Shell activePageId="049">
       <ScreenTitle>{title}</ScreenTitle>
       <div className={cn("mx-auto max-w-[104rem] space-y-5", drawerOpen ? "pr-0 xl:pr-[23rem]" : "")}>
         <PageHeading
-          action={<button className={primaryButtonClass} onClick={() => setDrawerOpen(true)} type="button"><Plus aria-hidden="true" className="size-4" />Create scoped role</button>}
+          action={
+            <button
+              className={primaryButtonClass}
+              data-testid="j07-open-role-drawer"
+              data-ux-lifecycle-result="opens-role-drawer"
+              data-ux-lifecycle-trigger="role-drawer"
+              onClick={openRoleDrawer}
+              type="button"
+            >
+              <Plus aria-hidden="true" className="size-4" />Create scoped role
+            </button>
+          }
           subtitle="Define roles and manage permissions across WealthOS."
           title={title}
         />
@@ -2020,13 +2107,51 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
       </div>
       <Drawer
         description="Custom role with sensitive permission changes."
-        footer={<div className="grid gap-3 sm:grid-cols-2"><button className={secondaryButtonClass} onClick={() => setDrawerOpen(false)} type="button">Discard changes</button><button className={primaryButtonClass} onClick={() => setModalOpen(true)} type="button">Review scoped changes</button></div>}
-        onClose={() => setDrawerOpen(false)}
+        footer={
+          <div className="grid gap-3 sm:grid-cols-2">
+            <button className={secondaryButtonClass} disabled={status === "submitting"} onClick={closeRoleDrawer} type="button">Discard changes</button>
+            <button
+              className={primaryButtonClass}
+              data-testid="j07-review-role-changes"
+              data-ux-lifecycle-result={drawerAcknowledged ? "opens-second-confirmation" : "blocked-validation-required"}
+              disabled={!drawerAcknowledged || status === "submitting"}
+              onClick={openRoleConfirmation}
+              type="button"
+            >
+              Review scoped changes
+            </button>
+          </div>
+        }
+        onClose={status === "submitting" ? undefined : closeRoleDrawer}
         open={drawerOpen}
         title="Portfolio Manager"
       >
-        <div className="space-y-5">
-          <StatePanel detail="Sensitive permission changes stay role-scoped and require confirmation plus audit logging." state="restricted" title="Sensitive permission change" />
+        <div
+          className="space-y-5"
+          data-testid="uxp3-role-drawer-lifecycle"
+          data-ux-lifecycle-status={lifecycleStatus}
+          data-ux-lifecycle-validation={drawerValidation}
+          data-ux-no-overclaim="true"
+        >
+          <StatePanel detail="Sensitive permission changes stay role-scoped and require confirmation plus audit logging. Second confirmation and audit workflow checks are still required; drawer context alone cannot activate roles or expand access." state="restricted" title="Sensitive permission change" />
+          <label className="flex items-start gap-3 text-sm text-alphavest-muted">
+            <input
+              checked={drawerAcknowledged}
+              className="mt-1"
+              disabled={status === "submitting" || status === "success"}
+              onChange={(event) => setDrawerAcknowledged(event.target.checked)}
+              type="checkbox"
+            />
+            <span>I understand these role changes remain pending until second confirmation and audit workflow checks pass.</span>
+          </label>
+          {status === "idle" && !modalOpen ? (
+            <StatePanel
+              detail={drawerAcknowledged ? "Scoped role changes can move to second confirmation." : "Role review remains blocked until the scoped-role acknowledgement is checked."}
+              state={drawerAcknowledged ? "validation" : "blocked"}
+              testId="j07-role-drawer-validation-state"
+              title={drawerAcknowledged ? "Role drawer valid" : "Role drawer blocked"}
+            />
+          ) : null}
           {rolePermissions.map((group) => (
             <Card key={group.group}>
               <CardHeader><CardTitle>{group.group}</CardTitle></CardHeader>
@@ -2052,19 +2177,82 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
           </div>
         }
         description="You are about to save changes that modify sensitive permissions."
-            footer={<><button className={secondaryButtonClass} onClick={() => setModalOpen(false)} type="button">Cancel</button><button className={primaryButtonClass} data-testid="j07-save-role-changes" onClick={() => { void runScreencastDemoAction("j07.saveRoleChanges", "/governance/access-requests/ar-2025-0612"); }} type="button">Confirm scoped role change</button></>}
-        onClose={() => setModalOpen(false)}
+        footer={
+          <>
+            <button className={secondaryButtonClass} disabled={status === "submitting"} onClick={closeRoleConfirmation} type="button">Cancel</button>
+            <button
+              className={primaryButtonClass}
+              data-testid="j07-save-role-changes"
+              data-ux-lifecycle-result={roleChangeValid ? "submits-scoped-role-review" : "blocked-validation-required"}
+              disabled={!roleChangeValid || status === "submitting" || status === "success"}
+              onClick={() => {
+                void submitRoleConfirmation();
+              }}
+              type="button"
+            >
+              {status === "submitting" ? "Confirming..." : "Confirm scoped role change"}
+            </button>
+          </>
+        }
+        onClose={status === "submitting" ? undefined : closeRoleConfirmation}
         open={modalOpen}
         title="Confirm Sensitive Permission Changes"
       >
-        <div className="space-y-4">
+        <div
+          className="space-y-4"
+          data-testid="uxp3-role-confirmation-lifecycle"
+          data-ux-lifecycle-status={lifecycleStatus}
+          data-ux-lifecycle-validation={modalValidation}
+          data-ux-no-overclaim="true"
+        >
           <StatePanel detail="This role change cannot release advice, mark evidence sufficient, approve export or bypass audit persistence." state="restricted" title="Second confirmation required" />
           <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4 text-sm text-alphavest-muted">
             <p>3 sensitive permissions modified.</p>
             <p>Affects 7 users across 2 teams.</p>
             <p>This change requires audit logging before it can be accepted.</p>
           </div>
-          <Field label="Confirmation phrase" value="PORTFOLIO MANAGER" />
+          <label className="block">
+            <span className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Type {requiredPhrase}</span>
+            <input
+              className={inputClass}
+              data-testid="j07-role-confirmation-phrase"
+              disabled={status === "submitting" || status === "success"}
+              onChange={(event) => setConfirmationText(event.target.value)}
+              value={confirmationText}
+            />
+          </label>
+          {status === "idle" ? (
+            <StatePanel
+              detail={roleChangeValid ? "Second confirmation is valid. Submit can route the scoped role review through the existing workflow." : "Role change remains blocked until acknowledgement and exact confirmation phrase are present."}
+              state={roleChangeValid ? "validation" : "blocked"}
+              testId="j07-role-confirmation-validation-state"
+              title={roleChangeValid ? "Role confirmation valid" : "Role confirmation blocked"}
+            />
+          ) : null}
+          {status === "submitting" ? (
+            <StatePanel
+              detail={message ?? "Checking the existing role-change workflow."}
+              state="loading"
+              testId="j07-role-confirmation-loading-state"
+              title="Role change confirming"
+            />
+          ) : null}
+          {status === "success" ? (
+            <StatePanel
+              detail={message ?? "Scoped role-change review was routed through the existing workflow; role activation, access expansion, release, evidence sufficiency and export/share remain separate controls."}
+              state="success"
+              testId="j07-role-confirmation-success-state"
+              title="Role change review routed"
+            />
+          ) : null}
+          {status === "error" ? (
+            <StatePanel
+              detail={message ?? "Role-change workflow failed without scoped role activation, access expansion, release or client visibility change."}
+              state="error"
+              testId="j07-role-confirmation-error-state"
+              title="Role change failed"
+            />
+          ) : null}
         </div>
       </Modal>
     </Phase12Shell>
