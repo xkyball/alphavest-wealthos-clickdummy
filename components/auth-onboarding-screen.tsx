@@ -282,13 +282,13 @@ function LoginPage() {
               or
               <span className="h-px flex-1 bg-alphavest-border" />
             </div>
-            <button className={cn(secondaryButtonClass, "w-full justify-between")} type="button">
+            <p className={cn(secondaryButtonClass, "w-full justify-between opacity-65")} data-ux-affordance="static-control-note" data-ux-interactive="false">
               <span className="flex items-center gap-2">
                 <ShieldCheck aria-hidden="true" className="size-4 text-alphavest-gold-soft" />
                 Sign in with SSO
               </span>
               <Badge>SAML 2.0</Badge>
-            </button>
+            </p>
             <p className="text-center text-sm text-alphavest-muted">
               Need help? <span className="font-semibold text-alphavest-gold-soft">Contact your administrator.</span>
             </p>
@@ -367,10 +367,10 @@ function MfaPage() {
             </div>
             <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/40">
               <div className="grid grid-cols-2 border-b border-alphavest-border text-sm">
-                <button className="border-r border-alphavest-border bg-alphavest-panel-soft/60 px-4 py-3 text-left font-semibold text-alphavest-ivory" type="button">
+                <span className="border-r border-alphavest-border bg-alphavest-panel-soft/60 px-4 py-3 text-left font-semibold text-alphavest-ivory opacity-80">
                   Authenticator app
-                </button>
-                <button className="px-4 py-3 text-left text-alphavest-muted" type="button">Security key</button>
+                </span>
+                <span className="px-4 py-3 text-left text-alphavest-muted opacity-60">Security key</span>
               </div>
               <div className="p-4">
                 <p className="text-sm text-alphavest-gold-soft">Open your authenticator app and enter the 6-digit code.</p>
@@ -397,10 +397,10 @@ function MfaPage() {
               state={status === "error" ? "blocked" : status === "success" ? "success" : "restricted"}
               title={`MFA for ${email}`}
             />
-            <button className={cn(secondaryButtonClass, "w-full justify-between")} type="button">
+            <p className={cn(secondaryButtonClass, "w-full justify-between opacity-65")} data-ux-affordance="static-control-note" data-ux-interactive="false">
               <span>Send push notification</span>
               <ChevronRight aria-hidden="true" className="size-4" />
-            </button>
+            </p>
             <div className="flex items-center justify-between text-sm text-alphavest-muted">
               <Link href="/login">Back to sign in</Link>
               <span>Sign out</span>
@@ -474,7 +474,7 @@ function InvitePage() {
               </span>
               <ArrowRight aria-hidden="true" className="size-4" />
             </Link>
-            <button className={cn(secondaryButtonClass, "w-full")} type="button">Decline invitation</button>
+            <p className={cn(secondaryButtonClass, "w-full opacity-65")} data-ux-affordance="static-control-note" data-ux-interactive="false">Decline invitation</p>
             <p className="text-center text-sm leading-6 text-alphavest-muted">
               Accepting starts the secure account setup process and prepares an audit event.
             </p>
@@ -536,13 +536,13 @@ function IdentityPage() {
             <div className="md:col-span-2">
               <FieldShell helper="Optional profile data is stored separately from account credentials." icon="phone" label="Phone number" value={invitedUser.phone} />
             </div>
-            <button className={cn(secondaryButtonClass, "justify-between md:col-span-2")} type="button">
+            <p className={cn(secondaryButtonClass, "justify-between opacity-65 md:col-span-2")} data-ux-affordance="static-control-note" data-ux-interactive="false">
               <span className="flex items-center gap-2">
                 <ShieldCheck aria-hidden="true" className="size-4 text-alphavest-gold-soft" />
                 Set up with Single Sign-On
               </span>
               <Badge>SAML 2.0</Badge>
-            </button>
+            </p>
             <StatePanel
               className="md:col-span-2"
               detail="Only account security and onboarding fields are collected at this stage."
@@ -608,10 +608,10 @@ function ConsentPage() {
               <p className="mt-3 text-sm text-alphavest-muted">Required acknowledgements are stored as consent records.</p>
             </div>
             <div className="grid gap-3 md:grid-cols-[0.55fr_1fr]">
-              <button className={secondaryButtonClass} type="button">
+              <p className={cn(secondaryButtonClass, "opacity-65")} data-ux-affordance="static-control-note" data-ux-interactive="false">
                 <X aria-hidden="true" className="size-4 text-alphavest-gold-soft" />
                 Decline and sign out
-              </button>
+              </p>
               <Link className={cn(primaryButtonClass, "justify-center")} href="/onboarding/role-confirmation">
                 <LockKeyhole aria-hidden="true" className="size-4" />
                 Continue

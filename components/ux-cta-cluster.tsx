@@ -30,6 +30,8 @@ const secondaryClass =
 const recoveryClass =
   "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-gold/55 bg-alphavest-gold/10 px-4 text-sm font-semibold text-alphavest-gold-soft transition hover:border-alphavest-gold hover:bg-alphavest-gold/15";
 
+const defaultUnwiredReason = "This action is held until an authorized lifecycle is wired.";
+
 function CtaButton({
   action,
   className,
@@ -39,25 +41,39 @@ function CtaButton({
   className: string;
   kind: "primary" | "recovery" | "secondary";
 }) {
-  const reasonId = action.disabledReason ? `${action.testId ?? action.label.replace(/\W+/g, "-").toLowerCase()}-reason` : undefined;
+  const hasLifecycle = Boolean(action.href || action.onClick);
+  const disabled = Boolean(action.disabled || !hasLifecycle);
+  const disabledReason = action.disabledReason ?? (!hasLifecycle ? defaultUnwiredReason : undefined);
+  const reasonId = disabledReason ? `${action.testId ?? action.label.replace(/\W+/g, "-").toLowerCase()}-reason` : undefined;
   const dataAttrs = {
     "data-ux-primary-cta": kind === "primary" ? "true" : undefined,
     "data-ux-recovery-cta": kind === "recovery" ? "true" : undefined,
     "data-ux-secondary-cta": kind === "secondary" ? "true" : undefined,
+    "data-ux-interactive": disabled ? "false" : "true",
     "data-testid": action.testId ?? (kind === "primary" ? "ux-complexity-primary-cta" : undefined),
   };
 
   return (
     <div className="min-w-[10rem] max-w-full space-y-1">
-      {action.href && !action.disabled ? (
+      {action.href && !disabled ? (
         <Link aria-describedby={reasonId} className={className} href={action.href} {...dataAttrs}>
           {action.label}
         </Link>
+      ) : disabled ? (
+        <span
+          aria-describedby={reasonId}
+          aria-label={disabledReason ? `${action.label}: ${disabledReason}` : action.label}
+          className={cn(className, "cursor-default opacity-65")}
+          role="status"
+          title={disabledReason}
+          {...dataAttrs}
+        >
+          {action.label}
+        </span>
       ) : (
         <button
           aria-describedby={reasonId}
           className={className}
-          disabled={action.disabled}
           onClick={action.onClick}
           type="button"
           {...dataAttrs}
@@ -65,9 +81,9 @@ function CtaButton({
           {action.label}
         </button>
       )}
-      {action.disabledReason ? (
+      {disabledReason ? (
         <p className="max-w-[18rem] text-xs leading-5 text-alphavest-muted" data-testid="ux-cta-disabled-reason" id={reasonId}>
-          {action.disabledReason}
+          {disabledReason}
         </p>
       ) : null}
     </div>

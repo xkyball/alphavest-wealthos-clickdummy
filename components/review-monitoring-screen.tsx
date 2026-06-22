@@ -175,8 +175,8 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, de
         </div>
       </div>
       <div className="mt-4 flex flex-wrap gap-3">
-        <button className={primaryButtonClass} data-testid="ux-phase6-confirm" disabled type="button">{confirmLabel}</button>
-        <button className={secondaryButtonClass} data-testid="ux-phase6-cancel" type="button">{cancelLabel}</button>
+        <span className={primaryButtonClass} data-testid="ux-phase6-confirm" data-ux-affordance="static-control-note" data-ux-interactive="false">{confirmLabel}</span>
+        <span className={secondaryButtonClass} data-testid="ux-phase6-cancel" data-ux-affordance="static-control-note" data-ux-interactive="false">{cancelLabel}</span>
       </div>
     </section>
   );

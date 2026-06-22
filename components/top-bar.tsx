@@ -153,14 +153,14 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
             <span className="sr-only">Reset role and tenant context</span>
           </button>
 
-          <button
-            className="grid size-10 place-items-center rounded-full border border-alphavest-border bg-alphavest-charcoal/70 text-alphavest-muted transition hover:border-alphavest-gold hover:text-alphavest-gold"
-            title="Notifications"
-            type="button"
+          <span
+            aria-label="Notifications are informational in this release"
+            className="grid size-10 place-items-center rounded-full border border-alphavest-border bg-alphavest-charcoal/70 text-alphavest-muted opacity-65"
+            role="status"
           >
             <Bell aria-hidden="true" className="size-4" />
             <span className="sr-only">Notifications</span>
-          </button>
+          </span>
 
           <div className="flex items-center gap-3 rounded-full border border-alphavest-border bg-alphavest-charcoal/70 py-1 pl-1 pr-3">
             <div className="grid size-9 place-items-center rounded-full border border-alphavest-gold/45 text-sm font-semibold text-alphavest-gold">

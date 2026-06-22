@@ -47,14 +47,18 @@ export function FilterBar({ filters = [], mobilePlaceholder, placeholder = "Sear
 
         <div className="flex flex-wrap gap-2">
           {filters.map((filter) => (
-            <button
-              className="inline-flex h-[var(--field-height)] items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-midnight/70 px-3 text-sm text-alphavest-muted transition hover:border-alphavest-gold/45 hover:text-alphavest-gold-soft"
+            <span
+              aria-label={`${filter.label} filter is not wired in this release`}
+              className="inline-flex h-[var(--field-height)] items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-midnight/70 px-3 text-sm text-alphavest-muted opacity-65"
+              data-ux-affordance="blocked-filter-button"
+              data-ux-interactive="false"
               key={filter.value}
-              type="button"
+              role="status"
+              title="This filter button is not wired in this release."
             >
               <SlidersHorizontal aria-hidden="true" className="size-4" />
               {filter.label}
-            </button>
+            </span>
           ))}
         </div>
       </div>

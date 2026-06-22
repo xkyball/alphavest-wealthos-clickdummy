@@ -101,8 +101,8 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, de
         </div>
       </div>
       <div className="mt-4 flex flex-wrap gap-3">
-        <button className={primaryButtonClass} data-testid="ux-phase6-confirm" disabled type="button">{confirmLabel}</button>
-        <button className={secondaryButtonClass} data-testid="ux-phase6-cancel" type="button">{cancelLabel}</button>
+        <span className={primaryButtonClass} data-testid="ux-phase6-confirm" data-ux-affordance="static-control-note" data-ux-interactive="false">{confirmLabel}</span>
+        <span className={secondaryButtonClass} data-testid="ux-phase6-cancel" data-ux-affordance="static-control-note" data-ux-interactive="false">{cancelLabel}</span>
       </div>
     </section>
   );
@@ -259,10 +259,10 @@ function QueuePage({ title }: { title: string }) {
                     {item}
                   </button>
                 ))}
-                <button className={primaryButtonClass} type="button">
+                <span className={primaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">
                   <Gavel aria-hidden="true" className="size-4" />
-                  Open review
-                </button>
+                  Review held
+                </span>
               </div>
             </Card>
             <DataTable columns={committeeColumns} getRowId={(row) => row.id} rows={committeeReviewRows} />
@@ -422,14 +422,14 @@ function DetailPage({ title }: { title: string }) {
                   <Vote aria-hidden="true" className="size-4" />
                   Approve committee review
                 </button>
-                <button className={cn(secondaryButtonClass, "w-full")} type="button">
+                <span className={cn(secondaryButtonClass, "w-full")} data-ux-affordance="static-control-note" data-ux-interactive="false">
                   <MessageSquareWarning aria-hidden="true" className="size-4" />
-                  Record dissent
-                </button>
-                <button className={cn(secondaryButtonClass, "w-full")} type="button">
+                  Dissent held
+                </span>
+                <span className={cn(secondaryButtonClass, "w-full")} data-ux-affordance="static-control-note" data-ux-interactive="false">
                   <ClipboardCheck aria-hidden="true" className="size-4" />
-                  Request evidence
-                </button>
+                  Evidence request held
+                </span>
               </CardContent>
             </Card>
             <StatePanel

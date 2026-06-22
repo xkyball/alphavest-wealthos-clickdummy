@@ -40,10 +40,17 @@ export function Kanban({ columns }: KanbanProps) {
                 <p className="mt-2 text-xs text-alphavest-muted">{item.meta}</p>
               </article>
             ))}
-            <button className="flex h-9 w-full items-center justify-center gap-2 rounded-md border border-dashed border-alphavest-border text-xs text-alphavest-gold transition hover:border-alphavest-gold" type="button">
+            <p
+              aria-label={`Add item to ${column.title} is not wired in this release`}
+              className="flex h-9 w-full items-center justify-center gap-2 rounded-md border border-dashed border-alphavest-border text-xs text-alphavest-gold opacity-60"
+              data-ux-affordance="blocked-cta"
+              data-ux-interactive="false"
+              role="status"
+              title="Kanban item creation is not wired in this release."
+            >
               <Plus aria-hidden="true" className="size-4" />
               Add item
-            </button>
+            </p>
           </div>
         </section>
       ))}

@@ -361,7 +361,7 @@ function SessionScopePanel() {
 function PlatformSettingsPage({ onConfirm, route }: { onConfirm: () => void; route: ScreenRoute }) {
   return (
     <div className="space-y-5">
-      <AuditBanner action={<button className={secondaryButtonClass} type="button">View audit log</button>}>
+      <AuditBanner action={<span className={staticButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Audit log scoped</span>}>
         {platformSettings.auditBanner}. Changes require approval and are logged for compliance.
       </AuditBanner>
       <ScfP07P09TrustPanel mode="governance" />
@@ -390,7 +390,7 @@ function PlatformSettingsPage({ onConfirm, route }: { onConfirm: () => void; rou
         </Card>
       </section>
       <ActionBar>
-        <button className={secondaryButtonClass} type="button">Discard changes</button>
+        <span className={staticButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Changes require confirmation</span>
         <button
           className={primaryButtonClass}
           data-testid="j10-save-platform"
@@ -523,17 +523,18 @@ function RolesPage({ onPermissionModal, route }: { onPermissionModal: () => void
           </CardHeader>
           <CardContent className="space-y-3">
             {roleTemplates.map((role) => (
-              <button
-                className="flex w-full items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 text-left transition hover:border-alphavest-gold/50"
+              <article
+                className="flex w-full items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 text-left opacity-70"
+                data-ux-affordance="blocked-cta"
+                data-ux-interactive="false"
                 key={role.name}
-                type="button"
               >
                 <span>
                   <span className="block text-sm font-semibold text-alphavest-ivory">{role.name}</span>
                   <span className="mt-1 block text-sm text-alphavest-muted">{role.description}</span>
                 </span>
                 <StatusBadge status={role.status} />
-              </button>
+              </article>
             ))}
           </CardContent>
         </Card>
@@ -593,7 +594,7 @@ function SecurityPage({ onConfirm }: { onConfirm: () => void }) {
     <div className="space-y-5">
       <ActionBar>
         <StatusChip label="All systems secure" status="ACTIVE" />
-        <button className={secondaryButtonClass} type="button">View audit log</button>
+        <span className={staticButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Audit log scoped</span>
         <button
           className={primaryButtonClass}
           data-testid="j10-save-security"
@@ -656,8 +657,8 @@ function EvidenceTemplatesPage() {
     <div className="space-y-5">
       <ActionBar>
         <SearchShell placeholder="Search templates, categories, tags..." />
-        <button className={secondaryButtonClass} type="button"><Upload aria-hidden="true" className="size-4" />Import template</button>
-        <button className={primaryButtonClass} type="button"><Plus aria-hidden="true" className="size-4" />New template</button>
+        <span className={staticButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false"><Upload aria-hidden="true" className="size-4" />Import held</span>
+        <span className={staticButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false"><Plus aria-hidden="true" className="size-4" />Template creation held</span>
       </ActionBar>
       <AuditBanner>Templates are compliance-reviewed and version-controlled. Last audit: 15 May 2024 by Compliance.</AuditBanner>
       <section className="grid gap-5 xl:grid-cols-[1.3fr_0.7fr]">
@@ -710,7 +711,7 @@ function ExportTemplatesPage() {
     <div className="space-y-5">
       <ActionBar>
         <SearchShell placeholder="Search templates, profiles, fields..." />
-        <button className={primaryButtonClass} type="button">Create template</button>
+        <span className={staticButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Template creation held</span>
       </ActionBar>
       <section className="grid gap-4 md:grid-cols-3">
         <MetricCard detail="6 active, 9 draft, 3 blocked" label="Templates" value="18" />
@@ -780,7 +781,7 @@ function TenantsPage() {
     <div className="space-y-5">
       <ActionBar>
         <StatusChip label={loadState === "error" ? "DB snapshot unavailable" : "DB tenant rows"} status={loadState === "error" ? "FAILED" : "ACTIVE"} />
-        <button className={secondaryButtonClass} type="button"><Download aria-hidden="true" className="size-4" />Export CSV</button>
+        <span className={staticButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />CSV export held</span>
         <button className={primaryButtonClass} data-testid="j06-new-tenant" onClick={() => { void runScreencastDemoAction("j06.newTenant", "/tenants/new"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add Tenant</button>
       </ActionBar>
       <Card>
@@ -934,7 +935,7 @@ function TenantSetupPage() {
                   {index >= 3 && index !== 5 ? <CheckCircle2 className="size-4 text-alphavest-green" /> : <XCircle className="size-4 text-alphavest-red" />}
                 </div>
               ))}
-              <button className={cn(primaryButtonClass, "w-full opacity-60")} type="button">Activate tenant</button>
+              <p className={cn(staticButtonClass, "w-full")} data-ux-affordance="static-control-note" data-ux-interactive="false">Activation blocked</p>
             </CardContent>
           </Card>
           <StatePanel detail="Policy framework and CRM integration need attention before this tenant can activate." state="blocked" title="Missing and blocked items" />
@@ -960,7 +961,7 @@ function TenantTeamPage() {
     <div className="space-y-5">
       <ActionBar>
         <StatusBadge status="Draft" />
-        <button className={secondaryButtonClass} type="button">Preview assignments</button>
+        <span className={staticButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Assignment preview held</span>
         <button className={primaryButtonClass} data-testid="j06-assign-team" onClick={() => { void runScreencastDemoAction("j06.assignTeam", "/tenants/demo/policies"); }} type="button">Save changes</button>
       </ActionBar>
       <section className="grid gap-5 xl:grid-cols-[1fr_0.45fr]">
@@ -991,7 +992,7 @@ function TenantPoliciesPage() {
         <StatusChip label="12 Active" status="ACTIVE" />
         <StatusChip label="3 Draft" status="DRAFT" />
         <StatusChip label="1 Blocked" status="FAILED" />
-        <button className={primaryButtonClass} type="button">Create Policy</button>
+        <span className={staticButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Policy creation held</span>
       </ActionBar>
       <Card>
         <CardHeader>
@@ -1010,12 +1011,12 @@ function TenantPoliciesPage() {
               {card.details.map((detail) => (
                 <div className="border-b border-alphavest-border/45 pb-3 text-sm text-alphavest-muted last:border-0" key={detail}>{detail}</div>
               ))}
-              <button className={secondaryButtonClass} type="button">Configure <ArrowRight aria-hidden="true" className="size-4" /></button>
+              <span className={staticButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Configure held <ArrowRight aria-hidden="true" className="size-4" /></span>
             </CardContent>
           </Card>
         ))}
       </section>
-      <AuditBanner action={<button className={secondaryButtonClass} type="button">Review pending overrides</button>}>
+      <AuditBanner action={<span className={staticButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Override review held</span>}>
         Policy overrides require Compliance approval and audit confirmation before activation.
       </AuditBanner>
     </div>

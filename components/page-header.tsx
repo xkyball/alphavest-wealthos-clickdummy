@@ -30,6 +30,8 @@ type PageHeaderProps = {
   description: string;
 };
 
+const defaultUnwiredActionReason = "This action is held until an authorized lifecycle is wired.";
+
 function routeForPathname(pathname: string) {
   const cleanPath = pathname.split("?")[0]?.split("#")[0] ?? "/";
   const normalized = cleanPath.length > 1 ? cleanPath.replace(/\/+$/, "") : cleanPath;
@@ -40,28 +42,48 @@ function routeForPathname(pathname: string) {
 }
 
 function HeaderAction({ action, primary = false, recovery = false }: { action: PageHeaderAction; primary?: boolean; recovery?: boolean }) {
+  const hasLifecycle = Boolean(action.href || action.onClick);
+  const disabledReason = action.disabledReason ?? (!hasLifecycle ? defaultUnwiredActionReason : undefined);
   const className = cn(
     "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold transition",
     primary
       ? "bg-alphavest-gold text-alphavest-navy hover:bg-alphavest-gold-soft"
       : "border border-alphavest-border bg-alphavest-charcoal/70 text-alphavest-ivory hover:border-alphavest-gold/60 hover:text-alphavest-gold-soft",
-    action.disabledReason && "cursor-not-allowed opacity-60 hover:border-alphavest-border hover:text-alphavest-ivory"
+    disabledReason && "cursor-not-allowed opacity-60 hover:border-alphavest-border hover:text-alphavest-ivory"
   );
 
-  if (action.disabledReason || !action.href) {
+  if (disabledReason) {
+    return (
+      <span
+        aria-label={`${action.label}: ${disabledReason}`}
+        className={className}
+        data-ux-cta-kind={primary ? "primary" : recovery ? "recovery" : "secondary"}
+        data-ux-interactive="false"
+        data-ux-primary-cta={primary ? "true" : undefined}
+        data-ux-secondary-cta={!primary ? "true" : undefined}
+        role="status"
+        title={disabledReason}
+      >
+        <LockKeyhole aria-hidden="true" className="size-4" />
+        {action.label}
+        {recovery ? <RotateCcw aria-hidden="true" className="size-4" /> : null}
+      </span>
+    );
+  }
+
+  if (!action.href) {
     return (
       <button
         className={className}
         data-ux-cta-kind={primary ? "primary" : recovery ? "recovery" : "secondary"}
+        data-ux-interactive="true"
         data-ux-primary-cta={primary ? "true" : undefined}
         data-ux-secondary-cta={!primary ? "true" : undefined}
-        disabled={Boolean(action.disabledReason)}
         onClick={action.onClick}
         type="button"
       >
-        {action.disabledReason ? <LockKeyhole aria-hidden="true" className="size-4" /> : null}
         {action.label}
-        {primary && !action.disabledReason ? <ArrowRight aria-hidden="true" className="size-4" /> : null}
+        {primary ? <ArrowRight aria-hidden="true" className="size-4" /> : null}
         {recovery ? <RotateCcw aria-hidden="true" className="size-4" /> : null}
       </button>
     );
@@ -71,6 +93,7 @@ function HeaderAction({ action, primary = false, recovery = false }: { action: P
     <Link
       className={className}
       data-ux-cta-kind={primary ? "primary" : recovery ? "recovery" : "secondary"}
+      data-ux-interactive="true"
       data-ux-primary-cta={primary ? "true" : undefined}
       data-ux-secondary-cta={!primary ? "true" : undefined}
       href={action.href}

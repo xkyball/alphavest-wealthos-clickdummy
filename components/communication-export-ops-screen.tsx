@@ -181,8 +181,8 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, de
         </div>
       </div>
       <div className="mt-4 flex flex-wrap gap-3">
-        <button className={primaryButtonClass} data-testid="ux-phase6-confirm" disabled type="button">{confirmLabel}</button>
-        <button className={secondaryButtonClass} data-testid="ux-phase6-cancel" type="button">{cancelLabel}</button>
+        <span className={primaryButtonClass} data-testid="ux-phase6-confirm" data-ux-affordance="static-control-note" data-ux-interactive="false">{confirmLabel}</span>
+        <span className={secondaryButtonClass} data-testid="ux-phase6-cancel" data-ux-affordance="static-control-note" data-ux-interactive="false">{cancelLabel}</span>
       </div>
     </section>
   );
@@ -588,10 +588,10 @@ function Phase13Sidebar({ activePageId }: { activePageId: string }) {
         })}
       </nav>
       <div className="border-t border-alphavest-border/60 pt-4">
-        <button className="flex h-9 w-full items-center justify-between rounded-md px-2 text-sm text-alphavest-muted transition hover:bg-alphavest-panel/65 hover:text-alphavest-ivory" type="button">
+        <p className="flex h-9 w-full items-center justify-between rounded-md px-2 text-sm text-alphavest-muted opacity-65" data-ux-affordance="static-control-note" data-ux-interactive="false">
           <span>Collapse</span>
           <span aria-hidden="true">{"<<"}</span>
-        </button>
+        </p>
       </div>
     </aside>
   );
@@ -753,14 +753,14 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
       <UxDenseOperationsPanel
         actions={
           <>
-            <button className={secondaryButtonClass} type="button">
+            <span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">
               <RefreshCw aria-hidden="true" className="size-4" />
-              Refresh
-            </button>
-            <button className={secondaryButtonClass} type="button">
+              Refresh held
+            </span>
+            <span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">
               <Download aria-hidden="true" className="size-4" />
-              Export audit events
-            </button>
+              Audit export held
+            </span>
           </>
         }
         className="mt-5"
@@ -944,10 +944,10 @@ function CommunicationCentrePage({ title }: { title: string }) {
               <CardTitle>Build Message or Call</CardTitle>
               <p className="mt-1 text-sm text-alphavest-muted">Secure-message draft with approved template and evidence purpose.</p>
             </div>
-            <button className={secondaryButtonClass} type="button">
+            <span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">
               <Plus aria-hidden="true" className="size-4" />
-              New
-            </button>
+              New item held
+            </span>
           </CardHeader>
           <CardContent>
             <DataTable compact columns={templateColumns} getRowId={(row) => row.id} rows={communicationTemplates} />
@@ -1022,10 +1022,10 @@ function CallTriggerMatrixPage({ title }: { title: string }) {
           <Card>
             <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <CardTitle>Routing Matrix</CardTitle>
-              <button className={secondaryButtonClass} type="button">
+              <span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">
                 <Settings aria-hidden="true" className="size-4" />
-                Manage matrix
-              </button>
+                Matrix management held
+              </span>
             </CardHeader>
             <CardContent>
               <DataTable columns={columns} getRowId={(row) => row.id} rows={callTriggerMatrix} />
@@ -1053,10 +1053,10 @@ function CallTriggerMatrixPage({ title }: { title: string }) {
               <p className="font-semibold text-alphavest-gold-soft">{selected.path}</p>
               <p className="mt-2 text-sm leading-6 text-alphavest-muted">Proactive digital communication keeps clients informed while minimizing friction.</p>
             </div>
-            <button className={cn(primaryButtonClass, "mt-4 w-full")} type="button">
-              Send digital message
+            <p className={cn(primaryButtonClass, "mt-4 w-full")} data-ux-affordance="static-control-note" data-ux-interactive="false">
+              Digital send held
               <ArrowRight aria-hidden="true" className="size-4" />
-            </button>
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -1674,10 +1674,10 @@ function OpsQueuesPage({ title }: { title: string }) {
               <Filter aria-hidden="true" className="size-4" />
               Filters
             </button>
-            <button className={primaryButtonClass} type="button">
+            <span className={primaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">
               <Plus aria-hidden="true" className="size-4" />
-              New Queue
-            </button>
+              Queue creation held
+            </span>
           </div>
         </CardHeader>
         <CardContent>
@@ -1760,7 +1760,7 @@ function SlaEscalationPage({ title }: { title: string }) {
         <Card>
           <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <CardTitle>Active Breaches and Risks</CardTitle>
-            <button className={primaryButtonClass} type="button">Create Escalation</button>
+            <span className={primaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Escalation creation held</span>
           </CardHeader>
           <CardContent>
             <DataTable

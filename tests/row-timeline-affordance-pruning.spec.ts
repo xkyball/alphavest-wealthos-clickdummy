@@ -73,8 +73,9 @@ test.describe("UXP2-006 row and timeline action pruning", () => {
 
     await page.getByRole("button", { name: "Open selected action" }).first().click();
 
-    await expect(page.getByRole("button", { name: "Related evidence view-all is not wired in this release" })).toBeDisabled();
-    await expect(page.getByRole("button", { name: "Timeline view-all is not wired in this release" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: /Related evidence view-all|Timeline view-all/ })).toHaveCount(0);
+    await expect(page.getByText("Scoped list")).toBeVisible();
+    await expect(page.getByText("Scoped timeline")).toBeVisible();
     await expect(page.getByTestId("ux-phase5-audit-timeline")).toHaveAttribute("data-ux-affordance", "static-audit-timeline");
     await expect(page.getByTestId("ux-phase5-audit-timeline")).toHaveAttribute("data-ux-interactive", "false");
     await expect(page.locator('[data-ux-affordance="static-timeline-item"][role="button"]')).toHaveCount(0);

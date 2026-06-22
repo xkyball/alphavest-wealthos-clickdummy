@@ -456,10 +456,16 @@ function InternalTopBar() {
             <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
           </label>
           <Badge tone="gold">Internal only</Badge>
-          <button className="relative grid size-10 place-items-center rounded-full border border-alphavest-border text-alphavest-muted" type="button">
+          <span
+            aria-label="Internal notifications are informational in this release"
+            className="relative grid size-10 place-items-center rounded-full border border-alphavest-border text-alphavest-muted opacity-65"
+            data-ux-affordance="blocked-cta"
+            data-ux-interactive="false"
+            role="status"
+          >
             <Bell aria-hidden="true" className="size-4" />
             <span className="absolute -right-1 -top-1 rounded-full bg-alphavest-gold px-1.5 text-[0.65rem] font-bold text-alphavest-navy">7</span>
-          </button>
+          </span>
           <div className="flex h-10 items-center gap-2 rounded-full border border-alphavest-border bg-alphavest-charcoal/70 pl-1 pr-3">
             <span className="grid size-8 place-items-center rounded-full border border-alphavest-gold/45 text-xs font-semibold text-alphavest-gold">{session.actor.initials}</span>
             <span className="hidden text-sm font-semibold text-alphavest-ivory md:block">{session.actor.displayName}</span>
@@ -597,8 +603,8 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, de
         </div>
       </div>
       <div className="mt-4 flex flex-wrap gap-3">
-        <button className={primaryButtonClass} data-testid="ux-phase6-confirm" disabled type="button">{confirmLabel}</button>
-        <button className={secondaryButtonClass} data-testid="ux-phase6-cancel" type="button">{cancelLabel}</button>
+        <span className={primaryButtonClass} data-testid="ux-phase6-confirm" data-ux-affordance="static-control-note" data-ux-interactive="false">{confirmLabel}</span>
+        <span className={secondaryButtonClass} data-testid="ux-phase6-cancel" data-ux-affordance="static-control-note" data-ux-interactive="false">{cancelLabel}</span>
       </div>
     </section>
   );
@@ -910,7 +916,7 @@ function TriggerDetailPage({ title }: { title: string }) {
                   <Badge tone="red">{triggerDetail.status}</Badge>
                   <h2 className="mt-3 font-display text-3xl text-alphavest-ivory md:text-4xl">{triggerDetail.title}</h2>
                 </div>
-                <button className={secondaryButtonClass} type="button">Back to Triggers</button>
+                <span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Trigger list scoped</span>
               </div>
               <div className="grid gap-4 md:grid-cols-6">
                 {[
@@ -1073,7 +1079,7 @@ function AdvisorQueuePage({ title }: { title: string }) {
       <div className="mx-auto grid max-w-[112rem] gap-5 2xl:grid-cols-[1fr_28rem]">
         <section className="min-w-0 space-y-5">
           <PageHeading
-            action={<div className="flex gap-3"><button className={secondaryButtonClass} type="button"><Download aria-hidden="true" className="size-4" />Export</button><button className={primaryButtonClass} type="button">Bulk Actions</button></div>}
+            action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />Export held</span><span className={primaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Bulk actions held</span></div>}
             badge={<Badge tone="gold">36</Badge>}
             subtitle="Review and approve client recommendations and updates."
             title={title}
@@ -1167,9 +1173,9 @@ function AdvisorSummaryPanel() {
           </CardContent>
         </Card>
         <div className="grid gap-3 sm:grid-cols-3">
-          <button className={secondaryButtonClass} type="button">Request Info</button>
-          <button className={secondaryButtonClass} type="button">Send Back</button>
-          <button className={primaryButtonClass} type="button">Approve</button>
+          <span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Request info in detail</span>
+          <span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Send back in detail</span>
+          <span className={primaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Approve in detail</span>
         </div>
       </div>
     </aside>
@@ -1297,8 +1303,8 @@ function AdvisorDetailPage({ title }: { title: string }) {
               >
                 <Check aria-hidden="true" className="size-4" />Approve for compliance review
               </button>
-              <button className={secondaryButtonClass + " w-full"} data-testid="ux-cta-ai-rebuild" type="button">Rebuild internal draft</button>
-              <button className={secondaryButtonClass + " w-full"} type="button">Request evidence for rebuild</button>
+              <p className={secondaryButtonClass + " w-full"} data-testid="ux-cta-ai-rebuild" data-ux-affordance="static-control-note" data-ux-interactive="false">Draft rebuild held for Phase 3</p>
+              <p className={secondaryButtonClass + " w-full"} data-ux-affordance="static-control-note" data-ux-interactive="false">Evidence request held for Phase 3</p>
               <button
                 className="inline-flex h-[var(--button-height)] w-full items-center justify-center gap-2 rounded-md border border-alphavest-red/55 bg-alphavest-red/10 px-4 text-sm font-semibold text-alphavest-red"
                 data-testid="j01-escalate-advisor"
@@ -1353,7 +1359,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
       <div className="mx-auto max-w-[104rem] space-y-5">
         <UxHubPage pageId="038" />
         <PageHeading
-          action={<div className="flex gap-3"><button className={secondaryButtonClass} type="button"><Download aria-hidden="true" className="size-4" />Export</button><button className={primaryButtonClass} type="button"><RefreshCw aria-hidden="true" className="size-4" />Refresh</button></div>}
+          action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />Export held</span><span className={primaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false"><RefreshCw aria-hidden="true" className="size-4" />Refresh held</span></div>}
           subtitle="Review and action pending compliance items."
           title={title}
         />

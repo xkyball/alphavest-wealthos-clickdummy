@@ -295,10 +295,10 @@ function Phase12TopBar() {
             </select>
             <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
           </label>
-          <button className="relative grid size-10 place-items-center rounded-full border border-alphavest-border text-alphavest-muted" type="button">
+          <span aria-label="Decision workspace notifications are informational in this release" className="relative grid size-10 place-items-center rounded-full border border-alphavest-border text-alphavest-muted opacity-65" data-ux-affordance="static-notification-indicator" data-ux-interactive="false" role="status">
             <Bell aria-hidden="true" className="size-4" />
             <span className="absolute -right-1 -top-1 rounded-full bg-alphavest-gold px-1.5 text-[0.65rem] font-bold text-alphavest-navy">7</span>
-          </button>
+          </span>
           <div className="flex h-10 items-center gap-2 rounded-full border border-alphavest-border bg-alphavest-charcoal/70 pl-1 pr-3">
             <span className="grid size-8 place-items-center rounded-full border border-alphavest-gold/45 text-xs font-semibold text-alphavest-gold">{session.actor.initials}</span>
             <span className="hidden text-sm font-semibold text-alphavest-ivory md:block">{session.actor.displayName}</span>
@@ -406,8 +406,8 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, de
         </div>
       </div>
       <div className="mt-4 flex flex-wrap gap-3">
-        <button className={primaryButtonClass} data-testid="ux-phase6-confirm" disabled type="button">{confirmLabel}</button>
-        <button className={secondaryButtonClass} data-testid="ux-phase6-cancel" type="button">{cancelLabel}</button>
+        <span className={primaryButtonClass} data-testid="ux-phase6-confirm" data-ux-affordance="static-control-note" data-ux-interactive="false">{confirmLabel}</span>
+        <span className={secondaryButtonClass} data-testid="ux-phase6-cancel" data-ux-affordance="static-control-note" data-ux-interactive="false">{cancelLabel}</span>
       </div>
     </section>
   );
@@ -669,7 +669,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
             >
               {status === "submitting" ? "Submitting..." : "Request Evidence"}
             </button>
-            <button className={secondaryButtonClass} type="button">Escalate</button>
+            <span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Escalation held</span>
           </>
         }
         onClose={status === "submitting" ? undefined : resetAndClose}
@@ -708,7 +708,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
                     <Badge tone="gold">{item.required ? "Required" : "Optional"}</Badge>
                   </div>
                 ))}
-                <button className="text-sm font-semibold text-alphavest-gold" type="button">Add evidence item</button>
+                <span className="text-sm font-semibold text-alphavest-gold opacity-60" data-ux-affordance="static-control-note" data-ux-interactive="false">Evidence items scoped</span>
               </CardContent>
             </Card>
             <Card>
@@ -831,7 +831,7 @@ function ComplianceAuditPage({ title }: { title: string }) {
               >
                 <LockKeyhole aria-hidden="true" className="size-4" />Export Controlled
               </button>
-              <button className={secondaryButtonClass} type="button">Column Settings</button>
+              <span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Column settings held</span>
               </>
             }
             controls={["Date range", "Event type", "Exception status", "Actor", "Client", "Severity", "Source", "Policy / rule"]}
@@ -918,7 +918,7 @@ function DecisionRoomPage({ title }: { title: string }) {
       <ScreenTitle>{title}</ScreenTitle>
       <div className="mx-auto max-w-[112rem] space-y-5">
         <PageHeading
-          action={<button className={secondaryButtonClass} type="button">View Release Workflow</button>}
+          action={<span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Release workflow scoped</span>}
           badge={<Badge tone="gold">Ready to Decide</Badge>}
           subtitle={`${decisionRoom.decisionId} - ${decisionRoom.client}`}
           title={title}
@@ -1161,7 +1161,7 @@ function DecisionSuccessPage({ title }: { title: string }) {
               <p className="text-sm text-alphavest-muted">Continue working or return to the Decisions list.</p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <button className={secondaryButtonClass} type="button">Return to Decisions</button>
+              <span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Decision list scoped</span>
               <button
                 className={primaryButtonClass}
                 data-testid="j03-view-evidence-record"
@@ -1225,7 +1225,7 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
       </div>
       <Drawer
         description="Verified form assessment."
-        footer={<button className={primaryButtonClass + " w-full"} type="button"><Download aria-hidden="true" className="size-4" />Download</button>}
+        footer={<span className={primaryButtonClass + " w-full"} data-ux-affordance="static-control-note" data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />Download held</span>}
         onClose={() => setDrawerOpen(false)}
         open={drawerOpen}
         title="Risk Tolerance Questionnaire"
@@ -1468,7 +1468,7 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
           ))}
         </div>
         <UxDenseOperationsPanel
-          actions={<button className={secondaryButtonClass} type="button"><Download aria-hidden="true" className="size-4" />Export user list</button>}
+          actions={<span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />User-list export held</span>}
           controls={["Search user", "Role", "Status", "MFA", "Entity access", "Last active"]}
           description="User access stays in a compact operations table so role, MFA and entity scope can be compared without admin bypass."
           pageId="048"

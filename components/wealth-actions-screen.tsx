@@ -16,7 +16,6 @@ import {
   LockKeyhole,
   MessageSquare,
   Network,
-  Plus,
   ShieldCheck,
   SlidersHorizontal,
   Upload,
@@ -82,9 +81,6 @@ const shellNav: ShellNavItem[] = [
   { href: "/compliance/reviews", icon: ShieldCheck, label: "Compliance" },
   { href: "/evidence", icon: FileText, label: "Evidence" }
 ];
-
-const primaryButtonClass =
-  "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md bg-alphavest-gold px-4 text-sm font-semibold text-alphavest-navy transition hover:bg-alphavest-gold-soft";
 
 const secondaryButtonClass =
   "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-4 text-sm font-semibold text-alphavest-ivory transition hover:border-alphavest-gold/60 hover:text-alphavest-gold-soft";
@@ -172,10 +168,10 @@ function WealthSidebar({ activePageId }: { activePageId: string }) {
           <p className="text-sm font-semibold text-alphavest-ivory">{wealthWorkspace.household}</p>
           <p className="mt-1 text-xs text-alphavest-muted">Tenant context</p>
         </div>
-        <button className="flex h-10 w-full items-center gap-2 rounded-md border border-alphavest-border px-3 text-sm text-alphavest-muted" type="button">
+        <p className="flex h-10 w-full items-center gap-2 rounded-md border border-alphavest-border px-3 text-sm text-alphavest-muted opacity-65" data-ux-affordance="static-control-note" data-ux-interactive="false">
           <SlidersHorizontal aria-hidden="true" className="size-4" />
           Configure
-        </button>
+        </p>
       </div>
     </aside>
   );
@@ -220,14 +216,10 @@ function WealthTopBar() {
             </select>
             <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
           </label>
-          <button className={primaryButtonClass} type="button">
-            <Plus aria-hidden="true" className="size-4" />
-            New
-          </button>
-          <button className="relative grid size-10 place-items-center rounded-full border border-alphavest-border text-alphavest-muted" type="button">
+          <span className="relative grid size-10 place-items-center rounded-full border border-alphavest-border text-alphavest-muted opacity-65" data-ux-affordance="static-notification-indicator" data-ux-interactive="false" role="status">
             <Bell aria-hidden="true" className="size-4" />
             <span className="absolute -right-1 -top-1 rounded-full bg-alphavest-gold px-1.5 text-[0.65rem] font-bold text-alphavest-navy">7</span>
-          </button>
+          </span>
           <div className="flex h-10 items-center gap-2 rounded-full border border-alphavest-border bg-alphavest-charcoal/70 pl-1 pr-3">
             <span className="grid size-8 place-items-center rounded-full border border-alphavest-gold/45 text-xs font-semibold text-alphavest-gold">{session.actor.initials}</span>
             <span className="hidden text-sm font-semibold text-alphavest-ivory md:block">{session.actor.displayName}</span>
@@ -534,13 +526,13 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
           <div className="flex flex-col gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-panel/55 p-3 md:flex-row md:items-center md:justify-between">
             <div className="flex flex-wrap gap-2">
               {["Priority", "Owner", "Due date", "Evidence state", "Workflow stage"].map((filter) => (
-                <button aria-label={`${filter} filter is static in this action board`} className="flex h-10 cursor-not-allowed items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted opacity-65" disabled key={filter} title="Board filters are not wired in this release." type="button">
+                <span aria-label={`${filter} filter is static in this action board`} className="flex h-10 items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted opacity-65" data-ux-affordance="static-control-note" data-ux-interactive="false" key={filter} role="status">
                   {filter}
                   <ChevronDown aria-hidden="true" className="size-4" />
-                </button>
+                </span>
               ))}
             </div>
-            <button aria-label="Board grouping is fixed to workflow stage" className={secondaryButtonClass} disabled title="Board grouping is fixed in this release." type="button">Group: Workflow Stage</button>
+            <span aria-label="Board grouping is fixed to workflow stage" className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false" role="status">Group: Workflow Stage</span>
           </div>
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             {actionColumns.map((column) => (
@@ -553,10 +545,9 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
                   {column.cards.map((card) => (
                     <ActionBoardCard card={card} key={card.id} selected={card.id === selectedAction.id} />
                   ))}
-                  <button className="flex h-9 w-full items-center justify-center gap-2 rounded-md border border-dashed border-alphavest-border text-xs font-semibold text-alphavest-gold transition hover:border-alphavest-gold" type="button">
-                    <Plus aria-hidden="true" className="size-4" />
-                    Add Action
-                  </button>
+                  <p className="flex h-9 w-full items-center justify-center gap-2 rounded-md border border-dashed border-alphavest-border text-xs font-semibold text-alphavest-gold opacity-60" data-ux-affordance="static-control-note" data-ux-interactive="false">
+                    Column actions locked
+                  </p>
                 </div>
               </section>
             ))}
@@ -653,15 +644,7 @@ function ActionDrawer({ onClose }: { onClose: () => void }) {
         <section>
           <div className="mb-3 flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-gold">Related Evidence</p>
-            <button
-              aria-label="Related evidence view-all is not wired in this release"
-              className="text-xs font-semibold text-alphavest-gold disabled:cursor-not-allowed disabled:opacity-55"
-              disabled
-              title="Evidence expansion is not wired in this release."
-              type="button"
-            >
-              View all
-            </button>
+            <span className="text-xs font-semibold text-alphavest-muted" data-ux-affordance="static-control-note" data-ux-interactive="false">Scoped list</span>
           </div>
           <div className="overflow-hidden rounded-md border border-alphavest-border/70">
             {selectedActionEvidence.map((item) => (
@@ -679,15 +662,7 @@ function ActionDrawer({ onClose }: { onClose: () => void }) {
         <section>
           <div className="mb-3 flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-gold">Timeline</p>
-            <button
-              aria-label="Timeline view-all is not wired in this release"
-              className="text-xs font-semibold text-alphavest-gold disabled:cursor-not-allowed disabled:opacity-55"
-              disabled
-              title="Timeline expansion is not wired in this release."
-              type="button"
-            >
-              View all
-            </button>
+            <span className="text-xs font-semibold text-alphavest-muted" data-ux-affordance="static-control-note" data-ux-interactive="false">Scoped timeline</span>
           </div>
           <AuditTimeline items={selectedActionTimeline.map((item) => ({ ...item }))} />
         </section>
