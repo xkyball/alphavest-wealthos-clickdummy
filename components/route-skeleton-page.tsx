@@ -58,7 +58,7 @@ const scopeShellCopy = {
   REFERENCE_ONLY: {
     heading: "Reference Workspace",
     description:
-      "This route remains registered as an internal reference surface and is not treated as product implementation or lifecycle proof."
+      "Read-only internal reference. No product workflow, mutation, release, export, advice or client-visible change is available."
   },
   HOLD_PENDING_DECISION: {
     heading: "Held Workspace",
@@ -87,7 +87,28 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
     evidenceStatus: route.clientVisibilitySensitive ? "VALIDATED" : "PLACEHOLDER",
     permission: { allowed: true, reasonCode: "DEMO_PERMISSIVE" }
   });
-  const siblingRoutes = getSiblingRoutes(route);
+  const siblingRoutes = routeScope === "REFERENCE_ONLY" ? [] : getSiblingRoutes(route);
+  const lockedActionLabel = routeScope === "REFERENCE_ONLY" ? "Reference only" : "Product action locked";
+  const interactionPatternDetail =
+    routeScope === "REFERENCE_ONLY"
+      ? "No product controls are available for reference-only routes."
+      : "Final controls are deferred to the page implementation phase.";
+  const clientVisibilityDetail =
+    routeScope === "REFERENCE_ONLY"
+      ? "No client-visible payload is exposed from this reference route."
+      : route.clientVisibilitySensitive
+        ? "Advice-like content stays blocked until compliance release and evidence are complete."
+        : "No client-visible advice is exposed from this placeholder.";
+  const guardTitle = routeScope === "REFERENCE_ONLY" ? "Reference Guard" : "Release Guard";
+  const guardDescription =
+    routeScope === "REFERENCE_ONLY"
+      ? "Reference routes do not unlock product workflow."
+      : "Advisor approval alone never unlocks client visibility.";
+  const guardStateTitle = routeScope === "REFERENCE_ONLY" ? "Product workflow unavailable" : "Client visibility blocked";
+  const guardStateDetail =
+    routeScope === "REFERENCE_ONLY"
+      ? "No product action, release, export, mutation or client visibility is available from this route."
+      : `Missing gates: ${gate.missing.length > 0 ? gate.missing.join(", ") : "none"}.`;
 
   return (
     <AppShell>
@@ -99,7 +120,7 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
           primaryAction={
             siblingRoutes[0] && (routeScope === "MVP" || routeScope === "MVP_SUPPORT")
               ? { href: routeToSmokePath(siblingRoutes[0].route), label: `Continue to ${siblingRoutes[0].title}` }
-              : { disabledReason: uxPolicy.safetyReminder, label: "Product action locked" }
+              : { disabledReason: uxPolicy.safetyReminder, label: lockedActionLabel }
           }
           status={routeScope === "MVP" ? "ACTIVE" : routeScope === "MVP_SUPPORT" ? "PENDING" : "ON_HOLD"}
           statusLabel={`${uxPolicy.pageType} · ${uxPolicy.densityTier}`}
@@ -137,7 +158,7 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
                   {modeLabels[route.visualMode]}
                 </dd>
                 <dd className="mt-1 text-sm text-alphavest-muted">
-                  Final controls are deferred to the page implementation phase.
+                  {interactionPatternDetail}
                 </dd>
               </div>
               <div className="rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-4">
@@ -159,9 +180,7 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
                   {gate.passed ? "Eligible" : "Guarded"}
                 </dd>
                 <dd className="mt-1 text-sm text-alphavest-muted">
-                  {route.clientVisibilitySensitive
-                    ? "Advice-like content stays blocked until compliance release and evidence are complete."
-                    : "No client-visible advice is exposed from this placeholder."}
+                  {clientVisibilityDetail}
                 </dd>
               </div>
             </dl>
@@ -177,42 +196,44 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
                 <LockKeyhole aria-hidden="true" className="size-5" />
               </div>
               <div>
-                <h2 className="font-display text-2xl text-alphavest-ivory">Release Guard</h2>
-                <p className="text-sm text-alphavest-muted">Advisor approval alone never unlocks client visibility.</p>
+                <h2 className="font-display text-2xl text-alphavest-ivory">{guardTitle}</h2>
+                <p className="text-sm text-alphavest-muted">{guardDescription}</p>
               </div>
             </div>
 
             <div className="mt-5 rounded-md border border-alphavest-red/30 bg-alphavest-red/10 p-4">
               <div className="flex items-center gap-2 text-sm font-semibold text-alphavest-red">
                 <ShieldCheck aria-hidden="true" className="size-4" />
-                Client visibility blocked
+                {guardStateTitle}
               </div>
               <p className="mt-2 text-sm leading-6 text-alphavest-muted">
-                Missing gates: {gate.missing.length > 0 ? gate.missing.join(", ") : "none"}.
+                {guardStateDetail}
               </p>
             </div>
           </article>
 
-          <article className="alpha-card p-5">
-            <div className="border-b border-alphavest-border/60 pb-4">
-              <h2 className="font-display text-2xl text-alphavest-ivory">Related Workspaces</h2>
-              <p className="mt-1 text-sm text-alphavest-muted">
-                Nearby screens in the same navigation group are already registered for smoke coverage.
-              </p>
-            </div>
-            <div className="mt-5 grid gap-3 md:grid-cols-2">
-              {siblingRoutes.map((item) => (
-                <Link
-                  className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 px-4 py-3 text-sm text-alphavest-ivory transition hover:border-alphavest-gold/50 hover:text-alphavest-gold-soft"
-                  href={routeToSmokePath(item.route)}
-                  key={item.pageId}
-                >
-                  <span className="truncate">{item.title}</span>
-                  <ArrowRight aria-hidden="true" className="size-4 shrink-0" />
-                </Link>
-              ))}
-            </div>
-          </article>
+          {siblingRoutes.length > 0 ? (
+            <article className="alpha-card p-5">
+              <div className="border-b border-alphavest-border/60 pb-4">
+                <h2 className="font-display text-2xl text-alphavest-ivory">Related Workspaces</h2>
+                <p className="mt-1 text-sm text-alphavest-muted">
+                  Nearby screens in the same navigation group are already registered for smoke coverage.
+                </p>
+              </div>
+              <div className="mt-5 grid gap-3 md:grid-cols-2">
+                {siblingRoutes.map((item) => (
+                  <Link
+                    className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 px-4 py-3 text-sm text-alphavest-ivory transition hover:border-alphavest-gold/50 hover:text-alphavest-gold-soft"
+                    href={routeToSmokePath(item.route)}
+                    key={item.pageId}
+                  >
+                    <span className="truncate">{item.title}</span>
+                    <ArrowRight aria-hidden="true" className="size-4 shrink-0" />
+                  </Link>
+                ))}
+              </div>
+            </article>
+          ) : null}
         </section>
       </div>
     </AppShell>

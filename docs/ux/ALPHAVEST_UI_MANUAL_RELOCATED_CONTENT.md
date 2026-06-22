@@ -46,9 +46,9 @@ It preserves context for implementation review without keeping that explanation 
 | 040-041 | Release/block gate explanation for compliance-controlled client visibility. | Compliance Gate Manual | Show blocked reason, required preconditions, and confirm/cancel controls only. | Seeded from cleanup audit |
 | 048-051 | RBAC/admin non-bypass explanation and role/access governance rationale. | Governance and Access Manual | Show role diff, affected object, confirmation reason, and current permission state. | Seeded from cleanup audit |
 | 054-058 | Export lifecycle proof explanation, including approval, redaction, and download-control rationale. | Export and Redaction Manual | Show scope, redaction state, approval state, and download step state. | Seeded from cleanup audit |
-| 061 `/service-blueprint` | Service blueprint/process explanation presented as product-style navigation or controls. | Internal Service Blueprint | Remove from product navigation or keep clearly separated as internal reference. | Seeded from cleanup audit |
-| 062 `/roadmap` | MVP/future-scope roadmap explanation presented as an operative product page. | Internal Roadmap Reference | Remove from product navigation or keep clearly separated as internal reference. | Seeded from cleanup audit |
-| 063 `/states` | State and badge catalogue explanation presented as a product workflow surface. | Internal State Reference | Remove from product navigation or keep clearly separated as internal reference. | Seeded from cleanup audit |
+| 061 `/service-blueprint` | Service blueprint/process explanation presented as product-style navigation, filters or controls. | Internal Service Blueprint | UI now shows `Read-only reference` and keeps blueprint lanes as internal reference content only. | Relocated in UXP1-007 |
+| 062 `/roadmap` | MVP/future-scope roadmap explanation presented as an operative product page or scope-control surface. | Internal Roadmap Reference | UI now shows `Read-only scope reference`, `Reference Summary` and `Scope Decision Register`. | Relocated in UXP1-007 |
+| 063 `/states` | State and badge catalogue explanation presented as a product workflow surface or status-changing control set. | Internal State Reference | UI now shows `Read-only state reference` and keeps state examples non-mutating. | Relocated in UXP1-007 |
 
 ## Entry Template
 

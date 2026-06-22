@@ -1813,14 +1813,8 @@ function SlaEscalationPage({ title }: { title: string }) {
 function ServiceBlueprintPage({ title }: { title: string }) {
   return (
     <div>
-      <PageLead description="End-to-end service blueprint across customer experience, operations, systems and immutable records." icon={Network} title={title} />
-      <div className="mb-5 flex flex-wrap gap-3">
-        <FieldPill label="Stage focus" value="All stages" />
-        <FieldPill label="View" value="Default blueprint" />
-        {["All", "Milestones", "Controls", "Handoffs"].map((item, index) => (
-          <Badge key={item} tone={index === 0 ? "gold" : "muted"}>{item}</Badge>
-        ))}
-      </div>
+      <PageLead description="Read-only internal reference for service stages, operational handoffs and record touchpoints." icon={Network} title={title} />
+      <StatePanel className="mb-5" detail="Reference only. No workflow action, approval, export or client-visible change is available here." state="reference-only" title="Read-only reference" />
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {blueprintStages.map((stage, stageIndex) => (
           <section className="rounded-md border border-alphavest-border bg-alphavest-panel/70 p-4" key={stage}>
@@ -1844,8 +1838,8 @@ function ServiceBlueprintPage({ title }: { title: string }) {
 function RoadmapPage({ title }: { title: string }) {
   return (
     <div>
-      <PageLead description="Plan, sequence and control scope. Ensure no unapproved advice reaches the client." icon={GitBranch} title={title} />
-      <StatePanel className="mb-5" detail="Blocked roadmap items cannot become client-visible advice-like functionality until the approval workflow, evidence and compliance release gates are complete." state="restricted" title="No unapproved advice reaches the client." />
+      <PageLead description="Read-only internal reference for MVP boundaries and later-scope items." icon={GitBranch} title={title} />
+      <StatePanel className="mb-5" detail="Reference only. Listed items do not create product workflow, release, advice or client visibility." state="reference-only" title="Read-only scope reference" />
       <div className="grid gap-5 xl:grid-cols-3">
         {roadmapColumns.map((column) => (
           <Card key={column.id}>
@@ -1875,7 +1869,7 @@ function RoadmapPage({ title }: { title: string }) {
       <div className="mt-5 grid gap-5 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Dependency Overview</CardTitle>
+            <CardTitle>Reference Summary</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 sm:grid-cols-4">
@@ -1895,7 +1889,7 @@ function RoadmapPage({ title }: { title: string }) {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Decision and Audit Trail</CardTitle>
+            <CardTitle>Scope Decision Register</CardTitle>
           </CardHeader>
           <CardContent>
             <DataTable compact columns={[
@@ -1917,7 +1911,8 @@ function RoadmapPage({ title }: { title: string }) {
 function StatesReferencePage({ title }: { title: string }) {
   return (
     <div>
-      <PageLead description="Central catalogue for status chips, workflow badges, component states and state machines." icon={Table2} title={title} />
+      <PageLead description="Read-only internal reference for status chips, workflow badges and component states." icon={Table2} title={title} />
+      <StatePanel className="mb-5" detail="Reference only. State examples do not change workflow status or complete downstream gates." state="reference-only" title="Read-only state reference" />
       <div className="grid gap-5 xl:grid-cols-3">
         <Card>
           <CardHeader>
@@ -1945,9 +1940,9 @@ function StatesReferencePage({ title }: { title: string }) {
           </CardHeader>
           <CardContent>
             <div className="grid gap-3">
-              <StatePanel detail="Default controls are ready for interaction." state="empty" title="Default" />
+              <StatePanel detail="Default reference styling for neutral content." state="empty" title="Default" />
               <StatePanel detail="Loading variants keep table and panel geometry stable." state="loading" title="Loading" />
-              <StatePanel detail="Restricted content shows why a role cannot continue." state="restricted" title="Restricted" />
+              <StatePanel detail="Restricted examples show blocked state only." state="restricted" title="Restricted" />
             </div>
           </CardContent>
         </Card>
