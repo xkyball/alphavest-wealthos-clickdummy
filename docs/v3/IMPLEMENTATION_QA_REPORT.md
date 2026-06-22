@@ -6851,3 +6851,19 @@ Date: 2026-06-22
 Commands: `pnpm typecheck`, `pnpm lint`, focused route-smoke on `UX-CTA evidence`, `pnpm test:workflow-gate`, `pnpm test:workflow-api`, `pnpm test:file-export`, `pnpm test:permissions` all passed. Lint retains 27 existing warnings and 0 errors.
 
 Safety proof: Upload/review CTAs do not mutate gates and do not claim evidence sufficiency, compliance release, export approval/download/share, audit persistence, client visibility or RBAC authority.
+
+## UX-CTA-004 QA Addendum
+
+Date: 2026-06-22
+
+| Area | QA result | Evidence |
+| --- | --- | --- |
+| AI draft internal-only chain | Passed | Advisor detail route-smoke verifies internal draft heading, internal-only guard copy and rebuild/reject CTAs. |
+| Advisor-not-release boundary | Passed | Primary action is `Approve for compliance review`, not client release. |
+| Overclaim prevention | Passed | Test rejects client-release/client-ready wording and old `82% Success`. |
+| P0 safety | Passed | Workflow-gate, workflow-api, file-export and permissions tests passed. |
+| Screenshot proof | Passed | Six screenshots under `artifacts/ux-page-to-policy/UX-CTA-004/`. |
+
+Commands: `pnpm typecheck`, `pnpm lint`, focused route-smoke on `UX-CTA AI draft`, `pnpm test:workflow-gate`, `pnpm test:workflow-api`, `pnpm test:file-export`, `pnpm test:permissions` all passed. Lint retains 27 existing warnings and 0 errors.
+
+Safety proof: AI/rules draft actions remain internal, advisor approval remains separate from compliance release, and no client visibility, release, export, audit persistence or RBAC authority is implied by static CTA copy.

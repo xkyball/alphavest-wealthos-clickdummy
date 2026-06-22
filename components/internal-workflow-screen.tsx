@@ -1285,7 +1285,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
             </Card>
           </div>
           <div className="grid gap-5 2xl:grid-cols-4">
-            <Card className="xl:col-span-2"><CardHeader><CardTitle>AI Draft Recommendation</CardTitle></CardHeader><CardContent><p className="text-sm leading-6 text-alphavest-muted">{selectedApproval.recommendation}</p><div className="mt-4 grid gap-3 sm:grid-cols-4">{["6.4% Return", "10.2% Volatility", "82% Success", "89/100 Tax Score"].map((item) => <Badge key={item} tone="green">{item}</Badge>)}</div></CardContent></Card>
+            <Card className="xl:col-span-2"><CardHeader><CardTitle>Internal Draft Recommendation</CardTitle></CardHeader><CardContent><p className="text-sm leading-6 text-alphavest-muted">{selectedApproval.recommendation}</p><div className="mt-4 grid gap-3 sm:grid-cols-4">{["6.4% Return", "10.2% Volatility", "82% Scenario Fit", "89/100 Tax Score"].map((item) => <Badge key={item} tone="green">{item}</Badge>)}</div><p className="mt-4 rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3 text-sm text-alphavest-gold-soft">Internal draft only. Rejection or rebuild keeps client visibility blocked until advisor and compliance gates pass.</p></CardContent></Card>
             <Card><CardHeader><CardTitle>Risk View</CardTitle></CardHeader><CardContent><p className="text-center text-xl font-semibold text-alphavest-gold">Moderate (5/10)</p><ProgressBar value={50} /><p className="mt-3 text-sm text-alphavest-muted">Key considerations: equity allocation, interest rate sensitivity and sequence risk.</p></CardContent></Card>
             <Card><CardHeader><CardTitle>Alternatives</CardTitle></CardHeader><CardContent className="space-y-2">{selectedApproval.alternatives.map((item, index) => <div className="flex justify-between text-sm" key={item}><span className="text-alphavest-muted">{item}</span><Badge tone="gold">Score {84 - index * 5}</Badge></div>)}</CardContent></Card>
           </div>
@@ -1306,10 +1306,10 @@ function AdvisorDetailPage({ title }: { title: string }) {
                 }}
                 type="button"
               >
-                <Check aria-hidden="true" className="size-4" />Approve
+                <Check aria-hidden="true" className="size-4" />Approve for compliance review
               </button>
-              <button className={secondaryButtonClass + " w-full"} type="button">Revise</button>
-              <button className={secondaryButtonClass + " w-full"} type="button">Request More Data</button>
+              <button className={secondaryButtonClass + " w-full"} data-testid="ux-cta-ai-rebuild" type="button">Rebuild internal draft</button>
+              <button className={secondaryButtonClass + " w-full"} type="button">Request evidence for rebuild</button>
               <button
                 className="inline-flex h-[var(--button-height)] w-full items-center justify-center gap-2 rounded-md border border-alphavest-red/55 bg-alphavest-red/10 px-4 text-sm font-semibold text-alphavest-red"
                 data-testid="j01-escalate-advisor"
@@ -1320,7 +1320,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
                 }}
                 type="button"
               >
-                Escalate to Call
+                Reject unsupported draft claim
               </button>
               {decisionStatus ? (
                 <p className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3 text-sm text-alphavest-gold-soft">

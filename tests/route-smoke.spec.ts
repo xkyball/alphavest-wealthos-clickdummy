@@ -811,6 +811,23 @@ test.describe("UX-CTA evidence upload and review chain", () => {
   }
 });
 
+test.describe("UX-CTA AI draft internal-only chain", () => {
+  test("advisor detail exposes reject/rebuild as internal-only without client release", async ({ page }) => {
+    await page.setViewportSize({ height: 1000, width: 1440 });
+    await authenticateRouteSmokePage(page);
+    await page.goto("/advisor-approval/demo");
+
+    await expect(page.getByRole("heading", { name: "Internal Draft Recommendation" })).toBeVisible();
+    await expect(page.getByText("Internal draft only. Rejection or rebuild keeps client visibility blocked until advisor and compliance gates pass.")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Approve for compliance review" })).toBeVisible();
+    await expect(page.getByTestId("ux-cta-ai-rebuild")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Request evidence for rebuild" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Reject unsupported draft claim" })).toBeVisible();
+    await expect(page.getByText(/release to client|client visibility unlocked|client-ready draft|approved for client/i)).toHaveCount(0);
+    await expect(page.getByText("82% Success")).toHaveCount(0);
+  });
+});
+
 test.describe("locked route workset preservation", () => {
   test("all registered routes are classified exactly once", () => {
     expect(routeWorksetIntegrity.counts).toEqual(lockedRouteWorksetCounts);

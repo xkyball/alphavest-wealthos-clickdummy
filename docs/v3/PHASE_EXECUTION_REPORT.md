@@ -9074,3 +9074,39 @@ Negative/P0 acceptance: no upload/review CTA claims sufficiency, release, export
 No-generation, no-route-reclassification, no-P1/Hold/Reference-elevation and no-safety-regression confirmed.
 
 Exit Gate Decision: `UX_CTA_003_COMPLETED_WITH_UPLOAD_NOT_SUFFICIENCY_CTA_PROOF`
+
+## UX-CTA-004 Addendum - AI Draft Internal-Only CTA Chain
+
+Date: 2026-06-22
+
+Status: Completed and validated.
+
+Task IDs: `UX-CTA-004`
+
+Route-policy rows cited:
+- Route Policy Matrix rows `033-037` and `027-030`.
+- `SAFE-POL-004` AI Draft internal-only.
+- `CTA-POL-005` advisor approval is not compliance release.
+- `CTA-POL-006` compliance release is not client acceptance.
+
+Completed `UX-CTA-004` by changing advisor detail draft language from client-facing/success-like wording to internal draft wording, separating approve-for-compliance-review from rebuild, evidence request and unsupported-claim rejection actions. The implementation changes UI copy and regression proof only; it does not change workflow state, release, payload, route or permission behavior.
+
+Changed files: `components/internal-workflow-screen.tsx`, `tests/route-smoke.spec.ts`, reports and `artifacts/ux-page-to-policy/UX-CTA-004/*.png`.
+
+Validation: `pnpm typecheck` passed; `pnpm lint` passed with 27 existing warnings; `PLAYWRIGHT_PORT=3483 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-CTA AI draft"` passed 1 test; `PLAYWRIGHT_PORT=3484 pnpm test:workflow-gate` passed 13; `PLAYWRIGHT_PORT=3485 pnpm test:workflow-api` passed 15; `PLAYWRIGHT_PORT=3486 pnpm test:file-export` passed 14; `PLAYWRIGHT_PORT=3487 pnpm test:permissions` passed 8.
+
+Proof artifacts: `artifacts/ux-page-to-policy/UX-CTA-004/` contains six screenshots for signal queue, workbench, trigger detail, advisor queue, advisor detail internal draft and evidence review.
+
+Positive acceptance: advisor detail now presents internal draft handling with a single primary advisor-to-compliance action and clear secondary reject/rebuild/recovery actions.
+
+Negative/P0 acceptance: no CTA or metric claims client release, client-ready approval or old `82% Success`; P0 workflow, export and permission tests remain green.
+
+No-generation confirmation: no screen generation, state-screen generation, image generation or generated product assets.
+
+No-route-reclassification confirmation: route IDs, paths, worksets and route scopes remain unchanged.
+
+No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route was elevated.
+
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
+
+Exit Gate Decision: `UX_CTA_004_COMPLETED_WITH_AI_DRAFT_INTERNAL_ONLY_CTA_PROOF`

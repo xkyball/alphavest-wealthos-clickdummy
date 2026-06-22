@@ -1968,3 +1968,50 @@ No-generation confirmation: no screen, state-screen, image or generated product 
 No-route-reclassification confirmation: route IDs, paths, worksets and scopes remain unchanged.
 No-P1/Hold/Reference-elevation confirmation: no protected route was touched or elevated.
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
+
+## Completed Slice: UX-CTA-004
+
+Task: `UX-CTA-004` - Implement AI draft rejection/rebuild CTA chain as internal-only.
+
+Mission Card: keep AI/rules draft actions internal on advisor approval and adjacent advisory routes, while making reject, rebuild, evidence request and advisor-to-compliance handoff distinct.
+
+Evidence Intake:
+- Task-master `UX-CTA-004`; Route Policy Matrix rows `033-037` and `027-030`.
+- Route Policy Matrix `SAFE-POL-004`, `CTA-POL-005`, `CTA-POL-006` and `ADVICE_BOUNDARY_CRITICAL`.
+- Existing advisor detail implementation already routed approval to compliance review; CTA copy and success-like metric wording needed tightening.
+
+Method artifacts: Discover found a client-visible success implication risk in `AI Draft Recommendation` plus `82% Success`. Define kept workflow behavior unchanged and changed only labels, blocked copy and test proof. Develop used the existing advisor detail rail and route-smoke suite. Deliver includes six CTA screenshots and P0 negative tests.
+
+Changed files:
+- `components/internal-workflow-screen.tsx`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-CTA-004/*.png`
+
+Validation:
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with 27 existing warnings, 0 errors.
+- `PLAYWRIGHT_PORT=3483 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-CTA AI draft"` - passed, 1 test.
+- `PLAYWRIGHT_PORT=3484 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3485 pnpm test:workflow-api` - passed, 15 tests.
+- `PLAYWRIGHT_PORT=3486 pnpm test:file-export` - passed, 14 tests.
+- `PLAYWRIGHT_PORT=3487 pnpm test:permissions` - passed, 8 tests.
+
+Screenshot/proof:
+- `artifacts/ux-page-to-policy/UX-CTA-004/2026-06-22-UX-CTA-004-signal-queue.png`
+- `artifacts/ux-page-to-policy/UX-CTA-004/2026-06-22-UX-CTA-004-workbench.png`
+- `artifacts/ux-page-to-policy/UX-CTA-004/2026-06-22-UX-CTA-004-trigger-detail.png`
+- `artifacts/ux-page-to-policy/UX-CTA-004/2026-06-22-UX-CTA-004-advisor-queue.png`
+- `artifacts/ux-page-to-policy/UX-CTA-004/2026-06-22-UX-CTA-004-advisor-detail-internal-draft.png`
+- `artifacts/ux-page-to-policy/UX-CTA-004/2026-06-22-UX-CTA-004-evidence-review.png`
+
+Positive acceptance: advisor detail exposes one advisor-to-compliance primary action plus internal rebuild, evidence request and unsupported-claim rejection actions.
+
+Negative/P0 acceptance: route-smoke rejects client-release wording and the old `82% Success` overclaim; workflow, export and permission tests remain green.
+
+No-generation confirmation: no screen, state-screen, image or generated product asset was created.
+No-route-reclassification confirmation: route IDs, paths, worksets and scopes remain unchanged.
+No-P1/Hold/Reference-elevation confirmation: no protected route was touched or elevated.
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
