@@ -239,19 +239,17 @@ pnpm smoke:phase13
 
 ## Source Of Truth
 
-Before implementation, read `AGENTS.md` first. It routes work to the active
-source package for the selected workstream.
+Before implementation, read `AGENTS.md` first and then
+`ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md`.
 
-Current active workstream sources:
+`ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md` is the only operative source of
+truth for implementation, planning, validation, route evolution, safety,
+reporting and prompt derivation. Run the Moving Baseline Preflight from that
+handoff before code changes. Use support artefacts only when the True-UX
+handoff names them for the selected phase/task.
 
-- UX refactoring: `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md` and `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`. Repository override `UX_IMPLEMENTATION_HANDOFF_MISSING_POLICY_OVERRIDDEN` makes the imported UX matrix and task master sufficient for scoped UX execution; `ALPHAVEST_UX_REFACTORING_IMPLEMENTATION_HANDOFF.md` is optional convenience output, not a blocker.
-- DB-backed tables/forms: `ALPHAVEST_DB_BACKED_TABLES_FORMS_CODEX_PROMPT_PACK.md` plus `ALPHAVEST_DB_BACKED_TABLES_FORMS_REALITY_REBASE_PLAN.md`.
-- E2E Journey Proof 25: `ALPHAVEST_E2E_JOURNEY_PROOF_25_CODEX_TASK_PACK.md`.
-- Broad SCF work outside focused workstreams: `ALPHAVEST_SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK.md`, bounded by `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_RELEASE_PHASE_PLAN.md` and `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`.
-
-Older First-Build, BP/AV-FB, MVP, minimum-path, V3 and previous handoff/task
-files are supporting references only unless `AGENTS.md` or an active workstream
-source explicitly elevates them.
+Do not use `main`, source snapshots, media packages, previous prompt packs or
+previous handoffs as target truth.
 
 ## Product Guardrails
 
@@ -264,11 +262,17 @@ source explicitly elevates them.
 - Evidence is created by default for important actions.
 - Sensitive actions create audit events.
 
-## First Build Phase Reports
+## True-UX Phase Reports
 
-After each phase, update:
+After each True-UX phase, update the reporting and proof artefacts required by
+`ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md`, including:
 
-- `docs/v3/PHASE_EXECUTION_REPORT.md`
-- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- changed files
+- inspected files
+- tests run
+- proof produced
+- positive and negative acceptance result
+- deviations, blockers and next recommended phase
 
-The final Phase 19 handoff is documented in `docs/v3/FINAL_HANDOFF_REPORT.md`.
+Older report files in `docs/v3/` are historical evidence only. They are not
+implementation authority.

@@ -12,10 +12,20 @@ export const phase0LockedRouteWorksetCounts: Record<RouteScopeLabel, number> = {
 };
 
 export const phase0LockedApiRoutes = [
+  "app/api/admin-tenants/route.ts",
+  "app/api/audit-events/route.ts",
+  "app/api/auth/dummy/route.ts",
+  "app/api/dashboard-metrics/route.ts",
   "app/api/demo-workflow/route.ts",
   "app/api/documents/review/route.ts",
   "app/api/documents/route.ts",
   "app/api/documents/upload/route.ts",
+  "app/api/entities/route.ts",
+  "app/api/export-workflow/route.ts",
+  "app/api/family-members/route.ts",
+  "app/api/global-search/route.ts",
+  "app/api/ops-sla/route.ts",
+  "app/api/profile/route.ts",
   "app/api/review-monitoring/route.ts",
 ] as const;
 
@@ -25,66 +35,78 @@ export const phase0LockedPrismaShape = {
 } as const;
 
 export const phase0P0GateLabels = [
-  "providerless-not-anonymous",
-  "tenant/object isolation",
-  "route/action/object/payload separation",
-  "AI Draft internal-only",
-  "no unapproved advice",
-  "advisor approval not release",
+  "client advice",
+  "evidence",
+  "export",
+  "RBAC",
+  "committee",
+  "KYC",
+  "rebalance",
+  "client-safe",
+  "audit",
+  "advisor approval",
   "compliance release",
-  "upload not sufficiency",
-  "evidence sufficiency",
-  "fail-closed client visibility",
-  "admin non-bypass",
-  "audit persistence",
-  "export redaction",
-  "no automatic advice execution",
-  "do not silently enter mvp task scope",
+  "AI Draft",
+  "admin",
 ] as const;
 
-export const phase0SourceHierarchyMarkers = [
-  "ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md",
-  "MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF_APPROVED_WITH_CONSTRAINTS",
-  "BP-00",
-  "BP-11",
-  "full-workflow",
-  "`main` is false-gap only",
-  "supersedes older phase plans, task definitions",
+export const trueUxSourceHierarchyMarkers = [
+  "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md",
+  "TRUE_UX_IMPLEMENTATION_HANDOFF_APPROVED_WITH_CONSTRAINTS",
+  "AUTHORIZED_ONLY_WITHIN_THIS_HANDOFF",
+  "MANDATORY_BEFORE_ANY_CODE_CHANGE",
+  "MUST_RECHECK_CURRENT_FULL_WORKFLOW_BEFORE_EXECUTION",
+  "TRUE_UX_CODEX_TASK_PACK_APPLIED",
+  "Never target truth",
 ] as const;
 
-export const firstBuildPhase0RequiredArtifacts = [
+export const trueUxRequiredSupportArtifacts = [
   {
-    path: "ALPHAVEST_MVP_FIRST_BUILD_PACKAGE_PLAN.md",
-    markers: ["FIRST_BUILD_PACKAGE_PLAN_LOCKED", "BP-00", "BP-11", "DO_NOT_EXECUTE"],
+    path: "ALPHAVEST_TRUE_UX_CODEX_TASK_PACK.md",
+    markers: ["TRUE_UX_CODEX_TASK_PACK_ACCEPTED_WITH_IMPLEMENTATION_HANDOFF_DEPENDENCY", "77 task-pack entries", "No task in this pack authorizes execution"],
   },
   {
-    path: "ALPHAVEST_MAIN_BASED_FALSE_GAP_CLEANUP_v0.3.md",
-    markers: ["MAIN_FALSE_GAP_BLOCKED_FOR_FIRST_BUILD", "DO_NOT_CREATE_TASK", "full-workflow"],
+    path: "ALPHAVEST_TRUE_UX_FLOW_REFACTORING_PLAN.md",
+    markers: ["ALPHAVEST_TRUE_UX_FLOW_REFACTORING_PLAN", "Priority Flow Set", "Route Evolution"],
   },
   {
-    path: "SCREEN_GENERATION_BRIEF_IF_NEEDED.md",
-    markers: ["NO_SCREEN_GENERATION_FOR_FIRST_BUILD_PHASE_0", "state-screen", "visual asset"],
+    path: "ALPHAVEST_TRUE_UX_ROUTE_EVOLUTION_POLICY_MATRIX.md",
+    markers: ["ALPHAVEST_TRUE_UX_ROUTE_EVOLUTION_POLICY_MATRIX", "Route Evolution", "Screen Split"],
   },
   {
-    path: "SCHEMA_FIELD_LEVEL_RECONCILIATION.md",
-    markers: ["NO_SCHEMA_MIGRATION_ALIGN_USAGE_ONLY", "enum count: 22", "model count: 42"],
+    path: "ALPHAVEST_TRUE_UX_DECISION_GOVERNANCE_AND_ROUTE_EVOLUTION_POLICY.md",
+    markers: ["ALPHAVEST_TRUE_UX_DECISION_GOVERNANCE", "Product Owner", "AUTO_APPROVED_UNLESS_SAFETY_CONFLICT"],
   },
   {
-    path: "API_CONTRACT_MATRIX.md",
-    markers: ["NO_NEW_API_BY_DEFAULT", "app/api/demo-workflow/route.ts", "API route returning 200 is not"],
+    path: "ALPHAVEST_TRUE_UX_FLOW_REFACTORING_STRATEGY_AND_CODEX_DERIVATION_PLAN.md",
+    markers: ["ALPHAVEST_TRUE_UX_FLOW_REFACTORING_STRATEGY", "Route Evolution", "ALPHAVEST_TRUE_UX_ROUTE_EVOLUTION_POLICY_MATRIX.md"],
   },
   {
-    path: "FINAL_CODEX_TASK_MASTER.md",
-    markers: ["SUPERSEDED_BY_FIRST_BUILD_HANDOFF", "Do not use this file as source of truth"],
+    path: "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF_REPO_LOCAL_BUNDLE_MANIFEST.md",
+    markers: ["REPO_LOCAL_ARTIFACT_BUNDLE_CREATED", "Included artefact count", "Codex Usage Instructions"],
   },
   {
-    path: "FINAL_CODEX_IMPLEMENTATION_HANDOFF.md",
-    markers: ["SUPERSEDED_BY_FIRST_BUILD_HANDOFF", "Do not use this file as implementation authority"],
+    path: "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF_REPO_LOCAL_REFERENCE_REWRITE_REPORT.md",
+    markers: ["REPO_LOCAL_REFERENCE_REWRITE_COMPLETED", "Manual Review Notes", "repo-local preflight requirements"],
   },
-  {
-    path: "P0_TEST_ACCEPTANCE_MATRIX.md",
-    markers: ["P0_ACCEPTANCE_PRECHECK_LOCKED", "P0-NEG-011", "P0-NEG-012"],
-  },
+] as const;
+
+export const trueUxEntrypointFiles = [
+  "AGENTS.md",
+  "CODEX_MASTER_TASK.md",
+  "CODEX_START_PHASE_MASTER_PROMPT.md",
+  "COPY_PASTE_CODEX_START_COMMANDS.md",
+  "README.md",
+] as const;
+
+export const oldSourceOfTruthPhrases = [
+  "ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md remains the sole operative",
+  "Use ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md and ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md as the active UX sources",
+  "Current active workstream sources",
+  "UX_IMPLEMENTATION_HANDOFF_MISSING_POLICY_OVERRIDDEN",
+  "ALPHAVEST_SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK.md is the operative",
+  "ALPHAVEST_DB_BACKED_TABLES_FORMS_CODEX_PROMPT_PACK.md is the operative",
+  "ALPHAVEST_E2E_JOURNEY_PROOF_25_CODEX_TASK_PACK.md is the operative",
 ] as const;
 
 function walkFiles(currentPath: string, predicate: (fileName: string) => boolean, rootPath: string, matches: string[]) {
@@ -135,12 +157,12 @@ export function readPrismaShape(cwd = process.cwd()) {
   };
 }
 
-export function readFirstBuildHandoff(cwd = process.cwd()) {
-  return readFileSync(path.join(cwd, "ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md"), "utf8");
+export function readTrueUxHandoff(cwd = process.cwd()) {
+  return readFileSync(path.join(cwd, "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md"), "utf8");
 }
 
-export function readFirstBuildPhase0ArtifactTexts(cwd = process.cwd()) {
-  return firstBuildPhase0RequiredArtifacts.map((artifact) => {
+export function readTrueUxSupportArtifactTexts(cwd = process.cwd()) {
+  return trueUxRequiredSupportArtifacts.map((artifact) => {
     const absolutePath = path.join(cwd, artifact.path);
 
     return {
@@ -152,12 +174,24 @@ export function readFirstBuildPhase0ArtifactTexts(cwd = process.cwd()) {
   });
 }
 
+export function readTrueUxEntrypointTexts(cwd = process.cwd()) {
+  return trueUxEntrypointFiles.map((entrypointPath) => {
+    const absolutePath = path.join(cwd, entrypointPath);
+
+    return {
+      path: entrypointPath,
+      text: readFileSync(absolutePath, "utf8"),
+    };
+  });
+}
+
 export function buildPhase0SourceRealitySnapshot(cwd = process.cwd()) {
   return {
     apiRouteFiles: listApiRouteFiles(cwd),
     p0GateLabels: phase0P0GateLabels,
-    planText: readFirstBuildHandoff(cwd),
-    phase0Artifacts: readFirstBuildPhase0ArtifactTexts(cwd),
+    planText: readTrueUxHandoff(cwd),
+    trueUxEntrypoints: readTrueUxEntrypointTexts(cwd),
+    trueUxSupportArtifacts: readTrueUxSupportArtifactTexts(cwd),
     prismaShape: readPrismaShape(cwd),
     routeRegistryCount,
     routeWorksetIntegrity,

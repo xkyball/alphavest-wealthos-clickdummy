@@ -6,11 +6,12 @@ import {
   phase0LockedPrismaShape,
   phase0LockedRouteWorksetCounts,
   phase0P0GateLabels,
-  phase0SourceHierarchyMarkers,
-  firstBuildPhase0RequiredArtifacts,
+  oldSourceOfTruthPhrases,
+  trueUxRequiredSupportArtifacts,
+  trueUxSourceHierarchyMarkers,
 } from "../lib/source-reality-gate";
 
-test.describe("First Build source reality gate", () => {
+test.describe("True UX source reality gate", () => {
   test("keeps route worksets, API universe and Prisma shape executable", () => {
     const snapshot = buildPhase0SourceRealitySnapshot();
 
@@ -26,13 +27,13 @@ test.describe("First Build source reality gate", () => {
   test("keeps source hierarchy and main-branch exclusion explicit", () => {
     const { planText } = buildPhase0SourceRealitySnapshot();
 
-    for (const marker of phase0SourceHierarchyMarkers) {
+    for (const marker of trueUxSourceHierarchyMarkers) {
       expect(planText).toContain(marker);
     }
 
-    expect(planText).toContain("Implementation gate status");
-    expect(planText).toContain("Codex may execute?");
-    expect(planText).toContain("Allowed Task Inventory");
+    expect(planText).toContain("Source-of-Truth Applied");
+    expect(planText).toContain("Moving Baseline Preflight Gate");
+    expect(planText).toContain("Execution Order Overview");
   });
 
   test("keeps P0 gate labels mapped before acceptance claims", () => {
@@ -44,8 +45,8 @@ test.describe("First Build source reality gate", () => {
       expect(planText.toLowerCase()).toContain(gate.toLowerCase());
     }
 
-    expect(planText).toContain("Treating presence as readiness proof");
-    expect(planText).toContain("P0 negative proof");
+    expect(planText).toContain("Skip safety negative tests");
+    expect(planText).toContain("P0 Safety Tests");
   });
 
   test("tracks executable test inventory without treating count as readiness", () => {
@@ -55,18 +56,32 @@ test.describe("First Build source reality gate", () => {
     expect(specFiles.length).toBeGreaterThanOrEqual(17);
   });
 
-  test("keeps First Build Phase 0 guardrail artifacts present and authoritative", () => {
-    const { phase0Artifacts } = buildPhase0SourceRealitySnapshot();
+  test("keeps True UX support artifacts present and handoff-bounded", () => {
+    const { trueUxSupportArtifacts } = buildPhase0SourceRealitySnapshot();
 
-    expect(phase0Artifacts.map((artifact) => artifact.path)).toEqual(
-      firstBuildPhase0RequiredArtifacts.map((artifact) => artifact.path),
+    expect(trueUxSupportArtifacts.map((artifact) => artifact.path)).toEqual(
+      trueUxRequiredSupportArtifacts.map((artifact) => artifact.path),
     );
 
-    for (const artifact of phase0Artifacts) {
+    for (const artifact of trueUxSupportArtifacts) {
       expect(artifact.exists, `${artifact.path} exists`).toBe(true);
 
       for (const marker of artifact.markers) {
         expect(artifact.text, `${artifact.path} contains ${marker}`).toContain(marker);
+      }
+    }
+  });
+
+  test("keeps repo entrypoints on the True UX handoff and off old operative sources", () => {
+    const { trueUxEntrypoints } = buildPhase0SourceRealitySnapshot();
+
+    for (const entrypoint of trueUxEntrypoints) {
+      expect(entrypoint.text, `${entrypoint.path} names True UX handoff`).toContain(
+        "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md",
+      );
+
+      for (const oldPhrase of oldSourceOfTruthPhrases) {
+        expect(entrypoint.text, `${entrypoint.path} does not contain ${oldPhrase}`).not.toContain(oldPhrase);
       }
     }
   });

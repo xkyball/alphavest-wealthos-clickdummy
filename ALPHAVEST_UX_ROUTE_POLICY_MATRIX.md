@@ -1,28 +1,9 @@
 # ALPHAVEST_UX_ROUTE_POLICY_MATRIX
+> **Repo-local bundle note:** This sanitized artefact is included as decision / policy / task / handoff guidance only. It does not provide source code, source snapshots, screenshots, screencasts, reference images or generated visual assets. Codex must work on a local repository checkout / pull of the intended target branch and run the Moving Baseline Preflight before any code change.
 
-## 0. Current Repository Override — Handoff Missing Policy
-
-**Override generated:** 2026-06-21  
-**Override status:** `UX_IMPLEMENTATION_HANDOFF_MISSING_POLICY_OVERRIDDEN`  
-**User directive:** `overwrite the handhoff missing policy`
-
-This repository override removes the original requirement that UX
-implementation stay blocked only because
-`ALPHAVEST_UX_REFACTORING_IMPLEMENTATION_HANDOFF.md` is absent. This route
-policy matrix remains the binding guardrail layer for UX execution together
-with `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`.
-
-Any later row in this artefact that says UX work is eligible only after or via
-a final implementation handoff must be read through this override: named UX
-tasks may execute directly from this matrix plus the UX task master.
-
-The override does not reclassify routes, elevate P1/Reference/Hold work,
-authorize screen/state-screen/image generation, weaken RBAC or payload
-visibility, allow client-visible unapproved advice, or relax P0 proof
-obligations.
 
 **Generated:** 2026-06-21  
-**Mode:** Route-policy artefact with repository execution override. Scoped Codex execution is allowed only through named UX tasks/workstreams in `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`. Keine Screen-/State-Screen-/Image-Generation.  
+**Mode:** Route-policy artefact only. Keine Implementierung. Keine Codeänderung. Keine Codex-Ausführung. Keine Screen-/State-Screen-/Image-Generation.  
 **Target project:** AlphaVest WealthOS  
 **Target branch:** `full-workflow`  
 **Direct predecessor:** `ALPHAVEST_UX_NAVIGATION_PAGE_DENSITY_CTA_DECISION_BRIEF.md`  
@@ -32,7 +13,7 @@ obligations.
 
 **Artefact status:** `UX_ROUTE_POLICY_MATRIX_ACCEPTED_FOR_TASK_MASTER_DERIVATION`
 
-**Codex execution status:** `AUTHORIZED_BY_REPOSITORY_OVERRIDE_FOR_NAMED_UX_TASKS`
+**Codex execution status:** `NOT_AUTHORIZED_IN_THIS_ARTEFACT`
 
 **Route scope status:** `ROUTE_SCOPE_LOCK_PRESERVED`
 
@@ -46,7 +27,7 @@ This route policy matrix is the binding guardrail layer for later UX Codex work.
 | Density target | `CONTROLLED_PREMIUM_WORKBENCH_HYBRID` | Client/executive surfaces stay calm; internal workbenches use disciplined productive density. |
 | Page-type policy | Hub / Workbench / Detail / Drawer / Modal / Reference / P1 / Hold | Page type controls allowed content, CTAs, density and task eligibility. |
 | Route policy status | `BINDING_BEFORE_TASKS` | UX tasks must cite the policy labels below. |
-| Implementation authorization | `AUTHORIZED_BY_REPOSITORY_OVERRIDE_FOR_NAMED_UX_TASKS` | Use with `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`; no separate missing-handoff blocker. |
+| Implementation authorization | `BLOCKED_UNTIL_FINAL_HANDOFF` | This matrix is not a Codex execution command. |
 
 ## 2. Source-of-Truth Applied
 
@@ -70,15 +51,15 @@ This route policy matrix is the binding guardrail layer for later UX Codex work.
 | 16 | `SCHEMA_FIELD_LEVEL_RECONCILIATION.md` | Full-workflow schema baseline. | No blind schema replacement or patch-only model creation. |
 | 17 | `P0_TEST_ACCEPTANCE_MATRIX.md` | Existing proof slices and missing negative tests. | Existing tests are not complete P0 proof. |
 | 18 | `SCREEN_GENERATION_BRIEF_IF_NEEDED.md` | No-generation decision. | No visual generation from UX desire. |
-| 19 | `alphavest-wealthos-clickdummy-full-workflow.zip` / branch `full-workflow` | Only valid target codebase. | `main` is not target truth. |
-| 20 | `alphavest_mvp_artifact_completion_patch.zip` | Control spec only. | Does not replace code/schema. |
-| 21 | `alphavest-wealthos-clickdummy-main.zip` | False-gap source only. | Never a target task source. |
+| 19 | `local repository checkout / pull of target branch full-workflow` / branch `full-workflow` | Only valid target codebase. | `main` is not target truth. |
+| 20 | `control-spec concepts represented in bundled markdown artefacts; no patch archive included` | Control spec only. | Does not replace code/schema. |
+| 21 | `main branch as false-gap / historical only; never target truth` | False-gap source only. | Never a target task source. |
 
 ## 3. Route Policy Vocabulary
 
 | Label | Meaning | Codex Treatment |
 |---|---|---|
-| `UX_TASK_ELIGIBLE` | Route may receive UX work when acceptance and safety are clear. | May become implementation task through a named UX task in the task master. |
+| `UX_TASK_ELIGIBLE` | Route may receive UX work when acceptance and safety are clear. | May become implementation task only in final handoff. |
 | `UX_TASK_ELIGIBLE_WITH_SAFETY_TESTS` | Route may receive UX work only with P0/safety proof. | Requires positive and negative tests. |
 | `UX_SUPPORT_ONLY` | Route may be refactored only to support MVP flow/context. | No MVP capability expansion. |
 | `UX_P1_DEFERRED` | Route is P1 after MVP. | No MVP product task. |
@@ -86,7 +67,7 @@ This route policy matrix is the binding guardrail layer for later UX Codex work.
 | `UX_HOLD_BLOCKED_NO_TASK` | Route remains hold-blocked. | No implementation until explicit unlock. |
 | `NO_ROUTE_RECLASSIFICATION` | Route scope remains binding. | Codex must not reclassify. |
 | `NO_SCREEN_GENERATION` | No new screen/image generation. | Use existing components/screens only. |
-| `NO_STATE_SCREEN_GENERATION` | No visual state-screen generation. | Implement states in code only if a named UX task authorizes it. |
+| `NO_STATE_SCREEN_GENERATION` | No visual state-screen generation. | Implement states in code only if final handoff authorizes. |
 | `CLIENT_SAFE_ONLY` | Client-facing content is released/redacted/client-safe only. | Fail closed by default. |
 | `INTERNAL_ONLY` | Internal staff route or internal payload. | Do not expose to client. |
 | `AI_DRAFT_INTERNAL_ONLY` | AI/rules draft cannot be client-visible. | Negative tests required when touched. |
@@ -256,7 +237,7 @@ This route policy matrix is the binding guardrail layer for later UX Codex work.
 
 | Eligibility | Count | Route IDs | Codex Meaning |
 |---|---:|---|---|
-| `UX_TASK_ELIGIBLE_WITH_SAFETY_TESTS` | 31 | 008, 019, 020, 027, 028, 029, 030, 033, 034, 035, 036, 037, 038, 039, 040, 041, 042, 043, 044, 045, 046, 047, 048, 049, 050, 051, 054, 055, 056, 057, 058 | Candidate MVP UX tasks under repository override; most require P0 positive/negative proof. |
+| `UX_TASK_ELIGIBLE_WITH_SAFETY_TESTS` | 31 | 008, 019, 020, 027, 028, 029, 030, 033, 034, 035, 036, 037, 038, 039, 040, 041, 042, 043, 044, 045, 046, 047, 048, 049, 050, 051, 054, 055, 056, 057, 058 | Candidate MVP UX tasks after final handoff; most require P0 positive/negative proof. |
 | `UX_SUPPORT_ONLY` | 25 | 001, 002, 003, 004, 005, 006, 007, 009, 010, 011, 012, 013, 014, 015, 016, 017, 018, 021, 022, 023, 024, 025, 026, 031, 032 | Flow-relevant support refactors only; no capability expansion. |
 | `UX_P1_DEFERRED` | 5 | 052, 053, 059, 060, 068 | No MVP task except guard/deprioritization. |
 | `UX_REFERENCE_ONLY_NO_PRODUCT_TASK` | 3 | 061, 062, 063 | No product UX task. |

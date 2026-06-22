@@ -1,0 +1,158 @@
+{
+  "root_artifact": "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md",
+  "generated_at": "2026-06-22T09:50:58.316754+00:00",
+  "bundle_type": "repo-local artifact-only",
+  "included_artifacts": [
+    "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md",
+    "ALPHAVEST_TRUE_UX_CODEX_TASK_PACK.md",
+    "ALPHAVEST_TRUE_UX_FLOW_REFACTORING_PLAN.md",
+    "ALPHAVEST_TRUE_UX_ROUTE_EVOLUTION_POLICY_MATRIX.md",
+    "ALPHAVEST_TRUE_UX_DECISION_GOVERNANCE_AND_ROUTE_EVOLUTION_POLICY.md",
+    "ALPHAVEST_TRUE_UX_FLOW_REFACTORING_STRATEGY_AND_CODEX_DERIVATION_PLAN.md",
+    "ALPHAVEST_UX_NAVIGATION_PAGE_DENSITY_CTA_DECISION_BRIEF.md",
+    "ALPHAVEST_UX_REFACTORING_INPUT_AND_APPROACH_BRIEF.md",
+    "ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md",
+    "ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md",
+    "MVP_SCOPE_LOCK.md",
+    "ROUTE_SCOPE_LOCK.md",
+    "ROUTE_SCREEN_VISUAL_ASSET_MATRIX.md",
+    "MISSING_SCREEN_STATE_SCREEN_DECISION_LOG.md",
+    "STATE_SCREEN_SPEC.md",
+    "DRAWER_MODAL_INTERACTION_CONTRACT.md",
+    "FEEDBACK_VALIDATION_ERROR_STATE_CONTRACT.md",
+    "RBAC_CLIENT_VISIBILITY_ADVICE_BOUNDARY_CONTRACT.md",
+    "EVIDENCE_AUDIT_EXPORT_SAFETY_CONTRACT.md",
+    "API_CONTRACT_MATRIX.md",
+    "SCHEMA_FIELD_LEVEL_RECONCILIATION.md",
+    "P0_TEST_ACCEPTANCE_MATRIX.md",
+    "SCREEN_GENERATION_BRIEF_IF_NEEDED.md",
+    "FINAL_CODEX_TASK_MASTER.md",
+    "FINAL_CODEX_IMPLEMENTATION_HANDOFF.md",
+    "ALPHAVEST_MVP_JOURNEY_REQUIREMENTS_MATRIX.md",
+    "ALPHAVEST_MEGA_JOURNEY_PRIORITY_LOCK.md",
+    "ALPHAVEST_LIVING_KNOWLEDGE_BASE.md",
+    "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF_REPO_LOCAL_REFERENCE_REWRITE_REPORT.md",
+    "recursive_reference_graph_repo_local.json",
+    "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF_REPO_LOCAL_BUNDLE_MANIFEST.md"
+  ],
+  "excluded_forbidden_files": [
+    {
+      "filename_or_pattern": "ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER_PROMPT_ENGINE_PROOF.md",
+      "reason": "Prompt-generation proof excluded from runtime bundle."
+    },
+    {
+      "filename_or_pattern": "[redacted old task master pack]",
+      "reason": "ZIP excluded: source snapshot, media/evidence package, prior bundle, or not a markdown/json artefact."
+    },
+    {
+      "filename_or_pattern": "ALPHAVEST_UX_NAVIGATION_PAGE_DENSITY_CTA_DECISION_PROMPT_ENGINE_PROOF.md",
+      "reason": "Prompt-generation proof excluded from runtime bundle."
+    },
+    {
+      "filename_or_pattern": "[redacted media-evidence package]",
+      "reason": "ZIP excluded: source snapshot, media/evidence package, prior bundle, or not a markdown/json artefact."
+    },
+    {
+      "filename_or_pattern": "[redacted video evidence]",
+      "reason": "Media/image/screenshot/screencast excluded."
+    },
+    {
+      "filename_or_pattern": "ALPHAVEST_UX_REFACTORING_INPUT_DISCOVERY_PROMPT_ENGINE_PROOF.md",
+      "reason": "Prompt-generation proof excluded from runtime bundle."
+    },
+    {
+      "filename_or_pattern": "[redacted control-spec source archive]",
+      "reason": "ZIP excluded: source snapshot, media/evidence package, prior bundle, or not a markdown/json artefact."
+    },
+    {
+      "filename_or_pattern": "[redacted main source snapshot]",
+      "reason": "ZIP excluded: source snapshot, media/evidence package, prior bundle, or not a markdown/json artefact."
+    },
+    {
+      "filename_or_pattern": "[redacted full-workflow source snapshot]",
+      "reason": "ZIP excluded: source snapshot, media/evidence package, prior bundle, or not a markdown/json artefact."
+    },
+    {
+      "filename_or_pattern": "ALPHAVEST_TRUE_UX_FLOW_REFACTORING_STRATEGY_PROMPT_ENGINE_PROOF.md",
+      "reason": "Prompt-generation proof excluded from runtime bundle."
+    },
+    {
+      "filename_or_pattern": "ALPHAVEST_TRUE_UX_DECISION_GOVERNANCE_ROUTE_EVOLUTION_POLICY_PROMPT_ENGINE_PROOF.md",
+      "reason": "Prompt-generation proof excluded from runtime bundle."
+    },
+    {
+      "filename_or_pattern": "ALPHAVEST_TRUE_UX_DECISION_GOVERNANCE_AND_ROUTE_EVOLUTION_POLICY_PROMPT_ENGINE_PROOF.md",
+      "reason": "Prompt-generation proof excluded from runtime bundle."
+    },
+    {
+      "filename_or_pattern": "ALPHAVEST_TRUE_UX_ROUTE_EVOLUTION_POLICY_MATRIX_PROMPT_ENGINE_PROOF.md",
+      "reason": "Prompt-generation proof excluded from runtime bundle."
+    },
+    {
+      "filename_or_pattern": "ALPHAVEST_TRUE_UX_FLOW_REFACTORING_PLAN_PROMPT_ENGINE_PROOF.md",
+      "reason": "Prompt-generation proof excluded from runtime bundle."
+    },
+    {
+      "filename_or_pattern": "build_flow_plan.py",
+      "reason": "Non-artefact file excluded."
+    },
+    {
+      "filename_or_pattern": "ALPHAVEST_TRUE_UX_CODEX_TASK_PACK_PROMPT_ENGINE_PROOF.md",
+      "reason": "Prompt-generation proof excluded from runtime bundle."
+    },
+    {
+      "filename_or_pattern": "build_true_ux_task_pack.py",
+      "reason": "Non-artefact file excluded."
+    },
+    {
+      "filename_or_pattern": "[redacted old input bundle]",
+      "reason": "ZIP excluded: source snapshot, media/evidence package, prior bundle, or not a markdown/json artefact."
+    },
+    {
+      "filename_or_pattern": "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF_PROMPT_ENGINE_PROOF.md",
+      "reason": "Prompt-generation proof excluded from runtime bundle."
+    },
+    {
+      "filename_or_pattern": "[redacted superseded recursive bundle]",
+      "reason": "ZIP excluded: source snapshot, media/evidence package, prior bundle, or not a markdown/json artefact."
+    },
+    {
+      "filename_or_pattern": "ALPHAVEST_TRUE_UX_REPO_LOCAL_BUNDLE_CLEANUP_PROMPT_ENGINE_PROOF.md",
+      "reason": "Prompt-generation proof excluded from runtime bundle."
+    }
+  ],
+  "missing_references": [],
+  "rewrite_counts": {
+    "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md": 3,
+    "ALPHAVEST_TRUE_UX_CODEX_TASK_PACK.md": 1,
+    "ALPHAVEST_TRUE_UX_FLOW_REFACTORING_PLAN.md": 1,
+    "ALPHAVEST_TRUE_UX_ROUTE_EVOLUTION_POLICY_MATRIX.md": 2,
+    "ALPHAVEST_TRUE_UX_DECISION_GOVERNANCE_AND_ROUTE_EVOLUTION_POLICY.md": 2,
+    "ALPHAVEST_TRUE_UX_FLOW_REFACTORING_STRATEGY_AND_CODEX_DERIVATION_PLAN.md": 4,
+    "ALPHAVEST_UX_NAVIGATION_PAGE_DENSITY_CTA_DECISION_BRIEF.md": 6,
+    "ALPHAVEST_UX_REFACTORING_INPUT_AND_APPROACH_BRIEF.md": 5,
+    "ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md": 4,
+    "ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md": 2,
+    "MVP_SCOPE_LOCK.md": 4,
+    "ROUTE_SCOPE_LOCK.md": 4,
+    "ROUTE_SCREEN_VISUAL_ASSET_MATRIX.md": 6,
+    "MISSING_SCREEN_STATE_SCREEN_DECISION_LOG.md": 5,
+    "STATE_SCREEN_SPEC.md": 4,
+    "DRAWER_MODAL_INTERACTION_CONTRACT.md": 4,
+    "FEEDBACK_VALIDATION_ERROR_STATE_CONTRACT.md": 4,
+    "RBAC_CLIENT_VISIBILITY_ADVICE_BOUNDARY_CONTRACT.md": 4,
+    "EVIDENCE_AUDIT_EXPORT_SAFETY_CONTRACT.md": 4,
+    "API_CONTRACT_MATRIX.md": 4,
+    "SCHEMA_FIELD_LEVEL_RECONCILIATION.md": 4,
+    "P0_TEST_ACCEPTANCE_MATRIX.md": 4,
+    "SCREEN_GENERATION_BRIEF_IF_NEEDED.md": 4,
+    "FINAL_CODEX_TASK_MASTER.md": 4,
+    "FINAL_CODEX_IMPLEMENTATION_HANDOFF.md": 4,
+    "ALPHAVEST_MVP_JOURNEY_REQUIREMENTS_MATRIX.md": 4,
+    "ALPHAVEST_MEGA_JOURNEY_PRIORITY_LOCK.md": 3,
+    "ALPHAVEST_LIVING_KNOWLEDGE_BASE.md": 5,
+    "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF_REPO_LOCAL_REFERENCE_REWRITE_REPORT.md": 2
+  },
+  "forbidden_content_scan_result": "PASS",
+  "forbidden_content_scan_issues": []
+}

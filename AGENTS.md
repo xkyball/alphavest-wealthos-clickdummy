@@ -4,94 +4,42 @@
 Build AlphaVest WealthOS as a demo-data-first web application using Next.js, React, TypeScript, Tailwind CSS, PostgreSQL, Prisma and Docker Compose.
 
 ## Mandatory source of truth
-Read this before implementation:
+Read `ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md` before any implementation,
+planning handoff, QA claim, prompt derivation, route change, UI refactor, test
+change or reporting change.
 
-- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md` when the task is about UX route policy, navigation model, sidebar/app shell, topbar context, page headers, page type, density, CTA rules, drawers/modals, interaction states, UX safety policy or route-scope treatment.
-- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md` when the task mentions UX refactoring, `UX-NAV`, `UX-HUB`, `UX-PAGE`, `UX-COMPLEXITY`, `UX-DENSITY`, `UX-CTA`, `UX-INTERACTION`, `UX-SAFETY`, `UX-POLICY`, or derives a UX implementation handoff.
-- `ALPHAVEST_DB_BACKED_TABLES_FORMS_CODEX_PROMPT_PACK.md` when the task is about DB-backed tables, lists, cards, search, filters, sorting, pagination, row actions, forms, input masks, wizards, seed data, metrics, charts, gauges or the DBTF phase sequence.
-- `ALPHAVEST_E2E_JOURNEY_PROOF_25_CODEX_TASK_PACK.md` when the task is about the 25 canonical journeys, CJ-001 through CJ-025, E2E journey proofs, journey proof fixtures/harnesses, canonical path coverage, or the E2E proof workstream sequence.
-- `ALPHAVEST_SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK.md`
-- `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_RELEASE_PHASE_PLAN.md`
-- `ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md`
+`ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md` is the only operative source of
+truth for this repository. It owns execution authority, phase order, preflight
+rules, task eligibility, route evolution discipline, safety boundaries,
+validation obligations, proof language and reporting requirements.
 
-`ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md` is the binding route-policy guardrail
-for later UX Codex work. It owns route-by-route UX eligibility, density tier,
-page-type treatment, CTA policy, route-scope preservation, P1/Reference/Hold
-treatment, client/internal visibility expectations and no-generation rules for
-UX work. It is not an implementation command and does not authorize route
-reclassification, P1/Hold/Reference elevation, screen generation,
-state-screen generation, image generation, client-visible advice expansion,
-admin bypass or blind API/schema/migration work.
+The handoff's required support chain is:
 
-`ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md` is the operative UX task-master
-source for UX refactoring planning and scoped execution. For UX
-navigation, hub, page, complexity, density, CTA, interaction, safety and policy
-tasks, it supersedes broader SCF/UI-clickflow artefacts only as the active UX
-task layer. The repository-level override
-`UX_IMPLEMENTATION_HANDOFF_MISSING_POLICY_OVERRIDDEN` means
-`ALPHAVEST_UX_REFACTORING_IMPLEMENTATION_HANDOFF.md` is no longer required
-before UX task execution; it may be created later as a derived convenience
-handoff, but its absence is not a blocker. Codex may execute only named UX
-tasks/workstreams from the task master, must cite the matching route-policy
-rows, and must preserve all route-scope, no-generation and P0 safety proof
-rules. When UX tasks also touch DBTF, E2E, control-layer, API, schema, RBAC,
-visibility, evidence, audit or export behavior, read the relevant source above
-as well and keep the stricter safety rule.
+- `ALPHAVEST_TRUE_UX_CODEX_TASK_PACK.md`
+- `ALPHAVEST_TRUE_UX_FLOW_REFACTORING_PLAN.md`
+- `ALPHAVEST_TRUE_UX_ROUTE_EVOLUTION_POLICY_MATRIX.md`
+- `ALPHAVEST_TRUE_UX_DECISION_GOVERNANCE_AND_ROUTE_EVOLUTION_POLICY.md`
+- `ALPHAVEST_TRUE_UX_FLOW_REFACTORING_STRATEGY_AND_CODEX_DERIVATION_PLAN.md`
 
-`ALPHAVEST_E2E_JOURNEY_PROOF_25_CODEX_TASK_PACK.md` is the operative Codex
-source of truth for the E2E Journey Proof 25 workstream. For journey-proof
-tasks it supersedes broader SCF and older journey/handoff artefacts as the
-active task-card, workstream, stop-rule and reporting contract. It does not by
-itself authorize immediate implementation: each execution turn must follow the
-relevant E2E workstream or `E2E-CJ-*` task card, verify the target files and
-Control-Layer dependencies first, and preserve its bans on new screens,
-state-screen/image generation, Prisma migrations, new API routes without
-`API_DECISION_REQUIRED`, `main`-derived work, P1/HOLD elevation, autonomous
-advice, admin bypass or client-visible AI drafts.
+Other imported policy, safety, matrix and lock artefacts may be read only as
+supporting context when the True-UX handoff names or requires them. No other
+file may elevate itself into implementation authority, phase authority,
+task-source authority, route-scope authority, release authority or acceptance
+authority.
 
-`ALPHAVEST_DB_BACKED_TABLES_FORMS_CODEX_PROMPT_PACK.md` is the operative Codex
-execution source of truth for focused DBTF work. For DBTF tasks it supersedes
-the broader SCF prompt pack as the active phase sequence and scope boundary.
-Its highest planning source is
-`ALPHAVEST_DB_BACKED_TABLES_FORMS_REALITY_REBASE_PLAN.md`; if that file is
-missing, report it as a blocker before doing DBTF feature edits. DBTF work must
-stay limited to DB-backed tables/lists/boards/card-lists, search/filter/sort/
-pagination, row actions and RBAC row filtering, forms/input masks/wizards, seed
-data, data-derived metrics/charts/gauges and focused tests. It does not
-authorize broad AlphaVest implementation, full advice/compliance/export
-architecture, new screens, screen/image/state-screen generation, production auth
-rebuilds, blind APIs, blind Prisma migrations or P1/Hold/Reference promotion.
+Codex must run the Moving Baseline Preflight from the True-UX handoff before
+code changes. The target branch is `full-workflow` unless the user explicitly
+sets a different branch for the turn. `main`, uploaded source snapshots, visual
+media packages and previous bundles are never target truth.
 
-`ALPHAVEST_SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK.md` is the operative Codex
-execution source of truth for broad SCF work outside the DBTF focus. It owns the phased Codex
-prompt sequence, phase entry/exit instructions, validation-discovery rules,
-reporting templates, Do-Not-Implement register and stop-after-phase workflow
-for implementation turns.
+The True-UX handoff authorizes implementation only inside its constraints. It
+does not authorize screen/image/state-screen generation, blind schema
+migrations, blind API creation, safety weakening, client-visible internal
+payloads, unapproved advice, admin bypasses, advisor-approval-as-release,
+export without approval/redaction, or route/screen evolution without the
+required record and tests.
 
-`ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_RELEASE_PHASE_PLAN.md` is the
-highest authorization source inside the prompt-pack hierarchy. It owns release
-authorization, `AUTHORIZED_*` labels, non-goals, forbidden work, prompt-pack /
-handoff dependency and stop rules. The Codex Prompt Pack must not be used to
-override the release plan's authorization boundaries.
-
-`ALPHAVEST_SCREEN_CAPABILITY_E2E_IMPLEMENTATION_PLAN_DETAIL.md` remains the
-direct predecessor and detailed task/subtask source for phase IDs `P00` through
-`P14`, `SCF-Pxx-Txxx` task IDs, dependencies, acceptance criteria, proof
-obligations and QA-before-Codex gates. It must be read through the Codex Prompt
-Pack and release-plan authorization layer and must not be treated as broader
-implementation approval where either says work is deferred, held,
-reference-only or not authorized.
-
-Older First-Build, MVP, V3, minimum-path, journey, package-plan, final-task,
-legacy task-master, prompt-pack and previous handoff artefacts are historical or
-supporting references only for task/phase work. They must not define task
-scope, reorder phases, revive BP/AV-FB task IDs, add new task IDs, bypass the
-prompt pack or release plan's hold/defer/static decisions, or override their
-proof gates.
-When a product or safety rule from an older artefact is stricter and does not
-conflict with the prompt pack or release plan, keep the stricter safety rule.
-
-## Visual source of truth
+## Visual reference
 Use `public/reference/page_ui_v3/clean_pages/` as page-level UI design reference.
 
 Important: the images are not pixel-perfect contracts. They show design direction, components, screen composition and states. Normalize all pages into one homogeneous AlphaVest design system.
@@ -100,9 +48,9 @@ Important: the images are not pixel-perfect contracts. They show design directio
 Do not implement spec panels, route labels, filenames, annotation rails, dev notes, callout legends or explanatory documentation as app UI. Only implement actual application UI.
 
 ## Navigation mapping rule
-For UX refactoring tasks, apply `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md` before
-navigation edits and use `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md` only
-within its named UX task/workstream boundaries.
+For navigation work, follow the True-UX handoff first. Use imported route,
+task, route-evolution and navigation artefacts only through the hierarchy named
+by that handoff.
 
 For tasks, prompts or tests that still refer to old left-navigation groups,
 route-catalogue menu labels, or legacy sidebar wording, read and apply
@@ -125,7 +73,7 @@ and active-parent behavior.
 - Sensitive actions create audit events.
 
 ## Early implementation rule
-Do not start with real authentication. Use a demo session, role switcher and tenant switcher first. Permission and security functions must exist early but may return permissive/demo results until `ALPHAVEST_SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK.md` or a later QA-passed handoff authorizes a stricter implementation task.
+Do not start with real authentication. Use a demo session, role switcher and tenant switcher first. Permission and security functions must exist early but may return permissive/demo results until the True-UX handoff or a later user-approved successor explicitly authorizes a stricter implementation task.
 
 ## Engineering rules
 - Use TypeScript strictly.
@@ -138,23 +86,8 @@ Do not start with real authentication. Use a demo session, role switcher and ten
 - Run build/lint/tests when available.
 - Keep changes phase-scoped and commit-ready.
 
-## Required reporting after each SCF phase
-Produce or update:
-
-- `docs/v3/PHASE_EXECUTION_REPORT.md`
-- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
-- list of changed files
-- tests run
-- unresolved risks / TODOs
-
-## Required reporting after each DBTF phase
-Produce or update the DBTF phase report required by
-`ALPHAVEST_DB_BACKED_TABLES_FORMS_CODEX_PROMPT_PACK.md`, including:
-
-- Phase ID `DBTF-Pxx`
-- completed workstream/task/subtask IDs
-- changed and inspected files
-- DB/seed/API/service changes
-- tests run and proof produced
-- positive and negative acceptance result
-- stop rules, deviations, blockers and next recommended phase
+## Required reporting
+After each True-UX execution phase, update the reports and proof artefacts
+required by `ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md`, including changed
+files, inspected files, tests run, positive and negative acceptance result,
+proof produced, deviations, blockers and next recommended phase.

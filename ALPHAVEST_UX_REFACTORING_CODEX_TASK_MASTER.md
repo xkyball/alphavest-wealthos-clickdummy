@@ -1,46 +1,26 @@
 # ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER
+> **Repo-local bundle note:** This sanitized artefact is included as decision / policy / task / handoff guidance only. It does not provide source code, source snapshots, screenshots, screencasts, reference images or generated visual assets. Codex must work on a local repository checkout / pull of the intended target branch and run the Moving Baseline Preflight before any code change.
 
-## 0. Current Repository Override — Handoff Missing Policy
-
-**Override generated:** 2026-06-21  
-**Override status:** `UX_IMPLEMENTATION_HANDOFF_MISSING_POLICY_OVERRIDDEN`  
-**User directive:** `overwrite the handhoff missing policy`
-
-This repository override replaces the original missing-handoff stop rule in
-this artefact. `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md` and this task master now
-serve together as the operative UX refactoring source for scoped Codex
-execution. `ALPHAVEST_UX_REFACTORING_IMPLEMENTATION_HANDOFF.md` may still be
-created later as a derived convenience handoff, but its absence is not a
-blocker and must not stop UX task execution by itself.
-
-The override does not relax the route-policy, safety, no-generation or proof
-rules. Codex may execute only a named UX task/workstream from this task master,
-must cite the matching route-policy rows, must preserve MVP/P1/Reference/Hold
-scope, and must keep all P0 positive and negative safety proof obligations.
 
 **Generated:** 2026-06-21  
-**Mode:** UX Codex Task Master with repository execution override. Scoped Codex execution is allowed for named UX tasks/workstreams. Keine Screen-/State-Screen-/Image-Generation.  
+**Mode:** UX Codex Task Master only. Keine Implementierung. Keine Codeänderung. Keine Codex-Ausführung. Kein finaler Implementation Handoff. Keine Screen-/State-Screen-/Image-Generation.  
 **Target project:** AlphaVest WealthOS  
 **Target branch:** `full-workflow`  
 **Required predecessor:** `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`  
-**Next artefact:** `ALPHAVEST_UX_REFACTORING_IMPLEMENTATION_HANDOFF.md` is optional after repository override.
+**Next required artefact:** `ALPHAVEST_UX_REFACTORING_IMPLEMENTATION_HANDOFF.md`
 
 ## 1. Executive Decision
 
 | Decision Area | Decision |
 |---|---|
-| Task Master Status | `UX_CODEX_TASK_MASTER_READY_FOR_SCOPED_EXECUTION_BY_OVERRIDE` |
-| Codex Execution Status | `AUTHORIZED_BY_REPOSITORY_OVERRIDE_FOR_NAMED_UX_TASKS` |
+| Task Master Status | `UX_CODEX_TASK_MASTER_READY_FOR_HANDOFF_DERIVATION` |
+| Codex Execution Status | `NOT_AUTHORIZED_IN_THIS_ARTEFACT` |
 | Route Policy Matrix Status | `ROUTE_POLICY_MATRIX_REQUIRED_AND_CREATED` |
 | Scope Status | `ROUTE_SCOPE_LOCK_PRESERVED` |
 | Generation Status | `NO_SCREEN_GENERATION_NO_STATE_SCREEN_GENERATION_NO_IMAGE_GENERATION` |
-| Final Handoff Status | `OPTIONAL_CONVENIENCE_ARTEFACT_NOT_BLOCKER` |
+| Final Handoff Status | `REQUIRED_NEXT` |
 
-This task master translates the UX Decision Brief and Route Policy Matrix into
-implementation-ready work packages. Under repository override
-`UX_IMPLEMENTATION_HANDOFF_MISSING_POLICY_OVERRIDDEN`, it authorizes scoped
-execution for named UX tasks/workstreams when used with
-`ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`.
+This task master translates the UX Decision Brief and Route Policy Matrix into implementation-ready-after-final-handoff work packages. It is detailed enough to support the next artefact, `ALPHAVEST_UX_REFACTORING_IMPLEMENTATION_HANDOFF.md`, but it does not authorize Codex execution by itself.
 
 ## 2. Source-of-Truth Applied
 
@@ -51,7 +31,7 @@ execution for named UX tasks/workstreams when used with
 | 3 | UX evidence videos / ZIP | Evidence of current UX friction and state coverage. | Does not override scope/safety. |
 | 4 | `ALPHAVEST_MVP_JOURNEY_REQUIREMENTS_MATRIX.md` and `ALPHAVEST_MEGA_JOURNEY_PRIORITY_LOCK.md` | Priority journeys and first product proof path. | Do not convert all journeys to MVP. |
 | 5 | Route/screen/state/interaction/safety/API/schema/P0 artefacts | Guardrails and acceptance obligations. | Presence is not proof; tests required. |
-| 6 | `alphavest-wealthos-clickdummy-full-workflow.zip` | Target code reality, package scripts and target files. | No `main` target usage. |
+| 6 | `local repository checkout / pull of target branch full-workflow` | Target code reality, package scripts and target files. | No `main` target usage. |
 
 ## 3. Input Decision Summary
 
@@ -74,7 +54,7 @@ Every task below must cite and obey `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`.
 | Density tier | Use D1-D4 route/page type density rules. |
 | CTA policy | One primary CTA per state, safe secondary actions, blocked reason and recovery. |
 | Safety policy | Client-safe only where client-facing; AI Draft internal-only; no unapproved advice; no admin bypass; upload/export overclaim blocked. |
-| Codex eligibility | Tasks marked `IMPLEMENTATION_READY_AFTER_FINAL_HANDOFF` are now executable by repository override as named UX tasks/workstreams, without a separate missing-handoff blocker. |
+| Codex eligibility | Only tasks marked `IMPLEMENTATION_READY_AFTER_FINAL_HANDOFF` may be executed later, and only through the final handoff. |
 
 ## 5. Task Creation Rules
 
@@ -87,13 +67,13 @@ Every task below must cite and obey `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`.
 | UX-TM-RULE-005 | No task may change route scope or elevate P1/Hold/Reference routes. |
 | UX-TM-RULE-006 | No task may generate screens, state-screens or images. |
 | UX-TM-RULE-007 | No task may weaken RBAC, client visibility, advice boundary, evidence/audit/export safety. |
-| UX-TM-RULE-008 | Implementation order follows the selected named UX task/workstream from this task master; a later handoff may refine order but is not required. |
+| UX-TM-RULE-008 | Final implementation order is delegated to the next handoff artefact only. |
 
 ## 6. Task Classification Vocabulary
 
 | Label | Meaning |
 |---|---|
-| `IMPLEMENTATION_READY_AFTER_FINAL_HANDOFF` | Legacy label meaning the task is sufficiently specified; by repository override it is executable as a named UX task/workstream. |
+| `IMPLEMENTATION_READY_AFTER_FINAL_HANDOFF` | Task is sufficiently specified for later handoff execution. |
 | `BLOCKED` | Task lacks required scope/safety/file proof. |
 | `DEFERRED_P1` | Task belongs to P1 route/capability and not MVP. |
 | `REFERENCE_ONLY_NO_TASK` | Route/page remains reference-only. |
@@ -1145,8 +1125,8 @@ Every task below must cite and obey `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`.
 | Problem | Without an explicit policy layer, later UX tasks may drift from route scope and safety constraints. |
 | User Impact | UX may improve locally while damaging trust, safety or product clarity elsewhere. |
 | Refactoring Intent | Make route policy consumable by navigation/page/header/CTA logic and by tests/reporting without creating a competing product engine. |
-| Target Files | lib/route-registry.ts; optional new lib/ux-route-policy.ts if the named UX task authorizes |
-| Allowed Changes | Add metadata/config/test/reporting if the named UX task authorizes and existing structures support it. |
+| Target Files | lib/route-registry.ts; optional new lib/ux-route-policy.ts if final handoff authorizes |
+| Allowed Changes | Add metadata/config/test/reporting if final handoff authorizes and existing structures support it. |
 | Forbidden Changes | No new route scope decisions; no replacement of permission/visibility/workflow engines; no generation. |
 | Implementation Steps | 1. Map matrix fields to code-friendly metadata. 2. Connect nav/page/header task decisions to metadata. 3. Add tests/reporting for protected routes and policy deviations. |
 | Acceptance Criteria | Every UX task can cite route policy; protected routes remain protected; no route count/scope drift. |
@@ -1168,7 +1148,7 @@ Every task below must cite and obey `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`.
 | User Impact | UX may improve locally while damaging trust, safety or product clarity elsewhere. |
 | Refactoring Intent | Make route policy consumable by navigation/page/header/CTA logic and by tests/reporting without creating a competing product engine. |
 | Target Files | components/sidebar.tsx; components/app-shell.tsx; lib/route-registry.ts |
-| Allowed Changes | Add metadata/config/test/reporting if the named UX task authorizes and existing structures support it. |
+| Allowed Changes | Add metadata/config/test/reporting if final handoff authorizes and existing structures support it. |
 | Forbidden Changes | No new route scope decisions; no replacement of permission/visibility/workflow engines; no generation. |
 | Implementation Steps | 1. Map matrix fields to code-friendly metadata. 2. Connect nav/page/header task decisions to metadata. 3. Add tests/reporting for protected routes and policy deviations. |
 | Acceptance Criteria | Every UX task can cite route policy; protected routes remain protected; no route count/scope drift. |
@@ -1190,7 +1170,7 @@ Every task below must cite and obey `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`.
 | User Impact | UX may improve locally while damaging trust, safety or product clarity elsewhere. |
 | Refactoring Intent | Make route policy consumable by navigation/page/header/CTA logic and by tests/reporting without creating a competing product engine. |
 | Target Files | tests/route-smoke.spec.ts; optional new policy test if authorized |
-| Allowed Changes | Add metadata/config/test/reporting if the named UX task authorizes and existing structures support it. |
+| Allowed Changes | Add metadata/config/test/reporting if final handoff authorizes and existing structures support it. |
 | Forbidden Changes | No new route scope decisions; no replacement of permission/visibility/workflow engines; no generation. |
 | Implementation Steps | 1. Map matrix fields to code-friendly metadata. 2. Connect nav/page/header task decisions to metadata. 3. Add tests/reporting for protected routes and policy deviations. |
 | Acceptance Criteria | Every UX task can cite route policy; protected routes remain protected; no route count/scope drift. |
@@ -1212,7 +1192,7 @@ Every task below must cite and obey `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`.
 | User Impact | UX may improve locally while damaging trust, safety or product clarity elsewhere. |
 | Refactoring Intent | Make route policy consumable by navigation/page/header/CTA logic and by tests/reporting without creating a competing product engine. |
 | Target Files | documentation/reporting only unless test harness supports |
-| Allowed Changes | Add metadata/config/test/reporting if the named UX task authorizes and existing structures support it. |
+| Allowed Changes | Add metadata/config/test/reporting if final handoff authorizes and existing structures support it. |
 | Forbidden Changes | No new route scope decisions; no replacement of permission/visibility/workflow engines; no generation. |
 | Implementation Steps | 1. Map matrix fields to code-friendly metadata. 2. Connect nav/page/header task decisions to metadata. 3. Add tests/reporting for protected routes and policy deviations. |
 | Acceptance Criteria | Every UX task can cite route policy; protected routes remain protected; no route count/scope drift. |
@@ -1234,7 +1214,7 @@ Every task below must cite and obey `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`.
 | User Impact | UX may improve locally while damaging trust, safety or product clarity elsewhere. |
 | Refactoring Intent | Make route policy consumable by navigation/page/header/CTA logic and by tests/reporting without creating a competing product engine. |
 | Target Files | Task reporting and handoff template |
-| Allowed Changes | Add metadata/config/test/reporting if the named UX task authorizes and existing structures support it. |
+| Allowed Changes | Add metadata/config/test/reporting if final handoff authorizes and existing structures support it. |
 | Forbidden Changes | No new route scope decisions; no replacement of permission/visibility/workflow engines; no generation. |
 | Implementation Steps | 1. Map matrix fields to code-friendly metadata. 2. Connect nav/page/header task decisions to metadata. 3. Add tests/reporting for protected routes and policy deviations. |
 | Acceptance Criteria | Every UX task can cite route policy; protected routes remain protected; no route count/scope drift. |
@@ -1278,7 +1258,7 @@ Every task below must cite and obey `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`.
 | Export / communication / ops | components/communication-export-ops-screen.tsx | UX-HUB; UX-PAGE; UX-DENSITY; UX-SAFETY | Export scope/redaction/preview/download separation | Export preview not approval/download; P1 routes deferred | pnpm test:file-export |
 | Held/P1 specialist screens | components/kyc-aml-workflow-screen.tsx; components/suitability-ips-screen.tsx; components/review-monitoring-screen.tsx; components/committee-review-screen.tsx | UX-PAGE; UX-POLICY only | Guard/deferred/hold treatment only | No MVP task, no scope unlock, no generation | pnpm test:route-smoke |
 | UI primitives | components/ui/* | UX-DENSITY; UX-INTERACTION; UX-CTA | Reusable density, table, drawer, modal, state panel improvements | No fake lifecycle; no untested mutation | pnpm typecheck; pnpm lint; targeted Playwright tests |
-| Safety engines/services | lib/permission-engine.ts; lib/visibility-engine.ts; lib/workflow-gate.ts | UX-SAFETY; UX-POLICY | Read-only integration or scoped hardening when the named UX task authorizes | No replacement or bypass of engines | pnpm test:permissions; pnpm test:workflow-gate |
+| Safety engines/services | lib/permission-engine.ts; lib/visibility-engine.ts; lib/workflow-gate.ts | UX-SAFETY; UX-POLICY | Read-only integration or scoped hardening when final handoff authorizes | No replacement or bypass of engines | pnpm test:permissions; pnpm test:workflow-gate |
 | Tests | tests/* | UX-SAFETY; UX-POLICY; all safety-critical tasks | Add/extend positive/negative tests | Do not claim existing tests fully close P0 without proof | pnpm test:playwright; targeted specs |
 
 ## 19. Acceptance Criteria Matrix
@@ -1353,7 +1333,7 @@ Later Codex execution must report:
 |---|---|---|
 | Route policy | READY | Companion matrix created and should be imported into next handoff. |
 | Task detail | READY | Workstreams include task IDs, target files, allowed/forbidden changes, steps, acceptance, tests and validation. |
-| Codex execution | AUTHORIZED BY REPOSITORY OVERRIDE | Use this task master plus `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`; no separate missing-handoff blocker. |
+| Codex execution | NOT AUTHORIZED | Requires `ALPHAVEST_UX_REFACTORING_IMPLEMENTATION_HANDOFF.md`. |
 | Safety/P0 proof | PARTIAL BUT MAPPED | Missing/required tests are assigned to UX-SAFETY and affected tasks. |
 | Package validation commands | READY | pnpm confirmed from package.json in full-workflow ZIP. |
 | Visual generation | BLOCKED | No screen/state/image generation authorized. |
@@ -1371,7 +1351,7 @@ Later Codex execution must report:
 | Acceptance criteria included | PASS |
 | Validation commands included | PASS |
 | P0/safety tests integrated | PASS |
-| Scoped implementation authorized by override | PASS |
-| Final handoff optional, not blocker | PASS |
+| No implementation authorized | PASS |
+| No final handoff created | PASS |
 | No screen/state/image generation authorized | PASS |
 | `main` not used as target truth | PASS |
