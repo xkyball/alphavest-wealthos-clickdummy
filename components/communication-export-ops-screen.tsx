@@ -5,7 +5,6 @@ import {
   ArrowRight,
   Bell,
   Calendar,
-  Check,
   CheckCircle2,
   ChevronDown,
   ClipboardCheck,
@@ -1333,9 +1332,54 @@ function ExportRedactionPage({ title }: { title: string }) {
 
 function ExportPreviewPage({ title, visualState }: { title: string; visualState?: VisualState }) {
   const [modalOpen, setModalOpen] = useState(visualState === "approval");
+  const [acknowledged, setAcknowledged] = useState(false);
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [message, setMessage] = useState<string | null>(null);
   const { snapshot } = useExportWorkflowSnapshot();
   const currentExport = snapshot?.current;
   const timeline = snapshot?.timeline.length ? snapshot.timeline : exportTimeline;
+  const lifecycleStatus = status === "submitting" ? "loading" : status;
+  const validationState = acknowledged ? "valid-export-approval-review" : "blocked-acknowledgement-required";
+
+  function openExportApprovalModal() {
+    setModalOpen(true);
+    setAcknowledged(false);
+    setStatus("idle");
+    setMessage(null);
+  }
+
+  function closeExportApprovalModal() {
+    setModalOpen(false);
+    setAcknowledged(false);
+    setStatus("idle");
+    setMessage(null);
+  }
+
+  async function submitExportApproval() {
+    if (!acknowledged || status === "submitting") {
+      return;
+    }
+
+    setStatus("submitting");
+    setMessage("Routing export approval through the existing audit-gated workflow. Close and cancel are blocked until the workflow returns.");
+
+    try {
+      const body = await runScreencastDemoAction("j08.confirmApproval");
+      setStatus("success");
+      setMessage(
+        body.result?.auditEventId
+          ? `Audit recorded: ${body.result.auditEventId}. Export approval and metadata package generation were recorded through the existing workflow; download, share, client acceptance and advice release remain separate controls.`
+          : "Export approval and metadata package generation were recorded through the existing workflow; download, share, client acceptance and advice release remain separate controls.",
+      );
+    } catch (error) {
+      setStatus("error");
+      setMessage(
+        error instanceof Error
+          ? `${error.message} No download, share, client acceptance or advice release change was completed.`
+          : "Export approval workflow failed without download, share, client acceptance or advice release change.",
+      );
+    }
+  }
 
   return (
     <div>
@@ -1360,6 +1404,29 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
         status="Approval required"
         timelineItems={timeline.slice(0, 3).map((item) => item.title)}
       />
+      <div
+        className="mb-5 rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4"
+        data-testid="uxp3-export-preview-step-separation"
+        data-ux-no-overclaim="true"
+      >
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <StatePanel
+            detail="Preview inspection is not approval. Approval can record only the approval and metadata-generation step; download, share, client acceptance and advice release remain separate controls."
+            state="restricted"
+            title="Preview separated from delivery"
+          />
+          <button
+            className={primaryButtonClass}
+            data-testid="j08-open-export-approval"
+            data-ux-lifecycle-result="opens-export-approval-modal"
+            data-ux-lifecycle-trigger="export-approval-modal"
+            onClick={openExportApprovalModal}
+            type="button"
+          >
+            Review export approval
+          </button>
+        </div>
+      </div>
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1fr)]">
         <Card>
           <CardHeader>
@@ -1463,21 +1530,76 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
         description="You are about to approve this export package. Generation, download and share remain separate controlled steps."
         footer={
           <>
-            <button className={secondaryButtonClass} onClick={() => setModalOpen(false)} type="button">Cancel</button>
-            <button className={primaryButtonClass} data-testid="j08-confirm-approval" onClick={() => { void runScreencastDemoAction("j08.confirmApproval", "/export/demo/download?state=confirm"); }} type="button">Confirm Export Approval</button>
+            <button className={secondaryButtonClass} disabled={status === "submitting"} onClick={closeExportApprovalModal} type="button">Cancel</button>
+            <button
+              className={primaryButtonClass}
+              data-testid="j08-confirm-approval"
+              data-ux-lifecycle-result={acknowledged ? "submits-export-approval-only" : "blocked-validation-required"}
+              disabled={!acknowledged || status === "submitting" || status === "success"}
+              onClick={() => {
+                void submitExportApproval();
+              }}
+              type="button"
+            >
+              {status === "submitting" ? "Confirming..." : "Confirm Export Approval"}
+            </button>
           </>
         }
-        onClose={() => setModalOpen(false)}
+        onClose={status === "submitting" ? undefined : closeExportApprovalModal}
         open={modalOpen}
         title="Approve Export Package"
       >
-        <StatePanel detail="Approval state records the approval step. Download, share and client acceptance remain separate." state="restricted" title="Approval confirmation" />
-        <label className="mt-4 flex items-start gap-3 text-sm leading-6 text-alphavest-muted">
-          <span className="mt-1 grid size-5 shrink-0 place-items-center rounded border border-alphavest-gold bg-alphavest-gold text-alphavest-navy">
-            <Check aria-hidden="true" className="size-3" />
-          </span>
-          I confirm that I have reviewed this export package and it complies with applicable policies and regulatory requirements.
-        </label>
+        <div
+          className="space-y-4"
+          data-testid="uxp3-export-approval-lifecycle"
+          data-ux-lifecycle-status={lifecycleStatus}
+          data-ux-lifecycle-validation={validationState}
+          data-ux-no-overclaim="true"
+        >
+          <StatePanel detail="Approval can record only the export approval and metadata-generation step. Download, share, client acceptance and advice release remain separate controlled events." state="restricted" title="Approval confirmation" />
+          <label className="flex items-start gap-3 text-sm leading-6 text-alphavest-muted">
+            <input
+              checked={acknowledged}
+              className="mt-1"
+              disabled={status === "submitting" || status === "success"}
+              onChange={(event) => setAcknowledged(event.target.checked)}
+              type="checkbox"
+            />
+            <span>I confirm that I reviewed the scoped export package, redaction state, policy checks and audit readiness; this does not approve download, share, client acceptance or advice release.</span>
+          </label>
+          {status === "idle" ? (
+            <StatePanel
+              detail={acknowledged ? "Export approval can be submitted through the existing audit-gated workflow." : "Export approval remains blocked until the scoped approval acknowledgement is checked."}
+              state={acknowledged ? "validation" : "blocked"}
+              testId="j08-export-approval-validation-state"
+              title={acknowledged ? "Export approval valid" : "Export approval blocked"}
+            />
+          ) : null}
+          {status === "submitting" ? (
+            <StatePanel
+              detail={message ?? "Routing export approval through the existing audit-gated workflow."}
+              state="loading"
+              testId="j08-export-approval-loading-state"
+              title="Export approval submitting"
+            />
+          ) : null}
+          {status === "success" ? (
+            <StatePanel
+              detail={message ?? "Export approval and metadata package generation were recorded through the existing workflow; download, share, client acceptance and advice release remain separate controls."}
+              state="success"
+              testId="j08-export-approval-success-state"
+              title="Export approval recorded"
+            />
+          ) : null}
+          {status === "error" ? (
+            <StatePanel
+              detail={message ?? "Export approval workflow failed without download, share, client acceptance or advice release change."}
+              state="error"
+              testId="j08-export-approval-error-state"
+              title="Export approval failed"
+            />
+          ) : null}
+        </div>
       </Modal>
     </div>
   );
