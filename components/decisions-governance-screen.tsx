@@ -350,6 +350,54 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+function Phase4WorkbenchPanel({
+  activeTask,
+  blocker,
+  context,
+  primaryAction,
+  queueLabel,
+  safetyNote,
+  taskId,
+}: {
+  activeTask: string;
+  blocker: string;
+  context: string;
+  primaryAction: string;
+  queueLabel: string;
+  safetyNote: string;
+  taskId: string;
+}) {
+  return (
+    <section className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4" data-testid="ux-workbench-phase4" data-ux-workbench-task={taskId}>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <Badge tone="gold">{taskId}</Badge>
+          <h3 className="mt-3 font-display text-2xl text-alphavest-ivory">Active task workbench</h3>
+          <p className="mt-2 text-sm leading-6 text-alphavest-muted">One selected item, one guarded action rail and one explicit blocker. Queue visibility does not change release, export or client visibility state.</p>
+        </div>
+        <button className={primaryButtonClass} data-testid="ux-workbench-primary-cta" disabled type="button">{primaryAction}</button>
+      </div>
+      <div className="mt-4 grid gap-3 lg:grid-cols-3" data-testid="ux-workbench-triad">
+        <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-3" data-testid="ux-workbench-queue">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Queue</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{queueLabel}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-3" data-testid="ux-workbench-active-context">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Active context</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{activeTask}</p>
+          <p className="mt-2 text-sm leading-6 text-alphavest-muted">{context}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3" data-testid="ux-workbench-action-rail">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-red">Action rail</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{primaryAction}</p>
+          <p className="mt-2 text-sm leading-6 text-alphavest-muted" data-testid="ux-workbench-blocker">{blocker}</p>
+        </div>
+      </div>
+      <p className="mt-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 text-sm leading-6 text-alphavest-muted" data-testid="ux-workbench-safety-note">{safetyNote}</p>
+    </section>
+  );
+}
+
 function ComplianceBlockPage({ title, visualState }: { title: string; visualState?: VisualState }) {
   const [modalOpen, setModalOpen] = useState(visualState === "block");
   const [acknowledged, setAcknowledged] = useState(false);
@@ -1493,6 +1541,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
   return (
     <Phase12Shell activePageId="050">
       <ScreenTitle>{title}</ScreenTitle>
+      <Phase4WorkbenchPanel activeTask="Access request AR-204 selected" blocker="Permission change requires scoped confirmation and audit; route visibility is not mutation authority." context="Reviewer compares requested role, tenant scope and policy checks before approval." primaryAction="Approve scoped access" queueLabel="Governance access queue" safetyNote="UX-WORKBENCH-004: admin workbench cannot bypass RBAC, audit, evidence, release or export controls." taskId="UX-WORKBENCH-004" />
       <div className={cn("mx-auto max-w-[104rem] space-y-5", drawerOpen ? "pr-0 xl:pr-[23rem]" : "")}>
         <PageHeading
           action={<button className={primaryButtonClass} onClick={() => setDrawerOpen(true)} type="button">Review policy-checked request</button>}

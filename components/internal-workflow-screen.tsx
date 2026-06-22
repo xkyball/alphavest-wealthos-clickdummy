@@ -543,6 +543,54 @@ function InternalGuard() {
   );
 }
 
+function Phase4WorkbenchPanel({
+  activeTask,
+  blocker,
+  context,
+  primaryAction,
+  queueLabel,
+  safetyNote,
+  taskId,
+}: {
+  activeTask: string;
+  blocker: string;
+  context: string;
+  primaryAction: string;
+  queueLabel: string;
+  safetyNote: string;
+  taskId: string;
+}) {
+  return (
+    <section className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4" data-testid="ux-workbench-phase4" data-ux-workbench-task={taskId}>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <Badge tone="gold">{taskId}</Badge>
+          <h3 className="mt-3 font-display text-2xl text-alphavest-ivory">Active task workbench</h3>
+          <p className="mt-2 text-sm leading-6 text-alphavest-muted">One selected item, one guarded action rail and one explicit blocker. Queue visibility does not change release, export or client visibility state.</p>
+        </div>
+        <button className={primaryButtonClass} data-testid="ux-workbench-primary-cta" disabled type="button">{primaryAction}</button>
+      </div>
+      <div className="mt-4 grid gap-3 lg:grid-cols-3" data-testid="ux-workbench-triad">
+        <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-3" data-testid="ux-workbench-queue">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Queue</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{queueLabel}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-3" data-testid="ux-workbench-active-context">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Active context</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{activeTask}</p>
+          <p className="mt-2 text-sm leading-6 text-alphavest-muted">{context}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3" data-testid="ux-workbench-action-rail">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-red">Action rail</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{primaryAction}</p>
+          <p className="mt-2 text-sm leading-6 text-alphavest-muted" data-testid="ux-workbench-blocker">{blocker}</p>
+        </div>
+      </div>
+      <p className="mt-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 text-sm leading-6 text-alphavest-muted" data-testid="ux-workbench-safety-note">{safetyNote}</p>
+    </section>
+  );
+}
+
 function SignalsPage({ title }: { title: string }) {
   return (
     <InternalShell activePageId="033">
@@ -739,6 +787,7 @@ function TriggerDetailPage({ title }: { title: string }) {
   return (
     <InternalShell activePageId="035">
       <ScreenTitle>{title}</ScreenTitle>
+      <Phase4WorkbenchPanel activeTask="Trigger TRG-443 selected for analyst review" blocker="Missing beneficial-owner and purpose-of-wire evidence keeps advisor handoff blocked." context="AI draft remains internal; analyst must resolve unsupported claims before routing." primaryAction="Request missing evidence" queueLabel="Advisory trigger queue" safetyNote="UX-WORKBENCH-001: no client release, export or visibility mutation can happen from the analyst trigger workbench." taskId="UX-WORKBENCH-001" />
       <div className="mx-auto grid max-w-[112rem] gap-5 2xl:grid-cols-[1fr_24rem]">
         <section className="min-w-0 space-y-5">
           <ScfP04P06FlowPanel mode="advisory" />
@@ -1055,6 +1104,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
   return (
     <InternalShell activePageId="037">
       <ScreenTitle>{title}</ScreenTitle>
+      <Phase4WorkbenchPanel activeTask="Advisor review ADV-219 selected" blocker="Advisor approval is blocked from release until compliance, evidence and audit gates pass." context="Advisor can assess suitability wording, but cannot publish client-visible advice." primaryAction="Record advisor review" queueLabel="Advisor approval queue" safetyNote="UX-WORKBENCH-003: advisor approval does not set clientVisible and does not bypass compliance release." taskId="UX-WORKBENCH-003" />
       <div className="mx-auto grid max-w-[112rem] gap-5 xl:grid-cols-[1fr_24rem]">
         <section className="min-w-0 space-y-5">
           <PageHeading

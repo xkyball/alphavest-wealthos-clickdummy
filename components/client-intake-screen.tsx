@@ -731,6 +731,54 @@ function SafeClientBanner({ children = "No unapproved advice reaches the client.
   );
 }
 
+function Phase4WorkbenchPanel({
+  activeTask,
+  blocker,
+  context,
+  primaryAction,
+  queueLabel,
+  safetyNote,
+  taskId,
+}: {
+  activeTask: string;
+  blocker: string;
+  context: string;
+  primaryAction: string;
+  queueLabel: string;
+  safetyNote: string;
+  taskId: string;
+}) {
+  return (
+    <section className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4" data-testid="ux-workbench-phase4" data-ux-workbench-task={taskId}>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <Badge tone="gold">{taskId}</Badge>
+          <h3 className="mt-3 font-display text-2xl text-alphavest-ivory">Active task workbench</h3>
+          <p className="mt-2 text-sm leading-6 text-alphavest-muted">One selected item, one guarded action rail and one explicit blocker. Queue visibility does not change release, export or client visibility state.</p>
+        </div>
+        <button className={primaryButtonClass} data-testid="ux-workbench-primary-cta" disabled type="button">{primaryAction}</button>
+      </div>
+      <div className="mt-4 grid gap-3 lg:grid-cols-3" data-testid="ux-workbench-triad">
+        <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-3" data-testid="ux-workbench-queue">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Queue</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{queueLabel}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-3" data-testid="ux-workbench-active-context">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Active context</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{activeTask}</p>
+          <p className="mt-2 text-sm leading-6 text-alphavest-muted">{context}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3" data-testid="ux-workbench-action-rail">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-red">Action rail</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{primaryAction}</p>
+          <p className="mt-2 text-sm leading-6 text-alphavest-muted" data-testid="ux-workbench-blocker">{blocker}</p>
+        </div>
+      </div>
+      <p className="mt-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 text-sm leading-6 text-alphavest-muted" data-testid="ux-workbench-safety-note">{safetyNote}</p>
+    </section>
+  );
+}
+
 function PortalPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="019">
@@ -2337,6 +2385,7 @@ function VerificationPendingPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="030">
       <ScreenTitle>{title}</ScreenTitle>
+      <Phase4WorkbenchPanel activeTask="Document DOC-118 selected for extraction review" blocker="Upload-created evidence is review-pending and cannot satisfy release gates." context="Reviewer checks extracted fields, source quality and linkage before evidence sufficiency." primaryAction="Mark extraction reviewed" queueLabel="Document review queue" safetyNote="UX-WORKBENCH-002: upload-only success remains separate from reviewed, linked and current evidence sufficiency." taskId="UX-WORKBENCH-002" />
       <div className="space-y-5">
         <SectionTitle action={<button className={secondaryButtonClass} type="button"><Download aria-hidden="true" className="size-4" />Download Summary</button>} icon={FileText} subtitle="Your submitted information is under human review. No final validation has been completed." title={title} />
         <StatePanel detail="A member of our operations team is reviewing your documents and information." state="loading" title="Under Human Review" />

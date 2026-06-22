@@ -295,6 +295,37 @@ test.describe("UX-HUB phase 3 orientation hubs", () => {
   }
 });
 
+test.describe("UX-WORKBENCH phase 4 active task workbenches", () => {
+  const phase4WorkbenchRoutes = [
+    { path: "/advisory/triggers/demo/review", taskId: "UX-WORKBENCH-001" },
+    { path: "/documents/demo/review", taskId: "UX-WORKBENCH-002" },
+    { path: "/advisor/reviews/demo", taskId: "UX-WORKBENCH-003" },
+    { path: "/governance/access-requests/demo", taskId: "UX-WORKBENCH-004" },
+    { path: "/reviews/demo", taskId: "UX-WORKBENCH-005" },
+    { path: "/ops/sla/demo", taskId: "UX-WORKBENCH-006" },
+  ];
+
+  for (const route of phase4WorkbenchRoutes) {
+    test(`${route.taskId} ${route.path} renders queue, active context and guarded action rail`, async ({ page }) => {
+      await page.setViewportSize({ height: 1100, width: 1440 });
+      await authenticateRouteSmokePage(page);
+      await page.goto(route.path);
+
+      const workbench = page.getByTestId("ux-workbench-phase4").first();
+      await expect(workbench).toBeVisible();
+      await expect(workbench).toHaveAttribute("data-ux-workbench-task", route.taskId);
+      await expect(workbench.getByTestId("ux-workbench-triad")).toBeVisible();
+      await expect(workbench.getByTestId("ux-workbench-queue")).toHaveCount(1);
+      await expect(workbench.getByTestId("ux-workbench-active-context")).toHaveCount(1);
+      await expect(workbench.getByTestId("ux-workbench-action-rail")).toHaveCount(1);
+      await expect(workbench.getByTestId("ux-workbench-blocker")).toContainText(/blocked|cannot|requires|does not/i);
+      await expect(workbench.getByTestId("ux-workbench-safety-note")).toContainText(route.taskId);
+      await expect(workbench.getByTestId("ux-workbench-primary-cta")).toHaveCount(1);
+      await expect(workbench.getByTestId("ux-workbench-primary-cta")).toBeDisabled();
+    });
+  }
+});
+
 test.describe("UX-PAGE detail standard", () => {
   const uxPage003Routes = [
     "/advisory/triggers/demo/review",
