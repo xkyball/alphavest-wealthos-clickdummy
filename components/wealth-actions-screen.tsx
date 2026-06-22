@@ -489,7 +489,11 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
                 primary={{ label: "Open selected action", onClick: () => setDrawerOpen(true) }}
                 recoveryAction={{ label: "Request missing evidence", onClick: () => setDrawerOpen(true) }}
                 secondary={[
-                  { label: "Filters" },
+                  {
+                    disabled: true,
+                    disabledReason: "Action board filters are not wired in this release.",
+                    label: "Filters",
+                  },
                   {
                     disabled: true,
                     disabledReason: "Open and resolve the selected blocked action before creating new work.",
@@ -530,13 +534,13 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
           <div className="flex flex-col gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-panel/55 p-3 md:flex-row md:items-center md:justify-between">
             <div className="flex flex-wrap gap-2">
               {["Priority", "Owner", "Due date", "Evidence state", "Workflow stage"].map((filter) => (
-                <button className="flex h-10 items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted" key={filter} type="button">
+                <button aria-label={`${filter} filter is static in this action board`} className="flex h-10 cursor-not-allowed items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted opacity-65" disabled key={filter} title="Board filters are not wired in this release." type="button">
                   {filter}
                   <ChevronDown aria-hidden="true" className="size-4" />
                 </button>
               ))}
             </div>
-            <button className={secondaryButtonClass} type="button">Group: Workflow Stage</button>
+            <button aria-label="Board grouping is fixed to workflow stage" className={secondaryButtonClass} disabled title="Board grouping is fixed in this release." type="button">Group: Workflow Stage</button>
           </div>
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             {actionColumns.map((column) => (

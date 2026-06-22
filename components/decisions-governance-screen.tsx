@@ -1211,15 +1211,15 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-[minmax(14rem,1fr)_repeat(4,minmax(9rem,10rem))_auto]">
           <label className="relative min-w-0 sm:col-span-2 lg:col-span-1">
             <Search aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-            <input className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm outline-none focus:border-alphavest-gold" placeholder="Search evidence..." />
+            <input className="h-11 w-full cursor-not-allowed rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm opacity-65 outline-none focus:border-alphavest-gold" disabled placeholder="Evidence search unavailable" title="Evidence list filters are not wired in this release." />
           </label>
           {["Category", "Evidence Type", "Status", "Date Range"].map((filter) => (
-            <button className="flex h-11 min-w-0 items-center justify-between gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted" key={filter} type="button">
+            <button aria-label={`${filter} filter is static in this evidence list`} className="flex h-11 min-w-0 cursor-not-allowed items-center justify-between gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted opacity-65" disabled key={filter} title="Evidence list filters are not wired in this release." type="button">
               <span className="truncate">{filter}</span>
               <ChevronDown aria-hidden="true" className="size-4 shrink-0" />
             </button>
           ))}
-          <button className={secondaryButtonClass} type="button"><Filter aria-hidden="true" className="size-4" />Filters</button>
+          <button aria-label="Additional evidence filters are not wired in this release" className={secondaryButtonClass} disabled title="Evidence list filters are not wired in this release." type="button"><Filter aria-hidden="true" className="size-4" />Filters</button>
         </div>
         <DataTable columns={evidenceColumns} getRowId={(row) => row.title} rows={evidenceRows} />
       </div>

@@ -805,7 +805,7 @@ function TenantsPage() {
               <option key={status} value={status}>{status}</option>
             ))}
           </select>
-          <button className={secondaryButtonClass} type="button">
+          <button aria-label="Additional tenant filters are static in this directory" className={secondaryButtonClass} disabled title="Search and status already filter this directory." type="button">
             <Filter aria-hidden="true" className="size-4" />
             Filters
           </button>
@@ -1062,7 +1062,7 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
             <CardTitle>User Access</CardTitle>
             <CardDescription>Manage users, assign roles and control access across the organization.</CardDescription>
           </div>
-          <button className={secondaryButtonClass} type="button">
+          <button aria-label="Tenant user filters are not wired in this release" className={secondaryButtonClass} disabled title="User access filters are not wired in this release." type="button">
             <SlidersHorizontal aria-hidden="true" className="size-4" />
             Filters
           </button>

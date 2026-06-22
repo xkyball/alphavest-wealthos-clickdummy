@@ -1670,7 +1670,7 @@ function OpsQueuesPage({ title }: { title: string }) {
         <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <CardTitle>Queue Overview</CardTitle>
           <div className="flex flex-wrap gap-2">
-            <button className={secondaryButtonClass} type="button">
+            <button aria-label="Queue filters are not wired in this release" className={secondaryButtonClass} disabled title="Queue filters are not wired in this release." type="button">
               <Filter aria-hidden="true" className="size-4" />
               Filters
             </button>

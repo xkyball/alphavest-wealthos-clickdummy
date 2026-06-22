@@ -247,12 +247,14 @@ function QueuePage({ title }: { title: string }) {
                 <label className="relative min-w-0">
                   <Search aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
                   <input
-                    className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold"
-                    placeholder="Search committee queue..."
+                    className="h-11 w-full cursor-not-allowed rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm text-alphavest-ivory opacity-65 outline-none focus:border-alphavest-gold"
+                    disabled
+                    placeholder="Committee search unavailable"
+                    title="Committee filters are held until this scope is unlocked."
                   />
                 </label>
                 {["Risk", "Vote state", "Evidence"].map((item) => (
-                  <button className={secondaryButtonClass} key={item} type="button">
+                  <button aria-label={`${item} filter is held for committee scope`} className={secondaryButtonClass} disabled key={item} title="Committee filters are held until this scope is unlocked." type="button">
                     <Filter aria-hidden="true" className="size-4" />
                     {item}
                   </button>

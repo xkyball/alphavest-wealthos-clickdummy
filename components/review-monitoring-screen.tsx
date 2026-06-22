@@ -362,7 +362,7 @@ function ReviewCalendarPage({ title }: { title: string }) {
             <Card>
               <CardHeader className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <CardTitle>Due Reviews</CardTitle>
-                <button className={secondaryButtonClass} type="button">
+                <button aria-label="Review schedule filters are not wired in this release" className={secondaryButtonClass} disabled title="Review schedule filters are not wired in this release." type="button">
                   <Filter aria-hidden="true" className="size-4" />
                   Filters
                 </button>

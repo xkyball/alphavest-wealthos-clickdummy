@@ -2034,11 +2034,11 @@ function DocumentsPageContent({ title }: { title: string }) {
               <DocumentFilterSelect label="Types" onChange={setTypeFilter} options={typeOptions} testId="p10-document-type-filter" value={typeFilter} />
               <DocumentFilterSelect label="Statuses" onChange={setStatusFilter} options={statusOptions} testId="p10-document-status-filter" value={statusFilter} />
               <DocumentFilterSelect label="Sensitivities" onChange={setSensitivityFilter} options={sensitivityOptions} testId="p10-document-sensitivity-filter" value={sensitivityFilter} />
-              <button aria-disabled="true" className="flex h-11 items-center justify-between gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-left text-sm text-alphavest-muted" type="button">
+              <button aria-disabled="true" className="flex h-11 cursor-not-allowed items-center justify-between gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-left text-sm text-alphavest-muted opacity-65" disabled title="Entity scope is fixed to the current tenant and role." type="button">
                 <span className="truncate">Scoped Entities</span>
                 <ShieldCheck aria-hidden="true" className="size-4 text-alphavest-subtle" />
               </button>
-              <button aria-disabled="true" className="flex h-11 items-center justify-between gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-left text-sm text-alphavest-muted" type="button">
+              <button aria-disabled="true" className="flex h-11 cursor-not-allowed items-center justify-between gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-left text-sm text-alphavest-muted opacity-65" disabled title="Access filtering is fixed to the current actor." type="button">
                 <span className="truncate">Accessible to Me</span>
                 <Shield aria-hidden="true" className="size-4 text-alphavest-subtle" />
               </button>
