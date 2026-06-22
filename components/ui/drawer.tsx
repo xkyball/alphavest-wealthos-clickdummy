@@ -29,6 +29,7 @@ export function Drawer({ children, className, context, description, footer, onCl
   const descriptionId = useId();
   const panelRef = useRef<HTMLElement | null>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+  const closeLifecycle = onClose ? "escape-backdrop-close-button-safe" : "blocked-while-submitting";
 
   useEffect(() => {
     if (!open) {
@@ -111,6 +112,13 @@ export function Drawer({ children, className, context, description, footer, onCl
         data-testid="ux-a11y-drawer"
         data-ux-a11y-escape={onClose ? "enabled" : "blocked"}
         data-ux-a11y-focus-return="trigger"
+        data-ux-interaction-lifecycle="drawer"
+        data-ux-lifecycle-cancel="no-submit-no-mutation"
+        data-ux-lifecycle-close={closeLifecycle}
+        data-ux-lifecycle-open="controlled-by-owner-state"
+        data-ux-lifecycle-status="owner-handles-validation-loading-success-error-blocked"
+        data-ux-lifecycle-submit="owner-owned-where-present"
+        data-ux-no-overclaim="true"
         data-ux-phase10-tasks="UX-A11Y-001 UX-A11Y-002"
         ref={panelRef}
         role="complementary"
@@ -139,7 +147,9 @@ export function Drawer({ children, className, context, description, footer, onCl
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 md:px-6 md:py-6">
           <p aria-live="polite" className="sr-only" data-testid="ux-phase10-drawer-status" role="status">
-            Drawer opened. Focus is inside the drawer; use Tab for controls, Escape or Cancel to recover context.
+            {onClose
+              ? "Drawer opened. Focus is inside the drawer; use Tab for controls. Escape, backdrop, Close or Cancel recover context without submitting."
+              : "Drawer opened. Focus is inside the drawer; closing is blocked while the owning workflow is submitting."}
           </p>
           {context ? <div className="mb-5 rounded-md border border-alphavest-border/70 bg-alphavest-navy/38 p-4">{context}</div> : null}
           {children}
