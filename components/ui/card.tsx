@@ -18,7 +18,16 @@ type UxDensityProofPanelProps = {
 };
 
 export function Card({ children, className, ...props }: CardProps) {
-  return <section className={cn("alpha-card min-w-0 p-[var(--card-padding)]", className)} {...props}>{children}</section>;
+  return (
+    <section
+      data-ux-affordance="static-card"
+      data-ux-interactive="false"
+      {...props}
+      className={cn("alpha-card min-w-0 p-[var(--card-padding)]", className)}
+    >
+      {children}
+    </section>
+  );
 }
 
 export function CardHeader({ children, className, ...props }: CardProps) {

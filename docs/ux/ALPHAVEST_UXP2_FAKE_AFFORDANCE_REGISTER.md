@@ -4,9 +4,9 @@
 
 | Field | Value |
 | --- | --- |
-| Register status | `PHASE_2_REGISTER_UPDATED_UXP2_004` |
+| Register status | `PHASE_2_REGISTER_UPDATED_UXP2_005` |
 | Phase | Phase 2 - Fake Affordance Pruning |
-| Last updated | 2026-06-22 by `UXP2-004` |
+| Last updated | 2026-06-22 by `UXP2-005` |
 | Product authority | None |
 | Route scope authority | None |
 
@@ -28,6 +28,7 @@ This register records visible affordances touched by Phase 2 and the action take
 | `UXP2-002` | Held/deferred support components | Review, ops and committee filter controls in non-MVP/HOLD support components | `components/review-monitoring-screen.tsx`, `components/communication-export-ops-screen.tsx`, `components/committee-review-screen.tsx` | Disabled with reasons | Protected scopes must not gain productive list filtering before scope unlock. | Source inspection; full route-smoke deferred to UXP2-010 |
 | `UXP2-003` | Shared data-table sort headers | Sort buttons on sortable table columns | `components/ui/data-table.tsx` | Kept interactive with ARIA state and visible row reordering proof | Sort headers are authorized only through the shared table lifecycle: click toggles row order locally, marks the active header with `aria-sort`, and leaves row actions disabled where no action lifecycle exists. | `tests/sort-affordance-pruning.spec.ts` |
 | `UXP2-004` | Shared status chips, badges and workflow badges | Status/badge indicators across global route workset | `components/ui/badge.tsx`, `components/ui/status-chip.tsx`, `components/ui/workflow-badge.tsx`, `components/admin-tenant-setup-screen.tsx` | Kept as static indicators with explicit non-interactive metadata | Badge-like elements are informational state labels only; they must not expose button/link/focus affordances or imply direct lifecycle transitions. | `tests/status-badge-affordance-pruning.spec.ts` |
+| `UXP2-005` | Shared cards, KPI cards and dashboard summary cards | Card and metric-card containers across global route workset | `components/ui/card.tsx`, `components/ui/metric-card.tsx` | Kept as static informational regions with explicit non-interactive metadata | Cards/KPIs summarize state only; real actions must remain separate buttons/links with their own lifecycle, audit and safety boundaries. | `tests/card-kpi-affordance-pruning.spec.ts` |
 
 ## Acceptance Notes
 
@@ -37,4 +38,5 @@ This register records visible affordances touched by Phase 2 and the action take
 - Generic filter controls touched in UXP2-002 are either real, disabled with reason, or non-interactive.
 - Sort controls touched in UXP2-003 remain only where the shared table visibly reorders rows and exposes active sort state.
 - Status and workflow badge controls touched in UXP2-004 remain static state indicators with no focusable control affordance.
+- Card and KPI surfaces touched in UXP2-005 remain static state summaries; actionable flows stay on explicit controls.
 - Full route-smoke is deferred to the UXP2-010 phase gate per execution instruction.

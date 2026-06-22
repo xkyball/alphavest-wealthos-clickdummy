@@ -25,7 +25,11 @@ export function MetricCard({
   const TrendIcon = trend === "down" ? ArrowDownRight : ArrowUpRight;
 
   return (
-    <Card className={cn("min-h-40", className)}>
+    <Card
+      className={cn("min-h-40", className)}
+      data-ux-affordance="static-metric-card"
+      data-ux-interactive="false"
+    >
       <div className="min-w-0">
         <div className="flex items-start justify-between gap-3">
           <p className="min-w-0 text-sm text-alphavest-muted">{label}</p>
