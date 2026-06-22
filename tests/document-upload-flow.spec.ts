@@ -106,7 +106,7 @@ test.describe("document upload browser flow", () => {
     await page.getByTestId("real-upload-document").click();
     await expect(page.getByText(`${fileName} upload completed.`)).toBeVisible();
 
-    await page.goto("/documents/extraction-review");
+    await page.goto("/documents/review-queue");
     await page.getByLabel("Tenant context").last().selectOption("morgan");
     await page.getByLabel("Role context").last().selectOption("compliance_officer");
     await expect(page.getByText(fileName)).toBeVisible();
