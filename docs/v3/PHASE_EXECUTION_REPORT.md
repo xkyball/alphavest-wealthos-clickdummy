@@ -8816,3 +8816,66 @@ No-safety-regression confirmation: client visibility, advice boundary, upload/ev
 ### Exit Gate Decision
 
 `UX_DENSITY_003_COMPLETED_WITH_D2_WORKBENCH_AND_D4_NON_COERCION_PROOF`
+
+## UX-DENSITY-005 Addendum - D4 Focused Detail Applied
+
+Date: 2026-06-22
+
+Status: Completed and validated.
+
+Task IDs: `UX-DENSITY-005`
+
+Route-policy rows cited:
+- `035` `/workbench/triggers/:id`
+- `037` `/advisor-approval/:id`
+- `039` `/compliance/:id/review`
+- `044` `/decisions/:id`
+- `047` `/evidence/:id`
+- `057` `/export/:id/preview`
+- `058` `/export/:id/download`
+
+Completed `UX-DENSITY-005` by extending the shared focused detail panel with a D4-only status strip: object, status, next action and gate. The visible UI stays functional and product-facing; D4/task/proof/method wording remains in reports and handbook guidance, not on the product surface.
+
+Changed files:
+- `components/ux-detail-standard-panel.tsx`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+Proof artifacts:
+- `artifacts/ux-page-to-policy/UX-DENSITY-005/2026-06-22-UX-DENSITY-005-d1-portal-control.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-005/2026-06-22-UX-DENSITY-005-d2-workbench-control.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-005/2026-06-22-UX-DENSITY-005-d3-audit-control.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-005/2026-06-22-UX-DENSITY-005-trigger-detail-d4.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-005/2026-06-22-UX-DENSITY-005-compliance-review-d4.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-005/2026-06-22-UX-DENSITY-005-evidence-record-d4.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-005/2026-06-22-UX-DENSITY-005-export-preview-d4.png`
+
+Validation:
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with 27 existing warnings and 0 errors.
+- `pnpm visual:contract` - passed, 71 assets/routes checked, 0 failures.
+- `PLAYWRIGHT_PORT=3447 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-DENSITY focused detail"` - passed, 7 tests.
+- `PLAYWRIGHT_PORT=3448 pnpm test:route-smoke` - passed, 200 tests.
+- `PLAYWRIGHT_PORT=3451 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3452 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3453 pnpm test:file-export` - passed, 14 tests.
+
+Positive acceptance:
+- D4 detail routes now show focused detail density with object/status/next action/gate plus key facts, evidence/audit and action rail.
+- Visible UI avoids D4/task/proof/method explanatory copy.
+
+Negative/P0 acceptance:
+- D4 action rail does not bypass advice, evidence, compliance, export, audit or RBAC gates.
+- D4 routes are not marked as D2 workbench or D3 operations.
+
+No-generation confirmation: no screen generation, state-screen generation, image generation or generated product assets.
+
+No-route-reclassification confirmation: route IDs, paths, worksets and route scopes remain unchanged.
+
+No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route was elevated.
+
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
+
+Exit Gate Decision: `UX_DENSITY_005_COMPLETED_WITH_D4_FOCUSED_DETAIL_AND_NO_VISIBLE_EXPLANATORY_COPY_PROOF`

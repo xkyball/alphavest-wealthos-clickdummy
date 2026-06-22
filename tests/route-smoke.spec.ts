@@ -551,6 +551,44 @@ test.describe("UX-DENSITY dense operations routes", () => {
   }
 });
 
+test.describe("UX-DENSITY focused detail routes", () => {
+  const d4DetailRoutes = [
+    { pageId: "035", path: "/workbench/triggers/demo" },
+    { pageId: "037", path: "/advisor-approval/demo" },
+    { pageId: "039", path: "/compliance/demo/review" },
+    { pageId: "044", path: "/decisions/demo" },
+    { pageId: "047", path: "/evidence/demo" },
+    { pageId: "057", path: "/export/demo/preview" },
+    { pageId: "058", path: "/export/demo/download" },
+  ];
+
+  for (const route of d4DetailRoutes) {
+    test(`${route.path} applies D4 focused detail density`, async ({ page }) => {
+      expect(uxDensityForPageId(route.pageId).tier).toBe("D4");
+
+      await page.setViewportSize({ height: 1000, width: 1440 });
+      await authenticateRouteSmokePage(page);
+      await page.goto(route.path);
+
+      const detail = page.getByTestId("ux-page-detail-standard").first();
+      await expect(detail).toBeVisible();
+      await expect(detail).toHaveAttribute("data-ux-density-tier", "D4");
+      await expect(detail).toHaveAttribute("data-ux-density-pattern", "focused-detail");
+      await expect(detail).toHaveAttribute("data-ux-d4-focused-detail", "true");
+      await expect(detail.getByTestId("ux-d4-focused-status-strip")).toBeVisible();
+      await expect(detail.getByTestId("ux-page-detail-object-header")).toBeVisible();
+      await expect(detail.getByTestId("ux-page-detail-key-facts")).toBeVisible();
+      await expect(detail.getByTestId("ux-page-detail-evidence-timeline")).toBeVisible();
+      await expect(detail.getByTestId("ux-page-detail-gated-action-rail")).toBeVisible();
+      await expect(detail).toContainText(/Object|Status|Next action|Gate/i);
+      await expect(detail).toContainText(/client|compliance|evidence|audit|approval|release|share|download|gate/i);
+      await expect(detail).not.toContainText(/D4|Focused Detail|Workflow step|route policy|gate-completion proof|visual proof|complexity reduction/i);
+      await expect(page.locator('[data-ux-d2-productive-workbench="true"]')).toHaveCount(0);
+      await expect(page.getByTestId("ux-d3-dense-operations")).toHaveCount(0);
+    });
+  }
+});
+
 test.describe("locked route workset preservation", () => {
   test("all registered routes are classified exactly once", () => {
     expect(routeWorksetIntegrity.counts).toEqual(lockedRouteWorksetCounts);

@@ -6633,3 +6633,55 @@ Source of truth:
 
 - This slice applies D3 only to the scoped matrix rows. D4 focused detail remains assigned to `UX-DENSITY-005`.
 - Lint still reports 27 existing unused-code warnings outside this slice; there are no lint errors.
+
+## UX-DENSITY-005 QA Addendum
+
+Date: 2026-06-22
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+- `docs/v3/ALPHAVEST_SURFACE_COPY_HANDBOOK_RULE.md`
+
+| Area | QA result | Evidence |
+| --- | --- | --- |
+| D4 focused detail density | Passed | Route-smoke verifies D4 metadata, focused status strip, object header, key facts, evidence/timeline and action rail on `035`, `037`, `039`, `044`, `047`, `057`, `058`. |
+| No visible explanatory copy | Passed | D4 route-smoke rejects visible `D4`, `Focused Detail`, workflow-step, route-policy, proof and complexity-reduction wording. |
+| D2/D3 non-coercion | Passed | D4 tests verify scoped routes do not render D2 workbench or D3 operations surfaces. |
+| Route Policy preservation | Passed | No route IDs, paths, worksets or route scopes changed. |
+| P0 safety | Passed | Permissions, workflow-gate, file-export and full route-smoke tests passed after D4 changes. |
+| Screenshot proof | Passed | Seven screenshots captured under `artifacts/ux-page-to-policy/UX-DENSITY-005/`, including D1-D4 representatives. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | `tsc --noEmit` completed successfully. |
+| `pnpm lint` | Passed | 27 existing warnings, 0 errors. |
+| `pnpm visual:contract` | Passed | 71 assets/routes checked, 0 failures. |
+| `PLAYWRIGHT_PORT=3447 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-DENSITY focused detail"` | Passed | 7 tests. |
+| `PLAYWRIGHT_PORT=3448 pnpm test:route-smoke` | Passed | 200 tests. |
+| `PLAYWRIGHT_PORT=3451 pnpm test:permissions` | Passed | 8 tests. |
+| `PLAYWRIGHT_PORT=3452 pnpm test:workflow-gate` | Passed | 13 tests. |
+| `PLAYWRIGHT_PORT=3453 pnpm test:file-export` | Passed | 14 tests. |
+
+### Screenshot Proof
+
+- `artifacts/ux-page-to-policy/UX-DENSITY-005/2026-06-22-UX-DENSITY-005-d1-portal-control.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-005/2026-06-22-UX-DENSITY-005-d2-workbench-control.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-005/2026-06-22-UX-DENSITY-005-d3-audit-control.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-005/2026-06-22-UX-DENSITY-005-trigger-detail-d4.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-005/2026-06-22-UX-DENSITY-005-compliance-review-d4.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-005/2026-06-22-UX-DENSITY-005-evidence-record-d4.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-005/2026-06-22-UX-DENSITY-005-export-preview-d4.png`
+
+### Safety Proof
+
+- D4 detail density is non-authorizing and does not change workflow state.
+- Visible next actions do not bypass advice, evidence, compliance release, export approval/download/share, audit persistence or RBAC payload gates.
+- Product UI uses functional labels only; explanatory task/proof/method language remains documentation.
+
+### QA Limits
+
+- This slice applies D4 focused detail only to the task-card route set.
+- Lint still reports 27 existing unused-code warnings outside this slice; there are no lint errors.

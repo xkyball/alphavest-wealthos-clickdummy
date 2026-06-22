@@ -36,14 +36,43 @@ export function UxDetailStandardPanel({
   timelineItems,
 }: UxDetailStandardPanelProps) {
   const density = uxDensityForPageId(routeId);
+  const isFocusedDetail = density.tier === "D4";
 
   return (
     <section
-      className={cn("grid gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-panel/72 p-4 xl:grid-cols-[1.1fr_1.2fr_0.9fr]", className)}
+      className={cn(
+        "grid gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-panel/72 p-4",
+        isFocusedDetail
+          ? "xl:grid-cols-[minmax(18rem,0.95fr)_minmax(22rem,1.2fr)_minmax(18rem,0.85fr)]"
+          : "xl:grid-cols-[1.1fr_1.2fr_0.9fr]",
+        className
+      )}
+      data-ux-d4-focused-detail={isFocusedDetail ? "true" : undefined}
       data-testid="ux-page-detail-standard"
       data-ux-density-pattern={density.pattern}
       data-ux-density-tier={density.tier}
     >
+      {isFocusedDetail ? (
+        <div className="grid gap-2 rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/55 p-3 sm:grid-cols-2 xl:col-span-3 xl:grid-cols-[1.1fr_0.8fr_1fr_1.2fr]" data-testid="ux-d4-focused-status-strip" data-ux-content-tier="must-see">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Object</p>
+            <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{objectTitle}</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Status</p>
+            <p className="mt-1 text-sm font-semibold text-alphavest-gold-soft">{status}</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Next action</p>
+            <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{actionLabel}</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Gate</p>
+            <p className="mt-1 text-sm leading-5 text-alphavest-muted">{safetyNote}</p>
+          </div>
+        </div>
+      ) : null}
+
       <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-4" data-testid="ux-page-detail-object-header" data-ux-content-tier="must-see">
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">{objectType}</p>
         <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectTitle}</h2>

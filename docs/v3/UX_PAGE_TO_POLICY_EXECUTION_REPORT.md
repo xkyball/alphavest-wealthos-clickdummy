@@ -112,6 +112,94 @@ No-P1/Hold/Reference-elevation confirmation: protected contracts remain non-prod
 
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and tests.
 
+## Completed Slice: UX-DENSITY-005
+
+Task: `UX-DENSITY-005` - Apply D4 Focused Detail to object decision routes.
+
+Mission Card: sharpen D4 object decision routes into focused detail surfaces with object, status, next action, gate, key facts, evidence/audit and action rail, while keeping task/method/proof explanation out of visible app UI.
+
+Evidence Intake:
+- Task-master related routes: `035`, `037`, `039`, `044`, `047`, `057`, `058`.
+- Route-policy D4 rows cited: `/workbench/triggers/:id`, `/advisor-approval/:id`, `/compliance/:id/review`, `/decisions/:id`, `/evidence/:id`, `/export/:id/preview`, `/export/:id/download`.
+- Existing implementation finding: PAGE-003 detail structure existed, but D4 needed a testable focused-detail status strip and stronger negative proof that visible UI does not expose handbook/task/proof language.
+
+Problem Architecture: detail pages need higher information density without becoming explanatory spec panels or implying that visible status/action copy completes evidence, advice, compliance, export, audit or RBAC gates.
+
+Double Diamond:
+- Discover: D4 routes had object header, facts, evidence/timeline and action rail, but no D4-specific above-fold focused status strip.
+- Define: D4 needs functional detail identity: object, status, next action and gate.
+- Develop: extend the existing shared detail panel with D4-only focused status strip and metadata.
+- Deliver: D4 route-smoke coverage, D1-D4 screenshot proof, reports and safety test reruns.
+
+Method Artifacts:
+- Psycho-Logic + Map/Model: user pressure is "tell me the state and what I can safely do." The map trap is turning proof/method labels into product UI. Design move: functional labels only.
+- Reframing Matrix: page-as-list rejected; page-as-job kept; page-as-gate kept; page-as-handoff kept for export delivery without collapsing approval/download/share.
+- TRIZ: increase density and orientation without weakening gates by adding a compact status strip above existing sections.
+- SIT Closed World: reused `UxDetailStandardPanel`, density policy, existing route data and route-smoke harness.
+- Zwicky + CCA: shared D4 detail strip kept; per-page bespoke layouts rejected; visible "D4 Focused Detail" label rejected as handbook copy.
+- SCAMPER: added status strip, combined gate and next-action signal, eliminated visible method/proof phrasing, rearranged detail density without new routes.
+- Harvard/BATNA: objective criteria are Route Policy Matrix D4 policy and user copy rule. BATNA remains stop/report if behavior authority is required.
+- MESOs: A shared D4 panel extension chosen; B per-route rewrite rejected; C tests-only proof rejected because user asked to adapt surfaces.
+
+Measurement Plan:
+- `pnpm typecheck`
+- `pnpm lint`
+- `pnpm visual:contract`
+- `PLAYWRIGHT_PORT=3447 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-DENSITY focused detail"`
+- `PLAYWRIGHT_PORT=3448 pnpm test:route-smoke`
+- `PLAYWRIGHT_PORT=3451 pnpm test:permissions`
+- `PLAYWRIGHT_PORT=3452 pnpm test:workflow-gate`
+- `PLAYWRIGHT_PORT=3453 pnpm test:file-export`
+
+Ethics/Fairness: no deception, no dark patterns, no fake proof, no client-visible AI draft, no hidden safety weakening and no export/advice/evidence overclaim.
+
+Adversarial QA: D4 action rail could be misread as authority; tests require gate language and also prove no D2/D3 coercion and no visible D4/task/proof wording.
+
+Learning Log: `UX-DENSITY-006` can now enforce above-the-fold job/status/next-step using the same functional-copy rule across all eligible routes.
+
+Changed files:
+- `components/ux-detail-standard-panel.tsx`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+Validation:
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with 27 existing warnings and 0 errors.
+- `pnpm visual:contract` - passed, 71 assets/routes checked, 0 failures.
+- `PLAYWRIGHT_PORT=3447 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-DENSITY focused detail"` - passed, 7 tests.
+- `PLAYWRIGHT_PORT=3448 pnpm test:route-smoke` - passed, 200 tests.
+- `PLAYWRIGHT_PORT=3451 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3452 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3453 pnpm test:file-export` - passed, 14 tests.
+- A first parallel permissions/workflow run hit Next dev-server lock contention while route-smoke owned the server; sequential reruns passed.
+
+Screenshot/proof:
+- `artifacts/ux-page-to-policy/UX-DENSITY-005/2026-06-22-UX-DENSITY-005-d1-portal-control.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-005/2026-06-22-UX-DENSITY-005-d2-workbench-control.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-005/2026-06-22-UX-DENSITY-005-d3-audit-control.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-005/2026-06-22-UX-DENSITY-005-trigger-detail-d4.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-005/2026-06-22-UX-DENSITY-005-compliance-review-d4.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-005/2026-06-22-UX-DENSITY-005-evidence-record-d4.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-005/2026-06-22-UX-DENSITY-005-export-preview-d4.png`
+
+Positive acceptance:
+- Scoped D4 routes expose focused detail density with object, status, next action, gate, key facts, evidence/audit and action rail.
+- The visible app UI uses product work/status labels, not task/method/proof explanation.
+
+Negative/P0 acceptance:
+- D4 detail UI does not imply unapproved advice, evidence sufficiency, compliance release, export approval/download/share, audit persistence or RBAC expansion.
+- D4 routes are not coerced into D2 workbench or D3 operations treatment.
+
+No-generation confirmation: no screen generation, state-screen generation, image generation or generated product assets.
+
+No-route-reclassification confirmation: route IDs, paths, worksets, route scopes and route-policy classifications remain unchanged.
+
+No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route was elevated.
+
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
+
 ## Completed Slice: UX-DENSITY-004
 
 Task: `UX-DENSITY-004` - Apply D3 Dense Operations to governance/export/audit tables.
