@@ -44,8 +44,8 @@ test.describe("Phase 03 UI state boundaries", () => {
 
     await expect(page.getByText("Ready", { exact: true })).toBeVisible();
     await expect(page.getByText("Select a file to start document intake.")).toBeVisible();
-    await expect(page.getByText("Extraction queued")).toBeVisible();
-    await expect(page.getByText("The document is queued for validation and human extraction review.")).toBeVisible();
+    await expect(page.getByText("Upload blocked")).toBeVisible();
+    await expect(page.getByText("Select a supported source file before an extraction review item can be queued.")).toBeVisible();
     await expect(page.getByText("Evidence sufficiency complete")).toHaveCount(0);
     await expect(page.getByText("Client visibility unlocked")).toHaveCount(0);
   });
@@ -60,7 +60,7 @@ test.describe("Phase 03 UI state boundaries", () => {
     await page.goto("/export/demo/approval?state=approval");
     await expect(page.getByRole("dialog", { name: "Approve Export Package" })).toBeVisible();
     await expect(page.getByText("Approval confirmation")).toBeVisible();
-    await expect(page.getByText("Approval state records the approval step. Download, share and client acceptance remain separate.")).toBeVisible();
+    await expect(page.getByText("Approval can record only the export approval and metadata-generation step. Download, share, client acceptance and advice release remain separate controlled events.")).toBeVisible();
   });
 
   test("export delivery state does not imply client acceptance", async ({ page }) => {
@@ -89,7 +89,7 @@ test.describe("Phase 05 feedback no-overclaim boundaries", () => {
     await expect(page.getByRole("dialog", { name: "Approve Export Package" })).toBeVisible();
     await expect(page.getByTestId("j08-confirm-approval")).toBeVisible();
     await expect(page.getByText("Generation, download and share remain separate controlled steps.")).toBeVisible();
-    await expect(page.getByText("Approval state records the approval step.")).toBeVisible();
+    await expect(page.getByText("Approval can record only the export approval and metadata-generation step.")).toBeVisible();
   });
 
   test("audit-sensitive feedback states audit requirements rather than claiming persistence", async ({ page }) => {

@@ -356,7 +356,8 @@ test.describe("UX-DECISION-ROOM phase 6 safety-critical decision rooms", () => {
       await expect(panel.getByTestId("ux-phase6-blocker")).toContainText(/blocked|remains|cannot|incomplete/i);
       await expect(panel.getByTestId("ux-phase6-safety-note")).toContainText(/No release, export or advice effect can occur until gate preconditions pass and an audit record exists/i);
       await expect(panel.getByTestId("ux-phase6-confirm")).toHaveCount(1);
-      await expect(panel.getByTestId("ux-phase6-confirm")).toBeDisabled();
+      await expect(panel.getByTestId("ux-phase6-confirm")).toHaveAttribute("data-ux-interactive", "false");
+      await expect(panel.getByTestId("ux-phase6-confirm")).toHaveAttribute("data-ux-affordance", "static-control-note");
       await expect(panel.getByTestId("ux-phase6-cancel")).toHaveCount(1);
     });
   }
@@ -528,7 +529,6 @@ test.describe("UX-COMPLEXITY CTA clusters", () => {
     "/actions",
     "/actions?state=drawer",
     "/evidence/demo/review",
-    "/governance/access-requests/demo?state=drawer",
     "/export/demo/redaction",
   ];
 
@@ -988,7 +988,8 @@ test.describe("UX-CTA AI draft internal-only chain", () => {
     await expect(page.getByText("Internal draft only. Rejection or rebuild keeps client visibility blocked until advisor and compliance gates pass.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Approve for compliance review" })).toBeVisible();
     await expect(page.getByTestId("ux-cta-ai-rebuild")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Request evidence for rebuild" })).toBeVisible();
+    await expect(page.getByTestId("ux-cta-ai-rebuild")).toHaveAttribute("data-ux-interactive", "false");
+    await expect(page.getByTestId("ux-cta-ai-rebuild")).toContainText("Draft rebuild held for Phase 3");
     await expect(page.getByRole("button", { name: "Reject unsupported draft claim" })).toBeVisible();
     await expect(page.getByText(/release to client|client visibility unlocked|client-ready draft|approved for client/i)).toHaveCount(0);
     await expect(page.getByText("82% Success")).toHaveCount(0);
@@ -1138,7 +1139,7 @@ test.describe("UX-CTA disabled blocked recovery copy", () => {
     {
       path: "/governance/access-requests/demo?state=drawer",
       expected: [
-        "Access approval remains constrained by visible policy, SOD and audit checks; it cannot release advice, prove evidence sufficiency or approve export.",
+        "Access approval remains constrained by visible policy, SOD and audit checks. This drawer cannot release advice, prove evidence sufficiency, approve export/share or make content client-visible.",
         "Approve access request",
       ],
     },

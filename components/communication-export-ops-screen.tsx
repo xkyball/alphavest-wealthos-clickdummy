@@ -11,7 +11,6 @@ import {
   Download,
   Eye,
   FileCheck2,
-  FileText,
   Filter,
   Folder,
   Gauge,
@@ -41,7 +40,6 @@ import {
   Drawer,
   Modal,
   StatePanel,
-  WizardStepper,
   type BadgeTone,
   type DataTableColumn
 } from "@/components/ui";
@@ -72,8 +70,6 @@ import {
   exportForbiddenPayloadChecks,
   exportPackageControls,
   exportTimeline,
-  exportTypes,
-  exportWizardSteps,
   opsMetrics,
   previewPolicyChecks,
   queueRows,
@@ -1605,11 +1601,56 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
   );
 }
 
-function ExportDownloadPage({ title }: { title: string }) {
-  const [modalOpen, setModalOpen] = useState(false);
+function ExportDownloadPage({ title, visualState }: { title: string; visualState?: VisualState }) {
+  const [modalOpen, setModalOpen] = useState(visualState === "confirm");
+  const [acknowledged, setAcknowledged] = useState(false);
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [message, setMessage] = useState<string | null>(null);
   const { snapshot } = useExportWorkflowSnapshot();
   const currentExport = snapshot?.current;
   const timeline = snapshot?.timeline.length ? snapshot.timeline : exportTimeline;
+  const lifecycleStatus = status === "submitting" ? "loading" : status;
+  const validationState = acknowledged ? "valid-export-download-review" : "blocked-acknowledgement-required";
+
+  function openDownloadConfirmation() {
+    setModalOpen(true);
+    setAcknowledged(false);
+    setStatus("idle");
+    setMessage(null);
+  }
+
+  function closeDownloadConfirmation() {
+    setModalOpen(false);
+    setAcknowledged(false);
+    setStatus("idle");
+    setMessage(null);
+  }
+
+  async function submitExportDownload() {
+    if (!acknowledged || status === "submitting") {
+      return;
+    }
+
+    setStatus("submitting");
+    setMessage("Recording the controlled export download. Close and cancel are blocked until the workflow returns.");
+
+    try {
+      const body = await runScreencastDemoAction("j08.downloadExport");
+      setStatus("success");
+      setMessage(
+        body.result?.auditEventId
+          ? `Audit recorded: ${body.result.auditEventId}. Controlled export download was recorded through the existing workflow; secure share, client acceptance and advice release remain separate controls.`
+          : "Controlled export download was recorded through the existing workflow; secure share, client acceptance and advice release remain separate controls.",
+      );
+    } catch (error) {
+      setStatus("error");
+      setMessage(
+        error instanceof Error
+          ? `${error.message} No download, share, client acceptance or advice release change was completed.`
+          : "Export download workflow failed without download, share, client acceptance or advice release change.",
+      );
+    }
+  }
 
   return (
     <div>
@@ -1686,7 +1727,14 @@ function ExportDownloadPage({ title }: { title: string }) {
                   <p className="font-semibold text-alphavest-ivory">{currentExport?.fileName ?? "Watermarked export package"}</p>
                   <p className="text-sm text-alphavest-muted">Download pending, delivery action controlled</p>
                 </div>
-                <button className={primaryButtonClass} data-testid="j08-download-export" onClick={() => { void runScreencastDemoAction("j08.downloadExport"); }} type="button">
+                <button
+                  className={primaryButtonClass}
+                  data-testid="j08-open-download-confirmation"
+                  data-ux-lifecycle-result="opens-export-download-confirmation"
+                  data-ux-lifecycle-trigger="export-download-confirmation-modal"
+                  onClick={openDownloadConfirmation}
+                  type="button"
+                >
                   <Download aria-hidden="true" className="size-4" />
                   Download package
                 </button>
@@ -1724,20 +1772,85 @@ function ExportDownloadPage({ title }: { title: string }) {
         </div>
       </div>
       <Modal
-        description="Your secure link is ready to share. Link creation does not imply recipient acceptance."
-        footer={<button className={primaryButtonClass} onClick={() => setModalOpen(false)} type="button">Done</button>}
-        onClose={() => setModalOpen(false)}
+        context={
+          <div className="grid gap-2 text-sm">
+            <p className="font-semibold text-alphavest-ivory">Watermarked export package</p>
+            <p className="text-alphavest-muted">Download requires explicit confirmation and audit recording before any share action can be considered.</p>
+          </div>
+        }
+        description="You are about to record a controlled export download. Share and client acceptance remain separate."
+        footer={
+          <>
+            <button className={secondaryButtonClass} disabled={status === "submitting"} onClick={closeDownloadConfirmation} type="button">Cancel</button>
+            <button
+              className={primaryButtonClass}
+              data-testid="j08-download-export"
+              data-ux-lifecycle-result={acknowledged ? "submits-controlled-download-only" : "blocked-validation-required"}
+              disabled={!acknowledged || status === "submitting" || status === "success"}
+              onClick={() => {
+                void submitExportDownload();
+              }}
+              type="button"
+            >
+              {status === "submitting" ? "Recording..." : "Confirm controlled download"}
+            </button>
+          </>
+        }
+        onClose={status === "submitting" ? undefined : closeDownloadConfirmation}
         open={modalOpen}
-        title="Secure Share Link Created"
+        title="Confirm Export Download"
       >
-        <KeyValueList
-          items={[
-            { label: "Link token", value: "SHARE-9F3B-7A2C" },
-            { label: "Expires", value: "May 28, 2025 09:42" },
-            { label: "Access", value: "Approved link holders" },
-            { label: "Watermark", value: <Badge tone="green">Enabled</Badge> }
-          ]}
-        />
+        <div
+          className="space-y-4"
+          data-testid="uxp3-export-download-lifecycle"
+          data-ux-lifecycle-status={lifecycleStatus}
+          data-ux-lifecycle-validation={validationState}
+          data-ux-no-overclaim="true"
+        >
+          <StatePanel detail="Download confirmation records only the controlled download event. It cannot create a share link, imply client acceptance or release advice." state="restricted" title="Download confirmation" />
+          <label className="flex items-start gap-3 text-sm leading-6 text-alphavest-muted">
+            <input
+              checked={acknowledged}
+              className="mt-1"
+              disabled={status === "submitting" || status === "success"}
+              onChange={(event) => setAcknowledged(event.target.checked)}
+              type="checkbox"
+            />
+            <span>I understand this records only the watermarked export download; secure share, recipient access, client acceptance and advice release remain separate controls.</span>
+          </label>
+          {status === "idle" ? (
+            <StatePanel
+              detail={acknowledged ? "Controlled download can be recorded through the existing audit-gated workflow." : "Download remains blocked until the controlled-download acknowledgement is checked."}
+              state={acknowledged ? "validation" : "blocked"}
+              testId="j08-export-download-validation-state"
+              title={acknowledged ? "Download confirmation valid" : "Download confirmation blocked"}
+            />
+          ) : null}
+          {status === "submitting" ? (
+            <StatePanel
+              detail={message ?? "Recording the controlled export download."}
+              state="loading"
+              testId="j08-export-download-loading-state"
+              title="Download recording"
+            />
+          ) : null}
+          {status === "success" ? (
+            <StatePanel
+              detail={message ?? "Controlled export download was recorded through the existing workflow; secure share, client acceptance and advice release remain separate controls."}
+              state="success"
+              testId="j08-export-download-success-state"
+              title="Download recorded"
+            />
+          ) : null}
+          {status === "error" ? (
+            <StatePanel
+              detail={message ?? "Export download workflow failed without download, share, client acceptance or advice release change."}
+              state="error"
+              testId="j08-export-download-error-state"
+              title="Download failed closed"
+            />
+          ) : null}
+        </div>
       </Modal>
     </div>
   );
@@ -2124,7 +2237,7 @@ function CommunicationExportOpsPageBody({ route, visualState }: { route: ScreenR
     case "057":
       return <ExportPreviewPage title={route.title} visualState={visualState} />;
     case "058":
-      return <ExportDownloadPage title={route.title} />;
+      return <ExportDownloadPage title={route.title} visualState={visualState} />;
     case "059":
       return <OpsQueuesPage title={route.title} />;
     case "060":
