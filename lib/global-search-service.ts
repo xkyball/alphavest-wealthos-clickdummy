@@ -169,7 +169,7 @@ export async function searchGlobalDb(
     ...familyMembers.map((row) => ({
       description: [row.relationshipType, row.taxResidency].filter(Boolean).join(" / ") || "Family member",
       haystack: [row.displayName, row.relationshipType, row.taxResidency ?? ""],
-      href: "/profile",
+      href: "/client/family-members",
       id: `family-${row.id}`,
       label: row.displayName,
       status: row.relationshipType,
@@ -178,7 +178,7 @@ export async function searchGlobalDb(
     ...entities.map((row) => ({
       description: [String(row.entityType), row.jurisdiction, row.riskRating].filter(Boolean).join(" / "),
       haystack: [row.name, String(row.entityType), row.jurisdiction ?? "", row.riskRating ?? "", row.status],
-      href: "/structures/entities",
+      href: "/entities",
       id: `entity-${row.id}`,
       label: row.name,
       status: row.status,
@@ -205,7 +205,7 @@ export async function searchGlobalDb(
     ...dataQualityIssues.map((row) => ({
       description: row.description,
       haystack: [row.issueType, row.description, row.severity, String(row.status)],
-      href: "/ops/sla/:id",
+      href: "/ops/sla/demo",
       id: `dq-${row.id}`,
       label: row.issueType,
       status: `${row.severity} / ${String(row.status)}`,
@@ -214,7 +214,7 @@ export async function searchGlobalDb(
     ...auditEvents.map((row) => ({
       description: row.reason ?? String(row.targetType),
       haystack: [row.eventType, row.reason ?? "", String(row.result), String(row.targetType)],
-      href: "/audit",
+      href: "/compliance/reviews/demo/audit",
       id: `audit-${row.id}`,
       label: row.eventType,
       status: String(row.result),

@@ -17,15 +17,19 @@ type GlobalSearchResult = {
 
 type GlobalSearchBoxProps = {
   className?: string;
+  disabledReason?: string;
   placeholder?: string;
 };
 
-export function GlobalSearchBox({ className, placeholder = "Search WealthOS..." }: GlobalSearchBoxProps) {
+export function GlobalSearchBox({ className, disabledReason, placeholder = "Search scoped workspace..." }: GlobalSearchBoxProps) {
   const { session } = useDemoSession();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<GlobalSearchResult[]>([]);
   const [state, setState] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const trimmedQuery = query.trim();
+  const disabled = Boolean(disabledReason);
+  const descriptionId = "global-search-state";
+  const resultPanelId = "global-search-results";
   const searchUrl = useMemo(() => {
     const params = new URLSearchParams({
       q: trimmedQuery,
@@ -37,7 +41,7 @@ export function GlobalSearchBox({ className, placeholder = "Search WealthOS..." 
   }, [session.role.key, session.tenant.slug, trimmedQuery]);
 
   useEffect(() => {
-    if (trimmedQuery.length < 2) {
+    if (disabled || trimmedQuery.length < 2) {
       return;
     }
 
@@ -68,26 +72,34 @@ export function GlobalSearchBox({ className, placeholder = "Search WealthOS..." 
       controller.abort();
       window.clearTimeout(handle);
     };
-  }, [searchUrl, trimmedQuery.length]);
+  }, [disabled, searchUrl, trimmedQuery.length]);
 
-  const hasPanel = trimmedQuery.length >= 2;
+  const hasPanel = !disabled && trimmedQuery.length >= 2;
   const visibleResults = hasPanel ? results : [];
   const visibleState = hasPanel ? state : "idle";
 
   return (
     <div className={cn("relative min-w-0", className)}>
       <label className="block">
-        <span className="sr-only">Global search</span>
+        <span className="sr-only">Tenant-scoped global search</span>
         <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-5 size-4 -translate-y-1/2 text-alphavest-subtle" />
         <input
-          className="h-10 w-full rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-10 text-sm text-alphavest-ivory outline-none transition placeholder:text-alphavest-subtle focus:border-alphavest-gold"
+          aria-controls={resultPanelId}
+          aria-describedby={descriptionId}
+          aria-expanded={hasPanel}
+          className={cn(
+            "h-10 w-full rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-10 text-sm text-alphavest-ivory outline-none transition placeholder:text-alphavest-subtle focus:border-alphavest-gold",
+            disabled ? "cursor-not-allowed opacity-70" : "",
+          )}
+          disabled={disabled}
           onChange={(event) => setQuery(event.target.value)}
           onKeyDown={(event) => {
-            if (event.key === "Enter" && results[0]) {
+            if (!disabled && event.key === "Enter" && results[0]) {
               window.location.assign(results[0].href);
             }
           }}
           placeholder={placeholder}
+          role="combobox"
           type="search"
           value={query}
         />
@@ -95,8 +107,16 @@ export function GlobalSearchBox({ className, placeholder = "Search WealthOS..." 
           DB
         </span>
       </label>
+      <p className="sr-only" id={descriptionId}>
+        {disabledReason ?? "Searches scoped demo database rows for the selected tenant and role."}
+      </p>
+      {disabledReason ? (
+        <p className="mt-1 text-xs text-alphavest-muted">
+          {disabledReason}
+        </p>
+      ) : null}
       {hasPanel ? (
-        <div className="absolute left-0 right-0 top-12 z-40 overflow-hidden rounded-md border border-alphavest-border bg-alphavest-panel shadow-2xl">
+        <div className="absolute left-0 right-0 top-12 z-40 overflow-hidden rounded-md border border-alphavest-border bg-alphavest-panel shadow-2xl" id={resultPanelId}>
           {visibleState === "loading" ? <p className="p-4 text-sm text-alphavest-muted">Searching scoped DB rows...</p> : null}
           {visibleState === "error" ? <p className="p-4 text-sm text-alphavest-red">Search failed closed for this scope.</p> : null}
           {visibleState === "ready" && visibleResults.length === 0 ? <p className="p-4 text-sm text-alphavest-muted">No tenant-scoped rows found.</p> : null}

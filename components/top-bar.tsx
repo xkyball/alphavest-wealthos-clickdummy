@@ -28,6 +28,10 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
   const currentRoute = routeForPathname(pathname);
   const currentPolicy = currentRoute ? uxRoutePolicyForRoute(currentRoute) : null;
   const currentScope = currentRoute ? routeScopeForPageId(currentRoute.pageId) : null;
+  const globalSearchDisabledReason =
+    currentScope && currentScope !== "MVP" && currentScope !== "MVP_SUPPORT"
+      ? "Search is disabled on registered-only routes."
+      : undefined;
   const routeIsClientVisibilitySensitive =
     currentRoute && "clientVisibilitySensitive" in currentRoute ? Boolean(currentRoute.clientVisibilitySensitive) : false;
   const visibilityMode = routeIsClientVisibilitySensitive ? "Internal until released" : "Scoped context";
@@ -67,7 +71,7 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
         </div>
 
         <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center lg:justify-end">
-          <GlobalSearchBox className="hidden min-w-56 sm:block" />
+          <GlobalSearchBox className="hidden min-w-56 sm:block" disabledReason={globalSearchDisabledReason} />
 
           <div className="hidden items-center gap-2 xl:flex">
             <RouteContextChip />

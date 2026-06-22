@@ -245,6 +245,7 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(body.safety.scoped).toBe(true);
     expect(body.results.length).toBeGreaterThan(0);
     expect(body.results.every((row: { label: string; description: string }) => `${row.label} ${row.description}`.toLowerCase().includes("bennett"))).toBe(true);
+    expect(body.results.every((row: { href: string }) => row.href.startsWith("/") && !row.href.includes(":"))).toBe(true);
 
     const invalidResponse = await request.get("/api/global-search?tenantSlug=unknown&roleKey=family_cfo&q=Bennett");
     const invalidBody = await invalidResponse.json();
