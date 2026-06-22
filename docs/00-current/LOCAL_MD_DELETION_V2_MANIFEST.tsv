@@ -1,178 +1,134 @@
 path	reason	category	size_bytes	git_tracked	protected	blocked	deletion_mode	backup_tag
-AGENTS.md	protected keep-list	protected	4777	yes	yes	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-ALPHAVEST_ALL_ROUTES_SOFT_UNLOCK_HANDOFF.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	3195	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-ALPHAVEST_DB_BACKED_TABLES_FORMS_CODEX_PROMPT_PACK.md	prompt filename pattern owner-approved deletion	prompt-filename	349	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-ALPHAVEST_E2E_JOURNEY_PROOF_25_CODEX_TASK_PACK.md	root generated report/audit/proof candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	374	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-ALPHAVEST_INTERACTION_AND_DB_REALITY_AUDIT.md	root generated report/audit/proof candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	38974	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-ALPHAVEST_MAIN_BASED_FALSE_GAP_CLEANUP_v0.3.md	root generated report/audit/proof candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	413	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	569	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-ALPHAVEST_MVP_JOURNEY_REQUIREMENTS_MATRIX.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	72876	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-ALPHAVEST_MVP_MINIMUM_PATH_CODEX_PATCH_PROMPT.md	prompt filename pattern owner-approved deletion	prompt-filename	17438	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-ALPHAVEST_MVP_MINIMUM_PATH_PATCH_REPORT.md	root generated report/audit/proof candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	12154	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-ALPHAVEST_MVP_MINIMUM_PATH_PRE_EDIT_REPORT.md	root generated report/audit/proof candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	12812	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-ALPHAVEST_MVP_READINESS_VERDICT_FROM_REALITY_AUDIT.md	root generated report/audit/proof candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	17927	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-ALPHAVEST_SCREEN_CAPABILITY_E2E_CODEX_PROMPT_PACK.md	prompt filename pattern owner-approved deletion	prompt-filename	366	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-ALPHAVEST_TRUE_UX_CODEX_TASK_PACK.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	99425	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	102014	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF_REPO_LOCAL_BUNDLE_MANIFEST.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	11141	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF_REPO_LOCAL_REFERENCE_REWRITE_REPORT.md	root generated report/audit/proof candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	16151	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-ALPHAVEST_TRUE_UX_ROUTE_EVOLUTION_POLICY_MATRIX.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	77754	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-ALPHAVEST_UI_CLICKFLOW_PAGEFLOW_STATE_VISIBILITY_INTERACTION_CODEX_TASK_PACK.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	204946	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	117081	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	82776	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-ALPHAVEST_WEALTHOS_CONTROL_LAYER_33_SYSTEM_PROCESS_CODEX_TASK_PACK.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	209622	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-API_CONTRACT_MATRIX.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	50363	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-CODEX_MASTER_TASK.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	721	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-CODEX_START_PHASE_MASTER_PROMPT.md	prompt filename pattern owner-approved deletion	prompt-filename	1417	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-COPY_PASTE_CODEX_START_COMMANDS.md	prompt filename pattern owner-approved deletion	prompt-filename	999	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-DRAWER_MODAL_INTERACTION_CONTRACT.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	82006	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-EVIDENCE_AUDIT_EXPORT_SAFETY_CONTRACT.md	root generated report/audit/proof candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	76855	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-FEEDBACK_VALIDATION_ERROR_STATE_CONTRACT.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	95774	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-FINAL_CODEX_IMPLEMENTATION_HANDOFF.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	358	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-FINAL_CODEX_IMPLEMENTATION_HANDOFF_REBASED_ON_SCF.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	1562	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-FINAL_CODEX_TASK_MASTER.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	333	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-MISSING_SCREEN_STATE_SCREEN_DECISION_LOG.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	94966	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-MVP_SCOPE_LOCK.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	32186	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-P0_TEST_ACCEPTANCE_MATRIX.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	76243	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-RBAC_CLIENT_VISIBILITY_ADVICE_BOUNDARY_CONTRACT.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	117582	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-README.md	protected keep-list	protected	15307	yes	yes	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-README_CODEX_HANDOFF_V3.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	319	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-ROUTE_SCOPE_LOCK.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	113679	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-ROUTE_SCREEN_VISUAL_ASSET_MATRIX.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	84043	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-SCHEMA_FIELD_LEVEL_RECONCILIATION.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	82106	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-STATE_SCREEN_SPEC.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	70086	yes	no	yes	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/02_EXECUTION_COMPLETION_ARTEFACTS/TASK_DONE_DEFINITION_AND_QA_CHECKLIST.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	34417	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/03_SAFETY_CONTRACTS/EVIDENCE_AUDIT_EXPORT_SAFETY_CONTRACT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	76380	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/04_CODEX_PHASE_PROMPTS/00A_NO_DECISION_EXECUTION_PATCH_PROMPT.md	prompt filename pattern owner-approved deletion	prompt-filename	8104	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/04_CODEX_PHASE_PROMPTS/00_MASTER_CODEX_BOOTSTRAP_PROMPT.md	prompt filename pattern owner-approved deletion	prompt-filename	1721	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/04_CODEX_PHASE_PROMPTS/01_PHASE_FOUNDATION_GUARDRAILS_PROMPT.md	prompt filename pattern owner-approved deletion	prompt-filename	4021	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/04_CODEX_PHASE_PROMPTS/02_PHASE_ROUTE_ACCESS_PROMPT.md	prompt filename pattern owner-approved deletion	prompt-filename	3829	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/04_CODEX_PHASE_PROMPTS/03_PHASE_UI_STATE_PROMPT.md	prompt filename pattern owner-approved deletion	prompt-filename	5182	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/04_CODEX_PHASE_PROMPTS/04_PHASE_INTERACTION_LIFECYCLE_PROMPT.md	prompt filename pattern owner-approved deletion	prompt-filename	5120	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/04_CODEX_PHASE_PROMPTS/05_PHASE_FEEDBACK_VALIDATION_ERROR_PROMPT.md	prompt filename pattern owner-approved deletion	prompt-filename	5146	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/04_CODEX_PHASE_PROMPTS/06_PHASE_RBAC_VISIBILITY_ADVICE_PROMPT.md	prompt filename pattern owner-approved deletion	prompt-filename	3879	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/04_CODEX_PHASE_PROMPTS/07_PHASE_EVIDENCE_AUDIT_EXPORT_PROMPT.md	prompt filename pattern owner-approved deletion	prompt-filename	3893	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/04_CODEX_PHASE_PROMPTS/08_PHASE_API_HARDENING_PROMPT.md	prompt filename pattern owner-approved deletion	prompt-filename	3926	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/04_CODEX_PHASE_PROMPTS/09_PHASE_SCHEMA_ALIGNMENT_PROMPT.md	prompt filename pattern owner-approved deletion	prompt-filename	3929	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/04_CODEX_PHASE_PROMPTS/10_PHASE_P0_TESTS_PROMPT.md	prompt filename pattern owner-approved deletion	prompt-filename	4015	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/04_CODEX_PHASE_PROMPTS/11_PHASE_FINAL_QA_PROMPT.md	prompt filename pattern owner-approved deletion	prompt-filename	1511	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/05_QA_AND_REPORTING/FINAL_IMPLEMENTATION_REPORT_TEMPLATE.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	473	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/05_QA_AND_REPORTING/NO_DECISION_PHASE_EXIT_REPORT_TEMPLATE.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	467	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/05_QA_AND_REPORTING/NO_DECISION_PRE_EDIT_REPORT_TEMPLATE.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	415	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/05_QA_AND_REPORTING/PHASE_REPORT_TEMPLATE.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	479	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/05_QA_AND_REPORTING/UI_INTERACTION_REALITY_AUDIT_REPORT_TEMPLATE.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	568	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/06A_NO_DECISION_EXECUTION_PATCH/CODEX_NO_DECISION_EXECUTION_PATCH_PROMPT.md	prompt filename pattern owner-approved deletion	prompt-filename	8104	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/06_UI_INTERACTION_REALITY_PATCH/CODEX_UI_INTERACTION_REMEDIATION_PROMPT_PATCH.md	prompt filename pattern owner-approved deletion	prompt-filename	11273	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/06_UI_INTERACTION_REALITY_PATCH/UI_INTERACTION_REALITY_CODEBASE_AUDIT_CHECKLIST.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	1230	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/07_REFERENCE_ONLY/ALPHAVEST_CODEX_COMPLETION_PROMPT_PACK.md	prompt filename pattern owner-approved deletion	prompt-filename	52450	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/07_REFERENCE_ONLY/ALPHAVEST_CODEX_HANDOFF_EXECUTION_GUIDE_v2.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	9499	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/07_REFERENCE_ONLY/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_MANIFEST.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	8195	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/07_REFERENCE_ONLY/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_REFERENCE_NOTE.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	286	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/07_REFERENCE_ONLY/ALPHAVEST_CODEX_NO_DECISION_READINESS_AUDIT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	19174	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/07_REFERENCE_ONLY/ALPHAVEST_FULL_WORKFLOW_INTERACTION_REALITY_AUDIT_v0.6.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	68888	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED/07_REFERENCE_ONLY/ALPHAVEST_MAIN_BASED_FALSE_GAP_CLEANUP_v0.3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	50969	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-archives/AlphaVest_WealthOS_Clean_UI_Page_Realisation_Batch_Prompts_V3.md	legacy AlphaVest archive markdown	legacy-archive	86194	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-archives/AlphaVest_WealthOS_Codex_Remaining_Phase_Prompts_V2.md	legacy AlphaVest archive markdown	legacy-archive	38916	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/proof/SCF_P10_P14_PROOF_PACKAGE.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	3038	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/ux/ALPHAVEST_UXP0_004_INTERACTION_REALITY_REGISTER.md	old task/handoff/matrix/contract in docs/archive location	old-task-handoff-matrix-contract	12010	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/ux/ALPHAVEST_UXP1_001_APP_SHELL_TOPBAR_CLEANUP_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	3043	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/ux/ALPHAVEST_UXP1_002_PAGE_HEADER_PRIMARY_CTA_CLEANUP_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	4706	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/ux/ALPHAVEST_UXP1_PHASE_1_CONTENT_CLEANUP_COMPLETION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	4761	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/ux/ALPHAVEST_UXP2_PHASE_2_FAKE_AFFORDANCE_PRUNING_COMPLETION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	2816	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/ux/ALPHAVEST_UXP3_INTERACTION_LIFECYCLE_REGISTER.md	old task/handoff/matrix/contract in docs/archive location	old-task-handoff-matrix-contract	9826	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/ALPHAVEST_MVP_PHASE_10_P0_ACCEPTANCE_PROOF_MAP.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	3668	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/ALPHAVEST_UI_CLICKFLOW_PHASE_01_05_IMPLEMENTATION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	6784	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/ALPHAVEST_UI_CLICKFLOW_PHASE_06_10_IMPLEMENTATION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	6990	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/ALPHAVEST_UI_CLICKFLOW_PHASE_0_SOURCE_REALITY_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	15700	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/AV_REF_001_REFACTOR_FIRST_IMPLEMENTATION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	14036	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/AV_REF_002_REBASE_CHARACTERIZATION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	4549	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/CAPABILITY_GAP_BACKLOG_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	5287	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/CAPABILITY_TRUTH_AUDIT_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	16403	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/CODEX_TASKS_DETAILED_V3.md	old task/handoff/matrix/contract in docs/archive location	old-task-handoff-matrix-contract	35299	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/DATA_MODEL_IMPLEMENTATION_RECONCILIATION_V3.md	old task/handoff/matrix/contract in docs/archive location	old-task-handoff-matrix-contract	8717	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/DEMO_JOURNEY_UNIVERSE_AUDIT_PROMPT_V3.md	prompt filename pattern owner-approved deletion	prompt-filename	11392	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/DEMO_JOURNEY_UNIVERSE_AUDIT_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	28003	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/DEMO_VIDEO_IMPLEMENTATION_ROADMAP_V3.md	old task/handoff/matrix/contract in docs/archive location	old-task-handoff-matrix-contract	21011	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/DEMO_VIDEO_IMPLEMENTATION_TASKS_DETAILED_V3.md	old task/handoff/matrix/contract in docs/archive location	old-task-handoff-matrix-contract	48055	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/DEMO_VIDEO_INTERNAL_PROOF_INDEX_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	2550	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/DESIGN_IMPLEMENTATION_GAP_ANALYSIS_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	3395	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/ENGINE_V3_PROOF.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	2354	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/FINAL_HANDOFF_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	2500	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/FINAL_IMPLEMENTATION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	6289	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/FINAL_MVP_FIRST_BUILD_IMPLEMENTATION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	5754	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/GUIDED_PRODUCT_UX_REWORK_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	4665	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/IMPLEMENTATION_GAP_BACKLOG_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	9250	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/IMPLEMENTATION_QA_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	470565	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/OPERATIONALIZATION_PROJECT_CONTRACT_V3.md	old task/handoff/matrix/contract in docs/archive location	old-task-handoff-matrix-contract	18546	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/PHASE_EXECUTION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	526455	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/PIXEL_ACCURACY_TASKS_V3_V2.md	old task/handoff/matrix/contract in docs/archive location	old-task-handoff-matrix-contract	1998	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/REPO_INTAKE_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	1701	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/SCREENCAST_QA_REPORT_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	11850	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/SCREENSHOT_PROOF_STATUS_TEMPLATE_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	2529	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/SCREEN_TO_TASK_MATRIX_V3.md	old task/handoff/matrix/contract in docs/archive location	old-task-handoff-matrix-contract	9371	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/STRICT_VISUAL_TASKS_DETAILED_V3.md	old task/handoff/matrix/contract in docs/archive location	old-task-handoff-matrix-contract	59274	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/TRUE_UX_BLOCKER_REMEDIATION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	5524	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/TRUE_UX_PHASE_10_A11Y_FOCUS_KEYBOARD_STATUS_EXECUTION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	4594	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/TRUE_UX_PHASE_11_P0_SAFETY_EXECUTION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	5760	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/TRUE_UX_PHASE_12_FINAL_VALIDATION_PROOF_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	8859	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/TRUE_UX_PHASE_4_WORKBENCH_EXECUTION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	5200	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/TRUE_UX_PHASE_5_DETAIL_SPLIT_EXECUTION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	6181	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/TRUE_UX_PHASE_6_DECISION_ROOMS_EXECUTION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	5577	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/TRUE_UX_PHASE_7_CLIENT_PROJECTION_EXECUTION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	5165	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/TRUE_UX_PHASE_8_CTA_STATE_RECOVERY_EXECUTION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	4664	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/TRUE_UX_PHASE_9_DENSITY_LAYOUT_EXECUTION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	4349	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	142736	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/WORKFLOW_EXECUTION_REALITY_MATRIX_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	5152	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	38848	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/user-manual-collaboration/ALPHAVEST_COLLABORATIVE_WORKFLOW_MANUAL_QA_REPORT_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	3242	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/user-manual-context/ALPHAVEST_USER_MANUAL_CONTEXT_QA_REPORT_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	11820	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/user-manual-pdf/ALPHAVEST_COLLABORATIVE_WORKFLOW_MANUAL_PDF_QA_REPORT_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	8348	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/user-manual-pdf/ALPHAVEST_CONTEXTUAL_USER_MANUAL_PDF_QA_REPORT_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	4680	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/user-manual-pdf/ALPHAVEST_USER_MANUAL_PDF_QA_REPORT_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	2101	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/user-manual-pdf/ALPHAVEST_VISUAL_PROCESS_MANUAL_PDF_QA_REPORT_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	13398	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/user-manual-pdf/ALPHAVEST_VISUAL_PROCESS_MANUAL_PDF_QA_REPORT_V4.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	11857	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/user-manual-source/DATA_STATE_EVIDENCE_AUDIT_REFERENCE_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	4806	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/user-manual-source/ROLE_TASK_INVENTORY_V3.md	old task/handoff/matrix/contract in docs/archive location	old-task-handoff-matrix-contract	6997	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/user-manual-visual-process/ALPHAVEST_VISUAL_PROCESS_MANUAL_QA_REPORT_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	13398	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-docs/v3/user-manual/ALPHAVEST_USER_MANUAL_QA_REPORT_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	8729	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-node_modules/.pnpm/playwright@1.61.0/node_modules/playwright/lib/agents/playwright-test-coverage.prompt.md	prompt filename pattern owner-approved deletion	prompt-filename	1294	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-node_modules/.pnpm/playwright@1.61.0/node_modules/playwright/lib/agents/playwright-test-generate.prompt.md	prompt filename pattern owner-approved deletion	prompt-filename	175	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-node_modules/.pnpm/playwright@1.61.0/node_modules/playwright/lib/agents/playwright-test-heal.prompt.md	prompt filename pattern owner-approved deletion	prompt-filename	105	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-node_modules/.pnpm/playwright@1.61.0/node_modules/playwright/lib/agents/playwright-test-plan.prompt.md	prompt filename pattern owner-approved deletion	prompt-filename	196	no	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/ADAPT_SCREENCAST_AUTOMATION_FROM_PPWR_REFERENCE_ENGINE_MIX.md	prompt path under prompts/	prompt-path	16397	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/ALPHAVEST_MVP_MINIMUM_PATH_CODEX_PROMPT_PACK.md	prompt path under prompts/	prompt-path	33027	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/ALPHAVEST_MVP_READINESS_VERDICT_PROMPT_ENGINE_PROOF.md	prompt path under prompts/	prompt-path	9293	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/CREATE_SCREENCAST_AUTOMATION_FROM_JOURNEYS_ENGINE_MIX.md	prompt path under prompts/	prompt-path	10497	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/PROJECT_DEFINITION_WORKFLOW_GAP_ANALYSIS_ENGINE_MIX.md	prompt path under prompts/	prompt-path	17291	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/STATEFUL_SCREENCAST_PROVISIONING_ENGINE_MIX.md	prompt path under prompts/	prompt-path	9731	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/USER_MANUAL_COLLABORATIVE_WORKFLOW_NARRATIVE_ENGINE_MIX.md	prompt path under prompts/	prompt-path	13162	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/USER_MANUAL_COLLABORATIVE_WORKFLOW_PDF_PRODUCTION_ENGINE_MIX.md	prompt path under prompts/	prompt-path	16446	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/USER_MANUAL_CONTEXTUAL_EXPLANATION_ENGINE_MIX.md	prompt path under prompts/	prompt-path	20555	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/USER_MANUAL_CONTEXTUAL_PDF_PRODUCTION_ENGINE_MIX.md	prompt path under prompts/	prompt-path	14572	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/USER_MANUAL_PDF_PRODUCTION_ENGINE_MIX.md	prompt path under prompts/	prompt-path	13315	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/USER_MANUAL_RAW_ARTIFACT_EXTRACTION_ENGINE_MIX.md	prompt path under prompts/	prompt-path	20752	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/USER_MANUAL_STATE_OF_ART_GENERATION_ENGINE_MIX.md	prompt path under prompts/	prompt-path	18331	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/USER_MANUAL_VISUAL_PROCESS_EXPLANATION_ENGINE_MIX.md	prompt path under prompts/	prompt-path	15765	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/USER_MANUAL_VISUAL_PROCESS_PDF_PRODUCTION_ENGINE_MIX.md	prompt path under prompts/	prompt-path	18475	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/UX_PAGE_TO_POLICY_SEQUENTIAL_EXECUTION_ENGINE_MIX.md	prompt path under prompts/	prompt-path	12855	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/phases/PHASE_00_Repository_and_Project_Setup.md	prompt path under prompts/	prompt-path	1505	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/phases/PHASE_01_Next_js_React_Tailwind_Foundation.md	prompt path under prompts/	prompt-path	1499	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/phases/PHASE_02_Docker_Compose_PostgreSQL_Prisma.md	prompt path under prompts/	prompt-path	1469	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/phases/PHASE_03_Data_Model_and_Demo_Seed_System.md	prompt path under prompts/	prompt-path	1488	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/phases/PHASE_04_Demo_Session_Role_Tenant_Switcher_and_Service_Stubs.md	prompt path under prompts/	prompt-path	1495	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/phases/PHASE_05_Route_Skeleton_for_All_63_Pages.md	prompt path under prompts/	prompt-path	1488	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/phases/PHASE_06_Shared_UI_Component_Library.md	prompt path under prompts/	prompt-path	1474	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/phases/PHASE_07_Auth_and_Onboarding_UI_Pages.md	prompt path under prompts/	prompt-path	2446	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/phases/PHASE_08_Admin_Platform_and_Tenant_Setup_Pages.md	prompt path under prompts/	prompt-path	3335	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/phases/PHASE_09_Client_Family_Entity_and_Document_Intake_Pages.md	prompt path under prompts/	prompt-path	3156	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/phases/PHASE_10_Wealth_Map_and_Action_Board.md	prompt path under prompts/	prompt-path	1815	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/phases/PHASE_11_Internal_Workflow_and_Compliance_Pages.md	prompt path under prompts/	prompt-path	2701	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/phases/PHASE_12_Decisions_Evidence_and_Governance_Pages.md	prompt path under prompts/	prompt-path	3065	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/phases/PHASE_13_Communication_Export_Ops_and_Reference_Pages.md	prompt path under prompts/	prompt-path	3445	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/phases/PHASE_14_Workflow_Lifecycle_Integration.md	prompt path under prompts/	prompt-path	1553	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/phases/PHASE_15_Testing_Baseline.md	prompt path under prompts/	prompt-path	1465	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/phases/PHASE_16_Role_Aware_Permissions_and_Tenant_Isolation.md	prompt path under prompts/	prompt-path	1507	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/phases/PHASE_17_API_Data_Quality_and_Validation.md	prompt path under prompts/	prompt-path	1505	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/phases/PHASE_18_File_Export_Realism.md	prompt path under prompts/	prompt-path	1510	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/phases/PHASE_19_Hardening_and_Final_Handoff.md	prompt path under prompts/	prompt-path	1490	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
-prompts/templates/CODEX_START_PHASE_MASTER_PROMPT.md	prompt path under prompts/	prompt-path	490	yes	no	no	dry-run	pre-md-trash-delete-v2-20260622-286f213
+AGENTS.md	protected keep-list	protected	4777	yes	yes	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+ALPHAVEST_ALL_ROUTES_SOFT_UNLOCK_HANDOFF.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	3195	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+ALPHAVEST_E2E_JOURNEY_PROOF_25_CODEX_TASK_PACK.md	root generated report/audit/proof candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	374	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+ALPHAVEST_INTERACTION_AND_DB_REALITY_AUDIT.md	root generated report/audit/proof candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	38974	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+ALPHAVEST_MAIN_BASED_FALSE_GAP_CLEANUP_v0.3.md	root generated report/audit/proof candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	413	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+ALPHAVEST_MVP_FIRST_BUILD_IMPLEMENTATION_HANDOFF.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	569	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+ALPHAVEST_MVP_JOURNEY_REQUIREMENTS_MATRIX.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	72876	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+ALPHAVEST_MVP_MINIMUM_PATH_PATCH_REPORT.md	root generated report/audit/proof candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	12154	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+ALPHAVEST_MVP_MINIMUM_PATH_PRE_EDIT_REPORT.md	root generated report/audit/proof candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	12812	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+ALPHAVEST_MVP_READINESS_VERDICT_FROM_REALITY_AUDIT.md	root generated report/audit/proof candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	17927	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+ALPHAVEST_TRUE_UX_CODEX_TASK_PACK.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	99425	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	102014	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF_REPO_LOCAL_BUNDLE_MANIFEST.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	11141	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF_REPO_LOCAL_REFERENCE_REWRITE_REPORT.md	root generated report/audit/proof candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	16151	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+ALPHAVEST_TRUE_UX_ROUTE_EVOLUTION_POLICY_MATRIX.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	77754	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+ALPHAVEST_UI_CLICKFLOW_PAGEFLOW_STATE_VISIBILITY_INTERACTION_CODEX_TASK_PACK.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	204946	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	117081	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	82776	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+ALPHAVEST_WEALTHOS_CONTROL_LAYER_33_SYSTEM_PROCESS_CODEX_TASK_PACK.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	209622	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+API_CONTRACT_MATRIX.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	50363	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+CODEX_MASTER_TASK.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	721	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+DRAWER_MODAL_INTERACTION_CONTRACT.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	82006	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+EVIDENCE_AUDIT_EXPORT_SAFETY_CONTRACT.md	root generated report/audit/proof candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	76855	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+FEEDBACK_VALIDATION_ERROR_STATE_CONTRACT.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	95774	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+FINAL_CODEX_IMPLEMENTATION_HANDOFF.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	358	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+FINAL_CODEX_IMPLEMENTATION_HANDOFF_REBASED_ON_SCF.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	1562	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+FINAL_CODEX_TASK_MASTER.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	333	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+MISSING_SCREEN_STATE_SCREEN_DECISION_LOG.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	94966	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+MVP_SCOPE_LOCK.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	32186	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+P0_TEST_ACCEPTANCE_MATRIX.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	76243	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+RBAC_CLIENT_VISIBILITY_ADVICE_BOUNDARY_CONTRACT.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	117582	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+README.md	protected keep-list	protected	15307	yes	yes	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+README_CODEX_HANDOFF_V3.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	319	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+ROUTE_SCOPE_LOCK.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	113679	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+ROUTE_SCREEN_VISUAL_ASSET_MATRIX.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	84043	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+SCHEMA_FIELD_LEVEL_RECONCILIATION.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	82106	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+STATE_SCREEN_SPEC.md	root old task/handoff/matrix/contract candidate blocked without --include-root-old-docs	root-old-doc-candidate-blocked	70086	yes	no	yes	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/ALPHAVEST_MVP_PHASE_10_P0_ACCEPTANCE_PROOF_MAP.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	3668	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/ALPHAVEST_UI_CLICKFLOW_PHASE_01_05_IMPLEMENTATION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	6784	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/ALPHAVEST_UI_CLICKFLOW_PHASE_06_10_IMPLEMENTATION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	6990	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/ALPHAVEST_UI_CLICKFLOW_PHASE_0_SOURCE_REALITY_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	15700	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/AV_REF_001_REFACTOR_FIRST_IMPLEMENTATION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	14036	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/AV_REF_002_REBASE_CHARACTERIZATION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	4549	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/CAPABILITY_GAP_BACKLOG_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	5287	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/CAPABILITY_TRUTH_AUDIT_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	16403	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/CODEX_TASKS_DETAILED_V3.md	old task/handoff/matrix/contract in docs/archive location	old-task-handoff-matrix-contract	35299	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/DATA_MODEL_IMPLEMENTATION_RECONCILIATION_V3.md	old task/handoff/matrix/contract in docs/archive location	old-task-handoff-matrix-contract	8717	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/DEMO_JOURNEY_UNIVERSE_AUDIT_PROMPT_V3.md	prompt filename pattern owner-approved deletion	prompt-filename	11392	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/DEMO_JOURNEY_UNIVERSE_AUDIT_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	28003	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/DEMO_VIDEO_IMPLEMENTATION_ROADMAP_V3.md	old task/handoff/matrix/contract in docs/archive location	old-task-handoff-matrix-contract	21011	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/DEMO_VIDEO_IMPLEMENTATION_TASKS_DETAILED_V3.md	old task/handoff/matrix/contract in docs/archive location	old-task-handoff-matrix-contract	48055	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/DEMO_VIDEO_INTERNAL_PROOF_INDEX_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	2550	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/DESIGN_IMPLEMENTATION_GAP_ANALYSIS_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	3395	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/ENGINE_V3_PROOF.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	2354	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/FINAL_HANDOFF_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	2500	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/FINAL_IMPLEMENTATION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	6289	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/FINAL_MVP_FIRST_BUILD_IMPLEMENTATION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	5754	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/GUIDED_PRODUCT_UX_REWORK_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	4665	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/IMPLEMENTATION_GAP_BACKLOG_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	9250	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/IMPLEMENTATION_QA_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	470565	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/OPERATIONALIZATION_PROJECT_CONTRACT_V3.md	old task/handoff/matrix/contract in docs/archive location	old-task-handoff-matrix-contract	18546	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/PHASE_EXECUTION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	526455	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/PIXEL_ACCURACY_TASKS_V3_V2.md	old task/handoff/matrix/contract in docs/archive location	old-task-handoff-matrix-contract	1998	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/REPO_INTAKE_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	1701	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/SCREENCAST_QA_REPORT_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	11850	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/SCREENSHOT_PROOF_STATUS_TEMPLATE_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	2529	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/SCREEN_TO_TASK_MATRIX_V3.md	old task/handoff/matrix/contract in docs/archive location	old-task-handoff-matrix-contract	9371	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/STRICT_VISUAL_TASKS_DETAILED_V3.md	old task/handoff/matrix/contract in docs/archive location	old-task-handoff-matrix-contract	59274	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/TRUE_UX_BLOCKER_REMEDIATION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	5524	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/TRUE_UX_PHASE_10_A11Y_FOCUS_KEYBOARD_STATUS_EXECUTION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	4594	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/TRUE_UX_PHASE_11_P0_SAFETY_EXECUTION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	5760	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/TRUE_UX_PHASE_12_FINAL_VALIDATION_PROOF_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	8859	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/TRUE_UX_PHASE_4_WORKBENCH_EXECUTION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	5200	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/TRUE_UX_PHASE_5_DETAIL_SPLIT_EXECUTION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	6181	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/TRUE_UX_PHASE_6_DECISION_ROOMS_EXECUTION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	5577	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/TRUE_UX_PHASE_7_CLIENT_PROJECTION_EXECUTION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	5165	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/TRUE_UX_PHASE_8_CTA_STATE_RECOVERY_EXECUTION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	4664	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/TRUE_UX_PHASE_9_DENSITY_LAYOUT_EXECUTION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	4349	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	142736	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/WORKFLOW_EXECUTION_REALITY_MATRIX_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	5152	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/WORKFLOW_PAGEFLOW_CODE_GAP_ANALYSIS_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	38848	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/user-manual-collaboration/ALPHAVEST_COLLABORATIVE_WORKFLOW_MANUAL_QA_REPORT_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	3242	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/user-manual-context/ALPHAVEST_USER_MANUAL_CONTEXT_QA_REPORT_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	11820	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/user-manual-pdf/ALPHAVEST_COLLABORATIVE_WORKFLOW_MANUAL_PDF_QA_REPORT_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	8348	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/user-manual-pdf/ALPHAVEST_CONTEXTUAL_USER_MANUAL_PDF_QA_REPORT_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	4680	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/user-manual-pdf/ALPHAVEST_USER_MANUAL_PDF_QA_REPORT_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	2101	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/user-manual-pdf/ALPHAVEST_VISUAL_PROCESS_MANUAL_PDF_QA_REPORT_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	13398	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/user-manual-pdf/ALPHAVEST_VISUAL_PROCESS_MANUAL_PDF_QA_REPORT_V4.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	11857	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/user-manual-source/DATA_STATE_EVIDENCE_AUDIT_REFERENCE_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	4806	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/user-manual-source/ROLE_TASK_INVENTORY_V3.md	old task/handoff/matrix/contract in docs/archive location	old-task-handoff-matrix-contract	6997	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/user-manual-visual-process/ALPHAVEST_VISUAL_PROCESS_MANUAL_QA_REPORT_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	13398	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+docs/v3/user-manual/ALPHAVEST_USER_MANUAL_QA_REPORT_V3.md	generated report/QA/audit/proof/backlog/gap filename	report-audit-qa	8729	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+node_modules/.pnpm/playwright@1.61.0/node_modules/playwright/lib/agents/playwright-test-coverage.prompt.md	prompt filename pattern owner-approved deletion	prompt-filename	1294	no	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+node_modules/.pnpm/playwright@1.61.0/node_modules/playwright/lib/agents/playwright-test-generate.prompt.md	prompt filename pattern owner-approved deletion	prompt-filename	175	no	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+node_modules/.pnpm/playwright@1.61.0/node_modules/playwright/lib/agents/playwright-test-heal.prompt.md	prompt filename pattern owner-approved deletion	prompt-filename	105	no	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+node_modules/.pnpm/playwright@1.61.0/node_modules/playwright/lib/agents/playwright-test-plan.prompt.md	prompt filename pattern owner-approved deletion	prompt-filename	196	no	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/ADAPT_SCREENCAST_AUTOMATION_FROM_PPWR_REFERENCE_ENGINE_MIX.md	prompt path under prompts/	prompt-path	16397	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/ALPHAVEST_MVP_MINIMUM_PATH_CODEX_PROMPT_PACK.md	prompt path under prompts/	prompt-path	33027	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/ALPHAVEST_MVP_READINESS_VERDICT_PROMPT_ENGINE_PROOF.md	prompt path under prompts/	prompt-path	9293	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/CREATE_SCREENCAST_AUTOMATION_FROM_JOURNEYS_ENGINE_MIX.md	prompt path under prompts/	prompt-path	10497	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/PROJECT_DEFINITION_WORKFLOW_GAP_ANALYSIS_ENGINE_MIX.md	prompt path under prompts/	prompt-path	17291	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/STATEFUL_SCREENCAST_PROVISIONING_ENGINE_MIX.md	prompt path under prompts/	prompt-path	9731	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/USER_MANUAL_COLLABORATIVE_WORKFLOW_NARRATIVE_ENGINE_MIX.md	prompt path under prompts/	prompt-path	13162	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/USER_MANUAL_COLLABORATIVE_WORKFLOW_PDF_PRODUCTION_ENGINE_MIX.md	prompt path under prompts/	prompt-path	16446	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/USER_MANUAL_CONTEXTUAL_EXPLANATION_ENGINE_MIX.md	prompt path under prompts/	prompt-path	20555	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/USER_MANUAL_CONTEXTUAL_PDF_PRODUCTION_ENGINE_MIX.md	prompt path under prompts/	prompt-path	14572	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/USER_MANUAL_PDF_PRODUCTION_ENGINE_MIX.md	prompt path under prompts/	prompt-path	13315	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/USER_MANUAL_RAW_ARTIFACT_EXTRACTION_ENGINE_MIX.md	prompt path under prompts/	prompt-path	20752	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/USER_MANUAL_STATE_OF_ART_GENERATION_ENGINE_MIX.md	prompt path under prompts/	prompt-path	18331	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/USER_MANUAL_VISUAL_PROCESS_EXPLANATION_ENGINE_MIX.md	prompt path under prompts/	prompt-path	15765	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/USER_MANUAL_VISUAL_PROCESS_PDF_PRODUCTION_ENGINE_MIX.md	prompt path under prompts/	prompt-path	18475	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/UX_PAGE_TO_POLICY_SEQUENTIAL_EXECUTION_ENGINE_MIX.md	prompt path under prompts/	prompt-path	12855	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/phases/PHASE_00_Repository_and_Project_Setup.md	prompt path under prompts/	prompt-path	1505	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/phases/PHASE_01_Next_js_React_Tailwind_Foundation.md	prompt path under prompts/	prompt-path	1499	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/phases/PHASE_02_Docker_Compose_PostgreSQL_Prisma.md	prompt path under prompts/	prompt-path	1469	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/phases/PHASE_03_Data_Model_and_Demo_Seed_System.md	prompt path under prompts/	prompt-path	1488	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/phases/PHASE_04_Demo_Session_Role_Tenant_Switcher_and_Service_Stubs.md	prompt path under prompts/	prompt-path	1495	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/phases/PHASE_05_Route_Skeleton_for_All_63_Pages.md	prompt path under prompts/	prompt-path	1488	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/phases/PHASE_06_Shared_UI_Component_Library.md	prompt path under prompts/	prompt-path	1474	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/phases/PHASE_07_Auth_and_Onboarding_UI_Pages.md	prompt path under prompts/	prompt-path	2446	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/phases/PHASE_08_Admin_Platform_and_Tenant_Setup_Pages.md	prompt path under prompts/	prompt-path	3335	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/phases/PHASE_09_Client_Family_Entity_and_Document_Intake_Pages.md	prompt path under prompts/	prompt-path	3156	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/phases/PHASE_10_Wealth_Map_and_Action_Board.md	prompt path under prompts/	prompt-path	1815	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/phases/PHASE_11_Internal_Workflow_and_Compliance_Pages.md	prompt path under prompts/	prompt-path	2701	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/phases/PHASE_12_Decisions_Evidence_and_Governance_Pages.md	prompt path under prompts/	prompt-path	3065	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/phases/PHASE_13_Communication_Export_Ops_and_Reference_Pages.md	prompt path under prompts/	prompt-path	3445	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/phases/PHASE_14_Workflow_Lifecycle_Integration.md	prompt path under prompts/	prompt-path	1553	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/phases/PHASE_15_Testing_Baseline.md	prompt path under prompts/	prompt-path	1465	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/phases/PHASE_16_Role_Aware_Permissions_and_Tenant_Isolation.md	prompt path under prompts/	prompt-path	1507	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/phases/PHASE_17_API_Data_Quality_and_Validation.md	prompt path under prompts/	prompt-path	1505	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/phases/PHASE_18_File_Export_Realism.md	prompt path under prompts/	prompt-path	1510	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/phases/PHASE_19_Hardening_and_Final_Handoff.md	prompt path under prompts/	prompt-path	1490	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
+prompts/templates/CODEX_START_PHASE_MASTER_PROMPT.md	prompt path under prompts/	prompt-path	490	yes	no	no	apply	pre-md-trash-delete-v2-20260622-0ee24cd
