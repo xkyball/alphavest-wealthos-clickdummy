@@ -1395,7 +1395,7 @@ function EvidenceRecordDetailPage({ title }: { title: string }) {
               <CardHeader><CardTitle>Quick Actions</CardTitle></CardHeader>
               <CardContent>
                 <UxCtaCluster
-                  blockedReason="Revoke access and create-version actions are secondary and cannot prove evidence sufficiency or access authority."
+                  blockedReason="Revoke access and create-version actions are secondary and cannot complete sufficiency review or access authority."
                   className="[&_button]:w-full [&_button]:justify-start"
                   primary={{ label: "Request Review" }}
                   recoveryAction={{ href: "/governance/access-requests/:id", label: "Open access policy" }}
@@ -1408,7 +1408,7 @@ function EvidenceRecordDetailPage({ title }: { title: string }) {
                     },
                     {
                       disabled: true,
-                      disabledReason: "New versions need evidence review; versioning cannot mark evidence sufficient.",
+                      disabledReason: "New versions need evidence review; versioning cannot complete sufficiency review.",
                       label: "Create New Version",
                     },
                   ]}

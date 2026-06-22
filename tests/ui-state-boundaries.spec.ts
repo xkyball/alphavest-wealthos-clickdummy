@@ -44,8 +44,8 @@ test.describe("Phase 03 UI state boundaries", () => {
 
     await expect(page.getByText("Ready", { exact: true })).toBeVisible();
     await expect(page.getByText("Select a file to start document intake.")).toBeVisible();
-    await expect(page.getByText("Extraction Pipeline")).toBeVisible();
-    await expect(page.getByText("Your document will be scanned, validated and queued for human extraction review.")).toBeVisible();
+    await expect(page.getByText("Extraction queued")).toBeVisible();
+    await expect(page.getByText("The document is queued for validation and human extraction review.")).toBeVisible();
     await expect(page.getByText("Evidence sufficiency complete")).toHaveCount(0);
     await expect(page.getByText("Client visibility unlocked")).toHaveCount(0);
   });

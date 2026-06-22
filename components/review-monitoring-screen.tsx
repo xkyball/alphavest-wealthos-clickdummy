@@ -483,7 +483,7 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
                 ))}
               </CardContent>
             </Card>
-            <StatePanel detail="There are no rebalance triggers matching this filter in the empty-state proof path." state="empty" title="Empty state available" />
+            <StatePanel detail="No rebalance triggers match this filter." state="empty" title="No triggers found" />
           </aside>
           <section className="space-y-5">
             <Card>
@@ -583,7 +583,7 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
               </CardContent>
             </Card>
             <StatePanel
-              detail="Execution is disabled. The tested action path only records review state and audit evidence for this demo."
+              detail="Execution is disabled. This action records review state and audit only."
               state="restricted"
               title="Execution disabled"
             />

@@ -6,14 +6,14 @@
 
 | Field | Value |
 | --- | --- |
-| Artefact status | `PHASE_1_RELOCATION_TARGET_UPDATED_UXP1_009` |
+| Artefact status | `PHASE_1_RELOCATION_TARGET_UPDATED_UXP1_010` |
 | Scope | Internal UX/manual register for relocated explanations |
 | Product authority | None |
 | Runtime UI authority | None |
 | Source contract | UXP0/UXP1 interaction pruning and content cleanup tasks |
 | Last initialized | 2026-06-22 |
-| Last updated | 2026-06-22 by `UXP1-009` |
-| Covered execution slice | `UXP1-001` through `UXP1-008`, plus seeded cleanup-audit rows |
+| Last updated | 2026-06-22 by `UXP1-010` |
+| Covered execution slice | `UXP1-001` through `UXP1-010`, plus seeded cleanup-audit rows |
 
 ## Purpose
 
@@ -53,6 +53,7 @@ The document now serves four narrow jobs:
 | `UXP1-007` | Covered | Reference-only routes `061`, `062`, `063` |
 | `UXP1-008` | Covered | HOLD routes `064-067`, `069-071` and P1 route `068` |
 | `UXP1-009` | Covered | This consolidation section and validation contract |
+| `UXP1-010` | Covered | State copy cleanup across StatePanel usages and route `063` |
 
 ## Affected Artefact Map
 
@@ -95,6 +96,7 @@ The document now serves four narrow jobs:
 | 062 `/roadmap` | MVP/future-scope roadmap explanation presented as an operative product page or scope-control surface. | Internal Roadmap Reference | UI now shows `Read-only scope reference`, `Reference Summary` and `Scope Decision Register`. | Relocated in UXP1-007 |
 | 063 `/states` | State and badge catalogue explanation presented as a product workflow surface or status-changing control set. | Internal State Reference | UI now shows `Read-only state reference` and keeps state examples non-mutating. | Relocated in UXP1-007 |
 | 064-067, 069-071 HOLD / 068 P1 | Long protected-route explanation, implementation-placeholder language, product-action lock wording and continuation links that could imply unlocked high-risk workflow. | Hold and Deferred Route Manual | UI now shows `Held`, `Deferred`, `Hold Guard`, `Deferred Guard`, no product controls and no related-workspace continuation from protected routes. | Relocated in UXP1-008 |
+| StatePanel usages / route `063` | Proof/demo/DB/implementation wording inside state titles and state details that described methodology instead of current state. | State Copy Manual | UI now shows current state, impact and next step only, including `Profile saved`, `Family edit state`, `Extraction queued`, `Closure state` and `Read-only state reference`. | Relocated in UXP1-010 |
 
 ## Entry Template
 
@@ -124,12 +126,13 @@ Before a Phase 1 cleanup task is considered complete:
 - this document must not introduce product requirements, route eligibility, release authority, feature behavior or acceptance claims;
 - full route-smoke proof is deferred until the Phase 1 completion gate unless the active task explicitly overrides that instruction.
 
-Current UXP1-009 validation state:
+Current Phase 1 validation state:
 
 | Check | Result |
 | --- | --- |
 | Manual file exists at `docs/ux/ALPHAVEST_UI_MANUAL_RELOCATED_CONTENT.md` | PASS |
-| `UXP1-001` through `UXP1-008` have explicit coverage entries | PASS |
+| `UXP1-001` through `UXP1-010` have explicit coverage entries | PASS |
 | `UXP1-009` adds consolidation metadata without product authority | PASS |
-| Product UI changes in UXP1-009 | None |
-| Route scope or capability changes in UXP1-009 | None |
+| `UXP1-010` records StatePanel and route `063` state-copy relocation | PASS |
+| Product UI changes in UXP1-010 | State copy only |
+| Route scope or capability changes in UXP1-010 | None |

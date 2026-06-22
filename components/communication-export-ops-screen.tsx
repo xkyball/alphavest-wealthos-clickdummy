@@ -811,7 +811,7 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
           />
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             <StatePanel detail="No matching access changes for the saved filter." state="empty" title="Empty filter state" />
-            <StatePanel detail="Audit event rows are loading; sealed retention proof remains a separate gate." state="loading" title="Loading state" />
+            <StatePanel detail="Audit event rows are loading; retention review remains separate." state="loading" title="Loading state" />
             <StatePanel detail="Audit export is unavailable while the retention service is unreachable." state="error" title="Export error state" />
           </div>
       </UxDenseOperationsPanel>
@@ -1376,7 +1376,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
                 { label: "Classification", value: <Badge tone="red">Confidential</Badge> }
               ]}
             />
-            <StatePanel className="mt-5" detail="Preview does not approve the package. Approval, generation, download and share are separate controlled events." state="restricted" title="Step separation enforced" />
+            <StatePanel className="mt-5" detail="Preview is not approval. Generation, download and share remain separate." state="restricted" title="Approval still required" />
           </CardContent>
         </Card>
         <Card>
@@ -1912,7 +1912,7 @@ function StatesReferencePage({ title }: { title: string }) {
   return (
     <div>
       <PageLead description="Read-only internal reference for status chips, workflow badges and component states." icon={Table2} title={title} />
-      <StatePanel className="mb-5" detail="Reference only. State examples do not change workflow status or complete downstream gates." state="reference-only" title="Read-only state reference" />
+      <StatePanel className="mb-5" detail="Reference only. Examples do not change workflow status." state="reference-only" title="Read-only state reference" />
       <div className="grid gap-5 xl:grid-cols-3">
         <Card>
           <CardHeader>
@@ -1941,7 +1941,7 @@ function StatesReferencePage({ title }: { title: string }) {
           <CardContent>
             <div className="grid gap-3">
               <StatePanel detail="Default reference styling for neutral content." state="empty" title="Default" />
-              <StatePanel detail="Loading variants keep table and panel geometry stable." state="loading" title="Loading" />
+              <StatePanel detail="Content is loading." state="loading" title="Loading" />
               <StatePanel detail="Restricted examples show blocked state only." state="restricted" title="Restricted" />
             </div>
           </CardContent>
@@ -2014,7 +2014,7 @@ function CommunicationExportOpsPageBody({ route, visualState }: { route: ScreenR
     case "063":
       return <StatesReferencePage title={route.title} />;
     default:
-      return <StatePanel detail="This Phase 13 route is registered but not available in the demo component." state="error" title="Unknown route" />;
+      return <StatePanel detail="This registered route is not available in this component." state="error" title="Unknown route" />;
   }
 }
 

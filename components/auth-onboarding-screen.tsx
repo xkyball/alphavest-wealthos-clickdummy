@@ -185,9 +185,9 @@ function SecurityPanel({ title = "Security and privacy" }: { title?: string }) {
           </div>
         ))}
         <StatePanel
-          detail="Important access steps create an audit event for later review."
+          detail="Access remains restricted until identity and role checks pass."
           state="restricted"
-          title="No unapproved advice reaches the client"
+          title="Access restricted"
         />
       </CardContent>
     </Card>
@@ -507,7 +507,7 @@ function InvitePage() {
                 </div>
               </div>
             ))}
-            <StatePanel detail="Expired and already-used invite states are shown before sensitive data is exposed." state="restricted" title="Invitation status checked" />
+            <StatePanel detail="Expired or already-used invitations cannot continue." state="restricted" title="Invitation unavailable" />
           </CardContent>
         </Card>
       </div>

@@ -1144,7 +1144,7 @@ function ClientProfilePageContent({ title }: { title: string }) {
           subtitle="Maintain the family profile, goals and governance preferences that guide our partnership."
           title={title}
         />
-        <StatePanel detail={message} state={issues.length > 0 || loadState === "error" ? "restricted" : "success"} title={loadState === "loading" ? "Loading DB profile" : issues.length > 0 ? "Profile validation failed" : "DB-backed profile"} />
+        <StatePanel detail={message} state={issues.length > 0 || loadState === "error" ? "restricted" : "success"} title={loadState === "loading" ? "Loading profile" : issues.length > 0 ? "Profile validation failed" : "Profile saved"} />
         {issues.length > 0 ? <SafeClientBanner>{issues.join(", ")}</SafeClientBanner> : null}
         <div className="grid gap-5 xl:grid-cols-[1.1fr_0.75fr_0.72fr]">
           <Card>
@@ -1382,7 +1382,7 @@ function FamilyMembersPageContent({ title }: { title: string }) {
                 <FieldBox label="Sensitivity" value={selected?.sensitivity ?? "n/a"} />
                 <FieldBox label="Status" value={selected?.status ?? "n/a"} />
               </div>
-              <StatePanel detail={formIssues.length > 0 ? formIssues.join(", ") : formMessage} state={formIssues.length > 0 ? "restricted" : "success"} title="DB-backed family edit" />
+              <StatePanel detail={formIssues.length > 0 ? formIssues.join(", ") : formMessage} state={formIssues.length > 0 ? "restricted" : "success"} title="Family edit state" />
               <div className="flex justify-end gap-3">
                 <button className={secondaryButtonClass} onClick={() => selected && setFamilyForm({ displayName: selected.name, relationshipType: selected.relationship, taxResidency: selected.taxResidency })} type="button">Reset</button>
                 <button className={primaryButtonClass} data-testid="j09-save-family-changes" disabled={!selected || savingFamilyMember} onClick={() => { void saveSelectedMember(); }} type="button">Save Changes</button>
@@ -1844,7 +1844,7 @@ function CreateEntityPageContent({ title }: { title: string }) {
                   <span className="text-alphavest-muted">{item}</span>
                 </div>
               ))}
-              <StatePanel detail={issues.length > 0 ? issues.join(", ") : message} state={issues.length > 0 ? "restricted" : "success"} title="DB-backed wizard lifecycle" />
+              <StatePanel detail={issues.length > 0 ? issues.join(", ") : message} state={issues.length > 0 ? "restricted" : "success"} title="Wizard state" />
             </CardContent>
           </Card>
         </div>
@@ -2255,7 +2255,7 @@ function DocumentUploadForm() {
             <span className="text-alphavest-muted">Notes</span>
             <textarea className="min-h-20 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 py-2 text-alphavest-ivory outline-none focus:border-alphavest-gold" maxLength={500} onChange={(event) => setNotes(event.target.value)} placeholder="Add any notes about this document..." value={notes} />
           </label>
-          <StatePanel detail="Your document will be scanned, validated and queued for human extraction review." state="loading" title="Extraction Pipeline" />
+          <StatePanel detail="The document is queued for validation and human extraction review." state="loading" title="Extraction queued" />
           <button className={primaryButtonClass + " w-full"} data-testid="real-upload-document" disabled={uploadState === "uploading"} onClick={() => { void submitUpload(); }} type="button"><Upload aria-hidden="true" className="size-4" />Upload for review</button>
           <button className={secondaryButtonClass + " w-full"} data-testid="j04-upload-document" onClick={() => { void runScreencastDemoAction("j04.uploadDocument", "/documents/review-queue"); }} type="button">Open extraction review</button>
         </CardContent>
@@ -2286,7 +2286,7 @@ function DocumentUploadForm() {
               <p className="mt-2 text-xs text-alphavest-muted">Extraction: {latestDocument.extractionStatus ?? "pending"}</p>
             </div>
           ) : (
-            <StatePanel detail={loadState === "error" ? "Uploads could not be loaded." : "No persisted uploads yet."} state={loadState === "error" ? "error" : "empty"} title="Recent Uploads" />
+            <StatePanel detail={loadState === "error" ? "Uploads could not be loaded." : "No uploads yet."} state={loadState === "error" ? "error" : "empty"} title="Recent Uploads" />
           )}
           <Link className={secondaryButtonClass + " w-full"} href="/documents">View All Documents</Link>
         </CardContent>
@@ -2374,7 +2374,7 @@ function ExtractionReviewActionPanel() {
           </div>
         ) : (
           <StatePanel
-            detail={loadState === "loading" ? "Fetching uploaded documents." : "Upload a document before running review or sufficiency acceptance."}
+            detail={loadState === "loading" ? "Fetching uploaded documents." : "Upload a document before review can continue."}
             state={loadState === "error" ? "error" : "empty"}
             title={loadState === "error" ? "Uploads unavailable" : "No upload selected"}
           />

@@ -1117,7 +1117,7 @@ test.describe("UX-CTA disabled blocked recovery copy", () => {
       expected: [
         "Share needs evidence sufficiency, release and payload checks first.",
         "Revocation needs a scoped access decision and persisted audit event.",
-        "New versions need evidence review; versioning cannot mark evidence sufficient.",
+        "New versions need evidence review; versioning cannot complete sufficiency review.",
       ],
     },
     {
@@ -1311,7 +1311,13 @@ test.describe("locked route workset preservation", () => {
 
       await expect(page.getByTestId("ux-page-workbench-triad"), `${route.pageId} workbench triad`).toHaveCount(0);
       await expect(page.getByTestId("ux-page-detail-standard"), `${route.pageId} detail standard`).toHaveCount(0);
-      await expect(page.getByRole("button", { name: "Product action locked" }), `${route.pageId} locked action`).toBeDisabled();
+      const expectedActionLabel =
+        p1ProtectedPageIds.has(route.pageId)
+          ? "Deferred"
+          : referenceProtectedPageIds.has(route.pageId)
+            ? "Reference only"
+            : "Held";
+      await expect(page.getByRole("button", { name: expectedActionLabel }), `${route.pageId} locked action`).toBeDisabled();
     }
   });
 
@@ -1320,17 +1326,17 @@ test.describe("locked route workset preservation", () => {
       {
         path: "/service-blueprint",
         guardHeading: "Reference Workspace",
-        productText: "not treated as product implementation"
+        productText: "Read-only internal reference."
       },
       {
         path: "/roadmap",
         guardHeading: "Reference Workspace",
-        productText: "not treated as product implementation"
+        productText: "Read-only internal reference."
       },
       {
         path: "/states",
         guardHeading: "Reference Workspace",
-        productText: "not treated as product implementation"
+        productText: "Read-only internal reference."
       }
     ];
 
