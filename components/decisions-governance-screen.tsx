@@ -1449,6 +1449,22 @@ const evidenceColumns: Array<DataTableColumn<(typeof evidenceRows)[number]>> = [
 
 function EvidenceVaultPage({ title, visualState }: { title: string; visualState?: VisualState }) {
   const [drawerOpen, setDrawerOpen] = useState(visualState === "drawer");
+  const [drawerStatus, setDrawerStatus] = useState<"closed" | "loading" | "ready">(visualState === "drawer" ? "ready" : "closed");
+  const drawerLifecycleStatus = drawerStatus === "ready" ? "success" : drawerStatus;
+  const drawerValidation = drawerOpen ? "blocked-client-visibility-gates" : "closed";
+
+  function openEvidenceDrawer() {
+    setDrawerOpen(true);
+    setDrawerStatus("loading");
+    window.setTimeout(() => {
+      setDrawerStatus((currentStatus) => currentStatus === "loading" ? "ready" : currentStatus);
+    }, 120);
+  }
+
+  function closeEvidenceDrawer() {
+    setDrawerOpen(false);
+    setDrawerStatus("closed");
+  }
 
   return (
     <Phase12Shell activePageId="046">
@@ -1456,7 +1472,18 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
       <div className={cn("mx-auto max-w-[104rem] space-y-5", drawerOpen ? "pr-0 xl:pr-[23rem]" : "")}>
         <UxHubPage pageId="046" />
         <PageHeading
-          action={<button className={primaryButtonClass} onClick={() => setDrawerOpen(true)} type="button">Open Selected Evidence</button>}
+          action={
+            <button
+              className={primaryButtonClass}
+              data-testid="j03-open-evidence-drawer"
+              data-ux-lifecycle-result="opens-evidence-drawer"
+              data-ux-lifecycle-trigger="evidence-drawer"
+              onClick={openEvidenceDrawer}
+              type="button"
+            >
+              Open Selected Evidence
+            </button>
+          }
           badge={<ShieldCheck aria-hidden="true" className="size-5 text-alphavest-gold" />}
           subtitle="Secure, role-based repository for client evidence and attestations."
           title={title}
@@ -1484,13 +1511,55 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
       </div>
       <Drawer
         description="Verified form assessment."
-        footer={<span className={primaryButtonClass + " w-full"} data-ux-affordance="static-control-note" data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />Download held</span>}
-        onClose={() => setDrawerOpen(false)}
+        footer={
+          <div className="grid gap-3 sm:grid-cols-2">
+            <button className={secondaryButtonClass} onClick={closeEvidenceDrawer} type="button">Cancel</button>
+            <button
+              className={primaryButtonClass}
+              data-testid="j03-evidence-download-blocked"
+              data-ux-lifecycle-result="blocked-client-visibility-gates"
+              disabled
+              title="Download remains blocked until evidence sufficiency, release and export/share gates pass."
+              type="button"
+            >
+              <Download aria-hidden="true" className="size-4" />Download blocked
+            </button>
+          </div>
+        }
+        onClose={closeEvidenceDrawer}
         open={drawerOpen}
         title="Risk Tolerance Questionnaire"
       >
-        <div className="space-y-5">
-          <StatePanel detail="Internal and advisor visibility only. Not shared with client." state="restricted" title="Controlled visibility" />
+        <div
+          className="space-y-5"
+          data-testid="uxp3-evidence-drawer-lifecycle"
+          data-ux-lifecycle-status={drawerLifecycleStatus}
+          data-ux-lifecycle-submit="blocked-no-authorized-download-action"
+          data-ux-lifecycle-validation={drawerValidation}
+          data-ux-no-overclaim="true"
+        >
+          {drawerStatus === "loading" ? (
+            <StatePanel
+              detail="Loading the selected evidence context. Download, share and client visibility controls remain blocked while context is checked."
+              state="loading"
+              testId="j03-evidence-loading-state"
+              title="Evidence context loading"
+            />
+          ) : null}
+          {drawerStatus === "ready" ? (
+            <StatePanel
+              detail="Evidence context is loaded for review only. This does not prove evidence sufficiency, release content, export/download/share approval or client acceptance."
+              state="success"
+              testId="j03-evidence-success-state"
+              title="Evidence context ready"
+            />
+          ) : null}
+          <StatePanel
+            detail="Internal and advisor visibility only. Download and share remain blocked until evidence sufficiency, compliance release, export approval and client visibility gates pass."
+            state="blocked"
+            testId="j03-evidence-blocked-state"
+            title="Controlled visibility"
+          />
           <UxSecondaryContextTabs
             safetyNote="Drawer tabs expose evidence context only; they do not prove evidence sufficiency or compliance acceptance."
             tabs={[
