@@ -6734,3 +6734,55 @@ Source of truth:
 
 - Auth/onboarding support routes keep their support-density strip contract and are not forced into the app-shell Product Guidance surface.
 - Lint still reports 27 existing unused-code warnings outside this slice; there are no lint errors.
+
+## UX-CTA-001 QA Addendum
+
+Date: 2026-06-22
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+- `docs/v3/ALPHAVEST_SURFACE_COPY_HANDBOOK_RULE.md`
+
+| Area | QA result | Evidence |
+| --- | --- | --- |
+| One primary page CTA | Passed | Route-smoke verifies eligible route guidance maps to one guarded primary CTA. |
+| Blocked reason and recovery | Passed | Six priority flow UI checks assert blocked reason and recovery action are visible. |
+| Safety overclaim prevention | Passed | CTA labels are tested against evidence-sufficiency, release, export/download and admin-override overclaim wording. |
+| Protected route treatment | Passed | P1, Reference and Hold routes stay locked and receive no productive primary CTA. |
+| No visible explanatory copy | Passed | Guidance rejects route-policy, workflow-step, proof and complexity-reduction UI language. |
+| Route Policy preservation | Passed | No route IDs, paths, worksets or route scopes changed. |
+| P0 safety | Passed | Workflow API, workflow-gate, file-export and permission tests passed after the CTA change. |
+| Screenshot proof | Passed | Six screenshots captured under `artifacts/ux-page-to-policy/UX-CTA-001/`. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | `tsc --noEmit` completed successfully. |
+| `pnpm lint` | Passed | 27 existing warnings, 0 errors after sequential rerun. |
+| `PLAYWRIGHT_PORT=3461 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-CTA one-primary"` | Passed | 7 tests. |
+| `PLAYWRIGHT_PORT=3463 pnpm test:workflow-api` | Passed | 15 tests. |
+| `PLAYWRIGHT_PORT=3466 pnpm test:workflow-gate` | Passed | 13 tests after sequential rerun. |
+| `PLAYWRIGHT_PORT=3467 pnpm test:file-export` | Passed | 14 tests after sequential rerun. |
+| `PLAYWRIGHT_PORT=3468 pnpm test:permissions` | Passed | 8 tests after sequential rerun. |
+
+### Screenshot Proof
+
+- `artifacts/ux-page-to-policy/UX-CTA-001/2026-06-22-UX-CTA-001-evidence-upload.png`
+- `artifacts/ux-page-to-policy/UX-CTA-001/2026-06-22-UX-CTA-001-advisory-workbench.png`
+- `artifacts/ux-page-to-policy/UX-CTA-001/2026-06-22-UX-CTA-001-advisor-approval.png`
+- `artifacts/ux-page-to-policy/UX-CTA-001/2026-06-22-UX-CTA-001-compliance-queue.png`
+- `artifacts/ux-page-to-policy/UX-CTA-001/2026-06-22-UX-CTA-001-governance-users.png`
+- `artifacts/ux-page-to-policy/UX-CTA-001/2026-06-22-UX-CTA-001-export-preview.png`
+
+### Safety Proof
+
+- Page-state CTAs are navigation guidance only and do not mutate workflow state.
+- The surface does not claim compliance release, evidence sufficiency, export approval/download/share, audit persistence, advice visibility or RBAC payload authority.
+- Admin/governance routes retain non-bypass wording and existing permission tests passed.
+
+### QA Limits
+
+- This slice standardizes the global page-state CTA contract. Later `UX-CTA-002` through `UX-CTA-007` still need route-specific chain refinements.
+- Lint still reports 27 existing unused-code warnings outside this slice; there are no lint errors.

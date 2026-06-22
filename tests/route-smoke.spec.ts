@@ -12,6 +12,7 @@ import {
 import { uxContentHierarchyForPageType } from "../lib/ux-content-hierarchy";
 import { uxDensityForPageId, uxDensityTierContracts } from "../lib/ux-density";
 import { uxComplexity005SupportPageIds } from "../lib/ux-support-density";
+import { productGuidanceForRoute } from "../lib/product-guidance";
 import {
   groupedImplementationScreenRoutes,
   routeImplementationAccessDecision,
@@ -620,6 +621,66 @@ test.describe("UX-DENSITY above-the-fold route job", () => {
         const box = await locator.first().boundingBox();
         expect(box?.y, `${route.pageId} above-fold contract`).toBeLessThan(420);
       }
+    });
+  }
+});
+
+test.describe("UX-CTA one-primary page-state pattern", () => {
+  const authAndOnboardingSupportPageIds = new Set(["001", "002", "003", "004", "005", "006"]);
+  const eligibleGuidanceRoutes = screenRoutes.filter((route) => {
+    const scope = routeScopeForPageId(route.pageId);
+    return (scope === "MVP" || scope === "MVP_SUPPORT") && !authAndOnboardingSupportPageIds.has(route.pageId);
+  });
+
+  test("maps eligible routes to exactly one guarded primary CTA and protected routes to locked state", () => {
+    for (const route of eligibleGuidanceRoutes) {
+      const guidance = productGuidanceForRoute(route);
+
+      expect(guidance.ctaState.state, `${route.pageId} CTA state`).toBe("guarded");
+      expect(guidance.ctaState.primaryAction, `${route.pageId} primary action`).toBeDefined();
+      expect(guidance.ctaState.blockedReason, `${route.pageId} blocked reason`).toMatch(
+        /blocked|bypass|client-safe|does not|internal|separate|sufficiency|release|gates/i,
+      );
+      expect(guidance.ctaState.primaryAction?.label, `${route.pageId} primary label`).not.toMatch(
+        /approve export|download ready|evidence sufficient|release to client|admin override/i,
+      );
+    }
+
+    for (const route of screenRoutes.filter((candidate) => !eligibleGuidanceRoutes.includes(candidate))) {
+      const scope = routeScopeForPageId(route.pageId);
+      if (scope === "P1_AFTER_MVP" || scope === "REFERENCE_ONLY" || scope === "HOLD_PENDING_DECISION") {
+        const guidance = productGuidanceForRoute(route);
+        expect(guidance.ctaState.state, `${route.pageId} locked CTA state`).toBe("locked");
+        expect(guidance.ctaState.primaryAction, `${route.pageId} no productive primary`).toBeUndefined();
+      }
+    }
+  });
+
+  const priorityCtaRoutes = [
+    "/documents/upload",
+    "/workbench",
+    "/advisor-approval",
+    "/compliance",
+    "/governance/users",
+    "/export/demo/preview",
+  ];
+
+  for (const path of priorityCtaRoutes) {
+    test(`${path} renders one primary page CTA with blocked reason and recovery`, async ({ page }) => {
+      await page.setViewportSize({ height: 1000, width: 1440 });
+      await authenticateRouteSmokePage(page);
+      await page.goto(path);
+
+      const guidance = page.getByTestId("product-guidance").first();
+      const actions = guidance.getByTestId("ux-nav-next-actions");
+      await expect(actions).toBeVisible();
+      await expect(actions).toHaveAttribute("data-ux-cta-state", "guarded");
+      await expect(actions.locator('[data-ux-primary-cta="true"]')).toHaveCount(1);
+      await expect(actions.locator('[data-ux-secondary-cta="true"]').first()).toBeVisible();
+      await expect(actions.getByTestId("ux-cta-blocked-reason")).toBeVisible();
+      await expect(actions.getByTestId("ux-cta-recovery-action")).toBeVisible();
+      await expect(actions).not.toContainText(/approve export|download ready|evidence sufficient|release to client|admin override/i);
+      await expect(guidance).not.toContainText(/route policy|Workflow step|gate-completion proof|visual proof|complexity reduction/i);
     });
   }
 });

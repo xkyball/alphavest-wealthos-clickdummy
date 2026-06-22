@@ -112,6 +112,123 @@ No-P1/Hold/Reference-elevation confirmation: protected contracts remain non-prod
 
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and tests.
 
+## Completed Slice: UX-CTA-001
+
+Task: `UX-CTA-001` - Implement one-primary-CTA page-state pattern.
+
+Mission Card: formalize one guarded primary page CTA for every eligible MVP/MVP_SUPPORT route state while preserving upload, advice, compliance, export, audit, RBAC and admin non-bypass gates.
+
+Evidence Intake:
+- Task-master rows `UX-CTA-001`, source Decision Brief section 13, Global CTA policy and Feedback/Validation/Error Contract.
+- Route Policy Matrix `NAV-POL-004`, CTA vocabulary and all MVP/MVP_SUPPORT eligible route rows.
+- Current implementation finding: shared `ProductGuidancePanel` already owns above-fold page job/status/next step, while `UxCtaCluster` handles local action clusters on touched priority pages.
+
+Problem Architecture: users need one obvious page-level next action, but the UI must not turn a visible button into proof of evidence sufficiency, release, export approval, audit persistence or permission.
+
+Double Diamond:
+- Discover: page guidance had one primary link but no explicit CTA state, blocked reason or recovery contract.
+- Define: keep one page-state primary CTA in shared guidance and treat local page clusters as contextual action groups.
+- Develop: added `ProductGuidanceCtaState`, blocked reason/recovery derivation and testable primary/secondary CTA markers.
+- Deliver: route-smoke assertions and six screenshot proofs across priority CTA flows.
+
+Psycho-Logic + Map/Model: the user pressure is deciding what to do next without over-reading safety state. The map trap is mistaking CTA visibility for authority; the safe design move is one primary action plus concise guard and recovery copy.
+
+Reframing Matrix:
+- Page-as-button-wall: rejected.
+- Page-as-job: kept through page job, status and one primary next step.
+- Page-as-gate: constrained by blocked reason and recovery.
+- Page-as-handoff: kept for evidence, advisor, compliance, governance and export transitions without changing behavior.
+
+TRIZ: improve decisiveness while preserving hard gates by separating page-level primary navigation from local contextual actions.
+
+SIT Closed World: reused route registry, route policy, `ProductGuidancePanel`, `PageHeader` and existing route-smoke harness; no new routes, product scope engine, API, schema, screen or image asset.
+
+Zwicky + CCA:
+- Variant A: refactor every page-local button. Rejected for blast radius.
+- Variant B: add CTA state only to Product Guidance. Kept as the global page-state layer.
+- Variant C: replace `UxCtaCluster`. Rejected because previous complexity proof already uses it for local clusters.
+
+SCAMPER: substituted generic next-step copy with guarded state, combined primary CTA and recovery into one area, eliminated visible demo-explanation copy in guidance and rearranged CTA markers for testability.
+
+Harvard / BATNA: objective criteria are the task card, `NAV-POL-004` and P0 safety obligations. BATNA remains stop/report if a task requires behavior changes or route elevation.
+
+MESOs:
+- Option A: global CTA state in product guidance plus PageHeader compatibility. Chosen.
+- Option B: broad local button rewrite. Deferred to route-specific later CTA tasks.
+
+Measurement Plan:
+- `pnpm typecheck`
+- `pnpm lint`
+- `PLAYWRIGHT_PORT=3461 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-CTA one-primary"`
+- `PLAYWRIGHT_PORT=3462 pnpm test:workflow-gate` rerun sequentially as `PLAYWRIGHT_PORT=3466`
+- `PLAYWRIGHT_PORT=3463 pnpm test:workflow-api`
+- `PLAYWRIGHT_PORT=3464 pnpm test:file-export` rerun sequentially as `PLAYWRIGHT_PORT=3467`
+- `PLAYWRIGHT_PORT=3465 pnpm test:permissions` rerun sequentially as `PLAYWRIGHT_PORT=3468`
+- Screenshot proof under `artifacts/ux-page-to-policy/UX-CTA-001/`
+
+Ethics/Fairness: no coercive action hierarchy, no hidden bypass, no success overclaim and no client-visible unapproved advice.
+
+Adversarial QA: a primary CTA could imply downstream success. Tests reject export/download/sufficiency/release/admin-overclaim labels and verify blocked reason plus recovery in six priority flows.
+
+Learning Log: later `UX-CTA-002` through `UX-CTA-007` can refine specific journey chains while keeping this global page-state marker contract.
+
+Route-policy rows cited:
+- `NAV-POL-004` page job/status/one primary next step.
+- Evidence: `027-030`, `046`, `047`.
+- Advisory/approval/compliance: `033-041`.
+- Governance/admin: `048-051`.
+- Export: `054-058`.
+- Protected register: P1 `052`, `053`, `059`, `060`, `068`; Reference `061-063`; Hold `064-067`, `069-071`.
+
+Changed files:
+- `lib/product-guidance.ts`
+- `components/product-guidance-panel.tsx`
+- `components/page-header.tsx`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-CTA-001/2026-06-22-UX-CTA-001-evidence-upload.png`
+- `artifacts/ux-page-to-policy/UX-CTA-001/2026-06-22-UX-CTA-001-advisory-workbench.png`
+- `artifacts/ux-page-to-policy/UX-CTA-001/2026-06-22-UX-CTA-001-advisor-approval.png`
+- `artifacts/ux-page-to-policy/UX-CTA-001/2026-06-22-UX-CTA-001-compliance-queue.png`
+- `artifacts/ux-page-to-policy/UX-CTA-001/2026-06-22-UX-CTA-001-governance-users.png`
+- `artifacts/ux-page-to-policy/UX-CTA-001/2026-06-22-UX-CTA-001-export-preview.png`
+
+Validation:
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with 27 existing warnings, 0 errors after sequential rerun.
+- `PLAYWRIGHT_PORT=3461 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-CTA one-primary"` - passed, 7 tests.
+- `PLAYWRIGHT_PORT=3463 pnpm test:workflow-api` - passed, 15 tests.
+- `PLAYWRIGHT_PORT=3466 pnpm test:workflow-gate` - passed, 13 tests after sequential rerun.
+- `PLAYWRIGHT_PORT=3467 pnpm test:file-export` - passed, 14 tests after sequential rerun.
+- `PLAYWRIGHT_PORT=3468 pnpm test:permissions` - passed, 8 tests after sequential rerun.
+
+Screenshot/proof:
+- `artifacts/ux-page-to-policy/UX-CTA-001/2026-06-22-UX-CTA-001-evidence-upload.png`
+- `artifacts/ux-page-to-policy/UX-CTA-001/2026-06-22-UX-CTA-001-advisory-workbench.png`
+- `artifacts/ux-page-to-policy/UX-CTA-001/2026-06-22-UX-CTA-001-advisor-approval.png`
+- `artifacts/ux-page-to-policy/UX-CTA-001/2026-06-22-UX-CTA-001-compliance-queue.png`
+- `artifacts/ux-page-to-policy/UX-CTA-001/2026-06-22-UX-CTA-001-governance-users.png`
+- `artifacts/ux-page-to-policy/UX-CTA-001/2026-06-22-UX-CTA-001-export-preview.png`
+
+Positive acceptance:
+- Eligible productive routes map to exactly one guarded page-state primary CTA.
+- Six priority flows show a primary CTA, secondary context, blocked reason and recovery link.
+
+Negative/P0 acceptance:
+- Protected P1/Reference/Hold routes remain locked with no productive primary CTA.
+- CTA labels and tests do not claim evidence sufficiency, client release, export approval/download readiness or admin override.
+- Existing P0 workflow, export and permission tests passed.
+
+No-generation confirmation: no screen generation, state-screen generation, image generation or generated product assets.
+
+No-route-reclassification confirmation: route IDs, paths, worksets and route scopes remain unchanged.
+
+No-P1/Hold/Reference-elevation confirmation: protected routes remain non-productive and locked.
+
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
+
 ## Completed Slice: UX-DENSITY-005
 
 Task: `UX-DENSITY-005` - Apply D4 Focused Detail to object decision routes.

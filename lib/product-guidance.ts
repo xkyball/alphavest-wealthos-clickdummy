@@ -8,7 +8,7 @@ import {
   type RouteScopeLabel,
   type ScreenRoute,
 } from "@/lib/route-registry";
-import { uxFlowStepsForPageId, uxRoutePolicyForRoute, type UxFlowStep } from "@/lib/ux-route-policy";
+import { uxFlowStepsForPageId, uxRoutePolicyForRoute, type UxFlowStep, type UxWorkspaceKey } from "@/lib/ux-route-policy";
 import type { UxDensityTier } from "@/lib/ux-route-policy";
 
 export type ProductGuidanceLink = {
@@ -18,6 +18,7 @@ export type ProductGuidanceLink = {
 
 export type ProductGuidance = {
   area: string;
+  ctaState: ProductGuidanceCtaState;
   densityTier?: UxDensityTier;
   gateHint: string;
   nextStep?: ProductGuidanceLink;
@@ -31,6 +32,13 @@ export type ProductGuidance = {
   tier: RouteScopeLabel | "ROOT";
   tierLabel: string;
   workbenchStructure?: ProductGuidanceWorkbenchStructure;
+};
+
+export type ProductGuidanceCtaState = {
+  blockedReason?: string;
+  primaryAction?: ProductGuidanceLink;
+  recovery?: ProductGuidanceLink;
+  state: "ready" | "guarded" | "locked";
 };
 
 export type ProductGuidanceWorkbenchStructure = {
@@ -296,6 +304,51 @@ function fallbackPrimaryActionForRoute(route: ScreenRoute, tier: RouteScopeLabel
   };
 }
 
+function ctaBlockedReasonForWorkspace(workspace: UxWorkspaceKey) {
+  if (workspace === "client_workspace") return "Only released client-safe content may be visible here.";
+  if (workspace === "advisory_workbench") return "Draft work stays internal until advisor review and compliance release pass.";
+  if (workspace === "approvals") return "Advisor approval does not release work to the client.";
+  if (workspace === "compliance") return "Client visibility stays blocked until compliance release passes.";
+  if (workspace === "decisions") return "Decision records require released, evidence-backed context before client use.";
+  if (workspace === "evidence") return "Upload and review do not prove evidence sufficiency.";
+  if (workspace === "export") return "Preview, approval, download and share stay separate.";
+  if (workspace === "governance") return "Admin access cannot bypass evidence, release, audit or export gates.";
+  if (workspace === "setup") return "Setup changes do not bypass downstream gates.";
+
+  return "No productive action is available in the current release.";
+}
+
+function recoveryActionForCta(
+  primaryAction: ProductGuidanceLink | undefined,
+  nextStep: ProductGuidanceLink | undefined,
+  relatedRoutes: ProductGuidanceLink[],
+) {
+  if (nextStep && nextStep.href !== primaryAction?.href) return nextStep;
+  return relatedRoutes.find((route) => route.href !== primaryAction?.href);
+}
+
+function ctaStateForRoute(
+  tier: RouteScopeLabel,
+  workspace: UxWorkspaceKey,
+  primaryAction: ProductGuidanceLink | undefined,
+  nextStep: ProductGuidanceLink | undefined,
+  relatedRoutes: ProductGuidanceLink[],
+): ProductGuidanceCtaState {
+  if (tier !== "MVP" && tier !== "MVP_SUPPORT") {
+    return {
+      blockedReason: ctaBlockedReasonForWorkspace(workspace),
+      state: "locked",
+    };
+  }
+
+  return {
+    blockedReason: ctaBlockedReasonForWorkspace(workspace),
+    primaryAction,
+    recovery: recoveryActionForCta(primaryAction, nextStep, relatedRoutes),
+    state: primaryAction ? "guarded" : "locked",
+  };
+}
+
 export function productGuidanceForRoute(route: ScreenRoute): ProductGuidance {
   const tier = routeScopeForPageId(route.pageId);
   const policy = uxRoutePolicyForRoute(route);
@@ -308,15 +361,18 @@ export function productGuidanceForRoute(route: ScreenRoute): ProductGuidance {
     shortTitle: override.shortTitle ?? route.title,
     tierLabel: guidanceTierLabels[tier],
   };
+  const relatedRoutes = override.relatedRoutes ?? [];
+  const nextStep = override.nextStep;
 
   return {
     area: baseGuidance.area,
+    ctaState: ctaStateForRoute(tier, policy.workspace, baseGuidance.primaryAction, nextStep, relatedRoutes),
     densityTier: policy.densityTier,
     gateHint: baseGuidance.gateHint,
-    nextStep: override.nextStep,
+    nextStep,
     primaryAction: baseGuidance.primaryAction,
     purpose: override.purpose ?? route.purpose,
-    relatedRoutes: override.relatedRoutes ?? [],
+    relatedRoutes,
     routePolicyLabels: policy.routePolicyLabels,
     routeId: route.pageId,
     shortTitle: baseGuidance.shortTitle,
@@ -336,6 +392,12 @@ export function productGuidanceForPathname(pathname: string): ProductGuidance {
 
   return {
     area: "Design system",
+    ctaState: {
+      blockedReason: "Shared components do not prove release, evidence or export state.",
+      primaryAction: linkForPageId("019", "Open client portal"),
+      recovery: linkForPageId("038", "Open compliance queue"),
+      state: "guarded",
+    },
     gateHint: "Shared UI primitives support controlled workflow screens; they are not release proof by themselves.",
     primaryAction: linkForPageId("019", "Open client portal"),
     purpose: "Inspect the shared component language used by the AlphaVest workflow implementation.",

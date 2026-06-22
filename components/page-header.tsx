@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, LockKeyhole } from "lucide-react";
+import { ArrowRight, LockKeyhole, RotateCcw } from "lucide-react";
 import { StatusChip, type StatusChipStatus } from "@/components/ui/status-chip";
 import { WizardStepper, type WizardStep } from "@/components/ui/wizard-stepper";
 import { cn } from "@/lib/cn";
@@ -15,6 +15,7 @@ type PageHeaderProps = {
   blockedReason?: string;
   eyebrow?: string;
   primaryAction?: PageHeaderAction;
+  recoveryAction?: PageHeaderAction;
   secondaryActions?: PageHeaderAction[];
   status?: StatusChipStatus;
   statusLabel?: string;
@@ -23,7 +24,7 @@ type PageHeaderProps = {
   description: string;
 };
 
-function HeaderAction({ action, primary = false }: { action: PageHeaderAction; primary?: boolean }) {
+function HeaderAction({ action, primary = false, recovery = false }: { action: PageHeaderAction; primary?: boolean; recovery?: boolean }) {
   const className = cn(
     "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold transition",
     primary
@@ -34,18 +35,34 @@ function HeaderAction({ action, primary = false }: { action: PageHeaderAction; p
 
   if (action.disabledReason || !action.href) {
     return (
-      <button className={className} disabled={Boolean(action.disabledReason)} onClick={action.onClick} type="button">
+      <button
+        className={className}
+        data-ux-cta-kind={primary ? "primary" : recovery ? "recovery" : "secondary"}
+        data-ux-primary-cta={primary ? "true" : undefined}
+        data-ux-secondary-cta={!primary ? "true" : undefined}
+        disabled={Boolean(action.disabledReason)}
+        onClick={action.onClick}
+        type="button"
+      >
         {action.disabledReason ? <LockKeyhole aria-hidden="true" className="size-4" /> : null}
         {action.label}
         {primary && !action.disabledReason ? <ArrowRight aria-hidden="true" className="size-4" /> : null}
+        {recovery ? <RotateCcw aria-hidden="true" className="size-4" /> : null}
       </button>
     );
   }
 
   return (
-    <Link className={className} href={action.href}>
+    <Link
+      className={className}
+      data-ux-cta-kind={primary ? "primary" : recovery ? "recovery" : "secondary"}
+      data-ux-primary-cta={primary ? "true" : undefined}
+      data-ux-secondary-cta={!primary ? "true" : undefined}
+      href={action.href}
+    >
       {action.label}
       {primary ? <ArrowRight aria-hidden="true" className="size-4" /> : null}
+      {recovery ? <RotateCcw aria-hidden="true" className="size-4" /> : null}
     </Link>
   );
 }
@@ -54,6 +71,7 @@ export function PageHeader({
   blockedReason,
   eyebrow,
   primaryAction,
+  recoveryAction,
   secondaryActions = [],
   status = "PENDING",
   statusLabel,
@@ -88,7 +106,14 @@ export function PageHeader({
             </div>
           ) : null}
           {blockedReason ? (
-            <p className="max-w-sm text-left text-xs leading-5 text-alphavest-subtle lg:text-right">{blockedReason}</p>
+            <div className="max-w-sm text-left text-xs leading-5 text-alphavest-subtle lg:text-right" data-testid="page-header-cta-blocked-reason">
+              <p>{blockedReason}</p>
+              {recoveryAction ? (
+                <div className="mt-2 flex justify-start lg:justify-end">
+                  <HeaderAction action={recoveryAction} recovery />
+                </div>
+              ) : null}
+            </div>
           ) : null}
         </div>
       </div>

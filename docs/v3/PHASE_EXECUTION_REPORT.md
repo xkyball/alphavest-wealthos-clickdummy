@@ -8935,3 +8935,63 @@ No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route was 
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
 
 Exit Gate Decision: `UX_DENSITY_006_COMPLETED_WITH_ABOVE_FOLD_NEXT_STEP_PROOF`
+
+## UX-CTA-001 Addendum - One Primary CTA Page-State Pattern
+
+Date: 2026-06-22
+
+Status: Completed and validated.
+
+Task IDs: `UX-CTA-001`
+
+Route-policy rows cited:
+- Route Policy Matrix `NAV-POL-004`.
+- CTA policy across all MVP/MVP_SUPPORT eligible route rows.
+- Protected register for P1, Reference and Hold routes.
+
+Completed `UX-CTA-001` by materializing a guarded page-state CTA contract in shared product guidance and making `PageHeader` compatible with the same primary/secondary/recovery markers. Eligible routes now derive one primary page CTA, blocked reason and recovery from route policy context. Protected P1/Reference/Hold routes remain locked and do not receive productive primary CTAs. Visible guidance copy was shortened to functional context and avoids task/proof/policy explanatory language.
+
+Changed files:
+- `lib/product-guidance.ts`
+- `components/product-guidance-panel.tsx`
+- `components/page-header.tsx`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+Proof artifacts:
+- `artifacts/ux-page-to-policy/UX-CTA-001/2026-06-22-UX-CTA-001-evidence-upload.png`
+- `artifacts/ux-page-to-policy/UX-CTA-001/2026-06-22-UX-CTA-001-advisory-workbench.png`
+- `artifacts/ux-page-to-policy/UX-CTA-001/2026-06-22-UX-CTA-001-advisor-approval.png`
+- `artifacts/ux-page-to-policy/UX-CTA-001/2026-06-22-UX-CTA-001-compliance-queue.png`
+- `artifacts/ux-page-to-policy/UX-CTA-001/2026-06-22-UX-CTA-001-governance-users.png`
+- `artifacts/ux-page-to-policy/UX-CTA-001/2026-06-22-UX-CTA-001-export-preview.png`
+
+Validation:
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with 27 existing warnings and 0 errors after sequential rerun.
+- `PLAYWRIGHT_PORT=3461 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-CTA one-primary"` - passed, 7 tests.
+- `PLAYWRIGHT_PORT=3463 pnpm test:workflow-api` - passed, 15 tests.
+- `PLAYWRIGHT_PORT=3466 pnpm test:workflow-gate` - passed, 13 tests after sequential rerun.
+- `PLAYWRIGHT_PORT=3467 pnpm test:file-export` - passed, 14 tests after sequential rerun.
+- `PLAYWRIGHT_PORT=3468 pnpm test:permissions` - passed, 8 tests after sequential rerun.
+
+Positive acceptance:
+- Productive MVP/MVP_SUPPORT app-shell routes have exactly one guarded primary page-state CTA.
+- Six priority flow screenshots show primary action, secondary context, blocked reason and recovery.
+
+Negative/P0 acceptance:
+- CTA tests reject labels that overclaim evidence sufficiency, client release, export approval/download readiness or admin override.
+- P1/Reference/Hold routes remain non-productive and do not receive a primary MVP CTA.
+- No workflow mutation, permission, export lifecycle, upload sufficiency, compliance release or audit behavior changed.
+
+No-generation confirmation: no screen generation, state-screen generation, image generation or generated product assets.
+
+No-route-reclassification confirmation: route IDs, paths, worksets and route scopes remain unchanged.
+
+No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route was elevated.
+
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
+
+Exit Gate Decision: `UX_CTA_001_COMPLETED_WITH_ONE_PRIMARY_PAGE_STATE_PROOF`

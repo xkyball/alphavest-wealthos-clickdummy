@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Compass, LockKeyhole, ShieldCheck } from "lucide-react";
+import { ArrowRight, Compass, LockKeyhole, RotateCcw, ShieldCheck } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useDemoSession } from "@/components/demo-session-provider";
 import { UxSupportDensityStrip } from "@/components/ux-support-density-strip";
@@ -18,7 +18,14 @@ const secondaryActionClass =
 
 function GuidanceLink({ link, variant }: { link: ProductGuidanceLink; variant: "primary" | "secondary" }) {
   return (
-    <Link className={variant === "primary" ? primaryActionClass : secondaryActionClass} data-testid={variant === "primary" ? "ux-nav-primary-next-step" : undefined} href={link.href}>
+    <Link
+      className={variant === "primary" ? primaryActionClass : secondaryActionClass}
+      data-testid={variant === "primary" ? "ux-nav-primary-next-step" : undefined}
+      data-ux-cta-kind={variant}
+      data-ux-primary-cta={variant === "primary" ? "true" : undefined}
+      data-ux-secondary-cta={variant === "secondary" ? "true" : undefined}
+      href={link.href}
+    >
       {link.label}
       <ArrowRight aria-hidden="true" className="size-4" />
     </Link>
@@ -30,7 +37,9 @@ export function ProductGuidancePanel() {
   const { session } = useDemoSession();
   const guidance = productGuidanceForPathname(pathname);
   const density = guidance.densityTier ? uxDensityTierContracts[guidance.densityTier] : null;
-  const hasActions = guidance.primaryAction || guidance.nextStep || guidance.relatedRoutes.length > 0;
+  const primaryAction = guidance.ctaState.primaryAction ?? guidance.primaryAction;
+  const recoveryAction = guidance.ctaState.recovery;
+  const hasActions = primaryAction || guidance.nextStep || guidance.relatedRoutes.length > 0 || guidance.ctaState.blockedReason;
 
   return (
     <section
@@ -85,9 +94,7 @@ export function ProductGuidancePanel() {
 
           <div className="mt-4 hidden flex-wrap items-center gap-2 text-xs text-alphavest-muted sm:flex">
             <ShieldCheck aria-hidden="true" className="size-4 text-alphavest-gold" />
-            <span>
-              Scenario context: {session.tenant.displayName} · {session.role.label}. This switcher is demo-local and does not claim production authentication.
-            </span>
+            <span>Context: {session.tenant.displayName} · {session.role.label}</span>
           </div>
           {guidance.steps.length > 0 ? (
             <div className="mt-4 rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/35 p-3" data-testid="ux-nav-flow-rail" data-ux-content-tier="secondary">
@@ -123,14 +130,33 @@ export function ProductGuidancePanel() {
         </div>
 
         {hasActions ? (
-          <div className="hidden min-w-0 flex-col gap-2 sm:flex xl:w-72" data-testid="ux-nav-next-actions" data-ux-content-tier="must-see">
-            {guidance.primaryAction ? <GuidanceLink link={guidance.primaryAction} variant="primary" /> : null}
-            {guidance.nextStep && guidance.nextStep.href !== guidance.primaryAction?.href ? (
+          <div
+            className="hidden min-w-0 flex-col gap-2 sm:flex xl:w-72"
+            data-testid="ux-nav-next-actions"
+            data-ux-content-tier="must-see"
+            data-ux-cta-state={guidance.ctaState.state}
+          >
+            {primaryAction ? <GuidanceLink link={primaryAction} variant="primary" /> : null}
+            {guidance.nextStep && guidance.nextStep.href !== primaryAction?.href ? (
               <GuidanceLink link={guidance.nextStep} variant="secondary" />
             ) : null}
             {guidance.relatedRoutes.slice(0, 2).map((link) => (
               <GuidanceLink key={`${link.href}:${link.label}`} link={link} variant="secondary" />
             ))}
+            {guidance.ctaState.blockedReason ? (
+              <div className="rounded-md border border-alphavest-gold/30 bg-alphavest-navy/30 px-3 py-2 text-xs leading-5 text-alphavest-gold-soft" data-testid="ux-cta-blocked-reason">
+                <div className="flex items-start gap-2">
+                  <LockKeyhole aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
+                  <span>{guidance.ctaState.blockedReason}</span>
+                </div>
+                {recoveryAction ? (
+                  <Link className="mt-2 inline-flex items-center gap-1 font-semibold text-alphavest-gold" data-testid="ux-cta-recovery-action" href={recoveryAction.href}>
+                    <RotateCcw aria-hidden="true" className="size-3.5" />
+                    {recoveryAction.label}
+                  </Link>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         ) : null}
       </div>
