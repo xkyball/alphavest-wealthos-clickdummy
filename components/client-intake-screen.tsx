@@ -743,6 +743,52 @@ type Phase5DetailSplitPanelProps = {
   taskId: string;
 };
 
+
+
+type Phase7ClientProjectionPanelProps = {
+  allowedFields: string;
+  failClosed: string;
+  forbiddenFields: string;
+  recovery: string;
+  routeLabel: string;
+  taskId: string;
+  visibilityEngineOutput: string;
+};
+
+function Phase7ClientProjectionPanel({ allowedFields, failClosed, forbiddenFields, recovery, routeLabel, taskId, visibilityEngineOutput }: Phase7ClientProjectionPanelProps) {
+  return (
+    <section className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-4" data-testid="ux-phase7-client-projection" data-ux-phase7-task={taskId}>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-green">Phase 7 client-safe projection</p>
+          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{routeLabel}</h2>
+          <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted">Visibility engine output is rendered as a fail-closed client projection, never as an internal payload preview.</p>
+        </div>
+        <Badge tone="green">{taskId}</Badge>
+      </div>
+      <div className="mt-4 grid gap-3 lg:grid-cols-4">
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase7-visibility-engine">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Visibility engine</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{visibilityEngineOutput}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase7-safe-fields">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Allowed client fields</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{allowedFields}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3" data-testid="ux-phase7-forbidden-fields">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-red">Forbidden payloads</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{forbiddenFields}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3" data-testid="ux-phase7-fail-closed">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-gold">Fail closed</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{failClosed}</p>
+        </div>
+      </div>
+      <div className="mt-4" data-testid="ux-phase7-recovery"><StatePanel detail={recovery} state="restricted" title="Safe unavailable-content recovery" /></div>
+    </section>
+  );
+}
+
 function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pageJob, safetyBoundary, splitTaskId, taskId }: Phase5DetailSplitPanelProps) {
   return (
     <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
@@ -828,6 +874,7 @@ function PortalPage({ title }: { title: string }) {
     <ClientShell activePageId="019">
       <ScreenTitle>{title}</ScreenTitle>
       <Phase5DetailSplitPanel decisionSupport="Client projection stays separated from internal review and release gates." objectLabel="Client home projection split" objectState="Released client-safe state only" pageJob="Client portal shows released context without becoming mobile, evidence or decision detail." safetyBoundary="Client projection cannot expose internal payloads." splitTaskId="UX-PAGE-SPLIT-007" taskId="UX-PAGE-SPLIT-007" />
+      <Phase7ClientProjectionPanel allowedFields="clientSummary, releasedAt, redacted document title and status only" failClosed="Unavailable content explains release, evidence and permission blockers without showing the hidden object." forbiddenFields="No internal payload, manual override, unreleased evidence, AI Draft, compliance notes or storage keys." recovery="The client sees safe next steps only: wait for release, upload requested evidence or contact the advisor through controlled support." routeLabel="Client home released projection" taskId="UX-CLIENT-PROJECTION-001" visibilityEngineOutput="DEMO_CLIENT_SAFE_PROJECTION or DEMO_CLIENT_VISIBILITY_FAIL_CLOSED" />
       <UxHubPage pageId="019" />
     </ClientShell>
   );
@@ -2034,6 +2081,7 @@ function DocumentsPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="027">
       <DocumentsPageContent title={title} />
+      <Phase7ClientProjectionPanel allowedFields="request title, document type, redacted status and uploaded date only" failClosed="Unreleased evidence requests show safe unavailable state and never expose extraction or evidence internals." forbiddenFields="No unreleased evidence, extraction state, checksum, storage key, AI Draft or compliance notes." recovery="Client can upload requested evidence or wait for human review; sufficiency and release remain internal gates." routeLabel="Client evidence request projection" taskId="UX-CLIENT-PROJECTION-003" visibilityEngineOutput="DEMO_CLIENT_DOCUMENT_SAFE_PROJECTION or DEMO_CLIENT_DOCUMENT_FAIL_CLOSED" />
       <Phase5DetailSplitPanel decisionSupport="Document hub stays separate from review queue and evidence detail." objectLabel="Document workspace split" objectState="Document intake overview" pageJob="Documents page lists intake status and routes to queue/detail without acting as sufficiency proof." safetyBoundary="Document list context cannot mark evidence sufficient." splitTaskId="UX-PAGE-SPLIT-002" taskId="UX-PAGE-SPLIT-002" />
     </ClientShell>
   );

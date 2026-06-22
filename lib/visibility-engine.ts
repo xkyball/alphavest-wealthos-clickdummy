@@ -186,6 +186,22 @@ const internalDocumentFields = [
   "extractionStatus",
 ] as const;
 
+export const trueUxClientProjectionNoLeakageContract = {
+  allowedClientPayloadFields: ["clientSummary", "decisionState", "documentType", "id", "releasedAt", "status", "title", "uploadedAt"],
+  failClosedReasonCodes: [
+    "DEMO_CLIENT_VISIBILITY_FAIL_CLOSED",
+    "DEMO_CLIENT_DECISION_FAIL_CLOSED",
+    "DEMO_CLIENT_DOCUMENT_FAIL_CLOSED",
+  ],
+  forbiddenPayloadFields: Array.from(forbiddenClientProjectionFields).sort(),
+  taskIds: [
+    "UX-CLIENT-PROJECTION-001",
+    "UX-CLIENT-PROJECTION-002",
+    "UX-CLIENT-PROJECTION-003",
+    "UX-CLIENT-PROJECTION-004",
+  ],
+};
+
 const clientSafeDocumentEvidenceStatuses = new Set(["VALIDATED", "RELEASED"]);
 const clientSafeDocumentVisibilityStatuses = new Set(["CLIENT_VISIBLE", "REDACTED"]);
 const clientSourceDocumentRoles = new Set(["family_cfo"]);
