@@ -70,12 +70,12 @@ const secondaryButtonClass =
   "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-4 text-sm font-semibold text-alphavest-ivory transition hover:border-alphavest-gold/60 hover:text-alphavest-gold-soft disabled:cursor-not-allowed disabled:opacity-55";
 
 const kycNav: NavItem[] = [
-  { href: "/signals", icon: ShieldAlert, label: "Signals" },
-  { href: "/workbench/triggers/demo", icon: Flag, label: "Triggers", count: 12 },
-  { href: "/documents/extraction-review", icon: FileCheck2, label: "Extraction review" },
-  { href: "/kyc/demo/review", icon: UserCheck, label: "KYC review", pageIds: ["064"], count: 3 },
-  { href: "/kyc/demo/source-of-wealth", icon: WalletCards, label: "Source of wealth", pageIds: ["065"], count: 2 },
-  { href: "/compliance", icon: ShieldCheck, label: "Compliance" },
+  { href: "/advisory", icon: ShieldAlert, label: "Signals" },
+  { href: "/advisory/triggers/demo/review", icon: Flag, label: "Triggers", count: 12 },
+  { href: "/documents/review-queue", icon: FileCheck2, label: "Extraction review" },
+  { href: "/kyc/reviews", icon: UserCheck, label: "KYC review", pageIds: ["064"], count: 3 },
+  { href: "/kyc/reviews", icon: WalletCards, label: "Source of wealth", pageIds: ["065"], count: 2 },
+  { href: "/compliance/reviews", icon: ShieldCheck, label: "Compliance" },
 ];
 
 function toneFor(value: string): BadgeTone {

@@ -121,16 +121,16 @@ function handleStaticSortChange() {
 }
 
 const decisionNav: NavItem[] = [
-  { href: "/portal", icon: Home, label: "Home" },
+  { href: "/client/home", icon: Home, label: "Home" },
   { href: "/client/family-members", icon: UsersRound, label: "Clients" },
   { href: "/wealth-map", icon: Landmark, label: "Wealth Map" },
   { href: "/actions", icon: CheckCircle2, label: "Actions" },
   { href: "/decisions", icon: FileCheck2, label: "Decisions", pageIds: ["043", "044", "045"], count: 3 },
   { href: "/evidence", icon: Folder, label: "Evidence Vault", pageIds: ["046", "047"] },
-  { href: "/compliance", icon: ShieldCheck, label: "Compliance", pageIds: ["041", "042"] },
-  { href: "/governance/users", icon: KeyRound, label: "Governance", pageIds: ["048", "049", "050"], count: 8 },
+  { href: "/compliance/reviews", icon: ShieldCheck, label: "Compliance", pageIds: ["041", "042"] },
+  { href: "/governance", icon: KeyRound, label: "Governance", pageIds: ["048", "049", "050"], count: 8 },
   { href: "/documents", icon: FileText, label: "Documents" },
-  { href: "/communication", icon: MessageSquare, label: "Messages" },
+  { href: "/communication/:id/context", icon: MessageSquare, label: "Messages" },
   { href: "/settings", icon: SlidersHorizontal, label: "Settings" }
 ];
 
@@ -1204,7 +1204,7 @@ function EvidenceRecordDetailPage({ title }: { title: string }) {
                   blockedReason="Revoke access and create-version actions are secondary and cannot prove evidence sufficiency or access authority."
                   className="[&_button]:w-full [&_button]:justify-start"
                   primary={{ label: "Request Review" }}
-                  recoveryAction={{ href: "/governance/access-requests", label: "Open access policy" }}
+                  recoveryAction={{ href: "/governance/access-requests/:id", label: "Open access policy" }}
                   secondary={[
                     { label: "Add to Collection" },
                     {
@@ -1294,7 +1294,7 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
       </div>
       <Drawer
         description="Invite a user and assign scoped roles."
-        footer={<div className="grid gap-3 sm:grid-cols-2"><button className={secondaryButtonClass} onClick={() => setDrawerOpen(false)} type="button">Cancel</button><button className={primaryButtonClass} data-testid="j07-send-invitation" onClick={() => { void runScreencastDemoAction("j07.sendInvitation", "/governance/roles?state=confirm"); }} type="button"><Send aria-hidden="true" className="size-4" />Send scoped invitation</button></div>}
+        footer={<div className="grid gap-3 sm:grid-cols-2"><button className={secondaryButtonClass} onClick={() => setDrawerOpen(false)} type="button">Cancel</button><button className={primaryButtonClass} data-testid="j07-send-invitation" onClick={() => { void runScreencastDemoAction("j07.sendInvitation", "/governance/roles/portfolio-manager"); }} type="button"><Send aria-hidden="true" className="size-4" />Send scoped invitation</button></div>}
         onClose={() => setDrawerOpen(false)}
         open={drawerOpen}
         title="Invite New User"
@@ -1418,7 +1418,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
           </div>
         }
         description="You are about to save changes that modify sensitive permissions."
-        footer={<><button className={secondaryButtonClass} onClick={() => setModalOpen(false)} type="button">Cancel</button><button className={primaryButtonClass} data-testid="j07-save-role-changes" onClick={() => { void runScreencastDemoAction("j07.saveRoleChanges", "/governance/access-requests?state=approval"); }} type="button">Confirm scoped role change</button></>}
+            footer={<><button className={secondaryButtonClass} onClick={() => setModalOpen(false)} type="button">Cancel</button><button className={primaryButtonClass} data-testid="j07-save-role-changes" onClick={() => { void runScreencastDemoAction("j07.saveRoleChanges", "/governance/access-requests/ar-2025-0612"); }} type="button">Confirm scoped role change</button></>}
         onClose={() => setModalOpen(false)}
         open={modalOpen}
         title="Confirm Sensitive Permission Changes"
@@ -1526,7 +1526,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
           <UxCtaCluster
             blockedReason="Access approval remains constrained by visible policy, SOD and audit checks; it cannot release advice, prove evidence sufficiency or approve export."
             className="w-full"
-            primary={{ label: "Approve access request", onClick: () => { void runScreencastDemoAction("j07.approveAccess", "/governance/audit-history?state=drawer"); }, testId: "j07-approve-access" }}
+            primary={{ label: "Approve access request", onClick: () => { void runScreencastDemoAction("j07.approveAccess", "/governance"); }, testId: "j07-approve-access" }}
             secondary={[
               { label: "Escalate request", onClick: () => setDrawerOpen(false) },
               { label: "Deny request", onClick: () => setDrawerOpen(false) },

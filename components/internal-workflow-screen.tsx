@@ -313,15 +313,15 @@ function SensitiveWorkflowConfirmationModal({
 }
 
 const internalNav: NavItem[] = [
-  { href: "/portal", icon: Home, label: "Home" },
+  { href: "/client/home", icon: Home, label: "Home" },
   { href: "/client/family-members", icon: UsersRound, label: "Clients" },
   { href: "/entities", icon: BriefcaseBusiness, label: "Entities" },
-  { href: "/signals", icon: ShieldAlert, label: "Signals", pageIds: ["033"] },
-  { href: "/workbench", icon: LayoutDashboard, label: "Consultant Workbench", pageIds: ["034"] },
-  { href: "/workbench/triggers/demo", icon: Flag, label: "Triggers", pageIds: ["035"], count: 12 },
+  { href: "/advisory", icon: ShieldAlert, label: "Signals", pageIds: ["033"] },
+  { href: "/advisory/review-queue", icon: LayoutDashboard, label: "Consultant Workbench", pageIds: ["034"] },
+  { href: "/advisory/triggers/demo/review", icon: Flag, label: "Triggers", pageIds: ["035"], count: 12 },
   { href: "/actions", icon: ClipboardCheck, label: "Actions" },
-  { href: "/advisor-approval", icon: CheckCircle2, label: "Approvals", pageIds: ["036", "037"], count: 36 },
-  { href: "/compliance", icon: ShieldCheck, label: "Compliance", pageIds: ["038", "039", "040"] },
+  { href: "/advisor/reviews", icon: CheckCircle2, label: "Approvals", pageIds: ["036", "037"], count: 36 },
+  { href: "/compliance/reviews", icon: ShieldCheck, label: "Compliance", pageIds: ["038", "039", "040"] },
   { href: "/documents", icon: FileText, label: "Documents" },
   { href: "/reports", icon: SlidersHorizontal, label: "Reports" }
 ];
@@ -551,14 +551,14 @@ function SignalsPage({ title }: { title: string }) {
     if (optionTitle === "Request Data / Information") {
       setActionStatus("Saving request-data state...");
       await postDemoWorkflowAction("j01.requestData");
-      router.push("/workbench");
+      router.push("/advisory/review-queue");
       return;
     }
 
     if (optionTitle === "Assign to Advisor") {
       setActionStatus("Routing package to advisor...");
       await postDemoWorkflowAction("j01.routeToAdvisor");
-      router.push("/advisor-approval");
+      router.push("/advisor/reviews");
       return;
     }
 
@@ -913,7 +913,7 @@ function TriggerDetailPage({ title }: { title: string }) {
   async function routeToAdvisor() {
     setRoutingStatus("Routing package to advisor review...");
     await postDemoWorkflowAction("j01.routeToAdvisor");
-    router.push("/advisor-approval");
+    router.push("/advisor/reviews");
   }
 
   return (
@@ -1143,7 +1143,7 @@ function AdvisorQueuePage({ title }: { title: string }) {
             columns={advisorColumns}
             emptyMessage="No advisor queue rows match this search."
             getRowId={(row) => row.client}
-            onRowAction={() => router.push("/advisor-approval/demo")}
+            onRowAction={() => router.push("/advisor/reviews/demo")}
             rowActionLabel={(row) => `Open advisor review for ${row.client}`}
             rows={visibleRows}
           />
@@ -1422,7 +1422,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
           columns={complianceColumns}
           emptyMessage="No compliance queue rows match this search."
           getRowId={(row) => row.id}
-          onRowAction={() => router.push("/compliance/demo/review")}
+          onRowAction={(row) => router.push(`/compliance/reviews/${row.id}/decision-room`)}
           rowActionLabel={(row) => `Open compliance review ${row.id}`}
           rows={visibleRows}
         />
