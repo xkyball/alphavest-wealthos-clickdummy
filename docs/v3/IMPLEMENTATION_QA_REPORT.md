@@ -6579,3 +6579,57 @@ Source of truth:
 ### QA Limits
 
 - This slice applies D2 to current route-policy D2 workbench surfaces. Later D3/D4 tasks remain responsible for dense operations and focused detail refinements.
+
+## UX-DENSITY-004 QA Addendum
+
+Date: 2026-06-22
+
+Source of truth:
+- `ALPHAVEST_UX_REFACTORING_CODEX_TASK_MASTER.md`
+- `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`
+- `docs/v3/ALPHAVEST_SURFACE_COPY_HANDBOOK_RULE.md`
+
+| Area | QA result | Evidence |
+| --- | --- | --- |
+| D3 dense operations density | Passed | Route-smoke verifies D3 metadata, dense operations panel, table semantics, sort controls and row actions on `042`, `048`, `049`, `050`, `051`, `055`, `056`. |
+| D2 export-new preservation | Passed | Route-smoke verifies `054` remains a D2 hub/wizard and does not render the D3 operations panel. |
+| Surface-copy cleanup | Passed | Route-smoke representative checks reject visible handbook/proof/task copy such as workflow-step/proof/complexity-reduction language; shared surfaces now use product work/status/gate copy. |
+| Route Policy preservation | Passed | No route IDs, paths, worksets or route scopes changed. Density derivation was corrected to match matrix rows. |
+| P0 safety | Passed | Permissions, workflow-gate, file-export and full route-smoke tests passed after the D3 changes. |
+| Screenshot proof | Passed | Seven screenshots captured under `artifacts/ux-page-to-policy/UX-DENSITY-004/`. |
+
+### Commands And Results
+
+| Command | Status | Notes |
+| --- | --- | --- |
+| `pnpm typecheck` | Passed | `tsc --noEmit` completed successfully. |
+| `pnpm lint` | Passed | 27 existing warnings, 0 errors. |
+| `pnpm visual:contract` | Passed | 71 assets/routes checked, 0 failures. |
+| `PLAYWRIGHT_PORT=3446 pnpm test:route-smoke` | Passed | 193 tests. |
+| `PLAYWRIGHT_PORT=3445 pnpm exec playwright test tests/route-smoke.spec.ts -g "mobile route identity"` | Passed | 8 tests. |
+| `PLAYWRIGHT_PORT=3437 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-DENSITY dense operations"` | Passed | 8 tests. |
+| `PLAYWRIGHT_PORT=3438 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-NAV route policy navigation\\|UX-PAGE workbench structure\\|UX-COMPLEXITY support density\\|UX-DENSITY tier contract\\|UX-DENSITY productive workbench"` | Passed | 63 tests. |
+| `PLAYWRIGHT_PORT=3439 pnpm test:permissions` | Passed | 8 tests. |
+| `PLAYWRIGHT_PORT=3442 pnpm test:workflow-gate` | Passed | 13 tests. |
+| `PLAYWRIGHT_PORT=3443 pnpm test:file-export` | Passed | 14 tests. |
+
+### Screenshot Proof
+
+- `artifacts/ux-page-to-policy/UX-DENSITY-004/2026-06-22-UX-DENSITY-004-compliance-audit-d3.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-004/2026-06-22-UX-DENSITY-004-governance-users-d3.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-004/2026-06-22-UX-DENSITY-004-governance-roles-d3.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-004/2026-06-22-UX-DENSITY-004-governance-audit-history-d3.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-004/2026-06-22-UX-DENSITY-004-export-scope-d3.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-004/2026-06-22-UX-DENSITY-004-export-redaction-d3.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-004/2026-06-22-UX-DENSITY-004-export-new-d2-hub.png`
+
+### Safety Proof
+
+- D3 dense operations UI is table-first and non-authorizing.
+- Visible row actions do not bypass RBAC, tenant isolation, export lifecycle, audit persistence, evidence sufficiency or compliance-release gates.
+- Admin/governance surfaces still show blocked gates and cannot make client-visible advice or unredacted export payloads available.
+
+### QA Limits
+
+- This slice applies D3 only to the scoped matrix rows. D4 focused detail remains assigned to `UX-DENSITY-005`.
+- Lint still reports 27 existing unused-code warnings outside this slice; there are no lint errors.

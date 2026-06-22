@@ -53,6 +53,7 @@ import { RouteContextChip } from "@/components/route-context-chip";
 import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
+import { UxDenseOperationsPanel } from "@/components/ux-dense-operations-panel";
 import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
 import { UxComplexityPriorityPanel } from "@/components/ux-complexity-priority-panel";
 import { UxCtaCluster } from "@/components/ux-cta-cluster";
@@ -123,6 +124,10 @@ const primaryButtonClass =
 
 const secondaryButtonClass =
   "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-4 text-sm font-semibold text-alphavest-ivory transition hover:border-alphavest-gold/60 hover:text-alphavest-gold-soft";
+
+function handleStaticSortChange() {
+  return undefined;
+}
 
 const phase13Nav: NavItem[] = [
   { href: "/portal", icon: Home, label: "Home" },
@@ -534,7 +539,7 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
   });
   const selected = filteredRows[0] ?? rows[0];
   const columns: Array<DataTableColumn<AuditEventTableRow>> = [
-    { key: "timestamp", header: "Timestamp", render: (row) => row.timestamp },
+    { key: "timestamp", header: "Timestamp", render: (row) => row.timestamp, sortable: true },
     {
       key: "actor",
       header: "Actor",
@@ -543,54 +548,22 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
           <p className="font-semibold text-alphavest-ivory">{row.actor}</p>
           <p className="text-xs text-alphavest-subtle">{row.role}</p>
         </div>
-      )
+      ),
+      sortable: true
     },
-    { key: "object", header: "Object", render: (row) => row.object },
-    { key: "action", header: "Action", render: (row) => row.action },
+    { key: "object", header: "Object", render: (row) => row.object, sortable: true },
+    { key: "action", header: "Action", render: (row) => row.action, sortable: true },
     { key: "source", header: "Source", render: (row) => row.source },
-    { key: "result", header: "Result", render: (row) => <Badge tone={toneFor(row.result)}>{row.result}</Badge> }
+    { key: "result", header: "Result", render: (row) => <Badge tone={toneFor(row.result)}>{row.result}</Badge>, sortable: true }
   ];
 
   return (
     <div>
       <PageLead description="Access-event review with filters, export controls and event lineage." icon={LockKeyhole} title={title} />
       <StatePanel detail="Audit immutability depends on the retention and persistence gates; this view does not prove those gates by itself." state="restricted" title="Audit persistence gate" />
-      <div className="mt-5 grid gap-4 md:grid-cols-4">
-        <label className="grid gap-1 text-xs font-semibold text-alphavest-muted md:col-span-2">
-          <span>Search DB audit events</span>
-          <input
-            className="h-11 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm font-normal text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
-            onChange={(event) => setSearchTerm(event.target.value)}
-            placeholder="Search actor, object or action"
-            value={searchTerm}
-          />
-        </label>
-        <label className="grid gap-1 text-xs font-semibold text-alphavest-muted">
-          <span>Result</span>
-          <select
-            className="h-11 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm font-normal text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
-            onChange={(event) => setResultFilter(event.target.value)}
-            value={resultFilter}
-          >
-            <option value="all">All results</option>
-            {resultOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </label>
-        <FieldPill label="Scope" value="Tenant DB audit rows" />
-      </div>
-      <Card className="mt-5">
-        <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <CardTitle>Access Events</CardTitle>
-            <p className="mt-1 text-sm text-alphavest-muted">
-              Showing {filteredRows.length} of {rows.length} tenant-scoped DB audit-event rows.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
+      <UxDenseOperationsPanel
+        actions={
+          <>
             <button className={secondaryButtonClass} type="button">
               <RefreshCw aria-hidden="true" className="size-4" />
               Refresh
@@ -599,22 +572,60 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
               <Download aria-hidden="true" className="size-4" />
               Export events
             </button>
-          </div>
-        </CardHeader>
-        <CardContent>
+          </>
+        }
+        className="mt-5"
+        controls={["Search DB audit events", "Result", "Actor", "Object", "Action", "Source"]}
+        description="Access-event rows remain filterable and sortable while selected-event lineage stays in the drawer."
+        pageId="051"
+        resultLabel={`Showing ${filteredRows.length} of ${rows.length} tenant-scoped DB audit-event rows`}
+        safetyNote="Audit visibility does not prove audit persistence; retention, export and access-change gates remain separate."
+        title="Access-event operations"
+      >
+        <div className="grid gap-4 rounded-md border border-alphavest-border/70 bg-alphavest-panel/55 p-3 md:grid-cols-4">
+          <label className="grid gap-1 text-xs font-semibold text-alphavest-muted md:col-span-2">
+            <span>Search DB audit events</span>
+            <input
+              className="h-11 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm font-normal text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Search actor, object or action"
+              value={searchTerm}
+            />
+          </label>
+          <label className="grid gap-1 text-xs font-semibold text-alphavest-muted">
+            <span>Result</span>
+            <select
+              className="h-11 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm font-normal text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+              onChange={(event) => setResultFilter(event.target.value)}
+              value={resultFilter}
+            >
+              <option value="all">All results</option>
+              {resultOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </label>
+          <FieldPill label="Scope" value="Tenant DB audit rows" />
+        </div>
           <DataTable
             columns={columns}
+            compact
             emptyMessage={loadState === "error" ? "Audit events could not be loaded from the DB." : "No DB audit events match this filter."}
             getRowId={(row) => row.id}
+            onSortChange={handleStaticSortChange}
+            responsiveMode="table"
             rows={filteredRows}
+            sortDirection="desc"
+            sortKey="timestamp"
           />
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             <StatePanel detail="No matching access changes for the saved filter." state="empty" title="Empty filter state" />
             <StatePanel detail="Audit event rows are loading; sealed retention proof remains a separate gate." state="loading" title="Loading state" />
             <StatePanel detail="Audit export is unavailable while the retention service is unreachable." state="error" title="Export error state" />
           </div>
-        </CardContent>
-      </Card>
+      </UxDenseOperationsPanel>
       <Drawer description="Selected event lineage and before/after access state." onClose={() => setDrawerOpen(false)} open={drawerOpen && Boolean(selected)} title="Event Details">
         <div className="space-y-5">
           <div className="flex items-center justify-between gap-3">
@@ -876,9 +887,9 @@ function ExportScopePage({ title }: { title: string }) {
   const scopeRows = snapshot?.scopeItems.length ? snapshot.scopeItems : exportScopeItems;
   const summary = snapshot?.summary ?? exportScopeSummary;
   const availableColumns: Array<DataTableColumn<(typeof scopeRows)[number]>> = [
-    { key: "name", header: "Name", render: (row) => <span className={cn("font-semibold", row.selected ? "text-alphavest-ivory" : "text-alphavest-muted")}>{row.name}</span> },
-    { key: "type", header: "Type", render: (row) => row.type },
-    { key: "access", header: "Access", render: (row) => <Badge tone={toneFor(row.access)}>{row.access}</Badge> }
+    { key: "name", header: "Name", render: (row) => <span className={cn("font-semibold", row.selected ? "text-alphavest-ivory" : "text-alphavest-muted")}>{row.name}</span>, sortable: true },
+    { key: "type", header: "Type", render: (row) => row.type, sortable: true },
+    { key: "access", header: "Access", render: (row) => <Badge tone={toneFor(row.access)}>{row.access}</Badge>, sortable: true }
   ];
 
   return (
@@ -886,20 +897,27 @@ function ExportScopePage({ title }: { title: string }) {
       <PageLead description="Select permitted objects, recipients and date range before redaction review." icon={Folder} title={title} />
       <ScfP07P09TrustPanel mode="export" />
       <ScfP10P14ClosurePanel mode="api" />
-      <Card>
-        <div className="grid gap-4 md:grid-cols-3">
+      <UxDenseOperationsPanel
+        className="mt-5"
+        controls={["Date range", "Recipients", "Object type", "Access", "Selected only", "Blocked excluded"]}
+        description="Export scope is selected from object-level rows before redaction, preview or approval can proceed."
+        pageId="055"
+        resultLabel={`${summary.included} included; ${summary.blocked} blocked; ${summary.invalidSelected} invalid selected`}
+        safetyNote="Export scope selection is not approval, download or share; restricted objects stay excluded until permission and redaction controls pass."
+        title="Export-scope operations"
+      >
+        <div className="grid gap-4 rounded-md border border-alphavest-border/70 bg-alphavest-panel/55 p-3 md:grid-cols-3">
           <FieldPill label="Date range" value="May 1 - May 21, 2025" />
           <FieldPill label="Recipients" value="2 selected" />
           <FieldPill label="Object type" value="All types" />
         </div>
-      </Card>
-      <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <Card>
           <CardHeader>
             <CardTitle>Available Scope</CardTitle>
           </CardHeader>
           <CardContent>
-            <DataTable compact columns={availableColumns} getRowId={(row) => row.id} rows={scopeRows} />
+            <DataTable compact columns={availableColumns} getRowId={(row) => row.id} onSortChange={handleStaticSortChange} responsiveMode="table" rows={scopeRows} sortDirection="asc" sortKey="name" />
           </CardContent>
         </Card>
         <Card>
@@ -911,7 +929,7 @@ function ExportScopePage({ title }: { title: string }) {
             <button className={secondaryButtonClass} data-testid="j08-clear-scope" onClick={() => { void runScreencastDemoAction("j08.clearScope", "/export/demo/redaction"); }} type="button">Clear all</button>
           </CardHeader>
           <CardContent>
-            <DataTable compact columns={availableColumns} getRowId={(row) => `${row.id}-selected`} rows={scopeRows.filter((item) => item.selected)} />
+            <DataTable compact columns={availableColumns} getRowId={(row) => `${row.id}-selected`} onSortChange={handleStaticSortChange} responsiveMode="table" rows={scopeRows.filter((item) => item.selected)} sortDirection="asc" sortKey="name" />
             <StatePanel className="mt-4" detail={`${summary.blocked} restricted or not-permitted objects are excluded. Limited items remain in scope only after redaction review.`} state="restricted" title="Object-level permission checks" />
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               <FieldPill label="Included" value={`${summary.included} objects`} />
@@ -921,6 +939,7 @@ function ExportScopePage({ title }: { title: string }) {
           </CardContent>
         </Card>
       </div>
+      </UxDenseOperationsPanel>
     </div>
   );
 }
@@ -951,6 +970,26 @@ function RedactedDocumentPreview() {
 }
 
 function ExportRedactionPage({ title }: { title: string }) {
+  const redactionRows = [
+    ...redactionSummary.map((item) => ({
+      id: item.id,
+      label: item.label,
+      state: String(item.count),
+      visibility: item.severity,
+    })),
+    ...exportForbiddenPayloadChecks.map((item) => ({
+      id: item.label,
+      label: item.label,
+      state: item.state,
+      visibility: "Forbidden payload",
+    })),
+  ];
+  const redactionColumns: Array<DataTableColumn<(typeof redactionRows)[number]>> = [
+    { key: "label", header: "Payload field", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.label}</span>, sortable: true },
+    { key: "state", header: "State", render: (row) => <Badge tone={toneFor(row.state)}>{row.state}</Badge>, sortable: true },
+    { key: "visibility", header: "Visibility", render: (row) => row.visibility, sortable: true },
+  ];
+
   return (
     <div>
       <PageLead badge="Pending" description="Configure mandatory redaction before external or client-facing export release." icon={Eye} title={title} />
@@ -985,8 +1024,28 @@ function ExportRedactionPage({ title }: { title: string }) {
           { detail: "Items visible after external redaction", label: "External visible", value: "16" },
           { detail: "Forbidden payload checks", label: "Internal payload", value: "Blocked" },
         ]}
-        title="Redaction complexity reduction"
+        title="Redaction status"
       />
+      <UxDenseOperationsPanel
+        className="mt-5"
+        controls={["Payload field", "State", "Visibility", "Forbidden payload", "External visible", "Internal visible"]}
+        description="Redaction review is a dense payload-control table before document preview, approval or delivery can proceed."
+        pageId="056"
+        resultLabel={`${redactionRows.length} payload controls; 12 marked redactions`}
+        safetyNote="Redaction summary is not export approval; forbidden internal payload, preview, approval, download and share remain separate gates."
+        title="Payload redaction operations"
+      >
+        <DataTable
+          columns={redactionColumns}
+          compact
+          getRowId={(row) => row.id}
+          onSortChange={handleStaticSortChange}
+          responsiveMode="table"
+          rows={redactionRows}
+          sortDirection="asc"
+          sortKey="label"
+        />
+      </UxDenseOperationsPanel>
       <div className="mt-5 grid gap-5 2xl:grid-cols-[20rem_minmax(0,1fr)_24rem]">
         <Card>
           <CardHeader>

@@ -68,7 +68,10 @@ export function DataTable<T>({
   const tablePadding = compact ? "w-full min-w-0 table-fixed" : "w-full min-w-0 table-auto";
 
   const table = (
-    <div className="min-w-0 max-w-full overflow-x-auto overflow-y-visible rounded-md border border-alphavest-border/70 [contain:inline-size]">
+    <div
+      className="min-w-0 max-w-full overflow-x-auto overflow-y-visible rounded-md border border-alphavest-border/70 [contain:inline-size]"
+      data-testid="ux-data-table"
+    >
       <table className={tablePadding + " border-collapse text-left text-sm"}>
         <thead className="bg-alphavest-panel/75 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">
           <tr>
@@ -86,6 +89,7 @@ export function DataTable<T>({
                   <button
                     aria-label={`Sort by ${column.header}${sortKey === column.key ? `, currently ${sortDirection}` : ""}`}
                     className="inline-flex max-w-full items-center gap-1 text-left uppercase"
+                    data-testid="ux-data-table-sort"
                     onClick={() => onSortChange(column.key)}
                     type="button"
                   >
@@ -123,7 +127,14 @@ export function DataTable<T>({
                   </td>
                 ))}
                 <td className="px-5 py-4 text-right text-alphavest-subtle">
-                  <MoreHorizontal aria-hidden="true" className="ml-auto size-4" />
+                  <button
+                    aria-label="Open row actions"
+                    className="ml-auto grid size-8 place-items-center rounded-md border border-transparent text-alphavest-subtle transition hover:border-alphavest-border hover:text-alphavest-ivory"
+                    data-testid="ux-data-table-row-action"
+                    type="button"
+                  >
+                    <MoreHorizontal aria-hidden="true" className="size-4" />
+                  </button>
                 </td>
               </tr>
             ))
@@ -152,7 +163,14 @@ export function DataTable<T>({
                   <div className="min-w-0 text-sm font-semibold text-alphavest-ivory">
                     {mobileCardTitle ? mobileCardTitle(row) : columns[0]?.render(row)}
                   </div>
-                  <MoreHorizontal aria-hidden="true" className="size-4 shrink-0 text-alphavest-subtle" />
+                  <button
+                    aria-label="Open row actions"
+                    className="grid size-8 shrink-0 place-items-center rounded-md border border-transparent text-alphavest-subtle transition hover:border-alphavest-border hover:text-alphavest-ivory"
+                    data-testid="ux-data-table-row-action"
+                    type="button"
+                  >
+                    <MoreHorizontal aria-hidden="true" className="size-4" />
+                  </button>
                 </div>
                 <dl className="grid gap-3">
                   {columns.slice(mobileCardTitle ? 0 : 1).filter((column) => !column.mobileHidden).map((column) => (

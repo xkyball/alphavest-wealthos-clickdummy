@@ -502,13 +502,13 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
               { detail: "Client approval evidence missing", label: "Evidence blocker", value: selectedAction.evidenceState },
               { detail: selectedAction.due, label: "Next due item", value: selectedAction.stage },
             ]}
-            safetyNote="Action board priority is orientation only; readiness still requires evidence, audit and workflow gates."
+            safetyNote="Readiness still requires evidence, audit and workflow gates."
             summaryItems={[
               { detail: "Work that needs attention first", label: "Blocked", value: "1" },
               { detail: "Visible on the board", label: "Active actions", value: "22" },
               { detail: "Must stay evidence-backed", label: "Client visible", value: "0" },
             ]}
-            title="Actions complexity reduction"
+            title="Action status"
           />
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
             {actionMetrics.map((metric) => (

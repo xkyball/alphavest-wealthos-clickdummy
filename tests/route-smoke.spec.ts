@@ -132,7 +132,7 @@ test.describe("UX-NAV route policy navigation", () => {
     expect(uxNavigationPolicyForPageId("048").pageType).toBe("Workbench");
   });
 
-  test("journey rails do not treat visual position as gate completion proof", () => {
+  test("journey rails keep later gates blocked until prerequisites pass", () => {
     const advisorySteps = uxFlowStepsForPageId("038");
     expect(advisorySteps.map((step) => step.status)).toEqual([
       "complete",
@@ -145,7 +145,7 @@ test.describe("UX-NAV route policy navigation", () => {
     ]);
     expect(advisorySteps.filter((step) => step.status === "complete")).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ disabledReason: expect.stringContaining("not gate-completion proof") }),
+        expect.objectContaining({ disabledReason: expect.stringContaining("does not unlock this gate") }),
       ]),
     );
     expect(advisorySteps.filter((step) => step.status === "blocked")).toEqual(
@@ -155,17 +155,18 @@ test.describe("UX-NAV route policy navigation", () => {
     );
   });
 
-  test("renders page job, topbar route context and one primary next step above the desktop fold", async ({ page }) => {
+  test("renders product context, current gate and one primary next step above the desktop fold", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 1000 });
     await authenticateRouteSmokePage(page);
     await page.goto("/workbench");
 
     const guidance = page.getByTestId("product-guidance").first();
-    await expect(guidance.getByRole("heading", { name: "Page job and next step" })).toBeVisible();
+    await expect(guidance.getByRole("heading", { name: "Workbench" })).toBeVisible();
     await expect(guidance.getByTestId("ux-nav-gate-guidance")).toBeVisible();
     await expect(guidance.getByTestId("ux-nav-flow-rail")).toBeVisible();
     await expect(guidance.getByTestId("ux-nav-primary-next-step")).toHaveCount(1);
-    await expect(page.getByText("034 · Workbench").first()).toBeVisible();
+    await expect(page.getByTestId("ux-nav-route-context").first()).toContainText("Workbench");
+    await expect(page.getByText("034 · Workbench")).toHaveCount(0);
   });
 });
 
@@ -242,7 +243,7 @@ test.describe("UX-PAGE workbench structure", () => {
       await expect(triad.getByTestId("ux-page-queue")).toHaveCount(1);
       await expect(triad.getByTestId("ux-page-selected-context")).toHaveCount(1);
       await expect(triad.getByTestId("ux-page-action-rail")).toHaveCount(1);
-      await expect(triad.getByText("not gate-completion proof")).toBeVisible();
+      await expect(triad.getByText("Controls stay blocked until the required gate passes.")).toBeVisible();
     });
   }
 });
@@ -345,14 +346,14 @@ test.describe("UX-COMPLEXITY content priority hierarchy", () => {
   ];
 
   for (const path of representativeRoutes) {
-    test(`${path} exposes Must-see, Secondary and Tertiary tiers without hiding safety`, async ({ page }) => {
+    test(`${path} exposes visible priority tiers without surfacing handbook copy`, async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 1100 });
       await authenticateRouteSmokePage(page);
       await page.goto(path);
 
       await expect(page.locator('[data-ux-content-tier="must-see"]').first()).toBeVisible();
       await expect(page.locator('[data-ux-content-tier="secondary"]').first()).toBeVisible();
-      await expect(page.locator('[data-ux-content-tier="tertiary"]').first()).toBeVisible();
+      await expect(page.getByText(/gate-completion proof|visual proof|Workflow step|complexity reduction/i)).toHaveCount(0);
     });
   }
 });
@@ -399,7 +400,7 @@ test.describe("UX-COMPLEXITY support density", () => {
       await expect(strip.getByTestId("ux-complexity-support-job")).toBeVisible();
       await expect(strip.getByTestId("ux-complexity-support-status")).toBeVisible();
       await expect(strip.getByTestId("ux-complexity-support-next-step")).toBeVisible();
-      await expect(strip.getByTestId("ux-complexity-support-safety")).toContainText("not gate-completion proof");
+      await expect(strip.getByTestId("ux-complexity-support-safety")).toContainText("required gate passes");
     });
   }
 });
@@ -504,6 +505,50 @@ test.describe("UX-DENSITY productive workbench routes", () => {
       await expect(page.locator('[data-ux-d2-productive-workbench="true"]')).toHaveCount(0);
     }
   });
+});
+
+test.describe("UX-DENSITY dense operations routes", () => {
+  const d3OperationsRoutes = [
+    { pageId: "042", path: "/compliance/demo/audit" },
+    { pageId: "048", path: "/governance/users" },
+    { pageId: "049", path: "/governance/roles" },
+    { pageId: "050", path: "/governance/access-requests" },
+    { pageId: "051", path: "/governance/audit-history" },
+    { pageId: "055", path: "/export/demo/scope" },
+    { pageId: "056", path: "/export/demo/redaction" },
+  ];
+
+  test("keeps export-new as D2 hub/wizard rather than D3 operations table", async ({ page }) => {
+    expect(uxDensityForPageId("054").tier).toBe("D2");
+
+    await page.setViewportSize({ height: 1000, width: 1440 });
+    await authenticateRouteSmokePage(page);
+    await page.goto("/export/new");
+
+    await expect(page.getByTestId("ux-d3-dense-operations")).toHaveCount(0);
+    await expect(page.getByTestId("ux-hub-page")).toBeVisible();
+  });
+
+  for (const route of d3OperationsRoutes) {
+    test(`${route.path} applies D3 table-first operations density`, async ({ page }) => {
+      expect(uxDensityForPageId(route.pageId).tier).toBe("D3");
+
+      await page.setViewportSize({ height: 1000, width: 1440 });
+      await authenticateRouteSmokePage(page);
+      await page.goto(route.path);
+
+      const operations = page.getByTestId("ux-d3-dense-operations").first();
+      await expect(operations).toBeVisible();
+      await expect(operations).toHaveAttribute("data-ux-density-tier", "D3");
+      await expect(operations).toHaveAttribute("data-ux-density-pattern", "dense-operations");
+      await expect(operations.getByTestId("ux-d3-filter-sort-controls")).toBeVisible();
+      await expect(operations.getByTestId("ux-data-table").first()).toBeVisible();
+      await expect(operations.getByTestId("ux-data-table-sort").first()).toBeVisible();
+      await expect(operations.getByTestId("ux-data-table-row-action").first()).toBeVisible();
+      await expect(operations).toContainText(/blocked|gate|approval|audit|payload|permission|redaction|release/i);
+      await expect(operations).not.toContainText(/complexity reduction|gate-completion proof|Workflow step|visual proof/i);
+    });
+  }
 });
 
 test.describe("locked route workset preservation", () => {
@@ -653,11 +698,18 @@ test.describe("mobile route identity", () => {
       await authenticateRouteSmokePage(page);
       await page.goto(route.path);
 
-      const heading = page.getByRole("heading", { name: route.expectedHeading }).first();
-      await expect(heading).toBeVisible();
+      const registryRoute = screenRoutes.find((item) => item.pageId === route.pageId);
+      const productHeading = page
+        .getByTestId("page-header")
+        .getByRole("heading", { name: registryRoute?.title ?? route.expectedHeading })
+        .first();
+      const contentHeading = page.getByRole("heading", { name: route.expectedHeading }).first();
 
-      const box = await heading.boundingBox();
-      expect(box?.y, `${route.pageId} heading should be in the first mobile viewport`).toBeLessThan(420);
+      await expect(productHeading).toBeVisible();
+      await expect(contentHeading).toBeVisible();
+
+      const box = await productHeading.boundingBox();
+      expect(box?.y, `${route.pageId} product heading should be in the first mobile viewport`).toBeLessThan(420);
     });
   }
 });

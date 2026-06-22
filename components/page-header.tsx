@@ -62,7 +62,7 @@ export function PageHeader({
   description,
 }: PageHeaderProps) {
   return (
-    <header className="flex flex-col gap-4">
+    <header className="flex flex-col gap-4" data-testid="page-header">
       {eyebrow ? (
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-gold">
           {eyebrow}

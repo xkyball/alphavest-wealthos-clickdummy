@@ -315,7 +315,7 @@ function PermissionBoundaryPanel({ route }: { route: ScreenRoute }) {
       <Card>
         <CardHeader>
           <CardTitle>Permission Boundary</CardTitle>
-          <CardDescription>Route shell, action authority and payload visibility are evaluated separately for the current tenant and role.</CardDescription>
+          <CardDescription>Actions and payload visibility are evaluated separately for the current tenant and role.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {rows.map((row) => (
@@ -1386,8 +1386,8 @@ export function AdminTenantSetupScreen({ route, visualState }: AdminTenantSetupS
     <AppShell>
       <div className="space-y-6">
         <PageHeader description={route.purpose} title={route.title} />
-        <UxSupportDensityStrip pageId={route.pageId} />
         {renderPage()}
+        <UxSupportDensityStrip pageId={route.pageId} />
       </div>
       <CriticalChangeModal kind={confirmationKind} onClose={() => setConfirmationKind(null)} />
       <PermissionChangeModal onClose={() => setPermissionModalOpen(false)} open={permissionModalOpen} />

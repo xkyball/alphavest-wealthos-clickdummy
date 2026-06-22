@@ -86,6 +86,8 @@ const detailPageIds = new Set(["035", "037", "039", "040", "041", "042", "044", 
 const hubPageIds = new Set(["007", "013", "015", "019", "020", "024", "031", "034", "043", "054"]);
 const modalPageIds = new Set(["002", "005", "009", "010", "040", "041", "045", "049", "057", "058"]);
 const d1PageIds = new Set(["019", "020", "061", "062", "063"]);
+const d2PageIds = new Set(["054"]);
+const d3PageIds = new Set(["042"]);
 const d4PageIds = detailPageIds;
 const d3Workspaces = new Set<UxWorkspaceKey>(["governance", "export"]);
 
@@ -111,6 +113,8 @@ function pageTypeForPageId(pageId: string, scope: RouteScopeLabel): UxPageType {
 
 function densityForPageId(pageId: string, workspace: UxWorkspaceKey): UxDensityTier {
   if (d1PageIds.has(pageId)) return "D1";
+  if (d2PageIds.has(pageId)) return "D2";
+  if (d3PageIds.has(pageId)) return "D3";
   if (d4PageIds.has(pageId)) return "D4";
   if (d3Workspaces.has(workspace)) return "D3";
   return "D2";
@@ -149,8 +153,8 @@ function safetyReminderForWorkspace(workspace: UxWorkspaceKey) {
   if (workspace === "approvals") return "Advisor approval is not compliance release.";
   if (workspace === "compliance") return "Compliance release controls client visibility.";
   if (workspace === "export") return "Export preview is not approval, download or client acceptance.";
-  if (workspace === "governance") return "Route visibility does not expand action or payload authority.";
-  return "Route scope, payload visibility and audit gates remain separate from visible navigation.";
+  if (workspace === "governance") return "Visible access does not expand action or payload authority.";
+  return "Payload visibility and audit gates remain separate from visible navigation.";
 }
 
 export function uxRoutePolicyForPageId(pageId: string, route: Pick<ScreenRoute, "clientVisibilitySensitive"> = {}) {
@@ -244,7 +248,7 @@ export function uxFlowStepsForPageId(pageId: string): UxFlowStep[] {
 
     return {
       disabledReason: isPast
-        ? "Earlier route in the journey; visual position is not gate-completion proof."
+        ? "Earlier step; completed position does not unlock this gate."
         : !isCurrent && !isNext
           ? "Future gate stays blocked until the current step and prerequisites are satisfied."
           : undefined,

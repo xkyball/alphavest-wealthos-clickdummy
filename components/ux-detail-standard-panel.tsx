@@ -45,7 +45,7 @@ export function UxDetailStandardPanel({
       data-ux-density-tier={density.tier}
     >
       <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-4" data-testid="ux-page-detail-object-header" data-ux-content-tier="must-see">
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">{routeId} · {objectType}</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">{objectType}</p>
         <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectTitle}</h2>
         <p className="mt-2 text-sm font-semibold text-alphavest-gold-soft">{status}</p>
         <div className="mt-4 grid gap-2 sm:grid-cols-2" data-testid="ux-page-detail-key-facts">
@@ -76,7 +76,7 @@ export function UxDetailStandardPanel({
         </div>
       </div>
       <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4" data-testid="ux-page-detail-gated-action-rail" data-ux-content-tier="must-see">
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold-soft">Gated action rail</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold-soft">Actions</p>
         <p className="mt-3 text-lg font-semibold text-alphavest-ivory">{actionLabel}</p>
         <p className="mt-2 text-sm leading-6 text-alphavest-muted">{actionState}</p>
         <p className="mt-3 rounded-md border border-alphavest-gold/30 bg-alphavest-navy/30 p-3 text-xs leading-5 text-alphavest-gold-soft">{safetyNote}</p>

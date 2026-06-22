@@ -53,7 +53,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
               <div className={cn("mt-4 flex flex-col gap-4", !isMobileClientHub && "lg:flex-row lg:items-end lg:justify-between")}>
                 <div className="min-w-0">
                   <h2 className="font-display text-3xl text-alphavest-ivory">{hub.title}</h2>
-                  <p className="mt-3 max-w-3xl text-sm leading-6 text-alphavest-muted">{hub.summary}</p>
+                  <p className="sr-only">{hub.summary}</p>
                 </div>
                 <Link
                   className={cn(
@@ -93,8 +93,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
             <Card className="p-4" data-ux-content-tier="secondary" data-testid="ux-d1-source-summary">
               <div className={cn("flex flex-col gap-3", !isMobileClientHub && "sm:flex-row sm:items-center sm:justify-between")}>
                 <div>
-                  <p className="font-display text-xl text-alphavest-ivory">Released Source Summary</p>
-                  <p className="mt-1 text-sm leading-6 text-alphavest-muted">Client-facing inputs are summarized only after release, redaction and visibility checks.</p>
+                  <p className="font-display text-xl text-alphavest-ivory">Sources</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {hub.sourceSummaries.map((summary) => (
@@ -118,7 +117,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
                   {hub.primaryAction.label}
                   <ArrowRight aria-hidden="true" className="size-4" />
                 </span>
-                <span className="mt-2 block text-sm leading-6 text-alphavest-muted">{hub.primaryAction.detail}</span>
+                <span className="sr-only">{hub.primaryAction.detail}</span>
               </Link>
               <div className="mt-4 rounded-md border border-alphavest-gold/35 bg-alphavest-navy/35 p-3 text-sm leading-6 text-alphavest-gold-soft">
                 <div className="flex gap-3">
@@ -156,7 +155,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
             <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div className="min-w-0">
                 <h2 className="font-display text-3xl text-alphavest-ivory">{hub.title}</h2>
-                <p className="mt-3 max-w-3xl text-sm leading-6 text-alphavest-muted">{hub.summary}</p>
+                <p className="sr-only">{hub.summary}</p>
               </div>
               <Link
                 className="inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md bg-alphavest-gold px-4 text-sm font-semibold text-alphavest-navy transition hover:bg-alphavest-gold-soft"
@@ -196,7 +195,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
               <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3" data-testid="ux-page-action-rail">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold-soft">Action Rail</p>
                 <p className="mt-2 text-sm leading-6 text-alphavest-muted">{hub.primaryAction.detail}</p>
-                <p className="mt-2 text-xs leading-5 text-alphavest-gold-soft">Route visibility is orientation only; advice, evidence and release gates still decide authority.</p>
+                <p className="mt-2 text-xs leading-5 text-alphavest-gold-soft">Blocked until advice, evidence and release gates pass.</p>
               </div>
             </div>
           ) : null}
@@ -213,7 +212,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
 
           <Card data-ux-content-tier="secondary">
             <CardHeader>
-              <CardTitle>Source Summary</CardTitle>
+              <CardTitle>Sources</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-3 md:grid-cols-3">
               {hub.sourceSummaries.map((summary) => (

@@ -935,7 +935,7 @@ function TriggerDetailPage({ title }: { title: string }) {
             objectTitle={triggerDetail.title}
             objectType="Trigger detail"
             routeId="035"
-            safetyNote="Visual routing controls are not behavior proof; downstream advisor and compliance gates still apply."
+            safetyNote="Advisor and compliance gates must pass before this work can advance."
             status={triggerDetail.status}
             timelineItems={["Signal detected", "Analyst review open", "Escalation pending"]}
           />

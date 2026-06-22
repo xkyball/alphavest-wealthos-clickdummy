@@ -8695,6 +8695,86 @@ Completed `UX-DENSITY-003` for the current D2 workbench surfaces in the task ran
 - `artifacts/ux-page-to-policy/UX-DENSITY-003/2026-06-21-UX-DENSITY-003-consultant-workbench-d2.png`
 - `artifacts/ux-page-to-policy/UX-DENSITY-003/2026-06-21-UX-DENSITY-003-compliance-d2-workbench.png`
 
+## UX-DENSITY-004 Addendum - D3 Dense Operations Applied
+
+Date: 2026-06-22
+
+Status: Completed and validated.
+
+Task IDs: `UX-DENSITY-004`
+
+Route-policy rows cited:
+- `042` `/compliance/:id/audit`
+- `048` `/governance/users`
+- `049` `/governance/roles`
+- `050` `/governance/access-requests`
+- `051` `/governance/audit-history`
+- `055` `/export/:id/scope`
+- `056` `/export/:id/redaction`
+- Guard row: `054` `/export/new` remains D2 Productive Wizard/Hub.
+
+Completed `UX-DENSITY-004` by adding a reusable D3 Dense Operations panel and applying table-first dense operations treatment to governance, audit and export operation routes. The slice also applied the user's surface-copy correction to already-refactored shared UX surfaces: visible UI now prioritizes product work, status, controls and gates; route/task/proof/method explanatory copy is documented in `docs/v3/ALPHAVEST_SURFACE_COPY_HANDBOOK_RULE.md`.
+
+Changed files:
+- `components/ux-dense-operations-panel.tsx`
+- `components/decisions-governance-screen.tsx`
+- `components/communication-export-ops-screen.tsx`
+- `components/ui/data-table.tsx`
+- `components/page-header.tsx`
+- `components/product-guidance-panel.tsx`
+- `components/route-context-chip.tsx`
+- `components/ux-detail-standard-panel.tsx`
+- `components/ux-hub-page.tsx`
+- `components/ux-support-density-strip.tsx`
+- `components/admin-tenant-setup-screen.tsx`
+- `components/internal-workflow-screen.tsx`
+- `components/wealth-actions-screen.tsx`
+- `lib/ux-route-policy.ts`
+- `lib/product-guidance.ts`
+- `lib/ux-hub.ts`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/ALPHAVEST_SURFACE_COPY_HANDBOOK_RULE.md`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+Proof artifacts:
+- `artifacts/ux-page-to-policy/UX-DENSITY-004/2026-06-22-UX-DENSITY-004-compliance-audit-d3.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-004/2026-06-22-UX-DENSITY-004-governance-users-d3.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-004/2026-06-22-UX-DENSITY-004-governance-roles-d3.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-004/2026-06-22-UX-DENSITY-004-governance-audit-history-d3.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-004/2026-06-22-UX-DENSITY-004-export-scope-d3.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-004/2026-06-22-UX-DENSITY-004-export-redaction-d3.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-004/2026-06-22-UX-DENSITY-004-export-new-d2-hub.png`
+
+Validation:
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with 27 existing warnings and 0 errors.
+- `pnpm visual:contract` - passed, 71 assets/routes checked, 0 failures.
+- `PLAYWRIGHT_PORT=3446 pnpm test:route-smoke` - passed, 193 tests.
+- `PLAYWRIGHT_PORT=3437 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-DENSITY dense operations"` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3438 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-NAV route policy navigation|UX-PAGE workbench structure|UX-COMPLEXITY support density|UX-DENSITY tier contract|UX-DENSITY productive workbench"` - passed, 63 tests.
+- `PLAYWRIGHT_PORT=3439 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3442 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3443 pnpm test:file-export` - passed, 14 tests.
+- A first parallel workflow/file-export rerun hit Next dev-server lock contention and was rerun sequentially on fresh ports.
+
+Positive acceptance:
+- D3 routes expose dense operations panels with table, filter/sort and row-action semantics.
+- Shared refactored surfaces no longer expose route/task/proof/method explanatory wording as visible product UI.
+
+Negative/P0 acceptance:
+- No compliance release, export approval/download/share, evidence sufficiency, audit persistence or admin bypass is implied by dense UI.
+- `054` remains D2 and outside D3 operations treatment.
+
+No-generation confirmation: no screen generation, state-screen generation, image generation or generated product assets.
+
+No-route-reclassification confirmation: route IDs, paths, worksets and route scopes remain unchanged; the D2/D3 density mapping was aligned with the active matrix.
+
+No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route was elevated.
+
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
+
 ### Route-Policy Rows Cited
 
 - `027-030`, `033`, `034`, `036`, `038`, `046`; D4 preservation proof for `039`, `047`.

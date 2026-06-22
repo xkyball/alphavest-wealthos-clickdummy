@@ -199,20 +199,20 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
   },
   "061": {
     area: "Reference-only workspace",
-    gateHint: "Reference only: internal orientation surface, not product workflow proof.",
+    gateHint: "Read-only context. No product action is available.",
   },
   "070": {
     area: "Held committee review",
-    gateHint: "Held / not MVP: requires scope and safety unlock before product workflow use.",
+    gateHint: "Blocked until scope and safety are explicitly unlocked.",
   },
 };
 
 const tierGateHints: Record<RouteScopeLabel, string> = {
-  MVP: "MVP workflow route: action authority still depends on role, object, evidence and release gates.",
-  MVP_SUPPORT: "MVP support route: setup/context support only; safety gates still control downstream actions.",
-  P1_AFTER_MVP: "P1 / later: not part of the current MVP workflow. No product task or release authority is exposed.",
-  REFERENCE_ONLY: "Reference only: internal orientation surface, not product workflow proof.",
-  HOLD_PENDING_DECISION: "Held / not MVP: requires scope and safety unlock before product workflow use.",
+  MVP: "Current work can continue only when role, object, evidence and release gates allow it.",
+  MVP_SUPPORT: "Setup and context can continue; downstream actions still require their own gates.",
+  P1_AFTER_MVP: "Not active in this release. No release action is available.",
+  REFERENCE_ONLY: "Read-only context. No product action is available.",
+  HOLD_PENDING_DECISION: "Blocked until scope and safety are explicitly unlocked.",
 };
 
 const guidanceTierLabels: Record<RouteScopeLabel, string> = {
@@ -271,9 +271,9 @@ function workbenchStructureForRoute(route: ScreenRoute, guidance: Pick<ProductGu
     actionRail: guidance.primaryAction
       ? `Next allowed action: ${guidance.primaryAction.label}.`
       : "No productive action is exposed until route and role prerequisites are clear.",
-    context: `${guidance.shortTitle} is selected inside ${guidance.area}; route scope is ${guidance.tierLabel}.`,
-    queue: `Priority queue for ${guidance.shortTitle}; visible status is orientation, not gate-completion proof.`,
-    safety: guidance.gateHint,
+    context: `${guidance.shortTitle} selected in ${guidance.area}.`,
+    queue: `${guidance.shortTitle} open items and blocked states.`,
+    safety: `${guidance.gateHint} Controls stay blocked until the required gate passes.`,
   } satisfies ProductGuidanceWorkbenchStructure;
 }
 

@@ -48,6 +48,7 @@ import { RouteContextChip } from "@/components/route-context-chip";
 import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
 import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
+import { UxDenseOperationsPanel } from "@/components/ux-dense-operations-panel";
 import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
 import { UxComplexityPriorityPanel } from "@/components/ux-complexity-priority-panel";
 import { UxCtaCluster } from "@/components/ux-cta-cluster";
@@ -114,6 +115,10 @@ const textareaClass =
 
 const destructiveButtonClass =
   "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-red/60 bg-alphavest-red/10 px-4 text-sm font-semibold text-alphavest-red transition hover:bg-alphavest-red/16";
+
+function handleStaticSortChange() {
+  return undefined;
+}
 
 const decisionNav: NavItem[] = [
   { href: "/portal", icon: Home, label: "Home" },
@@ -575,12 +580,12 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
 }
 
 const complianceAuditColumns: Array<DataTableColumn<(typeof complianceAuditRows)[number]>> = [
-  { key: "timestamp", header: "Timestamp", render: (row) => row.timestamp },
-  { key: "event", header: "Event Type", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.event}</span> },
-  { key: "status", header: "Exception Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge> },
-  { key: "severity", header: "Severity", render: (row) => <Badge tone={toneFor(row.severity)}>{row.severity}</Badge> },
-  { key: "actor", header: "Actor", render: (row) => row.actor },
-  { key: "client", header: "Client", render: (row) => row.client },
+  { key: "timestamp", header: "Timestamp", render: (row) => row.timestamp, sortable: true },
+  { key: "event", header: "Event Type", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.event}</span>, sortable: true },
+  { key: "status", header: "Exception Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge>, sortable: true },
+  { key: "severity", header: "Severity", render: (row) => <Badge tone={toneFor(row.severity)}>{row.severity}</Badge>, sortable: true },
+  { key: "actor", header: "Actor", render: (row) => row.actor, sortable: true },
+  { key: "client", header: "Client", render: (row) => row.client, sortable: true },
   { key: "policy", header: "Policy / Rule", render: (row) => row.policy },
   { key: "source", header: "Source", render: (row) => row.source }
 ];
@@ -607,7 +612,7 @@ function ComplianceAuditPage({ title }: { title: string }) {
               { detail: "Exceptions still unresolved", label: "Open", value: "27" },
               { detail: "Export must remain controlled", label: "Download", value: "No" },
             ]}
-            title="Audit complexity reduction"
+            title="Audit status"
           />
           <div className="grid gap-3 md:grid-cols-4">
             {complianceAuditMetrics.map((metric) => (
@@ -623,10 +628,9 @@ function ComplianceAuditPage({ title }: { title: string }) {
               </Card>
             ))}
           </div>
-          <FilterPanel filters={["Date range", "Event type", "Exception status", "Policy / rule", "Actor", "Client", "Severity", "Source"]} />
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-alphavest-muted">12,842 results</p>
-            <div className="flex gap-3">
+          <UxDenseOperationsPanel
+            actions={
+              <>
               <button
                 className={secondaryButtonClass}
                 data-testid="j02-export-controlled"
@@ -638,9 +642,26 @@ function ComplianceAuditPage({ title }: { title: string }) {
                 <LockKeyhole aria-hidden="true" className="size-4" />Export Controlled
               </button>
               <button className={secondaryButtonClass} type="button">Column Settings</button>
-            </div>
-          </div>
-          <DataTable columns={complianceAuditColumns} getRowId={(row) => `${row.timestamp}-${row.event}`} rows={complianceAuditRows} />
+              </>
+            }
+            controls={["Date range", "Event type", "Exception status", "Actor", "Client", "Severity", "Source", "Policy / rule"]}
+            description="Compliance audit rows stay scan-first with filter, sort and row inspection before any controlled export."
+            pageId="042"
+            resultLabel="12,842 audit rows; 27 unresolved exceptions"
+            safetyNote="Audit visibility is not audit persistence; export and critical action controls remain blocked until persisted audit evidence exists."
+            title="Audit operations table"
+          >
+            <DataTable
+              columns={complianceAuditColumns}
+              compact
+              getRowId={(row) => `${row.timestamp}-${row.event}`}
+              onSortChange={handleStaticSortChange}
+              responsiveMode="table"
+              rows={complianceAuditRows}
+              sortDirection="desc"
+              sortKey="timestamp"
+            />
+          </UxDenseOperationsPanel>
         </section>
         <aside className="space-y-5">
           <StatePanel
@@ -680,20 +701,6 @@ function ComplianceAuditPage({ title }: { title: string }) {
         </aside>
       </div>
     </Phase12Shell>
-  );
-}
-
-function FilterPanel({ filters }: { filters: string[] }) {
-  return (
-    <div className="grid gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-panel/55 p-3 md:grid-cols-2 xl:grid-cols-4">
-      {filters.map((filter) => (
-        <button className="flex h-11 items-center justify-between gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted" key={filter} type="button">
-          <span>{filter}</span>
-          <ChevronDown aria-hidden="true" className="size-4" />
-        </button>
-      ))}
-      <button className={primaryButtonClass} type="button">Apply Filters</button>
-    </div>
   );
 }
 
@@ -1208,11 +1215,11 @@ function EvidenceRecordDetailPage({ title }: { title: string }) {
 }
 
 const userColumns: Array<DataTableColumn<(typeof governanceUsers)[number]>> = [
-  { key: "name", header: "User", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}<span className="block text-xs text-alphavest-muted">{row.email}</span></span> },
-  { key: "role", header: "Role(s)", render: (row) => row.role },
+  { key: "name", header: "User", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}<span className="block text-xs text-alphavest-muted">{row.email}</span></span>, sortable: true },
+  { key: "role", header: "Role(s)", render: (row) => row.role, sortable: true },
   { key: "access", header: "Entity Access", render: (row) => row.access },
-  { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge> },
-  { key: "lastActive", header: "Last Active", render: (row) => row.lastActive },
+  { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge>, sortable: true },
+  { key: "lastActive", header: "Last Active", render: (row) => row.lastActive, sortable: true },
   { key: "mfa", header: "MFA", render: (row) => <Badge tone={toneFor(row.mfa)}>{row.mfa}</Badge> }
 ];
 
@@ -1250,15 +1257,26 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
             </Card>
           ))}
         </div>
-        <div className="grid gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-panel/55 p-3 md:grid-cols-[1fr_auto_auto]">
-          <label className="relative min-w-0">
-            <Search aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-            <input className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm outline-none focus:border-alphavest-gold" placeholder="Search users by name or email..." />
-          </label>
-          <button className={secondaryButtonClass} type="button"><Filter aria-hidden="true" className="size-4" />Filters</button>
-          <button className={secondaryButtonClass} type="button"><Download aria-hidden="true" className="size-4" />Export</button>
-        </div>
-        <DataTable columns={userColumns} getRowId={(row) => row.email} rows={governanceUsers} />
+        <UxDenseOperationsPanel
+          actions={<button className={secondaryButtonClass} type="button"><Download aria-hidden="true" className="size-4" />Export</button>}
+          controls={["Search user", "Role", "Status", "MFA", "Entity access", "Last active"]}
+          description="User access stays in a compact operations table so role, MFA and entity scope can be compared without admin bypass."
+          pageId="048"
+          resultLabel={`${governanceUsers.length} governed users`}
+          safetyNote="Admin visibility does not expand role, object, payload, evidence, export or release authority."
+          title="User access operations"
+        >
+          <DataTable
+            columns={userColumns}
+            compact
+            getRowId={(row) => row.email}
+            onSortChange={handleStaticSortChange}
+            responsiveMode="table"
+            rows={governanceUsers}
+            sortDirection="asc"
+            sortKey="name"
+          />
+        </UxDenseOperationsPanel>
       </div>
       <Drawer
         description="Invite a user and assign scoped roles."
@@ -1341,7 +1359,16 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
             <Card key={label}><p className="text-sm text-alphavest-muted">{label}</p><p className="mt-2 text-2xl font-semibold text-alphavest-ivory">{value}</p><p className="text-xs text-alphavest-subtle">{detail}</p></Card>
           ))}
         </div>
-        <RoleMatrix />
+        <UxDenseOperationsPanel
+          controls={["Role", "Clients", "Accounts", "Investments", "Trading", "Reporting", "Billing", "Sensitive changes"]}
+          description="Role permissions remain a dense comparison table; confirmation and audit gates stay outside the matrix."
+          pageId="049"
+          resultLabel={`${roleRows.length} roles; 3 sensitive changes pending confirmation`}
+          safetyNote="Role edits cannot bypass scoped permissions, second confirmation or audit persistence."
+          title="Role-permission operations"
+        >
+          <RoleMatrix />
+        </UxDenseOperationsPanel>
       </div>
       <Drawer
         description="Custom role with sensitive permission changes."
@@ -1399,10 +1426,17 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
 function RoleMatrix() {
   return (
     <div className="overflow-x-auto rounded-md border border-alphavest-border/70">
-      <table className="w-full min-w-[62rem] table-fixed border-collapse text-left text-sm">
+      <table className="w-full min-w-[66rem] table-fixed border-collapse text-left text-sm" data-testid="ux-data-table">
         <thead className="bg-alphavest-panel/75 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">
           <tr>
-            {["Role", "Clients", "Accounts", "Investments", "Trading", "Reporting", "Billing"].map((header) => <th className="h-10 border-b border-alphavest-border/70 px-4" key={header}>{header}</th>)}
+            {["Role", "Clients", "Accounts", "Investments", "Trading", "Reporting", "Billing"].map((header) => (
+              <th className="h-10 border-b border-alphavest-border/70 px-4" key={header}>
+                <button className="text-left uppercase" data-testid="ux-data-table-sort" type="button">{header}</button>
+              </th>
+            ))}
+            <th className="h-10 w-20 border-b border-alphavest-border/70 px-4">
+              <span className="sr-only">Actions</span>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -1410,6 +1444,16 @@ function RoleMatrix() {
             <tr className={cn("h-[var(--table-row-height)] border-b border-alphavest-border/55 last:border-0", index === 1 ? "bg-alphavest-gold/10" : "")} key={row.role}>
               <td className="px-4 py-3 font-semibold text-alphavest-ivory">{row.role}<Badge className="ml-2" tone={toneFor(row.type)}>{row.type}</Badge></td>
               {[row.clients, row.accounts, row.investments, row.trading, row.reporting, row.billing].map((value, valueIndex) => <td className="px-4 py-3" key={`${row.role}-${valueIndex}`}><Badge tone={toneFor(value)}>{value}</Badge></td>)}
+              <td className="px-4 py-3 text-right">
+                <button
+                  aria-label={`Open row actions for ${row.role}`}
+                  className="ml-auto grid size-8 place-items-center rounded-md border border-transparent text-alphavest-subtle transition hover:border-alphavest-border hover:text-alphavest-ivory"
+                  data-testid="ux-data-table-row-action"
+                  type="button"
+                >
+                  <SlidersHorizontal aria-hidden="true" className="size-4" />
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -1419,12 +1463,12 @@ function RoleMatrix() {
 }
 
 const accessColumns: Array<DataTableColumn<(typeof accessRequests)[number]>> = [
-  { key: "access", header: "Request", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.access}<span className="block text-xs text-alphavest-muted">{row.type}</span></span> },
-  { key: "requester", header: "Requester", render: (row) => row.requester },
+  { key: "access", header: "Request", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.access}<span className="block text-xs text-alphavest-muted">{row.type}</span></span>, sortable: true },
+  { key: "requester", header: "Requester", render: (row) => row.requester, sortable: true },
   { key: "type", header: "Requested Access", render: (row) => row.type },
   { key: "scope", header: "Affected Scope", render: (row) => row.scope },
-  { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge> },
-  { key: "submitted", header: "Requested", render: (row) => row.submitted }
+  { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge>, sortable: true },
+  { key: "submitted", header: "Requested", render: (row) => row.submitted, sortable: true }
 ];
 
 function AccessRequestsPage({ title, visualState }: { title: string; visualState?: VisualState }) {
@@ -1440,11 +1484,25 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
           title={title}
         />
         <ScfP07P09TrustPanel mode="governance" />
-        <div className="flex flex-wrap gap-2">
-          {["All 24", "Pending 8", "Approved 11", "Denied 3", "Escalated 2"].map((item, index) => <Badge key={item} tone={index === 0 ? "gold" : toneFor(item)}>{item}</Badge>)}
-          <button className={secondaryButtonClass + " ml-auto"} type="button"><Filter aria-hidden="true" className="size-4" />Filters</button>
-        </div>
-        <DataTable columns={accessColumns} getRowId={(row) => `${row.requester}-${row.access}`} rows={accessRequests} />
+        <UxDenseOperationsPanel
+          controls={["All 24", "Pending 8", "Approved 11", "Denied 3", "Escalated 2", "SOD conflict"]}
+          description="Access requests stay in queue form with policy, scope and status visible before the selected request opens."
+          pageId="050"
+          resultLabel={`${accessRequests.length} visible access requests`}
+          safetyNote="Approval remains constrained by policy checks, segregation-of-duties checks and audit logging; admin users cannot bypass these gates."
+          title="Access-request operations"
+        >
+          <DataTable
+            columns={accessColumns}
+            compact
+            getRowId={(row) => `${row.requester}-${row.access}`}
+            onSortChange={handleStaticSortChange}
+            responsiveMode="table"
+            rows={accessRequests}
+            sortDirection="desc"
+            sortKey="submitted"
+          />
+        </UxDenseOperationsPanel>
       </div>
       <Drawer
         description="Review access request, policy checks and decision."

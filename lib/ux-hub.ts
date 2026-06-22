@@ -116,7 +116,7 @@ export const uxHubDefinitions: Record<string, UxHubDefinition> = {
       linkForPageId("028", "Upload evidence", "Provide scoped evidence input."),
       linkForPageId("046", "Open evidence", "Review permitted evidence context."),
     ],
-    safetyNote: "Mobile home is orientation only; it does not expose internal workflow detail or release controls.",
+    safetyNote: "Mobile home hides internal workflow detail and release controls.",
     sourceSummaries: ["Next step today", "Priority actions", "Released mobile summary"],
     statusStrip: ["Mobile", "Released view", "No internal detail"],
     summary: "The mobile hub strips the client workspace down to a safe next step and a few visible priorities.",

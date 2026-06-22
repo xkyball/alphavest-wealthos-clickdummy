@@ -1,13 +1,12 @@
 "use client";
 
-import { Route } from "lucide-react";
+import { Compass } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { productGuidanceForPathname } from "@/lib/product-guidance";
 
 export function RouteContextChip({ className = "" }: { className?: string }) {
   const pathname = usePathname();
   const routeContext = productGuidanceForPathname(pathname);
-  const label = `${routeContext.routeId ? `${routeContext.routeId} · ` : ""}${routeContext.shortTitle}`;
 
   return (
     <span
@@ -15,8 +14,8 @@ export function RouteContextChip({ className = "" }: { className?: string }) {
       data-testid="ux-nav-route-context"
       title={`${routeContext.area}: ${routeContext.shortTitle}`}
     >
-      <Route aria-hidden="true" className="size-3.5 shrink-0 text-alphavest-gold" />
-      <span className="truncate">{label}</span>
+      <Compass aria-hidden="true" className="size-3.5 shrink-0 text-alphavest-gold" />
+      <span className="truncate">{routeContext.shortTitle}</span>
     </span>
   );
 }

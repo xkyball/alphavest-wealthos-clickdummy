@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Compass, LockKeyhole, Route, ShieldCheck } from "lucide-react";
+import { ArrowRight, Compass, LockKeyhole, ShieldCheck } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useDemoSession } from "@/components/demo-session-provider";
 import { UxSupportDensityStrip } from "@/components/ux-support-density-strip";
@@ -61,30 +61,21 @@ export function ProductGuidancePanel() {
             >
               {guidance.tierLabel}
             </span>
-            {guidance.routeId ? (
-              <span className="inline-flex h-7 items-center gap-2 rounded-full border border-alphavest-border bg-alphavest-charcoal/65 px-3 text-xs font-semibold text-alphavest-muted">
-                <Route aria-hidden="true" className="size-3.5" />
-                Workflow step {guidance.routeId}
-              </span>
-            ) : null}
           </div>
 
           <div className="grid gap-2 md:gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.5fr)]">
             <div>
               <h2 className="font-display text-xl text-alphavest-ivory md:text-3xl">
-                Page job and next step
-              </h2>
-              <p className="mt-1 text-sm font-semibold text-alphavest-gold-soft md:text-base">
                 {guidance.shortTitle}
-              </p>
-              <p className="mt-1 hidden max-w-3xl text-sm leading-6 text-alphavest-muted sm:block md:mt-2">
+              </h2>
+              <p className="sr-only">
                 {guidance.purpose}
               </p>
             </div>
             <div className="hidden rounded-md border border-alphavest-gold/25 bg-alphavest-gold/10 p-2.5 sm:block md:p-3" data-testid="ux-nav-gate-guidance">
               <div className="flex items-center gap-2 text-sm font-semibold text-alphavest-gold-soft">
                 <LockKeyhole aria-hidden="true" className="size-4" />
-                Gate guidance
+                Current gate
               </div>
               <p className="mt-1 text-sm leading-5 text-alphavest-muted md:mt-2 md:leading-6">{guidance.gateHint}</p>
             </div>
@@ -121,25 +112,12 @@ export function ProductGuidancePanel() {
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold-soft">Action Rail</p>
                 <p className="mt-2 text-sm leading-6 text-alphavest-muted">{guidance.workbenchStructure.actionRail}</p>
                 <p className="mt-2 text-xs leading-5 text-alphavest-gold-soft">{guidance.workbenchStructure.safety}</p>
-                {density?.tier === "D2" ? (
-                  <p className="mt-2 text-xs leading-5 text-alphavest-gold-soft">D2 workbench density is orientation only; route gates and action authority still decide what can proceed.</p>
-                ) : null}
               </div>
             </div>
           ) : null}
           {guidance.routeId ? (
             <UxSupportDensityStrip className="mt-4" pageId={guidance.routeId} />
           ) : null}
-          <div className="mt-3 hidden flex-wrap gap-1.5 md:flex" data-ux-content-tier="tertiary">
-            {guidance.routePolicyLabels.slice(0, 4).map((label) => (
-              <span
-                className="rounded-full border border-alphavest-border/60 bg-alphavest-charcoal/45 px-2.5 py-1 text-[0.62rem] font-semibold uppercase text-alphavest-subtle"
-                key={label}
-              >
-                {label.replaceAll("_", " ")}
-              </span>
-            ))}
-          </div>
         </div>
 
         {hasActions ? (

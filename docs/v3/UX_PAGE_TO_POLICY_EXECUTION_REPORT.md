@@ -112,6 +112,135 @@ No-P1/Hold/Reference-elevation confirmation: protected contracts remain non-prod
 
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and tests.
 
+## Completed Slice: UX-DENSITY-004
+
+Task: `UX-DENSITY-004` - Apply D3 Dense Operations to governance/export/audit tables.
+
+Mission Card: apply D3 Dense Operations to the existing governance, audit and export operation routes that the Route Policy Matrix classifies as dense operations, while preserving route scope, compliance release, export lifecycle separation, audit visibility/persistence separation, RBAC and no-generation rules.
+
+Evidence Intake:
+- Task-master `UX-DENSITY-004` target behavior: D3 dense operation treatment for governance/export/audit tables.
+- Route-policy rows cited: `042` `/compliance/:id/audit`, `048` `/governance/users`, `049` `/governance/roles`, `050` `/governance/access-requests`, `051` `/governance/audit-history`, `055` `/export/:id/scope`, `056` `/export/:id/redaction`.
+- Guard row cited: `054` `/export/new` remains D2 Productive Wizard/Hub, not a D3 operations table.
+- Existing implementation finding: dense data tables existed, but D3 metadata, sort/action semantics and safety-state framing were not consistent.
+- User surface-copy instruction applied: explanatory route/task/proof/method copy belongs in docs/handbook, not visible app UI.
+
+Problem Architecture: operations users need compact table-first control surfaces, but dense layout must not imply admin bypass, evidence sufficiency, export approval/download/share, audit persistence or compliance release.
+
+Double Diamond:
+- Discover: governance/export/audit routes had useful data, but density behavior and visible copy were mixed with explanatory proof language.
+- Define: create a D3 operations wrapper and keep surface copy functional: status, controls, rows and blocked gates.
+- Develop: reuse existing `DataTable`, route density metadata, static sort callbacks and existing safety state panels.
+- Deliver: D3 operations panels, table semantics, route-smoke proof, visual proof and a handbook rule for non-product explanatory copy.
+
+Psycho-Logic + Map/Model: the operations user pressure is "show me what needs action without making me hunt." The map trap is mistaking a dense table or visible row action for permission. The safe design move is table-first density with explicit blocked gate status and no explanatory task labels in visible UI.
+
+Reframing Matrix:
+- Page-as-list: rejected when it only piles cards or notes.
+- Page-as-job: kept through result counts, filters and row actions.
+- Page-as-gate: kept through non-bypass state panels.
+- Page-as-handoff: kept for export scope/redaction without implying preview, approval or download completion.
+
+TRIZ: improve scan density and operational speed without weakening safety gates by adding D3 structure around existing tables instead of adding new actions or authority.
+
+SIT Closed World: reused `DataTable`, route policy/density helpers, existing demo rows, existing export/governance/audit screens and route-smoke harness; no route, schema, API, screen generation or product scope engine was introduced.
+
+Zwicky + CCA:
+- Variant A: one shared D3 operations panel plus existing tables. Kept.
+- Variant B: rewrite each route into a bespoke operations dashboard. Rejected as broad and less provable.
+- Variant C: classify all export routes as D3. Rejected because row `054` is D2 Productive Wizard/Hub.
+
+SCAMPER: substituted visible proof/task language with product-language status, combined filter/sort/action controls in table-first operations panels, eliminated dead explanatory copy from visible UI, rearranged support status after product content on admin/support pages.
+
+Harvard / BATNA: objective criteria are the Route Policy Matrix rows and task card. BATNA remains stop/report if a route needs behavior or authority changes beyond D3 UX structure.
+
+MESOs:
+- Option A: table-first D3 panel applied only to matrix D3 routes. Chosen.
+- Option B: broader governance shell rewrite with new layout primitives. Rejected for scope.
+- Option C: docs-only copy policy without code cleanup. Rejected because user explicitly asked to adapt already-refactored pages.
+
+Measurement Plan:
+- `pnpm typecheck`
+- `pnpm lint`
+- `pnpm visual:contract`
+- `PLAYWRIGHT_PORT=3446 pnpm test:route-smoke`
+- Targeted D3, mobile, permissions, workflow-gate and file-export Playwright runs.
+- Screenshot proof under `artifacts/ux-page-to-policy/UX-DENSITY-004/`.
+
+Ethics/Fairness: no deception, no dark patterns, no fake proof, no hidden client-visible advice, no admin bypass and no overclaim that dense operations UI completes compliance, evidence, export or audit obligations.
+
+Adversarial QA: dense row actions could be misread as authority; tests require safety/gate copy, row action semantics and no forbidden handbook/proof copy. Export-new could be accidentally coerced into D3; tests prove it remains D2 hub/wizard.
+
+Learning Log: `UX-DENSITY-005` should use the same pattern: focus detail density on real object decisions while keeping explanatory source/task language in docs.
+
+Changed files:
+- `components/ux-dense-operations-panel.tsx`
+- `components/decisions-governance-screen.tsx`
+- `components/communication-export-ops-screen.tsx`
+- `components/ui/data-table.tsx`
+- `components/page-header.tsx`
+- `components/product-guidance-panel.tsx`
+- `components/route-context-chip.tsx`
+- `components/ux-detail-standard-panel.tsx`
+- `components/ux-hub-page.tsx`
+- `components/ux-support-density-strip.tsx`
+- `components/admin-tenant-setup-screen.tsx`
+- `components/internal-workflow-screen.tsx`
+- `components/wealth-actions-screen.tsx`
+- `lib/ux-route-policy.ts`
+- `lib/product-guidance.ts`
+- `lib/ux-hub.ts`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/ALPHAVEST_SURFACE_COPY_HANDBOOK_RULE.md`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+
+Implementation summary:
+- Added `UxDenseOperationsPanel` for D3 Dense Operations surfaces.
+- Applied D3 table-first density to compliance audit, governance users, governance roles, access requests, audit history, export scope and export redaction.
+- Corrected density policy so `042` is D3 and `054` remains D2 as required by the matrix.
+- Added table test hooks for sort and row-action semantics.
+- Removed visible task/proof/route-ID style explanatory copy from shared UX surfaces already touched in prior slices and documented the rule in `ALPHAVEST_SURFACE_COPY_HANDBOOK_RULE.md`.
+
+Validation:
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with 27 existing warnings and 0 errors.
+- `pnpm visual:contract` - passed, 71 assets/routes checked, 0 failures.
+- `PLAYWRIGHT_PORT=3446 pnpm test:route-smoke` - passed, 193 tests.
+- `PLAYWRIGHT_PORT=3445 pnpm exec playwright test tests/route-smoke.spec.ts -g "mobile route identity"` - passed, 8 tests after targeting the real `PageHeader`.
+- `PLAYWRIGHT_PORT=3437 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-DENSITY dense operations"` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3438 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-NAV route policy navigation|UX-PAGE workbench structure|UX-COMPLEXITY support density|UX-DENSITY tier contract|UX-DENSITY productive workbench"` - passed, 63 tests.
+- `PLAYWRIGHT_PORT=3439 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3442 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3443 pnpm test:file-export` - passed, 14 tests.
+- A first parallel workflow/file-export rerun hit Next dev-server lock contention and was rerun sequentially on fresh ports.
+
+Screenshot/proof:
+- `artifacts/ux-page-to-policy/UX-DENSITY-004/2026-06-22-UX-DENSITY-004-compliance-audit-d3.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-004/2026-06-22-UX-DENSITY-004-governance-users-d3.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-004/2026-06-22-UX-DENSITY-004-governance-roles-d3.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-004/2026-06-22-UX-DENSITY-004-governance-audit-history-d3.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-004/2026-06-22-UX-DENSITY-004-export-scope-d3.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-004/2026-06-22-UX-DENSITY-004-export-redaction-d3.png`
+- `artifacts/ux-page-to-policy/UX-DENSITY-004/2026-06-22-UX-DENSITY-004-export-new-d2-hub.png`
+
+Positive acceptance:
+- Scoped D3 routes now expose table-first dense operations panels with filter/sort/action semantics and dense-route metadata.
+- Existing refactored surfaces now use product copy instead of visible route/task/proof explanations.
+
+Negative/P0 acceptance:
+- D3 panels do not claim compliance release, export approval/download/share, evidence sufficiency, audit persistence or admin bypass.
+- `054` remains D2 and is not coerced into dense operations.
+
+No-generation confirmation: no screen generation, state-screen generation, image generation or generated product assets.
+
+No-route-reclassification confirmation: route IDs, paths, worksets and route scopes remain unchanged; only density derivation was corrected to match the matrix.
+
+No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route was elevated or added to productive navigation.
+
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
+
 ## Completed Slice: UX-DENSITY-001
 
 Task: `UX-DENSITY-001` - Introduce density tier mapping D1-D4 into layout patterns.
