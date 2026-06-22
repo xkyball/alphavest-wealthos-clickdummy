@@ -99,6 +99,12 @@ export function DataTable<T>({
     onSortChange?.(key);
   }
 
+  function sortStateForColumn(column: DataTableColumn<T>) {
+    if (!column.sortable) return undefined;
+    if (activeSortKey !== column.key) return "none";
+    return activeSortDirection === "desc" ? "descending" : "ascending";
+  }
+
   function RowAction({ row }: { row: T }) {
     const actionLabel = rowActionLabel?.(row) ?? `Open row action for ${getRowId(row)}`;
 
@@ -129,34 +135,43 @@ export function DataTable<T>({
       <table className={tablePadding + " border-collapse text-left text-sm"}>
         <thead className="bg-alphavest-panel/75 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">
           <tr>
-            {columns.map((column) => (
-              <th
-                className={cn(
-                  "min-h-12 border-b border-alphavest-border/70 align-top text-[0.8rem] font-semibold tracking-[0.04em] uppercase",
-                  rowMinHeight,
-                  cellPadding,
-                  column.className
-                )}
-                key={column.key}
-              >
-                {column.sortable ? (
-                  <button
-                    aria-label={`Sort by ${column.header}${activeSortKey === column.key ? `, currently ${activeSortDirection}` : ""}`}
-                    className="inline-flex max-w-full items-center gap-1 text-left uppercase"
-                    data-testid="ux-data-table-sort"
-                    onClick={() => handleSort(column.key)}
-                    type="button"
-                  >
-                    <span className="truncate">{column.header}</span>
-                    <span aria-hidden="true" className="text-[0.68rem] text-alphavest-subtle">
-                      {activeSortKey === column.key ? (activeSortDirection === "desc" ? "desc" : "asc") : ""}
-                    </span>
-                  </button>
-                ) : (
-                  column.header
-                )}
-              </th>
-            ))}
+            {columns.map((column) => {
+              const columnSortState = sortStateForColumn(column);
+
+              return (
+                <th
+                  aria-sort={columnSortState}
+                  className={cn(
+                    "min-h-12 border-b border-alphavest-border/70 align-top text-[0.8rem] font-semibold tracking-[0.04em] uppercase",
+                    rowMinHeight,
+                    cellPadding,
+                    column.className
+                  )}
+                  key={column.key}
+                >
+                  {column.sortable ? (
+                    <button
+                      aria-label={`Sort by ${column.header}${activeSortKey === column.key ? `, currently ${columnSortState}` : ""}`}
+                      className="inline-flex max-w-full items-center gap-1 text-left uppercase"
+                      data-testid="ux-data-table-sort"
+                      onClick={() => handleSort(column.key)}
+                      title={`Sort table by ${column.header}${activeSortKey === column.key ? `, currently ${columnSortState}` : ""}.`}
+                      type="button"
+                    >
+                      <span className="truncate">{column.header}</span>
+                      <span aria-hidden="true" className="text-[0.68rem] text-alphavest-subtle">
+                        {activeSortKey === column.key ? (activeSortDirection === "desc" ? "desc" : "asc") : ""}
+                      </span>
+                      {activeSortKey === column.key ? (
+                        <span className="sr-only">Sorted {columnSortState}</span>
+                      ) : null}
+                    </button>
+                  ) : (
+                    column.header
+                  )}
+                </th>
+              );
+            })}
             <th className="min-h-12 w-14 border-b border-alphavest-border/70 px-5">
               <span className="sr-only">Actions</span>
             </th>
