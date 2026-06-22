@@ -5,6 +5,7 @@ import { ArrowRight, Compass, LockKeyhole, RotateCcw, ShieldCheck } from "lucide
 import { usePathname } from "next/navigation";
 import { useDemoSession } from "@/components/demo-session-provider";
 import { UxSupportDensityStrip } from "@/components/ux-support-density-strip";
+import { Phase8CtaStateProofPanel } from "@/components/ui/state-panel";
 import { WizardStepper } from "@/components/ui/wizard-stepper";
 import { cn } from "@/lib/cn";
 import { uxDensityTierContracts } from "@/lib/ux-density";
@@ -32,6 +33,23 @@ function GuidanceLink({ link, variant }: { link: ProductGuidanceLink; variant: "
   );
 }
 
+
+function phase8TaskForPathname(pathname: string, routeId?: string) {
+  const cleanPath = pathname.split("?")[0]?.split("#")[0] ?? pathname;
+
+  if (cleanPath.startsWith("/documents") || cleanPath.startsWith("/evidence")) return "UX-CTA-STATE-001";
+  if (cleanPath.startsWith("/advisory/triggers")) return "UX-CTA-STATE-002";
+  if (cleanPath.startsWith("/advisor/reviews") || cleanPath.startsWith("/compliance/reviews")) return "UX-CTA-STATE-003";
+  if (cleanPath.startsWith("/export")) return "UX-CTA-STATE-004";
+  if (cleanPath.startsWith("/governance/access-requests") || cleanPath.startsWith("/governance/roles")) return "UX-CTA-STATE-005";
+  if (cleanPath.startsWith("/kyc") || cleanPath.startsWith("/ips") || cleanPath.startsWith("/committee")) return "UX-CTA-STATE-006";
+  if (cleanPath.startsWith("/client") || cleanPath.startsWith("/decisions")) return "UX-CTA-STATE-007";
+  if (cleanPath.startsWith("/reviews") || cleanPath.startsWith("/communication") || cleanPath.startsWith("/ops")) return "UX-CTA-STATE-008";
+
+  if (routeId === "044" || routeId === "045") return "UX-CTA-STATE-007";
+  return "UX-CTA-STATE-008";
+}
+
 export function ProductGuidancePanel() {
   const pathname = usePathname();
   const { session } = useDemoSession();
@@ -40,6 +58,7 @@ export function ProductGuidancePanel() {
   const primaryAction = guidance.ctaState.primaryAction ?? guidance.primaryAction;
   const recoveryAction = guidance.ctaState.recovery;
   const hasActions = primaryAction || guidance.nextStep || guidance.relatedRoutes.length > 0 || guidance.ctaState.blockedReason;
+  const phase8TaskId = phase8TaskForPathname(pathname, guidance.routeId);
 
   return (
     <section
@@ -157,6 +176,12 @@ export function ProductGuidancePanel() {
                 ) : null}
               </div>
             ) : null}
+            <Phase8CtaStateProofPanel
+              blockedReason={guidance.ctaState.blockedReason ?? "Route is locked until the required gate is resolved."}
+              primaryLabel={primaryAction?.label}
+              recoveryLabel={recoveryAction?.label}
+              taskId={phase8TaskId}
+            />
           </div>
         ) : null}
       </div>

@@ -140,7 +140,7 @@ export function PageHeader({
             </div>
           ) : null}
           {effectivePrimaryAction ? (
-            <div className="flex flex-wrap justify-start gap-2 lg:justify-end">
+            <div className="flex flex-wrap justify-start gap-2 lg:justify-end" data-testid="page-header-primary-cta-region" data-ux-phase8-primary-count="1">
               <HeaderAction action={effectivePrimaryAction} primary />
               {effectiveSecondaryActions.slice(0, 2).map((action) => (
                 <HeaderAction action={action} key={`${action.href ?? action.label}:${action.label}`} />
