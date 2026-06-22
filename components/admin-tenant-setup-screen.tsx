@@ -371,7 +371,7 @@ function PlatformSettingsPage({ onConfirm, route }: { onConfirm: () => void; rou
         <Card>
           <CardHeader>
             <CardTitle>General</CardTitle>
-            <CardDescription>Global platform defaults used across demo tenants.</CardDescription>
+            <CardDescription>Global platform defaults used across client tenants.</CardDescription>
           </CardHeader>
           <CardContent>
             <FieldGrid fields={platformSettings.fields} />
@@ -1196,13 +1196,13 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
   const [roleKey, setRoleKey] = useState<DemoRoleKey>("analyst");
   const [tenantSlug, setTenantSlug] = useState<DemoTenantSlug>("summit");
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
-  const [message, setMessage] = useState("Invitation creates a DB user, pending role assignment and audit event.");
+  const [message, setMessage] = useState("Invitation creates a user, pending role assignment and audit event.");
   const [inviteToken, setInviteToken] = useState<string | null>(null);
 
   async function sendInvitation() {
     setStatus("submitting");
     setInviteToken(null);
-    setMessage("Creating DB-backed invitation...");
+    setMessage("Creating invitation...");
 
     const response = await fetch("/api/admin-tenants", {
       body: JSON.stringify({
@@ -1307,7 +1307,7 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
         <StatePanel
           detail={message}
           state={status === "error" ? "blocked" : status === "success" ? "success" : "restricted"}
-          title="DB-backed invitation"
+          title="Invitation state"
         />
         {inviteToken ? (
           <Link className={cn(secondaryButtonClass, "w-full justify-between")} data-testid="dummy-invite-link" href="/onboarding/invite">

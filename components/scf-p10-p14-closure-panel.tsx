@@ -15,8 +15,8 @@ const modeCopy: Record<ClosurePanelMode, { detail: string; title: string }> = {
     title: "Document Interaction Closure",
   },
   proof: {
-    detail: "P10-P14 proof is tied to executable tasks, QA artefacts and explicitly blocked unsupported scope.",
-    title: "Proof and Handoff Closure",
+    detail: "P10-P14 status is tied to executable tasks, QA artefacts and explicitly blocked unsupported scope.",
+    title: "Handoff Closure",
   },
 };
 
@@ -30,7 +30,7 @@ export function ScfP10P14ClosurePanel({ mode }: { mode: ClosurePanelMode }) {
           <CardTitle>{copy.title}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <StatePanel detail={copy.detail} state="success" title="P10-P14 implementation evidence" />
+          <StatePanel detail={copy.detail} state="success" title="P10-P14 implementation state" />
           <div className="grid gap-3 md:grid-cols-3">
             <ClosureMetric label="Master tasks" value={String(scfP10P14ProofPackage.masterTaskCount)} />
             <ClosureMetric label="Subtasks" value={String(scfP10P14ProofPackage.subtaskCount)} />

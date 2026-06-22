@@ -170,7 +170,7 @@ function WealthSidebar({ activePageId }: { activePageId: string }) {
       <div className="space-y-3">
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/60 p-4">
           <p className="text-sm font-semibold text-alphavest-ivory">{wealthWorkspace.household}</p>
-          <p className="mt-1 text-xs text-alphavest-muted">Demo tenant context</p>
+          <p className="mt-1 text-xs text-alphavest-muted">Tenant context</p>
         </div>
         <button className="flex h-10 w-full items-center gap-2 rounded-md border border-alphavest-border px-3 text-sm text-alphavest-muted" type="button">
           <SlidersHorizontal aria-hidden="true" className="size-4" />
@@ -684,7 +684,7 @@ function ActionDrawer({ onClose }: { onClose: () => void }) {
         <section>
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-gold">Available actions</p>
           <UxCtaCluster
-            blockedReason="Mark Ready stays blocked until client approval evidence is present; do not use drawer actions as readiness proof."
+            blockedReason="Mark Ready stays blocked until client approval evidence is present; drawer actions do not change readiness."
             primary={{ label: "Request Info", onClick: () => { void runScreencastDemoAction("j05.requestInfo"); }, testId: "j05-request-info" }}
             recoveryAction={{ href: "/documents/upload", label: "Request client approval evidence" }}
             secondary={[

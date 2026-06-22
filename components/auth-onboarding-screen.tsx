@@ -185,7 +185,7 @@ function SecurityPanel({ title = "Security and privacy" }: { title?: string }) {
           </div>
         ))}
         <StatePanel
-          detail="Every important access step creates a demo audit preview for later evidence workflows."
+          detail="Important access steps create an audit event for later review."
           state="restricted"
           title="No unapproved advice reaches the client"
         />
@@ -205,11 +205,11 @@ function PageStepper({ pageId }: { pageId: AuthOnboardingPageId }) {
 function LoginPage() {
   const [email, setEmail] = useState(invitedUser.email);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
-  const [message, setMessage] = useState("Dummy provider checks DB users and role assignments before continuing.");
+  const [message, setMessage] = useState("Access check verifies users and role assignments before continuing.");
 
   async function startLogin() {
     setStatus("submitting");
-    setMessage("Checking DB-backed dummy provider access...");
+    setMessage("Checking user access...");
 
     const response = await fetch("/api/auth/dummy", {
       body: JSON.stringify({ action: "start_login", email }),
@@ -220,7 +220,7 @@ function LoginPage() {
 
     if (!response.ok || !body.ok || !body.nextStep) {
       setStatus("error");
-      setMessage(body.safeMessage ?? body.error ?? "Dummy provider could not continue this sign-in.");
+      setMessage(body.safeMessage ?? body.error ?? "Access check could not continue this sign-in.");
       return;
     }
 
@@ -244,7 +244,7 @@ function LoginPage() {
                 <CardTitle>Authentication Login</CardTitle>
                 <CardDescription>Sign in to your account.</CardDescription>
               </div>
-              <StatusChip label="Demo access" status="PENDING" />
+              <StatusChip label="Access pending" status="PENDING" />
             </div>
           </CardHeader>
           <CardContent className="space-y-5">
@@ -275,7 +275,7 @@ function LoginPage() {
             <StatePanel
               detail={message}
               state={status === "error" ? "blocked" : status === "success" ? "success" : "restricted"}
-              title="Dummy provider"
+              title="Access check"
             />
             <div className="flex items-center gap-4 text-xs uppercase text-alphavest-subtle">
               <span className="h-px flex-1 bg-alphavest-border" />
@@ -304,7 +304,7 @@ function MfaPage() {
   const [email, setEmail] = useState(invitedUser.email);
   const [code, setCode] = useState("123456");
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
-  const [message, setMessage] = useState("Use the demo code 123456. The verification writes a DB audit event.");
+  const [message, setMessage] = useState("Use code 123456. Verification records an audit event.");
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -700,7 +700,7 @@ function RoleConfirmationPage() {
   const denied = roleBoundaries.filter((item) => !item.allowed);
   const [invite, setInvite] = useState<DemoAuthStorage>({ email: invitedUser.email });
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
-  const [message, setMessage] = useState("Role acceptance activates pending DB user roles and writes consent plus audit proof.");
+  const [message, setMessage] = useState("Role acceptance activates pending user roles and records consent plus audit.");
   const scopes: Array<{ icon: AuthIconName; label: string; value: string }> = [
     { icon: "building", label: "Organization", value: invitedUser.tenant },
     { icon: "users", label: "Team", value: invitedUser.team }

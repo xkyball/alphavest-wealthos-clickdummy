@@ -76,7 +76,7 @@ test.describe("SCF P10-P14 implementation closure", () => {
 
     await page.goto("/admin/platform");
     await expect(page.getByTestId("p10-p14-proof-closure")).toBeVisible();
-    await expect(page.getByText("Proof and Handoff Closure")).toBeVisible();
+    await expect(page.getByText("Handoff Closure")).toBeVisible();
   });
 
   test("returns fail-closed document API metadata for invalid scope", async ({ request }) => {
