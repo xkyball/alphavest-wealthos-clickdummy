@@ -545,15 +545,16 @@ export function productGuidanceForRoute(route: ScreenRoute): ProductGuidance {
   const policy = uxRoutePolicyForRoute(route);
   const override = guidanceOverrides[route.pageId] ?? {};
   const steps = uxFlowStepsForPageId(route.pageId);
+  const productiveTier = tier === "MVP" || tier === "MVP_SUPPORT";
   const baseGuidance = {
     area: override.area ?? areaForRoute(route),
     gateHint: override.gateHint ?? tierGateHints[tier],
-    primaryAction: override.primaryAction ?? fallbackPrimaryActionForRoute(route, tier, steps),
+    primaryAction: productiveTier ? override.primaryAction ?? fallbackPrimaryActionForRoute(route, tier, steps) : undefined,
     shortTitle: override.shortTitle ?? route.title,
     tierLabel: guidanceTierLabels[tier],
   };
-  const relatedRoutes = override.relatedRoutes ?? [];
-  const nextStep = override.nextStep;
+  const relatedRoutes = productiveTier ? override.relatedRoutes ?? [] : [];
+  const nextStep = productiveTier ? override.nextStep : undefined;
 
   return {
     area: baseGuidance.area,

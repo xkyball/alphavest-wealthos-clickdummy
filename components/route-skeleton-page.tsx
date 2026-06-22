@@ -9,6 +9,7 @@ import {
   navigationGroupLabels,
   routeScopeForPageId,
   routeToSmokePath,
+  type RouteScopeLabel,
   type ScreenRoute
 } from "@/lib/route-registry";
 import { uxFlowStepsForPageId, uxRoutePolicyForRoute } from "@/lib/ux-route-policy";
@@ -39,33 +40,96 @@ const modeLabels: Record<ScreenRoute["visualMode"], string> = {
   WIZARD_OR_STEP_PAGE: "Guided step page"
 };
 
-const scopeShellCopy = {
+type ScopeShellCopy = {
+  actionLabel: string;
+  clientVisibilityDetail?: string;
+  description: string;
+  guard: {
+    description: string;
+    detail: string;
+    stateTitle: string;
+    title: string;
+  };
+  heading: string;
+  interactionDetail: string;
+  protectedScope: boolean;
+};
+
+const scopeShellCopy: Record<RouteScopeLabel, ScopeShellCopy> = {
   MVP: {
+    actionLabel: "Product action locked",
+    guard: {
+      description: "Advisor approval alone never unlocks client visibility.",
+      detail: "",
+      stateTitle: "Client visibility blocked",
+      title: "Release Guard",
+    },
     heading: "Workspace Ready",
+    interactionDetail: "Final controls are deferred to the page implementation phase.",
+    protectedScope: false,
     description:
       "This screen is registered, navigable and ready for its dedicated UI build. The placeholder keeps the app shell, demo context and workflow guard visible without implementing the final screen early."
   },
   MVP_SUPPORT: {
+    actionLabel: "Product action locked",
+    guard: {
+      description: "Advisor approval alone never unlocks client visibility.",
+      detail: "",
+      stateTitle: "Client visibility blocked",
+      title: "Release Guard",
+    },
     heading: "Support Workspace",
+    interactionDetail: "Final controls are deferred to the page implementation phase.",
+    protectedScope: false,
     description:
       "This support route remains available for setup, access or client-context flows while action and payload authority stay governed by the dedicated workflow gates."
   },
   P1_AFTER_MVP: {
+    actionLabel: "Deferred",
+    clientVisibilityDetail: "No client-visible payload is exposed from this deferred route.",
+    guard: {
+      description: "Deferred routes do not unlock current-release workflow.",
+      detail: "No product action, release, export, mutation or client visibility is available from this deferred route.",
+      stateTitle: "Deferred workflow unavailable",
+      title: "Deferred Guard",
+    },
     heading: "Deferred Workspace",
+    interactionDetail: "Deferred routes expose no product controls in this release.",
+    protectedScope: true,
     description:
-      "This workspace remains registered for continuity, but it is not active in the current release and does not grant action authority or client-visible data."
+      "Deferred after MVP. No product workflow, release, export, advice or client-visible change is available in this release."
   },
   REFERENCE_ONLY: {
+    actionLabel: "Reference only",
+    clientVisibilityDetail: "No client-visible payload is exposed from this reference route.",
+    guard: {
+      description: "Reference routes do not unlock product workflow.",
+      detail: "No product action, release, export, mutation or client visibility is available from this route.",
+      stateTitle: "Product workflow unavailable",
+      title: "Reference Guard",
+    },
     heading: "Reference Workspace",
+    interactionDetail: "No product controls are available for reference-only routes.",
+    protectedScope: true,
     description:
       "Read-only internal reference. No product workflow, mutation, release, export, advice or client-visible change is available."
   },
   HOLD_PENDING_DECISION: {
+    actionLabel: "Held",
+    clientVisibilityDetail: "No client-visible payload is exposed from this held route.",
+    guard: {
+      description: "Held routes require explicit scope and safety approval before any MVP workflow exists.",
+      detail: "No product action, release, export, mutation or client visibility is available from this held route.",
+      stateTitle: "Held workflow unavailable",
+      title: "Hold Guard",
+    },
     heading: "Held Workspace",
+    interactionDetail: "Held routes expose no MVP controls until scope and safety are explicitly decided.",
+    protectedScope: true,
     description:
-      "This workspace remains registered, but implementation is held until a later explicit scope, safety and visual decision unlocks it."
+      "Held pending explicit scope and safety decision. No MVP workflow, release, export, advice or client-visible change is available."
   }
-} as const;
+};
 
 function getSiblingRoutes(route: ScreenRoute) {
   return (
@@ -87,27 +151,15 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
     evidenceStatus: route.clientVisibilitySensitive ? "VALIDATED" : "PLACEHOLDER",
     permission: { allowed: true, reasonCode: "DEMO_PERMISSIVE" }
   });
-  const siblingRoutes = routeScope === "REFERENCE_ONLY" ? [] : getSiblingRoutes(route);
-  const lockedActionLabel = routeScope === "REFERENCE_ONLY" ? "Reference only" : "Product action locked";
-  const interactionPatternDetail =
-    routeScope === "REFERENCE_ONLY"
-      ? "No product controls are available for reference-only routes."
-      : "Final controls are deferred to the page implementation phase.";
+  const siblingRoutes = scopeCopy.protectedScope ? [] : getSiblingRoutes(route);
   const clientVisibilityDetail =
-    routeScope === "REFERENCE_ONLY"
-      ? "No client-visible payload is exposed from this reference route."
-      : route.clientVisibilitySensitive
-        ? "Advice-like content stays blocked until compliance release and evidence are complete."
-        : "No client-visible advice is exposed from this placeholder.";
-  const guardTitle = routeScope === "REFERENCE_ONLY" ? "Reference Guard" : "Release Guard";
-  const guardDescription =
-    routeScope === "REFERENCE_ONLY"
-      ? "Reference routes do not unlock product workflow."
-      : "Advisor approval alone never unlocks client visibility.";
-  const guardStateTitle = routeScope === "REFERENCE_ONLY" ? "Product workflow unavailable" : "Client visibility blocked";
+    scopeCopy.clientVisibilityDetail ??
+    (route.clientVisibilitySensitive
+      ? "Advice-like content stays blocked until compliance release and evidence are complete."
+      : "No client-visible advice is exposed from this placeholder.");
   const guardStateDetail =
-    routeScope === "REFERENCE_ONLY"
-      ? "No product action, release, export, mutation or client visibility is available from this route."
+    scopeCopy.protectedScope
+      ? scopeCopy.guard.detail
       : `Missing gates: ${gate.missing.length > 0 ? gate.missing.join(", ") : "none"}.`;
 
   return (
@@ -120,7 +172,7 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
           primaryAction={
             siblingRoutes[0] && (routeScope === "MVP" || routeScope === "MVP_SUPPORT")
               ? { href: routeToSmokePath(siblingRoutes[0].route), label: `Continue to ${siblingRoutes[0].title}` }
-              : { disabledReason: uxPolicy.safetyReminder, label: lockedActionLabel }
+              : { disabledReason: uxPolicy.safetyReminder, label: scopeCopy.actionLabel }
           }
           status={routeScope === "MVP" ? "ACTIVE" : routeScope === "MVP_SUPPORT" ? "PENDING" : "ON_HOLD"}
           statusLabel={`${uxPolicy.pageType} · ${uxPolicy.densityTier}`}
@@ -158,7 +210,7 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
                   {modeLabels[route.visualMode]}
                 </dd>
                 <dd className="mt-1 text-sm text-alphavest-muted">
-                  {interactionPatternDetail}
+                  {scopeCopy.interactionDetail}
                 </dd>
               </div>
               <div className="rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-4">
@@ -196,15 +248,15 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
                 <LockKeyhole aria-hidden="true" className="size-5" />
               </div>
               <div>
-                <h2 className="font-display text-2xl text-alphavest-ivory">{guardTitle}</h2>
-                <p className="text-sm text-alphavest-muted">{guardDescription}</p>
+                <h2 className="font-display text-2xl text-alphavest-ivory">{scopeCopy.guard.title}</h2>
+                <p className="text-sm text-alphavest-muted">{scopeCopy.guard.description}</p>
               </div>
             </div>
 
             <div className="mt-5 rounded-md border border-alphavest-red/30 bg-alphavest-red/10 p-4">
               <div className="flex items-center gap-2 text-sm font-semibold text-alphavest-red">
                 <ShieldCheck aria-hidden="true" className="size-4" />
-                {guardStateTitle}
+                {scopeCopy.guard.stateTitle}
               </div>
               <p className="mt-2 text-sm leading-6 text-alphavest-muted">
                 {guardStateDetail}

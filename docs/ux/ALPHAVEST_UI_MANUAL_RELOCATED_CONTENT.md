@@ -49,6 +49,7 @@ It preserves context for implementation review without keeping that explanation 
 | 061 `/service-blueprint` | Service blueprint/process explanation presented as product-style navigation, filters or controls. | Internal Service Blueprint | UI now shows `Read-only reference` and keeps blueprint lanes as internal reference content only. | Relocated in UXP1-007 |
 | 062 `/roadmap` | MVP/future-scope roadmap explanation presented as an operative product page or scope-control surface. | Internal Roadmap Reference | UI now shows `Read-only scope reference`, `Reference Summary` and `Scope Decision Register`. | Relocated in UXP1-007 |
 | 063 `/states` | State and badge catalogue explanation presented as a product workflow surface or status-changing control set. | Internal State Reference | UI now shows `Read-only state reference` and keeps state examples non-mutating. | Relocated in UXP1-007 |
+| 064-067, 069-071 HOLD / 068 P1 | Long protected-route explanation, implementation-placeholder language, product-action lock wording and continuation links that could imply unlocked high-risk workflow. | Hold and Deferred Route Manual | UI now shows `Held`, `Deferred`, `Hold Guard`, `Deferred Guard`, no product controls and no related-workspace continuation from protected routes. | Relocated in UXP1-008 |
 
 ## Entry Template
 
