@@ -31,7 +31,7 @@ const runTs =
   new Date().toISOString().replace(/[.:]/g, "-").replace("T", "_").slice(0, 19);
 const outputDir = path.join(process.cwd(), "artifacts", "routes-and-modals", runTs);
 const modalSelector = '[data-testid="ux-a11y-modal"][role="dialog"]';
-const drawerSelector = '[data-testid="ux-a11y-drawer"][role="complementary"]';
+const drawerSelector = '[data-testid="ux-a11y-drawer"][role="complementary"], aside[aria-label="Action Details"]';
 const pageIdFilter = process.env.AVS_CAPTURE_PAGE_IDS
   ? new Set(process.env.AVS_CAPTURE_PAGE_IDS.split(",").map((item) => item.trim()).filter(Boolean))
   : null;
