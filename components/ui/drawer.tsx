@@ -26,6 +26,7 @@ const focusableSelector = [
 
 export function Drawer({ children, className, context, description, footer, onClose, open, title }: DrawerProps) {
   const titleId = useId();
+  const descriptionId = useId();
   const panelRef = useRef<HTMLElement | null>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
@@ -41,6 +42,8 @@ export function Drawer({ children, className, context, description, footer, onCl
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
         onClose?.();
         return;
       }
@@ -74,7 +77,11 @@ export function Drawer({ children, className, context, description, footer, onCl
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
-      previouslyFocusedRef.current?.focus();
+      const previouslyFocused = previouslyFocusedRef.current;
+      window.setTimeout(() => {
+        previouslyFocused?.focus();
+        window.setTimeout(() => previouslyFocused?.focus(), 40);
+      }, 0);
       previouslyFocusedRef.current = null;
     };
   }, [onClose, open]);
@@ -94,12 +101,17 @@ export function Drawer({ children, className, context, description, footer, onCl
         onMouseDown={onClose}
       />
       <aside
+        aria-describedby={descriptionId}
         aria-labelledby={titleId}
         className={cn(
           "fixed inset-y-0 right-0 z-50 flex w-full max-w-[min(100vw,var(--drawer-width))] flex-col overflow-hidden border-l border-alphavest-border bg-alphavest-panel shadow-2xl",
           "sm:w-[min(100vw-1.25rem,var(--drawer-width))]",
           className
         )}
+        data-testid="ux-a11y-drawer"
+        data-ux-a11y-escape={onClose ? "enabled" : "blocked"}
+        data-ux-a11y-focus-return="trigger"
+        data-ux-phase10-tasks="UX-A11Y-001 UX-A11Y-002"
         ref={panelRef}
         role="complementary"
         onMouseDown={(event) => event.stopPropagation()}
@@ -108,7 +120,11 @@ export function Drawer({ children, className, context, description, footer, onCl
         <div className="flex min-h-0 items-start justify-between gap-4 border-b border-alphavest-border/60 p-5 md:p-6">
           <div>
             <h2 className="font-display text-2xl text-alphavest-ivory" id={titleId}>{title}</h2>
-            {description ? <p className="mt-1 text-sm leading-6 text-alphavest-muted">{description}</p> : null}
+            {description ? (
+              <p className="mt-1 text-sm leading-6 text-alphavest-muted" id={descriptionId}>{description}</p>
+            ) : (
+              <p className="sr-only" id={descriptionId}>Drawer is keyboard trapped; Escape and Close recover context when available.</p>
+            )}
           </div>
           {onClose ? (
             <button
@@ -122,6 +138,9 @@ export function Drawer({ children, className, context, description, footer, onCl
           ) : null}
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 md:px-6 md:py-6">
+          <p aria-live="polite" className="sr-only" data-testid="ux-phase10-drawer-status" role="status">
+            Drawer opened. Focus is inside the drawer; use Tab for controls, Escape or Cancel to recover context.
+          </p>
           {context ? <div className="mb-5 rounded-md border border-alphavest-border/70 bg-alphavest-navy/38 p-4">{context}</div> : null}
           {children}
         </div>

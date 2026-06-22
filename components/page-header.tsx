@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowRight, LockKeyhole, RotateCcw } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { A11yStatusProofPanel } from "@/components/ui/a11y-status";
 import { StatusChip, type StatusChipStatus } from "@/components/ui/status-chip";
 import { WizardStepper, type WizardStep } from "@/components/ui/wizard-stepper";
 import { cn } from "@/lib/cn";
@@ -81,6 +82,46 @@ function HeaderAction({ action, primary = false, recovery = false }: { action: P
   );
 }
 
+function phase10A11yTasksForRoute(pathname: string, currentPolicy: ReturnType<typeof uxRoutePolicyForRoute> | null) {
+  const cleanPath = pathname.split("?")[0]?.split("#")[0] ?? pathname;
+  const taskIds = new Set<string>();
+
+  if (
+    cleanPath.includes("decision-room") ||
+    cleanPath.includes("approval") ||
+    cleanPath.includes("release") ||
+    cleanPath.includes("block") ||
+    cleanPath.includes("vote") ||
+    currentPolicy?.pageType === "Modal"
+  ) {
+    taskIds.add("UX-A11Y-001");
+  }
+
+  if (
+    cleanPath.includes("review-queue") ||
+    currentPolicy?.pageType === "Workbench" ||
+    currentPolicy?.workspace === "advisory_workbench" ||
+    currentPolicy?.workspace === "elevated_workflows" ||
+    currentPolicy?.workspace === "governance" ||
+    currentPolicy?.workspace === "ops"
+  ) {
+    taskIds.add("UX-A11Y-002");
+  }
+
+  if (
+    cleanPath.startsWith("/client") ||
+    cleanPath.startsWith("/documents") ||
+    cleanPath.startsWith("/evidence") ||
+    currentPolicy?.workspace === "client_workspace" ||
+    currentPolicy?.workspace === "evidence"
+  ) {
+    taskIds.add("UX-A11Y-003");
+  }
+
+  taskIds.add("UX-A11Y-004");
+  return Array.from(taskIds);
+}
+
 export function PageHeader({
   blockedReason,
   eyebrow,
@@ -107,6 +148,8 @@ export function PageHeader({
     secondaryActions.length > 0 || !previousStep
       ? secondaryActions
       : [{ href: previousStep.href, label: `Back to ${previousStep.label}` }];
+  const phase10TaskIds = phase10A11yTasksForRoute(pathname, currentPolicy);
+  const a11yStatusAnnouncement = `${title}: ${statusLabel ?? "No unapproved advice reaches the client"}. Keyboard users can tab through actions and recover without losing context.`;
 
   return (
     <header className="flex flex-col gap-4" data-testid="page-header">
@@ -139,6 +182,12 @@ export function PageHeader({
               </span>
             </div>
           ) : null}
+          <A11yStatusProofPanel
+            className="max-w-xl"
+            routeLabel={currentRoute ? currentRoute.title : title}
+            statusAnnouncement={a11yStatusAnnouncement}
+            taskIds={phase10TaskIds}
+          />
           {effectivePrimaryAction ? (
             <div className="flex flex-wrap justify-start gap-2 lg:justify-end" data-testid="page-header-primary-cta-region" data-ux-phase8-primary-count="1">
               <HeaderAction action={effectivePrimaryAction} primary />

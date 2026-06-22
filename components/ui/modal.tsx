@@ -26,6 +26,7 @@ const focusableSelector = [
 
 export function Modal({ children, className, context, description, footer, onClose, open, title }: ModalProps) {
   const titleId = useId();
+  const descriptionId = useId();
   const dialogRef = useRef<HTMLElement | null>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
@@ -37,10 +38,12 @@ export function Modal({ children, className, context, description, footer, onClo
     previouslyFocusedRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const dialog = dialogRef.current;
     const firstFocusable = dialog?.querySelector<HTMLElement>(focusableSelector);
-    (firstFocusable ?? dialog)?.focus();
+    window.setTimeout(() => (firstFocusable ?? dialog)?.focus(), 0);
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
         onClose?.();
         return;
       }
@@ -71,10 +74,14 @@ export function Modal({ children, className, context, description, footer, onClo
       }
     }
 
-    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown, true);
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      previouslyFocusedRef.current?.focus();
+      window.removeEventListener("keydown", handleKeyDown, true);
+      const previouslyFocused = previouslyFocusedRef.current;
+      window.setTimeout(() => {
+        previouslyFocused?.focus();
+        window.setTimeout(() => previouslyFocused?.focus(), 40);
+      }, 0);
       previouslyFocusedRef.current = null;
     };
   }, [onClose, open]);
@@ -86,12 +93,17 @@ export function Modal({ children, className, context, description, footer, onClo
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-alphavest-navy/68 p-4 backdrop-blur-sm" onMouseDown={onClose ? onClose : undefined}>
       <section
+        aria-describedby={descriptionId}
         aria-labelledby={titleId}
         aria-modal="true"
         className={cn(
           "max-h-[min(100dvh-2rem,calc(100vh-1.5rem))] w-full max-w-[min(var(--modal-width),calc(100vw-1.25rem))] overflow-hidden rounded-md border border-alphavest-gold/38 bg-alphavest-panel/95 shadow-2xl",
           className
         )}
+        data-testid="ux-a11y-modal"
+        data-ux-a11y-escape={onClose ? "enabled" : "blocked-while-submitting"}
+        data-ux-a11y-focus-return="parent-context"
+        data-ux-phase10-tasks="UX-A11Y-001 UX-A11Y-003"
         ref={dialogRef}
         role="dialog"
         onMouseDown={(event) => event.stopPropagation()}
@@ -100,7 +112,11 @@ export function Modal({ children, className, context, description, footer, onClo
         <div className="flex min-h-0 items-start justify-between gap-4 border-b border-alphavest-border/60 px-5 py-5 md:px-6">
           <div>
             <h2 className="font-display text-2xl text-alphavest-ivory" id={titleId}>{title}</h2>
-            {description ? <p className="mt-1 text-sm leading-6 text-alphavest-muted">{description}</p> : null}
+            {description ? (
+              <p className="mt-1 text-sm leading-6 text-alphavest-muted" id={descriptionId}>{description}</p>
+            ) : (
+              <p className="sr-only" id={descriptionId}>Dialog is keyboard trapped; Escape and Close recover context when available.</p>
+            )}
           </div>
           {onClose ? (
             <button
@@ -114,6 +130,9 @@ export function Modal({ children, className, context, description, footer, onClo
           ) : null}
         </div>
         <div className="flex min-h-0 flex-col gap-5 overflow-y-auto px-5 py-5 md:px-6">
+          <p aria-live="polite" className="sr-only" data-testid="ux-phase10-modal-status" role="status">
+            Dialog opened. Focus is inside the dialog; use Tab for controls, Escape or Cancel to recover context.
+          </p>
           {context ? <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/38 p-4">{context}</div> : null}
           <div>{children}</div>
           {footer ? <div className="flex flex-wrap justify-end gap-3 border-t border-alphavest-border/60 pt-4">{footer}</div> : null}
