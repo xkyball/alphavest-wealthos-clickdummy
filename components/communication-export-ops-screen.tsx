@@ -1001,10 +1001,19 @@ function ExportRedactionPage({ title }: { title: string }) {
         <UxCtaCluster
           blockedReason="Preview, approval, download and share remain separate export lifecycle steps; redaction review does not release the package."
           primary={{ label: "Review mandatory redactions" }}
+          recoveryAction={{ href: "/export/demo/redaction", label: "Resolve redaction blockers" }}
           secondary={[
             { label: "Inspect payload checks" },
-            { disabled: true, label: "Approval blocked until preview" },
-            { disabled: true, label: "Download blocked until approval" },
+            {
+              disabled: true,
+              disabledReason: "Preview inspection must pass before approval can be recorded.",
+              label: "Approval blocked until preview",
+            },
+            {
+              disabled: true,
+              disabledReason: "Approval and generation must be recorded before download.",
+              label: "Download blocked until approval",
+            },
           ]}
         />
       </div>
@@ -1376,8 +1385,11 @@ function ExportDownloadPage({ title }: { title: string }) {
                   { label: "Watermark", value: <Badge tone="green">Prepared</Badge> }
                 ]}
               />
-              <button className={secondaryButtonClass + " mt-4 w-full"} data-testid="j08-share-export" disabled type="button">Share after download</button>
-              <StatePanel className="mt-4" detail="Secure share is blocked until the download event is recorded and audited." state="blocked" title="Share blocked" />
+              <button aria-describedby="j08-share-export-reason" className={secondaryButtonClass + " mt-4 w-full"} data-testid="j08-share-export" disabled type="button">Share after download</button>
+              <StatePanel className="mt-4" detail="Record the package download before creating an external share." state="blocked" title="Share blocked" />
+              <p className="mt-2 text-xs leading-5 text-alphavest-muted" data-testid="ux-cta-disabled-reason" id="j08-share-export-reason">
+                Secure share is blocked until the download event is recorded and audited.
+              </p>
             </CardContent>
           </Card>
           <Card>

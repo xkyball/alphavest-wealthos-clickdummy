@@ -1095,9 +1095,14 @@ function EvidenceRecordDetailPage({ title }: { title: string }) {
             <UxCtaCluster
               blockedReason="Share remains blocked until evidence sufficiency, compliance release and payload visibility checks pass."
               primary={{ label: "Open" }}
+              recoveryAction={{ href: "/documents/upload", label: "Request review" }}
               secondary={[
                 { label: "Download", onClick: () => { void runScreencastDemoAction("j03.downloadEvidence"); }, testId: "j03-download-evidence" },
-                { disabled: true, label: "Share" },
+                {
+                  disabled: true,
+                  disabledReason: "Share needs evidence sufficiency, release and payload checks first.",
+                  label: "Share",
+                },
               ]}
             />
           }
@@ -1199,10 +1204,19 @@ function EvidenceRecordDetailPage({ title }: { title: string }) {
                   blockedReason="Revoke access and create-version actions are secondary and cannot prove evidence sufficiency or access authority."
                   className="[&_button]:w-full [&_button]:justify-start"
                   primary={{ label: "Request Review" }}
+                  recoveryAction={{ href: "/governance/access-requests", label: "Open access policy" }}
                   secondary={[
                     { label: "Add to Collection" },
-                    { disabled: true, label: "Revoke Access" },
-                    { disabled: true, label: "Create New Version" },
+                    {
+                      disabled: true,
+                      disabledReason: "Revocation needs a scoped access decision and persisted audit event.",
+                      label: "Revoke Access",
+                    },
+                    {
+                      disabled: true,
+                      disabledReason: "New versions need evidence review; versioning is not sufficiency proof.",
+                      label: "Create New Version",
+                    },
                   ]}
                 />
               </CardContent>

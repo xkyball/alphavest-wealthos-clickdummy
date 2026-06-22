@@ -487,7 +487,15 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
               <UxCtaCluster
                 blockedReason="New action is secondary; selected blocked work must be opened first because evidence is missing."
                 primary={{ label: "Open selected action", onClick: () => setDrawerOpen(true) }}
-                secondary={[{ label: "Filters" }, { disabled: true, label: "New action" }]}
+                recoveryAction={{ label: "Request missing evidence", onClick: () => setDrawerOpen(true) }}
+                secondary={[
+                  { label: "Filters" },
+                  {
+                    disabled: true,
+                    disabledReason: "Open and resolve the selected blocked action before creating new work.",
+                    label: "New action",
+                  },
+                ]}
               />
             }
             subtitle="Track and advance actions through the workflow."
@@ -678,9 +686,15 @@ function ActionDrawer({ onClose }: { onClose: () => void }) {
           <UxCtaCluster
             blockedReason="Mark Ready stays blocked until client approval evidence is present; do not use drawer actions as readiness proof."
             primary={{ label: "Request Info", onClick: () => { void runScreencastDemoAction("j05.requestInfo"); }, testId: "j05-request-info" }}
+            recoveryAction={{ href: "/documents/upload", label: "Request client approval evidence" }}
             secondary={[
               { label: "Update Due Date" },
-              { disabled: true, label: "Mark Ready", testId: "j05-mark-ready" },
+              {
+                disabled: true,
+                disabledReason: "Client approval evidence must be present before readiness can be marked.",
+                label: "Mark Ready",
+                testId: "j05-mark-ready",
+              },
             ]}
           />
         </section>

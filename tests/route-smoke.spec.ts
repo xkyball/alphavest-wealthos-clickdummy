@@ -929,6 +929,76 @@ test.describe("UX-CTA export lifecycle separation", () => {
   });
 });
 
+test.describe("UX-CTA disabled blocked recovery copy", () => {
+  const disabledRecoveryScreens = [
+    {
+      path: "/actions",
+      expected: [
+        "Open and resolve the selected blocked action before creating new work.",
+        "Request missing evidence",
+      ],
+    },
+    {
+      path: "/actions?state=drawer",
+      expected: [
+        "Client approval evidence must be present before readiness can be marked.",
+        "Request client approval evidence",
+      ],
+    },
+    {
+      path: "/evidence/demo",
+      expected: [
+        "Share needs evidence sufficiency, release and payload checks first.",
+        "Revocation needs a scoped access decision and persisted audit event.",
+        "New versions need evidence review; versioning is not sufficiency proof.",
+      ],
+    },
+    {
+      path: "/export/demo/redaction",
+      expected: [
+        "Preview inspection must pass before approval can be recorded.",
+        "Approval and generation must be recorded before download.",
+        "Resolve redaction blockers",
+      ],
+    },
+    {
+      path: "/export/demo/download",
+      expected: [
+        "Share after download",
+        "Secure share is blocked until the download event is recorded and audited.",
+      ],
+    },
+    {
+      path: "/governance/access-requests?state=drawer",
+      expected: [
+        "Access approval remains constrained by visible policy, SOD and audit checks; it cannot release advice, prove evidence sufficiency or approve export.",
+        "Approve access request",
+      ],
+    },
+  ];
+
+  for (const { expected, path } of disabledRecoveryScreens) {
+    test(`${path} names blocked CTA reason and recovery without success overclaim`, async ({ page }) => {
+      await page.setViewportSize({ height: 1000, width: 1440 });
+      await authenticateRouteSmokePage(page);
+      await page.goto(path);
+
+      for (const text of expected) {
+        await expect(page.getByText(text).first()).toBeVisible();
+      }
+
+      await expect(page.getByTestId("ux-nav-next-actions").first().locator('[data-ux-primary-cta="true"]')).toHaveCount(1);
+      const ctaClusters = page.getByTestId("ux-complexity-cta-cluster");
+      for (let index = 0; index < await ctaClusters.count(); index += 1) {
+        await expect(ctaClusters.nth(index).locator('[data-ux-primary-cta="true"]')).toHaveCount(1);
+      }
+      await expect(page.locator("body")).not.toContainText(
+        /admin override|client accepted|client visibility unlocked|download ready|evidence sufficient|preview approved|release complete|share ready/i,
+      );
+    });
+  }
+});
+
 test.describe("locked route workset preservation", () => {
   test("all registered routes are classified exactly once", () => {
     expect(routeWorksetIntegrity.counts).toEqual(lockedRouteWorksetCounts);

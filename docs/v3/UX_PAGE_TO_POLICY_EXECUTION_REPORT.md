@@ -1969,6 +1969,58 @@ No-route-reclassification confirmation: route IDs, paths, worksets and scopes re
 No-P1/Hold/Reference-elevation confirmation: no protected route was touched or elevated.
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
 
+## Completed Slice: UX-CTA-007
+
+Task: `UX-CTA-007` - Standardize disabled/blocked/recovery CTA copy.
+
+Mission Card: standardize disabled action reasons and recovery CTAs across visible safety-critical MVP/MVP_SUPPORT states without creating routes, reclassifying scope, changing workflow behavior or exposing internal/policy proof text as product UI.
+
+Evidence Intake:
+- Task-master `UX-CTA-007`; Route Policy Matrix rows `032`, `047`, `050`, `054-058`.
+- Route Policy Matrix `CTA-POL-001`, `CTA-POL-005`, `CTA-POL-007`, `SAFE-POL-005`, `SAFE-POL-008`.
+- Existing `PageHeader` already supported blocked reason and recovery; local `UxCtaCluster` did not expose per-disabled-action reasons or recovery affordances.
+
+Method artifacts: Discover found disabled local CTAs with labels but no adjacent reason on action, evidence and export surfaces. Define kept one primary per state and added blocked/recovery copy to the local cluster. Develop reused `UxCtaCluster`, existing route links, drawers and state panels. Deliver includes six visible safety-flow screenshots and route-smoke negative proof.
+
+Changed files:
+- `components/ux-cta-cluster.tsx`
+- `components/communication-export-ops-screen.tsx`
+- `components/decisions-governance-screen.tsx`
+- `components/wealth-actions-screen.tsx`
+- `tests/route-smoke.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-CTA-007/*.png`
+
+Validation:
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with 27 existing warnings, 0 errors.
+- `PLAYWRIGHT_PORT=3532 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-CTA disabled blocked recovery copy"` - passed, 6 tests.
+- `PLAYWRIGHT_PORT=3533 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3534 pnpm test:workflow-api` - passed, 15 tests.
+- `PLAYWRIGHT_PORT=3535 pnpm test:file-export` - passed, 14 tests.
+- `PLAYWRIGHT_PORT=3536 pnpm test:permissions` - passed, 8 tests.
+
+Screenshot/proof:
+- `artifacts/ux-page-to-policy/UX-CTA-007/2026-06-22-UX-CTA-007-actions-board-blocked-new-action.png`
+- `artifacts/ux-page-to-policy/UX-CTA-007/2026-06-22-UX-CTA-007-actions-drawer-mark-ready-blocked.png`
+- `artifacts/ux-page-to-policy/UX-CTA-007/2026-06-22-UX-CTA-007-evidence-record-disabled-actions.png`
+- `artifacts/ux-page-to-policy/UX-CTA-007/2026-06-22-UX-CTA-007-export-redaction-disabled-approval-download.png`
+- `artifacts/ux-page-to-policy/UX-CTA-007/2026-06-22-UX-CTA-007-export-download-share-blocked.png`
+- `artifacts/ux-page-to-policy/UX-CTA-007/2026-06-22-UX-CTA-007-governance-access-request-controlled-approval.png`
+
+Positive acceptance: local CTA clusters now expose one primary CTA, disabled action reasons and recovery actions on action-board, evidence, export and governance states.
+
+Negative/P0 acceptance: route-smoke rejects admin override, evidence sufficient, release complete, preview approved, download ready, share ready, client accepted and client visibility unlocked claims; workflow, export and permission tests remain green.
+
+Deviation note: an initial proof attempt targeted a non-rendered legacy Workbench readiness card. The final proof set uses visible MVP/MVP_SUPPORT routes only.
+
+No-generation confirmation: no screen, state-screen, image or generated product asset was created.
+No-route-reclassification confirmation: route IDs, paths, worksets and scopes remain unchanged.
+No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route was touched or elevated.
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
+
 ## Completed Slice: UX-CTA-006
 
 Task: `UX-CTA-006` - Implement export lifecycle CTA separation.

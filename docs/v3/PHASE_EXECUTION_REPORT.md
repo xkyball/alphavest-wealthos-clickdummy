@@ -9185,3 +9185,42 @@ No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route was 
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
 
 Exit Gate Decision: `UX_CTA_006_COMPLETED_WITH_EXPORT_LIFECYCLE_SEPARATION_PROOF`
+
+## UX-CTA-007 Addendum - Disabled Blocked Recovery CTA Copy
+
+Date: 2026-06-22
+
+Status: Completed and validated.
+
+Task IDs: `UX-CTA-007`
+
+Route-policy rows cited:
+- Route Policy Matrix rows `032`, `047`, `050`, `054-058`.
+- `CTA-POL-001` one primary CTA.
+- `CTA-POL-005` disabled actions must explain current gate and recovery.
+- `CTA-POL-007` export preview is not approval/download/share.
+- `SAFE-POL-005`, `SAFE-POL-008`.
+
+Completed `UX-CTA-007` by extending the local CTA cluster with per-action disabled reasons and recovery CTAs, then applying it to action-board, evidence, export redaction/download and access-request states. UI copy now names the current blocked action and the recovery path without presenting policy/proof labels as product text. No workflow, export, evidence, permission, route or API behavior changed.
+
+Changed files: `components/ux-cta-cluster.tsx`, `components/communication-export-ops-screen.tsx`, `components/decisions-governance-screen.tsx`, `components/wealth-actions-screen.tsx`, `tests/route-smoke.spec.ts`, reports and `artifacts/ux-page-to-policy/UX-CTA-007/*.png`.
+
+Validation: `pnpm typecheck` passed; `pnpm lint` passed with 27 existing warnings; focused route-smoke on `UX-CTA disabled blocked recovery copy` passed 6 tests; `pnpm test:workflow-gate` passed 13; `pnpm test:workflow-api` passed 15; `pnpm test:file-export` passed 14; `pnpm test:permissions` passed 8.
+
+Proof artifacts: `artifacts/ux-page-to-policy/UX-CTA-007/` contains six screenshots for action board, action drawer, evidence record, export redaction, export download/share-blocked and governance access request states.
+
+Positive acceptance: visible disabled CTAs now carry adjacent blocked reasons and recovery affordances while every inspected product guidance/local CTA state keeps exactly one primary action.
+
+Negative/P0 acceptance: no UI proof claims admin override, evidence sufficiency, release completion, preview approval, download readiness, share readiness, client acceptance or client visibility unlock; existing P0 workflow/export/permission gates remain green.
+
+Deviation note: a non-rendered legacy Workbench readiness card was excluded from proof after audit; final proof stays on visible MVP/MVP_SUPPORT routes.
+
+No-generation confirmation: no screen generation, state-screen generation, image generation or generated product assets.
+
+No-route-reclassification confirmation: route IDs, paths, worksets and route scopes remain unchanged.
+
+No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route was touched or elevated.
+
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
+
+Exit Gate Decision: `UX_CTA_007_COMPLETED_WITH_DISABLED_BLOCKED_RECOVERY_CTA_PROOF`

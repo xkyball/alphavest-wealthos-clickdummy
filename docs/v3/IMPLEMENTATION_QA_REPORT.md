@@ -6899,3 +6899,19 @@ Date: 2026-06-22
 Commands: `pnpm typecheck`, `pnpm lint`, focused route-smoke on `UX-CTA export`, focused UI-state boundary tests on `export`, `pnpm test:workflow-gate`, `pnpm test:workflow-api`, `pnpm test:file-export`, `pnpm test:permissions` all passed. Lint retains 27 existing warnings and 0 errors.
 
 Safety proof: preview is inspection only, approval is approval only, download is a separate controlled event and share remains blocked until download is recorded. No UI claims client acceptance, client visibility, export readiness or audit suppression from earlier lifecycle states.
+
+## UX-CTA-007 QA Addendum
+
+Date: 2026-06-22
+
+| Area | QA result | Evidence |
+| --- | --- | --- |
+| Disabled CTA reasons | Passed | Route-smoke validates blocked reason copy on action, evidence, export and governance flows. |
+| Recovery CTA standard | Passed | `UxCtaCluster` now supports non-primary recovery actions and route-linked recovery where applicable. |
+| One-primary pattern | Passed | Regression checks product guidance and each local CTA cluster for exactly one primary CTA. |
+| P0 overclaim prevention | Passed | Negative assertions reject admin override, evidence sufficiency, release complete, preview approved, download/share ready and client visibility unlock copy. |
+| Screenshot proof | Passed | Six screenshots under `artifacts/ux-page-to-policy/UX-CTA-007/`. |
+
+Commands: `pnpm typecheck`, `pnpm lint`, focused route-smoke on `UX-CTA disabled blocked recovery copy`, `pnpm test:workflow-gate`, `pnpm test:workflow-api`, `pnpm test:file-export`, `pnpm test:permissions` all passed. Lint retains 27 existing warnings and 0 errors.
+
+Safety proof: disabled/recovery CTA copy is explanatory only for the current blocked action. It does not mutate gates, release advice, prove evidence sufficiency, approve export/download/share, unlock client visibility, suppress audit or expand RBAC payload authority.
