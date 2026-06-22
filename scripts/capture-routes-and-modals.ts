@@ -10,6 +10,9 @@ type CaptureMode = "drawer" | "modal";
 type CaptureStatus = "captured" | "failed-open" | "failed-screenshot" | "missing-trigger";
 
 type CaptureItem = {
+  cssPath?: string;
+  domPath?: string;
+  domStatus?: "captured" | "failed-dom";
   pageId: string;
   path: string;
   route: string;
@@ -78,6 +81,10 @@ function fileNameFor(route: ScreenRoute, suffix: string) {
   return `${route.pageId}-${routeSlug(route.route)}-${suffix}.png`;
 }
 
+function sidecarNameFor(fileName: string, extension: "css" | "html") {
+  return fileName.replace(/\.png$/i, `.rendered.${extension}`);
+}
+
 async function clickSelector(page: Page, selector: string) {
   const locator = page.locator(selector).first();
   if ((await locator.count()) === 0) return false;
@@ -136,8 +143,92 @@ async function gotoReady(page: Page, url: string) {
 async function captureScreenshot(page: Page, item: CaptureItem, fileName: string) {
   try {
     await page.screenshot({ fullPage: true, path: path.join(outputDir, fileName) });
+    await captureRenderedDom(page, item, fileName);
   } catch {
     item.status = "failed-screenshot";
+  }
+}
+
+async function captureRenderedDom(page: Page, item: CaptureItem, screenshotFileName: string) {
+  const htmlFile = sidecarNameFor(screenshotFileName, "html");
+  const cssFile = sidecarNameFor(screenshotFileName, "css");
+
+  try {
+    const snapshot = await page.evaluate((capturedCssFileName) => {
+      const clone = document.documentElement.cloneNode(true) as HTMLElement;
+      const sourceElements = [document.documentElement, ...Array.from(document.documentElement.querySelectorAll<HTMLElement>("*"))];
+      const cloneElements = [clone, ...Array.from(clone.querySelectorAll<HTMLElement>("*"))];
+      const computedRules: string[] = [];
+
+      sourceElements.forEach((element, index) => {
+        const clonedElement = cloneElements[index];
+        if (!clonedElement) return;
+
+        clonedElement.setAttribute("data-avs-node-id", String(index));
+        const computedStyle = window.getComputedStyle(element);
+        const declarations: string[] = [];
+
+        for (const property of Array.from(computedStyle)) {
+          const value = computedStyle.getPropertyValue(property);
+          const priority = computedStyle.getPropertyPriority(property);
+          declarations.push(`${property}:${value}${priority ? ` !${priority}` : ""};`);
+        }
+
+        computedRules.push(`[data-avs-node-id="${index}"]{${declarations.join("")}}`);
+      });
+
+      const stylesheetRules = Array.from(document.styleSheets).map((sheet, index) => {
+        const href = sheet.href ?? "inline";
+
+        try {
+          return [
+            `/* stylesheet ${index}: ${href} */`,
+            ...Array.from(sheet.cssRules).map((rule) => rule.cssText),
+          ].join("\n");
+        } catch (error) {
+          return `/* stylesheet ${index}: ${href}; unavailable: ${error instanceof Error ? error.message : "unknown"} */`;
+        }
+      });
+
+      const head = clone.querySelector("head");
+      const link = document.createElement("link");
+      link.setAttribute("data-avs-captured-css", "true");
+      link.setAttribute("href", `./${capturedCssFileName}`);
+      link.setAttribute("rel", "stylesheet");
+      if (head) {
+        head.appendChild(link);
+      }
+
+      const css = [
+        "/* AlphaVest rendered DOM/CSS capture */",
+        `/* url: ${location.href} */`,
+        `/* capturedAt: ${new Date().toISOString()} */`,
+        "",
+        "/* Source stylesheet rules visible to the browser */",
+        ...stylesheetRules,
+        "",
+        "/* Per-node computed styles. Nodes are linked by data-avs-node-id in the rendered HTML. */",
+        ...computedRules,
+        "",
+      ].join("\n");
+
+      const html = [
+        "<!doctype html>",
+        `<!-- AlphaVest rendered DOM capture. CSS sidecar: ${capturedCssFileName}. URL: ${location.href}. Captured at ${new Date().toISOString()}. -->`,
+        clone.outerHTML,
+        "",
+      ].join("\n");
+
+      return { css, html };
+    }, cssFile);
+
+    writeFileSync(path.join(outputDir, htmlFile), snapshot.html);
+    writeFileSync(path.join(outputDir, cssFile), snapshot.css);
+    item.domPath = `routes-and-modals/${runTs}/${htmlFile}`;
+    item.cssPath = `routes-and-modals/${runTs}/${cssFile}`;
+    item.domStatus = "captured";
+  } catch {
+    item.domStatus = "failed-dom";
   }
 }
 
@@ -215,9 +306,9 @@ function writeIndex(items: CaptureItem[]) {
     `Base URL: ${baseUrl}`,
     `Run: ${runTs}`,
     "",
-    "| Page | Route | State | Status | File |",
-    "| --- | --- | --- | --- | --- |",
-    ...items.map((item) => `| ${item.pageId} | ${item.route} | ${item.state} | ${item.status} | ${item.path} |`),
+    "| Page | Route | State | Status | Screenshot | Rendered DOM | Rendered CSS |",
+    "| --- | --- | --- | --- | --- | --- | --- |",
+    ...items.map((item) => `| ${item.pageId} | ${item.route} | ${item.state} | ${item.status} | ${item.path} | ${item.domPath ?? ""} | ${item.cssPath ?? ""} |`),
   ];
   writeFileSync(path.join(outputDir, "index.md"), `${lines.join("\n")}\n`);
 }
