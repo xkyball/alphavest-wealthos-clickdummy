@@ -46,7 +46,8 @@ test.describe("UXP1-010 state copy cleanup", () => {
 
     await page.goto("/states");
     await expect(page.getByRole("heading", { name: "Reference Workspace" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Reference only" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Reference only" })).toHaveCount(0);
+    await expect(page.locator('[data-ux-primary-cta="true"][data-ux-interactive="false"]').filter({ hasText: "Reference only" })).toBeVisible();
     await expect(page.getByText(/state examples do not change workflow status or complete downstream gates|Loading variants keep table and panel geometry stable/i)).toHaveCount(0);
   });
 });

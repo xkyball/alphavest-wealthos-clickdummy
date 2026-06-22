@@ -4,9 +4,9 @@
 
 | Field | Value |
 | --- | --- |
-| Register status | `PHASE_2_REGISTER_UPDATED_UXP2_007` |
+| Register status | `PHASE_2_REGISTER_UPDATED_UXP2_008` |
 | Phase | Phase 2 - Fake Affordance Pruning |
-| Last updated | 2026-06-22 by `UXP2-007` |
+| Last updated | 2026-06-22 by `UXP2-008` |
 | Product authority | None |
 | Route scope authority | None |
 
@@ -31,6 +31,7 @@ This register records visible affordances touched by Phase 2 and the action take
 | `UXP2-005` | Shared cards, KPI cards and dashboard summary cards | Card and metric-card containers across global route workset | `components/ui/card.tsx`, `components/ui/metric-card.tsx` | Kept as static informational regions with explicit non-interactive metadata | Cards/KPIs summarize state only; real actions must remain separate buttons/links with their own lifecycle, audit and safety boundaries. | `tests/card-kpi-affordance-pruning.spec.ts` |
 | `UXP2-006` | Row actions, audit timelines and evidence/timeline list actions | Shared DataTable row actions, audit timeline items, shared evidence list items, ActionDrawer view-all controls, role matrix row/sort actions | `components/ui/data-table.tsx`, `components/ui/audit-timeline.tsx`, `components/ui/evidence-list.tsx`, `components/wealth-actions-screen.tsx`, `components/decisions-governance-screen.tsx` | Real row actions kept with explicit lifecycle state; no-lifecycle row/timeline/evidence actions disabled or marked static | Row, timeline and evidence affordances are safety-sensitive and must not imply navigation, audit, evidence expansion, role governance or release action unless an existing lifecycle is wired. | `tests/row-timeline-affordance-pruning.spec.ts` |
 | `UXP2-007` | Buttons and CTAs across MVP/MVP_SUPPORT screen components | Header CTAs, topbar notification buttons, board add/new actions, auth alternate actions, admin setup CTAs, advisor/compliance secondary CTAs, communication/export operation CTAs | `components/ux-cta-cluster.tsx`, `components/page-header.tsx`, `components/top-bar.tsx`, `components/auth-onboarding-screen.tsx`, `components/wealth-actions-screen.tsx`, `components/admin-tenant-setup-screen.tsx`, `components/internal-workflow-screen.tsx`, `components/client-intake-screen.tsx`, `components/decisions-governance-screen.tsx`, `components/communication-export-ops-screen.tsx`, `components/committee-review-screen.tsx`, `components/ui/filter-bar.tsx`, `components/ui/kanban.tsx` | Dummy buttons removed or rendered as static non-interactive labels; handler-backed buttons and links kept | Buttons must only appear where a real lifecycle exists. Held or unavailable actions may remain visible as text/status, not as fake product controls. | `tests/button-cta-lifecycle-pruning.spec.ts` |
+| `UXP2-008` | Reference routes `061-063` (`/service-blueprint`, `/roadmap`, `/states`) | Reference page primary CTA/status, product-guidance next-step links and reference skeleton controls | `components/route-skeleton-page.tsx`, `components/page-header.tsx`, `components/product-guidance-panel.tsx`, `lib/route-registry.ts`, `lib/product-guidance.ts` | Product controls removed from reference shells; remaining `Reference only` affordance is static non-interactive status with explicit reference-scope proof attributes | Reference-only routes are registered context, not product task surfaces. They must expose no primary button/link, mutation, export, release, next-step or workflow-unlocking control. | `tests/reference-product-control-pruning.spec.ts`, `tests/reference-only-copy-cleanup.spec.ts`, `tests/state-copy-cleanup.spec.ts`; route-smoke source updated, execution deferred |
 
 ## Acceptance Notes
 
@@ -43,4 +44,5 @@ This register records visible affordances touched by Phase 2 and the action take
 - Card and KPI surfaces touched in UXP2-005 remain static state summaries; actionable flows stay on explicit controls.
 - Row, timeline and evidence affordances touched in UXP2-006 are either wired to an existing lifecycle, disabled with a visible reason, or marked static/non-interactive.
 - Button and CTA affordances touched in UXP2-007 are either lifecycle-backed controls or static text/status; dummy buttons were removed.
+- Reference route product controls touched in UXP2-008 are absent as buttons/links; only static locked status and blocked guidance remain.
 - Full route-smoke is deferred until after UXP3-015 per execution instruction.

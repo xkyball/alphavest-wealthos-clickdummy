@@ -164,7 +164,12 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
 
   return (
     <AppShell>
-      <div className="space-y-6">
+      <div
+        className="space-y-6"
+        data-ux-productive-controls={scopeCopy.protectedScope ? "false" : "true"}
+        data-ux-reference-product-controls={routeScope === "REFERENCE_ONLY" ? "removed" : undefined}
+        data-ux-route-scope={routeScope}
+      >
         <PageHeader
           blockedReason={routeScope === "MVP" || routeScope === "MVP_SUPPORT" ? undefined : scopeCopy.description}
           description={route.purpose}

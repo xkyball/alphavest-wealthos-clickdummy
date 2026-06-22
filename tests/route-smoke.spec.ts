@@ -1317,7 +1317,11 @@ test.describe("locked route workset preservation", () => {
           : referenceProtectedPageIds.has(route.pageId)
             ? "Reference only"
             : "Held";
-      await expect(page.getByRole("button", { name: expectedActionLabel }), `${route.pageId} locked action`).toBeDisabled();
+      await expect(page.getByRole("button", { name: expectedActionLabel }), `${route.pageId} locked action button`).toHaveCount(0);
+      await expect(
+        page.locator('[data-ux-primary-cta="true"][data-ux-interactive="false"]').filter({ hasText: expectedActionLabel }),
+        `${route.pageId} locked action status`
+      ).toBeVisible();
     }
   });
 
