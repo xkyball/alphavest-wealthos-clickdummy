@@ -10,6 +10,7 @@ export type BadgeTone =
   | "teal";
 
 type BadgeProps = {
+  ariaLabel?: string;
   children: React.ReactNode;
   className?: string;
   tone?: BadgeTone;
@@ -25,14 +26,17 @@ const toneClass: Record<BadgeTone, string> = {
   teal: "border-teal-300/35 bg-teal-300/10 text-teal-200"
 };
 
-export function Badge({ children, className, tone = "muted" }: BadgeProps) {
+export function Badge({ ariaLabel, children, className, tone = "muted" }: BadgeProps) {
   return (
     <span
+      aria-label={ariaLabel}
       className={cn(
         "inline-flex h-[var(--status-chip-height)] w-fit items-center rounded-full border px-3 text-xs font-semibold",
         toneClass[tone],
         className
       )}
+      data-ux-affordance="static-badge"
+      data-ux-interactive="false"
     >
       {children}
     </span>

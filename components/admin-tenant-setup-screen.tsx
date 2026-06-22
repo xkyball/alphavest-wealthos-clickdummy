@@ -111,7 +111,7 @@ function statusTone(status: string): BadgeTone {
 }
 
 function StatusBadge({ status }: { status: string }) {
-  return <Badge tone={statusTone(status)}>{status}</Badge>;
+  return <Badge ariaLabel={`Status: ${status}`} tone={statusTone(status)}>{status}</Badge>;
 }
 
 function useAdminTenantSnapshot() {

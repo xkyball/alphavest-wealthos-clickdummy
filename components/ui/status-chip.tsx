@@ -51,11 +51,18 @@ const statusMeta: Record<StatusChipStatus, { icon: LucideIcon; label: string; to
 export function StatusChip({ className, label, status }: StatusChipProps) {
   const meta = statusMeta[status];
   const Icon = meta.icon;
+  const visibleLabel = label ?? meta.label;
 
   return (
-    <Badge className={cn("gap-1.5", className)} tone={meta.tone}>
+    <Badge
+      ariaLabel={`Status: ${visibleLabel}`}
+      className={cn("gap-1.5", className)}
+      tone={meta.tone}
+    >
       <Icon aria-hidden="true" className="size-3.5" />
-      {label ?? meta.label}
+      <span data-ux-affordance="static-status-chip" data-ux-interactive="false">
+        {visibleLabel}
+      </span>
     </Badge>
   );
 }

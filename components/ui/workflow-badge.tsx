@@ -57,11 +57,18 @@ const workflowMeta: Record<WorkflowBadgeStatus, { icon: LucideIcon; label: strin
 export function WorkflowBadge({ className, label, status }: WorkflowBadgeProps) {
   const meta = workflowMeta[status];
   const Icon = meta.icon;
+  const visibleLabel = label ?? meta.label;
 
   return (
-    <Badge className={cn("gap-1.5", className)} tone={meta.tone}>
+    <Badge
+      ariaLabel={`Workflow status: ${visibleLabel}`}
+      className={cn("gap-1.5", className)}
+      tone={meta.tone}
+    >
       <Icon aria-hidden="true" className="size-3.5" />
-      {label ?? meta.label}
+      <span data-ux-affordance="static-workflow-badge" data-ux-interactive="false">
+        {visibleLabel}
+      </span>
     </Badge>
   );
 }
