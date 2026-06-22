@@ -543,6 +543,50 @@ function InternalGuard() {
   );
 }
 
+
+
+type Phase5DetailSplitPanelProps = {
+  decisionSupport: string;
+  objectLabel: string;
+  objectState: string;
+  pageJob: string;
+  safetyBoundary: string;
+  splitTaskId?: string;
+  taskId: string;
+};
+
+function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pageJob, safetyBoundary, splitTaskId, taskId }: Phase5DetailSplitPanelProps) {
+  return (
+    <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Phase 5 detail / split proof</p>
+          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectLabel}</h2>
+        </div>
+        <Badge tone="gold">{taskId}</Badge>
+      </div>
+      <div className="mt-4 grid gap-3 lg:grid-cols-4">
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-object-state">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Object state</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{objectState}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-decision-support">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Decision support</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{decisionSupport}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-drawer-boundary">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Drawer boundary</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">Drawer-only context cannot approve, release, delete, export or mutate payload visibility. {safetyBoundary}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-page-job">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Page job</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{pageJob}</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Phase4WorkbenchPanel({
   activeTask,
   blocker,
@@ -595,6 +639,7 @@ function SignalsPage({ title }: { title: string }) {
   return (
     <InternalShell activePageId="033">
       <ScreenTitle>{title}</ScreenTitle>
+      <Phase5DetailSplitPanel decisionSupport="Advisory hub orients signal work without becoming trigger detail." objectLabel="Advisory hub split" objectState="Signal intake overview" pageJob="Hub routes to queue/detail while preserving one job per page." safetyBoundary="Hub context cannot approve advice or release content." splitTaskId="UX-PAGE-SPLIT-001" taskId="UX-PAGE-SPLIT-001" />
       <UxHubPage pageId="033" />
     </InternalShell>
   );
@@ -788,6 +833,7 @@ function TriggerDetailPage({ title }: { title: string }) {
     <InternalShell activePageId="035">
       <ScreenTitle>{title}</ScreenTitle>
       <Phase4WorkbenchPanel activeTask="Trigger TRG-443 selected for analyst review" blocker="Missing beneficial-owner and purpose-of-wire evidence keeps advisor handoff blocked." context="AI draft remains internal; analyst must resolve unsupported claims before routing." primaryAction="Request missing evidence" queueLabel="Advisory trigger queue" safetyNote="UX-WORKBENCH-001: no client release, export or visibility mutation can happen from the analyst trigger workbench." taskId="UX-WORKBENCH-001" />
+      <Phase5DetailSplitPanel decisionSupport="Trigger detail separates object evidence from queue triage before advisor routing." objectLabel="Trigger object review" objectState="Blocked by missing evidence" pageJob="Trigger detail explains one selected trigger and safe next action." safetyBoundary="Trigger detail cannot create client-visible advice." splitTaskId="UX-PAGE-SPLIT-001" taskId="UX-DETAIL-003" />
       <div className="mx-auto grid max-w-[112rem] gap-5 2xl:grid-cols-[1fr_24rem]">
         <section className="min-w-0 space-y-5">
           <ScfP04P06FlowPanel mode="advisory" />
@@ -974,6 +1020,7 @@ function AdvisorQueuePage({ title }: { title: string }) {
   return (
     <InternalShell activePageId="036">
       <ScreenTitle>{title}</ScreenTitle>
+      <Phase5DetailSplitPanel decisionSupport="Advisor queue remains separate from advisor package detail." objectLabel="Advisor queue split" objectState="Advisor work awaiting selection" pageJob="Advisor queue selects packages; detail records review context separately." safetyBoundary="Queue rows cannot approve or release recommendations." splitTaskId="UX-PAGE-SPLIT-004" taskId="UX-PAGE-SPLIT-004" />
       <div className="mx-auto grid max-w-[112rem] gap-5 2xl:grid-cols-[1fr_28rem]">
         <section className="min-w-0 space-y-5">
           <PageHeading
@@ -1105,6 +1152,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
     <InternalShell activePageId="037">
       <ScreenTitle>{title}</ScreenTitle>
       <Phase4WorkbenchPanel activeTask="Advisor review ADV-219 selected" blocker="Advisor approval is blocked from release until compliance, evidence and audit gates pass." context="Advisor can assess suitability wording, but cannot publish client-visible advice." primaryAction="Record advisor review" queueLabel="Advisor approval queue" safetyNote="UX-WORKBENCH-003: advisor approval does not set clientVisible and does not bypass compliance release." taskId="UX-WORKBENCH-003" />
+      <Phase5DetailSplitPanel decisionSupport="Advisor detail shows suitability, rationale and release preconditions without acting as compliance." objectLabel="Advisor package detail" objectState="Advisor review internal; compliance release missing" pageJob="Advisor detail supports one package review without becoming release room." safetyBoundary="Advisor detail cannot set clientVisible or bypass compliance." splitTaskId="UX-PAGE-SPLIT-004" taskId="UX-PAGE-SPLIT-004" />
       <div className="mx-auto grid max-w-[112rem] gap-5 xl:grid-cols-[1fr_24rem]">
         <section className="min-w-0 space-y-5">
           <PageHeading
@@ -1252,6 +1300,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
   return (
     <InternalShell activePageId="038">
       <ScreenTitle>{title}</ScreenTitle>
+      <Phase5DetailSplitPanel decisionSupport="Compliance queue separates work intake from decision-room review." objectLabel="Compliance queue split" objectState="Compliance items pending selection" pageJob="Compliance queue prioritizes review work without hiding decision consequences." safetyBoundary="Queue context cannot release, block or request evidence by itself." splitTaskId="UX-PAGE-SPLIT-003" taskId="UX-PAGE-SPLIT-003" />
       <div className="mx-auto max-w-[104rem] space-y-5">
         <UxHubPage pageId="038" />
         <PageHeading
@@ -1308,6 +1357,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
   return (
     <InternalShell activePageId="039">
       <ScreenTitle>{title}</ScreenTitle>
+      <Phase5DetailSplitPanel decisionSupport="Compliance detail carries evidence, policy and audit state before later decision-room actions." objectLabel="Compliance object review" objectState="Release gates not satisfied" pageJob="Compliance detail reviews one object without becoming a hidden drawer decision." safetyBoundary="Detail context cannot release without explicit gated decision controls." splitTaskId="UX-PAGE-SPLIT-003" taskId="UX-PAGE-SPLIT-003" />
       <div className="mx-auto grid max-w-[112rem] gap-5 2xl:grid-cols-[1fr_23rem]">
         <section className="min-w-0 space-y-5">
           <PageHeading

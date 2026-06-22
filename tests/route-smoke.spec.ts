@@ -327,6 +327,70 @@ test.describe("UX-WORKBENCH phase 4 active task workbenches", () => {
 });
 
 test.describe("UX-PAGE detail standard", () => {
+
+test.describe("UX-DETAIL / UX-PAGE-SPLIT phase 5 object review", () => {
+  const phase5Routes = [
+    { path: "/evidence/demo/review", taskId: "UX-DETAIL-001", splitTaskId: "UX-PAGE-SPLIT-002" },
+    { path: "/entities/demo", taskId: "UX-DETAIL-002", splitTaskId: "UX-PAGE-SPLIT-007" },
+    { path: "/advisory/triggers/demo/review", taskId: "UX-DETAIL-003", splitTaskId: "UX-PAGE-SPLIT-001" },
+    { path: "/export/demo/redaction", taskId: "UX-DETAIL-004", splitTaskId: "UX-PAGE-SPLIT-005" },
+    { path: "/compliance/reviews/demo/audit", taskId: "UX-DETAIL-005", splitTaskId: "UX-PAGE-SPLIT-006" },
+    { path: "/communication/demo/context", taskId: "UX-DETAIL-006", splitTaskId: "UX-PAGE-SPLIT-008" },
+    { path: "/advisory", taskId: "UX-PAGE-SPLIT-001", splitTaskId: "UX-PAGE-SPLIT-001" },
+    { path: "/documents/review-queue", taskId: "UX-PAGE-SPLIT-002", splitTaskId: "UX-PAGE-SPLIT-002" },
+    { path: "/compliance/reviews", taskId: "UX-PAGE-SPLIT-003", splitTaskId: "UX-PAGE-SPLIT-003" },
+    { path: "/advisor/reviews", taskId: "UX-PAGE-SPLIT-004", splitTaskId: "UX-PAGE-SPLIT-004" },
+    { path: "/export/new", taskId: "UX-PAGE-SPLIT-005", splitTaskId: "UX-PAGE-SPLIT-005" },
+    { path: "/governance", taskId: "UX-PAGE-SPLIT-006", splitTaskId: "UX-PAGE-SPLIT-006" },
+    { path: "/client/home", taskId: "UX-PAGE-SPLIT-007", splitTaskId: "UX-PAGE-SPLIT-007" },
+    { path: "/kyc/reviews", taskId: "UX-PAGE-SPLIT-008", splitTaskId: "UX-PAGE-SPLIT-008" },
+  ];
+
+  test("covers every Phase 5 task exactly in route proof inputs", () => {
+    expect(new Set(phase5Routes.map((route) => route.taskId))).toEqual(new Set([
+      "UX-DETAIL-001",
+      "UX-DETAIL-002",
+      "UX-DETAIL-003",
+      "UX-DETAIL-004",
+      "UX-DETAIL-005",
+      "UX-DETAIL-006",
+      "UX-PAGE-SPLIT-001",
+      "UX-PAGE-SPLIT-002",
+      "UX-PAGE-SPLIT-003",
+      "UX-PAGE-SPLIT-004",
+      "UX-PAGE-SPLIT-005",
+      "UX-PAGE-SPLIT-006",
+      "UX-PAGE-SPLIT-007",
+      "UX-PAGE-SPLIT-008",
+    ]));
+  });
+
+  for (const route of phase5Routes) {
+    test(route.taskId + " " + route.path + " exposes object state, decision support and split boundary", async ({ page }) => {
+      await page.setViewportSize({ height: 1100, width: 1440 });
+      await authenticateRouteSmokePage(page);
+      await page.goto(route.path);
+
+      const panel = page.locator('[data-testid="ux-phase5-detail-split"][data-ux-phase5-task="' + route.taskId + '"]').first();
+      await expect(panel).toBeVisible();
+      await expect(panel).toHaveAttribute("data-ux-phase5-split-task", route.splitTaskId);
+      await expect(panel.getByTestId("ux-phase5-object-state")).toContainText(/state|active|pending|blocked|verified|review|release|overview|package|breach|trigger|request|evidence/i);
+      await expect(panel.getByTestId("ux-phase5-decision-support")).toContainText(/separates|support|explains|shows|captures|distinguishes|routes/i);
+      await expect(panel.getByTestId("ux-phase5-drawer-boundary")).toContainText(/cannot approve, release, delete, export or mutate payload visibility/i);
+      await expect(panel.getByTestId("ux-phase5-page-job")).toContainText(/without|separate|one|routes|handles|reviews|supports/i);
+    });
+  }
+
+  test("evidence and audit primitives expose Phase 5 detail metadata", async ({ page }) => {
+    await page.setViewportSize({ height: 1100, width: 1440 });
+    await authenticateRouteSmokePage(page);
+
+    await page.goto("/kyc/reviews");
+    await expect(page.getByTestId("ux-phase5-evidence-list").first()).toHaveAttribute("data-ux-phase5-task", "UX-DETAIL-001");
+    await expect(page.getByTestId("ux-phase5-audit-timeline").first()).toHaveAttribute("data-ux-phase5-task", "UX-DETAIL-005");
+  });
+});
+
   const uxPage003Routes = [
     "/advisory/triggers/demo/review",
     "/advisor/reviews/demo",

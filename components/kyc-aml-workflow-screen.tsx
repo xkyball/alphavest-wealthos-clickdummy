@@ -279,6 +279,50 @@ const amlColumns: Array<DataTableColumn<(typeof amlChecks)[number]>> = [
   { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge> },
 ];
 
+
+
+type Phase5DetailSplitPanelProps = {
+  decisionSupport: string;
+  objectLabel: string;
+  objectState: string;
+  pageJob: string;
+  safetyBoundary: string;
+  splitTaskId?: string;
+  taskId: string;
+};
+
+function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pageJob, safetyBoundary, splitTaskId, taskId }: Phase5DetailSplitPanelProps) {
+  return (
+    <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Phase 5 detail / split proof</p>
+          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectLabel}</h2>
+        </div>
+        <Badge tone="gold">{taskId}</Badge>
+      </div>
+      <div className="mt-4 grid gap-3 lg:grid-cols-4">
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-object-state">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Object state</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{objectState}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-decision-support">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Decision support</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{decisionSupport}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-drawer-boundary">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Drawer boundary</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">Drawer-only context cannot approve, release, delete, export or mutate payload visibility. {safetyBoundary}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-page-job">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Page job</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{pageJob}</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function KycReviewPage({ title }: { title: string }) {
   const [status, setStatus] = useState<string | null>(null);
 
@@ -290,6 +334,7 @@ function KycReviewPage({ title }: { title: string }) {
   return (
     <KycShell activePageId="064">
       <ScreenTitle>{title}</ScreenTitle>
+      <Phase5DetailSplitPanel decisionSupport="KYC review separates identity evidence, AML blockers and compliance routing." objectLabel="KYC review split" objectState="KYC review blocked by evidence gaps" pageJob="KYC review handles one elevated review path without client release." safetyBoundary="KYC detail cannot publish risk notes or client-visible advice." splitTaskId="UX-PAGE-SPLIT-008" taskId="UX-PAGE-SPLIT-008" />
       <div className="space-y-5">
         <UxHubPage pageId="064" />
         <PageHeading
@@ -411,6 +456,7 @@ function SourceOfWealthPage({ title }: { title: string }) {
   return (
     <KycShell activePageId="065">
       <ScreenTitle>{title}</ScreenTitle>
+      <Phase5DetailSplitPanel decisionSupport="Source-of-wealth detail separates funds trail review from downstream compliance release." objectLabel="Source-of-wealth split" objectState="Funds trail partially verified" pageJob="Source-of-wealth page reviews proof gaps without becoming decision room." safetyBoundary="Source review cannot release suitability or advice output." splitTaskId="UX-PAGE-SPLIT-008" taskId="UX-PAGE-SPLIT-008" />
       <div className="space-y-5">
         <PageHeading
           action={

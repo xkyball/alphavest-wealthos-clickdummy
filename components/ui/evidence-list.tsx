@@ -22,7 +22,7 @@ const evidenceTone = {
 
 export function EvidenceList({ items }: EvidenceListProps) {
   return (
-    <div className="overflow-hidden rounded-md border border-alphavest-border/70">
+    <div className="overflow-hidden rounded-md border border-alphavest-border/70" data-testid="ux-phase5-evidence-list" data-ux-phase5-task="UX-DETAIL-001" data-ux-phase5-detail-support="object-state-decision-support">
       {items.map((item) => (
         <article className="flex gap-3 border-b border-alphavest-border/55 p-4 last:border-0" key={item.id}>
           <div className="grid size-10 shrink-0 place-items-center rounded-md border border-alphavest-border bg-alphavest-midnight/70 text-alphavest-gold">

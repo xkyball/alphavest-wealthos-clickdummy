@@ -731,6 +731,50 @@ function SafeClientBanner({ children = "No unapproved advice reaches the client.
   );
 }
 
+
+
+type Phase5DetailSplitPanelProps = {
+  decisionSupport: string;
+  objectLabel: string;
+  objectState: string;
+  pageJob: string;
+  safetyBoundary: string;
+  splitTaskId?: string;
+  taskId: string;
+};
+
+function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pageJob, safetyBoundary, splitTaskId, taskId }: Phase5DetailSplitPanelProps) {
+  return (
+    <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Phase 5 detail / split proof</p>
+          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectLabel}</h2>
+        </div>
+        <Badge tone="gold">{taskId}</Badge>
+      </div>
+      <div className="mt-4 grid gap-3 lg:grid-cols-4">
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-object-state">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Object state</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{objectState}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-decision-support">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Decision support</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{decisionSupport}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-drawer-boundary">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Drawer boundary</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">Drawer-only context cannot approve, release, delete, export or mutate payload visibility. {safetyBoundary}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-page-job">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Page job</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{pageJob}</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Phase4WorkbenchPanel({
   activeTask,
   blocker,
@@ -783,6 +827,7 @@ function PortalPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="019">
       <ScreenTitle>{title}</ScreenTitle>
+      <Phase5DetailSplitPanel decisionSupport="Client projection stays separated from internal review and release gates." objectLabel="Client home projection split" objectState="Released client-safe state only" pageJob="Client portal shows released context without becoming mobile, evidence or decision detail." safetyBoundary="Client projection cannot expose internal payloads." splitTaskId="UX-PAGE-SPLIT-007" taskId="UX-PAGE-SPLIT-007" />
       <UxHubPage pageId="019" />
     </ClientShell>
   );
@@ -1774,6 +1819,7 @@ function EntityDetailPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="026">
       <ScreenTitle>{title}</ScreenTitle>
+      <Phase5DetailSplitPanel decisionSupport="Entity facts support object understanding without hiding destructive changes in drawers." objectLabel="Entity detail review" objectState="Entity active; permissioned family office context" pageJob="Entity detail explains one object and routes edits to explicit actions." safetyBoundary="Entity drawers cannot change release, advice or visibility state." splitTaskId="UX-PAGE-SPLIT-007" taskId="UX-DETAIL-002" />
       <div className="space-y-5">
         <Card>
           <CardContent className="grid gap-5 p-5 xl:grid-cols-[1fr_24rem]">
@@ -1988,6 +2034,7 @@ function DocumentsPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="027">
       <DocumentsPageContent title={title} />
+      <Phase5DetailSplitPanel decisionSupport="Document hub stays separate from review queue and evidence detail." objectLabel="Document workspace split" objectState="Document intake overview" pageJob="Documents page lists intake status and routes to queue/detail without acting as sufficiency proof." safetyBoundary="Document list context cannot mark evidence sufficient." splitTaskId="UX-PAGE-SPLIT-002" taskId="UX-PAGE-SPLIT-002" />
     </ClientShell>
   );
 }
@@ -2328,6 +2375,7 @@ function ExtractionReviewPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="029">
       <ScreenTitle>{title}</ScreenTitle>
+      <Phase5DetailSplitPanel decisionSupport="Extraction review remains human review of draft fields, not final evidence." objectLabel="Document review queue split" objectState="Extraction draft needs human review" pageJob="Review queue resolves extraction work separately from document hub and evidence detail." safetyBoundary="Queue context cannot finalize sufficiency or release." splitTaskId="UX-PAGE-SPLIT-002" taskId="UX-PAGE-SPLIT-002" />
       <div className="space-y-5">
         <SectionTitle action={<div className="flex gap-3"><button className={secondaryButtonClass} type="button">Save Draft</button><button className={primaryButtonClass} data-testid="j04-confirm-finalize" onClick={() => { void runScreencastDemoAction("j04.confirmFinalize", "/documents/:id/review"); }} type="button"><Check aria-hidden="true" className="size-4" />Confirm & Finalize</button></div>} subtitle="Review AI-extracted data. This is a draft and not final evidence." title={title} />
         <SafeClientBanner>AI Draft Mode: extracted data requires human review. Not final. Not evidence.</SafeClientBanner>
@@ -2386,6 +2434,7 @@ function VerificationPendingPage({ title }: { title: string }) {
     <ClientShell activePageId="030">
       <ScreenTitle>{title}</ScreenTitle>
       <Phase4WorkbenchPanel activeTask="Document DOC-118 selected for extraction review" blocker="Upload-created evidence is review-pending and cannot satisfy release gates." context="Reviewer checks extracted fields, source quality and linkage before evidence sufficiency." primaryAction="Mark extraction reviewed" queueLabel="Document review queue" safetyNote="UX-WORKBENCH-002: upload-only success remains separate from reviewed, linked and current evidence sufficiency." taskId="UX-WORKBENCH-002" />
+      <Phase5DetailSplitPanel decisionSupport="Selected document state explains source quality, linkage and unresolved blockers before any next action." objectLabel="Document object review" objectState="Review pending; evidence sufficiency not proven" pageJob="Document detail supports one active object review without overloading the queue." safetyBoundary="Detail context cannot unlock release, export or client visibility." splitTaskId="UX-PAGE-SPLIT-002" taskId="UX-PAGE-SPLIT-002" />
       <div className="space-y-5">
         <SectionTitle action={<button className={secondaryButtonClass} type="button"><Download aria-hidden="true" className="size-4" />Download Summary</button>} icon={FileText} subtitle="Your submitted information is under human review. No final validation has been completed." title={title} />
         <StatePanel detail="A member of our operations team is reviewing your documents and information." state="loading" title="Under Human Review" />

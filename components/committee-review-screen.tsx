@@ -123,6 +123,50 @@ const committeeColumns: Array<DataTableColumn<CommitteeReviewRow>> = [
   { key: "due", header: "Due", render: (row) => <span className={row.committeeStatus === "Dissent" ? "text-alphavest-red" : ""}>{row.due}</span> },
 ];
 
+
+
+type Phase5DetailSplitPanelProps = {
+  decisionSupport: string;
+  objectLabel: string;
+  objectState: string;
+  pageJob: string;
+  safetyBoundary: string;
+  splitTaskId?: string;
+  taskId: string;
+};
+
+function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pageJob, safetyBoundary, splitTaskId, taskId }: Phase5DetailSplitPanelProps) {
+  return (
+    <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Phase 5 detail / split proof</p>
+          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectLabel}</h2>
+        </div>
+        <Badge tone="gold">{taskId}</Badge>
+      </div>
+      <div className="mt-4 grid gap-3 lg:grid-cols-4">
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-object-state">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Object state</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{objectState}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-decision-support">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Decision support</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{decisionSupport}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-drawer-boundary">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Drawer boundary</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">Drawer-only context cannot approve, release, delete, export or mutate payload visibility. {safetyBoundary}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-page-job">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Page job</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{pageJob}</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function QueuePage({ title }: { title: string }) {
   const pendingCount = committeeReviewRows.filter((row) => row.committeeStatus === "Pending").length;
   const dissentCount = committeeReviewRows.filter((row) => row.committeeStatus === "Dissent").length;
@@ -132,6 +176,7 @@ function QueuePage({ title }: { title: string }) {
   return (
     <AppShell>
       <div className="space-y-6">
+        <Phase5DetailSplitPanel decisionSupport="Committee queue separates package selection from vote and dissent detail." objectLabel="Committee review split" objectState="Committee packages pending" pageJob="Committee queue routes elevated reviews without becoming final decision room." safetyBoundary="Committee queue cannot release to client or bypass compliance." splitTaskId="UX-PAGE-SPLIT-008" taskId="UX-PAGE-SPLIT-008" />
         <PageHeader
           description="Independent peer review for high-risk advisor-approved recommendations. Committee approval is a separate internal gate before compliance can consider client release."
           eyebrow="Phase E · E-03"

@@ -119,6 +119,50 @@ function ProofStrip() {
   );
 }
 
+
+
+type Phase5DetailSplitPanelProps = {
+  decisionSupport: string;
+  objectLabel: string;
+  objectState: string;
+  pageJob: string;
+  safetyBoundary: string;
+  splitTaskId?: string;
+  taskId: string;
+};
+
+function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pageJob, safetyBoundary, splitTaskId, taskId }: Phase5DetailSplitPanelProps) {
+  return (
+    <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Phase 5 detail / split proof</p>
+          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectLabel}</h2>
+        </div>
+        <Badge tone="gold">{taskId}</Badge>
+      </div>
+      <div className="mt-4 grid gap-3 lg:grid-cols-4">
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-object-state">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Object state</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{objectState}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-decision-support">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Decision support</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{decisionSupport}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-drawer-boundary">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Drawer boundary</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">Drawer-only context cannot approve, release, delete, export or mutate payload visibility. {safetyBoundary}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-page-job">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Page job</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{pageJob}</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Phase4WorkbenchPanel({
   activeTask,
   blocker,
@@ -353,6 +397,7 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
           title={title}
         />
         <Phase4WorkbenchPanel activeTask="Rebalance trigger RB-77 selected" blocker="Monitoring trigger is internal review state only and cannot execute advice automatically." context="Reviewer confirms stale evidence, drift and suitability prerequisites before advisory routing." primaryAction="Route to advisory review" queueLabel="Rebalance monitoring queue" safetyNote="UX-WORKBENCH-005: monitoring does not create client release, rebalance execution or advice approval." taskId="UX-WORKBENCH-005" />
+        <Phase5DetailSplitPanel decisionSupport="Monitoring detail separates rebalance trigger review from execution or client advice." objectLabel="Rebalance trigger split" objectState="Internal trigger blocked" pageJob="Monitoring detail reviews one trigger without becoming rebalance execution." safetyBoundary="Monitoring detail cannot execute trades, approve advice or release content." splitTaskId="UX-PAGE-SPLIT-008" taskId="UX-PAGE-SPLIT-008" />
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <MetricCard detail="Rebalance trigger rows in demo monitoring scope." label="Triggers" status="PROCESSING" value={String(rebalanceTriggerRows.length)} />
           <MetricCard detail="Blocked actions require human review before any recommendation path." label="Blocked" status="FAILED" value={String(blockedCount)} />

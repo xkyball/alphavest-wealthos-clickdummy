@@ -23,7 +23,7 @@ const resultMeta: Record<AuditTimelineItem["result"], { icon: LucideIcon; style:
 
 export function AuditTimeline({ items }: AuditTimelineProps) {
   return (
-    <ol className="relative space-y-4 border-l border-alphavest-border pl-5">
+    <ol className="relative space-y-4 border-l border-alphavest-border pl-5" data-testid="ux-phase5-audit-timeline" data-ux-phase5-task="UX-DETAIL-005" data-ux-phase5-detail-support="audit-object-state">
       {items.map((item) => {
         const meta = resultMeta[item.result];
         const Icon = meta.icon;

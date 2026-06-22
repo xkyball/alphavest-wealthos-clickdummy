@@ -350,6 +350,50 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+
+
+type Phase5DetailSplitPanelProps = {
+  decisionSupport: string;
+  objectLabel: string;
+  objectState: string;
+  pageJob: string;
+  safetyBoundary: string;
+  splitTaskId?: string;
+  taskId: string;
+};
+
+function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pageJob, safetyBoundary, splitTaskId, taskId }: Phase5DetailSplitPanelProps) {
+  return (
+    <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Phase 5 detail / split proof</p>
+          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectLabel}</h2>
+        </div>
+        <Badge tone="gold">{taskId}</Badge>
+      </div>
+      <div className="mt-4 grid gap-3 lg:grid-cols-4">
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-object-state">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Object state</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{objectState}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-decision-support">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Decision support</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{decisionSupport}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-drawer-boundary">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Drawer boundary</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">Drawer-only context cannot approve, release, delete, export or mutate payload visibility. {safetyBoundary}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-page-job">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Page job</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{pageJob}</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Phase4WorkbenchPanel({
   activeTask,
   blocker,
@@ -642,6 +686,7 @@ function ComplianceAuditPage({ title }: { title: string }) {
   return (
     <Phase12Shell activePageId="042">
       <ScreenTitle>{title}</ScreenTitle>
+      <Phase5DetailSplitPanel decisionSupport="Audit detail exposes actor, target, result and exception context before controlled export." objectLabel="Audit object review" objectState="Audit exceptions open" pageJob="Audit detail supports review of persisted events without acting as permission approval." safetyBoundary="Audit drawer context cannot approve access, release advice or export packages." splitTaskId="UX-PAGE-SPLIT-006" taskId="UX-DETAIL-005" />
       <div className="mx-auto grid max-w-[112rem] gap-5 2xl:grid-cols-[1fr_20rem]">
         <section className="min-w-0 space-y-5">
           <PageHeading subtitle="Compliance decision, exception and resolution activity for audit review." title={title} />
@@ -1138,6 +1183,7 @@ function EvidenceRecordDetailPage({ title }: { title: string }) {
   return (
     <Phase12Shell activePageId="047">
       <ScreenTitle>{title}</ScreenTitle>
+      <Phase5DetailSplitPanel decisionSupport="Evidence detail explains provenance, linkage and visibility before any next action." objectLabel="Evidence object review" objectState="Verified record; sufficiency still contextual" pageJob="Evidence detail supports object understanding without overloading evidence hub or document queue." safetyBoundary="Evidence detail cannot imply upload sufficiency or client release." splitTaskId="UX-PAGE-SPLIT-002" taskId="UX-DETAIL-001" />
       <div className="mx-auto max-w-[112rem] space-y-5">
         <PageHeading
           action={
@@ -1292,6 +1338,7 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
   return (
     <Phase12Shell activePageId="048">
       <ScreenTitle>{title}</ScreenTitle>
+      <Phase5DetailSplitPanel decisionSupport="Governance hub stays separate from access-request and audit detail work." objectLabel="Governance hub split" objectState="Permission operations overview" pageJob="Governance hub routes to user, role, access request and audit surfaces." safetyBoundary="Governance hub cannot mutate scoped permissions without explicit review." splitTaskId="UX-PAGE-SPLIT-006" taskId="UX-PAGE-SPLIT-006" />
       <div className={cn("mx-auto max-w-[104rem] space-y-5", drawerOpen ? "pr-0 xl:pr-[23rem]" : "")}>
         <UxHubPage pageId="048" />
         <PageHeading
@@ -1542,6 +1589,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
     <Phase12Shell activePageId="050">
       <ScreenTitle>{title}</ScreenTitle>
       <Phase4WorkbenchPanel activeTask="Access request AR-204 selected" blocker="Permission change requires scoped confirmation and audit; route visibility is not mutation authority." context="Reviewer compares requested role, tenant scope and policy checks before approval." primaryAction="Approve scoped access" queueLabel="Governance access queue" safetyNote="UX-WORKBENCH-004: admin workbench cannot bypass RBAC, audit, evidence, release or export controls." taskId="UX-WORKBENCH-004" />
+      <Phase5DetailSplitPanel decisionSupport="Access request detail separates requester, scope, policy and audit consequences." objectLabel="Access request object review" objectState="Policy-checked request pending" pageJob="Access detail reviews one permission request without becoming global admin bypass." safetyBoundary="Access detail cannot expand payload, evidence, release or export authority." splitTaskId="UX-PAGE-SPLIT-006" taskId="UX-PAGE-SPLIT-006" />
       <div className={cn("mx-auto max-w-[104rem] space-y-5", drawerOpen ? "pr-0 xl:pr-[23rem]" : "")}>
         <PageHeading
           action={<button className={primaryButtonClass} onClick={() => setDrawerOpen(true)} type="button">Review policy-checked request</button>}

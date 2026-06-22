@@ -125,6 +125,50 @@ const primaryButtonClass =
 const secondaryButtonClass =
   "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-4 text-sm font-semibold text-alphavest-ivory transition hover:border-alphavest-gold/60 hover:text-alphavest-gold-soft";
 
+
+
+type Phase5DetailSplitPanelProps = {
+  decisionSupport: string;
+  objectLabel: string;
+  objectState: string;
+  pageJob: string;
+  safetyBoundary: string;
+  splitTaskId?: string;
+  taskId: string;
+};
+
+function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pageJob, safetyBoundary, splitTaskId, taskId }: Phase5DetailSplitPanelProps) {
+  return (
+    <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Phase 5 detail / split proof</p>
+          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectLabel}</h2>
+        </div>
+        <Badge tone="gold">{taskId}</Badge>
+      </div>
+      <div className="mt-4 grid gap-3 lg:grid-cols-4">
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-object-state">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Object state</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{objectState}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-decision-support">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Decision support</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{decisionSupport}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-drawer-boundary">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Drawer boundary</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">Drawer-only context cannot approve, release, delete, export or mutate payload visibility. {safetyBoundary}</p>
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-page-job">
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Page job</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{pageJob}</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Phase4WorkbenchPanel({
   activeTask,
   blocker,
@@ -760,6 +804,7 @@ function CommunicationCentrePage({ title }: { title: string }) {
   return (
     <div>
       <PageLead description="Design, approve and deliver compliant communications with preview, release and evidence logging." icon={MessageSquare} title={title} />
+      <Phase5DetailSplitPanel decisionSupport="Communication context surfaces source, consent and recovery information before any follow-up." objectLabel="Communication context detail" objectState="Context reviewed; outbound action still gated" pageJob="Communication detail explains one client context without becoming export or advice release." safetyBoundary="Communication context cannot release advice, evidence or export payloads." splitTaskId="UX-PAGE-SPLIT-008" taskId="UX-DETAIL-006" />
       <UxHubPage pageId="052" />
       <div className="rounded-md border border-alphavest-gold/45 bg-alphavest-gold/10 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -926,6 +971,7 @@ function ExportNewPage({ title }: { title: string }) {
   return (
     <div>
       <PageLead badge="Scope first" description="Start export scope before redaction, preview, approval or delivery." icon={Download} title={title} />
+      <Phase5DetailSplitPanel decisionSupport="Export start captures purpose and scope without preview, approval or download behavior." objectLabel="Export flow split" objectState="Export request not yet scoped" pageJob="Export start is separate from scope, redaction, preview, approval and delivery." safetyBoundary="Start page cannot generate, approve or download export packages." splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-PAGE-SPLIT-005" />
       <UxHubPage pageId="054" />
     </div>
   );
@@ -1042,6 +1088,7 @@ function ExportRedactionPage({ title }: { title: string }) {
   return (
     <div>
       <PageLead badge="Redaction step" description="Resolve forbidden payloads before preview inspection." icon={Eye} title={title} />
+      <Phase5DetailSplitPanel decisionSupport="Redaction detail shows field state, payload visibility and preview blockers." objectLabel="Export redaction object review" objectState="Forbidden payload checks active" pageJob="Redaction page resolves payload review separately from preview and approval." safetyBoundary="Redaction detail cannot approve, download or share the export." splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-DETAIL-004" />
       <StatePanel detail="All sensitive fields must be redacted before preview can move toward approval." state="blocked" title="Redaction blocks preview approval" />
       <div className="mt-5">
         <ScfP07P09TrustPanel mode="export" />
@@ -1194,6 +1241,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
   return (
     <div>
       <PageLead badge="Approval step" description="Inspect preview and record approval before generation or delivery." icon={PackageCheck} title={title} />
+      <Phase5DetailSplitPanel decisionSupport="Preview detail distinguishes inspection, approval, generation and delivery." objectLabel="Export preview split" objectState="Preview inspection pending approval" pageJob="Preview page inspects one package without becoming download or share." safetyBoundary="Preview context cannot generate, download or share packages." splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-PAGE-SPLIT-005" />
       <ScfP07P09TrustPanel mode="export" />
       <UxDetailStandardPanel
         actionLabel="Approve export package only"
@@ -1344,6 +1392,7 @@ function ExportDownloadPage({ title }: { title: string }) {
   return (
     <div>
       <PageLead badge="Delivery step" description="Download is the next controlled delivery event; share remains separate." icon={Download} title={title} />
+      <Phase5DetailSplitPanel decisionSupport="Delivery detail separates approved package, download event and share gate." objectLabel="Export delivery split" objectState="Approved package; share still blocked" pageJob="Download page handles controlled delivery without client acceptance overclaim." safetyBoundary="Delivery detail cannot mark share complete or client acceptance achieved." splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-PAGE-SPLIT-005" />
       <ScfP07P09TrustPanel mode="export" />
       <UxDetailStandardPanel
         actionLabel="Download package"
@@ -1591,6 +1640,7 @@ function SlaEscalationPage({ title }: { title: string }) {
     <div>
       <PageLead description="Monitor service levels, manage breaches and drive timely resolution." icon={LineChart} title={title} />
       <Phase4WorkbenchPanel activeTask="SLA breach OPS-14 selected" blocker="Operational escalation cannot approve advice, release content, export packages or client visibility." context="Support owner reviews breach cause, recovery plan and compliance blockers before escalation." primaryAction="Escalate recovery owner" queueLabel="Ops SLA queue" safetyNote="UX-WORKBENCH-006: ops recovery work routes blockers but never bypasses advice, compliance, evidence or export gates." taskId="UX-WORKBENCH-006" />
+      <Phase5DetailSplitPanel decisionSupport="SLA detail explains breach cause, owner and recovery plan without acting as decision gate." objectLabel="SLA breach object review" objectState="Breach active; recovery owner required" pageJob="Ops SLA detail handles one breach separately from ops queue and communication context." safetyBoundary="Ops detail cannot approve advice, release content or export packages." splitTaskId="UX-PAGE-SPLIT-008" taskId="UX-PAGE-SPLIT-008" />
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         {metrics.map((metric) => (
           <Card key={metric.label}>
