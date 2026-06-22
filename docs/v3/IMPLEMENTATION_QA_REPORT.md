@@ -6915,3 +6915,20 @@ Date: 2026-06-22
 Commands: `pnpm typecheck`, `pnpm lint`, focused route-smoke on `UX-CTA disabled blocked recovery copy`, `pnpm test:workflow-gate`, `pnpm test:workflow-api`, `pnpm test:file-export`, `pnpm test:permissions` all passed. Lint retains 27 existing warnings and 0 errors.
 
 Safety proof: disabled/recovery CTA copy is explanatory only for the current blocked action. It does not mutate gates, release advice, prove evidence sufficiency, approve export/download/share, unlock client visibility, suppress audit or expand RBAC payload authority.
+
+## UX-INTERACTION-001 QA Addendum
+
+Date: 2026-06-22
+
+| Area | QA result | Evidence |
+| --- | --- | --- |
+| Table sort semantics | Passed | `DataTable` sortable columns now sort rows locally when scoped. |
+| Search semantics | Passed | Advisor and compliance queue searches filter visible rows and expose empty-state copy. |
+| Row-action semantics | Passed | Advisor/compliance row actions navigate to scoped detail routes; access-request row action opens the existing drawer. |
+| Fake interaction cleanup | Passed | D3 scope controls render as static notes, and unscoped row actions are disabled with an unavailable label. |
+| P0 safety | Passed | Workflow, upload, export and permission suites passed after the test-auth harness fix for upload browser flows. |
+| Full Playwright | Blocked | Legacy committee/confirmation suites fail before task coverage; see phase report for exact specs. |
+
+Commands: `pnpm typecheck`, `pnpm lint`, focused route-smoke on `UX-INTERACTION table search sort row-action semantics`, `pnpm test:workflow-gate`, `pnpm test:workflow-api`, `pnpm test:file-export`, `pnpm test:permissions`, `pnpm test:document-upload-api` and `pnpm test:document-upload-flow` passed. Lint retains 27 existing warnings and 0 errors.
+
+Safety proof: interaction changes are UI-local search, sort, drawer open or route navigation. They do not persist workflow state, release advice, prove evidence sufficiency, approve export/download/share, unlock client visibility, suppress audit or expand RBAC payload authority.

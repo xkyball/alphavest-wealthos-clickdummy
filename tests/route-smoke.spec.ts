@@ -999,6 +999,52 @@ test.describe("UX-CTA disabled blocked recovery copy", () => {
   }
 });
 
+test.describe("UX-INTERACTION table search sort row-action semantics", () => {
+  test("advisor queue search filters rows and row action opens the advisor detail", async ({ page }) => {
+    await page.setViewportSize({ height: 1000, width: 1440 });
+    await authenticateRouteSmokePage(page);
+    await page.goto("/advisor-approval");
+
+    await page.getByTestId("ux-interaction-advisor-search").fill("Michael Wong");
+    const table = page.getByTestId("ux-data-table").first();
+    await expect(table).toContainText("Michael Wong");
+    await expect(table).not.toContainText("James Thornton");
+    await expect(page.getByRole("button", { name: "Type filter is static in this demo queue" })).toBeDisabled();
+    await table.getByTestId("ux-data-table-sort").first().click();
+    await table.getByTestId("ux-data-table-row-action").first().click();
+    await expect(page).toHaveURL(/\/advisor-approval\/demo/);
+  });
+
+  test("compliance queue search filters rows and row action opens review detail", async ({ page }) => {
+    await page.setViewportSize({ height: 1000, width: 1440 });
+    await authenticateRouteSmokePage(page);
+    await page.goto("/compliance");
+
+    await page.getByTestId("ux-interaction-compliance-search").fill("CMP-2025-0134");
+    const table = page.getByTestId("ux-data-table").first();
+    await expect(table).toContainText("CMP-2025-0134");
+    await expect(table).not.toContainText("CMP-2025-0137");
+    await expect(page.getByRole("button", { name: "Additional compliance filters are static in this demo queue" })).toBeDisabled();
+    await page.getByRole("button", { name: "Clear" }).click();
+    await expect(table).toContainText("CMP-2025-0137");
+    await table.getByTestId("ux-data-table-sort").first().click();
+    await table.getByTestId("ux-data-table-row-action").first().click();
+    await expect(page).toHaveURL(/\/compliance\/demo\/review/);
+  });
+
+  test("export dense tables do not expose fake controls or enabled row actions", async ({ page }) => {
+    await page.setViewportSize({ height: 1000, width: 1440 });
+    await authenticateRouteSmokePage(page);
+    await page.goto("/export/demo/redaction");
+
+    const operations = page.getByTestId("ux-d3-dense-operations").first();
+    await expect(operations.getByTestId("ux-d3-filter-sort-controls").getByRole("button")).toHaveCount(0);
+    await expect(operations.getByText("Scope").first()).toBeVisible();
+    await expect(operations.getByTestId("ux-data-table-sort").first()).toBeVisible();
+    await expect(operations.getByRole("button", { name: "No scoped row action for this table state." }).first()).toBeDisabled();
+  });
+});
+
 test.describe("locked route workset preservation", () => {
   test("all registered routes are classified exactly once", () => {
     expect(routeWorksetIntegrity.counts).toEqual(lockedRouteWorksetCounts);

@@ -1511,7 +1511,9 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
             compact
             getRowId={(row) => `${row.requester}-${row.access}`}
             onSortChange={handleStaticSortChange}
+            onRowAction={() => setDrawerOpen(true)}
             responsiveMode="table"
+            rowActionLabel={(row) => `Review access request from ${row.requester}`}
             rows={accessRequests}
             sortDirection="desc"
             sortKey="submitted"

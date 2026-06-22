@@ -2021,6 +2021,59 @@ No-route-reclassification confirmation: route IDs, paths, worksets and scopes re
 No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route was touched or elevated.
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
 
+## Completed Slice: UX-INTERACTION-001
+
+Task: `UX-INTERACTION-001` - Implement table/search/filter/sort/row-action semantics only where scoped.
+
+Mission Card: ensure interactive-looking queue/table controls either perform a scoped UI lifecycle or are visibly static/disabled, without fake persistence, route changes, workflow mutation or safety gate weakening.
+
+Evidence Intake:
+- Task-master `UX-INTERACTION-001`; Route Policy Matrix rows `036`, `038`, `050`, `055-056`.
+- Route Policy Matrix `VISUAL_NOT_BEHAVIOUR_PROOF`, `STATUS_CHIP_NOT_GATE_PROOF`, `RBAC_PAYLOAD_CRITICAL`, `SAFE-POL-005`, `SAFE-POL-008`.
+- Existing `DataTable` always rendered row-action buttons even when no row action existed; D3 operation controls were rendered as buttons even when they were static scope chips.
+
+Method artifacts: Discover found fake row actions and static controls styled as active buttons. Define kept interaction lifecycle to scoped UI navigation/drawer opening only. Develop added internal table sort, optional row actions, disabled static row actions, disabled static filter chips and visible queue search on advisor/compliance queues. Deliver includes focused route-smoke proof plus P0 and upload validations.
+
+Changed files:
+- `components/ui/data-table.tsx`
+- `components/ux-dense-operations-panel.tsx`
+- `components/internal-workflow-screen.tsx`
+- `components/decisions-governance-screen.tsx`
+- `tests/route-smoke.spec.ts`
+- `tests/document-upload-flow.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-INTERACTION-001/*.png`
+
+Validation:
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with 27 existing warnings, 0 errors.
+- `PLAYWRIGHT_PORT=3538 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-INTERACTION table search sort row-action semantics"` - passed, 3 tests.
+- `PLAYWRIGHT_PORT=3539 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3540 pnpm test:workflow-api` - passed, 15 tests.
+- `PLAYWRIGHT_PORT=3541 pnpm test:file-export` - passed, 14 tests.
+- `PLAYWRIGHT_PORT=3542 pnpm test:permissions` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3543 pnpm test:document-upload-api` - passed, 8 tests.
+- `PLAYWRIGHT_PORT=3545 pnpm test:document-upload-flow` - passed, 4 tests after adding the same demo-auth cookie used by route-smoke.
+- `PLAYWRIGHT_PORT=3546 pnpm test:playwright` - blocked in legacy suites before task coverage: `tests/committee-review-routes.spec.ts` missing legacy held-route headings; `tests/confirmation-lifecycle.spec.ts` missing legacy release dialog locators. Run interrupted after 14 passed, 4 failed, 1 interrupted, 522 not run.
+
+Screenshot/proof:
+- `artifacts/ux-page-to-policy/UX-INTERACTION-001/2026-06-22-UX-INTERACTION-001-advisor-search-row-action.png`
+- `artifacts/ux-page-to-policy/UX-INTERACTION-001/2026-06-22-UX-INTERACTION-001-compliance-search-clear-row-action.png`
+- `artifacts/ux-page-to-policy/UX-INTERACTION-001/2026-06-22-UX-INTERACTION-001-export-static-controls-disabled-row-action.png`
+
+Positive acceptance: advisor and compliance queues now support visible search filtering, sortable table headers and scoped row actions to detail routes; access requests open the existing drawer from row action.
+
+Negative/P0 acceptance: export D3 controls no longer expose fake control buttons; non-scoped table row actions are disabled and labeled. P0 workflow, export, permission and upload tests remain green.
+
+Deviation note: `pnpm test:playwright` remains blocked by pre-existing legacy expectations outside this task; no route, generated screen or safety behavior was changed to satisfy those stale expectations.
+
+No-generation confirmation: no screen, state-screen, image or generated product asset was created.
+No-route-reclassification confirmation: route IDs, paths, worksets and scopes remain unchanged.
+No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route was touched or elevated.
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
+
 ## Completed Slice: UX-CTA-006
 
 Task: `UX-CTA-006` - Implement export lifecycle CTA separation.

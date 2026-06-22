@@ -9224,3 +9224,40 @@ No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route was 
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
 
 Exit Gate Decision: `UX_CTA_007_COMPLETED_WITH_DISABLED_BLOCKED_RECOVERY_CTA_PROOF`
+
+## UX-INTERACTION-001 Addendum - Scoped Table Search Sort Row Actions
+
+Date: 2026-06-22
+
+Status: Completed and validated with full-suite blocker documented.
+
+Task IDs: `UX-INTERACTION-001`
+
+Route-policy rows cited:
+- Route Policy Matrix rows `036`, `038`, `050`, `055-056`.
+- `VISUAL_NOT_BEHAVIOUR_PROOF`, `STATUS_CHIP_NOT_GATE_PROOF`.
+- `SAFE-POL-005`, `SAFE-POL-008`.
+
+Completed `UX-INTERACTION-001` by making local table interactions honest: sortable headers now sort visible table rows, advisor/compliance queue search filters the queue, scoped row actions open the advisor/compliance detail or existing governance access drawer, and unscoped row actions stay disabled with a clear label. D3 dense-operation control chips now render as static scope notes rather than fake buttons.
+
+Changed files: `components/ui/data-table.tsx`, `components/ux-dense-operations-panel.tsx`, `components/internal-workflow-screen.tsx`, `components/decisions-governance-screen.tsx`, `tests/route-smoke.spec.ts`, `tests/document-upload-flow.spec.ts`, reports and `artifacts/ux-page-to-policy/UX-INTERACTION-001/*.png`.
+
+Validation: `pnpm typecheck` passed; `pnpm lint` passed with 27 existing warnings; focused route-smoke on `UX-INTERACTION table search sort row-action semantics` passed 3 tests; `pnpm test:workflow-gate` passed 13; `pnpm test:workflow-api` passed 15; `pnpm test:file-export` passed 14; `pnpm test:permissions` passed 8; `pnpm test:document-upload-api` passed 8; `pnpm test:document-upload-flow` passed 4 after restoring demo-auth setup in that browser-flow test.
+
+Full Playwright note: `PLAYWRIGHT_PORT=3546 pnpm test:playwright` was attempted and remains blocked before task coverage by legacy suites: `tests/committee-review-routes.spec.ts` expects old held-route headings, and `tests/confirmation-lifecycle.spec.ts` expects old release/dialog locators. The run was interrupted after 14 passed, 4 failed, 1 interrupted and 522 not run.
+
+Proof artifacts: `artifacts/ux-page-to-policy/UX-INTERACTION-001/` contains three screenshots for advisor queue search/row action, compliance queue search/clear/row action and export redaction static controls/disabled row action.
+
+Positive acceptance: scoped MVP queue interactions now have explicit search, sort and row-open behavior.
+
+Negative/P0 acceptance: static D3 controls no longer appear as active controls, unscoped row actions are disabled, and safety suites for workflow, upload, export and permissions remain green.
+
+No-generation confirmation: no screen generation, state-screen generation, image generation or generated product assets.
+
+No-route-reclassification confirmation: route IDs, paths, worksets and route scopes remain unchanged.
+
+No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route was touched or elevated.
+
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
+
+Exit Gate Decision: `UX_INTERACTION_001_COMPLETED_WITH_SCOPED_TABLE_INTERACTION_PROOF_AND_FULL_SUITE_LEGACY_BLOCKER`

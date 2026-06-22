@@ -1085,15 +1085,23 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 }
 
 const advisorColumns: Array<DataTableColumn<(typeof advisorQueue)[number]>> = [
-  { key: "client", header: "Client / Structure", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.client}<span className="block text-xs text-alphavest-muted">{row.structure}</span></span> },
-  { key: "type", header: "Type", render: (row) => <span>{row.type}<span className="block text-xs">{row.topic}</span></span> },
-  { key: "priority", header: "Priority", render: (row) => <Badge tone={toneFor(row.priority)}>{row.priority}</Badge> },
-  { key: "submitted", header: "Submitted", render: (row) => row.submitted },
-  { key: "due", header: "Due", render: (row) => <span className={row.status === "Overdue" ? "text-alphavest-red" : ""}>{row.due}</span> },
-  { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge> }
+  { key: "client", header: "Client / Structure", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.client}<span className="block text-xs text-alphavest-muted">{row.structure}</span></span>, sortable: true },
+  { key: "type", header: "Type", render: (row) => <span>{row.type}<span className="block text-xs">{row.topic}</span></span>, sortable: true },
+  { key: "priority", header: "Priority", render: (row) => <Badge tone={toneFor(row.priority)}>{row.priority}</Badge>, sortable: true },
+  { key: "submitted", header: "Submitted", render: (row) => row.submitted, sortable: true },
+  { key: "due", header: "Due", render: (row) => <span className={row.status === "Overdue" ? "text-alphavest-red" : ""}>{row.due}</span>, sortable: true },
+  { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge>, sortable: true }
 ];
 
 function AdvisorQueuePage({ title }: { title: string }) {
+  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState("");
+  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+  const visibleRows = advisorQueue.filter((row) => (
+    normalizedSearchTerm.length === 0 ||
+    [row.client, row.structure, row.type, row.topic, row.priority, row.status].some((value) => value.toLowerCase().includes(normalizedSearchTerm))
+  ));
+
   return (
     <InternalShell activePageId="036">
       <ScreenTitle>{title}</ScreenTitle>
@@ -1119,12 +1127,26 @@ function AdvisorQueuePage({ title }: { title: string }) {
           <div className="grid gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-panel/55 p-3 lg:grid-cols-[1fr_repeat(4,10rem)_auto]">
             <label className="relative min-w-0">
               <Search aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-              <input className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm outline-none focus:border-alphavest-gold" placeholder="Search queue..." />
+              <input
+                className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm outline-none focus:border-alphavest-gold"
+                data-testid="ux-interaction-advisor-search"
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder="Search queue..."
+                type="search"
+                value={searchTerm}
+              />
             </label>
             {["Type", "Priority", "Risk Level", "Assigned To"].map((filter) => <FilterButton key={filter} label={filter} />)}
-            <button className={secondaryButtonClass} type="button"><Filter aria-hidden="true" className="size-4" />Filters</button>
+            <button aria-label="Additional advisor filters are static in this demo queue" className={secondaryButtonClass} disabled type="button"><Filter aria-hidden="true" className="size-4" />Filters</button>
           </div>
-          <DataTable columns={advisorColumns} getRowId={(row) => row.client} rows={advisorQueue} />
+          <DataTable
+            columns={advisorColumns}
+            emptyMessage="No advisor queue rows match this search."
+            getRowId={(row) => row.client}
+            onRowAction={() => router.push("/advisor-approval/demo")}
+            rowActionLabel={(row) => `Open advisor review for ${row.client}`}
+            rows={visibleRows}
+          />
         </section>
         <AdvisorSummaryPanel />
       </div>
@@ -1134,7 +1156,7 @@ function AdvisorQueuePage({ title }: { title: string }) {
 
 function FilterButton({ label }: { label: string }) {
   return (
-    <button className="flex h-11 items-center justify-between gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted" type="button">
+    <button aria-label={`${label} filter is static in this demo queue`} className="flex h-11 items-center justify-between gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted disabled:cursor-not-allowed disabled:opacity-65" disabled type="button">
       <span>{label}: All</span>
       <ChevronDown aria-hidden="true" className="size-4" />
     </button>
@@ -1338,17 +1360,25 @@ function AdvisorDetailPage({ title }: { title: string }) {
 }
 
 const complianceColumns: Array<DataTableColumn<(typeof complianceQueue)[number]>> = [
-  { key: "id", header: "ID", render: (row) => <span className="font-semibold text-alphavest-gold">{row.id}</span> },
-  { key: "item", header: "Item", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.item}<span className="block text-xs text-alphavest-muted">{row.sub}</span></span> },
-  { key: "classification", header: "Classification", render: (row) => <Badge tone={toneFor(row.classification)}>{row.classification}</Badge> },
-  { key: "risk", header: "Risk Status", render: (row) => <Badge tone={toneFor(row.risk)}>{row.risk}</Badge> },
-  { key: "advisor", header: "Responsible Advisor", render: (row) => row.advisor },
-  { key: "evidence", header: "Evidence Status", render: (row) => <Badge tone={toneFor(row.evidence)}>{row.evidence}</Badge> },
-  { key: "publish", header: "Publish Status", render: (row) => <Badge tone={toneFor(row.publish)}>{row.publish}</Badge> },
-  { key: "due", header: "Due Date", render: (row) => <span className={row.age !== "0d" ? "text-alphavest-red" : ""}>{row.due}</span> }
+  { key: "id", header: "ID", render: (row) => <span className="font-semibold text-alphavest-gold">{row.id}</span>, sortable: true },
+  { key: "item", header: "Item", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.item}<span className="block text-xs text-alphavest-muted">{row.sub}</span></span>, sortable: true },
+  { key: "classification", header: "Classification", render: (row) => <Badge tone={toneFor(row.classification)}>{row.classification}</Badge>, sortable: true },
+  { key: "risk", header: "Risk Status", render: (row) => <Badge tone={toneFor(row.risk)}>{row.risk}</Badge>, sortable: true },
+  { key: "advisor", header: "Responsible Advisor", render: (row) => row.advisor, sortable: true },
+  { key: "evidence", header: "Evidence Status", render: (row) => <Badge tone={toneFor(row.evidence)}>{row.evidence}</Badge>, sortable: true },
+  { key: "publish", header: "Publish Status", render: (row) => <Badge tone={toneFor(row.publish)}>{row.publish}</Badge>, sortable: true },
+  { key: "due", header: "Due Date", render: (row) => <span className={row.age !== "0d" ? "text-alphavest-red" : ""}>{row.due}</span>, sortable: true }
 ];
 
 function ComplianceQueuePage({ title }: { title: string }) {
+  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState("");
+  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+  const visibleRows = complianceQueue.filter((row) => (
+    normalizedSearchTerm.length === 0 ||
+    [row.id, row.item, row.sub, row.classification, row.risk, row.advisor, row.evidence, row.publish].some((value) => value.toLowerCase().includes(normalizedSearchTerm))
+  ));
+
   return (
     <InternalShell activePageId="038">
       <ScreenTitle>{title}</ScreenTitle>
@@ -1375,13 +1405,27 @@ function ComplianceQueuePage({ title }: { title: string }) {
         <div className="grid gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-panel/55 p-3 lg:grid-cols-[1fr_repeat(4,10rem)_auto_auto]">
           <label className="relative min-w-0">
             <Search aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-            <input className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm outline-none focus:border-alphavest-gold" placeholder="Search by client, advisor, ID, or keyword..." />
+            <input
+              className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm outline-none focus:border-alphavest-gold"
+              data-testid="ux-interaction-compliance-search"
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Search by client, advisor, ID, or keyword..."
+              type="search"
+              value={searchTerm}
+            />
           </label>
           {["Classification", "Risk Status", "Evidence Status", "Publish Status"].map((filter) => <FilterButton key={filter} label={filter} />)}
-          <button className={secondaryButtonClass} type="button"><Filter aria-hidden="true" className="size-4" />More Filters</button>
-          <button className="px-3 text-sm font-semibold text-alphavest-gold" type="button">Clear</button>
+          <button aria-label="Additional compliance filters are static in this demo queue" className={secondaryButtonClass} disabled type="button"><Filter aria-hidden="true" className="size-4" />More Filters</button>
+          <button className="px-3 text-sm font-semibold text-alphavest-gold disabled:cursor-not-allowed disabled:opacity-55" disabled={searchTerm.length === 0} onClick={() => setSearchTerm("")} type="button">Clear</button>
         </div>
-        <DataTable columns={complianceColumns} getRowId={(row) => row.id} rows={complianceQueue} />
+        <DataTable
+          columns={complianceColumns}
+          emptyMessage="No compliance queue rows match this search."
+          getRowId={(row) => row.id}
+          onRowAction={() => router.push("/compliance/demo/review")}
+          rowActionLabel={(row) => `Open compliance review ${row.id}`}
+          rows={visibleRows}
+        />
       </div>
     </InternalShell>
   );

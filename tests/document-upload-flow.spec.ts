@@ -1,10 +1,23 @@
 import { execFileSync } from "node:child_process";
 import "dotenv/config";
 import { expect, test } from "@playwright/test";
+import { dummyAuthSessionCookieName } from "../lib/dummy-auth-session";
 
 test.describe("document upload browser flow", () => {
   test.beforeAll(() => {
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
+  });
+
+  test.beforeEach(async ({ page }) => {
+    await page.context().addCookies([
+      {
+        httpOnly: true,
+        name: dummyAuthSessionCookieName,
+        sameSite: "Lax",
+        url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3020",
+        value: "av-session-playwright-authenticated",
+      },
+    ]);
   });
 
   test("uploads a file through the picker and survives reload", async ({ page }) => {

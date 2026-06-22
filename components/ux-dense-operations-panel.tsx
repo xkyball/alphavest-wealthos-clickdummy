@@ -48,14 +48,15 @@ export function UxDenseOperationsPanel({
           <CardContent className="pt-0">
             <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4" data-testid="ux-d3-filter-sort-controls">
               {controls.map((control) => (
-                <button
+                <div
+                  aria-label={`${control} table scope`}
                   className="flex h-10 items-center justify-between gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-alphavest-muted"
                   key={control}
-                  type="button"
+                  role="note"
                 >
                   <span className="truncate">{control}</span>
-                  <span aria-hidden="true" className="text-alphavest-subtle">Sort</span>
-                </button>
+                  <span aria-hidden="true" className="text-alphavest-subtle">Scope</span>
+                </div>
               ))}
             </div>
           </CardContent>
