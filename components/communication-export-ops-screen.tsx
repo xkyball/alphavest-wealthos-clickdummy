@@ -876,7 +876,7 @@ function CallTriggerMatrixPage({ title }: { title: string }) {
 function ExportNewPage({ title }: { title: string }) {
   return (
     <div>
-      <PageLead badge="Hub" description="Orient export lifecycle work before scope, redaction, preview and delivery controls." icon={Download} title={title} />
+      <PageLead badge="Scope first" description="Start export scope before redaction, preview, approval or delivery." icon={Download} title={title} />
       <UxHubPage pageId="054" />
     </div>
   );
@@ -894,16 +894,16 @@ function ExportScopePage({ title }: { title: string }) {
 
   return (
     <div>
-      <PageLead description="Select permitted objects, recipients and date range before redaction review." icon={Folder} title={title} />
+      <PageLead description="Select permitted objects only. Preview, approval, download and share remain unavailable." icon={Folder} title={title} />
       <ScfP07P09TrustPanel mode="export" />
       <ScfP10P14ClosurePanel mode="api" />
       <UxDenseOperationsPanel
         className="mt-5"
         controls={["Date range", "Recipients", "Object type", "Access", "Selected only", "Blocked excluded"]}
-        description="Export scope is selected from object-level rows before redaction, preview or approval can proceed."
+        description="Object-level scope for the next redaction step."
         pageId="055"
         resultLabel={`${summary.included} included; ${summary.blocked} blocked; ${summary.invalidSelected} invalid selected`}
-        safetyNote="Export scope selection is not approval, download or share; restricted objects stay excluded until permission and redaction controls pass."
+        safetyNote="Scope selection is not preview, approval, download or share; restricted objects stay excluded until permission and redaction controls pass."
         title="Export-scope operations"
       >
         <div className="grid gap-4 rounded-md border border-alphavest-border/70 bg-alphavest-panel/55 p-3 md:grid-cols-3">
@@ -992,8 +992,8 @@ function ExportRedactionPage({ title }: { title: string }) {
 
   return (
     <div>
-      <PageLead badge="Pending" description="Configure mandatory redaction before external or client-facing export release." icon={Eye} title={title} />
-      <StatePanel detail="All sensitive fields must be redacted before export to client or external recipients." state="blocked" title="Redaction is mandatory for external exports" />
+      <PageLead badge="Redaction step" description="Resolve forbidden payloads before preview inspection." icon={Eye} title={title} />
+      <StatePanel detail="All sensitive fields must be redacted before preview can move toward approval." state="blocked" title="Redaction blocks preview approval" />
       <div className="mt-5">
         <ScfP07P09TrustPanel mode="export" />
       </div>
@@ -1003,8 +1003,8 @@ function ExportRedactionPage({ title }: { title: string }) {
           primary={{ label: "Review mandatory redactions" }}
           secondary={[
             { label: "Inspect payload checks" },
-            { disabled: true, label: "Approve export" },
-            { disabled: true, label: "Download package" },
+            { disabled: true, label: "Approval blocked until preview" },
+            { disabled: true, label: "Download blocked until approval" },
           ]}
         />
       </div>
@@ -1061,7 +1061,7 @@ function ExportRedactionPage({ title }: { title: string }) {
                 </div>
               ))}
             </div>
-            <StatePanel className="mt-4" detail="Review and confirm all redactions before approval." state="restricted" title="External exports require redaction" />
+            <StatePanel className="mt-4" detail="Review and confirm all redactions before preview or approval." state="restricted" title="External exports require redaction" />
           </CardContent>
         </Card>
         <Card>
@@ -1135,11 +1135,11 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
 
   return (
     <div>
-      <PageLead badge="Approval required" description="Validate package contents, policy checks, approvers and blocking warnings before export release." icon={PackageCheck} title={title} />
+      <PageLead badge="Approval step" description="Inspect preview and record approval before generation or delivery." icon={PackageCheck} title={title} />
       <ScfP07P09TrustPanel mode="export" />
       <UxDetailStandardPanel
-        actionLabel="Approve export package"
-        actionState="Approval is separate from generation, download, share and client acceptance."
+        actionLabel="Approve export package only"
+        actionState="Approval records the approval step only; generation, download, share and client acceptance remain separate."
         evidenceItems={["Export package summary", "Included scoped objects", "Policy checks"]}
         facts={[
           { label: "Export", value: currentExport?.id.slice(0, 8) ?? "EXP-2025" },
@@ -1285,12 +1285,12 @@ function ExportDownloadPage({ title }: { title: string }) {
 
   return (
     <div>
-      <PageLead badge="Completed" description="Download securely or create a time-limited external share after export approval." icon={Download} title={title} />
+      <PageLead badge="Delivery step" description="Download is the next controlled delivery event; share remains separate." icon={Download} title={title} />
       <ScfP07P09TrustPanel mode="export" />
       <UxDetailStandardPanel
-        actionLabel="Download or create secure share"
-        actionState="Delivery actions are available only after approval and remain audited separately."
-        evidenceItems={["Security and compliance", "Download package", "Secure share"]}
+        actionLabel="Download package"
+        actionState="Download is available after approval; secure share remains blocked until download is recorded."
+        evidenceItems={["Security and compliance", "Download package", "Share blocked until download"]}
         facts={[
           { label: "Export", value: currentExport?.id.slice(0, 8) ?? "EXP-2025" },
           { label: "Tenant", value: currentExport?.tenant ?? "Client Comms Portfolio Summary" },
@@ -1300,15 +1300,15 @@ function ExportDownloadPage({ title }: { title: string }) {
         objectTitle={currentExport?.fileName ?? "Watermarked export package"}
         objectType="Export delivery detail"
         routeId="058"
-        safetyNote="Download and share do not imply client acceptance and must remain separated from preview and approval."
-        status="Approved for controlled delivery"
+        safetyNote="Download does not imply share or client acceptance and remains separated from preview and approval."
+        status="Approved, not downloaded"
         timelineItems={timeline.slice(0, 3).map((item) => item.title)}
       />
       <StatePanel
         className="mb-5"
-        detail="The metadata-only export package is approved for controlled delivery. Download and share actions do not imply client acceptance or downstream advice execution."
-        state="success"
-        title="Export approved for delivery"
+        detail="The metadata-only export package is approved. Download is the next controlled event; share and client acceptance remain separate."
+        state="restricted"
+        title="Export approved, download pending"
       />
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div className="space-y-5">
@@ -1336,7 +1336,7 @@ function ExportDownloadPage({ title }: { title: string }) {
               <CardTitle>Security and Compliance</CardTitle>
             </CardHeader>
             <CardContent>
-              {["Data classified and watermarked", "Access check recorded for approved requester", "Forbidden internal payloads excluded", "Download action audited separately", "External sharing secured with expiry"].map((item) => (
+              {["Data classified and watermarked", "Access check recorded for approved requester", "Forbidden internal payloads excluded", "Download action audited separately", "External sharing blocked until download"].map((item) => (
                 <div className="mb-2 flex items-center gap-3 text-sm text-alphavest-muted" key={item}>
                   <CheckCircle2 aria-hidden="true" className="size-4 text-alphavest-green" />
                   {item}
@@ -1354,11 +1354,11 @@ function ExportDownloadPage({ title }: { title: string }) {
               <div className="flex flex-wrap items-center justify-between gap-4 rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-4">
                 <div>
                   <p className="font-semibold text-alphavest-ivory">{currentExport?.fileName ?? "Watermarked export package"}</p>
-                  <p className="text-sm text-alphavest-muted">{currentExport?.lifecycleStage ?? "Metadata-only manifest package"}, delivery action controlled</p>
+                  <p className="text-sm text-alphavest-muted">Download pending, delivery action controlled</p>
                 </div>
-                <button className={secondaryButtonClass} data-testid="j08-download-export" onClick={() => { void runScreencastDemoAction("j08.downloadExport"); }} type="button">
+                <button className={primaryButtonClass} data-testid="j08-download-export" onClick={() => { void runScreencastDemoAction("j08.downloadExport"); }} type="button">
                   <Download aria-hidden="true" className="size-4" />
-                  Download
+                  Download package
                 </button>
               </div>
             </CardContent>
@@ -1370,13 +1370,14 @@ function ExportDownloadPage({ title }: { title: string }) {
             <CardContent>
               <KeyValueList
                 items={[
-                  { label: "Share token", value: "SHARE-9F3B-7A2C" },
-                  { label: "Expires", value: <span className="text-alphavest-green">7 days remaining</span> },
-                  { label: "Access", value: "Anyone with approved link" },
-                  { label: "Watermark", value: <Badge tone="green">Enabled</Badge> }
+                  { label: "Share status", value: "Blocked until download" },
+                  { label: "Required event", value: "Download action recorded" },
+                  { label: "Access", value: "No external link issued" },
+                  { label: "Watermark", value: <Badge tone="green">Prepared</Badge> }
                 ]}
               />
-              <button className={primaryButtonClass + " mt-4 w-full"} data-testid="j08-share-export" onClick={() => { void runScreencastDemoAction("j08.shareExport"); setModalOpen(true); }} type="button">Share</button>
+              <button className={secondaryButtonClass + " mt-4 w-full"} data-testid="j08-share-export" disabled type="button">Share after download</button>
+              <StatePanel className="mt-4" detail="Secure share is blocked until the download event is recorded and audited." state="blocked" title="Share blocked" />
             </CardContent>
           </Card>
           <Card>

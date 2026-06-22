@@ -9149,3 +9149,39 @@ No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route was 
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
 
 Exit Gate Decision: `UX_CTA_005_COMPLETED_WITH_ADMIN_NON_BYPASS_CTA_PROOF`
+
+## UX-CTA-006 Addendum - Export Lifecycle CTA Separation
+
+Date: 2026-06-22
+
+Status: Completed and validated.
+
+Task IDs: `UX-CTA-006`
+
+Route-policy rows cited:
+- Route Policy Matrix rows `054-058`.
+- `CTA-POL-007` export preview is not approval/download/share.
+- `CTA-POL-008` client-facing CTAs operate only on released/redacted/client-safe content.
+- `SAFE-POL-008` export must be scoped, redacted, approved and audited.
+
+Completed `UX-CTA-006` by splitting export page-state CTAs into scope, redaction, preview, approval, download and share lifecycle steps. Fixed a visible delivery contradiction where the download page mixed `not downloaded` with `Downloaded`; the page now keeps `Download package` primary and disables `Share after download` until a download event is recorded. No export service, API, route or permission behavior changed.
+
+Changed files: `components/communication-export-ops-screen.tsx`, `lib/product-guidance.ts`, `tests/route-smoke.spec.ts`, `tests/ui-state-boundaries.spec.ts`, reports and `artifacts/ux-page-to-policy/UX-CTA-006/*.png`.
+
+Validation: `pnpm typecheck` passed; `pnpm lint` passed with 27 existing warnings; focused route-smoke on `UX-CTA export` passed 7 tests; focused UI-state boundary export tests passed 4; `pnpm test:workflow-gate` passed 13; `pnpm test:workflow-api` passed 15; `pnpm test:file-export` passed 14; `pnpm test:permissions` passed 8.
+
+Proof artifacts: `artifacts/ux-page-to-policy/UX-CTA-006/` contains six screenshots for export start, scope, redaction, preview, approval modal and download/share-blocked state.
+
+Positive acceptance: each export route shows the next lifecycle step without collapsing preview, approval, generation, download or share.
+
+Negative/P0 acceptance: no export state claims download-ready, share-ready, client accepted, client visibility unlocked or preview approved; export P0 tests remain green.
+
+No-generation confirmation: no screen generation, state-screen generation, image generation or generated product assets.
+
+No-route-reclassification confirmation: route IDs, paths, worksets and route scopes remain unchanged.
+
+No-P1/Hold/Reference-elevation confirmation: no P1, Reference or Hold route was elevated.
+
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
+
+Exit Gate Decision: `UX_CTA_006_COMPLETED_WITH_EXPORT_LIFECYCLE_SEPARATION_PROOF`

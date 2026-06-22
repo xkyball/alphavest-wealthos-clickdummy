@@ -6883,3 +6883,19 @@ Date: 2026-06-22
 Commands: `pnpm typecheck`, `pnpm lint`, focused route-smoke on `UX-CTA governance`, focused SCF trust UI on `P08 governance`, `pnpm test:workflow-gate`, `pnpm test:workflow-api`, `pnpm test:file-export`, `pnpm test:permissions` all passed. Lint retains 27 existing warnings and 0 errors.
 
 Safety proof: admin and governance CTAs remain bounded to access administration. They do not release advice, prove evidence sufficiency, approve export/download/share, unlock client visibility, suppress audit or expand RBAC payload authority.
+
+## UX-CTA-006 QA Addendum
+
+Date: 2026-06-22
+
+| Area | QA result | Evidence |
+| --- | --- | --- |
+| Export lifecycle CTAs | Passed | Route-smoke validates `054-058` scope, redaction, preview, approval and delivery labels. |
+| Preview/approval/download/share separation | Passed | UI boundary tests verify approval copy and disabled share-before-download state. |
+| Delivery overclaim fix | Passed | Download page now says `Download pending` and disables share until the download event is recorded. |
+| P0 export safety | Passed | File-export realism tests continue to separate approval, generation, download and share. |
+| Screenshot proof | Passed | Six screenshots under `artifacts/ux-page-to-policy/UX-CTA-006/`. |
+
+Commands: `pnpm typecheck`, `pnpm lint`, focused route-smoke on `UX-CTA export`, focused UI-state boundary tests on `export`, `pnpm test:workflow-gate`, `pnpm test:workflow-api`, `pnpm test:file-export`, `pnpm test:permissions` all passed. Lint retains 27 existing warnings and 0 errors.
+
+Safety proof: preview is inspection only, approval is approval only, download is a separate controlled event and share remains blocked until download is recorded. No UI claims client acceptance, client visibility, export readiness or audit suppression from earlier lifecycle states.

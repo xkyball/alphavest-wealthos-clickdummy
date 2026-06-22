@@ -870,6 +870,65 @@ test.describe("UX-CTA governance admin non-bypass chain", () => {
   }
 });
 
+test.describe("UX-CTA export lifecycle separation", () => {
+  const routeByPageId = new Map<string, (typeof screenRoutes)[number]>(screenRoutes.map((route) => [route.pageId, route]));
+
+  test("maps export routes to separate lifecycle CTA states", () => {
+    const expectedPrimaryLabels: Record<string, RegExp> = {
+      "054": /Select export scope/,
+      "055": /Review redaction/,
+      "056": /Inspect preview/,
+      "057": /Open delivery controls after approval/,
+      "058": /Review approval context/,
+    };
+
+    for (const [pageId, labelPattern] of Object.entries(expectedPrimaryLabels)) {
+      const route = routeByPageId.get(pageId);
+      expect(route, `${pageId} route`).toBeDefined();
+      const guidance = productGuidanceForRoute(route!);
+
+      expect(guidance.ctaState.state, `${pageId} CTA state`).toBe("guarded");
+      expect(guidance.ctaState.primaryAction?.label, `${pageId} primary label`).toMatch(labelPattern);
+      expect(guidance.gateHint, `${pageId} gate hint`).toMatch(/scope|redaction|preview|approval|download|share|separate/i);
+      expect(guidance.ctaState.primaryAction?.label, `${pageId} no collapsed delivery label`).not.toMatch(
+        /download ready|share ready|approved and downloaded|preview approved/i,
+      );
+    }
+  });
+
+  const exportScreens = [
+    { path: "/export/new", required: "Start export scope before redaction, preview, approval or delivery." },
+    { path: "/export/demo/scope", required: "Scope selection is not preview, approval, download or share" },
+    { path: "/export/demo/redaction", required: "Approval blocked until preview" },
+    { path: "/export/demo/preview?state=approval", required: "Generation, download and share remain separate controlled steps." },
+    { path: "/export/demo/download", required: "Share after download" },
+  ];
+
+  for (const { path, required } of exportScreens) {
+    test(`${path} keeps export lifecycle steps separate`, async ({ page }) => {
+      await page.setViewportSize({ height: 1000, width: 1440 });
+      await authenticateRouteSmokePage(page);
+      await page.goto(path);
+
+      await expect(page.getByText(required).first()).toBeVisible();
+      await expect(page.locator("body")).toContainText(/scope|redaction|preview|approval|download|share|separate/i);
+      await expect(page.locator("body")).not.toContainText(
+        /download ready|share ready|client accepted|client visibility unlocked|preview approved/i,
+      );
+    });
+  }
+
+  test("download page blocks share until download is recorded", async ({ page }) => {
+    await page.setViewportSize({ height: 1000, width: 1440 });
+    await authenticateRouteSmokePage(page);
+    await page.goto("/export/demo/download");
+
+    await expect(page.getByRole("button", { name: "Download package" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Share after download" })).toBeDisabled();
+    await expect(page.getByText("Secure share is blocked until the download event is recorded and audited.")).toBeVisible();
+  });
+});
+
 test.describe("locked route workset preservation", () => {
   test("all registered routes are classified exactly once", () => {
     expect(routeWorksetIntegrity.counts).toEqual(lockedRouteWorksetCounts);

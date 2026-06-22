@@ -1969,6 +1969,56 @@ No-route-reclassification confirmation: route IDs, paths, worksets and scopes re
 No-P1/Hold/Reference-elevation confirmation: no protected route was touched or elevated.
 No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
 
+## Completed Slice: UX-CTA-006
+
+Task: `UX-CTA-006` - Implement export lifecycle CTA separation.
+
+Mission Card: keep export scope, redaction, preview, approval, generation, download and share as separate visible lifecycle steps on routes `054-058`.
+
+Evidence Intake:
+- Task-master `UX-CTA-006`; Route Policy Matrix rows `054-058`.
+- Route Policy Matrix `CTA-POL-007`, `CTA-POL-008`, `SAFE-POL-008`.
+- Existing export service tests already prove lifecycle separation; UI still allowed delivery copy to collapse approved/downloaded/share-ready states.
+
+Method artifacts: Discover found combined delivery labels and a real contradiction where the download page said both `not downloaded` and `Downloaded`. Define kept export service/API behavior unchanged and changed UI copy, disabled share state and regression tests. Develop reused existing export pages, product guidance and state panels. Deliver includes six screenshots and P0 export validation.
+
+Changed files:
+- `components/communication-export-ops-screen.tsx`
+- `lib/product-guidance.ts`
+- `tests/route-smoke.spec.ts`
+- `tests/ui-state-boundaries.spec.ts`
+- `docs/v3/UX_PAGE_TO_POLICY_EXECUTION_REPORT.md`
+- `docs/v3/PHASE_EXECUTION_REPORT.md`
+- `docs/v3/IMPLEMENTATION_QA_REPORT.md`
+- `artifacts/ux-page-to-policy/UX-CTA-006/*.png`
+
+Validation:
+- `pnpm typecheck` - passed.
+- `pnpm lint` - passed with 27 existing warnings, 0 errors.
+- `PLAYWRIGHT_PORT=3524 pnpm exec playwright test tests/route-smoke.spec.ts -g "UX-CTA export"` - passed, 7 tests.
+- `PLAYWRIGHT_PORT=3518 pnpm exec playwright test tests/ui-state-boundaries.spec.ts -g "export"` - passed, 4 tests.
+- `PLAYWRIGHT_PORT=3520 pnpm test:workflow-gate` - passed, 13 tests.
+- `PLAYWRIGHT_PORT=3521 pnpm test:workflow-api` - passed, 15 tests.
+- `PLAYWRIGHT_PORT=3522 pnpm test:file-export` - passed, 14 tests.
+- `PLAYWRIGHT_PORT=3523 pnpm test:permissions` - passed, 8 tests.
+
+Screenshot/proof:
+- `artifacts/ux-page-to-policy/UX-CTA-006/2026-06-22-UX-CTA-006-export-new-scope-first.png`
+- `artifacts/ux-page-to-policy/UX-CTA-006/2026-06-22-UX-CTA-006-export-scope-not-approval.png`
+- `artifacts/ux-page-to-policy/UX-CTA-006/2026-06-22-UX-CTA-006-redaction-blocks-approval-download.png`
+- `artifacts/ux-page-to-policy/UX-CTA-006/2026-06-22-UX-CTA-006-preview-not-approval.png`
+- `artifacts/ux-page-to-policy/UX-CTA-006/2026-06-22-UX-CTA-006-approval-modal-not-delivery.png`
+- `artifacts/ux-page-to-policy/UX-CTA-006/2026-06-22-UX-CTA-006-download-share-blocked.png`
+
+Positive acceptance: export routes now expose one next lifecycle step per state, and the delivery page keeps download primary while secure share remains disabled until download is recorded.
+
+Negative/P0 acceptance: tests reject download-ready, share-ready, client-accepted, client-visibility-unlocked and preview-approved claims; export service, workflow and permission tests remain green.
+
+No-generation confirmation: no screen, state-screen, image or generated product asset was created.
+No-route-reclassification confirmation: route IDs, paths, worksets and scopes remain unchanged.
+No-P1/Hold/Reference-elevation confirmation: no protected route was touched or elevated.
+No-safety-regression confirmation: client visibility, advice boundary, upload/evidence, audit/export and RBAC remain governed by existing engines and passed tests.
+
 ## Completed Slice: UX-CTA-005
 
 Task: `UX-CTA-005` - Implement governance/admin non-bypass CTA behaviour.

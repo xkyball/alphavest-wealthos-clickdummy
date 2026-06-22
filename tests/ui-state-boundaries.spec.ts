@@ -1,4 +1,20 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
+
+async function authenticate(page: Page) {
+  await page.context().addCookies([
+    {
+      httpOnly: true,
+      name: "alphavest_dummy_auth_session",
+      sameSite: "Lax",
+      url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3020",
+      value: "av-session-playwright-authenticated",
+    },
+  ]);
+}
+
+test.beforeEach(async ({ page }) => {
+  await authenticate(page);
+});
 
 test.describe("Phase 03 UI state boundaries", () => {
   test("client-facing routes fail closed for unreleased recommendation states", async ({ page }) => {
@@ -34,9 +50,9 @@ test.describe("Phase 03 UI state boundaries", () => {
   test("export setup and preview states keep permission, redaction and approval separate", async ({ page }) => {
     await page.goto("/export/new");
 
-    await expect(page.getByText("Export permission required")).toBeVisible();
-    await expect(page.getByText("Export permission is required to configure and run exports. This demo state keeps the permission block visible.")).toBeVisible();
-    await expect(page.getByText("Permission required", { exact: true })).toBeVisible();
+    await expect(page.getByText("Scope first").first()).toBeVisible();
+    await expect(page.getByText("Start export scope before redaction, preview, approval or delivery.")).toBeVisible();
+    await expect(page.getByText("Select export scope").first()).toBeVisible();
 
     await page.goto("/export/demo/preview?state=approval");
     await expect(page.getByRole("dialog", { name: "Approve Export Package" })).toBeVisible();
@@ -47,8 +63,10 @@ test.describe("Phase 03 UI state boundaries", () => {
   test("export delivery state does not imply client acceptance", async ({ page }) => {
     await page.goto("/export/demo/download");
 
-    await expect(page.getByText("Export approved for delivery")).toBeVisible();
-    await expect(page.getByText("Download and share actions do not imply client acceptance or downstream advice execution.")).toBeVisible();
+    await expect(page.getByText("Export approved, download pending")).toBeVisible();
+    await expect(page.getByText("The metadata-only export package is approved. Download is the next controlled event; share and client acceptance remain separate.")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Download package" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Share after download" })).toBeDisabled();
   });
 });
 
@@ -108,17 +126,18 @@ test.describe("Phase 05 feedback no-overclaim boundaries", () => {
     await page.goto("/governance/audit-history");
 
     await expect(page.getByText("Audit persistence gate")).toBeVisible();
-    await expect(page.getByText("Audit immutability depends on the retention and persistence gates; this view does not prove those gates by itself.")).toBeVisible();
-    await expect(page.getByText("Showing 1-25 of 1,248 demo audit-event rows.")).toBeVisible();
+    await expect(page.getByText("Audit review is read-only here; persistence, retention and controlled export remain separate gates.")).toBeVisible();
+    await expect(page.getByText(/tenant-scoped DB audit-event rows/)).toBeVisible();
     await expect(page.getByText("Read-only and immutable")).toHaveCount(0);
     await expect(page.getByText("tamper-evident")).toHaveCount(0);
     await expect(page.getByText("live events")).toHaveCount(0);
 
     await page.goto("/export/demo/download");
-    await expect(page.getByText("Prepared")).toBeVisible();
-    await expect(page.getByText("8.7 MB metadata-only manifest package, delivery action pending")).toBeVisible();
+    await expect(page.getByRole("term").filter({ hasText: "Prepared" })).toBeVisible();
+    await expect(page.getByText("Download pending, delivery action controlled")).toBeVisible();
+    await expect(page.getByText("Share blocked", { exact: true })).toBeVisible();
     await expect(page.getByText("Binary status")).toBeVisible();
-    await expect(page.getByText("Metadata-only", { exact: true })).toBeVisible();
+    await expect(page.getByText("Blocked until download", { exact: true })).toBeVisible();
     await expect(page.getByText("downloaded May 21, 2025 09:45")).toHaveCount(0);
     await expect(page.getByText("Demo package scan marked clear")).toHaveCount(0);
   });
