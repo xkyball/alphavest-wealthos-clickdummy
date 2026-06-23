@@ -24,12 +24,29 @@ test.describe("WCL WS-00 to WS-04 control layer spine", () => {
   });
 
   test("WS-01 resolves mapped actors and denies unknown actor contexts fail-closed", () => {
-    const mapped = resolveActorContext({ roleKey: "compliance_officer", tenantSlug: "bennett" });
+    const mapped = resolveActorContext({
+      correlationId: "wp01-providerless-scope-test",
+      roleKey: "compliance_officer",
+      tenantSlug: "bennett",
+    });
     const unknown = resolveActorContext({ roleKey: "unknown_role", tenantSlug: "bennett" });
 
     expect(mapped.allowed).toBe(true);
     if (mapped.allowed) {
+      expect(mapped.actorContext.actorUserId).toBe(mapped.actorContext.userId);
+      expect(mapped.actorContext.correlationId).toBe("wp01-providerless-scope-test");
+      expect(mapped.actorContext.demoMode).toBe(true);
+      expect(mapped.actorContext.pilotMode).toBe("controlled_paid_pilot_candidate");
       expect(mapped.actorContext.roleKey).toBe("compliance_officer");
+      expect(mapped.actorContext.roleKeys).toEqual(["compliance_officer"]);
+      expect(mapped.actorContext.scopes).toEqual({
+        roleScope: "TENANT",
+        tenant: {
+          clientTenantId: mapped.actorContext.clientTenantId,
+          platformTenantId: mapped.actorContext.platformTenantId,
+          tenantSlug: "bennett",
+        },
+      });
       expect(mapped.actorContext.tenantSlug).toBe("bennett");
     }
 
