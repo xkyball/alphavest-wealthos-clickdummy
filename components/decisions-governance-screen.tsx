@@ -84,9 +84,10 @@ import {
   rolePermissions,
   roleRows
 } from "@/lib/decisions-governance-demo-data";
-import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { createDemoSession, demoPlatformTenantId, demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import type { ScreenRoute } from "@/lib/route-registry";
 import type { VisualState } from "@/lib/visual-contract";
+import { visibilityEngine, type DecisionVisibilityPayload } from "@/lib/visibility-engine";
 
 type DecisionsGovernanceScreenProps = {
   route: ScreenRoute;
@@ -115,6 +116,27 @@ const textareaClass =
 
 const destructiveButtonClass =
   "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-red/60 bg-alphavest-red/10 px-4 text-sm font-semibold text-alphavest-red transition hover:bg-alphavest-red/16";
+
+const wp07InternalDecisionSession = createDemoSession({ roleKey: "analyst", tenantSlug: "summit" });
+const wp07ClientDecisionSession = createDemoSession({ roleKey: "principal", tenantSlug: "summit" });
+
+const wp07InternalDecisionPayload: DecisionVisibilityPayload = {
+  aiDraft: "Internal draft remains internal to AlphaVest review.",
+  assumptionsJson: { source: "wp07-decision-record" },
+  clientSummary: "Strategic rebalance summary approved for client view after release.",
+  clientTenantId: wp07InternalDecisionSession.tenant.id,
+  clientVisible: true,
+  complianceNotes: "Compliance release notes retained internally.",
+  decisionState: "RELEASED",
+  evidenceRecordId: "evidence:summit:wp07-source",
+  id: "decision:summit:wp07-record",
+  internalRationale: "Internal rationale retained for traceability.",
+  releasedAt: "2026-06-23T09:15:00.000Z",
+  sensitivity: "RESTRICTED",
+  submittedAt: "2026-06-23T08:45:00.000Z",
+  title: "Strategic rebalance decision",
+  visibilityStatus: "CLIENT_VISIBLE",
+};
 
 function handleStaticSortChange() {
   return undefined;
@@ -973,6 +995,63 @@ function DecisionsListPage({ title }: { title: string }) {
   );
 }
 
+const wp07DecisionTraceabilityItems = [
+  { label: "Recommendation", value: "REC-NORTHBRIDGE-2026-001", detail: "Reviewed recommendation source retained internally." },
+  { label: "Evidence", value: "EVD-SUMMIT-2026-014", detail: "Linked and reviewed evidence package; raw source stays internal." },
+  { label: "Advisor approval", value: "ADV-APPROVED", detail: "Advisor approval is prerequisite only, not release." },
+  { label: "Compliance release", value: "COMPLIANCE-RELEASED", detail: "Compliance release controls client-safe visibility." },
+  { label: "Audit reference", value: "AUD-2026-WP07", detail: "Audit reference stored internally." },
+  { label: "Visibility status", value: "CLIENT_SAFE", detail: "Projection allowlist controls the client view." },
+];
+
+function DecisionRecordTraceabilityCard() {
+  const internalProjection = visibilityEngine.projectDecisionPayload(
+    wp07InternalDecisionSession.actor,
+    wp07InternalDecisionSession.role,
+    wp07InternalDecisionPayload,
+    demoPlatformTenantId,
+    wp07InternalDecisionSession.tenant.id,
+  );
+  const clientProjection = visibilityEngine.projectDecisionPayload(
+    wp07ClientDecisionSession.actor,
+    wp07ClientDecisionSession.role,
+    wp07InternalDecisionPayload,
+    demoPlatformTenantId,
+    wp07ClientDecisionSession.tenant.id,
+  );
+  const clientProjectionSafety = visibilityEngine.assertClientProjectionClean(clientProjection);
+
+  return (
+    <Card data-testid="wp07-decision-record-traceability" data-wp07-client-projection-clean={String(clientProjectionSafety.clean)} data-wp07-internal-projection={internalProjection.reasonCode}>
+      <CardHeader>
+        <CardTitle>Decision record traceability</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <StatePanel
+          detail="Internal traceability view - not client-visible. The client receives only the released projection allowlist."
+          state="restricted"
+          title="Internal decision record"
+        />
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {wp07DecisionTraceabilityItems.map((item) => (
+            <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3" key={item.label}>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">{item.label}</p>
+              <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{item.value}</p>
+              <p className="mt-2 text-xs leading-5 text-alphavest-muted">{item.detail}</p>
+            </div>
+          ))}
+        </div>
+        <div className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-3" data-testid="wp07-decision-client-projection-preview">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-green">Client projection allowlist</p>
+          <p className="mt-2 text-sm leading-6 text-alphavest-muted">
+            Client payload contains decision id, title, released state, released timestamp and client-safe summary only.
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 type DecisionActionKey = "request_more_information" | "defer" | "reject" | "accept";
 
 const decisionActionCopy: Record<DecisionActionKey, {
@@ -1097,6 +1176,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
           status="Ready to decide"
           timelineItems={["Released package available", "Decision review open", "Audit persistence required"]}
         />
+        <DecisionRecordTraceabilityCard />
         <div className="grid gap-5 xl:grid-cols-[1fr_18rem]">
           <section className="min-w-0 space-y-5">
             <StatePanel detail="Until released, this decision and related materials are confidential and not visible to the client. No unapproved advice reaches the client." state="restricted" title="Content is client-visible only after Compliance Release" />

@@ -73,8 +73,8 @@ test.describe("UXP2-007 button and CTA lifecycle pruning", () => {
   test("keeps handler-backed advisor decision CTA active and removes fake secondary buttons", async ({ page }) => {
     await page.goto("/advisor/reviews/demo");
 
-    await expect(page.getByRole("button", { name: "Approve for compliance review" })).toBeEnabled();
+    await expect(page.getByRole("button", { name: "Approve as advisor" })).toBeEnabled();
     await expect(page.locator('button[data-testid="ux-cta-ai-rebuild"]')).toHaveCount(0);
-    await expect(page.getByTestId("ux-cta-ai-rebuild")).toHaveText("Draft rebuild held for Phase 3");
+    await expect(page.getByTestId("ux-cta-ai-rebuild")).toHaveText("Draft rebuild remains analyst-owned");
   });
 });

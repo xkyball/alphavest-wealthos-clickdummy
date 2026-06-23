@@ -21,7 +21,6 @@ import {
   MessageSquare,
   RefreshCw,
   Search,
-  Send,
   ShieldAlert,
   ShieldCheck,
   SlidersHorizontal,
@@ -195,6 +194,21 @@ function SensitiveWorkflowConfirmationModal({
   const activeConfig = config;
   const valid = acknowledged && confirmationText.trim() === config.phrase && reason.trim().length >= 12;
   const disabled = !valid || status === "submitting" || status === "success";
+  const lifecycleStatus = status === "submitting" ? "loading" : status;
+  const validationState = valid
+    ? "valid-confirmation"
+    : !acknowledged
+      ? "blocked-acknowledgement-required"
+      : reason.trim().length < 12
+        ? "blocked-reason-required"
+        : "blocked-exact-phrase-required";
+  const validationMessage = valid
+    ? "Confirmation is valid. Submit can persist the audited compliance action while release remains separately gated."
+    : !acknowledged
+      ? "Compliance action is blocked until the acknowledgement is checked, a controlled reason is entered and the exact phrase is typed."
+      : reason.trim().length < 12
+        ? "Compliance action is blocked until the reason explains the decision with at least 12 characters."
+        : `Compliance action is blocked until the confirmation text exactly matches ${config.phrase}.`;
 
   function resetAndClose() {
     setAcknowledged(false);
@@ -248,7 +262,8 @@ function SensitiveWorkflowConfirmationModal({
           </button>
           <button
             className={primaryButtonClass}
-            data-testid={`typed-${config.action}-submit`}
+            data-testid={config.action === "request_evidence" ? "j02-confirm-request-evidence" : `typed-${config.action}-submit`}
+            data-ux-lifecycle-result={valid ? `submits-audited-${config.action.replace("_", "-")}` : "blocked-validation-required"}
             disabled={disabled}
             onClick={() => {
               void submit();
@@ -263,14 +278,23 @@ function SensitiveWorkflowConfirmationModal({
       open={open}
       title={config.title}
     >
-      <div className="space-y-4">
+      <div
+        className="space-y-4"
+        data-testid="uxp3-compliance-sensitive-action-lifecycle"
+        data-ux-lifecycle-status={lifecycleStatus}
+        data-ux-lifecycle-validation={validationState}
+        data-ux-no-overclaim="true"
+        data-ux-sensitive-action={config.action}
+      >
         <StatePanel
           detail="Cancel closes this dialog without calling the workflow API. Invalid input keeps submit disabled."
           state="restricted"
           title="Sensitive confirmation required"
         />
+        <p className="sr-only" id={`${config.action}-validation`}>{validationMessage}</p>
         <label className="flex items-start gap-3 text-sm text-alphavest-muted">
           <input
+            aria-describedby={`${config.action}-validation`}
             checked={acknowledged}
             className="mt-1"
             disabled={status === "submitting" || status === "success"}
@@ -282,6 +306,7 @@ function SensitiveWorkflowConfirmationModal({
         <label className="block">
           <span className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Reason</span>
           <textarea
+            aria-describedby={`${config.action}-validation`}
             className={textareaClass}
             disabled={status === "submitting" || status === "success"}
             onChange={(event) => setReason(event.target.value)}
@@ -294,18 +319,35 @@ function SensitiveWorkflowConfirmationModal({
             Type {config.phrase}
           </span>
           <input
+            aria-describedby={`${config.action}-validation`}
             className={inputClass}
-            data-testid={`typed-${config.action}-confirmation`}
+            data-testid={config.action === "request_evidence" ? "j02-request-evidence-confirmation" : `typed-${config.action}-confirmation`}
             disabled={status === "submitting" || status === "success"}
             onChange={(event) => setConfirmationText(event.target.value)}
             value={confirmationText}
           />
         </label>
+        {status === "idle" ? (
+          <StatePanel
+            detail={validationMessage}
+            state={valid ? "validation" : "blocked"}
+            testId="j02-sensitive-action-validation-state"
+            title={valid ? "Compliance action confirmation valid" : "Compliance action confirmation blocked"}
+          />
+        ) : null}
+        {status === "submitting" ? (
+          <StatePanel
+            detail={message ?? "Submitting the audited compliance action."}
+            state="loading"
+            testId="j02-sensitive-action-loading-state"
+            title="Compliance action submitting"
+          />
+        ) : null}
         {status === "success" ? (
-          <StatePanel detail={message ?? "Action persisted."} state="success" title="Action persisted" />
+          <StatePanel detail={message ?? "Action persisted."} state="success" testId="j02-sensitive-action-success-state" title="Action persisted" />
         ) : null}
         {status === "error" ? (
-          <StatePanel detail={message ?? "No mutation was completed."} state="blocked" title="Action failed" />
+          <StatePanel detail={message ?? "No mutation was completed."} state="blocked" testId="j02-sensitive-action-error-state" title="Action failed" />
         ) : null}
       </div>
     </Modal>
@@ -321,7 +363,7 @@ const internalNav: NavItem[] = [
   { href: "/advisory/triggers/demo/review", icon: Flag, label: "Triggers", pageIds: ["035"], count: 12 },
   { href: "/actions", icon: ClipboardCheck, label: "Actions" },
   { href: "/advisor/reviews", icon: CheckCircle2, label: "Approvals", pageIds: ["036", "037"], count: 36 },
-  { href: "/compliance/reviews", icon: ShieldCheck, label: "Compliance", pageIds: ["038", "039", "040"] },
+  { href: "/compliance/reviews", icon: ShieldCheck, label: "Compliance", pageIds: ["038", "039", "040", "041", "042"] },
   { href: "/documents", icon: FileText, label: "Documents" },
   { href: "/reports", icon: SlidersHorizontal, label: "Reports" }
 ];
@@ -607,6 +649,58 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, de
         <span className={secondaryButtonClass} data-testid="ux-phase6-cancel" data-ux-affordance="static-control-note" data-ux-interactive="false">{cancelLabel}</span>
       </div>
     </section>
+  );
+}
+
+const compliancePreconditions = [
+  {
+    detail: "Senior wealth advisor review is present, but it is only a prerequisite.",
+    label: "Advisor approval",
+    status: "Satisfied",
+    tone: "green",
+  },
+  {
+    detail: "Required source evidence is incomplete, so upload or existence alone cannot release.",
+    label: "Evidence sufficiency",
+    status: "Blocked",
+    tone: "red",
+  },
+  {
+    detail: "Compliance officer role may request evidence or block, but release stays disabled until all gates pass.",
+    label: "Compliance permission",
+    status: "Scoped",
+    tone: "gold",
+  },
+  {
+    detail: "Audit event is required before any critical state mutation can be trusted.",
+    label: "Audit persistence",
+    status: "Required",
+    tone: "gold",
+  },
+  {
+    detail: "Client-safe projection remains unavailable until compliance release succeeds.",
+    label: "Client-safe projection",
+    status: "Hidden",
+    tone: "red",
+  },
+] satisfies Array<{ detail: string; label: string; status: string; tone: BadgeTone }>;
+
+function CompliancePreconditionChecklist() {
+  return (
+    <Card data-testid="wp06-compliance-precondition-checklist" data-wp06-release-ready="false">
+      <CardHeader><CardTitle>Release Preconditions</CardTitle></CardHeader>
+      <CardContent className="grid gap-3 lg:grid-cols-5">
+        {compliancePreconditions.map((item) => (
+          <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3" data-wp06-precondition={item.label.toLowerCase().replaceAll(" ", "-")} key={item.label}>
+            <div className="flex items-start justify-between gap-3">
+              <p className="text-sm font-semibold text-alphavest-ivory">{item.label}</p>
+              <Badge tone={item.tone}>{item.status}</Badge>
+            </div>
+            <p className="mt-2 text-xs leading-5 text-alphavest-muted">{item.detail}</p>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -1194,7 +1288,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
       reason: "Advisor approved the package; compliance release remains required.",
       targetId: recommendationReviewDemoTargets.northbridge.recommendationId,
     });
-    setDecisionStatus("Advisor approval saved. Compliance release is still required.");
+    setDecisionStatus("Advisor approval saved. Waiting for compliance release.");
   }
 
   async function escalateToCall() {
@@ -1217,7 +1311,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
           />
           <ScfP04P06FlowPanel mode="advisory" />
           <UxDetailStandardPanel
-            actionLabel="Approve for compliance queue"
+            actionLabel="Approve as advisor"
             actionState="Advisor approval records advisor review only; compliance release remains required before client visibility."
             evidenceItems={["Reviewed documents", "Client objective", "Recommendation rationale"]}
             facts={[
@@ -1280,7 +1374,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
             </Card>
           </div>
           <div className="grid gap-5 2xl:grid-cols-4">
-            <Card className="xl:col-span-2"><CardHeader><CardTitle>Internal Draft Recommendation</CardTitle></CardHeader><CardContent><p className="text-sm leading-6 text-alphavest-muted">{selectedApproval.recommendation}</p><div className="mt-4 grid gap-3 sm:grid-cols-4">{["6.4% Return", "10.2% Volatility", "82% Scenario Fit", "89/100 Tax Score"].map((item) => <Badge key={item} tone="green">{item}</Badge>)}</div><p className="mt-4 rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3 text-sm text-alphavest-gold-soft">Internal draft only. Rejection or rebuild keeps client visibility blocked until advisor and compliance gates pass.</p></CardContent></Card>
+            <Card className="xl:col-span-2"><CardHeader><CardTitle>Internal Draft Recommendation</CardTitle></CardHeader><CardContent><p className="text-sm leading-6 text-alphavest-muted">{selectedApproval.recommendation}</p><div className="mt-4 grid gap-3 sm:grid-cols-4">{["6.4% Return", "10.2% Volatility", "82% Scenario Fit", "89/100 Tax Score"].map((item) => <Badge key={item} tone="green">{item}</Badge>)}</div><p className="mt-4 rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3 text-sm text-alphavest-gold-soft">Internal draft only. Advisor escalation or analyst rebuild keeps client visibility blocked until advisor and compliance gates pass.</p></CardContent></Card>
             <Card><CardHeader><CardTitle>Risk View</CardTitle></CardHeader><CardContent><p className="text-center text-xl font-semibold text-alphavest-gold">Moderate (5/10)</p><ProgressBar value={50} /><p className="mt-3 text-sm text-alphavest-muted">Key considerations: equity allocation, interest rate sensitivity and sequence risk.</p></CardContent></Card>
             <Card><CardHeader><CardTitle>Alternatives</CardTitle></CardHeader><CardContent className="space-y-2">{selectedApproval.alternatives.map((item, index) => <div className="flex justify-between text-sm" key={item}><span className="text-alphavest-muted">{item}</span><Badge tone="gold">Score {84 - index * 5}</Badge></div>)}</CardContent></Card>
           </div>
@@ -1301,10 +1395,10 @@ function AdvisorDetailPage({ title }: { title: string }) {
                 }}
                 type="button"
               >
-                <Check aria-hidden="true" className="size-4" />Approve for compliance review
+                <Check aria-hidden="true" className="size-4" />Approve as advisor
               </button>
-              <p className={secondaryButtonClass + " w-full"} data-testid="ux-cta-ai-rebuild" data-ux-affordance="static-control-note" data-ux-interactive="false">Draft rebuild held for Phase 3</p>
-              <p className={secondaryButtonClass + " w-full"} data-ux-affordance="static-control-note" data-ux-interactive="false">Evidence request held for Phase 3</p>
+              <p className={secondaryButtonClass + " w-full"} data-testid="ux-cta-ai-rebuild" data-ux-affordance="static-control-note" data-ux-interactive="false">Draft rebuild remains analyst-owned</p>
+              <p className={secondaryButtonClass + " w-full"} data-ux-affordance="static-control-note" data-ux-interactive="false">Evidence request remains compliance-owned</p>
               <button
                 className="inline-flex h-[var(--button-height)] w-full items-center justify-center gap-2 rounded-md border border-alphavest-red/55 bg-alphavest-red/10 px-4 text-sm font-semibold text-alphavest-red"
                 data-testid="j01-escalate-advisor"
@@ -1315,7 +1409,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
                 }}
                 type="button"
               >
-                Reject unsupported draft claim
+                Escalate advisor review call
               </button>
               {decisionStatus ? (
                 <p className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3 text-sm text-alphavest-gold-soft">
@@ -1439,6 +1533,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
             status="Release gates not satisfied"
             timelineItems={["Auto-classification completed", "Reviewer assigned", "Policy exception open"]}
           />
+          <CompliancePreconditionChecklist />
           <UxComplexityPriorityPanel
             actionLabel="Request evidence or block release"
             actionState="Release stays blocked while evidence completeness and policy checks are unresolved."
@@ -1522,7 +1617,25 @@ function ComplianceReviewPage({ title }: { title: string }) {
             <CardHeader><CardTitle>Decision</CardTitle></CardHeader>
             <CardContent className="space-y-3">
               <StatePanel detail="This item cannot be released until all required evidence is complete and policy checks pass." state="blocked" title="Release gates not satisfied" />
-              <button className={secondaryButtonClass + " w-full"} disabled type="button"><Send aria-hidden="true" className="size-4" />Release</button>
+              <span
+                className={secondaryButtonClass + " w-full cursor-not-allowed opacity-60"}
+                data-testid="wp06-release-blocked-control"
+                data-ux-interactive="false"
+                role="status"
+              >
+                <LockKeyhole aria-hidden="true" className="size-4" />Release blocked until preconditions pass
+              </span>
+              <button
+                className={primaryButtonClass + " w-full"}
+                data-testid="j02-request-evidence"
+                data-ux-primary-cta="true"
+                onClick={() => {
+                  setConfirmationAction("request_evidence");
+                }}
+                type="button"
+              >
+                <MessageSquare aria-hidden="true" className="size-4" />Request Evidence
+              </button>
               <button
                 className="inline-flex h-[var(--button-height)] w-full items-center justify-center gap-2 rounded-md border border-alphavest-red/55 bg-alphavest-red/10 px-4 text-sm font-semibold text-alphavest-red"
                 data-testid="j02-block-release"
@@ -1531,17 +1644,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
                 }}
                 type="button"
               >
-                Block
-              </button>
-              <button
-                className={secondaryButtonClass + " w-full"}
-                data-testid="j02-request-evidence"
-                onClick={() => {
-                  setConfirmationAction("request_evidence");
-                }}
-                type="button"
-              >
-                <MessageSquare aria-hidden="true" className="size-4" />Request Evidence
+                Keep Blocked
               </button>
             </CardContent>
           </Card>

@@ -979,20 +979,67 @@ test.describe("UX-CTA evidence upload and review chain", () => {
 });
 
 test.describe("UX-CTA AI draft internal-only chain", () => {
-  test("advisor detail exposes reject/rebuild as internal-only without client release", async ({ page }) => {
+  test("advisor detail exposes escalation/rebuild boundaries as internal-only without client release", async ({ page }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
     await authenticateRouteSmokePage(page);
     await page.goto("/advisor/reviews/demo");
 
     await expect(page.getByRole("heading", { name: "Internal Draft Recommendation" })).toBeVisible();
-    await expect(page.getByText("Internal draft only. Rejection or rebuild keeps client visibility blocked until advisor and compliance gates pass.")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Approve for compliance review" })).toBeVisible();
+    await expect(page.getByText("Internal draft only. Advisor escalation or analyst rebuild keeps client visibility blocked until advisor and compliance gates pass.")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Approve as advisor" })).toBeVisible();
     await expect(page.getByTestId("ux-cta-ai-rebuild")).toBeVisible();
     await expect(page.getByTestId("ux-cta-ai-rebuild")).toHaveAttribute("data-ux-interactive", "false");
-    await expect(page.getByTestId("ux-cta-ai-rebuild")).toContainText("Draft rebuild held for Phase 3");
-    await expect(page.getByRole("button", { name: "Reject unsupported draft claim" })).toBeVisible();
+    await expect(page.getByTestId("ux-cta-ai-rebuild")).toContainText("Draft rebuild remains analyst-owned");
+    await expect(page.getByText("Evidence request remains compliance-owned")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Escalate advisor review call" })).toBeVisible();
     await expect(page.getByText(/release to client|client visibility unlocked|client-ready draft|approved for client/i)).toHaveCount(0);
     await expect(page.getByText("82% Success")).toHaveCount(0);
+  });
+});
+
+test.describe("V0.96 WP-06 compliance decision-room refactor-first chain", () => {
+  test("compliance decision room exposes release preconditions and one safe primary action", async ({ page }) => {
+    await page.setViewportSize({ height: 1000, width: 1440 });
+    await authenticateRouteSmokePage(page);
+    await page.goto("/compliance/reviews/demo/decision-room");
+
+    const checklist = page.getByTestId("wp06-compliance-precondition-checklist");
+    await expect(checklist).toBeVisible();
+    await expect(checklist).toHaveAttribute("data-wp06-release-ready", "false");
+    await expect(checklist).toContainText("Advisor approval");
+    await expect(checklist).toContainText("Evidence sufficiency");
+    await expect(checklist).toContainText("Audit persistence");
+    await expect(checklist).toContainText("Client-safe projection");
+
+    await expect(page.getByTestId("wp06-release-blocked-control")).toContainText("Release blocked until preconditions pass");
+    await expect(page.getByTestId("wp06-release-blocked-control")).toHaveAttribute("data-ux-interactive", "false");
+    await expect(page.locator('[data-ux-primary-cta="true"]').filter({ hasText: "Request Evidence" })).toHaveCount(1);
+    await expect(page.getByRole("button", { name: "Keep Blocked" })).toBeVisible();
+    await expect(page.locator("body")).not.toContainText(
+      /advisor approved, released|upload complete, evidence complete|client accepted|admin override release|release complete/i,
+    );
+  });
+
+  test("decision room request-evidence modal validates lifecycle before API mutation", async ({ page }) => {
+    await page.setViewportSize({ height: 1000, width: 1440 });
+    await authenticateRouteSmokePage(page);
+    await page.goto("/compliance/reviews/demo/decision-room");
+
+    await page.getByTestId("j02-request-evidence").click();
+
+    const dialog = page.getByRole("dialog", { name: "Confirm Evidence Request" });
+    const lifecycle = page.getByTestId("uxp3-compliance-sensitive-action-lifecycle");
+    await expect(dialog).toBeVisible();
+    await expect(lifecycle).toHaveAttribute("data-ux-sensitive-action", "request_evidence");
+    await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-status", "idle");
+    await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-validation", "blocked-acknowledgement-required");
+    await expect(lifecycle).toHaveAttribute("data-ux-no-overclaim", "true");
+    await expect(page.getByTestId("j02-confirm-request-evidence")).toBeDisabled();
+
+    await dialog.locator("input[type='checkbox']").check();
+    await page.getByTestId("j02-request-evidence-confirmation").fill("REQUEST EVIDENCE");
+    await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-validation", "blocked-reason-required");
+    await expect(page.getByTestId("j02-confirm-request-evidence")).toBeDisabled();
   });
 });
 

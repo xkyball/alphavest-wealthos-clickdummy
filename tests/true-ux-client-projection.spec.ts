@@ -262,3 +262,52 @@ test.describe("UX-CLIENT-PROJECTION phase 7 route proof", () => {
     });
   }
 });
+
+test.describe("V0.96 WP-07 decision record and client-safe projection refactor", () => {
+  test("client portal exposes a projection-backed safe summary and fail-closed fallback", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 1200 });
+    await authenticate(page);
+    await page.goto("/client/home");
+
+    const card = page.getByTestId("wp07-client-safe-projection-card").first();
+    await expect(card).toBeVisible();
+    await expect(card).toHaveAttribute("data-wp07-projection-source", "visibility-engine");
+    await expect(card).toHaveAttribute("data-wp07-projection-state", "DEMO_CLIENT_DECISION_SAFE_PROJECTION");
+    await expect(card).toHaveAttribute("data-wp07-safe-clean", "true");
+    await expect(card.getByText("Client-safe summary is now available")).toBeVisible();
+    await expect(card.getByTestId("wp07-client-safe-summary")).toContainText("Reviewed governance update available for client view.");
+    await expect(card.getByTestId("wp07-client-fail-closed-state")).toContainText("No released content is available yet");
+    await expect(card).not.toContainText(/AI Draft|internal rationale|compliance notes|storage key|evidence record id|audit event|client accepted/i);
+  });
+
+  test("client-safe projection card keeps the same semantic contract in mobile density", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await authenticate(page);
+    await page.goto("/client/home");
+
+    const card = page.getByTestId("wp07-client-safe-projection-card").first();
+    await expect(card).toBeVisible();
+    await expect(card).toHaveAttribute("data-wp07-projection-source", "visibility-engine");
+    await expect(card).toHaveAttribute("data-wp07-safe-clean", "true");
+    await expect(card.getByTestId("wp07-client-projection-boundary")).toContainText("released summary and permitted metadata");
+  });
+
+  test("internal decision detail exposes traceability without becoming the client projection", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 1200 });
+    await authenticate(page);
+    await page.goto("/decisions/demo");
+
+    const traceability = page.getByTestId("wp07-decision-record-traceability");
+    await expect(traceability).toBeVisible();
+    await expect(traceability).toHaveAttribute("data-wp07-internal-projection", "DEMO_INTERNAL_DECISION_PROJECTION");
+    await expect(traceability).toHaveAttribute("data-wp07-client-projection-clean", "true");
+    await expect(traceability).toContainText("Recommendation");
+    await expect(traceability).toContainText("Evidence");
+    await expect(traceability).toContainText("Advisor approval");
+    await expect(traceability).toContainText("Compliance release");
+    await expect(traceability).toContainText("Audit reference");
+    await expect(traceability).toContainText("Visibility status");
+    await expect(traceability.getByTestId("wp07-decision-client-projection-preview")).toContainText("Client payload contains decision id, title, released state, released timestamp and client-safe summary only.");
+    await expect(traceability).not.toContainText(/client accepted|manual override|export approved|download ready/i);
+  });
+});

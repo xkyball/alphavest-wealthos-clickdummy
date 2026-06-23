@@ -75,9 +75,10 @@ import {
   relationshipRows,
   verificationEvidence
 } from "@/lib/client-intake-demo-data";
-import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { createDemoSession, demoPlatformTenantId, demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import type { ScreenRoute } from "@/lib/route-registry";
 import { runScreencastDemoAction } from "@/lib/screencast-demo-client";
+import { visibilityEngine, type DecisionVisibilityPayload } from "@/lib/visibility-engine";
 
 type ClientIntakeScreenProps = {
   route: ScreenRoute;
@@ -118,6 +119,35 @@ const mobileQuickActions: Array<{ icon: LucideIcon; label: string }> = [
   { icon: Calendar, label: "Schedule" },
   { icon: ShieldCheck, label: "Security" }
 ];
+
+const wp07ClientProjectionSession = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+
+const wp07ReleasedDecisionPayload: DecisionVisibilityPayload = {
+  aiDraft: "Internal draft text remains outside the client projection.",
+  assumptionsJson: { source: "wp07-internal-model" },
+  clientSummary: "Reviewed governance update available for client view.",
+  clientTenantId: wp07ClientProjectionSession.tenant.id,
+  clientVisible: true,
+  complianceNotes: "Compliance-only release notes remain internal.",
+  decisionState: "RELEASED",
+  id: "decision:bennett:wp07-client-safe",
+  internalRationale: "Internal rationale remains hidden.",
+  evidenceRecordId: "evidence:bennett:wp07-client-safe",
+  releasedAt: "2026-06-23T09:15:00.000Z",
+  sensitivity: "RESTRICTED",
+  submittedAt: "2026-06-23T08:30:00.000Z",
+  title: "Governance update decision",
+  visibilityStatus: "CLIENT_VISIBLE",
+};
+
+const wp07UnreleasedDecisionPayload: DecisionVisibilityPayload = {
+  ...wp07ReleasedDecisionPayload,
+  clientSummary: "Draft summary not available to the client.",
+  clientVisible: false,
+  decisionState: "SUBMITTED",
+  releasedAt: null,
+  visibilityStatus: "COMPLIANCE_VISIBLE",
+};
 
 type PersistedUploadDocument = {
   checksum: string;
@@ -793,6 +823,75 @@ function Phase7ClientProjectionPanel({ allowedFields, failClosed, forbiddenField
   );
 }
 
+function ClientSafeProjectionCard({ density = "desktop" }: { density?: "desktop" | "mobile" }) {
+  const releasedProjection = visibilityEngine.projectDecisionPayload(
+    wp07ClientProjectionSession.actor,
+    wp07ClientProjectionSession.role,
+    wp07ReleasedDecisionPayload,
+    demoPlatformTenantId,
+    wp07ClientProjectionSession.tenant.id,
+  );
+  const blockedProjection = visibilityEngine.projectDecisionPayload(
+    wp07ClientProjectionSession.actor,
+    wp07ClientProjectionSession.role,
+    wp07UnreleasedDecisionPayload,
+    demoPlatformTenantId,
+    wp07ClientProjectionSession.tenant.id,
+  );
+  const safety = visibilityEngine.assertClientProjectionClean(releasedProjection);
+  const releasedPayload = releasedProjection.visible ? releasedProjection.payload : {};
+
+  return (
+    <Card
+      data-testid="wp07-client-safe-projection-card"
+      data-wp07-mobile-parity={density === "mobile" ? "true" : "false"}
+      data-wp07-projection-source="visibility-engine"
+      data-wp07-projection-state={releasedProjection.reasonCode}
+      data-wp07-safe-clean={String(safety.clean)}
+    >
+      <CardHeader>
+        <CardTitle>Client-safe summary</CardTitle>
+        <CardDescription>Released content only, with fail-closed fallback.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <StatePanel
+          detail="This view is derived from compliance release and projection rules. Release does not mean client acceptance."
+          state="success"
+          title="Client-safe summary is now available"
+        />
+        <div className="grid gap-3 md:grid-cols-2">
+          <ClientProjectionField label="Decision" value={String(releasedPayload.title ?? "Released decision")} />
+          <ClientProjectionField label="State" value={String(releasedPayload.decisionState ?? "RELEASED")} />
+          <ClientProjectionField label="Released" value={String(releasedPayload.releasedAt ?? "Release timestamp unavailable")} />
+          <ClientProjectionField label="Projection" value={releasedProjection.reasonCode} />
+        </div>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4" data-testid="wp07-client-safe-summary">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">Summary</p>
+          <p className="mt-2 text-sm leading-6 text-alphavest-ivory">{String(releasedPayload.clientSummary ?? "No released summary available.")}</p>
+        </div>
+        <StatePanel
+          detail="Your AlphaVest team is still reviewing this item. No decision body or supporting detail is shown until a released projection exists."
+          state="blocked"
+          testId="wp07-client-fail-closed-state"
+          title={blockedProjection.visible ? "Released view available" : "No released content is available yet"}
+        />
+        <p className="rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-3 text-xs leading-5 text-alphavest-muted" data-testid="wp07-client-projection-boundary">
+          Traceability is retained by AlphaVest. This client view contains only the released summary and permitted metadata.
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ClientProjectionField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-3">
+      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">{label}</p>
+      <p className="mt-2 break-words text-sm font-semibold text-alphavest-ivory">{value}</p>
+    </div>
+  );
+}
+
 function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pageJob, safetyBoundary, splitTaskId, taskId }: Phase5DetailSplitPanelProps) {
   return (
     <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
@@ -877,6 +976,7 @@ function PortalPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="019">
       <ScreenTitle>{title}</ScreenTitle>
+      <ClientSafeProjectionCard />
       <Phase5DetailSplitPanel decisionSupport="Client projection stays separated from internal review and release gates." objectLabel="Client home projection split" objectState="Released client-safe state only" pageJob="Client portal shows released context without becoming mobile, evidence or decision detail." safetyBoundary="Client projection cannot expose internal payloads." splitTaskId="UX-PAGE-SPLIT-007" taskId="UX-PAGE-SPLIT-007" />
       <Phase7ClientProjectionPanel allowedFields="clientSummary, releasedAt, redacted document title and status only" failClosed="Unavailable content explains release, evidence and permission blockers without showing the hidden object." forbiddenFields="No internal payload, manual override, unreleased evidence, AI Draft, compliance notes or storage keys." recovery="The client sees safe next steps only: wait for release, upload requested evidence or contact the advisor through controlled support." routeLabel="Client home released projection" taskId="UX-CLIENT-PROJECTION-001" visibilityEngineOutput="DEMO_CLIENT_SAFE_PROJECTION or DEMO_CLIENT_VISIBILITY_FAIL_CLOSED" />
       <UxHubPage pageId="019" />
@@ -1067,6 +1167,18 @@ function MobileHomePage({ title }: { title: string }) {
       <main className="av-surface av-surface-mobile px-4 py-5">
         <ScreenTitle>{title}</ScreenTitle>
         <div className="mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-[41rem] flex-col border-x border-alphavest-border/60 bg-alphavest-midnight/84 px-5 py-6 shadow-2xl sm:px-6 sm:py-7">
+          <ClientSafeProjectionCard density="mobile" />
+          <div className="mt-5 grid gap-3">
+            {mobilePriorityActions.map((action) => (
+              <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3" key={action.label}>
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-semibold text-alphavest-ivory">{action.label}</p>
+                  <Badge tone="gold">{action.badge}</Badge>
+                </div>
+                <p className="mt-1 text-xs text-alphavest-muted">{action.detail}</p>
+              </div>
+            ))}
+          </div>
           <UxHubPage pageId="020" />
         </div>
       </main>

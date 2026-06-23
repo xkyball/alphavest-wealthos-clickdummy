@@ -464,6 +464,7 @@ Codex may proceed from Phase 0 to Phase 1 only after this gate passes. Condition
 | No client projection without no-leakage tests | Client visibility must fail closed | UX-CLIENT-PROJECTION | Require negative tests. |
 | No decision room without audit/safety tests | Safety-critical decisions need proof | UX-DECISION-ROOM | Require workflow/audit tests. |
 | No screen/image/state-screen generation | This is code refactoring, not asset generation | All visual work | Report no-generation confirmation. |
+| No avoidable UI shortcut instead of feasible refactor | True UX work must change the real product surface when the repo and active boundaries permit it | All UI/UX, navigation, shell, density, state, component and route work | Require inspected real-refactor path, blocker proof for any substitute, and follow-up task if a substitute is intentionally scoped. |
 | No client-visible AI Draft | AI/rules draft is internal-only | Advisory/client/export | Require no-leakage proof. |
 | No unapproved advice | Product/safety hard rule | Client projection/advisory/export | Stop on leakage or release shortcut. |
 | No admin bypass | Governance cannot override gates | Governance/RBAC | Require admin negative tests. |
@@ -511,6 +512,7 @@ pnpm playwright test tests/true-ux-a11y.spec.ts
 | Upload-not-sufficiency proof | Evidence upload/review flow | Negative test showing upload success does not unlock release/export/client visibility. |
 | Export-preview-not-approval proof | Export flow | Negative test showing preview cannot download/share/approve. |
 | Accessibility proof | Drawers/modals/forms/navigation | Keyboard/focus/ARIA/status proof. |
+| Refactor-first proof | Any UI/UX task where a smaller substitute is tempting or used | Report the real component/layout/route/state/shared-system path inspected, why it was implemented or why it was blocked, and the follow-up task for any temporary substitute. |
 | No-generation proof | Visual assets and state screens | File/report confirmation that no images/screens/state-screen assets were generated. |
 
 ## 27. Reporting Requirements
@@ -534,6 +536,7 @@ Codex final report must include:
 - flow proof
 - no-leakage proof
 - accessibility proof
+- refactor-first proof and any shortcut/substitute blocker
 - P0 negative tests added/updated
 - route policy deviations
 - no-screen-generation confirmation

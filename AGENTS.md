@@ -47,6 +47,28 @@ Important: the images are not pixel-perfect contracts. They show design directio
 ## Clean UI rule
 Do not implement spec panels, route labels, filenames, annotation rails, dev notes, callout legends or explanatory documentation as app UI. Only implement actual application UI.
 
+## Refactor-first anti-shortcut rule
+When a requested UI/UX improvement can be implemented through a real component,
+layout, route, state, navigation, density, accessibility, or shared-design-system
+refactor inside the True-UX handoff boundaries, Codex must implement the real
+refactor.
+
+Do not choose workaround UI, overlay-only fixes, cosmetic copy changes,
+test-only expectation changes, placeholder panels, fake success states, hidden
+shortcuts, or documentation/report-only substitutions when the repository
+contains a feasible implementation path.
+
+Before using a smaller substitute, Codex must report why the real UI refactor is
+blocked by the active source of truth, safety, route-evolution, screen-split,
+schema, data, or test boundary; which real implementation path was inspected;
+what proof shows the substitute is temporary or intentionally scoped; and the
+follow-up file or task needed to complete the real refactor.
+
+Passing tests is not acceptance if UI work was avoidably substituted by a
+shortcut. Acceptance requires the implemented surface to match the intended
+True-UX behavior, with route, flow, screenshot, or proof evidence where
+applicable.
+
 ## Navigation mapping rule
 For navigation work, follow the True-UX handoff first. Use imported route,
 task, route-evolution and navigation artefacts only through the hierarchy named
