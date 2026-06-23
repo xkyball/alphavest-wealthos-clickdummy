@@ -49,12 +49,21 @@ export function failClosedJson(
   input: Parameters<typeof buildFailClosedErrorEnvelope>[0] & Record<string, unknown>,
   init: { status: number },
 ) {
-  const { error, issues, reasonCode, retryAllowed, ...extra } = input;
+  const { error, issues, reasonCode, retryAllowed, safety: extraSafety, ...extra } = input;
+  const envelope = buildFailClosedErrorEnvelope({ error, issues, reasonCode, retryAllowed });
+  const mergedSafety =
+    extraSafety && typeof extraSafety === "object" && !Array.isArray(extraSafety)
+      ? {
+          ...(extraSafety as Record<string, unknown>),
+          ...envelope.safety,
+        }
+      : envelope.safety;
 
   return NextResponse.json(
     {
-      ...buildFailClosedErrorEnvelope({ error, issues, reasonCode, retryAllowed }),
       ...extra,
+      ...envelope,
+      safety: mergedSafety,
     },
     init,
   );
