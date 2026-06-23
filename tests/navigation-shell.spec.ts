@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 
 import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { createDemoSession } from "../lib/demo-session";
+import { navigationGroupsForRole, productiveNavigationPageIds } from "../lib/navigation";
 
 const importantNavigationLinks = [
   { path: "/client/home", label: "Client portal" },
@@ -28,6 +30,35 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe("AlphaVest navigation shell", () => {
+  test("orders the V0.96 core journey from evidence through export", () => {
+    const internalSession = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
+    const labels = navigationGroupsForRole(internalSession.role).map((group) => group.label);
+    const journeyLabels = ["Evidence", "Advisory Workbench", "Compliance", "Decisions", "Governance", "Export"];
+
+    for (const label of journeyLabels) {
+      expect(labels).toContain(label);
+    }
+
+    const positions = journeyLabels.map((label) => labels.indexOf(label));
+    expect(positions).toEqual([...positions].sort((left, right) => left - right));
+    expect(productiveNavigationPageIds).not.toEqual(expect.arrayContaining(["052", "053", "059", "060", "061", "062", "063", "064", "065", "066", "067", "068", "069", "070", "071"]));
+  });
+
+  test("keeps client-role navigation client-safe while naming locked internal workspaces", () => {
+    const principalSession = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const groups = navigationGroupsForRole(principalSession.role);
+    const visibleGroups = groups.filter((group) => group.items.length > 0).map((group) => group.label);
+    const lockedGroups = groups.filter((group) => group.lockedReason).map((group) => group.label);
+
+    expect(visibleGroups).toEqual(expect.arrayContaining(["Client Workspace", "Evidence", "Decisions"]));
+    expect(lockedGroups).toEqual(expect.arrayContaining(["Setup", "Advisory Workbench", "Compliance", "Governance", "Export"]));
+
+    for (const group of groups.filter((candidate) => candidate.lockedReason)) {
+      expect(group.items).toHaveLength(0);
+      expect(group.lockedReason).toContain("client-safe navigation view");
+    }
+  });
+
   test("desktop renders one primary navigation landmark with the current route marked active", async ({ page }) => {
     await page.goto("/documents/upload");
 
@@ -52,7 +83,8 @@ test.describe("AlphaVest navigation shell", () => {
     await expect(primaryNavigation.getByText("Platform & Tenant")).toHaveCount(0);
 
     const primaryEntries = primaryNavigation.locator("[data-navigation-item-tier='primary']");
-    await expect(primaryEntries).toHaveCount(29);
+    await expect(primaryEntries).toHaveCount(22);
+    await expect(primaryNavigation.locator("[data-navigation-item-tier='secondary']")).toHaveCount(10);
   });
 
   test("dynamic detail routes resolve the matching active parent navigation item", async ({ page }) => {

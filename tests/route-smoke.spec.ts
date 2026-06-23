@@ -109,8 +109,8 @@ test.describe("UX-NAV route policy navigation", () => {
       "Evidence",
       "Advisory Workbench",
       "Compliance",
-      "Governance",
       "Decisions",
+      "Governance",
       "Export",
     ]);
   });

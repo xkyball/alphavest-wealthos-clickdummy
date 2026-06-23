@@ -281,6 +281,25 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
     ]
   },
   {
+    key: "decisions",
+    icon: Archive,
+    items: [
+      {
+        pageId: "043",
+        label: "Decision list",
+        description: "Submitted and in-progress advice decisions.",
+        icon: ClipboardCheck
+      },
+      {
+        pageId: "044",
+        activePageIds: ["044", "045"],
+        label: "Decision room",
+        description: "Decision detail with submitted state folded in.",
+        icon: BadgeCheck
+      }
+    ]
+  },
+  {
     key: "governance",
     icon: Landmark,
     items: [
@@ -314,25 +333,6 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
         label: "Audit history",
         description: "Trace sensitive access and governance actions.",
         icon: Archive
-      }
-    ]
-  },
-  {
-    key: "decisions",
-    icon: Archive,
-    items: [
-      {
-        pageId: "043",
-        label: "Decision list",
-        description: "Submitted and in-progress advice decisions.",
-        icon: ClipboardCheck
-      },
-      {
-        pageId: "044",
-        activePageIds: ["044", "045"],
-        label: "Decision room",
-        description: "Decision detail with submitted state folded in.",
-        icon: BadgeCheck
       }
     ]
   },
