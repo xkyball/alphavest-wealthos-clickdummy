@@ -28,6 +28,8 @@ test.describe("WCL WS-05 audit guard", () => {
     expect(allowed.allowed).toBe(true);
     if (allowed.allowed) {
       expect(allowed.reasonCode).toBe("WCL_AUDIT_GUARD_ALLOWED");
+      expect(allowed.metadata.auditMinimumFields).toContain("correlationId");
+      expect(allowed.metadata.correlationId).toBe(baseAuditInput.correlationId);
       expect(allowed.metadata.failClosedOnAuditPersistence).toBe(true);
       expect(allowed.metadata.criticalActionFamily).toBe("release");
     }

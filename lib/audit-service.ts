@@ -35,6 +35,7 @@ export type AuditPersistencePolicyInput = {
   actorRoleKey?: string | null;
   auditPersistenceAvailable?: boolean;
   clientTenantId?: UUID | null;
+  correlationId?: string | null;
   eventType: string;
   nextState?: string | null;
   platformTenantId?: UUID | null;
@@ -131,20 +132,23 @@ function assertCriticalAuditWritable(input: AuditPersistencePolicyInput) {
 
 function criticalAuditMetadata(input: AuditPersistencePolicyInput) {
   const family = criticalActionFamily(input);
+  const auditMinimumFields = [
+    "actorUserId",
+    "actorRoleKey",
+    "clientTenantId",
+    "targetType",
+    "targetId",
+    "previousState",
+    "nextState",
+    "result",
+    "reason",
+    ...(input.correlationId ? ["correlationId"] : []),
+  ];
 
   return {
     auditContract: firstBuildAuditContract,
-    auditMinimumFields: [
-      "actorUserId",
-      "actorRoleKey",
-      "clientTenantId",
-      "targetType",
-      "targetId",
-      "previousState",
-      "nextState",
-      "result",
-      "reason",
-    ],
+    auditMinimumFields,
+    ...(input.correlationId ? { correlationId: input.correlationId } : {}),
     criticalActionFamily: family,
     failClosedOnAuditPersistence: criticalAuditActions.has(input.action),
   };
