@@ -24,6 +24,7 @@ import { resolveTenantObjectScope } from "@/lib/control-layer/scope-resolver";
 import { auditService, AuditPersistenceRequiredError } from "@/lib/audit-service";
 import {
   recommendationReviewConfirmationText,
+  recommendationReviewTransitionFor,
   type RecommendationReviewWorkflowAction,
 } from "@/lib/demo-workflow-validation";
 import type { PermissionDecision } from "@/lib/permission-engine";
@@ -367,52 +368,15 @@ export async function runDemoWorkflowMutation<T extends Record<string, unknown>>
 }
 
 function typedActionPermission(action: RecommendationReviewWorkflowAction): PermissionAction {
-  switch (action) {
-    case "advisor_approve":
-      return "APPROVE";
-    case "compliance_release":
-      return "RELEASE";
-    case "compliance_block":
-    case "request_evidence":
-      return "BLOCK";
-    case "reject_unsupported_claim":
-    case "rebuild_with_evidence":
-    case "submit_review":
-      return "REVIEW";
-  }
+  return recommendationReviewTransitionFor(action).permissionAction;
 }
 
 function expectedTypedRole(action: RecommendationReviewWorkflowAction): DemoRoleKey {
-  switch (action) {
-    case "reject_unsupported_claim":
-    case "rebuild_with_evidence":
-    case "submit_review":
-      return "analyst";
-    case "advisor_approve":
-      return "senior_wealth_advisor";
-    case "compliance_release":
-    case "compliance_block":
-    case "request_evidence":
-      return "compliance_officer";
-  }
+  return recommendationReviewTransitionFor(action).requiredRole;
 }
 
 function typedActionNextState(action: RecommendationReviewWorkflowAction) {
-  switch (action) {
-    case "submit_review":
-    case "rebuild_with_evidence":
-      return RecommendationStatus.ANALYST_REVIEWED;
-    case "reject_unsupported_claim":
-      return RecommendationStatus.REVISION_REQUESTED;
-    case "advisor_approve":
-      return RecommendationStatus.ADVISOR_APPROVED;
-    case "compliance_release":
-      return RecommendationStatus.RELEASED_TO_CLIENT;
-    case "compliance_block":
-      return RecommendationStatus.BLOCKED;
-    case "request_evidence":
-      return RecommendationStatus.MORE_DATA_REQUESTED;
-  }
+  return recommendationReviewTransitionFor(action).nextRecommendationStatus as RecommendationStatus;
 }
 
 function typedEventType(action: RecommendationReviewWorkflowAction) {
@@ -420,15 +384,7 @@ function typedEventType(action: RecommendationReviewWorkflowAction) {
 }
 
 function typedAuditResult(action: RecommendationReviewWorkflowAction) {
-  switch (action) {
-    case "compliance_block":
-    case "reject_unsupported_claim":
-      return AuditResult.BLOCKED;
-    case "request_evidence":
-      return AuditResult.PENDING;
-    default:
-      return AuditResult.SUCCESS;
-  }
+  return recommendationReviewTransitionFor(action).auditResult as AuditResult;
 }
 
 function tenantSlugForId(clientTenantId: string): DemoTenantSlug {

@@ -1,3 +1,6 @@
+import type { DemoRoleKey } from "@/lib/demo-session";
+import type { AuditResult, PermissionAction, RecommendationStatus } from "@/lib/domain-types";
+
 export type ValidationIssue = {
   code: string;
   field: string;
@@ -29,6 +32,70 @@ export const recommendationReviewConfirmationText: Partial<Record<Recommendation
   compliance_release: "RELEASE TO CLIENT",
   request_evidence: "REQUEST EVIDENCE",
 };
+
+export type RecommendationReviewWorkflowTransition = {
+  auditResult: AuditResult;
+  clientVisibleAfterAction: boolean;
+  nextRecommendationStatus: RecommendationStatus;
+  permissionAction: PermissionAction;
+  requiredRole: DemoRoleKey;
+};
+
+export const recommendationReviewWorkflowStateMachine = {
+  submit_review: {
+    auditResult: "SUCCESS",
+    clientVisibleAfterAction: false,
+    nextRecommendationStatus: "ANALYST_REVIEWED",
+    permissionAction: "REVIEW",
+    requiredRole: "analyst",
+  },
+  reject_unsupported_claim: {
+    auditResult: "BLOCKED",
+    clientVisibleAfterAction: false,
+    nextRecommendationStatus: "REVISION_REQUESTED",
+    permissionAction: "REVIEW",
+    requiredRole: "analyst",
+  },
+  rebuild_with_evidence: {
+    auditResult: "SUCCESS",
+    clientVisibleAfterAction: false,
+    nextRecommendationStatus: "ANALYST_REVIEWED",
+    permissionAction: "REVIEW",
+    requiredRole: "analyst",
+  },
+  advisor_approve: {
+    auditResult: "SUCCESS",
+    clientVisibleAfterAction: false,
+    nextRecommendationStatus: "ADVISOR_APPROVED",
+    permissionAction: "APPROVE",
+    requiredRole: "senior_wealth_advisor",
+  },
+  compliance_release: {
+    auditResult: "SUCCESS",
+    clientVisibleAfterAction: true,
+    nextRecommendationStatus: "RELEASED_TO_CLIENT",
+    permissionAction: "RELEASE",
+    requiredRole: "compliance_officer",
+  },
+  compliance_block: {
+    auditResult: "BLOCKED",
+    clientVisibleAfterAction: false,
+    nextRecommendationStatus: "BLOCKED",
+    permissionAction: "BLOCK",
+    requiredRole: "compliance_officer",
+  },
+  request_evidence: {
+    auditResult: "PENDING",
+    clientVisibleAfterAction: false,
+    nextRecommendationStatus: "MORE_DATA_REQUESTED",
+    permissionAction: "BLOCK",
+    requiredRole: "compliance_officer",
+  },
+} satisfies Record<RecommendationReviewWorkflowAction, RecommendationReviewWorkflowTransition>;
+
+export function recommendationReviewTransitionFor(action: RecommendationReviewWorkflowAction) {
+  return recommendationReviewWorkflowStateMachine[action];
+}
 
 export type DemoWorkflowActionIdRequestInput = {
   actionId: string;
