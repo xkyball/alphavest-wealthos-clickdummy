@@ -2,36 +2,44 @@
 
 Authority: `AGENTS.md` -> `ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md`
 
-Companion task source: `/Users/chris/Downloads/ALPHAVEST_V0_96_CORE_JOURNEY_UX_IA_REFACTOR_DETAILED_TASK_DESCRIPTIONS.md`
+Companion task source: `docs/v0-96/uploads/ALPHAVEST_V0_96_WP02_PAGE_TYPE_DENSITY_SYSTEM_DEEP_TASK_DESCRIPTION.md`
 
-Status: `ACCEPTED_WITH_PROOF`
+Status: `ACCEPTED_ALREADY_PRESENT_WITH_CURRENT_PROOF`
 
 Date: 2026-06-23
 
 ## Scope
 
-WP-02 asked for a consistent page-type and density model across touched V0.96 UI surfaces. This slice confirms and hardens the existing model instead of redesigning visible pages.
+WP-02 asked for a consistent page-type and density model across touched V0.96 UI surfaces. This slice confirms the existing model against the WP-02 deep prompt instead of redesigning visible pages.
 
-No routes were created, no held/reference/P1 routes were promoted, no visual assets were added, and no client-facing internal workbench density was introduced.
+No product code, schema, API, route, visual asset or test-code change was required in this run. No routes were created, no held/reference/P1 routes were promoted, and no client-facing internal workbench density was introduced.
 
 ## Classification
 
 Initial WP-00 classification: `PARTIAL`
 
-Post-slice classification: `ALREADY_PRESENT_WITH_TARGETED_HARDENING`
+Post-slice classification: `ALREADY_PRESENT_WITH_CURRENT_PROOF`
 
-Reason: the app already had `D1` through `D4` density contracts, page-type contracts, product guidance, support-density strips, workbench triads and route-smoke proof. WP-02 needed a V0.96-specific alias layer so older task wording such as `/workbench`, `/portal` and `DECISION_ROOM` maps to the current route registry without changing route truth.
+Reason: the app already has `D1` through `D4` density contracts, page-type contracts, product guidance, support-density strips, workbench triads, route-smoke proof and a V0.96-specific alias layer. Older task wording such as `/workbench`, `/portal` and `DECISION_ROOM` maps to the current route registry without changing route truth.
 
 ## Changed Files
 
 | File | Change |
 | --- | --- |
-| `lib/v0-96-ux-density-contract.ts` | Added a V0.96 adapter that maps target route labels and page-type aliases onto the existing route, page-type and density contracts. |
-| `tests/true-ux-density.spec.ts` | Added WP-02 regression tests for touched V0.96 surfaces, long-page density targets, client projection calmness, reference guards and hold guards. |
-| `V0_96_WP02_PAGE_TYPE_DENSITY_REPORT.md` | Added this execution report. |
+| `docs/v0-96/uploads/ALPHAVEST_V0_96_WP02_PAGE_TYPE_DENSITY_SYSTEM_DEEP_TASK_DESCRIPTION.md` | Added the WP-02 deep prompt as repo-local companion material. |
+| `docs/v0-96/uploads/ALPHAVEST_V0_96_WP03_EVIDENCE_WORKBENCH_SUFFICIENCY_UX_DEEP_TASK_DESCRIPTION.md` | Added the WP-03 deep prompt for the next staged slice. |
+| `docs/v0-96/uploads/ALPHAVEST_V0_96_WP04_ANALYST_WORKBENCH_AI_DRAFT_INTERNAL_REVIEW_DEEP_TASK_DESCRIPTION.md` | Added the WP-04 deep prompt for the next staged slice. |
+| `docs/v0-96/uploads/ALPHAVEST_V0_96_WP05_ADVISOR_QUEUE_APPROVAL_DETAIL_DEEP_TASK_DESCRIPTION.md` | Added the WP-05 deep prompt for the next staged slice. |
+| `docs/v0-96/uploads/README.md` | Registered WP-02 through WP-05 uploads with SHA-256 hashes. |
+| `V0_96_WP02_PAGE_TYPE_DENSITY_REPORT.md` | Refreshed the WP-02 execution report with current prompt source and proof. |
+
+No application code or test source was changed for WP-02 because the required contract and regression coverage were already present.
 
 ## Inspected Files
 
+- `docs/v0-96/uploads/ALPHAVEST_V0_96_WP02_PAGE_TYPE_DENSITY_SYSTEM_DEEP_TASK_DESCRIPTION.md`
+- `docs/v0-96/uploads/README.md`
+- `V0_96_UX_IA_DELTA_REGISTER.md`
 - `components/ux-hub-page.tsx`
 - `components/ux-dense-operations-panel.tsx`
 - `components/ux-detail-standard-panel.tsx`
@@ -82,14 +90,17 @@ Reason: the app already had `D1` through `D4` density contracts, page-type contr
 
 Focused proof for this slice:
 
-- `pnpm exec playwright test tests/true-ux-density.spec.ts`
-- `pnpm exec playwright test tests/true-ux-cta-state.spec.ts`
-- `pnpm test:route-smoke`
+- `pnpm playwright test tests/true-ux-density.spec.ts` -> `PASS` 8/8
+- `pnpm playwright test tests/true-ux-cta-state.spec.ts` -> `PASS` 9/9
+- `pnpm test:route-smoke` -> `PASS` 315/315
+- `pnpm playwright test tests/v0-96-ux-ia-delta-register.spec.ts` -> `PASS` 3/3
 
 Static safety proof:
 
-- `pnpm typecheck`
-- `pnpm lint`
+- `pnpm typecheck` -> `PASS`
+- `pnpm lint` -> `PASS` with 0 errors and 30 pre-existing warnings
+
+`tests/true-ux-flow-navigation.spec.ts` is not present in this repository. Equivalent route/navigation coverage was supplied by `tests/route-smoke.spec.ts`, including UX-NAV route policy navigation, page-type contracts, density tiers, locked workset preservation and mobile route identity.
 
 ## Screenshots
 
