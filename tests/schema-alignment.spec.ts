@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 import { expect, test } from "@playwright/test";
@@ -144,5 +144,41 @@ test.describe("Phase 09 schema alignment", () => {
     expect(schemaReconciliation).toContain("BLOCKER_FOR_CODEX_TASK_MASTER");
     expect(stopRules).toContain("patch-schema takeover");
     expect(stopRules).toContain("Prisma/schema replacement");
+  });
+
+  test("maps V1 P0 gates to existing schema/runtime support without adding migrations", () => {
+    const v1SchemaAlignment = fileText("V1_0_SCHEMA_USAGE_ALIGNMENT.md");
+    const packageJson = fileText("package.json");
+    const migrationFiles = readdirSync(path.join(process.cwd(), "prisma/migrations")).sort();
+
+    for (const concept of [
+      "Actor",
+      "Tenant",
+      "Role",
+      "Object scope",
+      "Client visibility",
+      "AI draft internal-only",
+      "Advisor approval",
+      "Compliance release",
+      "Evidence status/sufficiency",
+      "Upload-only state",
+      "Audit persistence",
+      "Export status/redaction",
+      "Admin non-bypass",
+      "Data-quality release guard",
+    ]) {
+      expect(v1SchemaAlignment, concept).toContain(`| ${concept} |`);
+    }
+
+    expect(v1SchemaAlignment).toContain("NO_MIGRATION_REQUIRED_FOR_WP11");
+    expect(v1SchemaAlignment).toContain("AiDraft");
+    expect(v1SchemaAlignment).toContain("ClientVisibilityEvaluation");
+    expect(v1SchemaAlignment).toContain("VisibilityRule");
+    expect(migrationFiles).toEqual([
+      "20260614201128_init_phase_02",
+      "20260614202332_phase_03_data_model_seed",
+      "migration_lock.toml",
+    ]);
+    expect(packageJson).toContain('"db:validate": "prisma validate"');
   });
 });
