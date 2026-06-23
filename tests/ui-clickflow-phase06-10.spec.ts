@@ -222,7 +222,7 @@ test.describe("UI Clickflow Phase 06-10 guard implementation", () => {
     expect(auditUnavailable.uiState).toBe("AUDIT_UNAVAILABLE_STATE");
   });
 
-  test("Phase 09 reflects True-UX promoted routes while keeping reference and offboarding guard-only", () => {
+  test("Phase 09 reflects True-UX registered-only route scopes and offboarding guard-only state", () => {
     const communication = evaluateDeferredRouteUiState(routeByPageId("052"));
     const reviewMonitoring = evaluateDeferredRouteUiState(routeByPageId("068"));
     const kycReview = evaluateDeferredRouteUiState(routeByPageId("064"));
@@ -261,14 +261,22 @@ test.describe("UI Clickflow Phase 06-10 guard implementation", () => {
       retentionPolicy: "wealthos_retention_7y",
     });
 
-    expect(communication.uiState).toBe("SUCCESS_STATE");
-    expect(reviewMonitoring.uiState).toBe("SUCCESS_STATE");
-    expect(kycReview.uiState).toBe("SUCCESS_STATE");
-    expect(committeeReview.uiState).toBe("SUCCESS_STATE");
-    for (const promoted of [communication, reviewMonitoring, kycReview, committeeReview]) {
-      expect(promoted.routeShellAccessible).toBe(true);
-      expect(promoted.action.hidden).toBe(false);
-      expect(promoted.productiveActionsEnabled).toBe(false);
+    for (const deferred of [communication, reviewMonitoring]) {
+      expect(deferred.uiState).toBe("P1_DEFERRED_STATE");
+      expect(deferred.routeScope).toBe("P1_AFTER_MVP");
+      expect(deferred.reasonCode).toBe("P1_DEFERRED");
+      expect(deferred.routeShellAccessible).toBe(false);
+      expect(deferred.action.hidden).toBe(true);
+      expect(deferred.productiveActionsEnabled).toBe(false);
+    }
+
+    for (const held of [kycReview, committeeReview]) {
+      expect(held.uiState).toBe("HOLD_BLOCKED_STATE");
+      expect(held.routeScope).toBe("HOLD_PENDING_DECISION");
+      expect(held.reasonCode).toBe("HOLD_PENDING_SCOPE_UNLOCK");
+      expect(held.routeShellAccessible).toBe(false);
+      expect(held.action.hidden).toBe(true);
+      expect(held.productiveActionsEnabled).toBe(false);
     }
 
     expect(reference.uiState).toBe("REFERENCE_ONLY_STATE");

@@ -288,7 +288,7 @@ function canGenerateExport(input: {
     input.role
   );
   const missing: string[] = [];
-  const redactionProfile = input.redactionProfile ?? "client-visible";
+  const redactionProfile = input.redactionProfile?.trim() ?? "";
 
   if (!permission.allowed) {
     missing.push("permission");

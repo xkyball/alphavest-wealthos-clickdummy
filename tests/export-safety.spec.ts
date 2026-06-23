@@ -71,4 +71,28 @@ test.describe("WCL WS-07 export safety", () => {
     expect(result.exportGate.missing).toContain("forbidden_payload:INTERNAL_RATIONALE");
     expect(result.exportGate.missing).toContain("forbidden_payload:COMPLIANCE_NOTES");
   });
+
+  test("blocks export generation when redaction profile is omitted", () => {
+    const result = evaluateExportSafety({
+      actorContext: controlLayerActors.summitCompliance,
+      approvalComplete: true,
+      auditPersistenceAvailable: true,
+      payloadClassifications: ["CLIENT_SAFE_SUMMARY"],
+      scopeItems: [
+        {
+          access: "Allowed",
+          id: "recommendation:summit:wcl-redaction-required",
+          name: "Released recommendation",
+          payloadClassifications: ["CLIENT_SAFE_SUMMARY"],
+          selected: true,
+          type: "recommendation",
+        },
+      ],
+      targetId: "export:summit:wcl-redaction-required",
+    });
+
+    expect(result.status).toBe("EXPORT_BLOCKED");
+    expect(result.exportGate.allowedToGenerate).toBe(false);
+    expect(result.exportGate.missing).toContain("redaction_profile");
+  });
 });
