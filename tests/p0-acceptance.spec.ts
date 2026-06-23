@@ -536,10 +536,10 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
 
   test("SCF-P00/P01/P02 preserves route worksets and Do-Not-Implement boundaries", () => {
     expect(routeWorksetIntegrity.counts).toEqual({
-      HOLD_PENDING_DECISION: 0,
-      MVP: 39,
-      MVP_SUPPORT: 29,
-      P1_AFTER_MVP: 0,
+      HOLD_PENDING_DECISION: 7,
+      MVP: 31,
+      MVP_SUPPORT: 25,
+      P1_AFTER_MVP: 5,
       REFERENCE_ONLY: 3,
     });
     expect(routeWorksetIntegrity.missingPageIds).toEqual([]);
@@ -547,13 +547,13 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
     expect(routeWorksetIntegrity.duplicatePageIds).toEqual([]);
 
     for (const pageId of ["052", "053", "059", "060", "068"]) {
-      const expectedScope = pageId === "068" ? "MVP" : "MVP_SUPPORT";
-      expect(routeScopeForPageId(pageId)).toBe(expectedScope);
+      expect(routeScopeForPageId(pageId)).toBe("P1_AFTER_MVP");
       expect(routeImplementationAccessDecision({ pageId })).toEqual({
-        accessMode: "FIRST_BUILD",
-        implementationShellAccessible: true,
-        routeScope: expectedScope,
-        safetyBoundary: "FULL_FIRST_BUILD_SCOPE",
+        accessMode: "REGISTERED_ONLY",
+        exclusionReason: "P1_DEFERRED",
+        implementationShellAccessible: false,
+        routeScope: "P1_AFTER_MVP",
+        safetyBoundary: "SCF_DO_NOT_IMPLEMENT_REGISTER",
       });
     }
 
@@ -569,11 +569,23 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
     }
 
     for (const pageId of ["064", "065", "066", "067", "069", "070", "071"]) {
-      expect(routeScopeForPageId(pageId)).toBe("MVP");
+      expect(routeScopeForPageId(pageId)).toBe("HOLD_PENDING_DECISION");
+      expect(routeImplementationAccessDecision({ pageId })).toEqual({
+        accessMode: "REGISTERED_ONLY",
+        exclusionReason: "HOLD_PENDING_SCOPE_UNLOCK",
+        implementationShellAccessible: false,
+        routeScope: "HOLD_PENDING_DECISION",
+        safetyBoundary: "SCF_DO_NOT_IMPLEMENT_REGISTER",
+      });
+    }
+
+    for (const pageId of ["027", "028", "033", "040", "043", "054", "058"]) {
+      const routeScope = routeScopeForPageId(pageId);
+      expect(routeScope).toBe("MVP");
       expect(routeImplementationAccessDecision({ pageId })).toEqual({
         accessMode: "FIRST_BUILD",
         implementationShellAccessible: true,
-        routeScope: "MVP",
+        routeScope,
         safetyBoundary: "FULL_FIRST_BUILD_SCOPE",
       });
     }
