@@ -4,11 +4,11 @@ import path from "node:path";
 import { routeRegistryCount, routeWorksetIntegrity, type RouteScopeLabel } from "./route-registry";
 
 export const phase0LockedRouteWorksetCounts: Record<RouteScopeLabel, number> = {
-  MVP: 39,
-  MVP_SUPPORT: 29,
-  P1_AFTER_MVP: 0,
+  MVP: 31,
+  MVP_SUPPORT: 25,
+  P1_AFTER_MVP: 5,
   REFERENCE_ONLY: 3,
-  HOLD_PENDING_DECISION: 0,
+  HOLD_PENDING_DECISION: 7,
 };
 
 export const phase0LockedApiRoutes = [
@@ -94,8 +94,7 @@ export const trueUxRequiredSupportArtifacts = [
 export const trueUxEntrypointFiles = [
   "AGENTS.md",
   "CODEX_MASTER_TASK.md",
-  "CODEX_START_PHASE_MASTER_PROMPT.md",
-  "COPY_PASTE_CODEX_START_COMMANDS.md",
+  "FINAL_CODEX_IMPLEMENTATION_HANDOFF.md",
   "README.md",
 ] as const;
 
