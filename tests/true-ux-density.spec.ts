@@ -1,6 +1,12 @@
 import { expect, type Page, test } from "@playwright/test";
 
 import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { uxDensityForPageId } from "../lib/ux-density";
+import {
+  v096TouchedDensityContracts,
+  v096TouchedDensityPageIds,
+  v096UxDensityContractForPageId,
+} from "../lib/v0-96-ux-density-contract";
 
 async function authenticate(page: Page) {
   await page.context().addCookies([
@@ -78,4 +84,82 @@ test.describe("UX-DENSITY phase 9 D1-D4 hierarchy and layout proof", () => {
       await expect(guidance).not.toContainText(/empty premium space|chaotic card wall|safety hidden|audit hidden|evidence hidden/i);
     });
   }
+});
+
+test.describe("V0.96 WP-02 page-type and density contract", () => {
+  test("assigns every touched V0.96 surface a page-type alias and density tier", () => {
+    expect(v096TouchedDensityContracts).toHaveLength(v096TouchedDensityPageIds.length);
+    expect(new Set(v096TouchedDensityContracts.map((contract) => contract.pageId))).toEqual(new Set(v096TouchedDensityPageIds));
+
+    for (const contract of v096TouchedDensityContracts) {
+      expect(contract.v096PageType).toMatch(/^(HUB|WORKBENCH_QUEUE|DETAIL_REVIEW|DECISION_ROOM|CLIENT_PROJECTION|REFERENCE|HOLD_GUARD)$/);
+      expect(contract.densityTier).toBe(uxDensityForPageId(contract.pageId).tier);
+      expect(contract.routeScope).toMatch(/^(MVP|MVP_SUPPORT)$/);
+      expect(contract.currentPath).toMatch(/^\/.+/);
+    }
+  });
+
+  test("keeps the explicit V0.96 long-page targets in controlled density patterns", () => {
+    expect(v096UxDensityContractForPageId("027")).toMatchObject({
+      densityTier: "D2",
+      v096PageType: "WORKBENCH_QUEUE",
+      v096RouteLabel: "/documents",
+    });
+    expect(v096UxDensityContractForPageId("034")).toMatchObject({
+      densityTier: "D2",
+      v096PageType: "WORKBENCH_QUEUE",
+      v096RouteLabel: "/workbench",
+    });
+    expect(v096UxDensityContractForPageId("035")).toMatchObject({
+      densityTier: "D4",
+      v096PageType: "DETAIL_REVIEW",
+      v096RouteLabel: "/workbench/triggers/:id",
+    });
+    expect(v096UxDensityContractForPageId("037")).toMatchObject({
+      densityTier: "D4",
+      v096PageType: "DETAIL_REVIEW",
+      v096RouteLabel: "/advisor-approval/:id",
+    });
+    expect(v096UxDensityContractForPageId("039")).toMatchObject({
+      densityTier: "D4",
+      v096PageType: "DECISION_ROOM",
+      v096RouteLabel: "/compliance/:id/review",
+    });
+    expect(v096UxDensityContractForPageId("042")).toMatchObject({
+      densityTier: "D3",
+      v096PageType: "DETAIL_REVIEW",
+      v096RouteLabel: "/compliance/:id/audit",
+    });
+    expect(v096UxDensityContractForPageId("055")).toMatchObject({
+      densityTier: "D3",
+      v096PageType: "WORKBENCH_QUEUE",
+      v096RouteLabel: "/export/:id/scope",
+    });
+    expect(v096UxDensityContractForPageId("056")).toMatchObject({
+      densityTier: "D3",
+      v096PageType: "WORKBENCH_QUEUE",
+      v096RouteLabel: "/export/:id/redaction",
+    });
+    expect(v096UxDensityContractForPageId("057")).toMatchObject({
+      densityTier: "D4",
+      v096PageType: "DECISION_ROOM",
+      v096RouteLabel: "/export/:id/preview",
+    });
+    expect(v096UxDensityContractForPageId("019")).toMatchObject({
+      densityTier: "D1",
+      v096PageType: "CLIENT_PROJECTION",
+      v096RouteLabel: "/portal",
+    });
+  });
+
+  test("keeps registered-only reference and hold examples outside productive density targets", () => {
+    expect(v096UxDensityContractForPageId("061")).toMatchObject({
+      routeScope: "REFERENCE_ONLY",
+      v096PageType: "REFERENCE",
+    });
+    expect(v096UxDensityContractForPageId("064")).toMatchObject({
+      routeScope: "HOLD_PENDING_DECISION",
+      v096PageType: "HOLD_GUARD",
+    });
+  });
 });
