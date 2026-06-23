@@ -22,7 +22,8 @@ The downloaded V1.0 detailed task descriptions are useful as an execution compan
 | Existing modified file before WP-00 | `scripts/capture-routes-and-modals.ts` |
 | Existing untracked files before WP-00 | `EXECUTION_PROTOCOL.md`, `NEXT_ACTION.md`, `PROMPT_CHAIN_DEPENDENCY_MAP.md`, `UPLOAD_READINESS.md`, `babel.config.js`, `scripts/avs-jsx-source-trace-babel.cjs`, `scripts/map-runtime-dom-source.ts` |
 | WP-00 code/doc edits made | `lib/source-reality-gate.ts`, `V1_0_REPO_REALITY_REBASE.md` |
-| Stop-rule status | Feature implementation remains blocked until baseline validation blockers are resolved or explicitly accepted as unrelated WIP |
+| Baseline stabilization edits made after first WP-00 report | `scripts/capture-routes-and-modals.ts`, `babel.config.js`, `scripts/avs-jsx-source-trace-babel.cjs`, `scripts/map-runtime-dom-source.ts` |
+| Stop-rule status | Static and route-smoke baselines are green; V1.0 companion-source chain remains partial because two referenced V1.0 documents are absent |
 
 ## 3. Current Inventory Counts
 
@@ -158,10 +159,11 @@ Current spec count: 77.
 |---|---|---|
 | `pnpm db:validate` | PASS | Prisma schema is valid. |
 | `pnpm test:source-reality` | PASS after WP-00 gate update | Source gate now matches current route worksets and existing True-UX entrypoints. |
-| `pnpm typecheck` | FAIL | Existing dirty/untracked runtime mapping work blocks TypeScript: `scripts/capture-routes-and-modals.ts`, `scripts/map-runtime-dom-source.ts`. |
-| `pnpm lint` | FAIL | Existing untracked runtime mapping files block lint: `scripts/avs-jsx-source-trace-babel.cjs`, `scripts/map-runtime-dom-source.ts`; warnings also exist in UI files. |
-| `pnpm build` | NOT RUN | Deferred because typecheck/lint baseline is already red. |
-| `pnpm test:route-smoke` | NOT RUN | Deferred until static baseline blockers are resolved or explicitly waived. |
+| `pnpm typecheck` | PASS | Runtime mapping type blockers were stabilized. |
+| `pnpm lint` | PASS_WITH_WARNINGS | Warnings remain for existing unused UI helpers and one unused capture helper; no lint errors. |
+| `pnpm build` | PASS_WITH_WARNINGS | Build passes; known warnings remain for custom Babel config and broad `document-storage-adapter` tracing. |
+| `pnpm phase:check` | PASS_WITH_WARNINGS | Runs `typecheck`, `lint`, `db:validate`, `build`. |
+| `pnpm test:route-smoke` | PASS | 315 passed. |
 
 ## 8. WP-00 Task Status
 
@@ -169,25 +171,23 @@ Current spec count: 77.
 |---|---|---|
 | `V10-WP00-T01` Current repo inventory | `ALREADY_PRESENT_WITH_REBASE_ARTIFACT` | Counts and path inventories recorded in this file. |
 | `V10-WP00-T02` Stale assumptions neutralisieren | `PARTIAL` | Old source gate counts and missing entrypoint assumptions were fixed in `lib/source-reality-gate.ts`; deeper V1.0 compare is blocked because two referenced V1.0 source files are absent from the repo. |
-| `V10-WP00-T03` Baseline checks | `PARTIAL_BLOCKED` | `db:validate` and `test:source-reality` pass; `typecheck` and `lint` fail on pre-existing dirty/untracked runtime mapping work. |
-| `V10-WP00-T04` Implementation Delta ableiten | `PARTIAL` | Sequential delta is defined below, but feature execution should wait for static baseline blockers. |
+| `V10-WP00-T03` Baseline checks | `PASS_WITH_WARNINGS` | `phase:check`, `db:validate`, `test:source-reality`, and `test:route-smoke` pass. |
+| `V10-WP00-T04` Implementation Delta ableiten | `READY_WITH_SOURCE_CHAIN_NOTE` | Sequential delta is defined below; V1.0 companion documents remain partial, but repo baseline gates are green. |
 
 ## 9. Sequential Delta
 
-1. Resolve or explicitly isolate existing runtime/source-mapping WIP so `pnpm typecheck` and `pnpm lint` can become meaningful V1.0 gates again.
-2. Keep `ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md` as authority and treat the V1.0 detailed file as a companion until its missing task-pack and strategy-report sources are provided or intentionally superseded.
-3. Execute next work in order only after WP-00 static baseline is green or formally waived: WP-01 providerless actor/tenant/role, WP-02 guard spine, WP-03 evidence lifecycle, WP-04 internal draft/analyst review, WP-05 advisor/compliance split, WP-06 client-safe projection, WP-07 audit fail-closed, WP-08 export redaction, WP-09 UI no-overclaim, WP-10 API hardening, WP-11 schema usage alignment, WP-12 P0 acceptance, WP-13 pilot ops, WP-14 pilot buyer proof.
-4. Do not promote P1/Hold/Reference routes into V1.0. Current route scopes remain locked.
-5. Prioritize P0 safety and payload/no-leakage proof before UI/GTM polishing.
+1. Keep `ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md` as authority and treat the V1.0 detailed file as a companion until its missing task-pack and strategy-report sources are provided or intentionally superseded.
+2. Execute next work in order: WP-01 providerless actor/tenant/role, WP-02 guard spine, WP-03 evidence lifecycle, WP-04 internal draft/analyst review, WP-05 advisor/compliance split, WP-06 client-safe projection, WP-07 audit fail-closed, WP-08 export redaction, WP-09 UI no-overclaim, WP-10 API hardening, WP-11 schema usage alignment, WP-12 P0 acceptance, WP-13 pilot ops, WP-14 pilot buyer proof.
+3. Do not promote P1/Hold/Reference routes into V1.0. Current route scopes remain locked.
+4. Prioritize P0 safety and payload/no-leakage proof before UI/GTM polishing.
 
 ## 10. Current Blockers
 
-- `TYPECHECK_BLOCKED_BY_EXISTING_WIP`: `scripts/capture-routes-and-modals.ts` and untracked `scripts/map-runtime-dom-source.ts` produce TypeScript errors.
-- `LINT_BLOCKED_BY_EXISTING_WIP`: untracked runtime mapping files produce lint errors; UI warnings are present but not the hard failure.
 - `V1_0_SOURCE_CHAIN_PARTIAL`: the downloaded V1.0 detailed file references `ALPHAVEST_V1_0_IMPLEMENTATION_TASK_PACK.md` and `ALPHAVEST_VERSION_1_0_STRATEGY_RESEARCH_REPORT.md`, which are absent from this repo.
+- `VALIDATION_WARNINGS_REMAIN`: `pnpm phase:check` passes, but lint/build warnings remain from existing unused UI helpers, custom Babel config, and Turbopack/NFT tracing around `lib/document-storage-adapter.ts`.
 
 ## 11. WP-00 Verdict
 
-`READY_WITH_BASELINE_BLOCKERS`.
+`READY_FOR_WP01_WITH_SOURCE_CHAIN_NOTE`.
 
-The repo reality is now rebased and the True-UX source gate is green, but full feature-task execution should not proceed silently while static validation is red from existing runtime/source-mapping WIP. The next sensible task is to either finish/fix that WIP or explicitly isolate it from V1.0 validation before starting WP-01.
+The repo reality is now rebased, the True-UX source gate is green, `phase:check` is green, and route-smoke is green. V1.0 feature work can proceed in order only through the True-UX authority chain, with the missing V1.0 companion-source files treated as a documented limitation rather than an invitation to invent scope.

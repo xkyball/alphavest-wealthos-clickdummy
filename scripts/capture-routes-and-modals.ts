@@ -1,5 +1,5 @@
-import { chromium, type BrowserContext, type Page } from "@playwright/test";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { chromium, type BrowserContext, type Locator, type Page, type Request, type Response } from "@playwright/test";
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 import { demoAuthSessionCookieName } from "@/lib/demo/demo-auth-session";
@@ -22,9 +22,15 @@ type CaptureItem = {
   componentRuntimeConfidence?: RuntimeConfidence;
   cssPath?: string;
   domPath?: string;
+  domRectTracePath?: string;
+  domRectTraceStatus?: "captured" | "failed-dom-rect-trace";
   domStatus?: "captured" | "failed-dom";
+  interactionProofTracePath?: string;
+  interactionProofTraceStatus?: "captured" | "failed-interaction-proof" | "not-tested";
   pageId: string;
   path: string;
+  reactSourceTracePath?: string;
+  reactSourceTraceStatus?: "captured" | "failed-react-source-trace";
   route: string;
   state: string;
   status: CaptureStatus;
@@ -63,6 +69,134 @@ const drawerSelector = '[data-testid="ux-a11y-drawer"][role="complementary"], as
 const pageIdFilter = process.env.AVS_CAPTURE_PAGE_IDS
   ? new Set(process.env.AVS_CAPTURE_PAGE_IDS.split(",").map((item) => item.trim()).filter(Boolean))
   : null;
+const sourceTraceEnabled = process.env.AVS_CAPTURE_SOURCE_TRACE !== "0";
+const sourceRoots = ["app", "components", "lib", "hooks", "contexts", "styles"].map((folder) => path.join(process.cwd(), folder)).filter(existsSync);
+
+type SourceFileIndexEntry = {
+  absPath: string;
+  content: string;
+  relPath: string;
+};
+
+type ResolvedSourceLocation = {
+  columnNumber: number | null;
+  confidence: "high" | "medium" | "low" | "unavailable";
+  fileName: string | null;
+  lineNumber: number | null;
+  localFileExists: boolean;
+  localFilePath: string | null;
+  proofLabel: "EXACT_SOURCE_MATCH" | "SOURCE_MAP_NORMALIZED_MATCH" | "COMPILED_RUNTIME_HINT" | "NO_SOURCE_MATCH";
+  sourceId: string | null;
+  sourceKind: string | null;
+};
+
+function walkSourceFiles(root: string) {
+  const files: string[] = [];
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const entryPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (["node_modules", ".next", "dist", "build", "coverage", "artifacts"].includes(entry.name)) continue;
+        walk(entryPath);
+      } else if (entry.isFile() && /\.(tsx|ts|jsx|js|css)$/.test(entry.name) && !entry.name.endsWith(".d.ts")) {
+        files.push(entryPath);
+      }
+    }
+  };
+  walk(root);
+  return files;
+}
+
+const sourceFileIndex: SourceFileIndexEntry[] = sourceRoots
+  .flatMap(walkSourceFiles)
+  .map((absPath) => ({
+    absPath,
+    content: readFileSync(absPath, "utf8"),
+    relPath: path.relative(process.cwd(), absPath),
+  }));
+
+function normalizeRuntimeSourcePath(fileName: string | null | undefined) {
+  if (!fileName) return null;
+  let normalized = fileName
+    .replace(/^webpack-internal:\/\/\/(?:\(.*?\)\/)?/, "")
+    .replace(/^file:\/\//, "")
+    .replace(/\?.*$/, "");
+  const srcIndex = normalized.indexOf("/src/");
+  if (srcIndex >= 0) normalized = normalized.slice(srcIndex + "/src/".length);
+  if (normalized.startsWith(process.cwd())) return path.relative(process.cwd(), normalized);
+  const direct = sourceFileIndex.find((entry) => normalized === entry.relPath || normalized.endsWith(`/${entry.relPath}`));
+  if (direct) return direct.relPath;
+  const byBasename = sourceFileIndex.filter((entry) => path.basename(entry.relPath) === path.basename(normalized));
+  if (byBasename.length === 1) return byBasename[0].relPath;
+  const bySuffix = sourceFileIndex.filter((entry) => normalized.endsWith(entry.relPath) || entry.relPath.endsWith(normalized));
+  if (bySuffix.length === 1) return bySuffix[0].relPath;
+  return normalized;
+}
+
+function resolveSourceLocation(source: {
+  columnNumber?: number | null;
+  fileName?: string | null;
+  lineNumber?: number | null;
+  sourceKind?: string | null;
+}, symbol?: string | null): ResolvedSourceLocation {
+  const localFilePath = normalizeRuntimeSourcePath(source.fileName);
+  const localFileExists = Boolean(localFilePath && existsSync(path.join(process.cwd(), localFilePath)));
+  const lineNumber = typeof source.lineNumber === "number" ? source.lineNumber : null;
+  const columnNumber = typeof source.columnNumber === "number" ? source.columnNumber : null;
+  const sourceId = localFilePath && lineNumber
+    ? `${localFilePath}:${lineNumber}:${columnNumber ?? 0}:${symbol ?? "unknown"}`
+    : null;
+
+  return {
+    columnNumber,
+    confidence: localFileExists && lineNumber ? "high" : localFilePath ? "low" : "unavailable",
+    fileName: source.fileName ?? null,
+    lineNumber,
+    localFileExists,
+    localFilePath: localFilePath ?? null,
+    proofLabel: localFileExists && lineNumber
+      ? ["_debugSource", "data-avs-source-id", "jsx-compile-time"].includes(source.sourceKind ?? "")
+        ? "EXACT_SOURCE_MATCH"
+        : "SOURCE_MAP_NORMALIZED_MATCH"
+      : localFilePath
+        ? "COMPILED_RUNTIME_HINT"
+        : "NO_SOURCE_MATCH",
+    sourceId,
+    sourceKind: source.sourceKind ?? null,
+  };
+}
+
+function resolveHandlerSource(handlerName: string | null | undefined, ownerSource: ResolvedSourceLocation, eventProp: string) {
+  const normalizedName = handlerName && handlerName !== "anonymous" ? handlerName : null;
+  if (!ownerSource.localFilePath || !normalizedName) {
+    return {
+      confidence: ownerSource.localFileExists ? "medium" : "low",
+      handlerSourceId: ownerSource.sourceId ? `${ownerSource.sourceId}:${eventProp}` : `unresolved:${eventProp}:${normalizedName ?? "anonymous"}`,
+      localFilePath: ownerSource.localFilePath,
+      proofLabel: ownerSource.localFileExists ? "HANDLER_OWNER_SOURCE_CANDIDATE" : "HANDLER_RUNTIME_PROP_ONLY",
+    };
+  }
+
+  const sourceFile = sourceFileIndex.find((entry) => entry.relPath === ownerSource.localFilePath);
+  const matchIndex = sourceFile?.content.search(new RegExp(`\\\\b${normalizedName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\\\b`)) ?? -1;
+  if (sourceFile && matchIndex >= 0) {
+    const lineNumber = sourceFile.content.slice(0, matchIndex).split("\n").length;
+    return {
+      confidence: "high",
+      handlerSourceId: `${sourceFile.relPath}:${lineNumber}:0:${normalizedName}`,
+      lineNumber,
+      localFilePath: sourceFile.relPath,
+      proofLabel: "HANDLER_SOURCE_MATCH",
+    };
+  }
+
+  return {
+    confidence: "medium",
+    handlerSourceId: `${ownerSource.localFilePath}:${ownerSource.lineNumber ?? 0}:${ownerSource.columnNumber ?? 0}:${normalizedName}:${eventProp}`,
+    localFilePath: ownerSource.localFilePath,
+    proofLabel: "HANDLER_OWNER_SOURCE_CANDIDATE",
+  };
+}
 
 const overlayPlans: Record<string, OverlayStep[]> = {
   "/onboarding/consent": [{ label: "policy-modal", mode: "modal", open: (page) => clickText(page, "Review policy") }],
@@ -112,6 +246,18 @@ function sidecarNameFor(fileName: string, extension: "css" | "html") {
 
 function componentRuntimeNameFor(fileName: string, extension: "json" | "md") {
   return fileName.replace(/\.png$/i, `.components.runtime.${extension}`);
+}
+
+function domRectTraceNameFor(fileName: string) {
+  return fileName.replace(/\.png$/i, ".RUNTIME_DOM_RECT_TRACE.json");
+}
+
+function reactSourceTraceNameFor(fileName: string) {
+  return fileName.replace(/\.png$/i, ".REACT_SOURCE_TRACE.json");
+}
+
+function interactionProofTraceNameFor(fileName: string) {
+  return fileName.replace(/\.png$/i, ".INTERACTION_PROOF_TRACE.json");
 }
 
 function overlaySelectorFor(mode: CaptureMode | "none") {
@@ -230,11 +376,149 @@ async function installReactReflectionHook(context: BrowserContext) {
   });
 }
 
+async function annotateRuntimeSourceIds(page: Page) {
+  if (!sourceTraceEnabled) return;
+
+  await page.evaluate(() => {
+    type FiberLike = {
+      _debugOwner?: FiberLike | null;
+      _debugStack?: { stack?: string } | null;
+      _debugSource?: { columnNumber?: number; fileName?: string; lineNumber?: number } | null;
+      elementType?: unknown;
+      memoizedProps?: unknown;
+      return?: FiberLike | null;
+      type?: unknown;
+    };
+
+    const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+      Boolean(value) && typeof value === "object" && !Array.isArray(value);
+    const typeLabel = (type: unknown): string => {
+      if (typeof type === "string") return type;
+      if (typeof type === "function") return (type as { displayName?: string; name?: string }).displayName ?? type.name ?? "Anonymous";
+      if (isPlainObject(type)) {
+        if (typeof type.displayName === "string") return type.displayName;
+        if (typeof type.name === "string") return type.name;
+        if (typeof type.render === "function") return (type.render as { displayName?: string; name?: string }).displayName ?? type.render.name ?? "ForwardRef";
+        if (type.type) return typeLabel(type.type);
+      }
+      return "Unknown";
+    };
+    const isCompositeFiber = (fiber: FiberLike | null | undefined) => {
+      if (!fiber) return false;
+      const type = fiber.elementType ?? fiber.type;
+      return typeof type !== "string" && typeLabel(type) !== "Unknown";
+    };
+    const nearestCompositeFiber = (fiber: FiberLike | null | undefined) => {
+      let current: FiberLike | null | undefined = fiber;
+      let guard = 0;
+      while (current && guard < 80) {
+        if (isCompositeFiber(current)) return current;
+        current = current.return ?? null;
+        guard += 1;
+      }
+      return null;
+    };
+    const sourceFor = (fiber: FiberLike | null | undefined) => {
+      if (!fiber) return { columnNumber: null, fileName: null, lineNumber: null, sourceKind: null as string | null };
+      if (fiber._debugSource?.fileName) {
+        return {
+          columnNumber: fiber._debugSource.columnNumber ?? null,
+          fileName: fiber._debugSource.fileName,
+          lineNumber: fiber._debugSource.lineNumber ?? null,
+          sourceKind: "_debugSource",
+        };
+      }
+      const stack = fiber._debugStack?.stack;
+      const match = typeof stack === "string" ? stack.match(/(\/[^)\s]+|\w+:\/\/[^)\s]+):(\d+):(\d+)/) : null;
+      if (match) {
+        return {
+          columnNumber: Number(match[3]),
+          fileName: match[1],
+          lineNumber: Number(match[2]),
+          sourceKind: "react-debug-stack",
+        };
+      }
+      return { columnNumber: null, fileName: null, lineNumber: null, sourceKind: null as string | null };
+    };
+    const getFiberAndPropsForElement = (element: Element) => {
+      const record = element as unknown as Record<string, unknown>;
+      const keys = Object.keys(record);
+      const fiberKey = keys.find((key) => key.startsWith("__reactFiber$") || key.startsWith("__reactInternalInstance$"));
+      const propsKey = keys.find((key) => key.startsWith("__reactProps$") || key.startsWith("__reactEventHandlers$"));
+      return {
+        fiber: fiberKey ? (record[fiberKey] as FiberLike | undefined) : undefined,
+        props: propsKey ? (record[propsKey] as Record<string, unknown> | undefined) : undefined,
+      };
+    };
+
+    [document.documentElement, ...Array.from(document.documentElement.querySelectorAll<HTMLElement>("*"))].forEach((element, index) => {
+      if (!(element instanceof HTMLElement)) return;
+      const nodeId = element.getAttribute("data-avs-node-id") ?? String(index);
+      element.setAttribute("data-avs-node-id", nodeId);
+      const { fiber, props } = getFiberAndPropsForElement(element);
+      const owner = nearestCompositeFiber(fiber);
+      const source = sourceFor(owner);
+      const symbol = owner ? typeLabel(owner.elementType ?? owner.type) : null;
+      if (!element.getAttribute("data-avs-source-id") && source.fileName && source.lineNumber) {
+        const sourceId = `${source.fileName}:${source.lineNumber}:${source.columnNumber ?? 0}:${symbol ?? "unknown"}`;
+        element.setAttribute("data-avs-source-id", sourceId);
+        element.setAttribute("data-avs-source-file", source.fileName);
+        element.setAttribute("data-avs-source-line", String(source.lineNumber));
+        element.setAttribute("data-avs-source-column", String(source.columnNumber ?? 0));
+        element.setAttribute("data-avs-source-symbol", symbol ?? "unknown");
+        element.setAttribute("data-avs-source-kind", source.sourceKind ?? "runtime");
+      }
+
+      const handlers = Object.entries(props ?? {})
+        .filter(([key, value]) => /^on[A-Z]/.test(key) && typeof value === "function")
+        .map(([key, value]) => {
+          const handlerName = (value as { name?: string }).name || "anonymous";
+          return source.fileName && source.lineNumber
+            ? `${source.fileName}:${source.lineNumber}:${source.columnNumber ?? 0}:${symbol ?? "unknown"}:${key}:${handlerName}`
+            : `unresolved:${key}:${handlerName}`;
+        });
+      if (handlers.length && !element.getAttribute("data-avs-handler-ids")) element.setAttribute("data-avs-handler-ids", handlers.join("|"));
+    });
+  });
+}
+
+async function recordPlannedClick(locator: Locator, trigger: { kind: string; value: string }) {
+  await locator.evaluate(
+    (element, input) => {
+      const win = window as typeof window & {
+        __AVS_INTERACTION_PROOF__?: {
+          plannedClicks?: unknown[];
+        };
+      };
+      win.__AVS_INTERACTION_PROOF__ ??= { plannedClicks: [] };
+      win.__AVS_INTERACTION_PROOF__.plannedClicks ??= [];
+      const target = element as HTMLElement;
+      const rect = target.getBoundingClientRect();
+      win.__AVS_INTERACTION_PROOF__.plannedClicks.push({
+        at: new Date().toISOString(),
+        bbox: { height: rect.height, left: rect.left, top: rect.top, width: rect.width },
+        node: {
+          handlerIds: target.getAttribute("data-avs-handler-ids"),
+          nodeId: target.getAttribute("data-avs-node-id"),
+          role: target.getAttribute("role"),
+          sourceId: target.getAttribute("data-avs-source-id"),
+          tagName: target.tagName,
+          testId: target.getAttribute("data-testid"),
+          text: (target.getAttribute("aria-label") ?? target.textContent ?? "").replace(/\s+/g, " ").trim().slice(0, 180),
+        },
+        trigger: input,
+      });
+    },
+    trigger,
+  ).catch(() => undefined);
+}
+
 async function clickSelector(page: Page, selector: string) {
   const locator = page.locator(selector).first();
   if ((await locator.count()) === 0) return false;
   try {
     await locator.waitFor({ state: "visible", timeout: 1500 });
+    await recordPlannedClick(locator, { kind: "selector", value: selector });
     await locator.click({ timeout: 2000 });
     return true;
   } catch {
@@ -247,6 +531,7 @@ async function clickText(page: Page, text: string) {
   if ((await locator.count()) === 0) return false;
   try {
     await locator.waitFor({ state: "visible", timeout: 1500 });
+    await recordPlannedClick(locator, { kind: "button-text", value: text });
     await locator.click({ timeout: 2000 });
     return true;
   } catch {
@@ -274,6 +559,13 @@ async function waitForOverlay(page: Page, mode: CaptureMode) {
   }
 }
 
+async function closeOverlayIfVisible(page: Page, mode: CaptureMode) {
+  if (!(await isOverlayVisible(page, mode))) return false;
+  await page.keyboard.press("Escape").catch(() => undefined);
+  await page.waitForTimeout(250);
+  return !(await isOverlayVisible(page, mode));
+}
+
 async function gotoReady(page: Page, url: string) {
   try {
     await page.goto(url, { waitUntil: "load", timeout: 20000 });
@@ -287,9 +579,12 @@ async function gotoReady(page: Page, url: string) {
 
 async function captureScreenshot(page: Page, item: CaptureItem, fileName: string, overlay: RuntimeOverlayMeta) {
   try {
+    await annotateRuntimeSourceIds(page);
     await page.screenshot({ fullPage: true, path: path.join(outputDir, fileName) });
     await captureRenderedDom(page, item, fileName);
     await captureRuntimeComponents(page, item, fileName, overlay);
+    await captureDomRectTrace(page, item, fileName, overlay);
+    await captureReactSourceTrace(page, item, fileName, overlay);
   } catch {
     item.status = "failed-screenshot";
   }
@@ -376,6 +671,508 @@ async function captureRenderedDom(page: Page, item: CaptureItem, screenshotFileN
     item.domStatus = "captured";
   } catch {
     item.domStatus = "failed-dom";
+  }
+}
+
+async function captureDomRectTrace(page: Page, item: CaptureItem, screenshotFileName: string, overlay: RuntimeOverlayMeta) {
+  const jsonFile = domRectTraceNameFor(screenshotFileName);
+
+  try {
+    const trace = await page.evaluate(
+      (input: {
+        overlay: RuntimeOverlayMeta;
+        pageId: string;
+        route: string;
+        screenshot: string;
+        state: string;
+        url: string;
+      }) => {
+        const textFor = (element: Element) =>
+          (element.getAttribute("aria-label") ?? element.textContent ?? "").replace(/\s+/g, " ").trim().slice(0, 220);
+        const inferredRole = (element: Element) => {
+          const explicitRole = element.getAttribute("role");
+          if (explicitRole) return explicitRole;
+          const tag = element.tagName.toLowerCase();
+          if (tag === "button") return "button";
+          if (tag === "a") return "link";
+          if (tag === "input" || tag === "textarea" || tag === "select") return "form-control";
+          if (tag === "nav") return "navigation";
+          if (tag === "main") return "main";
+          if (tag === "aside") return "complementary";
+          if (tag === "dialog") return "dialog";
+          return null;
+        };
+        const isMeaningful = (element: HTMLElement) => {
+          const rect = element.getBoundingClientRect();
+          if (rect.width <= 0 || rect.height <= 0) return false;
+          const style = window.getComputedStyle(element);
+          if (style.display === "none" || style.visibility === "hidden" || Number(style.opacity) === 0) return false;
+          const tag = element.tagName.toLowerCase();
+          return Boolean(
+            element.getAttribute("data-avs-node-id") ||
+              element.getAttribute("data-testid") ||
+              element.getAttribute("aria-label") ||
+              element.getAttribute("role") ||
+              ["button", "a", "input", "textarea", "select", "form", "dialog", "nav", "aside", "main", "header", "footer", "section", "article", "h1", "h2", "h3"].includes(tag) ||
+              textFor(element).length >= 8,
+          );
+        };
+        const elements = [document.documentElement, ...Array.from(document.documentElement.querySelectorAll<HTMLElement>("*"))].filter(
+          (element): element is HTMLElement => element instanceof HTMLElement && isMeaningful(element),
+        );
+        const viewport = {
+          devicePixelRatio: window.devicePixelRatio,
+          height: window.innerHeight,
+          scrollX: window.scrollX,
+          scrollY: window.scrollY,
+          width: window.innerWidth,
+        };
+
+        const nodes = elements.slice(0, 1600).map((element, index) => {
+          const rect = element.getBoundingClientRect();
+          const nodeId = element.getAttribute("data-avs-node-id") ?? `runtime-${index}`;
+          if (!element.getAttribute("data-avs-node-id")) element.setAttribute("data-avs-node-id", nodeId);
+          const center = {
+            x: Math.min(Math.max(rect.left + rect.width / 2, 0), Math.max(window.innerWidth - 1, 0)),
+            y: Math.min(Math.max(rect.top + rect.height / 2, 0), Math.max(window.innerHeight - 1, 0)),
+          };
+          const hit = document.elementFromPoint(center.x, center.y);
+          const hitNodeId = hit instanceof Element ? hit.getAttribute("data-avs-node-id") : null;
+          const directHit = hit === element;
+          const containsHit = hit instanceof Element ? element.contains(hit) : false;
+          const cropGeometry = {
+            height: Math.round(rect.height),
+            width: Math.round(rect.width),
+            x: Math.round(rect.left + window.scrollX),
+            y: Math.round(rect.top + window.scrollY),
+          };
+
+          return {
+            accessibleName: element.getAttribute("aria-label") ?? element.getAttribute("title") ?? textFor(element),
+            bbox: {
+              bottom: rect.bottom,
+              height: rect.height,
+              left: rect.left,
+              right: rect.right,
+              top: rect.top,
+              width: rect.width,
+              x: rect.x,
+              y: rect.y,
+            },
+            className: typeof element.className === "string" ? element.className.slice(0, 260) : "",
+            cropGeometry,
+            elementFromPoint: {
+              center,
+              containsHit,
+              directHit,
+              hitNodeId,
+              hitTag: hit instanceof Element ? hit.tagName : null,
+              proof: directHit || containsHit ? "ELEMENT_FROM_POINT_MATCH" : "ELEMENT_FROM_POINT_OCCLUDED_OR_DIFFERENT_NODE",
+            },
+            nodeId,
+            role: inferredRole(element),
+            screenshotCropId: `${input.pageId}:${input.state}:${nodeId}:crop:${cropGeometry.x}_${cropGeometry.y}_${cropGeometry.width}_${cropGeometry.height}`,
+            tagName: element.tagName,
+            testId: element.getAttribute("data-testid"),
+            text: textFor(element),
+          };
+        });
+
+        return {
+          capture: input,
+          generatedAt: new Date().toISOString(),
+          limitations: [
+            "Bounding boxes are runtime browser geometry for this viewport and scroll position.",
+            "elementFromPoint proves center-point hit/occlusion only; it does not prove handler behavior.",
+          ],
+          nodes,
+          overlay: input.overlay,
+          viewport,
+        };
+      },
+      {
+        overlay,
+        pageId: item.pageId,
+        route: item.route,
+        screenshot: item.path,
+        state: item.state,
+        url: item.url,
+      },
+    );
+
+    writeFileSync(path.join(outputDir, jsonFile), `${JSON.stringify(trace, null, 2)}\n`);
+    item.domRectTracePath = `routes-and-modals/${runTs}/${jsonFile}`;
+    item.domRectTraceStatus = "captured";
+  } catch (error) {
+    item.domRectTraceStatus = "failed-dom-rect-trace";
+    console.warn(`DOM rect trace failed for ${item.route} ${item.state}: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+function enrichReactSourceTrace<T extends {
+  nodes?: Array<{
+    handlerCandidates?: Array<{
+      eventProp?: string;
+      handlerName?: string;
+      handlerSourceId?: string;
+      proofLabel?: string;
+    }>;
+    source?: {
+      columnNumber?: number | null;
+      exportOrFunctionSymbol?: string | null;
+      fileName?: string | null;
+      lineNumber?: number | null;
+      sourceId?: string | null;
+      sourceKind?: string | null;
+    };
+  }>;
+}>(trace: T) {
+  trace.nodes = trace.nodes?.map((node) => {
+    const resolvedSource = resolveSourceLocation(node.source ?? {}, node.source?.exportOrFunctionSymbol ?? null);
+    return {
+      ...node,
+      handlerCandidates: node.handlerCandidates?.map((handler) => {
+        if (handler.proofLabel === "HANDLER_EXACT_SOURCE_MATCH" && handler.handlerSourceId) {
+          const parsedHandler = parseSourceId(handler.handlerSourceId);
+          const exactHandler = resolveSourceLocation(parsedHandler, parsedHandler.symbol);
+          return {
+            ...handler,
+            localFilePath: exactHandler.localFilePath,
+            localLineNumber: exactHandler.lineNumber,
+            proofLabel: "HANDLER_EXACT_SOURCE_MATCH",
+            sourceConfidence: exactHandler.confidence,
+          };
+        }
+        const resolvedHandler = resolveHandlerSource(handler.handlerName, resolvedSource, handler.eventProp ?? "onUnknown");
+        return {
+          ...handler,
+          handlerSourceId: resolvedHandler.handlerSourceId,
+          localFilePath: resolvedHandler.localFilePath,
+          localLineNumber: resolvedHandler.lineNumber ?? null,
+          proofLabel: resolvedHandler.proofLabel,
+          sourceConfidence: resolvedHandler.confidence,
+        };
+      }),
+      source: {
+        ...node.source,
+        local: resolvedSource,
+        sourceId: resolvedSource.sourceId ?? node.source?.sourceId ?? null,
+      },
+    };
+  });
+  return trace;
+}
+
+function enrichInteractionProofTrace<T extends {
+  after?: {
+    plannedClicks?: Array<{
+      node?: {
+        handlerIds?: string | null;
+        sourceId?: string | null;
+      };
+    }>;
+    recentClicks?: Array<{
+      handlerCandidates?: Array<{
+        eventProp?: string;
+        handlerName?: string;
+        handlerSourceId?: string;
+        proofLabel?: string;
+      }>;
+      source?: {
+        columnNumber?: number | null;
+        exportOrFunctionSymbol?: string | null;
+        fileName?: string | null;
+        lineNumber?: number | null;
+        sourceId?: string | null;
+      };
+    }>;
+  };
+}>(trace: T) {
+  trace.after = trace.after
+    ? {
+        ...trace.after,
+        plannedClicks: trace.after.plannedClicks?.map((click) => ({
+          ...click,
+          plannedSource: click.node?.sourceId
+            ? resolveSourceLocation(parseSourceId(click.node.sourceId), parseSourceId(click.node.sourceId).symbol)
+            : null,
+          plannedHandlers: click.node?.handlerIds
+            ? click.node.handlerIds.split("|").map((handlerId) => {
+                const parsed = parseSourceId(handlerId);
+                return {
+                  handlerId,
+                  resolved: resolveSourceLocation(parsed, parsed.symbol),
+                };
+              })
+            : [],
+        })),
+        recentClicks: trace.after.recentClicks?.map((click) => {
+          const source = resolveSourceLocation(click.source ?? {}, click.source?.exportOrFunctionSymbol ?? null);
+          return {
+            ...click,
+            handlerCandidates: click.handlerCandidates?.map((handler) => {
+              if (handler.proofLabel === "HANDLER_EXACT_SOURCE_MATCH" && handler.handlerSourceId) {
+                const parsedHandler = parseSourceId(handler.handlerSourceId);
+                const exactHandler = resolveSourceLocation(parsedHandler, parsedHandler.symbol);
+                return {
+                  ...handler,
+                  localFilePath: exactHandler.localFilePath,
+                  localLineNumber: exactHandler.lineNumber,
+                  proofLabel: "HANDLER_EXACT_SOURCE_MATCH",
+                  sourceConfidence: exactHandler.confidence,
+                };
+              }
+              const resolvedHandler = resolveHandlerSource(handler.handlerName, source, handler.eventProp ?? "onUnknown");
+              return {
+                ...handler,
+                handlerSourceId: resolvedHandler.handlerSourceId,
+                localFilePath: resolvedHandler.localFilePath,
+                localLineNumber: resolvedHandler.lineNumber ?? null,
+                proofLabel: resolvedHandler.proofLabel,
+                sourceConfidence: resolvedHandler.confidence,
+              };
+            }),
+            source: {
+              ...click.source,
+              local: source,
+              sourceId: source.sourceId ?? click.source?.sourceId ?? null,
+            },
+          };
+        }),
+      }
+    : trace.after;
+  return trace;
+}
+
+function parseSourceId(sourceId: string) {
+  const parts = sourceId.split(":");
+  const lineCandidate = parts.findIndex((part, index) => index > 0 && /^\d+$/.test(part) && /^\d+$/.test(parts[index + 1] ?? ""));
+  if (lineCandidate < 0) return { columnNumber: null, fileName: sourceId, lineNumber: null, sourceKind: "data-avs-source-id", symbol: null };
+  return {
+    columnNumber: Number(parts[lineCandidate + 1]),
+    fileName: parts.slice(0, lineCandidate).join(":"),
+    lineNumber: Number(parts[lineCandidate]),
+    sourceKind: "data-avs-source-id",
+    symbol: parts[lineCandidate + 2] ?? null,
+  };
+}
+
+async function captureReactSourceTrace(page: Page, item: CaptureItem, screenshotFileName: string, overlay: RuntimeOverlayMeta) {
+  const jsonFile = reactSourceTraceNameFor(screenshotFileName);
+
+  try {
+    const trace = await page.evaluate(
+      (input: {
+        overlay: RuntimeOverlayMeta;
+        pageId: string;
+        route: string;
+        screenshot: string;
+        state: string;
+        url: string;
+      }) => {
+        type FiberLike = {
+          _debugOwner?: FiberLike | null;
+          _debugStack?: { stack?: string } | null;
+          _debugSource?: { columnNumber?: number; fileName?: string; lineNumber?: number } | null;
+          elementType?: unknown;
+          key?: string | null;
+          memoizedProps?: unknown;
+          return?: FiberLike | null;
+          tag?: number;
+          type?: unknown;
+        };
+
+        const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+          Boolean(value) && typeof value === "object" && !Array.isArray(value);
+        const typeLabel = (type: unknown): string => {
+          if (typeof type === "string") return type;
+          if (typeof type === "function") return (type as { displayName?: string; name?: string }).displayName ?? type.name ?? "Anonymous";
+          if (isPlainObject(type)) {
+            if (typeof type.displayName === "string") return type.displayName;
+            if (typeof type.name === "string") return type.name;
+            if (typeof type.render === "function") return (type.render as { displayName?: string; name?: string }).displayName ?? type.render.name ?? "ForwardRef";
+            if (type.type) return typeLabel(type.type);
+          }
+          return "Unknown";
+        };
+        const sourceFor = (fiber: FiberLike | null | undefined) => {
+          if (!fiber) return { available: false, columnNumber: null, fileName: null, lineNumber: null, sourceKind: null as string | null };
+          if (fiber._debugSource?.fileName) {
+            return {
+              available: true,
+              columnNumber: fiber._debugSource.columnNumber ?? null,
+              fileName: fiber._debugSource.fileName,
+              lineNumber: fiber._debugSource.lineNumber ?? null,
+              sourceKind: "_debugSource",
+            };
+          }
+          const stack = fiber._debugStack?.stack;
+          const match = typeof stack === "string" ? stack.match(/(\/[^)\s]+|\w+:\/\/[^)\s]+):(\d+):(\d+)/) : null;
+          if (match) {
+            return {
+              available: true,
+              columnNumber: Number(match[3]),
+              fileName: match[1],
+              lineNumber: Number(match[2]),
+              sourceKind: "react-debug-stack",
+            };
+          }
+          return { available: false, columnNumber: null, fileName: null, lineNumber: null, sourceKind: null as string | null };
+        };
+        const getFiberAndPropsForElement = (element: Element) => {
+          const record = element as unknown as Record<string, unknown>;
+          const keys = Object.keys(record);
+          const fiberKey = keys.find((key) => key.startsWith("__reactFiber$") || key.startsWith("__reactInternalInstance$"));
+          const propsKey = keys.find((key) => key.startsWith("__reactProps$") || key.startsWith("__reactEventHandlers$"));
+          return {
+            fiber: fiberKey ? (record[fiberKey] as FiberLike | undefined) : undefined,
+            fiberKey: fiberKey ?? null,
+            props: propsKey ? (record[propsKey] as Record<string, unknown> | undefined) : undefined,
+            propsKey: propsKey ?? null,
+          };
+        };
+        const isCompositeFiber = (fiber: FiberLike | null | undefined) => {
+          if (!fiber) return false;
+          const label = typeLabel(fiber.elementType ?? fiber.type);
+          return label !== "Unknown" && typeof (fiber.elementType ?? fiber.type) !== "string";
+        };
+        const nearestCompositeFiber = (fiber: FiberLike | null | undefined) => {
+          let current: FiberLike | null | undefined = fiber;
+          let guard = 0;
+          while (current && guard < 80) {
+            if (isCompositeFiber(current)) return current;
+            current = current.return ?? null;
+            guard += 1;
+          }
+          return null;
+        };
+        const ownerChain = (fiber: FiberLike | null | undefined) => {
+          const chain: string[] = [];
+          let current: FiberLike | null | undefined = fiber;
+          let guard = 0;
+          while (current && guard < 40) {
+            if (isCompositeFiber(current)) chain.push(typeLabel(current.elementType ?? current.type));
+            current = current.return ?? null;
+            guard += 1;
+          }
+          return chain.reverse();
+        };
+        const parseAvsSourceId = (sourceId: string | null, fallbackSymbol: string | null) => {
+          if (!sourceId) return null;
+          const parts = sourceId.split(":");
+          const lineIndex = parts.findIndex((part, index) => index > 0 && /^\d+$/.test(part) && /^\d+$/.test(parts[index + 1] ?? ""));
+          if (lineIndex < 0) return null;
+          return {
+            available: true,
+            columnNumber: Number(parts[lineIndex + 1]),
+            exportOrFunctionSymbol: parts[lineIndex + 2] ?? fallbackSymbol,
+            fileName: parts.slice(0, lineIndex).join(":"),
+            lineNumber: Number(parts[lineIndex]),
+            sourceId,
+            sourceKind: "data-avs-source-id",
+          };
+        };
+        const sourceFromAttributes = (element: Element, fallbackSymbol: string | null) =>
+          parseAvsSourceId(element.getAttribute("data-avs-source-id"), element.getAttribute("data-avs-source-symbol") ?? fallbackSymbol);
+        const handlerCandidates = (element: Element, props: Record<string, unknown> | undefined, ownerSource: ReturnType<typeof sourceFor> & { sourceId?: string | null }) => {
+          const attrCandidates = (element.getAttribute("data-avs-handler-ids") ?? "")
+            .split("|")
+            .map((item) => item.trim())
+            .filter(Boolean)
+            .map((handlerSourceId) => {
+              const parsed = parseAvsSourceId(handlerSourceId, null);
+              const suffix = handlerSourceId.split(":").slice(-1)[0] ?? "onUnknown";
+              const eventProp = /^on[A-Z]/.test(suffix) ? suffix : handlerSourceId.split(":").find((part) => /^on[A-Z]/.test(part)) ?? "onUnknown";
+              return {
+                eventProp,
+                handlerName: parsed?.exportOrFunctionSymbol ?? "anonymous",
+                handlerSourceId,
+                proofLabel: parsed ? "HANDLER_EXACT_SOURCE_MATCH" : "HANDLER_RUNTIME_PROP_ONLY",
+              };
+            });
+          const runtimeCandidates = Object.entries(props ?? {})
+            .filter(([key, value]) => /^on[A-Z]/.test(key) && typeof value === "function")
+            .map(([key, value]) => ({
+              eventProp: key,
+              handlerName: (value as { name?: string }).name || "anonymous",
+              handlerSourceId: ownerSource.sourceId
+                ? `${ownerSource.sourceId}:${key}`
+                : ownerSource.available
+                  ? `${ownerSource.fileName}:${ownerSource.lineNumber}:${ownerSource.columnNumber ?? 0}:${key}`
+                : `unresolved:${key}:${(value as { name?: string }).name || "anonymous"}`,
+              proofLabel: ownerSource.available ? "HANDLER_OWNER_SOURCE_CANDIDATE" : "HANDLER_RUNTIME_PROP_ONLY",
+            }));
+          return attrCandidates.length ? [...attrCandidates, ...runtimeCandidates] : runtimeCandidates;
+        };
+        const textFor = (element: Element) =>
+          (element.getAttribute("aria-label") ?? element.textContent ?? "").replace(/\s+/g, " ").trim().slice(0, 160);
+
+        const nodes = [document.documentElement, ...Array.from(document.documentElement.querySelectorAll<HTMLElement>("*"))]
+          .filter((element): element is HTMLElement => element instanceof HTMLElement)
+          .slice(0, 2200)
+          .map((element, index) => {
+            const nodeId = element.getAttribute("data-avs-node-id") ?? `runtime-${index}`;
+            if (!element.getAttribute("data-avs-node-id")) element.setAttribute("data-avs-node-id", nodeId);
+            const { fiber, fiberKey, props, propsKey } = getFiberAndPropsForElement(element);
+            const owner = nearestCompositeFiber(fiber);
+            const chain = ownerChain(fiber);
+            const runtimeSymbol = owner ? typeLabel(owner.elementType ?? owner.type) : null;
+            const attrSource = sourceFromAttributes(element, runtimeSymbol);
+            const ownerSource = (attrSource ?? sourceFor(owner)) as ReturnType<typeof sourceFor> & { exportOrFunctionSymbol?: string | null; sourceId?: string | null };
+            const symbol = ownerSource.exportOrFunctionSymbol ?? runtimeSymbol;
+            return {
+              componentOwnerChain: chain,
+              confidence: ownerSource.available ? "high" : owner ? "medium" : fiber ? "low" : "unavailable",
+              domNode: {
+                nodeId,
+                role: element.getAttribute("role"),
+                tagName: element.tagName,
+                testId: element.getAttribute("data-testid"),
+                text: textFor(element),
+              },
+              fiberEvidence: {
+                fiberKeyPresent: Boolean(fiberKey),
+                propsKeyPresent: Boolean(propsKey),
+              },
+              handlerCandidates: handlerCandidates(element, props, ownerSource),
+              source: {
+                ...ownerSource,
+                exportOrFunctionSymbol: symbol,
+                sourceId: ownerSource.sourceId ?? (ownerSource.available
+                  ? `${ownerSource.fileName}:${ownerSource.lineNumber}:${ownerSource.columnNumber ?? 0}:${symbol ?? "unknown"}`
+                  : null),
+              },
+            };
+          })
+          .filter((entry) => entry.fiberEvidence.fiberKeyPresent || entry.fiberEvidence.propsKeyPresent || entry.source.available || entry.domNode.text || entry.domNode.role || entry.domNode.testId);
+
+        return {
+          capture: input,
+          generatedAt: new Date().toISOString(),
+          limitations: [
+            "React source locations depend on development/runtime metadata such as _debugSource or _debugStack.",
+            "Handler source IDs are owner-source candidates unless explicit handler source metadata is available.",
+          ],
+          nodes,
+          overlay: input.overlay,
+        };
+      },
+      {
+        overlay,
+        pageId: item.pageId,
+        route: item.route,
+        screenshot: item.path,
+        state: item.state,
+        url: item.url,
+      },
+    );
+
+    writeFileSync(path.join(outputDir, jsonFile), `${JSON.stringify(enrichReactSourceTrace(trace), null, 2)}\n`);
+    item.reactSourceTracePath = `routes-and-modals/${runTs}/${jsonFile}`;
+    item.reactSourceTraceStatus = "captured";
+  } catch (error) {
+    item.reactSourceTraceStatus = "failed-react-source-trace";
+    console.warn(`React source trace failed for ${item.route} ${item.state}: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
@@ -979,11 +1776,364 @@ function loginRedirected(page: Page, route: ScreenRoute) {
   return !isAuthRoute(route.route) && new URL(page.url()).pathname === "/login";
 }
 
+async function ensureInteractionProofRuntime(page: Page) {
+  await page.evaluate(() => {
+    type FiberLike = {
+      _debugSource?: { columnNumber?: number; fileName?: string; lineNumber?: number } | null;
+      elementType?: unknown;
+      return?: FiberLike | null;
+      type?: unknown;
+    };
+    type InteractionProofWindow = Window & typeof globalThis & {
+      __AVS_INTERACTION_PROOF__?: {
+        clicks: Array<{
+          at: string;
+          handlerCandidates: Array<{ eventProp: string; handlerName: string; handlerSourceId: string; proofLabel: string }>;
+          node: {
+            nodeId: string | null;
+            role: string | null;
+            tagName: string;
+            testId: string | null;
+            text: string;
+          };
+          ownerChain: string[];
+          source: {
+            available: boolean;
+            columnNumber: number | null;
+            exportOrFunctionSymbol: string | null;
+            fileName: string | null;
+            lineNumber: number | null;
+            sourceKind?: string | null;
+            sourceId: string | null;
+          };
+        }>;
+        installed: boolean;
+        plannedClicks?: unknown[];
+      };
+    };
+
+    const win = window as InteractionProofWindow;
+    if (win.__AVS_INTERACTION_PROOF__?.installed) return;
+    const plannedClicks = win.__AVS_INTERACTION_PROOF__?.plannedClicks ?? [];
+    win.__AVS_INTERACTION_PROOF__ = { clicks: [], installed: true, plannedClicks };
+
+    const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+      Boolean(value) && typeof value === "object" && !Array.isArray(value);
+    const typeLabel = (type: unknown): string => {
+      if (typeof type === "string") return type;
+      if (typeof type === "function") return (type as { displayName?: string; name?: string }).displayName ?? type.name ?? "Anonymous";
+      if (isPlainObject(type)) {
+        if (typeof type.displayName === "string") return type.displayName;
+        if (typeof type.name === "string") return type.name;
+        if (typeof type.render === "function") return (type.render as { displayName?: string; name?: string }).displayName ?? type.render.name ?? "ForwardRef";
+        if (type.type) return typeLabel(type.type);
+      }
+      return "Unknown";
+    };
+    const sourceFor = (fiber: FiberLike | null | undefined) => {
+      if (fiber?._debugSource?.fileName) {
+        return {
+          available: true,
+          columnNumber: fiber._debugSource.columnNumber ?? null,
+          fileName: fiber._debugSource.fileName,
+          lineNumber: fiber._debugSource.lineNumber ?? null,
+          sourceKind: "_debugSource",
+        };
+      }
+      return { available: false, columnNumber: null, fileName: null, lineNumber: null, sourceKind: null as string | null };
+    };
+    const getFiberAndPropsForElement = (element: Element) => {
+      const record = element as unknown as Record<string, unknown>;
+      const keys = Object.keys(record);
+      const fiberKey = keys.find((key) => key.startsWith("__reactFiber$") || key.startsWith("__reactInternalInstance$"));
+      const propsKey = keys.find((key) => key.startsWith("__reactProps$") || key.startsWith("__reactEventHandlers$"));
+      return {
+        fiber: fiberKey ? (record[fiberKey] as FiberLike | undefined) : undefined,
+        props: propsKey ? (record[propsKey] as Record<string, unknown> | undefined) : undefined,
+      };
+    };
+    const isCompositeFiber = (fiber: FiberLike | null | undefined) => {
+      if (!fiber) return false;
+      const type = fiber.elementType ?? fiber.type;
+      return typeof type !== "string" && typeLabel(type) !== "Unknown";
+    };
+    const nearestCompositeFiber = (fiber: FiberLike | null | undefined) => {
+      let current: FiberLike | null | undefined = fiber;
+      let guard = 0;
+      while (current && guard < 80) {
+        if (isCompositeFiber(current)) return current;
+        current = current.return ?? null;
+        guard += 1;
+      }
+      return null;
+    };
+    const ownerChain = (fiber: FiberLike | null | undefined) => {
+      const chain: string[] = [];
+      let current: FiberLike | null | undefined = fiber;
+      let guard = 0;
+      while (current && guard < 40) {
+        if (isCompositeFiber(current)) chain.push(typeLabel(current.elementType ?? current.type));
+        current = current.return ?? null;
+        guard += 1;
+      }
+      return chain.reverse();
+    };
+    const textFor = (element: Element) =>
+      (element.getAttribute("aria-label") ?? element.textContent ?? "").replace(/\s+/g, " ").trim().slice(0, 180);
+    const parseAvsSourceId = (sourceId: string | null, fallbackSymbol: string | null) => {
+      if (!sourceId) return null;
+      const parts = sourceId.split(":");
+      const lineIndex = parts.findIndex((part, index) => index > 0 && /^\d+$/.test(part) && /^\d+$/.test(parts[index + 1] ?? ""));
+      if (lineIndex < 0) return null;
+      return {
+        available: true,
+        columnNumber: Number(parts[lineIndex + 1]),
+        exportOrFunctionSymbol: parts[lineIndex + 2] ?? fallbackSymbol,
+        fileName: parts.slice(0, lineIndex).join(":"),
+        lineNumber: Number(parts[lineIndex]),
+        sourceId,
+        sourceKind: "data-avs-source-id",
+      };
+    };
+    const sourceFromAttributes = (element: Element, fallbackSymbol: string | null) =>
+      parseAvsSourceId(element.getAttribute("data-avs-source-id"), element.getAttribute("data-avs-source-symbol") ?? fallbackSymbol);
+    const handlerCandidatesFromAttributes = (element: Element) =>
+      (element.getAttribute("data-avs-handler-ids") ?? "")
+        .split("|")
+        .map((item) => item.trim())
+        .filter(Boolean)
+        .map((handlerSourceId) => {
+          const parsed = parseAvsSourceId(handlerSourceId, null);
+          const eventProp = handlerSourceId.split(":").find((part) => /^on[A-Z]/.test(part)) ?? "onUnknown";
+          return {
+            eventProp,
+            handlerName: parsed?.exportOrFunctionSymbol ?? "anonymous",
+            handlerSourceId,
+            proofLabel: parsed ? "HANDLER_EXACT_SOURCE_MATCH" : "HANDLER_RUNTIME_PROP_ONLY",
+          };
+        });
+
+    document.addEventListener(
+      "click",
+      (event) => {
+        const target = event.target instanceof Element ? event.target : null;
+        if (!target) return;
+        const element = target.closest("button,a,input,textarea,select,[role],[data-testid]") ?? target;
+        const { fiber, props } = getFiberAndPropsForElement(element);
+        const owner = nearestCompositeFiber(fiber);
+        const runtimeSymbol = owner ? typeLabel(owner.elementType ?? owner.type) : null;
+        const source = (sourceFromAttributes(element, runtimeSymbol) ?? sourceFor(owner)) as ReturnType<typeof sourceFor> & { exportOrFunctionSymbol?: string | null; sourceId?: string | null };
+        const symbol = source.exportOrFunctionSymbol ?? runtimeSymbol;
+        const sourceId = source.sourceId ?? (source.available ? `${source.fileName}:${source.lineNumber}:${source.columnNumber ?? 0}:${symbol ?? "unknown"}` : null);
+        const runtimeHandlerCandidates = Object.entries(props ?? {})
+          .filter(([key, value]) => /^on[A-Z]/.test(key) && typeof value === "function")
+          .map(([key, value]) => ({
+            eventProp: key,
+            handlerName: (value as { name?: string }).name || "anonymous",
+            handlerSourceId: sourceId ? `${sourceId}:${key}` : `unresolved:${key}:${(value as { name?: string }).name || "anonymous"}`,
+            proofLabel: sourceId ? "HANDLER_OWNER_SOURCE_CANDIDATE" : "HANDLER_RUNTIME_PROP_ONLY",
+          }));
+        const attrHandlerCandidates = handlerCandidatesFromAttributes(element);
+
+        win.__AVS_INTERACTION_PROOF__?.clicks.push({
+          at: new Date().toISOString(),
+          handlerCandidates: attrHandlerCandidates.length ? [...attrHandlerCandidates, ...runtimeHandlerCandidates] : runtimeHandlerCandidates,
+          node: {
+            nodeId: element.getAttribute("data-avs-node-id"),
+            role: element.getAttribute("role"),
+            tagName: element.tagName,
+            testId: element.getAttribute("data-testid"),
+            text: textFor(element),
+          },
+          ownerChain: ownerChain(fiber),
+          source: {
+            ...source,
+            exportOrFunctionSymbol: symbol,
+            sourceId,
+          },
+        });
+      },
+      true,
+    );
+  });
+}
+
+async function captureInteractionState(page: Page) {
+  return page.evaluate(() => {
+    const hashText = (text: string) => {
+      let hash = 2166136261;
+      for (let index = 0; index < text.length; index += 1) {
+        hash ^= text.charCodeAt(index);
+        hash = Math.imul(hash, 16777619);
+      }
+      return `fnv1a32:${(hash >>> 0).toString(16).padStart(8, "0")}`;
+    };
+    const visibleText = (document.body?.innerText ?? "").replace(/\s+/g, " ").trim();
+    const html = document.documentElement.outerHTML;
+    const controls = Array.from(document.querySelectorAll<HTMLElement>("button,a,input,textarea,select,[role='button'],[role='dialog'],[data-testid]"))
+      .slice(0, 160)
+      .map((element) => ({
+        nodeId: element.getAttribute("data-avs-node-id"),
+        role: element.getAttribute("role"),
+        tagName: element.tagName,
+        testId: element.getAttribute("data-testid"),
+        text: (element.getAttribute("aria-label") ?? element.textContent ?? "").replace(/\s+/g, " ").trim().slice(0, 160),
+      }));
+    const overlay = {
+      dialogs: Array.from(document.querySelectorAll<HTMLElement>("[role='dialog'], dialog")).map((element) => ({
+        nodeId: element.getAttribute("data-avs-node-id"),
+        text: (element.textContent ?? "").replace(/\s+/g, " ").trim().slice(0, 220),
+        visible: Boolean(element.offsetWidth || element.offsetHeight || element.getClientRects().length),
+      })),
+    };
+    const proof = (window as typeof window & {
+      __AVS_INTERACTION_PROOF__?: { clicks?: unknown[]; plannedClicks?: unknown[] };
+    }).__AVS_INTERACTION_PROOF__;
+
+    const htmlHash = hashText(html);
+    const visibleTextHash = hashText(visibleText);
+
+    return {
+      activeElement: document.activeElement instanceof Element
+        ? {
+            nodeId: document.activeElement.getAttribute("data-avs-node-id"),
+            tagName: document.activeElement.tagName,
+            text: (document.activeElement.textContent ?? "").replace(/\s+/g, " ").trim().slice(0, 120),
+          }
+        : null,
+      controls,
+      dom: {
+        htmlHash,
+        nodeCount: document.querySelectorAll("*").length,
+        visibleTextHash,
+        visibleTextSample: visibleText.slice(0, 1000),
+      },
+      location: location.href,
+      overlay,
+      plannedClicks: (proof?.plannedClicks ?? []).slice(-10),
+      recentClicks: (proof?.clicks ?? []).slice(-10),
+      timestamp: new Date().toISOString(),
+    };
+  });
+}
+
+async function captureInteractionProofTrace(page: Page, item: CaptureItem, screenshotFileName: string, overlay: OverlayStep, alreadyOpen: boolean) {
+  const jsonFile = interactionProofTraceNameFor(screenshotFileName);
+  const requests: Array<{ method: string; postData: string | null; resourceType: string; url: string }> = [];
+  const responses: Array<{ status: number; url: string }> = [];
+  const onRequest = (request: Request) => {
+    requests.push({
+      method: request.method(),
+      postData: request.postData()?.slice(0, 2000) ?? null,
+      resourceType: request.resourceType(),
+      url: request.url(),
+    });
+  };
+  const onResponse = (response: Response) => {
+    responses.push({ status: response.status(), url: response.url() });
+  };
+
+  try {
+    await ensureInteractionProofRuntime(page);
+    const overlayVisibleBefore = await isOverlayVisible(page, overlay.mode);
+    const before = await captureInteractionState(page);
+    page.on("request", onRequest);
+    page.on("response", onResponse);
+    const opened = alreadyOpen || (await overlay.open(page));
+    await page.waitForTimeout(250);
+    const overlayVisibleAfter = await isOverlayVisible(page, overlay.mode);
+    const selector = overlaySelectorFor(overlay.mode);
+    const overlayCountAfter = selector ? await page.locator(selector).count().catch(() => 0) : 0;
+    const after = await captureInteractionState(page);
+    page.off("request", onRequest);
+    page.off("response", onResponse);
+    const domHashChanged = before.dom.htmlHash !== after.dom.htmlHash;
+    const visibleTextHashChanged = before.dom.visibleTextHash !== after.dom.visibleTextHash;
+    const nodeCountChanged = before.dom.nodeCount !== after.dom.nodeCount;
+    const plannedClickCount = after.plannedClicks?.length ?? 0;
+    const recentClickCount = after.recentClicks?.length ?? 0;
+    const assertionChecks = [
+      {
+        detail: `opened=${opened}`,
+        name: "action-opened",
+        passed: opened,
+      },
+      {
+        detail: `before=${overlayVisibleBefore}; after=${overlayVisibleAfter}; countAfter=${overlayCountAfter}`,
+        name: "overlay-visible-after-action",
+        passed: overlayVisibleAfter && overlayCountAfter > 0,
+      },
+      {
+        detail: `plannedClickCount=${plannedClickCount}; recentClickCount=${recentClickCount}`,
+        name: "click-evidence-present",
+        passed: plannedClickCount > 0 || recentClickCount > 0,
+      },
+      {
+        detail: `htmlHashChanged=${domHashChanged}; visibleTextHashChanged=${visibleTextHashChanged}; nodeCountChanged=${nodeCountChanged}`,
+        name: "observable-ui-effect",
+        passed: domHashChanged || visibleTextHashChanged || nodeCountChanged,
+      },
+      {
+        detail: `${requests.length} request(s); ${responses.length} response(s)`,
+        name: "network-observed-if-any",
+        passed: true,
+      },
+    ];
+    const failedAssertionChecks = assertionChecks.filter((check) => !check.passed);
+
+    const trace = {
+      action: {
+        alreadyOpen,
+        assertions: {
+          checks: assertionChecks,
+          failed: failedAssertionChecks.length,
+          passed: assertionChecks.length - failedAssertionChecks.length,
+          status: failedAssertionChecks.length === 0 ? "passed" : opened && overlayVisibleAfter && (domHashChanged || visibleTextHashChanged || nodeCountChanged) ? "warning" : "failed",
+        },
+        label: overlay.label,
+        mode: overlay.mode,
+        opened,
+        proofLabel: alreadyOpen ? "ACTION_NOT_REPLAYED_OVERLAY_ALREADY_OPEN" : opened ? "CLICK_ACTION_RECORDED" : "CLICK_ACTION_FAILED_OR_NO_OVERLAY",
+      },
+      after,
+      before,
+      capture: {
+        pageId: item.pageId,
+        route: item.route,
+        screenshot: item.path,
+        state: item.state,
+        url: item.url,
+      },
+      generatedAt: new Date().toISOString(),
+      limitations: [
+        "Handler source IDs are runtime owner candidates unless explicit handler source metadata is present.",
+        "Network capture records browser requests/responses observed during the action window; absence of network does not prove absence of in-memory state changes.",
+      ],
+      network: {
+        requests,
+        responses,
+      },
+    };
+
+    writeFileSync(path.join(outputDir, jsonFile), `${JSON.stringify(trace, null, 2)}\n`);
+    item.interactionProofTracePath = `routes-and-modals/${runTs}/${jsonFile}`;
+    item.interactionProofTraceStatus = "captured";
+    return opened;
+  } catch (error) {
+    page.off("request", onRequest);
+    page.off("response", onResponse);
+    item.interactionProofTraceStatus = "failed-interaction-proof";
+    console.warn(`Interaction proof trace failed for ${item.route} ${item.state}: ${error instanceof Error ? error.message : String(error)}`);
+    return false;
+  }
+}
+
 async function captureRoute(page: Page, route: ScreenRoute) {
   const items: CaptureItem[] = [];
   const url = new URL(routeToSmokePath(route.route), baseUrl).toString();
   const baseFile = fileNameFor(route, "base");
   const baseItem: CaptureItem = {
+    interactionProofTraceStatus: "not-tested",
     pageId: route.pageId,
     path: `routes-and-modals/${runTs}/${baseFile}`,
     route: route.route,
@@ -1018,8 +2168,10 @@ async function captureRoute(page: Page, route: ScreenRoute) {
       url,
     };
 
+    const keepParentOverlayContext = overlay.label === "role-confirm-modal";
+    if (!keepParentOverlayContext) await closeOverlayIfVisible(page, overlay.mode);
     const alreadyOpen = await isOverlayVisible(page, overlay.mode);
-    const opened = alreadyOpen || (await overlay.open(page));
+    const opened = await captureInteractionProofTrace(page, overlayItem, overlayFile, overlay, alreadyOpen);
     if (!opened) {
       overlayItem.status = "missing-trigger";
     } else if (!(await waitForOverlay(page, overlay.mode))) {
@@ -1059,11 +2211,11 @@ function writeIndex(items: CaptureItem[]) {
     `Base URL: ${baseUrl}`,
     `Run: ${runTs}`,
     "",
-    "| Page | Route | State | Status | Screenshot | Rendered DOM | Rendered CSS | Runtime Components | Runtime Summary | Runtime Confidence |",
-    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    "| Page | Route | State | Status | Screenshot | Rendered DOM | Rendered CSS | Runtime Components | Runtime Summary | Runtime Confidence | DOM Rect Trace | React Source Trace | Interaction Proof Trace |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ...items.map(
       (item) =>
-        `| ${item.pageId} | ${item.route} | ${item.state} | ${item.status} | ${item.path} | ${item.domPath ?? ""} | ${item.cssPath ?? ""} | ${item.componentRuntimePath ?? ""} | ${item.componentRuntimeMarkdownPath ?? ""} | ${item.componentRuntimeConfidence ?? ""} |`,
+        `| ${item.pageId} | ${item.route} | ${item.state} | ${item.status} | ${item.path} | ${item.domPath ?? ""} | ${item.cssPath ?? ""} | ${item.componentRuntimePath ?? ""} | ${item.componentRuntimeMarkdownPath ?? ""} | ${item.componentRuntimeConfidence ?? ""} | ${item.domRectTracePath ?? ""} | ${item.reactSourceTracePath ?? ""} | ${item.interactionProofTracePath ?? ""} |`,
     ),
   ];
   writeFileSync(path.join(outputDir, "index.md"), `${lines.join("\n")}\n`);
