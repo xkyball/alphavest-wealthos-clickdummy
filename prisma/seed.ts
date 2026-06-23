@@ -31,9 +31,21 @@ import {
 } from "@prisma/client";
 
 const connectionString = process.env.DATABASE_URL;
+const appEnv = process.env.APP_ENV ?? "local";
+const dataMode = process.env.ALPHAVEST_DATA_MODE ?? "demo";
+const realClientDataAllowed = process.env.ALPHAVEST_REAL_CLIENT_DATA_ALLOWED === "true";
+const allowDemoSeedOutsideDemo = process.env.ALPHAVEST_ALLOW_DEMO_SEED_OUTSIDE_DEMO === "true";
 
 if (!connectionString) {
   throw new Error("DATABASE_URL is required to run the Phase 03 seed.");
+}
+
+if (realClientDataAllowed) {
+  throw new Error("Phase 03 seed is demo-only and must not run with real client data enabled.");
+}
+
+if ((appEnv === "production" || dataMode !== "demo") && !allowDemoSeedOutsideDemo) {
+  throw new Error("Phase 03 seed requires ALPHAVEST_DATA_MODE=demo outside explicitly approved demo-seed contexts.");
 }
 
 const adapter = new PrismaPg({ connectionString });

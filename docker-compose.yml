@@ -30,6 +30,10 @@ services:
     environment:
       APP_ENV: ${APP_ENV:-docker}
       NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-AlphaVest WealthOS}
+      ALPHAVEST_DATA_MODE: ${ALPHAVEST_DATA_MODE:-demo}
+      ALPHAVEST_REAL_CLIENT_DATA_ALLOWED: ${ALPHAVEST_REAL_CLIENT_DATA_ALLOWED:-false}
+      ALPHAVEST_PILOT_RELEASE_STAGE: ${ALPHAVEST_PILOT_RELEASE_STAGE:-docker_demo}
+      ALPHAVEST_DEMO_STORAGE_ROOT: ${ALPHAVEST_DEMO_STORAGE_ROOT:-tmp/demo-document-storage}
       DATABASE_URL: postgresql://${POSTGRES_USER:?Set POSTGRES_USER in local .env}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in local .env}@postgres:5432/${POSTGRES_DB:-alphavest_wealthos}?schema=public
       PORT: 3000
       HOSTNAME: 0.0.0.0

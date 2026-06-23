@@ -56,6 +56,7 @@
     "test:phase9": "playwright test tests/phase9-support-hardening.spec.ts",
     "test:phase10": "playwright test tests/p0-acceptance.spec.ts tests/p0-api-contract.spec.ts",
     "test:v1-p0": "playwright test tests/p0-acceptance.spec.ts tests/p0-api-contract.spec.ts tests/demo-workflow-api.spec.ts tests/document-upload-api.spec.ts tests/evidence-review-api.spec.ts tests/providerless-scope.spec.ts tests/governance-non-bypass.spec.ts tests/export-safety.spec.ts tests/audit-fail-closed.spec.ts tests/fail-closed-error-envelope.spec.ts tests/client-visibility-projection.spec.ts tests/file-export-realism.spec.ts --workers=1",
+    "test:v1-ops": "playwright test tests/pilot-operational-readiness.spec.ts",
     "test:offboarding-control": "playwright test tests/offboarding-control.spec.ts",
     "test:providerless-scope": "playwright test tests/providerless-scope.spec.ts",
     "test:route-smoke": "playwright test tests/route-smoke.spec.ts",
