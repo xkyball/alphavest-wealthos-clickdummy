@@ -1,6 +1,10 @@
 import { expect, test } from "@playwright/test";
 
-import { projectClientVisibleDecision, projectClientVisibleRecommendation } from "../lib/control-layer/client-visibility";
+import {
+  projectClientVisibleDecision,
+  projectClientVisibleDocument,
+  projectClientVisibleRecommendation,
+} from "../lib/control-layer/client-visibility";
 import { controlLayerActors } from "./fixtures/control-layer-fixtures";
 
 test.describe("WCL WS-06 client visibility projection", () => {
@@ -51,6 +55,75 @@ test.describe("WCL WS-06 client visibility projection", () => {
       expect(result.hiddenFields).toContain("aiDraft");
       expect(result.hiddenFields).toContain("internalRationale");
       expect(result.hiddenFields).toContain("complianceNotes");
+    }
+  });
+
+  test("projects document evidence metadata as hidden or client safe without operational internals", () => {
+    const blocked = projectClientVisibleDocument(controlLayerActors.bennettPrincipal, {
+      checksum: "internal-checksum",
+      clientTenantId: controlLayerActors.bennettPrincipal.clientTenantId,
+      clientVisible: false,
+      documentType: "financial_statement",
+      evidenceRecordId: "evidence:bennett:wcl-document",
+      evidenceStatus: "CREATED",
+      evidenceVisibilityStatus: "INTERNAL_ONLY",
+      extractionStatus: "pending",
+      fileName: "source.pdf",
+      fileSizeBytes: 42000,
+      id: "document:bennett:wcl-blocked",
+      mimeType: "application/pdf",
+      status: "UPLOADED",
+      storageKey: "demo/bennett/documents/source.pdf",
+      title: "Source statement",
+      uploadedAt: "2026-06-23T10:00:00.000Z",
+    });
+
+    expect(blocked.allowed).toBe(false);
+    if (!blocked.allowed) {
+      expect(blocked.reasonCode).toBe("WCL_CLIENT_VISIBILITY_HIDDEN");
+      expect(blocked.hiddenFields).toEqual(expect.arrayContaining([
+        "checksum",
+        "evidenceRecordId",
+        "evidenceStatus",
+        "evidenceVisibilityStatus",
+        "extractionStatus",
+        "fileName",
+        "mimeType",
+        "storageKey",
+      ]));
+    }
+
+    const released = projectClientVisibleDocument(controlLayerActors.bennettPrincipal, {
+      checksum: "released-internal-checksum",
+      clientTenantId: controlLayerActors.bennettPrincipal.clientTenantId,
+      clientVisible: true,
+      documentType: "financial_statement",
+      evidenceRecordId: "evidence:bennett:wcl-released",
+      evidenceStatus: "RELEASED",
+      evidenceVisibilityStatus: "REDACTED",
+      extractionStatus: "complete",
+      fileName: "released-source.pdf",
+      fileSizeBytes: 42000,
+      id: "document:bennett:wcl-released",
+      mimeType: "application/pdf",
+      status: "VERIFIED",
+      storageKey: "demo/bennett/documents/released-source.pdf",
+      title: "Released source statement",
+      uploadedAt: "2026-06-23T10:30:00.000Z",
+    });
+
+    expect(released.allowed).toBe(true);
+    if (released.allowed) {
+      expect(released.projection.payload).toEqual({
+        documentType: "financial_statement",
+        id: "document:bennett:wcl-released",
+        status: "VERIFIED",
+        title: "Released source statement",
+        uploadedAt: "2026-06-23T10:30:00.000Z",
+      });
+      expect(released.projection.payload).not.toHaveProperty("storageKey");
+      expect(released.projection.payload).not.toHaveProperty("checksum");
+      expect(released.projection.payload).not.toHaveProperty("evidenceStatus");
     }
   });
 });
