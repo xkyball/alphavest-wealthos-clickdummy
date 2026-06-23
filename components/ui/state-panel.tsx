@@ -1,6 +1,7 @@
 import { AlertTriangle, Ban, CheckCircle2, EyeOff, FileSearch, LoaderCircle, ShieldAlert } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { noOverclaimCopy } from "@/lib/no-overclaim-copy";
 
 export type ComponentState =
   | "audit-unavailable"
@@ -95,7 +96,7 @@ export function Phase8CtaStateProofPanel({ blockedReason, primaryLabel, recovery
           <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{recoveryLabel ?? "Recover by resolving the stated gate before continuing."}</p>
         </div>
         <StatePanel
-          detail="Evidence, release, export, share, visibility and permission gates remain unresolved until their own checks pass."
+          detail={noOverclaimCopy.noDownstreamCompletion}
           state="restricted"
           testId="ux-phase8-no-overclaim"
           title="No downstream completion"

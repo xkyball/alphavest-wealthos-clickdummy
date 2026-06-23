@@ -29,7 +29,11 @@ test.describe("UXP3-001 shared modal primitive lifecycle hardening", () => {
     const drawer = page.getByRole("complementary", { name: "Portfolio Manager" });
     await expect(drawer).toBeVisible();
 
-    await drawer.getByRole("button", { name: "Review scoped changes" }).click();
+    const reviewScopedChanges = drawer.getByRole("button", { name: "Review scoped changes" });
+    await expect(reviewScopedChanges).toBeDisabled();
+    await drawer.locator("input[type='checkbox']").check();
+    await expect(reviewScopedChanges).toBeEnabled();
+    await reviewScopedChanges.click();
     const dialog = page.getByRole("dialog", { name: "Confirm Sensitive Permission Changes" });
 
     await expect(dialog).toBeVisible();
@@ -52,6 +56,9 @@ test.describe("UXP3-001 shared modal primitive lifecycle hardening", () => {
     const drawer = page.getByRole("complementary", { name: "Portfolio Manager" });
     const modalTrigger = drawer.getByRole("button", { name: "Review scoped changes" });
     await expect(drawer).toBeVisible();
+    await expect(modalTrigger).toBeDisabled();
+    await drawer.locator("input[type='checkbox']").check();
+    await expect(modalTrigger).toBeEnabled();
 
     await modalTrigger.click();
     let dialog = page.getByRole("dialog", { name: "Confirm Sensitive Permission Changes" });

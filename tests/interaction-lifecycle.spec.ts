@@ -69,7 +69,15 @@ test.describe("Phase 04 interaction lifecycle", () => {
     await createRoleButton.click();
     await expect(roleDrawer).toBeVisible();
 
-    await roleDrawer.getByRole("button", { name: "Review scoped changes" }).click();
+    const reviewScopedChanges = roleDrawer.getByRole("button", { name: "Review scoped changes" });
+    await expect(reviewScopedChanges).toBeDisabled();
+    await expect(roleDrawer.getByTestId("j07-role-drawer-validation-state")).toContainText(
+      "Role review remains blocked until the scoped-role acknowledgement is checked.",
+    );
+    await roleDrawer.locator("input[type='checkbox']").check();
+    await expect(reviewScopedChanges).toBeEnabled();
+
+    await reviewScopedChanges.click();
     const confirmationDialog = page.getByRole("dialog", { name: "Confirm Sensitive Permission Changes" });
     await expect(confirmationDialog).toBeVisible();
 

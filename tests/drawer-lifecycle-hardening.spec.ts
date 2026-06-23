@@ -77,6 +77,7 @@ test.describe("UXP3-002 shared drawer primitive lifecycle hardening", () => {
     expect(drawerSource).toContain('data-ux-lifecycle-close={closeLifecycle}');
     expect(drawerSource).toContain('"blocked-while-submitting"');
     expect(drawerSource).toContain('data-ux-lifecycle-submit="owner-owned-where-present"');
-    expect(ownerSource).toContain('onClose={() => setDrawerOpen(false)}');
+    expect(ownerSource).toContain("function closeRoleDrawer()");
+    expect(ownerSource).toContain('onClose={status === "submitting" ? undefined : closeRoleDrawer}');
   });
 });

@@ -1,6 +1,7 @@
 import { expect, type Page, test } from "@playwright/test";
 
 import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { noOverclaimBoundaryOrder, noOverclaimCopy } from "../lib/no-overclaim-copy";
 
 async function authenticate(page: Page) {
   await page.context().addCookies([
@@ -74,6 +75,28 @@ test.describe("Phase 03 UI state boundaries", () => {
 });
 
 test.describe("Phase 05 feedback no-overclaim boundaries", () => {
+  test("canonical no-overclaim copy covers V1 blocking boundaries without downstream success claims", () => {
+    expect(noOverclaimBoundaryOrder).toEqual([
+      "uploadOnly",
+      "advisorApprovalNotRelease",
+      "complianceReleaseNotClientAcceptance",
+      "auditDisplayNotProof",
+      "exportPreviewNotApproval",
+      "noDownstreamCompletion",
+    ]);
+
+    expect(noOverclaimCopy.uploadOnly).toContain("evidence sufficiency");
+    expect(noOverclaimCopy.advisorApprovalNotRelease).toContain("compliance release controls client visibility");
+    expect(noOverclaimCopy.complianceReleaseNotClientAcceptance).toContain("client acceptance remain separate");
+    expect(noOverclaimCopy.auditDisplayNotProof).toContain("persistence is proven only by the audited action response");
+    expect(noOverclaimCopy.exportPreviewNotApproval).toContain("Preview is not approval");
+    expect(noOverclaimCopy.noDownstreamCompletion).toContain("gates remain unresolved");
+
+    for (const copy of Object.values(noOverclaimCopy)) {
+      expect(copy).not.toMatch(/evidence sufficiency complete|client visibility unlocked|approved for client|download ready|share ready|client accepted|fully audited/i);
+    }
+  });
+
   test("release modal does not show release success before submit", async ({ page }) => {
     await page.goto("/compliance/reviews/demo/release?state=release");
 
