@@ -360,6 +360,52 @@ test.describe("document upload multipart API", () => {
     expect(after).toBe(before);
   });
 
+  test("rejects missing document type without creating evidence or release state", async ({ request }) => {
+    const fileName = "missing-document-type-proof.pdf";
+    const morganSession = createDemoSession({ roleKey: "family_cfo", tenantSlug: "morgan" });
+    const documentCountBefore = await prisma.document.count({ where: { fileName } });
+    const evidenceCountBefore = await prisma.evidenceRecord.count({
+      where: {
+        clientTenantId: morganSession.tenant.id,
+        title: { contains: "missing-document-type-proof" },
+      },
+    });
+    const exportCountBefore = await prisma.exportRequest.count({
+      where: { clientTenantId: morganSession.tenant.id },
+    });
+
+    const response = await request.post("/api/documents/upload", {
+      multipart: {
+        file: {
+          buffer: Buffer.from("%PDF-1.4\nMissing document type\n%%EOF"),
+          mimeType: "application/pdf",
+          name: fileName,
+        },
+        roleKey: "family_cfo",
+        tenantSlug: "morgan",
+      },
+    });
+    const body = await response.json();
+    const documentCountAfter = await prisma.document.count({ where: { fileName } });
+    const evidenceCountAfter = await prisma.evidenceRecord.count({
+      where: {
+        clientTenantId: morganSession.tenant.id,
+        title: { contains: "missing-document-type-proof" },
+      },
+    });
+    const exportCountAfter = await prisma.exportRequest.count({
+      where: { clientTenantId: morganSession.tenant.id },
+    });
+
+    expect(response.status(), JSON.stringify(body)).toBe(400);
+    expect(body.ok).toBe(false);
+    expect(body.mutated).toBe(false);
+    expect(body.issues).toContain("document_type_required");
+    expect(documentCountAfter).toBe(documentCountBefore);
+    expect(evidenceCountAfter).toBe(evidenceCountBefore);
+    expect(exportCountAfter).toBe(exportCountBefore);
+  });
+
   test("denies roles outside the document upload demo policy and audits the denial", async ({ request }) => {
     const fileName = "denied-next-gen-upload.pdf";
     const response = await request.post("/api/documents/upload", {
