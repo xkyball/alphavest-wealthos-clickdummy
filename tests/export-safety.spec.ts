@@ -49,14 +49,14 @@ test.describe("WCL WS-07 export safety", () => {
       actorContext: controlLayerActors.summitCompliance,
       approvalComplete: false,
       auditPersistenceAvailable: true,
-      payloadClassifications: ["CLIENT_SAFE_SUMMARY", "AI_DRAFT"],
+      payloadClassifications: ["CLIENT_SAFE_SUMMARY", "AI_DRAFT", "INTERNAL_RATIONALE", "COMPLIANCE_NOTES"],
       redactionProfile: "client-safe-redacted",
       scopeItems: [
         {
           access: "Allowed",
           id: "recommendation:summit:wcl-unsafe",
           name: "Internal draft",
-          payloadClassifications: ["AI_DRAFT"],
+          payloadClassifications: ["AI_DRAFT", "INTERNAL_RATIONALE"],
           selected: true,
           type: "recommendation",
         },
@@ -68,5 +68,7 @@ test.describe("WCL WS-07 export safety", () => {
     expect(result.scopeDecision.missing).toContain("blocked_or_forbidden_scope_items");
     expect(result.exportGate.missing).toContain("approval");
     expect(result.exportGate.missing).toContain("forbidden_payload:AI_DRAFT");
+    expect(result.exportGate.missing).toContain("forbidden_payload:INTERNAL_RATIONALE");
+    expect(result.exportGate.missing).toContain("forbidden_payload:COMPLIANCE_NOTES");
   });
 });

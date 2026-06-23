@@ -100,6 +100,7 @@ const safeClientSummaryFields = new Set(["clientSummary"]);
 const safeReleasedRecordFields = new Set(["decisionState", "documentType", "id", "releasedAt", "status", "title", "uploadedAt"]);
 const exportFieldClassifications: Record<string, ExportPayloadClassification> = {
   aiDraft: "AI_DRAFT",
+  assumptionsJson: "INTERNAL_RATIONALE",
   clientSummaryDraft: "AI_DRAFT",
   complianceNotes: "COMPLIANCE_NOTES",
   complianceReviewNotes: "COMPLIANCE_NOTES",

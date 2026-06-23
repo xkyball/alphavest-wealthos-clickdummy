@@ -107,6 +107,7 @@ test.describe("UX-CLIENT-PROJECTION phase 7 no-leakage contract", () => {
     ]);
     expect(trueUxClientProjectionNoLeakageContract.forbiddenPayloadFields).toEqual(expect.arrayContaining([
       "aiDraft",
+      "assumptionsJson",
       "clientSummaryDraft",
       "complianceNotes",
       "evidenceRecordId",

@@ -6,6 +6,7 @@ import { controlLayerActors } from "./fixtures/control-layer-fixtures";
 test.describe("WCL WS-06 client visibility projection", () => {
   test("projects released client-safe recommendation payloads", () => {
     const result = projectClientVisibleRecommendation(controlLayerActors.bennettPrincipal, {
+      assumptionsJson: { model: "internal-only" },
       clientSummary: "Released client-safe recommendation.",
       clientSummaryDraft: "AI draft must stay hidden.",
       clientTenantId: controlLayerActors.bennettPrincipal.clientTenantId,
@@ -25,6 +26,7 @@ test.describe("WCL WS-06 client visibility projection", () => {
         "clientSummaryDraft",
         "internalRationale",
         "complianceNotes",
+        "assumptionsJson",
       ]);
     }
   });

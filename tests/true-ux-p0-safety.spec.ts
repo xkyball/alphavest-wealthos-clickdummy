@@ -136,18 +136,22 @@ test.describe("UX-P0-SAFETY phase 11 positive and negative safety proof", () => 
 
     const exportDecision = exportService.canUseClientProjectionForExport({
       payload: {
+        assumptionsJson: { model: "internal" },
         clientSummary: "Released summary",
         clientSummaryDraft: "AI Draft",
         complianceNotes: "Internal note",
+        internalRationale: "Internal rationale",
       },
       visible: true,
     });
 
     expect(exportDecision.allowed).toBe(false);
-    expect(exportDecision.payloadClassifications).toEqual(expect.arrayContaining(["AI_DRAFT", "COMPLIANCE_NOTES"]));
+    expect(exportDecision.payloadClassifications).toEqual(expect.arrayContaining(["AI_DRAFT", "COMPLIANCE_NOTES", "INTERNAL_RATIONALE"]));
     expect(exportDecision.missing).toEqual(expect.arrayContaining([
+      "forbidden_projection_field:assumptionsJson",
       "forbidden_projection_field:clientSummaryDraft",
       "forbidden_projection_field:complianceNotes",
+      "forbidden_projection_field:internalRationale",
     ]));
   });
 
