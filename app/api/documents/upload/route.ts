@@ -116,6 +116,7 @@ export async function POST(request: Request) {
       result,
       safety: {
         clientVisible: false,
+        evidenceLifecycleStatus: result.document.evidenceLifecycleStatus,
         evidenceStatus: "REVIEW_PENDING",
         releaseUnlocked: false,
         sufficiency: false,

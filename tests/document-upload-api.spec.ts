@@ -63,11 +63,13 @@ test.describe("document upload multipart API", () => {
     expect(body.result.auditEventId).toBeTruthy();
     expect(body.safety).toEqual({
       clientVisible: false,
+      evidenceLifecycleStatus: "extraction_pending",
       evidenceStatus: "REVIEW_PENDING",
       releaseUnlocked: false,
       sufficiency: false,
       uploadOnly: true,
     });
+    expect(body.result.document.evidenceLifecycleStatus).toBe("extraction_pending");
 
     const document = await prisma.document.findUniqueOrThrow({
       include: {
@@ -247,11 +249,13 @@ test.describe("document upload multipart API", () => {
     expect(response.ok(), JSON.stringify(body)).toBe(true);
     expect(body.safety).toEqual({
       clientVisible: false,
+      evidenceLifecycleStatus: "extraction_pending",
       evidenceStatus: "REVIEW_PENDING",
       releaseUnlocked: false,
       sufficiency: false,
       uploadOnly: true,
     });
+    expect(body.result.document.evidenceLifecycleStatus).toBe("extraction_pending");
 
     const document = await prisma.document.findUniqueOrThrow({
       where: { id: body.result.document.id },

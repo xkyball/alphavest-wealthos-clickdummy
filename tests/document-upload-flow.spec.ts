@@ -35,6 +35,7 @@ test.describe("document upload browser flow", () => {
 
     await page.getByTestId("real-upload-document").click();
     await expect(page.getByText(`${fileName} upload completed.`)).toBeVisible();
+    await expect(page.getByText("Lifecycle: Extraction Pending")).toBeVisible();
     await expect(page.getByText("Extraction review is the next step;")).toBeVisible();
     await expect(page.getByText("Evidence sufficiency, release, export and client visibility remain locked.")).toBeVisible();
 
@@ -59,6 +60,7 @@ test.describe("document upload browser flow", () => {
 
     await page.getByTestId("real-upload-document").click();
     await expect(page.getByText(`${fileName} upload completed.`)).toBeVisible();
+    await expect(page.getByText("Lifecycle: Extraction Pending")).toBeVisible();
     await expect(page.getByText("Evidence sufficiency, release, export and client visibility remain locked.")).toBeVisible();
 
     await page.reload();
@@ -113,7 +115,33 @@ test.describe("document upload browser flow", () => {
 
     await page.getByTestId("phase3-accept-sufficiency").click();
     await expect(page.getByText("Evidence accepted for this scoped gate. Release, export and client visibility remain locked.")).toBeVisible();
+    await expect(page.getByText("Lifecycle: Sufficient")).toBeVisible();
     await expect(page.getByText(/Evidence: Validated/)).toBeVisible();
     await expect(page.getByText(/Visibility: Redacted/)).toBeVisible();
+  });
+
+  test("renders clarification as insufficient without client release", async ({ page }) => {
+    const fileName = "playwright-phase3-clarification-proof.pdf";
+
+    await page.goto("/documents/upload");
+    await page.getByLabel("Tenant context").last().selectOption("morgan");
+    await page.getByLabel("Role context").last().selectOption("family_cfo");
+    await page.getByTestId("document-upload-file-input").setInputFiles({
+      buffer: Buffer.from("%PDF-1.4\nPlaywright phase 3 clarification proof\n%%EOF"),
+      mimeType: "application/pdf",
+      name: fileName,
+    });
+
+    await page.getByTestId("real-upload-document").click();
+    await expect(page.getByText(`${fileName} upload completed.`)).toBeVisible();
+
+    await page.goto("/documents/review-queue");
+    await page.getByLabel("Tenant context").last().selectOption("morgan");
+    await page.getByLabel("Role context").last().selectOption("analyst");
+    await expect(page.getByText(fileName)).toBeVisible();
+
+    await page.getByTestId("phase3-request-clarification").click();
+    await expect(page.getByText("Clarification requested. Evidence is insufficient and release, export and client visibility remain locked.")).toBeVisible();
+    await expect(page.getByText("Lifecycle: Insufficient")).toBeVisible();
   });
 });

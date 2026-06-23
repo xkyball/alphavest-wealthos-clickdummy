@@ -27,6 +27,7 @@ async function uploadProofDocument(request: APIRequestContext, fileName: string)
   expect(response.ok(), JSON.stringify(body)).toBe(true);
   expect(body.safety).toEqual({
     clientVisible: false,
+    evidenceLifecycleStatus: "extraction_pending",
     evidenceStatus: "REVIEW_PENDING",
     releaseUnlocked: false,
     sufficiency: false,
@@ -73,6 +74,7 @@ test.describe("Phase 3 evidence review and sufficiency API", () => {
     expect(response.ok(), JSON.stringify(body)).toBe(true);
     expect(body.safety).toEqual({
       clientVisible: false,
+      evidenceLifecycleStatus: "linked",
       evidenceSufficiency: false,
       exportUnlocked: false,
       gateSupport: false,
@@ -81,6 +83,7 @@ test.describe("Phase 3 evidence review and sufficiency API", () => {
       uploadOnly: false,
     });
     expect(body.result.documentStatus).toBe(DocumentStatus.VERIFIED);
+    expect(body.result.evidenceLifecycleStatus).toBe("linked");
     expect(body.result.evidenceStatus).toBe(EvidenceStatus.LINKED);
 
     const evidence = await prisma.evidenceRecord.findUniqueOrThrow({
@@ -94,6 +97,47 @@ test.describe("Phase 3 evidence review and sufficiency API", () => {
     expect(document.clientVisible).toBe(false);
     expect(evidence.status).toBe(EvidenceStatus.LINKED);
     expect(evidence.visibilityStatus).toBe(VisibilityStatus.INTERNAL_ONLY);
+  });
+
+  test("marks clarification requests as insufficient without release or export unlock", async ({ request }) => {
+    const upload = await uploadProofDocument(request, "phase3-clarification-insufficient-proof.pdf");
+    const response = await request.post("/api/documents/review", {
+      data: {
+        action: "request_clarification",
+        documentId: upload.document.id,
+        notes: "The uploaded statement lacks the account holder and period scope needed for evidence review.",
+        roleKey: "analyst",
+        tenantSlug: "morgan",
+      },
+    });
+    const body = await response.json();
+
+    expect(response.ok(), JSON.stringify(body)).toBe(true);
+    expect(body.safety).toMatchObject({
+      clientVisible: false,
+      evidenceLifecycleStatus: "insufficient",
+      evidenceSufficiency: false,
+      exportUnlocked: false,
+      gateSupport: false,
+      noClientRelease: true,
+      releaseUnlocked: false,
+    });
+    expect(body.result.documentStatus).toBe(DocumentStatus.NEEDS_CLARIFICATION);
+    expect(body.result.evidenceLifecycleStatus).toBe("insufficient");
+
+    const document = await prisma.document.findUniqueOrThrow({
+      include: { extractions: true },
+      where: { id: upload.document.id },
+    });
+    const audit = await prisma.auditEvent.findUniqueOrThrow({
+      where: { id: body.result.auditEventId },
+    });
+
+    expect(document.status).toBe(DocumentStatus.NEEDS_CLARIFICATION);
+    expect(document.clientVisible).toBe(false);
+    expect(document.extractions[0]?.extractionStatus).toBe("needs_clarification");
+    expect(audit.eventType).toBe("document.evidence_review.clarification_requested");
+    expect(audit.result).toBe(AuditResult.SUCCESS);
   });
 
   test("lets compliance accept reviewed scoped evidence without releasing client visibility", async ({ request }) => {
@@ -115,8 +159,10 @@ test.describe("Phase 3 evidence review and sufficiency API", () => {
 
     expect(response.ok(), JSON.stringify(body)).toBe(true);
     expect(body.safety.evidenceSufficiency).toBe(true);
+    expect(body.safety.evidenceLifecycleStatus).toBe("sufficient");
     expect(body.safety.noClientRelease).toBe(true);
     expect(body.safety.releaseUnlocked).toBe(false);
+    expect(body.result.evidenceLifecycleStatus).toBe("sufficient");
     expect(body.result.sufficiencyDecision).toMatchObject({
       exportImpact: "EXPORT_ALLOWED_FOR_SCOPED_GATE",
       label: "EVIDENCE_SUFFICIENT",

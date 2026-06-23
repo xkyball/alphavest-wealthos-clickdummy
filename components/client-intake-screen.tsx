@@ -122,6 +122,7 @@ const mobileQuickActions: Array<{ icon: LucideIcon; label: string }> = [
 type PersistedUploadDocument = {
   checksum: string;
   documentType: string;
+  evidenceLifecycleStatus?: string | null;
   evidenceRecordId: string | null;
   evidenceStatus: string | null;
   evidenceVisibilityStatus: string | null;
@@ -2161,7 +2162,7 @@ function DocumentUploadForm() {
 
       setSelectedFile(null);
       setUploadState("success");
-      setMessage(`${body.result.document.fileName} upload completed. Extraction review is the next step; evidence sufficiency, release, export and client visibility remain locked.`);
+      setMessage(`${body.result.document.fileName} upload completed. Lifecycle: ${labelFromEnum(body.result.document.evidenceLifecycleStatus ?? "extraction_pending")}. Extraction review is the next step; evidence sufficiency, release, export and client visibility remain locked.`);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -2341,6 +2342,7 @@ function DocumentUploadForm() {
             <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4">
               <p className="text-sm font-semibold text-alphavest-ivory">{latestDocument.fileName ?? latestDocument.title}</p>
               <p className="mt-1 text-xs text-alphavest-muted">{latestDocument.fileSizeBytes ? formatBytes(latestDocument.fileSizeBytes) : "Size hidden"} · {labelFromEnum(latestDocument.status)}</p>
+              <p className="mt-2 text-xs text-alphavest-muted">Lifecycle: {labelFromEnum(latestDocument.evidenceLifecycleStatus ?? "review_pending")}</p>
               <p className="mt-2 text-xs text-alphavest-muted">Extraction: {latestDocument.extractionStatus ?? "pending"}</p>
             </div>
           ) : (
@@ -2375,13 +2377,19 @@ function ExtractionReviewActionPanel() {
   const [reviewState, setReviewState] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState("Review the latest upload, then link or accept evidence through the controlled review API.");
 
-  async function submitReview(action: "mark_reviewed" | "accept_sufficiency") {
+  async function submitReview(action: "mark_reviewed" | "request_clarification" | "accept_sufficiency") {
     if (!latestDocument || reviewState === "submitting") {
       return;
     }
 
     setReviewState("submitting");
-    setMessage(action === "accept_sufficiency" ? "Checking scoped evidence sufficiency." : "Saving extraction review and evidence link.");
+    setMessage(
+      action === "accept_sufficiency"
+        ? "Checking scoped evidence sufficiency."
+        : action === "request_clarification"
+          ? "Requesting clarification and keeping evidence insufficient."
+          : "Saving extraction review and evidence link.",
+    );
 
     try {
       const response = await fetch("/api/documents/review", {
@@ -2399,7 +2407,7 @@ function ExtractionReviewActionPanel() {
         headers: { "Content-Type": "application/json" },
         method: "POST",
       });
-      const body = (await response.json()) as { error?: string; issues?: string[]; reason?: string; result?: { evidenceStatus?: string; safety?: { evidenceSufficiency: boolean } } };
+      const body = (await response.json()) as { error?: string; issues?: string[]; reason?: string; result?: { evidenceLifecycleStatus?: string; evidenceStatus?: string; safety?: { evidenceSufficiency: boolean } } };
 
       if (!response.ok || !body.result) {
         throw new Error(body.issues?.join(", ") || body.reason || body.error || "Evidence review failed.");
@@ -2409,7 +2417,9 @@ function ExtractionReviewActionPanel() {
       setMessage(
         body.result.safety?.evidenceSufficiency
           ? "Evidence accepted for this scoped gate. Release, export and client visibility remain locked."
-          : "Document reviewed and linked. Evidence remains review-gated and not client-visible.",
+          : body.result.evidenceLifecycleStatus === "insufficient"
+            ? "Clarification requested. Evidence is insufficient and release, export and client visibility remain locked."
+            : "Document reviewed and linked. Evidence remains review-gated and not client-visible.",
       );
       await refresh();
     } catch (error) {
@@ -2428,6 +2438,7 @@ function ExtractionReviewActionPanel() {
             <p className="mt-1 text-xs text-alphavest-muted">
               Document: {labelFromEnum(latestDocument.status)} · Evidence: {latestDocument.evidenceStatus ? labelFromEnum(latestDocument.evidenceStatus) : "Created"}
             </p>
+            <p className="mt-2 text-xs text-alphavest-muted">Lifecycle: {labelFromEnum(latestDocument.evidenceLifecycleStatus ?? "review_pending")}</p>
             <p className="mt-2 text-xs text-alphavest-muted">Visibility: {latestDocument.evidenceVisibilityStatus ? labelFromEnum(latestDocument.evidenceVisibilityStatus) : "Internal Only"}</p>
           </div>
         ) : (
@@ -2451,6 +2462,15 @@ function ExtractionReviewActionPanel() {
           state={reviewState === "error" ? "error" : reviewState === "success" ? "success" : "restricted"}
           title={reviewState === "success" ? "Review saved" : reviewState === "error" ? "Review blocked" : "Human review gate"}
         />
+        <button
+          className={secondaryButtonClass + " w-full"}
+          data-testid="phase3-request-clarification"
+          disabled={!latestDocument || reviewState === "submitting"}
+          onClick={() => { void submitReview("request_clarification"); }}
+          type="button"
+        >
+          Request clarification
+        </button>
         <button
           className={secondaryButtonClass + " w-full"}
           data-testid="phase3-mark-reviewed"

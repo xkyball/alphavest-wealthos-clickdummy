@@ -338,6 +338,12 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
         targetType: input.action === "accept_sufficiency" ? ObjectType.EVIDENCE_RECORD : ObjectType.DOCUMENT,
       },
     });
+    const evidenceLifecycleStatus = evidenceService.evidenceLifecycleStatusForDocument({
+      documentStatus: updatedDocument.status,
+      evidenceStatus: updatedEvidence.status,
+      extractionStatus: extraction?.extractionStatus ?? document.extractions[0]?.extractionStatus ?? null,
+      sufficiencyDecision,
+    });
 
     return {
       auditEventId: audit.id,
@@ -345,6 +351,7 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
       documentLinkId: link.id,
       documentStatus: updatedDocument.status,
       evidenceItemId: evidenceItem.id,
+      evidenceLifecycleStatus,
       evidenceRecordId: updatedEvidence.id,
       evidenceStatus: updatedEvidence.status,
       evidenceVisibilityStatus: updatedEvidence.visibilityStatus,
@@ -353,6 +360,7 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
       reviewStatus: review.status,
       safety: {
         clientVisible: false,
+        evidenceLifecycleStatus,
         evidenceSufficiency: sufficiencyDecision.sufficient,
         exportUnlocked: false,
         gateSupport: sufficiencyDecision.sufficient,

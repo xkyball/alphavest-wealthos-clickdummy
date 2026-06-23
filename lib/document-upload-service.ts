@@ -17,6 +17,7 @@ import { evaluateControlPermission } from "@/lib/control-layer/permission-decisi
 import { resolveTenantObjectScope } from "@/lib/control-layer/scope-resolver";
 import { localDocumentStorageAdapter } from "@/lib/document-storage-adapter";
 import { auditService, AuditPersistenceRequiredError } from "@/lib/audit-service";
+import { evidenceService, type EvidenceLifecycleStatus } from "@/lib/evidence-service";
 import { stableId } from "@/lib/stable-id";
 import { visibilityEngine } from "@/lib/visibility-engine";
 
@@ -48,6 +49,7 @@ export type UploadedDocumentListItem = {
   storageKey: string;
   uploadedAt: string;
   evidenceRecordId: string | null;
+  evidenceLifecycleStatus: EvidenceLifecycleStatus;
   evidenceStatus: string | null;
   evidenceVisibilityStatus: string | null;
   extractionStatus: string | null;
@@ -168,6 +170,11 @@ function mapDocument(document: {
     clientVisible: document.clientVisible,
     documentType: document.documentType,
     evidenceRecordId: document.evidenceRecords?.[0]?.id ?? null,
+    evidenceLifecycleStatus: evidenceService.evidenceLifecycleStatusForDocument({
+      documentStatus: document.status,
+      evidenceStatus: document.evidenceStatus as EvidenceStatus | null,
+      extractionStatus: document.extractions?.[0]?.extractionStatus ?? null,
+    }),
     evidenceStatus: document.evidenceStatus ?? null,
     evidenceVisibilityStatus: document.evidenceVisibilityStatus ?? null,
     extractionStatus: document.extractions?.[0]?.extractionStatus ?? null,

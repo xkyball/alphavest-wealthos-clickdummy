@@ -33,6 +33,22 @@ export type EvidenceSufficiencyDecision = {
   sufficient: boolean;
 };
 
+export type EvidenceLifecycleStatus =
+  | "uploaded"
+  | "extraction_pending"
+  | "review_pending"
+  | "insufficient"
+  | "rejected"
+  | "linked"
+  | "sufficient";
+
+export type EvidenceLifecycleStatusInput = {
+  documentStatus?: string | null;
+  evidenceStatus?: EvidenceStatus | null;
+  extractionStatus?: string | null;
+  sufficiencyDecision?: Pick<EvidenceSufficiencyDecision, "sufficient"> | null;
+};
+
 export type EvidenceLifecycleStage =
   | "NEEDS_EVIDENCE"
   | "UPLOAD_RECEIVED"
@@ -180,8 +196,37 @@ function evaluateEvidenceLifecycle(input: EvidenceSufficiencyInput & { uploaded?
   };
 }
 
+function evidenceLifecycleStatusForDocument(input: EvidenceLifecycleStatusInput): EvidenceLifecycleStatus {
+  if (input.sufficiencyDecision?.sufficient || input.evidenceStatus === "VALIDATED" || input.evidenceStatus === "RELEASED") {
+    return "sufficient";
+  }
+
+  if (input.documentStatus === "BLOCKED") {
+    return "rejected";
+  }
+
+  if (input.documentStatus === "NEEDS_CLARIFICATION" || input.evidenceStatus === "RESTRICTED") {
+    return "insufficient";
+  }
+
+  if (input.evidenceStatus === "LINKED" || input.documentStatus === "LINKED_TO_EVIDENCE" || input.documentStatus === "VERIFIED") {
+    return "linked";
+  }
+
+  if (input.extractionStatus === "pending") {
+    return "extraction_pending";
+  }
+
+  if (input.documentStatus === "UPLOADED" || input.evidenceStatus === "CREATED") {
+    return "review_pending";
+  }
+
+  return "uploaded";
+}
+
 export const evidenceService = {
   createEvidenceRecordDraft,
+  evidenceLifecycleStatusForDocument,
   evaluateEvidenceLifecycle,
   evaluateEvidenceSufficiency,
   hasSufficientEvidenceStatus,
