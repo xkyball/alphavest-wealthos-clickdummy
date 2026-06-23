@@ -97,9 +97,39 @@ test.describe("WCL WS-00 to WS-04 control layer spine", () => {
 
     expect(permission.allowed).toBe(true);
     expect(permission.controlLayer).toBe("WCL-03");
+    expect(permission.guardDecision).toEqual({
+      action: "RELEASE",
+      allowed: true,
+      auditRequired: true,
+      layer: "action",
+      objectId: recommendationId,
+      objectType: "RECOMMENDATION",
+      reason: permission.reason,
+      reasonCode: "DEMO_ROLE_AWARE_ALLOW",
+      redactionMode: "none",
+      secondConfirmationRequired: true,
+    });
     expect(permission.objectScopeApplied).toBe(true);
     expect(permission.requiresAudit).toBe(true);
     expect(permission.requiresComplianceReview).toBe(true);
+
+    const deniedPermission = evaluateControlPermission({
+      action: "RELEASE",
+      actorContext: actorResult.actorContext,
+      objectScope: scope.objectScope,
+      subject: {
+        clientTenantId: actorResult.actorContext.clientTenantId,
+        objectId: "recommendation:bennett:outside-scope",
+        objectType: "RECOMMENDATION",
+        sensitivity: "RESTRICTED",
+        visibilityStatus: "COMPLIANCE_VISIBLE",
+      },
+    });
+
+    expect(deniedPermission.allowed).toBe(false);
+    expect(deniedPermission.guardDecision.layer).toBe("object");
+    expect(deniedPermission.guardDecision.auditRequired).toBe(true);
+    expect(deniedPermission.guardDecision.reasonCode).toBe("DEMO_DENY_OBJECT_SCOPE_MISMATCH");
   });
 
   test("WS-02 projects payload fields as visible, redacted or hidden", () => {
@@ -122,6 +152,7 @@ test.describe("WCL WS-00 to WS-04 control layer spine", () => {
       riskScore: "[redacted]",
     });
     expect(projection.hiddenFields).toEqual(["complianceNotes"]);
+    expect(projection.redactionMode).toBe("mixed");
     expect(projection.redactedFields).toEqual(["riskScore"]);
   });
 

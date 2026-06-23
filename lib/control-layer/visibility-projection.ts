@@ -4,6 +4,7 @@ export type VisibilityProjection<T extends Record<string, unknown>> = {
   hiddenFields: string[];
   payload: Partial<T>;
   reasonCode: "WCL_VISIBILITY_PROJECTED";
+  redactionMode: "none" | "redacted" | "hidden" | "mixed";
   redactedFields: string[];
   visible: boolean;
   visibleFields: string[];
@@ -40,6 +41,14 @@ export function projectPayloadVisibility<T extends Record<string, unknown>>(
     hiddenFields,
     payload: projected,
     reasonCode: "WCL_VISIBILITY_PROJECTED",
+    redactionMode:
+      redactedFields.length > 0 && hiddenFields.length > 0
+        ? "mixed"
+        : redactedFields.length > 0
+          ? "redacted"
+          : hiddenFields.length > 0 && visibleFields.length === 0
+            ? "hidden"
+            : "none",
     redactedFields,
     visible: visibleFields.length > 0 || redactedFields.length > 0,
     visibleFields,
