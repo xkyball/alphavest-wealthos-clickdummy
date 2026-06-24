@@ -677,7 +677,7 @@ async function runJ02ReleaseClient(
         data: {
           status: EvidenceStatus.RELEASED,
           summary:
-            "Compliance release proof. workflowGate passed before the recommendation became client-visible.",
+            "Compliance release recorded. workflowGate passed before the recommendation became client-visible.",
           visibilityStatus: VisibilityStatus.CLIENT_VISIBLE,
         },
       });
@@ -688,7 +688,7 @@ async function runJ02ReleaseClient(
           itemType: "compliance_release",
           sourceObjectId: summitRecommendationId,
           sourceObjectType: ObjectType.RECOMMENDATION,
-          title: "workflowGate compliance release proof",
+          title: "workflowGate compliance release",
           visibilityStatus: VisibilityStatus.CLIENT_VISIBLE,
         },
       });

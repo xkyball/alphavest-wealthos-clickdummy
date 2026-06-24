@@ -7,7 +7,7 @@ test.describe("V0.96 WP-08 audit surface and persistence UI", () => {
 
     expect(timelineSource).toContain('sourceState?: "display-only" | "pending" | "source-backed" | "unavailable"');
     expect(timelineSource).toContain('const sourceState = item.sourceState ?? "display-only"');
-    expect(timelineSource).toContain('data-ux-audit-proof={sourceState === "source-backed" ? "persisted-source-backed" : "not-persistence-proof"}');
+    expect(timelineSource).toContain('data-ux-audit-source={sourceState === "source-backed" ? "source-backed" : "display-only"}');
     expect(timelineSource).toContain('"Display-only context"');
     expect(timelineSource).toContain('"Audit recorded"');
   });
@@ -17,7 +17,7 @@ test.describe("V0.96 WP-08 audit surface and persistence UI", () => {
 
     expect(complianceScreenSource).toContain('testId="wp08-display-only-audit-state"');
     expect(complianceScreenSource).toContain("Compliance audit rows on this demo screen are display-only context");
-    expect(complianceScreenSource).toContain("Persisted proof is the DB-backed AuditEvent record");
+    expect(complianceScreenSource).toContain("Persisted record is the DB-backed AuditEvent returned by the audited action or audit-history API");
     expect(complianceScreenSource).toContain("Audit visibility is not audit persistence");
   });
 

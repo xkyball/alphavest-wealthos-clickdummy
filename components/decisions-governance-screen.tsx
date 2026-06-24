@@ -506,7 +506,7 @@ function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pag
           <p className="mt-2 text-sm font-semibold text-alphavest-ivory">Drawer-only context cannot approve, release, delete, export or mutate payload visibility. {safetyBoundary}</p>
         </div>
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-page-job">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Page job</p>
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Focus</p>
           <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{pageJob}</p>
         </div>
       </div>
@@ -873,7 +873,7 @@ function ComplianceAuditPage({ title }: { title: string }) {
           <PageHeading subtitle="Compliance decision, exception and resolution activity for audit review." title={title} />
           <ScfP04P06FlowPanel mode="audit" />
           <StatePanel
-            detail="Compliance audit rows on this demo screen are display-only context. Persisted proof is the DB-backed AuditEvent record returned by the audited action or audit-history API."
+            detail="Compliance audit rows on this demo screen are display-only context. Persisted record is the DB-backed AuditEvent returned by the audited action or audit-history API."
             state="restricted"
             testId="wp08-display-only-audit-state"
             title="Display-only audit context"

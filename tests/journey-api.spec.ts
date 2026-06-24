@@ -273,7 +273,7 @@ test.describe("Wave 0-2 Journey APIs and command execution", () => {
     const intake = await command(request, journeyId, analystJwt, {
       command: "COMPLETE_STEP",
       fromStepKey: "intake.confirm_scope",
-      reason: "Scope confirmed for core E2E gate proof.",
+      reason: "Scope confirmed for core E2E gate.",
     });
     expect(intake.ok(), await intake.text()).toBe(true);
 

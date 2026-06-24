@@ -66,18 +66,18 @@ test.describe("V0.96 WP-12 no-overclaim microcopy and state feedback", () => {
     }
   });
 
-  test("status and workflow badges declare that chips are visual summaries, not gate proof", () => {
+  test("status and workflow badges declare that chips are visual summaries, not completion gates", () => {
     const statusChip = readSource("components", "ui", "status-chip.tsx");
     const workflowBadge = readSource("components", "ui", "workflow-badge.tsx");
     const demoSessionPanel = readSource("components", "demo-session-panel.tsx");
     const reviewMonitoringScreen = readSource("components", "review-monitoring-screen.tsx");
 
-    expect(statusChip).toContain("Status chip is a visual summary, not gate proof.");
-    expect(statusChip).toContain('data-ux-gate-proof="false"');
+    expect(statusChip).toContain("Status chip is a visual summary, not a completion gate.");
+    expect(statusChip).toContain('data-ux-completion-gate="false"');
     expect(statusChip).toContain("data-ux-state-source");
 
-    expect(workflowBadge).toContain("Workflow badge is a visual summary, not gate proof.");
-    expect(workflowBadge).toContain('data-ux-gate-proof="false"');
+    expect(workflowBadge).toContain("Workflow badge is a visual summary, not a completion gate.");
+    expect(workflowBadge).toContain('data-ux-completion-gate="false"');
     expect(workflowBadge).toContain("Advisor approved, release pending");
     expect(workflowBadge).toContain("Compliance release recorded");
     expect(workflowBadge).toContain("Evidence review ready");

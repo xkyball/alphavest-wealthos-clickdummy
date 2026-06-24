@@ -480,7 +480,7 @@ function journeyGuidanceForPathname(pathname: string): ProductGuidance | null {
       state: "guarded",
     },
     densityTier: "D2",
-    gateHint: "Journey status is orientation only; evidence sufficiency, audit proof, release and client projection remain separate.",
+    gateHint: "Journey status is orientation only; evidence sufficiency, audit record, release and client projection remain separate.",
     primaryAction: detail ? { href: "/journeys", label: "Back to Journey Dashboard" } : undefined,
     purpose: detail
       ? "Inspect one journey's stage, step, evidence posture, audit spine and client-safe projection without implying release."
@@ -635,7 +635,7 @@ export function productGuidanceForPathname(pathname: string): ProductGuidance {
       recovery: linkForPageId("038", "Open compliance queue"),
       state: "guarded",
     },
-    gateHint: "Shared UI primitives support controlled workflow screens; they are not release proof by themselves.",
+    gateHint: "Shared UI primitives support controlled workflow screens; they do not release client-visible work by themselves.",
     primaryAction: linkForPageId("019", "Open client portal"),
     purpose: "Inspect the shared component language used by the AlphaVest workflow implementation.",
     relatedRoutes: [linkForPageId("034", "Open workbench"), linkForPageId("038", "Open compliance queue")],

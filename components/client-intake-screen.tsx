@@ -916,7 +916,7 @@ function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pag
           <p className="mt-2 text-sm font-semibold text-alphavest-ivory">Drawer-only context cannot approve, release, delete, export or mutate payload visibility. {safetyBoundary}</p>
         </div>
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-page-job">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Page job</p>
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Focus</p>
           <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{pageJob}</p>
         </div>
       </div>

@@ -99,20 +99,19 @@ test.describe("UX-A11Y phase 10 keyboard, focus and status proof", () => {
   ];
 
   for (const route of headerRoutes) {
-    test(route.task + " " + route.path + " renders PageHeader keyboard/status proof without safety overclaim", async ({ page }) => {
+    test(route.task + " " + route.path + " keeps PageHeader keyboard/status semantics without visible proof panels", async ({ page }) => {
       await page.goto(route.path);
 
       const header = page.getByTestId("page-header");
-      const proof = header.getByTestId("ux-phase10-a11y-proof");
-      await expect(proof).toBeVisible();
+      const proof = header.getByTestId("ux-phase10-a11y-support");
+      await expect(proof).toHaveClass(/sr-only/);
+      await expect(proof).not.toBeVisible();
       await expect(proof).toHaveAttribute("data-ux-phase10-tasks", new RegExp(route.task));
       await expect(proof).toHaveAttribute("data-ux-phase10-tasks", /UX-A11Y-004/);
       await expect(proof).toHaveAttribute("data-ux-a11y-keyboard", "tab-escape-cancel-return");
       await expect(proof).toHaveAttribute("data-ux-a11y-status", "polite-live-region");
       await expect(proof.getByTestId("ux-phase10-live-status")).toContainText(/Keyboard users can tab through actions and recover without losing context/i);
-      await expect(proof.getByTestId("ux-phase10-keyboard-proof")).toContainText(/Tab.*Escape.*Cancel/i);
-      await expect(proof.getByTestId("ux-phase10-focus-proof")).toContainText(/Focus.*returns/i);
-      await expect(proof.getByTestId("ux-phase10-global-proof")).toContainText(/navigation.*breadcrumb|breadcrumb.*navigation/i);
+      await expect(proof.getByTestId("ux-phase10-route-label")).toContainText(/.+/);
       await expect(header).not.toContainText(/client visibility unlocked|admin override|release complete|evidence sufficient/i);
     });
   }

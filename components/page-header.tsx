@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ArrowRight, LockKeyhole, RotateCcw } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { A11yStatusProofPanel } from "@/components/ui/a11y-status";
+import { A11yStatusSupportPanel } from "@/components/ui/a11y-status";
 import { DisabledControlReason, disabledControlReasonId } from "@/components/ui/disabled-control-reason";
 import { StatusChip, type StatusChipStatus } from "@/components/ui/status-chip";
 import { WizardStepper, type WizardStep } from "@/components/ui/wizard-stepper";
@@ -220,20 +220,20 @@ export function PageHeader({
         <div className="flex min-w-0 flex-col items-start gap-2 lg:items-end">
           <StatusChip label={statusLabel ?? "No unapproved advice reaches the client"} status={status} />
           {currentRoute && currentPolicy ? (
-            <div className="flex max-w-xl flex-wrap justify-start gap-2 text-xs lg:justify-end" data-testid="page-header-route-context">
+            <div className="sr-only" data-testid="page-header-route-context">
               <span
                 className="max-w-72 truncate rounded-full border border-alphavest-gold/35 bg-alphavest-gold/10 px-3 py-1 font-semibold text-alphavest-gold-soft"
                 data-testid="page-header-page-job"
-                title={`Page job: ${currentPolicy.pageType}`}
+                title={currentPolicy.pageType}
               >
-                Page job · {currentPolicy.pageType}
+                {currentPolicy.pageType}
               </span>
               <span
                 className="max-w-96 truncate rounded-full border border-alphavest-gold/35 bg-alphavest-gold/10 px-3 py-1 font-semibold text-alphavest-gold-soft"
                 data-testid="page-header-current-gate"
-                title={`Current gate: ${currentPolicy.primaryCtaRule}`}
+                title={currentPolicy.primaryCtaRule}
               >
-                Gate · {currentPolicy.primaryCtaRule}
+                {currentPolicy.primaryCtaRule}
               </span>
               <span className="rounded-full border border-alphavest-border bg-alphavest-charcoal/55 px-3 py-1 font-semibold text-alphavest-muted">
                 {uxWorkspaceLabels[currentPolicy.workspace]}
@@ -246,7 +246,7 @@ export function PageHeader({
               </span>
             </div>
           ) : null}
-          <A11yStatusProofPanel
+          <A11yStatusSupportPanel
             className="max-w-xl"
             routeLabel={currentRoute ? currentRoute.title : title}
             statusAnnouncement={a11yStatusAnnouncement}
@@ -255,7 +255,7 @@ export function PageHeader({
           {effectivePrimaryAction ? (
             <div className="flex flex-wrap justify-start gap-2 lg:justify-end" data-testid="page-header-primary-cta-region" data-ux-phase8-primary-count="1">
               <span className="flex h-[var(--button-height)] items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/55 px-3 text-xs font-semibold text-alphavest-muted">
-                Page action
+                Action
               </span>
               <HeaderAction action={effectivePrimaryAction} primary />
               {effectiveSecondaryActions.slice(0, 2).map((action) => (

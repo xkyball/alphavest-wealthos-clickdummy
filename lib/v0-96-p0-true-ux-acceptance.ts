@@ -156,7 +156,7 @@ export const wp15CoverageMatrix: Wp15CoverageEntry[] = [
   {
     blocksV096Acceptance: false,
     category: "P0_SAFETY",
-    evidence: "Critical gate proofs require persisted audit references or source-backed DB read models.",
+    evidence: "Critical gates require persisted audit references or source-backed DB read models.",
     gateId: "WP15-G11-AUDIT-PERSISTENCE",
     nonClaim: "Visual audit rows are not persistence proof.",
     ownerWp: "WP08/WP15",
@@ -239,7 +239,7 @@ export const wp15CoverageMatrix: Wp15CoverageEntry[] = [
     ownerWp: "WP01/WP12/WP15",
     proofFiles: ["tests/product-guidance-shell.spec.ts", "tests/route-smoke.spec.ts"],
     status: "COVERED",
-    title: "Page job and header guidance",
+    title: "Focus and header guidance",
   },
   {
     blocksV096Acceptance: false,
@@ -299,13 +299,13 @@ export const wp15CoverageMatrix: Wp15CoverageEntry[] = [
   {
     blocksV096Acceptance: false,
     category: "TRUE_UX",
-    evidence: "Status/workflow badges declare visual-summary metadata and are not treated as gate proof.",
+    evidence: "Status/workflow badges declare visual-summary metadata and are not treated as completion gates.",
     gateId: "WP15-G24-STATUS-CHIP-NOT-GATE-PROOF",
     nonClaim: "Status chip or visual row alone is never proof.",
     ownerWp: "WP12/WP15",
     proofFiles: ["tests/true-ux-no-overclaim-copy.spec.ts", "tests/status-badge-affordance-pruning.spec.ts"],
     status: "COVERED",
-    title: "Status chips are not gate proof",
+    title: "Status chips are not completion gates",
   },
   {
     blocksV096Acceptance: false,

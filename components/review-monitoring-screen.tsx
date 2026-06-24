@@ -79,18 +79,18 @@ function formatDate(value: string | null) {
   }).format(new Date(value));
 }
 
-function ProofStrip() {
+function ReadinessStrip() {
   return (
     <div className="grid gap-3 lg:grid-cols-3">
       {[
         {
           icon: CalendarClock,
-          title: "Due state proof",
+          title: "Due state",
           detail: "Derived from ReviewSchedule, QueueItem and ActionItem dates in the Phase D service.",
         },
         {
           icon: ShieldAlert,
-          title: "Trigger state proof",
+          title: "Trigger state",
           detail: "Rebalance rows stay internal and are verified through the review monitoring API.",
         },
         {
@@ -187,7 +187,7 @@ function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pag
     <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Phase 5 detail / split proof</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Detail review</p>
           <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectLabel}</h2>
         </div>
         <Badge tone="gold">{taskId}</Badge>
@@ -206,7 +206,7 @@ function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pag
           <p className="mt-2 text-sm font-semibold text-alphavest-ivory">Drawer-only context cannot approve, release, delete, export or mutate payload visibility. {safetyBoundary}</p>
         </div>
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-page-job">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Page job</p>
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Focus</p>
           <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{pageJob}</p>
         </div>
       </div>
@@ -335,12 +335,12 @@ function ReviewCalendarPage({ title }: { title: string }) {
           title={title}
         />
         <UxHubPage pageId="068" />
-        <ProofStrip />
+        <ReadinessStrip />
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <MetricCard detail="Reviews with a due date inside the next 14 days." label="Due soon" status="SCHEDULED" value={String(dueSoonCount)} />
           <MetricCard detail="Overdue is derived from dated service fields, not from UI labels." label="Overdue" status={overdueCount > 0 ? "FAILED" : "COMPLETED"} value={String(overdueCount)} />
           <MetricCard detail="Rows with queue escalation or overdue queue state." label="Escalated" status="PENDING" value={String(escalatedCount)} />
-          <MetricCard detail="Snapshot path: GET /api/review-monitoring." label="API proof" status="PROCESSING" value="1 path" />
+          <MetricCard detail="Snapshot path: GET /api/review-monitoring." label="API path" status="PROCESSING" value="1 path" />
         </div>
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
           <section className="space-y-5">
@@ -414,7 +414,7 @@ function ReviewCalendarPage({ title }: { title: string }) {
             />
             <Card>
               <CardHeader>
-                <CardTitle>Proof checklist</CardTitle>
+                <CardTitle>Review checklist</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm text-alphavest-muted">
                 {["GET snapshot returns review rows", "J16 POST actions return audit rows", "No client release flag remains true"].map((item) => (
@@ -449,7 +449,7 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
         />
         <Phase4WorkbenchPanel activeTask="Rebalance trigger RB-77 selected" blocker="Monitoring trigger is internal review state only and cannot execute advice automatically." context="Reviewer confirms stale evidence, drift and suitability prerequisites before advisory routing." primaryAction="Route to advisory review" queueLabel="Rebalance monitoring queue" safetyNote="UX-WORKBENCH-005: monitoring does not create client release, rebalance execution or advice approval." taskId="UX-WORKBENCH-005" />
         <Phase5DetailSplitPanel decisionSupport="Monitoring detail separates rebalance trigger review from execution or client advice." objectLabel="Rebalance trigger split" objectState="Internal trigger blocked" pageJob="Monitoring detail reviews one trigger without becoming rebalance execution." safetyBoundary="Monitoring detail cannot execute trades, approve advice or release content." splitTaskId="UX-PAGE-SPLIT-008" taskId="UX-PAGE-SPLIT-008" />
-        <Phase6DecisionRoomPanel audit="Monitoring audit must record trigger, due state, reviewer routing and cancel or confirm outcome." blocker="Rebalance review remains blocked because monitoring state cannot execute trades or publish client advice." cancelLabel="Cancel monitoring decision" confirmLabel="Confirm rebalance review route" decisionLabel="Rebalance review decision room" evidence="Trigger proof path, due state, client-safe visibility flag and audit action path are visible before decision." preconditions="Human review route, evidence freshness, suitability context and compliance boundary must all pass." safetyNote="No release, export or advice effect can occur without gate preconditions and audit proof." taskId="UX-DECISION-ROOM-005" />
+        <Phase6DecisionRoomPanel audit="Monitoring audit must record trigger, due state, reviewer routing and cancel or confirm outcome." blocker="Rebalance review remains blocked because monitoring state cannot execute trades or publish client advice." cancelLabel="Cancel monitoring decision" confirmLabel="Confirm rebalance review route" decisionLabel="Rebalance review decision room" evidence="Trigger path, due state, client-safe visibility flag and audit action path are visible before decision." preconditions="Human review route, evidence freshness, suitability context and compliance boundary must all pass." safetyNote="No release, export or advice effect can occur until gate preconditions pass and audit is recorded." taskId="UX-DECISION-ROOM-005" />
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <MetricCard detail="Rebalance trigger rows in demo monitoring scope." label="Triggers" status="PROCESSING" value={String(rebalanceTriggerRows.length)} />
           <MetricCard detail="Blocked actions require human review before any recommendation path." label="Blocked" status="FAILED" value={String(blockedCount)} />
@@ -520,7 +520,7 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
             </div>
             <Card>
               <CardHeader>
-                <CardTitle>Trigger proof path</CardTitle>
+                <CardTitle>Trigger path</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-3 md:grid-cols-3">

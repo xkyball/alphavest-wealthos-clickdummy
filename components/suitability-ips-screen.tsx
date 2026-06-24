@@ -208,7 +208,7 @@ function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pag
     <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Phase 5 detail / split proof</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Detail review</p>
           <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectLabel}</h2>
         </div>
         <Badge tone="gold">{taskId}</Badge>
@@ -227,7 +227,7 @@ function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pag
           <p className="mt-2 text-sm font-semibold text-alphavest-ivory">Drawer-only context cannot approve, release, delete, export or mutate payload visibility. {safetyBoundary}</p>
         </div>
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-page-job">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Page job</p>
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Focus</p>
           <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{pageJob}</p>
         </div>
       </div>
@@ -385,7 +385,7 @@ function IpsMandatePage({ title }: { title: string }) {
           state="blocked"
           title="IPS / mandate release blocked"
         />
-        <Phase6DecisionRoomPanel audit="IPS decision audit must record actor, mandate version, suitability gate state and cancel or confirm outcome." blocker="IPS release remains blocked because acknowledgement, evidence and suitability gates are incomplete." cancelLabel="Cancel IPS decision" confirmLabel="Confirm IPS release" decisionLabel="IPS mandate decision room" evidence="Mandate constraints, document evidence, suitability gate result and audit trail are visible before decision." preconditions="Suitability pass, IPS evidence complete, acknowledgement and compliance release must all pass." safetyNote="No release, export or advice effect can occur without gate preconditions and audit proof." taskId="UX-DECISION-ROOM-003" />
+        <Phase6DecisionRoomPanel audit="IPS decision audit must record actor, mandate version, suitability gate state and cancel or confirm outcome." blocker="IPS release remains blocked because acknowledgement, evidence and suitability gates are incomplete." cancelLabel="Cancel IPS decision" confirmLabel="Confirm IPS release" decisionLabel="IPS mandate decision room" evidence="Mandate constraints, document evidence, suitability gate result and audit trail are visible before decision." preconditions="Suitability pass, IPS evidence complete, acknowledgement and compliance release must all pass." safetyNote="No release, export or advice effect can occur until gate preconditions pass and audit is recorded." taskId="UX-DECISION-ROOM-003" />
         {status ? <p className="text-sm text-alphavest-gold-soft">{status}</p> : null}
         <div className="grid gap-4 md:grid-cols-4">
           <MetricCard detail={ipsMandate.scope} label="Mandate" status="PENDING" value={ipsMandate.version} />

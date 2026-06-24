@@ -3,7 +3,7 @@
 import { Badge, Card, CardContent, CardHeader, CardTitle, StatePanel } from "@/components/ui";
 import { scfP10P14ProofPackage } from "@/lib/scf-p10-p14-proof";
 
-type ClosurePanelMode = "api" | "documents" | "proof";
+type ClosurePanelMode = "api" | "documents" | "handoff";
 
 const modeCopy: Record<ClosurePanelMode, { detail: string; title: string }> = {
   api: {
@@ -14,7 +14,7 @@ const modeCopy: Record<ClosurePanelMode, { detail: string; title: string }> = {
     detail: "Search, filters and table output now change the visible scoped document set without exposing hidden rows.",
     title: "Document Interaction Closure",
   },
-  proof: {
+  handoff: {
     detail: "P10-P14 status is tied to executable tasks, QA artefacts and explicitly blocked unsupported scope.",
     title: "Handoff Closure",
   },

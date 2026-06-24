@@ -67,7 +67,7 @@ test.describe("SCF-P06 critical gate audit persistence", () => {
         nextState: "CLIENT_VISIBLE",
         permissionAction: "RELEASE",
         previousState: "COMPLIANCE_PENDING",
-        reason: "Compliance released after gate proof.",
+        reason: "Compliance released after gate checks.",
         sensitivity: "RESTRICTED",
         targetId: demoPlatformTenantId,
         targetType: ObjectType.RECOMMENDATION,

@@ -361,7 +361,7 @@ function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pag
           <p className="mt-2 text-sm font-semibold text-alphavest-ivory">Drawer-only context cannot approve, release, delete, export or mutate payload visibility. {safetyBoundary}</p>
         </div>
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-page-job">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Page job</p>
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Focus</p>
           <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{pageJob}</p>
         </div>
       </div>
@@ -630,7 +630,7 @@ function ExportWorkflowTruthPanel({
   return (
     <StatePanel
       className={className}
-      detail="Export scope, redaction, preview, approval and delivery state are sourced from the tenant-scoped export workflow read model; fallback demo data is not treated as gate proof."
+      detail="Export scope, redaction, preview, approval and delivery state are sourced from the tenant-scoped export workflow read model; fallback demo data is not treated as a completion gate."
       state="restricted"
       testId="wp13-export-api-truth-ready"
       title="Export API truth source"
@@ -944,7 +944,7 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
         className="mt-4"
         detail={
           loadState === "ready"
-            ? "Rows in this view come from tenant-scoped AuditEvent records. Static screen context is not treated as audit proof."
+            ? "Rows in this view come from tenant-scoped AuditEvent records. Static screen context is display-only."
             : loadState === "loading"
               ? "Loading audit history..."
               : "Audit unavailable — required action remains blocked/pending."

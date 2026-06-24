@@ -296,7 +296,7 @@ function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pag
     <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Phase 5 detail / split proof</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Detail review</p>
           <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectLabel}</h2>
         </div>
         <Badge tone="gold">{taskId}</Badge>
@@ -315,7 +315,7 @@ function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pag
           <p className="mt-2 text-sm font-semibold text-alphavest-ivory">Drawer-only context cannot approve, release, delete, export or mutate payload visibility. {safetyBoundary}</p>
         </div>
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-page-job">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Page job</p>
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Focus</p>
           <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{pageJob}</p>
         </div>
       </div>
@@ -456,14 +456,14 @@ function SourceOfWealthPage({ title }: { title: string }) {
   return (
     <KycShell activePageId="065">
       <ScreenTitle>{title}</ScreenTitle>
-      <Phase5DetailSplitPanel decisionSupport="Source-of-wealth detail separates funds trail review from downstream compliance release." objectLabel="Source-of-wealth split" objectState="Funds trail partially verified" pageJob="Source-of-wealth page reviews proof gaps without becoming decision room." safetyBoundary="Source review cannot release suitability or advice output." splitTaskId="UX-PAGE-SPLIT-008" taskId="UX-PAGE-SPLIT-008" />
+      <Phase5DetailSplitPanel decisionSupport="Source-of-wealth detail separates funds trail review from downstream compliance release." objectLabel="Source-of-wealth split" objectState="Funds trail partially verified" pageJob="Source-of-wealth page reviews evidence gaps without becoming decision room." safetyBoundary="Source review cannot release suitability or advice output." splitTaskId="UX-PAGE-SPLIT-008" taskId="UX-PAGE-SPLIT-008" />
       <div className="space-y-5">
         <PageHeading
           action={
             <>
               <button className={secondaryButtonClass} onClick={() => void run("j12.escalateSourceOfWealth", "Source-of-wealth escalation audit recorded.")} type="button">
                 <ShieldAlert aria-hidden="true" className="size-4" />
-                Escalate proof gap
+                Escalate evidence gap
               </button>
               <button className={primaryButtonClass} onClick={() => void run("j12.linkSourceEvidence", "Source evidence package linked.")} type="button">
                 <CheckCircle2 aria-hidden="true" className="size-4" />
@@ -531,7 +531,7 @@ function SourceOfWealthPage({ title }: { title: string }) {
             </Card>
             <button className={secondaryButtonClass + " w-full"} disabled type="button">
               <Clock3 aria-hidden="true" className="size-4" />
-              Awaiting proof
+              Awaiting evidence
             </button>
           </aside>
         </div>

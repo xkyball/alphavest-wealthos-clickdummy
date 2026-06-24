@@ -16,7 +16,7 @@ export type UxDensityContract = {
 export const uxDensityTierContracts: Record<UxDensityTier, UxDensityContract> = {
   D1: {
     description: "Calm executive surface with a few high-signal cards, released/hidden state and one next-step panel.",
-    hierarchy: "Page job, client-safe status, next step and source summary lead; operational tables stay out of the above-fold calm view.",
+    hierarchy: "Focus, client-safe status, next step and source summary lead; operational tables stay out of the above-fold calm view.",
     pattern: "calm-executive",
     safetyRetention: "Client visibility, release state, evidence source and hidden-internal-data guardrails remain visible.",
     shellClassName: "gap-5 p-4 md:p-5",
@@ -24,7 +24,7 @@ export const uxDensityTierContracts: Record<UxDensityTier, UxDensityContract> = 
   },
   D2: {
     description: "Productive workbench with queue, selected context and gate/action rail.",
-    hierarchy: "Priority queue, selected context and action rail share the first working surface without turning into a card wall.",
+    hierarchy: "Priority work, context and next work share the first working surface without turning into a card wall.",
     pattern: "productive-workbench",
     safetyRetention: "Safety copy, blocked gates, evidence requirements and recovery actions remain present in the workbench.",
     shellClassName: "gap-4 p-4",

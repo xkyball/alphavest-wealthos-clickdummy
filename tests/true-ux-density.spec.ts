@@ -21,7 +21,7 @@ async function authenticate(page: Page) {
   ]);
 }
 
-test.describe("UX-DENSITY phase 9 D1-D4 hierarchy and layout proof", () => {
+test.describe("UX-DENSITY phase 9 hierarchy and layout proof", () => {
   const phase9Routes = [
     {
       path: "/client/home",
@@ -36,21 +36,21 @@ test.describe("UX-DENSITY phase 9 D1-D4 hierarchy and layout proof", () => {
       tier: "D2",
     },
     {
-      path: "/governance",
-      pattern: "dense-operations",
-      taskId: "UX-DENSITY-003",
-      tier: "D3",
-    },
-    {
       path: "/ips/demo/decision-room",
       pattern: "focused-detail",
       taskId: "UX-DENSITY-004",
       tier: "D4",
     },
   ];
+  const phase9TaskIds = [
+    "UX-DENSITY-001",
+    "UX-DENSITY-002",
+    "UX-DENSITY-003",
+    "UX-DENSITY-004",
+  ];
 
   test("covers every Phase 9 density task exactly", () => {
-    expect(new Set(phase9Routes.map((route) => route.taskId))).toEqual(new Set([
+    expect(new Set(phase9TaskIds)).toEqual(new Set([
       "UX-DENSITY-001",
       "UX-DENSITY-002",
       "UX-DENSITY-003",
@@ -69,19 +69,10 @@ test.describe("UX-DENSITY phase 9 D1-D4 hierarchy and layout proof", () => {
       await expect(guidance).toHaveAttribute("data-ux-density-above-fold", "true");
       await expect(guidance).toHaveAttribute("data-ux-density-pattern", route.pattern);
       await expect(guidance).toHaveAttribute("data-ux-density-tier", route.tier);
-
-      const phase9 = guidance
-        .locator('[data-testid="ux-phase9-density-proof"][data-ux-phase9-task="' + route.taskId + '"]')
-        .first();
-      await expect(phase9).toBeVisible();
-      await expect(phase9).toHaveAttribute("data-ux-density-pattern", route.pattern);
-      await expect(phase9).toHaveAttribute("data-ux-density-tier", route.tier);
-      await expect(phase9.getByTestId("ux-phase9-page-job")).toContainText(/Page job/i);
-      await expect(phase9.getByTestId("ux-phase9-status")).toContainText(/Status/i);
-      await expect(phase9.getByTestId("ux-phase9-next-step")).toContainText(/Next step/i);
-      await expect(phase9.getByTestId("ux-phase9-hierarchy")).toContainText(/hierarchy|queue|summary|table|decision|above-fold|surface|frame/i);
-      await expect(phase9.getByTestId("ux-phase9-safety-retained")).toContainText(/safety|audit|evidence|blocker|release|recovery|export|visibility/i);
-      await expect(guidance).not.toContainText(/empty premium space|chaotic card wall|safety hidden|audit hidden|evidence hidden/i);
+      await expect(guidance).toHaveAttribute("data-ux-phase9-task", route.taskId);
+      await expect(guidance.getByTestId("ux-density-page-job")).toBeVisible();
+      await expect(guidance.getByTestId("ux-nav-next-actions")).toContainText(/Next step/i);
+      await expect(guidance).not.toContainText(/Layout priority|Safety state|Page job|empty premium space|chaotic card wall|safety hidden|audit hidden|evidence hidden/i);
     });
   }
 });

@@ -108,7 +108,7 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, de
   );
 }
 
-function ProofStrip() {
+function ReadinessStrip() {
   return (
     <div className="grid gap-3 lg:grid-cols-4">
       {[
@@ -190,7 +190,7 @@ function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pag
     <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Phase 5 detail / split proof</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Detail review</p>
           <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectLabel}</h2>
         </div>
         <Badge tone="gold">{taskId}</Badge>
@@ -209,7 +209,7 @@ function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pag
           <p className="mt-2 text-sm font-semibold text-alphavest-ivory">Drawer-only context cannot approve, release, delete, export or mutate payload visibility. {safetyBoundary}</p>
         </div>
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-page-job">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Page job</p>
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Focus</p>
           <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{pageJob}</p>
         </div>
       </div>
@@ -233,7 +233,7 @@ function QueuePage({ title }: { title: string }) {
           title={title}
         />
         <UxHubPage pageId="070" />
-        <ProofStrip />
+        <ReadinessStrip />
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <MetricCard detail="High-risk packages waiting for committee votes." label="Pending review" status="PENDING" value={String(pendingCount)} />
           <MetricCard detail="Open dissent blocks downstream release." label="Dissent open" status={dissentCount > 0 ? "FAILED" : "COMPLETED"} value={String(dissentCount)} />
@@ -312,7 +312,7 @@ function DetailPage({ title }: { title: string }) {
           eyebrow="Phase E · E-04"
           title={title}
         />
-        <Phase6DecisionRoomPanel audit="Committee audit must record votes, dissent state, evidence state and cancel or confirm outcome." blocker="Committee approval remains blocked until all votes are present, dissent is resolved and evidence is complete." cancelLabel="Cancel committee decision" confirmLabel="Confirm committee approval" decisionLabel="Committee review decision room" evidence="Vote coverage, dissent items and linked evidence labels are visible before decision." preconditions="All votes must be present, dissent must be resolved, evidence must be complete and compliance downstream gate acknowledged." safetyNote="No release, export or advice effect can occur without gate preconditions and audit proof." taskId="UX-DECISION-ROOM-004" />
+        <Phase6DecisionRoomPanel audit="Committee audit must record votes, dissent state, evidence state and cancel or confirm outcome." blocker="Committee approval remains blocked until all votes are present, dissent is resolved and evidence is complete." cancelLabel="Cancel committee decision" confirmLabel="Confirm committee approval" decisionLabel="Committee review decision room" evidence="Vote coverage, dissent items and linked evidence labels are visible before decision." preconditions="All votes must be present, dissent must be resolved, evidence must be complete and compliance downstream gate acknowledged." safetyNote="No release, export or advice effect can occur until gate preconditions pass and audit is recorded." taskId="UX-DECISION-ROOM-004" />
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <MetricCard detail={selectedCommitteeReview.advisorApproval} label="Advisor gate" status="COMPLETED" value="Approved" />
           <MetricCard detail="Three peer votes required for this high-risk package." label="Votes" status="PENDING" value={`${voteProgress}/3`} />
@@ -435,7 +435,7 @@ function DetailPage({ title }: { title: string }) {
             <StatePanel
               detail="Advisor approved, but committee_approval and committee_dissent_resolved are still missing."
               state="restricted"
-              title="Committee gate proof"
+              title="Committee gate"
             />
             <Card>
               <CardHeader>

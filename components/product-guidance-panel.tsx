@@ -5,8 +5,6 @@ import { ArrowRight, Compass, LockKeyhole, RotateCcw, ShieldCheck } from "lucide
 import { usePathname } from "next/navigation";
 import { useDemoSession } from "@/components/demo-session-provider";
 import { UxSupportDensityStrip } from "@/components/ux-support-density-strip";
-import { UxDensityProofPanel } from "@/components/ui/card";
-import { Phase8CtaStateProofPanel } from "@/components/ui/state-panel";
 import { WizardStepper } from "@/components/ui/wizard-stepper";
 import { cn } from "@/lib/cn";
 import { uxDensityTierContracts } from "@/lib/ux-density";
@@ -96,6 +94,7 @@ export function ProductGuidancePanel() {
       data-ux-density-tier={density?.tier}
       data-testid="product-guidance"
       data-ux-content-tier="must-see"
+      data-ux-phase9-task={phase9TaskId}
     >
       <div className="grid gap-3 md:gap-4 xl:grid-cols-[minmax(0,1fr)_auto]">
         <div className="min-w-0">
@@ -131,7 +130,7 @@ export function ProductGuidancePanel() {
             <div className="rounded-md border border-alphavest-gold/25 bg-alphavest-gold/10 p-2.5 md:p-3" data-testid="ux-nav-gate-guidance">
               <div className="flex items-center gap-2 text-sm font-semibold text-alphavest-gold-soft">
                 <LockKeyhole aria-hidden="true" className="size-4" />
-                Current gate
+                Review status
               </div>
               <p className="mt-1 text-sm leading-5 text-alphavest-muted md:mt-2 md:leading-6">{guidance.gateHint}</p>
             </div>
@@ -155,15 +154,15 @@ export function ProductGuidancePanel() {
               data-ux-density-tier={density?.tier}
             >
               <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/40 p-3" data-testid="ux-page-queue">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Priority Queue</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Priority work</p>
                 <p className="mt-2 text-sm leading-6 text-alphavest-muted">{guidance.workbenchStructure.queue}</p>
               </div>
               <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/40 p-3" data-testid="ux-page-selected-context">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Selected Context</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Context</p>
                 <p className="mt-2 text-sm leading-6 text-alphavest-muted">{guidance.workbenchStructure.context}</p>
               </div>
               <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3" data-testid="ux-page-action-rail">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold-soft">Action Rail</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold-soft">Next work</p>
                 <p className="mt-2 text-sm leading-6 text-alphavest-muted">{guidance.workbenchStructure.actionRail}</p>
                 <p className="mt-2 text-xs leading-5 text-alphavest-gold-soft">{guidance.workbenchStructure.safety}</p>
               </div>
@@ -180,9 +179,13 @@ export function ProductGuidancePanel() {
             data-testid="ux-nav-next-actions"
             data-ux-content-tier="must-see"
             data-ux-cta-state={guidance.ctaState.state}
+            data-ux-phase8-blocked-reason={guidance.ctaState.blockedReason ?? undefined}
+            data-ux-phase8-primary-label={primaryAction?.label ?? undefined}
+            data-ux-phase8-recovery-label={recoveryAction?.label ?? undefined}
+            data-ux-phase8-task={phase8TaskId}
           >
             <span className="w-fit rounded-md border border-alphavest-border bg-alphavest-charcoal/55 px-3 py-1 text-xs font-semibold text-alphavest-muted">
-              Guidance next step
+              Next step
             </span>
             {primaryAction ? <GuidanceLink link={primaryAction} variant="primary" /> : null}
             {guidance.nextStep && guidance.nextStep.href !== primaryAction?.href ? (
@@ -204,24 +207,6 @@ export function ProductGuidancePanel() {
                   </Link>
                 ) : null}
               </div>
-            ) : null}
-            <Phase8CtaStateProofPanel
-              blockedReason={guidance.ctaState.blockedReason ?? "Route is locked until the required gate is resolved."}
-              primaryLabel={primaryAction?.label}
-              recoveryLabel={recoveryAction?.label}
-              taskId={phase8TaskId}
-            />
-            {density ? (
-              <UxDensityProofPanel
-                densityTier={density.tier}
-                hierarchy={density.hierarchy}
-                nextStepLabel={guidance.nextStep?.label ?? primaryAction?.label}
-                pageJob={guidance.shortTitle}
-                pattern={density.pattern}
-                safetyRetention={density.safetyRetention}
-                statusLabel={guidance.tierLabel}
-                taskId={phase9TaskId}
-              />
             ) : null}
           </div>
         ) : null}

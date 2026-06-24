@@ -33,7 +33,7 @@ export type UxPageContract = {
 
 const pageTypeJobs: Record<UxPageType, string> = {
   Detail: "Show one object's facts, evidence or timeline context, and the gated next action without turning the page into a global queue.",
-  Drawer: "Expose secondary context only; drawers do not become independent workflows or gate proof.",
+  Drawer: "Expose secondary context only; drawers do not become independent workflows or completion gates.",
   Hold: "Explain the hold state and keep the route blocked until a later explicit scope unlock.",
   Hub: "Orient, prioritize, and route to the next eligible work surface without carrying a complete workflow.",
   Modal: "Resolve one scoped confirmation, validation, or recovery step without silently advancing downstream gates.",
@@ -49,7 +49,7 @@ function allowedTreatmentForContract(pageType: UxPageType, routeScope: RouteScop
   if (pageType === "Hub") return "Summary, priority signal, and safe next-work handoff.";
   if (pageType === "Detail") return "Object header, key facts, evidence/timeline, and gated action rail.";
   if (pageType === "Modal") return "One explicit confirmation, validation, or recovery path with cancel/blocked feedback.";
-  return "Page job, status/gate context, and one primary next step aligned to route policy.";
+  return "Focus, status context, and one primary next step aligned to route policy.";
 }
 
 function forbiddenTreatmentForContract(pageType: UxPageType, routeScope: RouteScopeLabel) {
@@ -57,7 +57,7 @@ function forbiddenTreatmentForContract(pageType: UxPageType, routeScope: RouteSc
   if (routeScope === "REFERENCE_ONLY") return "No productive workflow, no product CTA, and no client payload.";
   if (routeScope === "HOLD_PENDING_DECISION") return "No MVP implementation, no visual generation, no scope unlock, and no safety finalization.";
   if (pageType === "Hub") return "No full workflow, final release, export approval, download, share, or client acceptance action on the hub.";
-  if (pageType === "Detail") return "No unrelated global queue, hidden prerequisites, payload expansion, or gate proof from visible status alone.";
+  if (pageType === "Detail") return "No unrelated global queue, hidden prerequisites, payload expansion, or completion from visible status alone.";
   return "No route creation, route reclassification, screen generation, state-screen generation, or downstream gate overclaim.";
 }
 

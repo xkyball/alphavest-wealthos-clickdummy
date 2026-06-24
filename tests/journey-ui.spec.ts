@@ -50,11 +50,11 @@ test.describe("Wave 0-2 Journey-first UI", () => {
     await exportJourney.getByRole("link", { name: /open detail/i }).click();
 
     await expect(page.getByTestId("journey-detail")).toBeVisible();
-    await expect(page.getByRole("heading", { name: /Stage and step rail/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Progress" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Evidence requirements" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Audit spine" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Client projection preview" })).toBeVisible();
-    await expect(page.getByText("Journey state is not release proof", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("Journey state is orientation only", { exact: true }).first()).toBeVisible();
 
     await page.screenshot({
       fullPage: true,

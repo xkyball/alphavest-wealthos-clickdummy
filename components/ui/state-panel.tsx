@@ -1,7 +1,6 @@
 import { AlertTriangle, Ban, CheckCircle2, EyeOff, FileSearch, LoaderCircle, ShieldAlert } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { noOverclaimCopy } from "@/lib/no-overclaim-copy";
 
 export type ComponentState =
   | "audit-unavailable"
@@ -63,45 +62,5 @@ export function StatePanel({ className, detail, state, testId, title }: StatePan
       </div>
       <p className="mt-2 text-sm leading-6 text-alphavest-muted">{detail}</p>
     </div>
-  );
-}
-
-
-type Phase8CtaStateProofPanelProps = {
-  blockedReason: string;
-  primaryLabel?: string;
-  recoveryLabel?: string;
-  taskId: string;
-};
-
-export function Phase8CtaStateProofPanel({ blockedReason, primaryLabel, recoveryLabel, taskId }: Phase8CtaStateProofPanelProps) {
-  return (
-    <section
-      className="rounded-md border border-alphavest-blue/35 bg-alphavest-blue/10 p-3"
-      data-testid="ux-phase8-cta-state"
-      data-ux-phase8-task={taskId}
-    >
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-blue">Next action state</p>
-      <div className="mt-3 grid gap-2">
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2" data-testid="ux-phase8-primary-count">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Next action</p>
-          <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{primaryLabel ?? "Locked until the required gate is resolved"}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-2" data-testid="ux-phase8-blocked-reason">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-gold">Blocked reason</p>
-          <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{blockedReason}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2" data-testid="ux-phase8-recovery">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Recovery</p>
-          <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{recoveryLabel ?? "Recover by resolving the stated gate before continuing."}</p>
-        </div>
-        <StatePanel
-          detail={noOverclaimCopy.noDownstreamCompletion}
-          state="restricted"
-          testId="ux-phase8-no-overclaim"
-          title="No downstream completion"
-        />
-      </div>
-    </section>
   );
 }

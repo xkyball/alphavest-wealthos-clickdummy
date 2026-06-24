@@ -76,7 +76,7 @@ export function AuditTimeline({
       className="relative space-y-4 border-l border-alphavest-border pl-5"
       data-testid="ux-phase5-audit-timeline"
       data-ux-affordance="static-audit-timeline"
-      data-ux-audit-proof={timelineSourceState(items) === "source-backed" ? "persisted-source-backed" : "not-persistence-proof"}
+      data-ux-audit-source={timelineSourceState(items) === "source-backed" ? "source-backed" : "display-only"}
       data-ux-audit-source-state={timelineSourceState(items)}
       data-ux-interactive="false"
       data-ux-phase5-task="UX-DETAIL-005"
@@ -93,7 +93,7 @@ export function AuditTimeline({
           <li
             className="relative"
             data-ux-affordance="static-timeline-item"
-            data-ux-audit-proof={sourceState === "source-backed" ? "persisted-source-backed" : "not-persistence-proof"}
+            data-ux-audit-source={sourceState === "source-backed" ? "source-backed" : "display-only"}
             data-ux-audit-source-ref={item.sourceRef}
             data-ux-audit-source-state={sourceState}
             data-ux-interactive="false"

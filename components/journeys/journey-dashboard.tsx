@@ -42,7 +42,7 @@ function JourneyCard({ journey }: { journey: JourneyListItem }) {
         </div>
         <StatusChip
           label={blocked ? "Blocked or gated" : undefined}
-          sourceDescription="Journey status is an operational orientation only, not proof of gate completion."
+          sourceDescription="Journey status is an operational orientation only, not a completion gate."
           status={statusForJourney(journey.status)}
         />
       </div>
@@ -201,7 +201,7 @@ export function JourneyDashboard() {
         eyebrow="Wave 0-2 Journey-first"
         recoveryAction={{ label: "Refresh", onClick: refresh }}
         status={error ? "FAILED" : loading ? "PROCESSING" : "ACTIVE"}
-        statusLabel="Journey status is orientation, not release proof"
+        statusLabel="Journey status is orientation only"
         title="Journey Dashboard"
       />
 

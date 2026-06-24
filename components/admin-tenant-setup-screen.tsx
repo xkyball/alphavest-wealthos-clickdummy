@@ -384,7 +384,7 @@ function PlatformSettingsPage({ onConfirm, route }: { onConfirm: () => void; rou
         {platformSettings.auditBanner}. Changes require approval and are logged for compliance.
       </AuditBanner>
       <ScfP07P09TrustPanel mode="governance" />
-      <ScfP10P14ClosurePanel mode="proof" />
+      <ScfP10P14ClosurePanel mode="handoff" />
       <ReleaseScopeControlPanel />
       <section className="grid gap-5 xl:grid-cols-[1fr_0.85fr]">
         <Card>

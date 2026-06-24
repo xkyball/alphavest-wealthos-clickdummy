@@ -49,7 +49,7 @@ const statusMeta: Record<StatusChipStatus, { icon: LucideIcon; label: string; to
   UNKNOWN: { icon: AlertTriangle, label: "Unknown", tone: "muted" }
 };
 
-export function StatusChip({ className, label, sourceDescription = "Status chip is a visual summary, not gate proof.", status }: StatusChipProps) {
+export function StatusChip({ className, label, sourceDescription = "Status chip is a visual summary, not a completion gate.", status }: StatusChipProps) {
   const meta = statusMeta[status];
   const Icon = meta.icon;
   const visibleLabel = label ?? meta.label;
@@ -58,7 +58,7 @@ export function StatusChip({ className, label, sourceDescription = "Status chip 
     <Badge
       ariaLabel={`Status: ${visibleLabel}. ${sourceDescription}`}
       className={cn("gap-1.5", className)}
-      data-ux-gate-proof="false"
+      data-ux-completion-gate="false"
       data-ux-state-source={sourceDescription}
       tone={meta.tone}
     >

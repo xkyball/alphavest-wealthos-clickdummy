@@ -151,7 +151,7 @@ function AuditPanel({ audit }: { audit: JourneyAuditResponse | null }) {
     <section className="rounded-md border border-alphavest-border bg-alphavest-panel/72 p-4">
       <h2 className="font-display text-xl text-alphavest-ivory">Audit spine</h2>
       <p className="mt-2 text-xs leading-5 text-alphavest-muted">
-        Sensitive commands create audit evidence. Absence of an event means no command proof is being claimed here.
+        Sensitive commands create audit evidence. Absence of an event means no command completion is being claimed here.
       </p>
       <div className="mt-4 space-y-3">
         {events.length > 0 ? (
@@ -358,17 +358,18 @@ export function JourneyDetail({ journeyId }: { journeyId: string }) {
   }
 
   const blocked = detail.status === "BLOCKED" || nextAction?.type === "RESOLVE_BLOCKER" || nextAction?.type === "BLOCKED";
+  const projectionViewLabel = detail.projectionType === "client" ? "Client workspace" : "Team workspace";
 
   return (
     <div className="space-y-6" data-testid="journey-detail">
       <PageHeader
         blockedReason={blocked ? projection.blockerReason ?? nextAction?.detail : undefined}
         description="Inspect the operational stage, actor-owned step, requirements, audit spine and client-safe projection before taking any command."
-        eyebrow={`${detail.journeyKey} · ${detail.projectionType} projection`}
+        eyebrow={`${detail.journeyKey} · ${projectionViewLabel}`}
         primaryAction={{ href: "/journeys", label: "Back to dashboard" }}
         recoveryAction={{ label: "Refresh", onClick: load }}
         status={statusForJourney(detail.status)}
-        statusLabel="Journey state is not release proof"
+        statusLabel="Journey state is orientation only"
         title={projection.title}
       />
 
@@ -400,15 +401,15 @@ export function JourneyDetail({ journeyId }: { journeyId: string }) {
         <section className="rounded-md border border-alphavest-border bg-alphavest-panel/72 p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h2 className="font-display text-2xl text-alphavest-ivory">Stage and step rail</h2>
+              <h2 className="font-display text-2xl text-alphavest-ivory">Progress</h2>
               <p className="mt-2 text-xs leading-5 text-alphavest-muted">
-                Current stage: {projection.currentStageKey ?? "not started"} · Current step:{" "}
+                Stage: {projection.currentStageKey ?? "not started"} · Step:{" "}
                 {projection.currentStepKey ?? projection.currentStepTitle ?? "client-safe status"}
               </p>
             </div>
             <StatusChip
               label={blocked ? "Blocked or gated" : undefined}
-              sourceDescription="Journey detail status is orientation only, not gate proof."
+              sourceDescription="Journey detail status is orientation only, not a completion gate."
               status={statusForJourney(detail.status)}
             />
           </div>
@@ -419,7 +420,7 @@ export function JourneyDetail({ journeyId }: { journeyId: string }) {
 
         <aside className="space-y-4">
           <section className="rounded-md border border-alphavest-border bg-alphavest-panel/72 p-4">
-            <h2 className="font-display text-xl text-alphavest-ivory">Command guard</h2>
+            <h2 className="font-display text-xl text-alphavest-ivory">Available action</h2>
             <p className="mt-2 text-xs leading-5 text-alphavest-muted">
               Only API-supported commands are exposed. Permission denial leaves state unchanged.
             </p>
