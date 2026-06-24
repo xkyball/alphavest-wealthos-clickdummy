@@ -47,6 +47,24 @@ type AuthOnboardingScreenProps = {
   pageId: AuthOnboardingPageId;
 };
 
+type AuthProviderOption = {
+  id: string;
+  label: string;
+  mode: string;
+  mfa: string;
+  productionIdp: boolean;
+};
+
+const fallbackAuthProviders: AuthProviderOption[] = [
+  {
+    id: "db-user-jwt",
+    label: "DB user JWT",
+    mode: "MVP_LOCAL_DB",
+    mfa: "stub-123456",
+    productionIdp: false,
+  },
+];
+
 const iconMap: Record<AuthIconName, LucideIcon> = {
   audit: ClipboardCheck,
   building: Building2,
@@ -204,15 +222,38 @@ function PageStepper({ pageId }: { pageId: AuthOnboardingPageId }) {
 
 function LoginPage() {
   const [email, setEmail] = useState(invitedUser.email);
+  const [providers, setProviders] = useState<AuthProviderOption[]>(fallbackAuthProviders);
+  const [providerId, setProviderId] = useState(fallbackAuthProviders[0].id);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState("Access check verifies users and role assignments before continuing.");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadProviders() {
+      const response = await fetch("/api/auth/providers");
+      const body = (await response.json()) as { providers?: AuthProviderOption[] };
+      const nextProviders = body.providers?.length ? body.providers : fallbackAuthProviders;
+
+      if (!cancelled) {
+        setProviders(nextProviders);
+        setProviderId(nextProviders[0].id);
+      }
+    }
+
+    void loadProviders().catch(() => undefined);
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function startLogin() {
     setStatus("submitting");
     setMessage("Checking user access...");
 
-    const response = await fetch("/api/auth/dummy", {
-      body: JSON.stringify({ action: "start_login", email }),
+    const response = await fetch("/api/auth/provider-login", {
+      body: JSON.stringify({ email, providerId }),
       headers: { "content-type": "application/json" },
       method: "POST",
     });
@@ -228,9 +269,10 @@ function LoginPage() {
       email,
       inviteToken: body.user?.inviteToken,
       nextStep: body.nextStep,
+      providerId,
     });
     setStatus("success");
-    setMessage(body.nextStep === "mfa_required" ? "DB user found. MFA challenge created." : "Invitation found. Continue onboarding.");
+    setMessage(body.nextStep === "mfa_required" ? "DB user found. DB-JWT MFA challenge created." : "Invitation found. Continue onboarding.");
     window.location.href = body.nextStep === "mfa_required" ? "/mfa" : "/onboarding/invite";
   }
 
@@ -258,6 +300,27 @@ function LoginPage() {
                   onChange={(event) => setEmail(event.target.value)}
                   value={email}
                 />
+              </span>
+            </label>
+            <label className="block">
+              <span className="text-sm font-semibold text-alphavest-ivory">Auth provider</span>
+              <span className="mt-2 flex h-[var(--field-height)] items-center gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-4 text-sm text-alphavest-muted">
+                <Database aria-hidden="true" className="size-4 shrink-0 text-alphavest-gold-soft" />
+                <select
+                  aria-label="Auth provider"
+                  className="min-w-0 flex-1 bg-transparent text-alphavest-ivory outline-none"
+                  onChange={(event) => setProviderId(event.target.value)}
+                  value={providerId}
+                >
+                  {providers.map((provider) => (
+                    <option className="bg-alphavest-navy text-alphavest-ivory" key={provider.id} value={provider.id}>
+                      {provider.label}
+                    </option>
+                  ))}
+                </select>
+              </span>
+              <span className="mt-2 block text-xs text-alphavest-muted">
+                MVP provider checks the user in the DB, uses MFA code 123456 and issues a scoped JWT.
               </span>
             </label>
             <FieldShell actionIcon={<Eye aria-hidden="true" className="size-4 text-alphavest-muted" />} icon="lock" label="Password" value="demo-password" />
@@ -302,20 +365,23 @@ function LoginPage() {
 
 function MfaPage() {
   const [email, setEmail] = useState(invitedUser.email);
+  const [providerId, setProviderId] = useState(fallbackAuthProviders[0].id);
   const [code, setCode] = useState("123456");
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
-  const [message, setMessage] = useState("Use code 123456. Verification records an audit event.");
+  const [message, setMessage] = useState("Use code 123456. Verification records an audit event and issues a scoped JWT.");
 
   useEffect(() => {
     queueMicrotask(() => {
-      setEmail(readDemoAuthStorage(invitedUser.email).email);
+      const stored = readDemoAuthStorage(invitedUser.email);
+      setEmail(stored.email);
+      setProviderId(stored.providerId ?? fallbackAuthProviders[0].id);
     });
   }, []);
 
   async function verifyMfa() {
     setStatus("submitting");
-    const response = await fetch("/api/auth/dummy", {
-      body: JSON.stringify({ action: "verify_mfa", code, email }),
+    const response = await fetch("/api/auth/mfa/verify", {
+      body: JSON.stringify({ code, email, providerId }),
       headers: { "content-type": "application/json" },
       method: "POST",
     });
@@ -328,7 +394,7 @@ function MfaPage() {
     }
 
     setStatus("success");
-    setMessage("MFA verified. Session context has been issued from DB role and tenant scope.");
+    setMessage("MFA verified. DB-JWT session context has been issued from DB role and tenant scope.");
     window.location.href = "/client/home";
   }
 

@@ -4,6 +4,7 @@ export type DemoAuthStorage = {
   email: string;
   inviteToken?: string;
   nextStep?: string;
+  providerId?: string;
 };
 
 export type DemoAuthResponse = {

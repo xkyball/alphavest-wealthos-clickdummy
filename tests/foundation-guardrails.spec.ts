@@ -4,6 +4,12 @@ import path from "node:path";
 import { expect, test } from "@playwright/test";
 
 import { routeWorksetIntegrity } from "../lib/route-registry";
+import {
+  assertWave02JourneyExecutable,
+  wave02BlockedJourneys,
+  wave02HoldRouteAssertions,
+  wave02SourceLock,
+} from "../lib/source-lock/wave0-2-source-lock";
 
 const handoffRoot = "_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED";
 
@@ -23,16 +29,18 @@ function apiRouteFiles(relativePath: string) {
 test.describe("Phase 01 foundation guardrails", () => {
   test("keeps the operative source hierarchy and patched changelog explicit", () => {
     const sourceOrder = fileText(`${handoffRoot}/01_OPERATIVE_AUTHORITY/SOURCE_OF_TRUTH_ORDER.md`);
-    const phasePrompt = fileText(`${handoffRoot}/04_CODEX_PHASE_PROMPTS/01_PHASE_FOUNDATION_GUARDRAILS_PROMPT.md`);
     const patchChangelog = fileText(`${handoffRoot}/00_START_HERE/V2_1_PATCH_CHANGELOG.md`);
+    const trueUxHandoff = fileText("ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md");
 
     expect(sourceOrder.indexOf("FINAL_CODEX_IMPLEMENTATION_HANDOFF.md")).toBeLessThan(
       sourceOrder.indexOf("FINAL_CODEX_TASK_MASTER.md"),
     );
     expect(sourceOrder).toContain("Safety contracts remain binding below the operative authority.");
-    expect(phasePrompt).toContain("AV-SLICE-FND-01..05");
     expect(patchChangelog).toContain("v2.1 is not a new product handoff");
     expect(patchChangelog).toContain("No Codex product decisions.");
+    expect(trueUxHandoff).toContain("ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF");
+    expect(trueUxHandoff).toContain("MANDATORY_BEFORE_ANY_CODE_CHANGE");
+    expect(trueUxHandoff).toContain("TRUE_UX_CODEX_TASK_PACK_APPLIED");
   });
 
   test("preserves no-main, no-generation, no-new-api and no-schema-replacement stop rules", () => {
@@ -66,6 +74,11 @@ test.describe("Phase 01 foundation guardrails", () => {
       "app/api/admin-tenants/route.ts",
       "app/api/audit-events/route.ts",
       "app/api/auth/dummy/route.ts",
+      "app/api/auth/logout/route.ts",
+      "app/api/auth/mfa/verify/route.ts",
+      "app/api/auth/provider-login/route.ts",
+      "app/api/auth/providers/route.ts",
+      "app/api/current-user/route.ts",
       "app/api/dashboard-metrics/route.ts",
       "app/api/demo-workflow/route.ts",
       "app/api/documents/review/route.ts",
@@ -92,13 +105,43 @@ test.describe("Phase 01 foundation guardrails", () => {
     expect(taskMaster).toContain("Do not create explicit models unless final handoff resolves need");
   });
 
+  test("keeps Wave 0-2 source lock and hold journeys machine-readable", () => {
+    expect(wave02SourceLock.targetBranch).toBe("full-workflow");
+    expect(wave02SourceLock.forbiddenTargetTruth).toContain("main");
+    expect(wave02SourceLock.noGenerationRules).toEqual([
+      "NO_SCREEN_GENERATION",
+      "NO_STATE_SCREEN_GENERATION",
+      "NO_IMAGE_GENERATION",
+    ]);
+
+    expect(wave02BlockedJourneys.map((journey) => journey.journeyId)).toEqual(["MJ-004", "MJ-007"]);
+    expect(() => assertWave02JourneyExecutable("MJ-004")).toThrow(/blocked by Wave 0-2 source lock/);
+    expect(() => assertWave02JourneyExecutable("MJ-007")).toThrow(/blocked by Wave 0-2 source lock/);
+    expect(() => assertWave02JourneyExecutable("MJ-001")).not.toThrow();
+
+    expect(wave02HoldRouteAssertions()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          pageId: "064",
+          routeScope: "HOLD_PENDING_DECISION",
+          access: expect.objectContaining({ implementationShellAccessible: false }),
+        }),
+        expect.objectContaining({
+          pageId: "071",
+          routeScope: "HOLD_PENDING_DECISION",
+          access: expect.objectContaining({ implementationShellAccessible: false }),
+        }),
+      ]),
+    );
+  });
+
   test("keeps P0 and UI lifecycle proof language bounded", () => {
     const finalHandoff = fileText(`${handoffRoot}/01_OPERATIVE_AUTHORITY/FINAL_CODEX_IMPLEMENTATION_HANDOFF.md`);
-    const phasePrompt = fileText(`${handoffRoot}/04_CODEX_PHASE_PROMPTS/01_PHASE_FOUNDATION_GUARDRAILS_PROMPT.md`);
+    const interactionPatch = fileText(`${handoffRoot}/04_CODEX_PHASE_PROMPTS/03_04_05_UI_INTERACTION_REALITY_REMEDIATION_PATCH.md`);
 
     expect(finalHandoff).toContain("Existing tests partial; missing tests specified");
     expect(finalHandoff).toContain("visible drawers/modals prove lifecycle behaviour");
-    expect(phasePrompt).toContain("Do not claim P0 is passed");
-    expect(phasePrompt).toContain("Do not treat visible UI as implemented behaviour.");
+    expect(interactionPatch).toContain("claim existing tests prove full P0 safety");
+    expect(interactionPatch).toContain("treat visible UI as lifecycle proof");
   });
 });
