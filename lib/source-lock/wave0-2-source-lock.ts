@@ -1,4 +1,4 @@
-import { routeImplementationAccessDecision, routeScopeForPageId } from "@/lib/route-registry";
+import { routeImplementationAccessDecision, routeScopeForPageId } from "../route-registry";
 
 export const wave02SourceLock = {
   acceptedSource: "ALPHAVEST_JOURNEY_FIRST_BOC_CTES_TICKET_ARCHITECT_OUTPUT_WAVE_0_2",

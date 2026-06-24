@@ -35,8 +35,8 @@ export const phase0LockedApiRoutes = [
 ] as const;
 
 export const phase0LockedPrismaShape = {
-  enumCount: 22,
-  modelCount: 42,
+  enumCount: 26,
+  modelCount: 48,
 } as const;
 
 export const phase0P0GateLabels = [

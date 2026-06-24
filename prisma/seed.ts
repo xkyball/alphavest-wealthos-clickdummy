@@ -16,6 +16,10 @@ import {
   EvidenceStatus,
   ExportStatus,
   ExportType,
+  JourneyDefinitionStatus as PrismaJourneyDefinitionStatus,
+  JourneyInstanceStatus as PrismaJourneyInstanceStatus,
+  JourneyObjectLinkRole as PrismaJourneyObjectLinkRole,
+  JourneyStepStatus as PrismaJourneyStepStatus,
   ObjectType,
   PermissionAction,
   Prisma,
@@ -29,6 +33,8 @@ import {
   VisibilityStatus,
   WorkflowStatus,
 } from "@prisma/client";
+
+import { activeJourneyDefinitions, journeyRegistry } from "../lib/journeys/journey-registry";
 
 const connectionString = process.env.DATABASE_URL;
 const appEnv = process.env.APP_ENV ?? "local";
@@ -249,6 +255,17 @@ const permissions = [
     action: PermissionAction.VIEW,
   },
   {
+    key: "journeys.view",
+    objectType: ObjectType.JOURNEY,
+    action: PermissionAction.VIEW,
+  },
+  {
+    key: "journeys.manage",
+    objectType: ObjectType.JOURNEY,
+    action: PermissionAction.MANAGE,
+    requiresAudit: true,
+  },
+  {
     key: "access.assign",
     objectType: ObjectType.PERMISSION,
     action: PermissionAction.ASSIGN,
@@ -258,18 +275,19 @@ const permissions = [
 ] as const;
 
 const rolePermissionKeys: Record<string, string[]> = {
-  principal: ["decisions.view", "decisions.comment", "documents.upload", "evidence.view", "exports.create"],
-  family_cfo: ["documents.upload", "documents.review", "decisions.view", "evidence.view", "exports.create"],
-  trustee: ["decisions.view", "decisions.comment", "evidence.view"],
-  next_gen: ["decisions.view", "evidence.view"],
+  principal: ["decisions.view", "decisions.comment", "documents.upload", "evidence.view", "exports.create", "journeys.view"],
+  family_cfo: ["documents.upload", "documents.review", "decisions.view", "evidence.view", "exports.create", "journeys.view"],
+  trustee: ["decisions.view", "decisions.comment", "evidence.view", "journeys.view"],
+  next_gen: ["decisions.view", "evidence.view", "journeys.view"],
   external_advisor: ["documents.upload", "documents.review", "evidence.view"],
-  analyst: ["documents.review", "triggers.review", "evidence.view", "audit.view"],
+  analyst: ["documents.review", "triggers.review", "evidence.view", "audit.view", "journeys.manage"],
   senior_wealth_advisor: [
     "documents.review",
     "triggers.review",
     "recommendations.approve",
     "evidence.view",
     "exports.create",
+    "journeys.manage",
   ],
   compliance_officer: [
     "recommendations.release",
@@ -277,10 +295,11 @@ const rolePermissionKeys: Record<string, string[]> = {
     "audit.view",
     "evidence.view",
     "access.assign",
+    "journeys.manage",
   ],
-  client_success: ["tenants.manage", "users.invite", "documents.review", "evidence.view"],
+  client_success: ["tenants.manage", "users.invite", "documents.review", "evidence.view", "journeys.manage"],
   admin: permissions.map((permission) => permission.key),
-  security_officer: ["platform.manage", "roles.manage", "access.assign", "audit.view", "exports.approve"],
+  security_officer: ["platform.manage", "roles.manage", "access.assign", "audit.view", "exports.approve", "journeys.manage"],
 };
 
 const internalUsers = [
@@ -464,8 +483,22 @@ function evidenceRecordId(slug: string) {
   return stableId(`evidence:${slug}:decision-pack`);
 }
 
+function journeyDefinitionId(journeyKey: string) {
+  return stableId(`journey-definition:${journeyKey}`);
+}
+
+function journeyInstanceId(slug: string, journeyKey: string) {
+  return stableId(`journey-instance:${slug}:${journeyKey}`);
+}
+
 async function clearDemoData() {
   await prisma.$transaction([
+    prisma.journeyCommandRun.deleteMany(),
+    prisma.journeyObjectLink.deleteMany(),
+    prisma.journeyStepInstance.deleteMany(),
+    prisma.journeyInstance.deleteMany(),
+    prisma.journeyEvidenceRequirement.deleteMany(),
+    prisma.journeyDefinition.deleteMany(),
     prisma.message.deleteMany(),
     prisma.messageThread.deleteMany(),
     prisma.callEvent.deleteMany(),
@@ -1896,6 +1929,168 @@ async function seedEvidenceCommunicationAndOps() {
   });
 }
 
+async function seedJourneys() {
+  await prisma.journeyDefinition.createMany({
+    data: journeyRegistry.map((definition) => ({
+      id: journeyDefinitionId(definition.journeyKey),
+      journeyKey: definition.journeyKey,
+      title: definition.title,
+      description: definition.description,
+      wave: definition.wave,
+      status: definition.status as PrismaJourneyDefinitionStatus,
+      holdReason: definition.holdReason ?? null,
+      routePageIds: definition.routePageIds,
+      actorRoleKeys: definition.actorRoleKeys,
+      metadataJson: {
+        foundationIds: definition.foundationIds,
+        source: "ALPHAVEST_JOURNEY_FIRST_BOC_CTES_TICKET_ARCHITECT_OUTPUT_WAVE_0_2",
+        executableInWave02: definition.status === "ACTIVE",
+      },
+      createdAt: seedDate,
+      updatedAt: seedDate,
+    })),
+  });
+
+  await prisma.journeyEvidenceRequirement.createMany({
+    data: activeJourneyDefinitions.flatMap((definition) =>
+      definition.evidenceRequirements.map((requirement) => ({
+        id: stableId(`journey-evidence-requirement:${definition.journeyKey}:${requirement.key}`),
+        journeyDefinitionId: journeyDefinitionId(definition.journeyKey),
+        requirementKey: requirement.key,
+        title: requirement.title,
+        requiredObjectType: requirement.requiredObjectType as ObjectType,
+        requiredForStepKey: requirement.requiredForStepKey,
+        minEvidenceStatus: requirement.minEvidenceStatus as EvidenceStatus,
+        metadataJson: {
+          wave: definition.wave,
+          journeyKey: definition.journeyKey,
+        },
+        createdAt: seedDate,
+      }))
+    ),
+  });
+
+  const seededTenantSlug = "bennett";
+
+  await prisma.journeyInstance.createMany({
+    data: activeJourneyDefinitions.map((definition) => {
+      const firstStep = definition.steps[0];
+
+      return {
+        id: journeyInstanceId(seededTenantSlug, definition.journeyKey),
+        definitionId: journeyDefinitionId(definition.journeyKey),
+        clientTenantId: tenantId(seededTenantSlug),
+        ownerUserId: userId("success"),
+        status: PrismaJourneyInstanceStatus.ACTIVE,
+        currentStepKey: firstStep?.key ?? null,
+        currentStageKey: firstStep?.stageKey ?? null,
+        metadataJson: {
+          demoSeed: true,
+          noClientVisibilityClaim: true,
+        },
+        startedAt: date(-2),
+        createdAt: seedDate,
+        updatedAt: seedDate,
+      };
+    }),
+  });
+
+  await prisma.journeyStepInstance.createMany({
+    data: activeJourneyDefinitions.flatMap((definition) =>
+      definition.steps.map((step, index) => ({
+        id: stableId(`journey-step-instance:${seededTenantSlug}:${definition.journeyKey}:${step.key}`),
+        journeyInstanceId: journeyInstanceId(seededTenantSlug, definition.journeyKey),
+        stepKey: step.key,
+        stageKey: step.stageKey,
+        title: step.title,
+        actorRoleKey: step.actorRoleKey,
+        status: index === 0 ? PrismaJourneyStepStatus.ACTIVE : PrismaJourneyStepStatus.LOCKED,
+        sortOrder: step.sortOrder,
+        startedAt: index === 0 ? date(-2) : null,
+        metadataJson: {
+          clientVisible: Boolean(step.clientVisible),
+          requiresAudit: Boolean(step.requiresAudit),
+          requiresEvidence: Boolean(step.requiresEvidence),
+        },
+        createdAt: seedDate,
+        updatedAt: seedDate,
+      }))
+    ),
+  });
+
+  await prisma.journeyObjectLink.createMany({
+    data: activeJourneyDefinitions.flatMap((definition) => {
+      const baseLinks = [
+        {
+          objectType: ObjectType.TENANT,
+          objectId: tenantId(seededTenantSlug),
+          linkRole: PrismaJourneyObjectLinkRole.PRIMARY_CONTEXT,
+          title: "Bennett Family Office",
+        },
+        {
+          objectType: ObjectType.RECOMMENDATION,
+          objectId: recommendationId(seededTenantSlug),
+          linkRole: PrismaJourneyObjectLinkRole.RECOMMENDATION,
+          title: "Liquidity governance recommendation",
+        },
+        {
+          objectType: ObjectType.DECISION,
+          objectId: decisionId(seededTenantSlug),
+          linkRole: PrismaJourneyObjectLinkRole.DECISION,
+          title: "Liquidity decision",
+        },
+        {
+          objectType: ObjectType.EVIDENCE_RECORD,
+          objectId: evidenceRecordId(seededTenantSlug),
+          linkRole: PrismaJourneyObjectLinkRole.SUPPORTING_EVIDENCE,
+          title: "Liquidity decision evidence",
+        },
+      ];
+      const exportLink =
+        definition.journeyKey === "MJ-005"
+          ? [
+              {
+                objectType: ObjectType.EXPORT_REQUEST,
+                objectId: stableId(`export:${seededTenantSlug}:evidence-pack`),
+                linkRole: PrismaJourneyObjectLinkRole.EXPORT,
+                title: "Evidence package export",
+              },
+            ]
+          : [];
+
+      return [...baseLinks, ...exportLink].map((link) => ({
+        id: stableId(
+          `journey-object-link:${seededTenantSlug}:${definition.journeyKey}:${link.objectType}:${link.linkRole}`
+        ),
+        journeyInstanceId: journeyInstanceId(seededTenantSlug, definition.journeyKey),
+        ...link,
+        metadataJson: {
+          demoSeed: true,
+          journeyKey: definition.journeyKey,
+        },
+        createdAt: seedDate,
+      }));
+    }),
+  });
+
+  await prisma.journeyCommandRun.createMany({
+    data: activeJourneyDefinitions.map((definition) => ({
+      id: stableId(`journey-command-run:${seededTenantSlug}:${definition.journeyKey}:start`),
+      journeyInstanceId: journeyInstanceId(seededTenantSlug, definition.journeyKey),
+      commandKey: "START",
+      actorUserId: userId("success"),
+      actorRoleKey: "client_success",
+      toStepKey: definition.steps[0]?.key ?? null,
+      result: AuditResult.SUCCESS,
+      reason: "Demo seed opened the accepted Wave 0-2 journey instance.",
+      metadataJson: {
+        auditRequiredForRuntimeTransitions: true,
+      },
+      createdAt: date(-2),
+    })),
+  });
+}
+
 async function seedAudit() {
   const events = [
     ...demoTenants.flatMap((tenant) => [
@@ -2011,6 +2206,8 @@ async function printSeedSummary() {
     recommendationCount,
     evidenceCount,
     auditCount,
+    journeyDefinitionCount,
+    journeyInstanceCount,
     blockedRecommendationCount,
     visibleRecommendationCount,
   ] = await Promise.all([
@@ -2021,6 +2218,8 @@ async function printSeedSummary() {
     prisma.recommendation.count(),
     prisma.evidenceRecord.count(),
     prisma.auditEvent.count(),
+    prisma.journeyDefinition.count(),
+    prisma.journeyInstance.count(),
     prisma.recommendation.count({ where: { status: RecommendationStatus.BLOCKED } }),
     prisma.recommendation.count({ where: { clientVisible: true } }),
   ]);
@@ -2038,6 +2237,8 @@ async function printSeedSummary() {
         blockedRecommendations: blockedRecommendationCount,
         evidenceRecords: evidenceCount,
         auditEvents: auditCount,
+        journeyDefinitions: journeyDefinitionCount,
+        journeyInstances: journeyInstanceCount,
       },
       null,
       2
@@ -2053,6 +2254,7 @@ async function main() {
   await seedStructureAndDocuments();
   await seedWorkflowObjects();
   await seedEvidenceCommunicationAndOps();
+  await seedJourneys();
   await seedAudit();
   await assertNoUnapprovedAdviceLeak();
   await printSeedSummary();

@@ -54,6 +54,8 @@ enum ObjectType {
   EVIDENCE_RECORD
   AUDIT_EVENT
   EXPORT_REQUEST
+  JOURNEY
+  JOURNEY_STEP
   MESSAGE
   REVIEW_SCHEDULE
   POLICY
@@ -275,6 +277,38 @@ enum ExportType {
   PILOT_METRICS_EXPORT
 }
 
+enum JourneyDefinitionStatus {
+  ACTIVE
+  HOLD_LOCKED
+  DEFERRED
+}
+
+enum JourneyInstanceStatus {
+  CREATED
+  ACTIVE
+  BLOCKED
+  COMPLETED
+  CANCELLED
+}
+
+enum JourneyStepStatus {
+  LOCKED
+  READY
+  ACTIVE
+  BLOCKED
+  COMPLETED
+  SKIPPED
+}
+
+enum JourneyObjectLinkRole {
+  PRIMARY_CONTEXT
+  SUPPORTING_EVIDENCE
+  RECOMMENDATION
+  DECISION
+  EXPORT
+  AUDIT_REFERENCE
+}
+
 model PlatformTenant {
   id              String             @id @default(uuid()) @db.Uuid
   name            String             @db.VarChar(160)
@@ -340,6 +374,7 @@ model ClientTenant {
   policies                 PolicyDefinition[]
   queueItems               QueueItem[]
   dataQualityIssues        DataQualityIssue[]
+  journeyInstances         JourneyInstance[]
   auditEvents              AuditEvent[]
 
   @@index([platformTenantId])
@@ -960,6 +995,128 @@ model DecisionParticipant {
 
   @@index([decisionId])
   @@map("decision_participants")
+}
+
+model JourneyDefinition {
+  id                   String                       @id @default(uuid()) @db.Uuid
+  journeyKey           String                       @unique @db.VarChar(40)
+  title                String                       @db.VarChar(220)
+  description          String                       @db.Text
+  wave                 String                       @db.VarChar(40)
+  status               JourneyDefinitionStatus
+  holdReason           String?                      @db.Text
+  routePageIds         Json?
+  actorRoleKeys        Json?
+  metadataJson         Json?
+  createdAt            DateTime                     @default(now())
+  updatedAt            DateTime                     @updatedAt
+  instances            JourneyInstance[]
+  evidenceRequirements JourneyEvidenceRequirement[]
+
+  @@index([status])
+  @@map("journey_definitions")
+}
+
+model JourneyInstance {
+  id              String                @id @default(uuid()) @db.Uuid
+  definitionId    String                @db.Uuid
+  definition      JourneyDefinition     @relation(fields: [definitionId], references: [id], onDelete: Restrict)
+  clientTenantId  String                @db.Uuid
+  clientTenant    ClientTenant          @relation(fields: [clientTenantId], references: [id], onDelete: Cascade)
+  ownerUserId     String?               @db.Uuid
+  status          JourneyInstanceStatus @default(CREATED)
+  currentStepKey  String?               @db.VarChar(80)
+  currentStageKey String?               @db.VarChar(80)
+  blockerCode     String?               @db.VarChar(80)
+  blockerReason   String?               @db.Text
+  startedAt       DateTime?
+  completedAt     DateTime?
+  metadataJson    Json?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  steps           JourneyStepInstance[]
+  objectLinks     JourneyObjectLink[]
+  commandRuns     JourneyCommandRun[]
+
+  @@index([clientTenantId, status])
+  @@index([definitionId])
+  @@map("journey_instances")
+}
+
+model JourneyStepInstance {
+  id                String            @id @default(uuid()) @db.Uuid
+  journeyInstanceId String            @db.Uuid
+  journeyInstance   JourneyInstance   @relation(fields: [journeyInstanceId], references: [id], onDelete: Cascade)
+  stepKey           String            @db.VarChar(80)
+  stageKey          String            @db.VarChar(80)
+  title             String            @db.VarChar(220)
+  actorRoleKey      String?           @db.VarChar(120)
+  status            JourneyStepStatus
+  blockerCode       String?           @db.VarChar(80)
+  blockerReason     String?           @db.Text
+  sortOrder         Int
+  startedAt         DateTime?
+  completedAt       DateTime?
+  metadataJson      Json?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@unique([journeyInstanceId, stepKey])
+  @@index([journeyInstanceId, status])
+  @@map("journey_step_instances")
+}
+
+model JourneyObjectLink {
+  id                String                @id @default(uuid()) @db.Uuid
+  journeyInstanceId String                @db.Uuid
+  journeyInstance   JourneyInstance       @relation(fields: [journeyInstanceId], references: [id], onDelete: Cascade)
+  objectType        ObjectType
+  objectId          String                @db.Uuid
+  linkRole          JourneyObjectLinkRole
+  title             String?               @db.VarChar(220)
+  metadataJson      Json?
+  createdAt         DateTime              @default(now())
+
+  @@index([journeyInstanceId])
+  @@index([objectType, objectId])
+  @@map("journey_object_links")
+}
+
+model JourneyEvidenceRequirement {
+  id                  String            @id @default(uuid()) @db.Uuid
+  journeyDefinitionId String            @db.Uuid
+  journeyDefinition   JourneyDefinition @relation(fields: [journeyDefinitionId], references: [id], onDelete: Cascade)
+  requirementKey      String            @db.VarChar(100)
+  title               String            @db.VarChar(220)
+  requiredObjectType  ObjectType
+  requiredForStepKey  String            @db.VarChar(80)
+  minEvidenceStatus   EvidenceStatus?
+  metadataJson        Json?
+  createdAt           DateTime          @default(now())
+
+  @@unique([journeyDefinitionId, requirementKey])
+  @@index([requiredObjectType])
+  @@map("journey_evidence_requirements")
+}
+
+model JourneyCommandRun {
+  id                String          @id @default(uuid()) @db.Uuid
+  journeyInstanceId String          @db.Uuid
+  journeyInstance   JourneyInstance @relation(fields: [journeyInstanceId], references: [id], onDelete: Cascade)
+  commandKey        String          @db.VarChar(80)
+  actorUserId       String?         @db.Uuid
+  actorRoleKey      String?         @db.VarChar(120)
+  fromStepKey       String?         @db.VarChar(80)
+  toStepKey         String?         @db.VarChar(80)
+  result            AuditResult
+  reason            String?         @db.Text
+  auditEventId      String?         @db.Uuid
+  metadataJson      Json?
+  createdAt         DateTime        @default(now())
+
+  @@index([journeyInstanceId, createdAt])
+  @@index([commandKey])
+  @@map("journey_command_runs")
 }
 
 model EvidenceRecord {

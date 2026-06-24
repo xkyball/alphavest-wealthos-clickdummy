@@ -36,8 +36,8 @@ test.describe("Phase 09 schema alignment", () => {
     const models = [...schema.matchAll(/^model\s+(\w+)\s+\{/gm)].map((match) => match[1]);
     const enums = [...schema.matchAll(/^enum\s+(\w+)\s+\{/gm)].map((match) => match[1]);
 
-    expect(models).toHaveLength(42);
-    expect(enums).toHaveLength(22);
+    expect(models).toHaveLength(48);
+    expect(enums).toHaveLength(26);
     expect(finalHandoff).toContain("Full-workflow schema baseline locked");
     expect(taskMaster).toContain("Preserve full-workflow schema baseline");
     expect(schemaReconciliation).toContain("Full-workflow model count | 42 models");
@@ -95,6 +95,42 @@ test.describe("Phase 09 schema alignment", () => {
     expectModelFields("Decision", ["status", "releasedToClientAt", "decisionByUserId", "decisionReason", "evidenceRecordId"]);
 
     expect(schema).not.toMatch(/^model\s+AiDraft\s+\{/m);
+  });
+
+  test("keeps Wave 0-2 Journey spine additive and hold-aware", () => {
+    expectModelFields("JourneyDefinition", [
+      "journeyKey",
+      "title",
+      "description",
+      "wave",
+      "status",
+      "holdReason",
+      "routePageIds",
+      "actorRoleKeys",
+    ]);
+    expectModelFields("JourneyInstance", [
+      "definitionId",
+      "clientTenantId",
+      "status",
+      "currentStepKey",
+      "currentStageKey",
+      "blockerCode",
+      "blockerReason",
+    ]);
+    expectModelFields("JourneyStepInstance", ["journeyInstanceId", "stepKey", "stageKey", "status", "sortOrder"]);
+    expectModelFields("JourneyObjectLink", ["journeyInstanceId", "objectType", "objectId", "linkRole"]);
+    expectModelFields("JourneyEvidenceRequirement", [
+      "journeyDefinitionId",
+      "requirementKey",
+      "requiredObjectType",
+      "requiredForStepKey",
+      "minEvidenceStatus",
+    ]);
+    expectModelFields("JourneyCommandRun", ["journeyInstanceId", "commandKey", "actorRoleKey", "result"]);
+
+    expect(schemaBlock("enum", "ObjectType")).toContain("JOURNEY");
+    expect(schemaBlock("enum", "ObjectType")).toContain("JOURNEY_STEP");
+    expect(schemaBlock("enum", "JourneyDefinitionStatus")).toContain("HOLD_LOCKED");
   });
 
   test("keeps document, evidence, audit and export safety fields available on baseline models", () => {
@@ -207,6 +243,7 @@ test.describe("Phase 09 schema alignment", () => {
     expect(migrationFiles).toEqual([
       "20260614201128_init_phase_02",
       "20260614202332_phase_03_data_model_seed",
+      "20260624190000_wave_0_2_journey_spine",
       "migration_lock.toml",
     ]);
     expect(packageJson).toContain('"db:validate": "prisma validate"');
