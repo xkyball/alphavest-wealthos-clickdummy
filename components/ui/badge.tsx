@@ -1,4 +1,5 @@
 import { cn } from "@/lib/cn";
+import type { HTMLAttributes } from "react";
 
 export type BadgeTone =
   | "blue"
@@ -9,7 +10,7 @@ export type BadgeTone =
   | "red"
   | "teal";
 
-type BadgeProps = {
+type BadgeProps = HTMLAttributes<HTMLSpanElement> & {
   ariaLabel?: string;
   children: React.ReactNode;
   className?: string;
@@ -26,7 +27,7 @@ const toneClass: Record<BadgeTone, string> = {
   teal: "border-teal-300/35 bg-teal-300/10 text-teal-200"
 };
 
-export function Badge({ ariaLabel, children, className, tone = "muted" }: BadgeProps) {
+export function Badge({ ariaLabel, children, className, tone = "muted", ...attributes }: BadgeProps) {
   return (
     <span
       aria-label={ariaLabel}
@@ -37,6 +38,7 @@ export function Badge({ ariaLabel, children, className, tone = "muted" }: BadgeP
       )}
       data-ux-affordance="static-badge"
       data-ux-interactive="false"
+      {...attributes}
     >
       {children}
     </span>

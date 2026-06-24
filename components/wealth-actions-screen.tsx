@@ -511,7 +511,7 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
             summaryItems={[
               { detail: "Work that needs attention first", label: "Blocked", value: "1" },
               { detail: "Visible on the board", label: "Active actions", value: "22" },
-              { detail: "Must stay evidence-backed", label: "Client visible", value: "0" },
+              { detail: "Must stay evidence-backed and release-controlled", label: "Client-safe visible", value: "0" },
             ]}
             title="Action status"
           />

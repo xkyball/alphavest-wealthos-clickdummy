@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { failClosedJson } from "@/lib/control-layer/error-envelope";
 import {
   EvidenceReviewInsufficientError,
   EvidenceReviewNotFoundError,
@@ -41,13 +42,11 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json(
+    return failClosedJson(
       {
         error: "Invalid evidence review request.",
         issues: ["json_body_required"],
-        mutated: false,
-        noClientRelease: true,
-        ok: false,
+        reasonCode: "INVALID_REQUEST",
       },
       { status: 400 },
     );
@@ -65,13 +64,11 @@ export async function POST(request: Request) {
   ];
 
   if (metadataIssues.length > 0) {
-    return NextResponse.json(
+    return failClosedJson(
       {
         error: "Invalid evidence review request.",
         issues: metadataIssues,
-        mutated: false,
-        noClientRelease: true,
-        ok: false,
+        reasonCode: "INVALID_REQUEST",
       },
       { status: 400 },
     );
@@ -81,13 +78,11 @@ export async function POST(request: Request) {
   const resolvedTenantSlug = parsedTenantSlug;
   const resolvedAction = parsedAction;
   if (!resolvedRoleKey || !resolvedTenantSlug || !resolvedAction) {
-    return NextResponse.json(
+    return failClosedJson(
       {
         error: "Invalid evidence review request.",
         issues: metadataIssues,
-        mutated: false,
-        noClientRelease: true,
-        ok: false,
+        reasonCode: "INVALID_REQUEST",
       },
       { status: 400 },
     );
@@ -110,39 +105,33 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, result, safety: result.safety });
   } catch (error) {
     if (error instanceof EvidenceReviewValidationError) {
-      return NextResponse.json(
+      return failClosedJson(
         {
           error: "Invalid evidence review request.",
           issues: error.issues,
-          mutated: false,
-          noClientRelease: true,
-          ok: false,
+          reasonCode: "INVALID_REQUEST",
         },
         { status: 400 },
       );
     }
 
     if (error instanceof EvidenceReviewNotFoundError) {
-      return NextResponse.json(
+      return failClosedJson(
         {
           error: error.message,
           issues: ["document_not_found_for_tenant"],
-          mutated: false,
-          noClientRelease: true,
-          ok: false,
+          reasonCode: "SCOPE_DENIED",
         },
         { status: 404 },
       );
     }
 
     if (error instanceof EvidenceReviewPermissionError) {
-      return NextResponse.json(
+      return failClosedJson(
         {
           auditEventId: error.auditEventId,
           error: "Evidence review denied.",
-          mutated: false,
-          noClientRelease: true,
-          ok: false,
+          reasonCode: "PERMISSION_DENIED",
           reason: error.reason,
         },
         { status: 403 },
@@ -150,25 +139,22 @@ export async function POST(request: Request) {
     }
 
     if (error instanceof EvidenceReviewInsufficientError) {
-      return NextResponse.json(
+      return failClosedJson(
         {
           auditEventId: error.auditEventId,
           decision: error.decision,
           error: error.message,
-          mutated: false,
-          noClientRelease: true,
-          ok: false,
+          reasonCode: "SCOPE_DENIED",
         },
         { status: 409 },
       );
     }
 
-    return NextResponse.json(
+    return failClosedJson(
       {
         error: "Unable to review evidence.",
-        mutated: false,
-        noClientRelease: true,
-        ok: false,
+        reasonCode: "SAFE_ERROR",
+        retryAllowed: true,
       },
       { status: 500 },
     );

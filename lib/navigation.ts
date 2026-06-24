@@ -34,9 +34,11 @@ import {
   type RouteScopeLabel
 } from "@/lib/route-registry";
 import {
+  isV096CoreWorkspace,
   isUxNavigationWorkspaceVisibleForRole,
   uxNavigationLockedReason,
   uxRoutePolicyForPageId,
+  v096CoreWorkspaceKeys,
   uxWorkspaceDescriptions,
   uxWorkspaceLabels,
   type UxWorkspaceKey,
@@ -63,6 +65,8 @@ export type NavigationGroup = {
   label: string;
   description: string;
   icon: LucideIcon;
+  journeyStage?: number;
+  journeyStageLabel?: string;
   lockedReason?: string;
   tier: NavigationGroupTier;
   items: NavigationItem[];
@@ -182,22 +186,22 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
     items: [
       {
         pageId: "027",
-        label: "Document library",
-        description: "Client documents already in the workspace.",
+        label: "Source library",
+        description: "Uploaded client source documents, not evidence sufficiency.",
         icon: FileText
       },
       {
         pageId: "028",
         activePageIds: ["028", "029", "030"],
         label: "Evidence intake",
-        description: "Upload, extraction review, and verification queue.",
+        description: "Upload, extraction review, and verification before sufficiency.",
         icon: Upload
       },
       {
         pageId: "046",
         activePageIds: ["046", "047"],
-        label: "Evidence vault",
-        description: "Auditable evidence records and record detail.",
+        label: "Reviewed evidence vault",
+        description: "Auditable reviewed evidence records and record detail.",
         icon: Archive
       }
     ]
@@ -223,7 +227,7 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
         pageId: "036",
         activePageIds: ["036", "037"],
         label: "Advisor approval",
-        description: "Human review before compliance release.",
+        description: "Human advisor review; not client release.",
         icon: BadgeCheck
       }
     ]
@@ -262,7 +266,7 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
       {
         pageId: "038",
         label: "Compliance queue",
-        description: "Review queue for controlled release work.",
+        description: "Review queue for compliance release decisions.",
         icon: ShieldCheck
       },
       {
@@ -274,7 +278,7 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
       {
         pageId: "040",
         activePageIds: ["040", "041", "042"],
-        label: "Release controls",
+        label: "Compliance release controls",
         description: "Release, block, request evidence, and audit exceptions.",
         icon: FileCheck2
       }
@@ -360,14 +364,14 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
       },
       {
         pageId: "057",
-        label: "Preview",
-        description: "Inspect the package before download.",
+        label: "Approval preview",
+        description: "Inspect the redacted package before approval.",
         icon: FileCheck2
       },
       {
         pageId: "058",
-        label: "Download / share",
-        description: "Download or share the reviewed package.",
+        label: "Delivery controls",
+        description: "Download or share only after approval remains valid.",
         icon: Archive
       }
     ]
@@ -458,6 +462,8 @@ export const navigationGroups: NavigationGroup[] = navigationDefinitions
       label: uxWorkspaceLabels[group.key],
       description: uxWorkspaceDescriptions[group.key],
       icon: group.icon,
+      journeyStage: isV096CoreWorkspace(group.key) ? v096CoreWorkspaceKeys.indexOf(group.key as (typeof v096CoreWorkspaceKeys)[number]) + 1 : undefined,
+      journeyStageLabel: isV096CoreWorkspace(group.key) ? "Core journey" : undefined,
       tier: group.tier ?? "core",
       items
     };

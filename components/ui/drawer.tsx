@@ -28,8 +28,13 @@ export function Drawer({ children, className, context, description, footer, onCl
   const titleId = useId();
   const descriptionId = useId();
   const panelRef = useRef<HTMLElement | null>(null);
+  const onCloseRef = useRef(onClose);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   const closeLifecycle = onClose ? "escape-backdrop-close-button-safe" : "blocked-while-submitting";
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     if (!open) {
@@ -45,7 +50,7 @@ export function Drawer({ children, className, context, description, footer, onCl
       if (event.key === "Escape") {
         event.preventDefault();
         event.stopPropagation();
-        onClose?.();
+        onCloseRef.current?.();
         return;
       }
 
@@ -79,13 +84,17 @@ export function Drawer({ children, className, context, description, footer, onCl
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       const previouslyFocused = previouslyFocusedRef.current;
+      const panelAtCleanup = panel;
       window.setTimeout(() => {
+        if (panelAtCleanup?.isConnected) {
+          return;
+        }
         previouslyFocused?.focus();
         window.setTimeout(() => previouslyFocused?.focus(), 40);
       }, 0);
       previouslyFocusedRef.current = null;
     };
-  }, [onClose, open]);
+  }, [open]);
 
   if (!open) {
     return null;

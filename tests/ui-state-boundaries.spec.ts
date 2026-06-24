@@ -78,18 +78,37 @@ test.describe("Phase 05 feedback no-overclaim boundaries", () => {
   test("canonical no-overclaim copy covers V1 blocking boundaries without downstream success claims", () => {
     expect(noOverclaimBoundaryOrder).toEqual([
       "uploadOnly",
+      "evidenceReviewPending",
+      "evidenceInsufficient",
+      "evidenceSufficientAfterReview",
+      "aiDraftInternalOnly",
       "advisorApprovalNotRelease",
       "complianceReleaseNotClientAcceptance",
+      "complianceReleasedClientSafeOnly",
+      "clientVisibilityHidden",
       "auditDisplayNotProof",
+      "auditUnavailableFailClosed",
+      "adminNonBypassDenied",
       "exportPreviewNotApproval",
+      "exportApprovalNotDownload",
+      "downloadNotClientAcceptance",
       "noDownstreamCompletion",
     ]);
 
     expect(noOverclaimCopy.uploadOnly).toContain("evidence sufficiency");
+    expect(noOverclaimCopy.evidenceReviewPending).toContain("awaiting review");
+    expect(noOverclaimCopy.evidenceSufficientAfterReview).toContain("reviewed, linked and accepted");
+    expect(noOverclaimCopy.aiDraftInternalOnly).toContain("not client visible");
     expect(noOverclaimCopy.advisorApprovalNotRelease).toContain("compliance release controls client visibility");
     expect(noOverclaimCopy.complianceReleaseNotClientAcceptance).toContain("client acceptance remain separate");
+    expect(noOverclaimCopy.complianceReleasedClientSafeOnly).toContain("client-safe summary");
+    expect(noOverclaimCopy.clientVisibilityHidden).toContain("No released client-safe content");
     expect(noOverclaimCopy.auditDisplayNotProof).toContain("persistence is proven only by the audited action response");
+    expect(noOverclaimCopy.auditUnavailableFailClosed).toContain("required audit logging is unavailable");
+    expect(noOverclaimCopy.adminNonBypassDenied).toContain("cannot bypass release");
     expect(noOverclaimCopy.exportPreviewNotApproval).toContain("Preview is not approval");
+    expect(noOverclaimCopy.exportApprovalNotDownload).toContain("download and share remain separate");
+    expect(noOverclaimCopy.downloadNotClientAcceptance).toContain("does not confirm client acceptance");
     expect(noOverclaimCopy.noDownstreamCompletion).toContain("gates remain unresolved");
 
     for (const copy of Object.values(noOverclaimCopy)) {

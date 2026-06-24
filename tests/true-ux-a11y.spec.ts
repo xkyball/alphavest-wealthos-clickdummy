@@ -39,6 +39,12 @@ test.describe("UX-A11Y phase 10 keyboard, focus and status proof", () => {
     const drawer = page.getByRole("complementary", { name: "Portfolio Manager" });
     const modalTrigger = drawer.getByRole("button", { name: "Review scoped changes" });
     await expect(drawer).toBeVisible();
+    await expect(modalTrigger).toBeDisabled();
+    await expect(drawer.getByTestId("j07-role-drawer-validation-state")).toContainText(
+      "Role review remains blocked until the scoped-role acknowledgement is checked.",
+    );
+    await drawer.locator("input[type='checkbox']").check();
+    await expect(modalTrigger).toBeEnabled();
     await modalTrigger.click();
 
     const dialog = page.getByRole("dialog", { name: "Confirm Sensitive Permission Changes" });

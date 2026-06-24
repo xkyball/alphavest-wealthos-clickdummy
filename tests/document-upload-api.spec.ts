@@ -298,6 +298,12 @@ test.describe("document upload multipart API", () => {
     expect(body.ok).toBe(false);
     expect(body.documents).toEqual([]);
     expect(body.issues).toContain("valid_tenant_slug_required");
+    expect(body.safety).toMatchObject({
+      failClosed: true,
+      hiddenRowsDisclosed: false,
+      scoped: false,
+      silentStateAdvance: false,
+    });
   });
 
   test("rejects document queries without an explicit mapped role", async ({ request }) => {
@@ -308,6 +314,12 @@ test.describe("document upload multipart API", () => {
     expect(missingRoleBody.ok).toBe(false);
     expect(missingRoleBody.documents).toEqual([]);
     expect(missingRoleBody.issues).toEqual(["valid_role_key_required"]);
+    expect(missingRoleBody.safety).toMatchObject({
+      failClosed: true,
+      hiddenRowsDisclosed: false,
+      scoped: false,
+      silentStateAdvance: false,
+    });
 
     const invalidRole = await request.get("/api/documents?tenantSlug=morgan&roleKey=pretend_role");
     const invalidRoleBody = await invalidRole.json();
@@ -316,6 +328,12 @@ test.describe("document upload multipart API", () => {
     expect(invalidRoleBody.ok).toBe(false);
     expect(invalidRoleBody.documents).toEqual([]);
     expect(invalidRoleBody.issues).toEqual(["valid_role_key_required"]);
+    expect(invalidRoleBody.safety).toMatchObject({
+      failClosed: true,
+      hiddenRowsDisclosed: false,
+      scoped: false,
+      silentStateAdvance: false,
+    });
   });
 
   test("rejects upload requests with invalid role or tenant metadata", async ({ request }) => {

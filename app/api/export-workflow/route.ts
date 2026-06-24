@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { failClosedJson } from "@/lib/control-layer/error-envelope";
 import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import { getExportWorkflowSnapshot } from "@/lib/export-workflow-readmodel-service";
 import { prismaClient } from "@/lib/prisma";
@@ -22,11 +23,20 @@ export async function GET(request: Request) {
   const parsedRoleKey = roleKey(url.searchParams.get("roleKey"));
 
   if (!parsedTenantSlug || !parsedRoleKey) {
-    return NextResponse.json(
+    return failClosedJson(
       {
         error: "Export workflow is not available for this scope.",
-        ok: false,
-        safety: { hiddenRowsDisclosed: false, scoped: false },
+        issues: [
+          ...(!parsedTenantSlug ? ["valid_tenant_slug_required"] : []),
+          ...(!parsedRoleKey ? ["valid_role_key_required"] : []),
+        ],
+        reasonCode: "INVALID_REQUEST",
+        safety: {
+          hiddenRowsDisclosed: false,
+          noExportApproval: true,
+          noExportDownload: true,
+          scoped: false,
+        },
         snapshot: null,
       },
       { status: 400 },
@@ -48,11 +58,17 @@ export async function GET(request: Request) {
       snapshot,
     });
   } catch {
-    return NextResponse.json(
+    return failClosedJson(
       {
         error: "Export workflow snapshot could not be loaded.",
-        ok: false,
-        safety: { hiddenRowsDisclosed: false, scoped: false },
+        reasonCode: "SAFE_ERROR",
+        retryAllowed: true,
+        safety: {
+          hiddenRowsDisclosed: false,
+          noExportApproval: true,
+          noExportDownload: true,
+          scoped: false,
+        },
         snapshot: null,
       },
       { status: 500 },

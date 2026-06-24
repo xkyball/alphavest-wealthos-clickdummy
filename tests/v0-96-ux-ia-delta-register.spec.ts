@@ -41,7 +41,8 @@ test.describe("V0.96 WP-00 UX/IA delta register", () => {
       expect(register).toContain(`| WP-${String(index).padStart(2, "0")} |`);
     }
 
-    expect(register).toContain("| WP-16 | Release Evidence / Handoff Update | `MISSING` |");
-    expect(register).toContain("Proceed to `WP-01");
+    expect(register).toContain("| WP-16 | Release Evidence / Handoff Update | `ACCEPTED_WITH_RELEASE_PROOF_AND_EXPLICIT_NON_GA_BOUNDARIES` |");
+    expect(register).toContain("## WP-16 Release Evidence Handoff Reality Classification");
+    expect(register).toContain("Proceed only with a user-authorized successor phase");
   });
 });

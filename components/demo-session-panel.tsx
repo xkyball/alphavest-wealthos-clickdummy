@@ -137,7 +137,7 @@ export function DemoSessionPanel() {
     };
   }, [session.actor, session.role, session.tenant]);
 
-  const gateLabel = derived.releaseGate.passed ? "Client visible" : "Client blocked";
+  const gateLabel = derived.releaseGate.passed ? "Client-safe available" : "Client-safe blocked";
 
   return (
     <section className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">

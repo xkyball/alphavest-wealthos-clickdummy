@@ -499,7 +499,7 @@ function ctaBlockedReasonForWorkspace(workspace: UxWorkspaceKey) {
   if (workspace === "communication") return "Communication context cannot send advice or bypass release.";
   if (workspace === "compliance") return "Client visibility stays blocked until compliance release passes.";
   if (workspace === "decisions") return "Decision records require released, evidence-backed context before client use.";
-  if (workspace === "evidence") return "Upload and review do not prove evidence sufficiency.";
+  if (workspace === "evidence") return "Upload and review do not complete evidence readiness.";
   if (workspace === "elevated_workflows") return "Elevated review work stays internal until safety, evidence and release gates pass.";
   if (workspace === "export") return "Preview, approval, download and share stay separate.";
   if (workspace === "governance") return "Admin access cannot bypass evidence, release, audit or export gates.";

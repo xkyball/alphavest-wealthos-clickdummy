@@ -192,7 +192,7 @@ function evaluateEvidenceLifecycle(input: EvidenceSufficiencyInput & { uploaded?
     missing: [],
     noUploadToReleaseShortcut: true,
     stage: "SUFFICIENT_FOR_SCOPED_GATE",
-    statusLabel: "Evidence sufficient for scoped gate",
+    statusLabel: "Evidence ready for scoped gate",
   };
 }
 

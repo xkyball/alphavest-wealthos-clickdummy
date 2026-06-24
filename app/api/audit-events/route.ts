@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { failClosedJson } from "@/lib/control-layer/error-envelope";
 import { listDbtfAuditEvents } from "@/lib/dbtf-table-service";
 import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import { prismaClient } from "@/lib/prisma";
@@ -22,11 +23,15 @@ export async function GET(request: Request) {
   const roleKey = roleKeyFromUrl(request);
 
   if (!tenantSlug || !roleKey) {
-    return NextResponse.json(
+    return failClosedJson(
       {
         auditEvents: [],
         error: "Audit events are not available for this scope.",
-        ok: false,
+        issues: [
+          ...(!tenantSlug ? ["valid_tenant_slug_required"] : []),
+          ...(!roleKey ? ["valid_role_key_required"] : []),
+        ],
+        reasonCode: "INVALID_REQUEST",
         safety: { hiddenRowsDisclosed: false, scoped: false },
       },
       { status: 400 },
@@ -51,11 +56,12 @@ export async function GET(request: Request) {
       },
     });
   } catch {
-    return NextResponse.json(
+    return failClosedJson(
       {
         auditEvents: [],
         error: "Audit events are not available for this scope.",
-        ok: false,
+        reasonCode: "SAFE_ERROR",
+        retryAllowed: true,
         safety: { hiddenRowsDisclosed: false, scoped: false },
       },
       { status: 500 },

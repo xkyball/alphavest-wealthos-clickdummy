@@ -109,7 +109,7 @@ export const phase06EvidenceItems = [
     title: "Client decision record",
     type: "Decision",
     status: "CREATED" as const,
-    visibility: "Client visible after release",
+    visibility: "Client-safe after release",
     updatedAt: "Yesterday"
   },
   {

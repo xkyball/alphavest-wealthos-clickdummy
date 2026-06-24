@@ -2198,7 +2198,7 @@ function DocumentsPage({ title }: { title: string }) {
     <ClientShell activePageId="027">
       <DocumentsPageContent title={title} />
       <Phase7ClientProjectionPanel allowedFields="request title, document type, redacted status and uploaded date only" failClosed="Unreleased evidence requests show safe unavailable state and never expose extraction or evidence internals." forbiddenFields="No unreleased evidence, extraction state, checksum, storage key, AI Draft or compliance notes." recovery="Client can upload requested evidence or wait for human review; sufficiency and release remain internal gates." routeLabel="Client evidence request projection" taskId="UX-CLIENT-PROJECTION-003" visibilityEngineOutput="DEMO_CLIENT_DOCUMENT_SAFE_PROJECTION or DEMO_CLIENT_DOCUMENT_FAIL_CLOSED" />
-      <Phase5DetailSplitPanel decisionSupport="Document hub stays separate from review queue and evidence detail." objectLabel="Document workspace split" objectState="Document intake overview" pageJob="Documents page lists intake status and routes to queue/detail without marking evidence sufficient." safetyBoundary="Document list context cannot mark evidence sufficient." splitTaskId="UX-PAGE-SPLIT-002" taskId="UX-PAGE-SPLIT-002" />
+      <Phase5DetailSplitPanel decisionSupport="Document hub stays separate from review queue and evidence detail." objectLabel="Document workspace split" objectState="Document intake overview" pageJob="Documents page lists intake status and routes to queue/detail without marking evidence review complete." safetyBoundary="Document list context cannot mark evidence review complete." splitTaskId="UX-PAGE-SPLIT-002" taskId="UX-PAGE-SPLIT-002" />
     </ClientShell>
   );
 }

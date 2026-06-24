@@ -23,8 +23,8 @@ test.describe("UXP1-010 state copy cleanup", () => {
   test("document upload state describes current state without pipeline methodology", async ({ page }) => {
     await page.goto("/documents/upload");
 
-    await expect(page.getByText("Extraction queued")).toBeVisible();
-    await expect(page.getByText("The document is queued for validation and human extraction review.")).toBeVisible();
+    await expect(page.getByText("Upload received, review pending")).toBeVisible();
+    await expect(page.getByText("Evidence moves from request to upload to human review and explicit sufficiency. Upload success never unlocks release by itself.")).toBeVisible();
     await expect(page.getByText(/Extraction Pipeline|sufficiency acceptance|scanned, validated and queued/i)).toHaveCount(0);
   });
 

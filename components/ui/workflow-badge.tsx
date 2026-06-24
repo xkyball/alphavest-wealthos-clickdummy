@@ -32,17 +32,18 @@ export type WorkflowBadgeStatus =
 type WorkflowBadgeProps = {
   className?: string;
   label?: string;
+  sourceDescription?: string;
   status: WorkflowBadgeStatus;
 };
 
 const workflowMeta: Record<WorkflowBadgeStatus, { icon: LucideIcon; label: string; tone: BadgeTone }> = {
-  ADVISOR_APPROVED: { icon: CheckCircle2, label: "Advisor approved", tone: "blue" },
+  ADVISOR_APPROVED: { icon: CheckCircle2, label: "Advisor approved, release pending", tone: "blue" },
   ADVISOR_REJECTED: { icon: AlertCircle, label: "Advisor rejected", tone: "red" },
   ADVISOR_REVIEW: { icon: Clock3, label: "Advisor review", tone: "gold" },
   COMPLIANCE_BLOCKED: { icon: ShieldAlert, label: "Compliance blocked", tone: "red" },
-  COMPLIANCE_RELEASE: { icon: CheckCircle2, label: "Compliance release", tone: "teal" },
+  COMPLIANCE_RELEASE: { icon: CheckCircle2, label: "Compliance release recorded", tone: "teal" },
   EVIDENCE_PENDING: { icon: Clock3, label: "Evidence pending", tone: "gold" },
-  EVIDENCE_READY: { icon: CheckCircle2, label: "Evidence ready", tone: "green" },
+  EVIDENCE_READY: { icon: CheckCircle2, label: "Evidence review ready", tone: "green" },
   APPROVED: { icon: CheckCircle2, label: "Approved", tone: "green" },
   BLOCKED: { icon: ShieldAlert, label: "Blocked", tone: "purple" },
   ESCALATED: { icon: AlertCircle, label: "Escalated", tone: "red" },
@@ -54,15 +55,17 @@ const workflowMeta: Record<WorkflowBadgeStatus, { icon: LucideIcon; label: strin
   REVIEW: { icon: Clock3, label: "Review", tone: "gold" }
 };
 
-export function WorkflowBadge({ className, label, status }: WorkflowBadgeProps) {
+export function WorkflowBadge({ className, label, sourceDescription = "Workflow badge is a visual summary, not gate proof.", status }: WorkflowBadgeProps) {
   const meta = workflowMeta[status];
   const Icon = meta.icon;
   const visibleLabel = label ?? meta.label;
 
   return (
     <Badge
-      ariaLabel={`Workflow status: ${visibleLabel}`}
+      ariaLabel={`Workflow status: ${visibleLabel}. ${sourceDescription}`}
       className={cn("gap-1.5", className)}
+      data-ux-gate-proof="false"
+      data-ux-state-source={sourceDescription}
       tone={meta.tone}
     >
       <Icon aria-hidden="true" className="size-3.5" />

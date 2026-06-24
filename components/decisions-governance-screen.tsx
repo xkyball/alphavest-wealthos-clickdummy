@@ -32,6 +32,7 @@ import {
   Badge,
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
   DataTable,
@@ -871,6 +872,12 @@ function ComplianceAuditPage({ title }: { title: string }) {
         <section className="min-w-0 space-y-5">
           <PageHeading subtitle="Compliance decision, exception and resolution activity for audit review." title={title} />
           <ScfP04P06FlowPanel mode="audit" />
+          <StatePanel
+            detail="Compliance audit rows on this demo screen are display-only context. Persisted proof is the DB-backed AuditEvent record returned by the audited action or audit-history API."
+            state="restricted"
+            testId="wp08-display-only-audit-state"
+            title="Display-only audit context"
+          />
           <UxComplexityPriorityPanel
             actionLabel="Review critical audit exceptions"
             actionState="Export and column controls remain secondary until critical audit fields and persistence are reviewed."
@@ -1346,7 +1353,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
             <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">Selected action</p>
               <p className="mt-2 font-semibold text-alphavest-ivory">{activeAction?.label ?? "No action selected"}</p>
-              <p className="mt-2 text-sm leading-6 text-alphavest-muted">This action records decision state only. It does not create advice, bypass compliance release, prove evidence sufficiency or approve export/download/share.</p>
+              <p className="mt-2 text-sm leading-6 text-alphavest-muted">This action records decision state only. It does not create advice, bypass compliance release, complete evidence review or approve export/download/share.</p>
             </div>
             <p className="sr-only" id="decision-confirmation-validation">{validationMessage}</p>
             <label className="flex items-start gap-3 text-sm text-alphavest-muted">
@@ -1628,7 +1635,7 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
           ) : null}
           {drawerStatus === "ready" ? (
             <StatePanel
-              detail="Evidence context is loaded for review only. This does not prove evidence sufficiency, release content, export/download/share approval or client acceptance."
+              detail="Evidence context is loaded for review only. This does not complete evidence review, release content, export/download/share approval or client acceptance."
               state="success"
               testId="j03-evidence-success-state"
               title="Evidence context ready"
@@ -1641,7 +1648,7 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
             title="Controlled visibility"
           />
           <UxSecondaryContextTabs
-            safetyNote="Drawer tabs expose evidence context only; they do not prove evidence sufficiency or compliance acceptance."
+            safetyNote="Drawer tabs expose evidence context only; they do not complete evidence review or compliance acceptance."
             tabs={[
               {
                 content: (
@@ -1912,6 +1919,7 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
           title={title}
         />
         <ScfP07P09TrustPanel mode="governance" />
+        <GovernanceCapabilityBoundary />
         <div className="grid gap-3 md:grid-cols-5">
           {governanceMetrics.map((metric) => (
             <Card key={metric.label}>
@@ -1972,7 +1980,7 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
           data-ux-lifecycle-validation={validationState}
           data-ux-no-overclaim="true"
         >
-          <StatePanel detail="Role assignment changes access only after scoped governance workflow submission. It cannot release advice, prove evidence sufficiency, approve exports or suppress audit." state="restricted" title="Sensitive access" />
+          <StatePanel detail="Role assignment changes access only after scoped governance workflow submission. It cannot release advice, complete evidence review, approve exports or suppress audit." state="restricted" title="Sensitive access" />
           <label className="flex items-start gap-3 text-sm text-alphavest-muted">
             <input
               checked={acknowledged}
@@ -2061,6 +2069,55 @@ function Field({ label, value }: { label: string; value: string }) {
       <span className="text-sm font-semibold text-alphavest-muted">{label}</span>
       <input className="mt-2 h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold" readOnly value={value} />
     </label>
+  );
+}
+
+const governanceCapabilities = [
+  "Invite or route scoped users",
+  "Review role and access requests",
+  "Confirm sensitive role changes",
+  "View source-backed governance audit history",
+] as const;
+
+const governanceDoesNotGrant = [
+  "Release advice to clients",
+  "Mark evidence review complete",
+  "Approve export or download packages",
+  "Suppress audit or client-visibility gates",
+] as const;
+
+function GovernanceCapabilityBoundary({ compact = false }: { compact?: boolean }) {
+  return (
+    <Card data-testid="wp09-governance-capability-boundary">
+      <CardHeader>
+        <CardTitle>Governance capability boundary</CardTitle>
+        <CardDescription>Admin power is configuration-scoped; route access is not advisory payload or release authority.</CardDescription>
+      </CardHeader>
+      <CardContent className={cn("grid gap-3", compact ? "md:grid-cols-1" : "md:grid-cols-2")}>
+        <div className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-green">Allowed governance actions</p>
+          <ul className="mt-3 space-y-2 text-sm text-alphavest-muted">
+            {governanceCapabilities.map((item) => (
+              <li className="flex gap-2" key={item}>
+                <Check aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-alphavest-green" />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-red">Does not grant</p>
+          <ul className="mt-3 space-y-2 text-sm text-alphavest-muted">
+            {governanceDoesNotGrant.map((item) => (
+              <li className="flex gap-2" key={item}>
+                <X aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-alphavest-red" />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -2184,6 +2241,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
         >
           <RoleMatrix />
         </UxDenseOperationsPanel>
+        <GovernanceCapabilityBoundary />
       </div>
       <Drawer
         description="Custom role with sensitive permission changes."
@@ -2214,6 +2272,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
           data-ux-no-overclaim="true"
         >
           <StatePanel detail="Sensitive permission changes stay role-scoped and require confirmation plus audit logging. Second confirmation and audit workflow checks are still required; drawer context alone cannot activate roles or expand access." state="restricted" title="Sensitive permission change" />
+          <GovernanceCapabilityBoundary compact />
           <label className="flex items-start gap-3 text-sm text-alphavest-muted">
             <input
               checked={drawerAcknowledged}
@@ -2285,7 +2344,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
           data-ux-lifecycle-validation={modalValidation}
           data-ux-no-overclaim="true"
         >
-          <StatePanel detail="This role change cannot release advice, mark evidence sufficient, approve export or bypass audit persistence." state="restricted" title="Second confirmation required" />
+          <StatePanel detail="This role change cannot release advice, mark evidence review complete, approve export or bypass audit persistence." state="restricted" title="Second confirmation required" />
           <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4 text-sm text-alphavest-muted">
             <p>3 sensitive permissions modified.</p>
             <p>Affects 7 users across 2 teams.</p>
@@ -2474,6 +2533,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
           title={title}
         />
         <ScfP07P09TrustPanel mode="governance" />
+        <GovernanceCapabilityBoundary />
         <UxDenseOperationsPanel
           controls={["All 24", "Pending 8", "Approved 11", "Denied 3", "Escalated 2", "SOD conflict"]}
           description="Access requests stay in queue form with policy, scope and status visible before the selected request opens."
@@ -2529,7 +2589,8 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
           data-ux-no-overclaim="true"
         >
           <Badge tone="gold">Pending</Badge>
-          <StatePanel detail="Access approval remains constrained by visible policy, SOD and audit checks. This drawer cannot release advice, prove evidence sufficiency, approve export/share or make content client-visible." state="restricted" title="Scoped access review" />
+          <StatePanel detail="Access approval remains constrained by visible policy, SOD and audit checks. This drawer cannot release advice, complete evidence review, approve export/share or make content client-visible." state="restricted" title="Scoped access review" />
+          <GovernanceCapabilityBoundary compact />
           <label className="flex items-start gap-3 text-sm text-alphavest-muted">
             <input
               checked={acknowledged}

@@ -238,7 +238,7 @@ function QueuePage({ title }: { title: string }) {
           <MetricCard detail="High-risk packages waiting for committee votes." label="Pending review" status="PENDING" value={String(pendingCount)} />
           <MetricCard detail="Open dissent blocks downstream release." label="Dissent open" status={dissentCount > 0 ? "FAILED" : "COMPLETED"} value={String(dissentCount)} />
           <MetricCard detail="Advisor gate or evidence gate still incomplete." label="Blocked" status={blockedCount > 0 ? "FAILED" : "COMPLETED"} value={String(blockedCount)} />
-          <MetricCard detail="Must remain zero on this route." label="Client visible" status={visibleCount === 0 ? "COMPLETED" : "FAILED"} value={String(visibleCount)} />
+          <MetricCard detail="Must remain zero on this route until client-safe release gates pass." label="Client-safe visible" status={visibleCount === 0 ? "COMPLETED" : "FAILED"} value={String(visibleCount)} />
         </div>
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_23rem]">
           <section className="space-y-5">

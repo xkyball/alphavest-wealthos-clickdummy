@@ -11,6 +11,7 @@ import { WizardStepper } from "@/components/ui/wizard-stepper";
 import { cn } from "@/lib/cn";
 import { uxDensityTierContracts } from "@/lib/ux-density";
 import { productGuidanceForPathname, type ProductGuidanceLink } from "@/lib/product-guidance";
+import { shouldSuppressV096RouteGuidance } from "@/lib/route-ui-cleanup";
 
 const primaryActionClass =
   "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md bg-alphavest-gold px-4 text-sm font-semibold text-alphavest-navy transition hover:bg-alphavest-gold-soft";
@@ -180,6 +181,9 @@ export function ProductGuidancePanel() {
             data-ux-content-tier="must-see"
             data-ux-cta-state={guidance.ctaState.state}
           >
+            <span className="w-fit rounded-md border border-alphavest-border bg-alphavest-charcoal/55 px-3 py-1 text-xs font-semibold text-alphavest-muted">
+              Guidance next step
+            </span>
             {primaryAction ? <GuidanceLink link={primaryAction} variant="primary" /> : null}
             {guidance.nextStep && guidance.nextStep.href !== primaryAction?.href ? (
               <GuidanceLink link={guidance.nextStep} variant="secondary" />
@@ -233,11 +237,16 @@ export function ProductGuidanceContent({
   children: React.ReactNode;
   containerClassName?: string;
 }) {
+  const pathname = usePathname();
+  const hideGuidancePanel = shouldSuppressV096RouteGuidance(pathname);
+
   return (
     <div className={cn(containerClassName, "flex flex-col")}>
-      <div className="order-2 sm:order-1">
-        <ProductGuidancePanel />
-      </div>
+      {hideGuidancePanel ? null : (
+        <div className="order-2 sm:order-1">
+          <ProductGuidancePanel />
+        </div>
+      )}
       <div className="order-1 sm:order-2">
         {children}
       </div>

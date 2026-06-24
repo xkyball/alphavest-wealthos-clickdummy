@@ -40,7 +40,7 @@ export type UiClickflowState =
   | "AUDIT_UNAVAILABLE_STATE"
   | "SUCCESS_STATE";
 
-export type UiActionGuardStatus = "enabled" | "disabled" | "denied" | "hidden";
+export type UiActionGuardStatus = "enabled" | "disabled" | "denied" | "error" | "hidden" | "loading" | "success";
 
 export type UiActionGuard = {
   allowed: boolean;

@@ -58,6 +58,42 @@ test.describe("WCL WS-06 client visibility projection", () => {
     }
   });
 
+  test("redacts internal audit detail from client decision projection", () => {
+    const result = projectClientVisibleDecision(controlLayerActors.bennettPrincipal, {
+      aiDraft: "Internal AI draft.",
+      auditActor: "compliance_officer",
+      auditEventId: "4c14a481-2c7b-4a5a-8d7b-b40df91fbb2f",
+      auditMetadata: { criticalActionFamily: "release", internal: true },
+      auditReason: "Internal compliance release rationale.",
+      clientSummary: "Released client-safe decision.",
+      clientTenantId: controlLayerActors.bennettPrincipal.clientTenantId,
+      clientVisible: true,
+      complianceNotes: "Internal compliance notes.",
+      decisionState: "RELEASED",
+      id: "decision:bennett:wcl-audit-redaction",
+      internalRationale: "Internal rationale.",
+      releasedAt: "2026-06-23T10:40:00.000Z",
+      title: "Released decision",
+      visibilityStatus: "CLIENT_VISIBLE",
+    });
+
+    expect(result.allowed).toBe(true);
+    if (result.allowed) {
+      expect(result.projection.payload).toEqual({
+        clientSummary: "Released client-safe decision.",
+        decisionState: "RELEASED",
+        id: "decision:bennett:wcl-audit-redaction",
+        releasedAt: "2026-06-23T10:40:00.000Z",
+        title: "Released decision",
+      });
+      expect(result.projection.hiddenFields).toEqual(
+        expect.arrayContaining(["auditActor", "auditEventId", "auditMetadata", "auditReason", "complianceNotes", "internalRationale"]),
+      );
+      expect(result.projection.payload).not.toHaveProperty("auditEventId");
+      expect(result.projection.payload).not.toHaveProperty("auditReason");
+    }
+  });
+
   test("projects document evidence metadata as hidden or client safe without operational internals", () => {
     const blocked = projectClientVisibleDocument(controlLayerActors.bennettPrincipal, {
       checksum: "internal-checksum",

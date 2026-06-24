@@ -13,6 +13,7 @@ import { uxContentHierarchyForPageType } from "../lib/ux-content-hierarchy";
 import { uxDensityForPageId, uxDensityTierContracts } from "../lib/ux-density";
 import { uxComplexity005SupportPageIds } from "../lib/ux-support-density";
 import { productGuidanceForRoute } from "../lib/product-guidance";
+import { hasV096CleanRouteChrome } from "../lib/route-ui-cleanup";
 import { uxHubDefinitionForPageId } from "../lib/ux-hub";
 import {
   groupedImplementationScreenRoutes,
@@ -230,12 +231,6 @@ test.describe("UX-PAGE workbench structure", () => {
     "/advisory",
     "/advisor/reviews",
     "/compliance/reviews",
-    "/governance",
-    "/governance/roles/demo",
-    "/governance/access-requests/demo",
-    "/export/new",
-    "/export/demo/scope",
-    "/export/demo/redaction",
   ];
 
   for (const path of uxPage002Routes) {
@@ -549,7 +544,10 @@ test.describe("UX-COMPLEXITY CTA clusters", () => {
 
 test.describe("UX-COMPLEXITY support density", () => {
   const supportDensityPaths = screenRoutes
-    .filter((route) => uxComplexity005SupportPageIds.includes(route.pageId as (typeof uxComplexity005SupportPageIds)[number]))
+    .filter((route) => (
+      uxComplexity005SupportPageIds.includes(route.pageId as (typeof uxComplexity005SupportPageIds)[number]) &&
+      !hasV096CleanRouteChrome(route.pageId)
+    ))
     .map((route) => routeToSmokePath(route.route));
 
   for (const path of supportDensityPaths) {
@@ -758,7 +756,11 @@ test.describe("UX-DENSITY above-the-fold route job", () => {
   const authAndOnboardingSupportPageIds = new Set(["001", "002", "003", "004", "005", "006"]);
   const aboveFoldRoutes = routeSmokeList.filter((route) => {
     const scope = routeScopeForPageId(route.pageId);
-    return (scope === "MVP" || scope === "MVP_SUPPORT") && !authAndOnboardingSupportPageIds.has(route.pageId);
+    return (
+      (scope === "MVP" || scope === "MVP_SUPPORT") &&
+      !authAndOnboardingSupportPageIds.has(route.pageId) &&
+      !hasV096CleanRouteChrome(route.pageId)
+    );
   });
 
   for (const route of aboveFoldRoutes) {
@@ -796,7 +798,11 @@ test.describe("UX-CTA one-primary page-state pattern", () => {
   const authAndOnboardingSupportPageIds = new Set(["001", "002", "003", "004", "005", "006"]);
   const eligibleGuidanceRoutes = screenRoutes.filter((route) => {
     const scope = routeScopeForPageId(route.pageId);
-    return (scope === "MVP" || scope === "MVP_SUPPORT") && !authAndOnboardingSupportPageIds.has(route.pageId);
+    return (
+      (scope === "MVP" || scope === "MVP_SUPPORT") &&
+      !authAndOnboardingSupportPageIds.has(route.pageId) &&
+      !hasV096CleanRouteChrome(route.pageId)
+    );
   });
 
   test("maps eligible routes to exactly one guarded primary CTA and protected routes to locked state", () => {
@@ -828,8 +834,6 @@ test.describe("UX-CTA one-primary page-state pattern", () => {
     "/advisory/review-queue",
     "/advisor/reviews",
     "/compliance/reviews",
-    "/governance",
-    "/export/demo/approval",
   ];
 
   for (const path of priorityCtaRoutes) {
@@ -896,8 +900,6 @@ test.describe("UX-CTA MJ-001 setup-to-release chain", () => {
   });
 
   const mj001ProofRoutes = [
-    "/admin/tenants",
-    "/tenants/new",
     "/documents/upload",
     "/advisory/triggers/demo/review",
     "/compliance/reviews/demo/release",
@@ -1186,7 +1188,7 @@ test.describe("UX-CTA disabled blocked recovery copy", () => {
     {
       path: "/governance/access-requests/demo?state=drawer",
       expected: [
-        "Access approval remains constrained by visible policy, SOD and audit checks. This drawer cannot release advice, prove evidence sufficiency, approve export/share or make content client-visible.",
+        "Access approval remains constrained by visible policy, SOD and audit checks. This drawer cannot release advice, complete evidence review, approve export/share or make content client-visible.",
         "Approve access request",
       ],
     },

@@ -1,8 +1,18 @@
 import type { PrismaClient } from "@prisma/client";
 
 import { type DemoTenantSlug, demoTenants } from "@/lib/demo-session";
+import { exportStatusUiTruthFor } from "@/lib/domain-types";
 
 export type ExportWorkflowSnapshot = Awaited<ReturnType<typeof getExportWorkflowSnapshot>>;
+
+const exportWorkflowUiTruth = {
+  apiRoute: "/api/export-workflow",
+  fallbackDemoData: false,
+  noClientRelease: true,
+  noDownstreamCompletion: true,
+  readModel: "getExportWorkflowSnapshot",
+  source: "DB_READMODEL",
+} as const;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -47,6 +57,7 @@ export async function getExportWorkflowSnapshot(prisma: PrismaClient, tenantSlug
         totalAvailable: 0,
       },
       timeline: [],
+      uiTruth: exportWorkflowUiTruth,
     };
   }
 
@@ -54,6 +65,7 @@ export async function getExportWorkflowSnapshot(prisma: PrismaClient, tenantSlug
   const selectedObjects = Array.isArray(scope.selectedObjects) ? scope.selectedObjects : [];
   const excludedObjects = Array.isArray(scope.excludedObjects) ? scope.excludedObjects : [];
   const lifecycle = isRecord(scope.exportLifecycle) ? scope.exportLifecycle : {};
+  const statusUiTruth = exportStatusUiTruthFor(currentExport.status);
   const auditEvents = await prisma.auditEvent.findMany({
     orderBy: { createdAt: "asc" },
     select: {
@@ -76,11 +88,19 @@ export async function getExportWorkflowSnapshot(prisma: PrismaClient, tenantSlug
       fileName: currentExport.generatedFileDocument?.fileName ?? "Metadata manifest pending",
       generatedFileDocumentId: currentExport.generatedFileDocumentId,
       id: currentExport.id,
-      lifecycleStage: typeof lifecycle.stage === "string" ? lifecycle.stage : label(currentExport.status),
+      lifecycleStage: typeof lifecycle.stage === "string" ? lifecycle.stage : statusUiTruth.lifecycleStage,
+      noOverclaimDetail: statusUiTruth.noOverclaimDetail,
       realFileGenerated: scope.generatedFileIsMetadataOnly === true ? false : Boolean(currentExport.generatedFileDocumentId),
       redactionProfile: currentExport.redactionProfile,
       requestedAt: currentExport.createdAt.toISOString(),
-      status: label(currentExport.status),
+      schemaStatus: statusUiTruth.schemaStatus,
+      status: statusUiTruth.label,
+      statusControls: {
+        allowedNextActions: statusUiTruth.allowedNextActions,
+        canApprove: statusUiTruth.canApprove,
+        canDownload: statusUiTruth.canDownload,
+        canGenerate: statusUiTruth.canGenerate,
+      },
       tenant: tenant.displayName,
     },
     scopeItems: [
@@ -115,6 +135,8 @@ export async function getExportWorkflowSnapshot(prisma: PrismaClient, tenantSlug
         actor: event.actorRoleKey ?? "system",
         id: event.id,
         result,
+        sourceRef: event.id,
+        sourceState: "source-backed" as const,
         timestamp: event.createdAt.toISOString().slice(0, 16).replace("T", " "),
         title: label(event.eventType),
       };
@@ -123,5 +145,6 @@ export async function getExportWorkflowSnapshot(prisma: PrismaClient, tenantSlug
       excludedObjects: arrayLength(scope.excludedObjects),
       selectedObjects: arrayLength(scope.selectedObjects),
     },
+    uiTruth: exportWorkflowUiTruth,
   };
 }

@@ -46,7 +46,7 @@ test.describe("UXP3-001 shared modal primitive lifecycle hardening", () => {
     await expect(dialog).toHaveAttribute("data-ux-no-overclaim", "true");
     await expect(dialog.getByTestId("ux-phase10-modal-status")).toContainText(/recover context without submitting/i);
     await expect(dialog).not.toContainText(/client visibility unlocked|release complete|download ready|client accepted/i);
-    await expect(dialog).toContainText("cannot release advice, mark evidence sufficient, approve export or bypass audit persistence");
+    await expect(dialog).toContainText("cannot release advice, mark evidence review complete, approve export or bypass audit persistence");
   });
 
   test("Escape and Cancel close the modal without mutating parent drawer state", async ({ page }) => {

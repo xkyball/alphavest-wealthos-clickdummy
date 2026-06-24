@@ -52,6 +52,8 @@ function NavigationContent({ onNavigate }: { onNavigate?: () => void }) {
                   ? "border-alphavest-border/35 bg-alphavest-charcoal/30"
                   : "border-transparent bg-transparent"
               )}
+              data-ux-role-gated={group.lockedReason ? "true" : undefined}
+              data-ux-workspace-key={group.key}
               key={group.label}
             >
               <div
@@ -66,6 +68,16 @@ function NavigationContent({ onNavigate }: { onNavigate?: () => void }) {
                   <GroupIcon aria-hidden="true" className="size-3.5" />
                 )}
                 <p className="truncate">{group.label}</p>
+                {group.journeyStage ? (
+                  <span
+                    className="ml-auto inline-flex h-5 shrink-0 items-center gap-1 rounded-full border border-alphavest-gold/35 bg-alphavest-gold/10 px-2 text-[0.58rem] font-semibold normal-case tracking-normal text-alphavest-gold-soft"
+                    data-testid="v096-core-journey-stage"
+                    data-ux-core-journey-stage={group.journeyStage}
+                  >
+                    <span>{group.journeyStage}</span>
+                    <span>{group.journeyStageLabel}</span>
+                  </span>
+                ) : null}
               </div>
               <p
                 className={cn(
@@ -76,8 +88,15 @@ function NavigationContent({ onNavigate }: { onNavigate?: () => void }) {
                 {group.description}
               </p>
               {group.lockedReason ? (
-                <div className="rounded-md border border-alphavest-border/50 bg-alphavest-navy/35 p-2 text-[0.66rem] leading-4 text-alphavest-subtle">
-                  {group.lockedReason}
+                <div
+                  className="rounded-md border border-alphavest-border/50 bg-alphavest-navy/35 p-2 text-[0.66rem] leading-4 text-alphavest-subtle"
+                  data-testid="role-gated-workspace"
+                >
+                  <p className="mb-1 flex items-center gap-1.5 font-semibold text-alphavest-gold-soft">
+                    <LockKeyhole aria-hidden="true" className="size-3" />
+                    Role-gated workspace
+                  </p>
+                  <p>{group.lockedReason}</p>
                 </div>
               ) : null}
               <div className="space-y-1" data-navigation-tier={group.tier}>

@@ -76,6 +76,10 @@ export type DecisionVisibilityPayload = {
   aiDraft?: string | null;
   internalRationale?: string | null;
   complianceNotes?: string | null;
+  auditActor?: string | null;
+  auditEventId?: UUID | null;
+  auditMetadata?: unknown;
+  auditReason?: string | null;
   evidenceRecordId?: UUID | null;
   assumptionsJson?: unknown;
 };
@@ -95,6 +99,10 @@ export type DecisionPayloadProjection = {
     aiDraft?: string;
     internalRationale?: string;
     complianceNotes?: string;
+    auditActor?: string;
+    auditEventId?: UUID;
+    auditMetadata?: unknown;
+    auditReason?: string;
     evidenceRecordId?: UUID;
     assumptionsJson?: unknown;
   };
@@ -157,6 +165,10 @@ const internalDecisionFields = [
   "aiDraft",
   "internalRationale",
   "complianceNotes",
+  "auditActor",
+  "auditEventId",
+  "auditMetadata",
+  "auditReason",
   "evidenceRecordId",
   "assumptionsJson",
 ] as const;

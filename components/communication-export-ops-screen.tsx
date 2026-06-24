@@ -103,6 +103,8 @@ type AuditEventTableRow = {
   result: string;
   role: string;
   source: string;
+  sourceRef: string;
+  sourceState: "source-backed";
   timestamp: string;
 };
 
@@ -225,6 +227,112 @@ function Phase7ClientProjectionPanel({ allowedFields, failClosed, forbiddenField
         </div>
       </div>
       <div className="mt-4" data-testid="ux-phase7-recovery"><StatePanel detail={recovery} state="restricted" title="Unavailable content" /></div>
+    </section>
+  );
+}
+
+type ExportLifecycleStageId = "scope" | "redaction" | "preview" | "approval" | "package" | "share";
+
+const exportLifecycleStages: Array<{
+  id: ExportLifecycleStageId;
+  label: string;
+  detail: string;
+}> = [
+  { id: "scope", label: "Scope selected", detail: "Permitted, released objects only." },
+  { id: "redaction", label: "Redaction checked", detail: "Forbidden internal payloads blocked." },
+  { id: "preview", label: "Preview inspected", detail: "Preview generated; approval required." },
+  { id: "approval", label: "Approval recorded", detail: "Approval recorded; download/share remain separate." },
+  { id: "package", label: "Manifest/download controlled", detail: "Package downloaded; client acceptance not recorded." },
+  { id: "share", label: "Share/client response separate", detail: "External share and client response are later events." },
+];
+
+function ExportStageBoundary({ activeStage, className }: { activeStage: ExportLifecycleStageId; className?: string }) {
+  const activeIndex = exportLifecycleStages.findIndex((stage) => stage.id === activeStage);
+
+  return (
+    <section
+      className={cn("rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4", className)}
+      data-testid="wp10-export-stage-boundary"
+      data-ux-no-overclaim="true"
+    >
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Export lifecycle boundary</p>
+          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">Export is a client-safe projection, not a raw data dump.</h2>
+          <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted">
+            Scope is not redaction. Redaction is not preview. Preview is not approval. Approval is not download/share. Download/share is not client acceptance.
+          </p>
+        </div>
+        <Badge tone="gold">WP-10</Badge>
+      </div>
+      <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-6">
+        {exportLifecycleStages.map((stage, index) => {
+          const state = index < activeIndex ? "complete" : index === activeIndex ? "current" : "later";
+          const tone: BadgeTone = state === "complete" ? "green" : state === "current" ? "gold" : "muted";
+
+          return (
+            <div
+              className={cn(
+                "min-h-32 rounded-md border p-3",
+                state === "current"
+                  ? "border-alphavest-gold bg-alphavest-gold/10"
+                  : state === "complete"
+                    ? "border-alphavest-green/35 bg-alphavest-green/10"
+                    : "border-alphavest-border bg-alphavest-charcoal/45",
+              )}
+              data-export-stage={stage.id}
+              key={stage.id}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-sm font-semibold text-alphavest-ivory">{stage.label}</p>
+                <Badge tone={tone}>{state}</Badge>
+              </div>
+              <p className="mt-2 text-xs leading-5 text-alphavest-muted">{stage.detail}</p>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function ExportPayloadBoundary({ className }: { className?: string }) {
+  const allowed = ["Released client-safe summaries", "Released evidence summaries", "Approved/redacted manifest metadata"];
+  const blocked = ["AI Draft", "internal rationale", "analyst notes", "compliance notes", "unreleased evidence", "unreleased recommendations", "hidden fields"];
+
+  return (
+    <section
+      className={cn("rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-4", className)}
+      data-testid="wp10-export-forbidden-payload-boundary"
+      data-ux-no-overclaim="true"
+    >
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-red">Forbidden payload boundary</p>
+          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">Only scoped, redacted and client-safe content can enter the export package.</h2>
+          <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted">
+            Admin access and advisor approval do not expand export payload permission; service checks and audit references remain required.
+          </p>
+        </div>
+        <LockKeyhole aria-hidden="true" className="size-6 text-alphavest-red" />
+      </div>
+      <div className="mt-4 grid gap-3 lg:grid-cols-2">
+        <div className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-green">Allowed source</p>
+          <ul className="mt-3 space-y-2 text-sm text-alphavest-muted">
+            {allowed.map((item) => (
+              <li className="flex items-start gap-2" key={item}>
+                <CheckCircle2 aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-alphavest-green" />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-red">Blocked source</p>
+          <p className="mt-3 text-sm leading-6 text-alphavest-muted">{blocked.join(", ")}.</p>
+        </div>
+      </div>
     </section>
   );
 }
@@ -399,8 +507,27 @@ function useDbtfAuditEvents() {
   return { loadState, rows };
 }
 
+type ExportWorkflowApiState = {
+  error?: string;
+  mutated?: false;
+  noClientRelease?: true;
+  ok?: boolean;
+  reasonCode?: string;
+  retryAllowed?: boolean;
+  safety?: {
+    failClosed?: boolean;
+    hiddenRowsDisclosed?: boolean;
+    noExportApproval?: boolean;
+    noExportDownload?: boolean;
+    scoped?: boolean;
+    silentStateAdvance?: boolean;
+  };
+  snapshot?: ExportWorkflowSnapshot | null;
+};
+
 function useExportWorkflowSnapshot() {
   const { session } = useDemoSession();
+  const [apiState, setApiState] = useState<ExportWorkflowApiState | null>(null);
   const [snapshot, setSnapshot] = useState<ExportWorkflowSnapshot | null>(null);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
 
@@ -415,18 +542,42 @@ function useExportWorkflowSnapshot() {
           `/api/export-workflow?tenantSlug=${encodeURIComponent(session.tenant.slug)}&roleKey=${encodeURIComponent(session.role.key)}`,
           { cache: "no-store" },
         );
-        const body = (await response.json()) as { snapshot?: ExportWorkflowSnapshot | null };
+        const body = (await response.json()) as ExportWorkflowApiState;
 
         if (!response.ok) {
-          throw new Error("Export snapshot failed.");
+          if (!cancelled) {
+            setApiState(body);
+            setSnapshot(null);
+            setLoadState("error");
+          }
+
+          return;
         }
 
         if (!cancelled) {
+          setApiState(body);
           setSnapshot(body.snapshot ?? null);
           setLoadState("ready");
         }
       } catch {
         if (!cancelled) {
+          setApiState({
+            error: "Export workflow snapshot could not be loaded.",
+            mutated: false,
+            noClientRelease: true,
+            ok: false,
+            reasonCode: "SAFE_ERROR",
+            retryAllowed: true,
+            safety: {
+              failClosed: true,
+              hiddenRowsDisclosed: false,
+              noExportApproval: true,
+              noExportDownload: true,
+              scoped: false,
+              silentStateAdvance: false,
+            },
+            snapshot: null,
+          });
           setSnapshot(null);
           setLoadState("error");
         }
@@ -440,7 +591,51 @@ function useExportWorkflowSnapshot() {
     };
   }, [session.role.key, session.tenant.slug]);
 
-  return { loadState, snapshot };
+  return { apiState, loadState, snapshot };
+}
+
+function ExportWorkflowTruthPanel({
+  apiState,
+  className,
+  loadState,
+}: {
+  apiState: ExportWorkflowApiState | null;
+  className?: string;
+  loadState: "loading" | "ready" | "error";
+}) {
+  if (loadState === "loading") {
+    return (
+      <StatePanel
+        className={className}
+        detail="Export scope, redaction, approval and delivery state are loading from the export workflow API before controls can rely on them."
+        state="loading"
+        testId="wp13-export-api-truth-loading"
+        title="Export API truth loading"
+      />
+    );
+  }
+
+  if (loadState === "error") {
+    return (
+      <StatePanel
+        className={className}
+        detail={`${apiState?.error ?? "Export workflow API truth is unavailable."} The UI remains fail-closed: no export approval, download, share, client acceptance or advice release is completed.`}
+        state="export-failed"
+        testId="wp13-export-api-truth-fail-closed"
+        title="Export workflow API fail-closed"
+      />
+    );
+  }
+
+  return (
+    <StatePanel
+      className={className}
+      detail="Export scope, redaction, preview, approval and delivery state are sourced from the tenant-scoped export workflow read model; fallback demo data is not treated as gate proof."
+      state="restricted"
+      testId="wp13-export-api-truth-ready"
+      title="Export API truth source"
+    />
+  );
 }
 
 function useOpsSlaSnapshot() {
@@ -745,6 +940,19 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
     <div>
       <PageLead description="Access-event review with filters, export controls and event lineage." icon={LockKeyhole} title={title} />
       <StatePanel detail="Audit review is read-only here; persistence, retention and controlled export remain separate gates." state="restricted" title="Audit persistence gate" />
+      <StatePanel
+        className="mt-4"
+        detail={
+          loadState === "ready"
+            ? "Rows in this view come from tenant-scoped AuditEvent records. Static screen context is not treated as audit proof."
+            : loadState === "loading"
+              ? "Loading audit history..."
+              : "Audit unavailable — required action remains blocked/pending."
+        }
+        state={loadState === "ready" ? "success" : loadState === "loading" ? "loading" : "audit-unavailable"}
+        testId="wp08-source-backed-audit-state"
+        title={loadState === "ready" ? "Audit recorded" : loadState === "loading" ? "Loading audit history" : "Audit unavailable"}
+      />
       <UxDenseOperationsPanel
         actions={
           <>
@@ -807,7 +1015,7 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             <StatePanel detail="No matching access changes for the saved filter." state="empty" title="Empty filter state" />
             <StatePanel detail="Audit event rows are loading; retention review remains separate." state="loading" title="Loading state" />
-            <StatePanel detail="Audit export is unavailable while the retention service is unreachable." state="error" title="Export error state" />
+            <StatePanel detail="Audit unavailable — required action remains blocked/pending while the retention service is unreachable." state="audit-unavailable" title="Audit unavailable" />
           </div>
       </UxDenseOperationsPanel>
       <Drawer description="Selected event lineage and before/after access state." onClose={() => setDrawerOpen(false)} open={drawerOpen && Boolean(selected)} title="Event Details">
@@ -837,6 +1045,8 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
                       { label: "Action", value: selected?.action ?? "n/a" },
                       { label: "Object", value: selected?.object ?? "n/a" },
                       { label: "Source", value: selected?.source ?? "n/a" },
+                      { label: "Source state", value: selected?.sourceState === "source-backed" ? "Audit recorded" : "Audit unavailable" },
+                      { label: "Source ref", value: selected?.sourceRef ?? "n/a" },
                       { label: "Actor", value: selected?.actor ?? "n/a" }
                     ]}
                   />
@@ -1064,15 +1274,26 @@ function ExportNewPage({ title }: { title: string }) {
     <div>
       <PageLead badge="Scope first" description="Start export scope before redaction, preview, approval or delivery." icon={Download} title={title} />
       <Phase5DetailSplitPanel decisionSupport="Export start captures purpose and scope without preview, approval or download behavior." objectLabel="Export flow split" objectState="Export request not yet scoped" pageJob="Export start is separate from scope, redaction, preview, approval and delivery." safetyBoundary="Start page cannot generate, approve or download export packages." splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-PAGE-SPLIT-005" />
+      <ExportStageBoundary activeStage="scope" className="mb-5" />
       <UxHubPage pageId="054" />
     </div>
   );
 }
 
 function ExportScopePage({ title }: { title: string }) {
-  const { snapshot } = useExportWorkflowSnapshot();
-  const scopeRows = snapshot?.scopeItems.length ? snapshot.scopeItems : exportScopeItems;
-  const summary = snapshot?.summary ?? exportScopeSummary;
+  const { apiState, loadState, snapshot } = useExportWorkflowSnapshot();
+  const apiUnavailable = loadState === "error";
+  const scopeRows = apiUnavailable ? [] : snapshot?.scopeItems.length ? snapshot.scopeItems : exportScopeItems;
+  const summary = apiUnavailable
+    ? {
+        activeRequestCount: 0,
+        blocked: 0,
+        included: 0,
+        invalidSelected: 0,
+        limitedIncluded: 0,
+        totalAvailable: 0,
+      }
+    : snapshot?.summary ?? exportScopeSummary;
   const availableColumns: Array<DataTableColumn<(typeof scopeRows)[number]>> = [
     { key: "name", header: "Name", render: (row) => <span className={cn("font-semibold", row.selected ? "text-alphavest-ivory" : "text-alphavest-muted")}>{row.name}</span>, sortable: true },
     { key: "type", header: "Type", render: (row) => row.type, sortable: true },
@@ -1082,6 +1303,8 @@ function ExportScopePage({ title }: { title: string }) {
   return (
     <div>
       <PageLead description="Select permitted objects only. Preview, approval, download and share remain unavailable." icon={Folder} title={title} />
+      <ExportStageBoundary activeStage="scope" className="mb-5" />
+      <ExportWorkflowTruthPanel apiState={apiState} className="mb-5" loadState={loadState} />
       <UxDenseOperationsPanel
         className="mt-5"
         controls={["Date range", "Recipients", "Object type", "Access", "Selected only", "Blocked excluded"]}
@@ -1125,6 +1348,7 @@ function ExportScopePage({ title }: { title: string }) {
         </Card>
       </div>
       </UxDenseOperationsPanel>
+      <ExportPayloadBoundary className="mt-5" />
       <div className="mt-5 space-y-5">
         <ScfP07P09TrustPanel mode="export" />
         <ScfP10P14ClosurePanel mode="api" />
@@ -1183,6 +1407,8 @@ function ExportRedactionPage({ title }: { title: string }) {
     <div>
       <PageLead badge="Redaction step" description="Resolve forbidden payloads before preview inspection." icon={Eye} title={title} />
       <Phase5DetailSplitPanel decisionSupport="Redaction detail shows field state, payload visibility and preview blockers." objectLabel="Export redaction object review" objectState="Forbidden payload checks active" pageJob="Redaction page resolves payload review separately from preview and approval." safetyBoundary="Redaction detail cannot approve, download or share the export." splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-DETAIL-004" />
+      <ExportStageBoundary activeStage="redaction" className="mt-5" />
+      <ExportPayloadBoundary className="mt-5" />
       <StatePanel detail="All sensitive fields must be redacted before preview can move toward approval." state="blocked" title="Redaction blocks preview approval" />
       <div className="mt-5">
         <ScfP07P09TrustPanel mode="export" />
@@ -1331,9 +1557,9 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
   const [acknowledged, setAcknowledged] = useState(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
-  const { snapshot } = useExportWorkflowSnapshot();
+  const { apiState, loadState, snapshot } = useExportWorkflowSnapshot();
   const currentExport = snapshot?.current;
-  const timeline = snapshot?.timeline.length ? snapshot.timeline : exportTimeline;
+  const timeline = loadState === "error" ? [] : snapshot?.timeline.length ? snapshot.timeline : exportTimeline;
   const lifecycleStatus = status === "submitting" ? "loading" : status;
   const validationState = acknowledged ? "valid-export-approval-review" : "blocked-acknowledgement-required";
 
@@ -1381,6 +1607,8 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
     <div>
       <PageLead badge="Approval step" description="Inspect preview and record approval before generation or delivery." icon={PackageCheck} title={title} />
       <Phase5DetailSplitPanel decisionSupport="Preview detail distinguishes inspection, approval, generation and delivery." objectLabel="Export preview split" objectState="Preview inspection pending approval" pageJob="Preview page inspects one package without becoming download or share." safetyBoundary="Preview context cannot generate, download or share packages." splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-PAGE-SPLIT-005" />
+      <ExportStageBoundary activeStage="preview" className="mt-5" />
+      <ExportWorkflowTruthPanel apiState={apiState} className="mt-5" loadState={loadState} />
       <Phase6DecisionRoomPanel audit="Approval audit must record scoped package, redaction state, actor and cancel or confirm outcome." blocker="Export approval remains blocked until redaction, policy and audit readiness are complete." cancelLabel="Cancel export approval" confirmLabel="Confirm export approval" decisionLabel="Export approval decision room" evidence="Package summary, forbidden payload checks, redaction review and policy checks are visible before decision." preconditions="Scoped package, forbidden payload pass, redaction review and audit readiness must all pass." safetyNote="No release, export or advice effect can occur until gate preconditions pass and an audit record exists." taskId="UX-DECISION-ROOM-002" />
       <ScfP07P09TrustPanel mode="export" />
       <UxDetailStandardPanel
@@ -1606,9 +1834,9 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
   const [acknowledged, setAcknowledged] = useState(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
-  const { snapshot } = useExportWorkflowSnapshot();
+  const { apiState, loadState, snapshot } = useExportWorkflowSnapshot();
   const currentExport = snapshot?.current;
-  const timeline = snapshot?.timeline.length ? snapshot.timeline : exportTimeline;
+  const timeline = loadState === "error" ? [] : snapshot?.timeline.length ? snapshot.timeline : exportTimeline;
   const lifecycleStatus = status === "submitting" ? "loading" : status;
   const validationState = acknowledged ? "valid-export-download-review" : "blocked-acknowledgement-required";
 
@@ -1656,6 +1884,8 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
     <div>
       <PageLead badge="Delivery step" description="Download is the next controlled delivery event; share remains separate." icon={Download} title={title} />
       <Phase5DetailSplitPanel decisionSupport="Delivery detail separates approved package, download event and share gate." objectLabel="Export delivery split" objectState="Approved package; share still blocked" pageJob="Download page handles controlled delivery without client acceptance overclaim." safetyBoundary="Delivery detail cannot mark share complete or client acceptance achieved." splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-PAGE-SPLIT-005" />
+      <ExportStageBoundary activeStage="package" className="mt-5" />
+      <ExportWorkflowTruthPanel apiState={apiState} className="mt-5" loadState={loadState} />
       <Phase7ClientProjectionPanel allowedFields="manifest id, redacted title, document type, released status and watermark state only" failClosed="Download stays blocked when projection is not visible, not released, not redacted or contains forbidden payload fields." forbiddenFields="No internal payload, unreleased evidence, AI Draft, compliance notes, storage key, checksum or raw file metadata." recovery="The user sees why the package is unavailable and can return to approval/redaction without generating or sharing unsafe content." routeLabel="Client-safe export package projection" taskId="UX-CLIENT-PROJECTION-004" visibilityEngineOutput="client projection clean check plus export package forbidden-field check" />
       <ScfP07P09TrustPanel mode="export" />
       <UxDetailStandardPanel

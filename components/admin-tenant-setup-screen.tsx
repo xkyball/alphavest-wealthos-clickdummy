@@ -67,6 +67,7 @@ import { cn } from "@/lib/cn";
 import { demoPlatformTenantId, demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import type { AdminTenantSnapshot } from "@/lib/admin-tenant-readmodel-service";
 import { permissionEngine } from "@/lib/permission-engine";
+import { hasV096CleanRouteChrome } from "@/lib/route-ui-cleanup";
 import type { ScreenRoute } from "@/lib/route-registry";
 import { runScreencastDemoAction } from "@/lib/screencast-demo-client";
 import { buildScopeControlSnapshot, type ScopeControlRow, type StaticWorkspaceControl } from "@/lib/scope-control";
@@ -327,6 +328,24 @@ function PermissionBoundaryPanel({ route }: { route: ScreenRoute }) {
               <p className="mt-2 text-sm leading-6 text-alphavest-muted">{row.detail}</p>
             </div>
           ))}
+          <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-4" data-testid="wp09-admin-does-not-grant">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-red">Admin configuration does not grant</p>
+            <div className="mt-3 grid gap-2 text-sm text-alphavest-muted sm:grid-cols-2">
+              {[
+                "Compliance release",
+                "Evidence sufficiency",
+                "Client visibility",
+                "Export approval",
+                "Audit suppression",
+                "Cross-tenant payload access",
+              ].map((item) => (
+                <span className="inline-flex items-center gap-2" key={item}>
+                  <XCircle aria-hidden="true" className="size-4 shrink-0 text-alphavest-red" />
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -655,12 +674,15 @@ function EvidenceTemplatesPage() {
 
   return (
     <div className="space-y-5">
+      <div>
+        <h1 className="font-display text-3xl text-alphavest-ivory md:text-4xl">Evidence Templates</h1>
+        <p className="mt-2 text-sm text-alphavest-muted">Manage reusable evidence requirements.</p>
+      </div>
       <ActionBar>
         <SearchShell placeholder="Search templates, categories, tags..." />
         <span className={staticButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false"><Upload aria-hidden="true" className="size-4" />Import held</span>
         <span className={staticButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false"><Plus aria-hidden="true" className="size-4" />Template creation held</span>
       </ActionBar>
-      <AuditBanner>Templates are compliance-reviewed and version-controlled. Last audit: 15 May 2024 by Compliance.</AuditBanner>
       <section className="grid gap-5 xl:grid-cols-[1.3fr_0.7fr]">
         <Card>
           <CardHeader><CardTitle>All Templates</CardTitle></CardHeader>
@@ -1225,7 +1247,7 @@ function PermissionChangeModal({ onClose, open }: { onClose: () => void; open: b
             {change}
           </div>
         ))}
-        <StatePanel detail="Permission change is scoped to this role template. It cannot release advice, mark evidence sufficient, approve export, or bypass audit." state="restricted" title="Scoped permission change" />
+        <StatePanel detail="Permission change is scoped to this role template. It cannot release advice, mark evidence review complete, approve export, or bypass audit." state="restricted" title="Scoped permission change" />
       </div>
     </Modal>
   );
@@ -1439,6 +1461,7 @@ export function AdminTenantSetupScreen({ route, visualState }: AdminTenantSetupS
   const [confirmationKind, setConfirmationKind] = useState<ConfirmationKind>(() => initialConfirmationKind(route, visualState));
   const [permissionModalOpen, setPermissionModalOpen] = useState(() => route.pageId === "009" && visualState === "permission");
   const [inviteDrawerOpen, setInviteDrawerOpen] = useState(() => route.pageId === "018" && visualState === "invite");
+  const useCleanRouteChrome = hasV096CleanRouteChrome(route.pageId);
 
   function renderPage() {
     if (route.pageId === "007") {
@@ -1480,9 +1503,15 @@ export function AdminTenantSetupScreen({ route, visualState }: AdminTenantSetupS
   return (
     <AppShell>
       <div className="space-y-6">
-        <PageHeader description={route.purpose} title={route.title} />
+        {route.pageId === "011" ? null : (
+          <PageHeader
+            chrome={useCleanRouteChrome ? "compact" : "full"}
+            description={route.purpose}
+            title={route.title}
+          />
+        )}
         {renderPage()}
-        <UxSupportDensityStrip pageId={route.pageId} />
+        {useCleanRouteChrome ? null : <UxSupportDensityStrip pageId={route.pageId} />}
       </div>
       <CriticalChangeModal kind={confirmationKind} onClose={() => setConfirmationKind(null)} />
       <PermissionChangeModal onClose={() => setPermissionModalOpen(false)} open={permissionModalOpen} />

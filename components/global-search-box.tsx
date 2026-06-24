@@ -107,8 +107,12 @@ export function GlobalSearchBox({ className, disabledReason, placeholder = "Sear
           type="search"
           value={query}
         />
-        <span className="pointer-events-none absolute right-3 top-5 hidden -translate-y-1/2 rounded border border-alphavest-border px-1.5 py-0.5 text-xs text-alphavest-subtle md:block">
-          DB
+        <span
+          className="pointer-events-none absolute right-3 top-5 hidden -translate-y-1/2 rounded border border-alphavest-border px-1.5 py-0.5 text-xs text-alphavest-subtle md:block"
+          data-testid="global-search-scope-badge"
+          title="Tenant and role scoped search"
+        >
+          Scoped
         </span>
       </label>
       <p className="sr-only" id={descriptionId}>

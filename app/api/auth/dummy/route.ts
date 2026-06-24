@@ -9,13 +9,19 @@ import {
 import { demoAuthSessionCookieName, demoAuthSessionMaxAgeSeconds } from "@/lib/demo/demo-auth-session";
 import { prismaClient } from "@/lib/prisma";
 
-function setDemoSessionCookie(response: NextResponse, sessionToken: string) {
+function isLocalAuthRequest(request: Request) {
+  const hostname = new URL(request.url).hostname;
+
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
+}
+
+function setDemoSessionCookie(response: NextResponse, request: Request, sessionToken: string) {
   response.cookies.set(demoAuthSessionCookieName, sessionToken, {
     httpOnly: true,
     maxAge: demoAuthSessionMaxAgeSeconds,
     path: "/",
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: process.env.NODE_ENV === "production" && !isLocalAuthRequest(request),
   });
 
   return response;
@@ -83,7 +89,7 @@ export async function POST(request: Request) {
           noClientRelease: true,
           productionAuthClaim: false,
         },
-      }), result.sessionToken);
+      }), request, result.sessionToken);
     }
 
     if (action === "accept_invite") {
@@ -98,7 +104,7 @@ export async function POST(request: Request) {
           noClientRelease: true,
           productionAuthClaim: false,
         },
-      }), sessionToken);
+      }), request, sessionToken);
     }
 
     return NextResponse.json(

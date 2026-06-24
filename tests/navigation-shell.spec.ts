@@ -10,8 +10,8 @@ const importantNavigationLinks = [
   { path: "/advisory/review-queue", label: "Workbench" },
   { path: "/advisor/reviews", label: "Advisor approval" },
   { path: "/compliance/reviews", label: "Compliance queue" },
-  { path: "/documents", label: "Document library" },
-  { path: "/evidence", label: "Evidence vault" },
+  { path: "/documents", label: "Source library" },
+  { path: "/evidence", label: "Reviewed evidence vault" },
   { path: "/governance", label: "Governance users" },
   { path: "/export/new", label: "New export" }
 ];
@@ -100,7 +100,7 @@ test.describe("AlphaVest navigation shell", () => {
     await page.goto("/decisions/demo/success");
 
     const primaryNavigation = page.getByRole("navigation", { name: "Primary navigation" });
-    await expect(primaryNavigation.getByRole("link", { name: "Decisions" })).toHaveAttribute(
+    await expect(primaryNavigation.getByRole("link", { name: /Decision room/ })).toHaveAttribute(
       "aria-current",
       "page"
     );

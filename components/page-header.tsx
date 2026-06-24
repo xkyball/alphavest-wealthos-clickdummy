@@ -20,6 +20,7 @@ export type PageHeaderAction = {
 
 type PageHeaderProps = {
   blockedReason?: string;
+  chrome?: "full" | "compact";
   eyebrow?: string;
   primaryAction?: PageHeaderAction;
   recoveryAction?: PageHeaderAction;
@@ -153,6 +154,7 @@ function phase10A11yTasksForRoute(pathname: string, currentPolicy: ReturnType<ty
 
 export function PageHeader({
   blockedReason,
+  chrome = "full",
   eyebrow,
   primaryAction,
   recoveryAction,
@@ -171,14 +173,33 @@ export function PageHeader({
     currentRoute && "clientVisibilitySensitive" in currentRoute ? Boolean(currentRoute.clientVisibilitySensitive) : false;
   const derivedSteps = steps ?? (currentRoute ? uxFlowStepsForPageId(currentRoute.pageId) : []);
   const previousStep = derivedSteps.filter((step) => step.status === "complete" && step.href).at(-1);
-  const nextStep = derivedSteps.find((step) => step.status === "upcoming" && step.href && !step.disabledReason);
-  const effectivePrimaryAction = primaryAction ?? (nextStep ? { href: nextStep.href, label: `Continue to ${nextStep.label}` } : undefined);
+  const effectivePrimaryAction = primaryAction;
   const effectiveSecondaryActions =
     secondaryActions.length > 0 || !previousStep
       ? secondaryActions
       : [{ href: previousStep.href, label: `Back to ${previousStep.label}` }];
   const phase10TaskIds = phase10A11yTasksForRoute(pathname, currentPolicy);
   const a11yStatusAnnouncement = `${title}: ${statusLabel ?? "No unapproved advice reaches the client"}. Keyboard users can tab through actions and recover without losing context.`;
+
+  if (chrome === "compact") {
+    return (
+      <header className="flex flex-col gap-2" data-testid="page-header">
+        {eyebrow ? (
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-gold">
+            {eyebrow}
+          </p>
+        ) : null}
+        <div className="max-w-3xl">
+          <h1 className="font-display text-3xl text-alphavest-ivory md:text-4xl">
+            {title}
+          </h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-alphavest-muted md:text-base">
+            {description}
+          </p>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header className="flex flex-col gap-4" data-testid="page-header">
@@ -200,6 +221,20 @@ export function PageHeader({
           <StatusChip label={statusLabel ?? "No unapproved advice reaches the client"} status={status} />
           {currentRoute && currentPolicy ? (
             <div className="flex max-w-xl flex-wrap justify-start gap-2 text-xs lg:justify-end" data-testid="page-header-route-context">
+              <span
+                className="max-w-72 truncate rounded-full border border-alphavest-gold/35 bg-alphavest-gold/10 px-3 py-1 font-semibold text-alphavest-gold-soft"
+                data-testid="page-header-page-job"
+                title={`Page job: ${currentPolicy.pageType}`}
+              >
+                Page job · {currentPolicy.pageType}
+              </span>
+              <span
+                className="max-w-96 truncate rounded-full border border-alphavest-gold/35 bg-alphavest-gold/10 px-3 py-1 font-semibold text-alphavest-gold-soft"
+                data-testid="page-header-current-gate"
+                title={`Current gate: ${currentPolicy.primaryCtaRule}`}
+              >
+                Gate · {currentPolicy.primaryCtaRule}
+              </span>
               <span className="rounded-full border border-alphavest-border bg-alphavest-charcoal/55 px-3 py-1 font-semibold text-alphavest-muted">
                 {uxWorkspaceLabels[currentPolicy.workspace]}
               </span>
@@ -219,6 +254,9 @@ export function PageHeader({
           />
           {effectivePrimaryAction ? (
             <div className="flex flex-wrap justify-start gap-2 lg:justify-end" data-testid="page-header-primary-cta-region" data-ux-phase8-primary-count="1">
+              <span className="flex h-[var(--button-height)] items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/55 px-3 text-xs font-semibold text-alphavest-muted">
+                Page action
+              </span>
               <HeaderAction action={effectivePrimaryAction} primary />
               {effectiveSecondaryActions.slice(0, 2).map((action) => (
                 <HeaderAction action={action} key={`${action.href ?? action.label}:${action.label}`} />

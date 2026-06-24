@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { failClosedJson } from "@/lib/control-layer/error-envelope";
 import { listUploadedDocuments } from "@/lib/document-upload-service";
 import { prismaClient } from "@/lib/prisma";
 import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
@@ -26,15 +27,12 @@ export async function GET(request: Request) {
   ];
 
   if (!tenantSlug || !roleKey) {
-    return NextResponse.json(
+    return failClosedJson(
       {
         documents: [],
         error: "Documents are not available for this scope.",
         issues,
-        mutated: false,
-        noAdviceExecution: true,
-        noClientRelease: true,
-        ok: false,
+        reasonCode: "INVALID_REQUEST",
         safety: {
           hiddenRowsDisclosed: false,
           releaseUnlocked: false,
@@ -72,14 +70,12 @@ export async function GET(request: Request) {
       },
     });
   } catch {
-    return NextResponse.json(
+    return failClosedJson(
       {
         documents: [],
         error: "Documents are not available for this scope.",
-        mutated: false,
-        noAdviceExecution: true,
-        noClientRelease: true,
-        ok: false,
+        reasonCode: "SAFE_ERROR",
+        retryAllowed: true,
         safety: {
           hiddenRowsDisclosed: false,
           releaseUnlocked: false,

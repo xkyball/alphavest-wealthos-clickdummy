@@ -3,6 +3,8 @@ import path from "node:path";
 
 import { expect, test } from "@playwright/test";
 
+import { canonicalExportStatuses, exportStatusUiTruth, exportStatusUiTruthFor } from "../lib/domain-types";
+
 const handoffRoot = "_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED";
 const schema = readFileSync(path.join(process.cwd(), "prisma/schema.prisma"), "utf8");
 
@@ -144,6 +146,34 @@ test.describe("Phase 09 schema alignment", () => {
     expect(schemaReconciliation).toContain("BLOCKER_FOR_CODEX_TASK_MASTER");
     expect(stopRules).toContain("patch-schema takeover");
     expect(stopRules).toContain("Prisma/schema replacement");
+  });
+
+  test("maps ExportStatus schema enum to canonical no-overclaim UI lifecycle states", () => {
+    const exportStatusBlock = schemaBlock("enum", "ExportStatus");
+    const schemaStatuses = [...exportStatusBlock.matchAll(/\b([A-Z_]+)\b/g)].map((match) => match[1]);
+
+    expect(schemaStatuses).toEqual([...canonicalExportStatuses]);
+    expect(Object.keys(exportStatusUiTruth)).toEqual([...canonicalExportStatuses]);
+    expect(exportStatusUiTruth.APPROVAL_REQUIRED).toMatchObject({
+      canApprove: true,
+      canDownload: false,
+      canGenerate: false,
+      lifecycleStage: "approval",
+      schemaUsage: "CANONICAL",
+    });
+    expect(exportStatusUiTruth.GENERATED).toMatchObject({
+      canApprove: false,
+      canDownload: true,
+      lifecycleStage: "generated",
+    });
+    expect(exportStatusUiTruth.DOWNLOADED.noOverclaimDetail).toContain("client acceptance");
+    expect(exportStatusUiTruthFor("PATCH_READY")).toMatchObject({
+      canApprove: false,
+      canDownload: false,
+      canGenerate: false,
+      schemaStatus: "UNKNOWN",
+      schemaUsage: "CONFLICTING",
+    });
   });
 
   test("maps V1 P0 gates to existing schema/runtime support without adding migrations", () => {

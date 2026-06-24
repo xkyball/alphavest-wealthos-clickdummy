@@ -449,12 +449,12 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
         />
         <Phase4WorkbenchPanel activeTask="Rebalance trigger RB-77 selected" blocker="Monitoring trigger is internal review state only and cannot execute advice automatically." context="Reviewer confirms stale evidence, drift and suitability prerequisites before advisory routing." primaryAction="Route to advisory review" queueLabel="Rebalance monitoring queue" safetyNote="UX-WORKBENCH-005: monitoring does not create client release, rebalance execution or advice approval." taskId="UX-WORKBENCH-005" />
         <Phase5DetailSplitPanel decisionSupport="Monitoring detail separates rebalance trigger review from execution or client advice." objectLabel="Rebalance trigger split" objectState="Internal trigger blocked" pageJob="Monitoring detail reviews one trigger without becoming rebalance execution." safetyBoundary="Monitoring detail cannot execute trades, approve advice or release content." splitTaskId="UX-PAGE-SPLIT-008" taskId="UX-PAGE-SPLIT-008" />
-        <Phase6DecisionRoomPanel audit="Monitoring audit must record trigger, due state, reviewer routing and cancel or confirm outcome." blocker="Rebalance review remains blocked because monitoring state cannot execute trades or publish client advice." cancelLabel="Cancel monitoring decision" confirmLabel="Confirm rebalance review route" decisionLabel="Rebalance review decision room" evidence="Trigger proof path, due state, client visibility flag and audit action path are visible before decision." preconditions="Human review route, evidence freshness, suitability context and compliance boundary must all pass." safetyNote="No release, export or advice effect can occur without gate preconditions and audit proof." taskId="UX-DECISION-ROOM-005" />
+        <Phase6DecisionRoomPanel audit="Monitoring audit must record trigger, due state, reviewer routing and cancel or confirm outcome." blocker="Rebalance review remains blocked because monitoring state cannot execute trades or publish client advice." cancelLabel="Cancel monitoring decision" confirmLabel="Confirm rebalance review route" decisionLabel="Rebalance review decision room" evidence="Trigger proof path, due state, client-safe visibility flag and audit action path are visible before decision." preconditions="Human review route, evidence freshness, suitability context and compliance boundary must all pass." safetyNote="No release, export or advice effect can occur without gate preconditions and audit proof." taskId="UX-DECISION-ROOM-005" />
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <MetricCard detail="Rebalance trigger rows in demo monitoring scope." label="Triggers" status="PROCESSING" value={String(rebalanceTriggerRows.length)} />
           <MetricCard detail="Blocked actions require human review before any recommendation path." label="Blocked" status="FAILED" value={String(blockedCount)} />
           <MetricCard detail="SLA state derived from queue/action due dates." label="Overdue" status="FAILED" value={String(overdueCount)} />
-          <MetricCard detail="Client visible triggers must stay at zero for this route." label="Client visible" status={clientVisibleCount === 0 ? "COMPLETED" : "FAILED"} value={String(clientVisibleCount)} />
+          <MetricCard detail="Client-safe visible triggers must stay at zero for this route." label="Client-safe visible" status={clientVisibleCount === 0 ? "COMPLETED" : "FAILED"} value={String(clientVisibleCount)} />
         </div>
         <div className="grid gap-5 xl:grid-cols-[18rem_minmax(0,1fr)_20rem] 2xl:grid-cols-[20rem_minmax(0,1fr)_24rem]">
           <aside className="space-y-5">
@@ -510,7 +510,7 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
                 ["Client", selected.client],
                 ["State", triggerStateLabel(selected.state)],
                 ["Due state", dueStateLabel(selected.dueState)],
-                ["Client visible", selected.clientVisible ? "Yes" : "No"],
+                ["Client-safe visible", selected.clientVisible ? "Yes" : "No"],
               ].map(([label, value]) => (
                 <Card className="min-h-28" key={label}>
                   <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">{label}</p>

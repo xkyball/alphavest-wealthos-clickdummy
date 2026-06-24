@@ -28,8 +28,13 @@ export function Modal({ children, className, context, description, footer, onClo
   const titleId = useId();
   const descriptionId = useId();
   const dialogRef = useRef<HTMLElement | null>(null);
+  const onCloseRef = useRef(onClose);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   const closeLifecycle = onClose ? "escape-backdrop-close-button-safe" : "blocked-while-submitting";
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     if (!open) {
@@ -39,13 +44,14 @@ export function Modal({ children, className, context, description, footer, onClo
     previouslyFocusedRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const dialog = dialogRef.current;
     const firstFocusable = dialog?.querySelector<HTMLElement>(focusableSelector);
+    (firstFocusable ?? dialog)?.focus();
     window.setTimeout(() => (firstFocusable ?? dialog)?.focus(), 0);
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         event.preventDefault();
         event.stopPropagation();
-        onClose?.();
+        onCloseRef.current?.();
         return;
       }
 
@@ -79,13 +85,17 @@ export function Modal({ children, className, context, description, footer, onClo
     return () => {
       window.removeEventListener("keydown", handleKeyDown, true);
       const previouslyFocused = previouslyFocusedRef.current;
+      const dialogAtCleanup = dialog;
       window.setTimeout(() => {
+        if (dialogAtCleanup?.isConnected) {
+          return;
+        }
         previouslyFocused?.focus();
         window.setTimeout(() => previouslyFocused?.focus(), 40);
       }, 0);
       previouslyFocusedRef.current = null;
     };
-  }, [onClose, open]);
+  }, [open]);
 
   if (!open) {
     return null;

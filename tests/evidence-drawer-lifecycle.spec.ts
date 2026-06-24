@@ -42,7 +42,7 @@ test.describe("UXP3-010 evidence drawer lifecycle", () => {
 
     await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-status", "success");
     await expect(page.getByTestId("j03-evidence-success-state")).toContainText(
-      "does not prove evidence sufficiency, release content, export/download/share approval or client acceptance.",
+      "does not complete evidence review, release content, export/download/share approval or client acceptance.",
     );
     await expect(page.getByTestId("j03-evidence-blocked-state")).toContainText(
       "Download and share remain blocked until evidence sufficiency, compliance release, export approval and client visibility gates pass.",

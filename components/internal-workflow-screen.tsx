@@ -1507,7 +1507,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
     <InternalShell activePageId="039">
       <ScreenTitle>{title}</ScreenTitle>
       <Phase5DetailSplitPanel decisionSupport="Compliance detail carries evidence, policy and audit state before later decision-room actions." objectLabel="Compliance object review" objectState="Release gates not satisfied" pageJob="Compliance detail reviews one object without becoming a hidden drawer decision." safetyBoundary="Detail context cannot release without explicit gated decision controls." splitTaskId="UX-PAGE-SPLIT-003" taskId="UX-PAGE-SPLIT-003" />
-      <Phase6DecisionRoomPanel audit="Audit event must record actor, target, gate state and confirm or cancel outcome before any release mutation." blocker="Release remains blocked because evidence, policy, reviewer and approver gates are not all satisfied." cancelLabel="Cancel without mutation" confirmLabel="Confirm compliance release" decisionLabel="Compliance release decision room" evidence="Evidence checklist, policy exception state and audit references are visible before decision." preconditions="Evidence complete, policy pass, human reviewer and compliance approver must all pass." safetyNote="No release, export or advice effect can occur until gate preconditions pass and an audit record exists." taskId="UX-DECISION-ROOM-001" />
+      <Phase6DecisionRoomPanel audit="Audit event must record actor, target, gate state and confirm or cancel outcome before any release mutation." blocker="Release remains blocked because evidence, policy, reviewer and approver gates are not all satisfied." cancelLabel="Cancel without mutation" confirmLabel="Confirm compliance release" decisionLabel="Compliance release decision room" evidence="Evidence checklist, policy exception state and audit references are visible before decision." preconditions="Evidence review complete, policy pass, human reviewer and compliance approver must all pass." safetyNote="No release, export or advice effect can occur until gate preconditions pass and an audit record exists." taskId="UX-DECISION-ROOM-001" />
       <div className="mx-auto grid max-w-[112rem] gap-5 2xl:grid-cols-[1fr_23rem]">
         <section className="min-w-0 space-y-5">
           <PageHeading
@@ -1519,7 +1519,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
           <UxDetailStandardPanel
             actionLabel="Release, block or request evidence"
             actionState="Release is disabled until evidence, policy, reviewer and approver prerequisites pass."
-            evidenceItems={["Evidence completeness", "Policy checks", "Audit references"]}
+            evidenceItems={["Evidence review state", "Policy checks", "Audit references"]}
             facts={[
               { label: "Review ID", value: complianceReview.id },
               { label: "Classification", value: complianceReview.classification },
@@ -1536,10 +1536,10 @@ function ComplianceReviewPage({ title }: { title: string }) {
           <CompliancePreconditionChecklist />
           <UxComplexityPriorityPanel
             actionLabel="Request evidence or block release"
-            actionState="Release stays blocked while evidence completeness and policy checks are unresolved."
+            actionState="Release stays blocked while evidence review and policy checks are unresolved."
             priorityItems={[
               { detail: complianceReview.client, label: complianceReview.title, value: complianceReview.classification },
-              { detail: complianceReview.evidenceComplete, label: "Evidence completeness", value: "Incomplete" },
+              { detail: complianceReview.evidenceComplete, label: "Evidence review state", value: "Incomplete" },
               { detail: complianceReview.policy, label: "Policy exception", value: "Open" },
             ]}
             safetyNote="Compliance card hierarchy does not complete release; the release action remains separately gated."

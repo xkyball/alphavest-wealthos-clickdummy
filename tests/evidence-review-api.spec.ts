@@ -217,6 +217,10 @@ test.describe("Phase 3 evidence review and sufficiency API", () => {
     expect(body.ok).toBe(false);
     expect(body.mutated).toBe(false);
     expect(body.auditEventId).toBeTruthy();
+    expect(body.safety).toMatchObject({
+      failClosed: true,
+      silentStateAdvance: false,
+    });
 
     const evidence = await prisma.evidenceRecord.findUniqueOrThrow({
       where: { id: upload.evidenceRecordId },
@@ -257,6 +261,10 @@ test.describe("Phase 3 evidence review and sufficiency API", () => {
     expect(body.ok).toBe(false);
     expect(body.mutated).toBe(false);
     expect(body.noClientRelease).toBe(true);
+    expect(body.safety).toMatchObject({
+      failClosed: true,
+      silentStateAdvance: false,
+    });
     expect(body.decision.sufficient).toBe(false);
     expect(body.decision.missing).toContain("evidence_object_id_scope");
 

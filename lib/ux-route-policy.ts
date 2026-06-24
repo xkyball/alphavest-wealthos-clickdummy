@@ -69,6 +69,31 @@ export const uxWorkspaceDescriptions: Record<UxWorkspaceKey, string> = {
   setup: "Access, onboarding, tenant setup and platform configuration.",
 };
 
+export const v096CoreWorkspaceKeys = [
+  "evidence",
+  "advisory_workbench",
+  "compliance",
+  "decisions",
+  "governance",
+  "export",
+] as const satisfies readonly UxWorkspaceKey[];
+
+export const v096SupportWorkspaceKeys = [
+  "setup",
+  "client_workspace",
+  "communication",
+  "ops",
+] as const satisfies readonly UxWorkspaceKey[];
+
+export const v096DeferredWorkspaceKeys = [
+  "elevated_workflows",
+  "registered_only",
+] as const satisfies readonly UxWorkspaceKey[];
+
+export function isV096CoreWorkspace(workspace: UxWorkspaceKey) {
+  return v096CoreWorkspaceKeys.includes(workspace as (typeof v096CoreWorkspaceKeys)[number]);
+}
+
 const workspacePageIds: Record<UxWorkspaceKey, readonly string[]> = {
   advisory_workbench: ["033", "034", "035", "036", "037"],
   client_workspace: ["019", "020", "021", "022", "023", "024", "025", "026", "031", "032"],

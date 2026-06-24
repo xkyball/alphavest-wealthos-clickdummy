@@ -38,6 +38,8 @@ export type DbtfAuditEventRow = {
   result: string;
   role: string;
   source: string;
+  sourceRef: string;
+  sourceState: "source-backed";
   timestamp: string;
 };
 
@@ -250,6 +252,8 @@ export async function listDbtfAuditEvents(
     result: labelFromEnum(event.result),
     role: event.actorRoleKey ? labelFromEnum(event.actorRoleKey) : "System",
     source: "AlphaVest DB audit log",
+    sourceRef: event.id,
+    sourceState: "source-backed",
     timestamp: formatDateTime(event.createdAt),
   }));
 }

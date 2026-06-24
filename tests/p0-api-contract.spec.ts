@@ -32,6 +32,13 @@ test.describe("Phase 10 P0 API fail-closed contract", () => {
     expect(body.mutated).toBe(false);
     expect(body.noClientRelease).toBe(true);
     expect(body.issues).toEqual(["valid_tenant_slug_required"]);
+    expect(body.safety).toMatchObject({
+      failClosed: true,
+      hiddenRowsDisclosed: false,
+      releaseUnlocked: false,
+      scoped: false,
+      silentStateAdvance: false,
+    });
   });
 
   test("invalid upload metadata cannot mutate, release or imply sufficiency", async ({ request }) => {
@@ -76,6 +83,10 @@ test.describe("Phase 10 P0 API fail-closed contract", () => {
     expect(body.mutated).toBe(false);
     expect(body.noClientRelease).toBe(true);
     expect(body.issues).toEqual(["valid_role_key_required", "valid_tenant_slug_required"]);
+    expect(body.safety).toMatchObject({
+      failClosed: true,
+      silentStateAdvance: false,
+    });
   });
 
   test("invalid review monitoring query remains internal and no-advice", async ({ request }) => {
@@ -88,5 +99,26 @@ test.describe("Phase 10 P0 API fail-closed contract", () => {
     expect(body.noAdviceExecution).toBe(true);
     expect(body.noClientRelease).toBe(true);
     expect(body.issues).toEqual(["valid_as_of_required"]);
+  });
+
+  test("invalid export workflow scope fails closed without UI fallback proof", async ({ request }) => {
+    const response = await request.get("/api/export-workflow?tenantSlug=unknown&roleKey=pretend_role");
+    const body = await response.json();
+
+    expect(response.status(), JSON.stringify(body)).toBe(400);
+    expect(body.ok).toBe(false);
+    expect(body.mutated).toBe(false);
+    expect(body.noAdviceExecution).toBe(true);
+    expect(body.noClientRelease).toBe(true);
+    expect(body.issues).toEqual(["valid_tenant_slug_required", "valid_role_key_required"]);
+    expect(body.safety).toMatchObject({
+      failClosed: true,
+      hiddenRowsDisclosed: false,
+      noExportApproval: true,
+      noExportDownload: true,
+      scoped: false,
+      silentStateAdvance: false,
+    });
+    expect(body.snapshot).toBeNull();
   });
 });

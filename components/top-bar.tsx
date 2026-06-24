@@ -96,6 +96,12 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
               <KeyRound aria-hidden="true" className="size-3.5 text-alphavest-gold" />
               {session.role.internal ? "Internal actor" : "Client-safe actor"}
             </span>
+            <span
+              className="inline-flex h-10 items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/62 px-3 text-xs font-semibold text-alphavest-muted"
+              data-testid="topbar-search-scope"
+            >
+              Search scoped by tenant + role
+            </span>
             <span className="inline-flex h-10 items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/62 px-3 text-xs font-semibold text-alphavest-muted">
               {session.tenant.riskRating} risk · {session.tenant.jurisdiction}
             </span>
