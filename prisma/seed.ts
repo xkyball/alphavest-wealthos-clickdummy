@@ -13,6 +13,7 @@ import {
   DocumentStatus,
   EntityType,
   EscalationType,
+  EvidenceSufficiencyDecisionStatus,
   EvidenceStatus,
   ExportStatus,
   ExportType,
@@ -493,6 +494,7 @@ function journeyInstanceId(slug: string, journeyKey: string) {
 
 async function clearDemoData() {
   await prisma.$transaction([
+    prisma.evidenceSufficiencyDecision.deleteMany(),
     prisma.journeyCommandRun.deleteMany(),
     prisma.journeyObjectLink.deleteMany(),
     prisma.journeyStepInstance.deleteMany(),
@@ -2071,6 +2073,32 @@ async function seedJourneys() {
         createdAt: seedDate,
       }));
     }),
+  });
+
+  await prisma.evidenceSufficiencyDecision.createMany({
+    data: activeJourneyDefinitions.flatMap((definition) =>
+      definition.evidenceRequirements.map((requirement) => ({
+        id: stableId(`evidence-sufficiency:${seededTenantSlug}:${definition.journeyKey}:${requirement.key}`),
+        clientTenantId: tenantId(seededTenantSlug),
+        journeyInstanceId: journeyInstanceId(seededTenantSlug, definition.journeyKey),
+        requirementKey: requirement.key,
+        evidenceRecordId: evidenceRecordId(seededTenantSlug),
+        decision: EvidenceSufficiencyDecisionStatus.SUFFICIENT,
+        decidedByUserId: userId("compliance"),
+        decidedByRoleKey: "compliance_officer",
+        reason: "Demo seed records explicit reviewed, scoped evidence sufficiency without client release.",
+        reviewed: true,
+        scopeMatches: true,
+        relevanceConfirmed: true,
+        currentnessConfirmed: true,
+        metadataJson: {
+          demoSeed: true,
+          uploadIsNotSufficiency: true,
+          journeyKey: definition.journeyKey,
+        },
+        createdAt: date(-1),
+      }))
+    ),
   });
 
   await prisma.journeyCommandRun.createMany({

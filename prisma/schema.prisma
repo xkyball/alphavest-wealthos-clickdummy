@@ -309,6 +309,11 @@ enum JourneyObjectLinkRole {
   AUDIT_REFERENCE
 }
 
+enum EvidenceSufficiencyDecisionStatus {
+  SUFFICIENT
+  INSUFFICIENT
+}
+
 model PlatformTenant {
   id              String             @id @default(uuid()) @db.Uuid
   name            String             @db.VarChar(160)
@@ -328,54 +333,55 @@ model PlatformTenant {
 }
 
 model ClientTenant {
-  id                       String               @id @default(uuid()) @db.Uuid
-  platformTenantId         String               @db.Uuid
-  platformTenant           PlatformTenant       @relation(fields: [platformTenantId], references: [id], onDelete: Restrict)
-  displayName              String               @db.VarChar(180)
-  legalName                String?              @db.VarChar(220)
-  status                   TenantStatus         @default(DRAFT)
-  jurisdiction             String?              @db.VarChar(80)
-  relationshipTier         String?              @db.VarChar(80)
-  primaryAdvisorUserId     String?              @db.Uuid
-  primaryAnalystUserId     String?              @db.Uuid
-  complianceOwnerUserId    String?              @db.Uuid
-  clientSuccessOwnerUserId String?              @db.Uuid
-  policyProfileId          String?              @db.Uuid
-  dataRegion               String?              @db.VarChar(80)
-  riskRating               String?              @db.VarChar(40)
-  onboardingCompletedAt    DateTime?
-  createdAt                DateTime             @default(now())
-  updatedAt                DateTime             @updatedAt
-  userProfiles             UserProfile[]
-  roles                    Role[]
-  userRoles                UserRole[]
-  accessRequests           AccessRequest[]
-  secondConfirmations      SecondConfirmation[]
-  consentRecords           ConsentRecord[]
-  familyMembers            FamilyMember[]
-  relationships            Relationship[]
-  objectives               ClientObjective[]
-  engagements              Engagement[]
-  entities                 Entity[]
-  entityParticipants       EntityParticipant[]
-  assets                   Asset[]
-  documents                Document[]
-  triggers                 Trigger[]
-  actionItems              ActionItem[]
-  recommendations          Recommendation[]
-  approvals                Approval[]
-  complianceReviews        ComplianceReview[]
-  decisions                Decision[]
-  evidenceRecords          EvidenceRecord[]
-  reviewSchedules          ReviewSchedule[]
-  messageThreads           MessageThread[]
-  callEvents               CallEvent[]
-  exportRequests           ExportRequest[]
-  policies                 PolicyDefinition[]
-  queueItems               QueueItem[]
-  dataQualityIssues        DataQualityIssue[]
-  journeyInstances         JourneyInstance[]
-  auditEvents              AuditEvent[]
+  id                           String                        @id @default(uuid()) @db.Uuid
+  platformTenantId             String                        @db.Uuid
+  platformTenant               PlatformTenant                @relation(fields: [platformTenantId], references: [id], onDelete: Restrict)
+  displayName                  String                        @db.VarChar(180)
+  legalName                    String?                       @db.VarChar(220)
+  status                       TenantStatus                  @default(DRAFT)
+  jurisdiction                 String?                       @db.VarChar(80)
+  relationshipTier             String?                       @db.VarChar(80)
+  primaryAdvisorUserId         String?                       @db.Uuid
+  primaryAnalystUserId         String?                       @db.Uuid
+  complianceOwnerUserId        String?                       @db.Uuid
+  clientSuccessOwnerUserId     String?                       @db.Uuid
+  policyProfileId              String?                       @db.Uuid
+  dataRegion                   String?                       @db.VarChar(80)
+  riskRating                   String?                       @db.VarChar(40)
+  onboardingCompletedAt        DateTime?
+  createdAt                    DateTime                      @default(now())
+  updatedAt                    DateTime                      @updatedAt
+  userProfiles                 UserProfile[]
+  roles                        Role[]
+  userRoles                    UserRole[]
+  accessRequests               AccessRequest[]
+  secondConfirmations          SecondConfirmation[]
+  consentRecords               ConsentRecord[]
+  familyMembers                FamilyMember[]
+  relationships                Relationship[]
+  objectives                   ClientObjective[]
+  engagements                  Engagement[]
+  entities                     Entity[]
+  entityParticipants           EntityParticipant[]
+  assets                       Asset[]
+  documents                    Document[]
+  triggers                     Trigger[]
+  actionItems                  ActionItem[]
+  recommendations              Recommendation[]
+  approvals                    Approval[]
+  complianceReviews            ComplianceReview[]
+  decisions                    Decision[]
+  evidenceRecords              EvidenceRecord[]
+  evidenceSufficiencyDecisions EvidenceSufficiencyDecision[]
+  reviewSchedules              ReviewSchedule[]
+  messageThreads               MessageThread[]
+  callEvents                   CallEvent[]
+  exportRequests               ExportRequest[]
+  policies                     PolicyDefinition[]
+  queueItems                   QueueItem[]
+  dataQualityIssues            DataQualityIssue[]
+  journeyInstances             JourneyInstance[]
+  auditEvents                  AuditEvent[]
 
   @@index([platformTenantId])
   @@index([status])
@@ -1018,25 +1024,26 @@ model JourneyDefinition {
 }
 
 model JourneyInstance {
-  id              String                @id @default(uuid()) @db.Uuid
-  definitionId    String                @db.Uuid
-  definition      JourneyDefinition     @relation(fields: [definitionId], references: [id], onDelete: Restrict)
-  clientTenantId  String                @db.Uuid
-  clientTenant    ClientTenant          @relation(fields: [clientTenantId], references: [id], onDelete: Cascade)
-  ownerUserId     String?               @db.Uuid
-  status          JourneyInstanceStatus @default(CREATED)
-  currentStepKey  String?               @db.VarChar(80)
-  currentStageKey String?               @db.VarChar(80)
-  blockerCode     String?               @db.VarChar(80)
-  blockerReason   String?               @db.Text
-  startedAt       DateTime?
-  completedAt     DateTime?
-  metadataJson    Json?
-  createdAt       DateTime              @default(now())
-  updatedAt       DateTime              @updatedAt
-  steps           JourneyStepInstance[]
-  objectLinks     JourneyObjectLink[]
-  commandRuns     JourneyCommandRun[]
+  id                           String                        @id @default(uuid()) @db.Uuid
+  definitionId                 String                        @db.Uuid
+  definition                   JourneyDefinition             @relation(fields: [definitionId], references: [id], onDelete: Restrict)
+  clientTenantId               String                        @db.Uuid
+  clientTenant                 ClientTenant                  @relation(fields: [clientTenantId], references: [id], onDelete: Cascade)
+  ownerUserId                  String?                       @db.Uuid
+  status                       JourneyInstanceStatus         @default(CREATED)
+  currentStepKey               String?                       @db.VarChar(80)
+  currentStageKey              String?                       @db.VarChar(80)
+  blockerCode                  String?                       @db.VarChar(80)
+  blockerReason                String?                       @db.Text
+  startedAt                    DateTime?
+  completedAt                  DateTime?
+  metadataJson                 Json?
+  createdAt                    DateTime                      @default(now())
+  updatedAt                    DateTime                      @updatedAt
+  steps                        JourneyStepInstance[]
+  objectLinks                  JourneyObjectLink[]
+  commandRuns                  JourneyCommandRun[]
+  evidenceSufficiencyDecisions EvidenceSufficiencyDecision[]
 
   @@index([clientTenantId, status])
   @@index([definitionId])
@@ -1119,24 +1126,52 @@ model JourneyCommandRun {
   @@map("journey_command_runs")
 }
 
+model EvidenceSufficiencyDecision {
+  id                   String                            @id @default(uuid()) @db.Uuid
+  clientTenantId       String                            @db.Uuid
+  clientTenant         ClientTenant                      @relation(fields: [clientTenantId], references: [id], onDelete: Cascade)
+  journeyInstanceId    String                            @db.Uuid
+  journeyInstance      JourneyInstance                   @relation(fields: [journeyInstanceId], references: [id], onDelete: Cascade)
+  requirementKey       String                            @db.VarChar(100)
+  evidenceRecordId     String                            @db.Uuid
+  evidenceRecord       EvidenceRecord                    @relation(fields: [evidenceRecordId], references: [id], onDelete: Cascade)
+  decision             EvidenceSufficiencyDecisionStatus
+  decidedByUserId      String?                           @db.Uuid
+  decidedByRoleKey     String?                           @db.VarChar(120)
+  reason               String                            @db.Text
+  reviewed             Boolean                           @default(false)
+  scopeMatches         Boolean                           @default(false)
+  relevanceConfirmed   Boolean                           @default(false)
+  currentnessConfirmed Boolean                           @default(false)
+  auditEventId         String?                           @db.Uuid
+  metadataJson         Json?
+  createdAt            DateTime                          @default(now())
+
+  @@index([clientTenantId, createdAt])
+  @@index([journeyInstanceId, requirementKey, createdAt])
+  @@index([evidenceRecordId])
+  @@map("evidence_sufficiency_decisions")
+}
+
 model EvidenceRecord {
-  id                String           @id @default(uuid()) @db.Uuid
-  clientTenantId    String           @db.Uuid
-  clientTenant      ClientTenant     @relation(fields: [clientTenantId], references: [id], onDelete: Cascade)
-  engagementId      String?          @db.Uuid
-  engagement        Engagement?      @relation(fields: [engagementId], references: [id], onDelete: SetNull)
-  title             String           @db.VarChar(220)
-  status            EvidenceStatus
-  relatedObjectType ObjectType
-  relatedObjectId   String           @db.Uuid
-  summary           String?          @db.Text
-  visibilityStatus  VisibilityStatus
-  retentionPolicy   String?          @db.VarChar(120)
-  reviewDate        DateTime?        @db.Date
-  createdByUserId   String?          @db.Uuid
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  items             EvidenceItem[]
+  id                   String                        @id @default(uuid()) @db.Uuid
+  clientTenantId       String                        @db.Uuid
+  clientTenant         ClientTenant                  @relation(fields: [clientTenantId], references: [id], onDelete: Cascade)
+  engagementId         String?                       @db.Uuid
+  engagement           Engagement?                   @relation(fields: [engagementId], references: [id], onDelete: SetNull)
+  title                String                        @db.VarChar(220)
+  status               EvidenceStatus
+  relatedObjectType    ObjectType
+  relatedObjectId      String                        @db.Uuid
+  summary              String?                       @db.Text
+  visibilityStatus     VisibilityStatus
+  retentionPolicy      String?                       @db.VarChar(120)
+  reviewDate           DateTime?                     @db.Date
+  createdByUserId      String?                       @db.Uuid
+  createdAt            DateTime                      @default(now())
+  updatedAt            DateTime                      @updatedAt
+  items                EvidenceItem[]
+  sufficiencyDecisions EvidenceSufficiencyDecision[]
 
   @@index([clientTenantId, status])
   @@index([relatedObjectType, relatedObjectId])
