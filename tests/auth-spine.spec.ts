@@ -53,10 +53,16 @@ test.describe("Wave 0-2 auth spine", () => {
     const body = await response.json();
 
     expect(response.status(), JSON.stringify(body)).toBe(403);
+    expect(body.apiState).toBe("DENIED");
+    expect(body.mutated).toBe(false);
     expect(body.ok).toBe(false);
     expect(body.safeMessage).toBe("If this email is eligible, the next sign-in step will be shown.");
+    expect(body.noAdviceExecution).toBe(true);
+    expect(body.noClientRelease).toBe(true);
+    expect(body.safety.failClosed).toBe(true);
     expect(body.safety.hiddenRowsDisclosed).toBe(false);
     expect(body.safety.productionAuthClaim).toBe(false);
+    expect(body.safety.silentStateAdvance).toBe(false);
   });
 
   test("issues a safe JWT only after MFA 123456 and resolves current-user context", async ({ request }) => {
@@ -84,7 +90,13 @@ test.describe("Wave 0-2 auth spine", () => {
     const deniedBody = await deniedResponse.json();
 
     expect(deniedResponse.status(), JSON.stringify(deniedBody)).toBe(403);
+    expect(deniedBody.apiState).toBe("DENIED");
+    expect(deniedBody.mutated).toBe(false);
+    expect(deniedBody.noAdviceExecution).toBe(true);
+    expect(deniedBody.noClientRelease).toBe(true);
     expect(deniedBody.reasonCode).toBe("DUMMY_AUTH_MFA_INVALID_CODE");
+    expect(deniedBody.safety.failClosed).toBe(true);
+    expect(deniedBody.safety.silentStateAdvance).toBe(false);
 
     const successResponse = await request.post("/api/auth/mfa/verify", {
       data: {
@@ -160,7 +172,12 @@ test.describe("Wave 0-2 auth spine", () => {
     const missingBody = await missingResponse.json();
 
     expect(missingResponse.status(), JSON.stringify(missingBody)).toBe(401);
+    expect(missingBody.apiState).toBe("DENIED");
+    expect(missingBody.mutated).toBe(false);
+    expect(missingBody.reasonCode).toBe("PERMISSION_DENIED");
+    expect(missingBody.safety.failClosed).toBe(true);
     expect(missingBody.safety.hiddenRowsDisclosed).toBe(false);
+    expect(missingBody.safety.silentStateAdvance).toBe(false);
 
     const invalidResponse = await request.get("/api/current-user", {
       headers: {
@@ -170,6 +187,10 @@ test.describe("Wave 0-2 auth spine", () => {
     const invalidBody = await invalidResponse.json();
 
     expect(invalidResponse.status(), JSON.stringify(invalidBody)).toBe(401);
+    expect(invalidBody.apiState).toBe("DENIED");
+    expect(invalidBody.mutated).toBe(false);
+    expect(invalidBody.reasonCode).toBe("PERMISSION_DENIED");
     expect(invalidBody.safety.internalPayloadReturned).toBe(false);
+    expect(invalidBody.safety.silentStateAdvance).toBe(false);
   });
 });

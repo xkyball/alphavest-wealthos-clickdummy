@@ -8,7 +8,10 @@ export type FailClosedReasonCode =
   | "SAFE_ERROR"
   | "SCOPE_DENIED";
 
+export type FailClosedApiState = "AUDIT_FAILURE" | "DENIED" | "ERROR" | "VALIDATION_ERROR";
+
 export type FailClosedErrorEnvelope = {
+  apiState: FailClosedApiState;
   error: string;
   issues?: unknown[];
   mutated: false;
@@ -23,20 +26,31 @@ export type FailClosedErrorEnvelope = {
   };
 };
 
+function apiStateForReason(reasonCode: FailClosedReasonCode): FailClosedApiState {
+  if (reasonCode === "AUDIT_PERSISTENCE_UNAVAILABLE") return "AUDIT_FAILURE";
+  if (reasonCode === "INVALID_REQUEST") return "VALIDATION_ERROR";
+  if (reasonCode === "PERMISSION_DENIED" || reasonCode === "SCOPE_DENIED") return "DENIED";
+
+  return "ERROR";
+}
+
 export function buildFailClosedErrorEnvelope(input: {
   error: string;
   issues?: unknown[];
   reasonCode?: FailClosedReasonCode;
   retryAllowed?: boolean;
 }): FailClosedErrorEnvelope {
+  const reasonCode = input.reasonCode ?? "SAFE_ERROR";
+
   return {
+    apiState: apiStateForReason(reasonCode),
     error: input.error,
     issues: input.issues,
     mutated: false,
     noAdviceExecution: true,
     noClientRelease: true,
     ok: false,
-    reasonCode: input.reasonCode ?? "SAFE_ERROR",
+    reasonCode,
     retryAllowed: input.retryAllowed ?? false,
     safety: {
       failClosed: true,

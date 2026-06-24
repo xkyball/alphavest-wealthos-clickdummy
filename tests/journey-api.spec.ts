@@ -83,6 +83,7 @@ test.describe("Wave 0-2 Journey APIs and command execution", () => {
     const body = await response.json();
 
     expect(response.status(), JSON.stringify(body)).toBe(401);
+    expect(body.apiState).toBe("DENIED");
     expect(body.ok).toBe(false);
     expect(body.mutated).toBe(false);
     expect(body.reasonCode).toBe("PERMISSION_DENIED");
@@ -163,6 +164,7 @@ test.describe("Wave 0-2 Journey APIs and command execution", () => {
     const body = await response.json();
 
     expect(response.status(), JSON.stringify(body)).toBe(400);
+    expect(body.apiState).toBe("VALIDATION_ERROR");
     expect(body.ok).toBe(false);
     expect(body.mutated).toBe(false);
     expect(body.issues).toContain("valid_command_required");
@@ -384,6 +386,7 @@ test.describe("Wave 0-2 Journey APIs and command execution", () => {
     });
     const crossTenantBody = await crossTenant.json();
     expect(crossTenant.status(), JSON.stringify(crossTenantBody)).toBe(403);
+    expect(crossTenantBody.apiState).toBe("DENIED");
     expect(crossTenantBody.reasonCode).toBe("SCOPE_DENIED");
     expect(crossTenantBody.mutated).toBe(false);
 

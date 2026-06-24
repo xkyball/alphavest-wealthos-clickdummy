@@ -31,6 +31,8 @@ test.describe("Wave 0-2 client work UI", () => {
     await expect(page.getByTestId("journey-dashboard")).toBeVisible();
     await expect(page.getByTestId("page-header").getByRole("heading", { name: "Work Dashboard" })).toBeVisible();
     await expect(page.getByText("Client-visible outcomes stay gated")).toBeVisible();
+    await expect(page.getByTestId("journey-worklist-state")).toHaveAttribute("data-run2-list-state", "data-bound");
+    await expect(page.getByTestId("journey-startable-state")).toHaveAttribute("data-run2-list-state", "data-bound");
     await expect(page.getByTestId("journey-worklist-card")).toHaveCount(7);
     await expect(page.getByTestId("journey-hold-panel")).toContainText("MJ-004");
     await expect(page.getByTestId("journey-hold-panel")).toContainText("MJ-007");
@@ -55,10 +57,33 @@ test.describe("Wave 0-2 client work UI", () => {
     await expect(page.getByRole("heading", { name: "Audit spine" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Client projection preview" })).toBeVisible();
     await expect(page.getByText("Work state is orientation only", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("command acceptance never equals client release or advice execution")).toBeVisible();
+    await expect(page.getByRole("button", { name: "COMPLETE_STEP" })).toHaveAttribute("data-run2-action-state", "permission-denied");
 
     await page.screenshot({
       fullPage: true,
       path: "artifacts/screenshots/wave02-journey-detail.png",
+    });
+  });
+
+  test("keeps the journey command visible on mobile without overclaiming action state", async ({ page }) => {
+    await authenticate(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/journeys");
+
+    const exportJourney = page.getByTestId("journey-worklist-card").filter({ hasText: "MJ-005" }).first();
+    await exportJourney.getByRole("link", { name: /open detail/i }).click();
+
+    await expect(page.getByTestId("journey-sticky-action")).toBeVisible();
+    await expect(page.getByTestId("journey-sticky-action")).toContainText("Next safe action");
+    await expect(page.getByTestId("journey-sticky-action").getByRole("button", { name: "COMPLETE_STEP" })).toHaveAttribute(
+      "data-run2-action-state",
+      "permission-denied",
+    );
+
+    await page.screenshot({
+      fullPage: true,
+      path: "artifacts/screenshots/wave02-journey-detail-mobile.png",
     });
   });
 });

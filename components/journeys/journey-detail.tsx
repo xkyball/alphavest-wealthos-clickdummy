@@ -359,6 +359,19 @@ export function JourneyDetail({ journeyId }: { journeyId: string }) {
 
   const blocked = detail.status === "BLOCKED" || nextAction?.type === "RESOLVE_BLOCKER" || nextAction?.type === "BLOCKED";
   const projectionViewLabel = detail.projectionType === "client" ? "Client workspace" : "Team workspace";
+  const actionButtonLabel = runningCommand ? "Running..." : command;
+  const actionButtonContent = (
+    <>
+      {actorMayRun ? <Play aria-hidden="true" className="size-4" /> : <LockKeyhole aria-hidden="true" className="size-4" />}
+      {actionButtonLabel}
+    </>
+  );
+  const actionButtonClassName = cn(
+    "inline-flex h-10 w-full items-center justify-center gap-2 rounded-md text-sm font-semibold transition",
+    actorMayRun
+      ? "bg-alphavest-gold text-alphavest-navy hover:bg-alphavest-gold-soft"
+      : "cursor-not-allowed border border-alphavest-border text-alphavest-subtle"
+  );
 
   return (
     <div className="space-y-6" data-testid="journey-detail">
@@ -397,6 +410,33 @@ export function JourneyDetail({ journeyId }: { journeyId: string }) {
         </div>
       </section>
 
+      {command ? (
+        <section
+          className="sticky bottom-3 z-20 rounded-md border border-alphavest-gold/45 bg-alphavest-navy/95 p-3 shadow-2xl shadow-black/30 xl:hidden"
+          data-testid="journey-sticky-action"
+        >
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase text-alphavest-gold-soft">Next safe action</p>
+              <p className="mt-1 text-xs leading-5 text-alphavest-muted">
+                {actorMayRun
+                  ? "Runs through the API gate and audit spine; client release remains separate."
+                  : `Required actor: ${nextAction?.actorRoleKey ?? "authorized operator"}.`}
+              </p>
+            </div>
+            <button
+              className={cn(actionButtonClassName, "sm:w-auto sm:px-4")}
+              data-run2-action-state={actorMayRun ? "enabled" : "permission-denied"}
+              disabled={!actorMayRun || runningCommand}
+              onClick={runCommand}
+              type="button"
+            >
+              {actionButtonContent}
+            </button>
+          </div>
+        </section>
+      ) : null}
+
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <section className="rounded-md border border-alphavest-border bg-alphavest-panel/72 p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -422,7 +462,7 @@ export function JourneyDetail({ journeyId }: { journeyId: string }) {
           <section className="rounded-md border border-alphavest-border bg-alphavest-panel/72 p-4">
             <h2 className="font-display text-xl text-alphavest-ivory">Available action</h2>
             <p className="mt-2 text-xs leading-5 text-alphavest-muted">
-              Only API-supported commands are exposed. Permission denial leaves state unchanged.
+              Only API-supported commands are exposed. Permission denial leaves state unchanged, and command acceptance never equals client release or advice execution.
             </p>
             <div className="mt-4 rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/42 p-3">
               <p className="text-xs font-semibold uppercase text-alphavest-gold-soft">
@@ -431,18 +471,13 @@ export function JourneyDetail({ journeyId }: { journeyId: string }) {
               <p className="mt-2 text-sm leading-6 text-alphavest-muted">{nextAction?.detail}</p>
               {command ? (
                 <button
-                  className={cn(
-                    "mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md text-sm font-semibold transition",
-                    actorMayRun
-                      ? "bg-alphavest-gold text-alphavest-navy hover:bg-alphavest-gold-soft"
-                      : "cursor-not-allowed border border-alphavest-border text-alphavest-subtle"
-                  )}
+                  className={cn(actionButtonClassName, "mt-4")}
+                  data-run2-action-state={actorMayRun ? "enabled" : "permission-denied"}
                   disabled={!actorMayRun || runningCommand}
                   onClick={runCommand}
                   type="button"
                 >
-                  {actorMayRun ? <Play aria-hidden="true" className="size-4" /> : <LockKeyhole aria-hidden="true" className="size-4" />}
-                  {runningCommand ? "Running..." : command}
+                  {actionButtonContent}
                 </button>
               ) : (
                 <p className="mt-4 flex items-start gap-2 rounded-md border border-alphavest-border/70 bg-alphavest-navy/30 p-3 text-xs leading-5 text-alphavest-muted">

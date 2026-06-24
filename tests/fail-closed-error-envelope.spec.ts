@@ -11,6 +11,7 @@ test.describe("WCL WS-10 fail-closed error envelope", () => {
     });
 
     expect(envelope).toEqual({
+      apiState: "VALIDATION_ERROR",
       error: "Invalid demo workflow request.",
       issues: ["action_required"],
       mutated: false,
@@ -34,6 +35,7 @@ test.describe("WCL WS-10 fail-closed error envelope", () => {
     });
 
     expect(envelope.retryAllowed).toBe(true);
+    expect(envelope.apiState).toBe("ERROR");
     expect(envelope.mutated).toBe(false);
     expect(envelope.noAdviceExecution).toBe(true);
     expect(envelope.noClientRelease).toBe(true);
@@ -61,6 +63,7 @@ test.describe("WCL WS-10 fail-closed error envelope", () => {
     const body = await response.json();
 
     expect(body).toMatchObject({
+      apiState: "VALIDATION_ERROR",
       error: "Invalid support API request.",
       mutated: false,
       noAdviceExecution: true,

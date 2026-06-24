@@ -78,11 +78,13 @@ function JourneyCard({ journey }: { journey: JourneyListItem }) {
 function DefinitionCard({
   definition,
   disabled,
+  disabledReason,
   onStart,
   starting,
 }: {
   definition: JourneyDefinitionSummary;
   disabled: boolean;
+  disabledReason?: string;
   onStart: (definition: JourneyDefinitionSummary) => void;
   starting: boolean;
 }) {
@@ -103,8 +105,10 @@ function DefinitionCard({
               ? "cursor-not-allowed border border-alphavest-border text-alphavest-subtle"
               : "bg-alphavest-gold text-alphavest-navy hover:bg-alphavest-gold-soft"
           )}
+          data-run2-action-state={disabled ? "disabled" : "enabled"}
           disabled={disabled}
           onClick={() => onStart(definition)}
+          title={disabledReason}
           type="button"
         >
           {starting ? <RefreshCw aria-hidden="true" className="size-3.5 animate-spin" /> : <Play aria-hidden="true" className="size-3.5" />}
@@ -157,6 +161,8 @@ export function JourneyDashboard() {
   const activeJourneys = useMemo(() => data?.journeys ?? [], [data?.journeys]);
   const existingKeys = useMemo(() => new Set(activeJourneys.map((journey) => journey.journeyKey)), [activeJourneys]);
   const startableDefinitions = data?.availableDefinitions ?? [];
+  const worklistState = error ? "error" : loading ? "loading" : activeJourneys.length > 0 ? "data-bound" : "empty";
+  const startableState = loading ? "loading" : startableDefinitions.length > 0 ? "data-bound" : "empty";
 
   async function refresh() {
     if (!jwt) return;
@@ -233,8 +239,12 @@ export function JourneyDashboard() {
             <h2 className="font-display text-2xl text-alphavest-ivory">Active worklist</h2>
             <p className="text-xs font-semibold uppercase text-alphavest-subtle">{loading ? "Loading" : `${activeJourneys.length} scoped work items`}</p>
           </div>
+          <div aria-busy={loading} data-run2-list-state={worklistState} data-testid="journey-worklist-state">
           {loading ? (
-            <div className="rounded-md border border-alphavest-border bg-alphavest-panel/72 p-8 text-center text-sm text-alphavest-muted">
+            <div
+              className="rounded-md border border-alphavest-border bg-alphavest-panel/72 p-8 text-center text-sm text-alphavest-muted"
+              data-testid="journey-worklist-loading"
+            >
               Loading scoped work items...
             </div>
           ) : activeJourneys.length > 0 ? (
@@ -244,28 +254,55 @@ export function JourneyDashboard() {
               ))}
             </div>
           ) : (
-            <div className="rounded-md border border-alphavest-border bg-alphavest-panel/72 p-8 text-center text-sm text-alphavest-muted">
+            <div
+              className="rounded-md border border-alphavest-border bg-alphavest-panel/72 p-8 text-center text-sm text-alphavest-muted"
+              data-testid="journey-worklist-empty"
+            >
               No scoped work items are available for this demo actor.
             </div>
           )}
+          </div>
         </div>
 
         <aside className="space-y-4">
-          <section className="rounded-md border border-alphavest-border bg-alphavest-panel/72 p-4">
+          <section
+            aria-busy={loading}
+            className="rounded-md border border-alphavest-border bg-alphavest-panel/72 p-4"
+            data-run2-list-state={startableState}
+            data-testid="journey-startable-state"
+          >
             <h2 className="font-display text-xl text-alphavest-ivory">Startable definitions</h2>
             <p className="mt-2 text-xs leading-5 text-alphavest-muted">
               Starting creates an internal work item only. It does not release client advice.
             </p>
             <div className="mt-4 grid gap-3">
-              {startableDefinitions.map((definition) => (
-                <DefinitionCard
-                  definition={definition}
-                  disabled={startingKey !== null || existingKeys.has(definition.journeyKey)}
-                  key={definition.journeyKey}
-                  onStart={startJourney}
-                  starting={startingKey === definition.journeyKey}
-                />
-              ))}
+              {startableDefinitions.length > 0 ? (
+                startableDefinitions.map((definition) => {
+                  const alreadyStarted = existingKeys.has(definition.journeyKey);
+                  const busy = startingKey !== null;
+
+                  return (
+                    <DefinitionCard
+                      definition={definition}
+                      disabled={busy || alreadyStarted}
+                      disabledReason={
+                        alreadyStarted
+                          ? "This work item already exists for the scoped demo actor."
+                          : busy
+                            ? "Another work item is being created."
+                            : undefined
+                      }
+                      key={definition.journeyKey}
+                      onStart={startJourney}
+                      starting={startingKey === definition.journeyKey}
+                    />
+                  );
+                })
+              ) : (
+                <p className="rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-3 text-xs leading-5 text-alphavest-muted">
+                  No startable definitions are exposed for this actor and tenant scope.
+                </p>
+              )}
             </div>
           </section>
 
