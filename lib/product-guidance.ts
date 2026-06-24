@@ -461,6 +461,45 @@ function routeFromPathname(pathname: string) {
   return matchRouteBySegments(normalized.split("/").filter(Boolean)) ?? null;
 }
 
+function journeyGuidanceForPathname(pathname: string): ProductGuidance | null {
+  const cleanPath = pathname.split("?")[0]?.split("#")[0] ?? "/";
+  const normalized = cleanPath.length > 1 ? cleanPath.replace(/\/+$/, "") : cleanPath;
+
+  if (normalized !== "/journeys" && !normalized.startsWith("/journeys/")) {
+    return null;
+  }
+
+  const detail = normalized.startsWith("/journeys/");
+
+  return {
+    area: "Journey-first",
+    ctaState: {
+      blockedReason: "Journey actions remain blocked unless the scoped API allows the current actor and state.",
+      primaryAction: detail ? { href: "/journeys", label: "Back to Journey Dashboard" } : undefined,
+      recovery: { href: "/journeys", label: "Review Journey Dashboard" },
+      state: "guarded",
+    },
+    densityTier: "D2",
+    gateHint: "Journey status is orientation only; evidence sufficiency, audit proof, release and client projection remain separate.",
+    primaryAction: detail ? { href: "/journeys", label: "Back to Journey Dashboard" } : undefined,
+    purpose: detail
+      ? "Inspect one journey's stage, step, evidence posture, audit spine and client-safe projection without implying release."
+      : "Orient work around scoped journeys, safe next actions and source-locked holds.",
+    relatedRoutes: detail ? [] : [{ href: "/journeys", label: "Refresh journey worklist" }],
+    routePolicyLabels: ["NO_SCREEN_GENERATION", "NO_ADVICE_RELEASE", "API_SCOPED_JOURNEY_STATE"],
+    shortTitle: detail ? "Journey detail" : "Journey Dashboard",
+    steps: [],
+    tier: "MVP_SUPPORT",
+    tierLabel: "Journey spine",
+    workbenchStructure: {
+      actionRail: "Only supported Journey API commands are exposed.",
+      context: "Stage, actor, blockers, evidence and client projection are shown together.",
+      queue: "Scoped journey instances and Wave 0-2 holds stay visible without becoming executable.",
+      safety: "Client-facing output stays gated until release and projection controls pass.",
+    },
+  };
+}
+
 function workbenchStructureForRoute(route: ScreenRoute, guidance: Pick<ProductGuidance, "area" | "gateHint" | "primaryAction" | "shortTitle" | "tierLabel">) {
   if (!uxPage002WorkbenchRouteIds.has(route.pageId)) return undefined;
 
@@ -576,6 +615,12 @@ export function productGuidanceForRoute(route: ScreenRoute): ProductGuidance {
 }
 
 export function productGuidanceForPathname(pathname: string): ProductGuidance {
+  const journeyGuidance = journeyGuidanceForPathname(pathname);
+
+  if (journeyGuidance) {
+    return journeyGuidance;
+  }
+
   const route = routeFromPathname(pathname);
 
   if (route) {

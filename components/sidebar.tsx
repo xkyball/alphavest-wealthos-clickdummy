@@ -1,6 +1,7 @@
 "use client";
 
-import { CircleCheck, LockKeyhole, X } from "lucide-react";
+import { CircleCheck, LockKeyhole, Route, X } from "lucide-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useDemoSession } from "@/components/demo-session-provider";
 import { isActiveNavigationItem, navigationGroupsForRole } from "@/lib/navigation";
@@ -32,6 +33,27 @@ function NavigationContent({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <>
       <AlphaVestMark />
+
+      <Link
+        aria-current={pathname.startsWith("/journeys") ? "page" : undefined}
+        className={cn(
+          "flex min-h-12 items-start gap-3 rounded-md border px-3 py-2.5 text-xs transition",
+          pathname.startsWith("/journeys")
+            ? "border-alphavest-gold/55 bg-alphavest-gold/12 text-alphavest-gold-soft"
+            : "border-alphavest-border/55 bg-alphavest-charcoal/42 text-alphavest-muted hover:border-alphavest-gold/60 hover:text-alphavest-gold-soft"
+        )}
+        data-testid="journey-first-navigation"
+        href="/journeys"
+        onClick={onNavigate}
+      >
+        <Route aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
+        <span className="min-w-0 flex-1">
+          <span className="block truncate font-semibold">Journeys</span>
+          <span className="block line-clamp-2 text-[0.66rem] leading-4 text-alphavest-subtle">
+            Worklist, stages and safe next actions.
+          </span>
+        </span>
+      </Link>
 
       <nav
         aria-label="Primary navigation"
