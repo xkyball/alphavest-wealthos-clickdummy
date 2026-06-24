@@ -11,6 +11,7 @@ type P0ProofRow = {
   expectation: string;
   mode: "positive" | "negative";
   proof: string;
+  taskId: "RUN2-T1.1" | "RUN2-T1.2" | "RUN2-T1.3" | "RUN2-T1.4";
 };
 
 const requiredP0ProofRows: P0ProofRow[] = [
@@ -18,43 +19,57 @@ const requiredP0ProofRows: P0ProofRow[] = [
     area: "Auth/Journey",
     expectation: "Known DB user completes stub MFA and receives scoped journey access.",
     mode: "positive",
-    proof: "IMPL-7.2A",
+    proof: "RUN2-P0-AUTH-POSITIVE",
+    taskId: "RUN2-T1.1",
   },
   {
     area: "Evidence/Gate/Projection",
     expectation: "Accepted P0 journey exposes evidence sufficiency and client projection without internal payload leakage.",
     mode: "positive",
-    proof: "IMPL-7.2B",
+    proof: "RUN2-P0-GATE-PROJECTION-POSITIVE",
+    taskId: "RUN2-T1.2",
   },
   {
     area: "Export",
     expectation: "Client-safe export scope can preview through explicit redaction before approval.",
     mode: "positive",
-    proof: "IMPL-7.2B",
+    proof: "RUN2-P0-EXPORT-PREVIEW-POSITIVE",
+    taskId: "RUN2-T1.3",
   },
   {
     area: "Auth/RBAC/Admin",
     expectation: "Wrong MFA, missing auth, cross-tenant access and admin force paths fail closed.",
     mode: "negative",
-    proof: "IMPL-7.3A",
+    proof: "RUN2-P0-AUTH-SCOPE-ADMIN-NEGATIVE",
+    taskId: "RUN2-T1.1",
   },
   {
     area: "Evidence/Advisor/Compliance",
     expectation: "Upload-only and advisor-only states cannot release client-visible output.",
     mode: "negative",
-    proof: "IMPL-7.3B",
+    proof: "RUN2-P0-GATE-ORDER-NEGATIVE",
+    taskId: "RUN2-T1.2",
   },
   {
     area: "AI/Projection/Export",
     expectation: "Internal rationale and compliance notes are blocked from client projection and export preview.",
     mode: "negative",
-    proof: "IMPL-7.3C",
+    proof: "RUN2-P0-INTERNAL-LEAKAGE-NEGATIVE",
+    taskId: "RUN2-T1.3",
   },
   {
     area: "Hold Journeys",
     expectation: "Wave 0-2 hold journeys remain unavailable for creation.",
     mode: "negative",
-    proof: "IMPL-7.3D",
+    proof: "RUN2-P0-HOLD-ROUTE-NEGATIVE",
+    taskId: "RUN2-T1.3",
+  },
+  {
+    area: "UI states",
+    expectation: "Journey UI blocked, denied, list-state, microcopy and mobile sticky-action checks are covered by journey-ui.",
+    mode: "positive",
+    proof: "RUN2-P0-UI-REGRESSION-POSITIVE",
+    taskId: "RUN2-T1.4",
   },
 ];
 
@@ -104,7 +119,7 @@ function safeScopeItem(label: string) {
 async function createExportRequest(request: APIRequestContext, label: string) {
   const response = await exportCommand(request, {
     command: "SET_SCOPE",
-    reason: "Epic 7 P0 release validation selects only client-safe released objects.",
+    reason: "Run2 Epic 5 P0 validation selects only client-safe released objects.",
     redactionProfile: "client-safe-redacted",
     roleKey: "compliance_officer",
     scopeItems: [safeScopeItem(label)],
@@ -119,27 +134,31 @@ async function createExportRequest(request: APIRequestContext, label: string) {
   return body.exportRequestId as string;
 }
 
-test.describe.serial("Epic 7 Wave 0-2 P0 test and release validation", () => {
+test.describe.serial("Run2 Epic 5 Wave 0-2 P0 test expansion and final validation", () => {
   test.beforeAll(() => {
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
   });
 
-  test("SPEC-7.1 maps required P0 positive and negative proof rows", () => {
-    expect(requiredP0ProofRows).toHaveLength(7);
+  test("RUN2-Q3 maps required P0 positive and negative proof rows to Run2 subtasks", () => {
+    expect(requiredP0ProofRows).toHaveLength(8);
+    expect(new Set(requiredP0ProofRows.map((row) => row.taskId))).toEqual(
+      new Set(["RUN2-T1.1", "RUN2-T1.2", "RUN2-T1.3", "RUN2-T1.4"]),
+    );
     expect(requiredP0ProofRows.filter((row) => row.mode === "positive").map((row) => row.proof).sort()).toEqual([
-      "IMPL-7.2A",
-      "IMPL-7.2B",
-      "IMPL-7.2B",
+      "RUN2-P0-AUTH-POSITIVE",
+      "RUN2-P0-EXPORT-PREVIEW-POSITIVE",
+      "RUN2-P0-GATE-PROJECTION-POSITIVE",
+      "RUN2-P0-UI-REGRESSION-POSITIVE",
     ]);
     expect(requiredP0ProofRows.filter((row) => row.mode === "negative").map((row) => row.proof).sort()).toEqual([
-      "IMPL-7.3A",
-      "IMPL-7.3B",
-      "IMPL-7.3C",
-      "IMPL-7.3D",
+      "RUN2-P0-AUTH-SCOPE-ADMIN-NEGATIVE",
+      "RUN2-P0-GATE-ORDER-NEGATIVE",
+      "RUN2-P0-HOLD-ROUTE-NEGATIVE",
+      "RUN2-P0-INTERNAL-LEAKAGE-NEGATIVE",
     ]);
   });
 
-  test("IMPL-7.2A proves positive Auth/Journey access for scoped P0 users", async ({ request }) => {
+  test("RUN2-T1.1 proves positive Auth/Journey access for scoped P0 users", async ({ request }) => {
     const jwt = await jwtFor(request, "cfo.bennett@example.demo");
 
     const currentUserResponse = await request.get("/api/current-user", {
@@ -176,7 +195,7 @@ test.describe.serial("Epic 7 Wave 0-2 P0 test and release validation", () => {
     expect(createBody.mutated).toBe(true);
   });
 
-  test("IMPL-7.2B proves positive evidence, projection and export preview gates", async ({ request }) => {
+  test("RUN2-T1.2/T1.3 proves positive evidence, projection and export preview gates", async ({ request }) => {
     const jwt = await jwtFor(request, "cfo.bennett@example.demo");
     const journeysResponse = await request.get("/api/journeys", {
       headers: bearer(jwt),
@@ -216,7 +235,7 @@ test.describe.serial("Epic 7 Wave 0-2 P0 test and release validation", () => {
         status: "RELEASED_TO_CLIENT",
         title: "Liquidity governance decision",
       },
-      reason: "Preview client-safe export package for Epic 7 P0 positive proof.",
+      reason: "Preview client-safe export package for Run2 Epic 5 P0 positive proof.",
       redactionProfile: "client-safe-redacted",
       roleKey: "compliance_officer",
       tenantSlug: "summit",
@@ -228,7 +247,7 @@ test.describe.serial("Epic 7 Wave 0-2 P0 test and release validation", () => {
     expect(previewBody.noClientRelease).toBe(true);
   });
 
-  test("IMPL-7.3A blocks wrong MFA, missing auth, cross-tenant access and admin bypass", async ({ request }) => {
+  test("RUN2-T1.1 blocks wrong MFA, missing auth, cross-tenant access and admin bypass", async ({ request }) => {
     const wrongMfa = await request.post("/api/auth/mfa/verify", {
       data: {
         code: "000000",
@@ -267,7 +286,7 @@ test.describe.serial("Epic 7 Wave 0-2 P0 test and release validation", () => {
         clientSafeSummary: "Admin cannot release.",
         command: "COMPLIANCE_RELEASE",
         confirmationPhrase: "RELEASE CLIENT-SAFE JOURNEY",
-        reason: "Epic 7 admin non-bypass proof.",
+        reason: "Run2 Epic 5 admin non-bypass proof.",
       },
       headers: bearer(adminJwt),
     });
@@ -277,7 +296,7 @@ test.describe.serial("Epic 7 Wave 0-2 P0 test and release validation", () => {
     expect(adminReleaseBody.issues).toContain("admin_non_bypass");
   });
 
-  test("IMPL-7.3B blocks upload-only and advisor-only release paths", async ({ request }) => {
+  test("RUN2-T1.2 blocks upload-only and advisor-only release paths", async ({ request }) => {
     const cfoJwt = await jwtFor(request, "cfo.bennett@example.demo");
     const advisorJwt = await jwtFor(request, "thabo.advisor@alphavest.demo");
     const complianceJwt = await jwtFor(request, "naledi.compliance@alphavest.demo");
@@ -304,7 +323,7 @@ test.describe.serial("Epic 7 Wave 0-2 P0 test and release validation", () => {
         clientSafeSummary: "Client-safe summary cannot release without evidence sufficiency.",
         command: "COMPLIANCE_RELEASE",
         confirmationPhrase: "RELEASE CLIENT-SAFE JOURNEY",
-        reason: "Epic 7 upload-only/advisor-only release block proof.",
+        reason: "Run2 Epic 5 upload-only/advisor-only release block proof.",
       },
       headers: bearer(complianceJwt),
     });
@@ -315,7 +334,7 @@ test.describe.serial("Epic 7 Wave 0-2 P0 test and release validation", () => {
     expect(releaseWithoutEvidenceBody.issues.some((issue: string) => issue.startsWith("evidence_sufficiency:"))).toBe(true);
   });
 
-  test("IMPL-7.3C blocks AI/internal rationale leakage from export payloads", async ({ request }) => {
+  test("RUN2-T1.3 blocks AI/internal rationale leakage from export payloads", async ({ request }) => {
     const exportRequestId = await createExportRequest(request, "negative-leakage");
 
     const response = await exportCommand(request, {
@@ -326,7 +345,7 @@ test.describe.serial("Epic 7 Wave 0-2 P0 test and release validation", () => {
         complianceNotes: "Internal compliance-only note.",
         internalRationale: "Model rationale.",
       },
-      reason: "Epic 7 unsafe export preview must fail closed.",
+      reason: "Run2 Epic 5 unsafe export preview must fail closed.",
       redactionProfile: "client-safe-redacted",
       roleKey: "compliance_officer",
       tenantSlug: "summit",
@@ -341,7 +360,7 @@ test.describe.serial("Epic 7 Wave 0-2 P0 test and release validation", () => {
     expect(body.safety.commandExecuted).toBe(false);
   });
 
-  test("IMPL-7.3D keeps Wave 0-2 hold journeys blocked", async ({ request }) => {
+  test("RUN2-T1.3 keeps Wave 0-2 hold journeys blocked", async ({ request }) => {
     const jwt = await jwtFor(request, "cfo.bennett@example.demo");
 
     for (const journeyKey of ["MJ-004", "MJ-007"]) {
