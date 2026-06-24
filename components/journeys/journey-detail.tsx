@@ -312,7 +312,9 @@ export function JourneyDetail({ journeyId }: { journeyId: string }) {
         }),
         method: "POST",
       });
-      setFeedback(`${result.command} accepted. Audit event ${result.auditEventId ?? "created by API"}.`);
+      setFeedback(
+        `${result.command} accepted. Audit event ${result.auditEventId ?? "created by API"}. Client release and advice execution remain separate.`,
+      );
       await load();
     } catch (runError) {
       setCommandError(safeErrorMessage(runError, "Workflow command failed closed."));
