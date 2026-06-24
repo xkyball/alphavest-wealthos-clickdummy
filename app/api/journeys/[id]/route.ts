@@ -19,7 +19,7 @@ async function journeyId(context: RouteContext) {
 }
 
 function errorResponse(error: unknown) {
-  const normalized = normalizeJourneyRouteError(error, "Journey detail is not available for this request.");
+  const normalized = normalizeJourneyRouteError(error, "Work detail is not available for this request.");
   return failClosedJson(
     {
       error: normalized.message,

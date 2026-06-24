@@ -49,7 +49,7 @@ const defaultSteps: JourneyStepDefinition[] = [
     key: "intake.confirm_scope",
     sortOrder: 10,
     stageKey: "intake",
-    title: "Confirm tenant, actor and journey scope",
+    title: "Confirm tenant, actor and work scope",
     requiresAudit: true,
   },
   {
@@ -159,12 +159,12 @@ const journeySpecificSteps: Partial<Record<string, JourneyStepDefinition[]>> = {
 
 const acceptedDescriptions: Record<string, string> = {
   "MJ-001": "DB-backed onboarding spine from tenant intake through first compliance-released, client-safe decision.",
-  "MJ-002": "Evidence upload and sufficiency journey where upload success remains separate from evidence acceptance.",
-  "MJ-003": "Internal-only draft review journey proving unsupported claims are blocked and rebuilt with evidence.",
-  "MJ-005": "Export scope, redaction, approval, generation and download journey with client-safe separation.",
-  "MJ-006": "Tenant and object isolation journey proving route access never substitutes for payload authorization.",
-  "MJ-010": "Admin governance journey proving role changes cannot bypass compliance release.",
-  "MJ-012": "Data-quality support journey for internal remediation without client advice execution.",
+  "MJ-002": "Evidence upload and sufficiency process where upload success remains separate from evidence acceptance.",
+  "MJ-003": "Internal-only draft review proving unsupported claims are blocked and rebuilt with evidence.",
+  "MJ-005": "Export scope, redaction, approval, generation and download process with client-safe separation.",
+  "MJ-006": "Tenant and object isolation control proving route access never substitutes for payload authorization.",
+  "MJ-010": "Admin governance control proving role changes cannot bypass compliance release.",
+  "MJ-012": "Data-quality support workstream for internal remediation without client advice execution.",
 };
 
 const deferredDescriptions: Record<string, string> = {
@@ -185,7 +185,7 @@ function definitionFromProof(journeyKey: string): JourneyDefinition {
       acceptedDescriptions[journeyKey] ??
       deferredDescriptions[journeyKey] ??
       blocked?.reason ??
-      "Journey metadata is retained for registry completeness but is not executable in Wave 0-2.",
+      "Work metadata is retained for registry completeness but is not executable in Wave 0-2.",
     evidenceRequirements: executable
       ? [
           {

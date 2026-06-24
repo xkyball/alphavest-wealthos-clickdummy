@@ -222,13 +222,13 @@ export const wp15CoverageMatrix: Wp15CoverageEntry[] = [
   {
     blocksV096Acceptance: false,
     category: "TRUE_UX",
-    evidence: "Navigation groups order the core journey and keep reference/P1/HOLD routes out of productive nav.",
+    evidence: "Navigation groups order the core client work and keep reference/P1/HOLD routes out of productive nav.",
     gateId: "WP15-G17-JOURNEY-FIRST-IA",
-    nonClaim: "Journey navigation does not promote held routes.",
+    nonClaim: "Client-work navigation does not promote held routes.",
     ownerWp: "WP01/WP15",
     proofFiles: ["tests/navigation-shell.spec.ts"],
     status: "COVERED",
-    title: "Journey-first IA",
+    title: "Client-work IA",
   },
   {
     blocksV096Acceptance: false,

@@ -28,7 +28,7 @@ async function parseJson(request: Request) {
 }
 
 function errorResponse(error: unknown) {
-  const normalized = normalizeJourneyRouteError(error, "Journey command failed closed before state advance.");
+  const normalized = normalizeJourneyRouteError(error, "Workflow command failed closed before state advance.");
   return failClosedJson(
     {
       error: normalized.message,
@@ -50,7 +50,7 @@ export async function POST(request: Request, context: RouteContext) {
   if (!parsed.ok) {
     return failClosedJson(
       {
-        error: "Journey command request is invalid.",
+        error: "Workflow command request is invalid.",
         issues: parsed.issues,
         reasonCode: "INVALID_REQUEST",
         safety: {

@@ -143,14 +143,14 @@ export function createJourneyRuntime(journeyKey: string): JourneyRuntime {
 export function calculateJourneyNextAction(journey: JourneyRuntime): JourneyNextAction {
   if (journey.status === "CANCELLED") {
     return {
-      detail: "Journey was cancelled.",
+      detail: "Work item was cancelled.",
       type: "CANCELLED",
     };
   }
 
   if (journey.status === "COMPLETED") {
     return {
-      detail: "Journey is complete.",
+      detail: "Work item is complete.",
       type: "DONE",
     };
   }
@@ -158,7 +158,7 @@ export function calculateJourneyNextAction(journey: JourneyRuntime): JourneyNext
   if (journey.status === "BLOCKED") {
     return {
       blockerCode: journey.blockerCode,
-      detail: journey.blockerReason ?? "Journey is blocked and requires remediation before it can continue.",
+      detail: journey.blockerReason ?? "Work item is blocked and requires remediation before it can continue.",
       stepKey: journey.currentStepKey,
       type: "RESOLVE_BLOCKER",
     };
@@ -168,14 +168,14 @@ export function calculateJourneyNextAction(journey: JourneyRuntime): JourneyNext
 
   if (!step) {
     return {
-      detail: "Journey is complete.",
+      detail: "Work item is complete.",
       type: "DONE",
     };
   }
 
   return {
     actorRoleKey: step.actorRoleKey,
-    detail: journey.status === "CREATED" ? "Start journey at the first ready step." : `Complete ${step.title}.`,
+    detail: journey.status === "CREATED" ? "Start work at the first ready step." : `Complete ${step.title}.`,
     stepKey: step.key,
     type: journey.status === "CREATED" ? "START" : "COMPLETE_STEP",
   };

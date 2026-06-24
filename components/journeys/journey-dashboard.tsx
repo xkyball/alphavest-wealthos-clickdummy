@@ -42,7 +42,7 @@ function JourneyCard({ journey }: { journey: JourneyListItem }) {
         </div>
         <StatusChip
           label={blocked ? "Blocked or gated" : undefined}
-          sourceDescription="Journey status is an operational orientation only, not a completion gate."
+          sourceDescription="Work status is operational orientation only, not a completion gate."
           status={statusForJourney(journey.status)}
         />
       </div>
@@ -188,7 +188,7 @@ export function JourneyDashboard() {
       setFeedback(`${definition.journeyKey} created. It remains unreleased until its gates pass.`);
       router.push(`/journeys/${created.detail.id}`);
     } catch (startError) {
-      setError(safeErrorMessage(startError, "Journey creation failed closed."));
+      setError(safeErrorMessage(startError, "Work item creation failed closed."));
     } finally {
       setStartingKey(null);
     }
@@ -197,12 +197,12 @@ export function JourneyDashboard() {
   return (
     <div className="space-y-6" data-testid="journey-dashboard">
       <PageHeader
-        description="Work from client-safe journeys, their current state, the next permitted action and any source-locked holds."
-        eyebrow="Wave 0-2 Journey-first"
+        description="Work from client-safe items, their current state, the next permitted action and any source-locked holds."
+        eyebrow="Wave 0-2 Client work"
         recoveryAction={{ label: "Refresh", onClick: refresh }}
         status={error ? "FAILED" : loading ? "PROCESSING" : "ACTIVE"}
-        statusLabel="Journey status is orientation only"
-        title="Journey Dashboard"
+        statusLabel="Work status is orientation only"
+        title="Work Dashboard"
       />
 
       <section
@@ -218,7 +218,7 @@ export function JourneyDashboard() {
           {error ? <AlertTriangle aria-hidden="true" className="mt-0.5 size-5 text-red-200" /> : <ShieldCheck aria-hidden="true" className="mt-0.5 size-5 text-alphavest-gold-soft" />}
           <div>
             <p className="font-semibold text-alphavest-ivory">
-              {error ? "Journey API feedback" : feedback ?? "Client-visible outcomes stay gated"}
+              {error ? "Workflow API feedback" : feedback ?? "Client-visible outcomes stay gated"}
             </p>
             <p className="mt-1 leading-6">
               {error ?? "This surface shows allowed work and blocked reasons. It does not claim evidence sufficiency, advice release or final approval."}
@@ -231,11 +231,11 @@ export function JourneyDashboard() {
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-3">
             <h2 className="font-display text-2xl text-alphavest-ivory">Active worklist</h2>
-            <p className="text-xs font-semibold uppercase text-alphavest-subtle">{loading ? "Loading" : `${activeJourneys.length} scoped journeys`}</p>
+            <p className="text-xs font-semibold uppercase text-alphavest-subtle">{loading ? "Loading" : `${activeJourneys.length} scoped work items`}</p>
           </div>
           {loading ? (
             <div className="rounded-md border border-alphavest-border bg-alphavest-panel/72 p-8 text-center text-sm text-alphavest-muted">
-              Loading scoped journeys...
+              Loading scoped work items...
             </div>
           ) : activeJourneys.length > 0 ? (
             <div className="grid gap-4">
@@ -245,7 +245,7 @@ export function JourneyDashboard() {
             </div>
           ) : (
             <div className="rounded-md border border-alphavest-border bg-alphavest-panel/72 p-8 text-center text-sm text-alphavest-muted">
-              No scoped journeys are available for this demo actor.
+              No scoped work items are available for this demo actor.
             </div>
           )}
         </div>
@@ -254,7 +254,7 @@ export function JourneyDashboard() {
           <section className="rounded-md border border-alphavest-border bg-alphavest-panel/72 p-4">
             <h2 className="font-display text-xl text-alphavest-ivory">Startable definitions</h2>
             <p className="mt-2 text-xs leading-5 text-alphavest-muted">
-              Starting creates an internal journey instance only. It does not release client advice.
+              Starting creates an internal work item only. It does not release client advice.
             </p>
             <div className="mt-4 grid gap-3">
               {startableDefinitions.map((definition) => (

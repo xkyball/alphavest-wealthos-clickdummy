@@ -48,7 +48,7 @@ function NavigationContent({ onNavigate }: { onNavigate?: () => void }) {
       >
         <Route aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
         <span className="min-w-0 flex-1">
-          <span className="block truncate font-semibold">Journeys</span>
+          <span className="block truncate font-semibold">Client work</span>
           <span className="block line-clamp-2 text-[0.66rem] leading-4 text-alphavest-subtle">
             Worklist, stages and safe next actions.
           </span>

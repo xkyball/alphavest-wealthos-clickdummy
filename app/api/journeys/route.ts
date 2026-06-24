@@ -17,14 +17,14 @@ async function parseJson(request: Request) {
   try {
     return await request.json();
   } catch {
-    throw new JourneyApiError("Journey request body must be valid JSON.", 400, "INVALID_REQUEST", [
+    throw new JourneyApiError("Workflow request body must be valid JSON.", 400, "INVALID_REQUEST", [
       "valid_json_required",
     ]);
   }
 }
 
 function errorResponse(error: unknown) {
-  const normalized = normalizeJourneyRouteError(error, "Journey API is not available for this request.");
+  const normalized = normalizeJourneyRouteError(error, "Workflow API is not available for this request.");
   return failClosedJson(
     {
       error: normalized.message,

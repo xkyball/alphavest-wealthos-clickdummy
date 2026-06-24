@@ -472,29 +472,29 @@ function journeyGuidanceForPathname(pathname: string): ProductGuidance | null {
   const detail = normalized.startsWith("/journeys/");
 
   return {
-    area: "Journey-first",
+    area: "Client work",
     ctaState: {
-      blockedReason: "Journey actions remain blocked unless the scoped API allows the current actor and state.",
-      primaryAction: detail ? { href: "/journeys", label: "Back to Journey Dashboard" } : undefined,
-      recovery: { href: "/journeys", label: "Review Journey Dashboard" },
+      blockedReason: "Actions remain blocked unless the scoped API allows the current actor and state.",
+      primaryAction: detail ? { href: "/journeys", label: "Back to Work Dashboard" } : undefined,
+      recovery: { href: "/journeys", label: "Review Work Dashboard" },
       state: "guarded",
     },
     densityTier: "D2",
-    gateHint: "Journey status is orientation only; evidence sufficiency, audit record, release and client projection remain separate.",
-    primaryAction: detail ? { href: "/journeys", label: "Back to Journey Dashboard" } : undefined,
+    gateHint: "Work status is orientation only; evidence sufficiency, audit record, release and client projection remain separate.",
+    primaryAction: detail ? { href: "/journeys", label: "Back to Work Dashboard" } : undefined,
     purpose: detail
-      ? "Inspect one journey's stage, step, evidence posture, audit spine and client-safe projection without implying release."
-      : "Orient work around scoped journeys, safe next actions and source-locked holds.",
-    relatedRoutes: detail ? [] : [{ href: "/journeys", label: "Refresh journey worklist" }],
+      ? "Inspect one work item's stage, step, evidence posture, audit spine and client-safe projection without implying release."
+      : "Orient work around scoped client items, safe next actions and source-locked holds.",
+    relatedRoutes: detail ? [] : [{ href: "/journeys", label: "Refresh worklist" }],
     routePolicyLabels: ["NO_SCREEN_GENERATION", "NO_ADVICE_RELEASE", "API_SCOPED_JOURNEY_STATE"],
-    shortTitle: detail ? "Journey detail" : "Journey Dashboard",
+    shortTitle: detail ? "Work detail" : "Work Dashboard",
     steps: [],
     tier: "MVP_SUPPORT",
-    tierLabel: "Journey spine",
+    tierLabel: "Workflow controls",
     workbenchStructure: {
-      actionRail: "Only supported Journey API commands are exposed.",
+      actionRail: "Only supported workflow API commands are exposed.",
       context: "Stage, actor, blockers, evidence and client projection are shown together.",
-      queue: "Scoped journey instances and Wave 0-2 holds stay visible without becoming executable.",
+      queue: "Scoped work items and Wave 0-2 holds stay visible without becoming executable.",
       safety: "Client-facing output stays gated until release and projection controls pass.",
     },
   };

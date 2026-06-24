@@ -22,7 +22,7 @@ async function journeyId(context: RouteContext) {
 }
 
 function errorResponse(error: unknown) {
-  const normalized = normalizeJourneyRouteError(error, "Journey client projection failed closed.");
+  const normalized = normalizeJourneyRouteError(error, "Client projection failed closed.");
 
   return failClosedJson(
     { error: normalized.message, issues: normalized.issues, reasonCode: normalized.reasonCode },

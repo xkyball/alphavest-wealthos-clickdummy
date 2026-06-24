@@ -136,7 +136,7 @@ function EvidencePanel({ evidence }: { evidence: JourneyEvidenceResponse | null 
           ))
         ) : (
           <p className="rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/42 p-3 text-sm text-alphavest-muted">
-            No evidence requirements are exposed for this actor and journey state.
+            No evidence requirements are exposed for this actor and work state.
           </p>
         )}
       </div>
@@ -255,7 +255,7 @@ export function JourneyDetail({ journeyId }: { journeyId: string }) {
       setJwt(loaded.token);
       setState(loaded.state);
     } catch (loadError) {
-      setError(safeErrorMessage(loadError, "Journey detail could not load."));
+      setError(safeErrorMessage(loadError, "Work detail could not load."));
     } finally {
       setLoading(false);
     }
@@ -275,7 +275,7 @@ export function JourneyDetail({ journeyId }: { journeyId: string }) {
         setState(loaded.state);
       } catch (loadError) {
         if (!active) return;
-        setError(safeErrorMessage(loadError, "Journey detail could not load."));
+        setError(safeErrorMessage(loadError, "Work detail could not load."));
       } finally {
         if (active) setLoading(false);
       }
@@ -308,14 +308,14 @@ export function JourneyDetail({ journeyId }: { journeyId: string }) {
         body: JSON.stringify({
           command,
           fromStepKey: command === "COMPLETE_STEP" ? nextAction.stepKey : undefined,
-          reason: "Executed from Journey Detail UI after user-visible permission and state feedback.",
+          reason: "Executed from Work Detail UI after user-visible permission and state feedback.",
         }),
         method: "POST",
       });
       setFeedback(`${result.command} accepted. Audit event ${result.auditEventId ?? "created by API"}.`);
       await load();
     } catch (runError) {
-      setCommandError(safeErrorMessage(runError, "Journey command failed closed."));
+      setCommandError(safeErrorMessage(runError, "Workflow command failed closed."));
     } finally {
       setRunningCommand(false);
     }
@@ -325,13 +325,13 @@ export function JourneyDetail({ journeyId }: { journeyId: string }) {
     return (
       <div className="space-y-6" data-testid="journey-detail">
         <PageHeader
-          description="Loading journey state, evidence posture, audit preview and client projection."
-          eyebrow="Wave 0-2 Journey Detail"
+          description="Loading work state, evidence posture, audit preview and client projection."
+          eyebrow="Wave 0-2 Work Detail"
           status="PROCESSING"
-          title="Journey Detail"
+          title="Work Detail"
         />
         <div className="rounded-md border border-alphavest-border bg-alphavest-panel/72 p-8 text-center text-sm text-alphavest-muted">
-          Loading journey detail...
+          Loading work detail...
         </div>
       </div>
     );
@@ -341,16 +341,16 @@ export function JourneyDetail({ journeyId }: { journeyId: string }) {
     return (
       <div className="space-y-6" data-testid="journey-detail">
         <PageHeader
-          description="The requested journey did not pass scoped API loading."
-          eyebrow="Wave 0-2 Journey Detail"
+          description="The requested work item did not pass scoped API loading."
+          eyebrow="Wave 0-2 Work Detail"
           recoveryAction={{ label: "Retry", onClick: load }}
           status="FAILED"
-          title="Journey Detail"
+          title="Work Detail"
         />
         <section className="rounded-md border border-red-400/50 bg-red-950/25 p-4 text-sm leading-6 text-red-100">
           <div className="flex gap-3">
             <AlertTriangle aria-hidden="true" className="mt-0.5 size-5" />
-            <p>{error ?? "Journey detail unavailable."}</p>
+            <p>{error ?? "Work detail unavailable."}</p>
           </div>
         </section>
       </div>
@@ -369,7 +369,7 @@ export function JourneyDetail({ journeyId }: { journeyId: string }) {
         primaryAction={{ href: "/journeys", label: "Back to dashboard" }}
         recoveryAction={{ label: "Refresh", onClick: load }}
         status={statusForJourney(detail.status)}
-        statusLabel="Journey state is orientation only"
+        statusLabel="Work state is orientation only"
         title={projection.title}
       />
 
@@ -409,7 +409,7 @@ export function JourneyDetail({ journeyId }: { journeyId: string }) {
             </div>
             <StatusChip
               label={blocked ? "Blocked or gated" : undefined}
-              sourceDescription="Journey detail status is orientation only, not a completion gate."
+              sourceDescription="Work detail status is orientation only, not a completion gate."
               status={statusForJourney(detail.status)}
             />
           </div>
@@ -463,7 +463,7 @@ export function JourneyDetail({ journeyId }: { journeyId: string }) {
             href="/journeys"
           >
             <ArrowLeft aria-hidden="true" className="size-4" />
-            Journey Dashboard
+            Work Dashboard
           </Link>
 
           <button

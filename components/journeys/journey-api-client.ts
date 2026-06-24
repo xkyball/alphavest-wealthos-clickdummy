@@ -158,7 +158,7 @@ export const holdJourneyPlaceholders: HoldJourneyPlaceholder[] = [
   },
 ];
 
-export function safeErrorMessage(error: unknown, fallback = "The journey surface could not load.") {
+export function safeErrorMessage(error: unknown, fallback = "The work surface could not load.") {
   if (error instanceof Error && error.message) {
     return error.message;
   }
@@ -207,7 +207,7 @@ export async function journeyApi<T>(path: string, jwt: string, init: RequestInit
 
   if (!response.ok) {
     const issues = Array.isArray(body?.issues) ? ` (${body.issues.join(", ")})` : "";
-    throw new Error(`${body?.error ?? "Journey API request failed."}${issues}`);
+    throw new Error(`${body?.error ?? "Workflow API request failed."}${issues}`);
   }
 
   return body as T;

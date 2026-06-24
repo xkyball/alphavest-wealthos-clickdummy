@@ -102,7 +102,7 @@ export function buildClientJourneyProjection(input: JourneyProjectionInput): Cli
     return {
       journeyKey: definition.journeyKey,
       nextAction: {
-        detail: "This journey is not available to clients.",
+        detail: "This work item is not available to clients.",
         type: "CLIENT_SAFE_STATUS",
       },
       status: "NOT_AVAILABLE",
@@ -114,7 +114,7 @@ export function buildClientJourneyProjection(input: JourneyProjectionInput): Cli
     return {
       journeyKey: definition.journeyKey,
       nextAction: {
-        detail: "The journey is complete.",
+        detail: "The work item is complete.",
         type: "DONE",
       },
       status: "COMPLETE",
@@ -128,7 +128,7 @@ export function buildClientJourneyProjection(input: JourneyProjectionInput): Cli
       currentStepTitle: input.journey.steps.find((step) => step.key === input.journey.currentStepKey)?.title,
       journeyKey: definition.journeyKey,
       nextAction: {
-        detail: "The AlphaVest team is reviewing this journey before any client-visible action.",
+        detail: "The AlphaVest team is reviewing this work item before any client-visible action.",
         type: "BLOCKED",
       },
       status: "BLOCKED",
@@ -143,7 +143,7 @@ export function buildClientJourneyProjection(input: JourneyProjectionInput): Cli
     currentStepTitle: currentStep?.clientVisible ? currentStep.title : undefined,
     journeyKey: definition.journeyKey,
     nextAction: {
-      detail: "AlphaVest is progressing the journey through internal review gates.",
+      detail: "AlphaVest is progressing this work item through internal review gates.",
       type: "CLIENT_SAFE_STATUS",
     },
     status: "IN_PROGRESS",
@@ -159,7 +159,7 @@ export function calculateJourneyBlockers(journey: JourneyRuntime) {
   return [
     {
       blockerCode: journey.blockerCode ?? "JOURNEY_BLOCKED",
-      blockerReason: journey.blockerReason ?? "Journey is blocked.",
+      blockerReason: journey.blockerReason ?? "Work item is blocked.",
       stepKey: journey.currentStepKey,
     },
   ];

@@ -19,7 +19,7 @@ async function journeyId(context: RouteContext) {
 }
 
 function errorResponse(error: unknown) {
-  const normalized = normalizeJourneyRouteError(error, "Journey audit failed closed.");
+  const normalized = normalizeJourneyRouteError(error, "Work audit failed closed.");
 
   return failClosedJson(
     { error: normalized.message, issues: normalized.issues, reasonCode: normalized.reasonCode },

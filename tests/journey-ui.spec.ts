@@ -19,7 +19,7 @@ async function authenticate(page: Page) {
   ]);
 }
 
-test.describe("Wave 0-2 Journey-first UI", () => {
+test.describe("Wave 0-2 client work UI", () => {
   test.beforeAll(() => {
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
   });
@@ -29,7 +29,7 @@ test.describe("Wave 0-2 Journey-first UI", () => {
     await page.goto("/journeys");
 
     await expect(page.getByTestId("journey-dashboard")).toBeVisible();
-    await expect(page.getByTestId("page-header").getByRole("heading", { name: "Journey Dashboard" })).toBeVisible();
+    await expect(page.getByTestId("page-header").getByRole("heading", { name: "Work Dashboard" })).toBeVisible();
     await expect(page.getByText("Client-visible outcomes stay gated")).toBeVisible();
     await expect(page.getByTestId("journey-worklist-card")).toHaveCount(7);
     await expect(page.getByTestId("journey-hold-panel")).toContainText("MJ-004");
@@ -54,7 +54,7 @@ test.describe("Wave 0-2 Journey-first UI", () => {
     await expect(page.getByRole("heading", { name: "Evidence requirements" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Audit spine" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Client projection preview" })).toBeVisible();
-    await expect(page.getByText("Journey state is orientation only", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("Work state is orientation only", { exact: true }).first()).toBeVisible();
 
     await page.screenshot({
       fullPage: true,

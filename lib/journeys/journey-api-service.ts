@@ -71,7 +71,7 @@ export function normalizeJourneyRouteError(error: unknown, fallbackMessage: stri
   }
 
   if (error instanceof Error && error.message.startsWith("Auth JWT")) {
-    return new JourneyApiError("Journey API requires a valid current-user session.", 401, "PERMISSION_DENIED", [
+    return new JourneyApiError("Workflow API requires a valid current-user session.", 401, "PERMISSION_DENIED", [
       "valid_auth_jwt_required",
     ]);
   }
@@ -91,7 +91,7 @@ function requireRole(currentUser: CurrentUserContext) {
   const roleKey = currentRoleKey(currentUser);
 
   if (!roleKey) {
-    throw new JourneyApiError("Journey API requires an assigned role.", 403, "PERMISSION_DENIED", [
+    throw new JourneyApiError("Workflow API requires an assigned role.", 403, "PERMISSION_DENIED", [
       "assigned_role_required",
     ]);
   }
@@ -102,7 +102,7 @@ function requireRole(currentUser: CurrentUserContext) {
 function scopedTenantWhere(currentUser: CurrentUserContext, requestedClientTenantId?: string) {
   if (currentUser.tenant) {
     if (requestedClientTenantId && requestedClientTenantId !== currentUser.tenant.id) {
-      throw new JourneyApiError("Journey scope is not available for this user.", 403, "SCOPE_DENIED", [
+      throw new JourneyApiError("Work scope is not available for this user.", 403, "SCOPE_DENIED", [
         "tenant_scope_denied",
       ]);
     }
@@ -111,7 +111,7 @@ function scopedTenantWhere(currentUser: CurrentUserContext, requestedClientTenan
   }
 
   if (!requestedClientTenantId) {
-    throw new JourneyApiError("A clientTenantId is required for platform-scoped journey creation.", 400, "INVALID_REQUEST", [
+    throw new JourneyApiError("A clientTenantId is required for platform-scoped work creation.", 400, "INVALID_REQUEST", [
       "client_tenant_id_required",
     ]);
   }
@@ -152,7 +152,7 @@ function commandPermissions(permissionKeys: string[]) {
 
 function requireJourneyManagePermission(permissionKeys: string[]) {
   if (!permissionKeys.includes("journeys.manage")) {
-    throw new JourneyApiError("Journey command is not permitted for this role.", 403, "PERMISSION_DENIED", [
+    throw new JourneyApiError("Workflow command is not permitted for this role.", 403, "PERMISSION_DENIED", [
       "command_permission_denied",
     ]);
   }
@@ -160,14 +160,14 @@ function requireJourneyManagePermission(permissionKeys: string[]) {
 
 function requireOperationalRole(roleKey: string, command: string, allowedRoleKeys: string[]) {
   if (adminBypassRoleKeys.has(roleKey)) {
-    throw new JourneyApiError("Admin and security roles cannot bypass journey gates.", 403, "PERMISSION_DENIED", [
+    throw new JourneyApiError("Admin and security roles cannot bypass workflow gates.", 403, "PERMISSION_DENIED", [
       "admin_non_bypass",
       `${command.toLowerCase()}_requires_operational_role`,
     ]);
   }
 
   if (!allowedRoleKeys.includes(roleKey)) {
-    throw new JourneyApiError("Journey gate command is not permitted for this role.", 403, "PERMISSION_DENIED", [
+    throw new JourneyApiError("Workflow gate command is not permitted for this role.", 403, "PERMISSION_DENIED", [
       "gate_role_denied",
       `${command.toLowerCase()}_requires_${allowedRoleKeys.join("_or_")}`,
     ]);
@@ -209,7 +209,7 @@ async function loadEvidenceRequirement(
   });
 
   if (!requirement) {
-    throw new JourneyApiError("Evidence requirement is not available for this journey.", 400, "INVALID_REQUEST", [
+    throw new JourneyApiError("Evidence requirement is not available for this work item.", 400, "INVALID_REQUEST", [
       "journey_evidence_requirement_not_found",
     ]);
   }
@@ -227,7 +227,7 @@ async function loadScopedEvidenceRecord(
   });
 
   if (!evidence || evidence.clientTenantId !== instance.clientTenantId) {
-    throw new JourneyApiError("Evidence is not available in this journey scope.", 403, "SCOPE_DENIED", [
+    throw new JourneyApiError("Evidence is not available in this work scope.", 403, "SCOPE_DENIED", [
       "evidence_scope_denied",
     ]);
   }
@@ -270,7 +270,7 @@ async function createJourneyAuditAndRun(
       nextState: input.nextState ?? null,
       platformTenantId: input.platformTenantId,
       previousState: input.previousState ?? input.instance.status,
-      reason: input.reason ?? "Journey command executed through scoped API.",
+      reason: input.reason ?? "Workflow command executed through scoped API.",
       result: input.result,
       targetId: input.instance.id,
       targetType: ObjectType.JOURNEY,
@@ -350,11 +350,11 @@ async function loadScopedJourneyInstance(prisma: PrismaClient, currentUser: Curr
   });
 
   if (!instance) {
-    throw new JourneyApiError("Journey was not found.", 404, "SCOPE_DENIED", ["journey_not_found"]);
+    throw new JourneyApiError("Work item was not found.", 404, "SCOPE_DENIED", ["journey_not_found"]);
   }
 
   if (currentUser.tenant && instance.clientTenantId !== currentUser.tenant.id) {
-    throw new JourneyApiError("Journey scope is not available for this user.", 403, "SCOPE_DENIED", [
+    throw new JourneyApiError("Work scope is not available for this user.", 403, "SCOPE_DENIED", [
       "tenant_scope_denied",
     ]);
   }
@@ -415,14 +415,14 @@ export async function createJourneyForCurrentUser(
   requireRole(currentUser);
 
   if (!input.journeyKey || typeof input.journeyKey !== "string") {
-    throw new JourneyApiError("Journey creation requires a valid journeyKey.", 400, "INVALID_REQUEST", [
+    throw new JourneyApiError("Work item creation requires a valid journeyKey.", 400, "INVALID_REQUEST", [
       "journey_key_required",
     ]);
   }
 
   const registeredDefinition = getJourneyDefinition(input.journeyKey);
   if (!registeredDefinition || registeredDefinition.status !== "ACTIVE") {
-    throw new JourneyApiError("Journey is not executable in Wave 0-2.", 403, "PERMISSION_DENIED", [
+    throw new JourneyApiError("Work item is not executable in Wave 0-2.", 403, "PERMISSION_DENIED", [
       "journey_not_executable",
     ]);
   }
@@ -581,7 +581,7 @@ async function executeLinkEvidenceCommand(input: {
     const evidence = await loadScopedEvidenceRecord(tx, input.instance, input.request.evidenceRecordId!);
 
     if (requirement.requiredObjectType !== ObjectType.EVIDENCE_RECORD) {
-      throw new JourneyApiError("Journey requirement does not accept evidence records.", 400, "INVALID_REQUEST", [
+      throw new JourneyApiError("Work requirement does not accept evidence records.", 400, "INVALID_REQUEST", [
         "requirement_object_type_mismatch",
       ]);
     }
@@ -1232,7 +1232,7 @@ export async function executeJourneyCommandForCurrentUser(
   const roleKey = requireRole(currentUser);
   const roleId = currentUser.role?.id;
   if (!roleId) {
-    throw new JourneyApiError("Journey command requires an assigned role.", 403, "PERMISSION_DENIED", [
+    throw new JourneyApiError("Workflow command requires an assigned role.", 403, "PERMISSION_DENIED", [
       "assigned_role_required",
     ]);
   }
@@ -1287,7 +1287,7 @@ export async function executeJourneyCommandForCurrentUser(
   }
 
   if (!genericJourneyCommands.has(request.command)) {
-    throw new JourneyApiError("Journey command handler is not implemented.", 400, "INVALID_REQUEST", [
+    throw new JourneyApiError("Workflow command handler is not implemented.", 400, "INVALID_REQUEST", [
       "journey_command_handler_missing",
     ]);
   }
@@ -1304,15 +1304,15 @@ export async function executeJourneyCommandForCurrentUser(
         toStepKey: request.toStepKey,
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Journey transition was denied.";
+      const message = error instanceof Error ? error.message : "Workflow transition was denied.";
 
       if (message.includes("lacks journey.")) {
-        throw new JourneyApiError("Journey command is not permitted for this role.", 403, "PERMISSION_DENIED", [
+        throw new JourneyApiError("Workflow command is not permitted for this role.", 403, "PERMISSION_DENIED", [
           "command_permission_denied",
         ]);
       }
 
-      throw new JourneyApiError("Journey command failed state validation.", 400, "INVALID_REQUEST", [
+      throw new JourneyApiError("Workflow command failed state validation.", 400, "INVALID_REQUEST", [
         "invalid_journey_transition",
       ]);
     }
@@ -1334,7 +1334,7 @@ export async function executeJourneyCommandForCurrentUser(
         nextState: result.journey.status,
         platformTenantId: role.platformTenantId,
         previousState: instance.status,
-        reason: request.reason ?? "Journey command executed through scoped API.",
+        reason: request.reason ?? "Workflow command executed through scoped API.",
         result: AuditResult.SUCCESS,
         targetId: instance.id,
         targetType: ObjectType.JOURNEY,
