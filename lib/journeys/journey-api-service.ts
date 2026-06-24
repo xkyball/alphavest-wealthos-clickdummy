@@ -14,6 +14,7 @@ import {
 } from "@prisma/client";
 
 import type { CurrentUserContext } from "../auth/current-user";
+import { dataQualityService } from "../data-quality-service";
 import { workflowGate } from "../workflow-gate";
 import {
   buildClientJourneyProjection,
@@ -537,6 +538,22 @@ async function latestSufficiencyDecisions(prisma: PrismaClient | Prisma.Transact
   return byRequirement;
 }
 
+async function journeyDataQualityReleaseGate(
+  prisma: Pick<PrismaClient, "dataQualityIssue">,
+  instance: JourneyInstanceWithGraph,
+) {
+  const snapshot = await dataQualityService.buildDataQualitySnapshot(prisma, {
+    clientTenantId: instance.clientTenantId,
+    targetId: instance.id,
+    targetType: ObjectType.JOURNEY,
+  });
+
+  return {
+    gate: dataQualityService.evaluateDataQualityReleaseGate(snapshot),
+    snapshot,
+  };
+}
+
 async function executeLinkEvidenceCommand(input: {
   currentUser: CurrentUserContext;
   instance: JourneyInstanceWithGraph;
@@ -1011,6 +1028,7 @@ async function executeComplianceReleaseCommand(input: {
     const metadata = metadataObject(input.instance.metadataJson);
     const coreMetadata = metadataObject(metadata.coreJourneyGates as Prisma.JsonValue | undefined);
     const decisions = await latestSufficiencyDecisions(tx, input.instance);
+    const dataQuality = await journeyDataQualityReleaseGate(tx, input.instance);
     const definition = requireJourneyDefinition(input.instance.definition.journeyKey);
     const missingEvidence = definition.evidenceRequirements.flatMap((requirement) => {
       const decision = decisions.get(requirement.key);
@@ -1047,6 +1065,7 @@ async function executeComplianceReleaseCommand(input: {
       advisorApprovalStatus: advisorApproved ? ReviewStatus.APPROVED : ReviewStatus.PENDING,
       auditPersistenceAvailable: Boolean(advisorApprovalRun) && missingEvidence.length === 0,
       compliancePermission: { allowed: confirmationMatches, reasonCode: confirmationMatches ? "allowed" : "release_confirmation_required" },
+      dataQualityGate: dataQuality.gate,
       evidenceDecision: {
         exportImpact: missingEvidence.length === 0 ? "EXPORT_ALLOWED_FOR_SCOPED_GATE" : "EXPORT_BLOCKED_NEEDS_EVIDENCE",
         label: missingEvidence.length === 0 ? "EVIDENCE_SUFFICIENT" : "EVIDENCE_INSUFFICIENT",
@@ -1070,6 +1089,8 @@ async function executeComplianceReleaseCommand(input: {
         instance: input.instance,
         metadataJson: {
           clientVisible: false,
+          dataQualityHighSeverityOpenCount: dataQuality.snapshot.highSeverityOpenCount,
+          dataQualityMissing: dataQuality.gate.missing,
           expectedConfirmationPhrase: releaseConfirmationPhrase,
           missing: [...new Set(missing)],
           recommendationId: recommendation?.id ?? null,
@@ -1180,6 +1201,7 @@ async function executeComplianceReleaseCommand(input: {
       instance: input.instance,
       metadataJson: {
         clientVisible: true,
+        dataQualityHighSeverityOpenCount: dataQuality.snapshot.highSeverityOpenCount,
         gatePassed: true,
         recommendationId: recommendation?.id ?? null,
       },
@@ -1415,10 +1437,38 @@ export async function getJourneyClientProjectionForCurrentUser(
   journeyInstanceId: string,
 ) {
   const instance = await loadScopedJourneyInstance(prisma, currentUser, journeyInstanceId);
+  const dataQuality = await journeyDataQualityReleaseGate(prisma, instance);
+  const projection = buildClientJourneyProjection({ journey: runtimeFromInstance(instance) });
+
+  if (!dataQuality.gate.passed) {
+    return {
+      dataQuality: {
+        gateName: dataQuality.gate.gateName,
+        highSeverityOpenCount: dataQuality.snapshot.highSeverityOpenCount,
+        missing: dataQuality.gate.missing,
+        releaseReady: false,
+      },
+      journeyId: instance.id,
+      projection: {
+        ...projection,
+        nextAction: {
+          detail: "Data-quality review blocks client-visible projection until high-severity issues are resolved.",
+          type: "BLOCKED" as const,
+        },
+        status: "BLOCKED" as const,
+      },
+    };
+  }
 
   return {
+    dataQuality: {
+      gateName: dataQuality.gate.gateName,
+      highSeverityOpenCount: dataQuality.snapshot.highSeverityOpenCount,
+      missing: dataQuality.gate.missing,
+      releaseReady: true,
+    },
     journeyId: instance.id,
-    projection: buildClientJourneyProjection({ journey: runtimeFromInstance(instance) }),
+    projection,
   };
 }
 

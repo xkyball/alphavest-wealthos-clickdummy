@@ -57,6 +57,7 @@ export type ComplianceReleaseCandidate = {
   advisorApprovalStatus: ReviewStatus;
   auditPersistenceAvailable: boolean;
   compliancePermission: Pick<PermissionDecision, "allowed" | "reasonCode">;
+  dataQualityGate?: DataQualityGate;
   evidenceDecision: EvidenceSufficiencyDecision;
   payloadReady: boolean;
 };
@@ -204,6 +205,11 @@ export function canPassComplianceReleaseGate(candidate: ComplianceReleaseCandida
 
   if (!candidate.auditPersistenceAvailable) {
     missing.push("audit_persistence");
+  }
+
+  if (candidate.dataQualityGate && !candidate.dataQualityGate.passed) {
+    missing.push(candidate.dataQualityGate.gateName.toLowerCase());
+    missing.push(...candidate.dataQualityGate.missing);
   }
 
   const uniqueMissing = [...new Set(missing)];
