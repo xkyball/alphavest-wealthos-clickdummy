@@ -428,3 +428,97 @@ Limitations:
 - No product code was changed because implementation is blocked by `DECISION-WP03-01`.
 - No screenshots were produced because this execution changed documentation/specification only.
 - Current analysis is source-grounded on the inspected `full-workflow` snapshot and may need refresh if later commits change projection or routes.
+
+## WP03 Rerun After WP02/WP04-WP06 Artefacts
+
+Execution date: 2026-06-25.
+
+Rerun trigger:
+
+- User requested a WP03 rerun from the original upload.
+- User requested all generated specification artefacts to be used as input or override for later tasks.
+- Current branch baseline before rerun: `full-workflow`, latest commit `0547c31 test: align route smoke with wp02 worksurface shell`, working tree clean.
+
+Generated artefacts used as rerun input:
+
+- `docs/00-current/ALPHAVEST_WP00_SOURCE_HIERARCHY_TARGET_GUARD_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP01_PROCESS_FIRST_ROUTE_NAV_SHELL_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP02_WORKSURFACE_LAYOUT_REFACTOR_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP03_CLIENT_SAFE_VISIBILITY_PORTAL_STATES_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP04_EVIDENCE_WORKFLOW_UPLOAD_NOT_SUFFICIENCY_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP05_INTERNAL_DRAFT_ADVISOR_COMPLIANCE_FLOW_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP06_RBAC_ADMIN_NON_BYPASS_EXECUTION.md`
+
+Rerun task-by-task status:
+
+Important execution note: this rerun did not create a fresh WP03 product-code mutation. The earlier user-approved Option A implementation was already present in the repository. The rerun re-extracted the upload tasks, applied the generated WP00-WP06 artefacts as current input/override, and then validated each implementation task against the live code and tests. Therefore `COMPLETE` below means `implemented earlier and revalidated against the rerun specification`, not `newly rewritten during this rerun`.
+
+- EPIC WP-03 Client-safe Visibility & Portal States: `COMPLETE_FOR_APPROVED_FIRST_WAVE`.
+- `ANALYSIS-1` Audit current client-facing visibility, payload and state surfaces: `COMPLETE`. Live recheck confirms route `019` is `/client/home`, route `020` is `/mobile`, `ClientSafeProjectionCard` consumes `clientPortalProjectionState`, and document source-upload projection excludes `sensitivity`.
+- `ANALYSIS-2` Map existing tests/proofs and missing leakage cases: `COMPLETE`. Live recheck confirms `true-ux-client-projection`, `client-visibility-projection`, `document-upload-api` and focused `route-smoke` cover the approved first-wave proof.
+- `SPEC-1` Client-safe visibility, payload and portal-state contract: `COMPLETE_AND_STILL_VALID`. WP04, WP05 and WP06 reinforce the same rules: upload is not sufficiency, advisor approval is not release, admin cannot force visibility, and client-facing payloads must come from the visibility/WCL boundary.
+- `DECISION-1` Confirm client-safe projection/API boundary: `COMPLETE`. Earlier user-approved Option A remains the strongest path: use existing `visibilityEngine` plus WCL/control-layer projection, no new API in WP03, existing seed first, minimal deterministic fixtures only where needed, mobile uses same projection engine with reduced presentation allowed.
+- `IMPL-1` Fail-closed client portal/mobile UI states: `COMPLETE`. Portal/mobile render state-driven projection panels for released, source-upload and fail-closed states.
+- `IMPL-1.1` Wire hidden/empty/redacted/permission/error states: `COMPLETE_FOR_APPROVED_FIRST_WAVE`. Current adapter maps projection outcomes to `released`, `redacted`, `source_upload`, `empty`, `hidden` and `permission_denied`; loading/error stale-content proof remains covered as test obligation rather than a new UI branch in this rerun.
+- `IMPL-1.2` Remove unsafe optimistic client fallback content: `COMPLETE_FOR_APPROVED_FIRST_WAVE`. Client-safe card renders no raw internal fallback when released payload is absent.
+- `IMPL-2` Client-safe payload projection wiring: `COMPLETE`. `visibilityEngine` and `lib/control-layer/client-visibility.ts` remain the canonical boundary.
+- `IMPL-2.1` Route/action/object/payload visibility checks: `COMPLETE`. Route access remains separate from payload projection; focused tests cover hidden/denied outcomes.
+- `IMPL-2.2` Exclude AI Draft, internal rationale, compliance notes and unreleased evidence: `COMPLETE`. Forbidden internal fields are absent in projection tests.
+- `IMPL-3` Released decision and evidence-safe summary wiring: `COMPLETE`. Released decision summary uses allowed fields only; evidence/source upload status remains upload/status-only and not sufficiency.
+- `QA-1` P0 positive/negative validation: `COMPLETE_FOR_APPROVED_FIRST_WAVE_WITH_NON_WP03_TEST_GAP_NOTED`.
+
+Spec-to-code traceability:
+
+| Spec / task requirement | Live implementation inspected | Test / proof used in rerun | Rerun result |
+| --- | --- | --- | --- |
+| Portal and mobile must use client-safe projection states rather than raw internal payloads. | `components/client-intake-screen.tsx`, `lib/client-portal-projection-state.ts`, `lib/visibility-engine.ts`, `lib/control-layer/client-visibility.ts` | `pnpm playwright test tests/true-ux-client-projection.spec.ts --workers=1`, `pnpm playwright test tests/client-visibility-projection.spec.ts --workers=1` | Existing implementation conforms to generated WP03/WP06 projection-boundary spec. |
+| Route `019` remains client portal, route `020` is the separate mobile client entry. | `lib/route-registry.ts`, process navigation shell output, current screenshots | `pnpm playwright test tests/route-smoke.spec.ts --grep "registered route smoke.*(019\|020)" --workers=1` | Existing route implementation conforms. |
+| Hidden, redacted, empty and permission-denied states must fail closed. | `getClientPortalProjectionState`, `ClientPortalProjectionStatePanel`, WCL decision visibility checks | `tests/client-visibility-projection.spec.ts`, `tests/true-ux-client-projection.spec.ts` | Existing fail-closed implementation conforms for approved first-wave states. |
+| Source upload may be visible only as metadata and must not be treated as sufficiency. | `lib/visibility-engine.ts`, upload API projection, source-upload state branch | `pnpm playwright test tests/document-upload-api.spec.ts --workers=1`, `pnpm playwright test tests/true-ux-client-projection.spec.ts --workers=1` | Existing implementation conforms; `sensitivity` remains excluded. |
+| AI draft, internal rationale, compliance notes and unreleased evidence must not reach client payloads. | WCL projection helpers, client portal adapter, evidence/decision summary fields | `tests/true-ux-client-projection.spec.ts`, `tests/client-visibility-projection.spec.ts` | Existing negative leakage proof conforms. |
+| Advisor approval alone must not publish to client; compliance release remains the visibility gate. | `lib/visibility-engine.ts`, control-layer visibility checks, WP05/WP06 execution artefact constraints | `tests/true-ux-client-projection.spec.ts`, `tests/client-visibility-projection.spec.ts` | Existing implementation remains aligned with generated WP05/WP06 overrides. |
+
+Validation performed in rerun:
+
+```bash
+pnpm guard:source
+pnpm exec tsc --noEmit --pretty false
+pnpm db:validate
+pnpm playwright test tests/true-ux-client-projection.spec.ts --workers=1
+pnpm playwright test tests/document-upload-api.spec.ts --workers=1
+pnpm playwright test tests/client-visibility-projection.spec.ts --workers=1
+pnpm playwright test tests/route-smoke.spec.ts --grep "registered route smoke.*(019|020)" --workers=1
+```
+
+Validation result:
+
+- Source/target guard: PASS.
+- TypeScript: PASS.
+- Prisma validate: PASS.
+- True UX client projection: PASS, 13 passed.
+- Document upload API: PASS, 9 passed.
+- WCL client visibility projection: PASS, 4 passed.
+- Focused route smoke for `019` and `020`: PASS, 2 passed.
+- A broader exploratory `route-smoke --grep "019|020|UX-NAV"` run passed the actual `019`, `020` and UX-NAV checks but also selected unrelated UX-DENSITY above-fold checks; those failed because `product-guidance` is absent on current client routes. This is not treated as WP03 failure and should be handled under a UX-DENSITY/page-header contract task if commercially needed.
+
+Screenshots produced in rerun:
+
+- `artifacts/wp03-client-safe-visibility/rerun-client-home-desktop.png`
+- `artifacts/wp03-client-safe-visibility/rerun-mobile-home-mobile.png`
+
+Current option shown to user:
+
+`WP03 Rerun Option A — No new product code. Treat WP03 approved first wave as complete; keep visibilityEngine + WCL as the canonical projection boundary, keep /mobile separate, keep source-upload metadata exception limited to fileName/fileSizeBytes, defer export/package links to WP07, and record only this rerun proof/report. Next aggressive cleanup should target the unrelated UX-DENSITY/product-guidance mismatch or the route-record issue called out in WP02, not WP03 client visibility.`
+
+Rejected branches:
+
+- New WP03 API: rejected because existing projection/service boundaries pass current proof and a new API would expand attack surface.
+- Local portal-only projection helper: rejected because it would duplicate visibility semantics.
+- UI-only filtering: rejected because payload safety must remain service/projection enforced.
+- More WP03 UI changes in this rerun: rejected because current approved first-wave behavior passes focused safety gates and route proof.
+
+Method/proof notes:
+
+- Facts: live code has `lib/client-portal-projection-state.ts`, route `020` is `/mobile`, `ClientSafeProjectionCard` renders projection states, and source-upload projection excludes `sensitivity`.
+- Assumption: existing seed remains sufficient for first-wave proof because no new missing WP03 negative gap was found in live rerun.
+- Interpretation: WP03 is not the next cleanup bottleneck; the next clean target is either non-WP03 UX-DENSITY guidance consistency or WP02 route-record cleanup.
