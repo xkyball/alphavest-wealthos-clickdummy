@@ -44,6 +44,11 @@ const worksurfaceRoutes = [
   { pageId: "048", worksurface: "governance-safety-users" },
   { pageId: "049", worksurface: "governance-safety-roles" },
   { pageId: "050", worksurface: "governance-safety-access-requests" },
+  { pageId: "054", worksurface: "export-redaction-start" },
+  { pageId: "055", worksurface: "export-redaction-scope" },
+  { pageId: "056", worksurface: "export-redaction-redaction" },
+  { pageId: "057", worksurface: "export-redaction-approval" },
+  { pageId: "058", worksurface: "export-redaction-download" },
 ] as const;
 
 test.describe("WP02 worksurface shell", () => {

@@ -1228,12 +1228,26 @@ function CallTriggerMatrixPage({ title }: { title: string }) {
 
 function ExportNewPage({ title }: { title: string }) {
   return (
-    <div>
-      <PageLead badge="Scope first" description="Start export scope before redaction, preview, approval or delivery." icon={Download} title={title} />
-      <Phase5DetailSplitPanel decisionSupport="Export start captures purpose and scope without preview, approval or download behavior." objectLabel="Export flow split" objectState="Export request not yet scoped" pageJob="Export start is separate from scope, redaction, preview, approval and delivery." safetyBoundary="Start page cannot generate, approve or download export packages." splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-PAGE-SPLIT-005" />
-      <ExportStageBoundary activeStage="scope" className="mb-5" />
-      <UxHubPage pageId="054" />
-    </div>
+    <WorksurfaceShell
+      description="Export request start screen that captures scope intent before redaction, preview, approval or controlled delivery can occur."
+      eyebrow="WP02 Export/Redaction"
+      primary={
+        <div className="space-y-4">
+          <PageLead badge="Scope first" description="Start export scope before redaction, preview, approval or delivery." icon={Download} title={title} />
+          <Phase5DetailSplitPanel decisionSupport="Export start captures purpose and scope without preview, approval or download behavior." objectLabel="Export flow split" objectState="Export request not yet scoped" pageJob="Export start is separate from scope, redaction, preview, approval and delivery." safetyBoundary="Start page cannot generate, approve or download export packages." splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-PAGE-SPLIT-005" />
+          <ExportStageBoundary activeStage="scope" />
+          <UxHubPage pageId="054" />
+        </div>
+      }
+      routeId="054"
+      safetyNote="Export start cannot generate, approve, download, share or make advice client-visible."
+      statusItems={[
+        { label: "Route", tone: "blue", value: "054" },
+        { label: "Stage", tone: "gold", value: "scope first" },
+      ]}
+      title={title}
+      worksurfaceId="export-redaction-start"
+    />
   );
 }
 
@@ -1258,10 +1272,26 @@ function ExportScopePage({ title }: { title: string }) {
   ];
 
   return (
-    <div>
-      <PageLead description="Select permitted objects only. Preview, approval, download and share remain unavailable." icon={Folder} title={title} />
-      <ExportStageBoundary activeStage="scope" className="mb-5" />
-      <ExportWorkflowTruthPanel apiState={apiState} className="mb-5" loadState={loadState} />
+    <WorksurfaceShell
+      description="Object-level export scope selection for permitted objects only before redaction and preview can proceed."
+      eyebrow="WP02 Export/Redaction"
+      primary={
+        <div className="space-y-4">
+          <PageLead description="Select permitted objects only. Preview, approval, download and share remain unavailable." icon={Folder} title={title} />
+          <ExportStageBoundary activeStage="scope" />
+          <ExportWorkflowTruthPanel apiState={apiState} loadState={loadState} />
+        </div>
+      }
+      routeId="055"
+      safetyNote="Scope selection is not preview, approval, download or share; restricted objects stay excluded until permission and redaction controls pass."
+      statusItems={[
+        { label: "Route", tone: "blue", value: "055" },
+        { label: "Included", tone: "green", value: String(summary.included) },
+        { label: "Blocked", tone: "red", value: String(summary.blocked) },
+      ]}
+      title={title}
+      worksurfaceId="export-redaction-scope"
+    >
       <UxDenseOperationsPanel
         className="mt-5"
         controls={["Date range", "Recipients", "Object type", "Access", "Selected only", "Blocked excluded"]}
@@ -1310,7 +1340,7 @@ function ExportScopePage({ title }: { title: string }) {
         <ScfP07P09TrustPanel mode="export" />
         <ScfP10P14ClosurePanel mode="api" />
       </div>
-    </div>
+    </WorksurfaceShell>
   );
 }
 
@@ -1361,15 +1391,29 @@ function ExportRedactionPage({ title }: { title: string }) {
   ];
 
   return (
-    <div>
-      <PageLead badge="Redaction step" description="Resolve forbidden payloads before preview inspection." icon={Eye} title={title} />
-      <Phase5DetailSplitPanel decisionSupport="Redaction detail shows field state, payload visibility and preview blockers." objectLabel="Export redaction object review" objectState="Forbidden payload checks active" pageJob="Redaction page resolves payload review separately from preview and approval." safetyBoundary="Redaction detail cannot approve, download or share the export." splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-DETAIL-004" />
-      <ExportStageBoundary activeStage="redaction" className="mt-5" />
-      <ExportPayloadBoundary className="mt-5" />
-      <StatePanel detail="All sensitive fields must be redacted before preview can move toward approval." state="blocked" title="Redaction blocks preview approval" />
-      <div className="mt-5">
-        <ScfP07P09TrustPanel mode="export" />
-      </div>
+    <WorksurfaceShell
+      description="Payload redaction review for forbidden internal fields before preview inspection or approval can continue."
+      eyebrow="WP02 Export/Redaction"
+      primary={
+        <div className="space-y-4">
+          <PageLead badge="Redaction step" description="Resolve forbidden payloads before preview inspection." icon={Eye} title={title} />
+          <Phase5DetailSplitPanel decisionSupport="Redaction detail shows field state, payload visibility and preview blockers." objectLabel="Export redaction object review" objectState="Forbidden payload checks active" pageJob="Redaction page resolves payload review separately from preview and approval." safetyBoundary="Redaction detail cannot approve, download or share the export." splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-DETAIL-004" />
+          <ExportStageBoundary activeStage="redaction" />
+          <ExportPayloadBoundary />
+          <StatePanel detail="All sensitive fields must be redacted before preview can move toward approval." state="blocked" title="Redaction blocks preview approval" />
+          <ScfP07P09TrustPanel mode="export" />
+        </div>
+      }
+      routeId="056"
+      safetyNote="Redaction summary is not export approval; forbidden internal payload, preview, approval, download and share remain separate gates."
+      statusItems={[
+        { label: "Route", tone: "blue", value: "056" },
+        { label: "Redactions", tone: "gold", value: "12" },
+        { label: "Payload", tone: "red", value: "blocked" },
+      ]}
+      title={title}
+      worksurfaceId="export-redaction-redaction"
+    >
       <div className="mt-5">
         <UxCtaCluster
           blockedReason="Preview, approval, download and share remain separate export lifecycle steps; redaction review does not release the package."
@@ -1505,7 +1549,7 @@ function ExportRedactionPage({ title }: { title: string }) {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </WorksurfaceShell>
   );
 }
 
@@ -1561,14 +1605,18 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
   }
 
   return (
-    <div>
-      <PageLead badge="Approval step" description="Inspect preview and record approval before generation or delivery." icon={PackageCheck} title={title} />
-      <Phase5DetailSplitPanel decisionSupport="Preview detail distinguishes inspection, approval, generation and delivery." objectLabel="Export preview split" objectState="Preview inspection pending approval" pageJob="Preview page inspects one package without becoming download or share." safetyBoundary="Preview context cannot generate, download or share packages." splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-PAGE-SPLIT-005" />
-      <ExportStageBoundary activeStage="preview" className="mt-5" />
-      <ExportWorkflowTruthPanel apiState={apiState} className="mt-5" loadState={loadState} />
-      <Phase6DecisionRoomPanel audit="Approval audit must record scoped package, redaction state, actor and cancel or confirm outcome." blocker="Export approval remains blocked until redaction, policy and audit readiness are complete." cancelLabel="Cancel export approval" confirmLabel="Confirm export approval" decisionLabel="Export approval decision room" evidence="Package summary, forbidden payload checks, redaction review and policy checks are visible before decision." preconditions="Scoped package, forbidden payload pass, redaction review and audit readiness must all pass." safetyNote="No release, export or advice effect can occur until gate preconditions pass and an audit record exists." taskId="UX-DECISION-ROOM-002" />
-      <ScfP07P09TrustPanel mode="export" />
-      <UxDetailStandardPanel
+    <WorksurfaceShell
+      description="Preview inspection and audit-gated export approval surface kept separate from generation, download, share and client acceptance."
+      eyebrow="WP02 Export/Redaction"
+      primary={
+        <div className="space-y-4">
+          <PageLead badge="Approval step" description="Inspect preview and record approval before generation or delivery." icon={PackageCheck} title={title} />
+          <Phase5DetailSplitPanel decisionSupport="Preview detail distinguishes inspection, approval, generation and delivery." objectLabel="Export preview split" objectState="Preview inspection pending approval" pageJob="Preview page inspects one package without becoming download or share." safetyBoundary="Preview context cannot generate, download or share packages." splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-PAGE-SPLIT-005" />
+          <ExportStageBoundary activeStage="preview" />
+          <ExportWorkflowTruthPanel apiState={apiState} loadState={loadState} />
+          <Phase6DecisionRoomPanel audit="Approval audit must record scoped package, redaction state, actor and cancel or confirm outcome." blocker="Export approval remains blocked until redaction, policy and audit readiness are complete." cancelLabel="Cancel export approval" confirmLabel="Confirm export approval" decisionLabel="Export approval decision room" evidence="Package summary, forbidden payload checks, redaction review and policy checks are visible before decision." preconditions="Scoped package, forbidden payload pass, redaction review and audit readiness must all pass." safetyNote="No release, export or advice effect can occur until gate preconditions pass and an audit record exists." taskId="UX-DECISION-ROOM-002" />
+          <ScfP07P09TrustPanel mode="export" />
+          <UxDetailStandardPanel
         actionLabel="Approve export package only"
         actionState="Approval records the approval step only; generation, download, share and client acceptance remain separate."
         evidenceItems={["Export package summary", "Included scoped objects", "Policy checks"]}
@@ -1585,6 +1633,17 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
         status="Approval required"
         timelineItems={timeline.slice(0, 3).map((item) => item.title)}
       />
+        </div>
+      }
+      routeId="057"
+      safetyNote="Preview is inspection only; approval can record only the approval step and cannot download, share, release advice or imply client acceptance."
+      statusItems={[
+        { label: "Route", tone: "blue", value: "057" },
+        { label: "Stage", tone: "gold", value: "approval" },
+      ]}
+      title={title}
+      worksurfaceId="export-redaction-approval"
+    >
       <div
         className="mb-5 rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4"
         data-testid="uxp3-export-preview-step-separation"
@@ -1782,7 +1841,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
           ) : null}
         </div>
       </Modal>
-    </div>
+    </WorksurfaceShell>
   );
 }
 
@@ -1838,14 +1897,18 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
   }
 
   return (
-    <div>
-      <PageLead badge="Delivery step" description="Download is the next controlled delivery event; share remains separate." icon={Download} title={title} />
-      <Phase5DetailSplitPanel decisionSupport="Delivery detail separates approved package, download event and share gate." objectLabel="Export delivery split" objectState="Approved package; share still blocked" pageJob="Download page handles controlled delivery without client acceptance overclaim." safetyBoundary="Delivery detail cannot mark share complete or client acceptance achieved." splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-PAGE-SPLIT-005" />
-      <ExportStageBoundary activeStage="package" className="mt-5" />
-      <ExportWorkflowTruthPanel apiState={apiState} className="mt-5" loadState={loadState} />
-      <Phase7ClientProjectionPanel allowedFields="manifest id, redacted title, document type, released status and watermark state only" failClosed="Download stays blocked when projection is not visible, not released, not redacted or contains forbidden payload fields." forbiddenFields="No internal payload, unreleased evidence, AI Draft, compliance notes, storage key, checksum or raw file metadata." recovery="The user sees why the package is unavailable and can return to approval/redaction without generating or sharing unsafe content." routeLabel="Client-safe export package projection" taskId="UX-CLIENT-PROJECTION-004" visibilityEngineOutput="client projection clean check plus export package forbidden-field check" />
-      <ScfP07P09TrustPanel mode="export" />
-      <UxDetailStandardPanel
+    <WorksurfaceShell
+      description="Controlled download confirmation surface for approved export packages; secure share and client acceptance stay separate."
+      eyebrow="WP02 Export/Redaction"
+      primary={
+        <div className="space-y-4">
+          <PageLead badge="Delivery step" description="Download is the next controlled delivery event; share remains separate." icon={Download} title={title} />
+          <Phase5DetailSplitPanel decisionSupport="Delivery detail separates approved package, download event and share gate." objectLabel="Export delivery split" objectState="Approved package; share still blocked" pageJob="Download page handles controlled delivery without client acceptance overclaim." safetyBoundary="Delivery detail cannot mark share complete or client acceptance achieved." splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-PAGE-SPLIT-005" />
+          <ExportStageBoundary activeStage="package" />
+          <ExportWorkflowTruthPanel apiState={apiState} loadState={loadState} />
+          <Phase7ClientProjectionPanel allowedFields="manifest id, redacted title, document type, released status and watermark state only" failClosed="Download stays blocked when projection is not visible, not released, not redacted or contains forbidden payload fields." forbiddenFields="No internal payload, unreleased evidence, AI Draft, compliance notes, storage key, checksum or raw file metadata." recovery="The user sees why the package is unavailable and can return to approval/redaction without generating or sharing unsafe content." routeLabel="Client-safe export package projection" taskId="UX-CLIENT-PROJECTION-004" visibilityEngineOutput="client projection clean check plus export package forbidden-field check" />
+          <ScfP07P09TrustPanel mode="export" />
+          <UxDetailStandardPanel
         actionLabel="Download package"
         actionState="Download is available after approval; secure share remains blocked until download is recorded."
         evidenceItems={["Security and compliance", "Download package", "Share blocked until download"]}
@@ -1862,6 +1925,18 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
         status="Approved, not downloaded"
         timelineItems={timeline.slice(0, 3).map((item) => item.title)}
       />
+        </div>
+      }
+      routeId="058"
+      safetyNote="Download confirmation records only the controlled download event; secure share, recipient access, client acceptance and advice release remain separate controls."
+      statusItems={[
+        { label: "Route", tone: "blue", value: "058" },
+        { label: "Stage", tone: "green", value: "download" },
+        { label: "Share", tone: "red", value: "blocked" },
+      ]}
+      title={title}
+      worksurfaceId="export-redaction-download"
+    >
       <StatePanel
         className="mb-5"
         detail="The metadata-only export package is approved. Download is the next controlled event; share and client acceptance remain separate."
@@ -2039,7 +2114,7 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
           ) : null}
         </div>
       </Modal>
-    </div>
+    </WorksurfaceShell>
   );
 }
 
