@@ -45,6 +45,7 @@ import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
 import { UxComplexityPriorityPanel } from "@/components/ux-complexity-priority-panel";
+import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
 import { wp05ComplianceReleaseConfirmationPhrase } from "@/lib/advisory-workflow-contract";
 import {
@@ -725,9 +726,52 @@ function Phase4WorkbenchPanel({
 function SignalsPage({ title }: { title: string }) {
   return (
     <InternalShell activePageId="033">
-      <ScreenTitle>{title}</ScreenTitle>
-      <Phase5DetailSplitPanel decisionSupport="Advisory hub orients signal work without becoming trigger detail." objectLabel="Advisory hub split" objectState="Signal intake overview" pageJob="Hub routes to queue/detail while preserving one job per page." safetyBoundary="Hub context cannot approve advice or release content." splitTaskId="UX-PAGE-SPLIT-001" taskId="UX-PAGE-SPLIT-001" />
-      <UxHubPage pageId="033" />
+      <WorksurfaceShell
+        description="Signal intake is now presented as one internal-only process surface: queue signal, explain the active review job and keep advisor/compliance release gates visibly separate."
+        eyebrow="WP02 internal workbench"
+        primary={
+          <div className="space-y-4">
+            <Phase5DetailSplitPanel decisionSupport="Advisory hub orients signal work without becoming trigger detail." objectLabel="Advisory hub split" objectState="Signal intake overview" pageJob="Hub routes to queue/detail while preserving one job per page." safetyBoundary="Hub context cannot approve advice or release content." splitTaskId="UX-PAGE-SPLIT-001" taskId="UX-PAGE-SPLIT-001" />
+            <UxHubPage pageId="033" />
+          </div>
+        }
+        rail={
+          <WorksurfacePanel description="Signal intake can route work, but cannot approve advice, release content or expose drafts to clients." title="Gate boundary">
+            <div className="space-y-3 text-sm">
+              {["Internal analyst only", "Advisor review required", "Compliance release required"].map((item) => (
+                <div className="flex items-center justify-between gap-3 border-b border-alphavest-border/45 pb-2 last:border-0" key={item}>
+                  <span className="text-alphavest-muted">{item}</span>
+                  <Badge tone="gold">Held</Badge>
+                </div>
+              ))}
+            </div>
+          </WorksurfacePanel>
+        }
+        routeId="033"
+        safetyNote="WP02 layout only: signal intake does not create client-visible advice, does not approve a recommendation and does not bypass advisor or compliance review."
+        secondary={
+          <div className="grid gap-3 lg:grid-cols-3">
+            {signalQueue.slice(0, 3).map((row) => (
+              <Card key={row.id}>
+                <CardContent className="space-y-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="font-semibold text-alphavest-ivory">{row.title}</p>
+                    <Badge tone={toneFor(row.severity)}>{row.severity}</Badge>
+                  </div>
+                  <p className="text-sm text-alphavest-muted">{row.client}</p>
+                  <p className="text-xs text-alphavest-subtle">{row.source} - {row.age}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        }
+        statusItems={[
+          { label: "Queue", tone: "gold", value: `${signalQueue.length} signals` },
+          { label: "Visibility", tone: "red", value: "Internal only" },
+        ]}
+        title={title}
+        worksurfaceId="internal-workbench-signals"
+      />
     </InternalShell>
   );
 }
@@ -735,8 +779,42 @@ function SignalsPage({ title }: { title: string }) {
 function WorkbenchPage({ title }: { title: string }) {
   return (
     <InternalShell activePageId="034">
-      <ScreenTitle>{title}</ScreenTitle>
-      <UxHubPage pageId="034" />
+      <WorksurfaceShell
+        description="The analyst workbench combines operational status, active client queues, trigger work and draft readiness in one process-owned surface."
+        eyebrow="WP02 internal workbench"
+        primary={<UxHubPage pageId="034" />}
+        rail={<ReadinessCard />}
+        routeId="034"
+        safetyNote="WP02 layout only: the workbench organizes analyst work but does not publish, release, export or alter client visibility."
+        secondary={
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+            {workbenchMetrics.map((metric) => (
+              <Card key={metric.label}>
+                <CardContent>
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="text-sm text-alphavest-muted">{metric.label}</p>
+                    <Badge tone={toneFor(metric.status)}>{metric.status}</Badge>
+                  </div>
+                  <p className="mt-3 text-2xl font-semibold text-alphavest-ivory">{metric.value}</p>
+                  <p className="mt-1 text-xs text-alphavest-subtle">{metric.detail}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        }
+        statusItems={[
+          { label: "Drafts", tone: "gold", value: `${draftRecommendations.length} active` },
+          { label: "Attention", tone: "red", value: "18 items" },
+        ]}
+        title={title}
+        worksurfaceId="internal-workbench-queue"
+      >
+        <div className="grid gap-4 xl:grid-cols-3">
+          <QueueCard rows={clientQueue} title="Client Work Queue" />
+          <TriggerQueueCard />
+          <DraftsCard />
+        </div>
+      </WorksurfaceShell>
     </InternalShell>
   );
 }
@@ -918,9 +996,33 @@ function TriggerDetailPage({ title }: { title: string }) {
 
   return (
     <InternalShell activePageId="035">
-      <ScreenTitle>{title}</ScreenTitle>
-      <Phase4WorkbenchPanel activeTask="Trigger TRG-443 selected for analyst review" blocker="Missing beneficial-owner and purpose-of-wire evidence keeps advisor handoff blocked." context="AI draft remains internal; analyst must resolve unsupported claims before routing." primaryAction="Request missing evidence" queueLabel="Advisory trigger queue" safetyNote="UX-WORKBENCH-001: no client release, export or visibility mutation can happen from the analyst trigger workbench." taskId="UX-WORKBENCH-001" />
-      <Phase5DetailSplitPanel decisionSupport="Trigger detail separates object evidence from queue triage before advisor routing." objectLabel="Trigger object review" objectState="Blocked by missing evidence" pageJob="Trigger detail explains one selected trigger and safe next action." safetyBoundary="Trigger detail cannot create client-visible advice." splitTaskId="UX-PAGE-SPLIT-001" taskId="UX-DETAIL-003" />
+      <WorksurfaceShell
+        description="The trigger detail page is now the focused analyst object review surface: signal context, missing evidence, draft guardrail and handoff action are kept together."
+        eyebrow="WP02 internal workbench"
+        primary={
+          <div className="space-y-4">
+            <Phase4WorkbenchPanel activeTask="Trigger TRG-443 selected for analyst review" blocker="Missing beneficial-owner and purpose-of-wire evidence keeps advisor handoff blocked." context="AI draft remains internal; analyst must resolve unsupported claims before routing." primaryAction="Request missing evidence" queueLabel="Advisory trigger queue" safetyNote="UX-WORKBENCH-001: no client release, export or visibility mutation can happen from the analyst trigger workbench." taskId="UX-WORKBENCH-001" />
+            <Phase5DetailSplitPanel decisionSupport="Trigger detail separates object evidence from queue triage before advisor routing." objectLabel="Trigger object review" objectState="Blocked by missing evidence" pageJob="Trigger detail explains one selected trigger and safe next action." safetyBoundary="Trigger detail cannot create client-visible advice." splitTaskId="UX-PAGE-SPLIT-001" taskId="UX-DETAIL-003" />
+          </div>
+        }
+        rail={
+          <WorksurfacePanel description="Analyst routing is allowed only after evidence gaps and unsupported claims are visible." title="Handoff guard">
+            <div className="space-y-3 text-sm">
+              <InfoRow label="Trigger" value={triggerDetail.triggerId} />
+              <InfoRow label="Evidence gaps" value={`${dataGaps.length} open`} />
+              <InfoRow label="Advisor release" value="Not permitted" />
+            </div>
+          </WorksurfacePanel>
+        }
+        routeId="035"
+        safetyNote="WP02 layout only: analyst trigger review may request evidence or route work, but it cannot create client-visible advice, advisor approval or compliance release."
+        statusItems={[
+          { label: "Status", tone: "red", value: triggerDetail.status },
+          { label: "Severity", tone: "red", value: triggerDetail.severity },
+        ]}
+        title={title}
+        worksurfaceId="internal-workbench-trigger-review"
+      >
       <div className="mx-auto grid max-w-[112rem] gap-5 2xl:grid-cols-[1fr_24rem]">
         <section className="min-w-0 space-y-5">
           <ScfP04P06FlowPanel mode="advisory" />
@@ -1073,6 +1175,7 @@ function TriggerDetailPage({ title }: { title: string }) {
           </Card>
         </aside>
       </div>
+      </WorksurfaceShell>
     </InternalShell>
   );
 }
