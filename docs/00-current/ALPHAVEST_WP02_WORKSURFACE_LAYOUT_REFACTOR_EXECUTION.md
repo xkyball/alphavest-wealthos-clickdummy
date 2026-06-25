@@ -626,3 +626,88 @@ Follow-up recommendation:
 
 - Treat WP02 Option A as implementation-complete for the approved rerun scope after final validation passes.
 - The next cleanest aggressive task is not more WP02 layout expansion; it is a focused route-record cleanup decision for the existing `048`/`051` shared `/governance` path, because route `051` is component-ready but not independently browser-addressable without a route decision.
+
+## WP02 Strict Chain Rerun and Access/Tenant Completion
+
+Execution date: 2026-06-25.
+
+User execution rule applied:
+
+- Blueprint task -> executed analysis result -> refined specification -> derived implementation task -> implementation -> QA/proof -> report.
+- Generated specification artefacts from WP00-WP06 were used as input and safety override.
+- No route, API, schema, RBAC, release, export approval, evidence sufficiency or client visibility behavior changes were allowed inside WP02 layout work.
+
+Blueprint extraction:
+
+- `ANALYSIS-WP02-01` Existing Screen / Component / Layout Inventory: map current route ownership, layout primitives, duplicated headers, side rails, route constraints and safety-sensitive surfaces.
+- `SPEC-WP02-01` Target Worksurface Layout Architecture: define shared worksurface shell, route-level shell metadata, safe status rail, action/safety boundary placement and split-by-worksurface implementation contract.
+- `DECISION-WP02-01` Implementation Slice Order and Layout Boundaries: CTES 13-16 must be split; no broad all-in-one implementation; P1/Hold/Reference remain deferred; route/API/schema changes out of scope.
+- `IMPL-WP02-01` Shared Worksurface Shell and Layout Primitives: canonical shell renderer and panels.
+- `IMPL-WP02-02` Access & Tenant Setup Worksurface Slice: routes `001-018`.
+- `IMPL-WP02-03` Client Context + Evidence Worksurface Slice: routes `019`, `027-032`, `046-047`.
+- `IMPL-WP02-04` Internal Workbench / Advisor / Compliance Worksurface Slice: routes `033-042`, split into internal workbench, advisor review and compliance release.
+- `IMPL-WP02-05` Decision / Evidence Record / Governance / Export Layout Slice: routes `043-050`, `054-058`; route `051` remains a route-record constraint because it shares `/governance` with `048`.
+- `QA-WP02-01` Worksurface Layout Regression and Stop-Rule Validation: runtime route proof, shell contract proof, source hierarchy guard, no forbidden scope expansion and screenshot proof for UI changes.
+
+Executed analysis result:
+
+- Current baseline before this strict rerun: branch `full-workflow`, latest commit `d9f82b5 docs: rerun wp04 evidence workflow proof`, working tree clean.
+- `WorksurfaceShell` already existed and was used by Client/Evidence, Internal Workbench, Advisor Review, Compliance Release, Decision/Evidence Record, Governance Safety Console and Export/Redaction slices.
+- `tests/wp02-worksurface-shell.spec.ts` covered 31 implemented routes before this rerun.
+- Routes `001-006` still rendered the older `AuthCanvas` without the shared WP02 shell.
+- Routes `007-018` still rendered `AppShell`/`PageHeader` or `UxHubPage` without the shared WP02 shell.
+- Earlier approved option placed Access/Tenant last unless commercially urgent. Since all later approved slices were already complete, `IMPL-WP02-02` became the remaining real delta rather than a deferral.
+- `IMPL-WP02-01`, `IMPL-WP02-03`, `IMPL-WP02-04` and `IMPL-WP02-05` derived to zero-delta in this rerun, with code/test proof from the existing shell adoption and expanded shell regression.
+
+Refined specification:
+
+- Access and tenant setup must use the same `WorksurfaceShell` contract as all later process surfaces.
+- Auth/onboarding routes must keep their branded auth canvas but nest the actual work area in the shared shell with access-specific safety copy.
+- Admin/tenant routes must keep the `AppShell`, demo session controls, modals and drawers, but replace local page-header chrome with the shared shell.
+- The shell must expose `data-testid="wp02-worksurface-shell"`, `data-wp02-route-id` and `data-wp02-worksurface` for every WP02 productive/support route now in scope.
+- The shell safety boundary must explicitly prevent overclaiming: access, tenant setup, role templates and admin configuration do not grant release, evidence sufficiency, export approval, audit bypass or cross-tenant payload access.
+
+Derived implementation task:
+
+- `IMPL-WP02-02A` Auth Onboarding: add route-specific access worksurface metadata and wrap pages `001-006` inside `WorksurfaceShell`.
+- `IMPL-WP02-02B` Admin/Tenant Setup: add route-specific admin/tenant worksurface metadata and wrap pages `007-018` inside `WorksurfaceShell`.
+- `IMPL-WP02-02C` Regression Contract: extend `tests/wp02-worksurface-shell.spec.ts` from 31 to 49 shell route checks and handle `/login` anonymously because authenticated sessions intentionally do not stay on login.
+
+Implementation result:
+
+- `components/auth-onboarding-screen.tsx`: added access worksurface metadata and shared shell adoption for routes `001-006`.
+- `components/admin-tenant-setup-screen.tsx`: added platform/tenant worksurface metadata and shared shell adoption for routes `007-018`.
+- `tests/wp02-worksurface-shell.spec.ts`: expanded route coverage to `001-019`, `027-050` and `054-058`.
+
+QA/proof:
+
+```bash
+pnpm typecheck
+pnpm exec playwright test tests/wp02-worksurface-shell.spec.ts --reporter=line
+pnpm guard:source
+```
+
+Result:
+
+- TypeScript: PASS.
+- WP02 Worksurface shell contract: PASS, 49 passed.
+- Source/target guard: PASS, violations `0`.
+- Negative proof: the first expanded WP02 shell run failed for route `001` because the test authenticated before visiting `/login`; that is expected product behavior for an already authenticated session. The test was refined so only `/login` runs anonymous; the rerun passed all 49 checks.
+
+Screenshots:
+
+- `test-results/wp02-rerun-screenshots/wp02-access-login-shell.png`
+- `test-results/wp02-rerun-screenshots/wp02-tenant-users-shell.png`
+
+Boundaries preserved:
+
+- No route registry edits.
+- No API edits.
+- No schema or migration edits.
+- No safety, RBAC, evidence sufficiency, export approval, release or client-visibility behavior changes.
+- P1/Hold/Reference routes remain deferred.
+
+Residual risks:
+
+- Route `051` is still component-adopted but not independently browser-addressable because the registry shares `/governance` with route `048`; fixing it requires a separate route-record decision outside WP02 layout work.
+- Broader full-suite route smoke was not rerun in this strict delta; focused WP02 route-shell proof, TypeScript and source guard were run for this task-scoped commit.

@@ -22,11 +22,11 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { useDemoSession } from "@/components/demo-session-provider";
-import { PageHeader } from "@/components/page-header";
 import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { UxSupportDensityStrip } from "@/components/ux-support-density-strip";
+import { WorksurfaceShell } from "@/components/worksurface-shell";
 import {
   Badge,
   Card,
@@ -61,13 +61,13 @@ import {
   tenantRows,
   tenantSetupChecklist,
   tenantUsers,
-  tenantWizardSteps
+  tenantWizardSteps,
+  type AdminTenantSetupPageId
 } from "@/lib/admin-tenant-setup-demo-data";
 import { cn } from "@/lib/cn";
 import { demoPlatformTenantId, demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import type { AdminTenantSnapshot } from "@/lib/admin-tenant-readmodel-service";
 import { permissionEngine } from "@/lib/permission-engine";
-import { hasV096CleanRouteChrome } from "@/lib/route-ui-cleanup";
 import type { ScreenRoute } from "@/lib/route-registry";
 import { runScreencastDemoAction } from "@/lib/screencast-demo-client";
 import { buildScopeControlSnapshot, type ScopeControlRow, type StaticWorkspaceControl } from "@/lib/scope-control";
@@ -88,6 +88,81 @@ const secondaryButtonClass =
 
 const staticButtonClass =
   "inline-flex h-[var(--button-height)] cursor-not-allowed items-center justify-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/40 px-4 text-sm font-semibold text-alphavest-subtle opacity-75";
+
+const adminTenantWorksurfaceMeta: Record<AdminTenantSetupPageId, { safetyNote: string; status: string; tone?: BadgeTone; worksurfaceId: string }> = {
+  "007": {
+    safetyNote: "Platform settings are configuration only. Changes cannot release advice, mark evidence sufficient or expose client payloads.",
+    status: "Guarded configuration",
+    tone: "gold",
+    worksurfaceId: "platform-settings",
+  },
+  "008": {
+    safetyNote: "Advice boundary policy defines handling rules only. Client-visible advice still requires workflow review and compliance release.",
+    status: "Policy controlled",
+    tone: "red",
+    worksurfaceId: "platform-advice-boundary",
+  },
+  "009": {
+    safetyNote: "Role templates shape access requests only. Admin role edits do not bypass release, evidence, audit or export controls.",
+    status: "Non-bypass",
+    tone: "red",
+    worksurfaceId: "platform-role-templates",
+  },
+  "010": {
+    safetyNote: "Security settings are sensitive configuration. Demo changes remain blocked unless exact confirmation and backend authority are present.",
+    status: "Second confirmation",
+    tone: "gold",
+    worksurfaceId: "platform-security",
+  },
+  "011": {
+    safetyNote: "Evidence templates define requirements only. Upload or template presence is never treated as evidence sufficiency.",
+    status: "Template only",
+    tone: "blue",
+    worksurfaceId: "platform-evidence-templates",
+  },
+  "012": {
+    safetyNote: "Export templates define packaging and redaction defaults only. Export approval and download remain separate governed steps.",
+    status: "Redaction controlled",
+    tone: "blue",
+    worksurfaceId: "platform-export-templates",
+  },
+  "013": {
+    safetyNote: "Tenant list visibility does not grant cross-tenant payload access or downstream action authority.",
+    status: "Tenant inventory",
+    tone: "blue",
+    worksurfaceId: "tenant-list",
+  },
+  "014": {
+    safetyNote: "Tenant creation starts onboarding only. It does not activate users, approve policies or expose client data.",
+    status: "Onboarding draft",
+    tone: "gold",
+    worksurfaceId: "tenant-create",
+  },
+  "015": {
+    safetyNote: "Tenant setup tracks readiness only. Remaining tasks must complete before production-like access can be assumed.",
+    status: "Setup controlled",
+    tone: "gold",
+    worksurfaceId: "tenant-setup-dashboard",
+  },
+  "016": {
+    safetyNote: "Team assignment sets responsibility boundaries only. It does not grant approval authority outside role and tenant scope.",
+    status: "Assignment scoped",
+    tone: "blue",
+    worksurfaceId: "tenant-team-assignment",
+  },
+  "017": {
+    safetyNote: "Tenant policies remain scoped to the selected tenant. Policy changes cannot bypass compliance release or audit.",
+    status: "Policy scoped",
+    tone: "red",
+    worksurfaceId: "tenant-policies",
+  },
+  "018": {
+    safetyNote: "User invitations create pending access only. Sensitive roles and actions remain subject to permission and audit checks.",
+    status: "Invitation controlled",
+    tone: "gold",
+    worksurfaceId: "tenant-users",
+  },
+};
 
 function statusTone(status: string): BadgeTone {
   const normalized = status.toLowerCase();
@@ -1461,7 +1536,7 @@ export function AdminTenantSetupScreen({ route, visualState }: AdminTenantSetupS
   const [confirmationKind, setConfirmationKind] = useState<ConfirmationKind>(() => initialConfirmationKind(route, visualState));
   const [permissionModalOpen, setPermissionModalOpen] = useState(() => route.pageId === "009" && visualState === "permission");
   const [inviteDrawerOpen, setInviteDrawerOpen] = useState(() => route.pageId === "018" && visualState === "invite");
-  const useCleanRouteChrome = hasV096CleanRouteChrome(route.pageId);
+  const worksurface = adminTenantWorksurfaceMeta[route.pageId as AdminTenantSetupPageId];
 
   function renderPage() {
     if (route.pageId === "007") {
@@ -1502,17 +1577,21 @@ export function AdminTenantSetupScreen({ route, visualState }: AdminTenantSetupS
 
   return (
     <AppShell>
-      <div className="space-y-6">
-        {route.pageId === "011" ? null : (
-          <PageHeader
-            chrome={useCleanRouteChrome ? "compact" : "full"}
-            description={route.purpose}
-            title={route.title}
-          />
-        )}
-        {renderPage()}
-        {useCleanRouteChrome ? null : <UxSupportDensityStrip pageId={route.pageId} />}
-      </div>
+      <WorksurfaceShell
+        description={route.purpose}
+        eyebrow={route.navigationGroup === "tenant_setup" ? "Tenant setup worksurface" : "Platform setup worksurface"}
+        primary={renderPage()}
+        routeId={route.pageId}
+        safetyNote={worksurface.safetyNote}
+        statusItems={[
+          { label: "Workflow", tone: "blue", value: route.workflowName },
+          { label: "Control", tone: worksurface.tone, value: worksurface.status },
+        ]}
+        title={route.title}
+        worksurfaceId={worksurface.worksurfaceId}
+      >
+        <UxSupportDensityStrip pageId={route.pageId} />
+      </WorksurfaceShell>
       <CriticalChangeModal kind={confirmationKind} onClose={() => setConfirmationKind(null)} />
       <PermissionChangeModal onClose={() => setPermissionModalOpen(false)} open={permissionModalOpen} />
       <InviteUserDrawer onClose={() => setInviteDrawerOpen(false)} open={inviteDrawerOpen} />

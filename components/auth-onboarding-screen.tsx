@@ -28,6 +28,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, Modal, StatePanel, StatusChip, WizardStepper } from "@/components/ui";
 import { UxSupportDensityStrip } from "@/components/ux-support-density-strip";
+import { WorksurfaceShell } from "@/components/worksurface-shell";
 import {
   authSecurityFeatures,
   inviteSummary,
@@ -89,6 +90,45 @@ const primaryButtonClass =
 const secondaryButtonClass =
   "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/50 px-5 text-sm font-semibold text-alphavest-ivory transition hover:border-alphavest-gold/60 hover:text-alphavest-gold-soft";
 
+const authWorksurfaceMeta: Record<AuthOnboardingPageId, { description: string; safetyNote: string; title: string; worksurfaceId: string }> = {
+  "001": {
+    description: "Authenticate a demo user before any tenant, role or payload access can be reached.",
+    safetyNote: "Authentication grants only a demo session. It does not approve advice, release client-visible content or expand tenant payload access.",
+    title: "Authentication login",
+    worksurfaceId: "access-login",
+  },
+  "002": {
+    description: "Complete the local MFA challenge before continuing into invite acceptance or workspace access.",
+    safetyNote: "MFA completion confirms the demo challenge only. Role assignment, tenant membership and downstream action authority remain separately controlled.",
+    title: "Multi-factor authentication",
+    worksurfaceId: "access-mfa",
+  },
+  "003": {
+    description: "Accept the invitation and verify which tenant and role context will be activated.",
+    safetyNote: "Invitation acceptance starts onboarding only. It does not bypass identity setup, consent, role confirmation or audit requirements.",
+    title: "Invitation acceptance",
+    worksurfaceId: "access-invite-acceptance",
+  },
+  "004": {
+    description: "Capture identity details used to bind the invited user to a governed demo account.",
+    safetyNote: "Identity setup remains an onboarding step. It does not grant elevated permissions or cross-tenant visibility.",
+    title: "Identity setup",
+    worksurfaceId: "access-identity-setup",
+  },
+  "005": {
+    description: "Review privacy, consent and responsibility policies before activating workspace access.",
+    safetyNote: "Consent records user acknowledgement only. It does not release client-facing advice or mark compliance review complete.",
+    title: "Consent and privacy",
+    worksurfaceId: "access-consent",
+  },
+  "006": {
+    description: "Confirm role boundaries and activate the DB-backed demo access context.",
+    safetyNote: "Role confirmation activates the assigned demo role only. Sensitive actions still require their own permission, evidence and audit checks.",
+    title: "Role confirmation",
+    worksurfaceId: "access-role-confirmation",
+  },
+};
+
 function AlphaVestMark({ compact = false }: { compact?: boolean }) {
   return (
     <div className={cn("flex items-center gap-3", compact ? "justify-start" : "justify-center")}>
@@ -127,8 +167,20 @@ function AuthCanvas({ children, compactHeader = false, supportPageId }: { childr
             </p>
           ) : null}
         </header>
-        {supportPageId ? <UxSupportDensityStrip className="mx-auto mb-5 max-w-6xl" pageId={supportPageId} /> : null}
-        {children}
+        {supportPageId ? (
+          <WorksurfaceShell
+            description={authWorksurfaceMeta[supportPageId].description}
+            eyebrow="Access worksurface"
+            primary={children}
+            routeId={supportPageId}
+            safetyNote={authWorksurfaceMeta[supportPageId].safetyNote}
+            statusItems={[{ label: "Scope", tone: "blue", value: "Onboarding" }, { label: "Mode", tone: "gold", value: "Demo controlled" }]}
+            title={authWorksurfaceMeta[supportPageId].title}
+            worksurfaceId={authWorksurfaceMeta[supportPageId].worksurfaceId}
+          >
+            <UxSupportDensityStrip className="mx-auto max-w-6xl" pageId={supportPageId} />
+          </WorksurfaceShell>
+        ) : children}
       </div>
     </main>
   );

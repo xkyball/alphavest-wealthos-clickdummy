@@ -19,6 +19,24 @@ async function authenticate(page: Page) {
 }
 
 const worksurfaceRoutes = [
+  { pageId: "001", worksurface: "access-login" },
+  { pageId: "002", worksurface: "access-mfa" },
+  { pageId: "003", worksurface: "access-invite-acceptance" },
+  { pageId: "004", worksurface: "access-identity-setup" },
+  { pageId: "005", worksurface: "access-consent" },
+  { pageId: "006", worksurface: "access-role-confirmation" },
+  { pageId: "007", worksurface: "platform-settings" },
+  { pageId: "008", worksurface: "platform-advice-boundary" },
+  { pageId: "009", worksurface: "platform-role-templates" },
+  { pageId: "010", worksurface: "platform-security" },
+  { pageId: "011", worksurface: "platform-evidence-templates" },
+  { pageId: "012", worksurface: "platform-export-templates" },
+  { pageId: "013", worksurface: "tenant-list" },
+  { pageId: "014", worksurface: "tenant-create" },
+  { pageId: "015", worksurface: "tenant-setup-dashboard" },
+  { pageId: "016", worksurface: "tenant-team-assignment" },
+  { pageId: "017", worksurface: "tenant-policies" },
+  { pageId: "018", worksurface: "tenant-users" },
   { pageId: "019", worksurface: "client-context-home" },
   { pageId: "027", worksurface: "evidence-document-hub" },
   { pageId: "028", worksurface: "evidence-upload-intake" },
@@ -55,6 +73,8 @@ test.describe("WP02 worksurface shell", () => {
   test("centralizes the shared worksurface renderer and route adoption", () => {
     const root = process.cwd();
     const shell = readFileSync(join(root, "components/worksurface-shell.tsx"), "utf8");
+    const auth = readFileSync(join(root, "components/auth-onboarding-screen.tsx"), "utf8");
+    const adminTenant = readFileSync(join(root, "components/admin-tenant-setup-screen.tsx"), "utf8");
     const client = readFileSync(join(root, "components/client-intake-screen.tsx"), "utf8");
     const wealth = readFileSync(join(root, "components/wealth-actions-screen.tsx"), "utf8");
     const governance = readFileSync(join(root, "components/decisions-governance-screen.tsx"), "utf8");
@@ -63,6 +83,8 @@ test.describe("WP02 worksurface shell", () => {
 
     expect(shell).toContain("export function WorksurfaceShell");
     expect(shell).toContain('data-testid="wp02-worksurface-shell"');
+    expect(auth).toContain('from "@/components/worksurface-shell"');
+    expect(adminTenant).toContain('from "@/components/worksurface-shell"');
     expect(client).toContain('from "@/components/worksurface-shell"');
     expect(wealth).toContain('from "@/components/worksurface-shell"');
     expect(governance).toContain('from "@/components/worksurface-shell"');
@@ -77,7 +99,9 @@ test.describe("WP02 worksurface shell", () => {
       const registeredRoute = screenRoutes.find((candidate) => candidate.pageId === route.pageId);
 
       expect(registeredRoute, `${route.pageId} is registered`).toBeTruthy();
-      await authenticate(page);
+      if (route.pageId !== "001") {
+        await authenticate(page);
+      }
       await page.goto(routeToSmokePath(registeredRoute!.route));
 
       const shell = page.getByTestId("wp02-worksurface-shell");
