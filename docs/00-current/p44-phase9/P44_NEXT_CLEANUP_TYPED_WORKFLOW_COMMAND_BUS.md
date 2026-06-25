@@ -41,10 +41,11 @@ Create a typed workflow command bus that routes explicit command families:
 | --- | --- | --- |
 | `AnalystDraftCommand` | Internal draft generation, classification, unsupported-claim handling, evidence-backed rebuild, draft trace | `lib/p44-phase5-ai-draft-governance.ts` |
 | `AdvisorReviewCommand` | Advisor queue triage, approve, reject, request evidence, return to analyst | `lib/p44-phase6-advisor-review-closure.ts` |
-| `ComplianceReleaseCommand` | Compliance queue, evidence request, rationale capture, release precondition check, release denial | `lib/p44-phase7-compliance-rationale-closure.ts` |
+| `ComplianceReleaseCommand` | Compliance queue, evidence request, rationale capture, release denial, `ReleaseSpine` precondition evaluation | `lib/p44-phase7-compliance-rationale-closure.ts` and `lib/release-spine-command-surface.ts` |
 | `ExportCommand` | Scope, redaction, preview, approval, package generation, download/share | `lib/export-workflow-command-service.ts` and `lib/p44-phase8-export-command-closure.ts` |
 
 The bus should be a thin dispatcher, not a new all-purpose service. Domain semantics must stay in the command-family modules.
+Release readiness should flow through `ReleaseSpine`, not through a private compliance/export/demo-workflow shape.
 
 ## Proposed Ticket
 
