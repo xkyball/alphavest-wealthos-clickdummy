@@ -17,6 +17,7 @@ import {
   EvidenceStatus,
   ExportStatus,
   ExportType,
+  InternalDraftStatus,
   JourneyDefinitionStatus as PrismaJourneyDefinitionStatus,
   JourneyInstanceStatus as PrismaJourneyInstanceStatus,
   JourneyObjectLinkRole as PrismaJourneyObjectLinkRole,
@@ -1497,19 +1498,33 @@ async function seedWorkflowObjects() {
       title: `${tenant.displayName} liquidity governance recommendation`,
       summaryInternal:
         "Internal draft for human review. Client release remains blocked until advisor, compliance and evidence gates pass.",
-      clientSummaryDraft:
-        "Review the liquidity buffer and confirm whether to retain the current governance-approved reserve.",
       adviceClassification: tenant.slug === "bennett" ? AdviceClassification.ADVICE : AdviceClassification.ADVICE_RELEVANT,
       status: tenant.recommendationStatus,
       advisorApprovalId: approvalId(tenant.slug),
       complianceReviewId: complianceReviewId(tenant.slug),
       clientVisible: tenant.recommendationClientVisible,
       riskSummary: "Liquidity, concentration and document completeness risks considered.",
-      assumptionsJson: {
-        noUnapprovedAdviceGate: true,
-        advisorApprovalAloneIsNotEnough: true,
-        tenant: tenant.displayName,
-      },
+      createdAt: seedDate,
+      updatedAt: seedDate,
+    })),
+  });
+
+  await prisma.internalDraft.createMany({
+    data: demoTenants.map((tenant) => ({
+      id: stableId(`internal-draft:${tenant.slug}:liquidity`),
+      clientTenantId: tenantId(tenant.slug),
+      createdByUserId: userId("analyst"),
+      draftClientSummary: "Review the liquidity buffer and confirm whether to retain the current governance-approved reserve.",
+      draftKey: "seed-liquidity-governance",
+      internalRationale:
+        "Seeded first-class internal draft for human review. Client release remains blocked until advisor, compliance and evidence gates pass.",
+      processId: "seed-liquidity-governance",
+      recommendationId: recommendationId(tenant.slug),
+      sourceObjectId: triggerId(tenant.slug, "liquidity"),
+      sourceObjectType: ObjectType.TRIGGER,
+      sourceRefsJson: ["seed:liquidity-trigger", "seed:recommendation"],
+      status: InternalDraftStatus.CREATED,
+      title: `${tenant.displayName} liquidity governance internal draft`,
       createdAt: seedDate,
       updatedAt: seedDate,
     })),

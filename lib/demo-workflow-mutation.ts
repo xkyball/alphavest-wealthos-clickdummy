@@ -29,6 +29,7 @@ import {
 } from "@/lib/demo-workflow-validation";
 import { wp05DemoWorkflowCompatibilityMode } from "@/lib/advisory-workflow-contract";
 import type { PermissionDecision } from "@/lib/permission-engine";
+import { p44InternalDraftLegacyFallbackFlag } from "@/lib/p44-phase5-ai-draft-governance";
 import { visibilityEngine, type RecommendationPayloadProjection } from "@/lib/visibility-engine";
 import { workflowGate } from "@/lib/workflow-gate";
 import type {
@@ -471,6 +472,10 @@ function hasReleaseReadyPayload(recommendation: {
   assumptionsJson: Prisma.JsonValue | null;
   clientSummaryDraft: string | null;
 }) {
+  if (process.env[p44InternalDraftLegacyFallbackFlag] !== "1") {
+    return false;
+  }
+
   if (!recommendation.clientSummaryDraft?.trim()) {
     return false;
   }
@@ -562,7 +567,7 @@ function buildClientRecommendationProjection(input: {
     clientSession.role,
     {
       clientSummary: input.clientSummaryDraft,
-      clientSummaryDraft: input.clientSummaryDraft,
+      ...(process.env[p44InternalDraftLegacyFallbackFlag] === "1" ? { clientSummaryDraft: input.clientSummaryDraft } : {}),
       clientTenantId: input.clientTenantId,
       clientVisible: input.clientVisible,
       objectId: input.id,
@@ -826,12 +831,6 @@ export async function runAdvisorApprovalWorkflowMutation(
     if (input.action === "reject_unsupported_claim") {
       await tx.recommendation.update({
         data: {
-          assumptionsJson: {
-            aiDraftInternalOnly: true,
-            phase4UnsupportedClaimRejected: true,
-            rejectionReason: reason,
-            requiresEvidenceLinkedRebuild: true,
-          },
           clientVisible: false,
           status: RecommendationStatus.REVISION_REQUESTED,
           summaryInternal: `Unsupported claim rejected by analyst: ${reason}`,
@@ -878,13 +877,6 @@ export async function runAdvisorApprovalWorkflowMutation(
 
       await tx.recommendation.update({
         data: {
-          assumptionsJson: {
-            aiDraftInternalOnly: true,
-            evidenceBackedRebuild: true,
-            phase4RebuildEvidenceIds: acceptedEvidenceRecords.map((record) => record.id),
-            rebuildReason: reason,
-          },
-          clientSummaryDraft: "Internal draft rebuilt with accepted evidence. Compliance release remains required.",
           clientVisible: false,
           status: RecommendationStatus.ANALYST_REVIEWED,
           summaryInternal: `Evidence-backed internal draft rebuilt by analyst: ${reason}`,

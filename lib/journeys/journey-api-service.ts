@@ -1178,7 +1178,6 @@ async function executeComplianceReleaseCommand(input: {
 
       await tx.recommendation.update({
         data: {
-          clientSummaryDraft: input.request.clientSafeSummary,
           clientVisible: true,
           status: RecommendationStatus.RELEASED_TO_CLIENT,
         },

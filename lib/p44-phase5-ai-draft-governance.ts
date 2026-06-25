@@ -2,12 +2,16 @@ import {
   AdviceClassification,
   AuditResult,
   ComplianceStatus,
+  DraftClassificationKind,
+  DraftRiskLevel,
   EvidenceStatus,
+  InternalDraftStatus,
   ObjectType,
   Prisma,
   type PrismaClient,
   RecommendationStatus,
   ReviewStatus,
+  UnsupportedClaimStatus,
   VisibilityStatus,
 } from "@prisma/client";
 
@@ -130,9 +134,53 @@ function p44DraftMetadata(input: Prisma.InputJsonObject): Prisma.InputJsonObject
   };
 }
 
+export const p44InternalDraftLegacyFallbackFlag = "ALPHAVEST_INTERNAL_DRAFT_LEGACY_FALLBACK" as const;
+export const p44InternalDraftLegacyFallbackRemovalTicket = {
+  ticketId: "P44-INTERNAL-DRAFT-LEGACY-FALLBACK-REMOVAL",
+  target: "Remove Recommendation.assumptionsJson/clientSummaryDraft fallback after migration verification.",
+  temporaryFlag: p44InternalDraftLegacyFallbackFlag,
+} as const;
+
 function jsonObject(value: Prisma.JsonValue | null | undefined): Prisma.JsonObject {
   return value && typeof value === "object" && !Array.isArray(value) ? value : {};
 }
+
+function legacyInternalDraftFallbackEnabled() {
+  return process.env[p44InternalDraftLegacyFallbackFlag] === "1";
+}
+
+function toDraftClassificationKind(classification: P44DraftClassification["classification"]) {
+  return {
+    advice_relevant: DraftClassificationKind.ADVICE_RELEVANT,
+    guidance: DraftClassificationKind.GUIDANCE,
+    information: DraftClassificationKind.INFORMATION,
+    out_of_scope: DraftClassificationKind.OUT_OF_SCOPE,
+  }[classification];
+}
+
+function toDraftRiskLevel(riskLevel: P44DraftClassification["riskLevel"]) {
+  return {
+    critical: DraftRiskLevel.CRITICAL,
+    high: DraftRiskLevel.HIGH,
+    low: DraftRiskLevel.LOW,
+    medium: DraftRiskLevel.MEDIUM,
+  }[riskLevel];
+}
+
+type P44DraftGateInput = {
+  classified: boolean;
+  evidenceBackedRebuild: boolean;
+  rejected: boolean;
+  status: RecommendationStatus;
+  unsupportedClaimStatus: "clear" | "unsupported_claims_detected";
+};
+
+export type P44DraftGovernanceState = P44DraftGateInput & {
+  draftId: string | null;
+  legacyFallbackUsed: boolean;
+  processId: string | null;
+  sourceRefs: string[];
+};
 
 function requireInternalDraftRole(roleKey: DemoRoleKey) {
   if (!["analyst", "senior_wealth_advisor"].includes(roleKey)) {
@@ -166,6 +214,110 @@ function evidenceIsScopedToRecommendation(
   );
 }
 
+async function createDraftTrace(
+  tx: Prisma.TransactionClient,
+  input: {
+    actorRoleKey: DemoRoleKey;
+    actorUserId?: string | null;
+    auditEventId?: string | null;
+    evidenceRecordId?: string | null;
+    internalDraftId: string;
+    metadataJson?: Prisma.InputJsonObject;
+    reason: string;
+    traceType: string;
+  },
+) {
+  const trace = await tx.draftTrace.create({
+    data: {
+      actorRoleKey: input.actorRoleKey,
+      actorUserId: input.actorUserId ?? null,
+      auditEventId: input.auditEventId ?? null,
+      evidenceRecordId: input.evidenceRecordId ?? null,
+      internalDraftId: input.internalDraftId,
+      metadataJson: input.metadataJson,
+      reason: input.reason,
+      traceType: input.traceType,
+    },
+  });
+
+  await tx.internalDraft.update({
+    data: { currentTraceId: trace.id },
+    where: { id: input.internalDraftId },
+  });
+
+  return trace;
+}
+
+export async function getP44InternalDraftGovernanceState(
+  prisma: PrismaClient | Prisma.TransactionClient,
+  recommendationId: string,
+): Promise<P44DraftGovernanceState> {
+  const internalDraft = await prisma.internalDraft.findFirst({
+    include: {
+      classifications: { orderBy: { createdAt: "desc" }, take: 1 },
+      unsupportedClaims: {
+        where: { status: UnsupportedClaimStatus.NEEDS_EVIDENCE },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+    where: { recommendationId },
+  });
+
+  if (internalDraft) {
+    const latestClassification = internalDraft.classifications[0] ?? null;
+    return {
+      classified: Boolean(latestClassification),
+      draftId: internalDraft.id,
+      evidenceBackedRebuild:
+        internalDraft.status === InternalDraftStatus.REBUILT_WITH_EVIDENCE ||
+        internalDraft.status === InternalDraftStatus.ADVISOR_READY,
+      legacyFallbackUsed: false,
+      processId: internalDraft.processId,
+      rejected: internalDraft.status === InternalDraftStatus.REJECTED,
+      sourceRefs: Array.isArray(internalDraft.sourceRefsJson) ? internalDraft.sourceRefsJson.filter((ref): ref is string => typeof ref === "string") : [],
+      status: internalDraft.recommendationId ? (await prisma.recommendation.findUniqueOrThrow({ where: { id: recommendationId } })).status : RecommendationStatus.DRAFT,
+      unsupportedClaimStatus:
+        latestClassification?.unsupportedClaimsClear === true && internalDraft.unsupportedClaims.length === 0
+          ? "clear"
+          : "unsupported_claims_detected",
+    };
+  }
+
+  if (legacyInternalDraftFallbackEnabled()) {
+    const recommendation = await prisma.recommendation.findUnique({ where: { id: recommendationId } });
+    const metadata = jsonObject(recommendation?.assumptionsJson);
+    const classification = jsonObject(metadata.draftClassification as Prisma.JsonValue);
+
+    return {
+      classified: Boolean(classification.classification),
+      draftId: null,
+      evidenceBackedRebuild: metadata.evidenceBackedRebuild === true,
+      legacyFallbackUsed: true,
+      processId: typeof jsonObject(metadata.sourceContext as Prisma.JsonValue).processId === "string"
+        ? String(jsonObject(metadata.sourceContext as Prisma.JsonValue).processId)
+        : null,
+      rejected: metadata.draftRejected === true,
+      sourceRefs: Array.isArray(jsonObject(metadata.sourceContext as Prisma.JsonValue).sourceRefs)
+        ? (jsonObject(metadata.sourceContext as Prisma.JsonValue).sourceRefs as unknown[]).filter((ref): ref is string => typeof ref === "string")
+        : [],
+      status: recommendation?.status ?? RecommendationStatus.DRAFT,
+      unsupportedClaimStatus: classification.unsupportedClaimStatus === "clear" ? "clear" : "unsupported_claims_detected",
+    };
+  }
+
+  return {
+    classified: false,
+    draftId: null,
+    evidenceBackedRebuild: false,
+    legacyFallbackUsed: false,
+    processId: null,
+    rejected: false,
+    sourceRefs: [],
+    status: RecommendationStatus.DRAFT,
+    unsupportedClaimStatus: "unsupported_claims_detected",
+  };
+}
+
 export async function createP44InternalAiDraft(prisma: PrismaClient, input: P44InternalDraftInput) {
   requireInternalDraftRole(input.actorRoleKey);
   requireDraftText(input.clientSummaryDraft, "clientSummaryDraft");
@@ -182,12 +334,6 @@ export async function createP44InternalAiDraft(prisma: PrismaClient, input: P44I
     const recommendation = await tx.recommendation.upsert({
       create: {
         adviceClassification: AdviceClassification.ADVICE_RELEVANT,
-        assumptionsJson: p44DraftMetadata({
-          currentTicket: "P44-5-T01-EXEC",
-          internalRationale: input.internalRationale,
-          sourceContext: input.sourceContext,
-        }),
-        clientSummaryDraft: input.clientSummaryDraft,
         clientTenantId: session.tenant.id,
         clientVisible: false,
         createdByUserId: session.actor.id,
@@ -199,12 +345,6 @@ export async function createP44InternalAiDraft(prisma: PrismaClient, input: P44I
       },
       update: {
         adviceClassification: AdviceClassification.ADVICE_RELEVANT,
-        assumptionsJson: p44DraftMetadata({
-          currentTicket: "P44-5-T01-EXEC",
-          internalRationale: input.internalRationale,
-          sourceContext: input.sourceContext,
-        }),
-        clientSummaryDraft: input.clientSummaryDraft,
         clientVisible: false,
         riskSummary: "Internal AI/rules draft. Human review and evidence gates are mandatory before release.",
         status: RecommendationStatus.AI_DRAFT,
@@ -212,6 +352,39 @@ export async function createP44InternalAiDraft(prisma: PrismaClient, input: P44I
         title: input.title,
       },
       where: { id: recommendationId },
+    });
+    const internalDraft = await tx.internalDraft.upsert({
+      create: {
+        clientTenantId: session.tenant.id,
+        createdByUserId: session.actor.id,
+        draftClientSummary: input.clientSummaryDraft,
+        draftKey: input.draftKey,
+        id: stableId(`p44:phase5:internal-draft:${input.tenantSlug}:${input.draftKey}`),
+        internalRationale: input.internalRationale,
+        processId: input.sourceContext.processId,
+        recommendationId: recommendation.id,
+        sourceObjectId: input.sourceContext.sourceObjectId,
+        sourceObjectType: input.sourceContext.sourceObjectType,
+        sourceRefsJson: input.sourceContext.sourceRefs,
+        status: InternalDraftStatus.CREATED,
+        title: input.title,
+      },
+      update: {
+        draftClientSummary: input.clientSummaryDraft,
+        internalRationale: input.internalRationale,
+        processId: input.sourceContext.processId,
+        sourceObjectId: input.sourceContext.sourceObjectId,
+        sourceObjectType: input.sourceContext.sourceObjectType,
+        sourceRefsJson: input.sourceContext.sourceRefs,
+        status: InternalDraftStatus.CREATED,
+        title: input.title,
+      },
+      where: {
+        recommendationId_draftKey: {
+          draftKey: input.draftKey,
+          recommendationId: recommendation.id,
+        },
+      },
     });
     await tx.approval.upsert({
       create: {
@@ -273,11 +446,26 @@ export async function createP44InternalAiDraft(prisma: PrismaClient, input: P44I
         targetType: ObjectType.RECOMMENDATION,
       },
     });
+    await createDraftTrace(tx, {
+      actorRoleKey: session.role.key,
+      actorUserId: session.actor.id,
+      auditEventId: audit.id,
+      internalDraftId: internalDraft.id,
+      metadataJson: p44DraftMetadata({
+        draftKey: input.draftKey,
+        sourceContext: input.sourceContext,
+        storage: "internal_drafts",
+        ticketId: "P44-5-T01-EXEC",
+      }),
+      reason: input.reason,
+      traceType: "p44.ai_draft.created_internal",
+    });
 
     return {
       auditEventId: audit.id,
       clientVisible: recommendation.clientVisible,
       complianceReviewId,
+      internalDraftId: internalDraft.id,
       noAutonomousAdvice: true,
       recommendationId: recommendation.id,
       status: recommendation.status,
@@ -341,28 +529,44 @@ export async function classifyP44InternalDraft(
 
   const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const existing = await prisma.recommendation.findUniqueOrThrow({ where: { id: input.recommendationId } });
-  const previousMetadata = jsonObject(existing.assumptionsJson);
   const nextStatus =
     input.classification.unsupportedClaimStatus === "clear"
       ? RecommendationStatus.ANALYST_REVIEWED
       : RecommendationStatus.REVISION_REQUESTED;
 
   return prisma.$transaction(async (tx) => {
+    const internalDraft = await tx.internalDraft.findFirstOrThrow({
+      orderBy: { createdAt: "desc" },
+      where: { recommendationId: input.recommendationId },
+    });
     const recommendation = await tx.recommendation.update({
       data: {
-        assumptionsJson: {
-          ...previousMetadata,
-          currentTicket: "P44-5-T03-EXEC",
-          draftClassification: input.classification,
-          nextReviewState:
-            input.classification.unsupportedClaimStatus === "clear"
-              ? "advisor_review_ready_after_evidence_check"
-              : "unsupported_claim_review_required",
-        },
         clientVisible: false,
         status: nextStatus,
       },
       where: { id: input.recommendationId },
+    });
+    const classification = await tx.draftClassification.create({
+      data: {
+        classification: toDraftClassificationKind(input.classification.classification),
+        classifiedByRoleKey: session.role.key,
+        classifiedByUserId: session.actor.id,
+        internalDraftId: internalDraft.id,
+        reason: input.reason,
+        riskLevel: toDraftRiskLevel(input.classification.riskLevel),
+        unsupportedClaimsClear: input.classification.unsupportedClaimStatus === "clear",
+      },
+    });
+    await tx.internalDraft.update({
+      data: {
+        status:
+          input.classification.unsupportedClaimStatus === "clear"
+            ? internalDraft.status === InternalDraftStatus.REBUILT_WITH_EVIDENCE
+              ? InternalDraftStatus.ADVISOR_READY
+              : InternalDraftStatus.CLASSIFIED
+            : InternalDraftStatus.REVISION_REQUESTED,
+      },
+      where: { id: internalDraft.id },
     });
     const audit = await tx.auditEvent.create({
       data: {
@@ -383,9 +587,24 @@ export async function classifyP44InternalDraft(
         targetType: ObjectType.RECOMMENDATION,
       },
     });
+    await createDraftTrace(tx, {
+      actorRoleKey: session.role.key,
+      actorUserId: session.actor.id,
+      auditEventId: audit.id,
+      internalDraftId: internalDraft.id,
+      metadataJson: p44DraftMetadata({
+        classificationId: classification.id,
+        classification: input.classification,
+        storage: "draft_classifications",
+        ticketId: "P44-5-T03-EXEC",
+      }),
+      reason: input.reason,
+      traceType: "p44.ai_draft.classified",
+    });
 
     return {
       auditEventId: audit.id,
+      classificationId: classification.id,
       clientVisible: recommendation.clientVisible,
       nextReviewState:
         input.classification.unsupportedClaimStatus === "clear"
@@ -398,15 +617,11 @@ export async function classifyP44InternalDraft(
   });
 }
 
-export function canP44DraftAdvanceToAdvisor(metadata: Prisma.JsonValue | null | undefined) {
-  const parsed = jsonObject(metadata);
-  const draftClassification = jsonObject(parsed.draftClassification as Prisma.JsonValue);
-  const classified = Boolean(draftClassification.classification);
-  const unsupportedClaimStatus = draftClassification.unsupportedClaimStatus;
+export function canP44DraftAdvanceToAdvisor(input: P44DraftGateInput) {
   const missing: string[] = [];
 
-  if (!classified) missing.push("draft_classification");
-  if (unsupportedClaimStatus !== "clear") missing.push("unsupported_claim_clearance");
+  if (!input.classified) missing.push("draft_classification");
+  if (input.unsupportedClaimStatus !== "clear") missing.push("unsupported_claim_clearance");
 
   return {
     allowed: missing.length === 0,
@@ -422,10 +637,6 @@ export async function persistP44UnsupportedClaim(prisma: PrismaClient, input: P4
 
   const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const existing = await prisma.recommendation.findUniqueOrThrow({ where: { id: input.recommendationId } });
-  const previousMetadata = jsonObject(existing.assumptionsJson);
-  const previousClaims = Array.isArray(previousMetadata.unsupportedClaims)
-    ? previousMetadata.unsupportedClaims
-    : [];
   const claim = {
     claimKey: input.claimKey,
     evidenceRequirement: input.evidenceRequirement,
@@ -435,6 +646,10 @@ export async function persistP44UnsupportedClaim(prisma: PrismaClient, input: P4
   const evidenceRecordId = p44UnsupportedClaimEvidenceId(input.recommendationId, input.claimKey);
 
   return prisma.$transaction(async (tx) => {
+    const internalDraft = await tx.internalDraft.findFirstOrThrow({
+      orderBy: { createdAt: "desc" },
+      where: { recommendationId: input.recommendationId },
+    });
     const evidence = await tx.evidenceRecord.upsert({
       create: {
         clientTenantId: session.tenant.id,
@@ -457,19 +672,39 @@ export async function persistP44UnsupportedClaim(prisma: PrismaClient, input: P4
     });
     const recommendation = await tx.recommendation.update({
       data: {
-        assumptionsJson: {
-          ...previousMetadata,
-          currentTicket: "P44-5-T04-EXEC",
-          draftClassification: {
-            ...jsonObject(previousMetadata.draftClassification as Prisma.JsonValue),
-            unsupportedClaimStatus: "unsupported_claims_detected",
-          },
-          unsupportedClaims: [...previousClaims, claim],
-        },
         clientVisible: false,
         status: RecommendationStatus.REVISION_REQUESTED,
       },
       where: { id: input.recommendationId },
+    });
+    const unsupportedClaim = await tx.unsupportedClaim.upsert({
+      create: {
+        claimKey: input.claimKey,
+        createdByRoleKey: session.role.key,
+        createdByUserId: session.actor.id,
+        evidenceRecordId: evidence.id,
+        evidenceRequirement: input.evidenceRequirement,
+        id: stableId(`p44:phase5:unsupported-claim-row:${input.recommendationId}:${input.claimKey}`),
+        internalDraftId: internalDraft.id,
+        sourceRef: input.sourceRef,
+        status: UnsupportedClaimStatus.NEEDS_EVIDENCE,
+      },
+      update: {
+        evidenceRecordId: evidence.id,
+        evidenceRequirement: input.evidenceRequirement,
+        sourceRef: input.sourceRef,
+        status: UnsupportedClaimStatus.NEEDS_EVIDENCE,
+      },
+      where: {
+        internalDraftId_claimKey: {
+          claimKey: input.claimKey,
+          internalDraftId: internalDraft.id,
+        },
+      },
+    });
+    await tx.internalDraft.update({
+      data: { status: InternalDraftStatus.REVISION_REQUESTED },
+      where: { id: internalDraft.id },
     });
     const audit = await tx.auditEvent.create({
       data: {
@@ -481,6 +716,8 @@ export async function persistP44UnsupportedClaim(prisma: PrismaClient, input: P4
         metadataJson: p44DraftMetadata({
           claim,
           evidenceRecordId: evidence.id,
+          storage: "unsupported_claims",
+          unsupportedClaimId: unsupportedClaim.id,
           ticketId: "P44-5-T04-EXEC",
         }),
         nextState: recommendation.status,
@@ -492,6 +729,22 @@ export async function persistP44UnsupportedClaim(prisma: PrismaClient, input: P4
         targetType: ObjectType.RECOMMENDATION,
       },
     });
+    await createDraftTrace(tx, {
+      actorRoleKey: session.role.key,
+      actorUserId: session.actor.id,
+      auditEventId: audit.id,
+      evidenceRecordId: evidence.id,
+      internalDraftId: internalDraft.id,
+      metadataJson: p44DraftMetadata({
+        claim,
+        evidenceRecordId: evidence.id,
+        storage: "unsupported_claims",
+        ticketId: "P44-5-T04-EXEC",
+        unsupportedClaimId: unsupportedClaim.id,
+      }),
+      reason: input.reason,
+      traceType: "p44.ai_draft.unsupported_claim_recorded",
+    });
 
     return {
       auditEventId: audit.id,
@@ -501,6 +754,7 @@ export async function persistP44UnsupportedClaim(prisma: PrismaClient, input: P4
       status: recommendation.status,
       ticketId: "P44-5-T04-EXEC" as const,
       unsupportedClaim: claim,
+      unsupportedClaimId: unsupportedClaim.id,
     };
   });
 }
@@ -546,23 +800,23 @@ export async function rejectP44InternalDraft(
 
   const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const existing = await prisma.recommendation.findUniqueOrThrow({ where: { id: input.recommendationId } });
-  const previousMetadata = jsonObject(existing.assumptionsJson);
 
   return prisma.$transaction(async (tx) => {
+    const internalDraft = await tx.internalDraft.findFirstOrThrow({
+      orderBy: { createdAt: "desc" },
+      where: { recommendationId: input.recommendationId },
+    });
     const recommendation = await tx.recommendation.update({
       data: {
-        assumptionsJson: {
-          ...previousMetadata,
-          currentTicket: "P44-5-T06-EXEC",
-          draftRejected: true,
-          rejectionReason: input.reason,
-          requiresEvidenceLinkedRebuild: true,
-        },
         clientVisible: false,
         status: RecommendationStatus.REVISION_REQUESTED,
         summaryInternal: `Internal draft rejected: ${input.reason}`,
       },
       where: { id: input.recommendationId },
+    });
+    await tx.internalDraft.update({
+      data: { status: InternalDraftStatus.REJECTED },
+      where: { id: internalDraft.id },
     });
     await tx.approval.updateMany({
       data: {
@@ -594,6 +848,7 @@ export async function rejectP44InternalDraft(
         eventType: "p44.ai_draft.rejected",
         metadataJson: p44DraftMetadata({
           rejectionReason: input.reason,
+          storage: "internal_drafts",
           ticketId: "P44-5-T06-EXEC",
         }),
         nextState: recommendation.status,
@@ -604,6 +859,19 @@ export async function rejectP44InternalDraft(
         targetId: recommendation.id,
         targetType: ObjectType.RECOMMENDATION,
       },
+    });
+    await createDraftTrace(tx, {
+      actorRoleKey: session.role.key,
+      actorUserId: session.actor.id,
+      auditEventId: audit.id,
+      internalDraftId: internalDraft.id,
+      metadataJson: p44DraftMetadata({
+        rejectionReason: input.reason,
+        storage: "internal_drafts",
+        ticketId: "P44-5-T06-EXEC",
+      }),
+      reason: input.reason,
+      traceType: "p44.ai_draft.rejected",
     });
 
     return {
@@ -635,9 +903,12 @@ export async function rebuildP44DraftWithEvidence(
 
   const session = requireDemoSession({ roleKey: input.actorRoleKey, tenantSlug: input.tenantSlug });
   const existing = await prisma.recommendation.findUniqueOrThrow({ where: { id: input.recommendationId } });
-  const previousMetadata = jsonObject(existing.assumptionsJson);
 
   return prisma.$transaction(async (tx) => {
+    const internalDraft = await tx.internalDraft.findFirstOrThrow({
+      orderBy: { createdAt: "desc" },
+      where: { recommendationId: input.recommendationId },
+    });
     const evidenceRecords = await tx.evidenceRecord.findMany({
       include: {
         items: {
@@ -661,20 +932,22 @@ export async function rebuildP44DraftWithEvidence(
 
     const recommendation = await tx.recommendation.update({
       data: {
-        assumptionsJson: {
-          ...previousMetadata,
-          currentTicket: "P44-5-T07-EXEC",
-          draftRejected: false,
-          evidenceBackedRebuild: true,
-          phase5RebuildEvidenceIds: acceptedScopedEvidence.map((record) => record.id),
-          rebuildReason: input.reason,
-        },
-        clientSummaryDraft: "Internal draft rebuilt with accepted evidence. Client release remains blocked.",
         clientVisible: false,
         status: RecommendationStatus.ANALYST_REVIEWED,
         summaryInternal: `Evidence-backed internal draft rebuilt: ${input.reason}`,
       },
       where: { id: input.recommendationId },
+    });
+    await tx.internalDraft.update({
+      data: {
+        draftClientSummary: "Internal draft rebuilt with accepted evidence. Client release remains blocked.",
+        status: InternalDraftStatus.REBUILT_WITH_EVIDENCE,
+      },
+      where: { id: internalDraft.id },
+    });
+    await tx.unsupportedClaim.updateMany({
+      data: { status: UnsupportedClaimStatus.RESOLVED },
+      where: { internalDraftId: internalDraft.id },
     });
     await tx.evidenceItem.createMany({
       data: acceptedScopedEvidence.map((record) => ({
@@ -695,6 +968,7 @@ export async function rebuildP44DraftWithEvidence(
         evidenceRecordId: acceptedScopedEvidence[0]?.id,
         metadataJson: p44DraftMetadata({
           evidenceIds: acceptedScopedEvidence.map((record) => record.id),
+          storage: "internal_drafts",
           ticketId: "P44-5-T07-EXEC",
         }),
         nextState: recommendation.status,
@@ -705,6 +979,20 @@ export async function rebuildP44DraftWithEvidence(
         targetId: recommendation.id,
         targetType: ObjectType.RECOMMENDATION,
       },
+    });
+    await createDraftTrace(tx, {
+      actorRoleKey: session.role.key,
+      actorUserId: session.actor.id,
+      auditEventId: audit.id,
+      evidenceRecordId: acceptedScopedEvidence[0]?.id,
+      internalDraftId: internalDraft.id,
+      metadataJson: p44DraftMetadata({
+        evidenceIds: acceptedScopedEvidence.map((record) => record.id),
+        storage: "internal_drafts",
+        ticketId: "P44-5-T07-EXEC",
+      }),
+      reason: input.reason,
+      traceType: "p44.ai_draft.rebuilt_with_evidence",
     });
 
     return {
@@ -731,8 +1019,7 @@ export async function buildP44DraftTraceMap(
   const recommendation = await prisma.recommendation.findUniqueOrThrow({
     where: { id: input.recommendationId },
   });
-  const metadata = jsonObject(recommendation.assumptionsJson);
-  const sourceContext = jsonObject(metadata.sourceContext as Prisma.JsonValue);
+  const draftState = await getP44InternalDraftGovernanceState(prisma, input.recommendationId);
   const evidenceRecords = await prisma.evidenceRecord.findMany({
     include: {
       items: true,
@@ -760,9 +1047,10 @@ export async function buildP44DraftTraceMap(
     },
     internalTrace: {
       evidenceRecordIds: evidenceRecords.map((record) => record.id),
-      processId: typeof sourceContext.processId === "string" ? sourceContext.processId : null,
+      legacyFallbackUsed: draftState.legacyFallbackUsed,
+      processId: draftState.processId,
       recommendationId: recommendation.id,
-      sourceRefs: Array.isArray(sourceContext.sourceRefs) ? sourceContext.sourceRefs : [],
+      sourceRefs: draftState.sourceRefs,
     },
     ticketId: "P44-5-T08-EXEC" as const,
   };
@@ -818,16 +1106,12 @@ export function sweepP44AiDraftLeakageSurfaces(
   });
 }
 
-export function canP44EvidenceBackedDraftMoveToAdvisor(input: {
-  assumptionsJson: Prisma.JsonValue | null | undefined;
-  status: RecommendationStatus;
-}) {
-  const metadata = jsonObject(input.assumptionsJson);
-  const classificationGate = canP44DraftAdvanceToAdvisor(input.assumptionsJson);
+export function canP44EvidenceBackedDraftMoveToAdvisor(input: P44DraftGateInput) {
+  const classificationGate = canP44DraftAdvanceToAdvisor(input);
   const missing = [...classificationGate.missing];
 
-  if (metadata.evidenceBackedRebuild !== true) missing.push("evidence_backed_rebuild");
-  if (metadata.draftRejected === true) missing.push("draft_not_rejected");
+  if (!input.evidenceBackedRebuild) missing.push("evidence_backed_rebuild");
+  if (input.rejected) missing.push("draft_not_rejected");
   if (input.status !== RecommendationStatus.ANALYST_REVIEWED) missing.push("analyst_reviewed_state");
 
   return {

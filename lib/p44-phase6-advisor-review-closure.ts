@@ -174,12 +174,6 @@ export async function createP44AdvisorQueueTriage(prisma: PrismaClient, input: P
     const recommendation = await tx.recommendation.upsert({
       create: {
         adviceClassification: AdviceClassification.ADVICE_RELEVANT,
-        assumptionsJson: phase6Metadata({
-          currentTicket: "P44-6-T01-EXEC",
-          internalRationale: input.internalRationale,
-          sourceRefs: input.sourceRefs,
-        }),
-        clientSummaryDraft: "Advisor review draft is internal until compliance release.",
         clientTenantId: session.tenant.id,
         clientVisible: false,
         createdByUserId: session.actor.id,
@@ -190,11 +184,6 @@ export async function createP44AdvisorQueueTriage(prisma: PrismaClient, input: P
         title: input.title,
       },
       update: {
-        assumptionsJson: phase6Metadata({
-          currentTicket: "P44-6-T01-EXEC",
-          internalRationale: input.internalRationale,
-          sourceRefs: input.sourceRefs,
-        }),
         clientVisible: false,
         riskSummary: "Advisor review in progress. Advisor action cannot release client visibility.",
         status: RecommendationStatus.ADVISOR_PENDING,
@@ -398,10 +387,6 @@ export async function createP44OptionComparison(
   return prisma.$transaction(async (tx) => {
     await tx.recommendation.update({
       data: {
-        assumptionsJson: phase6Metadata({
-          currentTicket: "P44-6-T03-EXEC",
-          optionComparisonReady: true,
-        }),
         clientVisible: false,
         status: RecommendationStatus.ADVISOR_PENDING,
       },
@@ -719,11 +704,6 @@ export async function returnP44AdvisorReviewToAnalyst(
   return prisma.$transaction(async (tx) => {
     await tx.recommendation.update({
       data: {
-        assumptionsJson: phase6Metadata({
-          currentTicket: "P44-6-T07-EXEC",
-          returnReason: input.reason,
-          returnedTo: "analyst",
-        }),
         clientVisible: false,
         status: RecommendationStatus.REVISION_REQUESTED,
       },

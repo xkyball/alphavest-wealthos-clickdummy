@@ -181,6 +181,36 @@ enum RecommendationStatus {
   ARCHIVED
 }
 
+enum InternalDraftStatus {
+  CREATED
+  CLASSIFIED
+  REVISION_REQUESTED
+  REJECTED
+  REBUILT_WITH_EVIDENCE
+  ADVISOR_READY
+  ARCHIVED
+}
+
+enum DraftClassificationKind {
+  ADVICE_RELEVANT
+  GUIDANCE
+  INFORMATION
+  OUT_OF_SCOPE
+}
+
+enum DraftRiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum UnsupportedClaimStatus {
+  NEEDS_EVIDENCE
+  RESOLVED
+  WAIVED
+}
+
 enum DecisionStatus {
   DRAFT
   RELEASED_TO_CLIENT
@@ -382,6 +412,7 @@ model ClientTenant {
   dataQualityIssues            DataQualityIssue[]
   journeyInstances             JourneyInstance[]
   auditEvents                  AuditEvent[]
+  internalDrafts               InternalDraft[]
 
   @@index([platformTenantId])
   @@index([status])
@@ -898,10 +929,94 @@ model Recommendation {
   updatedAt            DateTime               @updatedAt
   options              RecommendationOption[]
   decisions            Decision[]
+  internalDrafts       InternalDraft[]
 
   @@index([clientTenantId, status])
   @@index([triggerId])
   @@map("recommendations")
+}
+
+model InternalDraft {
+  id                 String                  @id @default(uuid()) @db.Uuid
+  recommendationId   String                  @db.Uuid
+  recommendation     Recommendation          @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+  clientTenantId     String                  @db.Uuid
+  clientTenant       ClientTenant            @relation(fields: [clientTenantId], references: [id], onDelete: Cascade)
+  draftKey           String                  @db.VarChar(140)
+  title              String                  @db.VarChar(200)
+  draftClientSummary String                  @db.Text
+  internalRationale  String                  @db.Text
+  processId          String                  @db.VarChar(80)
+  sourceObjectId     String                  @db.Uuid
+  sourceObjectType   ObjectType
+  sourceRefsJson     Json
+  status             InternalDraftStatus     @default(CREATED)
+  createdByUserId    String?                 @db.Uuid
+  currentTraceId     String?                 @db.Uuid
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+  classifications    DraftClassification[]
+  unsupportedClaims  UnsupportedClaim[]
+  traces             DraftTrace[]
+
+  @@unique([recommendationId, draftKey])
+  @@index([clientTenantId, status])
+  @@index([recommendationId, createdAt])
+  @@map("internal_drafts")
+}
+
+model DraftClassification {
+  id                     String                  @id @default(uuid()) @db.Uuid
+  internalDraftId         String                  @db.Uuid
+  internalDraft           InternalDraft           @relation(fields: [internalDraftId], references: [id], onDelete: Cascade)
+  classification          DraftClassificationKind
+  riskLevel               DraftRiskLevel
+  unsupportedClaimsClear  Boolean                 @default(false)
+  classifiedByRoleKey     String                  @db.VarChar(120)
+  classifiedByUserId      String?                 @db.Uuid
+  reason                  String                  @db.Text
+  createdAt               DateTime                @default(now())
+
+  @@index([internalDraftId, createdAt])
+  @@map("draft_classifications")
+}
+
+model UnsupportedClaim {
+  id                  String                 @id @default(uuid()) @db.Uuid
+  internalDraftId      String                 @db.Uuid
+  internalDraft        InternalDraft          @relation(fields: [internalDraftId], references: [id], onDelete: Cascade)
+  evidenceRecordId    String?                @db.Uuid
+  claimKey            String                 @db.VarChar(140)
+  evidenceRequirement String                 @db.Text
+  sourceRef           String                 @db.Text
+  status              UnsupportedClaimStatus @default(NEEDS_EVIDENCE)
+  createdByRoleKey    String                 @db.VarChar(120)
+  createdByUserId     String?                @db.Uuid
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+
+  @@unique([internalDraftId, claimKey])
+  @@index([internalDraftId, status])
+  @@index([evidenceRecordId])
+  @@map("unsupported_claims")
+}
+
+model DraftTrace {
+  id               String        @id @default(uuid()) @db.Uuid
+  internalDraftId  String        @db.Uuid
+  internalDraft    InternalDraft @relation(fields: [internalDraftId], references: [id], onDelete: Cascade)
+  auditEventId     String?       @db.Uuid
+  evidenceRecordId String?       @db.Uuid
+  traceType        String        @db.VarChar(100)
+  actorRoleKey     String        @db.VarChar(120)
+  actorUserId      String?       @db.Uuid
+  reason           String        @db.Text
+  metadataJson     Json?
+  createdAt        DateTime      @default(now())
+
+  @@index([internalDraftId, createdAt])
+  @@index([traceType])
+  @@map("draft_traces")
 }
 
 model RecommendationOption {

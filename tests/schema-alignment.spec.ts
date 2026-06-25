@@ -32,12 +32,13 @@ test.describe("Phase 09 schema alignment", () => {
     const models = [...schema.matchAll(/^model\s+(\w+)\s+\{/gm)].map((match) => match[1]);
     const enums = [...schema.matchAll(/^enum\s+(\w+)\s+\{/gm)].map((match) => match[1]);
 
-    expect(models).toHaveLength(49);
-    expect(enums).toHaveLength(27);
-    expect(sourceRealityGate).toContain("modelCount: 49");
-    expect(sourceRealityGate).toContain("enumCount: 27");
+    expect(models).toHaveLength(53);
+    expect(enums).toHaveLength(31);
+    expect(sourceRealityGate).toContain("modelCount: 53");
+    expect(sourceRealityGate).toContain("enumCount: 31");
     expect(wp09Execution).toContain("Current `full-workflow` schema is the only implementation schema authority.");
     expect(wp09Execution).toContain("No Prisma migration is allowed in WP09 first wave.");
+    expect(schema).toMatch(/^model\s+InternalDraft\s+\{/m);
 
     for (const patchOnlyModel of ["AiDraft", "ClientVisibilityEvaluation", "PolicyException", "VisibilityRule"]) {
       expect(models).not.toContain(patchOnlyModel);
@@ -66,7 +67,7 @@ test.describe("Phase 09 schema alignment", () => {
     ]);
   });
 
-  test("keeps visibility and advice-boundary fields separated without AiDraft model creation", () => {
+  test("keeps visibility fields separated and moves internal draft governance to first-class models", () => {
     expectModelFields("Recommendation", [
       "summaryInternal",
       "clientSummaryDraft",
@@ -77,6 +78,19 @@ test.describe("Phase 09 schema alignment", () => {
       "clientVisible",
       "assumptionsJson",
     ]);
+    expectModelFields("InternalDraft", [
+      "recommendationId",
+      "draftClientSummary",
+      "internalRationale",
+      "processId",
+      "sourceObjectType",
+      "sourceObjectId",
+      "sourceRefsJson",
+      "status",
+    ]);
+    expectModelFields("DraftClassification", ["internalDraftId", "classification", "riskLevel", "unsupportedClaimsClear", "reason"]);
+    expectModelFields("UnsupportedClaim", ["internalDraftId", "claimKey", "evidenceRequirement", "sourceRef", "status"]);
+    expectModelFields("DraftTrace", ["internalDraftId", "traceType", "metadataJson", "reason"]);
     expectModelFields("Approval", ["targetType", "targetId", "approverUserId", "approvalType", "status", "approvedAt"]);
     expectModelFields("ComplianceReview", [
       "status",
@@ -206,7 +220,7 @@ test.describe("Phase 09 schema alignment", () => {
     });
   });
 
-  test("maps V1 P0 gates to existing schema/runtime support without adding migrations", () => {
+  test("maps V1 P0 gates to existing schema/runtime support with authorized internal-draft migration", () => {
     const v1SchemaAlignment = fileText("V1_0_SCHEMA_USAGE_ALIGNMENT.md");
     const packageJson = fileText("package.json");
     const migrationFiles = readdirSync(path.join(process.cwd(), "prisma/migrations")).sort();
@@ -239,6 +253,7 @@ test.describe("Phase 09 schema alignment", () => {
       "20260614202332_phase_03_data_model_seed",
       "20260624190000_wave_0_2_journey_spine",
       "20260624213000_wave_0_2_core_journey_gates",
+      "20260625143000_internal_draft_governance_spine",
       "migration_lock.toml",
     ]);
     expect(packageJson).toContain('"db:validate": "prisma validate"');

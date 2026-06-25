@@ -157,11 +157,6 @@ export async function createP44ComplianceQueueTriage(
     const recommendation = await tx.recommendation.upsert({
       create: {
         adviceClassification: AdviceClassification.ADVICE_RELEVANT,
-        assumptionsJson: phase7Metadata({
-          currentTicket: "P44-7-T01-EXEC",
-          releasePreconditions: ["advisor_approval", "evidence_sufficiency", "audit_persistence", "redaction_ready", "decision_rationale"],
-        }),
-        clientSummaryDraft: "Compliance release candidate remains internal until release preconditions pass.",
         clientTenantId: session.tenant.id,
         clientVisible: false,
         createdByUserId: session.actor.id,
@@ -172,10 +167,6 @@ export async function createP44ComplianceQueueTriage(
         title: input.title,
       },
       update: {
-        assumptionsJson: phase7Metadata({
-          currentTicket: "P44-7-T01-EXEC",
-          releasePreconditions: ["advisor_approval", "evidence_sufficiency", "audit_persistence", "redaction_ready", "decision_rationale"],
-        }),
         clientVisible: false,
         riskSummary: "Compliance queue item. Queue visibility is not release permission.",
         status: RecommendationStatus.COMPLIANCE_PENDING,

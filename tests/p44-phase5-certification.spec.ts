@@ -14,6 +14,7 @@ import {
   createP44DraftWorkflowClosureNotes,
   createP44InternalAiDraft,
   createP44Phase5ReadinessChecklist,
+  getP44InternalDraftGovernanceState,
   getP44DraftTraceAudit,
   inspectP44InternalDraftProjection,
   p44Phase5TicketOrder,
@@ -91,12 +92,17 @@ test.describe("P44 Phase 5 AI draft governance certification", () => {
       title: "P44 internal liquidity draft",
     });
     const recommendation = await prisma.recommendation.findUniqueOrThrow({ where: { id: result.recommendationId } });
+    const internalDraft = await prisma.internalDraft.findUniqueOrThrow({ where: { id: result.internalDraftId } });
     const audit = await prisma.auditEvent.findUniqueOrThrow({ where: { id: result.auditEventId } });
 
     expect(result.clientVisible).toBe(false);
     expect(result.noAutonomousAdvice).toBe(true);
     expect(recommendation.status).toBe(RecommendationStatus.AI_DRAFT);
     expect(recommendation.clientVisible).toBe(false);
+    expect(recommendation.assumptionsJson).toBeNull();
+    expect(recommendation.clientSummaryDraft).toBeNull();
+    expect(internalDraft.draftClientSummary).toBe("Internal AI draft for liquidity governance. Not client-safe.");
+    expect(internalDraft.internalRationale).toContain("Model/rules rationale");
     expect(audit.eventType).toBe("p44.ai_draft.created_internal");
     expect(audit.result).toBe(AuditResult.PENDING);
   });
@@ -122,8 +128,8 @@ test.describe("P44 Phase 5 AI draft governance certification", () => {
   });
 
   test("P44-5-T03 persists classification and blocks unclassified handoff", async () => {
-    const unclassified = await prisma.recommendation.findUniqueOrThrow({ where: { id: recommendationId } });
-    expect(canP44DraftAdvanceToAdvisor(unclassified.assumptionsJson)).toMatchObject({
+    const unclassified = await getP44InternalDraftGovernanceState(prisma, recommendationId);
+    expect(canP44DraftAdvanceToAdvisor(unclassified)).toMatchObject({
       allowed: false,
       missing: ["draft_classification", "unsupported_claim_clearance"],
     });
@@ -139,10 +145,12 @@ test.describe("P44 Phase 5 AI draft governance certification", () => {
       recommendationId,
       tenantSlug: "morgan",
     });
-    const classified = await prisma.recommendation.findUniqueOrThrow({ where: { id: recommendationId } });
+    const classified = await getP44InternalDraftGovernanceState(prisma, recommendationId);
+    const classificationRows = await prisma.draftClassification.findMany({ where: { internalDraftId: classified.draftId ?? "" } });
 
     expect(result.status).toBe(RecommendationStatus.ANALYST_REVIEWED);
-    expect(canP44DraftAdvanceToAdvisor(classified.assumptionsJson)).toEqual({
+    expect(classificationRows).toHaveLength(1);
+    expect(canP44DraftAdvanceToAdvisor(classified)).toEqual({
       allowed: true,
       missing: [],
       ticketId: "P44-5-T03-EXEC",
@@ -160,11 +168,14 @@ test.describe("P44 Phase 5 AI draft governance certification", () => {
       tenantSlug: "morgan",
     });
     const evidence = await prisma.evidenceRecord.findUniqueOrThrow({ where: { id: result.evidenceRecordId } });
+    const unsupportedClaim = await prisma.unsupportedClaim.findUniqueOrThrow({ where: { id: result.unsupportedClaimId } });
 
     expect(result.clientVisible).toBe(false);
     expect(result.status).toBe(RecommendationStatus.REVISION_REQUESTED);
     expect(evidence.status).toBe(EvidenceStatus.PLACEHOLDER);
     expect(evidence.visibilityStatus).toBe(VisibilityStatus.COMPLIANCE_VISIBLE);
+    expect(unsupportedClaim.claimKey).toBe("unverified-liquidity-threshold");
+    expect(unsupportedClaim.evidenceRecordId).toBe(evidence.id);
   });
 
   test("P44-5-T05 exposes unsupported claim feedback internally and hides it from client", () => {
@@ -199,6 +210,7 @@ test.describe("P44 Phase 5 AI draft governance certification", () => {
     });
     const audit = await prisma.auditEvent.findUniqueOrThrow({ where: { id: result.auditEventId } });
     const recommendation = await prisma.recommendation.findUniqueOrThrow({ where: { id: recommendationId } });
+    const rejectedGate = await getP44InternalDraftGovernanceState(prisma, recommendationId);
 
     expect(result.status).toBe(RecommendationStatus.REVISION_REQUESTED);
     expect(recommendation.clientVisible).toBe(false);
@@ -206,7 +218,7 @@ test.describe("P44 Phase 5 AI draft governance certification", () => {
     expect(audit.result).toBe(AuditResult.BLOCKED);
     expect(
       canP44EvidenceBackedDraftMoveToAdvisor({
-        assumptionsJson: recommendation.assumptionsJson,
+        ...rejectedGate,
         status: recommendation.status,
       }).allowed,
     ).toBe(false);
@@ -255,6 +267,7 @@ test.describe("P44 Phase 5 AI draft governance certification", () => {
     expect(result.status).toBe(RecommendationStatus.ANALYST_REVIEWED);
     expect(result.clientVisible).toBe(false);
     expect(result.evidenceIds).toEqual([evidenceRecordId]);
+    await expect(prisma.unsupportedClaim.findFirstOrThrow({ where: { status: "RESOLVED" } })).resolves.toBeTruthy();
   });
 
   test("P44-5-T08 maps internal evidence trace while client projection exposes no rationale", async () => {
@@ -266,6 +279,7 @@ test.describe("P44 Phase 5 AI draft governance certification", () => {
 
     expect(trace.internalTrace.recommendationId).toBe(recommendationId);
     expect(trace.internalTrace.evidenceRecordIds).toContain(evidenceRecordId);
+    expect(trace.internalTrace.legacyFallbackUsed).toBe(false);
     expect(trace.clientSafeProjection).toEqual({
       recommendationId,
       traceAvailable: false,
@@ -322,8 +336,9 @@ test.describe("P44 Phase 5 AI draft governance certification", () => {
       tenantSlug: "morgan",
     });
     const recommendation = await prisma.recommendation.findUniqueOrThrow({ where: { id: recommendationId } });
+    const gateState = await getP44InternalDraftGovernanceState(prisma, recommendationId);
     const gate = canP44EvidenceBackedDraftMoveToAdvisor({
-      assumptionsJson: recommendation.assumptionsJson,
+      ...gateState,
       status: recommendation.status,
     });
 
