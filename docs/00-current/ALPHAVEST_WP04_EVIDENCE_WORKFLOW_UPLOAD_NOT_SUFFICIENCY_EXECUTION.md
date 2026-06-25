@@ -1,0 +1,414 @@
+# ALPHAVEST WP04 Evidence Workflow Upload-not-Sufficiency Execution
+
+Generated: 2026-06-25
+Target branch: `full-workflow`
+Source upload: `/Users/chris/Downloads/alphavest/ALPHAVEST_WP04_EVIDENCE_WORKFLOW_UPLOAD_NOT_SUFFICIENCY_BOC_TICKET_STRUCTURE.md`
+Operative repo authority: `ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md`
+
+## 0. Moving Baseline Preflight
+
+Task status: DONE
+
+Reported baseline:
+
+- Branch: `full-workflow`
+- Remote state: `full-workflow...origin/full-workflow [ahead 21]`
+- Latest commit: `ad37f39 feat: implement wp03 client-safe projection states`
+- Working tree before WP04 documentation edit: clean
+- Diff stat before WP04 documentation edit: empty
+- Package manager: `pnpm@9.15.9`
+- Guard: `pnpm guard:source` PASS, 0 violations
+- Route registry: `lib/route-registry.ts` exists and contains WP04-relevant routes including document, compliance, communication/export and client projection route families.
+- Test inventory: WP04-relevant tests exist, including document upload API/flow/lifecycle hardening, evidence review API, workflow gate, permission engine, journey API, true UX P0 safety, export realism and audit fail-closed tests.
+
+Decision: Preflight passes for read-only WP04 analysis and specification. Implementation remains blocked by `WP04-DECISION-1`.
+
+## 1. Upload Interpretation
+
+Core rule from WP04:
+
+> Upload success is upload-only. It must never imply Evidence Sufficiency, Advisor Approval, Compliance Release, Client Visibility or Export Readiness.
+
+WP04 is a P0 safety spine. The target chain is:
+
+Upload -> Review -> Linkage -> Sufficiency Decision -> Compliance Gate -> Client-safe Visibility / Export.
+
+## 2. Extracted Task Chain
+
+The upload explicitly rejects a single direct implementation task. It requires an Epic delivery chain with analysis, specification, human policy decision, implementation slices and P0 QA.
+
+### EPIC: WP04 Evidence Workflow & Upload-not-Sufficiency Safety Spine
+
+Description:
+Build the evidence workflow safety spine so that documents may be uploaded, but upload alone remains candidate evidence only. The workflow must separate document intake, human review, linkage to a scoped object or requirement, sufficiency decision, compliance release blocking, audit persistence and client-safe/export projection.
+
+Detailed scope:
+
+- Candidate upload evidence.
+- Evidence review.
+- Evidence linkage to object, recommendation, decision or compliance review.
+- Evidence sufficiency decision.
+- Compliance release blocker.
+- Client visibility and export boundary.
+- Audit evidence for critical transitions.
+- P0 positive and negative proof.
+
+Out of scope:
+
+- New visual screen generation.
+- State-screen image generation.
+- Full KYC/SoW/Suitability/IPS policy buildout.
+- Committee route unlock.
+- Production storage redesign.
+- Blind schema replacement.
+- Export implementation beyond preventing premature evidence leakage.
+
+### WP04-ANALYSIS-1 Evidence Workflow Reality Audit
+
+Type: Analysis / Research / Spike
+Status in this execution: DONE
+
+Detailed description:
+Analyse the current `full-workflow` codebase and AlphaVest artifacts to determine whether Upload, Document Review, Evidence Linkage, Evidence Sufficiency, Compliance Release Blocking, Audit and Tests are real, partial, static, demo-only or unproven. The analysis prevents existing upload code or evidence models from being overclaimed as complete sufficiency implementation.
+
+Definition of done:
+
+- Identify affected routes, APIs, services and tests.
+- Separate upload-only from sufficiency.
+- Name proof slices and missing P0 tests.
+- Document specification needs.
+- Validate or adjust implementation task boundaries.
+- Pass open decisions to `WP04-DECISION-1`.
+
+### WP04-SPEC-1 Evidence Sufficiency and Upload-not-Sufficiency Contract
+
+Type: Specification / Design / Acceptance Criteria
+Status in this execution: DONE as draft, blocked for human policy approval
+
+Detailed description:
+Define the target state precisely enough that implementation can harden upload, review, linkage, sufficiency gate, compliance block and audit without inventing business safety policy. The spec must define evidence state taxonomy, upload-only semantics, review and verification semantics, object linkage, sufficiency decision semantics, compliance release blocker, audit requirements, API/UI expectations, client visibility/export redaction boundaries and P0 acceptance.
+
+Definition of done:
+
+- State taxonomy is explicit.
+- Upload-only semantics are explicit.
+- Sufficiency criteria are explicit.
+- Role/action boundaries are explicit.
+- API/UI/test expectations are explicit.
+- Implementation boundaries are explicit.
+- Implementation tasks remain derivable with CTES.
+
+### WP04-DECISION-1 Approve Minimal MVP Evidence Sufficiency Policy
+
+Type: Human Decision / Approval
+Status in this execution: STOP REQUIRED
+
+Detailed description:
+The human confirms the minimal MVP policy for Evidence Sufficiency: what is enough, who may decide, at which object/workflow level sufficiency applies and when release/export remain blocked. Codex must not invent this policy.
+
+Required human outputs:
+
+- Approved MVP Evidence Sufficiency Policy.
+- Role/ownership decision.
+- Scope-level decision.
+- Stop rules for insufficient evidence.
+- Confirmation that implementation may proceed.
+
+### WP04-IMPL-1 Upload-only UI/API Semantics
+
+Status: Blocked until `WP04-SPEC-1` and `WP04-DECISION-1`
+
+Detailed description:
+Implement UI and API semantics so a successful upload confirms only transfer/intake. It must not imply review completion, evidence sufficiency, compliance release, client visibility or export readiness.
+
+Subtasks:
+
+- `WP04-IMPL-1.1 Upload feedback wording and state separation`: visible upload copy must say upload is complete or review pending, with sufficiency/release/export/client visibility still locked.
+- `WP04-IMPL-1.2 API response/payload no-sufficiency semantics`: upload and documents APIs must not include or imply sufficiency/release/client visibility after upload.
+
+### WP04-IMPL-2 Evidence Review and Linkage Lifecycle
+
+Status: Blocked until `WP04-SPEC-1`, `WP04-DECISION-1` and `WP04-IMPL-1`
+
+Detailed description:
+Implement or connect a review lifecycle and evidence-to-object linkage so evidence can be reviewed, marked insufficient/needs clarification, linked to the relevant target and later evaluated by sufficiency gates.
+
+Subtasks:
+
+- `WP04-IMPL-2.1 Evidence review states`: map uploaded/review pending/reviewed/insufficient states so no evidence can count before review.
+- `WP04-IMPL-2.2 Evidence-to-object linkage`: enforce linkage to the relevant object, recommendation, compliance review, decision, export scope or evidence record.
+
+### WP04-IMPL-3 Sufficiency Gate and Compliance Release Blocker
+
+Status: Blocked until `WP04-IMPL-2`
+
+Detailed description:
+Implement a testable evidence sufficiency predicate and integrate it into compliance release so release is blocked when evidence is missing, unreviewed, unlinked, insufficient, stale, wrong-scope or unaudited.
+
+Subtasks:
+
+- `WP04-IMPL-3.1 Sufficiency gate derivation`: implement the pure predicate/derivation from approved policy.
+- `WP04-IMPL-3.2 Compliance release block integration`: wire the predicate into compliance release/block/request evidence workflows.
+
+### WP04-IMPL-4 Evidence Audit and Fail-Closed Behaviour
+
+Status: Blocked until `WP04-SPEC-1`, `WP04-DECISION-1`, review/linkage/gate transitions and event list
+
+Detailed description:
+Harden audit events for evidence-critical actions and fail closed when audit persistence is unavailable. No sufficiency, compliance release or export action may silently complete without an audit trail.
+
+Subtasks:
+
+- `WP04-IMPL-4.1 Audit event mapping for evidence actions`: audit upload, review, linkage, sufficiency decision, request evidence, block and release where critical.
+- `WP04-IMPL-4.2 Audit unavailable fail-closed handling`: block critical gate transition if audit write cannot be confirmed.
+
+### WP04-QA-1 P0 Evidence Workflow Positive/Negative Validation
+
+Status: Blocked until WP04 implementation tasks complete
+
+Detailed description:
+Validate upload-only, review/linkage, sufficiency, release, audit, client visibility and export boundaries with positive and negative P0 proof.
+
+Expected negative proof:
+
+- Upload-only cannot release.
+- Unreviewed evidence cannot release.
+- Unlinked/wrong-scope evidence cannot release.
+- Wrong-tenant evidence is denied.
+- Admin cannot force sufficiency or release.
+- Audit failure blocks critical transitions.
+- Export excludes unreleased/internal evidence.
+
+## 3. Reality Audit Matrix
+
+### Upload
+
+Current reality: real and already strongly aligned.
+
+Evidence:
+
+- `app/api/documents/upload/route.ts` returns `safety.uploadOnly: true`, `sufficiency: false`, `releaseUnlocked: false`, `clientVisible: false`.
+- `lib/document-upload-service.ts` persists `Document`, `DocumentVersion`, `DocumentExtraction`, `EvidenceRecord`, `EvidenceItem` and `AuditEvent`.
+- Upload creates `DocumentStatus.UPLOADED`, `EvidenceStatus.CREATED`, `VisibilityStatus.INTERNAL_ONLY`.
+- UI copy in `components/client-intake-screen.tsx` already states upload is intake/review only and keeps sufficiency/release/export/client visibility locked.
+
+Gap:
+
+- Copy is good, but WP04 still needs final approved wording. Recommended wording: `Upload complete - evidence review pending`.
+
+### Review
+
+Current reality: real but split.
+
+Evidence:
+
+- `app/api/documents/review/route.ts` exposes `mark_reviewed`, `request_clarification`, `accept_sufficiency`.
+- `lib/evidence-review-service.ts` creates `DocumentReview`, updates `Document`, updates `DocumentExtraction`, creates `DocumentLink`, updates `EvidenceRecord`, creates `EvidenceItem` and audit.
+- `DocumentReview` exists in Prisma with `reviewType`, `status`, `notes`, `clientVisibleSummary`, `reviewedAt`.
+
+Gap:
+
+- `accept_sufficiency` bundles review acceptance and sufficiency acceptance in the document review path. Clean WP04 should prefer a shared sufficiency service or journey-level decision path, not duplicate hidden policy inside document review.
+
+### Linkage
+
+Current reality: real but not yet unified.
+
+Evidence:
+
+- `DocumentLink` exists for document-to-target links.
+- `JourneyObjectLink` supports `SUPPORTING_EVIDENCE` links with `requirementKey` metadata.
+- `EvidenceRecord` contains `relatedObjectType` and `relatedObjectId`.
+- Recommendation review workflow validates evidence scope through related object or `EvidenceItem` source object.
+
+Gap:
+
+- Linkage semantics are split between document review, journey evidence requirements and recommendation review. WP04 should normalize on requirement/object-scoped linkage for release gates.
+
+### Sufficiency
+
+Current reality: partial real implementation, policy not final.
+
+Evidence:
+
+- `lib/evidence-service.ts` has `evaluateEvidenceSufficiency`.
+- Prisma has `EvidenceSufficiencyDecision` with `reviewed`, `scopeMatches`, `relevanceConfirmed`, `currentnessConfirmed`, decision, role/user, audit id and requirement key.
+- `lib/journeys/journey-api-service.ts` has `DECIDE_EVIDENCE_SUFFICIENCY` logic and blocks `SUFFICIENT` unless linked, reviewed, scoped, relevant, current, minimum status and client-safe visibility checks pass.
+- Tests already cover upload-created evidence not being sufficient and admin non-bypass.
+
+Gap:
+
+- The upload file asks for human decision on who owns sufficiency. Current journey command allows both `analyst` and `compliance_officer` to decide. Aggressive clean recommendation: analyst can prepare/review/link, but only compliance can make final `SUFFICIENT`.
+
+### Compliance Release
+
+Current reality: real in two paths, but not fully consolidated.
+
+Evidence:
+
+- `workflowGate.canPassComplianceReleaseGate` consumes a full `EvidenceSufficiencyDecision`.
+- `lib/journeys/journey-api-service.ts` blocks `COMPLIANCE_RELEASE` unless every journey evidence requirement has a latest sufficient, reviewed, scoped, relevant, current and audited decision.
+- `lib/demo-workflow-mutation.ts` has recommendation review release preconditions: advisor approval, accepted/scoped evidence, payload ready, permission, audit readiness.
+
+Gap:
+
+- Legacy/demo recommendation review path still uses `EvidenceStatus.VALIDATED/RELEASED` and scoped items, not the canonical `EvidenceSufficiencyDecision` model.
+- J02 screencast release path uses `canBecomeClientVisible` with evidence status, not the stronger `canPassComplianceReleaseGate` predicate.
+
+### Audit
+
+Current reality: real, upload and generic mutation fail-closed are strong; review/journey sufficiency need hardening.
+
+Evidence:
+
+- `auditService.assertCriticalAuditWritable` defines required fields and fail-closed behavior.
+- Upload asserts critical audit writable before creating document/evidence rows.
+- `runDemoWorkflowMutation` asserts audit writable before mutation.
+- Audit events include actor, role, tenant, target, previous/next state, result and reason.
+
+Gap:
+
+- `evidence-review-service` writes audit inside transaction but does not accept `auditPersistenceAvailable`, so it lacks explicit fail-closed simulation for review/sufficiency transitions.
+- `journey-api-service` creates journey audit rows but does not currently expose the same audit-persistence simulation in the inspected path.
+
+### Client Visibility
+
+Current reality: real and fail-closed.
+
+Evidence:
+
+- Client projection state and visibility engine block unreleased/internal payloads.
+- Upload UI/API explicitly sets no client release.
+- Document projection hides internal fields for client roles.
+
+Gap:
+
+- Sufficiency itself should remain internal/compliance-only. Client should see request/review/released summary states, not raw sufficiency rationale unless later redacted/released.
+
+### Export
+
+Current reality: real export gate and redaction classification exist; not directly tied to WP04 sufficiency decision in every path.
+
+Evidence:
+
+- `exportService` blocks forbidden payload classes including `UNRELEASED_EVIDENCE`, `COMPLIANCE_NOTES`, `INTERNAL_RATIONALE` and hidden fields.
+- Export generation checks permission, redaction profile, approval, selected request, audit and data quality.
+
+Gap:
+
+- Export uses payload classifications and approval gates, but WP04 should ensure sufficient/released evidence is the only evidence eligible for export scope.
+
+## 4. Target Contract Draft
+
+### State taxonomy
+
+- `UPLOAD_RECEIVED`: source document exists; review not complete; cannot support release/export.
+- `REVIEW_PENDING`: extraction/review queue item exists; cannot support release/export.
+- `REVIEWED_LINKED`: reviewed and linked, but not yet sufficient.
+- `INSUFFICIENT`: reviewed evidence failed criteria or clarification needed.
+- `SUFFICIENT_FOR_SCOPED_GATE`: reviewed, linked, relevant, scoped, current, accepted by authorized role and audited.
+- `RELEASED_CLIENT_SAFE`: compliance release has passed and client/export projection uses released/redacted payload only.
+
+### Minimal sufficiency criteria
+
+Evidence may be sufficient only when all are true:
+
+- It is tied to a specific journey evidence requirement or target object.
+- It is tenant-scoped to the active client tenant.
+- It is linked to the relevant `EvidenceRecord` and object/requirement.
+- It has been reviewed by an operational reviewer.
+- Its scope matches the requirement.
+- Its relevance is confirmed.
+- Its currentness/staleness is confirmed.
+- Its evidence status meets the requirement minimum.
+- It is accepted by the authorized final decision role.
+- The decision has an audit event id.
+
+### Blockers
+
+Release/export/client visibility stay blocked for:
+
+- Upload-only.
+- Unreviewed evidence.
+- Unlinked evidence.
+- Wrong object or wrong tenant.
+- Stale/currentness not confirmed.
+- Relevance not confirmed.
+- Scope mismatch.
+- Insufficient evidence status.
+- Missing audit event.
+- Admin/security attempted bypass.
+
+## 5. Decision Options
+
+### Option A: Compliance-owned final sufficiency, analyst/advisor prepare only
+
+Recommendation: APPROVE.
+
+Shape:
+
+- Analyst may review/link/prepare.
+- Advisor may rely on reviewed evidence for advice workflow but cannot mark final sufficiency.
+- Compliance officer owns final `SUFFICIENT` decision.
+- Scope is `JourneyEvidenceRequirement` plus linked `EvidenceRecord` and target object.
+- Use existing `EvidenceSufficiencyDecision` as canonical record.
+- Keep sufficiency internal/compliance-only; client sees only safe request/review/released summaries.
+- No schema migration unless implementation proves a real field gap.
+
+Why this is cleanest:
+
+- It removes role ambiguity.
+- It uses the existing strong schema.
+- It prevents upload and advisor approval from drifting into release authority.
+- It gives one canonical predicate for compliance release and later export.
+
+### Option B: Analyst can decide sufficiency, compliance only releases
+
+Recommendation: REJECT for clean MVP.
+
+Tradeoff:
+
+- Faster operations.
+- Dirtier safety boundary because the same role that prepares evidence can make it sufficient.
+- Requires more compensating checks in compliance release.
+
+### Option C: Document-level sufficiency field
+
+Recommendation: REJECT.
+
+Tradeoff:
+
+- Easy UI/API implementation.
+- Wrong domain model: a document is not sufficient by itself; sufficiency is contextual to a requirement/object/gate.
+- High risk of recreating the upload-equals-sufficiency anti-pattern.
+
+### Option D: New schema/migration now
+
+Recommendation: DEFER unless proven necessary.
+
+Tradeoff:
+
+- Could make future abstractions explicit.
+- Current schema already has enough primitives. A migration now would be churn and risk without proof.
+
+## 6. Aggressive Implementation Recommendation After Approval
+
+Approve Option A, then execute the implementation in this order:
+
+1. Normalize final sufficiency ownership so only `compliance_officer` can create `SUFFICIENT`; analyst may still create or prepare non-final review/linkage states.
+2. Extract a shared evidence sufficiency policy helper used by document review, journey release and recommendation review paths.
+3. Route all release checks through the canonical `EvidenceSufficiencyDecision` model where a journey/evidence requirement exists.
+4. Keep upload API/UI almost unchanged except final copy alignment and tests, because it already obeys upload-only semantics.
+5. Add audit fail-closed simulation to evidence review/sufficiency and journey sufficiency/release commands.
+6. Add P0 tests that prove upload-only, analyst-only, advisor-only, admin-force and audit-failure paths cannot release/export/client-show.
+
+## 7. Current Stop
+
+WP04 implementation must stop here because `WP04-DECISION-1` is explicitly required by the uploaded ticket structure.
+
+Decision requested:
+
+Approve Option A, or correct the policy before implementation.
+
+My recommendation is aggressive and clean: approve Option A.
+
