@@ -8,12 +8,13 @@ import {
 
 import { dataQualityService } from "@/lib/data-quality-service";
 import { demoPlatformTenantId, type DemoRoleKey, type DemoTenantSlug, createDemoSession, demoTenants } from "@/lib/demo-session";
+import { av27Phase6AllowedExportPayloadFields } from "@/lib/av27-phase6-payload-contract";
 import { exportPackageService } from "@/lib/export-package-service";
 import { exportService, type ExportPayloadClassification, type ExportScopeCandidate } from "@/lib/export-service";
 import { fileMetadataService } from "@/lib/file-metadata-service";
 import { stableId } from "@/lib/stable-id";
 
-export const exportRedactionAllowlist = ["clientSummary", "decisionState", "documentType", "id", "releasedAt", "status", "title", "uploadedAt"] as const;
+export const exportRedactionAllowlist = av27Phase6AllowedExportPayloadFields;
 
 export const exportWorkflowCommandIds = [
   "SET_SCOPE",

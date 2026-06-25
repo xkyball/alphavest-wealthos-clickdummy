@@ -2,6 +2,12 @@ import type { DemoActor, DemoRole } from "@/lib/demo-session";
 import type { ExportStatus, ObjectType, UUID } from "@/lib/domain-types";
 import { permissionEngine } from "@/lib/permission-engine";
 import type { DataQualityGate } from "@/lib/data-quality-service";
+import {
+  av27Phase6AllowedExportPayloadFields,
+  av27Phase6PayloadFieldClassifications,
+  inspectAv27Phase6ClientPayload,
+  type Av27Phase6PayloadClassification,
+} from "@/lib/av27-phase6-payload-contract";
 
 export type ExportGateDecision = {
   status: ExportStatus;
@@ -73,15 +79,7 @@ export type ExportStepSeparationDecision = {
   missing: string[];
 };
 
-export type ExportPayloadClassification =
-  | "CLIENT_SAFE_SUMMARY"
-  | "RELEASED_EVIDENCE_SUMMARY"
-  | "AI_DRAFT"
-  | "INTERNAL_RATIONALE"
-  | "COMPLIANCE_NOTES"
-  | "UNRELEASED_EVIDENCE"
-  | "UNRELEASED_RECOMMENDATION"
-  | "HIDDEN_FIELD";
+export type ExportPayloadClassification = Av27Phase6PayloadClassification;
 
 const forbiddenClientExportPayloads = new Set<ExportPayloadClassification>([
   "AI_DRAFT",
@@ -96,55 +94,14 @@ function forbiddenExportPayloads(payloadClassifications: ExportPayloadClassifica
   return payloadClassifications.filter((classification) => forbiddenClientExportPayloads.has(classification));
 }
 
-const safeClientSummaryFields = new Set(["clientSummary"]);
-const safeReleasedRecordFields = new Set(["decisionState", "documentType", "id", "releasedAt", "status", "title", "uploadedAt"]);
-const exportFieldClassifications: Record<string, ExportPayloadClassification> = {
-  aiDraft: "AI_DRAFT",
-  assumptionsJson: "INTERNAL_RATIONALE",
-  clientSummaryDraft: "AI_DRAFT",
-  complianceNotes: "COMPLIANCE_NOTES",
-  complianceReviewNotes: "COMPLIANCE_NOTES",
-  evidenceRecordId: "UNRELEASED_EVIDENCE",
-  evidenceStatus: "UNRELEASED_EVIDENCE",
-  evidenceVisibilityStatus: "UNRELEASED_EVIDENCE",
-  internalNotes: "INTERNAL_RATIONALE",
-  internalRationale: "INTERNAL_RATIONALE",
-  storageKey: "HIDDEN_FIELD",
-  summaryInternal: "INTERNAL_RATIONALE",
-};
-
 function inspectClientExportPayload(payload: Record<string, unknown>): ExportPayloadInspection {
-  const missing: string[] = [];
-  const forbiddenFields: string[] = [];
-  const payloadClassifications: ExportPayloadClassification[] = [];
-
-  for (const key of Object.keys(payload)) {
-    if (safeClientSummaryFields.has(key)) {
-      payloadClassifications.push("CLIENT_SAFE_SUMMARY");
-      continue;
-    }
-
-    if (safeReleasedRecordFields.has(key)) {
-      payloadClassifications.push("RELEASED_EVIDENCE_SUMMARY");
-      continue;
-    }
-
-    const classification = exportFieldClassifications[key] ?? "HIDDEN_FIELD";
-    payloadClassifications.push(classification);
-    forbiddenFields.push(key);
-    missing.push(`forbidden_projection_field:${key}`);
-  }
-
-  if (Object.keys(payload).length === 0) {
-    missing.push("client_safe_payload");
-    payloadClassifications.push("HIDDEN_FIELD");
-  }
+  const inspection = inspectAv27Phase6ClientPayload(payload, { surface: "export" });
 
   return {
-    clean: missing.length === 0 && forbiddenExportPayloads(payloadClassifications).length === 0,
-    forbiddenFields,
-    missing,
-    payloadClassifications: [...new Set(payloadClassifications)],
+    clean: inspection.clean && forbiddenExportPayloads(inspection.payloadClassifications).length === 0,
+    forbiddenFields: inspection.forbiddenFields,
+    missing: inspection.missing,
+    payloadClassifications: inspection.payloadClassifications,
   };
 }
 
@@ -339,6 +296,8 @@ function canGenerateExport(input: {
 }
 
 export const exportService = {
+  av27AllowedExportPayloadFields: [...av27Phase6AllowedExportPayloadFields],
+  av27PayloadFieldClassifications: av27Phase6PayloadFieldClassifications,
   evaluateExportScope,
   evaluateExportStepSeparation,
   canGenerateExport,

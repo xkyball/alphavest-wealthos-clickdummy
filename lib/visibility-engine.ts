@@ -7,6 +7,10 @@ import { canBecomeClientVisible } from "@/lib/workflow-gate";
 import type { ObjectType, RecommendationStatus, Sensitivity, UUID, VisibilityStatus } from "@/lib/domain-types";
 import type { PermissionDecision } from "@/lib/permission-engine";
 import { permissionEngine } from "@/lib/permission-engine";
+import {
+  av27Phase6AllowedClientPayloadFields,
+  av27Phase6ForbiddenPayloadFields,
+} from "@/lib/av27-phase6-payload-contract";
 
 type ClientProjectionState =
   | "CLIENT_SAFE"
@@ -179,6 +183,7 @@ const internalDecisionFields = [
 const forbiddenClientProjectionFields = new Set<string>([
   ...internalRecommendationFields,
   ...internalDecisionFields,
+  ...av27Phase6ForbiddenPayloadFields,
   "checksum",
   "evidenceStatus",
   "evidenceVisibilityStatus",
@@ -204,7 +209,7 @@ const internalDocumentFields = [
 ] as const;
 
 export const trueUxClientProjectionNoLeakageContract = {
-  allowedClientPayloadFields: ["clientSummary", "decisionState", "documentType", "id", "latestVersionNumber", "releasedAt", "status", "title", "uploadedAt", "versionCount"],
+  allowedClientPayloadFields: [...av27Phase6AllowedClientPayloadFields],
   failClosedReasonCodes: [
     "DEMO_CLIENT_VISIBILITY_FAIL_CLOSED",
     "DEMO_CLIENT_DECISION_FAIL_CLOSED",
