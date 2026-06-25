@@ -553,3 +553,76 @@ Rejected branches:
 Recommended approval wording:
 
 `I approve WP02 rerun Option A: continue with IMPL-WP02-04 next, split into Internal Workbench, Advisor Review and Compliance Release task-scoped commits, then proceed to IMPL-WP02-05 split by Decision/Evidence Record, Governance Safety Console and Export/Redaction, keep Access/Tenant last unless commercially urgent, keep P1/Hold/Reference deferred, and make no route/API/schema/safety changes inside WP02 layout work.`
+
+## WP02 Option A Continued Implementation
+
+Execution date: 2026-06-25.
+
+Approved user option:
+
+- Continue with `IMPL-WP02-04` split into Internal Workbench, Advisor Review and Compliance Release task-scoped commits.
+- Then continue with `IMPL-WP02-05` split into Decision/Evidence Record, Governance Safety Console and Export/Redaction.
+- Keep Access/Tenant last unless commercially urgent.
+- Keep P1/Hold/Reference deferred.
+- Make no route/API/schema/safety changes inside WP02 layout work.
+
+Implementation commits:
+
+- `3ef1327 feat: add wp02 internal workbench worksurfaces`
+- `381dd62 feat: add wp02 advisor review worksurfaces`
+- `9801f2e feat: add wp02 compliance release worksurfaces`
+- `2c535bb feat: add wp02 decision record worksurfaces`
+- `9de3ab4 feat: add wp02 governance safety worksurfaces`
+- `0176c51 feat: add wp02 export redaction worksurfaces`
+
+Task completion:
+
+- `IMPL-WP02-04A` Internal Workbench: `COMPLETE`. Routes `033`, `034` and `035` now use `WorksurfaceShell`.
+- `IMPL-WP02-04B` Advisor Review: `COMPLETE`. Routes `036` and `037` now use `WorksurfaceShell`.
+- `IMPL-WP02-04C` Compliance Release: `COMPLETE`. Routes `038`, `039`, `040`, `041` and `042` now use `WorksurfaceShell`.
+- `IMPL-WP02-05A` Decision/Evidence Record: `COMPLETE`. Routes `043`, `044` and `045` now use `WorksurfaceShell`; evidence routes `046` and `047` remained already adopted.
+- `IMPL-WP02-05B` Governance Safety Console: `COMPLETE_WITH_ROUTE_CONSTRAINT`. Routes `048`, `049` and `050` are browser-verified Worksurface routes. Route `051` audit history is component-adopted as `governance-safety-audit-history`, but the current registry still shares `/governance` with route `048`; no route change was made because WP02 approval forbids route changes.
+- `IMPL-WP02-05C` Export/Redaction: `COMPLETE`. Routes `054`, `055`, `056`, `057` and `058` now use `WorksurfaceShell`.
+
+Changed files:
+
+- `components/internal-workflow-screen.tsx`
+- `components/decisions-governance-screen.tsx`
+- `components/communication-export-ops-screen.tsx`
+- `tests/wp02-worksurface-shell.spec.ts`
+- `docs/00-current/ALPHAVEST_WP02_WORKSURFACE_LAYOUT_REFACTOR_EXECUTION.md`
+
+Screenshots produced:
+
+- `artifacts/wp02-screenshots/internal-workbench-review-queue.png`
+- `artifacts/wp02-screenshots/advisor-review-detail.png`
+- `artifacts/wp02-screenshots/compliance-release-decision-room.png`
+- `artifacts/wp02-screenshots/decision-record-room.png`
+- `artifacts/wp02-screenshots/governance-safety-access-requests.png`
+- `artifacts/wp02-screenshots/export-redaction-review.png`
+
+Validation during implementation:
+
+```bash
+pnpm exec tsc --noEmit --pretty false
+pnpm playwright test tests/wp02-worksurface-shell.spec.ts --workers=1
+```
+
+Result:
+
+- TypeScript: PASS after each implementation slice.
+- WP02 Worksurface shell contract: PASS after each implementation slice; final implementation-slice run passed 31 tests.
+
+Boundaries preserved:
+
+- No route registry edits.
+- No API edits.
+- No schema or migration edits.
+- No safety, RBAC, evidence sufficiency, export approval, release or client-visibility behavior changes.
+- Access/Tenant setup remains deferred by approved option.
+- P1/Hold/Reference routes remain deferred by approved option.
+
+Follow-up recommendation:
+
+- Treat WP02 Option A as implementation-complete for the approved rerun scope after final validation passes.
+- The next cleanest aggressive task is not more WP02 layout expansion; it is a focused route-record cleanup decision for the existing `048`/`051` shared `/governance` path, because route `051` is component-ready but not independently browser-addressable without a route decision.
