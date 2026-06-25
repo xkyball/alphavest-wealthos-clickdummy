@@ -172,7 +172,7 @@ test.describe("UX-NAV route policy navigation", () => {
     await authenticateRouteSmokePage(page);
     await page.goto("/advisory/review-queue");
 
-    await expect(page.getByRole("heading", { name: "Consultant Workbench", level: 1 })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Consultant Workbench", level: 2 })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Advisory Review Hub", level: 2 })).toBeVisible();
     await expect(page.getByRole("complementary").getByRole("heading", { name: "Next Work Queue" })).toBeVisible();
     await expect(page.getByRole("link", { name: /Open next trigger/ }).first()).toBeVisible();
