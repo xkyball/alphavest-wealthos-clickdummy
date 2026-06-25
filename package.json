@@ -23,6 +23,7 @@
     "smoke:phase11": "tsx scripts/smoke-phase-11.ts",
     "smoke:phase12": "tsx scripts/smoke-phase-12.ts",
     "smoke:phase13": "tsx scripts/smoke-phase-13.ts",
+    "guard:source": "tsx scripts/source-target-guard.ts",
     "visual:contract": "tsx scripts/visual-qa-contract.ts",
     "visual:strict": "tsx scripts/strict-visual-capture.ts",
     "screencast:journey": "tsx scripts/screencast/run-journey.ts",

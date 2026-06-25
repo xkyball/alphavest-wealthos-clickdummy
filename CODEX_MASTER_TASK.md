@@ -18,6 +18,11 @@ safety, reporting and prompt derivation.
 ## Execution Rule
 
 Run the Moving Baseline Preflight from the True-UX handoff before code changes.
-Execute only handoff-authorized phases/tasks. Do not use any previous handoff,
-prompt pack, phase plan, source snapshot, media package or `main` branch state
-as target truth.
+Then run `pnpm guard:source` before downstream WP execution. Execute only
+handoff-authorized phases/tasks. Do not use any previous handoff, prompt pack,
+phase plan, source snapshot, media package or `main` branch state as target
+truth.
+
+If `pnpm guard:source` fails, stop and report the source-hierarchy or target
+guard violation before editing product code, route metadata, schema, tests or
+visual assets.

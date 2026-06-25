@@ -2,6 +2,8 @@ import { expect, test } from "@playwright/test";
 
 import {
   buildPhase0SourceRealitySnapshot,
+  evaluateTrueUxTechnicalGuard,
+  findTechnicalGuardViolationsForText,
   phase0LockedApiRoutes,
   phase0LockedPrismaShape,
   phase0LockedRouteWorksetCounts,
@@ -84,5 +86,51 @@ test.describe("True UX source reality gate", () => {
         expect(entrypoint.text, `${entrypoint.path} does not contain ${oldPhrase}`).not.toContain(oldPhrase);
       }
     }
+  });
+
+  test("keeps the technical source and target guard executable", () => {
+    const result = evaluateTrueUxTechnicalGuard();
+
+    expect(result.checkedFiles).toEqual([
+      "AGENTS.md",
+      "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md",
+      "CODEX_MASTER_TASK.md",
+      "FINAL_CODEX_IMPLEMENTATION_HANDOFF.md",
+      "README.md",
+    ]);
+    expect(result.checkedScripts).toEqual(["guard:source", "test:source-reality"]);
+    expect(result.violations).toEqual([]);
+  });
+
+  test("distinguishes forbidden target drift from approved stop-rule wording", () => {
+    expect(
+      findTechnicalGuardViolationsForText(
+        "allowed.md",
+        [
+          "Do not use main as target truth.",
+          "main branch / main ZIP is a false-gap warning only.",
+          "Do not generate images, state-screen assets, or screen assets.",
+          "No blind schema replacement.",
+          "Do not promote P1 hold routes to MVP without route evolution policy.",
+        ].join("\n"),
+      ),
+    ).toEqual([]);
+
+    const violations = findTechnicalGuardViolationsForText(
+      "forbidden.md",
+      [
+        "Target branch: main",
+        "Generate screen images for the missing states.",
+        "Adopt the patch-schema before implementation.",
+        "Promote P1 hold routes to MVP now.",
+      ].join("\n"),
+    );
+
+    expect(violations.map((violation) => violation.ruleId)).toEqual([
+      "NO_MAIN_TARGET_TRUTH",
+      "NO_UNAUTHORIZED_SCREEN_ASSET_GENERATION",
+      "NO_BLIND_SCHEMA_OR_PATCH_REPLACEMENT",
+      "NO_SCOPE_ELEVATION_WITHOUT_POLICY",
+    ]);
   });
 });

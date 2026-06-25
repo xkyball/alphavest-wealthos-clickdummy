@@ -32,6 +32,13 @@ code changes. The target branch is `full-workflow` unless the user explicitly
 sets a different branch for the turn. `main`, uploaded source snapshots, visual
 media packages and previous bundles are never target truth.
 
+After the moving-baseline preflight, run `pnpm guard:source` before downstream
+WP execution or any task derived from uploaded/source-hierarchy material. The
+guard is a technical preflight for the active source hierarchy, target-codebase
+contract, `main` exclusion, no-generation rule, no blind schema replacement and
+route/scope preservation. A failing guard is a stop-and-report condition unless
+the user explicitly approves a guard-spec update.
+
 The True-UX handoff authorizes implementation only inside its constraints. It
 does not authorize screen/image/state-screen generation, blind schema
 migrations, blind API creation, safety weakening, client-visible internal

@@ -248,6 +248,18 @@ reporting and prompt derivation. Run the Moving Baseline Preflight from that
 handoff before code changes. Use support artefacts only when the True-UX
 handoff names them for the selected phase/task.
 
+Run the technical source/target guard before downstream WP execution:
+
+```bash
+pnpm guard:source
+pnpm test:source-reality
+```
+
+The guard checks the active source hierarchy, `full-workflow` target contract,
+`main` exclusion, no-generation rule, no blind schema replacement and
+route/scope preservation. A failure is a stop-and-report condition until the
+guard spec or offending instruction is corrected.
+
 Do not use `main`, source snapshots, media packages, previous prompt packs or
 previous handoffs as target truth.
 
