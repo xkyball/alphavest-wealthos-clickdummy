@@ -126,7 +126,7 @@ const wp07UnreleasedDecisionPayload: DecisionVisibilityPayload = {
 };
 
 type PersistedUploadDocument = {
-  checksum: string;
+  checksum?: string;
   documentType: string;
   evidenceLifecycleStatus?: string | null;
   evidenceRecordId: string | null;
@@ -136,12 +136,14 @@ type PersistedUploadDocument = {
   fileName?: string;
   fileSizeBytes?: number;
   id: string;
+  latestVersionNumber?: number | null;
   mimeType?: string;
-  sensitivity: string;
+  sensitivity?: string;
   status: string;
   storageKey?: string;
   title: string;
   uploadedAt: string;
+  versionCount?: number | null;
 };
 
 type DocumentTableRow = {
@@ -257,7 +259,6 @@ function isPersistedUploadDocument(value: unknown): value is PersistedUploadDocu
   return (
     typeof candidate.documentType === "string" &&
     typeof candidate.id === "string" &&
-    typeof candidate.sensitivity === "string" &&
     typeof candidate.status === "string" &&
     typeof candidate.title === "string" &&
     typeof candidate.uploadedAt === "string"
@@ -269,7 +270,7 @@ function toDocumentRows(documents: PersistedUploadDocument[], entityLabel: strin
     entity: entityLabel,
     id: document.id,
     name: document.fileName ?? document.title,
-    sensitivity: labelFromEnum(document.sensitivity),
+    sensitivity: document.sensitivity ? labelFromEnum(document.sensitivity) : "Client Safe",
     status: labelFromEnum(document.status),
     type: labelFromEnum(document.documentType),
     updated: formatUploadDate(document.uploadedAt),
@@ -282,8 +283,11 @@ function usePersistedUploadDocuments() {
   const roleKey = session.role.key;
   const [documents, setDocuments] = useState<PersistedUploadDocument[]>([]);
   const [loadState, setLoadState] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const refreshSequenceRef = useRef(0);
 
   const refresh = useCallback(async () => {
+    const refreshSequence = refreshSequenceRef.current + 1;
+    refreshSequenceRef.current = refreshSequence;
     setLoadState("loading");
     setDocuments([]);
 
@@ -298,9 +302,17 @@ function usePersistedUploadDocuments() {
         throw new Error("Document reload failed.");
       }
 
+      if (refreshSequence !== refreshSequenceRef.current) {
+        return;
+      }
+
       setDocuments((body.documents ?? []).filter(isPersistedUploadDocument));
       setLoadState("ready");
     } catch {
+      if (refreshSequence !== refreshSequenceRef.current) {
+        return;
+      }
+
       setLoadState("error");
     }
   }, [roleKey, tenantSlug]);
@@ -311,7 +323,12 @@ function usePersistedUploadDocuments() {
     });
   }, [refresh]);
 
-  return { documents, loadState, refresh };
+  const rememberUploadedDocument = useCallback((document: PersistedUploadDocument) => {
+    setDocuments((current) => [document, ...current.filter((item) => item.id !== document.id)]);
+    setLoadState("ready");
+  }, []);
+
+  return { documents, loadState, refresh, rememberUploadedDocument };
 }
 
 function sortByKey<T>(rows: T[], key: keyof T, direction: "asc" | "desc") {
@@ -2301,7 +2318,7 @@ const documentColumns: Array<DataTableColumn<DocumentTableRow>> = [
 
 function DocumentUploadForm() {
   const { session } = useDemoSession();
-  const { documents, loadState, refresh } = usePersistedUploadDocuments();
+  const { documents, loadState, refresh, rememberUploadedDocument } = usePersistedUploadDocuments();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [documentType, setDocumentType] = useState("financial_statement");
   const [subType, setSubType] = useState("Quarterly Report");
@@ -2360,12 +2377,13 @@ function DocumentUploadForm() {
       }
 
       setSelectedFile(null);
-      setUploadState("success");
-      setMessage(`${body.result.document.fileName} upload completed. Upload complete - evidence review pending. Lifecycle: ${labelFromEnum(body.result.document.evidenceLifecycleStatus ?? "extraction_pending")}. Evidence sufficiency, release, export and client visibility remain locked.`);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
       await refresh();
+      rememberUploadedDocument(body.result.document);
+      setUploadState("success");
+      setMessage(`${body.result.document.fileName} upload completed. Upload complete - evidence review pending. Lifecycle: ${labelFromEnum(body.result.document.evidenceLifecycleStatus ?? "extraction_pending")}. Evidence sufficiency, release, export and client visibility remain locked.`);
     } catch (error) {
       setUploadState("error");
       setMessage(error instanceof Error ? error.message : "Upload failed.");
@@ -2433,7 +2451,7 @@ function DocumentUploadForm() {
             </div>
           </label>
           {selectedFile ? (
-            <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4">
+            <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4" data-testid="document-upload-latest-card">
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="font-semibold text-alphavest-ivory">{selectedFile.name}</p>
@@ -2538,9 +2556,10 @@ function DocumentUploadForm() {
             </button>
           ) : null}
           {latestDocument ? (
-            <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4">
+            <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4" data-testid="document-upload-latest-card">
               <p className="text-sm font-semibold text-alphavest-ivory">{latestDocument.fileName ?? latestDocument.title}</p>
               <p className="mt-1 text-xs text-alphavest-muted">{latestDocument.fileSizeBytes ? formatBytes(latestDocument.fileSizeBytes) : "Size hidden"} · {labelFromEnum(latestDocument.status)}</p>
+              <p className="mt-2 text-xs text-alphavest-muted">Version: v{latestDocument.latestVersionNumber ?? 1} of {latestDocument.versionCount ?? 1} · checksum proof stored internally</p>
               <p className="mt-2 text-xs text-alphavest-muted">Lifecycle: {labelFromEnum(latestDocument.evidenceLifecycleStatus ?? "review_pending")}</p>
               <p className="mt-2 text-xs text-alphavest-muted">Extraction: {latestDocument.extractionStatus ?? "pending"}</p>
             </div>
@@ -2647,11 +2666,12 @@ function ExtractionReviewActionPanel() {
       <CardHeader><CardTitle>Review & Sufficiency</CardTitle></CardHeader>
       <CardContent className="space-y-4">
         {latestDocument ? (
-          <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4">
+          <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4" data-testid="document-review-latest-card">
             <p className="text-sm font-semibold text-alphavest-ivory">{latestDocument.fileName}</p>
             <p className="mt-1 text-xs text-alphavest-muted">
               Document: {labelFromEnum(latestDocument.status)} · Evidence: {latestDocument.evidenceStatus ? labelFromEnum(latestDocument.evidenceStatus) : "Created"}
             </p>
+            <p className="mt-2 text-xs text-alphavest-muted">Version: v{latestDocument.latestVersionNumber ?? 1} of {latestDocument.versionCount ?? 1} · checksum proof stored internally</p>
             <p className="mt-2 text-xs text-alphavest-muted">Lifecycle: {labelFromEnum(latestDocument.evidenceLifecycleStatus ?? "review_pending")}</p>
             <p className="mt-2 text-xs text-alphavest-muted">Visibility: {latestDocument.evidenceVisibilityStatus ? labelFromEnum(latestDocument.evidenceVisibilityStatus) : "Internal Only"}</p>
           </div>

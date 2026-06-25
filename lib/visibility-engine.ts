@@ -133,7 +133,10 @@ export type DocumentVisibilityPayload = {
   mimeType?: string | null;
   checksum?: string | null;
   storageKey?: string | null;
+  latestVersionChecksum?: string | null;
+  latestVersionNumber?: number | null;
   uploadedAt?: string;
+  versionCount?: number | null;
 };
 
 export type DocumentPayloadProjection = {
@@ -184,6 +187,7 @@ const forbiddenClientProjectionFields = new Set<string>([
   "fileSizeBytes",
   "mimeType",
   "storageKey",
+  "latestVersionChecksum",
 ]);
 
 const internalDocumentFields = [
@@ -192,6 +196,7 @@ const internalDocumentFields = [
   "mimeType",
   "checksum",
   "storageKey",
+  "latestVersionChecksum",
   "evidenceRecordId",
   "evidenceStatus",
   "evidenceVisibilityStatus",
@@ -199,7 +204,7 @@ const internalDocumentFields = [
 ] as const;
 
 export const trueUxClientProjectionNoLeakageContract = {
-  allowedClientPayloadFields: ["clientSummary", "decisionState", "documentType", "id", "releasedAt", "status", "title", "uploadedAt"],
+  allowedClientPayloadFields: ["clientSummary", "decisionState", "documentType", "id", "latestVersionNumber", "releasedAt", "status", "title", "uploadedAt", "versionCount"],
   failClosedReasonCodes: [
     "DEMO_CLIENT_VISIBILITY_FAIL_CLOSED",
     "DEMO_CLIENT_DECISION_FAIL_CLOSED",
@@ -456,8 +461,10 @@ function projectDocumentPayload(
           documentType: payload.documentType,
           fileName: payload.fileName,
           fileSizeBytes: payload.fileSizeBytes,
+          ...(payload.latestVersionNumber ? { latestVersionNumber: payload.latestVersionNumber } : {}),
           status: payload.status,
           uploadedAt: payload.uploadedAt,
+          ...(payload.versionCount ? { versionCount: payload.versionCount } : {}),
         },
         hiddenFields,
       };
@@ -485,8 +492,10 @@ function projectDocumentPayload(
         id: payload.id,
         title: payload.title,
         documentType: payload.documentType,
+        ...(payload.latestVersionNumber ? { latestVersionNumber: payload.latestVersionNumber } : {}),
         status: payload.status,
         uploadedAt: payload.uploadedAt,
+        ...(payload.versionCount ? { versionCount: payload.versionCount } : {}),
       },
       hiddenFields,
     };

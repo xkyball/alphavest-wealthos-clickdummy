@@ -46,8 +46,11 @@ export type UploadedDocumentListItem = {
   fileSizeBytes: number;
   mimeType: string;
   checksum: string;
+  latestVersionChecksum: string;
+  latestVersionNumber: number;
   storageKey: string;
   uploadedAt: string;
+  versionCount: number;
   evidenceRecordId: string | null;
   evidenceLifecycleStatus: EvidenceLifecycleStatus;
   evidenceStatus: string | null;
@@ -163,7 +166,10 @@ function mapDocument(document: {
   status: DocumentStatus;
   storageKey: string | null;
   title: string;
+  versions?: Array<{ checksum: string | null; versionNumber: number }>;
 }): UploadedDocumentListItem {
+  const latestVersion = document.versions?.[0] ?? null;
+
   return {
     checksum: document.checksum ?? "",
     clientTenantId: document.clientTenantId,
@@ -181,12 +187,15 @@ function mapDocument(document: {
     fileName: document.fileName ?? document.title,
     fileSizeBytes: document.fileSizeBytes ?? 0,
     id: document.id,
+    latestVersionChecksum: latestVersion?.checksum ?? document.checksum ?? "",
+    latestVersionNumber: latestVersion?.versionNumber ?? 1,
     mimeType: document.mimeType ?? "",
     sensitivity: document.sensitivity,
     status: document.status,
     storageKey: document.storageKey ?? "",
     title: document.title,
     uploadedAt: document.createdAt.toISOString(),
+    versionCount: document.versions?.length ?? 0,
   };
 }
 
@@ -496,6 +505,7 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
         evidenceStatus: evidenceRecord.status,
         evidenceVisibilityStatus: evidenceRecord.visibilityStatus,
         extractions: [{ extractionStatus: extraction.extractionStatus }],
+        versions: [{ checksum: version.checksum, versionNumber: version.versionNumber }],
       }),
       documentEvidenceItemId: documentEvidenceItem.id,
       evidenceRecordId: evidenceRecord.id,
@@ -521,6 +531,10 @@ export async function listUploadedDocuments(
         orderBy: { createdAt: "desc" },
         select: { extractionStatus: true },
         take: 1,
+      },
+      versions: {
+        orderBy: { versionNumber: "desc" },
+        select: { checksum: true, versionNumber: true },
       },
     },
     orderBy: { createdAt: "desc" },

@@ -35,12 +35,14 @@ test.describe("document upload browser flow", () => {
 
     await page.getByTestId("real-upload-document").click();
     await expect(page.getByText(`${fileName} upload completed.`)).toBeVisible();
-    await expect(page.getByText("Lifecycle: Extraction Pending")).toBeVisible();
-    await expect(page.getByText("Extraction review is the next step;")).toBeVisible();
+    await expect(page.getByText(fileName, { exact: true })).toBeVisible();
+    await expect(page.getByText("Version: v1 of 1 · checksum proof stored internally", { exact: true })).toBeVisible();
+    await expect(page.getByText("Lifecycle: Extraction Pending", { exact: true })).toBeVisible();
     await expect(page.getByText("Evidence sufficiency, release, export and client visibility remain locked.")).toBeVisible();
 
     await page.reload();
-    await expect(page.locator("p:visible, span:visible, td:visible, article:visible", { hasText: fileName }).first()).toBeVisible();
+    await expect(page.getByText(fileName, { exact: true })).toBeVisible();
+    await expect(page.getByText("Version: v1 of 1 · checksum proof stored internally", { exact: true })).toBeVisible();
 
     await page.goto("/documents");
     await expect(page.locator("p:visible, span:visible, td:visible, article:visible", { hasText: fileName }).first()).toBeVisible();
@@ -60,11 +62,14 @@ test.describe("document upload browser flow", () => {
 
     await page.getByTestId("real-upload-document").click();
     await expect(page.getByText(`${fileName} upload completed.`)).toBeVisible();
-    await expect(page.getByText("Lifecycle: Extraction Pending")).toBeVisible();
+    await expect(page.getByText(fileName, { exact: true })).toBeVisible();
+    await expect(page.getByText("Version: v1 of 1 · checksum proof stored internally", { exact: true })).toBeVisible();
+    await expect(page.getByText("Lifecycle: Extraction Pending", { exact: true })).toBeVisible();
     await expect(page.getByText("Evidence sufficiency, release, export and client visibility remain locked.")).toBeVisible();
 
     await page.reload();
-    await expect(page.locator("p:visible, span:visible, td:visible, article:visible", { hasText: fileName }).first()).toBeVisible();
+    await expect(page.getByText(fileName, { exact: true })).toBeVisible();
+    await expect(page.getByText("Version: v1 of 1 · checksum proof stored internally", { exact: true })).toBeVisible();
 
     await page.goto("/documents");
     await expect(page.locator("p:visible, span:visible, td:visible, article:visible", { hasText: fileName }).first()).toBeVisible();
@@ -112,6 +117,8 @@ test.describe("document upload browser flow", () => {
     await page.getByLabel("Tenant context").last().selectOption("morgan");
     await page.getByLabel("Role context").last().selectOption("compliance_officer");
     await expect(page.getByText(fileName)).toBeVisible();
+    await expect(page.getByTestId("document-review-latest-card")).toContainText("Version: v1 of 1");
+    await expect(page.getByTestId("document-review-latest-card")).toContainText("checksum proof stored internally");
 
     await page.getByTestId("phase3-accept-sufficiency").click();
     await expect(page.getByText("Evidence accepted for this scoped gate. Release, export and client visibility remain locked.")).toBeVisible();

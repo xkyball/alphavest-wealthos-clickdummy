@@ -110,10 +110,30 @@ export async function POST(request: Request) {
       subType: stringValue(formData, "subType"),
       tenantSlug: resolvedTenantSlug,
     });
+    const safeDocumentResult = {
+      documentType: result.document.documentType,
+      evidenceLifecycleStatus: result.document.evidenceLifecycleStatus,
+      fileName: result.document.fileName,
+      fileSizeBytes: result.document.fileSizeBytes,
+      id: result.document.id,
+      latestVersionNumber: result.document.latestVersionNumber,
+      status: result.document.status,
+      title: result.document.title,
+      uploadedAt: result.document.uploadedAt,
+      versionCount: result.document.versionCount,
+    };
+    const safeResult = {
+      auditEventId: result.auditEventId,
+      document: safeDocumentResult,
+      evidenceRecordId: result.evidenceRecordId,
+      extractionId: result.extractionId,
+      uploadedAt: result.uploadedAt,
+      versionId: result.versionId,
+    };
 
     return NextResponse.json({
       ok: true,
-      result,
+      result: safeResult,
       safety: {
         clientVisible: false,
         evidenceLifecycleStatus: result.document.evidenceLifecycleStatus,

@@ -61,6 +61,13 @@ test.describe("document upload multipart API", () => {
     expect(body.result.extractionId).toBeTruthy();
     expect(body.result.evidenceRecordId).toBeTruthy();
     expect(body.result.auditEventId).toBeTruthy();
+    expect(body.result.document.latestVersionNumber).toBe(1);
+    expect(body.result.document.versionCount).toBe(1);
+    expect(body.result).not.toHaveProperty("auditEvidenceItemId");
+    expect(body.result).not.toHaveProperty("documentEvidenceItemId");
+    expect(body.result).not.toHaveProperty("storageKey");
+    expect(body.result.document).not.toHaveProperty("checksum");
+    expect(body.result.document).not.toHaveProperty("storageKey");
     expect(body.safety).toEqual({
       clientVisible: false,
       evidenceLifecycleStatus: "extraction_pending",
@@ -91,6 +98,9 @@ test.describe("document upload multipart API", () => {
     expect(document.fileSizeBytes).toBeGreaterThan(0);
     expect(document.storageKey).toContain("demo/morgan/documents/");
     expect(document.versions).toHaveLength(1);
+    expect(document.versions[0]?.documentId).toBe(document.id);
+    expect(document.versions[0]?.checksum).toHaveLength(64);
+    expect(document.versions[0]?.versionNumber).toBe(1);
     expect(document.extractions[0]?.extractionStatus).toBe("pending");
     expect(evidenceRecord.relatedObjectId).toBe(document.id);
     expect(evidenceRecord.status).toBe(EvidenceStatus.CREATED);
@@ -121,6 +131,9 @@ test.describe("document upload multipart API", () => {
     const reloadedDocument = reloadBody.documents.find((item: { id: string }) => item.id === document.id);
 
     expect(reloadedDocument?.fileName).toBe(fileName);
+    expect(reloadedDocument?.latestVersionNumber).toBe(1);
+    expect(reloadedDocument?.versionCount).toBe(1);
+    expect(reloadedDocument?.latestVersionChecksum).toHaveLength(64);
 
     const uploaderClientReload = await request.get("/api/documents?tenantSlug=morgan&roleKey=family_cfo");
     const uploaderClientReloadBody = await uploaderClientReload.json();
@@ -130,11 +143,14 @@ test.describe("document upload multipart API", () => {
     expect(uploaderClientDocument?.visible).toBe(true);
     expect(uploaderClientDocument?.reasonCode).toBe("DEMO_CLIENT_SOURCE_DOCUMENT_PROJECTION");
     expect(uploaderClientDocument?.fileName).toBe(fileName);
+    expect(uploaderClientDocument?.latestVersionNumber).toBe(1);
+    expect(uploaderClientDocument?.versionCount).toBe(1);
     expect(uploaderClientDocument).not.toHaveProperty("evidenceStatus");
     expect(uploaderClientDocument).not.toHaveProperty("evidenceVisibilityStatus");
     expect(uploaderClientDocument).not.toHaveProperty("sensitivity");
     expect(uploaderClientDocument).not.toHaveProperty("storageKey");
     expect(uploaderClientDocument).not.toHaveProperty("checksum");
+    expect(uploaderClientDocument).not.toHaveProperty("latestVersionChecksum");
 
     const blockedClientReload = await request.get("/api/documents?tenantSlug=morgan&roleKey=principal");
     const blockedClientReloadBody = await blockedClientReload.json();
@@ -169,9 +185,58 @@ test.describe("document upload multipart API", () => {
     expect(releasedClientDocument?.visibilityState).toBe("CLIENT_SAFE");
     expect(releasedClientDocument?.title).toBe(document.title);
     expect(releasedClientDocument?.documentType).toBe(document.documentType);
+    expect(releasedClientDocument?.latestVersionNumber).toBe(1);
+    expect(releasedClientDocument?.versionCount).toBe(1);
     expect(releasedClientDocument).not.toHaveProperty("storageKey");
     expect(releasedClientDocument).not.toHaveProperty("checksum");
+    expect(releasedClientDocument).not.toHaveProperty("latestVersionChecksum");
     expect(releasedClientDocument).not.toHaveProperty("fileName");
+  });
+
+  test("denies orphan document versions and keeps version proof linked to its document", async ({ request }) => {
+    const fileName = "phase3-version-link-proof.pdf";
+    const response = await request.post("/api/documents/upload", {
+      multipart: {
+        documentType: "financial_statement",
+        file: {
+          buffer: Buffer.from("%PDF-1.4\nVersion link proof\n%%EOF"),
+          mimeType: "application/pdf",
+          name: fileName,
+        },
+        roleKey: "family_cfo",
+        tenantSlug: "morgan",
+      },
+    });
+    const body = await response.json();
+
+    expect(response.ok(), JSON.stringify(body)).toBe(true);
+
+    const document = await prisma.document.findUniqueOrThrow({
+      include: { versions: true },
+      where: { id: body.result.document.id },
+    });
+
+    expect(document.versions).toHaveLength(1);
+    expect(document.versions[0]?.documentId).toBe(document.id);
+    expect(document.versions[0]?.checksum).toHaveLength(64);
+
+    await expect(
+      prisma.documentVersion.create({
+        data: {
+          checksum: "orphan-checksum",
+          createdByUserId: document.uploadedByUserId,
+          documentId: "00000000-0000-0000-0000-000000000000",
+          storageKey: "demo/orphan/version.pdf",
+          versionNumber: 1,
+        },
+      }),
+    ).rejects.toThrow();
+
+    const orphan = await prisma.documentVersion.findFirst({
+      where: { storageKey: "demo/orphan/version.pdf" },
+    });
+
+    expect(orphan).toBeNull();
   });
 
   test("fails closed before multipart upload mutation when required audit persistence is unavailable", async ({ request }) => {
