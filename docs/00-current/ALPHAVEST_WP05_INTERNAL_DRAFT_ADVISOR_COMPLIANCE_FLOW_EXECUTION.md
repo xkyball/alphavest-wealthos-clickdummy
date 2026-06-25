@@ -468,3 +468,201 @@ Observed UI proof:
 Implementation wave and focused QA are complete.
 
 No further human decision is required for this first Option A wave.
+
+## 10. WP05 Strict Source-Scope Rerun
+
+Execution date: 2026-06-25.
+
+Rerun trigger:
+
+- User requested WP05 rerun from `/Users/chris/Downloads/alphavest/ALPHAVEST_WP05_INTERNAL_DRAFT_ADVISOR_COMPLIANCE_FLOW_BOC_TICKET_STRUCTURE.md`.
+- User required strict source scope: uploaded blueprint, current repo, generated artefacts from the same refactor chain and explicit human/generated decisions only.
+- User required the execution chain: blueprint task -> executed analysis result -> refined specification -> derived implementation task -> implementation or zero-delta implementation -> QA/proof -> report.
+
+Preflight and source-scope result:
+
+- Current branch: `full-workflow`.
+- Current baseline commit before this report update: `57731c5 docs: rerun wp04 evidence workflow proof`.
+- Working tree before report update: clean.
+- `package.json` confirms `pnpm@9.15.9` and runnable source guard, typecheck, Prisma validation and Playwright tests.
+- `ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md` was used as operative repo authority required by `AGENTS.md`, not as a replacement for the WP05 blueprint.
+- Engine mixed V2/V3 was used only as execution/proof discipline because the user invoked `max`; it was not used as WP05 specification authority.
+- No unrelated legacy planning docs, broad handoff docs, old KB artefacts, `source_refs`, `source_artefacts` or unvalidated prior assumptions were imported as WP05 specification authority.
+
+Generated artefacts used as input or override:
+
+- This WP05 execution report, including the earlier accepted Option A implementation proof.
+- Earlier same-chain generated reports in `docs/00-current/` for WP00, WP01, WP02, WP03, WP04 and WP06, only where they encode accepted process results or reinforce safety constraints already revalidated against the current repo.
+- Explicit human decision already present in the thread: `I approve WP05 Option A: canonical Journey Command path, demo workflow compatibility only, fail-closed audit before mutation, minimal Decision/Audit linkage included, no new API and no schema migration in first wave.`
+
+### ANALYSIS-WP05-1 Executed Analysis Result
+
+Status: `COMPLETE`.
+
+Blueprint tasks/subtasks extracted:
+
+- Epic: `WP-05 Internal Draft / Analyst / Advisor / Compliance Flow`.
+- `ANALYSIS-WP05-1` Current advisory-flow implementation and gate audit.
+- `SPEC-WP05-1` Draft -> Analyst -> Advisor -> Compliance workflow contract.
+- `SPEC-WP05-1.1` State taxonomy and transition naming contract.
+- `SPEC-WP05-1.2` Role/gate/payload/audit acceptance contract.
+- `DECISION-WP05-1` Human approval of WP-05 state/API/gate cutline.
+- `IMPL-WP05-1` Internal Workbench draft/rebuild and unsupported-claim control.
+- `IMPL-WP05-1.1` Draft internal-only state handling.
+- `IMPL-WP05-1.2` Unsupported claim / evidence-gap states.
+- `IMPL-WP05-1.3` Analyst rebuild/escalate-to-advisor action path.
+- `IMPL-WP05-2` Advisor approval not release.
+- `IMPL-WP05-2.1` Advisor queue/detail state and validation.
+- `IMPL-WP05-2.2` Approve-for-compliance transition.
+- `IMPL-WP05-2.3` Return-to-analyst / needs-evidence transition.
+- `IMPL-WP05-3` Compliance release/block/request-evidence gate.
+- `IMPL-WP05-3.1` Compliance precondition checks.
+- `IMPL-WP05-3.2` Block/request-evidence action state.
+- `IMPL-WP05-3.3` Release action with audit and fail-closed behaviour.
+- `IMPL-WP05-3.4` Compliance audit/exception surface integration.
+- `IMPL-WP05-4` Decision/audit linkage for released or blocked advisory item.
+- `QA-WP05-1` End-to-end P0 validation for advisory gate chain.
+
+Live repo evidence:
+
+- WP05 route scope exists in `lib/route-registry.ts`: route IDs `033`, `034`, `035`, `036`, `037`, `038`, `039`, `040`, `041`, `042`.
+- `lib/advisory-workflow-contract.ts` defines canonical WP05 states, canonical Journey command IDs, `RELEASE CLIENT-SAFE JOURNEY`, and `DEMO_WORKFLOW_COMPATIBILITY_ONLY`.
+- `lib/journeys/journey-command-registry.ts` includes the WP05 canonical Journey command IDs.
+- `lib/journeys/journey-api-service.ts` implements `AI_DRAFT_INTERNAL`, `ADVISOR_APPROVE`, evidence sufficiency decisions and `COMPLIANCE_RELEASE` with advisor/evidence/payload/permission/audit gates.
+- `lib/demo-workflow-validation.ts` maps typed recommendation-review actions to canonical Journey commands/states and keeps `advisor_approve` output at `COMPLIANCE_PENDING`, `clientVisibleAfterAction: false`.
+- `lib/demo-workflow-mutation.ts` implements typed recommendation-review mutations for unsupported claim rejection, evidence-backed rebuild, advisor approval, compliance block, request evidence and compliance release.
+- `app/api/demo-workflow/route.ts` routes typed `recommendation-review` payloads through `runRecommendationReviewWorkflowMutation` and returns fail-closed envelopes on errors.
+- `components/internal-workflow-screen.tsx` renders advisor/compliance UI copy that says advisor approval is not release and release requires exact phrase plus compliance acknowledgement.
+- Tests cover the contract, typed demo workflow, canonical journey command path, workflow gates, client projection redaction, UI confirmation lifecycle and P04-P06 boundary panels.
+
+Analysis conclusion:
+
+The approved WP05 first-wave implementation is already present in the current repo. No product-code gap was found for the blueprint's approved first-wave scope. Remaining cleanup is not new WP05 scope: extract a shared advisory gate adapter/service so `/api/demo-workflow` compatibility and canonical Journey commands cannot drift.
+
+### SPEC-WP05-1 Refined Specification
+
+Status: `COMPLETE_AND_STILL_VALID`.
+
+Refined first-wave contract:
+
+- Internal AI/rules draft is internal-only and never client-visible.
+- Unsupported claims and evidence gaps block forward progress until evidence-backed rebuild or safe rejection/request evidence path.
+- Analyst may review/rebuild/route; analyst may not advisor-approve, compliance-release or create client visibility.
+- Advisor approval is human review only and outputs compliance-pending semantics.
+- Advisor approval never sets release, client acceptance or export/share readiness.
+- Compliance owns release/block/request evidence.
+- Compliance release requires advisor approval, sufficient scoped evidence, client-safe payload, permission, exact phrase and audit persistence.
+- Critical gate actions fail closed before mutation when audit persistence is unavailable.
+- Client-safe projection excludes internal draft, internal rationale, compliance notes, audit metadata internals and unreleased evidence.
+- Decision/Audit linkage is minimal in first wave: release/block/request evidence can link evidence/audit/decision records, but client acceptance remains downstream.
+- `/api/journeys/:id/commands` remains the canonical WP05 command spine.
+- `/api/demo-workflow` typed recommendation-review remains demo workflow compatibility only.
+- No new API, route, schema migration or held-route unlock is authorized for this rerun.
+
+### DECISION-WP05-1 Decision Result
+
+Status: `COMPLETE`.
+
+Existing human approval applies:
+
+- Option A remains the accepted policy.
+- Canonical Journey command path is preferred.
+- Demo workflow remains compatibility only.
+- Audit fails closed before critical mutation.
+- Minimal Decision/Audit linkage is included.
+- No new API and no schema migration in first wave.
+
+No human stop was required in this strict rerun.
+
+### WP05 Implementation Result
+
+Overall implementation status: `ZERO-DELTA PRODUCT CODE`.
+
+Product-code changes in this strict rerun: none.
+
+Generated artefact changes in this strict rerun: this report section.
+
+Task-by-task derived implementation result:
+
+- `IMPL-WP05-1` Internal Workbench draft/rebuild and unsupported-claim control: `ZERO-DELTA IMPLEMENTATION`. Internal-only draft, unsupported claim and evidence-backed rebuild semantics already exist in UI, typed workflow and tests.
+- `IMPL-WP05-1.1` Draft internal-only state handling: `ZERO-DELTA IMPLEMENTATION`. Journey AI draft and recommendation-review paths keep `clientVisible: false` and internal draft metadata.
+- `IMPL-WP05-1.2` Unsupported claim / evidence-gap states: `ZERO-DELTA IMPLEMENTATION`. `reject_unsupported_claim`, `request_evidence`, gate-missing states and evidence placeholders are implemented and tested.
+- `IMPL-WP05-1.3` Analyst rebuild/escalate-to-advisor action path: `ZERO-DELTA IMPLEMENTATION`. `rebuild_with_evidence` requires accepted scoped evidence and remains unreleased.
+- `IMPL-WP05-2` Advisor approval not release: `ZERO-DELTA IMPLEMENTATION`. Advisor approval sets `COMPLIANCE_PENDING`, not release or client visibility.
+- `IMPL-WP05-2.1` Advisor queue/detail state and validation: `ZERO-DELTA IMPLEMENTATION`. Advisor UI and tests preserve compliance handoff boundary.
+- `IMPL-WP05-2.2` Approve-for-compliance transition: `ZERO-DELTA IMPLEMENTATION`. `advisor_approve` maps to `ADVISOR_APPROVE` and canonical state `COMPLIANCE_PENDING`.
+- `IMPL-WP05-2.3` Return-to-analyst / needs-evidence transition: `ZERO-DELTA IMPLEMENTATION`. Request-evidence and unsupported-claim branches keep client visibility closed and record reason/audit state.
+- `IMPL-WP05-3` Compliance release/block/request-evidence gate: `ZERO-DELTA IMPLEMENTATION`. Compliance gates already enforce preconditions and fail closed.
+- `IMPL-WP05-3.1` Compliance precondition checks: `ZERO-DELTA IMPLEMENTATION`. Release checks advisor approval, scoped accepted evidence, payload readiness, permission and audit readiness.
+- `IMPL-WP05-3.2` Block/request-evidence action state: `ZERO-DELTA IMPLEMENTATION`. Block and request evidence actions keep release closed and write audit/decision linkage metadata.
+- `IMPL-WP05-3.3` Release action with audit and fail-closed behaviour: `ZERO-DELTA IMPLEMENTATION`. Release requires exact phrase and audit readiness; audit failure returns no mutation.
+- `IMPL-WP05-3.4` Compliance audit/exception surface integration: `ZERO-DELTA IMPLEMENTATION`. Compliance audit surface and tests show audit persistence gate and critical gate contract.
+- `IMPL-WP05-4` Decision/audit linkage for released or blocked advisory item: `ZERO-DELTA IMPLEMENTATION`. Release updates linked Decision rows to `RELEASED_TO_CLIENT` without setting client acceptance; block/request evidence link available evidence metadata.
+
+### QA-WP05-1 Proof
+
+Status: `COMPLETE_FOR_APPROVED_FIRST_WAVE`.
+
+Validation run:
+
+```bash
+pnpm guard:source
+pnpm exec tsc --noEmit --pretty false
+pnpm db:validate
+pnpm exec playwright test tests/wp05-advisory-workflow-contract.spec.ts tests/demo-workflow-validation.spec.ts --workers=1 --reporter=line
+pnpm exec playwright test tests/demo-workflow-api.spec.ts --workers=1 --reporter=line
+PLAYWRIGHT_PORT=3037 pnpm exec playwright test tests/journey-api.spec.ts --workers=1 --reporter=line
+pnpm exec playwright test tests/workflow-gate.spec.ts tests/client-visibility-projection.spec.ts --workers=1 --reporter=line
+pnpm exec playwright test tests/confirmation-lifecycle.spec.ts tests/scf-p04-p06-flow-ui.spec.ts --workers=1 --reporter=line
+```
+
+Validation result:
+
+- Source/target guard: PASS, 0 violations.
+- TypeScript: PASS.
+- Prisma validate: PASS.
+- WP05 contract/compatibility mapping: PASS, 2 passed.
+- Typed demo workflow API: PASS, 15 passed.
+- Canonical Journey command API: PASS, 8 passed after isolated rerun on `PLAYWRIGHT_PORT=3037`.
+- Workflow gate and client visibility projection: PASS, 17 passed.
+- UI confirmation lifecycle and P04-P06 boundary panels: PASS, 7 passed.
+
+Negative/blocked proof:
+
+- One parallel first attempt of `tests/journey-api.spec.ts` failed only because Playwright port `3020` was already in use by a parallel test server. It was rerun in isolation with `PLAYWRIGHT_PORT=3037` and passed 8/8. This is recorded as an environment/parallelization collision, not a WP05 product failure.
+
+Positive proof:
+
+- Internal draft can be recorded without client release.
+- Evidence-backed rebuild can proceed with accepted scoped evidence and still remain unreleased.
+- Advisor approval persists and produces compliance-pending state.
+- Compliance release succeeds only after advisor/evidence/payload/permission/audit gates pass.
+- Release writes audit and minimal decision linkage while keeping client acceptance separate.
+
+Negative proof:
+
+- Client cannot see AI draft/internal rationale through client-safe projection.
+- Unsupported claim rejection keeps draft internal-only.
+- Rebuild without accepted scoped evidence is blocked.
+- Advisor approval does not release or create client visibility.
+- Compliance release without evidence/advisor/payload/phrase/audit readiness is blocked.
+- Audit persistence failure prevents release mutation.
+- Wrong role/action/object paths fail closed.
+- Admin/non-authorized bypass remains denied through governance and permission gates covered in prior same-chain WP06 and focused WP05 tests.
+
+Screenshot proof:
+
+- `test-results/wp05-strict-rerun-screenshots/wp05-internal-trigger-review.png`
+- `test-results/wp05-strict-rerun-screenshots/wp05-advisor-review.png`
+- `test-results/wp05-strict-rerun-screenshots/wp05-compliance-release.png`
+- `test-results/wp05-strict-rerun-screenshots/wp05-compliance-audit.png`
+
+Residual risks:
+
+- This rerun did not execute full `pnpm phase:check`; it executed the focused WP05 proof set plus source guard, typecheck and Prisma validation.
+- `/api/demo-workflow` still contains compatibility and screencast-oriented paths. It is acceptable for first-wave demo compatibility but should not become the long-term product command authority.
+- Full export package proof and client acceptance workflow remain downstream, not WP05 first-wave scope.
+
+Aggressive clean-solution recommendation:
+
+Keep WP05 closed as `ZERO-DELTA PRODUCT CODE / COMPLETE_FOR_APPROVED_FIRST_WAVE`. Do not add a new API, route or schema migration here. The next clean debt-removal task should extract a shared advisory gate adapter/service used by both canonical Journey commands and `/api/demo-workflow` recommendation-review compatibility, then reduce duplicate release/precondition logic with focused journey/demo-workflow/client-visibility regression tests.
