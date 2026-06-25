@@ -28,6 +28,164 @@ export const exportWorkflowCommandIds = [
 
 export type ExportWorkflowCommandId = (typeof exportWorkflowCommandIds)[number];
 
+export const exportWorkflowCommandSpinePath = "lib/export-workflow-command-service.ts" as const;
+export const exportWorkflowCanonicalApiRoute = "/api/export-workflow" as const;
+export const exportWorkflowCommandAuditEventTypes = exportWorkflowCommandIds.map(
+  (command) => `export.workflow.${command.toLowerCase()}`,
+);
+
+export type ExportWorkflowProofFamilyAuthority =
+  | "COMMAND_SPINE"
+  | "HELPER_ATTACHMENT"
+  | "LEGACY_REFERENCE_ONLY"
+  | "COMPATIBILITY_ADAPTER";
+
+export type ExportWorkflowProofFamilyId =
+  | "EXPORT_WORKFLOW_COMMAND_SERVICE"
+  | "P44_PHASE8_EXPORT_CLOSURE"
+  | "WP10_EXPORT_SCOPE_REDACTION_APPROVAL_UX"
+  | "AV27_PHASE6_PAYLOAD_CONTRACT"
+  | "AV27_PHASE7_PAYLOAD_SWEEP"
+  | "WCL_EXPORT_SAFETY"
+  | "FILE_EXPORT_REALISM"
+  | "DEMO_WORKFLOW_EXPORT_COMPATIBILITY";
+
+export type ExportWorkflowProofFamily = {
+  familyId: ExportWorkflowProofFamilyId;
+  authority: ExportWorkflowProofFamilyAuthority;
+  canonicalApiRoute: typeof exportWorkflowCanonicalApiRoute;
+  canonicalCommandService: typeof exportWorkflowCommandSpinePath;
+  helperFiles: readonly string[];
+  proofFiles: readonly string[];
+  rule: string;
+};
+
+export type ExportWorkflowCommandSpineContract = {
+  canonicalApiRoute: typeof exportWorkflowCanonicalApiRoute;
+  canonicalCommandService: typeof exportWorkflowCommandSpinePath;
+  commandIds: readonly ExportWorkflowCommandId[];
+  expectedAuditEvents: readonly string[];
+  legacyProofFamiliesRetired: boolean;
+  proofFamilies: readonly ExportWorkflowProofFamily[];
+};
+
+export const exportWorkflowCommandSpineContract = {
+  canonicalApiRoute: exportWorkflowCanonicalApiRoute,
+  canonicalCommandService: exportWorkflowCommandSpinePath,
+  commandIds: exportWorkflowCommandIds,
+  expectedAuditEvents: exportWorkflowCommandAuditEventTypes,
+  legacyProofFamiliesRetired: true,
+  proofFamilies: [
+    {
+      authority: "COMMAND_SPINE",
+      canonicalApiRoute: exportWorkflowCanonicalApiRoute,
+      canonicalCommandService: exportWorkflowCommandSpinePath,
+      familyId: "EXPORT_WORKFLOW_COMMAND_SERVICE",
+      helperFiles: ["lib/export-service.ts", "lib/export-package-service.ts", "lib/file-metadata-service.ts"],
+      proofFiles: ["tests/export-workflow-api.spec.ts", "tests/p44-phase8-certification.spec.ts"],
+      rule: "All export state mutations, stage progression and audit event semantics enter through this command service.",
+    },
+    {
+      authority: "HELPER_ATTACHMENT",
+      canonicalApiRoute: exportWorkflowCanonicalApiRoute,
+      canonicalCommandService: exportWorkflowCommandSpinePath,
+      familyId: "P44_PHASE8_EXPORT_CLOSURE",
+      helperFiles: ["lib/p44-phase8-export-command-closure.ts"],
+      proofFiles: ["tests/p44-phase8-certification.spec.ts"],
+      rule: "Phase 8 is certification evidence for the command spine, not a second export command authority.",
+    },
+    {
+      authority: "LEGACY_REFERENCE_ONLY",
+      canonicalApiRoute: exportWorkflowCanonicalApiRoute,
+      canonicalCommandService: exportWorkflowCommandSpinePath,
+      familyId: "WP10_EXPORT_SCOPE_REDACTION_APPROVAL_UX",
+      helperFiles: ["docs/v0-96/uploads/ALPHAVEST_V0_96_WP10_EXPORT_SCOPE_REDACTION_APPROVAL_UX_DEEP_TASK_DESCRIPTION.md"],
+      proofFiles: ["tests/export-workflow-api.spec.ts", "tests/phase8-export-workflow-api.spec.ts"],
+      rule: "WP10 describes the legacy export UX intent; implementation authority is retired into the command spine.",
+    },
+    {
+      authority: "HELPER_ATTACHMENT",
+      canonicalApiRoute: exportWorkflowCanonicalApiRoute,
+      canonicalCommandService: exportWorkflowCommandSpinePath,
+      familyId: "AV27_PHASE6_PAYLOAD_CONTRACT",
+      helperFiles: ["lib/av27-phase6-payload-contract.ts", "lib/export-service.ts"],
+      proofFiles: ["tests/av27-phase6-payload-contract.spec.ts", "tests/export-safety.spec.ts"],
+      rule: "AV27 payload classification supplies redaction vocabulary only; it cannot advance export workflow state.",
+    },
+    {
+      authority: "HELPER_ATTACHMENT",
+      canonicalApiRoute: exportWorkflowCanonicalApiRoute,
+      canonicalCommandService: exportWorkflowCommandSpinePath,
+      familyId: "AV27_PHASE7_PAYLOAD_SWEEP",
+      helperFiles: ["lib/av27-phase7-certification.ts"],
+      proofFiles: ["tests/av27-phase7-certification.spec.ts"],
+      rule: "AV27 Phase 7 payload sweep is negative proof attached to the export command spine.",
+    },
+    {
+      authority: "HELPER_ATTACHMENT",
+      canonicalApiRoute: exportWorkflowCanonicalApiRoute,
+      canonicalCommandService: exportWorkflowCommandSpinePath,
+      familyId: "WCL_EXPORT_SAFETY",
+      helperFiles: ["lib/control-layer/export-safety.ts", "lib/export-service.ts"],
+      proofFiles: ["tests/export-safety.spec.ts"],
+      rule: "Control-layer export safety is a gate helper and must not expose an alternate export action surface.",
+    },
+    {
+      authority: "HELPER_ATTACHMENT",
+      canonicalApiRoute: exportWorkflowCanonicalApiRoute,
+      canonicalCommandService: exportWorkflowCommandSpinePath,
+      familyId: "FILE_EXPORT_REALISM",
+      helperFiles: ["lib/export-package-service.ts", "lib/file-metadata-service.ts", "lib/export-service.ts"],
+      proofFiles: ["tests/file-export-realism.spec.ts"],
+      rule: "Package and file realism prove generated metadata shape only after the command spine permits generation.",
+    },
+    {
+      authority: "COMPATIBILITY_ADAPTER",
+      canonicalApiRoute: exportWorkflowCanonicalApiRoute,
+      canonicalCommandService: exportWorkflowCommandSpinePath,
+      familyId: "DEMO_WORKFLOW_EXPORT_COMPATIBILITY",
+      helperFiles: ["app/api/demo-workflow/route.ts", "lib/demo-workflow-mutation.ts"],
+      proofFiles: ["tests/demo-workflow-api.spec.ts", "tests/phase8-export-workflow-api.spec.ts"],
+      rule: "Demo workflow export branches are compatibility only and must not become new export command truth.",
+    },
+  ],
+} as const satisfies ExportWorkflowCommandSpineContract;
+
+export function certifyExportWorkflowCommandSpineContract(
+  contract: ExportWorkflowCommandSpineContract = exportWorkflowCommandSpineContract,
+) {
+  const commandSpineFamilies = contract.proofFamilies.filter((family) => family.authority === "COMMAND_SPINE");
+  const retiredFamilies = contract.proofFamilies.filter((family) => family.authority !== "COMMAND_SPINE");
+  const expectedAuditEvents = contract.commandIds.map((command) => `export.workflow.${command.toLowerCase()}`);
+  const missingProof: string[] = [];
+
+  if (contract.canonicalCommandService !== exportWorkflowCommandSpinePath) missingProof.push("canonical_command_service");
+  if (contract.canonicalApiRoute !== exportWorkflowCanonicalApiRoute) missingProof.push("canonical_api_route");
+  if (!contract.legacyProofFamiliesRetired) missingProof.push("legacy_proof_families_retired_flag");
+  if (commandSpineFamilies.length !== 1 || commandSpineFamilies[0]?.familyId !== "EXPORT_WORKFLOW_COMMAND_SERVICE") {
+    missingProof.push("single_export_command_spine");
+  }
+  if (retiredFamilies.some((family) => family.canonicalCommandService !== exportWorkflowCommandSpinePath)) {
+    missingProof.push("retired_family_canonical_service");
+  }
+  if (retiredFamilies.some((family) => family.canonicalApiRoute !== exportWorkflowCanonicalApiRoute)) {
+    missingProof.push("retired_family_canonical_route");
+  }
+  if (expectedAuditEvents.join("|") !== contract.expectedAuditEvents.join("|")) {
+    missingProof.push("command_audit_event_alignment");
+  }
+
+  return {
+    canonicalApiRoute: contract.canonicalApiRoute,
+    canonicalCommandService: contract.canonicalCommandService,
+    certification: missingProof.length === 0 ? "EXPORT_COMMAND_SPINE_READY" : "EXPORT_COMMAND_SPINE_BLOCKED",
+    commandAuthorityFamilyIds: commandSpineFamilies.map((family) => family.familyId),
+    legacyProofFamiliesRetired: contract.legacyProofFamiliesRetired,
+    missingProof,
+    retiredFamilyIds: retiredFamilies.map((family) => family.familyId),
+  };
+}
+
 export type ExportWorkflowCommandRequest = {
   command: ExportWorkflowCommandId;
   exportRequestId?: string;

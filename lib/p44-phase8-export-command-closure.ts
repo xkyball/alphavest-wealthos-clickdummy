@@ -1,5 +1,7 @@
 import type { AuditResult, ExportStatus } from "@prisma/client";
 
+import { exportWorkflowCommandSpinePath } from "@/lib/export-workflow-command-service";
+
 export const p44Phase8TicketOrder = [
   "P44-8-T01-EXEC",
   "P44-8-T02-EXEC",
@@ -30,6 +32,7 @@ export type P44Phase8ReadinessInput = {
 };
 
 export type P44Phase8TicketEvidence = {
+  commandSpine: typeof exportWorkflowCommandSpinePath;
   ticketId: P44Phase8TicketId;
   processId: "J-001" | "J-002" | "J-003" | "J-004" | "J-005" | "J-006" | "J-007" | "J-008" | "J-domain";
   positiveProof: string;
@@ -37,7 +40,7 @@ export type P44Phase8TicketEvidence = {
   targetFiles: string[];
 };
 
-export const p44Phase8TicketEvidence: readonly P44Phase8TicketEvidence[] = [
+const p44Phase8TicketEvidenceRows: readonly Omit<P44Phase8TicketEvidence, "commandSpine">[] = [
   {
     ticketId: "P44-8-T01-EXEC",
     processId: "J-001",
@@ -151,6 +154,11 @@ export const p44Phase8TicketEvidence: readonly P44Phase8TicketEvidence[] = [
     targetFiles: ["lib/p44-phase8-export-command-closure.ts", "docs/00-current/p44-phase8/PHASE8_TICKET_EXTRACTION_AND_EXECUTION_REPORT.md"],
   },
 ];
+
+export const p44Phase8TicketEvidence: readonly P44Phase8TicketEvidence[] = p44Phase8TicketEvidenceRows.map((evidence) => ({
+  ...evidence,
+  commandSpine: exportWorkflowCommandSpinePath,
+}));
 
 export const p44Phase8ExpectedAuditEvents = [
   "export.workflow.set_scope",

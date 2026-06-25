@@ -46,6 +46,7 @@ Create a typed workflow command bus that routes explicit command families:
 
 The bus should be a thin dispatcher, not a new all-purpose service. Domain semantics must stay in the command-family modules.
 Release readiness should flow through `ReleaseSpine`, not through a private compliance/export/demo-workflow shape.
+Export readiness should flow through `lib/export-workflow-command-service.ts`, with AV27, WP10, WCL export safety, file realism and Phase 8 proof families classified behind the command spine by `tests/export-command-spine-contract.spec.ts`.
 
 ## Proposed Ticket
 
