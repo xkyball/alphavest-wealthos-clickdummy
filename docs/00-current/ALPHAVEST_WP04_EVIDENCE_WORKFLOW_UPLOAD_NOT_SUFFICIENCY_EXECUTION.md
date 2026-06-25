@@ -473,3 +473,99 @@ Screenshot proof:
 Residual risk:
 
 - Legacy/demo recommendation review and J02 screencast paths still have some status-based release checks. WP04 now strengthens the journey and document evidence paths; the next aggressive clean-up should normalize remaining legacy release paths onto the shared sufficiency policy helper.
+
+## 9. WP04 Rerun After WP03/WP05-WP06 Artefacts
+
+Execution date: 2026-06-25.
+
+Rerun trigger:
+
+- User requested a WP04 rerun from the original upload.
+- User requested all generated specification artefacts to be used either as input or override for later tasks.
+- Current branch baseline before rerun: `full-workflow`, latest commit `b0f8b51 docs: rerun wp03 client visibility proof`, working tree clean.
+
+Generated artefacts used as rerun input:
+
+- `docs/00-current/ALPHAVEST_WP00_SOURCE_HIERARCHY_TARGET_GUARD_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP01_PROCESS_FIRST_ROUTE_NAV_SHELL_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP02_WORKSURFACE_LAYOUT_REFACTOR_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP03_CLIENT_SAFE_VISIBILITY_PORTAL_STATES_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP04_EVIDENCE_WORKFLOW_UPLOAD_NOT_SUFFICIENCY_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP05_INTERNAL_DRAFT_ADVISOR_COMPLIANCE_FLOW_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP06_RBAC_ADMIN_NON_BYPASS_EXECUTION.md`
+
+Important execution note:
+
+This rerun did not create a fresh WP04 product-code mutation. The earlier user-approved Option A implementation was already present in the repository. The rerun re-extracted the upload tasks, applied the generated WP00-WP06 artefacts as current input/override, and then validated each implementation task against the live code and tests. Therefore `COMPLETE` below means `implemented earlier and revalidated against the rerun specification`, not `newly rewritten during this rerun`.
+
+Rerun task-by-task status:
+
+- EPIC WP04 Evidence Workflow & Upload-not-Sufficiency Safety Spine: `COMPLETE_FOR_APPROVED_FIRST_WAVE`.
+- `WP04-ANALYSIS-1` Evidence Workflow Reality Audit: `COMPLETE`. Live recheck confirms real upload, review/linkage, sufficiency, release-block, audit, client-visibility and export boundaries exist in the current codebase.
+- `WP04-SPEC-1` Evidence Sufficiency and Upload-not-Sufficiency Contract: `COMPLETE_AND_STILL_VALID`. WP03, WP05 and WP06 reinforce the same safety contract: upload is not sufficiency, advisor approval is not release, admin cannot force visibility or sufficiency, and export/client payloads must be redacted/released only.
+- `WP04-DECISION-1` Approve Minimal MVP Evidence Sufficiency Policy: `COMPLETE`. Earlier user-approved Option A remains the clean path: Compliance owns final `SUFFICIENT`; analyst/advisor may review/link/prepare only; sufficiency is requirement/object scoped; existing schema remains enough for this wave.
+- `WP04-IMPL-1` Upload-only UI/API Semantics: `COMPLETE`. Upload UI/API still confirms intake only and returns `uploadOnly: true`, `sufficiency: false`, `releaseUnlocked: false`, `clientVisible: false`.
+- `WP04-IMPL-1.1` Upload feedback wording and state separation: `COMPLETE`. Current UI copy states `Upload complete - evidence review pending` and keeps sufficiency/release/export/client visibility locked.
+- `WP04-IMPL-1.2` API response/payload no-sufficiency semantics: `COMPLETE`. Upload and document APIs do not set release, sufficiency or client-visible state from upload alone.
+- `WP04-IMPL-2` Evidence Review and Linkage Lifecycle: `COMPLETE`. Review/linkage is real; final sufficiency acceptance is Compliance-only; Analyst review remains non-release and non-sufficiency.
+- `WP04-IMPL-2.1` Evidence review states: `COMPLETE`. Uploaded, review pending, linked, insufficient and sufficient lifecycle states are mapped and tested.
+- `WP04-IMPL-2.2` Evidence-to-object linkage: `COMPLETE`. Document/evidence links and journey requirement evidence links are explicit enough for first-wave gates.
+- `WP04-IMPL-3` Sufficiency Gate and Compliance Release Blocker: `COMPLETE`. Shared sufficiency helpers and journey release checks require reviewed, linked, scoped, relevant, current and audited evidence decisions.
+- `WP04-IMPL-3.1` Sufficiency gate derivation: `COMPLETE`. `evidenceService.evaluateEvidenceSufficiency` and `evaluateRequirementSufficiency` provide testable predicates.
+- `WP04-IMPL-3.2` Compliance release block integration: `COMPLETE`. Journey compliance release denies missing evidence sufficiency and keeps client visibility hidden.
+- `WP04-IMPL-4` Evidence Audit and Fail-Closed Behaviour: `COMPLETE`. Upload/review/journey critical actions assert audit writability before mutation; audit failure returns `AUDIT_PERSISTENCE_UNAVAILABLE`.
+- `WP04-IMPL-4.1` Audit event mapping for evidence actions: `COMPLETE`. Upload, review/linkage, sufficiency, denied attempts and release paths are audit-mapped for first wave.
+- `WP04-IMPL-4.2` Audit unavailable fail-closed handling: `COMPLETE`. Tests prove upload, review and journey sufficiency mutation do not silently complete when audit persistence is unavailable.
+- `WP04-QA-1` P0 Evidence Workflow Positive/Negative Validation: `COMPLETE_FOR_APPROVED_FIRST_WAVE`.
+
+Spec-to-code traceability:
+
+| Spec / task requirement | Live implementation inspected | Test / proof used in rerun | Rerun result |
+| --- | --- | --- | --- |
+| Upload success is upload-only and must not imply sufficiency, release, client visibility or export readiness. | `app/api/documents/upload/route.ts`, `lib/document-upload-service.ts`, `components/client-intake-screen.tsx` | `tests/document-upload-api.spec.ts`, `tests/document-upload-lifecycle-hardening.spec.ts` | Existing implementation conforms. |
+| Review/linkage must be separate from final sufficiency and release. | `app/api/documents/review/route.ts`, `lib/evidence-review-service.ts`, `lib/evidence-service.ts` | `tests/evidence-review-api.spec.ts` | Existing implementation conforms; Analyst review/link remains non-release and non-final-sufficiency. |
+| Final `SUFFICIENT` decision is Compliance-owned and scoped to requirement/object evidence. | `lib/evidence-review-service.ts`, `lib/journeys/journey-api-service.ts`, `lib/permission-engine.ts` | `tests/evidence-review-api.spec.ts`, `tests/journey-api.spec.ts`, `tests/governance-non-bypass.spec.ts` | Existing implementation conforms to Option A. |
+| Compliance release must block missing, unreviewed, unlinked, wrong-scope or unaudited evidence. | `lib/journeys/journey-api-service.ts`, `lib/workflow-gate.ts`, `lib/evidence-service.ts` | `tests/journey-api.spec.ts`, `tests/workflow-gate.spec.ts` inspected as supporting gate contract | Existing implementation conforms for first-wave journey path. |
+| Audit unavailable must fail closed before critical evidence mutation. | `lib/audit-service.ts`, `lib/document-upload-service.ts`, `lib/evidence-review-service.ts`, `lib/journeys/journey-api-service.ts` | `tests/document-upload-api.spec.ts`, `tests/evidence-review-api.spec.ts`, `tests/journey-api.spec.ts` | Existing implementation conforms. |
+| Client projection must not expose internal/unreleased evidence. | `lib/control-layer/client-visibility.ts`, `lib/visibility-engine.ts`, document projection paths | `tests/client-visibility-projection.spec.ts`, `tests/document-upload-api.spec.ts` | Existing implementation conforms. |
+| Export must exclude unreleased/internal evidence and forbidden internal payload classes. | `lib/export-service.ts`, `lib/export-package-service.ts` | `tests/file-export-realism.spec.ts` | Existing implementation conforms. |
+| Admin cannot force evidence sufficiency, release, export or visibility. | `lib/permission-engine.ts`, journey command role guards, governance tests | `tests/governance-non-bypass.spec.ts`, `tests/journey-api.spec.ts` | Existing implementation conforms. |
+
+Validation performed in rerun:
+
+```bash
+pnpm guard:source
+pnpm exec tsc --noEmit --pretty false
+pnpm db:validate
+pnpm playwright test tests/document-upload-api.spec.ts tests/evidence-review-api.spec.ts tests/journey-api.spec.ts tests/document-upload-lifecycle-hardening.spec.ts --workers=1
+pnpm playwright test tests/file-export-realism.spec.ts tests/client-visibility-projection.spec.ts tests/governance-non-bypass.spec.ts --workers=1
+```
+
+Validation result:
+
+- Source/target guard: PASS.
+- TypeScript: PASS.
+- Prisma validate: PASS.
+- WP04 upload/review/journey/UI lifecycle slice: PASS, 26 passed.
+- Export/client visibility/governance non-bypass slice: PASS, 21 passed.
+
+Screenshot produced in rerun:
+
+- `artifacts/wp04-evidence-workflow/rerun-documents-upload-desktop.png`
+
+Current option shown to user:
+
+`WP04 Rerun Option A — No new product code. Treat WP04 approved first wave as complete; keep Compliance-owned final sufficiency, keep Analyst/Advisor as prepare/review/link roles only, keep existing EvidenceSufficiencyDecision and journey requirement linkage as canonical first-wave model, keep upload API/UI upload-only, keep audit fail-closed before mutation, keep export/client-visibility redaction gates, and record this rerun proof. Next aggressive cleanup should normalize remaining legacy/demo recommendation and screencast release paths onto the shared sufficiency policy helper, not expand WP04 with new schema or routes.`
+
+Rejected branches:
+
+- New schema/migration now: rejected because current schema has enough proof-bearing primitives for first wave.
+- Document-level sufficiency flag: rejected because it recreates the upload-equals-sufficiency trap.
+- Analyst-owned final sufficiency: rejected because it blurs preparation and release authority.
+- UI-only wording fix: rejected as insufficient because service/API/audit gates already carry the safety boundary and must remain canonical.
+
+Method/proof notes:
+
+- Facts: live code contains upload-only API safety fields, Compliance-only `accept_sufficiency`, shared sufficiency predicates, journey release blockers, audit failure simulation and export/client visibility negative tests.
+- Assumption: legacy/demo recommendation and J02 screencast paths are compatibility surfaces, not the canonical WP04 first-wave safety boundary.
+- Interpretation: WP04 is complete for the approved first wave; the cleanest next move is consolidation of remaining legacy release paths onto the shared sufficiency helper.
