@@ -410,3 +410,78 @@ Validation result:
 - Prisma schema validation: PASS.
 - Source/target guard: PASS.
 - Build: PASS with pre-existing Turbopack document-storage tracing warnings.
+
+## WP01 Rerun After WP02-WP06 Artefacts
+
+Execution date: 2026-06-25.
+
+Rerun trigger:
+
+- User requested a WP01 rerun from the original upload with all generated specification artefacts used as input for later tasks.
+- Current branch baseline before rerun: `full-workflow`, latest commit `871ddc4 docs: add wp06 rbac non-bypass execution spec`, working tree clean.
+
+Generated artefacts used as rerun input:
+
+- `docs/00-current/ALPHAVEST_WP00_SOURCE_HIERARCHY_TARGET_GUARD_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP01_PROCESS_FIRST_ROUTE_NAV_SHELL_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP02_WORKSURFACE_LAYOUT_REFACTOR_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP03_CLIENT_SAFE_VISIBILITY_PORTAL_STATES_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP04_EVIDENCE_WORKFLOW_UPLOAD_NOT_SUFFICIENCY_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP05_INTERNAL_DRAFT_ADVISOR_COMPLIANCE_FLOW_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP06_RBAC_ADMIN_NON_BYPASS_EXECUTION.md`
+
+Task-by-task rerun status:
+
+- EPIC WP-01 - Process-first Route/Nav Shell: COMPLETE. The visible primary shell remains process-first, not a flat technical route catalogue.
+- ANALYSIS-01.1 - Current route/nav shell audit: COMPLETE. Current live surfaces remain `lib/navigation.ts`, `components/process-navigation.tsx`, `components/sidebar.tsx`, `components/app-shell.tsx`, `components/top-bar.tsx`, `lib/route-registry.ts` and `app/[...segments]/page.tsx`.
+- SPEC-01.2 - Process-first navigation and deep-link policy: COMPLETE. The approved policy is still the active contract: eight productive navigation entries, P1/reference/hold routes hidden from primary navigation, deep links preserved, and route visibility not treated as payload/action authority.
+- DECISION-01.3 - Approve navigation collapse and route visibility policy: COMPLETE. Existing approval remains sufficient; no new product decision is needed for the rerun because the later WP02-WP06 artefacts do not require a WP01 navigation reversal.
+- IMPL-01.4 - Introduce process-first navigation model/config: COMPLETE. `lib/navigation.ts` remains the central navigation model and exports `navigationGroupsForRole` plus `productiveNavigationPageIds`.
+- IMPL-01.5 - Integrate role-aware nav into Sidebar/App Shell: COMPLETE. `components/sidebar.tsx` and route-specific shells consume the shared process navigation renderer instead of local route arrays.
+- IMPL-01.6 - Preserve deep links and blocked/deferred route handling: COMPLETE. `routeSmokeList`, `matchRouteBySegments` and route implementation access decisions keep registered route resolution intact while productive navigation stays collapsed.
+- QA-01.7 - Navigation shell validation and regression review: COMPLETE. Focused WP01 gates passed in this rerun.
+- WP01.8 - Shell Navigation Consolidation: COMPLETE. Local shell navigation arrays remain removed; `tests/navigation-shell.spec.ts` guards against reintroduction.
+
+Cross-artefact safety findings:
+
+- WP02 keeps `ProcessSidebar` / `ProcessNavigation` as the shell foundation and does not require local nav arrays to return.
+- WP03 confirms route access is not client-safe payload visibility; WP01 navigation therefore must stay a shell/orientation layer only.
+- WP04 and WP05 confirm evidence/compliance gates must not be implied by navigation state.
+- WP06 confirms route/action/object/payload enforcement is separate from navigation and must remain fail-closed outside the shell.
+
+Rerun validation completed:
+
+```bash
+pnpm guard:source
+pnpm exec tsc --noEmit --pretty false
+pnpm playwright test tests/navigation-shell.spec.ts --workers=1
+pnpm playwright test tests/route-smoke.spec.ts --grep "registered route smoke|UX-NAV" --workers=1
+pnpm test:source-reality
+pnpm db:validate
+```
+
+Rerun validation result:
+
+- Source/target guard: PASS.
+- TypeScript: PASS.
+- Navigation shell tests: PASS, 10 passed.
+- Focused route smoke / UX-NAV tests: PASS, 79 passed.
+- Source reality gate: PASS, 8 passed after rerunning sequentially. The first attempt failed only because parallel Playwright web servers contended for port `3020`.
+- Prisma schema validation: PASS.
+
+UI/screenshot status:
+
+- No UI code changed in this rerun.
+- Existing WP01.8 screenshots remain the current visual proof for the shared process sidebar.
+- No new screenshot was produced because the rerun produced a documentation/audit artefact only.
+
+Aggressive recommendation:
+
+- Keep WP01 locked as the eight-entry process navigation contract.
+- Do not reintroduce Communication/Ops/Reference Lab/P1/Hold routes into primary navigation.
+- Do not delete route-registry entries in WP01; they are still needed for deep-link preservation, smoke tests, and later route-specific workflow work.
+- Treat the remaining full `tests/route-smoke.spec.ts` `UX-PAGE workbench structure` issue as a separate cleanup: either restore a real Product Guidance / workbench-triad surface as an accepted app-shell contract, or update the stale assertions to the currently accepted shell.
+
+Recommended approval wording if a separate decision is desired:
+
+`I approve WP01 rerun Option A: keep the existing eight-entry process navigation and shared ProcessSidebar as the locked WP01 contract, keep P1/reference/hold routes hidden from primary navigation, preserve deep links, make no route/API/schema/UI changes in WP01, and handle stale Product Guidance route-smoke cleanup as a separate follow-up.`
