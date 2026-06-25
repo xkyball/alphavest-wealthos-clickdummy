@@ -1961,10 +1961,28 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
 
   return (
     <Phase12Shell activePageId="048">
-      <ScreenTitle>{title}</ScreenTitle>
-      <Phase5DetailSplitPanel decisionSupport="Governance hub stays separate from access-request and audit detail work." objectLabel="Governance hub split" objectState="Permission operations overview" pageJob="Governance hub routes to user, role, access request and audit surfaces." safetyBoundary="Governance hub cannot mutate scoped permissions without explicit review." splitTaskId="UX-PAGE-SPLIT-006" taskId="UX-PAGE-SPLIT-006" />
-      <div className={cn("mx-auto max-w-[104rem] space-y-5", drawerOpen ? "pr-0 xl:pr-[23rem]" : "")}>
-        <UxHubPage pageId="048" />
+      <WorksurfaceShell
+        className={drawerOpen ? "pr-0 xl:pr-[23rem]" : ""}
+        description="Scoped user governance console with role, MFA and entity-access context kept separate from release, evidence and export authority."
+        eyebrow="WP02 Governance Safety"
+        primary={
+          <div className="space-y-4">
+            <Phase5DetailSplitPanel decisionSupport="Governance hub stays separate from access-request and audit detail work." objectLabel="Governance hub split" objectState="Permission operations overview" pageJob="Governance hub routes to user, role, access request and audit surfaces." safetyBoundary="Governance hub cannot mutate scoped permissions without explicit review." splitTaskId="UX-PAGE-SPLIT-006" taskId="UX-PAGE-SPLIT-006" />
+            <UxHubPage pageId="048" />
+            <ScfP07P09TrustPanel mode="governance" />
+            <GovernanceCapabilityBoundary />
+          </div>
+        }
+        routeId="048"
+        safetyNote="Admin visibility does not expand scoped role, object, payload, evidence, export or release authority."
+        statusItems={[
+          { label: "Route", tone: "blue", value: "048" },
+          { label: "Scope", tone: "gold", value: "users" },
+        ]}
+        title={title}
+        worksurfaceId="governance-safety-users"
+      >
+      <div className="mx-auto max-w-[104rem] space-y-5">
         <PageHeading
           action={
             <button
@@ -1983,8 +2001,6 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
           subtitle="Manage platform access, roles and user permissions."
           title={title}
         />
-        <ScfP07P09TrustPanel mode="governance" />
-        <GovernanceCapabilityBoundary />
         <div className="grid gap-3 md:grid-cols-5">
           {governanceMetrics.map((metric) => (
             <Card key={metric.label}>
@@ -2015,6 +2031,7 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
           />
         </UxDenseOperationsPanel>
       </div>
+      </WorksurfaceShell>
       <Drawer
         description="Invite a user and assign scoped roles."
         footer={
@@ -2268,24 +2285,38 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
 
   return (
     <Phase12Shell activePageId="049">
-      <ScreenTitle>{title}</ScreenTitle>
-      <div className={cn("mx-auto max-w-[104rem] space-y-5", drawerOpen ? "pr-0 xl:pr-[23rem]" : "")}>
-        <PageHeading
-          action={
-            <button
-              className={primaryButtonClass}
-              data-testid="j07-open-role-drawer"
-              data-ux-lifecycle-result="opens-role-drawer"
-              data-ux-lifecycle-trigger="role-drawer"
-              onClick={openRoleDrawer}
-              type="button"
-            >
-              <Plus aria-hidden="true" className="size-4" />Create scoped role
-            </button>
-          }
-          subtitle="Define roles and manage permissions across WealthOS."
-          title={title}
-        />
+      <WorksurfaceShell
+        className={drawerOpen ? "pr-0 xl:pr-[23rem]" : ""}
+        description="Role-permission comparison and sensitive-change confirmation surface for governed role changes."
+        eyebrow="WP02 Governance Safety"
+        primary={
+          <PageHeading
+            action={
+              <button
+                className={primaryButtonClass}
+                data-testid="j07-open-role-drawer"
+                data-ux-lifecycle-result="opens-role-drawer"
+                data-ux-lifecycle-trigger="role-drawer"
+                onClick={openRoleDrawer}
+                type="button"
+              >
+                <Plus aria-hidden="true" className="size-4" />Create scoped role
+              </button>
+            }
+            subtitle="Define roles and manage permissions across WealthOS."
+            title={title}
+          />
+        }
+        routeId="049"
+        safetyNote="Role edits cannot bypass scoped permissions, second confirmation or audit persistence."
+        statusItems={[
+          { label: "Route", tone: "blue", value: "049" },
+          { label: "Scope", tone: "gold", value: "roles" },
+        ]}
+        title={title}
+        worksurfaceId="governance-safety-roles"
+      >
+      <div className="mx-auto max-w-[104rem] space-y-5">
         <div className="grid gap-3 md:grid-cols-4">
           {[
             ["Total Roles", "12", "Active roles"],
@@ -2308,6 +2339,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
         </UxDenseOperationsPanel>
         <GovernanceCapabilityBoundary />
       </div>
+      </WorksurfaceShell>
       <Drawer
         description="Custom role with sensitive permission changes."
         footer={
@@ -2577,10 +2609,28 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
 
   return (
     <Phase12Shell activePageId="050">
-      <ScreenTitle>{title}</ScreenTitle>
-      <Phase4WorkbenchPanel activeTask="Access request AR-204 selected" blocker="Permission change requires scoped confirmation and audit; route visibility is not mutation authority." context="Reviewer compares requested role, tenant scope and policy checks before approval." primaryAction="Approve scoped access" queueLabel="Governance access queue" safetyNote="UX-WORKBENCH-004: admin workbench cannot bypass RBAC, audit, evidence, release or export controls." taskId="UX-WORKBENCH-004" />
-      <Phase5DetailSplitPanel decisionSupport="Access request detail separates requester, scope, policy and audit consequences." objectLabel="Access request object review" objectState="Policy-checked request pending" pageJob="Access detail reviews one permission request without becoming global admin bypass." safetyBoundary="Access detail cannot expand payload, evidence, release or export authority." splitTaskId="UX-PAGE-SPLIT-006" taskId="UX-PAGE-SPLIT-006" />
-      <div className={cn("mx-auto max-w-[104rem] space-y-5", drawerOpen ? "pr-0 xl:pr-[23rem]" : "")}>
+      <WorksurfaceShell
+        className={drawerOpen ? "pr-0 xl:pr-[23rem]" : ""}
+        description="Policy-checked access queue and selected request review with SOD, RBAC and audit constraints visible before action."
+        eyebrow="WP02 Governance Safety"
+        primary={
+          <div className="space-y-4">
+            <Phase4WorkbenchPanel activeTask="Access request AR-204 selected" blocker="Permission change requires scoped confirmation and audit; route visibility is not mutation authority." context="Reviewer compares requested role, tenant scope and policy checks before approval." primaryAction="Approve scoped access" queueLabel="Governance access queue" safetyNote="UX-WORKBENCH-004: admin workbench cannot bypass RBAC, audit, evidence, release or export controls." taskId="UX-WORKBENCH-004" />
+            <Phase5DetailSplitPanel decisionSupport="Access request detail separates requester, scope, policy and audit consequences." objectLabel="Access request object review" objectState="Policy-checked request pending" pageJob="Access detail reviews one permission request without becoming global admin bypass." safetyBoundary="Access detail cannot expand payload, evidence, release or export authority." splitTaskId="UX-PAGE-SPLIT-006" taskId="UX-PAGE-SPLIT-006" />
+            <ScfP07P09TrustPanel mode="governance" />
+            <GovernanceCapabilityBoundary />
+          </div>
+        }
+        routeId="050"
+        safetyNote="Approval remains constrained by policy checks, segregation-of-duties checks and audit logging; admin users cannot bypass these gates."
+        statusItems={[
+          { label: "Route", tone: "blue", value: "050" },
+          { label: "Scope", tone: "red", value: "access" },
+        ]}
+        title={title}
+        worksurfaceId="governance-safety-access-requests"
+      >
+      <div className="mx-auto max-w-[104rem] space-y-5">
         <PageHeading
           action={
             <button
@@ -2597,8 +2647,6 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
           subtitle="Review and take action on access requests across the organization."
           title={title}
         />
-        <ScfP07P09TrustPanel mode="governance" />
-        <GovernanceCapabilityBoundary />
         <UxDenseOperationsPanel
           controls={["All 24", "Pending 8", "Approved 11", "Denied 3", "Escalated 2", "SOD conflict"]}
           description="Access requests stay in queue form with policy, scope and status visible before the selected request opens."
@@ -2621,6 +2669,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
           />
         </UxDenseOperationsPanel>
       </div>
+      </WorksurfaceShell>
       <Drawer
         description="Review access request, policy checks and decision."
         footer={

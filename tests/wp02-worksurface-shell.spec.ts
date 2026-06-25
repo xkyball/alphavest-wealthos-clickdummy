@@ -41,6 +41,9 @@ const worksurfaceRoutes = [
   { pageId: "045", worksurface: "decision-record-success" },
   { pageId: "046", worksurface: "evidence-vault" },
   { pageId: "047", worksurface: "evidence-record-detail" },
+  { pageId: "048", worksurface: "governance-safety-users" },
+  { pageId: "049", worksurface: "governance-safety-roles" },
+  { pageId: "050", worksurface: "governance-safety-access-requests" },
 ] as const;
 
 test.describe("WP02 worksurface shell", () => {
@@ -51,6 +54,7 @@ test.describe("WP02 worksurface shell", () => {
     const wealth = readFileSync(join(root, "components/wealth-actions-screen.tsx"), "utf8");
     const governance = readFileSync(join(root, "components/decisions-governance-screen.tsx"), "utf8");
     const internal = readFileSync(join(root, "components/internal-workflow-screen.tsx"), "utf8");
+    const exportOps = readFileSync(join(root, "components/communication-export-ops-screen.tsx"), "utf8");
 
     expect(shell).toContain("export function WorksurfaceShell");
     expect(shell).toContain('data-testid="wp02-worksurface-shell"');
@@ -58,6 +62,9 @@ test.describe("WP02 worksurface shell", () => {
     expect(wealth).toContain('from "@/components/worksurface-shell"');
     expect(governance).toContain('from "@/components/worksurface-shell"');
     expect(internal).toContain('from "@/components/worksurface-shell"');
+    expect(exportOps).toContain('from "@/components/worksurface-shell"');
+    expect(exportOps).toContain('routeId="051"');
+    expect(exportOps).toContain('worksurfaceId="governance-safety-audit-history"');
   });
 
   for (const route of worksurfaceRoutes) {

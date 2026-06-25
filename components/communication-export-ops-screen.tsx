@@ -53,6 +53,7 @@ import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
 import { UxComplexityPriorityPanel } from "@/components/ux-complexity-priority-panel";
 import { UxCtaCluster } from "@/components/ux-cta-cluster";
 import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
+import { WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
 import {
   blueprintRows,
@@ -879,22 +880,36 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
   ];
 
   return (
-    <div>
-      <PageLead description="Access-event review with filters, export controls and event lineage." icon={LockKeyhole} title={title} />
-      <StatePanel detail="Audit review is read-only here; persistence, retention and controlled export remain separate gates." state="restricted" title="Audit persistence gate" />
-      <StatePanel
-        className="mt-4"
-        detail={
-          loadState === "ready"
-            ? "Rows in this view come from tenant-scoped AuditEvent records. Static screen context is display-only."
-            : loadState === "loading"
-              ? "Loading audit history..."
-              : "Audit unavailable — required action remains blocked/pending."
-        }
-        state={loadState === "ready" ? "success" : loadState === "loading" ? "loading" : "audit-unavailable"}
-        testId="wp08-source-backed-audit-state"
-        title={loadState === "ready" ? "Audit recorded" : loadState === "loading" ? "Loading audit history" : "Audit unavailable"}
-      />
+    <WorksurfaceShell
+      description="Tenant-scoped audit event review with selected-event lineage and controlled audit export still held behind explicit gates."
+      eyebrow="WP02 Governance Safety"
+      primary={
+        <div className="space-y-4">
+          <PageLead description="Access-event review with filters, export controls and event lineage." icon={LockKeyhole} title={title} />
+          <StatePanel detail="Audit review is read-only here; persistence, retention and controlled export remain separate gates." state="restricted" title="Audit persistence gate" />
+          <StatePanel
+            detail={
+              loadState === "ready"
+                ? "Rows in this view come from tenant-scoped AuditEvent records. Static screen context is display-only."
+                : loadState === "loading"
+                  ? "Loading audit history..."
+                  : "Audit unavailable — required action remains blocked/pending."
+            }
+            state={loadState === "ready" ? "success" : loadState === "loading" ? "loading" : "audit-unavailable"}
+            testId="wp08-source-backed-audit-state"
+            title={loadState === "ready" ? "Audit recorded" : loadState === "loading" ? "Loading audit history" : "Audit unavailable"}
+          />
+        </div>
+      }
+      routeId="051"
+      safetyNote="Audit visibility is read-only here; it does not prove persistence, approve access changes or authorize controlled export."
+      statusItems={[
+        { label: "Route", tone: "blue", value: "051" },
+        { label: "Mode", tone: "gold", value: "audit review" },
+      ]}
+      title={title}
+      worksurfaceId="governance-safety-audit-history"
+    >
       <UxDenseOperationsPanel
         actions={
           <>
@@ -1033,7 +1048,7 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
           />
         </div>
       </Drawer>
-    </div>
+    </WorksurfaceShell>
   );
 }
 
