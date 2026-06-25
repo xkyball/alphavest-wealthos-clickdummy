@@ -2,13 +2,13 @@
 
 Generated: 2026-06-25
 
-Status: STOPPED_AT_DECISION_WP07_1
+Status: COMPLETE_FOR_APPROVED_OPTION_A_ZERO_DELTA_PRODUCT_CODE
 
 This report executes the uploaded WP07 blueprint as a strict process chain:
 
 Blueprint task -> executed analysis result -> refined specification -> derived implementation task -> implementation or zero-delta implementation -> QA/proof -> report.
 
-No product-code change was made in this WP07 run. The current repository already contains a substantial export safety implementation, but the uploaded blueprint explicitly requires human approval before implementation proceeds. Therefore implementation tasks are derived but blocked until `DECISION-WP07-1`.
+No product-code change was made in this WP07 run. After the human approved WP07 Option A, all implementation tasks were executed as zero-delta product-code revalidation. The current repository already contains the approved first-wave export safety implementation: MVP export routes `054-058`, existing `/api/export-workflow`, no new API, no schema migration, metadata-only redacted package manifest proof, Share as audited state/action after controlled download, mandatory forbidden-payload negative tests, and `/api/demo-workflow` export actions as compatibility/demo only.
 
 ## Source Scope Used
 
@@ -22,6 +22,7 @@ No product-code change was made in this WP07 run. The current repository already
 - Explicit human decisions from this refactor chain:
   - WP05 Option A approved: canonical Journey command path, demo workflow compatibility only, fail-closed audit before mutation, no new API, no schema migration in first wave.
   - WP06 Option A approved: full route/action/object plus payload/API/service enforcement, admin non-bypass fail-closed, denied sensitive attempts audited before mutation, no new API, no schema migration, demo workflow compatibility only.
+  - WP07 Option A approved: MVP export routes `054-058` only, existing `/api/export-workflow` only, no new API, no schema migration, metadata-only redacted package manifest proof for first wave, Share as audited state/action after controlled download, forbidden payload negative tests mandatory, `/api/demo-workflow` export actions compatibility/demo only.
 
 Excluded as specification authority: unrelated legacy planning docs, broad handoff docs, source refs, old KB/source artefacts and prior assumptions unless revalidated against current repo evidence.
 
@@ -339,13 +340,15 @@ Forbidden in client export:
 
 Task: `DECISION-WP07-1`
 
-Status: REQUIRED_NOW
+Status: COMPLETE
 
-No explicit WP07 human decision was found in this thread or in generated WP07 decision artefacts. This is a true blocker because the blueprint requires human approval before implementation.
+The human approved WP07 Option A:
+
+`I approve WP07 Option A: MVP export routes 054-058 only, existing /api/export-workflow only, no new API, no schema migration, metadata-only redacted package manifest proof for first wave, Share as audited state/action after controlled download, forbidden payload negative tests mandatory, /api/demo-workflow export actions compatibility/demo only, and revalidate as likely zero-delta product-code implementation before any new code.`
 
 ### Options
 
-Option A - recommended aggressive clean solution:
+Approved Option A - aggressive clean solution:
 
 Approve WP07 first wave as MVP export routes `054-058` only, existing `/api/export-workflow` only, no new API, no schema migration, metadata-only redacted package manifest proof, Share as an audited state/action after controlled download, forbidden payload negative tests mandatory, `/api/demo-workflow` export actions compatibility/demo only.
 
@@ -357,41 +360,35 @@ Why this is cleanest now:
 - It removes debt by making `/api/export-workflow` the canonical WP07 path and demoting `/api/demo-workflow` export actions to compatibility/demo status.
 - It avoids pretending a metadata manifest is a real downloadable ZIP.
 
-Option B:
+Rejected Option B:
 
 Approve a real downloadable ZIP/binary export artefact in WP07 first wave. This requires a larger implementation slice, deeper file content QA, explicit storage/retention semantics, stricter redacted payload fixture review and likely new proof artefacts. It is cleaner long term but too broad for the current first-wave safety gate unless commercial demo value requires it now.
 
-Option C:
+Rejected Option C:
 
 Expand WP07 to P1 communication/ops export contexts now. Not recommended. It widens blast radius, conflicts with the MVP route scope lock and risks importing unrevalidated planning assumptions.
 
 ## Derived Implementation Tasks
 
-Implementation is BLOCKED_PENDING_DECISION. No product-code implementation was executed in this WP07 run.
+Implementation status: ZERO-DELTA PRODUCT CODE for approved Option A.
 
-If Option A is approved, derived implementation should proceed as zero-delta verification first:
+- `IMPL-WP07-1` ZERO-DELTA PRODUCT CODE: current `exportService`, command parser and package manifest already enforce object scope, forbidden classifications, redaction profile, selected export request and safe payload inspection. Code proof: `lib/export-service.ts`, `lib/export-package-service.ts`, `lib/export-workflow-command-service.ts`.
+- `IMPL-WP07-2` ZERO-DELTA PRODUCT CODE: current command service and tests already separate `PREVIEW`, `APPROVE`, `GENERATE`, `DOWNLOAD` and `SHARE`; download requires generated state, share requires downloaded state and explicit external-share flag. Code proof: `lib/export-workflow-command-service.ts`.
+- `IMPL-WP07-3` ZERO-DELTA PRODUCT CODE: current API/command service persists export workflow audit events, read model declares `/api/export-workflow` as DB read-model truth, and UI explains fail-closed/no-overclaim states. Code proof: `app/api/export-workflow/route.ts`, `lib/export-workflow-readmodel-service.ts`, `components/communication-export-ops-screen.tsx`.
 
-- `IMPL-WP07-1` likely ZERO-DELTA PRODUCT CODE: current `exportService`, command parser and package manifest already enforce object scope, forbidden classifications, redaction profile and safe payload inspection. Revalidate with export safety/API tests.
-- `IMPL-WP07-2` likely ZERO-DELTA PRODUCT CODE: current command service and tests already separate preview, approval, generation, download and share.
-- `IMPL-WP07-3` likely ZERO-DELTA PRODUCT CODE with residual compatibility debt: current API/command service persists export workflow audit events and UI explains fail-closed/no-overclaim states. Follow-up cleanup should route demo export actions through the canonical command service or clearly keep them compatibility-only.
-
-If Option B is approved, implementation is not zero-delta:
-
-- Add real binary/ZIP package generation only from sanitized projections.
-- Add artifact content inspection tests proving no forbidden fields in generated package.
-- Add retention/storage/download semantics and audit proof.
+Product-code delta: none. This is not a new implementation claim; it is an approved zero-delta implementation based on current repo evidence and final focused QA.
 
 ## QA / Proof
 
-Task: partial `QA-WP07-1` revalidation only.
+Task: final `QA-WP07-1` revalidation for approved Option A.
 
-Final QA is blocked because implementation tasks are decision-blocked. The following current-state proof was executed as strongest valid partial proof:
+The final focused proof command was:
 
 ```text
 pnpm guard:source
 pnpm exec tsc --noEmit --pretty false
 pnpm db:validate
-pnpm exec playwright test tests/export-safety.spec.ts tests/file-export-realism.spec.ts tests/export-workflow-api.spec.ts tests/phase8-export-workflow-api.spec.ts tests/true-ux-export-scope-redaction-approval.spec.ts --workers=1 --reporter=line
+pnpm exec playwright test tests/export-safety.spec.ts tests/file-export-realism.spec.ts tests/export-workflow-api.spec.ts tests/phase8-export-workflow-api.spec.ts tests/true-ux-export-scope-redaction-approval.spec.ts tests/true-ux-api-service-ui-truth.spec.ts --workers=1 --reporter=line
 ```
 
 Result:
@@ -399,7 +396,7 @@ Result:
 - Source target guard: PASS, 0 violations.
 - TypeScript: PASS.
 - Prisma schema validation: PASS.
-- Focused export/redaction tests: PASS, 29/29.
+- Focused export/redaction/API-truth tests: PASS, 31/31.
 
 Positive proof:
 
@@ -425,19 +422,16 @@ None.
 ## Generated Artefact Updates
 
 - Added this WP07 execution report.
+- Updated this report after WP07 Option A approval with zero-delta implementation and final QA proof.
 
 ## Residual Risks
 
-- `DECISION-WP07-1` is not approved yet, so product-code implementation cannot be claimed complete.
-- Current export package is metadata-only. This is acceptable only if Option A is approved.
+- Current export package is metadata-only by approved Option A. This must not be overclaimed as a real binary/ZIP export.
 - `/api/demo-workflow` still has export compatibility actions. They are acceptable as demo compatibility but should not be treated as the canonical WP07 export command spine.
 - Route `057` uses `/export/:id/approval` while the upload references `/export/:id/preview`. Current semantics pass, but literal route naming should not be changed without route-evolution approval.
 
-## Current Recommendation
+## Completion Recommendation
 
-Approve Option A:
+Keep WP07 closed for approved Option A as `ZERO-DELTA PRODUCT CODE / COMPLETE_FOR_APPROVED_FIRST_WAVE`.
 
-`I approve WP07 Option A: MVP export routes 054-058 only, existing /api/export-workflow only, no new API, no schema migration, metadata-only redacted package manifest proof for first wave, Share as audited state/action after controlled download, forbidden payload negative tests mandatory, /api/demo-workflow export actions compatibility/demo only, and revalidate as likely zero-delta product-code implementation before any new code.`
-
-This is the most aggressive clean-solution path because it locks export scope, prevents artifact overclaiming, avoids unnecessary new surfaces and turns existing strong implementation into a canonical, test-proven first-wave contract before adding real binary export later.
-
+Next aggressive cleanup should be a narrow follow-up outside WP07 Option A: consolidate `/api/demo-workflow` export compatibility actions behind the canonical `/api/export-workflow` command service, or explicitly mark them as demo-only in tests and reports. Do not add real ZIP/binary export until a separate decision approves storage, retention, content-inspection and download semantics.
