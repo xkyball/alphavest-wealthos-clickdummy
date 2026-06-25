@@ -53,3 +53,6 @@ export const noOverclaimBoundaryOrder: NoOverclaimBoundary[] = [
   "downloadNotClientAcceptance",
   "noDownstreamCompletion",
 ];
+
+export const noOverclaimForbiddenSuccessPattern =
+  /evidence sufficiency complete|client visibility unlocked|approved for client|download ready|share ready|client accepted|fully audited/i;

@@ -15,6 +15,7 @@ import type {
 } from "@/lib/domain-types";
 import { evidenceService, type EvidenceSufficiencyInput } from "@/lib/evidence-service";
 import type { ExportPayloadClassification } from "@/lib/export-service";
+import { av27Phase6ForbiddenPayloadFields } from "@/lib/av27-phase6-payload-contract";
 import { permissionEngine, type PermissionDecision } from "@/lib/permission-engine";
 import { routeImplementationAccessDecision, type ScreenRoute } from "@/lib/route-registry";
 import { visibilityEngine, type DecisionVisibilityPayload, type RecommendationVisibilityPayload } from "@/lib/visibility-engine";
@@ -132,22 +133,8 @@ const uiStateToComponentState: Record<UiClickflowState, ComponentState> = {
 };
 
 export const uiClickflowForbiddenClientFields = [
-  "aiDraft",
-  "assumptionsJson",
-  "checksum",
-  "clientSummaryDraft",
-  "complianceNotes",
-  "evidenceRecordId",
-  "evidenceStatus",
-  "evidenceVisibilityStatus",
-  "extractionStatus",
-  "fileName",
-  "fileSizeBytes",
-  "internalRationale",
-  "mimeType",
-  "storageKey",
-  "summaryInternal",
-] as const;
+  ...av27Phase6ForbiddenPayloadFields,
+];
 
 export function componentStateForUiState(uiState: UiClickflowState): ComponentState {
   return uiStateToComponentState[uiState];
@@ -474,13 +461,11 @@ export function evaluateClientDecisionRoomUi(input: {
 
 export function evaluateExportUiState(input: Parameters<typeof evaluateExportSafety>[0]): ExportUiState {
   const exportSafety = evaluateExportSafety(input);
-  const forbiddenPayloads = input.payloadClassifications
-    ? input.payloadClassifications.filter((classification) =>
-        ["AI_DRAFT", "INTERNAL_RATIONALE", "COMPLIANCE_NOTES", "UNRELEASED_EVIDENCE", "UNRELEASED_RECOMMENDATION", "HIDDEN_FIELD"].includes(
-          classification,
-        ),
-      )
-    : [];
+  const forbiddenPayloads = input.payloadClassifications ? exportSafety.exportGate.missing.flatMap((missing) => {
+    const [, classification] = missing.split("forbidden_payload:");
+
+    return classification ? [classification as ExportPayloadClassification] : [];
+  }) : [];
   const uiState: UiClickflowState =
     input.auditPersistenceAvailable === false
       ? "AUDIT_UNAVAILABLE_STATE"

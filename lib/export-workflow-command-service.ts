@@ -8,7 +8,7 @@ import {
 
 import { dataQualityService } from "@/lib/data-quality-service";
 import { demoPlatformTenantId, type DemoRoleKey, type DemoTenantSlug, createDemoSession, demoTenants } from "@/lib/demo-session";
-import { av27Phase6AllowedExportPayloadFields } from "@/lib/av27-phase6-payload-contract";
+import { av27Phase6AllowedExportPayloadFields, isAv27Phase6PayloadClassification } from "@/lib/av27-phase6-payload-contract";
 import { exportPackageService } from "@/lib/export-package-service";
 import { exportService, type ExportPayloadClassification, type ExportScopeCandidate } from "@/lib/export-service";
 import { fileMetadataService } from "@/lib/file-metadata-service";
@@ -95,17 +95,7 @@ function parseScopeItems(value: unknown): ExportScopeCandidate[] | undefined {
       name: typeof item.name === "string" ? item.name : `Scope item ${index + 1}`,
       payloadClassifications: Array.isArray(item.payloadClassifications)
         ? item.payloadClassifications.filter((classification): classification is ExportPayloadClassification =>
-            typeof classification === "string" &&
-            [
-              "CLIENT_SAFE_SUMMARY",
-              "RELEASED_EVIDENCE_SUMMARY",
-              "AI_DRAFT",
-              "INTERNAL_RATIONALE",
-              "COMPLIANCE_NOTES",
-              "UNRELEASED_EVIDENCE",
-              "UNRELEASED_RECOMMENDATION",
-              "HIDDEN_FIELD",
-            ].includes(classification)
+            isAv27Phase6PayloadClassification(classification)
           )
         : undefined,
       selected: item.selected === true,

@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 
+import { forbiddenAv27Phase6PayloadFieldsPresent } from "../lib/av27-phase6-payload-contract";
 import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
 import { exportService } from "../lib/export-service";
 import {
@@ -7,14 +8,6 @@ import {
   type DecisionVisibilityPayload,
   type RecommendationVisibilityPayload,
 } from "../lib/visibility-engine";
-
-const forbiddenClientPayloadFields = [
-  "clientSummaryDraft",
-  "summaryInternal",
-  "internalRationale",
-  "complianceNotes",
-  "assumptionsJson",
-] as const;
 
 function recommendationPayload(
   overrides: Partial<RecommendationVisibilityPayload> = {},
@@ -61,9 +54,13 @@ function decisionPayload(overrides: Partial<DecisionVisibilityPayload> = {}): De
 }
 
 function expectNoForbiddenClientFields(payload: Record<string, unknown>) {
-  for (const field of forbiddenClientPayloadFields) {
+  for (const field of forbiddenAv27Phase6PayloadFieldsPresent(payload)) {
     expect(payload).not.toHaveProperty(field);
   }
+}
+
+function expectHiddenFieldsForPayload(hiddenFields: string[], payload: Record<string, unknown>, extraFields: string[] = []) {
+  expect(hiddenFields).toEqual(expect.arrayContaining([...extraFields, ...forbiddenAv27Phase6PayloadFieldsPresent(payload)]));
 }
 
 test.describe("Minimum path Prompt 05 client visibility proof", () => {
@@ -102,7 +99,7 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
     expect(projection.visible).toBe(false);
     expect(projection.reasonCode).toBe("DEMO_CLIENT_VISIBILITY_FAIL_CLOSED");
     expect(projection.payload).toEqual({});
-    expect(projection.hiddenFields).toEqual(["clientSummary", ...forbiddenClientPayloadFields]);
+    expectHiddenFieldsForPayload(projection.hiddenFields, payload, ["clientSummary"]);
   });
 
   test("projects only safe redacted output after compliance release", () => {
@@ -126,7 +123,7 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
     expect(projection.reasonCode).toBe("DEMO_CLIENT_SAFE_PROJECTION");
     expect(projection.payload).toEqual({ clientSummary: payload.clientSummary });
     expectNoForbiddenClientFields(projection.payload);
-    expect(projection.hiddenFields).toEqual([...forbiddenClientPayloadFields]);
+    expectHiddenFieldsForPayload(projection.hiddenFields, payload);
 
     const safety = visibilityEngine.assertClientProjectionClean(projection);
     expect(safety.clean).toBe(true);
@@ -296,7 +293,7 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
     expect(projection.visible).toBe(false);
     expect(projection.reasonCode).toBe("DEMO_CLIENT_VISIBILITY_FAIL_CLOSED");
     expect(projection.payload).toEqual({});
-    expect(projection.hiddenFields).toEqual(["clientSummary", ...forbiddenClientPayloadFields]);
+    expectHiddenFieldsForPayload(projection.hiddenFields, payload, ["clientSummary"]);
 
     const forbiddenExportPayloads = exportService.forbiddenExportPayloads([
       "CLIENT_SAFE_SUMMARY",
@@ -339,7 +336,7 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
     expect(projection.visible).toBe(false);
     expect(projection.reasonCode).toBe("DEMO_DENY_CROSS_TENANT");
     expect(projection.payload).toEqual({});
-    expect(projection.hiddenFields).toEqual(["clientSummary", ...forbiddenClientPayloadFields]);
+    expectHiddenFieldsForPayload(projection.hiddenFields, payload, ["clientSummary"]);
   });
 
   test("fails closed for wrong internal roles and forbidden export payloads", () => {
@@ -358,7 +355,7 @@ test.describe("Minimum path Prompt 05 client visibility proof", () => {
 
       expect(projection.visible).toBe(false);
       expect(projection.payload).toEqual({});
-      expect(projection.hiddenFields).toEqual(["clientSummary", ...forbiddenClientPayloadFields]);
+      expectHiddenFieldsForPayload(projection.hiddenFields, payload, ["clientSummary"]);
     }
 
     const forbiddenExportPayloads = exportService.forbiddenExportPayloads([

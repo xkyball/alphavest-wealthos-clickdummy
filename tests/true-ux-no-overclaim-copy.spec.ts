@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { expect, type Page, test } from "@playwright/test";
 
 import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
-import { noOverclaimBoundaryOrder, noOverclaimCopy } from "../lib/no-overclaim-copy";
+import { noOverclaimBoundaryOrder, noOverclaimCopy, noOverclaimForbiddenSuccessPattern } from "../lib/no-overclaim-copy";
 
 const repoRoot = process.cwd();
 
@@ -62,7 +62,7 @@ test.describe("V0.96 WP-12 no-overclaim microcopy and state feedback", () => {
     expect(noOverclaimCopy.downloadNotClientAcceptance).toContain("does not confirm client acceptance");
 
     for (const copy of Object.values(noOverclaimCopy)) {
-      expect(copy).not.toMatch(/evidence sufficiency complete|client visibility unlocked|approved for client|download ready|share ready|fully audited/i);
+      expect(copy).not.toMatch(noOverclaimForbiddenSuccessPattern);
     }
   });
 

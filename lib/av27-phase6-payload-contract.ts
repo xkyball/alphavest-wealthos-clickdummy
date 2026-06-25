@@ -23,6 +23,17 @@ export const av27Phase6TicketOrder: Av27Phase6TicketId[] = [
   "AV27-P6-T05",
 ];
 
+export const av27Phase6PayloadClassifications = [
+  "CLIENT_SAFE_SUMMARY",
+  "RELEASED_EVIDENCE_SUMMARY",
+  "AI_DRAFT",
+  "INTERNAL_RATIONALE",
+  "COMPLIANCE_NOTES",
+  "UNRELEASED_EVIDENCE",
+  "UNRELEASED_RECOMMENDATION",
+  "HIDDEN_FIELD",
+] as const satisfies Av27Phase6PayloadClassification[];
+
 export const av27Phase6AllowedClientPayloadFields = [
   "clientSummary",
   "decisionState",
@@ -128,6 +139,7 @@ export const av27Phase6PayloadFieldClassifications: Record<string, Av27Phase6Pay
 const allowedClientPayloadFields = new Set<string>(av27Phase6AllowedClientPayloadFields);
 const allowedExportPayloadFields = new Set<string>(av27Phase6AllowedExportPayloadFields);
 const forbiddenPayloadFields = new Set<string>(av27Phase6ForbiddenPayloadFields);
+const payloadClassifications = new Set<string>(av27Phase6PayloadClassifications);
 const sourceUploadMetadataExceptionFields = new Set<string>(av27Phase6SourceUploadMetadataExceptionFields);
 
 export type Av27Phase6PayloadInspection = {
@@ -142,8 +154,16 @@ export function classifyAv27Phase6PayloadField(field: string): Av27Phase6Payload
   return av27Phase6PayloadFieldClassifications[field] ?? "HIDDEN_FIELD";
 }
 
+export function isAv27Phase6PayloadClassification(value: unknown): value is Av27Phase6PayloadClassification {
+  return typeof value === "string" && payloadClassifications.has(value);
+}
+
 export function isAv27Phase6ForbiddenPayloadField(field: string) {
   return forbiddenPayloadFields.has(field) || !allowedClientPayloadFields.has(field);
+}
+
+export function forbiddenAv27Phase6PayloadFieldsPresent(payload: Record<string, unknown>) {
+  return av27Phase6ForbiddenPayloadFields.filter((field) => field in payload);
 }
 
 export function inspectAv27Phase6ClientPayload(

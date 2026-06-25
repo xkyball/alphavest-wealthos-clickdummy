@@ -1,21 +1,7 @@
-export const forbiddenClientPayloadFields = [
-  "aiDraft",
-  "assumptionsJson",
-  "checksum",
-  "clientSummaryDraft",
-  "complianceNotes",
-  "evidenceStatus",
-  "evidenceVisibilityStatus",
-  "extractionStatus",
-  "fileName",
-  "fileSizeBytes",
-  "internalRationale",
-  "mimeType",
-  "storageKey",
-  "summaryInternal",
-] as const;
+import { av27Phase6ForbiddenPayloadFields, forbiddenAv27Phase6PayloadFieldsPresent } from "../../lib/av27-phase6-payload-contract";
+
+export const forbiddenClientPayloadFields = av27Phase6ForbiddenPayloadFields;
 
 export function forbiddenFieldsPresent(payload: Record<string, unknown>) {
-  return forbiddenClientPayloadFields.filter((field) => field in payload);
+  return forbiddenAv27Phase6PayloadFieldsPresent(payload);
 }
-

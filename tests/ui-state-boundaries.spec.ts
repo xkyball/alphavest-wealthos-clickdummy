@@ -1,7 +1,7 @@
 import { expect, type Page, test } from "@playwright/test";
 
 import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
-import { noOverclaimBoundaryOrder, noOverclaimCopy } from "../lib/no-overclaim-copy";
+import { noOverclaimBoundaryOrder, noOverclaimCopy, noOverclaimForbiddenSuccessPattern } from "../lib/no-overclaim-copy";
 
 async function authenticate(page: Page) {
   await page.context().addCookies([
@@ -112,7 +112,7 @@ test.describe("Phase 05 feedback no-overclaim boundaries", () => {
     expect(noOverclaimCopy.noDownstreamCompletion).toContain("gates remain unresolved");
 
     for (const copy of Object.values(noOverclaimCopy)) {
-      expect(copy).not.toMatch(/evidence sufficiency complete|client visibility unlocked|approved for client|download ready|share ready|client accepted|fully audited/i);
+      expect(copy).not.toMatch(noOverclaimForbiddenSuccessPattern);
     }
   });
 
