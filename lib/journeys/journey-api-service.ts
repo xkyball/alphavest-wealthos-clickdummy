@@ -15,6 +15,8 @@ import {
 
 import type { CurrentUserContext } from "../auth/current-user";
 import { dataQualityService } from "../data-quality-service";
+import { auditService, AuditPersistenceRequiredError } from "../audit-service";
+import { evidenceService } from "../evidence-service";
 import { workflowGate } from "../workflow-gate";
 import {
   buildClientJourneyProjection,
@@ -43,22 +45,16 @@ const clientRoleKeys = new Set(["principal", "family_cfo", "trustee", "next_gen"
 const genericJourneyCommands = new Set(["START", "COMPLETE_STEP", "BLOCK", "RESUME", "CANCEL"]);
 const adminBypassRoleKeys = new Set(["admin", "security_officer"]);
 const releaseConfirmationPhrase = "RELEASE CLIENT-SAFE JOURNEY";
-const statusRank: Record<EvidenceStatus, number> = {
-  ARCHIVED: 0,
-  PLACEHOLDER: 0,
-  SUPERSEDED: 0,
-  CREATED: 1,
-  LINKED: 2,
-  VALIDATED: 3,
-  RELEASED: 4,
-  RESTRICTED: 0,
-};
-
 export class JourneyApiError extends Error {
   constructor(
     message: string,
     readonly status: number,
-    readonly reasonCode: "INVALID_REQUEST" | "PERMISSION_DENIED" | "SAFE_ERROR" | "SCOPE_DENIED",
+    readonly reasonCode:
+      | "AUDIT_PERSISTENCE_UNAVAILABLE"
+      | "INVALID_REQUEST"
+      | "PERMISSION_DENIED"
+      | "SAFE_ERROR"
+      | "SCOPE_DENIED",
     readonly issues: string[] = [],
   ) {
     super(message);
@@ -68,6 +64,12 @@ export class JourneyApiError extends Error {
 export function normalizeJourneyRouteError(error: unknown, fallbackMessage: string) {
   if (error instanceof JourneyApiError) {
     return error;
+  }
+
+  if (error instanceof AuditPersistenceRequiredError) {
+    return new JourneyApiError("Required audit persistence is unavailable; workflow command was not applied.", 409, "AUDIT_PERSISTENCE_UNAVAILABLE", [
+      "audit_persistence_unavailable",
+    ]);
   }
 
   if (error instanceof Error && error.message.startsWith("Auth JWT")) {
@@ -238,6 +240,7 @@ async function loadScopedEvidenceRecord(
 async function createJourneyAuditAndRun(
   tx: Prisma.TransactionClient,
   input: {
+    auditPersistenceAvailable?: boolean;
     command: JourneyCommandRequest["command"];
     currentUser: CurrentUserContext;
     eventType: string;
@@ -254,6 +257,33 @@ async function createJourneyAuditAndRun(
     toStepKey?: string | null;
   },
 ) {
+  const auditAction =
+    input.command === "COMPLIANCE_RELEASE"
+      ? "RELEASE"
+      : input.command === "COMPLIANCE_BLOCK" || input.command === "COMPLIANCE_REQUEST_EVIDENCE"
+        ? "BLOCK"
+        : input.command === "DECIDE_EVIDENCE_SUFFICIENCY" || input.command === "ADVISOR_APPROVE"
+          ? "APPROVE"
+          : "REVIEW";
+  const previousState = input.previousState ?? input.instance.status;
+  const nextState = input.nextState ?? input.instance.status;
+
+  auditService.assertCriticalAuditWritable({
+    action: auditAction,
+    actorRoleKey: input.roleKey,
+    actorUserId: input.currentUser.actor.id,
+    auditPersistenceAvailable: input.auditPersistenceAvailable,
+    clientTenantId: input.instance.clientTenantId,
+    eventType: input.eventType,
+    nextState,
+    platformTenantId: input.platformTenantId,
+    previousState,
+    reason: input.reason ?? "Workflow command executed through scoped API.",
+    result: input.result,
+    targetId: input.instance.id,
+    targetType: ObjectType.JOURNEY,
+  });
+
   const auditEvent = await tx.auditEvent.create({
     data: {
       actorRoleKey: input.roleKey,
@@ -267,9 +297,9 @@ async function createJourneyAuditAndRun(
         noClientRelease: input.command === "COMPLIANCE_RELEASE" && input.result === AuditResult.SUCCESS ? false : true,
         ...(input.metadataJson ?? {}),
       },
-      nextState: input.nextState ?? null,
+      nextState,
       platformTenantId: input.platformTenantId,
-      previousState: input.previousState ?? input.instance.status,
+      previousState,
       reason: input.reason ?? "Workflow command executed through scoped API.",
       result: input.result,
       targetId: input.instance.id,
@@ -619,6 +649,7 @@ async function executeLinkEvidenceCommand(input: {
     }
 
     return createJourneyAuditAndRun(tx, {
+      auditPersistenceAvailable: input.request.simulateAuditPersistenceFailure === true ? false : undefined,
       command: input.request.command,
       currentUser: input.currentUser,
       eventType: "journey.evidence.linked",
@@ -664,7 +695,11 @@ async function executeEvidenceSufficiencyDecisionCommand(input: {
   const sufficiencyDecision = input.request.decision;
   const decisionReason = input.request.reason;
 
-  requireOperationalRole(input.roleKey, input.request.command, ["analyst", "compliance_officer"]);
+  requireOperationalRole(
+    input.roleKey,
+    input.request.command,
+    sufficiencyDecision === "SUFFICIENT" ? ["compliance_officer"] : ["analyst", "compliance_officer"],
+  );
 
   const audit = await input.prisma.$transaction(async (tx) => {
     const requirement = await loadEvidenceRequirement(tx, input.instance, input.request.requirementKey!);
@@ -682,18 +717,17 @@ async function executeEvidenceSufficiencyDecisionCommand(input: {
     const scopeMatches = input.request.scopeMatches === true;
     const relevanceConfirmed = input.request.relevanceConfirmed === true;
     const currentnessConfirmed = input.request.currentnessConfirmed === true;
-    const sufficientStatus = statusRank[evidence.status] >= statusRank[minimum];
-    const clientSafeVisibility =
-      evidence.visibilityStatus !== "INTERNAL_ONLY" && evidence.visibilityStatus !== "RESTRICTED";
-    const preconditionMissing = [
-      ...(!linked ? ["evidence_requirement_link"] : []),
-      ...(!reviewed ? ["evidence_review"] : []),
-      ...(!scopeMatches ? ["evidence_scope"] : []),
-      ...(!relevanceConfirmed ? ["evidence_relevance"] : []),
-      ...(!currentnessConfirmed ? ["evidence_current"] : []),
-      ...(!sufficientStatus ? ["evidence_status"] : []),
-      ...(!clientSafeVisibility ? ["client_safe_visibility"] : []),
-    ];
+    const requirementDecision = evidenceService.evaluateRequirementSufficiency({
+      currentnessConfirmed,
+      evidenceStatus: evidence.status,
+      linked: Boolean(linked),
+      minEvidenceStatus: minimum,
+      relevanceConfirmed,
+      reviewed,
+      scopeMatches,
+      visibilityStatus: evidence.visibilityStatus,
+    });
+    const preconditionMissing = requirementDecision.missing;
 
     if (sufficiencyDecision === "SUFFICIENT" && preconditionMissing.length > 0) {
       throw new JourneyApiError("Evidence cannot be marked sufficient before scoped review passes.", 400, "INVALID_REQUEST", [
@@ -703,6 +737,7 @@ async function executeEvidenceSufficiencyDecisionCommand(input: {
     }
 
     const auditEvent = await createJourneyAuditAndRun(tx, {
+      auditPersistenceAvailable: input.request.simulateAuditPersistenceFailure === true ? false : undefined,
       command: input.request.command,
       currentUser: input.currentUser,
       eventType: `journey.evidence_sufficiency.${sufficiencyDecision.toLowerCase()}`,
@@ -788,6 +823,7 @@ async function executeAiDraftInternalCommand(input: {
     });
 
     return createJourneyAuditAndRun(tx, {
+      auditPersistenceAvailable: input.request.simulateAuditPersistenceFailure === true ? false : undefined,
       command: input.request.command,
       currentUser: input.currentUser,
       eventType: "journey.ai_draft.internal_only",
@@ -870,6 +906,7 @@ async function executeAdvisorApprovalCommand(input: {
     });
 
     return createJourneyAuditAndRun(tx, {
+      auditPersistenceAvailable: input.request.simulateAuditPersistenceFailure === true ? false : undefined,
       command: input.request.command,
       currentUser: input.currentUser,
       eventType: "journey.advisor.approved",
@@ -982,6 +1019,7 @@ async function executeComplianceBlockCommand(input: {
     }
 
     return createJourneyAuditAndRun(tx, {
+      auditPersistenceAvailable: input.request.simulateAuditPersistenceFailure === true ? false : undefined,
       command: input.request.command,
       currentUser: input.currentUser,
       eventType: isEvidenceRequest ? "journey.compliance.evidence_requested" : "journey.compliance.blocked",
@@ -1082,7 +1120,8 @@ async function executeComplianceReleaseCommand(input: {
     ];
 
     if (missing.length > 0) {
-      const deniedAudit = await createJourneyAuditAndRun(tx, {
+    const deniedAudit = await createJourneyAuditAndRun(tx, {
+        auditPersistenceAvailable: input.request.simulateAuditPersistenceFailure === true ? false : undefined,
         command: input.request.command,
         currentUser: input.currentUser,
         eventType: "journey.compliance.release_denied",
@@ -1195,6 +1234,7 @@ async function executeComplianceReleaseCommand(input: {
     });
 
     return createJourneyAuditAndRun(tx, {
+      auditPersistenceAvailable: input.request.simulateAuditPersistenceFailure === true ? false : undefined,
       command: input.request.command,
       currentUser: input.currentUser,
       eventType: "journey.compliance.released",
@@ -1517,7 +1557,7 @@ export async function getJourneyEvidenceSufficiencyForCurrentUser(
         decisionIsSufficient &&
         linkedRecord &&
           minimum &&
-          statusRank[linkedRecord.status] >= statusRank[minimum as EvidenceStatus] &&
+          evidenceService.evidenceStatusMeetsMinimum(linkedRecord.status, minimum as EvidenceStatus) &&
           linkedRecord.visibilityStatus !== "INTERNAL_ONLY" &&
           linkedRecord.visibilityStatus !== "RESTRICTED",
       ),

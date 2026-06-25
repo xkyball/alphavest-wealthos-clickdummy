@@ -2351,7 +2351,7 @@ function DocumentUploadForm() {
 
       setSelectedFile(null);
       setUploadState("success");
-      setMessage(`${body.result.document.fileName} upload completed. Lifecycle: ${labelFromEnum(body.result.document.evidenceLifecycleStatus ?? "extraction_pending")}. Extraction review is the next step; evidence sufficiency, release, export and client visibility remain locked.`);
+      setMessage(`${body.result.document.fileName} upload completed. Upload complete - evidence review pending. Lifecycle: ${labelFromEnum(body.result.document.evidenceLifecycleStatus ?? "extraction_pending")}. Evidence sufficiency, release, export and client visibility remain locked.`);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -2367,7 +2367,7 @@ function DocumentUploadForm() {
   const uploadLifecycleStatus = uploadState === "uploading" ? "loading" : uploadState;
   const uploadValidationState = hasSelectedFile ? "valid-file-selected" : "blocked-file-required";
   const uploadValidationMessage = hasSelectedFile
-    ? "Ready to upload this source document for extraction review. Upload creates pending internal evidence and audit only."
+    ? "Ready to upload this source document for extraction review. Upload creates pending internal evidence and audit only; upload complete means evidence review pending."
     : "Upload remains blocked until a source file is selected. No evidence, audit, release, export or client visibility changes occur.";
   const canUpload = hasSelectedFile && uploadState !== "uploading";
 

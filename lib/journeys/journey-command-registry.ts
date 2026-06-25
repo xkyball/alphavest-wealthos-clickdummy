@@ -28,6 +28,7 @@ export type JourneyCommandRequest = {
   reason?: string;
   reviewed?: boolean;
   scopeMatches?: boolean;
+  simulateAuditPersistenceFailure?: boolean;
   toStepKey?: string;
 };
 
@@ -75,6 +76,7 @@ export function parseJourneyCommandRequest(body: unknown): JourneyCommandValidat
     ...(!optionalBoolean(record.scopeMatches) ? ["scope_matches_must_be_boolean"] : []),
     ...(!optionalBoolean(record.relevanceConfirmed) ? ["relevance_confirmed_must_be_boolean"] : []),
     ...(!optionalBoolean(record.currentnessConfirmed) ? ["currentness_confirmed_must_be_boolean"] : []),
+    ...(!optionalBoolean(record.simulateAuditPersistenceFailure) ? ["simulate_audit_persistence_failure_must_be_boolean"] : []),
   ];
 
   if (record.command === "BLOCK" && typeof record.reason !== "string") {
@@ -126,6 +128,9 @@ export function parseJourneyCommandRequest(body: unknown): JourneyCommandValidat
       ...(typeof record.reason === "string" ? { reason: record.reason } : {}),
       ...(typeof record.reviewed === "boolean" ? { reviewed: record.reviewed } : {}),
       ...(typeof record.scopeMatches === "boolean" ? { scopeMatches: record.scopeMatches } : {}),
+      ...(typeof record.simulateAuditPersistenceFailure === "boolean"
+        ? { simulateAuditPersistenceFailure: record.simulateAuditPersistenceFailure }
+        : {}),
       ...(typeof record.toStepKey === "string" ? { toStepKey: record.toStepKey } : {}),
     },
   };

@@ -52,13 +52,13 @@ test.describe("UXP3-006 document upload lifecycle hardening", () => {
     await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-validation", "valid-file-selected");
     await expect(page.getByTestId("real-upload-document")).toBeEnabled();
     await expect(page.getByTestId("document-upload-validation-state")).toContainText(
-      "Upload creates pending internal evidence and audit only.",
+      "Upload creates pending internal evidence and audit only; upload complete means evidence review pending.",
     );
 
     await page.getByTestId("real-upload-document").click();
     await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-status", "success");
     await expect(page.getByText(`${fileName} upload completed.`)).toBeVisible();
-    await expect(page.getByText("Extraction review is the next step;")).toBeVisible();
+    await expect(page.getByText("Upload complete - evidence review pending.")).toBeVisible();
     await expect(page.getByText("Evidence sufficiency, release, export and client visibility remain locked.")).toBeVisible();
     await expect(page.getByText(/client accepted|released to client|export approved/i)).toHaveCount(0);
   });
@@ -78,6 +78,6 @@ test.describe("UXP3-006 document upload lifecycle hardening", () => {
     await expect(page.getByText("Upload blocked")).toBeVisible();
     await expect(page.getByText("supported_file_type_required").first()).toBeVisible();
     await expect(page.getByTestId("retry-upload-document")).toBeVisible();
-    await expect(page.getByText("Upload complete")).toHaveCount(0);
+    await expect(page.getByText(/^Upload complete$/)).toHaveCount(0);
   });
 });

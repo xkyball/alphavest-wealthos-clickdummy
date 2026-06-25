@@ -120,6 +120,7 @@ export async function POST(request: Request) {
         evidenceStatus: "REVIEW_PENDING",
         releaseUnlocked: false,
         sufficiency: false,
+        uploadStateLabel: "Upload complete - evidence review pending",
         uploadOnly: true,
       },
     });

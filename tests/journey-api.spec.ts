@@ -289,7 +289,7 @@ test.describe("Wave 0-2 Journey APIs and command execution", () => {
     expect(link.ok(), JSON.stringify(linkBody)).toBe(true);
     expect(linkBody.noClientRelease).toBe(true);
 
-    const sufficient = await command(request, journeyId, analystJwt, {
+    const sufficient = await command(request, journeyId, complianceJwt, {
       command: "DECIDE_EVIDENCE_SUFFICIENCY",
       currentnessConfirmed: true,
       decision: "SUFFICIENT",
@@ -390,7 +390,7 @@ test.describe("Wave 0-2 Journey APIs and command execution", () => {
     expect(crossTenantBody.reasonCode).toBe("SCOPE_DENIED");
     expect(crossTenantBody.mutated).toBe(false);
 
-    const unreviewed = await command(request, journeyId, analystJwt, {
+    const unreviewed = await command(request, journeyId, complianceJwt, {
       command: "DECIDE_EVIDENCE_SUFFICIENCY",
       decision: "SUFFICIENT",
       evidenceRecordId,
@@ -401,6 +401,45 @@ test.describe("Wave 0-2 Journey APIs and command execution", () => {
     expect(unreviewed.status(), JSON.stringify(unreviewedBody)).toBe(400);
     expect(unreviewedBody.issues).toContain("evidence_review_preconditions_failed");
     expect(unreviewedBody.mutated).toBe(false);
+
+    const analystSufficiency = await command(request, journeyId, analystJwt, {
+      command: "DECIDE_EVIDENCE_SUFFICIENCY",
+      currentnessConfirmed: true,
+      decision: "SUFFICIENT",
+      evidenceRecordId,
+      relevanceConfirmed: true,
+      requirementKey,
+      reviewed: true,
+      scopeMatches: true,
+      reason: "Analyst may prepare review but cannot make the final sufficiency decision.",
+    });
+    const analystSufficiencyBody = await analystSufficiency.json();
+    expect(analystSufficiency.status(), JSON.stringify(analystSufficiencyBody)).toBe(403);
+    expect(analystSufficiencyBody.mutated).toBe(false);
+    expect(analystSufficiencyBody.issues).toContain("gate_role_denied");
+    expect(analystSufficiencyBody.issues).toContain("decide_evidence_sufficiency_requires_compliance_officer");
+
+    const prisma = prismaClient();
+    const decisionCountBefore = await prisma.evidenceSufficiencyDecision.count({
+      where: { journeyInstanceId: journeyId, requirementKey },
+    });
+    const auditFailure = await command(request, journeyId, complianceJwt, {
+      command: "DECIDE_EVIDENCE_SUFFICIENCY",
+      decision: "INSUFFICIENT",
+      evidenceRecordId,
+      requirementKey,
+      reason: "Audit persistence failure must block evidence decision mutation.",
+      simulateAuditPersistenceFailure: true,
+    });
+    const auditFailureBody = await auditFailure.json();
+    const decisionCountAfter = await prisma.evidenceSufficiencyDecision.count({
+      where: { journeyInstanceId: journeyId, requirementKey },
+    });
+    expect(auditFailure.status(), JSON.stringify(auditFailureBody)).toBe(409);
+    expect(auditFailureBody.reasonCode).toBe("AUDIT_PERSISTENCE_UNAVAILABLE");
+    expect(auditFailureBody.mutated).toBe(false);
+    expect(auditFailureBody.safety.commandExecuted).toBe(false);
+    expect(decisionCountAfter).toBe(decisionCountBefore);
 
     const adminSufficiency = await command(request, journeyId, adminJwt, {
       command: "DECIDE_EVIDENCE_SUFFICIENCY",

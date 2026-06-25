@@ -11,6 +11,7 @@ export type ObjectType =
   | "FAMILY_MEMBER"
   | "RELATIONSHIP"
   | "ENGAGEMENT"
+  | "JOURNEY"
   | "ENTITY"
   | "ASSET"
   | "DOCUMENT"

@@ -66,9 +66,82 @@ export type EvidenceLifecycleDecision = {
 };
 
 const sufficientEvidenceStatuses = new Set<EvidenceStatus>(["VALIDATED", "RELEASED"]);
+const evidenceStatusRank: Record<EvidenceStatus, number> = {
+  ARCHIVED: 0,
+  PLACEHOLDER: 0,
+  SUPERSEDED: 0,
+  CREATED: 1,
+  LINKED: 2,
+  VALIDATED: 3,
+  RELEASED: 4,
+  RESTRICTED: 0,
+};
 
 function hasSufficientEvidenceStatus(status: EvidenceStatus) {
   return sufficientEvidenceStatuses.has(status);
+}
+
+function evidenceStatusMeetsMinimum(status: EvidenceStatus, minimum: EvidenceStatus) {
+  return evidenceStatusRank[status] >= evidenceStatusRank[minimum];
+}
+
+function evaluateRequirementSufficiency(input: {
+  auditEventId?: UUID | null;
+  currentnessConfirmed?: boolean;
+  evidenceStatus: EvidenceStatus;
+  linked?: boolean;
+  minEvidenceStatus?: EvidenceStatus | null;
+  relevanceConfirmed?: boolean;
+  requireAuditEvent?: boolean;
+  reviewed?: boolean;
+  scopeMatches?: boolean;
+  visibilityStatus: VisibilityStatus;
+}): EvidenceSufficiencyDecision {
+  const missing: string[] = [];
+  const minimum = input.minEvidenceStatus ?? "VALIDATED";
+
+  if (!input.linked) {
+    missing.push("evidence_requirement_link");
+  }
+
+  if (!input.reviewed) {
+    missing.push("evidence_review");
+  }
+
+  if (!input.scopeMatches) {
+    missing.push("evidence_scope");
+  }
+
+  if (!input.relevanceConfirmed) {
+    missing.push("evidence_relevance");
+  }
+
+  if (!input.currentnessConfirmed) {
+    missing.push("evidence_current");
+  }
+
+  if (!evidenceStatusMeetsMinimum(input.evidenceStatus, minimum)) {
+    missing.push("evidence_status");
+  }
+
+  if (input.visibilityStatus === "INTERNAL_ONLY" || input.visibilityStatus === "RESTRICTED") {
+    missing.push("client_safe_visibility");
+  }
+
+  if (input.requireAuditEvent && !input.auditEventId) {
+    missing.push("evidence_decision_audit");
+  }
+
+  const uniqueMissing = [...new Set(missing)];
+  const sufficient = uniqueMissing.length === 0;
+
+  return {
+    exportImpact: sufficient ? "EXPORT_ALLOWED_FOR_SCOPED_GATE" : "EXPORT_BLOCKED_NEEDS_EVIDENCE",
+    label: sufficient ? "EVIDENCE_SUFFICIENT" : "EVIDENCE_INSUFFICIENT",
+    missing: uniqueMissing,
+    releaseImpact: sufficient ? "RELEASE_ALLOWED_FOR_SCOPED_GATE" : "RELEASE_BLOCKED_NEEDS_EVIDENCE",
+    sufficient,
+  };
 }
 
 function createEvidenceRecordDraft(input: {
@@ -226,8 +299,10 @@ function evidenceLifecycleStatusForDocument(input: EvidenceLifecycleStatusInput)
 
 export const evidenceService = {
   createEvidenceRecordDraft,
+  evidenceStatusMeetsMinimum,
   evidenceLifecycleStatusForDocument,
   evaluateEvidenceLifecycle,
   evaluateEvidenceSufficiency,
+  evaluateRequirementSufficiency,
   hasSufficientEvidenceStatus,
 };

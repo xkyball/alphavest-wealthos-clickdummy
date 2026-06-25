@@ -67,6 +67,7 @@ test.describe("document upload multipart API", () => {
       evidenceStatus: "REVIEW_PENDING",
       releaseUnlocked: false,
       sufficiency: false,
+      uploadStateLabel: "Upload complete - evidence review pending",
       uploadOnly: true,
     });
     expect(body.result.document.evidenceLifecycleStatus).toBe("extraction_pending");
@@ -254,6 +255,7 @@ test.describe("document upload multipart API", () => {
       evidenceStatus: "REVIEW_PENDING",
       releaseUnlocked: false,
       sufficiency: false,
+      uploadStateLabel: "Upload complete - evidence review pending",
       uploadOnly: true,
     });
     expect(body.result.document.evidenceLifecycleStatus).toBe("extraction_pending");

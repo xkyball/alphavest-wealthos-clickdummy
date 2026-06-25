@@ -31,6 +31,7 @@ async function uploadProofDocument(request: APIRequestContext, fileName: string)
     evidenceStatus: "REVIEW_PENDING",
     releaseUnlocked: false,
     sufficiency: false,
+    uploadStateLabel: "Upload complete - evidence review pending",
     uploadOnly: true,
   });
 
@@ -138,6 +139,47 @@ test.describe("Phase 3 evidence review and sufficiency API", () => {
     expect(document.extractions[0]?.extractionStatus).toBe("needs_clarification");
     expect(audit.eventType).toBe("document.evidence_review.clarification_requested");
     expect(audit.result).toBe(AuditResult.SUCCESS);
+  });
+
+  test("fails closed before evidence review mutation when audit persistence is unavailable", async ({ request }) => {
+    const upload = await uploadProofDocument(request, "phase3-audit-unavailable-review-proof.pdf");
+    const auditCountBefore = await prisma.auditEvent.count({
+      where: { eventType: "document.evidence_review.linked" },
+    });
+    const response = await request.post("/api/documents/review", {
+      data: {
+        action: "mark_reviewed",
+        documentId: upload.document.id,
+        notes: "Audit persistence failure should block review state advance.",
+        roleKey: "analyst",
+        simulateAuditPersistenceFailure: true,
+        tenantSlug: "morgan",
+      },
+    });
+    const body = await response.json();
+    const auditCountAfter = await prisma.auditEvent.count({
+      where: { eventType: "document.evidence_review.linked" },
+    });
+    const document = await prisma.document.findUniqueOrThrow({
+      where: { id: upload.document.id },
+    });
+    const evidence = await prisma.evidenceRecord.findUniqueOrThrow({
+      where: { id: upload.evidenceRecordId },
+    });
+
+    expect(response.status(), JSON.stringify(body)).toBe(409);
+    expect(body.ok).toBe(false);
+    expect(body.mutated).toBe(false);
+    expect(body.reasonCode).toBe("AUDIT_PERSISTENCE_UNAVAILABLE");
+    expect(body.auditPersistenceRequired).toBe(true);
+    expect(body.safety).toMatchObject({
+      failClosed: true,
+      silentStateAdvance: false,
+    });
+    expect(document.status).toBe(DocumentStatus.UPLOADED);
+    expect(document.clientVisible).toBe(false);
+    expect(evidence.status).toBe(EvidenceStatus.CREATED);
+    expect(auditCountAfter).toBe(auditCountBefore);
   });
 
   test("lets compliance accept reviewed scoped evidence without releasing client visibility", async ({ request }) => {

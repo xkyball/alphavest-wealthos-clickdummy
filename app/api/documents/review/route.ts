@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { failClosedJson } from "@/lib/control-layer/error-envelope";
 import {
   EvidenceReviewInsufficientError,
+  EvidenceReviewAuditUnavailableError,
   EvidenceReviewNotFoundError,
   EvidenceReviewPermissionError,
   EvidenceReviewValidationError,
@@ -91,6 +92,7 @@ export async function POST(request: Request) {
   try {
     const result = await reviewDocumentEvidence(prismaClient(), {
       action: resolvedAction,
+      auditPersistenceAvailable: booleanValue(payload.simulateAuditPersistenceFailure) ? false : undefined,
       clientSafeAccepted: booleanValue(payload.clientSafeAccepted),
       currentAccepted: booleanValue(payload.currentAccepted),
       documentId,
@@ -145,6 +147,17 @@ export async function POST(request: Request) {
           decision: error.decision,
           error: error.message,
           reasonCode: "SCOPE_DENIED",
+        },
+        { status: 409 },
+      );
+    }
+
+    if (error instanceof EvidenceReviewAuditUnavailableError) {
+      return failClosedJson(
+        {
+          auditPersistenceRequired: true,
+          error: error.message,
+          reasonCode: "AUDIT_PERSISTENCE_UNAVAILABLE",
         },
         { status: 409 },
       );

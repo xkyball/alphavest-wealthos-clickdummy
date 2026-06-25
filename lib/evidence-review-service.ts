@@ -9,15 +9,18 @@ import {
 } from "@prisma/client";
 
 import { demoPlatformTenantId, requireDemoSession, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { auditService, AuditPersistenceRequiredError } from "@/lib/audit-service";
 import { evidenceService, type EvidenceSufficiencyDecision } from "@/lib/evidence-service";
 import { permissionEngine } from "@/lib/permission-engine";
 
 const reviewerRoleAllowlist = new Set<DemoRoleKey>(["analyst", "senior_wealth_advisor", "compliance_officer"]);
+const sufficiencyDecisionRoleAllowlist = new Set<DemoRoleKey>(["compliance_officer"]);
 
 export type EvidenceReviewAction = "mark_reviewed" | "request_clarification" | "accept_sufficiency";
 
 export type ReviewDocumentEvidenceInput = {
   action: EvidenceReviewAction;
+  auditPersistenceAvailable?: boolean;
   clientSafeAccepted?: boolean;
   currentAccepted?: boolean;
   documentId: string;
@@ -56,6 +59,12 @@ export class EvidenceReviewInsufficientError extends Error {
     public readonly auditEventId: string,
   ) {
     super("Evidence cannot satisfy the scoped gate.");
+  }
+}
+
+export class EvidenceReviewAuditUnavailableError extends Error {
+  constructor() {
+    super("Required audit persistence is unavailable; evidence review state was not applied.");
   }
 }
 
@@ -172,9 +181,15 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
     session.role,
   );
 
-  if (!permission.allowed || !reviewerRoleAllowlist.has(input.roleKey)) {
-    const reason = !reviewerRoleAllowlist.has(input.roleKey)
+  const roleAllowed = reviewerRoleAllowlist.has(input.roleKey);
+  const sufficiencyRoleAllowed =
+    input.action !== "accept_sufficiency" || sufficiencyDecisionRoleAllowlist.has(input.roleKey);
+
+  if (!permission.allowed || !roleAllowed || !sufficiencyRoleAllowed) {
+    const reason = !roleAllowed
       ? `${session.role.label} cannot review evidence in the current demo policy.`
+      : !sufficiencyRoleAllowed
+        ? `${session.role.label} can review or link evidence, but final evidence sufficiency requires Compliance.`
       : permission.reason;
     const audit = await writeDeniedAudit(prisma, {
       actorRoleKey: session.role.key,
@@ -210,6 +225,38 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
     status: nextEvidenceStatus,
     visibilityStatus,
   });
+
+  try {
+    auditService.assertCriticalAuditWritable({
+      action: input.action === "accept_sufficiency" ? "APPROVE" : "REVIEW",
+      actorRoleKey: session.role.key,
+      actorUserId: session.actor.id,
+      auditPersistenceAvailable: input.auditPersistenceAvailable,
+      clientTenantId: session.tenant.id,
+      eventType:
+        input.action === "accept_sufficiency"
+          ? "document.evidence_sufficiency.accepted"
+          : input.action === "request_clarification"
+            ? "document.evidence_review.clarification_requested"
+            : "document.evidence_review.linked",
+      nextState: nextDocumentStatus,
+      platformTenantId: demoPlatformTenantId,
+      previousState: document.status,
+      reason:
+        input.action === "accept_sufficiency"
+          ? "Compliance-only evidence sufficiency decision requires audit before state changes."
+          : "Evidence review/linkage requires audit before state changes.",
+      result: input.action === "request_clarification" ? AuditResult.PENDING : AuditResult.SUCCESS,
+      targetId: input.action === "accept_sufficiency" ? evidenceRecord.id : document.id,
+      targetType: input.action === "accept_sufficiency" ? ObjectType.EVIDENCE_RECORD : ObjectType.DOCUMENT,
+    });
+  } catch (error) {
+    if (error instanceof AuditPersistenceRequiredError) {
+      throw new EvidenceReviewAuditUnavailableError();
+    }
+
+    throw error;
+  }
 
   if (input.action === "accept_sufficiency" && !sufficiencyDecision.sufficient) {
     const audit = await prisma.auditEvent.create({

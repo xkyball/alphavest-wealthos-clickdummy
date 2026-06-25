@@ -404,11 +404,72 @@ Approve Option A, then execute the implementation in this order:
 
 ## 7. Current Stop
 
-WP04 implementation must stop here because `WP04-DECISION-1` is explicitly required by the uploaded ticket structure.
+`WP04-DECISION-1` was approved by the human with Option A:
 
-Decision requested:
+- Final sufficiency is Compliance-owned.
+- Analyst/advisor roles may review/link/prepare, but cannot create a final `SUFFICIENT` decision.
+- Sufficiency remains scoped to `JourneyEvidenceRequirement` plus linked `EvidenceRecord` and target object.
+- Existing schema is used; no new migration is required for this slice.
 
-Approve Option A, or correct the policy before implementation.
+## 8. Implementation Result After Approval
 
-My recommendation is aggressive and clean: approve Option A.
+### WP04-IMPL-1 Upload-only UI/API Semantics
 
+Status: DONE
+
+Implemented:
+
+- Upload UI copy now states `Upload complete - evidence review pending`.
+- Upload API response exposes `safety.uploadStateLabel`.
+- Upload API continues to return `uploadOnly: true`, `sufficiency: false`, `releaseUnlocked: false`, `clientVisible: false`.
+
+### WP04-IMPL-2 Evidence Review and Linkage Lifecycle
+
+Status: DONE
+
+Implemented:
+
+- Analyst/advisor/compliance review/linkage paths remain available where permitted.
+- Final document evidence sufficiency acceptance is explicit Compliance-only.
+- Analyst `accept_sufficiency` remains fail-closed, audited and non-mutating.
+
+### WP04-IMPL-3 Sufficiency Gate and Compliance Release Blocker
+
+Status: DONE
+
+Implemented:
+
+- Shared requirement-sufficiency policy helper added to `evidenceService`.
+- Journey sufficiency decision now uses the shared policy helper.
+- Journey `SUFFICIENT` command is Compliance-only; `INSUFFICIENT` remains available for operational preparation.
+- Compliance release continues to require latest sufficient, reviewed, scoped, relevant, current and audited evidence decisions for all journey requirements.
+
+### WP04-IMPL-4 Evidence Audit and Fail-Closed Behaviour
+
+Status: DONE
+
+Implemented:
+
+- Evidence review/sufficiency API now accepts audit-failure simulation and blocks mutation when audit persistence is unavailable.
+- Journey command registry accepts audit-failure simulation.
+- Central journey audit/run persistence now asserts critical audit writability before creating audit/run rows.
+- Audit failure produces `AUDIT_PERSISTENCE_UNAVAILABLE` and no state advance.
+
+### WP04-QA-1 P0 Evidence Workflow Validation
+
+Status: DONE
+
+Validation run:
+
+- `pnpm guard:source` PASS
+- `pnpm typecheck` PASS
+- `pnpm lint` PASS with pre-existing warnings only
+- `pnpm playwright test tests/document-upload-api.spec.ts tests/evidence-review-api.spec.ts tests/journey-api.spec.ts tests/document-upload-lifecycle-hardening.spec.ts --workers=1` PASS, 26/26
+
+Screenshot proof:
+
+- `artifacts/wp04-evidence-workflow/documents-upload-desktop.png`
+
+Residual risk:
+
+- Legacy/demo recommendation review and J02 screencast paths still have some status-based release checks. WP04 now strengthens the journey and document evidence paths; the next aggressive clean-up should normalize remaining legacy release paths onto the shared sufficiency policy helper.
