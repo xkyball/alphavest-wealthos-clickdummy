@@ -1,10 +1,15 @@
 import { expect, test } from "@playwright/test";
 
 import {
+  recommendationReviewConfirmationText,
   recommendationReviewWorkflowStateMachine,
   recommendationReviewTransitionFor,
   type RecommendationReviewWorkflowAction,
 } from "../lib/demo-workflow-validation";
+import {
+  wp05ComplianceReleaseConfirmationPhrase,
+  wp05DemoWorkflowCompatibilityMode,
+} from "../lib/advisory-workflow-contract";
 
 const recommendationReviewActions = [
   "submit_review",
@@ -22,19 +27,26 @@ test.describe("recommendation review workflow state machine", () => {
 
     expect(recommendationReviewTransitionFor("advisor_approve")).toMatchObject({
       auditResult: "SUCCESS",
+      canonicalCommand: "ADVISOR_APPROVE",
+      canonicalState: "COMPLIANCE_PENDING",
       clientVisibleAfterAction: false,
-      nextRecommendationStatus: "ADVISOR_APPROVED",
+      nextRecommendationStatus: "COMPLIANCE_PENDING",
       permissionAction: "APPROVE",
       requiredRole: "senior_wealth_advisor",
     });
 
     expect(recommendationReviewTransitionFor("compliance_release")).toMatchObject({
       auditResult: "SUCCESS",
+      canonicalCommand: "COMPLIANCE_RELEASE",
+      canonicalState: "COMPLIANCE_RELEASED_CLIENT_SAFE",
       clientVisibleAfterAction: true,
       nextRecommendationStatus: "RELEASED_TO_CLIENT",
       permissionAction: "RELEASE",
       requiredRole: "compliance_officer",
     });
+
+    expect(recommendationReviewConfirmationText.compliance_release).toBe(wp05ComplianceReleaseConfirmationPhrase);
+    expect(wp05DemoWorkflowCompatibilityMode).toBe("DEMO_WORKFLOW_COMPATIBILITY_ONLY");
 
     expect(recommendationReviewTransitionFor("compliance_block")).toMatchObject({
       auditResult: "BLOCKED",

@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { expect, type Page, test } from "@playwright/test";
 
+import { wp05ComplianceReleaseConfirmationPhrase } from "../lib/advisory-workflow-contract";
 import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
 
 async function authenticate(page: Page) {
@@ -32,7 +33,7 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
 
     await page.goto("/compliance/reviews/demo/release?state=release");
 
-    const releaseDialog = page.getByRole("dialog", { name: "Release to client" });
+    const releaseDialog = page.getByRole("dialog", { name: "Release client-safe journey" });
     const lifecycle = page.getByTestId("uxp3-compliance-release-lifecycle");
     await expect(releaseDialog).toBeVisible();
     await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-status", "idle");
@@ -46,7 +47,7 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
     await releaseDialog.locator("input[type='checkbox']").check();
     await page.getByTestId("j02-release-confirmation").fill("CONFIRM");
     await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-validation", "blocked-exact-phrase-required");
-    await expect(page.getByTestId("j02-release-validation-state")).toContainText("exactly matches RELEASE TO CLIENT");
+    await expect(page.getByTestId("j02-release-validation-state")).toContainText(`exactly matches ${wp05ComplianceReleaseConfirmationPhrase}`);
     await expect(page.getByTestId("j02-release-client")).toBeDisabled();
 
     await releaseDialog.getByRole("button", { name: "Cancel" }).click();
@@ -57,11 +58,11 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
   test("valid release confirmation calls the API and shows success feedback", async ({ page }) => {
     await page.goto("/compliance/reviews/demo/release?state=release");
 
-    const releaseDialog = page.getByRole("dialog", { name: "Release to client" });
+    const releaseDialog = page.getByRole("dialog", { name: "Release client-safe journey" });
     const lifecycle = page.getByTestId("uxp3-compliance-release-lifecycle");
     await expect(releaseDialog).toBeVisible();
     await releaseDialog.locator("input[type='checkbox']").check();
-    await page.getByTestId("j02-release-confirmation").fill("RELEASE TO CLIENT");
+    await page.getByTestId("j02-release-confirmation").fill(wp05ComplianceReleaseConfirmationPhrase);
     await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-validation", "valid-confirmation");
     await expect(page.getByTestId("j02-release-validation-state")).toContainText("Confirmation is valid.");
     await expect(page.getByTestId("j02-release-client")).toHaveAttribute("data-ux-lifecycle-result", "submits-audited-release");

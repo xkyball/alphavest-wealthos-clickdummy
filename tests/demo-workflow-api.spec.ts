@@ -17,6 +17,7 @@ import { expect, test } from "@playwright/test";
 
 import { stableId } from "../lib/stable-id";
 import { scfCriticalGateAuditContract } from "../lib/audit-service";
+import { wp05ComplianceReleaseConfirmationPhrase } from "../lib/advisory-workflow-contract";
 
 const demoTargets = {
   morgan: {
@@ -35,6 +36,7 @@ const demoTargets = {
 
 const bennettDecisionId = stableId("decision:bennett:liquidity-review");
 const bennettRecommendationId = stableId("recommendation:bennett:liquidity-review");
+const summitDecisionId = stableId("decision:summit:liquidity-review");
 
 const workflowActions = [
   "j02.requestEvidence",
@@ -403,7 +405,7 @@ test.describe("demo workflow API", () => {
       expect(advisorBody.noClientRelease).toBe(true);
       expect(advisorBody.result.reloadedState.advisorApproval.status).toBe(ReviewStatus.APPROVED);
       expect(advisorBody.result.reloadedState.recommendation.status).toBe(
-        RecommendationStatus.ADVISOR_APPROVED,
+        RecommendationStatus.COMPLIANCE_PENDING,
       );
       expect(advisorBody.result.reloadedState.recommendation.clientVisible).toBe(false);
 
@@ -420,7 +422,7 @@ test.describe("demo workflow API", () => {
         data: {
           action: "compliance_release",
           actorRole: "compliance_officer",
-          confirmationText: "RELEASE TO CLIENT",
+          confirmationText: wp05ComplianceReleaseConfirmationPhrase,
           evidenceIds: [demoTargets.summit.evidenceId],
           reason: "First Build P0 compliance release after advisor, evidence, payload and audit gates.",
           targetId: demoTargets.summit.recommendationId,
@@ -433,6 +435,12 @@ test.describe("demo workflow API", () => {
       expect(releaseBody.noClientRelease).toBe(false);
       expect(releaseBody.result.gatePassed).toBe(true);
       expect(releaseBody.result.gateMissing).toEqual([]);
+      expect(releaseBody.result.canonicalCommand).toBe("COMPLIANCE_RELEASE");
+      expect(releaseBody.result.canonicalState).toBe("COMPLIANCE_RELEASED_CLIENT_SAFE");
+      expect(releaseBody.result.decisionLinkage).toMatchObject({
+        decisionRows: 1,
+        mode: "released_to_client",
+      });
       expect(releaseBody.result.clientProjection.visible).toBe(true);
       expect(releaseBody.result.clientProjection.payload).toEqual({
         clientSummary: clientSafeSummary,
@@ -697,7 +705,7 @@ test.describe("demo workflow API", () => {
       expect(response.ok(), JSON.stringify(body)).toBe(true);
       expect(body.noClientRelease).toBe(true);
       expect(body.result.reloadedState.advisorApproval.status).toBe(ReviewStatus.APPROVED);
-      expect(body.result.reloadedState.recommendation.status).toBe(RecommendationStatus.ADVISOR_APPROVED);
+      expect(body.result.reloadedState.recommendation.status).toBe(RecommendationStatus.COMPLIANCE_PENDING);
       expect(body.result.reloadedState.recommendation.clientVisible).toBe(false);
 
       const [recommendation, complianceReview, audit] = await Promise.all([
@@ -720,7 +728,7 @@ test.describe("demo workflow API", () => {
       expect(complianceReview.releasedAt).toBeNull();
       expect(audit.eventType).toBe("recommendation_review.advisor_approve");
       expect(audit.result).toBe(AuditResult.SUCCESS);
-      expect(audit.nextState).toBe(RecommendationStatus.ADVISOR_APPROVED);
+      expect(audit.nextState).toBe(RecommendationStatus.COMPLIANCE_PENDING);
     });
 
     test("compliance release fails before prerequisites and persists after gates pass", async ({ request }) => {
@@ -728,7 +736,7 @@ test.describe("demo workflow API", () => {
         data: {
           action: "compliance_release",
           actorRole: "compliance_officer",
-          confirmationText: "RELEASE TO CLIENT",
+          confirmationText: wp05ComplianceReleaseConfirmationPhrase,
           evidenceIds: [demoTargets.northbridge.evidenceId],
           reason: "Attempt release without prerequisites.",
           targetId: demoTargets.northbridge.recommendationId,
@@ -752,6 +760,22 @@ test.describe("demo workflow API", () => {
       expect(blockedRecommendation.clientVisible).toBe(false);
       expect(blockedRecommendation.status).not.toBe(RecommendationStatus.RELEASED_TO_CLIENT);
 
+      const advisorHandoffResponse = await request.post("/api/demo-workflow", {
+        data: {
+          action: "advisor_approve",
+          actorRole: "senior_wealth_advisor",
+          reason: "Prepare Summit item for compliance-pending release checks.",
+          targetId: demoTargets.summit.recommendationId,
+          workflowType: "recommendation-review",
+        },
+      });
+      const advisorHandoffBody = await advisorHandoffResponse.json();
+
+      expect(advisorHandoffResponse.ok(), JSON.stringify(advisorHandoffBody)).toBe(true);
+      expect(advisorHandoffBody.result.reloadedState.recommendation.status).toBe(
+        RecommendationStatus.COMPLIANCE_PENDING,
+      );
+
       const invalidConfirmationResponse = await request.post("/api/demo-workflow", {
         data: {
           action: "compliance_release",
@@ -774,13 +798,13 @@ test.describe("demo workflow API", () => {
       });
 
       expect(summitBeforeRelease.clientVisible).toBe(false);
-      expect(summitBeforeRelease.status).toBe(RecommendationStatus.ADVISOR_APPROVED);
+      expect(summitBeforeRelease.status).toBe(RecommendationStatus.COMPLIANCE_PENDING);
 
       const missingEvidenceResponse = await request.post("/api/demo-workflow", {
         data: {
           action: "compliance_release",
           actorRole: "compliance_officer",
-          confirmationText: "RELEASE TO CLIENT",
+          confirmationText: wp05ComplianceReleaseConfirmationPhrase,
           reason: "Attempt release without scoped evidence payload.",
           targetId: demoTargets.summit.recommendationId,
           workflowType: "recommendation-review",
@@ -811,7 +835,7 @@ test.describe("demo workflow API", () => {
         data: {
           action: "compliance_release",
           actorRole: "compliance_officer",
-          confirmationText: "RELEASE TO CLIENT",
+          confirmationText: wp05ComplianceReleaseConfirmationPhrase,
           evidenceIds: [demoTargets.summit.evidenceId],
           reason: "Attempt release while internal draft marker remains active.",
           targetId: demoTargets.summit.recommendationId,
@@ -834,7 +858,7 @@ test.describe("demo workflow API", () => {
         data: {
           action: "compliance_release",
           actorRole: "compliance_officer",
-          confirmationText: "RELEASE TO CLIENT",
+          confirmationText: wp05ComplianceReleaseConfirmationPhrase,
           evidenceIds: [demoTargets.summit.evidenceId],
           reason: "Attempt release without a client-safe summary payload.",
           targetId: demoTargets.summit.recommendationId,
@@ -863,7 +887,7 @@ test.describe("demo workflow API", () => {
         data: {
           action: "compliance_release",
           actorRole: "compliance_officer",
-          confirmationText: "RELEASE TO CLIENT",
+          confirmationText: wp05ComplianceReleaseConfirmationPhrase,
           evidenceIds: [demoTargets.summit.evidenceId],
           reason: "Simulate audit persistence failure before release.",
           simulateAuditPersistenceFailure: true,
@@ -890,7 +914,7 @@ test.describe("demo workflow API", () => {
       });
 
       expect(auditBlockedRecommendation.clientVisible).toBe(false);
-      expect(auditBlockedRecommendation.status).toBe(RecommendationStatus.ADVISOR_APPROVED);
+      expect(auditBlockedRecommendation.status).toBe(RecommendationStatus.COMPLIANCE_PENDING);
       expect(auditBlockedComplianceReview.status).not.toBe(ComplianceStatus.RELEASED);
       expect(auditBlockedComplianceReview.releasedAt).toBeNull();
 
@@ -898,7 +922,7 @@ test.describe("demo workflow API", () => {
         data: {
           action: "compliance_release",
           actorRole: "compliance_officer",
-          confirmationText: "RELEASE TO CLIENT",
+          confirmationText: wp05ComplianceReleaseConfirmationPhrase,
           evidenceIds: [demoTargets.summit.evidenceId],
           reason: "Compliance release after advisor approval, evidence and permission gates.",
           targetId: demoTargets.summit.recommendationId,
@@ -941,13 +965,41 @@ test.describe("demo workflow API", () => {
         visibilityStatus: VisibilityStatus.CLIENT_VISIBLE,
       });
 
-      const audit = await prisma.auditEvent.findUniqueOrThrow({
-        where: { id: releaseBody.result.auditEventId },
-      });
+      const [audit, decision] = await Promise.all([
+        prisma.auditEvent.findUniqueOrThrow({
+          where: { id: releaseBody.result.auditEventId },
+        }),
+        prisma.decision.findUniqueOrThrow({
+          where: { id: summitDecisionId },
+        }),
+      ]);
+      const auditMetadata = audit.metadataJson as {
+        canonicalCommand?: string;
+        canonicalState?: string;
+        decisionLinkage?: {
+          decisionRows?: number;
+          mode?: string;
+        };
+        demoWorkflowCompatibilityMode?: string;
+      } | null;
 
       expect(audit.result).toBe(AuditResult.SUCCESS);
       expect(audit.targetType).toBe(ObjectType.RECOMMENDATION);
       expect(audit.eventType).toBe("recommendation_review.compliance_release");
+      expect(auditMetadata).toMatchObject({
+        canonicalCommand: "COMPLIANCE_RELEASE",
+        canonicalState: "COMPLIANCE_RELEASED_CLIENT_SAFE",
+        decisionLinkage: {
+          decisionRows: 1,
+          mode: "released_to_client",
+        },
+        demoWorkflowCompatibilityMode: "DEMO_WORKFLOW_COMPATIBILITY_ONLY",
+      });
+      expect(decision.status).toBe(DecisionStatus.RELEASED_TO_CLIENT);
+      expect(decision.releasedToClientAt).toBeTruthy();
+      expect(decision.evidenceRecordId).toBe(demoTargets.summit.evidenceId);
+      expect(decision.decisionAction).toBeNull();
+      expect(decision.decisionAt).toBeNull();
     });
 
     test("compliance block prevents client visibility and records audit", async ({ request }) => {
@@ -1048,7 +1100,7 @@ test.describe("demo workflow API", () => {
         data: {
           action: "compliance_release",
           actorRole: "compliance_officer",
-          confirmationText: "RELEASE TO CLIENT",
+          confirmationText: wp05ComplianceReleaseConfirmationPhrase,
           simulateAuditPersistenceFailure: "yes",
           targetId: demoTargets.summit.recommendationId,
           workflowType: "recommendation-review",
@@ -1066,7 +1118,7 @@ test.describe("demo workflow API", () => {
         data: {
           action: "compliance_release",
           actorRole: "compliance_officer",
-          confirmationText: "RELEASE TO CLIENT",
+          confirmationText: wp05ComplianceReleaseConfirmationPhrase,
           targetId: "96705b67-40b2-5fb8-aa69-a3f2c106025e",
           workflowType: "recommendation-review",
         },

@@ -1,5 +1,12 @@
 import type { DemoRoleKey } from "@/lib/demo-session";
 import type { AuditResult, PermissionAction, RecommendationStatus } from "@/lib/domain-types";
+import {
+  recommendationReviewActionToCanonicalCommand,
+  recommendationReviewActionToCanonicalState,
+  wp05ComplianceReleaseConfirmationPhrase,
+  type Wp05CanonicalState,
+} from "@/lib/advisory-workflow-contract";
+import type { JourneyCommandId } from "@/lib/journeys/journey-command-registry";
 
 export type ValidationIssue = {
   code: string;
@@ -29,12 +36,14 @@ export type RecommendationReviewWorkflowRequestInput = {
 
 export const recommendationReviewConfirmationText: Partial<Record<RecommendationReviewWorkflowAction, string>> = {
   compliance_block: "BLOCK RELEASE",
-  compliance_release: "RELEASE TO CLIENT",
+  compliance_release: wp05ComplianceReleaseConfirmationPhrase,
   request_evidence: "REQUEST EVIDENCE",
 };
 
 export type RecommendationReviewWorkflowTransition = {
   auditResult: AuditResult;
+  canonicalCommand: JourneyCommandId;
+  canonicalState: Wp05CanonicalState;
   clientVisibleAfterAction: boolean;
   nextRecommendationStatus: RecommendationStatus;
   permissionAction: PermissionAction;
@@ -44,6 +53,8 @@ export type RecommendationReviewWorkflowTransition = {
 export const recommendationReviewWorkflowStateMachine = {
   submit_review: {
     auditResult: "SUCCESS",
+    canonicalCommand: recommendationReviewActionToCanonicalCommand.submit_review,
+    canonicalState: recommendationReviewActionToCanonicalState.submit_review,
     clientVisibleAfterAction: false,
     nextRecommendationStatus: "ANALYST_REVIEWED",
     permissionAction: "REVIEW",
@@ -51,6 +62,8 @@ export const recommendationReviewWorkflowStateMachine = {
   },
   reject_unsupported_claim: {
     auditResult: "BLOCKED",
+    canonicalCommand: recommendationReviewActionToCanonicalCommand.reject_unsupported_claim,
+    canonicalState: recommendationReviewActionToCanonicalState.reject_unsupported_claim,
     clientVisibleAfterAction: false,
     nextRecommendationStatus: "REVISION_REQUESTED",
     permissionAction: "REVIEW",
@@ -58,6 +71,8 @@ export const recommendationReviewWorkflowStateMachine = {
   },
   rebuild_with_evidence: {
     auditResult: "SUCCESS",
+    canonicalCommand: recommendationReviewActionToCanonicalCommand.rebuild_with_evidence,
+    canonicalState: recommendationReviewActionToCanonicalState.rebuild_with_evidence,
     clientVisibleAfterAction: false,
     nextRecommendationStatus: "ANALYST_REVIEWED",
     permissionAction: "REVIEW",
@@ -65,13 +80,17 @@ export const recommendationReviewWorkflowStateMachine = {
   },
   advisor_approve: {
     auditResult: "SUCCESS",
+    canonicalCommand: recommendationReviewActionToCanonicalCommand.advisor_approve,
+    canonicalState: recommendationReviewActionToCanonicalState.advisor_approve,
     clientVisibleAfterAction: false,
-    nextRecommendationStatus: "ADVISOR_APPROVED",
+    nextRecommendationStatus: "COMPLIANCE_PENDING",
     permissionAction: "APPROVE",
     requiredRole: "senior_wealth_advisor",
   },
   compliance_release: {
     auditResult: "SUCCESS",
+    canonicalCommand: recommendationReviewActionToCanonicalCommand.compliance_release,
+    canonicalState: recommendationReviewActionToCanonicalState.compliance_release,
     clientVisibleAfterAction: true,
     nextRecommendationStatus: "RELEASED_TO_CLIENT",
     permissionAction: "RELEASE",
@@ -79,6 +98,8 @@ export const recommendationReviewWorkflowStateMachine = {
   },
   compliance_block: {
     auditResult: "BLOCKED",
+    canonicalCommand: recommendationReviewActionToCanonicalCommand.compliance_block,
+    canonicalState: recommendationReviewActionToCanonicalState.compliance_block,
     clientVisibleAfterAction: false,
     nextRecommendationStatus: "BLOCKED",
     permissionAction: "BLOCK",
@@ -86,6 +107,8 @@ export const recommendationReviewWorkflowStateMachine = {
   },
   request_evidence: {
     auditResult: "PENDING",
+    canonicalCommand: recommendationReviewActionToCanonicalCommand.request_evidence,
+    canonicalState: recommendationReviewActionToCanonicalState.request_evidence,
     clientVisibleAfterAction: false,
     nextRecommendationStatus: "MORE_DATA_REQUESTED",
     permissionAction: "BLOCK",

@@ -16,6 +16,7 @@ import {
 import type { CurrentUserContext } from "../auth/current-user";
 import { dataQualityService } from "../data-quality-service";
 import { auditService, AuditPersistenceRequiredError } from "../audit-service";
+import { wp05ComplianceReleaseConfirmationPhrase } from "../advisory-workflow-contract";
 import { evidenceService } from "../evidence-service";
 import { workflowGate } from "../workflow-gate";
 import {
@@ -44,7 +45,7 @@ type JourneyInstanceWithGraph = Prisma.JourneyInstanceGetPayload<{
 const clientRoleKeys = new Set(["principal", "family_cfo", "trustee", "next_gen"]);
 const genericJourneyCommands = new Set(["START", "COMPLETE_STEP", "BLOCK", "RESUME", "CANCEL"]);
 const adminBypassRoleKeys = new Set(["admin", "security_officer"]);
-const releaseConfirmationPhrase = "RELEASE CLIENT-SAFE JOURNEY";
+const releaseConfirmationPhrase = wp05ComplianceReleaseConfirmationPhrase;
 export class JourneyApiError extends Error {
   constructor(
     message: string,
@@ -886,7 +887,7 @@ async function executeAdvisorApprovalCommand(input: {
       await tx.recommendation.update({
         data: {
           clientVisible: false,
-          status: RecommendationStatus.ADVISOR_APPROVED,
+          status: RecommendationStatus.COMPLIANCE_PENDING,
         },
         where: { id: recommendation.id },
       });

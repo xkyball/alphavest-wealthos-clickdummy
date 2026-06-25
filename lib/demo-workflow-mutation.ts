@@ -27,6 +27,7 @@ import {
   recommendationReviewTransitionFor,
   type RecommendationReviewWorkflowAction,
 } from "@/lib/demo-workflow-validation";
+import { wp05DemoWorkflowCompatibilityMode } from "@/lib/advisory-workflow-contract";
 import type { PermissionDecision } from "@/lib/permission-engine";
 import { visibilityEngine, type RecommendationPayloadProjection } from "@/lib/visibility-engine";
 import { workflowGate } from "@/lib/workflow-gate";
@@ -115,7 +116,13 @@ type RecommendationReviewWorkflowResult = {
   action: RecommendationReviewWorkflowAction;
   auditEventId: string;
   auditRows: number;
+  canonicalCommand: string;
+  canonicalState: string;
   clientVisible: boolean;
+  decisionLinkage: {
+    decisionRows: number;
+    mode: "metadata_only" | "released_to_client";
+  };
   gateMissing: string[];
   gatePassed: boolean;
   message: string;
@@ -385,6 +392,14 @@ function typedEventType(action: RecommendationReviewWorkflowAction) {
 
 function typedAuditResult(action: RecommendationReviewWorkflowAction) {
   return recommendationReviewTransitionFor(action).auditResult as AuditResult;
+}
+
+function typedCanonicalCommand(action: RecommendationReviewWorkflowAction) {
+  return recommendationReviewTransitionFor(action).canonicalCommand;
+}
+
+function typedCanonicalState(action: RecommendationReviewWorkflowAction) {
+  return recommendationReviewTransitionFor(action).canonicalState;
 }
 
 function tenantSlugForId(clientTenantId: string): DemoTenantSlug {
@@ -696,6 +711,9 @@ export async function runRecommendationReviewWorkflowMutation(
           eventType: typedEventType(input.action),
           metadataJson: {
             action: input.action,
+            canonicalCommand: typedCanonicalCommand(input.action),
+            canonicalState: typedCanonicalState(input.action),
+            demoWorkflowCompatibilityMode: wp05DemoWorkflowCompatibilityMode,
             ...auditService.criticalAuditMetadata({
               action: permissionAction,
               actorRoleKey: session.role.key,
@@ -733,8 +751,14 @@ export async function runRecommendationReviewWorkflowMutation(
         action: input.action,
         auditEventId: audit.id,
         auditRows: 1,
+        canonicalCommand: typedCanonicalCommand(input.action),
+        canonicalState: typedCanonicalState(input.action),
         clientProjection: null,
         clientVisible: reloadedState.recommendation.clientVisible,
+        decisionLinkage: {
+          decisionRows: 0,
+          mode: "metadata_only",
+        },
         gateMissing: ["permission_check"],
         gatePassed: false,
         message: deniedReason,
@@ -795,6 +819,8 @@ export async function runRecommendationReviewWorkflowMutation(
 
     let gateMissing: string[] = [];
     let gatePassed = false;
+    let decisionRows = 0;
+    let decisionLinkageMode: "metadata_only" | "released_to_client" = "metadata_only";
     let releasePreconditions: ComplianceReleasePreconditions | null = null;
 
     if (input.action === "reject_unsupported_claim") {
@@ -924,7 +950,7 @@ export async function runRecommendationReviewWorkflowMutation(
       await tx.recommendation.update({
         data: {
           clientVisible: false,
-          status: RecommendationStatus.ADVISOR_APPROVED,
+          status: RecommendationStatus.COMPLIANCE_PENDING,
         },
         where: { id: input.targetId },
       });
@@ -1053,6 +1079,32 @@ export async function runRecommendationReviewWorkflowMutation(
         },
         where: { id: releasePreconditions.selectedEvidenceRecordId! },
       });
+      const decisionUpdate = await tx.decision.updateMany({
+        data: {
+          evidenceRecordId: releasePreconditions.selectedEvidenceRecordId,
+          releasedToClientAt: now,
+          status: "RELEASED_TO_CLIENT",
+        },
+        where: {
+          clientTenantId: recommendation.clientTenantId,
+          recommendationId: input.targetId,
+        },
+      });
+      decisionRows = decisionUpdate.count;
+      decisionLinkageMode = "released_to_client";
+    }
+
+    if (input.action === "request_evidence" || input.action === "compliance_block") {
+      const decisionUpdate = await tx.decision.updateMany({
+        data: {
+          evidenceRecordId: evidenceRecords[0]?.id ?? null,
+        },
+        where: {
+          clientTenantId: recommendation.clientTenantId,
+          recommendationId: input.targetId,
+        },
+      });
+      decisionRows = decisionUpdate.count;
     }
 
     const audit = await tx.auditEvent.create({
@@ -1064,6 +1116,9 @@ export async function runRecommendationReviewWorkflowMutation(
         evidenceRecordId: evidenceRecords[0]?.id ?? null,
         metadataJson: {
           action: input.action,
+          canonicalCommand: typedCanonicalCommand(input.action),
+          canonicalState: typedCanonicalState(input.action),
+          demoWorkflowCompatibilityMode: wp05DemoWorkflowCompatibilityMode,
           ...auditService.criticalAuditMetadata({
             action: permissionAction,
             actorRoleKey: session.role.key,
@@ -1081,6 +1136,10 @@ export async function runRecommendationReviewWorkflowMutation(
           }),
           confirmationText: input.confirmationText ?? null,
           demoMode: true,
+          decisionLinkage: {
+            decisionRows,
+            mode: decisionLinkageMode,
+          },
           evidenceIds: input.evidenceIds ?? [],
           phase: "SCF-P04-P06",
           releasePreconditions,
@@ -1115,8 +1174,14 @@ export async function runRecommendationReviewWorkflowMutation(
       action: input.action,
       auditEventId: audit.id,
       auditRows: 1,
+      canonicalCommand: typedCanonicalCommand(input.action),
+      canonicalState: typedCanonicalState(input.action),
       clientProjection,
       clientVisible: reloadedState.recommendation.clientVisible,
+      decisionLinkage: {
+        decisionRows,
+        mode: decisionLinkageMode,
+      },
       gateMissing,
       gatePassed,
       message: `${input.action} persisted for recommendation review workflow.`,

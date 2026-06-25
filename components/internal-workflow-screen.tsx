@@ -46,6 +46,7 @@ import { UxHubPage } from "@/components/ux-hub-page";
 import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
 import { UxComplexityPriorityPanel } from "@/components/ux-complexity-priority-panel";
 import { cn } from "@/lib/cn";
+import { wp05ComplianceReleaseConfirmationPhrase } from "@/lib/advisory-workflow-contract";
 import {
   recommendationReviewDemoTargets,
   runRecommendationReviewWorkflowAction,
@@ -1225,7 +1226,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
       reason: "Advisor approved the package; compliance release remains required.",
       targetId: recommendationReviewDemoTargets.northbridge.recommendationId,
     });
-    setDecisionStatus("Advisor approval saved. Waiting for compliance release.");
+    setDecisionStatus("Advisor approval saved. Compliance pending; release still requires Compliance.");
   }
 
   async function escalateToCall() {
@@ -1657,7 +1658,7 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
   const [confirmationText, setConfirmationText] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
-  const releasePhrase = "RELEASE TO CLIENT";
+  const releasePhrase = wp05ComplianceReleaseConfirmationPhrase;
   const releaseValid = acknowledged && confirmationText.trim() === releasePhrase;
   const submitDisabled = !releaseValid || status === "submitting" || status === "success";
   const lifecycleStatus = status === "submitting" ? "loading" : status;
@@ -1738,13 +1739,13 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
             }}
             type="button"
           >
-            <LockKeyhole aria-hidden="true" className="size-4" />{status === "submitting" ? "Submitting..." : "Release to client"}
+            <LockKeyhole aria-hidden="true" className="size-4" />{status === "submitting" ? "Submitting..." : "Release client-safe journey"}
           </button>
         </>
       }
       onClose={status === "submitting" ? undefined : resetAndClose}
       open={open}
-      title="Release to client"
+      title="Release client-safe journey"
     >
       <div
         className="grid gap-4 xl:grid-cols-2"

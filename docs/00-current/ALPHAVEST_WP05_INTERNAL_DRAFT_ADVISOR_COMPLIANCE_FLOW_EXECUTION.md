@@ -12,8 +12,8 @@ Task status: DONE
 Reported baseline:
 
 - Branch: `full-workflow`
-- Remote state: `full-workflow...origin/full-workflow [ahead 23]`
-- Latest commit: `0e055be feat: implement wp04 evidence sufficiency gate`
+- Remote state before implementation: `full-workflow...origin/full-workflow [ahead 24]`
+- Latest implementation-start commit: `0a9248e docs: add wp05 advisory flow execution spec`
 - Working tree before WP05 documentation edit: clean
 - Diff stat before WP05 documentation edit: empty
 - Package manager: `pnpm@9.15.9`
@@ -21,7 +21,7 @@ Reported baseline:
 - Route registry: `lib/route-registry.ts` exists and contains WP05 routes 033-042.
 - Test inventory: WP05-relevant tests exist, including `tests/demo-workflow-api.spec.ts`, `tests/journey-api.spec.ts`, `tests/workflow-gate.spec.ts`, `tests/client-visibility-projection.spec.ts`, `tests/permission-engine.spec.ts`, `tests/governance-non-bypass.spec.ts`, `tests/true-ux-p0-safety.spec.ts`, `tests/scf-p04-p06-flow-ui.spec.ts` and route/navigation smoke tests.
 
-Decision: Preflight passes for read-only WP05 analysis and specification. Implementation remains blocked by `DECISION-WP05-1`.
+Decision: Preflight passes. `DECISION-WP05-1` was approved by the user on 2026-06-25 with Option A.
 
 ## 1. Upload Interpretation
 
@@ -106,7 +106,7 @@ Subtask: Role/gate/payload/audit acceptance contract
 ### DECISION-WP05-1 Human approval of WP-05 state/API/gate cutline
 
 Type: Human Decision / Approval
-Status in this execution: STOP REQUIRED
+Status in this execution: DONE
 
 Detailed description:
 Approve or correct state taxonomy, implementation cutline, API approach, audit-failure handling and whether Decision Record linkage is included in the first WP05 wave.
@@ -118,6 +118,14 @@ Required human outputs:
 - Audit-failure behavior.
 - Decision Record inclusion decision.
 - Go/no-go for implementation tasks.
+
+Approved cutline:
+
+- Canonical API/command strategy: `/api/journeys/:id/commands` is the WP05 command spine.
+- Demo Workflow strategy: typed `/api/demo-workflow` recommendation-review remains compatibility/demo fixture only and must map to canonical WP05 commands/states.
+- Audit behavior: fail closed before mutation for critical gate actions.
+- Decision/Audit linkage: minimal linkage included in WP05 first wave.
+- API/schema: no new API and no schema migration in first wave.
 
 ### IMPL-WP05-1 Internal Workbench draft/rebuild and unsupported-claim control
 
@@ -204,8 +212,8 @@ Required proof:
 | 038 | `/compliance/reviews` | `ComplianceQueuePage` | Queue surface and process states | Mostly UI |
 | 039 | `/compliance/reviews/:id/decision-room` | `ComplianceReviewPage` | Request evidence/block modal uses typed recommendation review workflow | Real mutation path through `/api/demo-workflow` |
 | 040 | `/compliance/reviews/:id/release` | `ReleasePage` / `ReleaseModal` | Calls typed `compliance_release` | Real mutation path through `/api/demo-workflow` |
-| 041 | `/compliance/reviews/:id/block` | Falls through to `ReleasePage` in current component switch | Gap: route has registry entry but no separate block page rendering branch |
-| 042 | `/compliance/reviews/:id/audit` | Falls through to `ReleasePage` in current component switch | Gap: route has registry entry but no separate audit page rendering branch |
+| 041 | `/compliance/reviews/:id/block` | `DecisionsGovernanceScreen` -> `ComplianceBlockPage` | Implemented; contains request-evidence confirmation and blocked state | Corrected finding after deeper route dispatch read: route is not an InternalWorkflow fallback |
+| 042 | `/compliance/reviews/:id/audit` | `DecisionsGovernanceScreen` -> `ComplianceAuditPage` | Implemented; audit surface covered by SCF P04-P06 UI test | Corrected finding after deeper route dispatch read: route is not an InternalWorkflow fallback |
 
 ### Service and API Inventory
 
@@ -245,11 +253,10 @@ Required proof:
    - `/api/demo-workflow` typed `recommendation-review`.
    - `/api/journeys/:id/commands`.
    Both are real enough to pass P0 tests, but they can drift.
-2. `RecommendationStatus.COMPLIANCE_PENDING` exists in schema but the typed recommendation-review approval path currently sets `ADVISOR_APPROVED` plus `ComplianceReview.status = PENDING`. This is safe, but the label does not explicitly encode the handoff state.
-3. Routes 041 and 042 are registered but currently fall through to the generic release page branch in `InternalWorkflowScreen`. Block and audit have UI elements in route 039, but not separate route branches.
-4. UI still mixes static Phase panels and real mutation controls. The critical controls are real, but several surrounding cards remain explanatory/static.
-5. Demo workflow release mutates `clientVisible: true` directly after passing gates. That is acceptable in the current demo, but cleaner long-term wording is release eligibility plus client-safe projection, especially if future acceptance/export flows are separate.
-6. Decision linkage is stronger in `journey-api-service` than in typed `demo-workflow`; demo workflow positive spine updates decision later through `j03.acceptOption`, not as a first-class advisory gate outcome.
+2. Pre-implementation, `RecommendationStatus.COMPLIANCE_PENDING` existed in schema but the typed recommendation-review approval path set `ADVISOR_APPROVED` plus `ComplianceReview.status = PENDING`. This was changed in Option A implementation so advisor approval now outputs `COMPLIANCE_PENDING`.
+3. UI still mixes static Phase panels and real mutation controls. The critical controls are real, but several surrounding cards remain explanatory/static.
+4. Demo workflow release mutates `clientVisible: true` directly after passing gates. This remains acceptable in the current demo because release now uses the client-safe release phrase and projection proof; future work should move demo workflow behind the canonical journey command/service adapter.
+5. Decision linkage was stronger in `journey-api-service` than in typed `demo-workflow`. Option A implementation adds minimal release/block/request Decision linkage metadata and release Decision status linkage in demo workflow.
 
 ## 4. SPEC-WP05-1 Draft Contract
 
@@ -263,8 +270,8 @@ Recommended canonical WP05 state labels:
 | `UNSUPPORTED_CLAIM_BLOCKED` | `REVISION_REQUESTED`, `ReviewStatus.REQUEST_MORE_DATA`, `ComplianceStatus.NEEDS_EVIDENCE` | Analyst rejected unsupported claim |
 | `EVIDENCE_GAP` | `MORE_DATA_REQUESTED`, `ComplianceStatus.NEEDS_EVIDENCE`, evidence `PLACEHOLDER/CREATED` | Evidence missing, unreviewed, wrong-scope or insufficient |
 | `ANALYST_REBUILT_WITH_EVIDENCE` | `ANALYST_REVIEWED`, accepted scoped evidence | Analyst rebuilt internal draft with accepted evidence |
-| `ADVISOR_APPROVED_FOR_COMPLIANCE` | `ReviewStatus.APPROVED`, `RecommendationStatus.ADVISOR_APPROVED` | Advisor approved; not released |
-| `COMPLIANCE_PENDING` | `ComplianceReview.status = PENDING`; optionally `RecommendationStatus.COMPLIANCE_PENDING` if implementation adopts it | Compliance gate must still decide |
+| `ADVISOR_APPROVED_FOR_COMPLIANCE` | `ReviewStatus.APPROVED` plus `RecommendationStatus.COMPLIANCE_PENDING` output | Advisor approved; not released |
+| `COMPLIANCE_PENDING` | `ComplianceReview.status = PENDING`; `RecommendationStatus.COMPLIANCE_PENDING` | Compliance gate must still decide |
 | `COMPLIANCE_NEEDS_EVIDENCE` | `ComplianceStatus.NEEDS_EVIDENCE`, `RecommendationStatus.MORE_DATA_REQUESTED` | Compliance requested evidence |
 | `COMPLIANCE_BLOCKED` | `ComplianceStatus.BLOCKED`, `RecommendationStatus.BLOCKED` | Compliance blocks release |
 | `COMPLIANCE_RELEASED_CLIENT_SAFE` | `ComplianceStatus.RELEASED`, `RecommendationStatus.RELEASED_TO_CLIENT`, client-safe projection only | Release passed gates |
@@ -315,7 +322,7 @@ Recommended canonical WP05 state labels:
 
 ## 5. DECISION-WP05-1 Options
 
-### Option A - Recommended: Canonical Journey Command Path, Demo Workflow Compatibility Only
+### Option A - Approved and Implemented in First Wave: Canonical Journey Command Path, Demo Workflow Compatibility Only
 
 Decision:
 Make `/api/journeys/:id/commands` the canonical WP05 command spine. Keep `/api/demo-workflow` typed recommendation-review only as compatibility/test/demo fixture until it can delegate to the same command/service contract.
@@ -339,7 +346,7 @@ Why this is the cleanest aggressive path:
 - Avoids route/UI-only fixes.
 - Keeps WP05 inside True-UX boundaries without inventing new product scope.
 
-### Option B - Faster but Dirtier: Continue Hardening `/api/demo-workflow`
+### Option B - Rejected: Faster but Dirtier `/api/demo-workflow` Authority
 
 Decision:
 Keep typed `recommendation-review` in `/api/demo-workflow` as the WP05 authority and only patch UI/routes/tests around it.
@@ -355,7 +362,7 @@ Cons:
 - Keeps demo-workflow overloaded with unrelated `jXX.*` actions.
 - Higher future drift risk.
 
-### Option C - Reject for Now: New Dedicated Advisor/Compliance API
+### Option C - Rejected: New Dedicated Advisor/Compliance API
 
 Decision:
 Create a new `/api/advisory-review` or `/api/compliance-release` contract now.
@@ -372,7 +379,7 @@ Cons:
 
 Recommendation: do not choose this for WP05.
 
-### Option D - Narrow Cut: Stop at Advisor Approval / Compliance Pending
+### Option D - Rejected for This Wave: Stop at Advisor Approval / Compliance Pending
 
 Decision:
 Implement only internal draft/rebuild and advisor approval; defer compliance release.
@@ -390,11 +397,7 @@ Recommendation: use only if time-boxed or if canonical command consolidation is 
 
 ## 6. Aggressive Recommendation
 
-Approve Option A.
-
-Concrete approval sentence:
-
-`I approve WP05 Option A: canonical Journey Command path, demo workflow compatibility only, fail-closed audit before mutation, minimal Decision/Audit linkage included, no new API and no schema migration in first wave.`
+Option A was approved and executed.
 
 After approval, execute implementation in this order:
 
@@ -404,11 +407,64 @@ After approval, execute implementation in this order:
 4. `IMPL-WP05-4`: minimal Decision/Audit linkage for release/block/request evidence.
 5. `QA-WP05-1`: run focused API/service/UI P0 suite plus route/navigation smoke.
 
-## 7. Current Stop State
+## 7. Implementation Result
 
-Stopped at `DECISION-WP05-1` as required by the upload.
+Implemented files:
 
-No UI changes were made in this WP05 analysis/specification step, so no screenshot is required.
+- `lib/advisory-workflow-contract.ts`
+- `lib/journeys/journey-command-registry.ts`
+- `lib/journeys/journey-api-service.ts`
+- `lib/demo-workflow-validation.ts`
+- `lib/demo-workflow-mutation.ts`
+- `components/internal-workflow-screen.tsx`
+- `tests/demo-workflow-api.spec.ts`
+- `tests/demo-workflow-validation.spec.ts`
+- `tests/confirmation-lifecycle.spec.ts`
+- `tests/wp05-advisory-workflow-contract.spec.ts`
+- `docs/00-current/ALPHAVEST_WP05_INTERNAL_DRAFT_ADVISOR_COMPLIANCE_FLOW_EXECUTION.md`
 
-Implementation must not start until the state/API/gate cutline is approved or corrected.
+Implementation notes:
 
+- Added `wp05CanonicalStates`, canonical Journey command IDs, client-safe release phrase and demo workflow compatibility mapping.
+- `journeyCommandIds` now takes WP05-specific commands from the shared WP05 contract.
+- Journey advisor approval now sets recommendation state to `COMPLIANCE_PENDING`.
+- Typed demo workflow advisor approval now sets recommendation state to `COMPLIANCE_PENDING`.
+- Typed demo workflow returns/audits `canonicalCommand`, `canonicalState` and `DEMO_WORKFLOW_COMPATIBILITY_ONLY` metadata.
+- Compliance release confirmation phrase is now `RELEASE CLIENT-SAFE JOURNEY`.
+- Compliance release updates linked Decision rows to `RELEASED_TO_CLIENT`, sets `releasedToClientAt` and links the evidence record while leaving client acceptance fields empty.
+- Compliance block/request evidence actions link available evidence into the Decision record without overclaiming release.
+
+## 8. QA-WP05-1 Validation Evidence
+
+Validation commands:
+
+- `pnpm typecheck` - PASS
+- `pnpm playwright test tests/wp05-advisory-workflow-contract.spec.ts tests/demo-workflow-validation.spec.ts --workers=1` - PASS, 2/2
+- `pnpm playwright test tests/demo-workflow-api.spec.ts --workers=1` - PASS, 15/15
+- `pnpm playwright test tests/journey-api.spec.ts --workers=1` - PASS, 8/8
+- `pnpm playwright test tests/workflow-gate.spec.ts tests/client-visibility-projection.spec.ts --workers=1` - PASS, 17/17
+- `pnpm playwright test tests/confirmation-lifecycle.spec.ts tests/scf-p04-p06-flow-ui.spec.ts --workers=1` - PASS, 7/7
+- `pnpm guard:source` - PASS
+- `pnpm db:validate` - PASS
+- `pnpm lint` - PASS with existing warnings only
+
+Route-smoke note:
+
+- `pnpm test:route-smoke` was attempted as an aggressive additional gate. The registered route smoke section reached WP05 routes 038-042 successfully, then the broader pre-existing `UX-PAGE workbench structure` block failed on missing `ux-page-workbench-triad` expectations beginning at `/documents` and other non-WP05 workbench routes. This is not counted as a WP05 pass gate; focused WP05 route/API/UI coverage above is the acceptance evidence for this wave.
+
+Screenshot proof:
+
+- `artifacts/wp05-advisory-flow/release-client-safe-journey-desktop.png`
+
+Observed UI proof:
+
+- Release dialog title is `Release client-safe journey`.
+- Release confirmation prompt requires `RELEASE CLIENT-SAFE JOURNEY`.
+- Initial release action remains blocked until acknowledgement plus exact phrase are provided.
+- Dialog copy preserves the safety boundary: no unapproved advice reaches the client, advisor approval alone is not enough and client acceptance/export/share remain separate.
+
+## 9. Current Stop State
+
+Implementation wave and focused QA are complete.
+
+No further human decision is required for this first Option A wave.

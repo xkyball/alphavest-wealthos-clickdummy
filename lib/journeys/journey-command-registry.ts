@@ -1,3 +1,5 @@
+import { wp05CanonicalJourneyCommandIds } from "@/lib/advisory-workflow-contract";
+
 export const journeyCommandIds = [
   "START",
   "COMPLETE_STEP",
@@ -6,11 +8,7 @@ export const journeyCommandIds = [
   "CANCEL",
   "LINK_EVIDENCE",
   "DECIDE_EVIDENCE_SUFFICIENCY",
-  "AI_DRAFT_INTERNAL",
-  "ADVISOR_APPROVE",
-  "COMPLIANCE_BLOCK",
-  "COMPLIANCE_REQUEST_EVIDENCE",
-  "COMPLIANCE_RELEASE",
+  ...wp05CanonicalJourneyCommandIds,
 ] as const;
 
 export type JourneyCommandId = (typeof journeyCommandIds)[number];
