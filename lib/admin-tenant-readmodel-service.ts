@@ -1,6 +1,6 @@
 import type { PrismaClient } from "@prisma/client";
 
-import { demoPlatformTenantId, demoTenants } from "@/lib/demo-session";
+import { demoPlatformTenantId } from "@/lib/demo-session";
 
 export type AdminTenantSnapshot = Awaited<ReturnType<typeof getAdminTenantSnapshot>>;
 
@@ -16,7 +16,6 @@ function percent(part: number, whole: number) {
 }
 
 export async function getAdminTenantSnapshot(prisma: PrismaClient) {
-  const tenantIds = demoTenants.map((tenant) => tenant.id);
   const [tenants, roles, userRoles, users, policies, latestTenantAudit] = await Promise.all([
     prisma.clientTenant.findMany({
       orderBy: { displayName: "asc" },
@@ -32,12 +31,12 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
         relationshipTier: true,
         status: true,
       },
-      where: { id: { in: tenantIds } },
+      where: { platformTenantId: demoPlatformTenantId },
     }),
     prisma.role.findMany({
       orderBy: { name: "asc" },
       select: { clientTenantId: true, id: true, key: true, name: true, scope: true },
-      where: { clientTenantId: { in: tenantIds } },
+      where: { platformTenantId: demoPlatformTenantId },
     }),
     prisma.userRole.findMany({
       include: {
@@ -45,7 +44,7 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
         user: { select: { displayName: true, email: true, status: true } },
       },
       orderBy: { updatedAt: "desc" },
-      where: { clientTenantId: { in: tenantIds } },
+      where: { role: { platformTenantId: demoPlatformTenantId } },
     }),
     prisma.user.findMany({
       select: { displayName: true, id: true, status: true },
@@ -53,13 +52,16 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
     }),
     prisma.policyDefinition.findMany({
       select: { clientTenantId: true, status: true },
-      where: { clientTenantId: { in: tenantIds } },
+      where: { OR: [{ platformTenantId: demoPlatformTenantId }, { clientTenant: { platformTenantId: demoPlatformTenantId } }] },
     }),
     prisma.auditEvent.findMany({
       orderBy: { createdAt: "desc" },
       select: { clientTenantId: true, eventType: true, reason: true, result: true },
       take: 12,
-      where: { clientTenantId: { in: tenantIds }, eventType: { startsWith: "screencast.tenant." } },
+      where: {
+        clientTenant: { platformTenantId: demoPlatformTenantId },
+        eventType: { in: ["screencast.tenant.invitation", "p44.phase2.tenant_create.success", "auth.dummy.invitation.created"] },
+      },
     }),
   ]);
 

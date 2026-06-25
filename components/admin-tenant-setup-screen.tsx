@@ -931,6 +931,50 @@ function TenantsPage() {
 function CreateTenantPage() {
   const { snapshot } = useAdminTenantSnapshot();
   const morgan = snapshot?.tenantRows.find((row) => row.name.includes("Morgan")) ?? snapshot?.tenantRows[0];
+  const [tenantName, setTenantName] = useState(`P44 Family Office ${new Date().getFullYear()}`);
+  const [jurisdiction, setJurisdiction] = useState("South Africa");
+  const [relationshipTier, setRelationshipTier] = useState("Signature");
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [message, setMessage] = useState("Tenant creation starts a draft setup record only. It does not activate users or release payloads.");
+  const canSubmit = status !== "submitting" && tenantName.trim().length >= 3 && jurisdiction.trim().length >= 2;
+
+  async function createTenant() {
+    if (!canSubmit) {
+      setStatus("error");
+      setMessage("Enter a family office name and jurisdiction before a tenant draft can be created.");
+      return;
+    }
+
+    setStatus("submitting");
+    setMessage("Creating tenant draft...");
+
+    const response = await fetch("/api/admin-tenants", {
+      body: JSON.stringify({
+        action: "create_tenant",
+        actorRoleKey: "admin",
+        displayName: tenantName,
+        jurisdiction,
+        relationshipTier,
+      }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    });
+    const body = (await response.json()) as {
+      error?: string;
+      ok: boolean;
+      result?: { setupState?: string; tenant?: { displayName: string; status: string } };
+    };
+
+    if (!response.ok || !body.ok || !body.result?.tenant) {
+      setStatus("error");
+      setMessage(body.error ?? "Tenant draft could not be created.");
+      return;
+    }
+
+    setStatus("success");
+    setMessage(`${body.result.tenant.displayName} created as ${body.result.setupState ?? body.result.tenant.status}. Team, policy and invitation gates remain locked.`);
+    void runScreencastDemoAction("j06.newTenant");
+  }
 
   return (
     <div className="space-y-5">
@@ -942,20 +986,45 @@ function CreateTenantPage() {
             <CardDescription>Define the core details of the family office.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
-            <FieldGrid
-              fields={[
-                { label: "Family office name", value: morgan?.name ?? "Morgan Family Office" },
-                { label: "Jurisdiction", value: morgan?.jurisdiction ?? "United Kingdom" },
-                { label: "Operating tier", value: morgan?.tier ?? "Signature" },
-                { label: "Primary owner", value: morgan?.owner ?? "Unassigned" },
-                { label: "Entity type", value: "Single Family Office" },
-                { label: "Base currency", value: "USD - US Dollar" },
-                { label: "Time zone", value: "(UTC-05:00) Eastern Time" },
-                { label: "Fiscal year end", value: "December" }
-              ]}
-            />
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="block">
+                <span className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Family office name</span>
+                <input
+                  className="mt-2 h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition placeholder:text-alphavest-subtle focus:border-alphavest-gold"
+                  onChange={(event) => setTenantName(event.target.value)}
+                  value={tenantName}
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Jurisdiction</span>
+                <input
+                  className="mt-2 h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition placeholder:text-alphavest-subtle focus:border-alphavest-gold"
+                  onChange={(event) => setJurisdiction(event.target.value)}
+                  value={jurisdiction}
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Operating tier</span>
+                <select
+                  className="mt-2 h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+                  onChange={(event) => setRelationshipTier(event.target.value)}
+                  value={relationshipTier}
+                >
+                  <option>Signature</option>
+                  <option>Premier</option>
+                  <option>Standard</option>
+                </select>
+              </label>
+              <FieldGrid
+                fields={[
+                  { label: "Primary owner", value: morgan?.owner ?? "Unassigned" },
+                  { label: "Entity type", value: "Single Family Office" },
+                ]}
+              />
+            </div>
+            <StatePanel detail={message} state={status === "success" ? "success" : status === "error" ? "blocked" : "restricted"} title="Tenant draft command" />
             <ActionBar>
-              <button className={secondaryButtonClass} onClick={() => { void runScreencastDemoAction("j06.newTenant"); }} type="button">Save draft</button>
+              <button className={secondaryButtonClass} onClick={() => { void createTenant(); }} type="button">{status === "submitting" ? "Saving" : "Save draft"}</button>
               <button className={primaryButtonClass} data-testid="j06-continue-tenant" onClick={() => { void runScreencastDemoAction("j06.continueTenant", "/tenants/demo/setup"); }} type="button">Continue to team setup <ArrowRight aria-hidden="true" className="size-4" /></button>
             </ActionBar>
           </CardContent>
