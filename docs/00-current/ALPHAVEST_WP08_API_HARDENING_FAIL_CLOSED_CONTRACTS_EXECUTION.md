@@ -2,13 +2,13 @@
 
 Generated: 2026-06-25
 
-Status: STOPPED_AT_DECISION_WP08_1
+Status: COMPLETE_FOR_APPROVED_OPTION_A_ZERO_DELTA_PRODUCT_CODE
 
 This report executes the uploaded WP08 blueprint as a strict process chain:
 
 Blueprint task -> executed analysis result -> refined specification -> derived implementation task -> implementation or zero-delta implementation -> QA/proof -> report.
 
-No product-code change was made in this WP08 run. Implementation tasks are intentionally blocked until the human approves the API enforcement depth and first-wave boundary required by `DECISION-WP08-1`.
+No product-code change was made in this WP08 completion run. After the human approved WP08 Option A, all implementation tasks were executed as zero-delta product-code revalidation against the current repository. The existing implementation already satisfies the approved first-wave contract: existing API routes only, no new API, no schema migration, shared fail-closed/redaction/audit helpers allowed with limits, `/api/review-monitoring` as internal-only MVP support, `/api/demo-workflow` as compatibility/demo transport only, and canonical Journey/export/document APIs as MVP authority.
 
 ## Source Scope Used
 
@@ -24,6 +24,7 @@ No product-code change was made in this WP08 run. Implementation tasks are inten
   - WP05 Option A: canonical Journey command path, `/api/demo-workflow` compatibility only, fail-closed audit before mutation, no new API, no schema migration.
   - WP06 Option A: route/action/object plus payload/API/service-level enforcement, admin non-bypass fail-closed, denied sensitive attempts audited before mutation, no new API, no schema migration, demo workflow compatibility only.
   - WP07 Option A: MVP export routes `054-058` only, existing `/api/export-workflow` only, no new API, no schema migration, metadata-only redacted package manifest proof, forbidden payload negative tests mandatory, `/api/demo-workflow` export actions compatibility/demo only.
+  - WP08 Option A approved: existing API routes only, no new API, no schema migration, shared fail-closed/redaction/audit helpers allowed with limits, `/api/review-monitoring` internal-only MVP support, `/api/demo-workflow` compatibility/demo transport only, canonical Journey/export/document APIs remain MVP authority, and implementation starts with zero-delta revalidation before new code.
 
 Excluded as specification authority: unrelated legacy planning docs, broad handoff docs, source refs, old KB/source artefacts and prior assumptions unless revalidated against current repo evidence.
 
@@ -35,6 +36,13 @@ Excluded as specification authority: unrelated legacy planning docs, broad hando
 - Working tree at start: clean
 - Operative repo authority inspected before analysis: `ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md`
 - Package scripts inspected: `guard:source`, `typecheck`, `db:validate`, focused Playwright API/service suites and `phase:check` are available.
+
+Post-approval baseline:
+
+- Branch: `full-workflow`
+- Remote state before zero-delta implementation: `full-workflow...origin/full-workflow [ahead 47]`
+- Latest commit before zero-delta implementation: `3bcf9e0 docs: add wp08 api hardening decision proof`
+- Working tree before zero-delta implementation: clean
 
 ## Extracted Blueprint Tasks
 
@@ -287,11 +295,15 @@ Negative proof:
 
 ## DECISION-WP08-1
 
-Status: HUMAN_DECISION_REQUIRED
+Status: COMPLETE
 
-No explicit WP08 approval exists yet in this thread or in generated WP08 decision artefacts. This is a true stop point because implementation behavior differs materially depending on whether `/api/demo-workflow` remains compatibility-only or is tightened into a controlled action API.
+The user approved Option A after the decision-ready report:
+
+`I approve WP08 Option A: existing API routes only, no new API, no schema migration, shared fail-closed/redaction/audit helpers allowed with limits, /api/review-monitoring internal-only MVP support, /api/demo-workflow compatibility/demo transport only, canonical Journey/export/document APIs remain MVP authority, and implementation starts with zero-delta revalidation before new code.`
 
 ### Option A - Recommended: Existing Routes, Shared Helpers, Demo Compatibility Only
+
+Status: APPROVED
 
 Approve first-wave hardening as zero-delta-first revalidation against the current implementation:
 
@@ -326,36 +338,102 @@ Benefit: clean long-term command surface.
 
 Cost: explicitly out of WP08 first-wave scope; requires new route/API decision, route records, likely tests and product integration work.
 
-## Implementation Derivation Preview
+## Implementation Results
 
-Blocked until `DECISION-WP08-1` is approved.
+### IMPL-WP08-1: Documents/Upload API Hardening
 
-If Option A is approved:
+Status: ZERO-DELTA IMPLEMENTATION
 
-- `IMPL-WP08-1`: likely ZERO-DELTA product-code implementation for `/api/documents` and `/api/documents/upload`, followed by focused revalidation.
-- `IMPL-WP08-2`: likely ZERO-DELTA product-code implementation for typed recommendation-review hardening, with explicit residual-risk note that generic `jNN.*` fallback remains demo compatibility.
-- `IMPL-WP08-3`: likely ZERO-DELTA product-code implementation for internal-only review monitoring.
-- `IMPL-WP08-4`: likely ZERO-DELTA product-code implementation for shared fail-closed helper alignment.
-- `QA-WP08-1`: focused API/service test proof.
+Derived implementation task: prove that `/api/documents` and `/api/documents/upload` already enforce request validation, role/tenant scope, upload-only semantics, denied upload audit, audit-unavailable fail-closed behavior and client-safe projections without adding API or schema.
 
-If Option B is approved:
+Proof:
 
-- `IMPL-WP08-2` requires product-code changes to add a strict action allowlist or reject unknown generic `jNN.*` action IDs.
-- Additional tests must prove unknown demo workflow actions fail closed without generic audit mutation.
+- `app/api/documents/upload/route.ts` validates multipart form, role, tenant, file and metadata; invalid paths use `failClosedJson`.
+- Upload success returns `clientVisible: false`, `evidenceStatus: "REVIEW_PENDING"`, `releaseUnlocked: false`, `sufficiency: false` and `uploadOnly: true`.
+- `lib/document-upload-service.ts` validates file input, enforces actor context, object scope, permission and upload role allowlist.
+- Denied upload attempts write `document.upload.denied` audit when required; audit-unavailable paths fail closed before successful document/evidence mutation.
+- `app/api/documents/route.ts` validates role/tenant query, returns empty fail-closed payload for invalid scope, and lists only projected tenant-scoped documents.
+- `tests/document-upload-api.spec.ts`, `tests/document-upload-lifecycle-hardening.spec.ts` and `tests/p0-api-contract.spec.ts` prove positive and negative behavior.
+
+Product-code delta: none.
+
+### IMPL-WP08-2: Demo Workflow Action Hardening
+
+Status: ZERO-DELTA IMPLEMENTATION
+
+Derived implementation task: prove that `/api/demo-workflow` remains compatibility/demo transport only while typed recommendation-review actions enforce validation, role, object, evidence, confirmation, audit and release gates.
+
+Proof:
+
+- `app/api/demo-workflow/route.ts` uses `failClosedJson` for missing DB, invalid JSON/body, validation issues, typed workflow errors and audit persistence failure.
+- `lib/demo-workflow-validation.ts` defines typed recommendation-review actions and deterministic transition metadata, and separately accepts generic `jNN.*` action IDs as compatibility action IDs.
+- `lib/demo-workflow-mutation.ts` enforces typed role, permission, object scope, evidence, payload, compliance release and audit gates.
+- The generic `jNN.*` fallback in `app/api/demo-workflow/route.ts` remains a deterministic screencast audit compatibility path by approved Option A. It is not MVP API authority.
+- `tests/demo-workflow-validation.spec.ts`, `tests/demo-workflow-api.spec.ts`, `tests/p0-api-contract.spec.ts` and `tests/phase6-audit-persistence.spec.ts` prove malformed requests fail closed, advisor approval does not release, compliance release requires gates and audit outage blocks mutation.
+
+Product-code delta: none.
+
+### IMPL-WP08-3: Review Monitoring API Internal-Only Hardening
+
+Status: ZERO-DELTA IMPLEMENTATION
+
+Derived implementation task: prove that `/api/review-monitoring` is an internal read-model/monitoring API with no advice execution, no silent state advance and no client release.
+
+Proof:
+
+- `app/api/review-monitoring/route.ts` fails closed on missing DB/config and invalid `asOf`.
+- Success response sets `clientVisible: false`, `mutated: false`, `noAdviceExecution: true`, `noClientRelease: true` and includes `monitoringGuard`.
+- `lib/control-layer/monitoring-guard.ts` returns `internalTriggerOnly: true`, `noAutomaticAdvice: true`, `noAdviceExecution: true`, `noClientRelease: true` and `clientVisible: false`.
+- `tests/review-monitoring-service.spec.ts` and `tests/p0-api-contract.spec.ts` prove valid internal snapshot behavior and invalid query fail-closed behavior.
+
+Product-code delta: none.
+
+### IMPL-WP08-4: Shared API Fail-Closed/Redaction/Audit Helper Alignment
+
+Status: ZERO-DELTA IMPLEMENTATION
+
+Derived implementation task: prove that existing shared helpers already standardize fail-closed API behavior and prevent route extras from overriding safety-critical fields.
+
+Proof:
+
+- `lib/control-layer/error-envelope.ts` builds fail-closed responses with `ok: false`, `mutated: false`, `noAdviceExecution: true`, `noClientRelease: true`, `safety.failClosed: true` and `safety.silentStateAdvance: false`.
+- `failClosedJson` merges route-specific extras while writing the critical envelope fields after extras and preserving fail-closed safety fields.
+- Relevant API routes already use `failClosedJson`, including demo workflow, documents, document upload, document review, review monitoring, export workflow, journeys and audit events.
+- `tests/fail-closed-error-envelope.spec.ts`, `tests/true-ux-api-service-ui-truth.spec.ts` and `tests/p0-api-contract.spec.ts` prove helper defaults, no override of safety-critical fields and core API fail-closed usage.
+
+Product-code delta: none.
 
 ## QA/Proof Status
 
-Full `QA-WP08-1` is blocked until implementation or zero-delta implementation tasks are approved and executed.
+Status: COMPLETE
 
-Current pre-decision proof status:
+Final QA command:
+
+`pnpm guard:source && pnpm exec tsc --noEmit --pretty false && pnpm db:validate && pnpm exec playwright test tests/fail-closed-error-envelope.spec.ts tests/p0-api-contract.spec.ts tests/document-upload-api.spec.ts tests/document-upload-lifecycle-hardening.spec.ts tests/demo-workflow-validation.spec.ts tests/demo-workflow-api.spec.ts tests/review-monitoring-service.spec.ts tests/true-ux-api-service-ui-truth.spec.ts tests/audit-fail-closed.spec.ts tests/phase6-audit-persistence.spec.ts --workers=1 --reporter=line`
+
+Result:
 
 - `pnpm guard:source`: PASS, 0 violations.
 - `pnpm exec tsc --noEmit --pretty false`: PASS.
 - `pnpm db:validate`: PASS.
-- `pnpm exec playwright test tests/fail-closed-error-envelope.spec.ts tests/p0-api-contract.spec.ts tests/document-upload-api.spec.ts tests/demo-workflow-validation.spec.ts tests/review-monitoring-service.spec.ts tests/true-ux-api-service-ui-truth.spec.ts --workers=1 --reporter=line`: PASS, 26 passed.
-- Positive proof is available from current focused tests for document upload/list success, typed recommendation-review behavior, review monitoring and shared fail-closed helpers.
-- Negative proof is available from current focused tests for malformed demo workflow payloads, invalid document scope, invalid upload metadata, invalid review monitoring query, invalid export workflow scope and fail-closed envelope behavior.
-- Final WP08 QA has not been claimed because implementation/zero-delta implementation tasks are decision-blocked.
+- Focused Playwright API/fail-closed/audit suite: PASS, 51 passed.
+
+Positive proof:
+
+- Valid document upload stores document/evidence/audit rows and returns upload-only safety semantics.
+- Valid document list returns only tenant-scoped safe projections.
+- Valid typed recommendation-review actions persist expected internal/advisor/compliance states.
+- Valid compliance release succeeds only after advisor, evidence, payload, permission and audit gates pass.
+- Valid review monitoring snapshot returns internal-only guard semantics.
+
+Negative proof:
+
+- Malformed demo workflow payloads and malformed JSON fail closed.
+- Invalid document scope returns empty no-release payload.
+- Invalid upload metadata cannot mutate, release or imply sufficiency.
+- Invalid review monitoring query remains internal and no-advice.
+- Audit persistence failures block critical gate mutations and API release paths.
+- Shared fail-closed JSON extras cannot override safety-critical envelope fields.
 
 ## Product-Code Changes
 
@@ -363,20 +441,20 @@ None.
 
 ## Generated Artefact Updates
 
-- Added this WP08 execution, analysis, refined specification and decision report.
+- Updated this WP08 execution artefact with approved Option A, zero-delta implementation results and final QA proof.
 
 ## Residual Risks
 
 - `/api/demo-workflow` still accepts unknown `jNN.*` action IDs as demo compatibility and writes a deterministic audit event. This is acceptable only under Option A's explicit compatibility-only decision.
-- Full WP08 QA is not executed as final acceptance until after the decision and implementation/zero-delta tasks.
-- No screenshots are required for this WP08 stop because no UI changes were made.
+- `/api/demo-workflow` must not be referenced as canonical MVP command authority in future specs; Journey/export/document APIs remain the authority.
+- No screenshots are required for this WP08 completion because no UI changes were made.
 
 ## Method Compliance Checklist
 
 - Double Diamond Discover: completed through blueprint extraction, repo analysis and prior generated artefact review.
 - Double Diamond Define: completed through the refined API hardening contract.
 - Double Diamond Develop: options A, B and C compared.
-- Double Diamond Deliver: delivered a decision-ready WP08 artefact and stopped before unauthorized implementation.
+- Double Diamond Deliver: delivered approved Option A zero-delta implementation proof, QA evidence and updated report.
 - Psycho-Logic / Map: separated request validation, RBAC, object scope, payload projection, audit persistence and client release.
 - TRIZ: resolved the contradiction between demo flexibility and API safety by keeping demo compatibility out of MVP authority.
 - SIT Closed World: reused existing routes, services and helpers instead of adding new API surface.
@@ -385,6 +463,6 @@ None.
 
 ## Honest Limitations
 
-- This is not a final WP08 implementation report.
-- No product-code zero-delta claim is final until the human decision is approved and the implementation tasks are executed in order.
-- Test commands still need to be run as final QA after the decision path is selected.
+- This is a final WP08 Option A implementation report, but it is intentionally zero-delta product code.
+- The generic `/api/demo-workflow` fallback remains compatibility debt by explicit approval, not a controlled MVP API.
+- Full `phase:check` was not run because WP08 scope is API hardening and the focused guard/typecheck/schema/API/fail-closed/audit validation is the stronger task-matched proof.
