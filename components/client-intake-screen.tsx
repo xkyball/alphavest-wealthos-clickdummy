@@ -17,8 +17,6 @@ import {
   File,
   FileText,
   Folder,
-  Landmark,
-  LayoutDashboard,
   MessageSquare,
   Network,
   PanelLeftClose,
@@ -27,15 +25,14 @@ import {
   Send,
   Shield,
   ShieldCheck,
-  SlidersHorizontal,
   Upload,
-  UserRound,
   X
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { DemoActorHandoffBar } from "@/components/demo-actor-handoff-bar";
 import { GlobalSearchBox } from "@/components/global-search-box";
+import { ProcessSidebar } from "@/components/process-navigation";
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
 import { RouteContextChip } from "@/components/route-context-chip";
 import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
@@ -81,36 +78,11 @@ type ClientIntakeScreenProps = {
   route: ScreenRoute;
 };
 
-type NavItem = {
-  href: string;
-  icon: LucideIcon;
-  label: string;
-  pageIds?: string[];
-  count?: number;
-};
-
 const primaryButtonClass =
   "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md bg-alphavest-gold px-4 text-sm font-semibold text-alphavest-navy transition hover:bg-alphavest-gold-soft";
 
 const secondaryButtonClass =
   "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-4 text-sm font-semibold text-alphavest-ivory transition hover:border-alphavest-gold/60 hover:text-alphavest-gold-soft";
-
-const processNav: NavItem[] = [
-  { href: "/tenants/demo/setup", icon: SlidersHorizontal, label: "Access & tenant setup", pageIds: ["001", "002", "003", "004", "005", "006", "007", "009", "010", "011", "012", "013", "014", "015", "016", "017", "018"] },
-  { href: "/client/home", icon: LayoutDashboard, label: "Client context", pageIds: ["019", "020", "021", "022", "023", "024", "025", "026", "031", "032"] },
-  { href: "/documents/upload", icon: Folder, label: "Evidence workspace", pageIds: ["027", "028", "029", "030", "046", "047"] },
-  { href: "/advisory/review-queue", icon: UserRound, label: "Internal workbench", pageIds: ["033", "034", "035", "036", "037"] },
-  { href: "/compliance/reviews", icon: ShieldCheck, label: "Compliance release", pageIds: ["038", "039", "040", "041", "042"] },
-  { href: "/decisions/demo", icon: ClipboardCheck, label: "Decision & evidence record", pageIds: ["043", "044", "045"] },
-  { href: "/governance", icon: Landmark, label: "Governance / RBAC / audit", pageIds: ["008", "048", "049", "050", "051"] },
-  { href: "/export/new", icon: Upload, label: "Export & redaction", pageIds: ["054", "055", "056", "057", "058"] }
-];
-
-const clientNav: NavItem[] = [
-  processNav[1],
-  processNav[2],
-  processNav[5],
-];
 
 const mobileQuickActions: Array<{ icon: LucideIcon; label: string }> = [
   { icon: Upload, label: "Upload" },
@@ -562,20 +534,6 @@ function ScreenTitle({ children }: { children: React.ReactNode }) {
   return <h1 className="sr-only">{children}</h1>;
 }
 
-function AlphaVestLogo({ compact = false }: { compact?: boolean }) {
-  return (
-    <div className="flex items-center gap-3">
-      <div className={cn("grid place-items-center rounded text-alphavest-gold", compact ? "size-10 text-xl" : "size-12 text-2xl")}>
-        A
-      </div>
-      <div>
-        <p className={cn("font-display leading-none text-alphavest-ivory", compact ? "text-xl" : "text-2xl")}>AlphaVest</p>
-        <p className="mt-1 text-[0.62rem] font-semibold uppercase tracking-[0.34em] text-alphavest-gold">WealthOS</p>
-      </div>
-    </div>
-  );
-}
-
 function IconTile({ children, tone = "gold" }: { children: React.ReactNode; tone?: BadgeTone }) {
   const toneClass: Record<BadgeTone, string> = {
     blue: "border-alphavest-blue/35 bg-alphavest-blue/10 text-alphavest-blue",
@@ -606,50 +564,29 @@ function ProgressRing({ label, size = "large", value }: { label: string; size?: 
   );
 }
 
-function ClientSidebar({ activePageId }: { activePageId: string }) {
+function ClientSidebar() {
   const { session } = useDemoSession();
-  const navItems = session.role.internal ? processNav : clientNav;
 
   return (
-    <aside className="hidden min-h-screen border-r border-alphavest-border/60 bg-alphavest-navy/82 p-5 lg:flex lg:w-[var(--sidebar-width)] lg:flex-col">
-      <AlphaVestLogo />
-      <nav aria-label="Primary navigation" className="mt-8 flex flex-1 flex-col gap-1">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const active = item.pageIds?.includes(activePageId);
-
-          return (
-            <a
-              aria-current={active ? "page" : undefined}
-              className={cn(
-                "flex min-h-10 items-center gap-3 rounded-md border px-3 py-2 text-sm transition",
-                active
-                  ? "border-alphavest-gold/45 bg-alphavest-gold/12 text-alphavest-gold-soft"
-                  : "border-transparent text-alphavest-muted hover:border-alphavest-border hover:bg-alphavest-panel/65 hover:text-alphavest-ivory"
-              )}
-              href={item.href}
-              key={item.label}
-            >
-              <Icon aria-hidden="true" className="size-4 shrink-0" />
-              <span className="min-w-0 flex-1 leading-5">{item.label}</span>
-              {item.count ? <span className="rounded-full bg-alphavest-gold/20 px-2 text-xs text-alphavest-gold">{item.count}</span> : null}
-            </a>
-          );
-        })}
-      </nav>
-      <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/60 p-4">
-        <p className="text-sm font-semibold text-alphavest-ivory">{session.tenant.displayName}</p>
-        <p className="mt-1 text-xs text-alphavest-muted">{session.role.label}</p>
-        <div className="mt-3 flex items-center gap-2 text-xs text-alphavest-green">
-          <span className="size-2 rounded-full bg-alphavest-green" />
-          Active
-        </div>
-      </div>
-      <p className="mt-4 flex items-center gap-2 text-xs text-alphavest-muted opacity-65" data-ux-affordance="static-control-note" data-ux-interactive="false">
-        <PanelLeftClose aria-hidden="true" className="size-4" />
-        Collapse
-      </p>
-    </aside>
+    <ProcessSidebar
+      className="bg-alphavest-navy/82"
+      footer={
+        <>
+          <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/60 p-4">
+            <p className="text-sm font-semibold text-alphavest-ivory">{session.tenant.displayName}</p>
+            <p className="mt-1 text-xs text-alphavest-muted">{session.role.label}</p>
+            <div className="mt-3 flex items-center gap-2 text-xs text-alphavest-green">
+              <span className="size-2 rounded-full bg-alphavest-green" />
+              Active
+            </div>
+          </div>
+          <p className="mt-4 flex items-center gap-2 text-xs text-alphavest-muted opacity-65" data-ux-affordance="static-control-note" data-ux-interactive="false">
+            <PanelLeftClose aria-hidden="true" className="size-4" />
+            Collapse
+          </p>
+        </>
+      }
+    />
   );
 }
 
@@ -718,11 +655,11 @@ function ClientTopBar() {
   );
 }
 
-function ClientShell({ activePageId, children }: { activePageId: string; children: React.ReactNode }) {
+function ClientShell({ children }: { activePageId: string; children: React.ReactNode }) {
   return (
     <DemoSessionProvider>
       <div className="av-surface av-surface-client av-shell-grid">
-        <ClientSidebar activePageId={activePageId} />
+        <ClientSidebar />
         <div className="min-w-0">
           <ClientTopBar />
           <DemoActorHandoffBar />

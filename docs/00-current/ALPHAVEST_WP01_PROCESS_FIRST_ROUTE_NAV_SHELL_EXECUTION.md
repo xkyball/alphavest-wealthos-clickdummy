@@ -360,3 +360,53 @@ Assumptions: route deletion, Reference Lab creation and P1/Hold elevation remain
 V3 weak branch killed: route deletion and Reference Lab exposure were rejected because they create higher drift/risk than the approved hidden-by-default policy.
 
 Ethics/fairness: no hidden product promise is introduced; route visibility remains separate from payload/action authority; client role receives only client-safe actionable links.
+
+## WP01.8 Shell Navigation Consolidation
+
+Execution date: 2026-06-25.
+
+Implemented changes:
+
+- Added `components/process-navigation.tsx` as the shared renderer for AlphaVest process navigation, the product mark, the journey link and compact process sidebars.
+- Removed local shell navigation arrays from `components/client-intake-screen.tsx`, `components/internal-workflow-screen.tsx`, `components/decisions-governance-screen.tsx`, `components/communication-export-ops-screen.tsx`, `components/wealth-actions-screen.tsx` and `components/kyc-aml-workflow-screen.tsx`.
+- Replaced those local sidebars with `ProcessSidebar`, keeping each workspace's footer/status context while centralizing active-route logic in `lib/navigation.ts`.
+- Added a static Playwright guard in `tests/navigation-shell.spec.ts` so route-specific shells must use `ProcessSidebar` and cannot reintroduce `processNav`, `clientNav`, `internalNav`, `decisionNav`, `phase13Nav`, `shellNav` or `kycNav`.
+
+Validation target:
+
+- Shared process navigation remains the only actionable left-navigation source for these shells.
+- Client-safe role filtering still comes from `navigationGroupsForRole`.
+- Active parent highlighting still comes from `isActiveNavigationItem`.
+- Workspace footers remain informational only and do not introduce new actionable navigation.
+
+Proof artefacts:
+
+- `artifacts/wp01-shell-navigation-consolidation/desktop-client-principal-process-sidebar.png`
+- `artifacts/wp01-shell-navigation-consolidation/desktop-internal-process-sidebar.png`
+- `artifacts/wp01-shell-navigation-consolidation/desktop-export-process-sidebar.png`
+- `artifacts/wp01-shell-navigation-consolidation/desktop-kyc-process-sidebar.png`
+- `artifacts/wp01-shell-navigation-consolidation/mobile-process-navigation-open.png`
+
+Validation completed:
+
+```bash
+pnpm exec tsc --noEmit --pretty false
+pnpm lint
+pnpm playwright test tests/navigation-shell.spec.ts
+pnpm playwright test tests/route-smoke.spec.ts --grep "registered route smoke|UX-NAV"
+pnpm test:source-reality
+pnpm db:validate
+pnpm guard:source
+pnpm build
+```
+
+Validation result:
+
+- TypeScript: PASS.
+- Lint: PASS with 27 pre-existing warnings.
+- Navigation shell tests: PASS, 10 passed.
+- Focused route smoke / UX-NAV tests: PASS, 79 passed.
+- Source reality gate: PASS, 8 passed.
+- Prisma schema validation: PASS.
+- Source/target guard: PASS.
+- Build: PASS with pre-existing Turbopack document-storage tracing warnings.

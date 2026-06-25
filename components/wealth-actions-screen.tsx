@@ -10,21 +10,18 @@ import {
   ChevronDown,
   ClipboardCheck,
   FileText,
-  Folder,
   Home,
   Landmark,
   LockKeyhole,
-  MessageSquare,
   Network,
   ShieldCheck,
   SlidersHorizontal,
   Upload,
   UserRound,
-  UsersRound,
   X
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import { GlobalSearchBox } from "@/components/global-search-box";
+import { ProcessSidebar } from "@/components/process-navigation";
 import { AuditTimeline, Badge, Card, CardContent, CardHeader, CardTitle, StatePanel, type BadgeTone } from "@/components/ui";
 import { DisabledControlReason, disabledControlReasonId } from "@/components/ui/disabled-control-reason";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
@@ -63,26 +60,6 @@ type WealthActionsScreenProps = {
   visualState?: VisualState;
 };
 
-type ShellNavItem = {
-  href: string;
-  icon: LucideIcon;
-  label: string;
-  pageIds?: string[];
-};
-
-const shellNav: ShellNavItem[] = [
-  { href: "/client/home", icon: Home, label: "Home" },
-  { href: "/client/family-members", icon: UsersRound, label: "Clients" },
-  { href: "/entities", icon: Landmark, label: "Entities" },
-  { href: "/wealth-map", icon: Network, label: "Live wealth map", pageIds: ["031"] },
-  { href: "/documents", icon: Folder, label: "Documents" },
-  { href: "/actions", icon: ClipboardCheck, label: "Actions", pageIds: ["032"] },
-  { href: "/advisor/reviews", icon: CheckCircle2, label: "Workflows" },
-  { href: "/communication/:id/context", icon: MessageSquare, label: "Communications" },
-  { href: "/compliance/reviews", icon: ShieldCheck, label: "Compliance" },
-  { href: "/evidence", icon: FileText, label: "Evidence" }
-];
-
 const secondaryButtonClass =
   "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-4 text-sm font-semibold text-alphavest-ivory transition hover:border-alphavest-gold/60 hover:text-alphavest-gold-soft";
 
@@ -112,18 +89,6 @@ function ScreenTitle({ children }: { children: React.ReactNode }) {
   return <h1 className="sr-only">{children}</h1>;
 }
 
-function AlphaVestMark() {
-  return (
-    <div className="flex items-center gap-3">
-      <div className="grid size-11 place-items-center rounded text-2xl font-semibold text-alphavest-gold">A</div>
-      <div>
-        <p className="font-display text-2xl leading-none text-alphavest-ivory">AlphaVest</p>
-        <p className="mt-1 text-[0.62rem] font-semibold uppercase tracking-[0.34em] text-alphavest-gold">WealthOS</p>
-      </div>
-    </div>
-  );
-}
-
 function IconTile({ children, tone = "gold" }: { children: React.ReactNode; tone?: BadgeTone }) {
   const toneClass: Record<BadgeTone, string> = {
     blue: "border-alphavest-blue/35 bg-alphavest-blue/10 text-alphavest-blue",
@@ -138,43 +103,22 @@ function IconTile({ children, tone = "gold" }: { children: React.ReactNode; tone
   return <span className={cn("grid size-10 shrink-0 place-items-center rounded-md border", toneClass[tone])}>{children}</span>;
 }
 
-function WealthSidebar({ activePageId }: { activePageId: string }) {
+function WealthSidebar() {
   return (
-    <aside className="hidden min-h-screen border-r border-alphavest-border/60 bg-alphavest-navy/88 p-5 lg:flex lg:w-[var(--sidebar-width)] lg:flex-col">
-      <AlphaVestMark />
-      <nav className="mt-8 flex flex-1 flex-col gap-1">
-        {shellNav.map((item) => {
-          const Icon = item.icon;
-          const active = item.pageIds?.includes(activePageId);
-
-          return (
-            <a
-              className={cn(
-                "flex h-10 items-center gap-3 rounded-md border px-3 text-sm transition",
-                active
-                  ? "border-alphavest-gold/45 bg-alphavest-gold/12 text-alphavest-gold-soft"
-                  : "border-transparent text-alphavest-muted hover:border-alphavest-border hover:bg-alphavest-panel/65 hover:text-alphavest-ivory"
-              )}
-              href={item.href}
-              key={item.label}
-            >
-              <Icon aria-hidden="true" className="size-4 shrink-0" />
-              <span className="min-w-0 flex-1 truncate">{item.label}</span>
-            </a>
-          );
-        })}
-      </nav>
-      <div className="space-y-3">
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/60 p-4">
-          <p className="text-sm font-semibold text-alphavest-ivory">{wealthWorkspace.household}</p>
-          <p className="mt-1 text-xs text-alphavest-muted">Tenant context</p>
+    <ProcessSidebar
+      footer={
+        <div className="space-y-3">
+          <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/60 p-4">
+            <p className="text-sm font-semibold text-alphavest-ivory">{wealthWorkspace.household}</p>
+            <p className="mt-1 text-xs text-alphavest-muted">Tenant context</p>
+          </div>
+          <p className="flex h-10 w-full items-center gap-2 rounded-md border border-alphavest-border px-3 text-sm text-alphavest-muted opacity-65" data-ux-affordance="static-control-note" data-ux-interactive="false">
+            <SlidersHorizontal aria-hidden="true" className="size-4" />
+            Configure
+          </p>
         </div>
-        <p className="flex h-10 w-full items-center gap-2 rounded-md border border-alphavest-border px-3 text-sm text-alphavest-muted opacity-65" data-ux-affordance="static-control-note" data-ux-interactive="false">
-          <SlidersHorizontal aria-hidden="true" className="size-4" />
-          Configure
-        </p>
-      </div>
-    </aside>
+      }
+    />
   );
 }
 
@@ -231,11 +175,11 @@ function WealthTopBar() {
   );
 }
 
-function WealthShell({ activePageId, children }: { activePageId: string; children: React.ReactNode }) {
+function WealthShell({ children }: { activePageId: string; children: React.ReactNode }) {
   return (
     <DemoSessionProvider>
       <div className="av-surface av-surface-wealth av-shell-grid">
-        <WealthSidebar activePageId={activePageId} />
+        <WealthSidebar />
         <div className="min-w-0">
           <WealthTopBar />
           <main className="px-4 py-6 md:px-6">

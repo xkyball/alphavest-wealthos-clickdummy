@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { readFileSync } from "node:fs";
 
 import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
 import { createDemoSession } from "../lib/demo-session";
@@ -15,6 +16,25 @@ const importantNavigationLinks = [
   { path: "/export/new", label: "Export & redaction" }
 ];
 
+const routeSpecificShellFiles = [
+  "components/client-intake-screen.tsx",
+  "components/internal-workflow-screen.tsx",
+  "components/decisions-governance-screen.tsx",
+  "components/communication-export-ops-screen.tsx",
+  "components/wealth-actions-screen.tsx",
+  "components/kyc-aml-workflow-screen.tsx",
+];
+
+const legacyLocalNavigationNames = [
+  "processNav",
+  "clientNav",
+  "internalNav",
+  "decisionNav",
+  "phase13Nav",
+  "shellNav",
+  "kycNav",
+];
+
 test.beforeEach(async ({ page }) => {
   await page.context().addCookies([
     {
@@ -29,6 +49,21 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe("AlphaVest navigation shell", () => {
+  test("route-specific shells share the process sidebar renderer", () => {
+    for (const filePath of routeSpecificShellFiles) {
+      const source = readFileSync(filePath, "utf8");
+
+      expect(source, `${filePath} must render the shared process sidebar`).toContain("ProcessSidebar");
+      expect(source, `${filePath} must not declare a legacy NavItem type`).not.toMatch(/\btype\s+(NavItem|ShellNavItem)\b/);
+
+      for (const legacyName of legacyLocalNavigationNames) {
+        expect(source, `${filePath} must not keep local ${legacyName} links`).not.toMatch(
+          new RegExp(`\\bconst\\s+${legacyName}\\b`)
+        );
+      }
+    }
+  });
+
   test("orders the V0.96 core journey from evidence through export", () => {
     const internalSession = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
     const labels = navigationGroupsForRole(internalSession.role).map((group) => group.label);

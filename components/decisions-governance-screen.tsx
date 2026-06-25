@@ -12,10 +12,6 @@ import {
   FileCheck2,
   FileText,
   Filter,
-  Folder,
-  Home,
-  KeyRound,
-  Landmark,
   LockKeyhole,
   MessageSquare,
   Plus,
@@ -25,7 +21,6 @@ import {
   SlidersHorizontal,
   X
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import {
   AuditTimeline,
   Badge,
@@ -43,6 +38,7 @@ import {
 } from "@/components/ui";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { DemoActorHandoffBar } from "@/components/demo-actor-handoff-bar";
+import { ProcessSidebar } from "@/components/process-navigation";
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
 import { RouteContextChip } from "@/components/route-context-chip";
 import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
@@ -94,14 +90,6 @@ type DecisionsGovernanceScreenProps = {
   visualState?: VisualState;
 };
 
-type NavItem = {
-  href: string;
-  icon: LucideIcon;
-  label: string;
-  pageIds?: string[];
-  count?: number;
-};
-
 const primaryButtonClass =
   "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md bg-alphavest-gold px-4 text-sm font-semibold text-alphavest-navy transition hover:bg-alphavest-gold-soft disabled:cursor-not-allowed disabled:opacity-55";
 
@@ -142,17 +130,6 @@ function handleStaticSortChange() {
   return undefined;
 }
 
-const decisionNav: NavItem[] = [
-  { href: "/tenants/demo/setup", icon: SlidersHorizontal, label: "Access & tenant setup", pageIds: ["001", "002", "003", "004", "005", "006", "007", "009", "010", "011", "012", "013", "014", "015", "016", "017", "018"] },
-  { href: "/client/home", icon: Home, label: "Client context", pageIds: ["019", "020", "021", "022", "023", "024", "025", "026", "031", "032"] },
-  { href: "/documents/upload", icon: Folder, label: "Evidence workspace", pageIds: ["027", "028", "029", "030", "046", "047"] },
-  { href: "/advisory/review-queue", icon: CheckCircle2, label: "Internal workbench", pageIds: ["033", "034", "035", "036", "037"] },
-  { href: "/compliance/reviews", icon: ShieldCheck, label: "Compliance release", pageIds: ["038", "039", "040", "041", "042"] },
-  { href: "/decisions/demo", icon: FileCheck2, label: "Decision & evidence record", pageIds: ["043", "044", "045"] },
-  { href: "/governance", icon: KeyRound, label: "Governance / RBAC / audit", pageIds: ["008", "048", "049", "050", "051"] },
-  { href: "/export/new", icon: Landmark, label: "Export & redaction", pageIds: ["054", "055", "056", "057", "058"] }
-];
-
 function toneFor(value: string): BadgeTone {
   const normalized = value.toLowerCase();
 
@@ -181,18 +158,6 @@ function toneFor(value: string): BadgeTone {
 
 function ScreenTitle({ children }: { children: React.ReactNode }) {
   return <h1 className="sr-only">{children}</h1>;
-}
-
-function AlphaVestMark() {
-  return (
-    <div className="flex items-center gap-3">
-      <div className="grid size-11 place-items-center rounded text-2xl font-semibold text-alphavest-gold">A</div>
-      <div>
-        <p className="font-display text-2xl leading-none text-alphavest-ivory">AlphaVest</p>
-        <p className="mt-1 text-[0.62rem] font-semibold uppercase tracking-[0.34em] text-alphavest-gold">WealthOS</p>
-      </div>
-    </div>
-  );
 }
 
 function IconTile({ children, tone = "gold" }: { children: React.ReactNode; tone?: BadgeTone }) {
@@ -227,42 +192,19 @@ function ProgressBar({ tone = "gold", value }: { tone?: BadgeTone; value: number
   );
 }
 
-function Phase12Sidebar({ activePageId }: { activePageId: string }) {
+function Phase12Sidebar() {
   return (
-    <aside className="hidden min-h-screen border-r border-alphavest-border/60 bg-alphavest-navy/88 p-5 lg:flex lg:w-[var(--sidebar-width)] lg:flex-col">
-      <AlphaVestMark />
-      <nav aria-label="Primary navigation" className="mt-8 flex flex-1 flex-col gap-1">
-        {decisionNav.map((item) => {
-          const Icon = item.icon;
-          const active = item.pageIds?.includes(activePageId);
-
-          return (
-            <a
-              className={cn(
-                "flex min-h-10 items-center gap-3 rounded-md border px-3 py-2 text-sm transition",
-                active
-                  ? "border-alphavest-gold/45 bg-alphavest-gold/12 text-alphavest-gold-soft"
-                  : "border-transparent text-alphavest-muted hover:border-alphavest-border hover:bg-alphavest-panel/65 hover:text-alphavest-ivory"
-              )}
-              aria-current={active ? "page" : undefined}
-              href={item.href}
-              key={item.label}
-            >
-              <Icon aria-hidden="true" className="size-4 shrink-0" />
-              <span className="min-w-0 flex-1 leading-5">{item.label}</span>
-              {item.count ? <span className="rounded-full bg-alphavest-gold px-2 text-xs font-semibold text-alphavest-navy">{item.count}</span> : null}
-            </a>
-          );
-        })}
-      </nav>
-      <div className="rounded-md border border-alphavest-gold/30 bg-alphavest-gold/10 p-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-alphavest-gold-soft">
-          <ShieldCheck aria-hidden="true" className="size-4" />
-          Controlled visibility
+    <ProcessSidebar
+      footer={
+        <div className="rounded-md border border-alphavest-gold/30 bg-alphavest-gold/10 p-4">
+          <div className="flex items-center gap-2 text-sm font-semibold text-alphavest-gold-soft">
+            <ShieldCheck aria-hidden="true" className="size-4" />
+            Controlled visibility
+          </div>
+          <p className="mt-2 text-xs leading-5 text-alphavest-muted">No unapproved advice reaches the client. Sensitive actions are audit logged.</p>
         </div>
-        <p className="mt-2 text-xs leading-5 text-alphavest-muted">No unapproved advice reaches the client. Sensitive actions are audit logged.</p>
-      </div>
-    </aside>
+      }
+    />
   );
 }
 
@@ -328,11 +270,11 @@ function Phase12TopBar() {
   );
 }
 
-function Phase12Shell({ activePageId, children }: { activePageId: string; children: React.ReactNode }) {
+function Phase12Shell({ children }: { activePageId: string; children: React.ReactNode }) {
   return (
     <DemoSessionProvider>
       <div className="av-surface av-surface-internal av-shell-grid">
-        <Phase12Sidebar activePageId={activePageId} />
+        <Phase12Sidebar />
         <div className="min-w-0">
           <Phase12TopBar />
           <DemoActorHandoffBar />

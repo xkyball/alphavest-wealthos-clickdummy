@@ -5,12 +5,9 @@ import {
   Check,
   CheckCircle2,
   Clock3,
-  FileCheck2,
-  Flag,
   LockKeyhole,
   Search,
   ShieldAlert,
-  ShieldCheck,
   UserCheck,
   WalletCards,
 } from "lucide-react";
@@ -33,9 +30,9 @@ import {
   type DataTableColumn,
 } from "@/components/ui";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
+import { ProcessSidebar } from "@/components/process-navigation";
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
-import { cn } from "@/lib/cn";
 import {
   amlChecks,
   identityChecks,
@@ -56,28 +53,11 @@ type KycAmlWorkflowScreenProps = {
   route: ScreenRoute;
 };
 
-type NavItem = {
-  href: string;
-  icon: LucideIcon;
-  label: string;
-  pageIds?: string[];
-  count?: number;
-};
-
 const primaryButtonClass =
   "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md bg-alphavest-gold px-4 text-sm font-semibold text-alphavest-navy transition hover:bg-alphavest-gold-soft disabled:cursor-not-allowed disabled:opacity-55";
 
 const secondaryButtonClass =
   "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-4 text-sm font-semibold text-alphavest-ivory transition hover:border-alphavest-gold/60 hover:text-alphavest-gold-soft disabled:cursor-not-allowed disabled:opacity-55";
-
-const kycNav: NavItem[] = [
-  { href: "/advisory", icon: ShieldAlert, label: "Signals" },
-  { href: "/advisory/triggers/demo/review", icon: Flag, label: "Triggers", count: 12 },
-  { href: "/documents/review-queue", icon: FileCheck2, label: "Extraction review" },
-  { href: "/kyc/reviews", icon: UserCheck, label: "KYC review", pageIds: ["064"], count: 3 },
-  { href: "/kyc/reviews", icon: WalletCards, label: "Source of wealth", pageIds: ["065"], count: 2 },
-  { href: "/compliance/reviews", icon: ShieldCheck, label: "Compliance" },
-];
 
 function toneFor(value: string): BadgeTone {
   const normalized = value.toLowerCase();
@@ -121,53 +101,19 @@ function ScreenTitle({ children }: { children: React.ReactNode }) {
   return <h1 className="sr-only">{children}</h1>;
 }
 
-function AlphaVestMark() {
+function KycSidebar() {
   return (
-    <div className="flex items-center gap-3">
-      <div className="grid size-11 place-items-center rounded text-2xl font-semibold text-alphavest-gold">A</div>
-      <div>
-        <p className="font-display text-2xl leading-none text-alphavest-ivory">AlphaVest</p>
-        <p className="mt-1 text-[0.62rem] font-semibold uppercase tracking-[0.34em] text-alphavest-gold">WealthOS</p>
-      </div>
-    </div>
-  );
-}
-
-function KycSidebar({ activePageId }: { activePageId: string }) {
-  return (
-    <aside className="hidden min-h-screen border-r border-alphavest-border/60 bg-alphavest-navy/88 p-5 lg:flex lg:w-[var(--sidebar-width)] lg:flex-col">
-      <AlphaVestMark />
-      <nav className="mt-8 flex flex-1 flex-col gap-1">
-        {kycNav.map((item) => {
-          const Icon = item.icon;
-          const active = item.pageIds?.includes(activePageId);
-
-          return (
-            <a
-              className={cn(
-                "flex h-10 items-center gap-3 rounded-md border px-3 text-sm transition",
-                active
-                  ? "border-alphavest-gold/45 bg-alphavest-gold/12 text-alphavest-gold-soft"
-                  : "border-transparent text-alphavest-muted hover:border-alphavest-border hover:bg-alphavest-panel/65 hover:text-alphavest-ivory",
-              )}
-              href={item.href}
-              key={item.label}
-            >
-              <Icon aria-hidden="true" className="size-4 shrink-0" />
-              <span className="min-w-0 flex-1 truncate">{item.label}</span>
-              {item.count ? <span className="rounded-full bg-alphavest-gold px-2 text-xs font-semibold text-alphavest-navy">{item.count}</span> : null}
-            </a>
-          );
-        })}
-      </nav>
-      <div className="rounded-md border border-alphavest-gold/30 bg-alphavest-gold/10 p-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-alphavest-gold-soft">
-          <LockKeyhole aria-hidden="true" className="size-4" />
-          Internal Only
+    <ProcessSidebar
+      footer={
+        <div className="rounded-md border border-alphavest-gold/30 bg-alphavest-gold/10 p-4">
+          <div className="flex items-center gap-2 text-sm font-semibold text-alphavest-gold-soft">
+            <LockKeyhole aria-hidden="true" className="size-4" />
+            Internal Only
+          </div>
+          <p className="mt-2 text-xs leading-5 text-alphavest-muted">KYC review stays hidden from clients until compliance release gates pass.</p>
         </div>
-        <p className="mt-2 text-xs leading-5 text-alphavest-muted">KYC review stays hidden from clients until compliance release gates pass.</p>
-      </div>
-    </aside>
+      }
+    />
   );
 }
 
@@ -218,11 +164,11 @@ function KycTopBar() {
   );
 }
 
-function KycShell({ activePageId, children }: { activePageId: string; children: React.ReactNode }) {
+function KycShell({ children }: { activePageId: string; children: React.ReactNode }) {
   return (
     <DemoSessionProvider>
       <div className="av-surface av-surface-internal av-shell-grid overflow-x-hidden">
-        <KycSidebar activePageId={activePageId} />
+        <KycSidebar />
         <div className="min-w-0">
           <KycTopBar />
           <main className="min-w-0 px-4 py-5 md:px-6 lg:px-8 lg:py-7">

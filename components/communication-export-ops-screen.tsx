@@ -10,13 +10,10 @@ import {
   ClipboardCheck,
   Download,
   Eye,
-  FileCheck2,
   Filter,
   Folder,
   Gauge,
   GitBranch,
-  Home,
-  KeyRound,
   LineChart,
   LockKeyhole,
   MessageSquare,
@@ -45,6 +42,7 @@ import {
 } from "@/components/ui";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { GlobalSearchBox } from "@/components/global-search-box";
+import { ProcessSidebar } from "@/components/process-navigation";
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
 import { RouteContextChip } from "@/components/route-context-chip";
 import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
@@ -106,14 +104,6 @@ type AuditEventTableRow = {
   sourceRef: string;
   sourceState: "source-backed";
   timestamp: string;
-};
-
-type NavItem = {
-  href: string;
-  icon: LucideIcon;
-  label: string;
-  pageIds?: string[];
-  count?: number;
 };
 
 const primaryButtonClass =
@@ -421,17 +411,6 @@ function handleStaticSortChange() {
   return undefined;
 }
 
-const phase13Nav: NavItem[] = [
-  { href: "/tenants/demo/setup", icon: Settings, label: "Access & tenant setup", pageIds: ["001", "002", "003", "004", "005", "006", "007", "009", "010", "011", "012", "013", "014", "015", "016", "017", "018"] },
-  { href: "/client/home", icon: Home, label: "Client context", pageIds: ["019", "020", "021", "022", "023", "024", "025", "026", "031", "032"] },
-  { href: "/documents/upload", icon: Folder, label: "Evidence workspace", pageIds: ["027", "028", "029", "030", "046", "047"] },
-  { href: "/advisory/review-queue", icon: Network, label: "Internal workbench", pageIds: ["033", "034", "035", "036", "037"] },
-  { href: "/compliance/reviews", icon: KeyRound, label: "Compliance release", pageIds: ["038", "039", "040", "041", "042"] },
-  { href: "/decisions/demo", icon: FileCheck2, label: "Decision & evidence record", pageIds: ["043", "044", "045"] },
-  { href: "/governance", icon: GitBranch, label: "Governance / RBAC / audit", pageIds: ["008", "048", "049", "050", "051"] },
-  { href: "/export/new", icon: Download, label: "Export & redaction", pageIds: ["054", "055", "056", "057", "058"] }
-];
-
 function toneFor(value: string): BadgeTone {
   const normalized = value.toLowerCase();
 
@@ -683,18 +662,6 @@ function ScreenTitle({ children }: { children: React.ReactNode }) {
   return <h1 className="sr-only">{children}</h1>;
 }
 
-function AlphaVestMark() {
-  return (
-    <div className="flex items-center gap-3">
-      <div className="grid size-11 place-items-center rounded text-2xl font-semibold text-alphavest-gold">A</div>
-      <div>
-        <p className="font-display text-2xl leading-none text-alphavest-ivory">AlphaVest</p>
-        <p className="mt-1 text-[0.62rem] font-semibold uppercase tracking-[0.34em] text-alphavest-gold">WealthOS</p>
-      </div>
-    </div>
-  );
-}
-
 function IconTile({ children, tone = "gold" }: { children: React.ReactNode; tone?: BadgeTone }) {
   const toneClass: Record<BadgeTone, string> = {
     blue: "border-alphavest-blue/35 bg-alphavest-blue/10 text-alphavest-blue",
@@ -747,41 +714,18 @@ function MiniTrend({ tone = "green" }: { tone?: BadgeTone }) {
   );
 }
 
-function Phase13Sidebar({ activePageId }: { activePageId: string }) {
+function Phase13Sidebar() {
   return (
-    <aside className="hidden min-h-screen border-r border-alphavest-border/60 bg-alphavest-navy/88 p-5 lg:flex lg:w-[var(--sidebar-width)] lg:flex-col">
-      <AlphaVestMark />
-      <nav aria-label="Primary navigation" className="mt-8 flex flex-1 flex-col gap-1">
-        {phase13Nav.map((item) => {
-          const Icon = item.icon;
-          const active = item.pageIds?.includes(activePageId);
-
-          return (
-            <a
-              aria-current={active ? "page" : undefined}
-              className={cn(
-                "flex min-h-10 items-center gap-3 rounded-md border px-3 py-2 text-sm transition",
-                active
-                  ? "border-alphavest-gold/45 bg-alphavest-gold/12 text-alphavest-gold-soft"
-                  : "border-transparent text-alphavest-muted hover:border-alphavest-border hover:bg-alphavest-panel/65 hover:text-alphavest-ivory"
-              )}
-              href={item.href}
-              key={item.label}
-            >
-              <Icon aria-hidden="true" className="size-4 shrink-0" />
-              <span className="min-w-0 flex-1 leading-5">{item.label}</span>
-              {item.count ? <span className="rounded-full bg-alphavest-gold px-2 text-xs font-semibold text-alphavest-navy">{item.count}</span> : null}
-            </a>
-          );
-        })}
-      </nav>
-      <div className="border-t border-alphavest-border/60 pt-4">
-        <p className="flex h-9 w-full items-center justify-between rounded-md px-2 text-sm text-alphavest-muted opacity-65" data-ux-affordance="static-control-note" data-ux-interactive="false">
-          <span>Collapse</span>
-          <span aria-hidden="true">{"<<"}</span>
-        </p>
-      </div>
-    </aside>
+    <ProcessSidebar
+      footer={
+        <div className="border-t border-alphavest-border/60 pt-4">
+          <p className="flex h-9 w-full items-center justify-between rounded-md px-2 text-sm text-alphavest-muted opacity-65" data-ux-affordance="static-control-note" data-ux-interactive="false">
+            <span>Collapse</span>
+            <span aria-hidden="true">{"<<"}</span>
+          </p>
+        </div>
+      }
+    />
   );
 }
 
@@ -840,7 +784,7 @@ function Phase13Shell({ children, route }: { children: React.ReactNode; route: S
       <div className="av-surface av-surface-internal overflow-x-hidden">
         <ScreenTitle>{route.title}</ScreenTitle>
         <div className="av-shell-grid">
-          <Phase13Sidebar activePageId={route.pageId} />
+          <Phase13Sidebar />
           <div className="min-w-0 flex-1">
             <Phase13TopBar />
             <main className="px-4 py-6 md:px-6 lg:px-8">
