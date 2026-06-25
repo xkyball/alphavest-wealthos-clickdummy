@@ -43,7 +43,7 @@ export const p0RouteUiStateObligations = [
   {
     obligation: "client visibility fail-closed states",
     proof: "tests/ui-state-boundaries.spec.ts",
-    routes: ["/client/home", "/client/home", "/decisions/demo/success"],
+    routes: ["/client/home", "/mobile", "/decisions/demo/success"],
   },
   {
     obligation: "document upload is separate from evidence sufficiency",

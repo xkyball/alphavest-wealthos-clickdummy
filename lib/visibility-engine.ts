@@ -456,7 +456,6 @@ function projectDocumentPayload(
           documentType: payload.documentType,
           fileName: payload.fileName,
           fileSizeBytes: payload.fileSizeBytes,
-          sensitivity: payload.sensitivity,
           status: payload.status,
           uploadedAt: payload.uploadedAt,
         },

@@ -131,6 +131,7 @@ test.describe("document upload multipart API", () => {
     expect(uploaderClientDocument?.fileName).toBe(fileName);
     expect(uploaderClientDocument).not.toHaveProperty("evidenceStatus");
     expect(uploaderClientDocument).not.toHaveProperty("evidenceVisibilityStatus");
+    expect(uploaderClientDocument).not.toHaveProperty("sensitivity");
     expect(uploaderClientDocument).not.toHaveProperty("storageKey");
     expect(uploaderClientDocument).not.toHaveProperty("checksum");
 

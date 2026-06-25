@@ -415,7 +415,7 @@ export const screenRoutes = [
   },
   {
     pageId: "020",
-    route: "/client/home",
+    route: "/mobile",
     title: "Mobile Home",
     purpose: "Mobile home / next step today",
     visualMode: "NORMAL_PAGE",

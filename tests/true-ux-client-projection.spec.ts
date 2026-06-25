@@ -3,6 +3,7 @@ import { expect, type Page, test } from "@playwright/test";
 import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
 import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
 import { exportService } from "../lib/export-service";
+import { clientPortalProjectionState } from "../lib/client-portal-projection-state";
 import {
   trueUxClientProjectionNoLeakageContract,
   visibilityEngine,
@@ -148,11 +149,14 @@ test.describe("UX-CLIENT-PROJECTION phase 7 no-leakage contract", () => {
   test("fails closed for unreleased decisions and exposes only released client decision fields", () => {
     const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
     const blocked = visibilityEngine.projectDecisionPayload(principal.actor, principal.role, decisionPayload({ clientTenantId: principal.tenant.id }), demoPlatformTenantId, principal.tenant.id);
+    const blockedState = clientPortalProjectionState("decision", blocked);
 
     expect(blocked.visible).toBe(false);
     expect(blocked.reasonCode).toBe("DEMO_CLIENT_DECISION_FAIL_CLOSED");
     expect(blocked.payload).toEqual({});
     expect(blocked.hiddenFields).toEqual(expect.arrayContaining(["aiDraft", "internalRationale", "complianceNotes", "evidenceRecordId", "assumptionsJson"]));
+    expect(blockedState.state).toBe("empty");
+    expect(blockedState.safe).toBe(true);
 
     const released = visibilityEngine.projectDecisionPayload(
       principal.actor,
@@ -167,6 +171,7 @@ test.describe("UX-CLIENT-PROJECTION phase 7 no-leakage contract", () => {
       demoPlatformTenantId,
       principal.tenant.id,
     );
+    const releasedState = clientPortalProjectionState("decision", released);
 
     expect(released.visible).toBe(true);
     expect(released.payload).toEqual({
@@ -178,6 +183,8 @@ test.describe("UX-CLIENT-PROJECTION phase 7 no-leakage contract", () => {
     });
     expectNoForbiddenFields(released.payload);
     expect(visibilityEngine.assertClientProjectionClean(released).clean).toBe(true);
+    expect(releasedState.state).toBe("released");
+    expect(releasedState.allowedPayloadKeys).toEqual(["clientSummary", "decisionState", "id", "releasedAt", "title"]);
   });
 
   test("fails closed for unreleased evidence and allows only redacted released document summaries", () => {
@@ -212,6 +219,33 @@ test.describe("UX-CLIENT-PROJECTION phase 7 no-leakage contract", () => {
     });
     expectNoForbiddenFields(released.payload);
     expect(visibilityEngine.assertClientProjectionClean(released).clean).toBe(true);
+  });
+
+  test("keeps source-upload metadata as a named client status exception", () => {
+    const familyCfo = createDemoSession({ roleKey: "family_cfo", tenantSlug: "bennett" });
+    const sourceUpload = visibilityEngine.projectDocumentPayload(
+      familyCfo.actor,
+      familyCfo.role,
+      documentPayload({
+        clientTenantId: familyCfo.tenant.id,
+        fileName: "family-office-source.pdf",
+        fileSizeBytes: 12000,
+      }),
+      demoPlatformTenantId,
+      familyCfo.tenant.id,
+    );
+    const sourceState = clientPortalProjectionState("document", sourceUpload);
+
+    expect(sourceUpload.visible).toBe(true);
+    expect(sourceUpload.reasonCode).toBe("DEMO_CLIENT_SOURCE_DOCUMENT_PROJECTION");
+    expect(sourceState.state).toBe("source_upload");
+    expect(sourceState.safe).toBe(true);
+    expect(sourceUpload.payload).toMatchObject({
+      fileName: "family-office-source.pdf",
+      fileSizeBytes: 12000,
+    });
+    expect(sourceUpload.payload).not.toHaveProperty("sensitivity");
+    expect(sourceState.forbiddenFieldsPresent).toEqual([]);
   });
 
   test("allows export download only from clean client-safe projections", () => {
@@ -283,10 +317,11 @@ test.describe("V0.96 WP-07 decision record and client-safe projection refactor",
   test("client-safe projection card keeps the same semantic contract in mobile density", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await authenticate(page);
-    await page.goto("/client/home");
+    await page.goto("/mobile");
 
     const card = page.getByTestId("wp07-client-safe-projection-card").first();
     await expect(card).toBeVisible();
+    await expect(card).toHaveAttribute("data-wp07-mobile-parity", "true");
     await expect(card).toHaveAttribute("data-wp07-projection-source", "visibility-engine");
     await expect(card).toHaveAttribute("data-wp07-safe-clean", "true");
     await expect(card.getByTestId("wp07-client-projection-boundary")).toContainText("released summary and permitted metadata");

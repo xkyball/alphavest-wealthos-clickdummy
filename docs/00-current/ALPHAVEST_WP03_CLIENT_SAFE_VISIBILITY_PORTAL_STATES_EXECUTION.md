@@ -335,28 +335,53 @@ Rationale:
 - The route `019/020` duplication is legacy drift; cleaning it gives stronger proof than working around it.
 - Deferring export links to WP07 preserves lifecycle boundaries and avoids a premature download/share promise.
 
-Implementation remains blocked until this decision is accepted.
+Decision accepted by user on 2026-06-25.
+
+Implementation status after approval:
+
+- `IMPL-WP03-00` complete.
+- `IMPL-WP03-01` complete.
+- `IMPL-WP03-02` complete.
+- `IMPL-WP03-03` complete.
+- `IMPL-WP03-04` complete with one unrelated route-smoke blocker noted below.
+- Route `020` is moved to `/mobile` in `lib/route-registry.ts` so portal and mobile route proof are unambiguous.
+- Mobile semantic projection test now visits `/mobile` and asserts mobile parity.
+- Client portal/mobile rendering uses `lib/client-portal-projection-state.ts` as a small state adapter over `visibilityEngine`.
+- Source-upload projection no longer exposes `sensitivity`; `fileName` and `fileSizeBytes` are treated as own-upload status metadata only.
 
 ## Recommended Next Implementation Plan After Approval
 
 1. `IMPL-WP03-00`: route/proof cleanup for `019/020`.
-   - Decide whether `020` gets `/mobile` or route `020` becomes a mobile density/state of `/client/home`.
-   - Aggressive recommendation: restore distinct `/mobile` route for page `020` because current docs/assets/tests already expect it and it makes screenshots/proof unambiguous.
+   - Status: implemented after approval.
+   - Route `020` uses `/mobile`; route `019` remains `/client/home`.
+   - Mobile projection proof uses `/mobile`.
 2. `IMPL-WP03-01`: create `client-portal-projection-state` adapter from WCL/visibility results.
+   - Status: implemented in `lib/client-portal-projection-state.ts`.
 3. `IMPL-WP03-02`: refactor portal/mobile projection card into state-driven renderer.
+   - Status: implemented in `components/client-intake-screen.tsx`.
 4. `IMPL-WP03-03`: enforce source-upload metadata exception explicitly; remove `sensitivity` from client source-upload payload unless approved.
+   - Status: implemented in `lib/visibility-engine.ts` and tested.
 5. `IMPL-WP03-04`: add/extend tests for positive/negative portal, mobile, document source/released, wrong-tenant, advisor-not-release and stale loading/error states.
+   - Status: implemented for projection states, mobile route proof and source-upload metadata.
 6. `QA-WP03-01`: run focused unit/API/Playwright gates and capture screenshots for UI changes.
+   - Status: focused gates and screenshots complete.
 
 ## Validation Performed
 
 - Moving Baseline Preflight executed.
 - `pnpm guard:source`: PASS.
+- `pnpm typecheck`: PASS.
+- `PLAYWRIGHT_PORT=3083 pnpm playwright test tests/true-ux-client-projection.spec.ts --workers=1`: PASS, 13/13.
+- `PLAYWRIGHT_PORT=3083 pnpm playwright test tests/document-upload-api.spec.ts --workers=1`: PASS, 9/9.
+- `PLAYWRIGHT_PORT=3083 pnpm playwright test tests/route-smoke.spec.ts --workers=1`: PARTIAL/BLOCKED by existing broad UX expectation timeouts outside WP03; registered route smoke reached `020 /mobile` and passed before the run was interrupted.
 - Inspected `ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md`.
 - Inspected the full WP03 upload.
 - Inspected current route registry, catch-all route, client portal/mobile component paths, decision/evidence components, visibility engine, WCL wrapper, document API/service, journey client projection API/service and relevant tests.
 
-No UI code changed in this execution artefact, so no screenshot is required yet.
+Screenshots:
+
+- `artifacts/wp03-client-safe-visibility/client-home-desktop.png`
+- `artifacts/wp03-client-safe-visibility/mobile-home-mobile.png`
 
 ## Method Artifacts
 

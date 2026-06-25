@@ -56,6 +56,10 @@ import {
 } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import {
+  clientPortalProjectionState,
+  type ClientPortalProjectionViewModel,
+} from "@/lib/client-portal-projection-state";
+import {
   clientWorkspace,
   entityDetail,
   entityDocuments,
@@ -833,48 +837,92 @@ function ClientSafeProjectionCard({ density = "desktop" }: { density?: "desktop"
     demoPlatformTenantId,
     wp07ClientProjectionSession.tenant.id,
   );
-  const safety = visibilityEngine.assertClientProjectionClean(releasedProjection);
-  const releasedPayload = releasedProjection.visible ? releasedProjection.payload : {};
+  const releasedState = clientPortalProjectionState("decision", releasedProjection);
+  const blockedState = clientPortalProjectionState("decision", blockedProjection);
+  const releasedPayload = releasedState.visible ? releasedState.payload : {};
 
   return (
     <Card
       data-testid="wp07-client-safe-projection-card"
+      data-wp03-blocked-state={blockedState.state}
+      data-wp03-released-state={releasedState.state}
       data-wp07-mobile-parity={density === "mobile" ? "true" : "false"}
       data-wp07-projection-source="visibility-engine"
-      data-wp07-projection-state={releasedProjection.reasonCode}
-      data-wp07-safe-clean={String(safety.clean)}
+      data-wp07-projection-state={releasedState.reasonCode}
+      data-wp07-safe-clean={String(releasedState.safe)}
     >
       <CardHeader>
         <CardTitle>Client-safe summary</CardTitle>
         <CardDescription>Released content only, with fail-closed fallback.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <StatePanel
-          detail="This view is derived from compliance release and projection rules. Release does not mean client acceptance."
-          state="success"
-          title="Client-safe summary is now available"
-        />
+        <ClientPortalProjectionStatePanel model={releasedState} />
         <div className="grid gap-3 md:grid-cols-2">
           <ClientProjectionField label="Decision" value={String(releasedPayload.title ?? "Released decision")} />
           <ClientProjectionField label="State" value={String(releasedPayload.decisionState ?? "RELEASED")} />
           <ClientProjectionField label="Released" value={String(releasedPayload.releasedAt ?? "Release timestamp unavailable")} />
-          <ClientProjectionField label="Projection" value={releasedProjection.reasonCode} />
+          <ClientProjectionField label="Projection" value={releasedState.reasonCode} />
         </div>
         <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4" data-testid="wp07-client-safe-summary">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-muted">Summary</p>
           <p className="mt-2 text-sm leading-6 text-alphavest-ivory">{String(releasedPayload.clientSummary ?? "No released summary available.")}</p>
         </div>
-        <StatePanel
-          detail="Your AlphaVest team is still reviewing this item. No decision body or supporting detail is shown until a released projection exists."
-          state="blocked"
-          testId="wp07-client-fail-closed-state"
-          title={blockedProjection.visible ? "Released view available" : "No released content is available yet"}
-        />
+        <ClientPortalProjectionStatePanel model={blockedState} testId="wp07-client-fail-closed-state" />
         <p className="rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-3 text-xs leading-5 text-alphavest-muted" data-testid="wp07-client-projection-boundary">
           Traceability is retained by AlphaVest. This client view contains only the released summary and permitted metadata.
         </p>
       </CardContent>
     </Card>
+  );
+}
+
+function ClientPortalProjectionStatePanel({
+  model,
+  testId,
+}: {
+  model: ClientPortalProjectionViewModel;
+  testId?: string;
+}) {
+  if (model.state === "released") {
+    return (
+      <StatePanel
+        detail="This view is derived from compliance release and projection rules. Release does not mean client acceptance."
+        state="success"
+        testId={testId}
+        title="Client-safe summary is now available"
+      />
+    );
+  }
+
+  if (model.state === "permission_denied") {
+    return (
+      <StatePanel
+        detail="This account cannot view the requested client-safe projection. No internal object detail is disclosed."
+        state="restricted"
+        testId={testId}
+        title="Access restricted"
+      />
+    );
+  }
+
+  if (model.state === "source_upload") {
+    return (
+      <StatePanel
+        detail="Your upload is available as source-document status only. It is not evidence sufficiency, release readiness or advice."
+        state="validation"
+        testId={testId}
+        title="Source upload received"
+      />
+    );
+  }
+
+  return (
+    <StatePanel
+      detail="Your AlphaVest team is still reviewing this item. No decision body or supporting detail is shown until a released projection exists."
+      state={model.state === "blocked" ? "blocked" : "empty"}
+      testId={testId}
+      title="No released content is available yet"
+    />
   );
 }
 
