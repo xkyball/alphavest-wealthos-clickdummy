@@ -451,3 +451,105 @@ Files changed:
 Aggressive next recommendation:
 
 - Continue with `IMPL-WP02-04 Internal / Advisor / Compliance Worksurface Slice` next, not Access/Tenant yet. Reason: it follows the live process spine from evidence into review gates and will remove the biggest remaining visual/layout split across analyst, advisor and compliance screens before governance/export cleanup.
+
+## WP02 Rerun After WP03-WP06 Artefacts
+
+Execution date: 2026-06-25.
+
+Rerun trigger:
+
+- User requested a WP02 rerun from the original upload with all generated specification artefacts used as input for later tasks.
+- Current branch baseline before rerun: `full-workflow`, latest commit `cc650ca docs: rerun wp01 navigation shell audit`, working tree clean.
+
+Generated artefacts used as rerun input:
+
+- `docs/00-current/ALPHAVEST_WP00_SOURCE_HIERARCHY_TARGET_GUARD_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP01_PROCESS_FIRST_ROUTE_NAV_SHELL_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP02_WORKSURFACE_LAYOUT_REFACTOR_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP03_CLIENT_SAFE_VISIBILITY_PORTAL_STATES_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP04_EVIDENCE_WORKFLOW_UPLOAD_NOT_SUFFICIENCY_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP05_INTERNAL_DRAFT_ADVISOR_COMPLIANCE_FLOW_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP06_RBAC_ADMIN_NON_BYPASS_EXECUTION.md`
+
+Task-by-task rerun status:
+
+- EPIC WP-02 - Process-first Worksurface Layout Refactor: `PARTIAL_COMPLETE_WITH_DECISION_GATE`. The shell and first approved product slice are complete; remaining slices must stay split.
+- `ANALYSIS-WP02-01` - Existing Screen / Component / Layout Inventory: `COMPLETE`. Current ownership map remains valid; later WP03-WP06 artefacts reinforce the same safety boundaries.
+- `SPEC-WP02-01` - Target Worksurface Layout Architecture: `COMPLETE`. The thin `WorksurfaceShell` contract remains the active implementation pattern.
+- `DECISION-WP02-01` - Approve Implementation Slice Order: `PARTIAL_COMPLETE`. Prior approval covered Option A first wave: shared shell plus Client Context + Evidence first. It did not authorize a broad all-remaining WP02 implementation.
+- `IMPL-WP02-01` - Shared Worksurface Shell / Layout Primitives: `COMPLETE`. `components/worksurface-shell.tsx` is present and used by approved slices.
+- `IMPL-WP02-02` - Access & Tenant Setup Worksurface Slice: `NOT_STARTED`. Still available, but lower cleanup leverage than the live internal/advisor/compliance spine.
+- `IMPL-WP02-03` - Client Context + Evidence Worksurface Slice: `COMPLETE`. Routes `019`, `027`, `028`, `029`, `030`, `031`, `032`, `046` and `047` use the WP02 shell and preserve upload-not-sufficiency/client-safe boundaries.
+- `IMPL-WP02-04` - Internal Workbench / Advisor / Compliance Worksurface Slice: `NEXT_RECOMMENDED_DECISION`. Later WP05 implementation made this the cleanest next UI-debt removal target, but it still needs explicit slice approval because the upload marks it CTES 13 and split-required.
+- `IMPL-WP02-05` - Decision / Evidence Record / Governance / Export Layout Slice: `DEFER_AFTER_WP02-04`. Later WP06 gives strong governance/RBAC semantics, but the layout slice remains safety-sensitive and should follow the internal/advisor/compliance UI spine.
+- `QA-WP02-01` - Worksurface Layout Regression and Stop-Rule Validation: `COMPLETE_FOR_IMPLEMENTED_SLICES`; `PENDING_FOR_REMAINING_SLICES`.
+
+Cross-artefact safety findings:
+
+- WP03 confirms the WP02 client context/evidence slice must remain a presentation layer around released/client-safe projection, not a payload visibility shortcut.
+- WP04 confirms evidence upload and evidence record presence cannot be rendered as sufficiency by layout copy.
+- WP05 confirms the next high-value Worksurface slice is the internal draft -> advisor -> compliance chain, because the service/workflow semantics now exist and the UI should stop being split across older page shapes.
+- WP06 confirms governance/admin layout must not imply admin bypass, so governance/export should remain a later dedicated split, not a mixed broad refactor.
+
+Current code adoption check:
+
+- `components/worksurface-shell.tsx`: shared shell present.
+- `components/client-intake-screen.tsx`: WP02 shell adoption present for client/evidence routes.
+- `components/wealth-actions-screen.tsx`: WP02 shell adoption present for wealth/action routes.
+- `components/decisions-governance-screen.tsx`: WP02 shell adoption present for evidence vault/detail routes.
+- `components/internal-workflow-screen.tsx`: no WP02 shell adoption yet for internal/advisor/compliance routes.
+- `components/admin-tenant-setup-screen.tsx`: no WP02 shell adoption yet for access/tenant setup.
+- `components/communication-export-ops-screen.tsx`: no WP02 shell adoption yet for export/redaction.
+
+Rerun validation completed:
+
+```bash
+pnpm guard:source
+pnpm exec tsc --noEmit --pretty false
+pnpm playwright test tests/wp02-worksurface-shell.spec.ts --workers=1
+pnpm playwright test tests/route-smoke.spec.ts --grep "registered route smoke|UX-NAV" --workers=1
+pnpm test:source-reality
+pnpm db:validate
+```
+
+Rerun validation result:
+
+- Source/target guard: PASS.
+- TypeScript: PASS.
+- WP02 Worksurface shell tests: PASS, 10 passed.
+- Focused route smoke / UX-NAV tests: PASS, 79 passed after a sequential rerun. The first attempt failed only because parallel Playwright web servers contended for port `3020`.
+- Source reality gate: PASS, 8 passed.
+- Prisma schema validation: PASS.
+
+UI/screenshot status:
+
+- No UI code changed in this rerun.
+- Existing screenshot proof remains current for the implemented WP02 shell and Client/Evidence slice:
+  - `artifacts/wp02-screenshots/client-home.png`
+  - `artifacts/wp02-screenshots/documents-upload.png`
+  - `artifacts/wp02-screenshots/documents-review-queue.png`
+  - `artifacts/wp02-screenshots/wealth-map.png`
+  - `artifacts/wp02-screenshots/evidence-vault-base.png`
+  - `artifacts/wp02-screenshots/evidence-vault.png`
+- No new screenshot was produced because the rerun produced a documentation/audit artefact only.
+
+Decision gate:
+
+- Stop before product UI implementation. The next WP02 code slice changes visible UI and the upload requires split approval for CTES 13 work.
+
+Aggressive recommendation:
+
+- Approve `WP02 Rerun Option A`: continue next with `IMPL-WP02-04`, split into three task-scoped commits in this order: Internal Workbench (`033-035`), Advisor Review (`036-037`), Compliance Release (`038-042`).
+- Then continue with `IMPL-WP02-05`, split into Decision/Evidence Record, Governance Safety Console and Export & Redaction Studio.
+- Keep `IMPL-WP02-02 Access & Tenant Setup` last unless setup/auth becomes the immediate commercial demo priority.
+- Keep P1/Hold/Reference routes registered/deferred and out of primary Worksurface implementation.
+
+Rejected branches:
+
+- Upload-order-first `Access & Tenant Setup` next: lower product cleanup leverage now that WP04/WP05/WP06 produced stronger evidence/compliance/governance semantics.
+- Broad all-remaining WP02 implementation: rejected because it violates CTES split discipline and would mix safety-sensitive UI surfaces.
+- Route deletion: rejected because WP01/WP02 preserve deep links and route smoke proof.
+
+Recommended approval wording:
+
+`I approve WP02 rerun Option A: continue with IMPL-WP02-04 next, split into Internal Workbench, Advisor Review and Compliance Release task-scoped commits, then proceed to IMPL-WP02-05 split by Decision/Evidence Record, Governance Safety Console and Export/Redaction, keep Access/Tenant last unless commercially urgent, keep P1/Hold/Reference deferred, and make no route/API/schema/safety changes inside WP02 layout work.`
