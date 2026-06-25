@@ -36,6 +36,9 @@ const worksurfaceRoutes = [
   { pageId: "040", worksurface: "compliance-release-confirmation" },
   { pageId: "041", worksurface: "compliance-release-block" },
   { pageId: "042", worksurface: "compliance-release-audit" },
+  { pageId: "043", worksurface: "decision-record-list" },
+  { pageId: "044", worksurface: "decision-record-room" },
+  { pageId: "045", worksurface: "decision-record-success" },
   { pageId: "046", worksurface: "evidence-vault" },
   { pageId: "047", worksurface: "evidence-record-detail" },
 ] as const;

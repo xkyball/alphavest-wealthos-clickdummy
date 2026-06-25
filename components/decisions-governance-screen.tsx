@@ -985,8 +985,19 @@ const decisionColumns: Array<DataTableColumn<(typeof decisionRows)[number]>> = [
 function DecisionsListPage({ title }: { title: string }) {
   return (
     <Phase12Shell activePageId="043">
-      <ScreenTitle>{title}</ScreenTitle>
-      <UxHubPage pageId="043" />
+      <WorksurfaceShell
+        description="Decision register for finding active decision records while release, evidence and export controls stay on their own governed surfaces."
+        eyebrow="WP02 Decision Record"
+        primary={<UxHubPage pageId="043" />}
+        routeId="043"
+        safetyNote="The decision list is discovery and triage only; it cannot release advice, complete evidence sufficiency or export client material."
+        statusItems={[
+          { label: "Route", tone: "blue", value: "043" },
+          { label: "Authority", tone: "gold", value: "record only" },
+        ]}
+        title={title}
+        worksurfaceId="decision-record-list"
+      />
     </Phase12Shell>
   );
 }
@@ -1144,7 +1155,26 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
 
   return (
     <Phase12Shell activePageId="044">
-      <ScreenTitle>{title}</ScreenTitle>
+      <WorksurfaceShell
+        description="Released decision context, projection boundary, traceability and audited client decision action in one governed work surface."
+        eyebrow="WP02 Decision Record"
+        primary={
+          <div className="space-y-4">
+            <ScfP07P09TrustPanel mode="decision" />
+            <Phase7ClientProjectionPanel allowedFields="decision id, title, released state, client summary and releasedAt only" failClosed="Submitted or unreleased decisions render as unavailable and hide the decision body." forbiddenFields="No AI Draft, internal rationale, compliance notes, evidence record id, assumptions or manual override." recovery="The client sees safe decision status and can wait for compliance release or request advisor clarification." routeLabel="Client released decision projection" taskId="UX-CLIENT-PROJECTION-002" visibilityEngineOutput="DEMO_CLIENT_DECISION_SAFE_PROJECTION or DEMO_CLIENT_DECISION_FAIL_CLOSED" />
+            <Phase6DecisionRoomPanel audit="Client decision audit must record actor, released package state, selected action and cancel or confirm outcome." blocker="Client decision remains separated from compliance release, evidence controls and client acceptance." cancelLabel="Cancel decision action" confirmLabel="Confirm client decision" decisionLabel="Client decision governance room" evidence="Linked documents, approvals and decision options are visible before action." preconditions="Released package, evidence controls, permission scope and decision audit readiness must all pass." safetyNote="No release, export or advice effect can occur until gate preconditions pass and an audit record exists." taskId="UX-DECISION-ROOM-001" />
+          </div>
+        }
+        routeId="044"
+        safetyNote="Decision submission records only the released decision workflow action; compliance release, evidence sufficiency and export remain separate controls."
+        statusItems={[
+          { label: "Route", tone: "blue", value: "044" },
+          { label: "Decision", tone: "green", value: "ready" },
+          { label: "Audit", tone: "gold", value: "required" },
+        ]}
+        title={title}
+        worksurfaceId="decision-record-room"
+      >
       <div className="mx-auto max-w-[112rem] space-y-5">
         <PageHeading
           action={<span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Release workflow scoped</span>}
@@ -1152,9 +1182,6 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
           subtitle={`${decisionRoom.decisionId} - ${decisionRoom.client}`}
           title={title}
         />
-        <ScfP07P09TrustPanel mode="decision" />
-        <Phase7ClientProjectionPanel allowedFields="decision id, title, released state, client summary and releasedAt only" failClosed="Submitted or unreleased decisions render as unavailable and hide the decision body." forbiddenFields="No AI Draft, internal rationale, compliance notes, evidence record id, assumptions or manual override." recovery="The client sees safe decision status and can wait for compliance release or request advisor clarification." routeLabel="Client released decision projection" taskId="UX-CLIENT-PROJECTION-002" visibilityEngineOutput="DEMO_CLIENT_DECISION_SAFE_PROJECTION or DEMO_CLIENT_DECISION_FAIL_CLOSED" />
-        <Phase6DecisionRoomPanel audit="Client decision audit must record actor, released package state, selected action and cancel or confirm outcome." blocker="Client decision remains separated from compliance release, evidence controls and client acceptance." cancelLabel="Cancel decision action" confirmLabel="Confirm client decision" decisionLabel="Client decision governance room" evidence="Linked documents, approvals and decision options are visible before action." preconditions="Released package, evidence controls, permission scope and decision audit readiness must all pass." safetyNote="No release, export or advice effect can occur until gate preconditions pass and an audit record exists." taskId="UX-DECISION-ROOM-001" />
         <UxDetailStandardPanel
           actionLabel="Accept, defer, reject or request more information"
           actionState="Decision actions are recorded only within the released decision workflow and do not bypass evidence or compliance controls."
@@ -1402,6 +1429,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
           </div>
         </Modal>
       </div>
+      </WorksurfaceShell>
     </Phase12Shell>
   );
 }
@@ -1409,23 +1437,37 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
 function DecisionSuccessPage({ title }: { title: string }) {
   return (
     <Phase12Shell activePageId="045">
-      <ScreenTitle>{title}</ScreenTitle>
-      <div className="mx-auto max-w-[92rem] space-y-6">
-        <section className="grid gap-6 lg:grid-cols-[14rem_1fr]">
-          <div className="grid size-40 place-items-center rounded-full border border-alphavest-gold/45 bg-alphavest-green/10">
-            <Check aria-hidden="true" className="size-20 text-alphavest-gold" />
-          </div>
-          <div>
-            <h2 className="font-display text-5xl text-alphavest-ivory">{title}</h2>
-            <p className="mt-2 text-lg text-alphavest-gold">The decision has been recorded for review. Audit persistence remains a controlled gate.</p>
-            <div className="mt-8 grid gap-4 md:grid-cols-4">
-              <InfoRow label="Decision ID" value={decisionSuccess.decisionId} />
-              <InfoRow label="Client" value={decisionSuccess.client} />
-              <InfoRow label="Submitted By" value={decisionSuccess.submittedBy} />
-              <InfoRow label="Submitted On" value={decisionSuccess.submittedOn} />
+      <WorksurfaceShell
+        description="Submitted decision confirmation with persisted audit context and downstream evidence review still explicitly separated."
+        eyebrow="WP02 Decision Record"
+        primary={
+          <section className="grid gap-6 lg:grid-cols-[14rem_1fr]">
+            <div className="grid size-40 place-items-center rounded-full border border-alphavest-gold/45 bg-alphavest-green/10">
+              <Check aria-hidden="true" className="size-20 text-alphavest-gold" />
             </div>
-          </div>
-        </section>
+            <div>
+              <h2 className="font-display text-5xl text-alphavest-ivory">{title}</h2>
+              <p className="mt-2 text-lg text-alphavest-gold">The decision has been recorded for review. Audit persistence remains a controlled gate.</p>
+              <div className="mt-8 grid gap-4 md:grid-cols-4">
+                <InfoRow label="Decision ID" value={decisionSuccess.decisionId} />
+                <InfoRow label="Client" value={decisionSuccess.client} />
+                <InfoRow label="Submitted By" value={decisionSuccess.submittedBy} />
+                <InfoRow label="Submitted On" value={decisionSuccess.submittedOn} />
+              </div>
+            </div>
+          </section>
+        }
+        routeId="045"
+        safetyNote="Recorded decision confirmation does not expand client acceptance, compliance release, evidence sufficiency or export authority."
+        statusItems={[
+          { label: "Route", tone: "blue", value: "045" },
+          { label: "Audit", tone: "green", value: "persisted" },
+          { label: "Evidence", tone: "gold", value: "queued" },
+        ]}
+        title={title}
+        worksurfaceId="decision-record-success"
+      >
+      <div className="mx-auto max-w-[92rem] space-y-6">
         <Card className="border-alphavest-gold/45 bg-alphavest-green/10">
           <CardContent className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
@@ -1511,6 +1553,7 @@ function DecisionSuccessPage({ title }: { title: string }) {
           </CardContent>
         </Card>
       </div>
+      </WorksurfaceShell>
     </Phase12Shell>
   );
 }
