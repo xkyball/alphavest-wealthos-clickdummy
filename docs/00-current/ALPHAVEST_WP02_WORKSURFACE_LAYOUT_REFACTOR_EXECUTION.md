@@ -359,3 +359,95 @@ Assumptions: the user's "most aggressive decisions" preference means recommendat
 V3 weak branch killed: whole-WP02 implementation is rejected because it violates the upload CTES split rule.
 
 Ethics/fairness: the recommendation preserves visible decision rights, avoids hidden scope expansion and keeps safety/product boundaries explicit.
+
+## DECISION-WP02-01 Approval
+
+User approved Option A on 2026-06-25:
+
+- Delivery model: one WP-02 Epic, multiple task-scoped commits.
+- First implementation work: shared `WorksurfaceShell` plus the first visible Client Context + Evidence slice.
+- Aggressive cleanup preference: remove layout sprawl where the approved slice already touches the affected screens, while staying inside WP-02 source, route and safety constraints.
+
+## IMPL-WP02-01 Execution Result
+
+Status: `DONE`.
+
+Implemented:
+
+- Added `components/worksurface-shell.tsx`.
+- Added shared `WorksurfaceShell` with compact process header, status chips, primary content, optional secondary content, optional right rail and mandatory safety boundary.
+- Added `WorksurfacePanel` for repeated rail/panel use inside the shell.
+- Kept the shell layout-only: no route registry changes, no API calls, no Prisma/schema changes, no permission logic and no new data semantics.
+
+Acceptance:
+
+- `WorksurfaceShell` is used by approved route slices, not left as unused architecture.
+- Shell exposes stable test hooks:
+  - `data-testid="wp02-worksurface-shell"`
+  - `data-wp02-route-id`
+  - `data-wp02-worksurface`
+  - `data-testid="wp02-worksurface-safety-boundary"`
+
+## IMPL-WP02-03 Execution Result
+
+Status: `DONE`.
+
+Implemented Client Context routes:
+
+- `019 /client/home`: normalized client home projection into `client-context-home`.
+- `031 /wealth-map`: normalized wealth map into `client-context-wealth-map`.
+- `032 /actions`: normalized action board into `client-context-actions`.
+
+Implemented Evidence routes:
+
+- `027 /documents`: normalized document hub into `evidence-document-hub`.
+- `028 /documents/upload`: normalized upload intake into `evidence-upload-intake`.
+- `029 /documents/review-queue`: normalized extraction review into `evidence-extraction-review`.
+- `030 /documents/:id/review`: normalized verification pending into `evidence-verification-pending`.
+- `046 /evidence`: normalized evidence vault into `evidence-vault`.
+- `047 /evidence/:id/review`: normalized evidence record detail into `evidence-record-detail`.
+
+Safety preservation:
+
+- Upload remains intake-only.
+- Extraction remains draft/human-review gated.
+- Evidence record presence is not described as sufficiency.
+- Download/share/client visibility remain gated by release/export/access controls.
+- Client context does not expose internal payloads or imply advice release.
+
+Regression coverage:
+
+- Added `tests/wp02-worksurface-shell.spec.ts`.
+- Test verifies central renderer adoption in source files and runtime shell presence for all nine implemented WP02 slice routes.
+
+Validation run:
+
+- `pnpm exec tsc --noEmit --pretty false` — PASS.
+- `pnpm lint` — PASS with pre-existing warnings only.
+- `pnpm playwright test tests/wp02-worksurface-shell.spec.ts` — PASS, 10 tests.
+- `pnpm playwright test tests/route-smoke.spec.ts --grep "registered route smoke|UX-NAV"` — PASS, 79 tests.
+- `pnpm guard:source` — PASS.
+- `pnpm db:validate` — PASS.
+- `pnpm build` — PASS with existing Turbopack storage-adapter tracing warnings.
+
+Screenshot proof:
+
+- `artifacts/wp02-screenshots/client-home.png`
+- `artifacts/wp02-screenshots/documents-upload.png`
+- `artifacts/wp02-screenshots/documents-review-queue.png`
+- `artifacts/wp02-screenshots/wealth-map.png`
+- `artifacts/wp02-screenshots/evidence-vault-base.png`
+- `artifacts/wp02-screenshots/evidence-vault.png`
+
+Files changed:
+
+- `components/worksurface-shell.tsx`
+- `components/client-intake-screen.tsx`
+- `components/wealth-actions-screen.tsx`
+- `components/decisions-governance-screen.tsx`
+- `tests/wp02-worksurface-shell.spec.ts`
+- `docs/00-current/ALPHAVEST_WP02_WORKSURFACE_LAYOUT_REFACTOR_EXECUTION.md`
+
+Aggressive next recommendation:
+
+- Continue with `IMPL-WP02-04 Internal / Advisor / Compliance Worksurface Slice` next, not Access/Tenant yet. Reason: it follows the live process spine from evidence into review gates and will remove the biggest remaining visual/layout split across analyst, advisor and compliance screens before governance/export cleanup.

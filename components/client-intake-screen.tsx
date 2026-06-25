@@ -39,6 +39,7 @@ import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
 import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
+import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
 import {
   Badge,
   Card,
@@ -548,6 +549,62 @@ function IconTile({ children, tone = "gold" }: { children: React.ReactNode; tone
   return <span className={cn("grid size-11 shrink-0 place-items-center rounded-md border", toneClass[tone])}>{children}</span>;
 }
 
+function WorksurfaceInfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3">
+      <p className="text-xs text-alphavest-muted">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{value}</p>
+    </div>
+  );
+}
+
+function ClientContextRail() {
+  return (
+    <>
+      <WorksurfacePanel
+        description="Household, relationship and entity context stay advisory workspace context only."
+        title="Client context scope"
+      >
+        <div className="space-y-3">
+          <WorksurfaceInfoRow label="Household" value={clientWorkspace.household} />
+          <WorksurfaceInfoRow label="Readiness" value={`${clientWorkspace.readiness}%`} />
+          <WorksurfaceInfoRow label="Evidence coverage" value={`${clientWorkspace.evidenceComplete}%`} />
+          <WorksurfaceInfoRow label="Advisor" value={clientWorkspace.advisor} />
+          <WorksurfaceInfoRow label="Role" value={clientWorkspace.role} />
+        </div>
+      </WorksurfacePanel>
+      <StatePanel
+        detail="Context panels can inform advisor work, but cannot expose internal payloads or create client-visible advice."
+        state="internal-only"
+        title="Context is not release"
+      />
+    </>
+  );
+}
+
+function EvidenceLifecycleRail() {
+  return (
+    <>
+      <WorksurfacePanel
+        description="Upload, extraction and review remain separate lifecycle steps."
+        title="Evidence lifecycle"
+      >
+        <div className="space-y-3">
+          <WorksurfaceInfoRow label="Upload" value="Creates intake item only" />
+          <WorksurfaceInfoRow label="Extraction" value="Draft fields need human review" />
+          <WorksurfaceInfoRow label="Sufficiency" value="Scoped gate, never implied" />
+          <WorksurfaceInfoRow label="Client visibility" value="Compliance release required" />
+        </div>
+      </WorksurfacePanel>
+      <StatePanel
+        detail="Uploaded files, extracted fields and evidence records are not equivalent to release-ready evidence."
+        state="restricted"
+        title="No sufficiency shortcut"
+      />
+    </>
+  );
+}
+
 function ProgressRing({ label, size = "large", value }: { label: string; size?: "large" | "small"; value: number }) {
   return (
     <div
@@ -914,10 +971,27 @@ function PortalPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="019">
       <ScreenTitle>{title}</ScreenTitle>
-      <ClientSafeProjectionCard />
-      <Phase5DetailSplitPanel decisionSupport="Client projection stays separated from internal review and release gates." objectLabel="Client home projection split" objectState="Released client-safe state only" pageJob="Client portal shows released context without becoming mobile, evidence or decision detail." safetyBoundary="Client projection cannot expose internal payloads." splitTaskId="UX-PAGE-SPLIT-007" taskId="UX-PAGE-SPLIT-007" />
-      <Phase7ClientProjectionPanel allowedFields="clientSummary, releasedAt, redacted document title and status only" failClosed="Unavailable content explains release, evidence and permission blockers without showing the hidden object." forbiddenFields="No internal payload, manual override, unreleased evidence, AI Draft, compliance notes or storage keys." recovery="The client sees safe next steps only: wait for release, upload requested evidence or contact the advisor through controlled support." routeLabel="Client home released projection" taskId="UX-CLIENT-PROJECTION-001" visibilityEngineOutput="DEMO_CLIENT_SAFE_PROJECTION or DEMO_CLIENT_VISIBILITY_FAIL_CLOSED" />
-      <UxHubPage pageId="019" />
+      <WorksurfaceShell
+        description="Process-first home context for the client-facing projection, with internal review and release gates kept separate."
+        eyebrow="WP02 Client Context"
+        primary={
+          <>
+            <ClientSafeProjectionCard />
+            <Phase5DetailSplitPanel decisionSupport="Client projection stays separated from internal review and release gates." objectLabel="Client home projection split" objectState="Released client-safe state only" pageJob="Client portal shows released context without becoming mobile, evidence or decision detail." safetyBoundary="Client projection cannot expose internal payloads." splitTaskId="UX-PAGE-SPLIT-007" taskId="UX-PAGE-SPLIT-007" />
+            <Phase7ClientProjectionPanel allowedFields="clientSummary, releasedAt, redacted document title and status only" failClosed="Unavailable content explains release, evidence and permission blockers without showing the hidden object." forbiddenFields="No internal payload, manual override, unreleased evidence, AI Draft, compliance notes or storage keys." recovery="The client sees safe next steps only: wait for release, upload requested evidence or contact the advisor through controlled support." routeLabel="Client home released projection" taskId="UX-CLIENT-PROJECTION-001" visibilityEngineOutput="DEMO_CLIENT_SAFE_PROJECTION or DEMO_CLIENT_VISIBILITY_FAIL_CLOSED" />
+            <UxHubPage pageId="019" />
+          </>
+        }
+        rail={<ClientContextRail />}
+        routeId="019"
+        safetyNote="Client context cannot expose internal payloads, mark evidence sufficient or bypass compliance release."
+        statusItems={[
+          { label: "Route", tone: "blue", value: "019" },
+          { label: "Visibility", tone: "gold", value: "released projection only" },
+        ]}
+        title={title}
+        worksurfaceId="client-context-home"
+      />
     </ClientShell>
   );
 }
@@ -2134,9 +2208,26 @@ function DocumentsPageContent({ title }: { title: string }) {
 function DocumentsPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="027">
-      <DocumentsPageContent title={title} />
-      <Phase7ClientProjectionPanel allowedFields="request title, document type, redacted status and uploaded date only" failClosed="Unreleased evidence requests show safe unavailable state and never expose extraction or evidence internals." forbiddenFields="No unreleased evidence, extraction state, checksum, storage key, AI Draft or compliance notes." recovery="Client can upload requested evidence or wait for human review; sufficiency and release remain internal gates." routeLabel="Client evidence request projection" taskId="UX-CLIENT-PROJECTION-003" visibilityEngineOutput="DEMO_CLIENT_DOCUMENT_SAFE_PROJECTION or DEMO_CLIENT_DOCUMENT_FAIL_CLOSED" />
-      <Phase5DetailSplitPanel decisionSupport="Document hub stays separate from review queue and evidence detail." objectLabel="Document workspace split" objectState="Document intake overview" pageJob="Documents page lists intake status and routes to queue/detail without marking evidence review complete." safetyBoundary="Document list context cannot mark evidence review complete." splitTaskId="UX-PAGE-SPLIT-002" taskId="UX-PAGE-SPLIT-002" />
+      <WorksurfaceShell
+        description="Document intake overview with upload, projection and review boundaries made explicit."
+        eyebrow="WP02 Evidence"
+        primary={<DocumentsPageContent title={title} />}
+        rail={<EvidenceLifecycleRail />}
+        routeId="027"
+        safetyNote="The document hub lists scoped intake state only; it cannot mark review complete, prove sufficiency or release content."
+        secondary={
+          <>
+            <Phase7ClientProjectionPanel allowedFields="request title, document type, redacted status and uploaded date only" failClosed="Unreleased evidence requests show safe unavailable state and never expose extraction or evidence internals." forbiddenFields="No unreleased evidence, extraction state, checksum, storage key, AI Draft or compliance notes." recovery="Client can upload requested evidence or wait for human review; sufficiency and release remain internal gates." routeLabel="Client evidence request projection" taskId="UX-CLIENT-PROJECTION-003" visibilityEngineOutput="DEMO_CLIENT_DOCUMENT_SAFE_PROJECTION or DEMO_CLIENT_DOCUMENT_FAIL_CLOSED" />
+            <Phase5DetailSplitPanel decisionSupport="Document hub stays separate from review queue and evidence detail." objectLabel="Document workspace split" objectState="Document intake overview" pageJob="Documents page lists intake status and routes to queue/detail without marking evidence review complete." safetyBoundary="Document list context cannot mark evidence review complete." splitTaskId="UX-PAGE-SPLIT-002" taskId="UX-PAGE-SPLIT-002" />
+          </>
+        }
+        statusItems={[
+          { label: "Route", tone: "blue", value: "027" },
+          { label: "Lifecycle", tone: "gold", value: "intake overview" },
+        ]}
+        title={title}
+        worksurfaceId="evidence-document-hub"
+      />
     </ClientShell>
   );
 }
@@ -2409,12 +2500,27 @@ function DocumentUploadPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="028">
       <ScreenTitle>{title}</ScreenTitle>
-      <div className="space-y-5">
-        <SectionTitle subtitle="Securely upload documents to your AlphaVest workspace." title={title} />
-        <SafeClientBanner>Document uploads are scoped to permitted client roles, entities and assets.</SafeClientBanner>
-        <ScfP04P06FlowPanel mode="evidence" />
-        <DocumentUploadForm />
-      </div>
+      <WorksurfaceShell
+        description="Upload intake keeps file submission separate from extraction review, evidence sufficiency and release."
+        eyebrow="WP02 Evidence"
+        primary={
+          <div className="space-y-5">
+            <SectionTitle subtitle="Securely upload documents to your AlphaVest workspace." title={title} />
+            <SafeClientBanner>Document uploads are scoped to permitted client roles, entities and assets.</SafeClientBanner>
+            <ScfP04P06FlowPanel mode="evidence" />
+            <DocumentUploadForm />
+          </div>
+        }
+        rail={<EvidenceLifecycleRail />}
+        routeId="028"
+        safetyNote="Upload can create a pending review item only. It cannot complete evidence review, export approval or client visibility."
+        statusItems={[
+          { label: "Route", tone: "blue", value: "028" },
+          { label: "Lifecycle", tone: "gold", value: "upload intake" },
+        ]}
+        title={title}
+        worksurfaceId="evidence-upload-intake"
+      />
     </ClientShell>
   );
 }
@@ -2548,12 +2654,17 @@ function ExtractionReviewPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="029">
       <ScreenTitle>{title}</ScreenTitle>
-      <Phase5DetailSplitPanel decisionSupport="Extraction review remains human review of draft fields, not final evidence." objectLabel="Document review queue split" objectState="Extraction draft needs human review" pageJob="Review queue resolves extraction work separately from document hub and evidence detail." safetyBoundary="Queue context cannot finalize sufficiency or release." splitTaskId="UX-PAGE-SPLIT-002" taskId="UX-PAGE-SPLIT-002" />
-      <div className="space-y-5">
-        <SectionTitle action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Draft save held</span><button className={primaryButtonClass} data-testid="j04-confirm-finalize" onClick={() => { void runScreencastDemoAction("j04.confirmFinalize", "/documents/:id/review"); }} type="button"><Check aria-hidden="true" className="size-4" />Confirm & Finalize</button></div>} subtitle="Review AI-extracted data. This is a draft and not final evidence." title={title} />
-        <SafeClientBanner>AI Draft Mode: extracted data requires human review. Not final. Not evidence.</SafeClientBanner>
-        <ScfP04P06FlowPanel mode="evidence" />
-        <div className="grid gap-5 xl:grid-cols-[0.9fr_0.84fr_20rem]">
+      <WorksurfaceShell
+        description="Human review of extracted draft fields before any scoped evidence sufficiency check."
+        eyebrow="WP02 Evidence"
+        primary={
+          <>
+            <Phase5DetailSplitPanel decisionSupport="Extraction review remains human review of draft fields, not final evidence." objectLabel="Document review queue split" objectState="Extraction draft needs human review" pageJob="Review queue resolves extraction work separately from document hub and evidence detail." safetyBoundary="Queue context cannot finalize sufficiency or release." splitTaskId="UX-PAGE-SPLIT-002" taskId="UX-PAGE-SPLIT-002" />
+            <div className="space-y-5">
+              <SectionTitle action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Draft save held</span><button className={primaryButtonClass} data-testid="j04-confirm-finalize" onClick={() => { void runScreencastDemoAction("j04.confirmFinalize", "/documents/:id/review"); }} type="button"><Check aria-hidden="true" className="size-4" />Confirm & Finalize</button></div>} subtitle="Review AI-extracted data. This is a draft and not final evidence." title={title} />
+              <SafeClientBanner>AI Draft Mode: extracted data requires human review. Not final. Not evidence.</SafeClientBanner>
+              <ScfP04P06FlowPanel mode="evidence" />
+              <div className="grid gap-5 xl:grid-cols-[0.9fr_0.84fr_20rem]">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between"><CardTitle>2024_Q4_Brokerage_Statement.pdf</CardTitle><Badge>Page 1 of 4</Badge></CardHeader>
             <CardContent>
@@ -2596,8 +2707,20 @@ function ExtractionReviewPage({ title }: { title: string }) {
             <Card><CardHeader><CardTitle>Issues</CardTitle></CardHeader><CardContent className="space-y-3"><StatePanel detail="AI extracted value is inconsistent." state="error" title="Net Investment Change" /><StatePanel detail="Table structure could not be parsed. Please review manually." state="error" title="Page 2 - Table Detected" /></CardContent></Card>
             <ExtractionReviewActionPanel />
           </aside>
-        </div>
-      </div>
+              </div>
+            </div>
+          </>
+        }
+        rail={<EvidenceLifecycleRail />}
+        routeId="029"
+        safetyNote="Extraction review resolves draft data quality only; final evidence, release, export and client visibility stay gated."
+        statusItems={[
+          { label: "Route", tone: "blue", value: "029" },
+          { label: "Lifecycle", tone: "gold", value: "human review" },
+        ]}
+        title={title}
+        worksurfaceId="evidence-extraction-review"
+      />
     </ClientShell>
   );
 }
@@ -2606,54 +2729,71 @@ function VerificationPendingPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="030">
       <ScreenTitle>{title}</ScreenTitle>
-      <Phase4WorkbenchPanel activeTask="Document DOC-118 selected for extraction review" blocker="Upload-created evidence is review-pending and cannot satisfy release gates." context="Reviewer checks extracted fields, source quality and linkage before evidence sufficiency." primaryAction="Mark extraction reviewed" queueLabel="Document review queue" safetyNote="UX-WORKBENCH-002: upload-only success remains separate from reviewed, linked and current evidence sufficiency." taskId="UX-WORKBENCH-002" />
-      <Phase5DetailSplitPanel decisionSupport="Selected document state explains source quality, linkage and unresolved blockers before any next action." objectLabel="Document object review" objectState="Review pending; evidence sufficiency not proven" pageJob="Document detail supports one active object review without overloading the queue." safetyBoundary="Detail context cannot unlock release, export or client visibility." splitTaskId="UX-PAGE-SPLIT-002" taskId="UX-PAGE-SPLIT-002" />
-      <div className="space-y-5">
-        <SectionTitle action={<span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />Download held</span>} icon={FileText} subtitle="Your submitted information is under human review. No final validation has been completed." title={title} />
-        <StatePanel detail="A member of our operations team is reviewing your documents and information." state="loading" title="Under Human Review" />
-        <div className="grid gap-5 xl:grid-cols-[1fr_28rem]">
-          <section className="space-y-5">
-            <Card>
-              <CardHeader><CardTitle>Verification Summary</CardTitle></CardHeader>
-              <CardContent className="grid gap-4 md:grid-cols-3">
-                <MetricCard detail="No final validation yet" label="Overall Status" status="PENDING" value="Pending" />
-                <MetricCard detail="By Tue, May 27, 2025" label="Expected Review Time" status="SCHEDULED" value="2-3 Days" />
-                <MetricCard detail="10:14 AM ET" label="Submitted On" status="PROCESSING" value="May 21, 2025" />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader><CardTitle>Review Breakdown</CardTitle></CardHeader>
-              <CardContent className="grid gap-4 md:grid-cols-3">
-                <MetricCard detail="Areas Under Review" label="Review" value="1 of 3" />
-                <MetricCard detail="Needs Clarification" label="Clarification" status="FAILED" value="1" />
-                <MetricCard detail="SLA Breach" label="SLA" status="PENDING" value="1" />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader><CardTitle>Evidence Submitted</CardTitle></CardHeader>
-              <CardContent className="grid gap-3 md:grid-cols-5">
-                {verificationEvidence.map((item) => (
-                  <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4 text-center" key={item.title}>
-                    <File aria-hidden="true" className="mx-auto size-8 text-alphavest-muted" />
-                    <p className="mt-3 text-sm font-semibold text-alphavest-ivory">{item.title}</p>
-                    <p className="text-xs text-alphavest-muted">{item.date}</p>
-                    <Badge className="mt-3" tone={toneFor(item.state)}>{item.state}</Badge>
-                  </div>
-                ))}
-                <div className="grid min-h-32 place-items-center rounded-md border border-dashed border-alphavest-border text-center text-sm text-alphavest-muted">
-                  <div><Plus aria-hidden="true" className="mx-auto mb-2 size-7" />Additional Evidence Upload</div>
-                </div>
-              </CardContent>
-            </Card>
-          </section>
-          <aside className="space-y-5">
-            <Card><CardHeader><CardTitle>Human Review Status</CardTitle></CardHeader><CardContent><StatePanel detail="A verification specialist is reviewing your information and documentation." state="restricted" title="In Progress" /></CardContent></Card>
-            <Card><CardHeader><CardTitle>SLA Status</CardTitle></CardHeader><CardContent><StatePanel detail="This item has exceeded the expected review time by 1 business day." state="error" title="SLA Breach" /></CardContent></Card>
-            <Card><CardHeader><CardTitle>Needs Clarification</CardTitle></CardHeader><CardContent><StatePanel detail="We need additional information to continue the review." state="restricted" title="1 Item" /><button className={secondaryButtonClass + " mt-4 w-full"} data-testid="j04-view-details" onClick={() => { void runScreencastDemoAction("j04.viewDetails"); }} type="button">View Details</button></CardContent></Card>
-          </aside>
-        </div>
-        <SafeClientBanner>What happens next? No action is needed unless requested through your secure message center.</SafeClientBanner>
-      </div>
+      <WorksurfaceShell
+        description="Pending verification state for submitted evidence, review SLA and clarification work."
+        eyebrow="WP02 Evidence"
+        primary={
+          <>
+            <Phase4WorkbenchPanel activeTask="Document DOC-118 selected for extraction review" blocker="Upload-created evidence is review-pending and cannot satisfy release gates." context="Reviewer checks extracted fields, source quality and linkage before evidence sufficiency." primaryAction="Mark extraction reviewed" queueLabel="Document review queue" safetyNote="UX-WORKBENCH-002: upload-only success remains separate from reviewed, linked and current evidence sufficiency." taskId="UX-WORKBENCH-002" />
+            <Phase5DetailSplitPanel decisionSupport="Selected document state explains source quality, linkage and unresolved blockers before any next action." objectLabel="Document object review" objectState="Review pending; evidence sufficiency not proven" pageJob="Document detail supports one active object review without overloading the queue." safetyBoundary="Detail context cannot unlock release, export or client visibility." splitTaskId="UX-PAGE-SPLIT-002" taskId="UX-PAGE-SPLIT-002" />
+            <div className="space-y-5">
+              <SectionTitle action={<span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />Download held</span>} icon={FileText} subtitle="Your submitted information is under human review. No final validation has been completed." title={title} />
+              <StatePanel detail="A member of our operations team is reviewing your documents and information." state="loading" title="Under Human Review" />
+              <div className="grid gap-5 xl:grid-cols-[1fr_28rem]">
+                <section className="space-y-5">
+                  <Card>
+                    <CardHeader><CardTitle>Verification Summary</CardTitle></CardHeader>
+                    <CardContent className="grid gap-4 md:grid-cols-3">
+                      <MetricCard detail="No final validation yet" label="Overall Status" status="PENDING" value="Pending" />
+                      <MetricCard detail="By Tue, May 27, 2025" label="Expected Review Time" status="SCHEDULED" value="2-3 Days" />
+                      <MetricCard detail="10:14 AM ET" label="Submitted On" status="PROCESSING" value="May 21, 2025" />
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader><CardTitle>Review Breakdown</CardTitle></CardHeader>
+                    <CardContent className="grid gap-4 md:grid-cols-3">
+                      <MetricCard detail="Areas Under Review" label="Review" value="1 of 3" />
+                      <MetricCard detail="Needs Clarification" label="Clarification" status="FAILED" value="1" />
+                      <MetricCard detail="SLA Breach" label="SLA" status="PENDING" value="1" />
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader><CardTitle>Evidence Submitted</CardTitle></CardHeader>
+                    <CardContent className="grid gap-3 md:grid-cols-5">
+                      {verificationEvidence.map((item) => (
+                        <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4 text-center" key={item.title}>
+                          <File aria-hidden="true" className="mx-auto size-8 text-alphavest-muted" />
+                          <p className="mt-3 text-sm font-semibold text-alphavest-ivory">{item.title}</p>
+                          <p className="text-xs text-alphavest-muted">{item.date}</p>
+                          <Badge className="mt-3" tone={toneFor(item.state)}>{item.state}</Badge>
+                        </div>
+                      ))}
+                      <div className="grid min-h-32 place-items-center rounded-md border border-dashed border-alphavest-border text-center text-sm text-alphavest-muted">
+                        <div><Plus aria-hidden="true" className="mx-auto mb-2 size-7" />Additional Evidence Upload</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </section>
+                <aside className="space-y-5">
+                  <Card><CardHeader><CardTitle>Human Review Status</CardTitle></CardHeader><CardContent><StatePanel detail="A verification specialist is reviewing your information and documentation." state="restricted" title="In Progress" /></CardContent></Card>
+                  <Card><CardHeader><CardTitle>SLA Status</CardTitle></CardHeader><CardContent><StatePanel detail="This item has exceeded the expected review time by 1 business day." state="error" title="SLA Breach" /></CardContent></Card>
+                  <Card><CardHeader><CardTitle>Needs Clarification</CardTitle></CardHeader><CardContent><StatePanel detail="We need additional information to continue the review." state="restricted" title="1 Item" /><button className={secondaryButtonClass + " mt-4 w-full"} data-testid="j04-view-details" onClick={() => { void runScreencastDemoAction("j04.viewDetails"); }} type="button">View Details</button></CardContent></Card>
+                </aside>
+              </div>
+              <SafeClientBanner>What happens next? No action is needed unless requested through your secure message center.</SafeClientBanner>
+            </div>
+          </>
+        }
+        rail={<EvidenceLifecycleRail />}
+        routeId="030"
+        safetyNote="Verification pending means human review is in progress; it is not final validation, evidence sufficiency or client release."
+        statusItems={[
+          { label: "Route", tone: "blue", value: "030" },
+          { label: "Lifecycle", tone: "red", value: "review pending" },
+        ]}
+        title={title}
+        worksurfaceId="evidence-verification-pending"
+      />
     </ClientShell>
   );
 }

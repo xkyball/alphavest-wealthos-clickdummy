@@ -49,6 +49,7 @@ import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
 import { UxComplexityPriorityPanel } from "@/components/ux-complexity-priority-panel";
 import { UxCtaCluster } from "@/components/ux-cta-cluster";
 import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
+import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
 import {
   recommendationReviewDemoTargets,
@@ -308,6 +309,29 @@ function InfoRow({ label, value }: { label: string; value: string }) {
       <span className="min-w-0 text-alphavest-muted">{label}</span>
       <span className="min-w-0 break-words text-right font-semibold text-alphavest-ivory">{value}</span>
     </div>
+  );
+}
+
+function EvidenceControlRail() {
+  return (
+    <>
+      <WorksurfacePanel
+        description="Vault and record views expose controlled evidence context only."
+        title="Evidence controls"
+      >
+        <div className="space-y-3">
+          <InfoRow label="Download" value="Blocked until release/export gates pass" />
+          <InfoRow label="Share" value="Requires scoped visibility checks" />
+          <InfoRow label="Client access" value="Never implied by record presence" />
+          <InfoRow label="Audit" value="Sensitive actions remain logged" />
+        </div>
+      </WorksurfacePanel>
+      <StatePanel
+        detail="Evidence records can support decisions, but do not by themselves prove sufficiency or authorize client visibility."
+        state="internal-only"
+        title="Controlled evidence only"
+      />
+    </>
   );
 }
 
@@ -1494,46 +1518,62 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
   return (
     <Phase12Shell activePageId="046">
       <ScreenTitle>{title}</ScreenTitle>
-      <div className={cn("mx-auto max-w-[104rem] space-y-5", drawerOpen ? "pr-0 xl:pr-[23rem]" : "")}>
-        <UxHubPage pageId="046" />
-        <PageHeading
-          action={
-            <button
-              className={primaryButtonClass}
-              data-testid="j03-open-evidence-drawer"
-              data-ux-lifecycle-result="opens-evidence-drawer"
-              data-ux-lifecycle-trigger="evidence-drawer"
-              onClick={openEvidenceDrawer}
-              type="button"
-            >
-              Open Selected Evidence
-            </button>
-          }
-          badge={<ShieldCheck aria-hidden="true" className="size-5 text-alphavest-gold" />}
-          subtitle="Secure, role-based repository for client evidence and attestations."
-          title={title}
-        />
-        <ScfP04P06FlowPanel mode="evidence" />
-        <div className="flex flex-wrap gap-2 border-b border-alphavest-border/70">
-          {["All Evidence", "By Category", "Expiring Soon 12", "Needs Review 5"].map((tab, index) => (
-            <span className={cn("px-3 pb-3 text-sm font-semibold", index === 0 ? "border-b-2 border-alphavest-gold text-alphavest-gold" : "text-alphavest-muted")} key={tab}>{tab}</span>
-          ))}
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-[minmax(14rem,1fr)_repeat(4,minmax(9rem,10rem))_auto]">
-          <label className="relative min-w-0 sm:col-span-2 lg:col-span-1">
-            <Search aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-            <input className="h-11 w-full cursor-not-allowed rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm opacity-65 outline-none focus:border-alphavest-gold" disabled placeholder="Evidence search unavailable" title="Evidence list filters are not wired in this release." />
-          </label>
-          {["Category", "Evidence Type", "Status", "Date Range"].map((filter) => (
-            <button aria-label={`${filter} filter is static in this evidence list`} className="flex h-11 min-w-0 cursor-not-allowed items-center justify-between gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted opacity-65" disabled key={filter} title="Evidence list filters are not wired in this release." type="button">
-              <span className="truncate">{filter}</span>
-              <ChevronDown aria-hidden="true" className="size-4 shrink-0" />
-            </button>
-          ))}
-          <button aria-label="Additional evidence filters are not wired in this release" className={secondaryButtonClass} disabled title="Evidence list filters are not wired in this release." type="button"><Filter aria-hidden="true" className="size-4" />Filters</button>
-        </div>
-        <DataTable columns={evidenceColumns} getRowId={(row) => row.title} rows={evidenceRows} />
-      </div>
+      <WorksurfaceShell
+        className={drawerOpen ? "pr-0 xl:pr-[23rem]" : ""}
+        description="Evidence repository context with download, share and client visibility still gated."
+        eyebrow="WP02 Evidence"
+        primary={
+          <div className="space-y-5">
+            <UxHubPage pageId="046" />
+            <PageHeading
+              action={
+                <button
+                  className={primaryButtonClass}
+                  data-testid="j03-open-evidence-drawer"
+                  data-ux-lifecycle-result="opens-evidence-drawer"
+                  data-ux-lifecycle-trigger="evidence-drawer"
+                  onClick={openEvidenceDrawer}
+                  type="button"
+                >
+                  Open Selected Evidence
+                </button>
+              }
+              badge={<ShieldCheck aria-hidden="true" className="size-5 text-alphavest-gold" />}
+              subtitle="Secure, role-based repository for client evidence and attestations."
+              title={title}
+            />
+            <ScfP04P06FlowPanel mode="evidence" />
+            <div className="flex flex-wrap gap-2 border-b border-alphavest-border/70">
+              {["All Evidence", "By Category", "Expiring Soon 12", "Needs Review 5"].map((tab, index) => (
+                <span className={cn("px-3 pb-3 text-sm font-semibold", index === 0 ? "border-b-2 border-alphavest-gold text-alphavest-gold" : "text-alphavest-muted")} key={tab}>{tab}</span>
+              ))}
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-[minmax(14rem,1fr)_repeat(4,minmax(9rem,10rem))_auto]">
+              <label className="relative min-w-0 sm:col-span-2 lg:col-span-1">
+                <Search aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
+                <input className="h-11 w-full cursor-not-allowed rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm opacity-65 outline-none focus:border-alphavest-gold" disabled placeholder="Evidence search unavailable" title="Evidence list filters are not wired in this release." />
+              </label>
+              {["Category", "Evidence Type", "Status", "Date Range"].map((filter) => (
+                <button aria-label={`${filter} filter is static in this evidence list`} className="flex h-11 min-w-0 cursor-not-allowed items-center justify-between gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted opacity-65" disabled key={filter} title="Evidence list filters are not wired in this release." type="button">
+                  <span className="truncate">{filter}</span>
+                  <ChevronDown aria-hidden="true" className="size-4 shrink-0" />
+                </button>
+              ))}
+              <button aria-label="Additional evidence filters are not wired in this release" className={secondaryButtonClass} disabled title="Evidence list filters are not wired in this release." type="button"><Filter aria-hidden="true" className="size-4" />Filters</button>
+            </div>
+            <DataTable columns={evidenceColumns} getRowId={(row) => row.title} rows={evidenceRows} />
+          </div>
+        }
+        rail={drawerOpen ? undefined : <EvidenceControlRail />}
+        routeId="046"
+        safetyNote="Evidence vault context cannot authorize download, share, export or client visibility without release controls."
+        statusItems={[
+          { label: "Route", tone: "blue", value: "046" },
+          { label: "Visibility", tone: "gold", value: "controlled" },
+        ]}
+        title={title}
+        worksurfaceId="evidence-vault"
+      />
       <Drawer
         description="Verified form assessment."
         footer={
@@ -1635,47 +1675,52 @@ function EvidenceRecordDetailPage({ title }: { title: string }) {
   return (
     <Phase12Shell activePageId="047">
       <ScreenTitle>{title}</ScreenTitle>
-      <Phase5DetailSplitPanel decisionSupport="Evidence detail explains provenance, linkage and visibility before any next action." objectLabel="Evidence object review" objectState="Verified record; sufficiency still contextual" pageJob="Evidence detail supports object understanding without overloading evidence hub or document queue." safetyBoundary="Evidence detail cannot imply upload sufficiency or client release." splitTaskId="UX-PAGE-SPLIT-002" taskId="UX-DETAIL-001" />
-      <div className="mx-auto max-w-[112rem] space-y-5">
-        <PageHeading
-          action={
-            <UxCtaCluster
-              blockedReason="Share remains blocked until evidence sufficiency, compliance release and payload visibility checks pass."
-              primary={{ label: "Open" }}
-              recoveryAction={{ href: "/documents/upload", label: "Request review" }}
-              secondary={[
-                { label: "Download", onClick: () => { void runScreencastDemoAction("j03.downloadEvidence"); }, testId: "j03-download-evidence" },
-                {
-                  disabled: true,
-                  disabledReason: "Share needs evidence sufficiency, release and payload checks first.",
-                  label: "Share",
-                },
-              ]}
-            />
-          }
-          badge={<Badge tone="green">Verified</Badge>}
-          subtitle="Complete evidence record with provenance, access and audit information."
-          title={title}
-        />
-        <ScfP04P06FlowPanel mode="evidence" />
-        <UxDetailStandardPanel
-          actionLabel="Inspect controlled evidence"
-          actionState="Open, download or share actions remain role-scoped and must not imply evidence sufficiency."
-          evidenceItems={["Evidence summary", "Access permissions", "Linked decisions"]}
-          facts={[
-            { label: "Evidence ID", value: evidenceRecord.evidenceId },
-            { label: "Client", value: evidenceRecord.client },
-            { label: "Version", value: evidenceRecord.version },
-            { label: "Owner", value: evidenceRecord.owner },
-          ]}
-          objectTitle={evidenceRecord.title}
-          objectType="Evidence record detail"
-          routeId="047"
-          safetyNote="Upload, storage or download visibility is not evidence sufficiency or compliance acceptance."
-          status="Verified"
-          timelineItems={evidenceTimeline.slice(0, 3).map((item) => item.title)}
-        />
-        <div className="grid gap-5 xl:grid-cols-[1fr_18rem]">
+      <WorksurfaceShell
+        description="Evidence record detail for provenance, linkage and access context, kept separate from sufficiency and release."
+        eyebrow="WP02 Evidence"
+        primary={
+          <>
+            <Phase5DetailSplitPanel decisionSupport="Evidence detail explains provenance, linkage and visibility before any next action." objectLabel="Evidence object review" objectState="Verified record; sufficiency still contextual" pageJob="Evidence detail supports object understanding without overloading evidence hub or document queue." safetyBoundary="Evidence detail cannot imply upload sufficiency or client release." splitTaskId="UX-PAGE-SPLIT-002" taskId="UX-DETAIL-001" />
+            <div className="space-y-5">
+              <PageHeading
+                action={
+                  <UxCtaCluster
+                    blockedReason="Share remains blocked until evidence sufficiency, compliance release and payload visibility checks pass."
+                    primary={{ label: "Open" }}
+                    recoveryAction={{ href: "/documents/upload", label: "Request review" }}
+                    secondary={[
+                      { label: "Download", onClick: () => { void runScreencastDemoAction("j03.downloadEvidence"); }, testId: "j03-download-evidence" },
+                      {
+                        disabled: true,
+                        disabledReason: "Share needs evidence sufficiency, release and payload checks first.",
+                        label: "Share",
+                      },
+                    ]}
+                  />
+                }
+                badge={<Badge tone="green">Verified</Badge>}
+                subtitle="Complete evidence record with provenance, access and audit information."
+                title={title}
+              />
+              <ScfP04P06FlowPanel mode="evidence" />
+              <UxDetailStandardPanel
+                actionLabel="Inspect controlled evidence"
+                actionState="Open, download or share actions remain role-scoped and must not imply evidence sufficiency."
+                evidenceItems={["Evidence summary", "Access permissions", "Linked decisions"]}
+                facts={[
+                  { label: "Evidence ID", value: evidenceRecord.evidenceId },
+                  { label: "Client", value: evidenceRecord.client },
+                  { label: "Version", value: evidenceRecord.version },
+                  { label: "Owner", value: evidenceRecord.owner },
+                ]}
+                objectTitle={evidenceRecord.title}
+                objectType="Evidence record detail"
+                routeId="047"
+                safetyNote="Upload, storage or download visibility is not evidence sufficiency or compliance acceptance."
+                status="Verified"
+                timelineItems={evidenceTimeline.slice(0, 3).map((item) => item.title)}
+              />
+              <div className="grid gap-5 xl:grid-cols-[1fr_18rem]">
           <section className="space-y-5">
             <Card>
               <CardContent className="grid gap-5 md:grid-cols-[9rem_1fr_1fr_1fr]">
@@ -1769,8 +1814,20 @@ function EvidenceRecordDetailPage({ title }: { title: string }) {
               </CardContent>
             </Card>
           </aside>
-        </div>
-      </div>
+              </div>
+            </div>
+          </>
+        }
+        rail={<EvidenceControlRail />}
+        routeId="047"
+        safetyNote="Evidence detail can show provenance and access context only; sufficiency, export and client release remain separate controls."
+        statusItems={[
+          { label: "Route", tone: "blue", value: "047" },
+          { label: "Record", tone: "green", value: "verified context" },
+        ]}
+        title={title}
+        worksurfaceId="evidence-record-detail"
+      />
     </Phase12Shell>
   );
 }

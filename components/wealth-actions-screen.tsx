@@ -32,6 +32,7 @@ import { UxCtaCluster } from "@/components/ux-cta-cluster";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
 import { UxSupportDensityStrip } from "@/components/ux-support-density-strip";
+import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
 import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import type { ScreenRoute } from "@/lib/route-registry";
@@ -101,6 +102,38 @@ function IconTile({ children, tone = "gold" }: { children: React.ReactNode; tone
   };
 
   return <span className={cn("grid size-10 shrink-0 place-items-center rounded-md border", toneClass[tone])}>{children}</span>;
+}
+
+function WorksurfaceInfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3">
+      <p className="text-xs text-alphavest-muted">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{value}</p>
+    </div>
+  );
+}
+
+function WealthContextRail() {
+  return (
+    <>
+      <WorksurfacePanel
+        description="Wealth map and action board are context surfaces, not final decision or release gates."
+        title="Wealth context"
+      >
+        <div className="space-y-3">
+          <WorksurfaceInfoRow label="Household" value={wealthWorkspace.household} />
+          <WorksurfaceInfoRow label="Last updated" value={wealthWorkspace.lastUpdated} />
+          <WorksurfaceInfoRow label="Selected object" value={selectedWealthNode.name} />
+          <WorksurfaceInfoRow label="Blocked action" value={selectedAction.title} />
+        </div>
+      </WorksurfacePanel>
+      <StatePanel
+        detail="Map and action context can route work, but readiness still depends on evidence, audit and workflow gates."
+        state="restricted"
+        title="Context is not readiness"
+      />
+    </>
+  );
 }
 
 function WealthSidebar() {
@@ -216,8 +249,25 @@ function WealthMapPage({ title }: { title: string; visualState?: VisualState }) 
   return (
     <WealthShell activePageId="031">
       <ScreenTitle>{title}</ScreenTitle>
-      <UxSupportDensityStrip className="mx-auto mb-5 max-w-[104rem]" pageId="031" />
-      <UxHubPage pageId="031" />
+      <WorksurfaceShell
+        description="Relationship and entity map context for wealth-structure work, with restricted objects and follow-up actions kept gated."
+        eyebrow="WP02 Client Context"
+        primary={
+          <>
+            <UxSupportDensityStrip className="mb-5" pageId="031" />
+            <UxHubPage pageId="031" />
+          </>
+        }
+        rail={<WealthContextRail />}
+        routeId="031"
+        safetyNote="The wealth map can reveal structure and route work, but cannot mark action readiness or expose restricted object details."
+        statusItems={[
+          { label: "Route", tone: "blue", value: "031" },
+          { label: "Surface", tone: "gold", value: "wealth context" },
+        ]}
+        title={title}
+        worksurfaceId="client-context-wealth-map"
+      />
     </WealthShell>
   );
 }
@@ -417,7 +467,10 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
   return (
     <WealthShell activePageId="032">
       <ScreenTitle>{title}</ScreenTitle>
-      <div className={cn("mx-auto grid max-w-[118rem] gap-5", drawerOpen ? "2xl:grid-cols-[1fr_30rem]" : "")}>
+      <WorksurfaceShell
+        description="Action board for relationship and evidence-linked work, normalized into the shared process worksurface."
+        eyebrow="WP02 Client Context"
+        primary={<div className={cn("grid gap-5", drawerOpen ? "2xl:grid-cols-[1fr_30rem]" : "")}>
         <section className="min-w-0 space-y-5">
           <PageHeading
             action={
@@ -545,7 +598,17 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
           <SafeGateBanner />
         </section>
         {drawerOpen ? <ActionDrawer onClose={() => setDrawerOpen(false)} /> : null}
-      </div>
+      </div>}
+        rail={drawerOpen ? undefined : <WealthContextRail />}
+        routeId="032"
+        safetyNote="Action context can prioritize work only. Evidence, audit, workflow and approval gates still control readiness and visibility."
+        statusItems={[
+          { label: "Route", tone: "blue", value: "032" },
+          { label: "Surface", tone: selectedAction.evidenceState.includes("Missing") ? "red" : "gold", value: selectedAction.evidenceState },
+        ]}
+        title={title}
+        worksurfaceId="client-context-actions"
+      />
     </WealthShell>
   );
 }
