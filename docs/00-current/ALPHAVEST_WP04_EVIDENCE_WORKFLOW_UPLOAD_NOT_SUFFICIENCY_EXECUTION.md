@@ -569,3 +569,182 @@ Method/proof notes:
 - Facts: live code contains upload-only API safety fields, Compliance-only `accept_sufficiency`, shared sufficiency predicates, journey release blockers, audit failure simulation and export/client visibility negative tests.
 - Assumption: legacy/demo recommendation and J02 screencast paths are compatibility surfaces, not the canonical WP04 first-wave safety boundary.
 - Interpretation: WP04 is complete for the approved first wave; the cleanest next move is consolidation of remaining legacy release paths onto the shared sufficiency helper.
+
+## 10. WP04 Strict Source-Scope Rerun
+
+Execution date: 2026-06-25.
+
+Rerun trigger:
+
+- User requested WP04 rerun from `/Users/chris/Downloads/alphavest/ALPHAVEST_WP04_EVIDENCE_WORKFLOW_UPLOAD_NOT_SUFFICIENCY_BOC_TICKET_STRUCTURE.md`.
+- User required strict source scope: uploaded blueprint, current repo, generated artefacts from the same refactor chain and explicit human/generated decisions only.
+- User required the execution chain: blueprint task -> executed analysis result -> refined specification -> derived implementation task -> implementation or zero-delta implementation -> QA/proof -> report.
+
+Preflight and source-scope result:
+
+- Current branch: `full-workflow`.
+- Current baseline commit before this report update: `fe55663 docs: rerun wp03 client visibility proof`.
+- Working tree before report update: clean.
+- `package.json` confirms `pnpm@9.15.9` and runnable source guard, typecheck, Prisma validation and Playwright tests.
+- `ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md` was used as operative repo authority required by `AGENTS.md`, not as a replacement for the WP04 blueprint.
+- No unrelated legacy planning docs, broad handoff docs, old KB artefacts, `source_refs`, `source_artefacts` or unvalidated prior assumptions were imported as WP04 specification authority.
+
+Generated artefacts used as input or override:
+
+- This WP04 execution report, including the earlier accepted Option A implementation proof.
+- Earlier same-chain generated reports in `docs/00-current/` for WP00, WP01, WP02, WP03, WP05 and WP06, only where they encode accepted process results or reinforce safety constraints already revalidated against the current repo.
+- Explicit human decision already present in the thread: WP04 Option A was approved with "ich gebe das frei".
+
+### WP04-ANALYSIS-1 Executed Analysis Result
+
+Status: `COMPLETE`.
+
+Blueprint tasks/subtasks extracted:
+
+- Epic: `WP04 Evidence Workflow & Upload-not-Sufficiency Safety Spine`.
+- `WP04-ANALYSIS-1` Evidence Workflow Reality Audit.
+- `WP04-SPEC-1` Evidence Sufficiency and Upload-not-Sufficiency Contract.
+- `WP04-DECISION-1` Approve Minimal MVP Evidence Sufficiency Policy.
+- `WP04-IMPL-1` Upload-only UI/API Semantics.
+- `WP04-IMPL-1.1` Upload feedback wording and state separation.
+- `WP04-IMPL-1.2` API response/payload no-sufficiency semantics.
+- `WP04-IMPL-2` Evidence Review and Linkage Lifecycle.
+- `WP04-IMPL-2.1` Evidence review states.
+- `WP04-IMPL-2.2` Evidence-to-object linkage.
+- `WP04-IMPL-3` Sufficiency Gate and Compliance Release Blocker.
+- `WP04-IMPL-3.1` Sufficiency gate derivation.
+- `WP04-IMPL-3.2` Compliance release block integration.
+- `WP04-IMPL-4` Evidence Audit and Fail-Closed Behaviour.
+- `WP04-IMPL-4.1` Audit event mapping for evidence actions.
+- `WP04-IMPL-4.2` Audit unavailable fail-closed handling.
+- `WP04-QA-1` P0 Evidence Workflow Positive/Negative Validation.
+
+Live repo evidence:
+
+- WP04 route scope exists in `lib/route-registry.ts`: `019`, `020`, `027`, `028`, `029`, `030`, `038`, `039`, `040`, `041`, `046`, `047`, `054`, `055`, `056`, `057`, `058`.
+- Upload API in `app/api/documents/upload/route.ts` returns safety fields: `uploadOnly: true`, `sufficiency: false`, `releaseUnlocked: false`, `clientVisible: false`, `uploadStateLabel: "Upload complete - evidence review pending"`.
+- Upload service in `lib/document-upload-service.ts` creates document/version/extraction/evidence/audit rows with `clientVisible: false`, `DocumentStatus.UPLOADED`, `EvidenceStatus.CREATED`, `VisibilityStatus.INTERNAL_ONLY` and pre-mutation critical audit writability.
+- Upload and document UI in `components/client-intake-screen.tsx` says upload is intake/review only and explicitly keeps evidence sufficiency, release, export and client visibility locked.
+- Review/linkage service in `lib/evidence-review-service.ts` separates `mark_reviewed`, `request_clarification` and `accept_sufficiency`; `accept_sufficiency` is Compliance-only and creates review/link/evidence item/audit without client release.
+- Shared sufficiency predicates in `lib/evidence-service.ts` require review, scope, relevance, currentness, evidence status and, where required, audit evidence.
+- Journey evidence command in `lib/journeys/journey-api-service.ts` permits final `SUFFICIENT` only for `compliance_officer` and stores `EvidenceSufficiencyDecision`.
+- Journey compliance release in `lib/journeys/journey-api-service.ts` and `lib/workflow-gate.ts` blocks release unless sufficient evidence, advisor approval, payload readiness, permission, data quality and audit persistence are all present.
+- Export guard in `lib/export-service.ts` classifies and blocks `AI_DRAFT`, `INTERNAL_RATIONALE`, `COMPLIANCE_NOTES`, `UNRELEASED_EVIDENCE`, `UNRELEASED_RECOMMENDATION` and hidden fields.
+
+Analysis conclusion:
+
+The approved WP04 first-wave implementation is already present in the current repo. No product-code gap was found for the blueprint's first-wave scope. Remaining clean-up stays a separate consolidation task: normalize legacy/demo recommendation and screencast release compatibility paths onto the shared sufficiency helper.
+
+### WP04-SPEC-1 Refined Specification
+
+Status: `COMPLETE_AND_STILL_VALID`.
+
+Refined first-wave contract:
+
+- Upload is candidate intake only.
+- Upload success never implies evidence sufficiency, advisor approval, compliance release, client visibility or export readiness.
+- Evidence must pass review and linkage before it can be considered for sufficiency.
+- Final `SUFFICIENT` is Compliance-owned.
+- Analyst/advisor roles may prepare, review, link or rely on reviewed evidence, but may not create final sufficiency or release.
+- Sufficiency is requirement/object scoped, not document scoped.
+- `EvidenceSufficiencyDecision` remains the canonical first-wave record.
+- Compliance release requires reviewed, linked, scoped, relevant, current and audited sufficiency plus the other release gates.
+- Client-visible payloads are released/redacted summaries only.
+- Export excludes unreleased/internal evidence and forbidden internal payload classes.
+- Audit persistence is required before critical mutation; unavailable audit fails closed.
+- No new API, route, schema migration or product scope expansion is authorized for this rerun.
+
+### WP04-DECISION-1 Decision Result
+
+Status: `COMPLETE`.
+
+Existing human approval applies:
+
+- Option A remains the accepted policy.
+- Compliance owns final sufficiency.
+- Analyst/advisor roles prepare/review/link only.
+- Existing schema is sufficient for this wave.
+- No new route/API/schema migration is needed.
+
+No human stop was required in this strict rerun.
+
+### WP04 Implementation Result
+
+Overall implementation status: `ZERO-DELTA PRODUCT CODE`.
+
+Product-code changes in this strict rerun: none.
+
+Generated artefact changes in this strict rerun: this report section.
+
+Task-by-task derived implementation result:
+
+- `WP04-IMPL-1` Upload-only UI/API Semantics: `ZERO-DELTA IMPLEMENTATION`. Code already returns upload-only safety fields and UI already states review pending without release/export/client visibility.
+- `WP04-IMPL-1.1` Upload feedback wording and state separation: `ZERO-DELTA IMPLEMENTATION`. UI copy already includes `Upload complete - evidence review pending` and `No sufficiency shortcut`.
+- `WP04-IMPL-1.2` API response/payload no-sufficiency semantics: `ZERO-DELTA IMPLEMENTATION`. Upload API already returns `sufficiency: false`, `releaseUnlocked: false`, `clientVisible: false`.
+- `WP04-IMPL-2` Evidence Review and Linkage Lifecycle: `ZERO-DELTA IMPLEMENTATION`. Review/linkage lifecycle is implemented in the document review service and API.
+- `WP04-IMPL-2.1` Evidence review states: `ZERO-DELTA IMPLEMENTATION`. Upload, review pending, clarification/insufficient, linked and sufficient states are mapped and tested.
+- `WP04-IMPL-2.2` Evidence-to-object linkage: `ZERO-DELTA IMPLEMENTATION`. Document links, evidence records and journey supporting evidence links exist and are used by gates.
+- `WP04-IMPL-3` Sufficiency Gate and Compliance Release Blocker: `ZERO-DELTA IMPLEMENTATION`. Shared predicates and journey release checks already block insufficient evidence.
+- `WP04-IMPL-3.1` Sufficiency gate derivation: `ZERO-DELTA IMPLEMENTATION`. `evaluateEvidenceSufficiency` and `evaluateRequirementSufficiency` already encode the first-wave predicate.
+- `WP04-IMPL-3.2` Compliance release block integration: `ZERO-DELTA IMPLEMENTATION`. Release blocks missing evidence sufficiency and keeps client visibility hidden until release gates pass.
+- `WP04-IMPL-4` Evidence Audit and Fail-Closed Behaviour: `ZERO-DELTA IMPLEMENTATION`. Upload, review and journey command paths already fail closed when audit persistence is unavailable.
+- `WP04-IMPL-4.1` Audit event mapping for evidence actions: `ZERO-DELTA IMPLEMENTATION`. Upload, review/linkage, sufficiency acceptance/block and journey sufficiency/release attempts are audit-mapped for this wave.
+- `WP04-IMPL-4.2` Audit unavailable fail-closed handling: `ZERO-DELTA IMPLEMENTATION`. Tests prove no silent mutation for upload, review or journey evidence sufficiency when audit persistence fails.
+
+### WP04-QA-1 Proof
+
+Status: `COMPLETE_FOR_APPROVED_FIRST_WAVE`.
+
+Validation run:
+
+```bash
+pnpm guard:source
+pnpm exec tsc --noEmit --pretty false
+pnpm db:validate
+pnpm exec playwright test tests/document-upload-api.spec.ts tests/evidence-review-api.spec.ts tests/journey-api.spec.ts tests/document-upload-lifecycle-hardening.spec.ts --workers=1 --reporter=line
+pnpm exec playwright test tests/file-export-realism.spec.ts tests/client-visibility-projection.spec.ts tests/governance-non-bypass.spec.ts --workers=1 --reporter=line
+```
+
+Validation result:
+
+- Source/target guard: PASS, 0 violations.
+- TypeScript: PASS.
+- Prisma validate: PASS.
+- Upload/review/journey/lifecycle WP04 slice: PASS, 26 passed.
+- Export/client visibility/governance non-bypass slice: PASS, 21 passed.
+
+Positive proof:
+
+- Upload happy path still works.
+- Compliance can accept reviewed scoped evidence without releasing client visibility.
+- Journey can complete compliance release only after explicit evidence sufficiency, advisor approval, confirmation, audit and gate prerequisites align.
+- Client projection can show released client-safe summaries without internal leakage.
+- Export package generation works when scope, redaction, approval, audit and data quality controls align.
+
+Negative proof:
+
+- Upload success does not set sufficiency, release, export readiness or client visibility.
+- Analyst cannot force final sufficiency.
+- Advisor approval alone cannot release.
+- Wrong-scope sufficiency blocks without mutation.
+- Missing evidence sufficiency blocks release.
+- Admin cannot force evidence sufficiency or release.
+- Audit persistence failure blocks critical upload/review/journey mutations.
+- Export blocks unreleased/internal evidence and forbidden internal payload classes.
+- Client projection fails closed for unreleased decision/document payloads.
+
+Screenshot proof:
+
+- `test-results/wp04-strict-rerun-screenshots/wp04-documents-upload.png`
+- `test-results/wp04-strict-rerun-screenshots/wp04-documents-review-queue.png`
+- `test-results/wp04-strict-rerun-screenshots/wp04-compliance-release.png`
+
+Residual risks:
+
+- This rerun did not execute full `pnpm phase:check`; it executed the focused WP04 proof set plus source guard, typecheck and Prisma validation.
+- Legacy/demo recommendation and screencast compatibility paths should still be normalized onto the shared sufficiency helper in a separate cleanup task.
+- Production storage/security scanning and full KYC/SoW/IPS/committee policy buildout remain explicitly out of WP04 scope.
+
+Aggressive clean-solution recommendation:
+
+Keep WP04 closed as `ZERO-DELTA PRODUCT CODE / COMPLETE_FOR_APPROVED_FIRST_WAVE`. Do not add schema, routes or APIs here. The next clean debt-removal task should be a narrow consolidation ticket that routes remaining legacy/demo recommendation and screencast release compatibility paths through the shared sufficiency policy helper and proves no behavior regression with journey/export/client-visibility tests.
