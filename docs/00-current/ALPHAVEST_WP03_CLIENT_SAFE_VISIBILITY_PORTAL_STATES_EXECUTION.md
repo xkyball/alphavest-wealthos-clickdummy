@@ -522,3 +522,173 @@ Method/proof notes:
 - Facts: live code has `lib/client-portal-projection-state.ts`, route `020` is `/mobile`, `ClientSafeProjectionCard` renders projection states, and source-upload projection excludes `sensitivity`.
 - Assumption: existing seed remains sufficient for first-wave proof because no new missing WP03 negative gap was found in live rerun.
 - Interpretation: WP03 is not the next cleanup bottleneck; the next clean target is either non-WP03 UX-DENSITY guidance consistency or WP02 route-record cleanup.
+
+## WP03 Strict Source-Scope Rerun
+
+Execution date: 2026-06-25.
+
+Source-scope rule applied:
+
+- Specification authority was limited to the uploaded WP03 blueprint, current repository evidence, generated process artefacts, and explicit human/generated decision artefacts.
+- Non-generated referenced artefacts were treated as pointers only unless their claims were revalidated against current repo evidence or captured in generated process artefacts.
+- `ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md` was inspected only because repo instructions require it before implementation/reporting work; it was not used to import unrelated legacy claims into the WP03 specification.
+
+Baseline:
+
+- Branch: `full-workflow`.
+- Latest commit before rerun: `a51d568 feat: complete wp02 access tenant worksurfaces`.
+- Working tree before report update: clean.
+- Package scripts inspected from `package.json`.
+
+Generated artefacts used as inputs or overrides:
+
+- `docs/00-current/ALPHAVEST_WP00_SOURCE_HIERARCHY_TARGET_GUARD_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP01_PROCESS_FIRST_ROUTE_NAV_SHELL_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP02_WORKSURFACE_LAYOUT_REFACTOR_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP03_CLIENT_SAFE_VISIBILITY_PORTAL_STATES_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP04_EVIDENCE_WORKFLOW_UPLOAD_NOT_SUFFICIENCY_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP05_INTERNAL_DRAFT_ADVISOR_COMPLIANCE_FLOW_EXECUTION.md`
+- `docs/00-current/ALPHAVEST_WP06_RBAC_ADMIN_NON_BYPASS_EXECUTION.md`
+
+### Blueprint Task Extraction
+
+- `ANALYSIS-1` Audit current client-facing visibility, payload and state surfaces.
+- `ANALYSIS-2` Map existing tests/proofs and missing leakage cases.
+- `SPEC-1` Specify client-safe visibility, payload and portal-state contract.
+- `DECISION-1` Confirm client-safe projection/API boundary if multiple implementation paths remain.
+- `IMPL-1` Implement fail-closed client portal/mobile UI states.
+  - `IMPL-1.1` Wire hidden/empty/redacted/permission/error states.
+  - `IMPL-1.2` Remove unsafe optimistic client fallback content.
+- `IMPL-2` Implement client-safe payload projection wiring.
+  - `IMPL-2.1` Apply route/action/object/payload visibility checks.
+  - `IMPL-2.2` Exclude AI Draft, internal rationale, compliance notes and unreleased evidence.
+- `IMPL-3` Implement released decision and evidence-safe summary wiring.
+- `QA-1` Validate WP03 positive and negative client-safe visibility acceptance.
+
+Stop rules extracted from the upload:
+
+- No screen generation, state-screen image generation or visual replacement.
+- No `main` target truth.
+- No new API without explicit decision after analysis.
+- No route reclassification or P1/Hold elevation.
+- No blind schema replacement.
+- No internal notes, AI drafts, compliance notes, unreleased evidence or audit rationale in client-facing views.
+- Route access must not be treated as payload visibility.
+- Advisor approval must not be treated as compliance release.
+- Upload success must not be treated as evidence sufficiency.
+
+### ANALYSIS-1 Executed Result
+
+Live repo evidence:
+
+- Route `019` is `/client/home`; route `020` is `/mobile` in `lib/route-registry.ts`.
+- `components/client-intake-screen.tsx` renders `PortalPage` for `019` and `MobileHomePage` for `020`.
+- `ClientSafeProjectionCard` uses `visibilityEngine.projectDecisionPayload` and `clientPortalProjectionState`, then renders both released and fail-closed panels.
+- `lib/client-portal-projection-state.ts` maps projections into `released`, `redacted`, `source_upload`, `empty`, `hidden` and `permission_denied` states.
+- `lib/visibility-engine.ts` keeps `aiDraft`, `internalRationale`, `complianceNotes`, audit metadata, evidence internals, storage keys and checksum out of client projections.
+- `lib/control-layer/client-visibility.ts` remains the WCL wrapper around `visibilityEngine`.
+- `/api/documents` and document tests prove source-upload status is upload/status-only; `sensitivity`, storage keys and checksums are not client payload.
+
+Analysis conclusion:
+
+- No new projection/API boundary is needed.
+- The earlier `019/020` ambiguity is resolved in current code; `/mobile` is independently addressable.
+- The source-upload exception remains explicit and narrow: `fileName` and `fileSizeBytes` are own-upload status metadata only; `sensitivity` is excluded.
+- Current UI contains a released state and fail-closed state. Loading/error stale-content coverage remains validated by focused projection/no-leakage proof rather than a new UI branch in this rerun.
+
+### ANALYSIS-2 Executed Result
+
+Live test/proof map:
+
+- `tests/client-visibility-projection.spec.ts`: WCL projection positive and negative proof for recommendations, decisions and documents.
+- `tests/true-ux-client-projection.spec.ts`: no-leakage contract, released/unreleased projections, source-upload exception, route proof and mobile semantic parity.
+- `tests/document-upload-api.spec.ts`: upload-only API semantics, source-document status projection, no `sensitivity`, no storage/checksum leakage and no upload-to-release.
+- `tests/route-smoke.spec.ts`: route reachability for `019 /client/home` and `020 /mobile`.
+
+Missing case assessment:
+
+- No new first-wave WP03 product-code gap was found in the live rerun.
+- Full loading/error UI branch expansion is still a possible future hardening item, but current first-wave acceptance is covered by projection/state tests and no raw fallback rendering was found in the inspected client projection card.
+
+### SPEC-1 Refined Contract
+
+The refined rerun spec keeps the earlier accepted first-wave contract:
+
+- Use `visibilityEngine` plus `lib/control-layer/client-visibility.ts` as the canonical projection boundary.
+- Use `lib/client-portal-projection-state.ts` as the UI state adapter.
+- Client-facing portal/mobile may render only released, redacted, source-upload status, empty/hidden, or permission-denied state models.
+- Source-upload metadata exception is allowed only for own-source upload status and only for `fileName` and `fileSizeBytes`.
+- `sensitivity`, storage keys, checksum, internal rationale, AI draft, compliance notes, audit metadata and unreleased evidence remain forbidden.
+- No new API is needed.
+- `/mobile` uses the same projection boundary as portal with reduced presentation.
+- Export/package links stay outside WP03 and remain deferred to export/redaction work.
+
+### DECISION-1 Result
+
+No new human stop was required.
+
+Applied decision:
+
+- Earlier accepted/generated WP03 Option A remains valid: canonical `visibilityEngine` + WCL/control-layer projection, no new WP03 API, existing seed/demo data first, minimal deterministic fixtures only where needed, same projection boundary for mobile.
+
+Rejected branches:
+
+- New WP03 API: rejected because existing projection/service boundary passes current proof and would widen attack surface.
+- Local portal-only filtering: rejected because payload safety must be projection-enforced, not UI-only.
+- Additional product-code UI expansion in this rerun: rejected because analysis produced zero first-wave product delta.
+
+### Derived Implementation Tasks
+
+- `IMPL-1` Fail-closed portal/mobile UI states: `ZERO-DELTA IMPLEMENTATION`. `ClientSafeProjectionCard` and `ClientPortalProjectionStatePanel` already render released, permission-denied, source-upload and fail-closed no-release states from the adapter.
+- `IMPL-1.1` State branches: `ZERO-DELTA IMPLEMENTATION`. State adapter and panel branches are present.
+- `IMPL-1.2` Unsafe optimistic fallback removal: `ZERO-DELTA IMPLEMENTATION`. Released payload is rendered only when `releasedState.visible`; the blocked state renders a fail-closed message.
+- `IMPL-2` Client-safe projection wiring: `ZERO-DELTA IMPLEMENTATION`. `visibilityEngine` and WCL wrapper remain canonical and covered by tests.
+- `IMPL-2.1` Route/action/object/payload visibility checks: `ZERO-DELTA IMPLEMENTATION`. Projection functions require permission, tenant/object scope and client visibility before payload exposure.
+- `IMPL-2.2` Forbidden field exclusion: `ZERO-DELTA IMPLEMENTATION`. Forbidden internal fields are excluded and asserted absent in tests.
+- `IMPL-3` Released decision/evidence-safe summary wiring: `ZERO-DELTA IMPLEMENTATION`. Released decision summary and released/redacted document metadata use allowed fields only; source upload is status-only.
+
+Product-code delta:
+
+- None in this strict rerun.
+
+Generated artefact update:
+
+- This report section documents the strict source-scope rerun, zero-delta proof and latest validation.
+
+### QA-1 Proof
+
+Commands run:
+
+```bash
+pnpm guard:source
+pnpm typecheck
+pnpm db:validate
+pnpm exec playwright test tests/client-visibility-projection.spec.ts tests/true-ux-client-projection.spec.ts --workers=1 --reporter=line
+pnpm exec playwright test tests/document-upload-api.spec.ts --workers=1 --reporter=line
+PLAYWRIGHT_PORT=3085 pnpm exec playwright test tests/route-smoke.spec.ts --grep "registered route smoke.*(019|020)" --workers=1 --reporter=line
+```
+
+Results:
+
+- Source/target guard: PASS.
+- TypeScript: PASS.
+- Prisma validate: PASS.
+- Client visibility + true UX projection: PASS, 17 passed.
+- Document upload API: PASS, 9 passed.
+- Focused route smoke for `019` and `020`: PASS, 2 passed.
+
+Negative proof:
+
+- A first route-smoke attempt failed only because a parallel Playwright server already used port `3020`; rerun with `PLAYWRIGHT_PORT=3085` passed.
+- Projection tests assert internal fields are hidden: AI draft, internal rationale, compliance notes, audit metadata, evidence internals, storage keys and checksum.
+- Source-upload tests assert `sensitivity` is absent and upload remains upload-only.
+
+Screenshots:
+
+- `test-results/wp03-strict-rerun-screenshots/wp03-client-home-desktop.png`
+- `test-results/wp03-strict-rerun-screenshots/wp03-mobile-home.png`
+
+Residual risks:
+
+- Full loading/error UI branch expansion could be a later hardening task if product wants explicit visual states beyond current projection/fail-closed proof.
+- Broader route-smoke/UX-density checks were not rerun in this strict rerun because WP03 acceptance is covered by focused route, projection and document tests; previous unrelated UX-density/product-guidance mismatch remains non-WP03.
