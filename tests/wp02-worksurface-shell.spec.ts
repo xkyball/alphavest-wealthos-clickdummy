@@ -31,6 +31,11 @@ const worksurfaceRoutes = [
   { pageId: "035", worksurface: "internal-workbench-trigger-review" },
   { pageId: "036", worksurface: "advisor-review-queue" },
   { pageId: "037", worksurface: "advisor-review-detail" },
+  { pageId: "038", worksurface: "compliance-release-queue" },
+  { pageId: "039", worksurface: "compliance-release-decision-room" },
+  { pageId: "040", worksurface: "compliance-release-confirmation" },
+  { pageId: "041", worksurface: "compliance-release-block" },
+  { pageId: "042", worksurface: "compliance-release-audit" },
   { pageId: "046", worksurface: "evidence-vault" },
   { pageId: "047", worksurface: "evidence-record-detail" },
 ] as const;

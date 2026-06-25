@@ -1519,29 +1519,55 @@ function ComplianceQueuePage({ title }: { title: string }) {
 
   return (
     <InternalShell activePageId="038">
-      <ScreenTitle>{title}</ScreenTitle>
-      <Phase5DetailSplitPanel decisionSupport="Compliance queue separates work intake from decision-room review." objectLabel="Compliance queue split" objectState="Compliance items pending selection" pageJob="Compliance queue prioritizes review work without hiding decision consequences." safetyBoundary="Queue context cannot release, block or request evidence by itself." splitTaskId="UX-PAGE-SPLIT-003" taskId="UX-PAGE-SPLIT-003" />
+      <WorksurfaceShell
+        description="Compliance review is organized as a release-control worksurface: intake queue, evidence status, policy posture and explicit non-release queue boundary stay visible."
+        eyebrow="WP02 compliance release"
+        primary={
+          <div className="space-y-4">
+            <Phase5DetailSplitPanel decisionSupport="Compliance queue separates work intake from decision-room review." objectLabel="Compliance queue split" objectState="Compliance items pending selection" pageJob="Compliance queue prioritizes review work without hiding decision consequences." safetyBoundary="Queue context cannot release, block or request evidence by itself." splitTaskId="UX-PAGE-SPLIT-003" taskId="UX-PAGE-SPLIT-003" />
+            <UxHubPage pageId="038" />
+          </div>
+        }
+        rail={
+          <WorksurfacePanel description="Queue-level visibility only prioritizes work. Release remains inside the gated review room." title="Release boundary">
+            <div className="space-y-3 text-sm">
+              <InfoRow label="Queue actions" value="Open review only" />
+              <InfoRow label="Advisor approval" value="Prerequisite only" />
+              <InfoRow label="Client visibility" value="Blocked" />
+            </div>
+          </WorksurfacePanel>
+        }
+        routeId="038"
+        safetyNote="WP02 layout only: compliance queue rows cannot release, block, export or expose client-visible content."
+        secondary={
+          <div className="grid gap-3 md:grid-cols-5">
+            {complianceMetrics.map((metric) => (
+              <Card key={metric.label}>
+                <div className="flex items-center gap-4">
+                  <IconTile tone={metric.label === "Overdue" ? "red" : "muted"}>{metric.label === "Overdue" ? <Calendar aria-hidden="true" className="size-5" /> : <ClipboardCheck aria-hidden="true" className="size-5" />}</IconTile>
+                  <div>
+                    <p className={cn("text-3xl font-semibold", metric.label === "Overdue" ? "text-alphavest-red" : "text-alphavest-ivory")}>{metric.value}</p>
+                    <p className="text-sm text-alphavest-muted">{metric.label}</p>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        }
+        statusItems={[
+          { label: "Queue", tone: "gold", value: `${complianceQueue.length} reviews` },
+          { label: "Release", tone: "red", value: "Gated" },
+        ]}
+        title={title}
+        worksurfaceId="compliance-release-queue"
+      >
       <div className="mx-auto max-w-[104rem] space-y-5">
-        <UxHubPage pageId="038" />
         <PageHeading
           action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />Export held</span><span className={primaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false"><RefreshCw aria-hidden="true" className="size-4" />Refresh held</span></div>}
           subtitle="Review and action pending compliance items."
           title={title}
         />
         <ScfP04P06FlowPanel mode="compliance" />
-        <div className="grid gap-3 md:grid-cols-5">
-          {complianceMetrics.map((metric) => (
-            <Card key={metric.label}>
-              <div className="flex items-center gap-4">
-                <IconTile tone={metric.label === "Overdue" ? "red" : "muted"}>{metric.label === "Overdue" ? <Calendar aria-hidden="true" className="size-5" /> : <ClipboardCheck aria-hidden="true" className="size-5" />}</IconTile>
-                <div>
-                  <p className={cn("text-3xl font-semibold", metric.label === "Overdue" ? "text-alphavest-red" : "text-alphavest-ivory")}>{metric.value}</p>
-                  <p className="text-sm text-alphavest-muted">{metric.label}</p>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
         <div className="grid gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-panel/55 p-3 lg:grid-cols-[1fr_repeat(4,10rem)_auto_auto]">
           <label className="relative min-w-0">
             <Search aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
@@ -1567,6 +1593,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
           rows={visibleRows}
         />
       </div>
+      </WorksurfaceShell>
     </InternalShell>
   );
 }
@@ -1576,10 +1603,76 @@ function ComplianceReviewPage({ title }: { title: string }) {
 
   return (
     <InternalShell activePageId="039">
-      <ScreenTitle>{title}</ScreenTitle>
-      <Phase5DetailSplitPanel decisionSupport="Compliance detail carries evidence, policy and audit state before later decision-room actions." objectLabel="Compliance object review" objectState="Release gates not satisfied" pageJob="Compliance detail reviews one object without becoming a hidden drawer decision." safetyBoundary="Detail context cannot release without explicit gated decision controls." splitTaskId="UX-PAGE-SPLIT-003" taskId="UX-PAGE-SPLIT-003" />
-      <Phase6DecisionRoomPanel audit="Audit event must record actor, target, gate state and confirm or cancel outcome before any release mutation." blocker="Release remains blocked because evidence, policy, reviewer and approver gates are not all satisfied." cancelLabel="Cancel without mutation" confirmLabel="Confirm compliance release" decisionLabel="Compliance release decision room" evidence="Evidence checklist, policy exception state and audit references are visible before decision." preconditions="Evidence review complete, policy pass, human reviewer and compliance approver must all pass." safetyNote="No release, export or advice effect can occur until gate preconditions pass and an audit record exists." taskId="UX-DECISION-ROOM-001" />
-      <div className="mx-auto grid max-w-[112rem] gap-5 2xl:grid-cols-[1fr_23rem]">
+      <WorksurfaceShell
+        description="The compliance decision room keeps evidence, policy, preconditions, request/block controls and audit context in one release-gated worksurface."
+        eyebrow="WP02 compliance release"
+        primary={
+          <div className="space-y-4">
+            <Phase5DetailSplitPanel decisionSupport="Compliance detail carries evidence, policy and audit state before later decision-room actions." objectLabel="Compliance object review" objectState="Release gates not satisfied" pageJob="Compliance detail reviews one object without becoming a hidden drawer decision." safetyBoundary="Detail context cannot release without explicit gated decision controls." splitTaskId="UX-PAGE-SPLIT-003" taskId="UX-PAGE-SPLIT-003" />
+            <Phase6DecisionRoomPanel audit="Audit event must record actor, target, gate state and confirm or cancel outcome before any release mutation." blocker="Release remains blocked because evidence, policy, reviewer and approver gates are not all satisfied." cancelLabel="Cancel without mutation" confirmLabel="Confirm compliance release" decisionLabel="Compliance release decision room" evidence="Evidence checklist, policy exception state and audit references are visible before decision." preconditions="Evidence review complete, policy pass, human reviewer and compliance approver must all pass." safetyNote="No release, export or advice effect can occur until gate preconditions pass and an audit record exists." taskId="UX-DECISION-ROOM-001" />
+          </div>
+        }
+        rail={
+          <aside className="space-y-5">
+            <Card>
+              <CardHeader><CardTitle>Decision</CardTitle></CardHeader>
+              <CardContent className="space-y-3">
+                <StatePanel detail="This item cannot be released until all required evidence is complete and policy checks pass." state="blocked" title="Release gates not satisfied" />
+                <span
+                  className={secondaryButtonClass + " w-full cursor-not-allowed opacity-60"}
+                  data-testid="wp06-release-blocked-control"
+                  data-ux-interactive="false"
+                  role="status"
+                >
+                  <LockKeyhole aria-hidden="true" className="size-4" />Release blocked until preconditions pass
+                </span>
+                <button
+                  className={primaryButtonClass + " w-full"}
+                  data-testid="j02-request-evidence"
+                  data-ux-primary-cta="true"
+                  onClick={() => {
+                    setConfirmationAction("request_evidence");
+                  }}
+                  type="button"
+                >
+                  <MessageSquare aria-hidden="true" className="size-4" />Request Evidence
+                </button>
+                <button
+                  className="inline-flex h-[var(--button-height)] w-full items-center justify-center gap-2 rounded-md border border-alphavest-red/55 bg-alphavest-red/10 px-4 text-sm font-semibold text-alphavest-red"
+                  data-testid="j02-block-release"
+                  onClick={() => {
+                    setConfirmationAction("compliance_block");
+                  }}
+                  type="button"
+                >
+                  Keep Blocked
+                </button>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle>Review History</CardTitle></CardHeader>
+              <CardContent>
+                <AuditTimeline
+                  items={[
+                    { actor: "System", id: "classification", result: "SUCCESS", timestamp: "May 21, 2025 09:15 AM", title: "Auto-classification completed" },
+                    { actor: "Sarah Chen", id: "assigned", result: "PENDING", timestamp: "May 21, 2025 09:16 AM", title: "Assigned to reviewer" },
+                    { actor: "Policy engine", id: "policy", result: "BLOCKED", timestamp: "May 21, 2025 09:18 AM", title: "Policy check exception" }
+                  ]}
+                />
+              </CardContent>
+            </Card>
+          </aside>
+        }
+        routeId="039"
+        safetyNote="WP02 layout only: compliance can request evidence or keep release blocked here; release, export and client acceptance remain separate gated actions."
+        statusItems={[
+          { label: "Gate", tone: "red", value: "Blocked" },
+          { label: "Evidence", tone: "red", value: "Incomplete" },
+        ]}
+        title={title}
+        worksurfaceId="compliance-release-decision-room"
+      >
+      <div className="mx-auto max-w-[112rem]">
         <section className="min-w-0 space-y-5">
           <PageHeading
             badge={<Badge tone="gold">In Review</Badge>}
@@ -1683,56 +1776,8 @@ function ComplianceReviewPage({ title }: { title: string }) {
           </div>
           <StatePanel detail={`${complianceReview.releaseGates}. Release is disabled until evidence, policy, reviewer and approver gates pass.`} state="blocked" title="Release Gates Summary" />
         </section>
-        <aside className="space-y-5">
-          <Card>
-            <CardHeader><CardTitle>Decision</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
-              <StatePanel detail="This item cannot be released until all required evidence is complete and policy checks pass." state="blocked" title="Release gates not satisfied" />
-              <span
-                className={secondaryButtonClass + " w-full cursor-not-allowed opacity-60"}
-                data-testid="wp06-release-blocked-control"
-                data-ux-interactive="false"
-                role="status"
-              >
-                <LockKeyhole aria-hidden="true" className="size-4" />Release blocked until preconditions pass
-              </span>
-              <button
-                className={primaryButtonClass + " w-full"}
-                data-testid="j02-request-evidence"
-                data-ux-primary-cta="true"
-                onClick={() => {
-                  setConfirmationAction("request_evidence");
-                }}
-                type="button"
-              >
-                <MessageSquare aria-hidden="true" className="size-4" />Request Evidence
-              </button>
-              <button
-                className="inline-flex h-[var(--button-height)] w-full items-center justify-center gap-2 rounded-md border border-alphavest-red/55 bg-alphavest-red/10 px-4 text-sm font-semibold text-alphavest-red"
-                data-testid="j02-block-release"
-                onClick={() => {
-                  setConfirmationAction("compliance_block");
-                }}
-                type="button"
-              >
-                Keep Blocked
-              </button>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader><CardTitle>Review History</CardTitle></CardHeader>
-            <CardContent>
-              <AuditTimeline
-                items={[
-                  { actor: "System", id: "classification", result: "SUCCESS", timestamp: "May 21, 2025 09:15 AM", title: "Auto-classification completed" },
-                  { actor: "Sarah Chen", id: "assigned", result: "PENDING", timestamp: "May 21, 2025 09:16 AM", title: "Assigned to reviewer" },
-                  { actor: "Policy engine", id: "policy", result: "BLOCKED", timestamp: "May 21, 2025 09:18 AM", title: "Policy check exception" }
-                ]}
-              />
-            </CardContent>
-          </Card>
-        </aside>
       </div>
+      </WorksurfaceShell>
       <SensitiveWorkflowConfirmationModal
         action={confirmationAction}
         onClose={() => setConfirmationAction(null)}
@@ -1747,7 +1792,19 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
 
   return (
     <InternalShell activePageId="040">
-      <ScreenTitle>{title}</ScreenTitle>
+      <WorksurfaceShell
+        description="Compliance release confirmation is now the explicit release worksurface: checklist, client-safe preview candidate and audited confirmation remain visibly separated from export or acceptance."
+        eyebrow="WP02 compliance release"
+        primary={<StatePanel detail="Compliance release is still pending until the exact confirmation phrase is entered and the audited action succeeds." state="restricted" title="Release action required" />}
+        routeId="040"
+        safetyNote="WP02 layout only: this surface organizes the release confirmation UI; export, download, share and client acceptance remain separate controls."
+        statusItems={[
+          { label: "Review", tone: "green", value: "Approved" },
+          { label: "Release", tone: "gold", value: "Action pending" },
+        ]}
+        title={title}
+        worksurfaceId="compliance-release-confirmation"
+      >
       <div className="mx-auto grid max-w-[104rem] gap-5 xl:grid-cols-[18rem_1fr_22rem]">
         <aside className="space-y-4">
           <Card><CardHeader><CardTitle>Review progress</CardTitle></CardHeader><CardContent className="space-y-3">{["Advice validation", "Risk & suitability", "Product & fee review", "Disclosures", "Documents", "Overall review"].map((item) => <p className="flex items-center gap-2 text-sm text-alphavest-muted" key={item}><CheckCircle2 aria-hidden="true" className="size-4 text-alphavest-green" />{item}</p>)}</CardContent></Card>
@@ -1781,6 +1838,7 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
           <Card><CardHeader><CardTitle>Related items</CardTitle></CardHeader><CardContent className="space-y-3">{["SOA - Retirement Income Plan", "PDS - AlphaVest Balanced Fund", "Fee Disclosure Statement", "Risk Profile Assessment"].map((item) => <p className="text-sm text-alphavest-muted" key={item}>{item}</p>)}</CardContent></Card>
         </aside>
       </div>
+      </WorksurfaceShell>
       <ReleaseModal onClose={() => setModalOpen(false)} open={modalOpen} />
     </InternalShell>
   );

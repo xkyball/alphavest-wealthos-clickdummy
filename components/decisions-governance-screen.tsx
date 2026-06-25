@@ -594,7 +594,19 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
 
   return (
     <Phase12Shell activePageId="041">
-      <ScreenTitle>{title}</ScreenTitle>
+      <WorksurfaceShell
+        description="Compliance block handling is shown as a controlled release-stop surface: blocked state, missing evidence request and audit result stay separated from release."
+        eyebrow="WP02 compliance release"
+        primary={<StatePanel detail="Advice content is blocked from client visibility until requested evidence is received, reviewed and released." state="blocked" title="Compliance block active" />}
+        routeId="041"
+        safetyNote="WP02 layout only: request-evidence controls do not create evidence sufficiency, release, export/download/share or client acceptance."
+        statusItems={[
+          { label: "State", tone: "red", value: "Blocked" },
+          { label: "Evidence", tone: "gold", value: "Requested" },
+        ]}
+        title={title}
+        worksurfaceId="compliance-release-block"
+      >
       <div className="mx-auto grid max-w-[104rem] gap-5 xl:grid-cols-[19rem_1fr_19rem]">
         <aside className={cn("space-y-4", modalOpen ? "opacity-55" : "")}>
           <Card>
@@ -653,6 +665,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
           </Card>
         </aside>
       </div>
+      </WorksurfaceShell>
       <Modal
         className="max-w-[52rem]"
         context={
@@ -828,9 +841,58 @@ const complianceAuditColumns: Array<DataTableColumn<(typeof complianceAuditRows)
 function ComplianceAuditPage({ title }: { title: string }) {
   return (
     <Phase12Shell activePageId="042">
-      <ScreenTitle>{title}</ScreenTitle>
-      <Phase5DetailSplitPanel decisionSupport="Audit detail exposes actor, target, result and exception context before controlled export." objectLabel="Audit object review" objectState="Audit exceptions open" pageJob="Audit detail supports review of persisted events without acting as permission approval." safetyBoundary="Audit drawer context cannot approve access, release advice or export packages." splitTaskId="UX-PAGE-SPLIT-006" taskId="UX-DETAIL-005" />
-      <div className="mx-auto grid max-w-[112rem] gap-5 2xl:grid-cols-[1fr_20rem]">
+      <WorksurfaceShell
+        description="Compliance audit is a controlled review surface for actor, target, result, exception and export-control context. It does not itself prove persistence."
+        eyebrow="WP02 compliance release"
+        primary={<Phase5DetailSplitPanel decisionSupport="Audit detail exposes actor, target, result and exception context before controlled export." objectLabel="Audit object review" objectState="Audit exceptions open" pageJob="Audit detail supports review of persisted events without acting as permission approval." safetyBoundary="Audit drawer context cannot approve access, release advice or export packages." splitTaskId="UX-PAGE-SPLIT-006" taskId="UX-DETAIL-005" />}
+        rail={
+          <aside className="space-y-5">
+            <StatePanel
+              detail="Critical actions cannot complete unless the audit row can persist with actor, role, tenant, target, state change, result and reason."
+              state="restricted"
+              title="Audit persistence gate"
+            />
+            <Card>
+              <CardHeader><CardTitle>Minimum Audit Fields</CardTitle></CardHeader>
+              <CardContent className="space-y-3">
+                {complianceAuditControls.map((item) => (
+                  <InfoRow key={item.label} label={item.label} value={item.value} />
+                ))}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle>Exception Summary</CardTitle></CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid size-28 place-items-center rounded-full border-8 border-alphavest-gold/70 text-center">
+                  <div><p className="text-3xl font-semibold text-alphavest-ivory">27</p><p className="text-xs text-alphavest-muted">Open</p></div>
+                </div>
+                {exceptionSummary.map((item) => (
+                  <InfoRow key={item.label} label={item.label} value={String(item.value)} />
+                ))}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle>Resolution Summary</CardTitle></CardHeader>
+              <CardContent className="space-y-3">
+                <InfoRow label="Resolved" value="184" />
+                <InfoRow label="Auto-resolved" value="96" />
+                <InfoRow label="Manual" value="88" />
+                <InfoRow label="Avg. time" value="2.6 days" />
+              </CardContent>
+            </Card>
+            <StatePanel detail="Exports require security controls and audit confirmation before they can proceed." state="restricted" title="Export controlled" />
+          </aside>
+        }
+        routeId="042"
+        safetyNote="WP02 layout only: audit visibility is not audit persistence; export remains controlled and separate from release."
+        statusItems={[
+          { label: "Exceptions", tone: "red", value: "27 open" },
+          { label: "Export", tone: "red", value: "Controlled" },
+        ]}
+        title={title}
+        worksurfaceId="compliance-release-audit"
+      >
+      <div className="mx-auto max-w-[112rem]">
         <section className="min-w-0 space-y-5">
           <PageHeading subtitle="Compliance decision, exception and resolution activity for audit review." title={title} />
           <ScfP04P06FlowPanel mode="audit" />
@@ -905,43 +967,8 @@ function ComplianceAuditPage({ title }: { title: string }) {
             />
           </UxDenseOperationsPanel>
         </section>
-        <aside className="space-y-5">
-          <StatePanel
-            detail="Critical actions cannot complete unless the audit row can persist with actor, role, tenant, target, state change, result and reason."
-            state="restricted"
-            title="Audit persistence gate"
-          />
-          <Card>
-            <CardHeader><CardTitle>Minimum Audit Fields</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
-              {complianceAuditControls.map((item) => (
-                <InfoRow key={item.label} label={item.label} value={item.value} />
-              ))}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader><CardTitle>Exception Summary</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
-              <div className="grid size-28 place-items-center rounded-full border-8 border-alphavest-gold/70 text-center">
-                <div><p className="text-3xl font-semibold text-alphavest-ivory">27</p><p className="text-xs text-alphavest-muted">Open</p></div>
-              </div>
-              {exceptionSummary.map((item) => (
-                <InfoRow key={item.label} label={item.label} value={String(item.value)} />
-              ))}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader><CardTitle>Resolution Summary</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
-              <InfoRow label="Resolved" value="184" />
-              <InfoRow label="Auto-resolved" value="96" />
-              <InfoRow label="Manual" value="88" />
-              <InfoRow label="Avg. time" value="2.6 days" />
-            </CardContent>
-          </Card>
-          <StatePanel detail="Exports require security controls and audit confirmation before they can proceed." state="restricted" title="Export controlled" />
-        </aside>
       </div>
+      </WorksurfaceShell>
     </Phase12Shell>
   );
 }
