@@ -41,5 +41,11 @@ export function createDataQualityRepository(prisma: DataQualityReader) {
         where: openIssueWhere(input),
       });
     },
+
+    getIssue(issueId: string) {
+      return prisma.dataQualityIssue.findUniqueOrThrow({
+        where: { id: issueId },
+      });
+    },
   };
 }
