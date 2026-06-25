@@ -41,7 +41,9 @@ test.describe("Dummy DB auth provider, MFA and invitations", () => {
 
     await page.goto("/client/home");
     await expect(page).toHaveURL(/\/client\/home$/);
-    await expect(page.getByRole("heading", { name: "Client Web Dashboard" })).toBeVisible();
+    await expect(
+      page.getByTestId("wp02-worksurface-shell").getByRole("heading", { name: "Client Web Dashboard" }),
+    ).toBeVisible();
   });
 
   test("denies unknown email without disclosing hidden rows", async ({ request }) => {
@@ -142,6 +144,30 @@ test.describe("Dummy DB auth provider, MFA and invitations", () => {
       },
     });
     expect(audits.map((audit) => audit.result)).toContain(AuditResult.SUCCESS);
+
+    const replayResponse = await request.post("/api/auth/dummy", {
+      data: {
+        action: "accept_invite",
+        consentAccepted: true,
+        email,
+        token: inviteBody.result.inviteToken,
+      },
+    });
+    const replayBody = await replayResponse.json();
+
+    expect(replayResponse.status(), JSON.stringify(replayBody)).toBe(409);
+    expect(replayBody.ok).toBe(false);
+    expect(replayBody.reasonCode).toBe("DUMMY_INVITE_ALREADY_ACCEPTED");
+
+    const replayAudit = await prisma.auditEvent.findFirstOrThrow({
+      orderBy: { createdAt: "desc" },
+      where: {
+        eventType: "auth.dummy.invitation.blocked",
+        result: AuditResult.BLOCKED,
+        targetId: activatedUser.id,
+      },
+    });
+    expect(replayAudit.reason).toContain("replay blocked");
   });
 
   test("verifies MFA only for a known DB user with the accepted dummy code", async ({ request }) => {

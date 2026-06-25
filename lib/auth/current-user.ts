@@ -27,6 +27,31 @@ export type CurrentUserContext = {
     expiresAt: string;
     provider: "db-user-jwt";
   };
+  memberships: Array<{
+    objectScope?: {
+      objectId: string;
+      objectType: string;
+    };
+    role: {
+      id: string;
+      key: string;
+      name: string;
+      scope: string;
+    };
+    status: string;
+    tenant?: {
+      displayName: string;
+      id: string;
+    };
+    userRoleId: string;
+    validUntil: string | null;
+  }>;
+  objectScopes: Array<{
+    objectId: string;
+    objectType: string;
+    tenantId: string | null;
+    userRoleId: string;
+  }>;
   role?: {
     id: string;
     key: string;
@@ -46,6 +71,43 @@ function primaryRoleAssignment(user: LoadedUser) {
 
 function safeContextForUser(user: LoadedUser, claims: AuthJwtClaims): CurrentUserContext {
   const assignment = primaryRoleAssignment(user);
+  const memberships = user.userRoles
+    .filter((candidate) => activeAssignmentStatuses.has(candidate.status))
+    .map((candidate) => ({
+      ...(candidate.objectId && candidate.objectType
+        ? {
+            objectScope: {
+              objectId: candidate.objectId,
+              objectType: candidate.objectType,
+            },
+          }
+        : {}),
+      role: {
+        id: candidate.role.id,
+        key: candidate.role.key,
+        name: candidate.role.name,
+        scope: candidate.role.scope,
+      },
+      status: candidate.status,
+      ...(candidate.clientTenant
+        ? {
+            tenant: {
+              displayName: candidate.clientTenant.displayName,
+              id: candidate.clientTenant.id,
+            },
+          }
+        : {}),
+      userRoleId: candidate.id,
+      validUntil: candidate.validUntil?.toISOString() ?? null,
+    }));
+  const objectScopes = user.userRoles
+    .filter((candidate) => activeAssignmentStatuses.has(candidate.status) && candidate.objectId && candidate.objectType)
+    .map((candidate) => ({
+      objectId: candidate.objectId as string,
+      objectType: candidate.objectType as string,
+      tenantId: candidate.clientTenantId,
+      userRoleId: candidate.id,
+    }));
 
   return {
     actor: {
@@ -58,6 +120,8 @@ function safeContextForUser(user: LoadedUser, claims: AuthJwtClaims): CurrentUse
       expiresAt: new Date(claims.exp * 1000).toISOString(),
       provider: "db-user-jwt",
     },
+    memberships,
+    objectScopes,
     ...(assignment
       ? {
           role: {

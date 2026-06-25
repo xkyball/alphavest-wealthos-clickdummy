@@ -155,6 +155,14 @@ test.describe("Wave 0-2 auth spine", () => {
         displayName: "Bennett Family Office",
       },
     });
+    expect(currentBody.currentUser.memberships).toEqual([
+      expect.objectContaining({
+        role: expect.objectContaining({ key: "family_cfo" }),
+        status: "active",
+        tenant: expect.objectContaining({ displayName: "Bennett Family Office" }),
+      }),
+    ]);
+    expect(currentBody.currentUser.objectScopes).toEqual([]);
     expect(JSON.stringify(currentBody)).not.toMatch(/recommendation|evidenceRecord|complianceNote|clientPayload/i);
 
     const audit = await prisma.auditEvent.findFirstOrThrow({

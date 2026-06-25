@@ -503,6 +503,23 @@ export async function acceptDemoInvite(
     throw new DemoAuthProviderError("DUMMY_INVITE_ROLE_CONTEXT_REQUIRED", "Invite acceptance requires a configured role.", 409);
   }
 
+  if (user.status !== UserStatus.INVITED || !["pending", "invited"].includes(assignment.status)) {
+    await writeAuthAudit(prisma, {
+      actorUserId: user.id,
+      clientTenantId: assignment.clientTenantId,
+      eventType: "auth.dummy.invitation.blocked",
+      metadataJson: {
+        assignmentStatus: assignment.status,
+        attemptedStatus: user.status,
+        blockedReason: "already_accepted_or_inactive",
+      },
+      reason: "Invite acceptance replay blocked for a user that is no longer pending invitation.",
+      result: AuditResult.BLOCKED,
+      targetId: user.id,
+    });
+    throw new DemoAuthProviderError("DUMMY_INVITE_ALREADY_ACCEPTED", "Invite token is no longer acceptable.", 409);
+  }
+
   if (!consentAccepted) {
     await writeAuthAudit(prisma, {
       actorUserId: user.id,
