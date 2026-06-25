@@ -1209,9 +1209,21 @@ function AdvisorQueuePage({ title }: { title: string }) {
 
   return (
     <InternalShell activePageId="036">
-      <ScreenTitle>{title}</ScreenTitle>
-      <Phase5DetailSplitPanel decisionSupport="Advisor queue remains separate from advisor package detail." objectLabel="Advisor queue split" objectState="Advisor work awaiting selection" pageJob="Advisor queue selects packages; detail records review context separately." safetyBoundary="Queue rows cannot approve or release recommendations." splitTaskId="UX-PAGE-SPLIT-004" taskId="UX-PAGE-SPLIT-004" />
-      <div className="mx-auto grid max-w-[112rem] gap-5 2xl:grid-cols-[1fr_28rem]">
+      <WorksurfaceShell
+        description="Advisor review is now a clear human-gate worksurface: queue triage, selected package context and explicit non-release boundary stay visible together."
+        eyebrow="WP02 advisor review"
+        primary={<Phase5DetailSplitPanel decisionSupport="Advisor queue remains separate from advisor package detail." objectLabel="Advisor queue split" objectState="Advisor work awaiting selection" pageJob="Advisor queue selects packages; detail records review context separately." safetyBoundary="Queue rows cannot approve or release recommendations." splitTaskId="UX-PAGE-SPLIT-004" taskId="UX-PAGE-SPLIT-004" />}
+        rail={<AdvisorSummaryPanel />}
+        routeId="036"
+        safetyNote="WP02 layout only: advisor queue selection does not approve, release, export or create client visibility."
+        statusItems={[
+          { label: "Queue", tone: "gold", value: `${advisorQueue.length} packages` },
+          { label: "Release", tone: "red", value: "Compliance required" },
+        ]}
+        title={title}
+        worksurfaceId="advisor-review-queue"
+      >
+      <div className="mx-auto max-w-[112rem]">
         <section className="min-w-0 space-y-5">
           <PageHeading
             action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />Export held</span><span className={primaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Bulk actions held</span></div>}
@@ -1254,8 +1266,8 @@ function AdvisorQueuePage({ title }: { title: string }) {
             rows={visibleRows}
           />
         </section>
-        <AdvisorSummaryPanel />
       </div>
+      </WorksurfaceShell>
     </InternalShell>
   );
 }
@@ -1340,10 +1352,68 @@ function AdvisorDetailPage({ title }: { title: string }) {
 
   return (
     <InternalShell activePageId="037">
-      <ScreenTitle>{title}</ScreenTitle>
-      <Phase4WorkbenchPanel activeTask="Advisor review ADV-219 selected" blocker="Advisor approval is blocked from release until compliance, evidence and audit gates pass." context="Advisor can assess suitability wording, but cannot publish client-visible advice." primaryAction="Record advisor review" queueLabel="Advisor approval queue" safetyNote="UX-WORKBENCH-003: advisor approval does not set clientVisible and does not bypass compliance release." taskId="UX-WORKBENCH-003" />
-      <Phase5DetailSplitPanel decisionSupport="Advisor detail shows suitability, rationale and release preconditions without acting as compliance." objectLabel="Advisor package detail" objectState="Advisor review internal; compliance release missing" pageJob="Advisor detail supports one package review without becoming release room." safetyBoundary="Advisor detail cannot set clientVisible or bypass compliance." splitTaskId="UX-PAGE-SPLIT-004" taskId="UX-PAGE-SPLIT-004" />
-      <div className="mx-auto grid max-w-[112rem] gap-5 xl:grid-cols-[1fr_24rem]">
+      <WorksurfaceShell
+        description="The advisor detail page now keeps recommendation evidence, rationale, advisor action and compliance handoff boundary inside one review desk."
+        eyebrow="WP02 advisor review"
+        primary={
+          <div className="space-y-4">
+            <Phase4WorkbenchPanel activeTask="Advisor review ADV-219 selected" blocker="Advisor approval is blocked from release until compliance, evidence and audit gates pass." context="Advisor can assess suitability wording, but cannot publish client-visible advice." primaryAction="Record advisor review" queueLabel="Advisor approval queue" safetyNote="UX-WORKBENCH-003: advisor approval does not set clientVisible and does not bypass compliance release." taskId="UX-WORKBENCH-003" />
+            <Phase5DetailSplitPanel decisionSupport="Advisor detail shows suitability, rationale and release preconditions without acting as compliance." objectLabel="Advisor package detail" objectState="Advisor review internal; compliance release missing" pageJob="Advisor detail supports one package review without becoming release room." safetyBoundary="Advisor detail cannot set clientVisible or bypass compliance." splitTaskId="UX-PAGE-SPLIT-004" taskId="UX-PAGE-SPLIT-004" />
+          </div>
+        }
+        rail={
+          <aside className="space-y-5">
+            <Card>
+              <CardHeader><CardTitle>Advisor Decision</CardTitle></CardHeader>
+              <CardContent className="space-y-3">
+                <StatePanel detail="Please review all details before taking action. This does not release content to the client." state="restricted" title="No client visibility" />
+                <button
+                  className={primaryButtonClass + " w-full"}
+                  data-testid="j01-approve-advisor"
+                  onClick={() => {
+                    void approveRecommendation().catch((error: unknown) => {
+                      setDecisionStatus(error instanceof Error ? error.message : "Demo approval action failed.");
+                    });
+                  }}
+                  type="button"
+                >
+                  <Check aria-hidden="true" className="size-4" />Approve as advisor
+                </button>
+                <p className={secondaryButtonClass + " w-full"} data-testid="ux-cta-ai-rebuild" data-ux-affordance="static-control-note" data-ux-interactive="false">Draft rebuild remains analyst-owned</p>
+                <p className={secondaryButtonClass + " w-full"} data-ux-affordance="static-control-note" data-ux-interactive="false">Evidence request remains compliance-owned</p>
+                <button
+                  className="inline-flex h-[var(--button-height)] w-full items-center justify-center gap-2 rounded-md border border-alphavest-red/55 bg-alphavest-red/10 px-4 text-sm font-semibold text-alphavest-red"
+                  data-testid="j01-escalate-advisor"
+                  onClick={() => {
+                    void escalateToCall().catch((error: unknown) => {
+                      setDecisionStatus(error instanceof Error ? error.message : "Demo escalation action failed.");
+                    });
+                  }}
+                  type="button"
+                >
+                  Escalate advisor review call
+                </button>
+                {decisionStatus ? (
+                  <p className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3 text-sm text-alphavest-gold-soft">
+                    {decisionStatus}
+                  </p>
+                ) : null}
+              </CardContent>
+            </Card>
+            <StatePanel detail="Once approved by advisor, the recommendation is queued for compliance review. Until then, client visibility remains blocked." state="blocked" title="Compliance pending" />
+            <ScfP04P06FlowPanel mode="compliance" />
+          </aside>
+        }
+        routeId="037"
+        safetyNote="WP02 layout only: advisor approval can create a compliance-pending state, but cannot release content, mark client acceptance or bypass compliance."
+        statusItems={[
+          { label: "Status", tone: "gold", value: selectedApproval.status },
+          { label: "Visibility", tone: "red", value: "Client blocked" },
+        ]}
+        title={title}
+        worksurfaceId="advisor-review-detail"
+      >
+      <div className="mx-auto max-w-[112rem]">
         <section className="min-w-0 space-y-5">
           <PageHeading
             badge={<Badge tone="gold">{selectedApproval.status}</Badge>}
@@ -1421,48 +1491,8 @@ function AdvisorDetailPage({ title }: { title: string }) {
           </div>
           <InternalGuard />
         </section>
-        <aside className="space-y-5">
-          <Card>
-            <CardHeader><CardTitle>Advisor Decision</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
-              <StatePanel detail="Please review all details before taking action. This does not release content to the client." state="restricted" title="No client visibility" />
-              <button
-                className={primaryButtonClass + " w-full"}
-                data-testid="j01-approve-advisor"
-                onClick={() => {
-                  void approveRecommendation().catch((error: unknown) => {
-                    setDecisionStatus(error instanceof Error ? error.message : "Demo approval action failed.");
-                  });
-                }}
-                type="button"
-              >
-                <Check aria-hidden="true" className="size-4" />Approve as advisor
-              </button>
-              <p className={secondaryButtonClass + " w-full"} data-testid="ux-cta-ai-rebuild" data-ux-affordance="static-control-note" data-ux-interactive="false">Draft rebuild remains analyst-owned</p>
-              <p className={secondaryButtonClass + " w-full"} data-ux-affordance="static-control-note" data-ux-interactive="false">Evidence request remains compliance-owned</p>
-              <button
-                className="inline-flex h-[var(--button-height)] w-full items-center justify-center gap-2 rounded-md border border-alphavest-red/55 bg-alphavest-red/10 px-4 text-sm font-semibold text-alphavest-red"
-                data-testid="j01-escalate-advisor"
-                onClick={() => {
-                  void escalateToCall().catch((error: unknown) => {
-                    setDecisionStatus(error instanceof Error ? error.message : "Demo escalation action failed.");
-                  });
-                }}
-                type="button"
-              >
-                Escalate advisor review call
-              </button>
-              {decisionStatus ? (
-                <p className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3 text-sm text-alphavest-gold-soft">
-                  {decisionStatus}
-                </p>
-              ) : null}
-            </CardContent>
-          </Card>
-          <StatePanel detail="Once approved by advisor, the recommendation is queued for compliance review. Until then, client visibility remains blocked." state="blocked" title="Compliance pending" />
-          <ScfP04P06FlowPanel mode="compliance" />
-        </aside>
       </div>
+      </WorksurfaceShell>
     </InternalShell>
   );
 }

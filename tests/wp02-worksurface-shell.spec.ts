@@ -29,6 +29,8 @@ const worksurfaceRoutes = [
   { pageId: "033", worksurface: "internal-workbench-signals" },
   { pageId: "034", worksurface: "internal-workbench-queue" },
   { pageId: "035", worksurface: "internal-workbench-trigger-review" },
+  { pageId: "036", worksurface: "advisor-review-queue" },
+  { pageId: "037", worksurface: "advisor-review-detail" },
   { pageId: "046", worksurface: "evidence-vault" },
   { pageId: "047", worksurface: "evidence-record-detail" },
 ] as const;
