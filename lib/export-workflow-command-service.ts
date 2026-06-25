@@ -244,6 +244,17 @@ function permissionGate(input: ExportWorkflowCommandInput & { clientTenantId: st
   }
 }
 
+function requireExportStatus(
+  currentStatus: ExportStatus,
+  allowedStatuses: ExportStatus[],
+  issue: string,
+  message: string,
+) {
+  if (!allowedStatuses.includes(currentStatus)) {
+    throw new ExportWorkflowCommandError(message, 400, "INVALID_REQUEST", [issue]);
+  }
+}
+
 function validateRedactionPayload(input: ExportWorkflowCommandInput) {
   const inspection = exportService.inspectClientExportPayload(input.payload ?? { clientSummary: "Client-safe export preview." });
   const hiddenDisallowedFields = inspection.forbiddenFields.filter((field) => !exportRedactionAllowlist.includes(field as never));
@@ -333,6 +344,23 @@ export async function executeExportWorkflowCommand(prisma: PrismaClient, request
   permissionGate({ ...input, clientTenantId: tenant.id, exportRequestId: exportRequest.id });
 
   if (input.command === "VALIDATE_REDACTION" || input.command === "PREVIEW") {
+    if (input.command === "VALIDATE_REDACTION") {
+      requireExportStatus(
+        exportRequest.status,
+        [ExportStatus.SCOPE_SELECTED, ExportStatus.REDACTION_PENDING],
+        "scope_required_before_redaction",
+        "Export redaction requires a selected scope first.",
+      );
+    }
+    if (input.command === "PREVIEW") {
+      requireExportStatus(
+        exportRequest.status,
+        [ExportStatus.REDACTION_PENDING],
+        "redaction_required_before_preview",
+        "Export preview requires redaction validation first.",
+      );
+    }
+
     const inspection = validateRedactionPayload(input);
     const nextStatus = input.command === "PREVIEW" ? ExportStatus.APPROVAL_REQUIRED : ExportStatus.REDACTION_PENDING;
     const currentScope = inputJsonObject(exportRequest.scopeJson);
@@ -407,12 +435,24 @@ export async function executeExportWorkflowCommand(prisma: PrismaClient, request
     let nextStatus = exportRequest.status;
 
     if (input.command === "APPROVE") {
+      requireExportStatus(
+        exportRequest.status,
+        [ExportStatus.APPROVAL_REQUIRED],
+        "preview_required_before_approval",
+        "Export approval requires a redacted preview first.",
+      );
       nextStatus = ExportStatus.APPROVED;
       lifecyclePatch.stage = "approved";
       lifecyclePatch.approvedAt = new Date().toISOString();
     }
 
     if (input.command === "GENERATE") {
+      requireExportStatus(
+        exportRequest.status,
+        [ExportStatus.APPROVED],
+        "approval_required_before_generation",
+        "Export generation requires approval first.",
+      );
       if (!exportRequest.approvedByUserId) {
         throw new ExportWorkflowCommandError("Export generation requires approval first.", 400, "INVALID_REQUEST", [
           "approval_required_before_generation",

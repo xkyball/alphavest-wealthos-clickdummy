@@ -10,6 +10,13 @@ import { demoTenants } from "../lib/demo-session";
 import { stableId } from "../lib/stable-id";
 
 const summitTenant = demoTenants.find((tenant) => tenant.slug === "summit");
+const safePayload = {
+  clientSummary: "Released client-safe export summary.",
+  decisionState: "Released",
+  releasedAt: "2026-06-24T00:00:00.000Z",
+  status: "RELEASED_TO_CLIENT",
+  title: "Liquidity governance decision",
+};
 
 function safeScopeItem(label: string) {
   return {
@@ -189,6 +196,18 @@ test.describe.serial("Epic 6 export workflow API", () => {
 
   test("blocks forbidden internal payload fields before preview or approval", async ({ request }) => {
     const exportRequestId = await createExportRequest(request, "forbidden-payload");
+    const redaction = await exportCommand(request, {
+      command: "VALIDATE_REDACTION",
+      exportRequestId,
+      payload: safePayload,
+      reason: "Validate redaction before unsafe preview attempt.",
+      redactionProfile: "client-safe-redacted",
+      roleKey: "compliance_officer",
+      tenantSlug: "summit",
+    });
+
+    expect(redaction.ok(), await redaction.text()).toBe(true);
+
     const response = await exportCommand(request, {
       command: "PREVIEW",
       exportRequestId,
@@ -214,6 +233,27 @@ test.describe.serial("Epic 6 export workflow API", () => {
   test("blocks export approval while high-severity data quality is active", async ({ request }) => {
     if (!prisma || !summitTenant) throw new Error("Summit test context is missing.");
     const exportRequestId = await createExportRequest(request, "data-quality-blocker");
+    const redaction = await exportCommand(request, {
+      command: "VALIDATE_REDACTION",
+      exportRequestId,
+      payload: safePayload,
+      reason: "Validate redaction before approval blocker proof.",
+      redactionProfile: "client-safe-redacted",
+      roleKey: "compliance_officer",
+      tenantSlug: "summit",
+    });
+    expect(redaction.ok(), await redaction.text()).toBe(true);
+
+    const preview = await exportCommand(request, {
+      command: "PREVIEW",
+      exportRequestId,
+      payload: safePayload,
+      reason: "Preview before approval blocker proof.",
+      redactionProfile: "client-safe-redacted",
+      roleKey: "compliance_officer",
+      tenantSlug: "summit",
+    });
+    expect(preview.ok(), await preview.text()).toBe(true);
 
     await prisma.dataQualityIssue.create({
       data: {
