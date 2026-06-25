@@ -71,9 +71,10 @@ The matrix is intentionally stricter than a progress table. A row may be called 
 
 `I-001` remains partial by design. Phase 5 proves released-context decision actions, actor/context/audit persistence and unreleased draft denial. It does not implement arbitrary new decision creation from any domain input, and the claim pack must not pretend otherwise.
 
+The executable promotion lock lives in `lib/av27-phase7-certification.ts`. `I-001` may only be promoted after real `DecisionCreationService` or equivalent implementation proof exists with positive creation evidence and negative denial evidence. Report-language changes do not alter this status.
+
 ## Proof Artefacts
 
 - `lib/av27-phase7-certification.ts`
 - `tests/av27-phase7-certification.spec.ts`
 - Phase 0-6 execution reports listed in `av27Phase7PredecessorReports`
-

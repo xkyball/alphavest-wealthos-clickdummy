@@ -2,6 +2,8 @@ import { expect, test } from "@playwright/test";
 
 import {
   assertNoFalseAv27CompletionClaim,
+  av27CanonicalClaimGateOwner,
+  av27I001DecisionCreationServiceGate,
   av27P0AcceptanceMatrix,
   av27PayloadRedactionSweepMatrix,
   av27Phase7FullTestCommandSet,
@@ -13,6 +15,7 @@ import {
   inspectAv27Phase7ClaimPackCandidate,
   inspectAv27Phase7Payload,
   runAv27PayloadRedactionProofSamples,
+  validateAv27CanonicalClaimGate,
 } from "../lib/av27-phase7-certification";
 import { av27SelectedProcessIds, type Av27ProcessId } from "../lib/av27-safety-foundation";
 
@@ -53,7 +56,7 @@ test.describe("AV27 Phase 7 cross-process P0 certification", () => {
     });
     expect(assertNoFalseAv27CompletionClaim(scopedPartial)).toMatchObject({
       allowed: false,
-      reason: "AV27_PHASE7_PARTIAL_WITH_REASON_NOT_FULL_CLAIM",
+      reason: "AV27_PHASE7_I001_DECISION_CREATION_SERVICE_REQUIRED",
     });
 
     const forged = {
@@ -69,6 +72,17 @@ test.describe("AV27 Phase 7 cross-process P0 certification", () => {
       allowed: false,
       missingProofLayers: ["safety"],
       reason: "AV27_PHASE7_FALSE_COMPLETION_BLOCKED",
+    });
+
+    const forgedI001 = {
+      ...scopedPartial,
+      status: "FULLY_FULFILLED_VERTICAL_SLICE" as const,
+      statusReason: "Report says the decision creation gap is done.",
+    };
+
+    expect(assertNoFalseAv27CompletionClaim(forgedI001)).toMatchObject({
+      allowed: false,
+      reason: "AV27_PHASE7_I001_DECISION_CREATION_SERVICE_REQUIRED",
     });
   });
 
@@ -136,10 +150,12 @@ test.describe("AV27 Phase 7 cross-process P0 certification", () => {
     expect(av27Phase7FullTestCommandSet).toEqual(
       expect.arrayContaining([
         "pnpm guard:source",
+        "pnpm test:av27:claims",
         "pnpm typecheck",
         "pnpm lint",
         "pnpm db:validate",
-        "pnpm playwright test tests/av27-phase7-certification.spec.ts --workers=1",
+        "pnpm test:av27:no-server",
+        "pnpm test:av27:server",
         "pnpm phase:check",
       ]),
     );
@@ -149,5 +165,33 @@ test.describe("AV27 Phase 7 cross-process P0 certification", () => {
     expect(claimPack.claimableCount).toBe(26);
     expect(claimPack.blockedFullClaimCount).toBe(1);
     expect(claimPack.blockedRows[0].row.processId).toBe("I-001");
+  });
+
+  test("canonical claim gate is the only AV27 status claim authority", () => {
+    const validation = validateAv27CanonicalClaimGate();
+
+    expect(av27CanonicalClaimGateOwner).toBe("lib/av27-phase7-certification.ts");
+    expect(validation.status).toBe("PASS");
+    expect(validation.errors).toEqual([]);
+    expect(validation.partialRows.map((row) => row.processId)).toEqual(["I-001"]);
+    expect(av27I001DecisionCreationServiceGate).toMatchObject({
+      currentStatus: "MISSING",
+      processId: "I-001",
+      requiredServiceName: "DecisionCreationService",
+    });
+
+    const forgedRows = av27P0AcceptanceMatrix.map((row) =>
+      row.processId === "I-001"
+        ? {
+            ...row,
+            status: "FULLY_FULFILLED_VERTICAL_SLICE" as const,
+            statusReason: "Raised by report copy only.",
+          }
+        : row,
+    );
+
+    const forgedValidation = validateAv27CanonicalClaimGate(forgedRows);
+    expect(forgedValidation.status).toBe("FAIL");
+    expect(forgedValidation.errors).toContain("I-001 is promoted without implemented DecisionCreationService proof.");
   });
 });

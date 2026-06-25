@@ -28,6 +28,8 @@ export type Av27ProofLayer =
 
 export type Av27FulfillmentStatus = "FULLY_FULFILLED_VERTICAL_SLICE" | "PARTIAL_WITH_REASON";
 
+export type Av27DecisionCreationServiceStatus = "MISSING" | "IMPLEMENTED_WITH_PROOF";
+
 export type Av27P0AcceptanceMatrixRow = {
   domain: string;
   negativeAcceptance: string;
@@ -60,6 +62,31 @@ export type Av27PayloadSweepRow = {
   processIds: readonly Av27ProcessId[];
   surface: "api" | "export" | "ui";
   surfaceName: string;
+};
+
+export type Av27ClaimGateValidation = {
+  canonicalOwner: string;
+  decisionCreationServiceGate: typeof av27I001DecisionCreationServiceGate;
+  errors: string[];
+  partialRows: Av27P0AcceptanceMatrixRow[];
+  status: "PASS" | "FAIL";
+  warnings: string[];
+};
+
+export const av27CanonicalClaimGateOwner = "lib/av27-phase7-certification.ts";
+
+export const av27I001DecisionCreationServiceGate = {
+  blockedPromotionReason:
+    "I-001 may not be promoted by report language. It requires a real decision creation service plus positive and negative service/API proof.",
+  currentStatus: "MISSING" as Av27DecisionCreationServiceStatus,
+  processId: "I-001" as const satisfies Av27ProcessId,
+  requiredEvidence: [
+    "lib/decision-creation-service.ts or equivalent canonical service module",
+    "API/service tests proving creation from released context",
+    "negative tests proving unreleased draft and missing-audit creation denial",
+    "updated AV27 Phase 7 matrix generated from this claim gate",
+  ] as const,
+  requiredServiceName: "DecisionCreationService",
 };
 
 const phaseEvidenceByProcess = {
@@ -369,12 +396,12 @@ export const av27PayloadRedactionSweepMatrix: readonly Av27PayloadSweepRow[] = [
 
 export const av27Phase7FullTestCommandSet = [
   "pnpm guard:source",
+  "pnpm test:av27:claims",
   "pnpm typecheck",
   "pnpm lint",
   "pnpm db:validate",
-  "pnpm playwright test tests/av27-phase7-certification.spec.ts --workers=1",
-  "pnpm playwright test tests/av27-safety-foundation.spec.ts tests/av27-client-context-closure.spec.ts tests/av27-phase6-payload-sweep.spec.ts --workers=1",
-  "pnpm playwright test tests/workflow-gate.spec.ts tests/demo-workflow-api.spec.ts tests/client-visibility-projection.spec.ts tests/file-export-realism.spec.ts --workers=1",
+  "pnpm test:av27:no-server",
+  "pnpm test:av27:server",
   "pnpm phase:check",
 ] as const;
 
@@ -400,6 +427,17 @@ export function buildAv27Phase7CertificationSummary() {
 }
 
 export function assertNoFalseAv27CompletionClaim(row: Av27P0AcceptanceMatrixRow) {
+  if (
+    row.processId === av27I001DecisionCreationServiceGate.processId &&
+    av27I001DecisionCreationServiceGate.currentStatus !== "IMPLEMENTED_WITH_PROOF"
+  ) {
+    return {
+      allowed: false,
+      missingProofLayers: [],
+      reason: "AV27_PHASE7_I001_DECISION_CREATION_SERVICE_REQUIRED",
+    };
+  }
+
   if (row.status === "FULLY_FULFILLED_VERTICAL_SLICE") {
     const missingProofLayers = av27Phase7RequiredProofLayers.filter((layer) => row.proofLayers[layer].trim().length === 0);
     const hasPositiveAndNegative = row.positiveAcceptance.trim().length > 0 && row.negativeAcceptance.trim().length > 0;
@@ -419,6 +457,62 @@ export function assertNoFalseAv27CompletionClaim(row: Av27P0AcceptanceMatrixRow)
     allowed: false,
     missingProofLayers: [],
     reason: "AV27_PHASE7_PARTIAL_WITH_REASON_NOT_FULL_CLAIM",
+  };
+}
+
+export function validateAv27CanonicalClaimGate(
+  rows: readonly Av27P0AcceptanceMatrixRow[] = av27P0AcceptanceMatrix,
+): Av27ClaimGateValidation {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+  const processIds = rows.map((row) => row.processId);
+  const missing = av27SelectedProcessIds.filter((processId) => !processIds.includes(processId));
+  const duplicates = processIds.filter((processId, index) => processIds.indexOf(processId) !== index);
+  const rowsMissingProof = rows.filter((row) =>
+    av27Phase7RequiredProofLayers.some((layer) => row.proofLayers[layer].trim().length === 0),
+  );
+  const partialRows = rows.filter((row) => row.status === "PARTIAL_WITH_REASON");
+
+  if (rows.length !== 27) errors.push(`Expected 27 AV27 rows, found ${rows.length}.`);
+  if (missing.length > 0) errors.push(`Missing AV27 process IDs: ${missing.join(", ")}.`);
+  if (duplicates.length > 0) errors.push(`Duplicate AV27 process IDs: ${duplicates.join(", ")}.`);
+  if (rowsMissingProof.length > 0) {
+    errors.push(`Rows with missing proof layers: ${rowsMissingProof.map((row) => row.processId).join(", ")}.`);
+  }
+
+  const unsupportedPartials = partialRows.filter((row) => row.processId !== av27I001DecisionCreationServiceGate.processId);
+  if (unsupportedPartials.length > 0) {
+    errors.push(`Unexpected partial rows outside I-001: ${unsupportedPartials.map((row) => row.processId).join(", ")}.`);
+  }
+
+  const i001 = rows.find((row) => row.processId === av27I001DecisionCreationServiceGate.processId);
+  if (!i001) {
+    errors.push("Missing I-001 row.");
+  } else if (
+    av27I001DecisionCreationServiceGate.currentStatus !== "IMPLEMENTED_WITH_PROOF" &&
+    i001.status !== "PARTIAL_WITH_REASON"
+  ) {
+    errors.push("I-001 is promoted without implemented DecisionCreationService proof.");
+  } else if (i001.status === "PARTIAL_WITH_REASON") {
+    warnings.push(av27I001DecisionCreationServiceGate.blockedPromotionReason);
+  }
+
+  for (const row of rows) {
+    if (row.status === "FULLY_FULFILLED_VERTICAL_SLICE") {
+      const verdict = assertNoFalseAv27CompletionClaim(row);
+      if (!verdict.allowed) {
+        errors.push(`${row.processId} full claim blocked: ${verdict.reason}.`);
+      }
+    }
+  }
+
+  return {
+    canonicalOwner: av27CanonicalClaimGateOwner,
+    decisionCreationServiceGate: av27I001DecisionCreationServiceGate,
+    errors,
+    partialRows,
+    status: errors.length === 0 ? "PASS" : "FAIL",
+    warnings,
   };
 }
 

@@ -24,6 +24,16 @@ Ticket chain: `AV27-P7-T05-A`, `AV27-P7-T05-S`, `AV27-P7-T05-I`, `AV27-P7-T05-Q`
 
 `I-001` stays `PARTIAL_WITH_REASON`: released-context decision action is proven, but arbitrary decision creation remains intentionally out of scope. This is the right honesty boundary. Elevating it would be a false completion claim.
 
+Canonical promotion gate: `lib/av27-phase7-certification.ts`.
+
+Executable claim check:
+
+```bash
+pnpm test:av27:claims
+```
+
+`I-001` may only move to `FULLY_FULFILLED_VERTICAL_SLICE` after a real `DecisionCreationService` or equivalent service exists with positive creation proof and negative denial proof. Report wording is not promotion evidence.
+
 ## Phase Gate Status
 
 Current gate: `PHASE7_ACCEPTED_WITH_ONE_EXPLICIT_PARTIAL_SCOPE_NOTE`
@@ -32,8 +42,8 @@ Reason: Phase 7's own certification suite is green, the AV27 safety/payload regr
 
 ## Bold Cleanup Recommendations
 
-1. Make `lib/av27-phase7-certification.ts` the single claim-gate contract and remove future ad hoc "done" lists from reports.
+1. Keep `lib/av27-phase7-certification.ts` as the single claim-gate contract and remove future ad hoc "done" lists from reports.
 2. Promote `I-001` only when a real decision creation service exists. Do not blur released-context decision action into arbitrary decision creation.
-3. Split Playwright suites into no-server contract suites and server-required API/UI suites. The current mixed command shape invited the `ECONNREFUSED` rerun.
+3. Use `pnpm test:av27:no-server` for contract suites and `pnpm test:av27:server` for API/UI suites. The old mixed command shape is retired.
 4. Move Phase 0-7 AV27 reports under one current proof folder. Phase 4 and Phase 6 currently live outside `docs/00-current/av27-phase*`, which makes the proof chain harder to audit.
-5. Add a small generated status command for this matrix so future phase-gate claims fail fast when a process row loses proof evidence.
+5. Delete any future report-only status tables that do not quote the canonical gate output.

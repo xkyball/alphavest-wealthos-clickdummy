@@ -41,6 +41,7 @@ All five follow Analysis -> Specification -> Implementation -> QA.
 - `docs/00-current/av27-phase7/PAYLOAD_PROOF_MATRIX.md`
 - `docs/00-current/av27-phase7/TEST_EXECUTION_REPORT.md`
 - `docs/00-current/av27-phase7/27_FULLY_FULFILLED_VERTICAL_SLICE_CLAIM_PACK.md`
+- `docs/00-current/av27-phase7/CLAIM_GATE_AUTHORITY.md`
 - `docs/00-current/av27-phase7/PHASE7_EXECUTION_REPORT.md`
 
 ## Ticket Log
@@ -77,11 +78,13 @@ Positive:
 - Each row has all seven proof layers populated.
 - Negative family coverage exists for cross-tenant, wrong-role, wrong-object, no-audit, upload-only-not-sufficient and advisor-not-release.
 - Payload sweep covers API, UI and export surfaces through the Phase 6 payload contract.
+- Future AV27 Phase 7 status claims are gated by `lib/av27-phase7-certification.ts` and `pnpm test:av27:claims`.
+- Playwright proof is split into no-server contract suites and server-required API/UI suites.
 
 Negative:
 
 - Forged full-completion rows with missing safety proof are blocked.
-- `I-001` cannot be elevated to full arbitrary-scope completion.
+- `I-001` cannot be elevated to full arbitrary-scope completion until a real `DecisionCreationService` or equivalent implementation has positive creation proof and negative denial proof.
 - The first API test command cannot be claimed as product pass because it was run without a web server.
 - The server-backed API rerun passed and replaced the orchestration failure as final evidence.
 
@@ -94,9 +97,12 @@ No product UI changed. Screenshot proof is not applicable for this slice.
 ## Final Validation
 
 - `pnpm guard:source`: PASS.
+- `pnpm test:av27:claims`: PASS.
 - `pnpm typecheck`: PASS.
 - `PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm playwright test tests/av27-phase7-certification.spec.ts tests/av27-safety-foundation.spec.ts tests/av27-phase6-payload-sweep.spec.ts --workers=1`: PASS, 15/15.
 - `PLAYWRIGHT_PORT=3047 pnpm playwright test tests/demo-workflow-api.spec.ts --workers=1`: PASS, 15/15.
+- `pnpm test:av27:no-server`: PASS.
+- `PLAYWRIGHT_PORT=3048 pnpm test:av27:server`: PASS.
 - `pnpm lint`: PASS with 22 pre-existing warnings, 0 errors.
 - `pnpm db:validate`: PASS.
 - `pnpm phase:check`: PASS with existing Turbopack/NFT warnings around `lib/document-storage-adapter.ts`.
