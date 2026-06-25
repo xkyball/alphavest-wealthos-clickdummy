@@ -26,6 +26,7 @@ function queryContext(request: Request) {
   const url = new URL(request.url);
 
   return {
+    actorTenantSlug: tenantSlug(url.searchParams.get("actorTenantSlug")),
     roleKey: roleKey(url.searchParams.get("roleKey")),
     tenantSlug: tenantSlug(url.searchParams.get("tenantSlug")),
   };
@@ -52,7 +53,12 @@ export async function GET(request: Request) {
   }
 
   try {
-    const profile = await getDbtfClientProfile(prismaClient(), context.tenantSlug, context.roleKey);
+    const profile = await getDbtfClientProfile(
+      prismaClient(),
+      context.tenantSlug,
+      context.roleKey,
+      context.actorTenantSlug,
+    );
 
     return NextResponse.json({
       ok: true,
@@ -65,6 +71,20 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
+    if (error instanceof DbtfPermissionError) {
+      return NextResponse.json(
+        {
+          error: "Client profile is not available for this actor scope.",
+          mutated: false,
+          ok: false,
+          profile: null,
+          reason: error.reason,
+          safety: { hiddenRowsDisclosed: false, scoped: false },
+        },
+        { status: 403 },
+      );
+    }
+
     return NextResponse.json(
       {
         error: error instanceof DbtfNotFoundError ? error.message : "Client profile could not be loaded.",
@@ -82,6 +102,7 @@ export async function PATCH(request: Request) {
   const payload = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
   const parsedRoleKey = roleKey(payload.roleKey);
   const parsedTenantSlug = tenantSlug(payload.tenantSlug);
+  const parsedActorTenantSlug = tenantSlug(payload.actorTenantSlug);
   const mode = payload.action === "submit_review" ? "submit_review" : "save_draft";
 
   if (!parsedTenantSlug || !parsedRoleKey) {
@@ -89,7 +110,14 @@ export async function PATCH(request: Request) {
   }
 
   try {
-    const result = await saveDbtfClientProfile(prismaClient(), parsedTenantSlug, parsedRoleKey, payload, mode);
+    const result = await saveDbtfClientProfile(
+      prismaClient(),
+      parsedTenantSlug,
+      parsedRoleKey,
+      payload,
+      mode,
+      parsedActorTenantSlug,
+    );
 
     return NextResponse.json({ ok: true, result, safety: { noClientRelease: true, scoped: true } });
   } catch (error) {

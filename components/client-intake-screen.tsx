@@ -158,11 +158,13 @@ type FamilyMemberTableRow = {
   governance: string;
   id: string;
   name: string;
+  payloadMode: string;
   relationship: string;
   role: string;
   sensitivity: string;
   status: string;
   taxResidency: string;
+  visibilityStatus: string;
   year: string;
 };
 
@@ -172,9 +174,12 @@ type EntityTableRow = {
   missingDocs: string;
   name: string;
   ownership: string;
+  payloadMode: string;
   risk: string;
+  sensitivity: string;
   status: string;
   type: string;
+  visibilityStatus: string;
 };
 
 type DbtfClientProfile = {
@@ -1365,6 +1370,7 @@ function ClientProfilePageContent({ title }: { title: string }) {
                 ["Sections Completed", `${completedSections} / 4`],
                 ["Validation Issues", String(issues.length)],
                 ["Family Rows", String(family.rows.length)],
+                ["Sensitivity", profile?.sensitivity ?? "n/a"],
                 ["Last Reload", profile?.updatedAt ? formatUploadDate(profile.updatedAt) : "n/a"]
               ].map(([label, value]) => (
                 <div className="flex justify-between gap-4 border-b border-alphavest-border/45 pb-3 last:border-0" key={label}>
@@ -1547,6 +1553,7 @@ function FamilyMembersPageContent({ title }: { title: string }) {
                   <div className="mt-3 flex flex-wrap gap-2">
                     {selected ? <Badge tone={toneFor(selected.status)}>{selected.status}</Badge> : null}
                     {selected ? <Badge tone="blue">{selected.sensitivity}</Badge> : null}
+                    {selected ? <Badge tone="green">{selected.visibilityStatus}</Badge> : null}
                   </div>
                 </div>
               </div>
@@ -1559,6 +1566,7 @@ function FamilyMembersPageContent({ title }: { title: string }) {
                 <FormField label="Tax Residency" onChange={(value) => setFamilyForm((current) => ({ ...current, taxResidency: value }))} required value={familyForm.taxResidency} />
                 <FieldBox label="Source" value="FamilyMember DB row" />
                 <FieldBox label="Sensitivity" value={selected?.sensitivity ?? "n/a"} />
+                <FieldBox label="Visibility" value={selected?.visibilityStatus ?? "n/a"} />
                 <FieldBox label="Status" value={selected?.status ?? "n/a"} />
               </div>
               <StatePanel detail={formIssues.length > 0 ? formIssues.join(", ") : formMessage} state={formIssues.length > 0 ? "restricted" : "success"} title="Family edit state" />
@@ -1579,6 +1587,7 @@ const familyMemberColumns: Array<DataTableColumn<FamilyMemberTableRow>> = [
   { key: "role", header: "Family Role", render: (row) => <Badge tone="blue">{row.role}</Badge>, sortable: true },
   { key: "relationship", header: "Relationship", render: (row) => row.relationship, sortable: true },
   { key: "governance", header: "Governance", render: (row) => row.governance },
+  { key: "visibilityStatus", header: "Visibility", render: (row) => <Badge tone={toneFor(row.visibilityStatus)}>{row.visibilityStatus}</Badge>, sortable: true },
   { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge>, sortable: true }
 ];
 
@@ -1873,6 +1882,7 @@ const entityColumns: Array<DataTableColumn<EntityTableRow>> = [
   { key: "type", header: "Type", render: (row) => <Badge>{row.type}</Badge>, sortable: true },
   { key: "jurisdiction", header: "Jurisdiction", render: (row) => row.jurisdiction, sortable: true },
   { key: "ownership", header: "Ownership", render: (row) => row.ownership },
+  { key: "visibilityStatus", header: "Visibility", render: (row) => <Badge tone={toneFor(row.visibilityStatus)}>{row.visibilityStatus}</Badge>, sortable: true },
   { key: "docs", header: "Missing Documents", render: (row) => <Badge tone={toneFor(row.missingDocs)}>{row.missingDocs}</Badge> },
   { key: "risk", header: "Risk", render: (row) => <Badge tone={toneFor(row.risk)}>{row.risk}</Badge>, sortable: true }
 ];

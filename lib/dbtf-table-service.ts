@@ -1,6 +1,7 @@
 import { ObjectType, Sensitivity, type PrismaClient } from "@prisma/client";
 
 import { requireDemoSession, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { deriveClientContextVisibility } from "@/lib/client-context-visibility";
 
 type SortDirection = "asc" | "desc";
 
@@ -8,11 +9,13 @@ export type DbtfFamilyMemberRow = {
   governance: string;
   id: string;
   name: string;
+  payloadMode: string;
   relationship: string;
   role: string;
   sensitivity: string;
   status: string;
   taxResidency: string;
+  visibilityStatus: string;
   year: string;
 };
 
@@ -22,9 +25,12 @@ export type DbtfEntityRow = {
   missingDocs: string;
   name: string;
   ownership: string;
+  payloadMode: string;
   risk: string;
+  sensitivity: string;
   status: string;
   type: string;
+  visibilityStatus: string;
 };
 
 export type DbtfAuditEventRow = {
@@ -111,17 +117,27 @@ export async function listDbtfFamilyMembers(
       ...(roleSensitivityFilter(roleKey) ? { sensitivity: roleSensitivityFilter(roleKey) } : {}),
     },
   });
-  const mappedRows: DbtfFamilyMemberRow[] = rows.map((row) => ({
-    governance: row.isPrincipal ? "Principal" : row.sensitivity === "RESTRICTED" ? "Restricted" : "Family record",
-    id: row.id,
-    name: row.displayName,
-    relationship: labelFromEnum(row.relationshipType),
-    role: row.isPrincipal ? "Principal" : labelFromEnum(row.relationshipType),
-    sensitivity: labelFromEnum(row.sensitivity),
-    status: row.sensitivity === "RESTRICTED" || row.sensitivity === "HIGHLY_RESTRICTED" ? "Restricted" : "Active",
-    taxResidency: row.taxResidency ?? "Unspecified",
-    year: row.dateOfBirth ? String(row.dateOfBirth.getUTCFullYear()) : "n/a",
-  }));
+  const mappedRows: DbtfFamilyMemberRow[] = rows.flatMap((row) => {
+    const visibility = deriveClientContextVisibility(roleKey, row.sensitivity);
+
+    if (!visibility.canRenderPayload) {
+      return [];
+    }
+
+    return [{
+      governance: row.isPrincipal ? "Principal" : row.sensitivity === "RESTRICTED" ? "Restricted" : "Family record",
+      id: row.id,
+      name: row.displayName,
+      payloadMode: visibility.payloadMode,
+      relationship: labelFromEnum(row.relationshipType),
+      role: row.isPrincipal ? "Principal" : labelFromEnum(row.relationshipType),
+      sensitivity: labelFromEnum(visibility.sensitivity),
+      status: row.sensitivity === "RESTRICTED" || row.sensitivity === "HIGHLY_RESTRICTED" ? "Restricted" : "Active",
+      taxResidency: row.taxResidency ?? "Unspecified",
+      visibilityStatus: labelFromEnum(visibility.visibilityStatus),
+      year: row.dateOfBirth ? String(row.dateOfBirth.getUTCFullYear()) : "n/a",
+    }];
+  });
 
   if (options.sort === "name-desc") {
     return sortRows(mappedRows, "name", "desc");
@@ -186,22 +202,31 @@ export async function listDbtfEntities(
     documentCountByEntity.set(link.targetId, (documentCountByEntity.get(link.targetId) ?? 0) + 1);
   }
 
-  const mappedRows: DbtfEntityRow[] = entities.map((entity) => {
+  const mappedRows: DbtfEntityRow[] = entities.flatMap((entity) => {
+    const visibility = deriveClientContextVisibility(roleKey, entity.sensitivity);
+
+    if (!visibility.canRenderPayload) {
+      return [];
+    }
+
     const ownershipTotal = entity.participants.reduce((total, participant) => {
       return total + Number(participant.ownershipPercent ?? 0);
     }, 0);
     const linkedDocumentCount = documentCountByEntity.get(entity.id) ?? 0;
 
-    return {
+    return [{
       id: entity.id,
       jurisdiction: entity.jurisdiction ?? "Unspecified",
       missingDocs: linkedDocumentCount > 0 ? "All good" : "Evidence needed",
       name: entity.name,
       ownership: ownershipTotal > 0 ? `${ownershipTotal.toFixed(1).replace(/\.0$/, "")}%` : "Unspecified",
+      payloadMode: visibility.payloadMode,
       risk: entity.riskRating ?? "Unrated",
+      sensitivity: labelFromEnum(visibility.sensitivity),
       status: labelFromEnum(entity.status),
       type: labelFromEnum(entity.entityType),
-    };
+      visibilityStatus: labelFromEnum(visibility.visibilityStatus),
+    }];
   });
 
   if (options.sort === "risk") {

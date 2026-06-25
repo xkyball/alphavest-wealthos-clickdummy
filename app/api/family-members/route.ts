@@ -11,6 +11,12 @@ function tenantSlugFromUrl(request: Request): DemoTenantSlug | undefined {
   return demoTenants.some((tenant) => tenant.slug === value) ? (value as DemoTenantSlug) : undefined;
 }
 
+function actorTenantSlugFromUrl(request: Request): DemoTenantSlug | undefined {
+  const value = new URL(request.url).searchParams.get("actorTenantSlug");
+
+  return demoTenants.some((tenant) => tenant.slug === value) ? (value as DemoTenantSlug) : undefined;
+}
+
 function roleKeyFromUrl(request: Request): DemoRoleKey | undefined {
   const value = new URL(request.url).searchParams.get("roleKey");
 
@@ -19,6 +25,7 @@ function roleKeyFromUrl(request: Request): DemoRoleKey | undefined {
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
+  const actorTenantSlug = actorTenantSlugFromUrl(request);
   const tenantSlug = tenantSlugFromUrl(request);
   const roleKey = roleKeyFromUrl(request);
 
@@ -31,6 +38,18 @@ export async function GET(request: Request) {
         safety: { hiddenRowsDisclosed: false, scoped: false },
       },
       { status: 400 },
+    );
+  }
+
+  if (actorTenantSlug && actorTenantSlug !== tenantSlug) {
+    return NextResponse.json(
+      {
+        error: "Family members are not available for this actor scope.",
+        familyMembers: [],
+        ok: false,
+        safety: { hiddenRowsDisclosed: false, scoped: false },
+      },
+      { status: 403 },
     );
   }
 
@@ -67,6 +86,7 @@ export async function GET(request: Request) {
 export async function PATCH(request: Request) {
   const body = await request.json().catch(() => undefined);
   const payload = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
+  const parsedActorTenantSlug = tenantSlugFromUrlLike(payload.actorTenantSlug);
   const parsedRoleKey = roleKeyFromUrlLike(payload.roleKey);
   const parsedTenantSlug = tenantSlugFromUrlLike(payload.tenantSlug);
 
@@ -84,7 +104,13 @@ export async function PATCH(request: Request) {
   }
 
   try {
-    const result = await updateDbtfFamilyMember(prismaClient(), parsedTenantSlug, parsedRoleKey, payload);
+    const result = await updateDbtfFamilyMember(
+      prismaClient(),
+      parsedTenantSlug,
+      parsedRoleKey,
+      payload,
+      parsedActorTenantSlug,
+    );
 
     return NextResponse.json({ ok: true, result, safety: { noClientRelease: true, scoped: true } });
   } catch (error) {
