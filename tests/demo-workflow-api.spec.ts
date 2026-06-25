@@ -348,7 +348,7 @@ test.describe("demo workflow API", () => {
     }
   });
 
-  test.describe.serial("typed recommendation review workflow", () => {
+  test.describe.serial("typed advisor approval workflow", () => {
     test.beforeEach(() => {
       execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
     });
@@ -360,7 +360,7 @@ test.describe("demo workflow API", () => {
           actorRole: "analyst",
           reason: "First Build P0 analyst review started.",
           targetId: demoTargets.summit.recommendationId,
-          workflowType: "recommendation-review",
+          workflowType: "advisor-approval",
         },
       });
       const submitReviewBody = await submitReviewResponse.json();
@@ -379,7 +379,7 @@ test.describe("demo workflow API", () => {
           evidenceIds: [demoTargets.summit.evidenceId],
           reason: "First Build P0 rebuild with accepted scoped evidence.",
           targetId: demoTargets.summit.recommendationId,
-          workflowType: "recommendation-review",
+          workflowType: "advisor-approval",
         },
       });
       const rebuildBody = await rebuildResponse.json();
@@ -396,7 +396,7 @@ test.describe("demo workflow API", () => {
           actorRole: "senior_wealth_advisor",
           reason: "First Build P0 advisor approval after evidence-backed rebuild.",
           targetId: demoTargets.summit.recommendationId,
-          workflowType: "recommendation-review",
+          workflowType: "advisor-approval",
         },
       });
       const advisorBody = await advisorResponse.json();
@@ -426,7 +426,7 @@ test.describe("demo workflow API", () => {
           evidenceIds: [demoTargets.summit.evidenceId],
           reason: "First Build P0 compliance release after advisor, evidence, payload and audit gates.",
           targetId: demoTargets.summit.recommendationId,
-          workflowType: "recommendation-review",
+          workflowType: "advisor-approval",
         },
       });
       const releaseBody = await releaseResponse.json();
@@ -505,7 +505,7 @@ test.describe("demo workflow API", () => {
       ]);
 
       expect(releaseAudit.result).toBe(AuditResult.SUCCESS);
-      expect(releaseAudit.eventType).toBe("recommendation_review.compliance_release");
+      expect(releaseAudit.eventType).toBe("advisor_approval.compliance_release");
       expect(decisionAudit.result).toBe(AuditResult.SUCCESS);
       expect(decisionAudit.eventType).toBe("screencast.decision.accepted");
       expect(exportAudit.result).toBe(AuditResult.SUCCESS);
@@ -519,7 +519,7 @@ test.describe("demo workflow API", () => {
           actorRole: "analyst",
           reason: "Analyst submitted the review package.",
           targetId: demoTargets.northbridge.recommendationId,
-          workflowType: "recommendation-review",
+          workflowType: "advisor-approval",
         },
       });
       const body = await response.json();
@@ -553,7 +553,7 @@ test.describe("demo workflow API", () => {
           evidenceIds: [demoTargets.northbridge.evidenceId],
           reason,
           targetId: demoTargets.northbridge.recommendationId,
-          workflowType: "recommendation-review",
+          workflowType: "advisor-approval",
         },
       });
       const body = await response.json();
@@ -588,7 +588,7 @@ test.describe("demo workflow API", () => {
       });
       expect(evidence.status).toBe(EvidenceStatus.PLACEHOLDER);
       expect(evidence.visibilityStatus).toBe(VisibilityStatus.COMPLIANCE_VISIBLE);
-      expect(audit.eventType).toBe("recommendation_review.reject_unsupported_claim");
+      expect(audit.eventType).toBe("advisor_approval.reject_unsupported_claim");
       expect(audit.result).toBe(AuditResult.BLOCKED);
     });
 
@@ -600,7 +600,7 @@ test.describe("demo workflow API", () => {
           evidenceIds: [demoTargets.morgan.evidenceId],
           reason: "Attempt rebuild with placeholder evidence.",
           targetId: demoTargets.morgan.recommendationId,
-          workflowType: "recommendation-review",
+          workflowType: "advisor-approval",
         },
       });
       const blockedBody = await blockedResponse.json();
@@ -628,7 +628,7 @@ test.describe("demo workflow API", () => {
           evidenceIds: [demoTargets.northbridge.evidenceId],
           reason: "Attempt rebuild with accepted evidence scoped to another recommendation.",
           targetId: demoTargets.northbridge.recommendationId,
-          workflowType: "recommendation-review",
+          workflowType: "advisor-approval",
         },
       });
       const wrongScopeBody = await wrongScopeResponse.json();
@@ -646,7 +646,7 @@ test.describe("demo workflow API", () => {
           evidenceIds: [demoTargets.summit.evidenceId],
           reason,
           targetId: demoTargets.summit.recommendationId,
-          workflowType: "recommendation-review",
+          workflowType: "advisor-approval",
         },
       });
       const body = await response.json();
@@ -686,7 +686,7 @@ test.describe("demo workflow API", () => {
         phase4RebuildEvidenceIds: [demoTargets.summit.evidenceId],
       });
       expect(evidenceItem.visibilityStatus).toBe(VisibilityStatus.COMPLIANCE_VISIBLE);
-      expect(audit.eventType).toBe("recommendation_review.rebuild_with_evidence");
+      expect(audit.eventType).toBe("advisor_approval.rebuild_with_evidence");
       expect(audit.result).toBe(AuditResult.SUCCESS);
     });
 
@@ -697,7 +697,7 @@ test.describe("demo workflow API", () => {
           actorRole: "senior_wealth_advisor",
           reason: "Advisor approved; compliance release remains required.",
           targetId: demoTargets.northbridge.recommendationId,
-          workflowType: "recommendation-review",
+          workflowType: "advisor-approval",
         },
       });
       const body = await response.json();
@@ -726,7 +726,7 @@ test.describe("demo workflow API", () => {
       expect(recommendation.clientVisible).toBe(false);
       expect(complianceReview.status).toBe(ComplianceStatus.PENDING);
       expect(complianceReview.releasedAt).toBeNull();
-      expect(audit.eventType).toBe("recommendation_review.advisor_approve");
+      expect(audit.eventType).toBe("advisor_approval.advisor_approve");
       expect(audit.result).toBe(AuditResult.SUCCESS);
       expect(audit.nextState).toBe(RecommendationStatus.COMPLIANCE_PENDING);
     });
@@ -740,7 +740,7 @@ test.describe("demo workflow API", () => {
           evidenceIds: [demoTargets.northbridge.evidenceId],
           reason: "Attempt release without prerequisites.",
           targetId: demoTargets.northbridge.recommendationId,
-          workflowType: "recommendation-review",
+          workflowType: "advisor-approval",
         },
       });
       const blockedBody = await blockedResponse.json();
@@ -766,7 +766,7 @@ test.describe("demo workflow API", () => {
           actorRole: "senior_wealth_advisor",
           reason: "Prepare Summit item for compliance-pending release checks.",
           targetId: demoTargets.summit.recommendationId,
-          workflowType: "recommendation-review",
+          workflowType: "advisor-approval",
         },
       });
       const advisorHandoffBody = await advisorHandoffResponse.json();
@@ -784,7 +784,7 @@ test.describe("demo workflow API", () => {
           evidenceIds: [demoTargets.summit.evidenceId],
           reason: "Invalid confirmation should fail before mutation.",
           targetId: demoTargets.summit.recommendationId,
-          workflowType: "recommendation-review",
+          workflowType: "advisor-approval",
         },
       });
       const invalidConfirmationBody = await invalidConfirmationResponse.json();
@@ -807,7 +807,7 @@ test.describe("demo workflow API", () => {
           confirmationText: wp05ComplianceReleaseConfirmationPhrase,
           reason: "Attempt release without scoped evidence payload.",
           targetId: demoTargets.summit.recommendationId,
-          workflowType: "recommendation-review",
+          workflowType: "advisor-approval",
         },
       });
       const missingEvidenceBody = await missingEvidenceResponse.json();
@@ -839,7 +839,7 @@ test.describe("demo workflow API", () => {
           evidenceIds: [demoTargets.summit.evidenceId],
           reason: "Attempt release while internal draft marker remains active.",
           targetId: demoTargets.summit.recommendationId,
-          workflowType: "recommendation-review",
+          workflowType: "advisor-approval",
         },
       });
       const internalDraftBlockedBody = await internalDraftBlockedResponse.json();
@@ -862,7 +862,7 @@ test.describe("demo workflow API", () => {
           evidenceIds: [demoTargets.summit.evidenceId],
           reason: "Attempt release without a client-safe summary payload.",
           targetId: demoTargets.summit.recommendationId,
-          workflowType: "recommendation-review",
+          workflowType: "advisor-approval",
         },
       });
       const payloadBlockedBody = await payloadBlockedResponse.json();
@@ -892,7 +892,7 @@ test.describe("demo workflow API", () => {
           reason: "Simulate audit persistence failure before release.",
           simulateAuditPersistenceFailure: true,
           targetId: demoTargets.summit.recommendationId,
-          workflowType: "recommendation-review",
+          workflowType: "advisor-approval",
         },
       });
       const auditFailureBody = await auditFailureResponse.json();
@@ -926,7 +926,7 @@ test.describe("demo workflow API", () => {
           evidenceIds: [demoTargets.summit.evidenceId],
           reason: "Compliance release after advisor approval, evidence and permission gates.",
           targetId: demoTargets.summit.recommendationId,
-          workflowType: "recommendation-review",
+          workflowType: "advisor-approval",
         },
       });
       const releaseBody = await releaseResponse.json();
@@ -985,7 +985,7 @@ test.describe("demo workflow API", () => {
 
       expect(audit.result).toBe(AuditResult.SUCCESS);
       expect(audit.targetType).toBe(ObjectType.RECOMMENDATION);
-      expect(audit.eventType).toBe("recommendation_review.compliance_release");
+      expect(audit.eventType).toBe("advisor_approval.compliance_release");
       expect(auditMetadata).toMatchObject({
         canonicalCommand: "COMPLIANCE_RELEASE",
         canonicalState: "COMPLIANCE_RELEASED_CLIENT_SAFE",
@@ -1011,7 +1011,7 @@ test.describe("demo workflow API", () => {
           evidenceIds: [demoTargets.morgan.evidenceId],
           reason: "Compliance block proof.",
           targetId: demoTargets.morgan.recommendationId,
-          workflowType: "recommendation-review",
+          workflowType: "advisor-approval",
         },
       });
       const body = await response.json();
@@ -1039,7 +1039,7 @@ test.describe("demo workflow API", () => {
           evidenceIds: [demoTargets.morgan.evidenceId],
           reason,
           targetId: demoTargets.morgan.recommendationId,
-          workflowType: "recommendation-review",
+          workflowType: "advisor-approval",
         },
       });
       const body = await response.json();
@@ -1068,7 +1068,7 @@ test.describe("demo workflow API", () => {
           actorRole: "analyst",
           reason: "Analyst should not approve.",
           targetId: demoTargets.northbridge.recommendationId,
-          workflowType: "recommendation-review",
+          workflowType: "advisor-approval",
         },
       });
       const wrongRoleBody = await wrongRoleResponse.json();
@@ -1088,7 +1088,7 @@ test.describe("demo workflow API", () => {
           action: "publish",
           actorRole: "compliance_officer",
           targetId: demoTargets.summit.recommendationId,
-          workflowType: "recommendation-review",
+          workflowType: "advisor-approval",
         },
       });
       const wrongActionBody = await wrongActionResponse.json();
@@ -1103,7 +1103,7 @@ test.describe("demo workflow API", () => {
           confirmationText: wp05ComplianceReleaseConfirmationPhrase,
           simulateAuditPersistenceFailure: "yes",
           targetId: demoTargets.summit.recommendationId,
-          workflowType: "recommendation-review",
+          workflowType: "advisor-approval",
         },
       });
       const invalidAuditSimulationBody = await invalidAuditSimulationResponse.json();
@@ -1120,7 +1120,7 @@ test.describe("demo workflow API", () => {
           actorRole: "compliance_officer",
           confirmationText: wp05ComplianceReleaseConfirmationPhrase,
           targetId: "96705b67-40b2-5fb8-aa69-a3f2c106025e",
-          workflowType: "recommendation-review",
+          workflowType: "advisor-approval",
         },
       });
       const wrongObjectBody = await wrongObjectResponse.json();

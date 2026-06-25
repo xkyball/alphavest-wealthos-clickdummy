@@ -1,11 +1,11 @@
 "use client";
 
 import type {
-  RecommendationReviewWorkflowAction,
-  RecommendationReviewWorkflowRequestInput,
+  AdvisorApprovalWorkflowAction,
+  AdvisorApprovalWorkflowRequestInput,
 } from "@/lib/demo-workflow-validation";
 
-export const recommendationReviewDemoTargets = {
+export const advisorApprovalDemoTargets = {
   morgan: {
     evidenceId: "ed6ecbad-2016-5cfd-9c91-c47189afaa0d",
     recommendationId: "7788c210-4907-5d7e-a27b-ddd07898d893",
@@ -20,11 +20,11 @@ export const recommendationReviewDemoTargets = {
   },
 } as const;
 
-type RecommendationReviewClientPayload = Omit<
-  RecommendationReviewWorkflowRequestInput,
+type AdvisorApprovalClientPayload = Omit<
+  AdvisorApprovalWorkflowRequestInput,
   "workflowType"
 > & {
-  action: RecommendationReviewWorkflowAction;
+  action: AdvisorApprovalWorkflowAction;
 };
 
 export async function runScreencastDemoAction(actionId: string, nextRoute?: string) {
@@ -53,22 +53,22 @@ export async function runScreencastDemoAction(actionId: string, nextRoute?: stri
   return body;
 }
 
-export async function runRecommendationReviewWorkflowAction(
-  payload: RecommendationReviewClientPayload,
+export async function runAdvisorApprovalWorkflowAction(
+  payload: AdvisorApprovalClientPayload,
   nextRoute?: string,
 ) {
   const response = await fetch("/api/demo-workflow", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      workflowType: "recommendation-review",
+      workflowType: "advisor-approval",
       ...payload,
     }),
   });
 
   if (!response.ok) {
     const body = (await response.json().catch(() => undefined)) as { error?: string } | undefined;
-    throw new Error(body?.error ?? `Recommendation review workflow failed with HTTP ${response.status}.`);
+    throw new Error(body?.error ?? `Advisor approval workflow failed with HTTP ${response.status}.`);
   }
 
   const body = (await response.json()) as {

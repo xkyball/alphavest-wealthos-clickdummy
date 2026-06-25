@@ -31,9 +31,9 @@ import { dataQualityService } from "@/lib/data-quality-service";
 import { exportPackageService } from "@/lib/export-package-service";
 import {
   AuditPersistenceUnavailableError,
-  RecommendationReviewWorkflowError,
+  AdvisorApprovalWorkflowError,
   runDemoWorkflowMutation,
-  runRecommendationReviewWorkflowMutation,
+  runAdvisorApprovalWorkflowMutation,
 } from "@/lib/demo-workflow-mutation";
 import { exportService } from "@/lib/export-service";
 import { fileMetadataService } from "@/lib/file-metadata-service";
@@ -4099,9 +4099,9 @@ export async function POST(request: Request) {
 
   const parsedValue = parsedBody.value;
 
-  if ("workflowType" in parsedValue && parsedValue.workflowType === "recommendation-review") {
+  if ("workflowType" in parsedValue && parsedValue.workflowType === "advisor-approval") {
     try {
-      const result = await runRecommendationReviewWorkflowMutation(prisma, {
+      const result = await runAdvisorApprovalWorkflowMutation(prisma, {
         action: parsedValue.action,
         actorRoleKey: parsedValue.actorRole as DemoRoleKey,
         auditPersistenceAvailable:
@@ -4117,25 +4117,25 @@ export async function POST(request: Request) {
         noClientRelease: !result.clientVisible,
         ok: true,
         result,
-        workflowType: "recommendation-review",
+        workflowType: "advisor-approval",
       });
     } catch (error) {
       return failClosedJson(
         {
           action: parsedValue.action,
           error:
-            error instanceof RecommendationReviewWorkflowError
+            error instanceof AdvisorApprovalWorkflowError
               ? error.message
-              : "Recommendation review workflow action failed.",
-          gateMissing: error instanceof RecommendationReviewWorkflowError ? error.details?.gateMissing : undefined,
+              : "Advisor approval workflow action failed.",
+          gateMissing: error instanceof AdvisorApprovalWorkflowError ? error.details?.gateMissing : undefined,
           reasonCode: "SAFE_ERROR",
           releasePreconditions:
-            error instanceof RecommendationReviewWorkflowError
+            error instanceof AdvisorApprovalWorkflowError
               ? error.details?.releasePreconditions
               : undefined,
-          workflowType: "recommendation-review",
+          workflowType: "advisor-approval",
         },
-        { status: error instanceof RecommendationReviewWorkflowError ? error.status : 409 },
+        { status: error instanceof AdvisorApprovalWorkflowError ? error.status : 409 },
       );
     }
   }

@@ -23,9 +23,9 @@ import { evaluateControlPermission } from "@/lib/control-layer/permission-decisi
 import { resolveTenantObjectScope } from "@/lib/control-layer/scope-resolver";
 import { auditService, AuditPersistenceRequiredError } from "@/lib/audit-service";
 import {
-  recommendationReviewConfirmationText,
-  recommendationReviewTransitionFor,
-  type RecommendationReviewWorkflowAction,
+  advisorApprovalConfirmationText,
+  advisorApprovalTransitionFor,
+  type AdvisorApprovalWorkflowAction,
 } from "@/lib/demo-workflow-validation";
 import { wp05DemoWorkflowCompatibilityMode } from "@/lib/advisory-workflow-contract";
 import type { PermissionDecision } from "@/lib/permission-engine";
@@ -63,8 +63,8 @@ type DemoWorkflowMutationInput = {
   workflowState?: WorkflowStatus;
 };
 
-type RecommendationReviewWorkflowInput = {
-  action: RecommendationReviewWorkflowAction;
+type AdvisorApprovalWorkflowInput = {
+  action: AdvisorApprovalWorkflowAction;
   actorRoleKey: DemoRoleKey;
   auditPersistenceAvailable?: boolean;
   confirmationText?: string;
@@ -73,7 +73,7 @@ type RecommendationReviewWorkflowInput = {
   targetId: string;
 };
 
-type RecommendationReviewState = {
+type AdvisorApprovalState = {
   advisorApproval: {
     approvedAt: string | null;
     id: string | null;
@@ -112,8 +112,8 @@ type ComplianceReleasePreconditions = {
   selectedEvidenceRecordId: string | null;
 };
 
-type RecommendationReviewWorkflowResult = {
-  action: RecommendationReviewWorkflowAction;
+type AdvisorApprovalWorkflowResult = {
+  action: AdvisorApprovalWorkflowAction;
   auditEventId: string;
   auditRows: number;
   canonicalCommand: string;
@@ -135,8 +135,8 @@ type RecommendationReviewWorkflowResult = {
   };
   clientProjection: RecommendationPayloadProjection | null;
   releasePreconditions: ComplianceReleasePreconditions | null;
-  reloadedState: RecommendationReviewState;
-  workflowType: "recommendation-review";
+  reloadedState: AdvisorApprovalState;
+  workflowType: "advisor-approval";
 };
 
 export class AuditPersistenceUnavailableError extends Error {
@@ -145,7 +145,7 @@ export class AuditPersistenceUnavailableError extends Error {
   }
 }
 
-class RecommendationReviewWorkflowError extends Error {
+export class AdvisorApprovalWorkflowError extends Error {
   constructor(
     message: string,
     public readonly status = 409,
@@ -374,52 +374,52 @@ export async function runDemoWorkflowMutation<T extends Record<string, unknown>>
   });
 }
 
-function typedActionPermission(action: RecommendationReviewWorkflowAction): PermissionAction {
-  return recommendationReviewTransitionFor(action).permissionAction;
+function typedActionPermission(action: AdvisorApprovalWorkflowAction): PermissionAction {
+  return advisorApprovalTransitionFor(action).permissionAction;
 }
 
-function expectedTypedRole(action: RecommendationReviewWorkflowAction): DemoRoleKey {
-  return recommendationReviewTransitionFor(action).requiredRole;
+function expectedTypedRole(action: AdvisorApprovalWorkflowAction): DemoRoleKey {
+  return advisorApprovalTransitionFor(action).requiredRole;
 }
 
-function typedActionNextState(action: RecommendationReviewWorkflowAction) {
-  return recommendationReviewTransitionFor(action).nextRecommendationStatus as RecommendationStatus;
+function typedActionNextState(action: AdvisorApprovalWorkflowAction) {
+  return advisorApprovalTransitionFor(action).nextRecommendationStatus as RecommendationStatus;
 }
 
-function typedEventType(action: RecommendationReviewWorkflowAction) {
-  return `recommendation_review.${action}`;
+function typedEventType(action: AdvisorApprovalWorkflowAction) {
+  return `advisor_approval.${action}`;
 }
 
-function typedAuditResult(action: RecommendationReviewWorkflowAction) {
-  return recommendationReviewTransitionFor(action).auditResult as AuditResult;
+function typedAuditResult(action: AdvisorApprovalWorkflowAction) {
+  return advisorApprovalTransitionFor(action).auditResult as AuditResult;
 }
 
-function typedCanonicalCommand(action: RecommendationReviewWorkflowAction) {
-  return recommendationReviewTransitionFor(action).canonicalCommand;
+function typedCanonicalCommand(action: AdvisorApprovalWorkflowAction) {
+  return advisorApprovalTransitionFor(action).canonicalCommand;
 }
 
-function typedCanonicalState(action: RecommendationReviewWorkflowAction) {
-  return recommendationReviewTransitionFor(action).canonicalState;
+function typedCanonicalState(action: AdvisorApprovalWorkflowAction) {
+  return advisorApprovalTransitionFor(action).canonicalState;
 }
 
 function tenantSlugForId(clientTenantId: string): DemoTenantSlug {
   const tenant = demoTenants.find((item) => item.id === clientTenantId);
   if (!tenant) {
-    throw new RecommendationReviewWorkflowError("Recommendation tenant is not part of the demo tenant set.");
+    throw new AdvisorApprovalWorkflowError("Recommendation tenant is not part of the demo tenant set.");
   }
 
   return tenant.slug;
 }
 
-function assertTypedConfirmation(input: RecommendationReviewWorkflowInput) {
-  const requiredConfirmation = recommendationReviewConfirmationText[input.action];
+function assertTypedConfirmation(input: AdvisorApprovalWorkflowInput) {
+  const requiredConfirmation = advisorApprovalConfirmationText[input.action];
 
   if (!requiredConfirmation) {
     return;
   }
 
   if ((input.confirmationText ?? "").trim() !== requiredConfirmation) {
-    throw new RecommendationReviewWorkflowError(
+    throw new AdvisorApprovalWorkflowError(
       `${requiredConfirmation} confirmation text is required before ${input.action}.`,
       400,
     );
@@ -575,17 +575,17 @@ function buildClientRecommendationProjection(input: {
   );
 }
 
-async function reloadRecommendationReviewState(
+async function reloadAdvisorApprovalState(
   tx: Prisma.TransactionClient,
   targetId: string,
   evidenceIds: string[] = [],
-): Promise<RecommendationReviewState> {
+): Promise<AdvisorApprovalState> {
   const recommendation = await tx.recommendation.findUnique({
     where: { id: targetId },
   });
 
   if (!recommendation) {
-    throw new RecommendationReviewWorkflowError("Recommendation target was not found.", 404);
+    throw new AdvisorApprovalWorkflowError("Recommendation target was not found.", 404);
   }
 
   const [advisorApproval, complianceReview, evidence] = await Promise.all([
@@ -645,10 +645,10 @@ async function reloadRecommendationReviewState(
   };
 }
 
-export async function runRecommendationReviewWorkflowMutation(
+export async function runAdvisorApprovalWorkflowMutation(
   prisma: PrismaClient,
-  input: RecommendationReviewWorkflowInput,
-): Promise<RecommendationReviewWorkflowResult> {
+  input: AdvisorApprovalWorkflowInput,
+): Promise<AdvisorApprovalWorkflowResult> {
   assertTypedConfirmation(input);
 
   const recommendation = await prisma.recommendation.findUnique({
@@ -656,7 +656,7 @@ export async function runRecommendationReviewWorkflowMutation(
   });
 
   if (!recommendation) {
-    throw new RecommendationReviewWorkflowError("Recommendation target was not found.", 404);
+    throw new AdvisorApprovalWorkflowError("Recommendation target was not found.", 404);
   }
 
   const tenantSlug = tenantSlugForId(recommendation.clientTenantId);
@@ -734,7 +734,7 @@ export async function runRecommendationReviewWorkflowMutation(
             permission,
             roleAllowed,
             scopeResolution,
-            workflowType: "recommendation-review",
+            workflowType: "advisor-approval",
           },
           nextState: recommendation.status,
           platformTenantId: demoPlatformTenantId,
@@ -745,7 +745,7 @@ export async function runRecommendationReviewWorkflowMutation(
           targetType: ObjectType.RECOMMENDATION,
         },
       });
-      const reloadedState = await reloadRecommendationReviewState(tx, input.targetId, input.evidenceIds);
+      const reloadedState = await reloadAdvisorApprovalState(tx, input.targetId, input.evidenceIds);
 
       return {
         action: input.action,
@@ -771,7 +771,7 @@ export async function runRecommendationReviewWorkflowMutation(
         },
         releasePreconditions: null,
         reloadedState,
-        workflowType: "recommendation-review",
+        workflowType: "advisor-approval",
       };
     }
 
@@ -814,7 +814,7 @@ export async function runRecommendationReviewWorkflowMutation(
     ]);
 
     if (!advisorApproval || !complianceReview) {
-      throw new RecommendationReviewWorkflowError("Recommendation review fixture is incomplete.");
+      throw new AdvisorApprovalWorkflowError("Advisor approval fixture is incomplete.");
     }
 
     let gateMissing: string[] = [];
@@ -871,7 +871,7 @@ export async function runRecommendationReviewWorkflowMutation(
       const acceptedEvidenceRecords = acceptedScopedEvidenceRecords(evidenceRecords, input.targetId);
 
       if (!input.evidenceIds?.length || acceptedEvidenceRecords.length === 0) {
-        throw new RecommendationReviewWorkflowError(
+        throw new AdvisorApprovalWorkflowError(
           "Accepted evidence scoped to this recommendation is required before rebuilding an internal draft.",
         );
       }
@@ -1028,7 +1028,7 @@ export async function runRecommendationReviewWorkflowMutation(
       });
 
       if (releasePreconditions.missing.length > 0) {
-        throw new RecommendationReviewWorkflowError(
+        throw new AdvisorApprovalWorkflowError(
           `Compliance release preconditions failed: ${releasePreconditions.missing.join(", ")}`,
           409,
           {
@@ -1047,7 +1047,7 @@ export async function runRecommendationReviewWorkflowMutation(
       });
 
       if (!gate.passed) {
-        throw new RecommendationReviewWorkflowError(`Client visibility gate failed: ${gate.missing.join(", ")}`, 409, {
+        throw new AdvisorApprovalWorkflowError(`Client visibility gate failed: ${gate.missing.join(", ")}`, 409, {
           gateMissing: gate.missing,
           releasePreconditions,
         });
@@ -1146,7 +1146,7 @@ export async function runRecommendationReviewWorkflowMutation(
           noRealAuth: true,
           permission,
           scopeResolution,
-          workflowType: "recommendation-review",
+          workflowType: "advisor-approval",
         },
         nextState: typedActionNextState(input.action),
         platformTenantId: demoPlatformTenantId,
@@ -1157,7 +1157,7 @@ export async function runRecommendationReviewWorkflowMutation(
         targetType: ObjectType.RECOMMENDATION,
       },
     });
-    const reloadedState = await reloadRecommendationReviewState(tx, input.targetId, input.evidenceIds);
+    const reloadedState = await reloadAdvisorApprovalState(tx, input.targetId, input.evidenceIds);
     const clientProjection =
       input.action === "compliance_release"
         ? buildClientRecommendationProjection({
@@ -1184,7 +1184,7 @@ export async function runRecommendationReviewWorkflowMutation(
       },
       gateMissing,
       gatePassed,
-      message: `${input.action} persisted for recommendation review workflow.`,
+      message: `${input.action} persisted for advisor approval workflow.`,
       mutated: true,
       permission: {
         allowed: permission.allowed,
@@ -1194,9 +1194,7 @@ export async function runRecommendationReviewWorkflowMutation(
       },
       releasePreconditions,
       reloadedState,
-      workflowType: "recommendation-review",
+      workflowType: "advisor-approval",
     };
   });
 }
-
-export { RecommendationReviewWorkflowError };

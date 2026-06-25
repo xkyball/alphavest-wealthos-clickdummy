@@ -1,16 +1,16 @@
 import { expect, test } from "@playwright/test";
 
 import {
-  recommendationReviewActionToCanonicalCommand,
-  recommendationReviewActionToCanonicalState,
+  advisorApprovalActionToCanonicalCommand,
+  advisorApprovalActionToCanonicalState,
   wp05CanonicalJourneyCommandIds,
   wp05CanonicalStates,
   wp05ComplianceReleaseConfirmationPhrase,
   wp05DemoWorkflowCompatibilityMode,
 } from "../lib/advisory-workflow-contract";
 import {
-  recommendationReviewConfirmationText,
-  recommendationReviewTransitionFor,
+  advisorApprovalConfirmationText,
+  advisorApprovalTransitionFor,
 } from "../lib/demo-workflow-validation";
 import { journeyCommandIds } from "../lib/journeys/journey-command-registry";
 
@@ -30,31 +30,30 @@ test.describe("WP05 advisory workflow contract", () => {
       "CLIENT_ACCEPTANCE_SEPARATE",
     ]);
 
-    expect(recommendationReviewActionToCanonicalCommand).toMatchObject({
+    expect(advisorApprovalActionToCanonicalCommand).toMatchObject({
       advisor_approve: "ADVISOR_APPROVE",
       compliance_block: "COMPLIANCE_BLOCK",
       compliance_release: "COMPLIANCE_RELEASE",
       request_evidence: "COMPLIANCE_REQUEST_EVIDENCE",
     });
-    expect(recommendationReviewActionToCanonicalState).toMatchObject({
+    expect(advisorApprovalActionToCanonicalState).toMatchObject({
       advisor_approve: "COMPLIANCE_PENDING",
       compliance_block: "COMPLIANCE_BLOCKED",
       compliance_release: "COMPLIANCE_RELEASED_CLIENT_SAFE",
       request_evidence: "COMPLIANCE_NEEDS_EVIDENCE",
     });
 
-    expect(recommendationReviewTransitionFor("advisor_approve")).toMatchObject({
+    expect(advisorApprovalTransitionFor("advisor_approve")).toMatchObject({
       canonicalCommand: "ADVISOR_APPROVE",
       canonicalState: "COMPLIANCE_PENDING",
       nextRecommendationStatus: "COMPLIANCE_PENDING",
     });
-    expect(recommendationReviewTransitionFor("compliance_release")).toMatchObject({
+    expect(advisorApprovalTransitionFor("compliance_release")).toMatchObject({
       canonicalCommand: "COMPLIANCE_RELEASE",
       canonicalState: "COMPLIANCE_RELEASED_CLIENT_SAFE",
       nextRecommendationStatus: "RELEASED_TO_CLIENT",
     });
-    expect(recommendationReviewConfirmationText.compliance_release).toBe(wp05ComplianceReleaseConfirmationPhrase);
+    expect(advisorApprovalConfirmationText.compliance_release).toBe(wp05ComplianceReleaseConfirmationPhrase);
     expect(wp05DemoWorkflowCompatibilityMode).toBe("DEMO_WORKFLOW_COMPATIBILITY_ONLY");
   });
 });
-

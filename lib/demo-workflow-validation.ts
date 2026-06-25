@@ -1,8 +1,8 @@
 import type { DemoRoleKey } from "@/lib/demo-session";
 import type { AuditResult, PermissionAction, RecommendationStatus } from "@/lib/domain-types";
 import {
-  recommendationReviewActionToCanonicalCommand,
-  recommendationReviewActionToCanonicalState,
+  advisorApprovalActionToCanonicalCommand,
+  advisorApprovalActionToCanonicalState,
   wp05ComplianceReleaseConfirmationPhrase,
   type Wp05CanonicalState,
 } from "@/lib/advisory-workflow-contract";
@@ -14,7 +14,7 @@ export type ValidationIssue = {
   message: string;
 };
 
-export type RecommendationReviewWorkflowAction =
+export type AdvisorApprovalWorkflowAction =
   | "submit_review"
   | "reject_unsupported_claim"
   | "rebuild_with_evidence"
@@ -23,24 +23,24 @@ export type RecommendationReviewWorkflowAction =
   | "compliance_block"
   | "request_evidence";
 
-export type RecommendationReviewWorkflowRequestInput = {
-  action: RecommendationReviewWorkflowAction;
+export type AdvisorApprovalWorkflowRequestInput = {
+  action: AdvisorApprovalWorkflowAction;
   actorRole: string;
   confirmationText?: string;
   evidenceIds?: string[];
   reason?: string;
   simulateAuditPersistenceFailure?: boolean;
   targetId: string;
-  workflowType: "recommendation-review";
+  workflowType: "advisor-approval";
 };
 
-export const recommendationReviewConfirmationText: Partial<Record<RecommendationReviewWorkflowAction, string>> = {
+export const advisorApprovalConfirmationText: Partial<Record<AdvisorApprovalWorkflowAction, string>> = {
   compliance_block: "BLOCK RELEASE",
   compliance_release: wp05ComplianceReleaseConfirmationPhrase,
   request_evidence: "REQUEST EVIDENCE",
 };
 
-export type RecommendationReviewWorkflowTransition = {
+export type AdvisorApprovalWorkflowTransition = {
   auditResult: AuditResult;
   canonicalCommand: JourneyCommandId;
   canonicalState: Wp05CanonicalState;
@@ -50,11 +50,11 @@ export type RecommendationReviewWorkflowTransition = {
   requiredRole: DemoRoleKey;
 };
 
-export const recommendationReviewWorkflowStateMachine = {
+export const advisorApprovalWorkflowStateMachine = {
   submit_review: {
     auditResult: "SUCCESS",
-    canonicalCommand: recommendationReviewActionToCanonicalCommand.submit_review,
-    canonicalState: recommendationReviewActionToCanonicalState.submit_review,
+    canonicalCommand: advisorApprovalActionToCanonicalCommand.submit_review,
+    canonicalState: advisorApprovalActionToCanonicalState.submit_review,
     clientVisibleAfterAction: false,
     nextRecommendationStatus: "ANALYST_REVIEWED",
     permissionAction: "REVIEW",
@@ -62,8 +62,8 @@ export const recommendationReviewWorkflowStateMachine = {
   },
   reject_unsupported_claim: {
     auditResult: "BLOCKED",
-    canonicalCommand: recommendationReviewActionToCanonicalCommand.reject_unsupported_claim,
-    canonicalState: recommendationReviewActionToCanonicalState.reject_unsupported_claim,
+    canonicalCommand: advisorApprovalActionToCanonicalCommand.reject_unsupported_claim,
+    canonicalState: advisorApprovalActionToCanonicalState.reject_unsupported_claim,
     clientVisibleAfterAction: false,
     nextRecommendationStatus: "REVISION_REQUESTED",
     permissionAction: "REVIEW",
@@ -71,8 +71,8 @@ export const recommendationReviewWorkflowStateMachine = {
   },
   rebuild_with_evidence: {
     auditResult: "SUCCESS",
-    canonicalCommand: recommendationReviewActionToCanonicalCommand.rebuild_with_evidence,
-    canonicalState: recommendationReviewActionToCanonicalState.rebuild_with_evidence,
+    canonicalCommand: advisorApprovalActionToCanonicalCommand.rebuild_with_evidence,
+    canonicalState: advisorApprovalActionToCanonicalState.rebuild_with_evidence,
     clientVisibleAfterAction: false,
     nextRecommendationStatus: "ANALYST_REVIEWED",
     permissionAction: "REVIEW",
@@ -80,8 +80,8 @@ export const recommendationReviewWorkflowStateMachine = {
   },
   advisor_approve: {
     auditResult: "SUCCESS",
-    canonicalCommand: recommendationReviewActionToCanonicalCommand.advisor_approve,
-    canonicalState: recommendationReviewActionToCanonicalState.advisor_approve,
+    canonicalCommand: advisorApprovalActionToCanonicalCommand.advisor_approve,
+    canonicalState: advisorApprovalActionToCanonicalState.advisor_approve,
     clientVisibleAfterAction: false,
     nextRecommendationStatus: "COMPLIANCE_PENDING",
     permissionAction: "APPROVE",
@@ -89,8 +89,8 @@ export const recommendationReviewWorkflowStateMachine = {
   },
   compliance_release: {
     auditResult: "SUCCESS",
-    canonicalCommand: recommendationReviewActionToCanonicalCommand.compliance_release,
-    canonicalState: recommendationReviewActionToCanonicalState.compliance_release,
+    canonicalCommand: advisorApprovalActionToCanonicalCommand.compliance_release,
+    canonicalState: advisorApprovalActionToCanonicalState.compliance_release,
     clientVisibleAfterAction: true,
     nextRecommendationStatus: "RELEASED_TO_CLIENT",
     permissionAction: "RELEASE",
@@ -98,8 +98,8 @@ export const recommendationReviewWorkflowStateMachine = {
   },
   compliance_block: {
     auditResult: "BLOCKED",
-    canonicalCommand: recommendationReviewActionToCanonicalCommand.compliance_block,
-    canonicalState: recommendationReviewActionToCanonicalState.compliance_block,
+    canonicalCommand: advisorApprovalActionToCanonicalCommand.compliance_block,
+    canonicalState: advisorApprovalActionToCanonicalState.compliance_block,
     clientVisibleAfterAction: false,
     nextRecommendationStatus: "BLOCKED",
     permissionAction: "BLOCK",
@@ -107,17 +107,17 @@ export const recommendationReviewWorkflowStateMachine = {
   },
   request_evidence: {
     auditResult: "PENDING",
-    canonicalCommand: recommendationReviewActionToCanonicalCommand.request_evidence,
-    canonicalState: recommendationReviewActionToCanonicalState.request_evidence,
+    canonicalCommand: advisorApprovalActionToCanonicalCommand.request_evidence,
+    canonicalState: advisorApprovalActionToCanonicalState.request_evidence,
     clientVisibleAfterAction: false,
     nextRecommendationStatus: "MORE_DATA_REQUESTED",
     permissionAction: "BLOCK",
     requiredRole: "compliance_officer",
   },
-} satisfies Record<RecommendationReviewWorkflowAction, RecommendationReviewWorkflowTransition>;
+} satisfies Record<AdvisorApprovalWorkflowAction, AdvisorApprovalWorkflowTransition>;
 
-export function recommendationReviewTransitionFor(action: RecommendationReviewWorkflowAction) {
-  return recommendationReviewWorkflowStateMachine[action];
+export function advisorApprovalTransitionFor(action: AdvisorApprovalWorkflowAction) {
+  return advisorApprovalWorkflowStateMachine[action];
 }
 
 export type DemoWorkflowActionIdRequestInput = {
@@ -127,7 +127,7 @@ export type DemoWorkflowActionIdRequestInput = {
 
 export type DemoWorkflowRequestInput =
   | DemoWorkflowActionIdRequestInput
-  | RecommendationReviewWorkflowRequestInput;
+  | AdvisorApprovalWorkflowRequestInput;
 
 type ValidationResult<T> =
   | {
@@ -141,7 +141,7 @@ type ValidationResult<T> =
 
 const demoWorkflowActionPattern = /^j\d{2}\.[a-zA-Z0-9]+$/;
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const recommendationReviewActions = new Set<RecommendationReviewWorkflowAction>([
+const advisorApprovalActions = new Set<AdvisorApprovalWorkflowAction>([
   "submit_review",
   "reject_unsupported_claim",
   "rebuild_with_evidence",
@@ -150,6 +150,7 @@ const recommendationReviewActions = new Set<RecommendationReviewWorkflowAction>(
   "compliance_block",
   "request_evidence",
 ]);
+const advisorApprovalWorkflowTypes = new Set(["advisor-approval", "recommendation-review"]);
 const demoActorRoles = new Set([
   "principal",
   "family_cfo",
@@ -168,7 +169,7 @@ export function isDemoWorkflowActionId(value: unknown): value is string {
   return typeof value === "string" && demoWorkflowActionPattern.test(value);
 }
 
-function hasRecommendationReviewShape(body: Record<string, unknown>) {
+function hasAdvisorApprovalShape(body: Record<string, unknown>) {
   return (
     "workflowType" in body ||
     "targetId" in body ||
@@ -228,7 +229,7 @@ export function parseDemoWorkflowRequestBody(body: unknown): ValidationResult<De
     };
   }
 
-  if (hasRecommendationReviewShape(record)) {
+  if (hasAdvisorApprovalShape(record)) {
     const issues: ValidationIssue[] = [];
     const workflowType = stringValue(record, "workflowType");
     const targetId = stringValue(record, "targetId");
@@ -238,11 +239,11 @@ export function parseDemoWorkflowRequestBody(body: unknown): ValidationResult<De
     const confirmationText = stringValue(record, "confirmationText");
     const evidenceIds = record.evidenceIds;
 
-    if (workflowType !== "recommendation-review") {
+    if (!workflowType || !advisorApprovalWorkflowTypes.has(workflowType)) {
       issues.push({
         code: "invalid_workflow_type",
         field: "workflowType",
-        message: "Workflow type must be recommendation-review.",
+        message: "Workflow type must be advisor-approval.",
       });
     }
 
@@ -254,11 +255,11 @@ export function parseDemoWorkflowRequestBody(body: unknown): ValidationResult<De
       });
     }
 
-    if (!action || !recommendationReviewActions.has(action as RecommendationReviewWorkflowAction)) {
+    if (!action || !advisorApprovalActions.has(action as AdvisorApprovalWorkflowAction)) {
       issues.push({
         code: "invalid_workflow_action",
         field: "action",
-        message: "Action must be a supported recommendation review workflow action.",
+        message: "Action must be a supported advisor approval workflow action.",
       });
     }
 
@@ -316,7 +317,7 @@ export function parseDemoWorkflowRequestBody(body: unknown): ValidationResult<De
     return {
       ok: true,
       value: {
-        action: action as RecommendationReviewWorkflowAction,
+        action: action as AdvisorApprovalWorkflowAction,
         actorRole: actorRole as string,
         ...(confirmationText ? { confirmationText } : {}),
         ...(Array.isArray(evidenceIds) ? { evidenceIds } : {}),
@@ -325,7 +326,7 @@ export function parseDemoWorkflowRequestBody(body: unknown): ValidationResult<De
           ? { simulateAuditPersistenceFailure: true }
           : {}),
         targetId: targetId as string,
-        workflowType: "recommendation-review",
+        workflowType: "advisor-approval",
       },
     };
   }

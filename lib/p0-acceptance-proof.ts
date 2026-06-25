@@ -80,7 +80,7 @@ export const p0AcceptanceProofMap: P0AcceptanceProofEntry[] = [
       "No client visibility before compliance release.",
     ],
     positiveProof: [
-      "tests/demo-workflow-api.spec.ts::typed recommendation review workflow",
+      "tests/demo-workflow-api.spec.ts::typed advisor approval workflow",
       "tests/p0-acceptance.spec.ts::AV-SLICE-P0-01",
       "tests/p0-acceptance.spec.ts::AV-SLICE-P0-03",
       "tests/ui-state-boundaries.spec.ts",

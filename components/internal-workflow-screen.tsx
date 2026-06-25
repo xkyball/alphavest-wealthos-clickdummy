@@ -49,8 +49,8 @@ import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-she
 import { cn } from "@/lib/cn";
 import { wp05ComplianceReleaseConfirmationPhrase } from "@/lib/advisory-workflow-contract";
 import {
-  recommendationReviewDemoTargets,
-  runRecommendationReviewWorkflowAction,
+  advisorApprovalDemoTargets,
+  runAdvisorApprovalWorkflowAction,
 } from "@/lib/screencast-demo-client";
 import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import {
@@ -118,20 +118,20 @@ const sensitiveWorkflowCopy: Record<
     action: "compliance_block",
     defaultReason: "Compliance blocked release because required evidence is incomplete.",
     description: "Block client visibility for this recommendation and record a compliance audit event.",
-    evidenceIds: [recommendationReviewDemoTargets.morgan.evidenceId],
+    evidenceIds: [advisorApprovalDemoTargets.morgan.evidenceId],
     phrase: "BLOCK RELEASE",
     submitLabel: "Block Release",
-    targetId: recommendationReviewDemoTargets.morgan.recommendationId,
+    targetId: advisorApprovalDemoTargets.morgan.recommendationId,
     title: "Confirm Compliance Block",
   },
   request_evidence: {
     action: "request_evidence",
     defaultReason: "Compliance requested missing evidence before client release.",
     description: "Request missing evidence while keeping the recommendation blocked from client visibility.",
-    evidenceIds: [recommendationReviewDemoTargets.morgan.evidenceId],
+    evidenceIds: [advisorApprovalDemoTargets.morgan.evidenceId],
     phrase: "REQUEST EVIDENCE",
     submitLabel: "Request Evidence",
-    targetId: recommendationReviewDemoTargets.morgan.recommendationId,
+    targetId: advisorApprovalDemoTargets.morgan.recommendationId,
     title: "Confirm Evidence Request",
   },
 };
@@ -215,7 +215,7 @@ function SensitiveWorkflowConfirmationModal({
     setMessage(null);
 
     try {
-      const body = await runRecommendationReviewWorkflowAction({
+      const body = await runAdvisorApprovalWorkflowAction({
         action: activeConfig.action,
         actorRole: "compliance_officer",
         confirmationText: confirmationText.trim(),
@@ -1335,11 +1335,11 @@ function AdvisorDetailPage({ title }: { title: string }) {
 
   async function approveRecommendation() {
     setDecisionStatus("Saving advisor approval...");
-    await runRecommendationReviewWorkflowAction({
+    await runAdvisorApprovalWorkflowAction({
       action: "advisor_approve",
       actorRole: "senior_wealth_advisor",
       reason: "Advisor approved the package; compliance release remains required.",
-      targetId: recommendationReviewDemoTargets.northbridge.recommendationId,
+      targetId: advisorApprovalDemoTargets.northbridge.recommendationId,
     });
     setDecisionStatus("Advisor approval saved. Compliance pending; release still requires Compliance.");
   }
@@ -1881,14 +1881,14 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
     setMessage("Submitting the audited compliance release request. Close and cancel are blocked until the request resolves.");
 
     try {
-      const body = await runRecommendationReviewWorkflowAction({
+      const body = await runAdvisorApprovalWorkflowAction({
         action: "compliance_release",
         actorRole: "compliance_officer",
         confirmationText: confirmationText.trim(),
-        evidenceIds: [recommendationReviewDemoTargets.summit.evidenceId],
+        evidenceIds: [advisorApprovalDemoTargets.summit.evidenceId],
         reason:
           "Compliance released the recommendation after advisor approval, evidence and permission gates passed.",
-        targetId: recommendationReviewDemoTargets.summit.recommendationId,
+        targetId: advisorApprovalDemoTargets.summit.recommendationId,
       });
 
       setStatus("success");

@@ -52,8 +52,8 @@ import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
 import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
 import {
-  recommendationReviewDemoTargets,
-  runRecommendationReviewWorkflowAction,
+  advisorApprovalDemoTargets,
+  runAdvisorApprovalWorkflowAction,
   runScreencastDemoAction,
 } from "@/lib/screencast-demo-client";
 import {
@@ -567,13 +567,13 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
     setMessage("Submitting the audited evidence request. Close and cancel are blocked until the request resolves.");
 
     try {
-      const body = await runRecommendationReviewWorkflowAction({
+      const body = await runAdvisorApprovalWorkflowAction({
         action: "request_evidence",
         actorRole: "compliance_officer",
         confirmationText: confirmationText.trim(),
-        evidenceIds: [recommendationReviewDemoTargets.morgan.evidenceId],
+        evidenceIds: [advisorApprovalDemoTargets.morgan.evidenceId],
         reason: reason.trim(),
-        targetId: recommendationReviewDemoTargets.morgan.recommendationId,
+        targetId: advisorApprovalDemoTargets.morgan.recommendationId,
       });
 
       setStatus("success");

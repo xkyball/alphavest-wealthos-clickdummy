@@ -29,7 +29,7 @@ The downloaded index is a navigation aid, not implementation authority. Executio
 
 - `docs/00-current/av27-phase5/PHASE5_EXECUTION_REPORT.md`
 
-No product code, route, schema, migration, API route, visual asset, screen image, or state-screen asset was created or changed. Phase 5 behavior was already implemented in the current central recommendation-review workflow spine and was validated in this run.
+No product code, route, schema, migration, API route, visual asset, screen image, or state-screen asset was created or changed. Phase 5 behavior was already implemented in the current central advisor-approval workflow spine and was validated in this run.
 
 ## Ticket Execution
 
@@ -134,7 +134,7 @@ Status: DONE.
 Detailed description: Decision timeline and audit persistence. Positive acceptance: critical events visible and persisted. Negative acceptance: missing audit prevents false completion claim.
 
 Execution:
-- A: inspected audit service, recommendation-review audit metadata, decision action audit metadata and existing audit tests.
+- A: inspected audit service, advisor-approval audit metadata, decision action audit metadata and existing audit tests.
 - S: locked proof to persisted `AuditEvent` rows with actor, role, target, previous/next state, result, reason and phase/contract metadata; visual timeline alone is not proof.
 - I: no code delta required; current critical actions fail closed when audit persistence is unavailable and successful critical actions write audit rows.
 - Q: `pnpm test:workflow-api` proves release/decision/export audit rows and fail-closed audit outage for decision action and compliance release.
@@ -171,10 +171,10 @@ Because current code already contained the central Phase 5 spine, the correct re
 
 ## Bold Cleanup Recommendations
 
-1. Promote `lib/demo-workflow-mutation.ts` recommendation-review behavior into a named `recommendation-review-service.ts` and leave the API route as a thin transport adapter. This would retire the last "demo workflow" naming around a genuinely safety-critical spine.
+1. Promote `lib/demo-workflow-mutation.ts` advisor-approval behavior into a named `advisor-approval-service.ts` and leave the API route as a thin transport adapter. This would retire the last "demo workflow" naming around a genuinely safety-critical spine.
 2. Merge legacy SCF/Phase 5 constants into one AV27 phase contract module. Keep `advisory-workflow-contract.ts` as the canonical command/state vocabulary and stop scattering release boundary strings across UI copy.
 3. Replace seeded decision linkage assumptions with an explicit released-context decision service when the next phase authorizes it. That is the biggest remaining structural debt: the current slice proves released-context decision actions, not arbitrary decision creation from domain inputs.
-4. Make audit history a first-class read model for decision/recommendation review pages. Do not rely on visual audit timelines as proof; derive timelines from persisted `AuditEvent` rows only.
+4. Make audit history a first-class read model for decision/advisor approval pages. Do not rely on visual audit timelines as proof; derive timelines from persisted `AuditEvent` rows only.
 5. Kill any old UI text that says "release complete" without immediately stating what is not complete. The product should make every gate boundary boringly impossible to misunderstand.
 
 ## Final Status

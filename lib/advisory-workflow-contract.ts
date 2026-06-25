@@ -27,7 +27,7 @@ export const wp05ComplianceReleaseConfirmationPhrase = "RELEASE CLIENT-SAFE JOUR
 
 export const wp05DemoWorkflowCompatibilityMode = "DEMO_WORKFLOW_COMPATIBILITY_ONLY";
 
-export const recommendationReviewActionToCanonicalCommand = {
+export const advisorApprovalActionToCanonicalCommand = {
   submit_review: "AI_DRAFT_INTERNAL",
   reject_unsupported_claim: "AI_DRAFT_INTERNAL",
   rebuild_with_evidence: "AI_DRAFT_INTERNAL",
@@ -37,7 +37,7 @@ export const recommendationReviewActionToCanonicalCommand = {
   request_evidence: "COMPLIANCE_REQUEST_EVIDENCE",
 } as const satisfies Record<string, Wp05CanonicalJourneyCommandId>;
 
-export const recommendationReviewActionToCanonicalState = {
+export const advisorApprovalActionToCanonicalState = {
   submit_review: "DRAFT_INTERNAL_ONLY",
   reject_unsupported_claim: "UNSUPPORTED_CLAIM_BLOCKED",
   rebuild_with_evidence: "ANALYST_REBUILT_WITH_EVIDENCE",
