@@ -1,12 +1,14 @@
 # AlphaVest V1.0 Schema Usage Alignment
 
 Generated: 2026-06-23
+Reconfirmed for WP09: 2026-06-25
 Authority: `ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md`
 Companion task source: `/Users/chris/Downloads/ALPHAVEST_V1_0_DETAILED_IMPLEMENTATION_TASK_DESCRIPTIONS.md`
+WP09 refinement source: `docs/00-current/ALPHAVEST_WP09_SCHEMA_USAGE_ALIGNMENT_EXECUTION.md`
 
 ## Scope
 
-The current full-workflow Prisma schema remains the V1.0 baseline: 42 models and 22 enums. WP-11 does not replace `prisma/schema.prisma`, does not create patch-only models, and does not add a new migration beyond the existing baseline migration history. V1.0 gate concepts are implemented through existing schema fields, service-level typed decisions, or documented runtime derivation.
+The current full-workflow Prisma schema remains the V1.0/WP09 baseline: 49 models and 27 enums. WP09 does not replace `prisma/schema.prisma`, does not create patch-only models, and does not add a new migration beyond the existing full-workflow migration history. V1.0 gate concepts are implemented through existing schema fields, service-level typed decisions, or documented runtime derivation.
 
 ## P0 Gate Support Map
 
@@ -29,9 +31,18 @@ The current full-workflow Prisma schema remains the V1.0 baseline: 42 models and
 
 ## Migration Decision
 
-`NO_MIGRATION_REQUIRED_FOR_WP11`.
+`NO_MIGRATION_REQUIRED_FOR_WP09_FIRST_WAVE`.
 
-The existing schema and runtime services support the V1.0 gates above. Patch-only concepts such as `AiDraft`, `ClientVisibilityEvaluation`, `PolicyException` and `VisibilityRule` remain blocked from blind creation. Any future schema change requires a specific accepted task, migration rationale, backwards-safe plan and tests. Existing baseline migrations remain limited to `20260614201128_init_phase_02` and `20260614202332_phase_03_data_model_seed`.
+The existing schema and runtime services support the V1.0/WP09 gates above. Patch-only concepts such as `AiDraft`, `ClientVisibilityEvaluation`, `PolicyException` and `VisibilityRule` remain blocked from blind creation. Any future schema change requires a specific accepted task, migration rationale, backwards-safe plan and tests.
+
+Current accepted full-workflow migration baseline:
+
+- `20260614201128_init_phase_02`
+- `20260614202332_phase_03_data_model_seed`
+- `20260624190000_wave_0_2_journey_spine`
+- `20260624213000_wave_0_2_core_journey_gates`
+
+Patch-only quarantine status: `DO_NOT_CREATE_PATCH_MODEL_NOW`.
 
 ## Service Usage Alignment
 

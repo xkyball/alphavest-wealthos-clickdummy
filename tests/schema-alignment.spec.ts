@@ -5,7 +5,6 @@ import { expect, test } from "@playwright/test";
 
 import { canonicalExportStatuses, exportStatusUiTruth, exportStatusUiTruthFor } from "../lib/domain-types";
 
-const handoffRoot = "_codex_handoff/ALPHAVEST_CODEX_HANDOFF_EXECUTION_PACK_v2_1_PATCHED";
 const schema = readFileSync(path.join(process.cwd(), "prisma/schema.prisma"), "utf8");
 
 function fileText(relativePath: string) {
@@ -27,21 +26,18 @@ function expectModelFields(modelName: string, fields: string[]) {
 
 test.describe("Phase 09 schema alignment", () => {
   test("preserves the full-workflow Prisma baseline without patch-schema takeover", () => {
-    const finalHandoff = fileText(`${handoffRoot}/01_OPERATIVE_AUTHORITY/FINAL_CODEX_IMPLEMENTATION_HANDOFF.md`);
-    const taskMaster = fileText(`${handoffRoot}/01_OPERATIVE_AUTHORITY/FINAL_CODEX_TASK_MASTER.md`);
-    const schemaReconciliation = fileText(
-      `${handoffRoot}/03_SAFETY_CONTRACTS/SCHEMA_FIELD_LEVEL_RECONCILIATION.md`,
-    );
+    const sourceRealityGate = fileText("lib/source-reality-gate.ts");
+    const wp09Execution = fileText("docs/00-current/ALPHAVEST_WP09_SCHEMA_USAGE_ALIGNMENT_EXECUTION.md");
 
     const models = [...schema.matchAll(/^model\s+(\w+)\s+\{/gm)].map((match) => match[1]);
     const enums = [...schema.matchAll(/^enum\s+(\w+)\s+\{/gm)].map((match) => match[1]);
 
-    expect(models).toHaveLength(48);
-    expect(enums).toHaveLength(26);
-    expect(finalHandoff).toContain("Full-workflow schema baseline locked");
-    expect(taskMaster).toContain("Preserve full-workflow schema baseline");
-    expect(schemaReconciliation).toContain("Full-workflow model count | 42 models");
-    expect(schemaReconciliation).toContain("Full-workflow enum count | 22 enums");
+    expect(models).toHaveLength(49);
+    expect(enums).toHaveLength(27);
+    expect(sourceRealityGate).toContain("modelCount: 49");
+    expect(sourceRealityGate).toContain("enumCount: 27");
+    expect(wp09Execution).toContain("Current `full-workflow` schema is the only implementation schema authority.");
+    expect(wp09Execution).toContain("No Prisma migration is allowed in WP09 first wave.");
 
     for (const patchOnlyModel of ["AiDraft", "ClientVisibilityEvaluation", "PolicyException", "VisibilityRule"]) {
       expect(models).not.toContain(patchOnlyModel);
@@ -172,16 +168,14 @@ test.describe("Phase 09 schema alignment", () => {
   });
 
   test("keeps patch-only schema concepts mapped or blocked rather than assumed", () => {
-    const schemaReconciliation = fileText(
-      `${handoffRoot}/03_SAFETY_CONTRACTS/SCHEMA_FIELD_LEVEL_RECONCILIATION.md`,
-    );
-    const stopRules = fileText(`${handoffRoot}/01_OPERATIVE_AUTHORITY/STOP_RULES_MASTER.md`);
+    const v1SchemaAlignment = fileText("V1_0_SCHEMA_USAGE_ALIGNMENT.md");
+    const sourceRealityGate = fileText("lib/source-reality-gate.ts");
 
-    expect(schemaReconciliation).toContain("DO_NOT_CREATE_PATCH_MODEL_NOW");
-    expect(schemaReconciliation).toContain("ClientVisibilityEvaluation");
-    expect(schemaReconciliation).toContain("BLOCKER_FOR_CODEX_TASK_MASTER");
-    expect(stopRules).toContain("patch-schema takeover");
-    expect(stopRules).toContain("Prisma/schema replacement");
+    expect(v1SchemaAlignment).toContain("DO_NOT_CREATE_PATCH_MODEL_NOW");
+    expect(v1SchemaAlignment).toContain("ClientVisibilityEvaluation");
+    expect(v1SchemaAlignment).toContain("PolicyException");
+    expect(v1SchemaAlignment).toContain("VisibilityRule");
+    expect(sourceRealityGate).toContain("NO_BLIND_SCHEMA_OR_PATCH_REPLACEMENT");
   });
 
   test("maps ExportStatus schema enum to canonical no-overclaim UI lifecycle states", () => {
@@ -236,7 +230,7 @@ test.describe("Phase 09 schema alignment", () => {
       expect(v1SchemaAlignment, concept).toContain(`| ${concept} |`);
     }
 
-    expect(v1SchemaAlignment).toContain("NO_MIGRATION_REQUIRED_FOR_WP11");
+    expect(v1SchemaAlignment).toContain("NO_MIGRATION_REQUIRED_FOR_WP09_FIRST_WAVE");
     expect(v1SchemaAlignment).toContain("AiDraft");
     expect(v1SchemaAlignment).toContain("ClientVisibilityEvaluation");
     expect(v1SchemaAlignment).toContain("VisibilityRule");
@@ -244,6 +238,7 @@ test.describe("Phase 09 schema alignment", () => {
       "20260614201128_init_phase_02",
       "20260614202332_phase_03_data_model_seed",
       "20260624190000_wave_0_2_journey_spine",
+      "20260624213000_wave_0_2_core_journey_gates",
       "migration_lock.toml",
     ]);
     expect(packageJson).toContain('"db:validate": "prisma validate"');

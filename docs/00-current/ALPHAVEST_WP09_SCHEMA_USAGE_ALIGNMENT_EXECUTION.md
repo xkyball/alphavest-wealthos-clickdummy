@@ -2,13 +2,13 @@
 
 Generated: 2026-06-25
 
-Status: STOPPED_AT_DECISION_WP09_1
+Status: COMPLETE_OPTION_A
 
 This report executes the uploaded WP09 blueprint as a strict process chain:
 
 Blueprint task -> executed analysis result -> refined specification -> derived implementation task -> implementation or zero-delta implementation -> QA/proof -> report.
 
-No product-code change was made in this WP09 run. Implementation tasks are blocked until the human approves the schema usage boundary required by `DECISION-WP09-1`.
+No runtime product-code change was made in this WP09 run. Option A was approved, stale schema-proof artefacts were aligned to current `full-workflow` reality, and implementation tasks that did not require runtime code deltas are explicitly recorded as zero-delta implementations.
 
 ## Source Scope Used
 
@@ -26,6 +26,7 @@ No product-code change was made in this WP09 run. Implementation tasks are block
   - WP06 Option A: route/action/object plus payload/API/service-level enforcement, admin non-bypass fail-closed, no new API, no schema migration.
   - WP07 Option A: existing `/api/export-workflow`, no new API, no schema migration, metadata-only redacted package proof, forbidden payload negative tests.
   - WP08 Option A: existing API routes only, no new API, no schema migration, shared fail-closed/redaction/audit helpers allowed with limits, `/api/demo-workflow` compatibility/demo only.
+  - WP09 Option A: current `full-workflow` schema reality is authority, no Prisma schema replacement, no Prisma migrations in WP09 first wave, patch-only concepts remain blocked/deferred/quarantined, shared selector/projection helpers allowed with limits only when they reduce leakage risk, stale schema proof updated to 49 models / 27 enums and current migration list, implementation zero-delta-first.
 
 Excluded as specification authority: unrelated legacy planning docs, broad handoff docs, old KB/source artefacts, source refs and prior assumptions unless revalidated against current repo evidence.
 
@@ -373,9 +374,9 @@ If approved, the clean first-wave implementation should be:
 
 ## DECISION-WP09-1
 
-Status: HUMAN_DECISION_REQUIRED
+Status: APPROVED_AND_APPLIED
 
-No explicit WP09 approval exists yet in this thread or in generated WP09 decision artefacts. This is a true stop point because the next step decides whether Codex may update stale schema-proof tests/docs and whether shared selectors/helpers are allowed.
+Explicit WP09 Option A approval exists in the thread and has been applied.
 
 ### Option A - Recommended: Current Schema Reality, No Migration, Proof Alignment First
 
@@ -413,7 +414,7 @@ Cost: directly conflicts with WP05-WP08 no-schema-migration posture and the WP09
 
 ## QA/Proof Status
 
-Full `QA-WP09-1` is blocked until decision and implementation/zero-delta tasks complete.
+Status: COMPLETE
 
 Pre-decision proof:
 
@@ -421,22 +422,42 @@ Pre-decision proof:
 - Prisma validate: PASS.
 - Schema alignment proof: FAIL because it is stale against current repo reality.
 
+Post-decision implementation/proof:
+
+- `IMPL-WP09-1`: ZERO-DELTA IMPLEMENTATION. Query/object/tenant usage review did not prove a required runtime code change. `lib/journeys/journey-api-service.ts` and related scoped services retain existing behavior; any future tightening must be backed by a concrete failing scope test.
+- `IMPL-WP09-2`: ZERO-DELTA IMPLEMENTATION. `lib/visibility-engine.ts` and export read models already provide separate client/internal/export projections. No new selector/helper was necessary.
+- `IMPL-WP09-3`: NEW TEST/DOC IMPLEMENTATION. Updated stale schema-proof expectations to current 49-model / 27-enum `full-workflow` reality, added the current `20260624213000_wave_0_2_core_journey_gates` migration to the accepted baseline, and quarantined patch-only concepts without creating Prisma models.
+- `IMPL-WP09-4`: ZERO-DELTA IMPLEMENTATION. Evidence, audit and export field usage remained aligned under focused safety tests; no runtime service edit was required.
+
+Final validation:
+
+- `pnpm guard:source`: PASS, 0 violations.
+- `pnpm db:validate`: PASS, Prisma schema valid.
+- `pnpm typecheck`: PASS.
+- `pnpm exec playwright test tests/schema-alignment.spec.ts --workers=1 --reporter=line`: PASS, 8/8.
+- `pnpm exec playwright test tests/client-visibility-projection.spec.ts tests/client-visibility-proof.spec.ts tests/document-upload-api.spec.ts tests/evidence-review-api.spec.ts tests/export-workflow-api.spec.ts tests/export-safety.spec.ts tests/governance-non-bypass.spec.ts tests/permission-engine.spec.ts --workers=1 --reporter=line`: PASS, 46/46.
+
 No UI changes were made, so no screenshot is required.
 
 ## Product-Code Changes
 
-None.
+None to runtime product code.
+
+Test/doc changes:
+
+- `tests/schema-alignment.spec.ts`
+- `V1_0_SCHEMA_USAGE_ALIGNMENT.md`
+- `docs/00-current/ALPHAVEST_WP09_SCHEMA_USAGE_ALIGNMENT_EXECUTION.md`
 
 ## Generated Artefact Updates
 
-- Added this WP09 execution, analysis, refined specification and decision report.
+- Added and updated this WP09 execution, analysis, refined specification, decision and implementation/QA report.
+- Updated the V1.0 schema-usage alignment artefact to reflect the current WP09-approved schema baseline.
 
 ## Residual Risks
 
-- Existing `tests/schema-alignment.spec.ts` is stale and will keep failing until updated.
-- `V1_0_SCHEMA_USAGE_ALIGNMENT.md` still claims older baseline migration limits and should be corrected if Option A is approved.
 - Internal read-model services with broad includes/selects need explicit classification as internal-only or narrowing before any client/export reuse.
-- Full WP09 QA is not claimable until after `DECISION-WP09-1` and implementation/zero-delta execution.
+- Full repository `phase:check` was not run in this WP09 pass; focused WP09 validation, typecheck, source guard and Prisma validation passed.
 
 ## Method Compliance Checklist
 
@@ -444,7 +465,7 @@ None.
 - Double Diamond Discover: completed through upload extraction, handoff/preflight and schema/query/test inventory.
 - Double Diamond Define: completed through the no-migration schema usage contract.
 - Double Diamond Develop: Options A, B and C compared.
-- Double Diamond Deliver: delivered decision-ready WP09 artefact and stopped before unauthorized implementation.
+- Double Diamond Deliver: delivered approved WP09 Option A implementation with focused QA and no unauthorized schema/API/runtime changes.
 - Psycho-Logic / Map: separated the plan's model-count map from actual repo schema territory.
 - TRIZ: resolved the contradiction between schema safety and no migration by updating proof assumptions, not the database schema.
 - SIT Closed World: uses current schema, current tests and existing projections as the closed-world resources.
@@ -454,6 +475,6 @@ None.
 
 ## Honest Limitations
 
-- This is not a final WP09 implementation report.
-- No zero-delta implementation claim is made yet.
-- The schema-alignment failure is current proof of stale acceptance artefacts, not proof of a broken Prisma schema.
+- This is a first-wave WP09 Option A implementation report, not a broad schema redesign.
+- Zero-delta claims apply only to the inspected runtime product-code areas and focused QA scope listed above.
+- The pre-decision schema-alignment failure was proof of stale acceptance artefacts, not proof of a broken Prisma schema; the updated schema-alignment proof now passes.
