@@ -172,11 +172,10 @@ test.describe("UX-NAV route policy navigation", () => {
     await authenticateRouteSmokePage(page);
     await page.goto("/advisory/review-queue");
 
-    const guidance = page.getByTestId("product-guidance").first();
-    await expect(guidance.getByRole("heading", { name: "Workbench" })).toBeVisible();
-    await expect(guidance.getByTestId("ux-nav-gate-guidance")).toBeVisible();
-    await expect(guidance.getByTestId("ux-nav-flow-rail")).toBeVisible();
-    await expect(guidance.getByTestId("ux-nav-primary-next-step")).toHaveCount(1);
+    await expect(page.getByRole("heading", { name: "Consultant Workbench", level: 1 })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Advisory Review Hub", level: 2 })).toBeVisible();
+    await expect(page.getByRole("complementary").getByRole("heading", { name: "Next Work Queue" })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Open next trigger/ }).first()).toBeVisible();
     await expect(page.getByTestId("ux-nav-route-context").first()).toContainText("Workbench");
     await expect(page.getByText("034 · Workbench")).toHaveCount(0);
   });

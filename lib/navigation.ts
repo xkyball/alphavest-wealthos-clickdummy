@@ -1,27 +1,13 @@
 import {
   Archive,
-  BadgeCheck,
-  Building2,
   BriefcaseBusiness,
-  CalendarClock,
   ClipboardCheck,
-  ClipboardList,
-  FileCheck2,
-  FileSearch,
-  FileText,
   FolderOpen,
-  Gauge,
-  Gavel,
   Home,
-  KeyRound,
   Landmark,
-  LockKeyhole,
-  MessageSquare,
-  Scale,
   Settings,
   ShieldCheck,
   Upload,
-  UsersRound
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { DemoRole } from "@/lib/demo-session";
@@ -94,63 +80,12 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
     icon: Settings,
     items: [
       {
-        pageId: "003",
-        activePageIds: ["001", "002", "003", "004", "005", "006"],
-        label: "User onboarding",
-        description: "Login, MFA, invite, identity, consent, and role confirmation.",
-        icon: LockKeyhole,
-        tier: "secondary"
-      },
-      {
-        pageId: "007",
-        label: "Platform settings",
-        description: "Global platform configuration.",
-        icon: Settings,
-        tier: "secondary"
-      },
-      {
-        pageId: "009",
-        label: "Role templates",
-        description: "Reusable global role templates.",
-        icon: KeyRound,
-        tier: "secondary"
-      },
-      {
-        pageId: "010",
-        label: "Security",
-        description: "Security configuration and sensitive controls.",
-        icon: ShieldCheck,
-        tier: "secondary"
-      },
-      {
-        pageId: "011",
-        label: "Evidence templates",
-        description: "Evidence template administration.",
-        icon: FileText,
-        tier: "secondary"
-      },
-      {
-        pageId: "012",
-        label: "Export templates",
-        description: "Export and redaction template administration.",
-        icon: FileSearch,
-        tier: "secondary"
-      },
-      {
-        pageId: "013",
-        activePageIds: ["013", "014"],
-        label: "Tenant directory",
-        description: "Tenant list and tenant creation.",
-        icon: Building2,
-        tier: "secondary"
-      },
-      {
         pageId: "015",
-        activePageIds: ["015", "016", "017", "018"],
-        label: "Tenant setup",
-        description: "Tenant setup, team, policies, and users.",
-        icon: UsersRound,
-        tier: "secondary"
+        activePageIds: ["001", "002", "003", "004", "005", "006", "007", "009", "010", "011", "012", "013", "014", "015", "016", "017", "018"],
+        label: "Access & tenant setup",
+        description: "One governed entry for onboarding, platform controls, tenants, roles and templates.",
+        icon: Settings,
+        tier: "primary"
       }
     ]
   },
@@ -160,23 +95,10 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
     items: [
       {
         pageId: "019",
-        label: "Client portal",
-        description: "Client-safe dashboard and next visible work.",
+        activePageIds: ["019", "020", "021", "022", "023", "024", "025", "026", "031", "032"],
+        label: "Client context",
+        description: "Client-safe household, profile, entity, wealth map and action context.",
         icon: Home
-      },
-      {
-        pageId: "020",
-        label: "Mobile client view",
-        description: "Responsive client-safe experience checkpoint.",
-        icon: FileText,
-        tier: "secondary"
-      },
-      {
-        pageId: "021",
-        activePageIds: ["021", "022", "023", "024", "025", "026", "031", "032"],
-        label: "Client profile",
-        description: "Client facts, relationships, entities, wealth map, and actions.",
-        icon: UsersRound
       }
     ]
   },
@@ -185,24 +107,11 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
     icon: FolderOpen,
     items: [
       {
-        pageId: "027",
-        label: "Source library",
-        description: "Uploaded client source documents, not evidence sufficiency.",
-        icon: FileText
-      },
-      {
         pageId: "028",
-        activePageIds: ["028", "029", "030"],
-        label: "Evidence intake",
-        description: "Upload, extraction review, and verification before sufficiency.",
-        icon: Upload
-      },
-      {
-        pageId: "046",
-        activePageIds: ["046", "047"],
-        label: "Reviewed evidence vault",
-        description: "Auditable reviewed evidence records and record detail.",
-        icon: Archive
+        activePageIds: ["027", "028", "029", "030", "046", "047"],
+        label: "Evidence workspace",
+        description: "Source intake, extraction, verification and evidence record review.",
+        icon: FolderOpen
       }
     ]
   },
@@ -211,51 +120,11 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
     icon: BriefcaseBusiness,
     items: [
       {
-        pageId: "033",
-        label: "Signal review",
-        description: "New portfolio and advice signals.",
-        icon: Scale
-      },
-      {
         pageId: "034",
-        activePageIds: ["034", "035"],
-        label: "Workbench",
-        description: "Advisor work area with trigger detail folded in.",
-        icon: ClipboardList
-      },
-      {
-        pageId: "036",
-        activePageIds: ["036", "037"],
-        label: "Advisor approval",
-        description: "Human advisor review; not client release.",
-        icon: BadgeCheck
-      }
-    ]
-  },
-  {
-    key: "elevated_workflows",
-    icon: ShieldCheck,
-    items: [
-      {
-        pageId: "064",
-        activePageIds: ["064", "065", "066", "067"],
-        label: "KYC and suitability",
-        description: "KYC, source-of-wealth, suitability and IPS review gates.",
-        icon: ShieldCheck
-      },
-      {
-        pageId: "068",
-        activePageIds: ["068", "069"],
-        label: "Review monitoring",
-        description: "Review calendar and rebalance monitoring without automatic advice.",
-        icon: CalendarClock
-      },
-      {
-        pageId: "070",
-        activePageIds: ["070", "071"],
-        label: "Committee review",
-        description: "Peer review and decision-room context before downstream release.",
-        icon: Gavel
+        activePageIds: ["033", "034", "035", "036", "037"],
+        label: "Internal workbench",
+        description: "Signals, internal drafts, trigger review and human sign-off before release.",
+        icon: BriefcaseBusiness
       }
     ]
   },
@@ -265,22 +134,10 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
     items: [
       {
         pageId: "038",
-        label: "Compliance queue",
-        description: "Review queue for compliance release decisions.",
+        activePageIds: ["038", "039", "040", "041", "042"],
+        label: "Compliance release",
+        description: "Queue, review, release, block, evidence request and audit exception gates.",
         icon: ShieldCheck
-      },
-      {
-        pageId: "039",
-        label: "Compliance review",
-        description: "Detailed review before any client-visible release.",
-        icon: FileSearch
-      },
-      {
-        pageId: "040",
-        activePageIds: ["040", "041", "042"],
-        label: "Compliance release controls",
-        description: "Release, block, request evidence, and audit exceptions.",
-        icon: FileCheck2
       }
     ]
   },
@@ -289,17 +146,11 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
     icon: Archive,
     items: [
       {
-        pageId: "043",
-        label: "Decision list",
-        description: "Submitted and in-progress advice decisions.",
-        icon: ClipboardCheck
-      },
-      {
         pageId: "044",
-        activePageIds: ["044", "045"],
-        label: "Decision room",
-        description: "Decision detail with submitted state folded in.",
-        icon: BadgeCheck
+        activePageIds: ["043", "044", "045"],
+        label: "Decision & evidence record",
+        description: "Decision list, decision room and submitted evidence package state.",
+        icon: ClipboardCheck
       }
     ]
   },
@@ -308,35 +159,11 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
     icon: Landmark,
     items: [
       {
-        pageId: "008",
-        label: "Advice boundary",
-        description: "Policy guardrail for advice limits.",
-        icon: Scale,
-        tier: "secondary"
-      },
-      {
         pageId: "048",
-        label: "Governance users",
-        description: "Manage users in the governed workspace.",
-        icon: UsersRound
-      },
-      {
-        pageId: "049",
-        label: "Roles",
-        description: "Role management and permissions.",
-        icon: KeyRound
-      },
-      {
-        pageId: "050",
-        label: "Access requests",
-        description: "Review and decide permission requests.",
-        icon: LockKeyhole
-      },
-      {
-        pageId: "051",
-        label: "Audit history",
-        description: "Trace sensitive access and governance actions.",
-        icon: Archive
+        activePageIds: ["008", "048", "049", "050", "051"],
+        label: "Governance / RBAC / audit",
+        description: "Advice boundary, users, roles, access requests and audit history without bypass.",
+        icon: Landmark
       }
     ]
   },
@@ -346,71 +173,10 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
     items: [
       {
         pageId: "054",
-        label: "New export",
-        description: "Start a client-safe export package.",
+        activePageIds: ["054", "055", "056", "057", "058"],
+        label: "Export & redaction",
+        description: "Create, scope, redact, preview, approve and deliver as separated controls.",
         icon: Upload
-      },
-      {
-        pageId: "055",
-        label: "Scope selection",
-        description: "Choose what enters the export.",
-        icon: ClipboardList
-      },
-      {
-        pageId: "056",
-        label: "Redaction",
-        description: "Apply redaction policy before preview.",
-        icon: FileSearch
-      },
-      {
-        pageId: "057",
-        label: "Approval preview",
-        description: "Inspect the redacted package before approval.",
-        icon: FileCheck2
-      },
-      {
-        pageId: "058",
-        label: "Delivery controls",
-        description: "Download or share only after approval remains valid.",
-        icon: Archive
-      }
-    ]
-  },
-  {
-    key: "communication",
-    icon: MessageSquare,
-    tier: "support",
-    items: [
-      {
-        pageId: "052",
-        label: "Communication context",
-        description: "Message and call context without advice or release authority.",
-        icon: MessageSquare
-      },
-      {
-        pageId: "053",
-        label: "Call trigger matrix",
-        description: "Trigger context that routes work without sending advice.",
-        icon: ClipboardList
-      }
-    ]
-  },
-  {
-    key: "ops",
-    icon: Gauge,
-    tier: "support",
-    items: [
-      {
-        pageId: "059",
-        label: "Ops queues",
-        description: "Support and recovery queue for blocked workflow work.",
-        icon: Gauge
-      },
-      {
-        pageId: "060",
-        label: "SLA escalation",
-        description: "Operational escalation detail without release or approval bypass.",
-        icon: CalendarClock
       }
     ]
   }

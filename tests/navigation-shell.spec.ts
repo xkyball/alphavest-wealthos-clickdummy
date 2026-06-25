@@ -5,15 +5,14 @@ import { createDemoSession } from "../lib/demo-session";
 import { navigationGroupsForRole, productiveNavigationPageIds } from "../lib/navigation";
 
 const importantNavigationLinks = [
-  { path: "/client/home", label: "Client portal" },
-  { path: "/documents/upload", label: "Evidence intake" },
-  { path: "/advisory/review-queue", label: "Workbench" },
-  { path: "/advisor/reviews", label: "Advisor approval" },
-  { path: "/compliance/reviews", label: "Compliance queue" },
-  { path: "/documents", label: "Source library" },
-  { path: "/evidence", label: "Reviewed evidence vault" },
-  { path: "/governance", label: "Governance users" },
-  { path: "/export/new", label: "New export" }
+  { path: "/tenants/demo/setup", label: "Access & tenant setup" },
+  { path: "/client/home", label: "Client context" },
+  { path: "/documents/upload", label: "Evidence workspace" },
+  { path: "/advisory/review-queue", label: "Internal workbench" },
+  { path: "/compliance/reviews", label: "Compliance release" },
+  { path: "/decisions/demo", label: "Decision & evidence record" },
+  { path: "/governance", label: "Governance / RBAC / audit" },
+  { path: "/export/new", label: "Export & redaction" }
 ];
 
 test.beforeEach(async ({ page }) => {
@@ -41,6 +40,7 @@ test.describe("AlphaVest navigation shell", () => {
 
     const positions = journeyLabels.map((label) => labels.indexOf(label));
     expect(positions).toEqual([...positions].sort((left, right) => left - right));
+    expect(productiveNavigationPageIds).toEqual(["015", "019", "028", "034", "038", "044", "048", "054"]);
     expect(productiveNavigationPageIds).not.toEqual(expect.arrayContaining(["052", "053", "059", "060", "061", "062", "063", "064", "065", "066", "067", "068", "069", "070", "071"]));
   });
 
@@ -65,7 +65,7 @@ test.describe("AlphaVest navigation shell", () => {
     const primaryNavigation = page.getByRole("navigation", { name: "Primary navigation" });
     await expect(primaryNavigation).toHaveCount(1);
 
-    const activeLink = primaryNavigation.getByRole("link", { name: "Evidence intake" });
+    const activeLink = primaryNavigation.getByRole("link", { name: "Evidence workspace" });
     await expect(activeLink).toHaveAttribute("aria-current", "page");
   });
 
@@ -83,15 +83,20 @@ test.describe("AlphaVest navigation shell", () => {
     await expect(primaryNavigation.getByText("Platform & Tenant")).toHaveCount(0);
 
     const primaryEntries = primaryNavigation.locator("[data-navigation-item-tier='primary']");
-    await expect(primaryEntries).toHaveCount(22);
-    await expect(primaryNavigation.locator("[data-navigation-item-tier='secondary']")).toHaveCount(10);
+    await expect(primaryEntries).toHaveCount(8);
+    await expect(primaryNavigation.locator("[data-navigation-item-tier='secondary']")).toHaveCount(0);
+    await expect(primaryNavigation.getByRole("link", { name: "Source library" })).toHaveCount(0);
+    await expect(primaryNavigation.getByRole("link", { name: "Evidence intake" })).toHaveCount(0);
+    await expect(primaryNavigation.getByRole("link", { name: "Reviewed evidence vault" })).toHaveCount(0);
+    await expect(primaryNavigation.getByRole("link", { name: "Advisor approval", exact: true })).toHaveCount(0);
+    await expect(primaryNavigation.getByRole("link", { name: "New export" })).toHaveCount(0);
   });
 
   test("dynamic detail routes resolve the matching active parent navigation item", async ({ page }) => {
     await page.goto("/documents/demo/review");
 
     const primaryNavigation = page.getByRole("navigation", { name: "Primary navigation" });
-    const activeLink = primaryNavigation.getByRole("link", { name: "Evidence intake" });
+    const activeLink = primaryNavigation.getByRole("link", { name: "Evidence workspace" });
 
     await expect(activeLink).toHaveAttribute("aria-current", "page");
   });
@@ -100,13 +105,13 @@ test.describe("AlphaVest navigation shell", () => {
     await page.goto("/decisions/demo/success");
 
     const primaryNavigation = page.getByRole("navigation", { name: "Primary navigation" });
-    await expect(primaryNavigation.getByRole("link", { name: /Decision room/ })).toHaveAttribute(
+    await expect(primaryNavigation.getByRole("link", { name: /Decision & evidence record/ })).toHaveAttribute(
       "aria-current",
       "page"
     );
 
     await page.goto("/tenants/demo/team");
-    await expect(primaryNavigation.getByRole("link", { name: "Tenant setup" })).toHaveAttribute(
+    await expect(primaryNavigation.getByRole("link", { name: "Access & tenant setup" })).toHaveAttribute(
       "aria-current",
       "page"
     );
@@ -132,6 +137,8 @@ test.describe("AlphaVest navigation shell", () => {
     await expect(primaryNavigation.getByRole("link", { name: "Service Blueprint" })).toHaveCount(0);
     await expect(primaryNavigation.getByRole("link", { name: "Trigger Detail", exact: true })).toHaveCount(0);
     await expect(primaryNavigation.getByRole("link", { name: "Decision Submitted", exact: true })).toHaveCount(0);
+    await expect(primaryNavigation.getByRole("region", { name: "Communication" })).toHaveCount(0);
+    await expect(primaryNavigation.getByRole("region", { name: "Ops" })).toHaveCount(0);
   });
 });
 
@@ -153,7 +160,7 @@ test.describe("AlphaVest mobile navigation shell", () => {
     await expect(page.getByRole("navigation", { name: "Primary navigation" })).toHaveCount(0);
 
     await page.getByRole("button", { name: "Open navigation" }).click();
-    await page.getByRole("navigation", { name: "Primary navigation" }).getByRole("link", { name: "Workbench" }).click();
+    await page.getByRole("navigation", { name: "Primary navigation" }).getByRole("link", { name: "Internal workbench" }).click();
 
     await expect(page).toHaveURL(/\/advisory\/review-queue$/);
     await expect(page.getByRole("navigation", { name: "Primary navigation" })).toHaveCount(0);

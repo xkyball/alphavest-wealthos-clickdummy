@@ -422,17 +422,14 @@ function handleStaticSortChange() {
 }
 
 const phase13Nav: NavItem[] = [
-  { href: "/client/home", icon: Home, label: "Home" },
-  { href: "/governance", icon: KeyRound, label: "Governance", pageIds: ["051"], count: 5 },
-  { href: "/communication/demo/context", icon: MessageSquare, label: "Communication Context", pageIds: ["052", "053"], count: 3 },
-  { href: "/export/new", icon: Download, label: "Exports", pageIds: ["054", "055", "056", "057", "058"], count: 2 },
-  { href: "/ops", icon: Gauge, label: "Ops Support", pageIds: ["059", "060"], count: 18 },
-  { href: "/service-blueprint", icon: Network, label: "Blueprint", pageIds: ["061"] },
-  { href: "/roadmap", icon: GitBranch, label: "Roadmap", pageIds: ["062"] },
-  { href: "/states", icon: Table2, label: "States", pageIds: ["063"] },
-  { href: "/evidence", icon: Folder, label: "Evidence" },
-  { href: "/decisions", icon: FileCheck2, label: "Decisions" },
-  { href: "/settings", icon: Settings, label: "Settings" }
+  { href: "/tenants/demo/setup", icon: Settings, label: "Access & tenant setup", pageIds: ["001", "002", "003", "004", "005", "006", "007", "009", "010", "011", "012", "013", "014", "015", "016", "017", "018"] },
+  { href: "/client/home", icon: Home, label: "Client context", pageIds: ["019", "020", "021", "022", "023", "024", "025", "026", "031", "032"] },
+  { href: "/documents/upload", icon: Folder, label: "Evidence workspace", pageIds: ["027", "028", "029", "030", "046", "047"] },
+  { href: "/advisory/review-queue", icon: Network, label: "Internal workbench", pageIds: ["033", "034", "035", "036", "037"] },
+  { href: "/compliance/reviews", icon: KeyRound, label: "Compliance release", pageIds: ["038", "039", "040", "041", "042"] },
+  { href: "/decisions/demo", icon: FileCheck2, label: "Decision & evidence record", pageIds: ["043", "044", "045"] },
+  { href: "/governance", icon: GitBranch, label: "Governance / RBAC / audit", pageIds: ["008", "048", "049", "050", "051"] },
+  { href: "/export/new", icon: Download, label: "Export & redaction", pageIds: ["054", "055", "056", "057", "058"] }
 ];
 
 function toneFor(value: string): BadgeTone {
@@ -754,15 +751,16 @@ function Phase13Sidebar({ activePageId }: { activePageId: string }) {
   return (
     <aside className="hidden min-h-screen border-r border-alphavest-border/60 bg-alphavest-navy/88 p-5 lg:flex lg:w-[var(--sidebar-width)] lg:flex-col">
       <AlphaVestMark />
-      <nav className="mt-8 flex flex-1 flex-col gap-1">
+      <nav aria-label="Primary navigation" className="mt-8 flex flex-1 flex-col gap-1">
         {phase13Nav.map((item) => {
           const Icon = item.icon;
           const active = item.pageIds?.includes(activePageId);
 
           return (
             <a
+              aria-current={active ? "page" : undefined}
               className={cn(
-                "flex h-10 items-center gap-3 rounded-md border px-3 text-sm transition",
+                "flex min-h-10 items-center gap-3 rounded-md border px-3 py-2 text-sm transition",
                 active
                   ? "border-alphavest-gold/45 bg-alphavest-gold/12 text-alphavest-gold-soft"
                   : "border-transparent text-alphavest-muted hover:border-alphavest-border hover:bg-alphavest-panel/65 hover:text-alphavest-ivory"
@@ -771,7 +769,7 @@ function Phase13Sidebar({ activePageId }: { activePageId: string }) {
               key={item.label}
             >
               <Icon aria-hidden="true" className="size-4 shrink-0" />
-              <span className="min-w-0 flex-1 truncate">{item.label}</span>
+              <span className="min-w-0 flex-1 leading-5">{item.label}</span>
               {item.count ? <span className="rounded-full bg-alphavest-gold px-2 text-xs font-semibold text-alphavest-navy">{item.count}</span> : null}
             </a>
           );

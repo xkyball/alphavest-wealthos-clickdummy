@@ -23,7 +23,6 @@ import {
   Send,
   ShieldCheck,
   SlidersHorizontal,
-  UsersRound,
   X
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -144,17 +143,14 @@ function handleStaticSortChange() {
 }
 
 const decisionNav: NavItem[] = [
-  { href: "/client/home", icon: Home, label: "Home" },
-  { href: "/client/family-members", icon: UsersRound, label: "Clients" },
-  { href: "/wealth-map", icon: Landmark, label: "Wealth Map" },
-  { href: "/actions", icon: CheckCircle2, label: "Actions" },
-  { href: "/decisions", icon: FileCheck2, label: "Decisions", pageIds: ["043", "044", "045"], count: 3 },
-  { href: "/evidence", icon: Folder, label: "Evidence Vault", pageIds: ["046", "047"] },
-  { href: "/compliance/reviews", icon: ShieldCheck, label: "Compliance", pageIds: ["041", "042"] },
-  { href: "/governance", icon: KeyRound, label: "Governance", pageIds: ["048", "049", "050"], count: 8 },
-  { href: "/documents", icon: FileText, label: "Documents" },
-  { href: "/communication/:id/context", icon: MessageSquare, label: "Messages" },
-  { href: "/settings", icon: SlidersHorizontal, label: "Settings" }
+  { href: "/tenants/demo/setup", icon: SlidersHorizontal, label: "Access & tenant setup", pageIds: ["001", "002", "003", "004", "005", "006", "007", "009", "010", "011", "012", "013", "014", "015", "016", "017", "018"] },
+  { href: "/client/home", icon: Home, label: "Client context", pageIds: ["019", "020", "021", "022", "023", "024", "025", "026", "031", "032"] },
+  { href: "/documents/upload", icon: Folder, label: "Evidence workspace", pageIds: ["027", "028", "029", "030", "046", "047"] },
+  { href: "/advisory/review-queue", icon: CheckCircle2, label: "Internal workbench", pageIds: ["033", "034", "035", "036", "037"] },
+  { href: "/compliance/reviews", icon: ShieldCheck, label: "Compliance release", pageIds: ["038", "039", "040", "041", "042"] },
+  { href: "/decisions/demo", icon: FileCheck2, label: "Decision & evidence record", pageIds: ["043", "044", "045"] },
+  { href: "/governance", icon: KeyRound, label: "Governance / RBAC / audit", pageIds: ["008", "048", "049", "050", "051"] },
+  { href: "/export/new", icon: Landmark, label: "Export & redaction", pageIds: ["054", "055", "056", "057", "058"] }
 ];
 
 function toneFor(value: string): BadgeTone {
@@ -243,7 +239,7 @@ function Phase12Sidebar({ activePageId }: { activePageId: string }) {
           return (
             <a
               className={cn(
-                "flex h-10 items-center gap-3 rounded-md border px-3 text-sm transition",
+                "flex min-h-10 items-center gap-3 rounded-md border px-3 py-2 text-sm transition",
                 active
                   ? "border-alphavest-gold/45 bg-alphavest-gold/12 text-alphavest-gold-soft"
                   : "border-transparent text-alphavest-muted hover:border-alphavest-border hover:bg-alphavest-panel/65 hover:text-alphavest-ivory"
@@ -253,7 +249,7 @@ function Phase12Sidebar({ activePageId }: { activePageId: string }) {
               key={item.label}
             >
               <Icon aria-hidden="true" className="size-4 shrink-0" />
-              <span className="min-w-0 flex-1 truncate">{item.label}</span>
+              <span className="min-w-0 flex-1 leading-5">{item.label}</span>
               {item.count ? <span className="rounded-full bg-alphavest-gold px-2 text-xs font-semibold text-alphavest-navy">{item.count}</span> : null}
             </a>
           );

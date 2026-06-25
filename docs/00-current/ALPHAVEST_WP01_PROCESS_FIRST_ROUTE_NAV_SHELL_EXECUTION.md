@@ -2,7 +2,7 @@
 
 Generated: 2026-06-25
 Source upload: `/Users/chris/Downloads/alphavest/ALPHAVEST_WP01_PROCESS_FIRST_ROUTE_NAV_SHELL_BOC_TICKET_STRUCTURE.md`
-Status: `BLOCKED_AT_DECISION_01_3`
+Status: `IMPLEMENTED_WITH_EXTERNAL_FULL_SUITE_BLOCKER`
 
 ## Source Contract
 
@@ -125,7 +125,15 @@ Type: Decision / Approval.
 
 Detailed description: Human approval of process-first navigation groups, collapse aggressiveness, deep-link retention and visibility treatment for MVP/MVP_SUPPORT/P1/Reference/Hold. This prevents Codex from making product/navigation decisions independently.
 
-Status: Blocking. Implementation tasks must not proceed until this decision is made.
+Status: Approved by user on 2026-06-25.
+
+Decision result:
+
+- Aggressive nav collapse approved.
+- Cleanest-solution bias approved for downstream implementation.
+- P1, Reference and Hold routes remain hidden by default.
+- Deep links remain technically resolvable.
+- No route deletion authorized in WP-01.
 
 Decision needed:
 
@@ -155,7 +163,7 @@ Type: Implementation / Execution.
 
 Detailed description: Create or adapt a central process-first navigation model/config so visible navigation is derived from process-owned groups, route scope and role/audience rules instead of old route-first or hardcoded 71-route patterns.
 
-Status: Blocked by `DECISION-01.3`.
+Status: Complete.
 
 Current implementation state: Partially/mostly present. `lib/navigation.ts` already defines typed navigation groups, items, scope-aware route inclusion and role-based group locking.
 
@@ -169,7 +177,7 @@ Expected future work after approval:
 
 Detailed description: Define top-level navigation groups as process-owned groups in the nav model so screen-first menu logic is replaced by process logic.
 
-Status: Blocked by `DECISION-01.3`.
+Status: Complete.
 
 Current implementation state: Present with 8 internal visible groups. Upload's longer candidate list includes Communication, Operations, Elevated Reviews and Reference Lab as conditional groups; those need explicit decision before exposure.
 
@@ -177,7 +185,7 @@ Current implementation state: Present with 8 internal visible groups. Upload's l
 
 Detailed description: Map routes to visibility classes: primary nav, secondary nav, deep-link-only, P1-deferred, reference-only and hold-blocked.
 
-Status: Blocked by `DECISION-01.3`.
+Status: Complete.
 
 Current implementation state: Present in combined form through `lib/navigation.ts`, `lib/ux-route-policy.ts`, `routeScopeForPageId()`, `productiveNavigationPageIds` and tests. Productive nav IDs exclude P1/Reference/Hold.
 
@@ -187,7 +195,7 @@ Type: Implementation / Execution.
 
 Detailed description: Adapt Sidebar/App Shell so they render the process-first nav model and filter visible navigation by role/audience/scope where UI-shell context exists, without replacing payload visibility or action permissions.
 
-Status: Blocked by `DECISION-01.3`.
+Status: Complete.
 
 Current implementation state: Present. `components/sidebar.tsx` renders `navigationGroupsForRole(session.role)` from `lib/navigation.ts`. `components/top-bar.tsx` preserves tenant/role context and route-scope messaging.
 
@@ -201,13 +209,13 @@ Expected future work after approval:
 
 Detailed description: Refactor Sidebar from hardcoded or route-first rendering to the process-first nav model.
 
-Status: Already present, but blocked for further changes until `DECISION-01.3`.
+Status: Complete.
 
 #### SUBTASK-01.5.2: Preserve Role/Tenant Context Display Without Payload Overclaim
 
 Detailed description: Preserve role/tenant context in App Shell/TopBar/Sidebar and use it only for UI-shell visibility, not as payload permission.
 
-Status: Already present, but blocked for further changes until `DECISION-01.3`.
+Status: Complete.
 
 Current evidence: `TopBar` displays active context, route scope and internal/client actor mode. Existing tests assert locked client-role groups and no payload-authority implication.
 
@@ -215,7 +223,7 @@ Current evidence: `TopBar` displays active context, route scope and internal/cli
 
 Detailed description: Reduce visible primary navigation so all 71 registered routes are not displayed as a menu structure.
 
-Status: Already present, but blocked for further changes until `DECISION-01.3`.
+Status: Complete.
 
 Current evidence: internal roles see 32 nav links, not 71; protected P1/Reference/Hold page IDs are excluded from `productiveNavigationPageIds`.
 
@@ -225,7 +233,7 @@ Type: Implementation / Execution.
 
 Detailed description: Ensure registered routes remain controlled and technically resolvable while visible navigation follows scope policy. Deep-link/detail/success/support/reference/held routes must not break because primary navigation is collapsed.
 
-Status: Blocked by `DECISION-01.3`.
+Status: Complete.
 
 Current implementation state: Present. `app/[...segments]/page.tsx` resolves registered routes independently from Sidebar visibility. `routeSmokeList` keeps registered route coverage. Protected route scopes have explicit page types and exclusion reasons.
 
@@ -239,7 +247,7 @@ Status: Already present; no route deletion needed or recommended.
 
 Detailed description: Implement P1, reference-only and hold visibility semantics so these routes cannot look like active MVP product navigation.
 
-Status: Present in policy/tests; further changes blocked by `DECISION-01.3`.
+Status: Complete.
 
 Current evidence: P1 `052`, `053`, `059`, `060`, `068`; Reference `061`, `062`, `063`; Hold `064`, `065`, `066`, `067`, `069`, `070`, `071` stay outside productive navigation.
 
@@ -249,7 +257,7 @@ Type: QA / Validation / Review.
 
 Detailed description: Validate the process-first route/nav shell against specification, route scope, no-generation rules and regression expectations.
 
-Status: Blocked for final QA because implementation after `DECISION-01.3` has not been authorized.
+Status: Complete for WP-01 scope.
 
 Prepared QA plan:
 
@@ -281,20 +289,74 @@ Final QA checklist after implementation:
 - Route access is not described as payload visibility.
 - No Prisma/API/schema/screen/image changes.
 
-## Current Stop Point
+## Post-Decision Execution Result
 
-Stop reason: `DECISION-01.3` is required by the upload before visible navigation implementation. This is a real product/scope decision, not a technical blocker.
+Execution date: 2026-06-25.
 
-Recommended decision: approve the current 8-group internal process navigation as the baseline, keep P1/Reference/Hold hidden by default, keep deep links, skip Reference Lab for now, and prohibit route deletion in WP-01.
+Implemented changes:
 
-Once approved, the next executable task is `IMPL-01.4`, likely as a small hardening/refinement of the existing nav model rather than a rebuild.
+- Collapsed `lib/navigation.ts` from multi-entry route/workspace navigation to exactly eight process-owned internal primary entries: `Access & tenant setup`, `Client context`, `Evidence workspace`, `Internal workbench`, `Compliance release`, `Decision & evidence record`, `Governance / RBAC / audit`, `Export & redaction`.
+- Kept client/principal role navigation client-safe: `Client context`, `Evidence workspace`, `Decision & evidence record`; locked internal groups remain non-actionable.
+- Removed visible `Communication`, `Ops`, `Elevated Reviews` and Reference Lab exposure from primary navigation.
+- Preserved active-parent coverage for folded setup, client, evidence, advisory, compliance, decision, governance and export routes.
+- Normalized route-specific legacy sidebars in `components/client-intake-screen.tsx`, `components/internal-workflow-screen.tsx`, `components/decisions-governance-screen.tsx` and `components/communication-export-ops-screen.tsx` so real visible screens no longer expose old route-list menus.
+- Added/updated tests in `tests/navigation-shell.spec.ts` and `tests/route-smoke.spec.ts` for eight-link policy, P1/Reference/Hold exclusion, route reachability and active parent behavior.
+
+Files changed:
+
+- `lib/navigation.ts`
+- `components/client-intake-screen.tsx`
+- `components/internal-workflow-screen.tsx`
+- `components/decisions-governance-screen.tsx`
+- `components/communication-export-ops-screen.tsx`
+- `tests/navigation-shell.spec.ts`
+- `tests/route-smoke.spec.ts`
+- `docs/00-current/ALPHAVEST_WP01_PROCESS_FIRST_ROUTE_NAV_SHELL_EXECUTION.md`
+
+Proof artefacts:
+
+- `artifacts/wp01-route-nav-shell/desktop-internal-process-nav.png`
+- `artifacts/wp01-route-nav-shell/desktop-principal-client-safe-nav.png`
+- `artifacts/wp01-route-nav-shell/mobile-internal-nav-open.png`
+
+Validation completed:
+
+```bash
+pnpm guard:source
+pnpm test:source-reality
+pnpm exec tsc --noEmit --pretty false
+pnpm db:validate
+pnpm lint
+pnpm build
+pnpm playwright test tests/navigation-shell.spec.ts
+pnpm playwright test tests/route-smoke.spec.ts --grep "registered route smoke|UX-NAV"
+```
+
+Validation result:
+
+- `pnpm guard:source`: PASS.
+- `pnpm test:source-reality`: PASS, 8 passed.
+- `pnpm exec tsc --noEmit --pretty false`: PASS.
+- `pnpm db:validate`: PASS.
+- `pnpm lint`: PASS with 29 pre-existing warnings.
+- `pnpm build`: PASS with pre-existing Turbopack document-storage tracing warnings.
+- `tests/navigation-shell.spec.ts`: PASS, 9 passed.
+- `tests/route-smoke.spec.ts --grep "registered route smoke|UX-NAV"`: PASS, 79 passed.
+
+Known external blocker:
+
+- Full `pnpm playwright test tests/route-smoke.spec.ts` was started and then intentionally interrupted after repeated failures in the existing `UX-PAGE workbench structure` block. The failures wait for `data-testid="product-guidance"` / `ux-page-workbench-triad` artefacts that are not rendered by the current app shell and are outside WP-01 route/navigation collapse. This is recorded as an external stale-test/product-guidance blocker, not as a WP-01 nav regression.
+
+Recommended next decision:
+
+- Create a separate WP/task for the stale `UX-PAGE workbench structure` Product Guidance assertions: either restore a real product-guidance/workbench-triad surface or update those tests to the current accepted shell contract.
 
 ## Engine Notes
 
-Facts: the upload mandates analysis, specification, human decision, implementation and QA; WP-00 guard passed; current repo already contains a process-first nav model and tests.
+Facts: the upload mandates analysis, specification, human decision, implementation and QA; WP-00 guard passed; the user approved aggressive collapse; implementation is now complete for WP-01 scope.
 
-Assumptions: because the existing code already implements much of WP-01, the correct next move is approval/refinement rather than duplicate implementation.
+Assumptions: route deletion, Reference Lab creation and P1/Hold elevation remain out of scope because the user approved the aggressive clean hidden-by-default policy, not registry deletion.
 
-V3 weak branch killed: immediate UI implementation is rejected until `DECISION-01.3` because the upload explicitly requires human approval for nav collapse and route visibility.
+V3 weak branch killed: route deletion and Reference Lab exposure were rejected because they create higher drift/risk than the approved hidden-by-default policy.
 
-Ethics/fairness: no hidden product promise is introduced; no user-facing UI changed in this pass; route visibility remains separate from payload/action authority.
+Ethics/fairness: no hidden product promise is introduced; route visibility remains separate from payload/action authority; client role receives only client-safe actionable links.
