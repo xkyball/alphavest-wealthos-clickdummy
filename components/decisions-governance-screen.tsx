@@ -391,8 +391,8 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, de
         </div>
       </div>
       <div className="mt-4 flex flex-wrap gap-3">
-        <span className={primaryButtonClass} data-testid="ux-phase6-confirm" data-ux-affordance="static-control-note" data-ux-interactive="false">{confirmLabel}</span>
-        <span className={secondaryButtonClass} data-testid="ux-phase6-cancel" data-ux-affordance="static-control-note" data-ux-interactive="false">{cancelLabel}</span>
+        <button className={primaryButtonClass} data-testid="ux-phase6-confirm" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed workflow command is implemented." type="button">{confirmLabel} blocked</button>
+        <button className={secondaryButtonClass} data-testid="ux-phase6-cancel" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed workflow command is implemented." type="button">{cancelLabel} blocked</button>
       </div>
     </section>
   );
@@ -691,7 +691,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
             >
               {status === "submitting" ? "Submitting..." : "Request Evidence"}
             </button>
-            <span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Escalation held</span>
+            <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Escalation held</span>
           </>
         }
         onClose={status === "submitting" ? undefined : resetAndClose}
@@ -737,7 +737,7 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
                     <Badge tone="gold">{item.required ? "Required" : "Optional"}</Badge>
                   </div>
                 ))}
-                <span className="text-sm font-semibold text-alphavest-gold opacity-60" data-ux-affordance="static-control-note" data-ux-interactive="false">Evidence items scoped</span>
+                <span className="text-sm font-semibold text-alphavest-gold opacity-60" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Evidence items scoped</span>
               </CardContent>
             </Card>
             <Card>
@@ -945,7 +945,7 @@ function ComplianceAuditPage({ title }: { title: string }) {
               >
                 <LockKeyhole aria-hidden="true" className="size-4" />Export Controlled
               </button>
-              <span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Column settings held</span>
+              <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Column settings held</span>
               </>
             }
             controls={["Date range", "Event type", "Exception status", "Actor", "Client", "Severity", "Source", "Policy / rule"]}
@@ -1177,7 +1177,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
       >
       <div className="mx-auto max-w-[112rem] space-y-5">
         <PageHeading
-          action={<span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Release workflow scoped</span>}
+          action={<span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Release workflow scoped</span>}
           badge={<Badge tone="gold">Ready to Decide</Badge>}
           subtitle={`${decisionRoom.decisionId} - ${decisionRoom.client}`}
           title={title}
@@ -1538,7 +1538,7 @@ function DecisionSuccessPage({ title }: { title: string }) {
               <p className="text-sm text-alphavest-muted">Continue working or return to the Decisions list.</p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Decision list scoped</span>
+              <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Decision list scoped</span>
               <button
                 className={primaryButtonClass}
                 data-testid="j03-view-evidence-record"
@@ -2011,7 +2011,7 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
           ))}
         </div>
         <UxDenseOperationsPanel
-          actions={<span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />User-list export held</span>}
+          actions={<span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />User-list export held</span>}
           controls={["Search user", "Role", "Status", "MFA", "Entity access", "Last active"]}
           description="User access stays in a compact operations table so role, MFA and entity scope can be compared without admin bypass."
           pageId="048"

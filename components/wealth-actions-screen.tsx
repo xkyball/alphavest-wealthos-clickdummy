@@ -145,7 +145,7 @@ function WealthSidebar() {
             <p className="text-sm font-semibold text-alphavest-ivory">{wealthWorkspace.household}</p>
             <p className="mt-1 text-xs text-alphavest-muted">Tenant context</p>
           </div>
-          <p className="flex h-10 w-full items-center gap-2 rounded-md border border-alphavest-border px-3 text-sm text-alphavest-muted opacity-65" data-ux-affordance="static-control-note" data-ux-interactive="false">
+          <p className="flex h-10 w-full items-center gap-2 rounded-md border border-alphavest-border px-3 text-sm text-alphavest-muted opacity-65" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
             <SlidersHorizontal aria-hidden="true" className="size-4" />
             Configure
           </p>
@@ -532,7 +532,7 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
                     aria-describedby={disabledReasonId}
                     aria-label={`${filter} filter is static in this action board`}
                     className="flex h-10 items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted opacity-65"
-                    data-ux-affordance="static-control-note"
+                    data-ux-affordance="blocked-static-control"
                     data-ux-disabled-message="accessible"
                     data-ux-disabled-reason={disabledReason}
                     data-ux-interactive="false"
@@ -556,7 +556,7 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
                   aria-describedby={disabledReasonId}
                   aria-label="Board grouping is fixed to workflow stage"
                   className={secondaryButtonClass}
-                  data-ux-affordance="static-control-note"
+                  data-ux-affordance="blocked-static-control"
                   data-ux-disabled-message="accessible"
                   data-ux-disabled-reason={disabledReason}
                   data-ux-interactive="false"
@@ -580,7 +580,7 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
                   {column.cards.map((card) => (
                     <ActionBoardCard card={card} key={card.id} selected={card.id === selectedAction.id} />
                   ))}
-                  <p className="flex h-9 w-full items-center justify-center gap-2 rounded-md border border-dashed border-alphavest-border text-xs font-semibold text-alphavest-gold opacity-60" data-ux-affordance="static-control-note" data-ux-interactive="false">
+                  <p className="flex h-9 w-full items-center justify-center gap-2 rounded-md border border-dashed border-alphavest-border text-xs font-semibold text-alphavest-gold opacity-60" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
                     Column actions locked
                   </p>
                 </div>
@@ -689,7 +689,7 @@ function ActionDrawer({ onClose }: { onClose: () => void }) {
         <section>
           <div className="mb-3 flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-gold">Related Evidence</p>
-            <span className="text-xs font-semibold text-alphavest-muted" data-ux-affordance="static-control-note" data-ux-interactive="false">Scoped list</span>
+            <span className="text-xs font-semibold text-alphavest-muted" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Scoped list</span>
           </div>
           <div className="overflow-hidden rounded-md border border-alphavest-border/70">
             {selectedActionEvidence.map((item) => (
@@ -707,7 +707,7 @@ function ActionDrawer({ onClose }: { onClose: () => void }) {
         <section>
           <div className="mb-3 flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-gold">Timeline</p>
-            <span className="text-xs font-semibold text-alphavest-muted" data-ux-affordance="static-control-note" data-ux-interactive="false">Scoped timeline</span>
+            <span className="text-xs font-semibold text-alphavest-muted" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Scoped timeline</span>
           </div>
           <AuditTimeline items={selectedActionTimeline.map((item) => ({ ...item }))} />
         </section>

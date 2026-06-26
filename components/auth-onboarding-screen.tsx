@@ -397,7 +397,7 @@ function LoginPage() {
               or
               <span className="h-px flex-1 bg-alphavest-border" />
             </div>
-            <p className={cn(secondaryButtonClass, "w-full justify-between opacity-65")} data-ux-affordance="static-control-note" data-ux-interactive="false">
+            <p className={cn(secondaryButtonClass, "w-full justify-between opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
               <span className="flex items-center gap-2">
                 <ShieldCheck aria-hidden="true" className="size-4 text-alphavest-gold-soft" />
                 Sign in with SSO
@@ -515,7 +515,7 @@ function MfaPage() {
               state={status === "error" ? "blocked" : status === "success" ? "success" : "restricted"}
               title={`MFA for ${email}`}
             />
-            <p className={cn(secondaryButtonClass, "w-full justify-between opacity-65")} data-ux-affordance="static-control-note" data-ux-interactive="false">
+            <p className={cn(secondaryButtonClass, "w-full justify-between opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
               <span>Send push notification</span>
               <ChevronRight aria-hidden="true" className="size-4" />
             </p>
@@ -592,7 +592,7 @@ function InvitePage() {
               </span>
               <ArrowRight aria-hidden="true" className="size-4" />
             </Link>
-            <p className={cn(secondaryButtonClass, "w-full opacity-65")} data-ux-affordance="static-control-note" data-ux-interactive="false">Decline invitation</p>
+            <p className={cn(secondaryButtonClass, "w-full opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Decline invitation</p>
             <p className="text-center text-sm leading-6 text-alphavest-muted">
               Accepting starts the secure account setup process and prepares an audit event.
             </p>
@@ -654,7 +654,7 @@ function IdentityPage() {
             <div className="md:col-span-2">
               <FieldShell helper="Optional profile data is stored separately from account credentials." icon="phone" label="Phone number" value={invitedUser.phone} />
             </div>
-            <p className={cn(secondaryButtonClass, "justify-between opacity-65 md:col-span-2")} data-ux-affordance="static-control-note" data-ux-interactive="false">
+            <p className={cn(secondaryButtonClass, "justify-between opacity-65 md:col-span-2")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
               <span className="flex items-center gap-2">
                 <ShieldCheck aria-hidden="true" className="size-4 text-alphavest-gold-soft" />
                 Set up with Single Sign-On
@@ -734,7 +734,7 @@ function ConsentPage() {
               <p className="mt-3 text-sm text-alphavest-muted">Required acknowledgements are stored as consent records.</p>
             </div>
             <div className="grid gap-3 md:grid-cols-[0.55fr_1fr]">
-              <p className={cn(secondaryButtonClass, "opacity-65")} data-ux-affordance="static-control-note" data-ux-interactive="false">
+              <p className={cn(secondaryButtonClass, "opacity-65")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
                 <X aria-hidden="true" className="size-4 text-alphavest-gold-soft" />
                 Decline and sign out
               </p>

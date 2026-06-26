@@ -455,7 +455,7 @@ function SessionScopePanel() {
 function PlatformSettingsPage({ onConfirm, route }: { onConfirm: () => void; route: ScreenRoute }) {
   return (
     <div className="space-y-5">
-      <AuditBanner action={<span className={staticButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Audit log scoped</span>}>
+      <AuditBanner action={<span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Audit log scoped</span>}>
         {platformSettings.auditBanner}. Changes require approval and are logged for compliance.
       </AuditBanner>
       <ScfP07P09TrustPanel mode="governance" />
@@ -484,7 +484,7 @@ function PlatformSettingsPage({ onConfirm, route }: { onConfirm: () => void; rou
         </Card>
       </section>
       <ActionBar>
-        <span className={staticButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Changes require confirmation</span>
+        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Changes require confirmation</span>
         <button
           className={primaryButtonClass}
           data-testid="j10-save-platform"
@@ -688,7 +688,7 @@ function SecurityPage({ onConfirm }: { onConfirm: () => void }) {
     <div className="space-y-5">
       <ActionBar>
         <StatusChip label="All systems secure" status="ACTIVE" />
-        <span className={staticButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Audit log scoped</span>
+        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Audit log scoped</span>
         <button
           className={primaryButtonClass}
           data-testid="j10-save-security"
@@ -755,8 +755,8 @@ function EvidenceTemplatesPage() {
       </div>
       <ActionBar>
         <SearchShell placeholder="Search templates, categories, tags..." />
-        <span className={staticButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false"><Upload aria-hidden="true" className="size-4" />Import held</span>
-        <span className={staticButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false"><Plus aria-hidden="true" className="size-4" />Template creation held</span>
+        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false"><Upload aria-hidden="true" className="size-4" />Import held</span>
+        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false"><Plus aria-hidden="true" className="size-4" />Template creation held</span>
       </ActionBar>
       <section className="grid gap-5 xl:grid-cols-[1.3fr_0.7fr]">
         <Card>
@@ -808,7 +808,7 @@ function ExportTemplatesPage() {
     <div className="space-y-5">
       <ActionBar>
         <SearchShell placeholder="Search templates, profiles, fields..." />
-        <span className={staticButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Template creation held</span>
+        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Template creation held</span>
       </ActionBar>
       <section className="grid gap-4 md:grid-cols-3">
         <MetricCard detail="6 active, 9 draft, 3 blocked" label="Templates" value="18" />
@@ -878,7 +878,7 @@ function TenantsPage() {
     <div className="space-y-5">
       <ActionBar>
         <StatusChip label={loadState === "error" ? "DB snapshot unavailable" : "DB tenant rows"} status={loadState === "error" ? "FAILED" : "ACTIVE"} />
-        <span className={staticButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />CSV export held</span>
+        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />CSV export held</span>
         <button className={primaryButtonClass} data-testid="j06-new-tenant" onClick={() => { void runScreencastDemoAction("j06.newTenant", "/tenants/new"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add Tenant</button>
       </ActionBar>
       <Card>
@@ -1101,7 +1101,7 @@ function TenantSetupPage() {
                   {index >= 3 && index !== 5 ? <CheckCircle2 className="size-4 text-alphavest-green" /> : <XCircle className="size-4 text-alphavest-red" />}
                 </div>
               ))}
-              <p className={cn(staticButtonClass, "w-full")} data-ux-affordance="static-control-note" data-ux-interactive="false">Activation blocked</p>
+              <p className={cn(staticButtonClass, "w-full")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Activation blocked</p>
             </CardContent>
           </Card>
           <StatePanel detail="Policy framework and CRM integration need attention before this tenant can activate." state="blocked" title="Missing and blocked items" />
@@ -1127,7 +1127,7 @@ function TenantTeamPage() {
     <div className="space-y-5">
       <ActionBar>
         <StatusBadge status="Draft" />
-        <span className={staticButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Assignment preview held</span>
+        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Assignment preview held</span>
         <button className={primaryButtonClass} data-testid="j06-assign-team" onClick={() => { void runScreencastDemoAction("j06.assignTeam", "/tenants/demo/policies"); }} type="button">Save changes</button>
       </ActionBar>
       <section className="grid gap-5 xl:grid-cols-[1fr_0.45fr]">
@@ -1158,7 +1158,7 @@ function TenantPoliciesPage() {
         <StatusChip label="12 Active" status="ACTIVE" />
         <StatusChip label="3 Draft" status="DRAFT" />
         <StatusChip label="1 Blocked" status="FAILED" />
-        <span className={staticButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Policy creation held</span>
+        <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Policy creation held</span>
       </ActionBar>
       <Card>
         <CardHeader>
@@ -1177,12 +1177,12 @@ function TenantPoliciesPage() {
               {card.details.map((detail) => (
                 <div className="border-b border-alphavest-border/45 pb-3 text-sm text-alphavest-muted last:border-0" key={detail}>{detail}</div>
               ))}
-              <span className={staticButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Configure held <ArrowRight aria-hidden="true" className="size-4" /></span>
+              <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Configure held <ArrowRight aria-hidden="true" className="size-4" /></span>
             </CardContent>
           </Card>
         ))}
       </section>
-      <AuditBanner action={<span className={staticButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Override review held</span>}>
+      <AuditBanner action={<span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Override review held</span>}>
         Policy overrides require Compliance approval and audit confirmation before activation.
       </AuditBanner>
     </div>

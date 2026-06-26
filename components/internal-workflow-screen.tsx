@@ -584,8 +584,8 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, de
         </div>
       </div>
       <div className="mt-4 flex flex-wrap gap-3">
-        <span className={primaryButtonClass} data-testid="ux-phase6-confirm" data-ux-affordance="static-control-note" data-ux-interactive="false">{confirmLabel}</span>
-        <span className={secondaryButtonClass} data-testid="ux-phase6-cancel" data-ux-affordance="static-control-note" data-ux-interactive="false">{cancelLabel}</span>
+        <button className={primaryButtonClass} data-testid="ux-phase6-confirm" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed workflow command is implemented." type="button">{confirmLabel} blocked</button>
+        <button className={secondaryButtonClass} data-testid="ux-phase6-cancel" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed workflow command is implemented." type="button">{cancelLabel} blocked</button>
       </div>
     </section>
   );
@@ -1050,7 +1050,7 @@ function TriggerDetailPage({ title }: { title: string }) {
                   <Badge tone="red">{triggerDetail.status}</Badge>
                   <h2 className="mt-3 font-display text-3xl text-alphavest-ivory md:text-4xl">{triggerDetail.title}</h2>
                 </div>
-                <span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Trigger list scoped</span>
+                <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Trigger list scoped</span>
               </div>
               <div className="grid gap-4 md:grid-cols-6">
                 {[
@@ -1226,7 +1226,7 @@ function AdvisorQueuePage({ title }: { title: string }) {
       <div className="mx-auto max-w-[112rem]">
         <section className="min-w-0 space-y-5">
           <PageHeading
-            action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />Export held</span><span className={primaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Bulk actions held</span></div>}
+            action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />Export held</span><span className={primaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Bulk actions held</span></div>}
             badge={<Badge tone="gold">36</Badge>}
             subtitle="Review and approve client recommendations and updates."
             title={title}
@@ -1320,9 +1320,9 @@ function AdvisorSummaryPanel() {
           </CardContent>
         </Card>
         <div className="grid gap-3 sm:grid-cols-3">
-          <span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Request info in detail</span>
-          <span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Send back in detail</span>
-          <span className={primaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Approve in detail</span>
+          <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Request info in detail</span>
+          <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Send back in detail</span>
+          <span className={primaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Approve in detail</span>
         </div>
       </div>
     </aside>
@@ -1379,8 +1379,8 @@ function AdvisorDetailPage({ title }: { title: string }) {
                 >
                   <Check aria-hidden="true" className="size-4" />Approve as advisor
                 </button>
-                <p className={secondaryButtonClass + " w-full"} data-testid="ux-cta-ai-rebuild" data-ux-affordance="static-control-note" data-ux-interactive="false">Draft rebuild remains analyst-owned</p>
-                <p className={secondaryButtonClass + " w-full"} data-ux-affordance="static-control-note" data-ux-interactive="false">Evidence request remains compliance-owned</p>
+                <p className={secondaryButtonClass + " w-full"} data-testid="ux-cta-ai-rebuild" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Draft rebuild remains analyst-owned</p>
+                <p className={secondaryButtonClass + " w-full"} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Evidence request remains compliance-owned</p>
                 <button
                   className="inline-flex h-[var(--button-height)] w-full items-center justify-center gap-2 rounded-md border border-alphavest-red/55 bg-alphavest-red/10 px-4 text-sm font-semibold text-alphavest-red"
                   data-testid="j01-escalate-advisor"
@@ -1563,7 +1563,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
       >
       <div className="mx-auto max-w-[104rem] space-y-5">
         <PageHeading
-          action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />Export held</span><span className={primaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false"><RefreshCw aria-hidden="true" className="size-4" />Refresh held</span></div>}
+          action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />Export held</span><span className={primaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false"><RefreshCw aria-hidden="true" className="size-4" />Refresh held</span></div>}
           subtitle="Review and action pending compliance items."
           title={title}
         />

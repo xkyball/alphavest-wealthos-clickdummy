@@ -169,8 +169,8 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, de
         </div>
       </div>
       <div className="mt-4 flex flex-wrap gap-3">
-        <span className={primaryButtonClass} data-testid="ux-phase6-confirm" data-ux-affordance="static-control-note" data-ux-interactive="false">{confirmLabel}</span>
-        <span className={secondaryButtonClass} data-testid="ux-phase6-cancel" data-ux-affordance="static-control-note" data-ux-interactive="false">{cancelLabel}</span>
+        <button className={primaryButtonClass} data-testid="ux-phase6-confirm" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed workflow command is implemented." type="button">{confirmLabel} blocked</button>
+        <button className={secondaryButtonClass} data-testid="ux-phase6-cancel" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed workflow command is implemented." type="button">{cancelLabel} blocked</button>
       </div>
     </section>
   );
@@ -765,7 +765,7 @@ function Phase13Sidebar() {
     <ProcessSidebar
       footer={
         <div className="border-t border-alphavest-border/60 pt-4">
-          <p className="flex h-9 w-full items-center justify-between rounded-md px-2 text-sm text-alphavest-muted opacity-65" data-ux-affordance="static-control-note" data-ux-interactive="false">
+          <p className="flex h-9 w-full items-center justify-between rounded-md px-2 text-sm text-alphavest-muted opacity-65" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
             <span>Collapse</span>
             <span aria-hidden="true">{"<<"}</span>
           </p>
@@ -958,11 +958,11 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
       <UxDenseOperationsPanel
         actions={
           <>
-            <span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">
+            <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
               <RefreshCw aria-hidden="true" className="size-4" />
               Refresh held
             </span>
-            <span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">
+            <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
               <Download aria-hidden="true" className="size-4" />
               Audit export held
             </span>
@@ -1151,7 +1151,7 @@ function CommunicationCentrePage({ title }: { title: string }) {
               <CardTitle>Build Message or Call</CardTitle>
               <p className="mt-1 text-sm text-alphavest-muted">Secure-message draft with approved template and evidence purpose.</p>
             </div>
-            <span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">
+            <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
               <Plus aria-hidden="true" className="size-4" />
               New item held
             </span>
@@ -1229,7 +1229,7 @@ function CallTriggerMatrixPage({ title }: { title: string }) {
           <Card>
             <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <CardTitle>Routing Matrix</CardTitle>
-              <span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">
+              <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
                 <Settings aria-hidden="true" className="size-4" />
                 Matrix management held
               </span>
@@ -1260,7 +1260,7 @@ function CallTriggerMatrixPage({ title }: { title: string }) {
               <p className="font-semibold text-alphavest-gold-soft">{selected.path}</p>
               <p className="mt-2 text-sm leading-6 text-alphavest-muted">Proactive digital communication keeps clients informed while minimizing friction.</p>
             </div>
-            <p className={cn(primaryButtonClass, "mt-4 w-full")} data-ux-affordance="static-control-note" data-ux-interactive="false">
+            <p className={cn(primaryButtonClass, "mt-4 w-full")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
               Digital send held
               <ArrowRight aria-hidden="true" className="size-4" />
             </p>
@@ -2243,7 +2243,7 @@ function OpsQueuesPage({ title }: { title: string }) {
               <Filter aria-hidden="true" className="size-4" />
               Filters
             </button>
-            <span className={primaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">
+            <span className={primaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
               <Plus aria-hidden="true" className="size-4" />
               Queue creation held
             </span>
@@ -2329,7 +2329,7 @@ function SlaEscalationPage({ title }: { title: string }) {
         <Card>
           <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <CardTitle>Active Breaches and Risks</CardTitle>
-            <span className={primaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Escalation creation held</span>
+            <span className={primaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Escalation creation held</span>
           </CardHeader>
           <CardContent>
             <DataTable

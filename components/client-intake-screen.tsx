@@ -663,7 +663,7 @@ function ClientSidebar() {
               Active
             </div>
           </div>
-          <p className="mt-4 flex items-center gap-2 text-xs text-alphavest-muted opacity-65" data-ux-affordance="static-control-note" data-ux-interactive="false">
+          <p className="mt-4 flex items-center gap-2 text-xs text-alphavest-muted opacity-65" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
             <PanelLeftClose aria-hidden="true" className="size-4" />
             Collapse
           </p>
@@ -1167,7 +1167,7 @@ function PortalPageContent({ title }: { title: string }) {
               <CardHeader><CardTitle>Your Next Steps</CardTitle></CardHeader>
               <CardContent className="space-y-3">
                 {["Review open actions", "Upload missing documents", "Review pending decisions"].map((item) => (
-                  <div className="flex w-full items-center justify-between rounded-md border border-alphavest-border/60 p-3 text-left text-sm text-alphavest-muted opacity-65" data-ux-affordance="static-control-note" data-ux-interactive="false" key={item}>
+                  <div className="flex w-full items-center justify-between rounded-md border border-alphavest-border/60 p-3 text-left text-sm text-alphavest-muted opacity-65" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" key={item}>
                     <span>{item}</span>
                     <ChevronRight aria-hidden="true" className="size-4 text-alphavest-gold" />
                   </div>
@@ -1185,7 +1185,7 @@ function PortalPageContent({ title }: { title: string }) {
               <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4">
                 <p className="font-semibold text-alphavest-ivory">Jordan Mitchell, CFA</p>
                 <p className="mt-3 text-sm leading-6 text-alphavest-muted">Your Q2 wealth report is ready for review. Please let me know if you would like to schedule time to discuss.</p>
-                <p className={secondaryButtonClass + " mt-4 opacity-65"} data-ux-affordance="static-control-note" data-ux-interactive="false">Message view held</p>
+                <p className={secondaryButtonClass + " mt-4 opacity-65"} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Message view held</p>
               </div>
               {["Estate plan documents updated", "Tax planning opportunities", "Market update: Q2 2024"].map((item) => (
                 <div className="flex items-center justify-between border-b border-alphavest-border/50 pb-3 text-sm text-alphavest-muted last:border-0" key={item}>
@@ -1231,7 +1231,7 @@ function ListCard({ count, icon: Icon, items, title }: { count: string; icon: Lu
             <p className="mt-1 text-xs text-alphavest-muted">{item.meta}</p>
           </div>
         ))}
-        <span className="inline-flex items-center gap-2 text-sm font-semibold text-alphavest-gold opacity-60" data-ux-affordance="static-control-note" data-ux-interactive="false">
+        <span className="inline-flex items-center gap-2 text-sm font-semibold text-alphavest-gold opacity-60" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
           View all <ArrowRightIcon />
         </span>
       </CardContent>
@@ -1400,7 +1400,7 @@ function ClientProfilePageContent({ title }: { title: string }) {
           </Card>
         </div>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between"><CardTitle>Key Family Members</CardTitle><span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Manage held</span></CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between"><CardTitle>Key Family Members</CardTitle><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Manage held</span></CardHeader>
           <CardContent><DataTable columns={familySummaryColumns} emptyMessage="No DB-backed family members loaded." getRowId={(row) => row.id} rows={family.rows.slice(0, 4)} /></CardContent>
         </Card>
       </div>
@@ -1574,7 +1574,7 @@ function FamilyMembersPageContent({ title }: { title: string }) {
                   </div>
                 </div>
               </div>
-              <span className="text-alphavest-muted opacity-60" data-ux-affordance="static-control-note" data-ux-interactive="false"><X aria-hidden="true" className="size-5" /></span>
+              <span className="text-alphavest-muted opacity-60" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false"><X aria-hidden="true" className="size-5" /></span>
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="grid gap-3 md:grid-cols-2">
@@ -1614,7 +1614,7 @@ function RelationshipsPage({ title }: { title: string }) {
       <ScreenTitle>{title}</ScreenTitle>
       <div className="space-y-5">
         <SectionTitle
-          action={<div className="flex flex-wrap gap-3"><span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Auto layout held</span><span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Fit view held</span><button className={primaryButtonClass} data-testid="j09-add-relationship" onClick={() => { void runScreencastDemoAction("j09.addRelationship"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add</button></div>}
+          action={<div className="flex flex-wrap gap-3"><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Auto layout held</span><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Fit view held</span><button className={primaryButtonClass} data-testid="j09-add-relationship" onClick={() => { void runScreencastDemoAction("j09.addRelationship"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add</button></div>}
           subtitle="Validate relationship edges, evidence and conflicts across people, entities and advisors."
           title={title}
         />
@@ -2085,7 +2085,7 @@ function EntityDetailPage({ title }: { title: string }) {
                 </div>
               </div>
               <div className="flex gap-3">
-                <span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">More actions held</span>
+                <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">More actions held</span>
                 <button className={primaryButtonClass} data-testid="j05-edit-entity" onClick={() => { void runScreencastDemoAction("j05.editEntity", "/wealth-map?state=drawer"); }} type="button">Edit Entity</button>
               </div>
             </div>
@@ -2213,7 +2213,7 @@ function DocumentsPageContent({ title }: { title: string }) {
     <>
       <ScreenTitle>{title}</ScreenTitle>
       <div className="space-y-5">
-        <SectionTitle action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false"><Plus aria-hidden="true" className="size-4" />Folder creation held</span><button className={primaryButtonClass} data-testid="j04-open-upload-document" onClick={() => { void runScreencastDemoAction("j04.openUploadDocument", "/documents/upload"); }} type="button"><Upload aria-hidden="true" className="size-4" />Upload Document</button></div>} icon={Folder} subtitle="Securely manage and access client documents and evidence." title={title} />
+        <SectionTitle action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false"><Plus aria-hidden="true" className="size-4" />Folder creation held</span><button className={primaryButtonClass} data-testid="j04-open-upload-document" onClick={() => { void runScreencastDemoAction("j04.openUploadDocument", "/documents/upload"); }} type="button"><Upload aria-hidden="true" className="size-4" />Upload Document</button></div>} icon={Folder} subtitle="Securely manage and access client documents and evidence." title={title} />
         <ScfP04P06FlowPanel mode="evidence" />
         <ScfP10P14ClosurePanel mode="documents" />
         <Card>
@@ -2739,7 +2739,7 @@ function ExtractionReviewPage({ title }: { title: string }) {
           <>
             <Phase5DetailSplitPanel decisionSupport="Extraction review remains human review of draft fields, not final evidence." objectLabel="Document review queue split" objectState="Extraction draft needs human review" pageJob="Review queue resolves extraction work separately from document hub and evidence detail." safetyBoundary="Queue context cannot finalize sufficiency or release." splitTaskId="UX-PAGE-SPLIT-002" taskId="UX-PAGE-SPLIT-002" />
             <div className="space-y-5">
-              <SectionTitle action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">Draft save held</span><button className={primaryButtonClass} data-testid="j04-confirm-finalize" onClick={() => { void runScreencastDemoAction("j04.confirmFinalize", "/documents/:id/review"); }} type="button"><Check aria-hidden="true" className="size-4" />Confirm & Finalize</button></div>} subtitle="Review AI-extracted data. This is a draft and not final evidence." title={title} />
+              <SectionTitle action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Draft save held</span><button className={primaryButtonClass} data-testid="j04-confirm-finalize" onClick={() => { void runScreencastDemoAction("j04.confirmFinalize", "/documents/:id/review"); }} type="button"><Check aria-hidden="true" className="size-4" />Confirm & Finalize</button></div>} subtitle="Review AI-extracted data. This is a draft and not final evidence." title={title} />
               <SafeClientBanner>AI Draft Mode: extracted data requires human review. Not final. Not evidence.</SafeClientBanner>
               <ScfP04P06FlowPanel mode="evidence" />
               <div className="grid gap-5 xl:grid-cols-[0.9fr_0.84fr_20rem]">
@@ -2815,7 +2815,7 @@ function VerificationPendingPage({ title }: { title: string }) {
             <Phase4WorkbenchPanel activeTask="Document DOC-118 selected for extraction review" blocker="Upload-created evidence is review-pending and cannot satisfy release gates." context="Reviewer checks extracted fields, source quality and linkage before evidence sufficiency." primaryAction="Mark extraction reviewed" queueLabel="Document review queue" safetyNote="UX-WORKBENCH-002: upload-only success remains separate from reviewed, linked and current evidence sufficiency." taskId="UX-WORKBENCH-002" />
             <Phase5DetailSplitPanel decisionSupport="Selected document state explains source quality, linkage and unresolved blockers before any next action." objectLabel="Document object review" objectState="Review pending; evidence sufficiency not proven" pageJob="Document detail supports one active object review without overloading the queue." safetyBoundary="Detail context cannot unlock release, export or client visibility." splitTaskId="UX-PAGE-SPLIT-002" taskId="UX-PAGE-SPLIT-002" />
             <div className="space-y-5">
-              <SectionTitle action={<span className={secondaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />Download held</span>} icon={FileText} subtitle="Your submitted information is under human review. No final validation has been completed." title={title} />
+              <SectionTitle action={<span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />Download held</span>} icon={FileText} subtitle="Your submitted information is under human review. No final validation has been completed." title={title} />
               <StatePanel detail="A member of our operations team is reviewing your documents and information." state="loading" title="Under Human Review" />
               <div className="grid gap-5 xl:grid-cols-[1fr_28rem]">
                 <section className="space-y-5">

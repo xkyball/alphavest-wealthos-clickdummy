@@ -101,8 +101,8 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, de
         </div>
       </div>
       <div className="mt-4 flex flex-wrap gap-3">
-        <span className={primaryButtonClass} data-testid="ux-phase6-confirm" data-ux-affordance="static-control-note" data-ux-interactive="false">{confirmLabel}</span>
-        <span className={secondaryButtonClass} data-testid="ux-phase6-cancel" data-ux-affordance="static-control-note" data-ux-interactive="false">{cancelLabel}</span>
+        <button className={primaryButtonClass} data-testid="ux-phase6-confirm" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed workflow command is implemented." type="button">{confirmLabel} blocked</button>
+        <button className={secondaryButtonClass} data-testid="ux-phase6-cancel" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed workflow command is implemented." type="button">{cancelLabel} blocked</button>
       </div>
     </section>
   );
@@ -259,7 +259,7 @@ function QueuePage({ title }: { title: string }) {
                     {item}
                   </button>
                 ))}
-                <span className={primaryButtonClass} data-ux-affordance="static-control-note" data-ux-interactive="false">
+                <span className={primaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
                   <Gavel aria-hidden="true" className="size-4" />
                   Review held
                 </span>
@@ -422,11 +422,11 @@ function DetailPage({ title }: { title: string }) {
                   <Vote aria-hidden="true" className="size-4" />
                   Approve committee review
                 </button>
-                <span className={cn(secondaryButtonClass, "w-full")} data-ux-affordance="static-control-note" data-ux-interactive="false">
+                <span className={cn(secondaryButtonClass, "w-full")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
                   <MessageSquareWarning aria-hidden="true" className="size-4" />
                   Dissent held
                 </span>
-                <span className={cn(secondaryButtonClass, "w-full")} data-ux-affordance="static-control-note" data-ux-interactive="false">
+                <span className={cn(secondaryButtonClass, "w-full")} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
                   <ClipboardCheck aria-hidden="true" className="size-4" />
                   Evidence request held
                 </span>

@@ -351,8 +351,11 @@ test.describe("UX-DECISION-ROOM phase 6 safety-critical decision rooms", () => {
       await expect(panel.getByTestId("ux-phase6-safety-note")).toContainText(/No release, export or advice effect can occur until gate preconditions pass and an audit record exists/i);
       await expect(panel.getByTestId("ux-phase6-confirm")).toHaveCount(1);
       await expect(panel.getByTestId("ux-phase6-confirm")).toHaveAttribute("data-ux-interactive", "false");
-      await expect(panel.getByTestId("ux-phase6-confirm")).toHaveAttribute("data-ux-affordance", "static-control-note");
+      await expect(panel.getByTestId("ux-phase6-confirm")).toHaveAttribute("data-ux-affordance", "blocked-static-control");
+      await expect(panel.getByTestId("ux-phase6-confirm")).toBeDisabled();
       await expect(panel.getByTestId("ux-phase6-cancel")).toHaveCount(1);
+      await expect(panel.getByTestId("ux-phase6-cancel")).toHaveAttribute("data-ux-affordance", "blocked-static-control");
+      await expect(panel.getByTestId("ux-phase6-cancel")).toBeDisabled();
     });
   }
 });
