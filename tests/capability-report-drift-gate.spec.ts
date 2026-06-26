@@ -18,7 +18,6 @@ test.describe("capability report drift gate", () => {
       expect.arrayContaining([
         "API_BACKED_PARTIAL",
         "BLOCKED_UI_SAFETY_STATE",
-        "DEMO_COMMAND_BACKED_PARTIAL",
         "READMODEL_ONLY",
         "SERVICE_BACKED_INTERNAL",
         "STRONG_VERTICAL_CANDIDATE",
@@ -53,4 +52,3 @@ test.describe("capability report drift gate", () => {
     );
   });
 });
-

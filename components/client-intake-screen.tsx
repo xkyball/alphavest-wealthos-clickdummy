@@ -76,7 +76,7 @@ import {
 } from "@/lib/client-intake-demo-data";
 import { createDemoSession, demoPlatformTenantId, demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import type { ScreenRoute } from "@/lib/route-registry";
-import { runScreencastDemoAction } from "@/lib/screencast-demo-client";
+import { runDataMaintenanceCommand } from "@/lib/data-maintenance-command-client";
 import { visibilityEngine, type DecisionVisibilityPayload } from "@/lib/visibility-engine";
 
 type ClientIntakeScreenProps = {
@@ -1126,10 +1126,10 @@ function PortalPageContent({ title }: { title: string }) {
                       data-testid={index === 0 ? "j04-portal-upload" : index === 1 ? "j09-portal-upload" : undefined}
                       onClick={() => {
                         if (index === 1) {
-                          void runScreencastDemoAction("j09.portalUpload", "/client/profile");
+                          void runDataMaintenanceCommand("j09.portalUpload", "/client/profile");
                           return;
                         }
-                        void runScreencastDemoAction("j04.portalUpload", "/documents");
+                        void runDataMaintenanceCommand("j04.portalUpload", "/documents");
                       }}
                       type="button"
                     >
@@ -1523,7 +1523,7 @@ function FamilyMembersPageContent({ title }: { title: string }) {
       <ScreenTitle>{title}</ScreenTitle>
       <div className="space-y-5">
         <SectionTitle
-          action={<div className="flex flex-wrap gap-3"><button className={secondaryButtonClass} data-testid="j09-family-map" onClick={() => { void runScreencastDemoAction("j09.openFamilyMap", "/relationships"); }} type="button"><Network aria-hidden="true" className="size-4" />Family Map</button><button className={primaryButtonClass} data-testid="j09-add-member" onClick={() => { void runScreencastDemoAction("j09.addMember"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add Member</button></div>}
+          action={<div className="flex flex-wrap gap-3"><button className={secondaryButtonClass} data-testid="j09-family-map" onClick={() => { void runDataMaintenanceCommand("j09.openFamilyMap", "/relationships"); }} type="button"><Network aria-hidden="true" className="size-4" />Family Map</button><button className={primaryButtonClass} data-testid="j09-add-member" onClick={() => { void runDataMaintenanceCommand("j09.addMember"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add Member</button></div>}
           count={String(rows.length)}
           subtitle="Maintain family member profiles, relationships and governance roles."
           title={title}
@@ -1614,7 +1614,7 @@ function RelationshipsPage({ title }: { title: string }) {
       <ScreenTitle>{title}</ScreenTitle>
       <div className="space-y-5">
         <SectionTitle
-          action={<div className="flex flex-wrap gap-3"><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Auto layout held</span><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Fit view held</span><button className={primaryButtonClass} data-testid="j09-add-relationship" onClick={() => { void runScreencastDemoAction("j09.addRelationship"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add</button></div>}
+          action={<div className="flex flex-wrap gap-3"><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Auto layout held</span><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Fit view held</span><button className={primaryButtonClass} data-testid="j09-add-relationship" onClick={() => { void runDataMaintenanceCommand("j09.addRelationship"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add</button></div>}
           subtitle="Validate relationship edges, evidence and conflicts across people, entities and advisors."
           title={title}
         />
@@ -1774,7 +1774,7 @@ function EntitiesPageContent({ title }: { title: string }) {
       <ScreenTitle>{title}</ScreenTitle>
       <div className="space-y-5">
         <SectionTitle
-          action={<button className={primaryButtonClass} data-testid="j05-create-entity" onClick={() => { void runScreencastDemoAction("j05.createEntity", "/entities/new"); }} type="button"><Plus aria-hidden="true" className="size-4" />Create Entity</button>}
+          action={<button className={primaryButtonClass} data-testid="j05-create-entity" onClick={() => { void runDataMaintenanceCommand("j05.createEntity", "/entities/new"); }} type="button"><Plus aria-hidden="true" className="size-4" />Create Entity</button>}
           count={String(rows.length)}
           subtitle="View and manage entities across organizational and investment structures."
           title={title}
@@ -2086,7 +2086,7 @@ function EntityDetailPage({ title }: { title: string }) {
               </div>
               <div className="flex gap-3">
                 <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">More actions held</span>
-                <button className={primaryButtonClass} data-testid="j05-edit-entity" onClick={() => { void runScreencastDemoAction("j05.editEntity", "/wealth-map?state=drawer"); }} type="button">Edit Entity</button>
+                <button className={primaryButtonClass} data-testid="j05-edit-entity" onClick={() => { void runDataMaintenanceCommand("j05.editEntity", "/wealth-map?state=drawer"); }} type="button">Edit Entity</button>
               </div>
             </div>
             <StatePanel detail="This entity is in good standing and compliant. Last review: Apr 18, 2025." state="empty" title="Active" />
@@ -2213,7 +2213,7 @@ function DocumentsPageContent({ title }: { title: string }) {
     <>
       <ScreenTitle>{title}</ScreenTitle>
       <div className="space-y-5">
-        <SectionTitle action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false"><Plus aria-hidden="true" className="size-4" />Folder creation held</span><button className={primaryButtonClass} data-testid="j04-open-upload-document" onClick={() => { void runScreencastDemoAction("j04.openUploadDocument", "/documents/upload"); }} type="button"><Upload aria-hidden="true" className="size-4" />Upload Document</button></div>} icon={Folder} subtitle="Securely manage and access client documents and evidence." title={title} />
+        <SectionTitle action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false"><Plus aria-hidden="true" className="size-4" />Folder creation held</span><button className={primaryButtonClass} data-testid="j04-open-upload-document" onClick={() => { void runDataMaintenanceCommand("j04.openUploadDocument", "/documents/upload"); }} type="button"><Upload aria-hidden="true" className="size-4" />Upload Document</button></div>} icon={Folder} subtitle="Securely manage and access client documents and evidence." title={title} />
         <ScfP04P06FlowPanel mode="evidence" />
         <ScfP10P14ClosurePanel mode="documents" />
         <Card>
@@ -2529,7 +2529,7 @@ function DocumentUploadForm() {
             data-testid="j04-upload-document"
             data-ux-lifecycle-result="opens-review-queue-without-release"
             disabled={uploadState === "uploading"}
-            onClick={() => { void runScreencastDemoAction("j04.uploadDocument", "/documents/review-queue"); }}
+            onClick={() => { void runDataMaintenanceCommand("j04.uploadDocument", "/documents/review-queue"); }}
             type="button"
           >
             Open extraction review
@@ -2739,7 +2739,7 @@ function ExtractionReviewPage({ title }: { title: string }) {
           <>
             <Phase5DetailSplitPanel decisionSupport="Extraction review remains human review of draft fields, not final evidence." objectLabel="Document review queue split" objectState="Extraction draft needs human review" pageJob="Review queue resolves extraction work separately from document hub and evidence detail." safetyBoundary="Queue context cannot finalize sufficiency or release." splitTaskId="UX-PAGE-SPLIT-002" taskId="UX-PAGE-SPLIT-002" />
             <div className="space-y-5">
-              <SectionTitle action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Draft save held</span><button className={primaryButtonClass} data-testid="j04-confirm-finalize" onClick={() => { void runScreencastDemoAction("j04.confirmFinalize", "/documents/:id/review"); }} type="button"><Check aria-hidden="true" className="size-4" />Confirm & Finalize</button></div>} subtitle="Review AI-extracted data. This is a draft and not final evidence." title={title} />
+              <SectionTitle action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Draft save held</span><button className={primaryButtonClass} data-testid="j04-confirm-finalize" onClick={() => { void runDataMaintenanceCommand("j04.confirmFinalize", "/documents/:id/review"); }} type="button"><Check aria-hidden="true" className="size-4" />Confirm & Finalize</button></div>} subtitle="Review AI-extracted data. This is a draft and not final evidence." title={title} />
               <SafeClientBanner>AI Draft Mode: extracted data requires human review. Not final. Not evidence.</SafeClientBanner>
               <ScfP04P06FlowPanel mode="evidence" />
               <div className="grid gap-5 xl:grid-cols-[0.9fr_0.84fr_20rem]">
@@ -2855,7 +2855,7 @@ function VerificationPendingPage({ title }: { title: string }) {
                 <aside className="space-y-5">
                   <Card><CardHeader><CardTitle>Human Review Status</CardTitle></CardHeader><CardContent><StatePanel detail="A verification specialist is reviewing your information and documentation." state="restricted" title="In Progress" /></CardContent></Card>
                   <Card><CardHeader><CardTitle>SLA Status</CardTitle></CardHeader><CardContent><StatePanel detail="This item has exceeded the expected review time by 1 business day." state="error" title="SLA Breach" /></CardContent></Card>
-                  <Card><CardHeader><CardTitle>Needs Clarification</CardTitle></CardHeader><CardContent><StatePanel detail="We need additional information to continue the review." state="restricted" title="1 Item" /><button className={secondaryButtonClass + " mt-4 w-full"} data-testid="j04-view-details" onClick={() => { void runScreencastDemoAction("j04.viewDetails"); }} type="button">View Details</button></CardContent></Card>
+                  <Card><CardHeader><CardTitle>Needs Clarification</CardTitle></CardHeader><CardContent><StatePanel detail="We need additional information to continue the review." state="restricted" title="1 Item" /><button className={secondaryButtonClass + " mt-4 w-full"} data-testid="j04-view-details" onClick={() => { void runDataMaintenanceCommand("j04.viewDetails"); }} type="button">View Details</button></CardContent></Card>
                 </aside>
               </div>
               <SafeClientBanner>What happens next? No action is needed unless requested through your secure message center.</SafeClientBanner>

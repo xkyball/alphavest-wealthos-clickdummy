@@ -1,6 +1,7 @@
 import { isPlatformAdminWorkflowAction } from "@/lib/platform-admin-action-contract";
 import { isReviewMonitoringWorkflowAction } from "@/lib/review-monitoring-workflow-actions";
 import { isTenantGovernanceWorkflowAction } from "@/lib/tenant-governance-action-contract";
+import { isDataMaintenanceWorkflowAction } from "@/lib/data-maintenance-action-contract";
 
 export type DemoWorkflowActionBoundary =
   | {
@@ -13,6 +14,7 @@ export type DemoWorkflowActionBoundary =
       allowedOnDemoWorkflow: false;
       canonicalApiRoute:
         | "/api/export-workflow"
+        | "/api/data-maintenance/actions"
         | "/api/journeys/[id]/commands"
         | "/api/platform-admin/actions"
         | "/api/recommendation-review-workflow"
@@ -24,6 +26,7 @@ export type DemoWorkflowActionBoundary =
         | "LEGACY_EXPORT_DEMO_ACTION_RETIRED"
         | "PHASE_B_C_JOURNEY_COMMANDS_MOVED"
         | "ADVISOR_APPROVAL_WORKFLOW_MOVED"
+        | "DATA_MAINTENANCE_ACTIONS_MOVED"
         | "PLATFORM_ADMIN_ACTIONS_MOVED"
         | "REVIEW_MONITORING_ACTION_MOVED"
         | "TENANT_GOVERNANCE_ACTIONS_MOVED";
@@ -51,23 +54,6 @@ export const demoOnlyWorkflowActionIds = [
   "j03.acceptOption",
   "j03.viewEvidenceRecord",
   "j03.downloadEvidence",
-  "j04.portalUpload",
-  "j04.openUploadDocument",
-  "j04.uploadDocument",
-  "j04.confirmFinalize",
-  "j04.viewDetails",
-  "j05.createEntity",
-  "j05.continueEntity",
-  "j05.editEntity",
-  "j05.viewDetails",
-  "j05.markReady",
-  "j05.requestInfo",
-  "j09.portalUpload",
-  "j09.submitProfile",
-  "j09.addMember",
-  "j09.saveFamilyChanges",
-  "j09.openFamilyMap",
-  "j09.addRelationship",
 ] as const;
 
 const demoOnlyWorkflowActions = new Set<string>(demoOnlyWorkflowActionIds);
@@ -125,6 +111,16 @@ export function demoWorkflowActionBoundaryFor(actionId: string): DemoWorkflowAct
       classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
       productCommandAllowed: true,
       reasonCode: "REVIEW_MONITORING_ACTION_MOVED",
+    };
+  }
+
+  if (isDataMaintenanceWorkflowAction(actionId)) {
+    return {
+      allowedOnDemoWorkflow: false,
+      canonicalApiRoute: "/api/data-maintenance/actions",
+      classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
+      productCommandAllowed: true,
+      reasonCode: "DATA_MAINTENANCE_ACTIONS_MOVED",
     };
   }
 

@@ -110,23 +110,6 @@ const workflowActions = [
   "j03.acceptOption",
   "j03.viewEvidenceRecord",
   "j03.downloadEvidence",
-  "j04.portalUpload",
-  "j04.openUploadDocument",
-  "j04.uploadDocument",
-  "j04.confirmFinalize",
-  "j04.viewDetails",
-  "j05.createEntity",
-  "j05.continueEntity",
-  "j05.editEntity",
-  "j05.viewDetails",
-  "j05.markReady",
-  "j05.requestInfo",
-  "j09.portalUpload",
-  "j09.submitProfile",
-  "j09.addMember",
-  "j09.saveFamilyChanges",
-  "j09.openFamilyMap",
-  "j09.addRelationship",
 ];
 
 test.describe("demo workflow API", () => {
@@ -407,6 +390,50 @@ test.describe("demo workflow API", () => {
         noClientRelease: true,
       });
       expect(body.error).toContain("/api/tenant-governance/actions");
+    }
+  });
+
+  test("legacy demo workflow retires data maintenance actions to typed data maintenance commands", async ({ request }) => {
+    const actions = [
+      "j04.portalUpload",
+      "j04.openUploadDocument",
+      "j04.uploadDocument",
+      "j04.confirmFinalize",
+      "j04.viewDetails",
+      "j05.createEntity",
+      "j05.continueEntity",
+      "j05.editEntity",
+      "j05.viewDetails",
+      "j05.markReady",
+      "j05.requestInfo",
+      "j09.portalUpload",
+      "j09.submitProfile",
+      "j09.addMember",
+      "j09.saveFamilyChanges",
+      "j09.openFamilyMap",
+      "j09.addRelationship",
+    ];
+
+    for (const actionId of actions) {
+      const response = await request.post("/api/demo-workflow", {
+        data: { actionId },
+      });
+      const body = await response.json();
+
+      expect(response.status(), `${actionId}: ${JSON.stringify(body)}`).toBe(410);
+      expect(body.canonicalApiRoute).toBe("/api/data-maintenance/actions");
+      expect(body.legacyReasonCode).toBe("DATA_MAINTENANCE_ACTIONS_MOVED");
+      expect(body.demoWorkflowBoundary).toMatchObject({
+        classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
+        reasonCode: "DATA_MAINTENANCE_ACTIONS_MOVED",
+      });
+      expect(body.noClientRelease).toBe(true);
+      expect(body.safety).toMatchObject({
+        commandExecuted: false,
+        noAdviceExecution: true,
+        noClientRelease: true,
+      });
+      expect(body.error).toContain("/api/data-maintenance/actions");
     }
   });
 

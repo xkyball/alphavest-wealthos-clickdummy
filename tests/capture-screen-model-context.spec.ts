@@ -37,9 +37,26 @@ test.describe("normal screen capture model context", () => {
 
     const documentContext = captureModelContextForRoute(documentUploadRoute!);
     expect(documentContext.capability.status).toBe("STRONG_VERTICAL_CANDIDATE");
+    expect(documentContext.capability.apiEvidence).toContain("app/api/data-maintenance/actions/route.ts");
+    expect(documentContext.capability.serviceEvidence).toContain("lib/data-maintenance-workflow-actions.ts");
     expect(documentContext.models).toEqual(
       expect.arrayContaining(["Document", "DocumentVersion", "DocumentExtraction", "EvidenceRecord", "EvidenceItem", "AuditEvent"]),
     );
+  });
+
+  test("keeps data-maintenance captures tied to typed commands instead of demo workflow", () => {
+    const clientRoutes = screenRoutes.filter((route) => route.navigationGroup === "client_workspace");
+    const wealthRoutes = screenRoutes.filter((route) => route.navigationGroup === "wealth_actions");
+
+    expect(clientRoutes.length).toBeGreaterThan(0);
+    expect(wealthRoutes.length).toBeGreaterThan(0);
+
+    for (const route of [...clientRoutes, ...wealthRoutes]) {
+      const context = captureModelContextForRoute(route);
+      expect(context.capability.apiEvidence).toContain("app/api/data-maintenance/actions/route.ts");
+      expect(context.capability.serviceEvidence).toContain("lib/data-maintenance-workflow-actions.ts");
+      expect(context.warnings.join(" ")).toContain("data-maintenance");
+    }
   });
 
   test("keeps tenant and governance captures tied to typed tenant-governance commands", () => {

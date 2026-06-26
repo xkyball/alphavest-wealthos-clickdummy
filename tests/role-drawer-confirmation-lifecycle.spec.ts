@@ -23,10 +23,10 @@ test.describe("UXP3-012 role drawer and confirmation lifecycle", () => {
   });
 
   test("opens role drawer without workflow mutation and discards safely", async ({ page }) => {
-    const workflowRequests: string[] = [];
+    const commandRequests: string[] = [];
     page.on("request", (request) => {
-      if (request.url().includes("/api/demo-workflow")) {
-        workflowRequests.push(request.method());
+      if (request.url().includes("/api/tenant-governance/actions")) {
+        commandRequests.push(request.method());
       }
     });
 
@@ -51,7 +51,7 @@ test.describe("UXP3-012 role drawer and confirmation lifecycle", () => {
     await drawer.getByRole("button", { name: "Discard changes" }).click();
     await expect(drawer).toBeHidden();
     await expect(trigger).toBeFocused();
-    expect(workflowRequests).toEqual([]);
+    expect(commandRequests).toEqual([]);
   });
 
   test("requires drawer acknowledgement and exact second confirmation phrase", async ({ page }) => {
@@ -101,13 +101,13 @@ test.describe("UXP3-012 role drawer and confirmation lifecycle", () => {
     await page.getByTestId("j07-review-role-changes").click();
     await page.getByTestId("j07-role-confirmation-phrase").fill("CONFIRM ROLE CHANGE");
 
-    await page.route("**/api/demo-workflow", async (route) => {
+    await page.route("**/api/tenant-governance/actions", async (route) => {
       await new Promise((resolve) => setTimeout(resolve, 150));
       await route.continue();
     });
 
     const responsePromise = page.waitForResponse(
-      (response) => response.url().includes("/api/demo-workflow") && response.request().method() === "POST",
+      (response) => response.url().includes("/api/tenant-governance/actions") && response.request().method() === "POST",
     );
 
     const modalLifecycle = page.getByTestId("uxp3-role-confirmation-lifecycle");
@@ -130,10 +130,10 @@ test.describe("UXP3-012 role drawer and confirmation lifecycle", () => {
   });
 
   test("Escape closes drawer and modal without submitting", async ({ page }) => {
-    const workflowRequests: string[] = [];
+    const commandRequests: string[] = [];
     page.on("request", (request) => {
-      if (request.url().includes("/api/demo-workflow")) {
-        workflowRequests.push(request.method());
+      if (request.url().includes("/api/tenant-governance/actions")) {
+        commandRequests.push(request.method());
       }
     });
 
@@ -155,6 +155,6 @@ test.describe("UXP3-012 role drawer and confirmation lifecycle", () => {
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
     await expect(drawer).toBeVisible();
-    expect(workflowRequests).toEqual([]);
+    expect(commandRequests).toEqual([]);
   });
 });

@@ -36,7 +36,7 @@ import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-she
 import { cn } from "@/lib/cn";
 import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import type { ScreenRoute } from "@/lib/route-registry";
-import { runScreencastDemoAction } from "@/lib/screencast-demo-client";
+import { runDataMaintenanceCommand } from "@/lib/data-maintenance-command-client";
 import type { VisualState } from "@/lib/visual-contract";
 import {
   actionColumns,
@@ -419,7 +419,7 @@ function WealthMapDrawer({ onClose }: { onClose: () => void }) {
                           data-testid={alert.action === "View details" ? "j05-view-details" : undefined}
                           onClick={() => {
                             if (alert.action === "View details") {
-                              void runScreencastDemoAction("j05.viewDetails", "/actions?state=drawer");
+                              void runDataMaintenanceCommand("j05.viewDetails", "/actions?state=drawer");
                             }
                           }}
                           type="button"
@@ -725,7 +725,7 @@ function ActionDrawer({ onClose }: { onClose: () => void }) {
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-gold">Available actions</p>
           <UxCtaCluster
             blockedReason="Mark Ready stays blocked until client approval evidence is present; drawer actions do not change readiness."
-            primary={{ label: "Request Info", onClick: () => { void runScreencastDemoAction("j05.requestInfo"); }, testId: "j05-request-info" }}
+            primary={{ label: "Request Info", onClick: () => { void runDataMaintenanceCommand("j05.requestInfo"); }, testId: "j05-request-info" }}
             recoveryAction={{ href: "/documents/upload", label: "Request client approval evidence" }}
             secondary={[
               { label: "Update Due Date" },

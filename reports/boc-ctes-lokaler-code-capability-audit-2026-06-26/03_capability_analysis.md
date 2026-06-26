@@ -154,7 +154,7 @@ Current typed-command update:
 - J06/J07 tenant, user, role and governance actions are now routed through `/api/tenant-governance/actions`, `lib/tenant-governance-workflow-actions.ts` and `lib/tenant-governance-command-client.ts`.
 - J10 platform/security/admin actions are now routed through `/api/platform-admin/actions`, `lib/platform-admin-workflow-actions.ts` and `lib/platform-admin-command-client.ts`.
 - `/api/demo-workflow` returns fail-closed `410` responses for moved tenant-governance, platform-admin, export, Phase B/C journey and review-monitoring families with canonical route guidance.
-- Static UI scan found remaining `runScreencastDemoAction` product-like calls only in `j02`, `j03`, `j04`, `j05` and `j09` families; no current `j06`, `j07`, `j08`, `j10`, `j12`, `j13`, `j14`, `j16` or `j17` screen call remains on that client.
+- Static UI scan found remaining `runScreencastDemoAction` calls only in `j01`, `j02` and `j03` families after J04/J05/J09 data-maintenance, J06/J07 tenant-governance and J10 platform-admin were moved to typed clients.
 
 ## ANALYSIS-2.3 - DB Editability, Persistence And Process I/O
 

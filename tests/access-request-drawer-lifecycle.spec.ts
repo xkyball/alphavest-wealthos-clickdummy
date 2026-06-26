@@ -23,10 +23,10 @@ test.describe("UXP3-013 access request drawer lifecycle", () => {
   });
 
   test("opens access request drawer without workflow mutation and cancels safely", async ({ page }) => {
-    const workflowRequests: string[] = [];
+    const commandRequests: string[] = [];
     page.on("request", (request) => {
-      if (request.url().includes("/api/demo-workflow")) {
-        workflowRequests.push(request.method());
+      if (request.url().includes("/api/tenant-governance/actions")) {
+        commandRequests.push(request.method());
       }
     });
 
@@ -51,7 +51,7 @@ test.describe("UXP3-013 access request drawer lifecycle", () => {
     await drawer.getByRole("button", { name: "Cancel review" }).click();
     await expect(drawer).toBeHidden();
     await expect(trigger).toBeFocused();
-    expect(workflowRequests).toEqual([]);
+    expect(commandRequests).toEqual([]);
   });
 
   test("requires acknowledgement and submits only the scoped access review", async ({ page }) => {
@@ -72,13 +72,13 @@ test.describe("UXP3-013 access request drawer lifecycle", () => {
       "submits-scoped-access-review",
     );
 
-    await page.route("**/api/demo-workflow", async (route) => {
+    await page.route("**/api/tenant-governance/actions", async (route) => {
       await new Promise((resolve) => setTimeout(resolve, 150));
       await route.continue();
     });
 
     const responsePromise = page.waitForResponse(
-      (response) => response.url().includes("/api/demo-workflow") && response.request().method() === "POST",
+      (response) => response.url().includes("/api/tenant-governance/actions") && response.request().method() === "POST",
     );
 
     await page.getByTestId("j07-approve-access").click();
@@ -100,10 +100,10 @@ test.describe("UXP3-013 access request drawer lifecycle", () => {
   });
 
   test("Escape, escalation and denial close without submitting", async ({ page }) => {
-    const workflowRequests: string[] = [];
+    const commandRequests: string[] = [];
     page.on("request", (request) => {
-      if (request.url().includes("/api/demo-workflow")) {
-        workflowRequests.push(request.method());
+      if (request.url().includes("/api/tenant-governance/actions")) {
+        commandRequests.push(request.method());
       }
     });
 
@@ -126,6 +126,6 @@ test.describe("UXP3-013 access request drawer lifecycle", () => {
     await expect(drawer).toBeVisible();
     await drawer.getByRole("button", { name: "Deny request" }).click();
     await expect(drawer).toBeHidden();
-    expect(workflowRequests).toEqual([]);
+    expect(commandRequests).toEqual([]);
   });
 });

@@ -8,7 +8,7 @@ import {
 
 test.describe("demo workflow action registry", () => {
   test("keeps executable demo workflow actions explicitly demo-only", () => {
-    expect(demoOnlyWorkflowActionIds.length).toBeGreaterThan(20);
+    expect(demoOnlyWorkflowActionIds).toHaveLength(14);
 
     for (const actionId of demoOnlyWorkflowActionIds) {
       expect(demoWorkflowActionBoundaryFor(actionId), actionId).toMatchObject({
@@ -69,6 +69,24 @@ test.describe("demo workflow action registry", () => {
       canonicalApiRoute: "/api/platform-admin/actions",
       classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
       reasonCode: "PLATFORM_ADMIN_ACTIONS_MOVED",
+    });
+    expect(demoWorkflowActionBoundaryFor("j04.uploadDocument")).toMatchObject({
+      allowedOnDemoWorkflow: false,
+      canonicalApiRoute: "/api/data-maintenance/actions",
+      classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
+      reasonCode: "DATA_MAINTENANCE_ACTIONS_MOVED",
+    });
+    expect(demoWorkflowActionBoundaryFor("j05.requestInfo")).toMatchObject({
+      allowedOnDemoWorkflow: false,
+      canonicalApiRoute: "/api/data-maintenance/actions",
+      classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
+      reasonCode: "DATA_MAINTENANCE_ACTIONS_MOVED",
+    });
+    expect(demoWorkflowActionBoundaryFor("j09.addRelationship")).toMatchObject({
+      allowedOnDemoWorkflow: false,
+      canonicalApiRoute: "/api/data-maintenance/actions",
+      classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
+      reasonCode: "DATA_MAINTENANCE_ACTIONS_MOVED",
     });
   });
 

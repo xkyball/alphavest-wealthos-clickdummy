@@ -56,7 +56,7 @@ Top-level app pages:
 | `app/journeys/page.tsx`, `app/journeys/[id]/page.tsx` | Journey UI pages. |
 | `app/layout.tsx`, `app/error.tsx`, `app/loading.tsx`, `app/not-found.tsx`, `app/globals.css` | Framework shell and styling. |
 
-API route files found: `30`
+API route files found: `31`
 
 | API file | Methods observed |
 | --- | --- |
@@ -69,6 +69,7 @@ API route files found: `30`
 | `app/api/auth/providers/route.ts` | `GET` |
 | `app/api/current-user/route.ts` | `GET` |
 | `app/api/dashboard-metrics/route.ts` | `GET` |
+| `app/api/data-maintenance/actions/route.ts` | `POST` |
 | `app/api/demo-workflow/route.ts` | `POST` |
 | `app/api/documents/review/route.ts` | `POST` |
 | `app/api/documents/route.ts` | `GET` |
@@ -120,8 +121,8 @@ DB-backed or Prisma-touching code files found by static search:
 
 | Area | Files |
 | --- | --- |
-| API DB transaction hub | `app/api/demo-workflow/route.ts`, `app/api/platform-admin/actions/route.ts`, `app/api/tenant-governance/actions/route.ts` |
-| Tenant/profile/family/entity/data services | `lib/admin-tenant-readmodel-service.ts`, `lib/data-quality-repository.ts`, `lib/data-quality-service.ts`, `lib/dbtf-form-service.ts`, `lib/dbtf-table-service.ts` |
+| API DB transaction hub | `app/api/demo-workflow/route.ts`, `app/api/data-maintenance/actions/route.ts`, `app/api/platform-admin/actions/route.ts`, `app/api/tenant-governance/actions/route.ts` |
+| Tenant/profile/family/entity/data services | `lib/admin-tenant-readmodel-service.ts`, `lib/data-maintenance-workflow-actions.ts`, `lib/data-quality-repository.ts`, `lib/data-quality-service.ts`, `lib/dbtf-form-service.ts`, `lib/dbtf-table-service.ts` |
 | Auth/current user | `lib/auth/current-user.ts`, `lib/demo/demo-auth-provider-service.ts` |
 | Documents/evidence | `lib/document-upload-service.ts`, `lib/evidence-review-service.ts` |
 | Export | `lib/export-workflow-command-service.ts`, `lib/export-workflow-readmodel-service.ts` |
@@ -204,7 +205,7 @@ Inventory boundary: test existence supports proof planning and static claim chec
 | Package manager | Confirmed: `pnpm@9.15.9`. |
 | DB backend | PostgreSQL via Prisma; runtime DB availability not yet tested in this audit. |
 | Demo session/auth posture | Repo contains demo auth/session/provider modules and auth API routes; real-auth hardening is not assumed. |
-| Browser screenshots | Not required yet because no product UI changes were made. |
+| Browser screenshots | Required for this implementation slice because product-like UI clients were rewired from screencast demo calls to typed command clients. |
 | Product code changes | Out of scope for this audit unless the user later authorizes gap-fix implementation. |
 
 ## ANALYSIS-1.1.2 Validation

@@ -24,7 +24,7 @@ Choose `Accept with Corrections` only if you want wording changes; otherwise cho
 
 1. Run a focused browser/runtime proof pack for document upload/review, profile/family/entity, export workflow, tenant governance and platform admin typed commands.
 2. Continue splitting `/api/demo-workflow` into a demo-only action bus plus typed domain command APIs.
-3. Migrate the remaining product-like `j04/j05/j09` data-maintenance actions and `j02/j03` advice/evidence actions out of `runScreencastDemoAction`.
+3. Keep `j04/j05/j09` on the typed data-maintenance command surface; migrate `j02/j03` only after Advice/Release-History is separated.
 4. Purge static controls that look like real product actions unless they are wired or visibly safety-blocked by data.
 5. Keep the 53-model schema alignment gate in the proof pack and reject future stale 49-model claims.
 
@@ -35,7 +35,7 @@ This is the cleanest route to remove legacy ambiguity instead of hiding it behin
 | Follow-up | Current status | Needs human authorization? |
 | --- | --- | --- |
 | Focused browser/runtime proof pack | Ready to derive | Yes |
-| Remaining demo workflow family migration | Ready to derive for `j04/j05/j09`, then `j02/j03` after Advice/Release-history split | Yes |
+| Remaining demo workflow family migration | Ready to derive for `j02/j03` after Advice/Release-History split; J04/J05/J09 are already typed data-maintenance commands | Yes |
 | Export/tenant/platform lifecycle runtime proof | Ready to derive | Yes |
 | Static affordance purge | Ready to derive | Yes |
 | Schema alignment regression gate | Current-run proven; keep in follow-up proof pack | Yes |

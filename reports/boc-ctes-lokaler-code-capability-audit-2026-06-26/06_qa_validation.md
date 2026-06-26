@@ -42,7 +42,7 @@ QA decision: `PASS_WITH_LIMITATIONS`
 | Risk | Severity | Required next proof |
 | --- | --- | --- |
 | DB-backed suites may fail in current environment | Medium | Run focused document/profile/entity/export/journey tests against local DB. |
-| Remaining `j02/j03/j04/j05/j09` demo action IDs may be unevenly persisted/guarded | High | Migrate journey families into typed command clients and classify state/guard/audit/test proof. |
+| Remaining `j01/j02/j03` demo action IDs may be unevenly persisted/guarded | High | Split Advice/Release-History first, then migrate remaining advice/evidence-history families into typed command clients and classify state/guard/audit/test proof. |
 | Export/tenant/platform lifecycle still need full browser proof | Medium | Run direct lifecycle API/browser tests that exercise stateful DB transitions and screen interaction. |
 | Schema alignment may drift again later | Low | Keep `tests/schema-alignment.spec.ts` and source-reality gates in the proof pack. |
 | Static action controls may remain visually product-like | Medium | Purge, wire or visibly quarantine them. |
