@@ -17,6 +17,7 @@ import {
 } from "@/lib/advisory-workflow-contract";
 import {
   demoWorkflowActionBoundaryFor,
+  demoOnlyWorkflowActionIds,
   typedAdvisorApprovalWorkflowBoundary,
 } from "@/lib/demo-workflow-action-registry";
 import { parseDemoWorkflowRequestBody } from "@/lib/demo-workflow-validation";
@@ -25,10 +26,7 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 type DemoWorkflowAction =
-  | "j01.requestData"
-  | "j01.routeToAdvisor"
-  | "j01.approveAdvisor"
-  | "j01.escalateAdvisor";
+  (typeof demoOnlyWorkflowActionIds)[number];
 
 class UnsupportedLegacyDemoWorkflowActionError extends Error {
   constructor(readonly actionId: string) {
@@ -178,117 +176,6 @@ async function runDemoWorkflowAction(
       return { message: "Request-data state saved.", ...result };
     }
 
-    case "j01.routeToAdvisor": {
-      const result = await prisma.$transaction(async (tx) => {
-        const trigger = await tx.trigger.updateMany({
-          where: { id: northbridgeTriggerId, clientTenantId: northbridgeTenantId },
-          data: {
-            status: WorkflowStatus.ADVISOR_REVIEW,
-            clientVisible: false,
-          },
-        });
-        const recommendation = await tx.recommendation.updateMany({
-          where: { id: northbridgeRecommendationId, clientTenantId: northbridgeTenantId },
-          data: {
-            status: RecommendationStatus.ADVISOR_PENDING,
-            clientVisible: false,
-          },
-        });
-        const approval = await tx.approval.updateMany({
-          where: { id: northbridgeApprovalId, clientTenantId: northbridgeTenantId },
-          data: {
-            status: ReviewStatus.IN_REVIEW,
-            notes: "Routed to senior wealth advisor for screencast J01. Compliance release remains required.",
-          },
-        });
-        await writeAuditEvent(tx, {
-          actorUserId: userId("analyst"),
-          actorRoleKey: "analyst",
-          eventType: "screencast.trigger.route_to_advisor",
-          targetType: ObjectType.RECOMMENDATION,
-          targetId: northbridgeRecommendationId,
-          previousState: RecommendationStatus.BLOCKED,
-          nextState: RecommendationStatus.ADVISOR_PENDING,
-          reason: "Routed advisor package without client visibility.",
-          actionId,
-        });
-        return {
-          approvalRows: approval.count,
-          recommendationRows: recommendation.count,
-          triggerRows: trigger.count,
-        };
-      });
-
-      return { message: "Advisor routing state saved.", ...result };
-    }
-
-    case "j01.approveAdvisor": {
-      const result = await prisma.$transaction(async (tx) => {
-        const approval = await tx.approval.updateMany({
-          where: { id: northbridgeApprovalId, clientTenantId: northbridgeTenantId },
-          data: {
-            status: ReviewStatus.APPROVED,
-            notes: "Advisor approved in screencast J01. Client release is still blocked by compliance.",
-            approvedAt: now,
-          },
-        });
-        const recommendation = await tx.recommendation.updateMany({
-          where: { id: northbridgeRecommendationId, clientTenantId: northbridgeTenantId },
-          data: {
-            status: RecommendationStatus.ADVISOR_APPROVED,
-            clientVisible: false,
-          },
-        });
-        await writeAuditEvent(tx, {
-          actorUserId: userId("advisor"),
-          actorRoleKey: "senior_wealth_advisor",
-          eventType: "screencast.approval.approve",
-          targetType: ObjectType.RECOMMENDATION,
-          targetId: northbridgeRecommendationId,
-          previousState: ReviewStatus.IN_REVIEW,
-          nextState: ReviewStatus.APPROVED,
-          reason: "Advisor approved the package; compliance release remains required.",
-          actionId,
-        });
-        return { approvalRows: approval.count, recommendationRows: recommendation.count };
-      });
-
-      return { message: "Advisor approval saved. Compliance release is still required.", ...result };
-    }
-
-    case "j01.escalateAdvisor": {
-      const result = await prisma.$transaction(async (tx) => {
-        const approval = await tx.approval.updateMany({
-          where: { id: northbridgeApprovalId, clientTenantId: northbridgeTenantId },
-          data: {
-            status: ReviewStatus.ESCALATED_TO_CALL,
-            notes: "Advisor escalated the non-release alternative to a call in screencast J01.",
-          },
-        });
-        const recommendation = await tx.recommendation.updateMany({
-          where: { id: northbridgeRecommendationId, clientTenantId: northbridgeTenantId },
-          data: {
-            status: RecommendationStatus.BLOCKED,
-            clientVisible: false,
-          },
-        });
-        await writeAuditEvent(tx, {
-          actorUserId: userId("advisor"),
-          actorRoleKey: "senior_wealth_advisor",
-          eventType: "screencast.approval.escalate_to_call",
-          targetType: ObjectType.RECOMMENDATION,
-          targetId: northbridgeRecommendationId,
-          previousState: ReviewStatus.APPROVED,
-          nextState: ReviewStatus.ESCALATED_TO_CALL,
-          reason: "Escalated to call as a non-release alternative.",
-          actionId,
-        });
-        return { approvalRows: approval.count, recommendationRows: recommendation.count };
-      });
-
-      return { message: "Advisor escalation saved. No client release was created.", ...result };
-    }
-
     default:
       throw new UnsupportedLegacyDemoWorkflowActionError(actionId as string);
   }
@@ -363,6 +250,14 @@ export async function POST(request: Request) {
             noExportDownload: true,
             scoped: false,
           }
+        : demoWorkflowBoundary.canonicalApiRoute === "/api/advisor-review/actions"
+          ? {
+              commandExecuted: false,
+              hiddenRowsDisclosed: false,
+              noAdviceExecution: true,
+              noClientRelease: true,
+              scoped: false,
+            }
         : demoWorkflowBoundary.canonicalApiRoute === "/api/tenant-governance/actions" ||
             demoWorkflowBoundary.canonicalApiRoute === "/api/platform-admin/actions" ||
             demoWorkflowBoundary.canonicalApiRoute === "/api/data-maintenance/actions" ||

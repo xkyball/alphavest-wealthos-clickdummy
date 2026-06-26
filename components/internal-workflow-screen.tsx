@@ -79,6 +79,7 @@ import {
   workbenchHousehold,
   workbenchMetrics
 } from "@/lib/internal-workflow-demo-data";
+import { runAdvisorReviewCommand } from "@/lib/advisor-review-command-client";
 import type { ScreenRoute } from "@/lib/route-registry";
 import type { VisualState } from "@/lib/visual-contract";
 
@@ -135,28 +136,6 @@ const sensitiveWorkflowCopy: Record<
     title: "Confirm Evidence Request - No Client Release",
   },
 };
-
-type DemoWorkflowActionId =
-  | "j01.requestData"
-  | "j01.routeToAdvisor"
-  | "j01.approveAdvisor"
-  | "j01.escalateAdvisor";
-
-async function postDemoWorkflowAction(actionId: DemoWorkflowActionId) {
-  const response = await fetch("/api/demo-workflow", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ actionId }),
-  });
-
-  if (!response.ok) {
-    const fallback = `Demo workflow action failed with HTTP ${response.status}.`;
-    const body = (await response.json().catch(() => undefined)) as { error?: string } | undefined;
-    throw new Error(body?.error ?? fallback);
-  }
-
-  return response.json() as Promise<{ result: { message: string }; noClientRelease: boolean }>;
-}
 
 function SensitiveWorkflowConfirmationModal({
   action,
@@ -990,7 +969,7 @@ function TriggerDetailPage({ title }: { title: string }) {
 
   async function routeToAdvisor() {
     setRoutingStatus("Routing package to advisor review...");
-    await postDemoWorkflowAction("j01.routeToAdvisor");
+    await runAdvisorReviewCommand("j01.routeToAdvisor");
     router.push("/advisor/reviews");
   }
 
@@ -1346,7 +1325,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
 
   async function escalateToCall() {
     setDecisionStatus("Saving advisor escalation...");
-    await postDemoWorkflowAction("j01.escalateAdvisor");
+    await runAdvisorReviewCommand("j01.escalateAdvisor");
     router.push("/decisions");
   }
 

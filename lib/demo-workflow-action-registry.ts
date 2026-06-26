@@ -1,4 +1,5 @@
 import { isPlatformAdminWorkflowAction } from "@/lib/platform-admin-action-contract";
+import { advisorReviewCanonicalApiRoute, isAdvisorReviewWorkflowAction } from "@/lib/advisor-review-action-contract";
 import { isReviewMonitoringWorkflowAction } from "@/lib/review-monitoring-workflow-actions";
 import { isTenantGovernanceWorkflowAction } from "@/lib/tenant-governance-action-contract";
 import { isDataMaintenanceWorkflowAction } from "@/lib/data-maintenance-action-contract";
@@ -21,6 +22,7 @@ export type DemoWorkflowActionBoundary =
         | "/api/platform-admin/actions"
         | "/api/recommendation-review-workflow"
         | "/api/review-monitoring/actions"
+        | "/api/advisor-review/actions"
         | "/api/tenant-governance/actions";
       classification: "MOVED_TO_TYPED_PRODUCT_COMMAND";
       productCommandAllowed: true;
@@ -28,6 +30,7 @@ export type DemoWorkflowActionBoundary =
         | "LEGACY_EXPORT_DEMO_ACTION_RETIRED"
         | "PHASE_B_C_JOURNEY_COMMANDS_MOVED"
         | "ADVISOR_APPROVAL_WORKFLOW_MOVED"
+        | "ADVISOR_REVIEW_WORKFLOW_ACTIONS_MOVED"
         | "ADVICE_RELEASE_HISTORY_ACTIONS_MOVED"
         | "DATA_MAINTENANCE_ACTIONS_MOVED"
         | "PLATFORM_ADMIN_ACTIONS_MOVED"
@@ -44,9 +47,6 @@ export type DemoWorkflowActionBoundary =
 
 export const demoOnlyWorkflowActionIds = [
   "j01.requestData",
-  "j01.routeToAdvisor",
-  "j01.approveAdvisor",
-  "j01.escalateAdvisor",
 ] as const;
 
 const demoOnlyWorkflowActions = new Set<string>(demoOnlyWorkflowActionIds);
@@ -57,6 +57,14 @@ export const typedAdvisorApprovalWorkflowBoundary = {
   classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
   productCommandAllowed: true,
   reasonCode: "ADVISOR_APPROVAL_WORKFLOW_MOVED",
+} satisfies DemoWorkflowActionBoundary;
+
+const advisorReviewWorkflowBoundary = {
+  allowedOnDemoWorkflow: false,
+  canonicalApiRoute: advisorReviewCanonicalApiRoute,
+  classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
+  productCommandAllowed: true,
+  reasonCode: "ADVISOR_REVIEW_WORKFLOW_ACTIONS_MOVED",
 } satisfies DemoWorkflowActionBoundary;
 
 function isLegacyExportDemoAction(actionId: string) {
@@ -75,6 +83,14 @@ export function demoWorkflowActionBoundaryFor(actionId: string): DemoWorkflowAct
       productCommandAllowed: false,
       reasonCode: "SCREENCAST_DEMO_ACTION_ONLY",
     };
+  }
+
+  if (isAdvisorReviewWorkflowAction(actionId)) {
+    return advisorReviewWorkflowBoundary;
+  }
+
+  if (actionId === "j01.approveAdvisor") {
+    return typedAdvisorApprovalWorkflowBoundary;
   }
 
   if (isLegacyExportDemoAction(actionId)) {

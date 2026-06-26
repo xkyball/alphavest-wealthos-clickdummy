@@ -101,10 +101,9 @@ async function createGeneratedExport(request: APIRequestContext, label: string) 
 
 const workflowActions = [
   "j01.requestData",
-  "j01.routeToAdvisor",
-  "j01.approveAdvisor",
-  "j01.escalateAdvisor",
 ] as const;
+
+const advisorReviewActions = ["j01.routeToAdvisor", "j01.escalateAdvisor"] as const;
 
 const adviceReleaseHistoryActions = [
   "j02.requestEvidence",
@@ -168,6 +167,56 @@ test.describe("demo workflow API", () => {
         expect(body.proofDirectness).toBeUndefined();
       }
     }
+  });
+
+  test("legacy J01 route/escalate advisor-review actions are retired to advisor-review commands", async ({ request }) => {
+    for (const actionId of advisorReviewActions) {
+      const response = await request.post("/api/demo-workflow", {
+        data: { actionId },
+      });
+      const body = await response.json();
+
+      expect(response.status(), `${actionId}: ${JSON.stringify(body)}`).toBe(410);
+      expect(body.reasonCode).toBe("SAFE_ERROR");
+      expect(body.legacyReasonCode).toBe("ADVISOR_REVIEW_WORKFLOW_ACTIONS_MOVED");
+      expect(body.canonicalApiRoute).toBe("/api/advisor-review/actions");
+      expect(body.demoWorkflowBoundary).toMatchObject({
+        allowedOnDemoWorkflow: false,
+        canonicalApiRoute: "/api/advisor-review/actions",
+        classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
+        productCommandAllowed: true,
+        reasonCode: "ADVISOR_REVIEW_WORKFLOW_ACTIONS_MOVED",
+      });
+      expect(body.safety).toMatchObject({
+        commandExecuted: false,
+        hiddenRowsDisclosed: false,
+        noAdviceExecution: true,
+        noClientRelease: true,
+        scoped: false,
+      });
+      expect(body.result).toBeUndefined();
+      expect(body.mutated).toBeFalsy();
+    }
+  });
+
+  test("legacy J01 approve advisor action is retired to advisor approval workflow API", async ({ request }) => {
+    const response = await request.post("/api/demo-workflow", {
+      data: { actionId: "j01.approveAdvisor" },
+    });
+    const body = await response.json();
+
+    expect(response.status(), JSON.stringify(body)).toBe(410);
+    expect(body.reasonCode).toBe("SAFE_ERROR");
+    expect(body.legacyReasonCode).toBe("ADVISOR_APPROVAL_WORKFLOW_MOVED");
+    expect(body.canonicalApiRoute).toBe("/api/recommendation-review-workflow");
+    expect(body.demoWorkflowBoundary).toMatchObject({
+      allowedOnDemoWorkflow: false,
+      canonicalApiRoute: "/api/recommendation-review-workflow",
+      classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
+      productCommandAllowed: true,
+      reasonCode: "ADVISOR_APPROVAL_WORKFLOW_MOVED",
+    });
+    expect(body.mutated).toBe(false);
   });
 
   test("legacy advice and release-history demo actions are retired to the typed API", async ({ request }) => {
