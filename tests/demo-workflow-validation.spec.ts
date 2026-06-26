@@ -9,7 +9,12 @@ import {
 } from "../lib/demo-workflow-validation";
 import {
   wp05ComplianceReleaseConfirmationPhrase,
+  wp05CanonicalJourneyCommandApiRoute,
   wp05DemoWorkflowCompatibilityMode,
+  wp05LegacyDemoReleaseActionDirectness,
+  wp05LegacyDemoReleaseActionDirectnessFor,
+  wp05TypedAdvisorWorkflowDirectness,
+  wp05TypedAdvisorWorkflowDirectnessFor,
 } from "../lib/advisory-workflow-contract";
 
 const advisorApprovalActions = [
@@ -82,6 +87,44 @@ test.describe("advisor approval workflow state machine", () => {
     expect(parsed.value).toMatchObject({
       action: "advisor_approve",
       workflowType: "advisor-approval",
+    });
+  });
+
+  test("classifies PP004 release-related APIs by proof directness", () => {
+    expect(Object.keys(wp05LegacyDemoReleaseActionDirectness).sort()).toEqual([
+      "j01.approveAdvisor",
+      "j02.blockRelease",
+      "j02.confirmRequestEvidence",
+      "j02.releaseClient",
+      "j02.requestEvidence",
+      "j03.acceptOption",
+    ]);
+
+    for (const actionId of Object.keys(wp05LegacyDemoReleaseActionDirectness)) {
+      expect(wp05LegacyDemoReleaseActionDirectnessFor(actionId)).toMatchObject({
+        canonicalProofRoute: wp05CanonicalJourneyCommandApiRoute,
+        classification: "LEGACY_DEMO_COMPATIBILITY_ONLY",
+        demoWorkflowCompatibilityMode: wp05DemoWorkflowCompatibilityMode,
+        productProofBacked: false,
+        pp004CanonicalProofEligible: false,
+        proofBackedByStatePayloadAssertions: false,
+      });
+    }
+
+    expect(Object.keys(wp05TypedAdvisorWorkflowDirectness).sort()).toEqual([
+      "advisor_approve",
+      "compliance_block",
+      "compliance_release",
+      "request_evidence",
+    ]);
+    expect(wp05TypedAdvisorWorkflowDirectnessFor("compliance_release")).toMatchObject({
+      canonicalProofRoute: wp05CanonicalJourneyCommandApiRoute,
+      classification: "DOMAIN_BACKED_TYPED_COMPATIBILITY",
+      demoWorkflowCompatibilityMode: wp05DemoWorkflowCompatibilityMode,
+      productProofBacked: true,
+      pp004CanonicalProofEligible: false,
+      proofBackedByStatePayloadAssertions: true,
+      releaseBoundary: "compliance_release",
     });
   });
 });

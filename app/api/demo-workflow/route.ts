@@ -26,6 +26,10 @@ import {
 import { NextResponse } from "next/server";
 
 import { failClosedJson } from "@/lib/control-layer/error-envelope";
+import {
+  wp05LegacyDemoReleaseActionDirectnessFor,
+  wp05TypedAdvisorWorkflowDirectnessFor,
+} from "@/lib/advisory-workflow-contract";
 import { parseDemoWorkflowRequestBody } from "@/lib/demo-workflow-validation";
 import { dataQualityService } from "@/lib/data-quality-service";
 import {
@@ -3219,6 +3223,7 @@ export async function POST(request: Request) {
         error:
           "Typed advisor approval workflow actions have moved out of /api/demo-workflow. Use /api/recommendation-review-workflow.",
         legacyReasonCode: "ADVISOR_APPROVAL_WORKFLOW_MOVED",
+        proofDirectness: wp05TypedAdvisorWorkflowDirectnessFor(parsedValue.action),
         reasonCode: "SAFE_ERROR",
         workflowType: "advisor-approval",
       },
@@ -3274,6 +3279,7 @@ export async function POST(request: Request) {
   }
 
   const demoWorkflowActionId = actionId as DemoWorkflowAction;
+  const proofDirectness = wp05LegacyDemoReleaseActionDirectnessFor(actionId);
 
   try {
     const result = await runDemoWorkflowAction(prisma, demoWorkflowActionId, {
@@ -3290,6 +3296,7 @@ export async function POST(request: Request) {
       actionId,
       noClientRelease: !releasedToClient,
       ok: true,
+      proofDirectness,
       result,
     });
   } catch (error) {

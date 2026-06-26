@@ -19,7 +19,11 @@ import { expect, test, type APIRequestContext } from "@playwright/test";
 
 import { stableId } from "../lib/stable-id";
 import { scfCriticalGateAuditContract } from "../lib/audit-service";
-import { wp05ComplianceReleaseConfirmationPhrase } from "../lib/advisory-workflow-contract";
+import {
+  wp05CanonicalJourneyCommandApiRoute,
+  wp05ComplianceReleaseConfirmationPhrase,
+  wp05LegacyDemoReleaseActionDirectness,
+} from "../lib/advisory-workflow-contract";
 
 const demoTargets = {
   morgan: {
@@ -172,6 +176,16 @@ test.describe("demo workflow API", () => {
       expect(body.actionId).toBe(actionId);
       expect(body.result).toBeTruthy();
 
+      if (Object.prototype.hasOwnProperty.call(wp05LegacyDemoReleaseActionDirectness, actionId)) {
+        expect(body.proofDirectness).toMatchObject({
+          canonicalProofRoute: wp05CanonicalJourneyCommandApiRoute,
+          classification: "LEGACY_DEMO_COMPATIBILITY_ONLY",
+          pp004CanonicalProofEligible: false,
+          proofBackedByStatePayloadAssertions: false,
+        });
+      } else {
+        expect(body.proofDirectness).toBeUndefined();
+      }
     }
   });
 
@@ -399,6 +413,7 @@ test.describe("demo workflow API", () => {
     expect(body.noClientRelease).toBe(true);
     expect(body.canonicalApiRoute).toBe("/api/recommendation-review-workflow");
     expect(body.legacyReasonCode).toBe("ADVISOR_APPROVAL_WORKFLOW_MOVED");
+    expect(body.proofDirectness).toBeUndefined();
     expect(body.workflowType).toBe("advisor-approval");
   });
 
@@ -497,6 +512,12 @@ test.describe("demo workflow API", () => {
       expect(releaseBody.result.gateMissing).toEqual([]);
       expect(releaseBody.result.canonicalCommand).toBe("COMPLIANCE_RELEASE");
       expect(releaseBody.result.canonicalState).toBe("COMPLIANCE_RELEASED_CLIENT_SAFE");
+      expect(releaseBody.proofDirectness).toMatchObject({
+        canonicalProofRoute: wp05CanonicalJourneyCommandApiRoute,
+        classification: "DOMAIN_BACKED_TYPED_COMPATIBILITY",
+        pp004CanonicalProofEligible: false,
+        proofBackedByStatePayloadAssertions: true,
+      });
       expect(releaseBody.result.decisionLinkage).toMatchObject({
         decisionRows: 1,
         mode: "released_to_client",
@@ -529,6 +550,12 @@ test.describe("demo workflow API", () => {
 
       expect(decisionResponse.ok(), JSON.stringify(decisionBody)).toBe(true);
       expect(decisionBody.noClientRelease).toBe(false);
+      expect(decisionBody.proofDirectness).toMatchObject({
+        canonicalProofRoute: wp05CanonicalJourneyCommandApiRoute,
+        classification: "LEGACY_DEMO_COMPATIBILITY_ONLY",
+        pp004CanonicalProofEligible: false,
+        releaseBoundary: "client_decision_after_release",
+      });
       expect(decisionBody.result.gatePassed).toBe(true);
       expect(decisionBody.result.decisionRows).toBe(1);
 
