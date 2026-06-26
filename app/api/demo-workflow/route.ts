@@ -194,6 +194,10 @@ function stableEvidenceHash(label: string) {
   return createHash("sha256").update(`alphavest-wealthos:${label}`).digest("hex");
 }
 
+function isLegacyExportDemoAction(actionId: string) {
+  return actionId.startsWith("j08.");
+}
+
 function tenantId(slug: string) {
   return stableId(`tenant:${slug}`);
 }
@@ -4151,6 +4155,27 @@ export async function POST(request: Request) {
   }
 
   const actionId = parsedValue.actionId as DemoWorkflowAction;
+
+  if (isLegacyExportDemoAction(actionId)) {
+    return failClosedJson(
+      {
+        actionId,
+        canonicalApiRoute: "/api/export-workflow",
+        error: "Legacy demo export actions are retired from /api/demo-workflow. Use the typed export workflow API.",
+        legacyReasonCode: "LEGACY_EXPORT_DEMO_ACTION_RETIRED",
+        reasonCode: "SAFE_ERROR",
+        safety: {
+          commandExecuted: false,
+          hiddenRowsDisclosed: false,
+          noClientRelease: true,
+          noExportApproval: true,
+          noExportDownload: true,
+          scoped: false,
+        },
+      },
+      { status: 410 },
+    );
+  }
 
   try {
     const result = await runDemoWorkflowAction(prisma, actionId, {

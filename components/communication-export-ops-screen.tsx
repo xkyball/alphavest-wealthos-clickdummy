@@ -485,7 +485,10 @@ function useDbtfAuditEvents() {
 }
 
 type ExportWorkflowApiState = {
+  auditEventId?: string;
   error?: string;
+  exportRequestId?: string;
+  manifest?: { manifestVersion?: string };
   mutated?: false;
   noClientRelease?: true;
   ok?: boolean;
@@ -500,7 +503,49 @@ type ExportWorkflowApiState = {
     silentStateAdvance?: boolean;
   };
   snapshot?: ExportWorkflowSnapshot | null;
+  status?: string;
 };
+
+type ExportWorkflowCommandPayload = {
+  command: "APPROVE" | "DOWNLOAD";
+  exportRequestId?: string;
+  payload?: Record<string, unknown>;
+  reason: string;
+  redactionProfile?: string | null;
+  roleKey: DemoRoleKey;
+  tenantSlug: DemoTenantSlug;
+};
+
+const exportWorkflowSafePayload = {
+  clientSummary: "Released client-safe export summary.",
+  decisionState: "Released",
+  releasedAt: "2026-06-24T00:00:00.000Z",
+  status: "RELEASED_TO_CLIENT",
+  title: "Liquidity governance decision",
+};
+
+async function runExportWorkflowCommand(payload: ExportWorkflowCommandPayload) {
+  const response = await fetch("/api/export-workflow", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      ...payload,
+      payload: payload.payload ?? exportWorkflowSafePayload,
+      ...(payload.redactionProfile ? { redactionProfile: payload.redactionProfile } : {}),
+    }),
+  });
+  const body = (await response.json().catch(() => undefined)) as ExportWorkflowApiState | undefined;
+
+  if (!response.ok) {
+    const issues = Array.isArray((body as { issues?: unknown })?.issues)
+      ? ` (${(body as { issues: unknown[] }).issues.join(", ")})`
+      : "";
+
+    throw new Error(`${body?.error ?? `Export workflow command failed with HTTP ${response.status}`}${issues}`);
+  }
+
+  return body ?? {};
+}
 
 function useExportWorkflowSnapshot() {
   const { session } = useDemoSession();
@@ -1321,11 +1366,23 @@ function ExportScopePage({ title }: { title: string }) {
               <CardTitle>Selected Scope</CardTitle>
               <p className="mt-1 text-sm text-alphavest-muted">{summary.included} included, {summary.invalidSelected} invalid selected.</p>
             </div>
-            <button className={secondaryButtonClass} data-testid="j08-clear-scope" onClick={() => { void runScreencastDemoAction("j08.clearScope", "/export/demo/redaction"); }} type="button">Clear all</button>
+            <button
+              aria-describedby="j08-clear-scope-reason"
+              className={secondaryButtonClass}
+              data-testid="j08-clear-scope"
+              data-ux-action-state="blocked-until-typed-reset-command"
+              disabled
+              type="button"
+            >
+              Clear all blocked
+            </button>
           </CardHeader>
           <CardContent>
             <DataTable compact columns={availableColumns} getRowId={(row) => `${row.id}-selected`} onSortChange={handleStaticSortChange} responsiveMode="table" rows={scopeRows.filter((item) => item.selected)} sortDirection="asc" sortKey="name" />
             <StatePanel className="mt-4" detail={`${summary.blocked} restricted or not-permitted objects are excluded. Limited items remain in scope only after redaction review.`} state="restricted" title="Object-level permission checks" />
+            <p className="mt-2 text-xs leading-5 text-alphavest-muted" id="j08-clear-scope-reason">
+              Scope reset is blocked until it is implemented as a typed export workflow command; the legacy demo action is no longer a product path.
+            </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               <FieldPill label="Included" value={`${summary.included} objects`} />
               <FieldPill label="Limited" value={`${summary.limitedIncluded} reviewed`} />
@@ -1554,6 +1611,7 @@ function ExportRedactionPage({ title }: { title: string }) {
 }
 
 function ExportPreviewPage({ title, visualState }: { title: string; visualState?: VisualState }) {
+  const { session } = useDemoSession();
   const [modalOpen, setModalOpen] = useState(visualState === "approval");
   const [acknowledged, setAcknowledged] = useState(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
@@ -1587,19 +1645,26 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
     setMessage("Routing export approval through the existing audit-gated workflow. Close and cancel are blocked until the workflow returns.");
 
     try {
-      const body = await runScreencastDemoAction("j08.confirmApproval");
+      const body = await runExportWorkflowCommand({
+        command: "APPROVE",
+        exportRequestId: currentExport?.id,
+        reason: "Compliance approved the redacted export preview through the canonical export workflow API.",
+        redactionProfile: currentExport?.redactionProfile ?? "client-safe-redacted",
+        roleKey: session.role.key,
+        tenantSlug: session.tenant.slug,
+      });
       setStatus("success");
       setMessage(
-        body.result?.auditEventId
-          ? `Audit recorded: ${body.result.auditEventId}. Export approval and metadata package generation were recorded through the existing workflow; download, share, client acceptance and advice release remain separate controls.`
-          : "Export approval and metadata package generation were recorded through the existing workflow; download, share, client acceptance and advice release remain separate controls.",
+        body.auditEventId
+          ? `Audit recorded: ${body.auditEventId}. Export approval was recorded through /api/export-workflow; generation, download, share, client acceptance and advice release remain separate controls.`
+          : "Export approval was recorded through /api/export-workflow; generation, download, share, client acceptance and advice release remain separate controls.",
       );
     } catch (error) {
       setStatus("error");
       setMessage(
         error instanceof Error
           ? `${error.message} No download, share, client acceptance or advice release change was completed.`
-          : "Export approval workflow failed without download, share, client acceptance or advice release change.",
+          : "Export approval workflow failed without generation, download, share, client acceptance or advice release change.",
       );
     }
   }
@@ -1796,7 +1861,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
           data-ux-lifecycle-validation={validationState}
           data-ux-no-overclaim="true"
         >
-          <StatePanel detail="Approval can record only the export approval and metadata-generation step. Download, share, client acceptance and advice release remain separate controlled events." state="restricted" title="Approval confirmation" />
+          <StatePanel detail="Approval can record only the export approval step through /api/export-workflow. Generation, download, share, client acceptance and advice release remain separate controlled events." state="restricted" title="Approval confirmation" />
           <label className="flex items-start gap-3 text-sm leading-6 text-alphavest-muted">
             <input
               checked={acknowledged}
@@ -1809,7 +1874,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
           </label>
           {status === "idle" ? (
             <StatePanel
-              detail={acknowledged ? "Export approval can be submitted through the existing audit-gated workflow." : "Export approval remains blocked until the scoped approval acknowledgement is checked."}
+              detail={acknowledged ? "Export approval can be submitted through the canonical export workflow API." : "Export approval remains blocked until the scoped approval acknowledgement is checked."}
               state={acknowledged ? "validation" : "blocked"}
               testId="j08-export-approval-validation-state"
               title={acknowledged ? "Export approval valid" : "Export approval blocked"}
@@ -1817,7 +1882,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
           ) : null}
           {status === "submitting" ? (
             <StatePanel
-              detail={message ?? "Routing export approval through the existing audit-gated workflow."}
+              detail={message ?? "Routing export approval through /api/export-workflow."}
               state="loading"
               testId="j08-export-approval-loading-state"
               title="Export approval submitting"
@@ -1825,7 +1890,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
           ) : null}
           {status === "success" ? (
             <StatePanel
-              detail={message ?? "Export approval and metadata package generation were recorded through the existing workflow; download, share, client acceptance and advice release remain separate controls."}
+              detail={message ?? "Export approval was recorded through /api/export-workflow; generation, download, share, client acceptance and advice release remain separate controls."}
               state="success"
               testId="j08-export-approval-success-state"
               title="Export approval recorded"
@@ -1833,7 +1898,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
           ) : null}
           {status === "error" ? (
             <StatePanel
-              detail={message ?? "Export approval workflow failed without download, share, client acceptance or advice release change."}
+              detail={message ?? "Export approval workflow failed without generation, download, share, client acceptance or advice release change."}
               state="error"
               testId="j08-export-approval-error-state"
               title="Export approval failed"
@@ -1846,6 +1911,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
 }
 
 function ExportDownloadPage({ title, visualState }: { title: string; visualState?: VisualState }) {
+  const { session } = useDemoSession();
   const [modalOpen, setModalOpen] = useState(visualState === "confirm");
   const [acknowledged, setAcknowledged] = useState(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
@@ -1879,12 +1945,18 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
     setMessage("Recording the controlled export download. Close and cancel are blocked until the workflow returns.");
 
     try {
-      const body = await runScreencastDemoAction("j08.downloadExport");
+      const body = await runExportWorkflowCommand({
+        command: "DOWNLOAD",
+        exportRequestId: currentExport?.id,
+        reason: "Record the controlled export download through the canonical export workflow API.",
+        roleKey: session.role.key,
+        tenantSlug: session.tenant.slug,
+      });
       setStatus("success");
       setMessage(
-        body.result?.auditEventId
-          ? `Audit recorded: ${body.result.auditEventId}. Controlled export download was recorded through the existing workflow; secure share, client acceptance and advice release remain separate controls.`
-          : "Controlled export download was recorded through the existing workflow; secure share, client acceptance and advice release remain separate controls.",
+        body.auditEventId
+          ? `Audit recorded: ${body.auditEventId}. Controlled export download was recorded through /api/export-workflow; secure share, client acceptance and advice release remain separate controls.`
+          : "Controlled export download was recorded through /api/export-workflow; secure share, client acceptance and advice release remain separate controls.",
       );
     } catch (error) {
       setStatus("error");
@@ -1954,7 +2026,7 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
                 items={[
                   { label: "Export", value: currentExport?.id.slice(0, 8) ?? "EXP-2025-05-21-0087" },
                   { label: "Source", value: currentExport?.tenant ?? "Client Comms Portfolio Summary" },
-                  { label: "Requested by", value: "Demo workflow actor" },
+                  { label: "Requested by", value: "Export workflow actor" },
                   { label: "Prepared", value: currentExport?.requestedAt.slice(0, 16).replace("T", " ") ?? "May 21, 2025 09:42" },
                   { label: "Format", value: "ZIP manifest package" },
                   { label: "Binary status", value: <Badge tone="gold">{currentExport?.binaryStatus ?? "Metadata-only"}</Badge> },
@@ -2082,7 +2154,7 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
           </label>
           {status === "idle" ? (
             <StatePanel
-              detail={acknowledged ? "Controlled download can be recorded through the existing audit-gated workflow." : "Download remains blocked until the controlled-download acknowledgement is checked."}
+              detail={acknowledged ? "Controlled download can be recorded through the canonical export workflow API." : "Download remains blocked until the controlled-download acknowledgement is checked."}
               state={acknowledged ? "validation" : "blocked"}
               testId="j08-export-download-validation-state"
               title={acknowledged ? "Download confirmation valid" : "Download confirmation blocked"}
@@ -2098,7 +2170,7 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
           ) : null}
           {status === "success" ? (
             <StatePanel
-              detail={message ?? "Controlled export download was recorded through the existing workflow; secure share, client acceptance and advice release remain separate controls."}
+              detail={message ?? "Controlled export download was recorded through /api/export-workflow; secure share, client acceptance and advice release remain separate controls."}
               state="success"
               testId="j08-export-download-success-state"
               title="Download recorded"

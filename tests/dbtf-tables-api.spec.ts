@@ -1,6 +1,61 @@
 import { execFileSync } from "node:child_process";
 import "dotenv/config";
-import { expect, test } from "@playwright/test";
+import { expect, test, type APIRequestContext } from "@playwright/test";
+
+import { stableId } from "../lib/stable-id";
+
+const safeExportPayload = {
+  clientSummary: "Released client-safe export summary.",
+  decisionState: "Released",
+  releasedAt: "2026-06-24T00:00:00.000Z",
+  status: "RELEASED_TO_CLIENT",
+  title: "Liquidity governance decision",
+};
+
+function safeScopeItem(label: string) {
+  return {
+    access: "Allowed",
+    id: stableId(`dbtf-export-workflow:${label}`),
+    name: "Released client-safe decision summary",
+    payloadClassifications: ["CLIENT_SAFE_SUMMARY", "RELEASED_EVIDENCE_SUMMARY"],
+    selected: true,
+    type: "DECISION",
+  };
+}
+
+async function exportCommand(request: APIRequestContext, data: Record<string, unknown>) {
+  return request.post("/api/export-workflow", { data });
+}
+
+async function prepareGeneratedExport(request: APIRequestContext) {
+  const scope = await exportCommand(request, {
+    command: "SET_SCOPE",
+    reason: "Select client-safe released objects for DBTF readmodel proof.",
+    redactionProfile: "client-safe-redacted",
+    roleKey: "compliance_officer",
+    scopeItems: [safeScopeItem("generated-readmodel")],
+    tenantSlug: "summit",
+  });
+  const scopeBody = await scope.json();
+
+  expect(scope.ok(), JSON.stringify(scopeBody)).toBe(true);
+
+  const exportRequestId = scopeBody.exportRequestId as string;
+  for (const command of ["VALIDATE_REDACTION", "PREVIEW", "APPROVE", "GENERATE"] as const) {
+    const response = await exportCommand(request, {
+      command,
+      exportRequestId,
+      payload: safeExportPayload,
+      reason: `Prepare ${command.toLowerCase()} through canonical export workflow API.`,
+      redactionProfile: "client-safe-redacted",
+      roleKey: "compliance_officer",
+      tenantSlug: "summit",
+    });
+    const body = await response.json();
+
+    expect(response.ok(), `${command}: ${JSON.stringify(body)}`).toBe(true);
+  }
+}
 
 test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
   test.beforeAll(() => {
@@ -271,12 +326,7 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
   });
 
   test("surfaces J08 export wizard lifecycle from ExportRequest rows", async ({ request }) => {
-    for (const actionId of ["j08.selectDataExtract", "j08.clearScope", "j08.confirmApproval"]) {
-      const response = await request.post("/api/demo-workflow", { data: { actionId } });
-      const body = await response.json();
-
-      expect(response.ok(), `${actionId}: ${JSON.stringify(body)}`).toBe(true);
-    }
+    await prepareGeneratedExport(request);
 
     const response = await request.get("/api/export-workflow?tenantSlug=summit&roleKey=principal");
     const body = await response.json();
@@ -286,7 +336,7 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
     expect(body.snapshot.current.status).toBe("Generated");
     expect(body.snapshot.current.realFileGenerated).toBe(false);
     expect(body.snapshot.summary.included).toBeGreaterThan(0);
-    expect(body.snapshot.timeline.some((item: { title: string }) => item.title.toLowerCase().includes("approved"))).toBe(true);
+    expect(body.snapshot.timeline.some((item: { title: string }) => item.title.toLowerCase().includes("approve"))).toBe(true);
   });
 
   test("derives Ops/SLA metrics from queue and data-quality rows", async ({ request }) => {

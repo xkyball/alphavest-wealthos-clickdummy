@@ -15,7 +15,7 @@ import {
   ReviewStatus,
   VisibilityStatus,
 } from "@prisma/client";
-import { expect, test } from "@playwright/test";
+import { expect, test, type APIRequestContext } from "@playwright/test";
 
 import { stableId } from "../lib/stable-id";
 import { scfCriticalGateAuditContract } from "../lib/audit-service";
@@ -39,6 +39,61 @@ const demoTargets = {
 const bennettDecisionId = stableId("decision:bennett:liquidity-review");
 const bennettRecommendationId = stableId("recommendation:bennett:liquidity-review");
 const summitDecisionId = stableId("decision:summit:liquidity-review");
+const safeExportPayload = {
+  clientSummary: "Released client-safe export summary.",
+  decisionState: "Released",
+  releasedAt: "2026-06-24T00:00:00.000Z",
+  status: "RELEASED_TO_CLIENT",
+  title: "Liquidity governance decision",
+};
+
+function safeScopeItem(label: string) {
+  return {
+    access: "Allowed",
+    id: stableId(`demo-workflow-export-boundary:${label}`),
+    name: "Released client-safe decision summary",
+    payloadClassifications: ["CLIENT_SAFE_SUMMARY", "RELEASED_EVIDENCE_SUMMARY"],
+    selected: true,
+    type: "DECISION",
+  };
+}
+
+async function exportCommand(request: APIRequestContext, data: Record<string, unknown>) {
+  return request.post("/api/export-workflow", { data });
+}
+
+async function createGeneratedExport(request: APIRequestContext, label: string) {
+  const scope = await exportCommand(request, {
+    command: "SET_SCOPE",
+    reason: "Select client-safe released objects for demo workflow boundary proof.",
+    redactionProfile: "client-safe-redacted",
+    roleKey: "compliance_officer",
+    scopeItems: [safeScopeItem(label)],
+    tenantSlug: "summit",
+  });
+  const scopeBody = await scope.json();
+
+  expect(scope.ok(), JSON.stringify(scopeBody)).toBe(true);
+
+  const exportRequestId = scopeBody.exportRequestId as string;
+  for (const command of ["VALIDATE_REDACTION", "PREVIEW", "APPROVE", "GENERATE"] as const) {
+    const response = await exportCommand(request, {
+      command,
+      exportRequestId,
+      payload: safeExportPayload,
+      reason: `Run ${command.toLowerCase()} through canonical export workflow API.`,
+      redactionProfile: "client-safe-redacted",
+      roleKey: "compliance_officer",
+      tenantSlug: "summit",
+    });
+    const body = await response.json();
+
+    expect(response.ok(), `${command}: ${JSON.stringify(body)}`).toBe(true);
+    if (command === "GENERATE") return body as { auditEventId: string; status: string };
+  }
+
+  throw new Error("Export generation proof did not return.");
+}
 
 const workflowActions = [
   "j02.requestEvidence",
@@ -72,11 +127,6 @@ const workflowActions = [
   "j07.saveRoleChanges",
   "j07.approveAccess",
   "j07.exportAudit",
-  "j08.selectDataExtract",
-  "j08.clearScope",
-  "j08.confirmApproval",
-  "j08.downloadExport",
-  "j08.shareExport",
   "j09.portalUpload",
   "j09.submitProfile",
   "j09.addMember",
@@ -122,42 +172,25 @@ test.describe("demo workflow API", () => {
       expect(body.actionId).toBe(actionId);
       expect(body.result).toBeTruthy();
 
-      if (actionId === "j08.confirmApproval") {
-        expect(body.result.exportManifestVersion).toBe("2026.06.first-build-phase7");
-        expect(body.result.exportLifecycle).toMatchObject({
-          approved: true,
-          downloaded: false,
-          generated: true,
-          previewed: true,
-          shared: false,
-          stage: "generated",
-        });
-        expect(body.result.exportLifecycle.allowedNextActions).toEqual(["download"]);
-      }
+    }
+  });
 
-      if (actionId === "j08.downloadExport") {
-        expect(body.result.exportLifecycle).toMatchObject({
-          approved: true,
-          downloaded: false,
-          generated: true,
-          previewed: true,
-          shared: false,
-          stage: "generated",
-        });
-        expect(body.result.exportLifecycle.allowedNextActions).toEqual(["download"]);
-      }
+  test("legacy J08 export demo actions are retired in favor of the typed export workflow API", async ({ request }) => {
+    for (const actionId of ["j08.selectDataExtract", "j08.clearScope", "j08.confirmApproval", "j08.downloadExport", "j08.shareExport"]) {
+      const response = await request.post("/api/demo-workflow", {
+        data: { actionId },
+      });
+      const body = await response.json();
 
-      if (actionId === "j08.shareExport") {
-        expect(body.result.exportLifecycle).toMatchObject({
-          approved: true,
-          downloaded: true,
-          generated: true,
-          previewed: true,
-          shared: false,
-          stage: "downloaded",
-        });
-        expect(body.result.exportLifecycle.allowedNextActions).toEqual(["share"]);
-      }
+      expect(response.status(), `${actionId}: ${JSON.stringify(body)}`).toBe(410);
+      expect(body.reasonCode).toBe("SAFE_ERROR");
+      expect(body.legacyReasonCode).toBe("LEGACY_EXPORT_DEMO_ACTION_RETIRED");
+      expect(body.canonicalApiRoute).toBe("/api/export-workflow");
+      expect(body.mutated).toBe(false);
+      expect(body.noClientRelease).toBe(true);
+      expect(body.safety.commandExecuted).toBe(false);
+      expect(body.safety.noExportApproval).toBe(true);
+      expect(body.safety.noExportDownload).toBe(true);
     }
   });
 
@@ -465,39 +498,14 @@ test.describe("demo workflow API", () => {
       expect(decisionBody.result.gatePassed).toBe(true);
       expect(decisionBody.result.decisionRows).toBe(1);
 
-      for (const actionId of ["j08.selectDataExtract", "j08.clearScope"] as const) {
-        const exportSetupResponse = await request.post("/api/demo-workflow", {
-          data: { actionId },
-        });
-        const exportSetupBody = await exportSetupResponse.json();
+      const generatedExportBody = await createGeneratedExport(request, "positive-spine-export-boundary");
 
-        expect(exportSetupResponse.ok(), `${actionId}: ${JSON.stringify(exportSetupBody)}`).toBe(true);
-        expect(exportSetupBody.noClientRelease).toBe(true);
-      }
-
-      const exportApprovalResponse = await request.post("/api/demo-workflow", {
-        data: { actionId: "j08.confirmApproval" },
-      });
-      const exportApprovalBody = await exportApprovalResponse.json();
-
-      expect(exportApprovalResponse.ok(), JSON.stringify(exportApprovalBody)).toBe(true);
-      expect(exportApprovalBody.noClientRelease).toBe(true);
-      expect(exportApprovalBody.result.exportManifestVersion).toBe("2026.06.first-build-phase7");
-      expect(exportApprovalBody.result.exportLifecycle).toMatchObject({
-        approved: true,
-        downloaded: false,
-        generated: true,
-        previewed: true,
-        shared: false,
-        stage: "generated",
-      });
-      expect(exportApprovalBody.result.exportGate.allowedToGenerate).toBe(true);
-      expect(exportApprovalBody.result.realFileGenerated).toBe(false);
+      expect(generatedExportBody.status).toBe("GENERATED");
 
       const [releaseAudit, decisionAudit, exportAudit] = await Promise.all([
         prisma.auditEvent.findUniqueOrThrow({ where: { id: releaseBody.result.auditEventId } }),
         prisma.auditEvent.findUniqueOrThrow({ where: { id: decisionBody.result.auditEventId } }),
-        prisma.auditEvent.findUniqueOrThrow({ where: { id: exportApprovalBody.result.auditEventId } }),
+        prisma.auditEvent.findUniqueOrThrow({ where: { id: generatedExportBody.auditEventId } }),
       ]);
 
       expect(releaseAudit.result).toBe(AuditResult.SUCCESS);
@@ -505,7 +513,7 @@ test.describe("demo workflow API", () => {
       expect(decisionAudit.result).toBe(AuditResult.SUCCESS);
       expect(decisionAudit.eventType).toBe("screencast.decision.accepted");
       expect(exportAudit.result).toBe(AuditResult.SUCCESS);
-      expect(exportAudit.eventType).toBe("screencast.export.approved_generated");
+      expect(exportAudit.eventType).toBe("export.workflow.generate");
     });
 
     test("submit review persists analyst review state and reload proof", async ({ request }) => {

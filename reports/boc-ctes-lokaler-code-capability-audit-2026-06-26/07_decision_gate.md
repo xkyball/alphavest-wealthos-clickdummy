@@ -1,7 +1,8 @@
 # Human Decision Gate
 
-Ticket: `DECISION-1`  
-Status: `NEEDS_HUMAN_DECISION`  
+Ticket: `DECISION-1`
+Status: `ACCEPTED_WITH_LIMITATIONS`
+Decision source: user follow-up on 2026-06-26 authorized the recommended proof plus cleanup slice.
 Codex recommendation: `ACCEPT_WITH_LIMITATIONS_AND_AUTHORIZE_PROOF_PLUS_CLEANUP`
 
 ## Decision Needed
@@ -41,4 +42,4 @@ This is the cleanest route to remove legacy ambiguity instead of hiding it behin
 
 ## Stop Condition
 
-Codex should stop here until the human chooses the baseline decision and authorizes the next proof or cleanup slice.
+This stop condition was cleared by the user follow-up on 2026-06-26. The authorized next slice is: split export out of `/api/demo-workflow`, route export UI to `/api/export-workflow`, hard-block remaining fake export actions, and run focused proof.

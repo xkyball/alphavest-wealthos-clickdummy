@@ -2,6 +2,26 @@ import { execFileSync } from "node:child_process";
 import { expect, type APIRequestContext, type Page, test } from "@playwright/test";
 
 import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { stableId } from "../lib/stable-id";
+
+const safeExportPayload = {
+  clientSummary: "Released client-safe export summary.",
+  decisionState: "Released",
+  releasedAt: "2026-06-24T00:00:00.000Z",
+  status: "RELEASED_TO_CLIENT",
+  title: "Liquidity governance decision",
+};
+
+function safeScopeItem(label: string) {
+  return {
+    access: "Allowed",
+    id: stableId(`export-download-lifecycle:${label}`),
+    name: "Released client-safe decision summary",
+    payloadClassifications: ["CLIENT_SAFE_SUMMARY", "RELEASED_EVIDENCE_SUMMARY"],
+    selected: true,
+    type: "DECISION",
+  };
+}
 
 async function authenticate(page: Page) {
   await page.context().addCookies([
@@ -16,12 +36,37 @@ async function authenticate(page: Page) {
   ]);
 }
 
-async function prepareApprovedExport(request: APIRequestContext) {
-  for (const actionId of ["j08.selectDataExtract", "j08.clearScope", "j08.confirmApproval"]) {
-    const response = await request.post("/api/demo-workflow", { data: { actionId } });
+async function exportCommand(request: APIRequestContext, data: Record<string, unknown>) {
+  return request.post("/api/export-workflow", { data });
+}
+
+async function prepareGeneratedExport(request: APIRequestContext) {
+  const scope = await exportCommand(request, {
+    command: "SET_SCOPE",
+    reason: "Select client-safe released objects for export download lifecycle proof.",
+    redactionProfile: "client-safe-redacted",
+    roleKey: "compliance_officer",
+    scopeItems: [safeScopeItem("generated-download")],
+    tenantSlug: "bennett",
+  });
+  const scopeBody = await scope.json();
+
+  expect(scope.ok(), JSON.stringify(scopeBody)).toBe(true);
+
+  const exportRequestId = scopeBody.exportRequestId as string;
+  for (const command of ["VALIDATE_REDACTION", "PREVIEW", "APPROVE", "GENERATE"] as const) {
+    const response = await exportCommand(request, {
+      command,
+      exportRequestId,
+      payload: safeExportPayload,
+      reason: `Prepare ${command.toLowerCase()} before controlled download.`,
+      redactionProfile: "client-safe-redacted",
+      roleKey: "compliance_officer",
+      tenantSlug: "bennett",
+    });
     const body = await response.json();
 
-    expect(response.ok(), `${actionId}: ${JSON.stringify(body)}`).toBe(true);
+    expect(response.ok(), `${command}: ${JSON.stringify(body)}`).toBe(true);
   }
 }
 
@@ -64,7 +109,7 @@ test.describe("UXP3-015 export download confirmation lifecycle", () => {
   });
 
   test("requires acknowledgement and records only the controlled download event", async ({ page, request }) => {
-    await prepareApprovedExport(request);
+    await prepareGeneratedExport(request);
     await page.goto("/export/demo/download?state=base");
     await page.getByTestId("j08-open-download-confirmation").click();
 
@@ -82,13 +127,13 @@ test.describe("UXP3-015 export download confirmation lifecycle", () => {
       "submits-controlled-download-only",
     );
 
-    await page.route("**/api/demo-workflow", async (route) => {
+    await page.route("**/api/export-workflow", async (route) => {
       await new Promise((resolve) => setTimeout(resolve, 150));
       await route.continue();
     });
 
     const responsePromise = page.waitForResponse(
-      (response) => response.url().includes("/api/demo-workflow") && response.request().method() === "POST",
+      (response) => response.url().includes("/api/export-workflow") && response.request().method() === "POST",
     );
 
     await page.getByTestId("j08-download-export").click();

@@ -3,36 +3,94 @@ import "dotenv/config";
 import { execFileSync } from "node:child_process";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { ObjectType, PrismaClient, WorkflowStatus } from "@prisma/client";
-import { expect, test } from "@playwright/test";
+import { expect, test, type APIRequestContext } from "@playwright/test";
 
 import { demoTenants } from "../lib/demo-session";
 import { stableId } from "../lib/stable-id";
 
 const summitTenantId = demoTenants.find((tenant) => tenant.slug === "summit")?.id;
 const summitRecommendationId = stableId("recommendation:summit:liquidity-review");
-const summitExportRequestId = stableId("export:summit:evidence-pack");
+const safeExportPayload = {
+  clientSummary: "Released client-safe export summary.",
+  decisionState: "Released",
+  releasedAt: "2026-06-24T00:00:00.000Z",
+  status: "RELEASED_TO_CLIENT",
+  title: "Liquidity governance decision",
+};
 
-async function createSummitHighSeverityIssue(prisma: PrismaClient) {
+function safeScopeItem(label: string) {
+  return {
+    access: "Allowed",
+    id: stableId(`phase9-export-workflow:${label}`),
+    name: "Released client-safe decision summary",
+    payloadClassifications: ["CLIENT_SAFE_SUMMARY", "RELEASED_EVIDENCE_SUMMARY"],
+    selected: true,
+    type: "DECISION",
+  };
+}
+
+async function exportCommand(request: APIRequestContext, data: Record<string, unknown>) {
+  return request.post("/api/export-workflow", { data });
+}
+
+async function prepareApprovalRequiredExport(request: APIRequestContext) {
+  const scope = await exportCommand(request, {
+    command: "SET_SCOPE",
+    reason: "Select client-safe released objects for phase 9 blocker proof.",
+    redactionProfile: "client-safe-redacted",
+    roleKey: "compliance_officer",
+    scopeItems: [safeScopeItem("data-quality-blocker")],
+    tenantSlug: "summit",
+  });
+  const scopeBody = await scope.json();
+
+  expect(scope.ok(), JSON.stringify(scopeBody)).toBe(true);
+
+  const exportRequestId = scopeBody.exportRequestId as string;
+  for (const command of ["VALIDATE_REDACTION", "PREVIEW"] as const) {
+    const response = await exportCommand(request, {
+      command,
+      exportRequestId,
+      payload: safeExportPayload,
+      reason: `Prepare ${command.toLowerCase()} before high-severity blocker proof.`,
+      redactionProfile: "client-safe-redacted",
+      roleKey: "compliance_officer",
+      tenantSlug: "summit",
+    });
+    const body = await response.json();
+
+    expect(response.ok(), `${command}: ${JSON.stringify(body)}`).toBe(true);
+  }
+
+  return exportRequestId;
+}
+
+async function createSummitHighSeverityIssue(
+  prisma: PrismaClient,
+  target: { targetId?: string; targetType?: ObjectType } = {},
+) {
   if (!summitTenantId) throw new Error("Summit demo tenant is missing.");
+  const targetId = target.targetId ?? summitRecommendationId;
+  const targetType = target.targetType ?? ObjectType.RECOMMENDATION;
 
   await prisma.dataQualityIssue.upsert({
-    where: { id: stableId("data-quality:summit:phase9-release-blocker") },
+    where: { id: stableId(`data-quality:summit:phase9-release-blocker:${targetId}`) },
     create: {
-      id: stableId("data-quality:summit:phase9-release-blocker"),
+      id: stableId(`data-quality:summit:phase9-release-blocker:${targetId}`),
       clientTenantId: summitTenantId,
       description: "Phase 9 release/export blocker: conflicting beneficial ownership data needs review.",
       issueType: "ownership_conflict",
       ownerUserId: stableId("user:analyst"),
       severity: "high",
       status: WorkflowStatus.IN_REVIEW,
-      targetId: summitRecommendationId,
-      targetType: ObjectType.RECOMMENDATION,
+      targetId,
+      targetType,
     },
     update: {
       severity: "high",
       status: WorkflowStatus.IN_REVIEW,
-      targetId: summitRecommendationId,
-      targetType: ObjectType.RECOMMENDATION,
+      targetId,
+      targetType,
     },
   });
 }
@@ -87,10 +145,17 @@ test.describe.serial("Phase 9 support hardening", () => {
 
   test("blocks export approval while high-severity data quality is active", async ({ request }) => {
     if (!prisma) throw new Error("Prisma client was not initialized.");
-    await createSummitHighSeverityIssue(prisma);
+    const exportRequestId = await prepareApprovalRequiredExport(request);
+    await createSummitHighSeverityIssue(prisma, { targetId: exportRequestId, targetType: ObjectType.EXPORT_REQUEST });
 
-    const response = await request.post("/api/demo-workflow", {
-      data: { actionId: "j08.confirmApproval" },
+    const response = await exportCommand(request, {
+      command: "APPROVE",
+      exportRequestId,
+      payload: safeExportPayload,
+      reason: "Approval must fail closed while high-severity data quality is active.",
+      redactionProfile: "client-safe-redacted",
+      roleKey: "compliance_officer",
+      tenantSlug: "summit",
     });
     const body = await response.json();
 
@@ -99,7 +164,7 @@ test.describe.serial("Phase 9 support hardening", () => {
     expect(body.mutated).toBe(false);
 
     const exportRequest = await prisma.exportRequest.findUnique({
-      where: { id: summitExportRequestId },
+      where: { id: exportRequestId },
     });
     expect(exportRequest?.generatedFileDocumentId).toBeNull();
   });

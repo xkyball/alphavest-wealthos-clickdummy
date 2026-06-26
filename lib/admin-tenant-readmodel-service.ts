@@ -60,7 +60,7 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
       take: 12,
       where: {
         clientTenant: { platformTenantId: demoPlatformTenantId },
-        eventType: { in: ["screencast.tenant.invitation", "p44.phase2.tenant_create.success", "auth.dummy.invitation.created"] },
+        eventType: { in: ["screencast.tenant.details_saved", "screencast.tenant.invitation", "p44.phase2.tenant_create.success", "auth.dummy.invitation.created"] },
       },
     }),
   ]);
