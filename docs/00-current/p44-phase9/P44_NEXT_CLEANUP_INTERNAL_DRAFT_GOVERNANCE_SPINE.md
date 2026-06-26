@@ -18,18 +18,16 @@ Stop overloading `Recommendation.assumptionsJson` and `Recommendation.clientSumm
 - Migrated P44 Phase 5 internal draft creation, classification, unsupported-claim capture, reject, rebuild and trace mapping to the new models.
 - Stopped demo seed and P44 Phase 6/7 command modules from writing internal draft governance into `Recommendation.assumptionsJson` / `Recommendation.clientSummaryDraft`.
 - Added production mutation guard: `tests/internal-draft-governance-spine.spec.ts` fails if production recommendation mutations write either overloaded field again.
-- Kept legacy read fallback only behind `ALPHAVEST_INTERNAL_DRAFT_LEGACY_FALLBACK=1`.
+- Removed the legacy read fallback. Runtime and tests now require the canonical `InternalDraft` / `DraftClassification` / `UnsupportedClaim` / `DraftTrace` spine.
 
-## Temporary Fallback Removal Ticket
+## Fallback Removal Status
 
-Ticket: `P44-INTERNAL-DRAFT-LEGACY-FALLBACK-REMOVAL`
-
-Remove the fallback after migration verification proves:
+Status: `REMOVED_IN_FAVOR_OF_CANONICAL_INTERNAL_DRAFT_SPINE`
 
 - no production mutation writes `Recommendation.assumptionsJson` for draft governance;
 - no production mutation writes `Recommendation.clientSummaryDraft` for draft governance;
-- existing demo/runtime data has equivalent rows in `internal_drafts`, `draft_classifications`, `unsupported_claims` and `draft_traces`;
-- client/export projection tests pass with the fallback disabled.
+- demo/runtime data uses equivalent rows in `internal_drafts`, `draft_classifications`, `unsupported_claims` and `draft_traces`;
+- client/export projection tests pass without an env-flag compatibility path.
 
 ## Bold Recommendation
 

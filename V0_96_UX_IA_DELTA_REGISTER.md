@@ -126,7 +126,7 @@ Superseded prior register values are retained only as stale history for guard co
 | V0.96 domain | Existing API/service/test evidence |
 | --- | --- |
 | Evidence/document intake | `app/api/documents/**`, `lib/document-upload-service.ts`, `lib/evidence-review-service.ts`, `lib/evidence-service.ts`, `tests/document-upload-api.spec.ts`, `tests/document-upload-flow.spec.ts`, `tests/evidence-review-api.spec.ts` |
-| Analyst workbench / AI draft | `app/api/demo-workflow/route.ts`, `lib/demo-workflow-mutation.ts`, `lib/demo-workflow-validation.ts`, `lib/internal-workflow-demo-data.ts`, `tests/workflow-gate.spec.ts`, `tests/true-ux-p0-safety.spec.ts` |
+| Analyst workbench / AI draft | `app/api/demo-workflow/route.ts`, `lib/typed-workflow-command-bus.ts`, `lib/demo-workflow-validation.ts`, `lib/internal-workflow-demo-data.ts`, `tests/workflow-gate.spec.ts`, `tests/true-ux-p0-safety.spec.ts` |
 | Advisor/compliance release | `lib/workflow-gate.ts`, `lib/visibility-engine.ts`, `lib/control-layer/client-visibility.ts`, `tests/workflow-gate.spec.ts`, `tests/client-visibility-projection.spec.ts`, `tests/true-ux-client-projection.spec.ts` |
 | Audit persistence | `app/api/audit-events/route.ts`, `lib/audit-service.ts`, `lib/control-layer/audit-guard.ts`, `tests/audit-fail-closed.spec.ts`, `tests/phase6-audit-persistence.spec.ts` |
 | Governance / non-bypass | `app/api/admin-tenants/route.ts`, `lib/permission-engine.ts`, `lib/control-layer/permission-decision.ts`, `tests/permission-engine.spec.ts`, `tests/governance-non-bypass.spec.ts` |
@@ -166,7 +166,7 @@ WP-00 schema decision: `PARTIAL_BUT_SUFFICIENT_FOR_NEXT_RECHECK`. No migration i
 
 | Required classification key | Current classification | Evidence |
 | --- | --- | --- |
-| `AUDIT_SERVICE_REALITY` | `ALREADY_PRESENT_WITH_CURRENT_PROOF` | `lib/audit-service.ts`, `lib/control-layer/audit-guard.ts`, `lib/demo-workflow-mutation.ts`, `tests/audit-fail-closed.spec.ts`, `tests/phase6-audit-persistence.spec.ts` enforce minimum fields and fail-closed audit persistence. |
+| `AUDIT_SERVICE_REALITY` | `ALREADY_PRESENT_WITH_CURRENT_PROOF` | `lib/audit-service.ts`, `lib/control-layer/audit-guard.ts`, `lib/typed-workflow-command-bus.ts`, `tests/audit-fail-closed.spec.ts`, `tests/phase6-audit-persistence.spec.ts` enforce minimum fields and fail-closed audit persistence. |
 | `AUDIT_API_REALITY` | `ALREADY_PRESENT_WITH_SAFE_ERROR_ENVELOPE` | `app/api/audit-events/route.ts` returns scoped rows from `listDbtfAuditEvents` and safe empty/error envelopes without raw metadata disclosure. |
 | `AUDIT_UI_REALITY` | `ACCEPTED_WITH_TARGETED_REFACTOR` | `components/ui/audit-timeline.tsx` now distinguishes `source-backed`, `pending`, `unavailable` and `display-only`; `components/decisions-governance-screen.tsx` labels compliance demo audit rows as display-only; `components/communication-export-ops-screen.tsx` exposes source-backed DB audit state. |
 | `AUDIT_TEST_REALITY` | `ACCEPTED_WITH_FOCUSED_TRUE_UX_PROOF` | `tests/true-ux-audit-surface.spec.ts` covers display-only timelines, compliance audit copy, safe API error envelopes and source-backed readmodel contracts. Existing P0 audit tests remain the service-level proof. |

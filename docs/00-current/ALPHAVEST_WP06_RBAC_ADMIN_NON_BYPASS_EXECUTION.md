@@ -63,7 +63,7 @@ Current repo evidence:
 - Route/action/payload separation exists in `permissionEngine.evaluateRouteBoundary` and `permissionEngine.can`.
 - Admin/security non-bypass rules exist for recommendation release/block, advisor approval, evidence sufficiency, visibility release, export, governance management and internal advice payload in `lib/permission-engine.ts`.
 - Payload projection/redaction exists in `lib/visibility-engine.ts`; forbidden client projection fields include AI draft, internal rationale, compliance notes, audit internals, evidence internals and storage/file operational fields.
-- Demo workflow compatibility path uses WCL actor/scope/permission wrappers and denied-audit-before-mutation in `lib/demo-workflow-mutation.ts`.
+- Demo workflow compatibility path uses WCL actor/scope/permission wrappers and denied-audit-before-mutation in `lib/typed-workflow-command-bus.ts`.
 - Canonical Journey command path denies admin/security bypass through operational-role checks and tenant-scope checks in `lib/journeys/journey-api-service.ts`.
 - Governance UI feedback/no-overclaim state exists in `components/decisions-governance-screen.tsx`, `components/admin-tenant-setup-screen.tsx`, `components/internal-workflow-screen.tsx` and UI state tests.
 
@@ -131,8 +131,8 @@ Result: `ZERO-DELTA PRODUCT CODE`.
 Proof:
 
 - `lib/permission-engine.ts` denies admin/security bypass for evidence sufficiency, visibility release and export; non-compliance release remains denied before release authority.
-- `lib/demo-workflow-mutation.ts` writes denied audit events and skips mutation when permission is denied.
-- `lib/demo-workflow-mutation.ts` and `lib/journeys/journey-api-service.ts` fail closed before mutation when audit persistence is unavailable.
+- `lib/typed-workflow-command-bus.ts` writes denied audit events and skips mutation when permission is denied.
+- `lib/typed-workflow-command-bus.ts` and `lib/journeys/journey-api-service.ts` fail closed before mutation when audit persistence is unavailable.
 - `lib/journeys/journey-api-service.ts` denies admin/security operational gate commands with `admin_non_bypass`.
 
 Validation:
@@ -343,10 +343,10 @@ Status: BLOCKED until implementation tasks are complete.
 | --- | --- | --- |
 | Actor context | `lib/control-layer/actor-context.ts`, `lib/demo-session.ts`, `lib/auth/current-user.ts` | Demo actor context is normalized in WCL, while Journey API uses current-user. This is workable but creates two enforcement entry points. |
 | Route registry / route shell | `lib/route-registry.ts`, `lib/permission-engine.ts`, `components/process-navigation.tsx`, screen components | Route metadata carries object/action and scope labels. `permissionEngine.evaluateRouteBoundary` separates shell accessibility from action and payload decisions. |
-| Action permission | `lib/permission-engine.ts`, `lib/control-layer/permission-decision.ts`, `lib/demo-workflow-mutation.ts`, `lib/journeys/journey-api-service.ts` | Permission engine already denies admin release, admin evidence sufficiency, admin export and admin visibility bypass. Demo workflow and Journey API both perform pre-mutation checks, but they use related rather than identical guard wrappers. |
+| Action permission | `lib/permission-engine.ts`, `lib/control-layer/permission-decision.ts`, `lib/typed-workflow-command-bus.ts`, `lib/journeys/journey-api-service.ts` | Permission engine already denies admin release, admin evidence sufficiency, admin export and admin visibility bypass. Demo workflow and Journey API both perform pre-mutation checks, but they use related rather than identical guard wrappers. |
 | Object / tenant scope | `lib/control-layer/scope-resolver.ts`, `lib/permission-engine.ts`, `lib/journeys/journey-api-service.ts` | Tenant mismatch and object-scope gaps fail closed. Journey API also checks current-user tenant on load. |
 | Payload visibility | `lib/visibility-engine.ts`, `lib/control-layer/client-visibility.ts`, `lib/client-portal-projection-state.ts` | Recommendation, decision and document projections redact internal-only fields for client roles and fail closed for unreleased payloads. |
-| Audit fail-closed | `lib/audit-service.ts`, `lib/control-layer/audit-guard.ts`, `lib/demo-workflow-mutation.ts`, `lib/journeys/journey-api-service.ts` | Critical actions require minimum audit fields and audit persistence. Demo workflow and Journey API block or error before mutation if audit persistence is unavailable. |
+| Audit fail-closed | `lib/audit-service.ts`, `lib/control-layer/audit-guard.ts`, `lib/typed-workflow-command-bus.ts`, `lib/journeys/journey-api-service.ts` | Critical actions require minimum audit fields and audit persistence. Demo workflow and Journey API block or error before mutation if audit persistence is unavailable. |
 | Governance UI | `components/decisions-governance-screen.tsx`, `components/admin-tenant-setup-screen.tsx` | UI already names governance capability boundaries, second-confirmation states and blocked states. It is strong copy/state proof, but implementation authority must remain in services/API. |
 | API surfaces | `app/api/demo-workflow/route.ts`, `app/api/journeys/[id]/commands/route.ts`, `app/api/journeys/[id]/client-projection/route.ts`, `app/api/documents/*`, `app/api/export-workflow/route.ts` | Main safety surfaces exist. `/api/demo-workflow` is broad compatibility; `/api/journeys/:id/commands` is the cleaner command spine after WP05. |
 

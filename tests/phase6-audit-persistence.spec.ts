@@ -14,7 +14,7 @@ import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
 import {
   AuditPersistenceUnavailableError,
   runDemoWorkflowMutation,
-} from "../lib/demo-workflow-mutation";
+} from "../lib/typed-workflow-command-bus";
 
 test.describe("SCF-P06 critical gate audit persistence", () => {
   let prisma: PrismaClient;

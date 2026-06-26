@@ -29,7 +29,7 @@ const requiredTargetFiles = [
   "app/api/documents/route.ts",
   "app/api/documents/upload/route.ts",
   "lib/audit-service.ts",
-  "lib/demo-workflow-mutation.ts",
+  "lib/typed-workflow-command-bus.ts",
   "lib/demo-workflow-validation.ts",
   "lib/document-storage-adapter.ts",
   "lib/document-upload-service.ts",

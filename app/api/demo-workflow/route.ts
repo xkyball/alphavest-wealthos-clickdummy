@@ -34,7 +34,7 @@ import {
   AdvisorApprovalWorkflowError,
   runDemoWorkflowMutation,
   runAdvisorApprovalWorkflowMutation,
-} from "@/lib/demo-workflow-mutation";
+} from "@/lib/typed-workflow-command-bus";
 import { exportService } from "@/lib/export-service";
 import { fileMetadataService } from "@/lib/file-metadata-service";
 import type { DemoRoleKey } from "@/lib/demo-session";

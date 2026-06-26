@@ -599,7 +599,7 @@ This task inherits the AlphaVest rules: full-workflow only, main as false-gap, v
 - `components/ui/state-panel.tsx`
 - `components/ui/evidence-list.tsx`
 - `app/api/demo-workflow/route.ts`
-- `lib/demo-workflow-mutation.ts`
+- `lib/typed-workflow-command-bus.ts`
 - `lib/workflow-gate.ts`
 - `lib/visibility-engine.ts`
 - `lib/export-service.ts`

@@ -29,7 +29,7 @@ No route, schema, migration or broad audit analytics product was added. Existing
 
 | Required key | Classification | Evidence |
 | --- | --- | --- |
-| `AUDIT_SERVICE_REALITY` | `ALREADY_PRESENT_WITH_CURRENT_PROOF` | `lib/audit-service.ts`, `lib/control-layer/audit-guard.ts`, `lib/demo-workflow-mutation.ts`, `tests/audit-fail-closed.spec.ts`, `tests/phase6-audit-persistence.spec.ts`. |
+| `AUDIT_SERVICE_REALITY` | `ALREADY_PRESENT_WITH_CURRENT_PROOF` | `lib/audit-service.ts`, `lib/control-layer/audit-guard.ts`, `lib/typed-workflow-command-bus.ts`, `tests/audit-fail-closed.spec.ts`, `tests/phase6-audit-persistence.spec.ts`. |
 | `AUDIT_API_REALITY` | `ALREADY_PRESENT_WITH_SAFE_ERROR_ENVELOPE` | `app/api/audit-events/route.ts` scopes by tenant and role, returns safe empty/error envelopes and does not expose raw metadata on missing scope. |
 | `AUDIT_UI_REALITY` | `ACCEPTED_WITH_TARGETED_REFACTOR` | `components/ui/audit-timeline.tsx` now distinguishes `source-backed`, `pending`, `unavailable` and `display-only`; compliance demo audit rows are labelled display-only; DB audit history shows source-backed state. |
 | `AUDIT_TEST_REALITY` | `ACCEPTED_WITH_FOCUSED_TRUE_UX_PROOF` | `tests/true-ux-audit-surface.spec.ts` adds WP-08 UI/API/source-contract proof. Existing P0 audit specs remain the mutation/persistence proof. |
@@ -69,7 +69,7 @@ No route, schema, migration or broad audit analytics product was added. Existing
 - `lib/audit-service.ts`
 - `lib/control-layer/audit-guard.ts`
 - `lib/dbtf-table-service.ts`
-- `lib/demo-workflow-mutation.ts`
+- `lib/typed-workflow-command-bus.ts`
 - `lib/export-workflow-readmodel-service.ts`
 - `lib/visibility-engine.ts`
 - `prisma/schema.prisma`

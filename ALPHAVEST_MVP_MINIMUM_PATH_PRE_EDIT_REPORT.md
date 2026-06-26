@@ -67,7 +67,7 @@ The branch tracks `origin/full-workflow` and is currently ahead by 17 commits. N
 - `app/api/documents/upload/route.ts`
 - `app/api/review-monitoring/route.ts`
 - `lib/document-upload-service.ts`
-- `lib/demo-workflow-mutation.ts`
+- `lib/typed-workflow-command-bus.ts`
 - `lib/demo-workflow-validation.ts`
 - `lib/workflow-gate.ts`
 - `lib/visibility-engine.ts`
@@ -107,7 +107,7 @@ Likely for later prompts, if reached in order:
 
 - `app/api/demo-workflow/route.ts`
 - `lib/demo-workflow-validation.ts`
-- `lib/demo-workflow-mutation.ts`
+- `lib/typed-workflow-command-bus.ts`
 - `lib/workflow-gate.ts`
 - `lib/visibility-engine.ts`
 - `lib/permission-engine.ts`

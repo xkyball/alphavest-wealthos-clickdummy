@@ -36,7 +36,7 @@ This phase is a source-grounded documentation and acceptance-contract phase only
 - `lib/workflow-gate.ts`
 - `lib/visibility-engine.ts`
 - `lib/export-service.ts`
-- `lib/demo-workflow-mutation.ts`
+- `lib/typed-workflow-command-bus.ts`
 - `app/api/demo-workflow/route.ts`
 - `components/internal-workflow-screen.tsx`
 - `lib/internal-workflow-demo-data.ts`
@@ -141,7 +141,7 @@ Later P0 acceptance must include or preserve:
 | Routes `033-037`, `019-020`, `054-058` | No route changed. These remain affected surfaces for later internal draft, client projection and export redaction proof. |
 | APIs `/api/demo-workflow`, `/api/documents` | No API changed. Current demo workflow and visibility/export services are proof candidates; future internal draft API remains unauthorized until explicit handoff. |
 | Schema/models | No schema changed. `Trigger`, `Recommendation`, `RecommendationOption`, `DocumentExtraction`, `EvidenceRecord`, `DocumentLink`, `AuditEvent`, `Decision` and `ExportRequest` remain the relevant model set. |
-| Services/components | No service/component changed. `workflow-gate`, `visibility-engine`, `demo-workflow-mutation`, `export-service` and internal workflow UI/data remain relevant proof surfaces. |
+| Services/components | No service/component changed. `workflow-gate`, `visibility-engine`, `typed-workflow-command-bus`, `export-service` and internal workflow UI/data remain relevant proof surfaces. |
 | Tests | No tests changed or run. `workflow-gate.spec.ts`, `client-visibility-proof.spec.ts`, `file-export-realism.spec.ts`, `demo-workflow-api.spec.ts`, `p0-acceptance.spec.ts`, `permission-engine.spec.ts` and `ui-state-boundaries.spec.ts` remain proof candidates. |
 
 ## 10. Exit Gate Decision

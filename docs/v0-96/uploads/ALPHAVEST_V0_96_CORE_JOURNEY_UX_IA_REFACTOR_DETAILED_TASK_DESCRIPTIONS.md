@@ -425,7 +425,7 @@ Mega Journey Matrix makes AI governance a V0.96 core proof. Safety contracts for
 - `components/ui/guarded-action-button.tsx`
 - `app/api/demo-workflow/route.ts`
 - `lib/internal-workflow-demo-data.ts`
-- `lib/demo-workflow-mutation.ts`
+- `lib/typed-workflow-command-bus.ts`
 - `lib/workflow-gate.ts`
 - `lib/visibility-engine.ts`
 - `tests/demo-workflow-api.spec.ts`
@@ -670,7 +670,7 @@ Interaction audit and safety contracts say visible audit timelines are not persi
 - `app/api/audit-events/route.ts`
 - `lib/audit-service.ts`
 - `lib/permission-engine.ts`
-- `lib/demo-workflow-mutation.ts`
+- `lib/typed-workflow-command-bus.ts`
 - `tests/audit-fail-closed.spec.ts`
 - `tests/phase6-audit-persistence.spec.ts`
 - `tests/permission-engine.spec.ts`
@@ -968,7 +968,7 @@ API contract says route presence is not API safety proof. Current snapshot has 1
 - `app/api/auth/dummy/route.ts`
 - `app/api/admin-tenants/route.ts`
 - `lib/demo-workflow-validation.ts`
-- `lib/demo-workflow-mutation.ts`
+- `lib/typed-workflow-command-bus.ts`
 - `lib/permission-engine.ts`
 - `lib/visibility-engine.ts`
 - `lib/workflow-gate.ts`

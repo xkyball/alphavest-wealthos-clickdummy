@@ -69,7 +69,7 @@ This slice reused the existing permission engine, workflow mutation audit path, 
 - `lib/control-layer/permission-decision.ts`
 - `lib/visibility-engine.ts`
 - `lib/audit-service.ts`
-- `lib/demo-workflow-mutation.ts`
+- `lib/typed-workflow-command-bus.ts`
 - `app/api/admin-tenants/route.ts`
 - `app/api/demo-workflow/route.ts`
 - `prisma/schema.prisma`

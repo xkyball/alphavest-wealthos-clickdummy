@@ -55,7 +55,7 @@ Reason: the repo already had the compliance route family, typed `compliance_rele
 - `components/decisions-governance-screen.tsx`
 - `app/api/demo-workflow/route.ts`
 - `lib/demo-workflow-validation.ts`
-- `lib/demo-workflow-mutation.ts`
+- `lib/typed-workflow-command-bus.ts`
 - `lib/workflow-gate.ts`
 - `lib/permission-engine.ts`
 - `lib/visibility-engine.ts`

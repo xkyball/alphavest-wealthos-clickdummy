@@ -5,9 +5,11 @@ import {
   AuditResult,
   ComplianceStatus,
   DecisionStatus,
+  DraftClassificationKind,
+  DraftRiskLevel,
   EvidenceStatus,
+  InternalDraftStatus,
   ObjectType,
-  Prisma,
   PrismaClient,
   RecommendationStatus,
   ReviewStatus,
@@ -409,15 +411,6 @@ test.describe("demo workflow API", () => {
       );
       expect(advisorBody.result.reloadedState.recommendation.clientVisible).toBe(false);
 
-      const clientSafeSummary = "First Build P0 client-safe released summary.";
-      await prisma.recommendation.update({
-        data: {
-          assumptionsJson: Prisma.JsonNull,
-          clientSummaryDraft: clientSafeSummary,
-        },
-        where: { id: demoTargets.summit.recommendationId },
-      });
-
       const releaseResponse = await request.post("/api/demo-workflow", {
         data: {
           action: "compliance_release",
@@ -443,7 +436,7 @@ test.describe("demo workflow API", () => {
       });
       expect(releaseBody.result.clientProjection.visible).toBe(true);
       expect(releaseBody.result.clientProjection.payload).toEqual({
-        clientSummary: clientSafeSummary,
+        clientSummary: "Compliance-ready client summary for a released liquidity governance next step.",
       });
       expect(releaseBody.result.clientProjection.payload).not.toHaveProperty("clientSummaryDraft");
       expect(releaseBody.result.clientProjection.payload).not.toHaveProperty("internalRationale");
@@ -451,13 +444,16 @@ test.describe("demo workflow API", () => {
       expect(releaseBody.result.releasePreconditions).toMatchObject({
         advisorApproval: true,
         auditReady: true,
+        releaseSpineCanRelease: true,
         compliancePermission: true,
         evidenceAccepted: true,
         evidenceProvided: true,
         evidenceScoped: true,
+        internalDraftId: expect.any(String),
         payloadReady: true,
         selectedEvidenceRecordId: demoTargets.summit.evidenceId,
       });
+      expect(releaseBody.result.releasePreconditions.canonicalMissing).toEqual([]);
 
       const decisionResponse = await request.post("/api/demo-workflow", {
         data: { actionId: "j03.acceptOption" },
@@ -581,11 +577,7 @@ test.describe("demo workflow API", () => {
 
       expect(recommendation.clientVisible).toBe(false);
       expect(recommendation.summaryInternal).toContain(reason);
-      expect(recommendation.assumptionsJson).toMatchObject({
-        aiDraftInternalOnly: true,
-        phase4UnsupportedClaimRejected: true,
-        requiresEvidenceLinkedRebuild: true,
-      });
+      expect(recommendation.assumptionsJson).toBeNull();
       expect(evidence.status).toBe(EvidenceStatus.PLACEHOLDER);
       expect(evidence.visibilityStatus).toBe(VisibilityStatus.COMPLIANCE_VISIBLE);
       expect(audit.eventType).toBe("advisor_approval.reject_unsupported_claim");
@@ -660,9 +652,15 @@ test.describe("demo workflow API", () => {
       expect(body.result.gatePassed).toBe(false);
       expect(body.result.gateMissing).toEqual(["advisor_approval", "compliance_release"]);
 
-      const [recommendation, evidenceItem, audit] = await Promise.all([
+      const [recommendation, internalDraft, evidenceItem, audit] = await Promise.all([
         prisma.recommendation.findUniqueOrThrow({
           where: { id: demoTargets.summit.recommendationId },
+        }),
+        prisma.internalDraft.findFirstOrThrow({
+          where: {
+            draftKey: "typed-advisor-approval-release-spine",
+            recommendationId: demoTargets.summit.recommendationId,
+          },
         }),
         prisma.evidenceItem.findFirstOrThrow({
           where: {
@@ -678,13 +676,13 @@ test.describe("demo workflow API", () => {
       ]);
 
       expect(recommendation.clientVisible).toBe(false);
-      expect(recommendation.clientSummaryDraft).toContain("Compliance release remains required");
+      expect(recommendation.clientSummaryDraft).toBeNull();
       expect(recommendation.summaryInternal).toContain(reason);
-      expect(recommendation.assumptionsJson).toMatchObject({
-        aiDraftInternalOnly: true,
-        evidenceBackedRebuild: true,
-        phase4RebuildEvidenceIds: [demoTargets.summit.evidenceId],
-      });
+      expect(recommendation.assumptionsJson).toBeNull();
+      expect(internalDraft.status).toBe(InternalDraftStatus.REBUILT_WITH_EVIDENCE);
+      expect(internalDraft.draftClientSummary).toBe(
+        "Compliance-ready client summary for a released liquidity governance next step.",
+      );
       expect(evidenceItem.visibilityStatus).toBe(VisibilityStatus.COMPLIANCE_VISIBLE);
       expect(audit.eventType).toBe("advisor_approval.rebuild_with_evidence");
       expect(audit.result).toBe(AuditResult.SUCCESS);
@@ -751,7 +749,7 @@ test.describe("demo workflow API", () => {
       expect(blockedBody.gateMissing).toContain("accepted_evidence");
       expect(blockedBody.releasePreconditions.advisorApproval).toBe(false);
       expect(blockedBody.releasePreconditions.evidenceAccepted).toBe(false);
-      expect(blockedBody.releasePreconditions.payloadReady).toBe(true);
+      expect(blockedBody.releasePreconditions.payloadReady).toBe(false);
 
       const blockedRecommendation = await prisma.recommendation.findUniqueOrThrow({
         where: { id: demoTargets.northbridge.recommendationId },
@@ -818,17 +816,33 @@ test.describe("demo workflow API", () => {
       expect(missingEvidenceBody.releasePreconditions.advisorApproval).toBe(true);
       expect(missingEvidenceBody.releasePreconditions.evidenceProvided).toBe(false);
 
-      await prisma.recommendation.update({
-        data: {
-          assumptionsJson: {
-            aiDraftInternalOnly: true,
-            evidenceBackedRebuild: true,
-            phase4RebuildEvidenceIds: [demoTargets.summit.evidenceId],
-          },
-          clientSummaryDraft:
-            "Internal draft rebuilt with accepted evidence. Compliance release remains required.",
+      const summitInternalDraftId = stableId(`internal-draft:advisor-approval:${demoTargets.summit.recommendationId}`);
+      await prisma.internalDraft.upsert({
+        create: {
+          clientTenantId: stableId("tenant:summit"),
+          draftClientSummary: "Internal draft rebuilt with accepted evidence. Compliance release remains required.",
+          draftKey: "typed-advisor-approval-release-spine",
+          id: summitInternalDraftId,
+          internalRationale: "Compliance release still requires advisor-ready client-safe payload promotion.",
+          processId: "typed-advisor-approval",
+          recommendationId: demoTargets.summit.recommendationId,
+          sourceObjectId: demoTargets.summit.recommendationId,
+          sourceObjectType: ObjectType.RECOMMENDATION,
+          sourceRefsJson: ["test:release-precondition"],
+          status: InternalDraftStatus.REBUILT_WITH_EVIDENCE,
+          title: "Summit release-precondition internal draft spine",
         },
-        where: { id: demoTargets.summit.recommendationId },
+        update: {
+          draftClientSummary: "Internal draft rebuilt with accepted evidence. Compliance release remains required.",
+          internalRationale: "Compliance release still requires advisor-ready client-safe payload promotion.",
+          status: InternalDraftStatus.REBUILT_WITH_EVIDENCE,
+        },
+        where: {
+          recommendationId_draftKey: {
+            draftKey: "typed-advisor-approval-release-spine",
+            recommendationId: demoTargets.summit.recommendationId,
+          },
+        },
       });
 
       const internalDraftBlockedResponse = await request.post("/api/demo-workflow", {
@@ -849,9 +863,22 @@ test.describe("demo workflow API", () => {
       expect(internalDraftBlockedBody.gateMissing).toContain("payload_ready");
       expect(internalDraftBlockedBody.releasePreconditions.payloadReady).toBe(false);
 
-      await prisma.recommendation.update({
-        data: { clientSummaryDraft: null },
-        where: { id: demoTargets.summit.recommendationId },
+      await prisma.internalDraft.update({
+        data: {
+          draftClientSummary: " ",
+          status: InternalDraftStatus.ADVISOR_READY,
+        },
+        where: { id: summitInternalDraftId },
+      });
+      await prisma.draftClassification.create({
+        data: {
+          classifiedByRoleKey: "analyst",
+          classification: DraftClassificationKind.ADVICE_RELEVANT,
+          internalDraftId: summitInternalDraftId,
+          reason: "Test creates a clear classification while payload text remains empty.",
+          riskLevel: DraftRiskLevel.MEDIUM,
+          unsupportedClaimsClear: true,
+        },
       });
 
       const payloadBlockedResponse = await request.post("/api/demo-workflow", {
@@ -874,13 +901,12 @@ test.describe("demo workflow API", () => {
       expect(payloadBlockedBody.releasePreconditions.evidenceScoped).toBe(true);
       expect(payloadBlockedBody.releasePreconditions.payloadReady).toBe(false);
 
-      await prisma.recommendation.update({
+      await prisma.internalDraft.update({
         data: {
-          assumptionsJson: Prisma.JsonNull,
-          clientSummaryDraft:
-            "Compliance-ready client summary for a released liquidity governance next step.",
+          draftClientSummary: "Compliance-ready client summary for a released liquidity governance next step.",
+          status: InternalDraftStatus.ADVISOR_READY,
         },
-        where: { id: demoTargets.summit.recommendationId },
+        where: { id: summitInternalDraftId },
       });
 
       const auditFailureResponse = await request.post("/api/demo-workflow", {
@@ -940,20 +966,23 @@ test.describe("demo workflow API", () => {
       expect(releaseBody.result.clientProjection.payload).toEqual({
         clientSummary: "Compliance-ready client summary for a released liquidity governance next step.",
       });
-      expect(releaseBody.result.clientProjection.hiddenFields).toContain("clientSummaryDraft");
+      expect(releaseBody.result.clientProjection.hiddenFields).not.toContain("clientSummaryDraft");
       expect(releaseBody.result.clientProjection.payload).not.toHaveProperty("clientSummaryDraft");
       expect(releaseBody.result.clientProjection.payload).not.toHaveProperty("internalRationale");
       expect(releaseBody.result.clientProjection.payload).not.toHaveProperty("complianceNotes");
       expect(releaseBody.result.releasePreconditions).toMatchObject({
         advisorApproval: true,
         auditReady: true,
+        releaseSpineCanRelease: true,
         compliancePermission: true,
         evidenceAccepted: true,
         evidenceProvided: true,
         evidenceScoped: true,
+        internalDraftId: expect.any(String),
         payloadReady: true,
         selectedEvidenceRecordId: demoTargets.summit.evidenceId,
       });
+      expect(releaseBody.result.releasePreconditions.canonicalMissing).toEqual([]);
       expect(releaseBody.result.releasePreconditions.missing).toEqual([]);
       expect(releaseBody.result.reloadedState.recommendation.status).toBe(
         RecommendationStatus.RELEASED_TO_CLIENT,

@@ -3,11 +3,6 @@ import path from "node:path";
 
 import { expect, test } from "@playwright/test";
 
-import {
-  p44InternalDraftLegacyFallbackFlag,
-  p44InternalDraftLegacyFallbackRemovalTicket,
-} from "../lib/p44-phase5-ai-draft-governance";
-
 function walkFiles(root: string): string[] {
   return readdirSync(root).flatMap((entry) => {
     const absolute = path.join(root, entry);
@@ -17,7 +12,7 @@ function walkFiles(root: string): string[] {
 }
 
 test.describe("internal draft governance spine", () => {
-  test("declares first-class Prisma models and a temporary legacy fallback ticket", () => {
+  test("declares first-class Prisma models with no legacy Recommendation-field fallback", () => {
     const schema = readFileSync(path.join(process.cwd(), "prisma/schema.prisma"), "utf8");
     const migration = readFileSync(
       path.join(process.cwd(), "prisma/migrations/20260625143000_internal_draft_governance_spine/migration.sql"),
@@ -31,8 +26,6 @@ test.describe("internal draft governance spine", () => {
     expect(migration).toContain('CREATE TABLE "draft_classifications"');
     expect(migration).toContain('CREATE TABLE "unsupported_claims"');
     expect(migration).toContain('CREATE TABLE "draft_traces"');
-    expect(p44InternalDraftLegacyFallbackFlag).toBe("ALPHAVEST_INTERNAL_DRAFT_LEGACY_FALLBACK");
-    expect(p44InternalDraftLegacyFallbackRemovalTicket.ticketId).toBe("P44-INTERNAL-DRAFT-LEGACY-FALLBACK-REMOVAL");
   });
 
   test("forbids production recommendation mutations from writing overloaded draft fields", () => {

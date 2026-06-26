@@ -241,7 +241,7 @@ Direct Prisma usage exists in these product/service surfaces:
   - `lib/data-quality-repository.ts`
   - `lib/dbtf-form-service.ts`
   - `lib/dbtf-table-service.ts`
-  - `lib/demo-workflow-mutation.ts`
+  - `lib/typed-workflow-command-bus.ts`
   - `lib/demo/demo-auth-provider-service.ts`
   - `lib/document-upload-service.ts`
   - `lib/evidence-review-service.ts`

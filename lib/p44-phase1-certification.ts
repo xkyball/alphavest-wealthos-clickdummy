@@ -136,7 +136,7 @@ export const p44Phase1TicketCertifications: readonly P44Phase1TicketCertificatio
     coveredProcesses: ["B-009"],
     description: "Second confirmation interaction lifecycle.",
     id: "P44-1-T09",
-    proofFiles: ["lib/demo-workflow-mutation.ts", "tests/confirmation-lifecycle.spec.ts", "tests/role-drawer-confirmation-lifecycle.spec.ts"],
+    proofFiles: ["lib/typed-workflow-command-bus.ts", "tests/confirmation-lifecycle.spec.ts", "tests/role-drawer-confirmation-lifecycle.spec.ts"],
     status: "IMPLEMENTED_WITH_DIRECT_PROOF",
   },
   {

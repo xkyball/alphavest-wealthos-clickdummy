@@ -220,7 +220,7 @@ Required proof:
 | Surface | Current status | Finding |
 | --- | --- | --- |
 | `lib/demo-workflow-validation.ts` | Real typed state machine exists | Covers `submit_review`, `reject_unsupported_claim`, `rebuild_with_evidence`, `advisor_approve`, `compliance_release`, `compliance_block`, `request_evidence` |
-| `lib/demo-workflow-mutation.ts` | Real mutating recommendation-review workflow exists | Writes Recommendation, Approval, ComplianceReview, EvidenceRecord, EvidenceItem and AuditEvent |
+| `lib/typed-workflow-command-bus.ts` | Real mutating recommendation-review workflow exists | Writes Recommendation, Approval, ComplianceReview, EvidenceRecord, EvidenceItem and AuditEvent |
 | `app/api/demo-workflow/route.ts` | Mixed API for old `jXX.*` actions and typed recommendation-review | Functional but overloaded; this is the main cleanup target |
 | `lib/journeys/journey-api-service.ts` | Real journey command API exists | Covers `AI_DRAFT_INTERNAL`, `ADVISOR_APPROVE`, `COMPLIANCE_BLOCK`, `COMPLIANCE_REQUEST_EVIDENCE`, `COMPLIANCE_RELEASE`, sufficiency decisions and audit |
 | `app/api/journeys/[id]/commands/route.ts` | Canonical authenticated command endpoint exists | Stronger long-term foundation than ad hoc demo workflow actions |
@@ -415,7 +415,7 @@ Implemented files:
 - `lib/journeys/journey-command-registry.ts`
 - `lib/journeys/journey-api-service.ts`
 - `lib/demo-workflow-validation.ts`
-- `lib/demo-workflow-mutation.ts`
+- `lib/typed-workflow-command-bus.ts`
 - `components/internal-workflow-screen.tsx`
 - `tests/demo-workflow-api.spec.ts`
 - `tests/demo-workflow-validation.spec.ts`
@@ -530,7 +530,7 @@ Live repo evidence:
 - `lib/journeys/journey-command-registry.ts` includes the WP05 canonical Journey command IDs.
 - `lib/journeys/journey-api-service.ts` implements `AI_DRAFT_INTERNAL`, `ADVISOR_APPROVE`, evidence sufficiency decisions and `COMPLIANCE_RELEASE` with advisor/evidence/payload/permission/audit gates.
 - `lib/demo-workflow-validation.ts` maps typed recommendation-review actions to canonical Journey commands/states and keeps `advisor_approve` output at `COMPLIANCE_PENDING`, `clientVisibleAfterAction: false`.
-- `lib/demo-workflow-mutation.ts` implements typed recommendation-review mutations for unsupported claim rejection, evidence-backed rebuild, advisor approval, compliance block, request evidence and compliance release.
+- `lib/typed-workflow-command-bus.ts` implements typed recommendation-review mutations for unsupported claim rejection, evidence-backed rebuild, advisor approval, compliance block, request evidence and compliance release.
 - `app/api/demo-workflow/route.ts` routes typed `recommendation-review` payloads through `runRecommendationReviewWorkflowMutation` and returns fail-closed envelopes on errors.
 - `components/internal-workflow-screen.tsx` renders advisor/compliance UI copy that says advisor approval is not release and release requires exact phrase plus compliance acknowledgement.
 - Tests cover the contract, typed demo workflow, canonical journey command path, workflow gates, client projection redaction, UI confirmation lifecycle and P04-P06 boundary panels.

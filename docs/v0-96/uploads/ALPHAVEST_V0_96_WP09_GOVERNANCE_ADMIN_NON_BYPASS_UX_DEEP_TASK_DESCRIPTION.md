@@ -92,7 +92,7 @@ Codex must re-check the current `full-workflow` repo after WP-00. The following 
 | Shared primitives | `components/ui/modal.tsx`, `components/ui/drawer.tsx`, `components/ui/data-table.tsx`, `components/ui/state-panel.tsx`, `components/ui/audit-timeline.tsx`, `components/ui/guarded-action-button.tsx` if present | Determine lifecycle, a11y, table states, guarded action behaviour |
 | Permission services | `lib/permission-engine.ts`, `lib/control-layer/*`, `lib/visibility-engine.ts` | Verify route/action/object/payload separation |
 | Admin read models | `lib/admin-tenant-readmodel-service.ts` if present, any `governance` / `admin` read model service | Verify admin data surfaces do not leak payloads |
-| Audit services | `lib/audit-service.ts`, `lib/demo-workflow-mutation.ts` | Verify role changes, denied attempts and access requests write audit |
+| Audit services | `lib/audit-service.ts`, `lib/typed-workflow-command-bus.ts` | Verify role changes, denied attempts and access requests write audit |
 | Workflow gates | `lib/workflow-gate.ts`, `lib/evidence-service.ts`, `lib/export-service.ts` | Ensure admin cannot call or imply gate transitions |
 | APIs | `app/api/admin-tenants/route.ts` if present, `app/api/demo-workflow/route.ts`, any `app/api/*governance*`, `app/api/*audit*`, `app/api/*role*`, `app/api/*access*` routes | Verify validation, RBAC, safe errors, non-bypass semantics |
 | Schema | `prisma/schema.prisma` models: `User`, `Role`, `Permission`, `RolePermission`, `UserRole`, `AccessRequest`, `SecondConfirmation`, `AuditEvent`, `PolicyDefinition`, `ClientTenant` | Verify field support; no blind replacement |

@@ -24,7 +24,7 @@ import {
   rejectP44InternalDraft,
   sweepP44AiDraftLeakageSurfaces,
   tagP44InternalDraftPayload,
-} from "../lib/p44-phase5-ai-draft-governance";
+} from "../lib/internal-draft-governance-spine";
 import { stableId } from "../lib/stable-id";
 
 const draftKey = "ai-governance-liquidity";
@@ -279,7 +279,7 @@ test.describe("P44 Phase 5 AI draft governance certification", () => {
 
     expect(trace.internalTrace.recommendationId).toBe(recommendationId);
     expect(trace.internalTrace.evidenceRecordIds).toContain(evidenceRecordId);
-    expect(trace.internalTrace.legacyFallbackUsed).toBe(false);
+    expect(trace.internalTrace.canonicalSpineUsed).toBe(true);
     expect(trace.clientSafeProjection).toEqual({
       recommendationId,
       traceAvailable: false,
@@ -390,13 +390,13 @@ test.describe("P44 Phase 5 AI draft governance certification", () => {
     const notes = createP44DraftWorkflowClosureNotes({
       proofNotes: ["Internal draft creation, classification, reject/rebuild, trace, leakage and negative gates are covered."],
       routeFiles: ["app/api/demo-workflow/route.ts"],
-      serviceFiles: ["lib/p44-phase5-ai-draft-governance.ts"],
+      serviceFiles: ["lib/internal-draft-governance-spine.ts"],
       testFiles: ["tests/p44-phase5-certification.spec.ts"],
     });
 
     expect(notes.readyForCompletionClaim).toBe(true);
     expect(notes.claimUsesDemoOnlyBehavior).toBe(false);
-    expect(notes.files.services).toEqual(["lib/p44-phase5-ai-draft-governance.ts"]);
+    expect(notes.files.services).toEqual(["lib/internal-draft-governance-spine.ts"]);
   });
 
   test("P44-5-T14 certifies Phase 5 exit only with all tickets and no hidden blockers", () => {
@@ -421,7 +421,7 @@ test.describe("P44 Phase 5 AI draft governance certification", () => {
     const closureNotes = createP44DraftWorkflowClosureNotes({
       proofNotes: ["All P44 Phase 5 E-domain proof layers are mapped."],
       routeFiles: ["app/api/demo-workflow/route.ts"],
-      serviceFiles: ["lib/p44-phase5-ai-draft-governance.ts"],
+      serviceFiles: ["lib/internal-draft-governance-spine.ts"],
       testFiles: ["tests/p44-phase5-certification.spec.ts"],
     });
     const certification = certifyP44AiDraftGovernanceExit({

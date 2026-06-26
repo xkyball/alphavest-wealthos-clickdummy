@@ -134,21 +134,6 @@ function p44DraftMetadata(input: Prisma.InputJsonObject): Prisma.InputJsonObject
   };
 }
 
-export const p44InternalDraftLegacyFallbackFlag = "ALPHAVEST_INTERNAL_DRAFT_LEGACY_FALLBACK" as const;
-export const p44InternalDraftLegacyFallbackRemovalTicket = {
-  ticketId: "P44-INTERNAL-DRAFT-LEGACY-FALLBACK-REMOVAL",
-  target: "Remove Recommendation.assumptionsJson/clientSummaryDraft fallback after migration verification.",
-  temporaryFlag: p44InternalDraftLegacyFallbackFlag,
-} as const;
-
-function jsonObject(value: Prisma.JsonValue | null | undefined): Prisma.JsonObject {
-  return value && typeof value === "object" && !Array.isArray(value) ? value : {};
-}
-
-function legacyInternalDraftFallbackEnabled() {
-  return process.env[p44InternalDraftLegacyFallbackFlag] === "1";
-}
-
 function toDraftClassificationKind(classification: P44DraftClassification["classification"]) {
   return {
     advice_relevant: DraftClassificationKind.ADVICE_RELEVANT,
@@ -177,7 +162,7 @@ type P44DraftGateInput = {
 
 export type P44DraftGovernanceState = P44DraftGateInput & {
   draftId: string | null;
-  legacyFallbackUsed: boolean;
+  canonicalSpineUsed: boolean;
   processId: string | null;
   sourceRefs: string[];
 };
@@ -271,7 +256,7 @@ export async function getP44InternalDraftGovernanceState(
       evidenceBackedRebuild:
         internalDraft.status === InternalDraftStatus.REBUILT_WITH_EVIDENCE ||
         internalDraft.status === InternalDraftStatus.ADVISOR_READY,
-      legacyFallbackUsed: false,
+      canonicalSpineUsed: true,
       processId: internalDraft.processId,
       rejected: internalDraft.status === InternalDraftStatus.REJECTED,
       sourceRefs: Array.isArray(internalDraft.sourceRefsJson) ? internalDraft.sourceRefsJson.filter((ref): ref is string => typeof ref === "string") : [],
@@ -283,33 +268,11 @@ export async function getP44InternalDraftGovernanceState(
     };
   }
 
-  if (legacyInternalDraftFallbackEnabled()) {
-    const recommendation = await prisma.recommendation.findUnique({ where: { id: recommendationId } });
-    const metadata = jsonObject(recommendation?.assumptionsJson);
-    const classification = jsonObject(metadata.draftClassification as Prisma.JsonValue);
-
-    return {
-      classified: Boolean(classification.classification),
-      draftId: null,
-      evidenceBackedRebuild: metadata.evidenceBackedRebuild === true,
-      legacyFallbackUsed: true,
-      processId: typeof jsonObject(metadata.sourceContext as Prisma.JsonValue).processId === "string"
-        ? String(jsonObject(metadata.sourceContext as Prisma.JsonValue).processId)
-        : null,
-      rejected: metadata.draftRejected === true,
-      sourceRefs: Array.isArray(jsonObject(metadata.sourceContext as Prisma.JsonValue).sourceRefs)
-        ? (jsonObject(metadata.sourceContext as Prisma.JsonValue).sourceRefs as unknown[]).filter((ref): ref is string => typeof ref === "string")
-        : [],
-      status: recommendation?.status ?? RecommendationStatus.DRAFT,
-      unsupportedClaimStatus: classification.unsupportedClaimStatus === "clear" ? "clear" : "unsupported_claims_detected",
-    };
-  }
-
   return {
     classified: false,
     draftId: null,
     evidenceBackedRebuild: false,
-    legacyFallbackUsed: false,
+    canonicalSpineUsed: false,
     processId: null,
     rejected: false,
     sourceRefs: [],
@@ -1047,7 +1010,7 @@ export async function buildP44DraftTraceMap(
     },
     internalTrace: {
       evidenceRecordIds: evidenceRecords.map((record) => record.id),
-      legacyFallbackUsed: draftState.legacyFallbackUsed,
+      canonicalSpineUsed: draftState.canonicalSpineUsed,
       processId: draftState.processId,
       recommendationId: recommendation.id,
       sourceRefs: draftState.sourceRefs,

@@ -192,7 +192,7 @@ function processRowsForPhase(
 
 export const p44Phase9ProcessProofRows: readonly P44Phase9ProcessProofRow[] = [
   ...processRowsForPhase("PH5", phase5ProcessTickets, "tests/p44-phase5-certification.spec.ts", [
-    "lib/p44-phase5-ai-draft-governance.ts",
+    "lib/internal-draft-governance-spine.ts",
   ]),
   ...processRowsForPhase("PH6", phase6ProcessTickets, "tests/p44-phase6-certification.spec.ts", [
     "lib/p44-phase6-advisor-review-closure.ts",
@@ -529,7 +529,7 @@ function phaseTraceDefaults(phase: P44Phase9ProcessProofRow["phase"]) {
       api: "internal command/service boundary",
       db: "recommendation/audit/evidence records",
       route: "AI draft governance surface",
-      service: "lib/p44-phase5-ai-draft-governance.ts",
+      service: "lib/internal-draft-governance-spine.ts",
     };
   }
   if (phase === "PH6") {

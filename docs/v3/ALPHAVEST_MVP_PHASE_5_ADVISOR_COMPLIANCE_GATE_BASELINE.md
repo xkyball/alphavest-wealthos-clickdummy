@@ -37,7 +37,7 @@ This phase is a source-grounded documentation and acceptance-contract phase only
 - `docs/v3/WORKFLOW_EXECUTION_REALITY_MATRIX_V3.md`
 - `docs/v3/INPUT_MASK_AND_DATA_MAINTENANCE_REQUIREMENTS_V3.md`
 - `lib/workflow-gate.ts`
-- `lib/demo-workflow-mutation.ts`
+- `lib/typed-workflow-command-bus.ts`
 - `app/api/demo-workflow/route.ts`
 - `lib/audit-service.ts`
 - `lib/visibility-engine.ts`
@@ -62,7 +62,7 @@ This phase is a source-grounded documentation and acceptance-contract phase only
 | Surface | Current reality | Phase 5 interpretation |
 | --- | --- | --- |
 | Workflow gate | `lib/workflow-gate.ts` requires released recommendation state, advisor approval, compliance release, sufficient evidence and permission before client visibility can pass. | Strong service-level proof candidate for advisor-not-release and compliance-release preconditions. |
-| Typed recommendation-review workflow | `lib/demo-workflow-mutation.ts` maps analyst submit, advisor approve, compliance release, compliance block and request evidence to typed roles, state transitions, audit rows and reload state. | Strong bounded demo proof candidate. Phase 5 did not rerun or expand these tests. |
+| Typed recommendation-review workflow | `lib/typed-workflow-command-bus.ts` maps analyst submit, advisor approve, compliance release, compliance block and request evidence to typed roles, state transitions, audit rows and reload state. | Strong bounded demo proof candidate. Phase 5 did not rerun or expand these tests. |
 | Advisor approval mutation | `advisor_approve` updates `Approval` to `APPROVED`, `Recommendation` to `ADVISOR_APPROVED`, resets compliance review to `PENDING` and preserves `clientVisible=false`. | Advisor approval is represented as human review only, not release. |
 | Compliance release mutation | `compliance_release` requires exact confirmation text, advisor approval, an evidence record, workflow-gate pass and compliance actor permission before setting `Recommendation.RELEASED_TO_CLIENT` and `clientVisible=true`. | Release path has a bounded positive proof candidate, but full route/API/client projection proof remains later work. |
 | Compliance block/request evidence | `compliance_block` and `request_evidence` keep `clientVisible=false`, update `ComplianceReview` and `Recommendation`, and write audit results. | Block/request-evidence lifecycle exists as a typed demo proof candidate. |
@@ -137,7 +137,7 @@ Later P0 acceptance must include or preserve:
 | Routes `036-042`, `043-045`, `019-020` | No route changed. These remain affected surfaces for later advisor approval, compliance review, release, decision and client projection proof. |
 | API `/api/demo-workflow` | No API changed. Current typed recommendation-review workflow is a proof candidate; future release APIs remain unauthorized until explicit handoff. |
 | Schema/models | No schema changed. `Approval`, `Recommendation`, `ComplianceReview`, `Decision`, `EvidenceRecord` and `AuditEvent` remain the relevant model set. |
-| Services/components | No service/component changed. `workflow-gate`, `demo-workflow-mutation`, `audit-service` and `visibility-engine` remain relevant proof surfaces. |
+| Services/components | No service/component changed. `workflow-gate`, `typed-workflow-command-bus`, `audit-service` and `visibility-engine` remain relevant proof surfaces. |
 | Tests | No tests changed or run. `workflow-gate.spec.ts`, `demo-workflow-api.spec.ts`, `p0-acceptance.spec.ts` and permission/admin non-bypass tests remain proof candidates. |
 
 ## 10. Exit Gate Decision

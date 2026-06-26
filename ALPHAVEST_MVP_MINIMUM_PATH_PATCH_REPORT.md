@@ -33,7 +33,7 @@ Current tracked modified files:
 - `components/internal-workflow-screen.tsx`
 - `docs/v3/IMPLEMENTATION_QA_REPORT.md`
 - `docs/v3/PHASE_EXECUTION_REPORT.md`
-- `lib/demo-workflow-mutation.ts`
+- `lib/typed-workflow-command-bus.ts`
 - `lib/demo-workflow-validation.ts`
 - `lib/screencast-demo-client.ts`
 - `next-env.d.ts`

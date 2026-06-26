@@ -35,7 +35,7 @@ No application code or test source was changed for WP-04 in this execution. The 
 
 - `components/internal-workflow-screen.tsx`
 - `app/api/demo-workflow/route.ts`
-- `lib/demo-workflow-mutation.ts`
+- `lib/typed-workflow-command-bus.ts`
 - `lib/demo-workflow-validation.ts`
 - `lib/workflow-gate.ts`
 - `lib/visibility-engine.ts`

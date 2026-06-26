@@ -6,7 +6,7 @@ import { AuditResult, ObjectType, PrismaClient } from "@prisma/client";
 import { expect, test } from "@playwright/test";
 
 import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
-import { runDemoWorkflowMutation } from "../lib/demo-workflow-mutation";
+import { runDemoWorkflowMutation } from "../lib/typed-workflow-command-bus";
 import { permissionEngine } from "../lib/permission-engine";
 import { visibilityEngine } from "../lib/visibility-engine";
 

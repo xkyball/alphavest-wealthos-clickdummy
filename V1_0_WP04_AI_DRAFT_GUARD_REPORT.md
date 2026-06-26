@@ -32,7 +32,7 @@ WP-04 proves that AI/rules drafts, assumptions, internal rationale and complianc
 - `lib/control-layer/client-visibility.ts`
 - `lib/control-layer/export-safety.ts`
 - `lib/control-layer/visibility-projection.ts`
-- `lib/demo-workflow-mutation.ts`
+- `lib/typed-workflow-command-bus.ts`
 - `lib/demo-workflow-validation.ts`
 - `lib/domain-types.ts`
 - `lib/export-service.ts`

@@ -25,7 +25,7 @@ This phase is a source-grounded documentation and acceptance-contract phase only
 - `docs/v3/WORKFLOW_EXECUTION_REALITY_MATRIX_V3.md`
 - `docs/v3/INPUT_MASK_AND_DATA_MAINTENANCE_REQUIREMENTS_V3.md`
 - `lib/permission-engine.ts`
-- `lib/demo-workflow-mutation.ts`
+- `lib/typed-workflow-command-bus.ts`
 - `lib/demo-workflow-validation.ts`
 - `lib/workflow-gate.ts`
 - `lib/audit-service.ts`
@@ -57,7 +57,7 @@ This phase is a source-grounded documentation and acceptance-contract phase only
 | Export | Admin/security export of `EXPORT_REQUEST` is denied with `DEMO_DENY_ADMIN_NON_BYPASS`; other forbidden roles are denied with role-specific export denials. | Export must remain approval, redaction, visibility and evidence gated. Admin cannot bypass these gates. |
 | Advice payload visibility | Admin/security role authority alone is denied internal advice payload visibility with `DEMO_DENY_ADMIN_ADVICE_PAYLOAD_NON_BYPASS`. | Route or governance authority is not enough to view internal advice payload. |
 | Workflow gate | `lib/workflow-gate.ts` requires released recommendation state, advisor approval, compliance release, evidence and permission before client visibility. | Advisor approval, upload, admin role, UI state or audit copy alone is insufficient. |
-| Mutation wrapper | `lib/demo-workflow-mutation.ts` records denied recommendation-review actions as audit rows and keeps `mutated: false`; typed release/block/evidence actions require exact confirmation text. | Current recommendation review workflow has stronger proof candidates than static governance UI, but fresh proof was not run in this phase. |
+| Mutation wrapper | `lib/typed-workflow-command-bus.ts` records denied recommendation-review actions as audit rows and keeps `mutated: false`; typed release/block/evidence actions require exact confirmation text. | Current recommendation review workflow has stronger proof candidates than static governance UI, but fresh proof was not run in this phase. |
 | Audit service | `lib/audit-service.ts` can preview event metadata including permission decisions and second-confirmation flags. | Preview metadata is not a persistence proof unless a bounded mutation test or API path proves persisted audit rows. |
 | Schema | Prisma includes `Role`, `Permission`, `RolePermission`, `UserRole`, `AccessRequest`, `SecondConfirmation`, `AuditEvent` and `PolicyDefinition`. | The model supports later governance implementation, but schema presence alone is not operational proof. |
 | P0 tests | `tests/p0-acceptance.spec.ts` already contains admin non-bypass assertions as proof candidates. | These tests map the right acceptance shape but were not executed in Phase 2. |
@@ -145,7 +145,7 @@ Later P0 acceptance must include or preserve:
 | Upload-created evidence is not evidence sufficiency. | `evidenceService.evaluateEvidenceSufficiency` and workflow gate tests. |
 | Denied sensitive attempts are audited and do not mutate. | `runRecommendationReviewWorkflowMutation` denial paths and demo-workflow API tests. |
 | Audit persistence unavailable blocks sensitive mutation. | Existing audit fail-closed tests where applicable; later governance APIs must add equivalents. |
-| Confirmation phrase invalid blocks mutation. | `demo-workflow-validation.ts`, `demo-workflow-mutation.ts`, confirmation lifecycle tests. |
+| Confirmation phrase invalid blocks mutation. | `demo-workflow-validation.ts`, `typed-workflow-command-bus.ts`, confirmation lifecycle tests. |
 
 ## 11. Impact Matrix
 
@@ -154,7 +154,7 @@ Later P0 acceptance must include or preserve:
 | Routes `007-010`, `017-018`, `040`, `048-051`, `057` | No route changed. These remain affected surfaces for later governance/non-bypass implementation and proof. |
 | API `/api/demo-workflow` | No API changed. Current recommendation-review paths are proof candidates. Future governance APIs remain unauthorized until explicit handoff. |
 | Schema/models | No schema changed. `Role`, `Permission`, `RolePermission`, `UserRole`, `AccessRequest`, `SecondConfirmation`, `AuditEvent`, `PolicyDefinition` remain the relevant model set. |
-| Services/components | No service/component changed. `permission-engine`, `audit-service`, `demo-workflow-mutation`, `workflow-gate`, export/evidence/visibility services remain the relevant proof surfaces. |
+| Services/components | No service/component changed. `permission-engine`, `audit-service`, `typed-workflow-command-bus`, `workflow-gate`, export/evidence/visibility services remain the relevant proof surfaces. |
 | Tests | No tests changed or run. `permission-engine.spec.ts`, `demo-workflow-api.spec.ts`, `p0-acceptance.spec.ts`, `workflow-gate.spec.ts` and export/evidence tests remain proof candidates. |
 
 ## 12. Exit Gate Decision

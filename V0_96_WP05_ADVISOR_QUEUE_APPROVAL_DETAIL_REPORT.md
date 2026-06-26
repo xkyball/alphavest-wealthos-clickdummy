@@ -61,7 +61,7 @@ Real implementation paths inspected for WP05:
 - `components/internal-workflow-screen.tsx`
 - `app/api/demo-workflow/route.ts`
 - `lib/demo-workflow-validation.ts`
-- `lib/demo-workflow-mutation.ts`
+- `lib/typed-workflow-command-bus.ts`
 - `lib/workflow-gate.ts`
 - `lib/permission-engine.ts`
 - `lib/visibility-engine.ts`
@@ -83,7 +83,7 @@ Refactor-first decision:
 - `lib/ux-route-policy.ts`
 - `components/internal-workflow-screen.tsx`
 - `app/api/demo-workflow/route.ts`
-- `lib/demo-workflow-mutation.ts`
+- `lib/typed-workflow-command-bus.ts`
 - `lib/demo-workflow-validation.ts`
 - `lib/workflow-gate.ts`
 - `lib/permission-engine.ts`

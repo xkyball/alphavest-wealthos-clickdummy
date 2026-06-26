@@ -18,7 +18,7 @@ Mode: `max`
 - `cat package.json`: scripts verified; `guard:source`, `typecheck`, `lint`, `db:validate`, `build`, Playwright, `test:workflow-gate`, `test:workflow-api`, `test:client-visibility` and `test:export-safety` are present.
 - `pnpm guard:source`: PASS, 0 violations.
 - Route registry inspected: `lib/route-registry.ts`.
-- Target seams inspected: `lib/advisory-workflow-contract.ts`, `lib/demo-workflow-validation.ts`, `lib/demo-workflow-mutation.ts`, `lib/workflow-gate.ts`, `lib/visibility-engine.ts`, `lib/export-service.ts`, `lib/export-package-service.ts`, `lib/av27-phase6-payload-contract.ts`, `tests/demo-workflow-api.spec.ts`, `tests/wp05-advisory-workflow-contract.spec.ts`, `tests/workflow-gate.spec.ts`, `tests/av27-phase6-payload-sweep.spec.ts`, and prior P44/AV27 reports.
+- Target seams inspected: `lib/advisory-workflow-contract.ts`, `lib/demo-workflow-validation.ts`, `lib/typed-workflow-command-bus.ts`, `lib/workflow-gate.ts`, `lib/visibility-engine.ts`, `lib/export-service.ts`, `lib/export-package-service.ts`, `lib/av27-phase6-payload-contract.ts`, `tests/demo-workflow-api.spec.ts`, `tests/wp05-advisory-workflow-contract.spec.ts`, `tests/workflow-gate.spec.ts`, `tests/av27-phase6-payload-sweep.spec.ts`, and prior P44/AV27 reports.
 
 ## Source Reconciliation
 
@@ -32,7 +32,7 @@ The downloaded index remains a navigation aid and does not replace the active Tr
 
 Detailed description: Identify exact current-state evidence, target files, flows, routes, APIs, services, schemas, tests, risks and split decisions for Phase 5. No code edits, schema migrations, test writing or visual generation are allowed inside this analysis task.
 
-Execution: Completed. The repo already contains useful advisor/compliance workflow pieces in `lib/demo-workflow-mutation.ts`, `lib/demo-workflow-validation.ts`, `lib/advisory-workflow-contract.ts`, `lib/workflow-gate.ts`, `lib/visibility-engine.ts` and AV27 Phase 6 payload tests. Those pieces prove parts of AI draft/internal-rationale client exclusion and advisor/compliance release control. They do not provide a dedicated P44 E-domain AI draft governance module or one ordered certification suite for the 14 Phase 5 tickets.
+Execution: Completed. The repo already contains useful advisor/compliance workflow pieces in `lib/typed-workflow-command-bus.ts`, `lib/demo-workflow-validation.ts`, `lib/advisory-workflow-contract.ts`, `lib/workflow-gate.ts`, `lib/visibility-engine.ts` and AV27 Phase 6 payload tests. Those pieces prove parts of AI draft/internal-rationale client exclusion and advisor/compliance release control. They do not provide a dedicated P44 E-domain AI draft governance module or one ordered certification suite for the 14 Phase 5 tickets.
 
 Findings:
 - `submit_review`, `reject_unsupported_claim`, `rebuild_with_evidence`, `advisor_approve`, `request_evidence`, `compliance_block` and `compliance_release` already exist as advisor workflow actions.
@@ -51,7 +51,7 @@ Detailed description: Define target behavior for the 14 Source Candidates: UI/AP
 Execution: Completed. Selected a focused implementation path: add a P44 Phase 5 domain module plus a dedicated certification suite. Use existing Prisma models and existing visibility/export/workflow gate services. Do not add routes, schema migrations, generated visuals or screen-split changes.
 
 Target slice:
-- New domain module: `lib/p44-phase5-ai-draft-governance.ts`.
+- New domain module: `lib/internal-draft-governance-spine.ts`.
 - New focused test suite: `tests/p44-phase5-certification.spec.ts`.
 - Report updates in this file.
 
@@ -80,7 +80,7 @@ Status: Complete.
 
 Detailed description: Execute Phase 5 only through the 14 child subtasks. Direct parent-task implementation is forbidden because aggregate scope and CTES are too broad.
 
-Execution: Completed through the ordered readiness/checklist contract in `lib/p44-phase5-ai-draft-governance.ts`. Direct parent implementation was avoided. Child execution stayed ordered from `P44-5-T01-EXEC` through `P44-5-T14-EXEC`.
+Execution: Completed through the ordered readiness/checklist contract in `lib/internal-draft-governance-spine.ts`. Direct parent implementation was avoided. Child execution stayed ordered from `P44-5-T01-EXEC` through `P44-5-T14-EXEC`.
 
 Status: Complete.
 
@@ -206,7 +206,7 @@ Status: Complete for focused P44 Phase 5 certification.
 
 ## Changed Files
 
-- `lib/p44-phase5-ai-draft-governance.ts`
+- `lib/internal-draft-governance-spine.ts`
 - `tests/p44-phase5-certification.spec.ts`
 - `docs/00-current/p44-phase5/PHASE5_TICKET_EXTRACTION_AND_EXECUTION_REPORT.md`
 

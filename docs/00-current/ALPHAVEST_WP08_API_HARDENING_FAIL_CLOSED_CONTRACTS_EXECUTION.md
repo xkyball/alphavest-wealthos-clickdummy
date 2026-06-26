@@ -220,7 +220,7 @@ Current implementation is mixed by design:
 
 - `app/api/demo-workflow/route.ts` uses `failClosedJson` for missing DB, invalid JSON/body, validation issues, audit persistence failure and typed workflow errors.
 - `lib/demo-workflow-validation.ts` validates typed `recommendation-review` requests with action, actor role, target UUID, evidence IDs, confirmation and audit simulation fields.
-- `lib/demo-workflow-mutation.ts` enforces role, tenant/object scope, permission, evidence, payload, compliance release and audit gates for typed recommendation-review actions.
+- `lib/typed-workflow-command-bus.ts` enforces role, tenant/object scope, permission, evidence, payload, compliance release and audit gates for typed recommendation-review actions.
 - The same endpoint also accepts any `jNN.actionToken` shape through `demoWorkflowActionPattern`. Unknown generic screencast actions fall through to a deterministic audit-only compatibility path in `app/api/demo-workflow/route.ts`.
 
 That fallback is acceptable only if WP08 explicitly keeps `/api/demo-workflow` as demo compatibility transport. It must not be overclaimed as a controlled MVP action API. This aligns with the accepted WP05, WP06 and WP07 decisions.
@@ -367,7 +367,7 @@ Proof:
 
 - `app/api/demo-workflow/route.ts` uses `failClosedJson` for missing DB, invalid JSON/body, validation issues, typed workflow errors and audit persistence failure.
 - `lib/demo-workflow-validation.ts` defines typed recommendation-review actions and deterministic transition metadata, and separately accepts generic `jNN.*` action IDs as compatibility action IDs.
-- `lib/demo-workflow-mutation.ts` enforces typed role, permission, object scope, evidence, payload, compliance release and audit gates.
+- `lib/typed-workflow-command-bus.ts` enforces typed role, permission, object scope, evidence, payload, compliance release and audit gates.
 - The generic `jNN.*` fallback in `app/api/demo-workflow/route.ts` remains a deterministic screencast audit compatibility path by approved Option A. It is not MVP API authority.
 - `tests/demo-workflow-validation.spec.ts`, `tests/demo-workflow-api.spec.ts`, `tests/p0-api-contract.spec.ts` and `tests/phase6-audit-persistence.spec.ts` prove malformed requests fail closed, advisor approval does not release, compliance release requires gates and audit outage blocks mutation.
 

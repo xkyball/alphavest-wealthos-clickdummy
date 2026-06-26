@@ -248,7 +248,7 @@ Evidence:
 
 - `workflowGate.canPassComplianceReleaseGate` consumes a full `EvidenceSufficiencyDecision`.
 - `lib/journeys/journey-api-service.ts` blocks `COMPLIANCE_RELEASE` unless every journey evidence requirement has a latest sufficient, reviewed, scoped, relevant, current and audited decision.
-- `lib/demo-workflow-mutation.ts` has recommendation review release preconditions: advisor approval, accepted/scoped evidence, payload ready, permission, audit readiness.
+- `lib/typed-workflow-command-bus.ts` has recommendation review release preconditions: advisor approval, accepted/scoped evidence, payload ready, permission, audit readiness.
 
 Gap:
 

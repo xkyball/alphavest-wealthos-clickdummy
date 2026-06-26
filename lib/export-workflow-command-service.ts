@@ -144,7 +144,7 @@ export const exportWorkflowCommandSpineContract = {
       canonicalApiRoute: exportWorkflowCanonicalApiRoute,
       canonicalCommandService: exportWorkflowCommandSpinePath,
       familyId: "DEMO_WORKFLOW_EXPORT_COMPATIBILITY",
-      helperFiles: ["app/api/demo-workflow/route.ts", "lib/demo-workflow-mutation.ts"],
+      helperFiles: ["app/api/demo-workflow/route.ts", "lib/typed-workflow-command-bus.ts"],
       proofFiles: ["tests/demo-workflow-api.spec.ts", "tests/phase8-export-workflow-api.spec.ts"],
       rule: "Demo workflow export branches are compatibility only and must not become new export command truth.",
     },

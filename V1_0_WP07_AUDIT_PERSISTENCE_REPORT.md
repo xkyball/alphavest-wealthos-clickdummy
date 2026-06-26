@@ -28,7 +28,7 @@ WP-07 proves that critical safety actions require audit persistence, minimum aud
 - `app/api/audit-events/route.ts`
 - `lib/audit-service.ts`
 - `lib/control-layer/audit-guard.ts`
-- `lib/demo-workflow-mutation.ts`
+- `lib/typed-workflow-command-bus.ts`
 - `lib/export-service.ts`
 - `lib/permission-engine.ts`
 - `prisma/schema.prisma`

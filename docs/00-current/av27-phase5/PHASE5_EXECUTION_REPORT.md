@@ -22,7 +22,7 @@ The downloaded index is a navigation aid, not implementation authority. Executio
 - `git diff --stat`: no pre-existing diff before edits.
 - `package.json`: scripts verified, including `guard:source`, `test:workflow-gate`, `test:workflow-api`, `test:client-visibility`, and `phase:check`.
 - Route registry inspected: `lib/route-registry.ts`.
-- Target seams inspected: `lib/demo-workflow-mutation.ts`, `lib/workflow-gate.ts`, `lib/advisory-workflow-contract.ts`, `lib/visibility-engine.ts`, `lib/audit-service.ts`, `lib/no-overclaim-copy.ts`, `lib/domain-types.ts`, `components/internal-workflow-screen.tsx`, `components/decisions-governance-screen.tsx`, and targeted tests.
+- Target seams inspected: `lib/typed-workflow-command-bus.ts`, `lib/workflow-gate.ts`, `lib/advisory-workflow-contract.ts`, `lib/visibility-engine.ts`, `lib/audit-service.ts`, `lib/no-overclaim-copy.ts`, `lib/domain-types.ts`, `components/internal-workflow-screen.tsx`, `components/decisions-governance-screen.tsx`, and targeted tests.
 - `pnpm guard:source`: PASS, 0 violations.
 
 ## Changed Files
@@ -38,7 +38,7 @@ No product code, route, schema, migration, API route, visual asset, screen image
 Detailed description: Advisor approval sets compliance-pending state only. Positive acceptance: advisor approves and item moves to compliance. Negative acceptance: advisor approval does not set `clientVisible` or released state.
 
 Execution:
-- A: inspected current proof in `lib/demo-workflow-mutation.ts`, `lib/workflow-gate.ts`, `lib/demo-workflow-validation.ts`, `tests/demo-workflow-api.spec.ts`, and `tests/workflow-gate.spec.ts`.
+- A: inspected current proof in `lib/typed-workflow-command-bus.ts`, `lib/workflow-gate.ts`, `lib/demo-workflow-validation.ts`, `tests/demo-workflow-api.spec.ts`, and `tests/workflow-gate.spec.ts`.
 - S: locked target behavior to the existing `advisor_approve` command and canonical state `COMPLIANCE_PENDING`.
 - I: no code delta required; current implementation updates approval to `APPROVED`, recommendation to `COMPLIANCE_PENDING`, compliance review to `PENDING`, and keeps `clientVisible=false`.
 - Q: `pnpm test:workflow-api` proves advisor approval persists without client release; `pnpm test:workflow-gate` proves advisor approval is separate from compliance release and client visibility.
@@ -165,13 +165,13 @@ Two first proof attempts failed because parallel Playwright commands tried to bi
 
 ## Refactor-First Proof
 
-The real implementation path was inspected and used as the operative spine: `lib/demo-workflow-mutation.ts` plus `lib/workflow-gate.ts`, `lib/visibility-engine.ts`, `lib/audit-service.ts` and the workflow/API tests. No substitute UI, seed-only claim, report-only pass, or test-only expectation change was used to close behavior.
+The real implementation path was inspected and used as the operative spine: `lib/typed-workflow-command-bus.ts` plus `lib/workflow-gate.ts`, `lib/visibility-engine.ts`, `lib/audit-service.ts` and the workflow/API tests. No substitute UI, seed-only claim, report-only pass, or test-only expectation change was used to close behavior.
 
 Because current code already contained the central Phase 5 spine, the correct refactor-first move was to keep one authoritative implementation and prove it, rather than create duplicate advisor/compliance/decision logic in another component or API route.
 
 ## Bold Cleanup Recommendations
 
-1. Promote `lib/demo-workflow-mutation.ts` advisor-approval behavior into a named `advisor-approval-service.ts` and leave the API route as a thin transport adapter. This would retire the last "demo workflow" naming around a genuinely safety-critical spine.
+1. Promote `lib/typed-workflow-command-bus.ts` advisor-approval behavior into a named `advisor-approval-service.ts` and leave the API route as a thin transport adapter. This would retire the last "demo workflow" naming around a genuinely safety-critical spine.
 2. Merge legacy SCF/Phase 5 constants into one AV27 phase contract module. Keep `advisory-workflow-contract.ts` as the canonical command/state vocabulary and stop scattering release boundary strings across UI copy.
 3. Replace seeded decision linkage assumptions with an explicit released-context decision service when the next phase authorizes it. That is the biggest remaining structural debt: the current slice proves released-context decision actions, not arbitrary decision creation from domain inputs.
 4. Make audit history a first-class read model for decision/advisor approval pages. Do not rely on visual audit timelines as proof; derive timelines from persisted `AuditEvent` rows only.

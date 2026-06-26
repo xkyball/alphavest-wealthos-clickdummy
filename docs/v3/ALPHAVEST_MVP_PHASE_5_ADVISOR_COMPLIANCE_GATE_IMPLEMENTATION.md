@@ -20,7 +20,7 @@ Implemented Phase 5 as a bounded workflow/API proof rather than a docs-only cont
 
 ## Implemented Changes
 
-- Added typed compliance release preconditions in `lib/demo-workflow-mutation.ts`: advisor approval, compliance permission, accepted/scoped evidence, payload readiness and audit readiness.
+- Added typed compliance release preconditions in `lib/typed-workflow-command-bus.ts`: advisor approval, compliance permission, accepted/scoped evidence, payload readiness and audit readiness.
 - Made failed recommendation-review release responses return `gateMissing` and `releasePreconditions` through `/api/demo-workflow`.
 - Restricted release evidence mutation to the selected accepted/scoped evidence record.
 - Extended the API test suite to prove advisor-only release failure, missing evidence failure, payload-readiness failure and successful compliance release.

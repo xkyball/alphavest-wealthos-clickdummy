@@ -6,24 +6,24 @@ Generated: 2026-06-25
 
 `max`
 
-Stop extending the legacy all-purpose demo workflow mutation for advisor, compliance and release semantics.
+Stop extending generic demo workflow mutation semantics for advisor, compliance and release behavior.
 
 Promote the P44 phase modules into a typed workflow command bus with separate command families for analyst draft, advisor review, compliance release and export. This removes a major place where old safety debt can hide.
 
 ## Current Evidence
 
-- Legacy all-purpose mutation path exists at `app/api/demo-workflow/route.ts` and `lib/demo-workflow-mutation.ts`.
+- The command bus now lives at `lib/typed-workflow-command-bus.ts`; `/api/demo-workflow` remains the HTTP adapter.
 - P44 phase-specific modules already exist as stronger domain seams:
-  - `lib/p44-phase5-ai-draft-governance.ts`
+  - `lib/internal-draft-governance-spine.ts`
   - `lib/p44-phase6-advisor-review-closure.ts`
   - `lib/p44-phase7-compliance-rationale-closure.ts`
   - `lib/p44-phase8-export-command-closure.ts`
   - `lib/p44-phase9-cross-process-certification.ts`
-- Current Phase 9 proof already treats command-family separation as a claim-control requirement, but it does not yet replace the legacy mutation spine.
+- Current Phase 9 proof treats command-family separation as a claim-control requirement. The current slice names the bus and routes advisor/compliance release payload readiness through canonical internal-draft and release-spine helpers.
 
 ## Problem
 
-`/api/demo-workflow` and `runDemoWorkflowMutation` are too broad. They can carry analyst, advisor, compliance, release, export, evidence and client-visibility semantics through one compatibility-style mutation surface.
+`/api/demo-workflow` remains broad as an HTTP adapter. The risk is letting adapter compatibility become business authority instead of routing safety-critical actions through explicit command-family helpers.
 
 That makes old safety debt hard to see:
 
@@ -31,7 +31,7 @@ That makes old safety debt hard to see:
 - compliance release can inherit generic journey mutation assumptions
 - export readiness can be inferred from old workflow state instead of explicit export command stages
 - internal draft governance can be represented as generic recommendation mutations
-- tests can pass through the legacy compatibility path while the intended P44 command family remains only partially authoritative
+- tests can pass through adapter compatibility while the intended P44 command family remains only partially authoritative
 
 ## Target Architecture
 
@@ -39,7 +39,7 @@ Create a typed workflow command bus that routes explicit command families:
 
 | Family | Purpose | Initial Owner Module |
 | --- | --- | --- |
-| `AnalystDraftCommand` | Internal draft generation, classification, unsupported-claim handling, evidence-backed rebuild, draft trace | `lib/p44-phase5-ai-draft-governance.ts` |
+| `AnalystDraftCommand` | Internal draft generation, classification, unsupported-claim handling, evidence-backed rebuild, draft trace | `lib/internal-draft-governance-spine.ts` |
 | `AdvisorReviewCommand` | Advisor queue triage, approve, reject, request evidence, return to analyst | `lib/p44-phase6-advisor-review-closure.ts` |
 | `ComplianceReleaseCommand` | Compliance queue, evidence request, rationale capture, release denial, `ReleaseSpine` precondition evaluation | `lib/p44-phase7-compliance-rationale-closure.ts` and `lib/release-spine-command-surface.ts` |
 | `ExportCommand` | Scope, redaction, preview, approval, package generation, download/share | `lib/export-workflow-command-service.ts` and `lib/p44-phase8-export-command-closure.ts` |
@@ -52,15 +52,15 @@ Export readiness should flow through `lib/export-workflow-command-service.ts`, w
 
 `P44-COMMAND-BUS-01`
 
-Replace legacy all-purpose demo workflow command extension with a typed P44 workflow command bus.
+Replace generic demo workflow command extension with a typed P44 workflow command bus.
 
 ### Scope
 
 - Add a typed command discriminated union.
 - Add separate handlers for analyst draft, advisor review, compliance release and export.
 - Route new P44 safety-critical command tests through the typed bus.
-- Keep `/api/demo-workflow` only as a temporary compatibility adapter.
-- Forbid new advisor/compliance/release/export semantics from being added directly to `runDemoWorkflowMutation`.
+- Keep `/api/demo-workflow` as the HTTP adapter.
+- Forbid new advisor/compliance/release/export semantics from bypassing the typed command-family helpers inside `lib/typed-workflow-command-bus.ts`.
 
 ### Acceptance
 
@@ -70,7 +70,7 @@ Replace legacy all-purpose demo workflow command extension with a typed P44 work
 - Export commands require explicit export stage progression and do not infer readiness from generic workflow state.
 - Analyst draft commands remain internal-only and cannot produce client/export payloads.
 - A compatibility adapter can call the typed bus, but business logic does not live in the adapter.
-- Tests prove command-family separation and fail if a legacy all-purpose mutation tries to absorb new safety semantics.
+- Tests prove command-family separation and fail if generic adapter code absorbs new safety semantics.
 
 ### Negative Acceptance
 

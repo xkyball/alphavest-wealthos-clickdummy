@@ -31,7 +31,7 @@ Implementation executed from `mega_journeys_1/ALPHAVEST_MVP_JOURNEY_IMPLEMENTATI
 ## Changed Files
 
 - `lib/demo-workflow-validation.ts`
-- `lib/demo-workflow-mutation.ts`
+- `lib/typed-workflow-command-bus.ts`
 - `tests/demo-workflow-api.spec.ts`
 - `tests/client-visibility-proof.spec.ts`
 - `docs/v3/ALPHAVEST_MVP_PHASE_4_INTERNAL_DRAFT_ANALYST_REVIEW_IMPLEMENTATION.md`

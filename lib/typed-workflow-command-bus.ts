@@ -1,13 +1,17 @@
 import {
-  ComplianceStatus,
-  EvidenceStatus,
   AuditResult,
+  ComplianceStatus,
+  DraftClassificationKind,
+  DraftRiskLevel,
+  EvidenceStatus,
+  InternalDraftStatus,
   ObjectType,
   type ObjectType as PrismaObjectType,
   type Prisma,
   type PrismaClient,
   RecommendationStatus,
   ReviewStatus,
+  UnsupportedClaimStatus,
   VisibilityStatus,
 } from "@prisma/client";
 
@@ -29,7 +33,8 @@ import {
 } from "@/lib/demo-workflow-validation";
 import { wp05DemoWorkflowCompatibilityMode } from "@/lib/advisory-workflow-contract";
 import type { PermissionDecision } from "@/lib/permission-engine";
-import { p44InternalDraftLegacyFallbackFlag } from "@/lib/p44-phase5-ai-draft-governance";
+import { runReleaseSpineCommand } from "@/lib/release-spine-command-surface";
+import { stableId } from "@/lib/stable-id";
 import { visibilityEngine, type RecommendationPayloadProjection } from "@/lib/visibility-engine";
 import { workflowGate } from "@/lib/workflow-gate";
 import type {
@@ -104,11 +109,14 @@ type AdvisorApprovalState = {
 type ComplianceReleasePreconditions = {
   advisorApproval: boolean;
   auditReady: boolean;
+  canonicalMissing: string[];
   compliancePermission: boolean;
   evidenceAccepted: boolean;
   evidenceProvided: boolean;
   evidenceScoped: boolean;
+  internalDraftId: string | null;
   payloadReady: boolean;
+  releaseSpineCanRelease: boolean;
   missing: string[];
   selectedEvidenceRecordId: string | null;
 };
@@ -464,27 +472,168 @@ function acceptedScopedEvidenceRecords<
   return records.filter((record) => hasAcceptedEvidence(record) && isEvidenceScopedToRecommendation(record, targetId));
 }
 
-function isRecord(value: Prisma.JsonValue | null | undefined): value is Prisma.JsonObject {
-  return Boolean(value && typeof value === "object" && !Array.isArray(value));
+const advisorApprovalInternalDraftKey = "typed-advisor-approval-release-spine";
+const advisorApprovalClientSafeSummary =
+  "Compliance-ready client summary for a released liquidity governance next step.";
+
+async function upsertAdvisorApprovalInternalDraft(
+  tx: Prisma.TransactionClient,
+  input: {
+    actorRoleKey: DemoRoleKey;
+    actorUserId: string | null;
+    clientSafeSummary?: string;
+    recommendation: {
+      clientTenantId: string;
+      id: string;
+      title: string;
+    };
+    reason: string;
+    status: InternalDraftStatus;
+    traceType: string;
+  },
+) {
+  const draft = await tx.internalDraft.upsert({
+    create: {
+      clientTenantId: input.recommendation.clientTenantId,
+      createdByUserId: input.actorUserId,
+      draftClientSummary:
+        input.clientSafeSummary ?? "Internal draft awaiting evidence-backed rebuild. Compliance release remains required.",
+      draftKey: advisorApprovalInternalDraftKey,
+      id: stableId(`internal-draft:advisor-approval:${input.recommendation.id}`),
+      internalRationale: input.reason,
+      processId: "typed-advisor-approval",
+      recommendationId: input.recommendation.id,
+      sourceObjectId: input.recommendation.id,
+      sourceObjectType: ObjectType.RECOMMENDATION,
+      sourceRefsJson: ["typed-workflow-command-bus", "advisor-approval", "release-spine"],
+      status: input.status,
+      title: `${input.recommendation.title} internal draft spine`,
+    },
+    update: {
+      draftClientSummary:
+        input.clientSafeSummary ?? "Internal draft awaiting evidence-backed rebuild. Compliance release remains required.",
+      internalRationale: input.reason,
+      processId: "typed-advisor-approval",
+      sourceObjectId: input.recommendation.id,
+      sourceObjectType: ObjectType.RECOMMENDATION,
+      sourceRefsJson: ["typed-workflow-command-bus", "advisor-approval", "release-spine"],
+      status: input.status,
+      title: `${input.recommendation.title} internal draft spine`,
+    },
+    where: {
+      recommendationId_draftKey: {
+        draftKey: advisorApprovalInternalDraftKey,
+        recommendationId: input.recommendation.id,
+      },
+    },
+  });
+
+  await tx.draftClassification.create({
+    data: {
+      classifiedByRoleKey: input.actorRoleKey,
+      classifiedByUserId: input.actorUserId,
+      classification: DraftClassificationKind.ADVICE_RELEVANT,
+      internalDraftId: draft.id,
+      reason: input.reason,
+      riskLevel: DraftRiskLevel.MEDIUM,
+      unsupportedClaimsClear: true,
+    },
+  });
+
+  await tx.draftTrace.create({
+    data: {
+      actorRoleKey: input.actorRoleKey,
+      actorUserId: input.actorUserId,
+      internalDraftId: draft.id,
+      metadataJson: {
+        commandBus: "typed-workflow-command-bus",
+        releaseSpine: true,
+        storage: "internal_drafts",
+      },
+      reason: input.reason,
+      traceType: input.traceType,
+    },
+  });
+
+  return draft;
 }
 
-function hasReleaseReadyPayload(recommendation: {
-  assumptionsJson: Prisma.JsonValue | null;
-  clientSummaryDraft: string | null;
-}) {
-  if (process.env[p44InternalDraftLegacyFallbackFlag] !== "1") {
-    return false;
+async function markAdvisorApprovalInternalDraftReady(
+  tx: Prisma.TransactionClient,
+  input: {
+    actorRoleKey: DemoRoleKey;
+    actorUserId: string | null;
+    reason: string;
+    recommendationId: string;
+  },
+) {
+  const draft = await tx.internalDraft.findFirst({
+    include: {
+      unsupportedClaims: { where: { status: UnsupportedClaimStatus.NEEDS_EVIDENCE } },
+    },
+    orderBy: { updatedAt: "desc" },
+    where: {
+      draftKey: advisorApprovalInternalDraftKey,
+      recommendationId: input.recommendationId,
+    },
+  });
+
+  if (!draft || draft.status !== InternalDraftStatus.REBUILT_WITH_EVIDENCE || draft.unsupportedClaims.length > 0) {
+    return null;
   }
 
-  if (!recommendation.clientSummaryDraft?.trim()) {
-    return false;
-  }
+  const updatedDraft = await tx.internalDraft.update({
+    data: { status: InternalDraftStatus.ADVISOR_READY },
+    where: { id: draft.id },
+  });
 
-  if (isRecord(recommendation.assumptionsJson) && recommendation.assumptionsJson.aiDraftInternalOnly === true) {
-    return false;
-  }
+  await tx.draftTrace.create({
+    data: {
+      actorRoleKey: input.actorRoleKey,
+      actorUserId: input.actorUserId,
+      internalDraftId: draft.id,
+      metadataJson: {
+        commandBus: "typed-workflow-command-bus",
+        releaseSpine: true,
+        storage: "internal_drafts",
+      },
+      reason: input.reason,
+      traceType: "advisor_approval.internal_draft_ready",
+    },
+  });
 
-  return true;
+  return updatedDraft;
+}
+
+async function getReleaseReadyInternalDraftPayload(tx: Prisma.TransactionClient, recommendationId: string) {
+  const draft = await tx.internalDraft.findFirst({
+    include: {
+      classifications: { orderBy: { createdAt: "desc" }, take: 1 },
+      unsupportedClaims: { where: { status: UnsupportedClaimStatus.NEEDS_EVIDENCE } },
+    },
+    orderBy: { updatedAt: "desc" },
+    where: {
+      draftKey: advisorApprovalInternalDraftKey,
+      recommendationId,
+    },
+  });
+  const latestClassification = draft?.classifications[0] ?? null;
+  const clientSummary = draft?.draftClientSummary.trim() ? draft.draftClientSummary : null;
+  const rationaleCaptured = Boolean(draft?.internalRationale.trim());
+  const unsupportedClaimsClear =
+    latestClassification?.unsupportedClaimsClear === true && (draft?.unsupportedClaims.length ?? 0) === 0;
+  const ready =
+    Boolean(clientSummary) &&
+    rationaleCaptured &&
+    unsupportedClaimsClear &&
+    draft?.status === InternalDraftStatus.ADVISOR_READY;
+
+  return {
+    clientSummary,
+    internalDraftId: draft?.id ?? null,
+    rationaleCaptured,
+    ready,
+  };
 }
 
 function evaluateComplianceReleasePreconditions(input: {
@@ -499,21 +648,49 @@ function evaluateComplianceReleasePreconditions(input: {
     relatedObjectType: ObjectType;
     status: EvidenceStatus;
   }>;
+  internalDraftId: string | null;
   permissionAllowed: boolean;
   payloadReady: boolean;
+  rationaleCaptured: boolean;
   targetId: string;
   auditReady?: boolean;
 }) {
   const selectedEvidence = acceptedScopedEvidenceRecords(input.evidenceRecords, input.targetId)[0] ?? null;
+  const evidenceMissing = !input.evidenceRecords.length
+    ? ["evidence_record"]
+    : selectedEvidence
+      ? []
+      : ["accepted_evidence", "scoped_evidence"];
+  const releaseSpine = runReleaseSpineCommand({
+    command: "EVALUATE_RELEASE_PRECONDITIONS",
+    input: {
+      advisor: { approved: input.advisorApprovalStatus === ReviewStatus.APPROVED },
+      audit: { persistenceAvailable: input.auditReady ?? true },
+      compliance: { permissionAllowed: input.permissionAllowed },
+      evidence: {
+        exportImpact: selectedEvidence ? "EXPORT_ALLOWED_FOR_SCOPED_GATE" : "EXPORT_BLOCKED_NEEDS_EVIDENCE",
+        label: selectedEvidence ? "EVIDENCE_SUFFICIENT" : "EVIDENCE_INSUFFICIENT",
+        missing: evidenceMissing,
+        releaseImpact: selectedEvidence ? "RELEASE_ALLOWED_FOR_SCOPED_GATE" : "RELEASE_BLOCKED_NEEDS_EVIDENCE",
+        sufficient: Boolean(selectedEvidence),
+      },
+      payload: { ready: input.payloadReady },
+      rationale: { captured: input.rationaleCaptured },
+      redaction: { ready: true },
+    },
+  });
 
   const preconditions: ComplianceReleasePreconditions = {
     advisorApproval: input.advisorApprovalStatus === ReviewStatus.APPROVED,
     auditReady: input.auditReady ?? true,
+    canonicalMissing: releaseSpine.preconditions.missing,
     compliancePermission: input.permissionAllowed,
     evidenceAccepted: Boolean(selectedEvidence),
     evidenceProvided: input.evidenceRecords.length > 0,
     evidenceScoped: Boolean(selectedEvidence),
+    internalDraftId: input.internalDraftId,
     payloadReady: input.payloadReady,
+    releaseSpineCanRelease: releaseSpine.preconditions.canRelease,
     missing: [],
     selectedEvidenceRecordId: selectedEvidence?.id ?? null,
   };
@@ -550,7 +727,7 @@ function evaluateComplianceReleasePreconditions(input: {
 }
 
 function buildClientRecommendationProjection(input: {
-  clientSummaryDraft: string | null;
+  clientSummary: string | null;
   clientTenantId: string;
   clientVisible: boolean;
   id: string;
@@ -566,8 +743,7 @@ function buildClientRecommendationProjection(input: {
     clientSession.actor,
     clientSession.role,
     {
-      clientSummary: input.clientSummaryDraft,
-      ...(process.env[p44InternalDraftLegacyFallbackFlag] === "1" ? { clientSummaryDraft: input.clientSummaryDraft } : {}),
+      clientSummary: input.clientSummary,
       clientTenantId: input.clientTenantId,
       clientVisible: input.clientVisible,
       objectId: input.id,
@@ -827,6 +1003,7 @@ export async function runAdvisorApprovalWorkflowMutation(
     let decisionRows = 0;
     let decisionLinkageMode: "metadata_only" | "released_to_client" = "metadata_only";
     let releasePreconditions: ComplianceReleasePreconditions | null = null;
+    let releasePayload: Awaited<ReturnType<typeof getReleaseReadyInternalDraftPayload>> | null = null;
 
     if (input.action === "reject_unsupported_claim") {
       await tx.recommendation.update({
@@ -883,6 +1060,21 @@ export async function runAdvisorApprovalWorkflowMutation(
         },
         where: { id: input.targetId },
       });
+      await upsertAdvisorApprovalInternalDraft(tx, {
+        actorRoleKey: session.role.key,
+        actorUserId: session.actor.id,
+        clientSafeSummary: advisorApprovalClientSafeSummary,
+        recommendation,
+        reason,
+        status: InternalDraftStatus.REBUILT_WITH_EVIDENCE,
+        traceType: "advisor_approval.internal_draft_rebuilt_with_evidence",
+      });
+      await tx.unsupportedClaim.updateMany({
+        data: { status: UnsupportedClaimStatus.RESOLVED },
+        where: {
+          internalDraft: { is: { draftKey: advisorApprovalInternalDraftKey, recommendationId: input.targetId } },
+        },
+      });
       await tx.approval.update({
         data: {
           approvedAt: null,
@@ -920,6 +1112,14 @@ export async function runAdvisorApprovalWorkflowMutation(
         },
         where: { id: input.targetId },
       });
+      await upsertAdvisorApprovalInternalDraft(tx, {
+        actorRoleKey: session.role.key,
+        actorUserId: session.actor.id,
+        recommendation,
+        reason,
+        status: InternalDraftStatus.CLASSIFIED,
+        traceType: "advisor_approval.internal_draft_submitted_for_review",
+      });
       await tx.approval.update({
         data: {
           notes: reason,
@@ -931,6 +1131,12 @@ export async function runAdvisorApprovalWorkflowMutation(
     }
 
     if (input.action === "advisor_approve") {
+      await markAdvisorApprovalInternalDraftReady(tx, {
+        actorRoleKey: session.role.key,
+        actorUserId: session.actor.id,
+        reason,
+        recommendationId: input.targetId,
+      });
       await tx.approval.update({
         data: {
           approvedAt: now,
@@ -1010,21 +1216,26 @@ export async function runAdvisorApprovalWorkflowMutation(
     }
 
     if (input.action === "compliance_release") {
+      releasePayload = await getReleaseReadyInternalDraftPayload(tx, input.targetId);
       releasePreconditions = evaluateComplianceReleasePreconditions({
         advisorApprovalStatus: advisorApproval.status,
         auditReady: input.auditPersistenceAvailable !== false,
         evidenceRecords,
+        internalDraftId: releasePayload.internalDraftId,
         permissionAllowed: permission.allowed,
-        payloadReady: hasReleaseReadyPayload(recommendation),
+        payloadReady: releasePayload.ready,
+        rationaleCaptured: releasePayload.rationaleCaptured,
         targetId: input.targetId,
       });
 
-      if (releasePreconditions.missing.length > 0) {
+      if (releasePreconditions.missing.length > 0 || !releasePreconditions.releaseSpineCanRelease) {
         throw new AdvisorApprovalWorkflowError(
-          `Compliance release preconditions failed: ${releasePreconditions.missing.join(", ")}`,
+          `Compliance release preconditions failed: ${[
+            ...new Set([...releasePreconditions.missing, ...releasePreconditions.canonicalMissing]),
+          ].join(", ")}`,
           409,
           {
-            gateMissing: releasePreconditions.missing,
+            gateMissing: [...new Set([...releasePreconditions.missing, ...releasePreconditions.canonicalMissing])],
             releasePreconditions,
           },
         );
@@ -1153,7 +1364,7 @@ export async function runAdvisorApprovalWorkflowMutation(
     const clientProjection =
       input.action === "compliance_release"
         ? buildClientRecommendationProjection({
-            clientSummaryDraft: recommendation.clientSummaryDraft,
+            clientSummary: releasePayload?.clientSummary ?? null,
             clientTenantId: recommendation.clientTenantId,
             clientVisible: reloadedState.recommendation.clientVisible,
             id: recommendation.id,

@@ -20,7 +20,7 @@ WP-05 proves that advisor approval, compliance release, compliance block and evi
 ## Changed Files
 
 - `lib/demo-workflow-validation.ts`
-- `lib/demo-workflow-mutation.ts`
+- `lib/typed-workflow-command-bus.ts`
 - `tests/demo-workflow-validation.spec.ts`
 - `V1_0_WP05_ADVISOR_COMPLIANCE_RELEASE_REPORT.md`
 
@@ -30,7 +30,7 @@ WP-05 proves that advisor approval, compliance release, compliance block and evi
 - `components/internal-workflow-screen.tsx`
 - `components/decisions-governance-screen.tsx`
 - `lib/control-layer/client-visibility.ts`
-- `lib/demo-workflow-mutation.ts`
+- `lib/typed-workflow-command-bus.ts`
 - `lib/demo-workflow-validation.ts`
 - `lib/workflow-gate.ts`
 - `tests/demo-workflow-api.spec.ts`

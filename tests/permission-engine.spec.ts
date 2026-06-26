@@ -11,7 +11,7 @@ import {
   demoTenants,
   type DemoTenantSlug,
 } from "../lib/demo-session";
-import { AuditPersistenceUnavailableError, runDemoWorkflowMutation } from "../lib/demo-workflow-mutation";
+import { AuditPersistenceUnavailableError, runDemoWorkflowMutation } from "../lib/typed-workflow-command-bus";
 import { permissionEngine } from "../lib/permission-engine";
 import { visibilityEngine } from "../lib/visibility-engine";
 
