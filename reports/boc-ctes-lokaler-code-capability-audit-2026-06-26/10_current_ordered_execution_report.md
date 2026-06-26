@@ -23,7 +23,8 @@ Current head at execution start: `2f746c6 chore(docs): align J01 markdown bounda
 | 11 | `QA-1` Report validieren und Claim-Kontrolle durchführen | `DONE` | QA decision `PASS_WITH_LIMITATIONS`: stale QA claims removed, capability drift gate updated, focused proof pack passed `12/12`, and `pnpm gate:capability-report` passed against current 53-model / 33-API-route report truth. |
 | 12 | `DECISION-1` Menschliche Abnahme der Report-Baseline | `DONE_ACCEPTED_WITH_LIMITATIONS` | Human decision recorded: baseline accepted with limitations; proof pack, J01 boundary/quarantine, Advice/Release-History typed boundary and removal of product-like `runScreencastDemoAction` usage authorized. |
 | 13 | `FOLLOWUP-0` Decision acceptance record | `DONE` | Current user authorization captured in `07_decision_gate.md`; `pnpm guard:source` passed before follow-up execution resumed. |
-| 14 | `FOLLOWUP-1` Browser/runtime proof pack for typed command surfaces | `NEXT` | Run focused proof for export, tenant governance and platform admin typed command surfaces before further cleanup claims. |
+| 14 | `FOLLOWUP-1` Browser/runtime proof pack for typed command surfaces | `DONE` | Focused Playwright proof pack passed `26/26` for export API/lifecycle, tenant-governance typed API, platform-admin typed API/browser runtime and source command-client wiring. |
+| 15 | `FOLLOWUP-2` J01 typed intake/advisor-review boundary or screencast-seed quarantine | `NEXT` | Inspect remaining J01 command semantics and either build a typed boundary or quarantine it as pure screencast seed support. |
 
 ## Current Proof Pack
 
@@ -43,9 +44,10 @@ static Prisma operation scan over app/api and lib; schema, migration and seed in
 guard/security/test inventory over lib, app/api and tests
 PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm exec playwright test tests/demo-workflow-action-registry.spec.ts tests/capture-screen-model-context.spec.ts tests/capability-report-drift-gate.spec.ts --workers=1
 pnpm gate:capability-report
+pnpm exec playwright test tests/export-workflow-api.spec.ts tests/phase8-export-workflow-api.spec.ts tests/export-approval-lifecycle.spec.ts tests/export-download-confirmation-lifecycle.spec.ts tests/tenant-governance-actions-api.spec.ts tests/platform-admin-actions-api.spec.ts tests/platform-admin-browser-runtime.spec.ts tests/platform-admin-command-client-source.spec.ts tests/export-command-spine-contract.spec.ts --workers=1
 ```
 
-Result so far: `ANALYSIS-1`, all `ANALYSIS-2` subtasks, `SPEC-1`, all `IMPL-1` report slices, `QA-1`, `DECISION-1` and `FOLLOWUP-0` completed with source guard `PASS`, targeted drift proof pack `12 passed`, capability report gate `PASS`, QA decision `PASS_WITH_LIMITATIONS`, human acceptance with cleanup authorization recorded, and no UI changes in `FOLLOWUP-0`.
+Result so far: `ANALYSIS-1`, all `ANALYSIS-2` subtasks, `SPEC-1`, all `IMPL-1` report slices, `QA-1`, `DECISION-1`, `FOLLOWUP-0` and `FOLLOWUP-1` completed with source guard `PASS`, targeted drift proof pack `12 passed`, capability report gate `PASS`, focused runtime proof pack `26 passed`, QA decision `PASS_WITH_LIMITATIONS`, human acceptance with cleanup authorization recorded, and no UI changes in `FOLLOWUP-0` or `FOLLOWUP-1`.
 
 ## Current Workspace Boundary
 
@@ -60,4 +62,4 @@ They are excluded from `ANALYSIS-1` unless a later ordered ticket explicitly rec
 
 ## Next Ticket
 
-Proceed to `FOLLOWUP-1`: Browser/runtime proof pack for export, tenant governance and platform admin typed command surfaces.
+Proceed to `FOLLOWUP-2`: J01 typed intake/advisor-review boundary or screencast-seed quarantine.
