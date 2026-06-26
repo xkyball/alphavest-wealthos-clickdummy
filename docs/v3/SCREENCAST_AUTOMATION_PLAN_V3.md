@@ -114,7 +114,7 @@ The automation now uses four layers:
 
 Date: 2026-06-16
 
-- J01 now keeps only `j01.requestData` on the canonical typed boundary (legacy compatibility bridge); route-to-advisor, escalations and advisor approval are routed through typed product command APIs.
+- J01 request-data, route-to-advisor and escalation now run through the typed advisor-review boundary; advisor approval remains routed through the typed recommendation-review workflow API.
 - J01 step 2, 4, 6 and 7 are required real clicks with interaction success/fallback recorded in `run-log.json`.
 - J01 step 3, 5 and 8 now use `navigation: "continue"` to verify the state reached by the previous click.
 - The cursor state is preserved through page transitions; proof frames show it near active controls, not jumping from the top-left corner.

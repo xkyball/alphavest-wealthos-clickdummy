@@ -27,7 +27,7 @@ AlphaVest is not only a static clickdummy. Static local inspection found a real 
 
 The strongest local capability candidates are document upload/review, export workflow, journey commands, data maintenance, tenant governance, advice/release-history and DBTF profile/family/entity maintenance. None is promoted to `COMPLETE_VERTICAL_SLICE` in this matrix because this ticket did not execute every required positive and negative vertical proof layer for each flow.
 
-The most important semantic cleanup finding is that `/api/demo-workflow` must not be treated as a product API. Current code and tests classify moved product-like Jxx families through typed APIs and leave only explicit demo-only compatibility under the legacy route.
+The most important semantic cleanup finding is that `/api/demo-workflow` must not be treated as a product API. Current code and tests classify moved product-like Jxx families through typed APIs and leave no executable demo-only compatibility under the legacy route.
 
 Decision summary: accept this report as a conservative baseline only if `PASS_WITH_LIMITATIONS` is acceptable. A stricter `PASS` requires focused DB/browser/API proof for the strongest vertical candidates.
 
@@ -37,7 +37,7 @@ Decision summary: accept this report as a conservative baseline only if `PASS_WI
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Source hierarchy guard | Repo governance | N/A | `pnpm guard:source` script | `scripts/source-target-guard.ts`, `lib/source-reality-gate.ts` | N/A | Current-run `pnpm guard:source` PASS | `RUNTIME_PROVEN_THIS_RUN` |
 | Capture/report drift guard | Report/capture generation | N/A | `lib/capability-report-drift-gate.ts` | `lib/capture-screen-model-context.ts` | N/A | Current-run `tests/capture-screen-model-context.spec.ts` and `tests/capability-report-drift-gate.spec.ts` PASS | `RUNTIME_PROVEN_THIS_RUN` |
-| Demo-workflow quarantine | Legacy screencast support | Product-like screens no longer import `runScreencastDemoAction` in current scan | `app/api/demo-workflow/route.ts` | `lib/demo-workflow-action-registry.ts` | Direct demo-only execution only for `j01.requestData`; moved families return typed-route guidance | Current-run `tests/demo-workflow-action-registry.spec.ts` PASS | `LEGACY_DEMO_ONLY_BOUNDARY` |
+| Demo-workflow quarantine | Legacy screencast support | Product-like screens no longer import `runScreencastDemoAction` in current scan | `app/api/demo-workflow/route.ts` | `lib/demo-workflow-action-registry.ts` | No direct demo-only execution remains; former J01/request-data and moved families return typed-route guidance | Current-run `tests/demo-workflow-action-registry.spec.ts` PASS | `LEGACY_DEMO_410_BOUNDARY` |
 | Document upload | Client workspace / documents | `ClientIntakeScreen`, `/documents/upload` | `app/api/documents/upload/route.ts` | `lib/document-upload-service.ts` | `Document`, `DocumentVersion`, `DocumentExtraction`, `EvidenceRecord`, `EvidenceItem`, `AuditEvent` | Upload safety response and local upload tests exist | `STRONG_VERTICAL_CANDIDATE` |
 | Evidence/document review | Client workspace / evidence | `ClientIntakeScreen` review/sufficiency controls | `app/api/documents/review/route.ts` | `lib/evidence-review-service.ts` | `DocumentReview`, `DocumentLink`, `EvidenceItem`; updates document/extraction/evidence | Permission, sufficiency and audit failure branches; local review tests exist | `STRONG_VERTICAL_CANDIDATE` |
 | Profile edit | Client workspace / profile | `ClientIntakeScreen` profile form | `app/api/profile/route.ts` | `lib/dbtf-form-service.ts` | `UserProfile` update path | Tenant/role validation, scoped response; local tests exist | `API_BACKED_PARTIAL` |
@@ -66,7 +66,7 @@ Decision summary: accept this report as a conservative baseline only if `PASS_WI
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Source truth guard | N/A | Yes | Yes | N/A | Yes | Yes | Yes, `pnpm guard:source` PASS | `RUNTIME_PROVEN_THIS_RUN` |
 | Capture/report drift guard | N/A | Yes | Yes | N/A | Yes | Yes | Yes, drift/capture pack `12 passed` | `RUNTIME_PROVEN_THIS_RUN` |
-| Demo-workflow quarantine | N/A | Yes | Yes | Limited demo-only | Yes | Yes | Yes, registry proof `12 passed` pack | `LEGACY_DEMO_ONLY_BOUNDARY` |
+| Demo-workflow quarantine | N/A | Yes | Yes | No direct mutation path | Yes | Yes | Yes, registry/API proof pack | `LEGACY_DEMO_410_BOUNDARY` |
 | Document upload | Yes | Yes | Yes | Yes | Yes | Yes | No focused upload run in this ticket | `STRONG_VERTICAL_CANDIDATE` |
 | Evidence review | Yes | Yes | Yes | Yes | Yes | Yes | No focused review run in this ticket | `STRONG_VERTICAL_CANDIDATE` |
 | Profile update | Yes | Yes | Yes | Yes | Yes | Yes | Not run end-to-end in this ticket | `API_BACKED_PARTIAL` |
@@ -104,7 +104,7 @@ Decision summary: accept this report as a conservative baseline only if `PASS_WI
 | Recommendation review workflow | Advisor approval workflow payload with action, actor role, target, reason, evidence IDs, confirmation | `/api/recommendation-review-workflow` -> `handleRecommendationReviewWorkflowRequest` -> `runAdvisorApprovalWorkflowMutation` | Advisor/release workflow state by command | Permission, audit and release-precondition failures return safe errors | `SERVICE_BACKED_INTERNAL` |
 | Journey command | Journey ID, current user, typed command body | `/api/journeys/[id]/commands` -> `parseJourneyCommandRequest` -> `executeJourneyCommandForCurrentUser` | Journey command runs, step/instance state, evidence/decision/recommendation state by command family | Missing user, invalid command, scope denial and permission failures block state advance | `STRONG_VERTICAL_CANDIDATE` |
 | Export workflow | Command ID, tenant, role, export request, scope/redaction/payload/share flags | `/api/export-workflow` -> `parseExportWorkflowCommandRequest` -> `executeExportWorkflowCommand` | Export request status, audit event and package metadata | Role, scope, redaction, status, data-quality and unsafe-payload blockers fail closed | `STRONG_VERTICAL_CANDIDATE` |
-| Legacy demo-only action | Demo-only action ID | `/api/demo-workflow` -> `demoWorkflowActionBoundaryFor` -> only demo-only execution path | Direct legacy result only for demo-only compatibility | Product-like moved actions return `410` with canonical typed API route | `LEGACY_DEMO_ONLY_BOUNDARY` |
+| Legacy demo route | Legacy action ID | `/api/demo-workflow` -> `demoWorkflowActionBoundaryFor` -> fail-closed typed-route guidance | No direct legacy mutation result remains | Product-like and former demo-only actions return `410` with canonical typed API route | `LEGACY_DEMO_410_BOUNDARY` |
 
 ## Data Editability Matrix
 
@@ -147,7 +147,7 @@ Decision summary: accept this report as a conservative baseline only if `PASS_WI
 | Full DB/browser suites not run in this ticket | No product capability is promoted to `COMPLETE_VERTICAL_SLICE`. |
 | Field-level editability not exhaustively validated | Data matrix stays at process/model-family level. |
 | Platform admin command persistence is audit-record-only | Do not call platform admin a full platform/security settings CRUD surface. |
-| Legacy screencast client file remains present | Keep `/api/demo-workflow` classified as legacy demo-only boundary until deletion/quarantine is authorized and proved. |
+| Legacy screencast client file remains present | Keep `/api/demo-workflow` classified as a legacy fail-closed boundary until deletion/quarantine is proved. |
 
 ## Limitations
 
@@ -165,7 +165,7 @@ Decision summary: accept this report as a conservative baseline only if `PASS_WI
 | Risk | Why it is dangerous | Required correction |
 | --- | --- | --- |
 | Calling the whole app complete | The repo has real workflows, but also static/blocked/partial/unrun surfaces | Use per-capability labels only. |
-| Treating `/api/demo-workflow` as a product API | It is now a legacy demo-only boundary; product-like Jxx families must use typed APIs | Keep moved actions on typed routes and delete/quarantine remaining demo support when possible. |
+| Treating `/api/demo-workflow` as a product API | It is now a legacy fail-closed boundary; product-like Jxx families must use typed APIs | Keep moved actions on typed routes and delete/quarantine remaining demo support when possible. |
 | Treating schema breadth as editability | 53 models do not imply field-level UI/API editing | Require handler/service/write-path proof per data family. |
 | Treating test existence as current pass proof | Most tests were inventoried, not run | Mark unrun tests as `TEST_INTENT`; list current-run commands verbatim. |
 | Treating visible UI as workflow proof | Buttons/drawers/routes may be static, held or safety-blocked | Require API/service/DB/guard mapping before capability claims. |
@@ -176,7 +176,7 @@ Decision summary: accept this report as a conservative baseline only if `PASS_WI
 ## Bold Legacy-Cleanup Recommendations
 
 1. Delete or hard-quarantine `lib/screencast-demo-client.ts` from product screens after confirming no remaining seed/screencast dependency needs it. Do not leave it as a semi-official product client.
-2. Move the remaining J01 demo-only choreography behind a typed intake/advisor-review command surface, or explicitly isolate it as screencast seed support only. This is the last meaningful cleanup to stop `/api/demo-workflow` from looking like a shadow product API.
+2. Keep J01 on the typed advisor-review/recommendation-review command surfaces and reject any attempt to reintroduce direct `/api/demo-workflow` mutation support. This is the last meaningful cleanup to stop `/api/demo-workflow` from looking like a shadow product API.
 3. Promote typed command clients as the only acceptable product-like action path: data maintenance, tenant governance, platform admin, advice/release history, advisor review, export and journeys.
 4. Add a hard report-generation gate that fails on stale `32` API-route truth, stale model counts, `COMPLETE_VERTICAL_SLICE` overclaims and product-like demo-workflow language.
 5. Remove static controls from product routes unless they are safety-blocked with explicit data-driven reasons. If a control is not intended to work, either make that state honest or delete it.
@@ -188,9 +188,9 @@ Decision summary: accept this report as a conservative baseline only if `PASS_WI
 | Candidate | Goal | Recommendation |
 | --- | --- | --- |
 | Focused runtime proof pack | Run the strongest vertical candidates end to end with DB/API/browser proof | High priority before any complete-slice claim. |
-| J01 final split | Type J01 intake/advisor-review commands or quarantine remaining `j01.requestData` as seed support | Highest cleanup priority for demo-workflow retirement. |
+| J01 final split | Completed in `FOLLOWUP-2`: `j01.requestData`, route and escalation now use typed advisor-review commands; `/api/demo-workflow` returns `410` | Keep regression tests and remove the screencast client path from product-like screens. |
 | Screencast client deletion audit | Verify no product screen imports or runtime paths need `runScreencastDemoAction`, then delete or isolate the client | Bold cleanup; avoids future shadow API drift. |
-| Generated JSON/PDF/Markdown source reconciliation | Bring all generated/source channels to the same `LEGACY_DEMO_ONLY_BOUNDARY` and typed-command terminology | Prevents later copy steps from reintroducing stale semantics. |
+| Generated JSON/PDF/Markdown source reconciliation | Bring all generated/source channels to the same `LEGACY_DEMO_410_BOUNDARY` and typed-command terminology | Prevents later copy steps from reintroducing stale semantics. |
 | Platform-admin persistence decision | Decide whether platform/security commands should remain audit-record-only or receive real settings persistence | Human decision required before implementation. |
 | Static affordance purge | Delete/wire/quarantine static/held product-looking controls | Recommended after proof baseline acceptance. |
 | Capability status generator | Generate capability matrices directly from route/API/service/test maps | Useful to prevent future manual report drift. |

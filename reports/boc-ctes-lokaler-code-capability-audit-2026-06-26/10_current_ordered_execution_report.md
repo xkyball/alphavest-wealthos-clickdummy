@@ -15,16 +15,17 @@ Current head at execution start: `2f746c6 chore(docs): align J01 markdown bounda
 | 3 | `ANALYSIS-2.1` UI-, Route-, Screen- und Interaktionsflächen erfassen | `DONE` | Current route/UI inventory captured: 71 registered routes, current visual-mode distribution, typed command candidates, API mutation candidates, static/blocked controls and quarantined legacy screencast client path. |
 | 4 | `ANALYSIS-2.2` API-, Service- und Workflow-Datenfluss erfassen | `DONE` | Handler/service map refreshed: form APIs, document/evidence APIs, export workflow, journey commands, typed J01/J02/J03/J04/J05/J06/J07/J09/J10/J16/J17 command routes and `/api/demo-workflow` legacy 410 boundary classified. |
 | 5 | `ANALYSIS-2.3` DB-Editierbarkeit, Persistenz und Prozess-I/O erfassen | `DONE` | Schema/migration/seed inventory and model operation scan completed: 53 Prisma models, 5 migrations, 45 models with app/lib operation evidence, editability classified by process family. |
-| 6 | `ANALYSIS-2.4` Security-, Guard-, Audit- und Test-Beweise erfassen | `DONE` | Guard/test matrix completed. Targeted drift proof pack now passes 12/12 after updating the capability drift gate from 32 to 33 API route files and narrowing demo-only actions to `j01.requestData`. |
+| 6 | `ANALYSIS-2.4` Security-, Guard-, Audit- und Test-Beweise erfassen | `DONE` | Guard/test matrix completed. Targeted drift proof pack passed after updating stale API-route truth and first narrowing demo-only actions; `FOLLOWUP-2` later removes the last executable demo-only J01 action. |
 | 7 | `SPEC-1` Report-Taxonomie, Evidence-Regeln und Acceptance Criteria spezifizieren | `DONE` | Report taxonomy, evidence hierarchy, typed-command/demo boundary rules, acceptance criteria and QA labels refreshed from current ANALYSIS findings and current-run proof boundaries. |
-| 8 | `IMPL-1.4.1` Capability Matrix und Vertical-Slice Matrix erzeugen | `DONE` | Capability Matrix and Vertical Slice Matrix regenerated with current taxonomy, 33 API-route truth, typed-command statuses and `/api/demo-workflow` as `LEGACY_DEMO_ONLY_BOUNDARY`. |
+| 8 | `IMPL-1.4.1` Capability Matrix und Vertical-Slice Matrix erzeugen | `DONE` | Capability Matrix and Vertical Slice Matrix regenerated with current taxonomy, 33 API-route truth, typed-command statuses and `/api/demo-workflow` as a legacy boundary; `FOLLOWUP-2` later tightens it to `LEGACY_DEMO_410_BOUNDARY`. |
 | 9 | `IMPL-1.4.2` Workflow-I/O-, Datenpflege- und Absicherungsreport erzeugen | `DONE` | Workflow I/O, data editability, security/audit/test proof and missing-proof sections added to the capability report. |
 | 10 | `IMPL-1.4.3` Befunde, Grenzen, Overclaim-Warnungen und Folgearbeit konsolidieren | `DONE` | Executive summary, limitations, overclaim risk register, bold legacy-cleanup recommendations and candidate follow-up register added. |
 | 11 | `QA-1` Report validieren und Claim-Kontrolle durchführen | `DONE` | QA decision `PASS_WITH_LIMITATIONS`: stale QA claims removed, capability drift gate updated, focused proof pack passed `12/12`, and `pnpm gate:capability-report` passed against current 53-model / 33-API-route report truth. |
 | 12 | `DECISION-1` Menschliche Abnahme der Report-Baseline | `DONE_ACCEPTED_WITH_LIMITATIONS` | Human decision recorded: baseline accepted with limitations; proof pack, J01 boundary/quarantine, Advice/Release-History typed boundary and removal of product-like `runScreencastDemoAction` usage authorized. |
 | 13 | `FOLLOWUP-0` Decision acceptance record | `DONE` | Current user authorization captured in `07_decision_gate.md`; `pnpm guard:source` passed before follow-up execution resumed. |
 | 14 | `FOLLOWUP-1` Browser/runtime proof pack for typed command surfaces | `DONE` | Focused Playwright proof pack passed `26/26` for export API/lifecycle, tenant-governance typed API, platform-admin typed API/browser runtime and source command-client wiring. |
-| 15 | `FOLLOWUP-2` J01 typed intake/advisor-review boundary or screencast-seed quarantine | `NEXT` | Inspect remaining J01 command semantics and either build a typed boundary or quarantine it as pure screencast seed support. |
+| 15 | `FOLLOWUP-2` J01 typed intake/advisor-review boundary | `DONE` | `j01.requestData` moved to `/api/advisor-review/actions`; `/api/demo-workflow` is now a fail-closed 410 boundary with no executable demo-only actions; focused J01/demo/capture proof pack passed `43/43`. |
+| 16 | `FOLLOWUP-3` Advice/Release-History typed boundary proof for J02/J03 | `NEXT` | Verify and harden J02/J03 typed advice-release-history boundary, then continue removing product-like screencast client paths. |
 
 ## Current Proof Pack
 
@@ -47,7 +48,7 @@ pnpm gate:capability-report
 pnpm exec playwright test tests/export-workflow-api.spec.ts tests/phase8-export-workflow-api.spec.ts tests/export-approval-lifecycle.spec.ts tests/export-download-confirmation-lifecycle.spec.ts tests/tenant-governance-actions-api.spec.ts tests/platform-admin-actions-api.spec.ts tests/platform-admin-browser-runtime.spec.ts tests/platform-admin-command-client-source.spec.ts tests/export-command-spine-contract.spec.ts --workers=1
 ```
 
-Result so far: `ANALYSIS-1`, all `ANALYSIS-2` subtasks, `SPEC-1`, all `IMPL-1` report slices, `QA-1`, `DECISION-1`, `FOLLOWUP-0` and `FOLLOWUP-1` completed with source guard `PASS`, targeted drift proof pack `12 passed`, capability report gate `PASS`, focused runtime proof pack `26 passed`, QA decision `PASS_WITH_LIMITATIONS`, human acceptance with cleanup authorization recorded, and no UI changes in `FOLLOWUP-0` or `FOLLOWUP-1`.
+Result so far: `ANALYSIS-1`, all `ANALYSIS-2` subtasks, `SPEC-1`, all `IMPL-1` report slices, `QA-1`, `DECISION-1`, `FOLLOWUP-0`, `FOLLOWUP-1` and `FOLLOWUP-2` completed with source guard `PASS`, targeted drift proof pack `12 passed`, capability report gate `PASS`, focused runtime proof pack `26 passed`, focused J01/demo/capture proof pack `43 passed`, QA decision `PASS_WITH_LIMITATIONS`, human acceptance with cleanup authorization recorded, and no UI changes in `FOLLOWUP-0` or `FOLLOWUP-1`.
 
 ## Current Workspace Boundary
 
@@ -62,4 +63,4 @@ They are excluded from `ANALYSIS-1` unless a later ordered ticket explicitly rec
 
 ## Next Ticket
 
-Proceed to `FOLLOWUP-2`: J01 typed intake/advisor-review boundary or screencast-seed quarantine.
+Proceed to `FOLLOWUP-3`: Advice/Release-History typed boundary proof for J02/J03.

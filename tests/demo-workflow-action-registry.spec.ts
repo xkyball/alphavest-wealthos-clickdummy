@@ -8,7 +8,7 @@ import {
 
 test.describe("demo workflow action registry", () => {
   test("keeps executable demo workflow actions explicitly demo-only", () => {
-    expect(demoOnlyWorkflowActionIds).toEqual(["j01.requestData"]);
+    expect(demoOnlyWorkflowActionIds).toEqual([]);
 
     for (const actionId of demoOnlyWorkflowActionIds) {
       expect(demoWorkflowActionBoundaryFor(actionId), actionId).toMatchObject({
@@ -105,6 +105,12 @@ test.describe("demo workflow action registry", () => {
       canonicalApiRoute: "/api/advice-release-history/actions",
       classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
       reasonCode: "ADVICE_RELEASE_HISTORY_ACTIONS_MOVED",
+    });
+    expect(demoWorkflowActionBoundaryFor("j01.requestData")).toMatchObject({
+      allowedOnDemoWorkflow: false,
+      canonicalApiRoute: "/api/advisor-review/actions",
+      classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
+      reasonCode: "ADVISOR_REVIEW_WORKFLOW_ACTIONS_MOVED",
     });
   });
 

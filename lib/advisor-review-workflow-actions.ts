@@ -1,4 +1,4 @@
-import { AuditResult, ObjectType, PrismaClient, ReviewStatus, RecommendationStatus } from "@prisma/client";
+import { AuditResult, ObjectType, PrismaClient, ReviewStatus, RecommendationStatus, WorkflowStatus } from "@prisma/client";
 
 import {
   advisorReviewCanonicalApiRoute,
@@ -28,6 +28,10 @@ function triggerId(slug: string, key: string) {
   return stableId(`trigger:${slug}:${key}`);
 }
 
+function actionItemId(slug: string, key: string) {
+  return stableId(`action:${slug}:${key}`);
+}
+
 function recommendationId(slug: string) {
   return stableId(`recommendation:${slug}:liquidity-review`);
 }
@@ -41,6 +45,17 @@ function userId(key: string) {
 }
 
 function actionStateFor(actionId: AdvisorReviewWorkflowAction) {
+  if (actionId === "j01.requestData") {
+    return {
+      command: advisorReviewCommandForAction(actionId),
+      eventType: "advisor_review.request_data",
+      previousState: WorkflowStatus.ANALYST_REVIEW,
+      reason: "Advisor-review intake requested ownership, wire purpose and source-of-funds confirmation before routing.",
+      targetNext: "REQUEST_DATA",
+      note: "J01 request-data persisted through typed advisor-review command boundary; no client-facing release action created.",
+    };
+  }
+
   return {
     command: advisorReviewCommandForAction(actionId),
     eventType:
@@ -71,8 +86,76 @@ function actionStateFor(actionId: AdvisorReviewWorkflowAction) {
   };
 }
 
+async function runJ01RequestData(prisma: PrismaClient) {
+  const actionId = "j01.requestData" satisfies AdvisorReviewWorkflowAction;
+  const actionState = actionStateFor(actionId);
+
+  return runDemoWorkflowMutation(
+    prisma,
+    {
+      actionId,
+      actorRoleKey: "analyst",
+      auditResult: AuditResult.SUCCESS,
+      clientTenantId: northbridgeTenantId,
+      eventType: actionState.eventType,
+      metadataJson: {
+        canonicalApiRoute: advisorReviewCanonicalApiRoute,
+        command: actionState.command,
+        notes: actionState.note,
+        requestData: true,
+        targetNext: actionState.targetNext,
+      },
+      nextState: WorkflowStatus.AWAITING_INFO,
+      permissionAction: "REVIEW",
+      previousState: actionState.previousState,
+      reason: actionState.reason,
+      targetId: northbridgeTriggerId,
+      targetType: ObjectType.TRIGGER,
+      tenantSlug: "northbridge",
+      visibilityStatus: "INTERNAL_ONLY",
+      workflowState: "ADVISOR_REVIEW",
+    },
+    async (tx) => {
+      const trigger = await tx.trigger.updateMany({
+        where: { id: northbridgeTriggerId, clientTenantId: northbridgeTenantId },
+        data: {
+          status: WorkflowStatus.AWAITING_INFO,
+          clientVisible: false,
+        },
+      });
+
+      const actionItem = await tx.actionItem.updateMany({
+        where: {
+          id: actionItemId("northbridge", "blocked-release"),
+          clientTenantId: northbridgeTenantId,
+        },
+        data: {
+          status: WorkflowStatus.AWAITING_INFO,
+          clientVisible: false,
+          blockedReason: "Typed J01 advisor-review command requested ownership, wire purpose and source-of-funds confirmation.",
+        },
+      });
+
+      return {
+        actionItemRows: actionItem.count,
+        clientVisible: false,
+        message: "Advisor-review request-data persisted without client release.",
+        triggerRows: trigger.count,
+      };
+    },
+  );
+}
+
 async function runJ01RouteToAdvisor(prisma: PrismaClient, actionId: AdvisorReviewWorkflowAction) {
   const actionState = actionStateFor(actionId);
+  if (!("targetStatus" in actionState)) {
+    throw new Error("Request-data must use the typed advisor-review request-data command path.");
+  }
+  const targetStatus = actionState.targetStatus;
+  const targetState = actionState.targetState;
+  if (!targetStatus || !targetState) {
+    throw new Error("Advisor-review route command target state is missing.");
+  }
 
   return runDemoWorkflowMutation(
     prisma,
@@ -89,7 +172,7 @@ async function runJ01RouteToAdvisor(prisma: PrismaClient, actionId: AdvisorRevie
         routeToAdvisor: true,
         targetNext: actionState.targetNext,
       },
-      nextState: actionState.targetStatus,
+      nextState: targetStatus,
       permissionAction: "REVIEW",
       previousState: actionState.previousState,
       reason: actionState.reason,
@@ -111,7 +194,7 @@ async function runJ01RouteToAdvisor(prisma: PrismaClient, actionId: AdvisorRevie
       const recommendation = await tx.recommendation.updateMany({
         where: { id: northbridgeRecommendationId, clientTenantId: northbridgeTenantId },
         data: {
-          status: actionState.targetStatus,
+          status: targetStatus,
           clientVisible: false,
         },
       });
@@ -120,7 +203,7 @@ async function runJ01RouteToAdvisor(prisma: PrismaClient, actionId: AdvisorRevie
         where: { id: northbridgeApprovalId, clientTenantId: northbridgeTenantId },
         data: {
           notes: actionState.note,
-          status: actionState.targetState,
+          status: targetState,
         },
       });
 
@@ -142,5 +225,9 @@ export async function runAdvisorReviewWorkflowAction(
   prisma: PrismaClient,
   actionId: AdvisorReviewWorkflowAction,
 ) {
+  if (actionId === "j01.requestData") {
+    return runJ01RequestData(prisma);
+  }
+
   return runJ01RouteToAdvisor(prisma, actionId);
 }

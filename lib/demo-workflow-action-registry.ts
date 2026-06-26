@@ -46,7 +46,6 @@ export type DemoWorkflowActionBoundary =
     };
 
 export const demoOnlyWorkflowActionIds = [
-  "j01.requestData",
 ] as const;
 
 const demoOnlyWorkflowActions = new Set<string>(demoOnlyWorkflowActionIds);

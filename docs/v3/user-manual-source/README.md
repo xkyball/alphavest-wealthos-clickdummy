@@ -19,7 +19,7 @@ This directory is a raw source package for a future AlphaVest WealthOS user manu
 
 ## Evidence stance
 
-Current AlphaVest is a route-complete, data-model-rich demo workflow prototype with partial executable workflow behavior. J01 signal/advisor actions are framed as a canonical typed boundary (legacy compatibility bridge) while canonical typed journey governance is migrated. Most other workflows are navigable/static or route-state demos and must not be described as fully persisted or governed in a finished manual until the implementation gaps are closed.
+Current AlphaVest is a route-complete, data-model-rich demo workflow prototype with partial executable workflow behavior. J01 signal/advisor actions are framed through typed advisor-review and recommendation-review boundaries while canonical typed journey governance is migrated. Most other workflows are navigable/static or route-state demos and must not be described as fully persisted or governed in a finished manual until the implementation gaps are closed.
 
 ## Mixed Engine artifacts
 

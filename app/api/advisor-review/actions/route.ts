@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     return failClosedJson(
       {
         canonicalApiRoute: advisorReviewCanonicalApiRoute,
-        error: "Advisor-review actions only support J01 route and escalation commands.",
+        error: "Advisor-review actions only support J01 request-data, route and escalation commands.",
         reasonCode: "INVALID_REQUEST",
         safety: {
           commandExecuted: false,

@@ -1,23 +1,9 @@
-import { createHash } from "node:crypto";
-import { PrismaPg } from "@prisma/adapter-pg";
-import {
-  AuditResult,
-  ObjectType,
-  PrismaClient,
-  RecommendationStatus,
-  ReviewStatus,
-  WorkflowStatus,
-} from "@prisma/client";
-import { NextResponse } from "next/server";
-
 import { failClosedJson } from "@/lib/control-layer/error-envelope";
 import {
-  wp05LegacyDemoReleaseActionDirectnessFor,
   wp05TypedAdvisorWorkflowDirectnessFor,
 } from "@/lib/advisory-workflow-contract";
 import {
   demoWorkflowActionBoundaryFor,
-  demoOnlyWorkflowActionIds,
   typedAdvisorApprovalWorkflowBoundary,
 } from "@/lib/demo-workflow-action-registry";
 import { parseDemoWorkflowRequestBody } from "@/lib/demo-workflow-validation";
@@ -25,175 +11,72 @@ import { parseDemoWorkflowRequestBody } from "@/lib/demo-workflow-validation";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-type DemoWorkflowAction =
-  (typeof demoOnlyWorkflowActionIds)[number];
-
-class UnsupportedLegacyDemoWorkflowActionError extends Error {
-  constructor(readonly actionId: string) {
-    super(`Unsupported legacy demo workflow action: ${actionId}`);
+function safetyForMovedAction(canonicalApiRoute: string) {
+  if (canonicalApiRoute === "/api/export-workflow") {
+    return {
+      commandExecuted: false,
+      hiddenRowsDisclosed: false,
+      noClientRelease: true,
+      noExportApproval: true,
+      noExportDownload: true,
+      scoped: false,
+    };
   }
-}
 
-const platformTenantId = stableId("platform:alphavest");
-const northbridgeTenantId = tenantId("northbridge");
-const northbridgeTriggerId = triggerId("northbridge", "liquidity");
-const northbridgeRecommendationId = recommendationId("northbridge");
-const northbridgeApprovalId = approvalId("northbridge");
-
-type DemoWorkflowPrismaGlobal = typeof globalThis & {
-  alphaVestDemoWorkflowPrisma?: PrismaClient;
-};
-
-type DemoWorkflowAuditWriter = Pick<PrismaClient, "auditEvent">;
-
-function stableId(label: string) {
-  const hash = createHash("sha1").update(`alphavest-wealthos:${label}`).digest("hex");
-  const variant = ((Number.parseInt(hash.slice(16, 18), 16) & 0x3f) | 0x80).toString(16).padStart(2, "0");
-
-  return [
-    hash.slice(0, 8),
-    hash.slice(8, 12),
-    `5${hash.slice(13, 16)}`,
-    `${variant}${hash.slice(18, 20)}`,
-    hash.slice(20, 32),
-  ].join("-");
-}
-
-function tenantId(slug: string) {
-  return stableId(`tenant:${slug}`);
-}
-
-function userId(key: string) {
-  return stableId(`user:${key}`);
-}
-
-function triggerId(slug: string, key: string) {
-  return stableId(`trigger:${slug}:${key}`);
-}
-
-function actionItemId(slug: string, key: string) {
-  return stableId(`action:${slug}:${key}`);
-}
-
-function recommendationId(slug: string) {
-  return stableId(`recommendation:${slug}:liquidity-review`);
-}
-
-function approvalId(slug: string) {
-  return stableId(`approval:${slug}:advisor`);
-}
-
-function prismaClient() {
-  const connectionString = process.env.DATABASE_URL;
-  if (!connectionString) return undefined;
-
-  const globalForPrisma = globalThis as DemoWorkflowPrismaGlobal;
-  globalForPrisma.alphaVestDemoWorkflowPrisma ??= new PrismaClient({
-    adapter: new PrismaPg({ connectionString }),
-  });
-
-  return globalForPrisma.alphaVestDemoWorkflowPrisma;
-}
-
-async function writeAuditEvent(
-  prisma: DemoWorkflowAuditWriter,
-  input: {
-    actorUserId: string;
-    actorRoleKey: string;
-    eventType: string;
-    targetType: ObjectType;
-    targetId: string;
-    clientTenantId?: string;
-    previousState: string;
-    nextState: string;
-    reason: string;
-    actionId: DemoWorkflowAction;
+  if (
+    canonicalApiRoute === "/api/advisor-review/actions" ||
+    canonicalApiRoute === "/api/tenant-governance/actions" ||
+    canonicalApiRoute === "/api/platform-admin/actions" ||
+    canonicalApiRoute === "/api/data-maintenance/actions" ||
+    canonicalApiRoute === "/api/advice-release-history/actions" ||
+    canonicalApiRoute === "/api/review-monitoring/actions" ||
+    canonicalApiRoute === "/api/journeys/[id]/commands"
+  ) {
+    return {
+      commandExecuted: false,
+      hiddenRowsDisclosed: false,
+      noAdviceExecution: true,
+      noClientRelease: true,
+      scoped: false,
+    };
   }
-) {
-  await prisma.auditEvent.create({
-    data: {
-      platformTenantId,
-      clientTenantId: input.clientTenantId ?? northbridgeTenantId,
-      actorUserId: input.actorUserId,
-      actorRoleKey: input.actorRoleKey,
-      eventType: input.eventType,
-      targetType: input.targetType,
-      targetId: input.targetId,
-      previousState: input.previousState,
-      nextState: input.nextState,
-      result: AuditResult.SUCCESS,
-      reason: input.reason,
-      metadataJson: {
-        actionId: input.actionId,
-        demoScope: "screencast",
-        noClientRelease: true,
-      },
-    },
-  });
+
+  return undefined;
 }
 
-async function runDemoWorkflowAction(
-  prisma: PrismaClient,
-  actionId: DemoWorkflowAction,
-) {
-  const now = new Date();
-
-  switch (actionId) {
-    case "j01.requestData": {
-      const result = await prisma.$transaction(async (tx) => {
-        const trigger = await tx.trigger.updateMany({
-          where: { id: northbridgeTriggerId, clientTenantId: northbridgeTenantId },
-          data: {
-            status: WorkflowStatus.AWAITING_INFO,
-            clientVisible: false,
-          },
-        });
-        const blockedReleaseAction = await tx.actionItem.updateMany({
-          where: {
-            id: actionItemId("northbridge", "blocked-release"),
-            clientTenantId: northbridgeTenantId,
-          },
-          data: {
-            status: WorkflowStatus.AWAITING_INFO,
-            clientVisible: false,
-            blockedReason: "Screencast J01 requested ownership, wire purpose and source-of-funds confirmation.",
-          },
-        });
-        await writeAuditEvent(tx, {
-          actorUserId: userId("analyst"),
-          actorRoleKey: "analyst",
-          eventType: "screencast.trigger.request_data",
-          targetType: ObjectType.TRIGGER,
-          targetId: northbridgeTriggerId,
-          previousState: WorkflowStatus.ANALYST_REVIEW,
-          nextState: WorkflowStatus.AWAITING_INFO,
-          reason: "Requested missing information before analyst routing.",
-          actionId,
-        });
-        return { actionItemRows: blockedReleaseAction.count, triggerRows: trigger.count };
-      });
-
-      return { message: "Request-data state saved.", ...result };
-    }
-
-    default:
-      throw new UnsupportedLegacyDemoWorkflowActionError(actionId as string);
+function movedActionErrorFor(canonicalApiRoute: string) {
+  if (canonicalApiRoute === "/api/export-workflow") {
+    return "Legacy demo export actions are retired from /api/demo-workflow. Use the typed export workflow API.";
   }
+
+  if (canonicalApiRoute === "/api/advisor-review/actions") {
+    return "Legacy J01 advisor-review actions are retired from /api/demo-workflow. Use /api/advisor-review/actions.";
+  }
+
+  if (canonicalApiRoute === "/api/journeys/[id]/commands") {
+    return "Legacy Phase B/C demo actions are retired from /api/demo-workflow. Use the typed journey command API.";
+  }
+
+  if (canonicalApiRoute === "/api/tenant-governance/actions") {
+    return "Legacy tenant governance demo actions are retired from /api/demo-workflow. Use /api/tenant-governance/actions.";
+  }
+
+  if (canonicalApiRoute === "/api/platform-admin/actions") {
+    return "Legacy platform admin demo actions are retired from /api/demo-workflow. Use /api/platform-admin/actions.";
+  }
+
+  if (canonicalApiRoute === "/api/data-maintenance/actions") {
+    return "Legacy data-maintenance demo actions are retired from /api/demo-workflow. Use /api/data-maintenance/actions.";
+  }
+
+  if (canonicalApiRoute === "/api/advice-release-history/actions") {
+    return "Legacy advice and release-history demo actions are retired from /api/demo-workflow. Use /api/advice-release-history/actions.";
+  }
+
+  return "Legacy review monitoring actions are retired from /api/demo-workflow. Use /api/review-monitoring/actions.";
 }
 
 export async function POST(request: Request) {
-  const prisma = prismaClient();
-  if (!prisma) {
-    return failClosedJson(
-      {
-        error: "DATABASE_URL is required for demo workflow actions.",
-        reasonCode: "DATABASE_URL_REQUIRED",
-        retryAllowed: true,
-      },
-      { status: 503 }
-    );
-  }
-
   const body = await request.json().catch(() => undefined);
   const parsedBody = parseDemoWorkflowRequestBody(body);
   if (!parsedBody.ok) {
@@ -240,55 +123,14 @@ export async function POST(request: Request) {
   const demoWorkflowBoundary = demoWorkflowActionBoundaryFor(actionId);
 
   if (demoWorkflowBoundary.classification === "MOVED_TO_TYPED_PRODUCT_COMMAND") {
-      const movedActionSafety =
-        demoWorkflowBoundary.canonicalApiRoute === "/api/export-workflow"
-          ? {
-            commandExecuted: false,
-            hiddenRowsDisclosed: false,
-            noClientRelease: true,
-            noExportApproval: true,
-            noExportDownload: true,
-            scoped: false,
-          }
-        : demoWorkflowBoundary.canonicalApiRoute === "/api/advisor-review/actions"
-          ? {
-              commandExecuted: false,
-              hiddenRowsDisclosed: false,
-              noAdviceExecution: true,
-              noClientRelease: true,
-              scoped: false,
-            }
-        : demoWorkflowBoundary.canonicalApiRoute === "/api/tenant-governance/actions" ||
-            demoWorkflowBoundary.canonicalApiRoute === "/api/platform-admin/actions" ||
-            demoWorkflowBoundary.canonicalApiRoute === "/api/data-maintenance/actions" ||
-            demoWorkflowBoundary.canonicalApiRoute === "/api/advice-release-history/actions"
-          ? {
-              commandExecuted: false,
-              hiddenRowsDisclosed: false,
-              noAdviceExecution: true,
-              noClientRelease: true,
-              scoped: false,
-            }
-        : undefined;
+    const movedActionSafety = safetyForMovedAction(demoWorkflowBoundary.canonicalApiRoute);
+
     return failClosedJson(
       {
         actionId,
         canonicalApiRoute: demoWorkflowBoundary.canonicalApiRoute,
         demoWorkflowBoundary,
-        error:
-          demoWorkflowBoundary.canonicalApiRoute === "/api/export-workflow"
-            ? "Legacy demo export actions are retired from /api/demo-workflow. Use the typed export workflow API."
-            : demoWorkflowBoundary.canonicalApiRoute === "/api/journeys/[id]/commands"
-              ? "Legacy Phase B/C demo actions are retired from /api/demo-workflow. Use the typed journey command API."
-              : demoWorkflowBoundary.canonicalApiRoute === "/api/tenant-governance/actions"
-                ? "Legacy tenant governance demo actions are retired from /api/demo-workflow. Use /api/tenant-governance/actions."
-                : demoWorkflowBoundary.canonicalApiRoute === "/api/platform-admin/actions"
-                  ? "Legacy platform admin demo actions are retired from /api/demo-workflow. Use /api/platform-admin/actions."
-                  : demoWorkflowBoundary.canonicalApiRoute === "/api/data-maintenance/actions"
-                    ? "Legacy data-maintenance demo actions are retired from /api/demo-workflow. Use /api/data-maintenance/actions."
-                    : demoWorkflowBoundary.canonicalApiRoute === "/api/advice-release-history/actions"
-                      ? "Legacy advice and release-history demo actions are retired from /api/demo-workflow. Use /api/advice-release-history/actions."
-                      : "Review monitoring actions have moved out of /api/demo-workflow. Use /api/review-monitoring/actions.",
+        error: movedActionErrorFor(demoWorkflowBoundary.canonicalApiRoute),
         legacyReasonCode: demoWorkflowBoundary.reasonCode,
         reasonCode: "SAFE_ERROR",
         ...(movedActionSafety ? { safety: movedActionSafety } : {}),
@@ -312,49 +154,15 @@ export async function POST(request: Request) {
     );
   }
 
-  const demoWorkflowActionId = actionId as DemoWorkflowAction;
-  const proofDirectness = wp05LegacyDemoReleaseActionDirectnessFor(actionId);
-
-  try {
-    const result = await runDemoWorkflowAction(prisma, demoWorkflowActionId);
-    const releasedToClient =
-      typeof result === "object" &&
-      result !== null &&
-      "clientVisible" in result &&
-      result.clientVisible === true;
-
-    return NextResponse.json({
+  return failClosedJson(
+    {
       actionId,
+      canonicalApiRoute: "/api/advisor-review/actions",
       demoWorkflowBoundary,
-      demoOnly: true,
-      noClientRelease: !releasedToClient,
-      ok: true,
-      productCommandAllowed: false,
-      proofDirectness,
-      result,
-    });
-  } catch (error) {
-    if (error instanceof UnsupportedLegacyDemoWorkflowActionError) {
-      return failClosedJson(
-        {
-          actionId: error.actionId,
-          canonicalApiRoute: "/api/journeys/[id]/commands",
-          error:
-            "Unsupported demo workflow actions are blocked. Move real journey commands to the typed journey command API before enabling them.",
-          legacyReasonCode: "UNSUPPORTED_DEMO_WORKFLOW_ACTION_BLOCKED",
-          reasonCode: "SAFE_ERROR",
-        },
-        { status: 410 },
-      );
-    }
-
-    return failClosedJson(
-      {
-        actionId,
-        error: "Demo workflow action failed.",
-        reasonCode: "SAFE_ERROR",
-      },
-      { status: 409 },
-    );
-  }
+      error: "No executable demo workflow actions remain on /api/demo-workflow. Use typed command APIs.",
+      legacyReasonCode: "DEMO_WORKFLOW_EXECUTION_RETIRED",
+      reasonCode: "SAFE_ERROR",
+    },
+    { status: 410 },
+  );
 }

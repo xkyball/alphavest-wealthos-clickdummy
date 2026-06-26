@@ -99,11 +99,7 @@ async function createGeneratedExport(request: APIRequestContext, label: string) 
   throw new Error("Export generation proof did not return.");
 }
 
-const workflowActions = [
-  "j01.requestData",
-] as const;
-
-const advisorReviewActions = ["j01.routeToAdvisor", "j01.escalateAdvisor"] as const;
+const advisorReviewActions = ["j01.requestData", "j01.routeToAdvisor", "j01.escalateAdvisor"] as const;
 
 const adviceReleaseHistoryActions = [
   "j02.requestEvidence",
@@ -137,39 +133,7 @@ test.describe("demo workflow API", () => {
     await prisma?.$disconnect();
   });
 
-  test("implemented J01 compatibility actions return successful legacy-bridge mutation responses", async ({ request }) => {
-    for (const actionId of workflowActions) {
-      const response = await request.post("/api/demo-workflow", {
-        data: { actionId },
-      });
-      const body = await response.json();
-
-      expect(response.ok(), `${actionId}: ${JSON.stringify(body)}`).toBe(true);
-      expect(body.actionId).toBe(actionId);
-      expect(body.demoOnly).toBe(true);
-      expect(body.productCommandAllowed).toBe(false);
-      expect(body.demoWorkflowBoundary).toMatchObject({
-        allowedOnDemoWorkflow: true,
-        classification: "DEMO_ONLY_COMPATIBILITY",
-        productCommandAllowed: false,
-        reasonCode: "SCREENCAST_DEMO_ACTION_ONLY",
-      });
-      expect(body.result).toBeTruthy();
-
-      if (Object.prototype.hasOwnProperty.call(wp05LegacyDemoReleaseActionDirectness, actionId)) {
-        expect(body.proofDirectness).toMatchObject({
-          canonicalProofRoute: wp05CanonicalJourneyCommandApiRoute,
-          classification: "LEGACY_DEMO_COMPATIBILITY_ONLY",
-          pp004CanonicalProofEligible: false,
-          proofBackedByStatePayloadAssertions: false,
-        });
-      } else {
-        expect(body.proofDirectness).toBeUndefined();
-      }
-    }
-  });
-
-  test("legacy J01 route/escalate advisor-review actions are retired to advisor-review commands", async ({ request }) => {
+  test("legacy J01 request-data/route/escalate advisor-review actions are retired to advisor-review commands", async ({ request }) => {
     for (const actionId of advisorReviewActions) {
       const response = await request.post("/api/demo-workflow", {
         data: { actionId },
@@ -195,6 +159,7 @@ test.describe("demo workflow API", () => {
         scoped: false,
       });
       expect(body.result).toBeUndefined();
+      expect(body.demoOnly).toBeFalsy();
       expect(body.mutated).toBeFalsy();
     }
   });

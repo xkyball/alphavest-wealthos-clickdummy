@@ -162,7 +162,7 @@ Status: `DONE`
 | Platform admin J10 | `app/api/platform-admin/actions/route.ts` `POST` | `runPlatformAdminWorkflowAction` | JSON action ID allow-list | Writes audit-shaped result and returns no advice/release; safe error response on failure | `TYPED_PLATFORM_ADMIN_COMMAND_CANDIDATE` |
 | Recommendation review workflow | `app/api/recommendation-review-workflow/route.ts` `POST` | `handleRecommendationReviewWorkflowRequest`, `parseDemoWorkflowRequestBody`, `runAdvisorApprovalWorkflowMutation` | Typed `workflowType: advisor-approval` request | Fail-closed on missing DB, invalid request and workflow gate errors | `TYPED_ADVISOR_APPROVAL_WORKFLOW_CANDIDATE` |
 | Review monitoring J16/J17 | `app/api/review-monitoring/actions/route.ts` `POST`; read snapshot route exists separately | `runReviewMonitoringWorkflowAction` | JSON action ID allow-list | DB URL required; invalid action fail closed; response says no client release | `TYPED_REVIEW_MONITORING_COMMAND_CANDIDATE` |
-| Legacy demo workflow | `app/api/demo-workflow/route.ts` `POST` | `parseDemoWorkflowRequestBody`, `demoWorkflowActionBoundaryFor`, local `runDemoWorkflowAction` | Legacy `actionId` or retired advisor workflow payload | Moved product commands return `410` with canonical typed route; unsupported demo actions blocked; only demo-only path remains direct | `LEGACY_DEMO_ONLY_BOUNDARY` |
+| Legacy demo workflow | `app/api/demo-workflow/route.ts` `POST` | `parseDemoWorkflowRequestBody`, `demoWorkflowActionBoundaryFor` | Legacy `actionId` or retired advisor workflow payload | Moved product commands return `410` with canonical typed route; unsupported demo actions blocked; no executable demo-only mutation path remains | `LEGACY_DEMO_410_BOUNDARY` |
 
 ### Workflow / State Transition Candidate Matrix
 
@@ -181,7 +181,7 @@ Status: `DONE`
 | J06/J07 tenant governance | Product screens -> `runTenantGovernanceCommand` -> `/api/tenant-governance/actions` -> `runTenantGovernanceWorkflowAction` | Tenant/user/role/access/export-audit commands dispatch through typed endpoint, not `/api/demo-workflow` | `TRACEABLE_TYPED_COMMAND` |
 | J10 platform admin | Product screen -> `runPlatformAdminCommand` -> `/api/platform-admin/actions` -> `runPlatformAdminWorkflowAction` | Audit-event command record for platform/security/admin changes | `TRACEABLE_TYPED_COMMAND` |
 | Review monitoring | Product screen candidate -> `/api/review-monitoring/actions` -> `runReviewMonitoringWorkflowAction` | J16/J17 action allow-list dispatches review calendar and rebalance monitoring workflows | `TRACEABLE_TYPED_COMMAND` |
-| Legacy `/api/demo-workflow` | Legacy client path -> `/api/demo-workflow` | Product-like moved actions return `410` with canonical API route; direct execution remains only for demo-only `j01.requestData` | `NOT_PRODUCT_API_BOUNDARY` |
+| Legacy `/api/demo-workflow` | Legacy client path -> `/api/demo-workflow` | Product-like and former demo-only actions return `410` with canonical API route; direct execution is retired | `NOT_PRODUCT_API_BOUNDARY` |
 
 ### Process I/O Draft Matrix
 
@@ -196,7 +196,7 @@ Status: `DONE`
 | Journey command | Journey ID, current user, typed journey command payload | Current user resolution, route scoped journey load, command registry parse, role permission checks | Journey command result, updated projection, safety envelope | Command-specific persistence belongs to `ANALYSIS-2.3`. |
 | Typed action clients | Action ID for a typed family | Endpoint allow-list rejects actions outside family; service dispatches only known actions | Command result, audit/safety fields, no client release unless explicit release-history service result says otherwise | Each command's exact model writes belong to `ANALYSIS-2.3`. |
 | Recommendation review workflow | Advisor approval workflow payload: action, actor role, target, reason, evidence IDs, confirmation | Parsed through shared workflow validation, then typed command bus release/gate logic | Advisor approval workflow result or gate failure | Gate/persistence/test proof belongs to `ANALYSIS-2.3/2.4`. |
-| Legacy demo-only action | `actionId` routed to `/api/demo-workflow` | Boundary registry classifies moved/unsupported/demo-only actions; product-like commands are rejected with canonical route | `410` for moved/unsupported product-like calls; direct result only for demo-only action | This path must not be used as product capability evidence. |
+| Legacy demo route | `actionId` routed to `/api/demo-workflow` | Boundary registry classifies moved/unsupported actions; product-like commands are rejected with canonical route | `410` for moved/unsupported calls; no direct demo mutation result remains | This path must not be used as product capability evidence. |
 
 ### Dynamic / Unclear Code Paths
 
@@ -211,7 +211,7 @@ Status: `DONE`
 
 Relevant handlers and services are locally traceable. The strongest workflow data-flow candidates are document upload/review, export workflow commands, journey commands, DBTF profile/family/entity forms, typed advisor/release-history/data-maintenance/tenant-governance/platform-admin action endpoints and recommendation review workflow commands.
 
-The important cleanup finding is structural: `/api/demo-workflow` is now a legacy demo-only boundary, not a shadow product API. Product-like moved actions fail closed with `410` and point to canonical typed routes.
+The important cleanup finding is structural: `/api/demo-workflow` is now a legacy fail-closed boundary, not a shadow product API. Product-like and former demo-only actions fail closed with `410` and point to canonical typed routes.
 
 Finished: `ANALYSIS-2.2`.
 
@@ -290,7 +290,7 @@ Static operation scan result, grouped by persistence meaning:
 | Journey workflow | UI command -> journey API -> journey service -> journey instance/step/object/evidence/command-run writes plus domain-object writes for command families | `STRONG_TYPED_COMMAND` |
 | Tenant governance | UI command -> tenant-governance API -> command service -> tenant/user/role/access/policy/export-audit writes | `STRONG_TYPED_COMMAND_SEEDED_SCOPE` |
 | Platform admin | UI command -> platform-admin API -> service -> audit event write | `AUDIT_RECORD_ONLY_FOR_PLATFORM_COMMANDS` |
-| Legacy demo-only `/api/demo-workflow` | Legacy action ID -> demo boundary -> only demo-only `j01.requestData` direct execution; moved product commands 410 | `DEMO_ONLY_NOT_PRODUCT_PERSISTENCE` |
+| Legacy `/api/demo-workflow` 410 boundary | Legacy action ID -> demo boundary -> moved product commands 410; no executable demo-only direct action remains | `NO_PRODUCT_PERSISTENCE` |
 
 ### Process I/O Matrix Update
 
@@ -347,7 +347,7 @@ Status: `DONE`
 | Capability / risk area | Local test evidence | What is proven | Claim boundary |
 | --- | --- | --- | --- |
 | Source truth | `tests/source-reality-gate.spec.ts`; current run `pnpm guard:source` | Source hierarchy/current target restrictions | Does not prove product runtime behavior. |
-| Demo-workflow quarantine | `tests/demo-workflow-action-registry.spec.ts` | Only `j01.requestData` remains demo-only executable; moved families point to typed APIs; unregistered demo-shaped actions blocked | Does not delete the legacy client file by itself. |
+| Demo-workflow quarantine | `tests/demo-workflow-action-registry.spec.ts` | No demo-only executable actions remain; moved families point to typed APIs; unregistered demo-shaped actions blocked | Does not delete the legacy client file by itself. |
 | Capture/report drift | `tests/capture-screen-model-context.spec.ts`, `tests/capability-report-drift-gate.spec.ts` | 71 routes, 53 models, 31 enums, 33 API-route truth, no complete-slice overclaim, typed command context for migrated families | Does not run every product workflow. |
 | Permission and non-bypass | `tests/permission-engine.spec.ts`, `tests/governance-non-bypass.spec.ts`, `tests/true-ux-governance-non-bypass.spec.ts` | Cross-tenant denial, route-access vs action permission, admin/security non-bypass | Test scope is role/action/object cases, not every field. |
 | Audit fail closed | `tests/audit-fail-closed.spec.ts`, `tests/phase6-audit-persistence.spec.ts`, command API specs | Critical actions block when audit persistence/minimum fields are missing | Does not prove external audit backend durability beyond local DB/service behavior. |
@@ -373,10 +373,10 @@ Results:
 - `pnpm guard:source`: `PASS`, `violations: 0`.
 - First drift proof run: failed on two stale proof expectations:
   - `lib/capability-report-drift-gate.ts` still required `API route files found: \`32\`` although current inventory is `33`.
-  - `tests/demo-workflow-action-registry.spec.ts` still expected four executable demo-only actions although the current hard boundary leaves only `j01.requestData`.
+  - `tests/demo-workflow-action-registry.spec.ts` originally expected four executable demo-only actions; the earlier hard boundary had already narrowed this to `j01.requestData`.
 - Fix applied:
   - `lib/capability-report-drift-gate.ts` now requires `API route files found: \`33\``.
-  - `tests/demo-workflow-action-registry.spec.ts` now expects `demoOnlyWorkflowActionIds` to equal `["j01.requestData"]`.
+  - `FOLLOWUP-2` moves `j01.requestData` to `/api/advisor-review/actions`; `tests/demo-workflow-action-registry.spec.ts` now expects `demoOnlyWorkflowActionIds` to equal `[]`.
 - Rerun result: `12 passed`.
 
 ### Negative Proof / Missing Proof Register

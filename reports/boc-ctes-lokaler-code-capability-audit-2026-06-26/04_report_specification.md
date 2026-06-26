@@ -59,7 +59,7 @@ Current-run proof result:
 | `UI_ONLY_STATIC` | UI visible, but no local mutation/handler proof; includes explicit static-control notes. |
 | `BLOCKED_UI_SAFETY_STATE` | UI intentionally disables or blocks action due to safety/permission/workflow state. |
 | `SCHEMA_ONLY` | Prisma model/field exists, but no local UI/API/service operation was found. |
-| `LEGACY_DEMO_ONLY_BOUNDARY` | `/api/demo-workflow` or screencast support exists only for explicitly demo-only seed/screencast support and cannot be used as product capability evidence. |
+| `LEGACY_DEMO_410_BOUNDARY` | `/api/demo-workflow` or screencast support exists only as a fail-closed legacy boundary; no direct product or demo-only mutation may execute there. |
 | `UNPROVEN` | Insufficient evidence for a capability claim. |
 
 Forbidden status usage:
@@ -93,7 +93,7 @@ No capability may be marked `COMPLETE_VERTICAL_SLICE` unless every criterion bel
 | Audit UI is not audit persistence | Audit display surfaces must be separated from audit write/storage paths and tests. |
 | Test honesty | Unrun tests are proof intent, not pass claims. Current-run commands must be listed verbatim. |
 | Drift gate authority | Capture/report generator context must reject stale route/model/API counts and generated `COMPLETE_VERTICAL_SLICE` overclaims. |
-| Demo boundary | `/api/demo-workflow` is a legacy demo-only boundary. Moved typed product commands must point to canonical typed APIs. |
+| Demo boundary | `/api/demo-workflow` is a legacy fail-closed 410 boundary. Moved typed product commands must point to canonical typed APIs. |
 | Internet boundary | Internet may support methodology/tooling only; it cannot be used as evidence for local project facts. |
 
 ## Required Report Sections

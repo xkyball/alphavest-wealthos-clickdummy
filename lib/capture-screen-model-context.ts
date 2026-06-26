@@ -8,7 +8,6 @@ import {
 export type CaptureCapabilityStatus =
   | "STRONG_VERTICAL_CANDIDATE"
   | "API_BACKED_PARTIAL"
-  | "DEMO_COMMAND_BACKED_PARTIAL"
   | "SERVICE_BACKED_INTERNAL"
   | "READMODEL_ONLY"
   | "UI_ONLY_STATIC"
@@ -145,7 +144,7 @@ const groupTemplates: Record<NavigationGroupKey, ContextTemplate> = {
     capability: {
       apiEvidence: ["app/api/demo-workflow/route.ts", "app/api/journeys/[id]/commands/route.ts", "app/api/recommendation-review-workflow/route.ts", "app/api/advice-release-history/actions/route.ts"],
       guardEvidence: ["Advisor approval is not compliance release; client-visible AI draft remains forbidden; J02/J03 use typed advice-release-history commands."],
-      proofPosture: "Internal service-backed workflow with typed advisor-review and advice/release-history command boundaries; J01 remains explicit demo-only compatibility.",
+      proofPosture: "Internal service-backed workflow with typed advisor-review and advice/release-history command boundaries; /api/demo-workflow remains a legacy 410 boundary, not a product command path.",
       serviceEvidence: [
         "lib/advice-release-history-command-client.ts",
         "lib/advice-release-history-workflow-actions.ts",
@@ -174,7 +173,7 @@ const groupTemplates: Record<NavigationGroupKey, ContextTemplate> = {
       "EvidenceRecord",
       ...sharedAuditModels,
     ],
-    warnings: ["J02/J03 advice/release-history actions use typed commands; J12/J13/J14 are typed journey commands; only J01 remains demo-only compatibility."],
+    warnings: ["J01/J02/J03 advice and advisor-review actions use typed commands; J12/J13/J14 are typed journey commands; /api/demo-workflow is a legacy 410 boundary."],
   },
   decisions_evidence: {
     capability: {

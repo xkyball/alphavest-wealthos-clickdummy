@@ -56,7 +56,7 @@ function requiredTruthsForReport(reportPath: string) {
       "STRONG_VERTICAL_CANDIDATE",
       "SERVICE_BACKED_INTERNAL",
       "TYPED_COMMAND_BACKED_PARTIAL",
-      "LEGACY_DEMO_ONLY_BOUNDARY",
+      "LEGACY_DEMO_410_BOUNDARY",
       "/api/demo-workflow",
       "/api/export-workflow",
       "/api/advice-release-history/actions",

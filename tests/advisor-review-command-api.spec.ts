@@ -7,7 +7,7 @@ test.describe("advisor-review command API", () => {
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
   });
 
-  const advisorReviewActions = ["j01.routeToAdvisor", "j01.escalateAdvisor"] as const;
+  const advisorReviewActions = ["j01.requestData", "j01.routeToAdvisor", "j01.escalateAdvisor"] as const;
 
   for (const actionId of advisorReviewActions) {
     test(`executes typed ${actionId} command via /api/advisor-review/actions`, async ({ request }) => {
@@ -41,7 +41,7 @@ test.describe("advisor-review command API", () => {
     const body = await response.json();
 
     expect(response.status()).toBe(400);
-    expect(body.error).toBe("Advisor-review actions only support J01 route and escalation commands.");
+    expect(body.error).toBe("Advisor-review actions only support J01 request-data, route and escalation commands.");
     expect(body.safety).toMatchObject({
       commandExecuted: false,
       hiddenRowsDisclosed: false,
