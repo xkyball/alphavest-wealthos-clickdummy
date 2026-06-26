@@ -49,14 +49,26 @@ async function seededJourneyContext(journeyKey: string) {
     where: { journeyDefinitionId: instance.definitionId },
   });
   const evidenceLink = instance.objectLinks.find((link) => link.objectType === "EVIDENCE_RECORD");
+  const recommendationLink = instance.objectLinks.find((link) => link.linkRole === "RECOMMENDATION");
+  const decisionLink = instance.objectLinks.find((link) => link.linkRole === "DECISION");
 
   if (!evidenceLink) {
     throw new Error(`Seeded ${journeyKey} journey is missing evidence link.`);
   }
 
+  if (!recommendationLink) {
+    throw new Error(`Seeded ${journeyKey} journey is missing recommendation link.`);
+  }
+
+  if (!decisionLink) {
+    throw new Error(`Seeded ${journeyKey} journey is missing decision link.`);
+  }
+
   return {
+    decisionId: decisionLink.objectId,
     evidenceRecordId: evidenceLink.objectId,
     journeyId: instance.id,
+    recommendationId: recommendationLink.objectId,
     requirementKey: requirement.requirementKey,
   };
 }
@@ -270,7 +282,7 @@ test.describe("Wave 0-2 Journey APIs and command execution", () => {
     const advisorJwt = await jwtFor(request, "thabo.advisor@alphavest.demo");
     const complianceJwt = await jwtFor(request, "naledi.compliance@alphavest.demo");
     const cfoJwt = await jwtFor(request, "cfo.bennett@example.demo");
-    const { evidenceRecordId, journeyId, requirementKey } = await seededJourneyContext("MJ-001");
+    const { decisionId, evidenceRecordId, journeyId, recommendationId, requirementKey } = await seededJourneyContext("MJ-001");
 
     const intake = await command(request, journeyId, analystJwt, {
       command: "COMPLETE_STEP",
@@ -317,6 +329,26 @@ test.describe("Wave 0-2 Journey APIs and command execution", () => {
     });
     expect(evidenceStep.ok(), await evidenceStep.text()).toBe(true);
 
+    const prisma = prismaClient();
+    const [decisionBeforeApproval, releaseRunBeforeApproval] = await Promise.all([
+      prisma.decision.findUniqueOrThrow({
+        select: {
+          releasedToClientAt: true,
+          status: true,
+        },
+        where: { id: decisionId },
+      }),
+      prisma.journeyCommandRun.findFirst({
+        where: {
+          commandKey: "COMPLIANCE_RELEASE",
+          journeyInstanceId: journeyId,
+          result: "SUCCESS",
+        },
+      }),
+    ]);
+    expect(decisionBeforeApproval.status).not.toBe("RELEASED_TO_CLIENT");
+    expect(releaseRunBeforeApproval).toBeNull();
+
     const approval = await command(request, journeyId, advisorJwt, {
       command: "ADVISOR_APPROVE",
       reason: "Advisor approval completed; compliance release remains separate.",
@@ -324,6 +356,81 @@ test.describe("Wave 0-2 Journey APIs and command execution", () => {
     const approvalBody = await approval.json();
     expect(approval.ok(), JSON.stringify(approvalBody)).toBe(true);
     expect(approvalBody.noClientRelease).toBe(true);
+    expect(approvalBody.detail.status).not.toBe("COMPLETED");
+    expect(approvalBody.clientProjection).toBeUndefined();
+    expect(JSON.stringify(approvalBody)).not.toMatch(/releasedToClientAt|COMPLIANCE_RELEASED_CLIENT_SAFE/);
+
+    const [approvedRecommendation, unreleasedDecision, releaseRunBeforeCompliance] = await Promise.all([
+      prisma.recommendation.findUniqueOrThrow({
+        select: {
+          clientVisible: true,
+          status: true,
+        },
+        where: { id: recommendationId },
+      }),
+      prisma.decision.findUniqueOrThrow({
+        select: {
+          releasedToClientAt: true,
+          status: true,
+        },
+        where: { id: decisionId },
+      }),
+      prisma.journeyCommandRun.findFirst({
+        where: {
+          commandKey: "COMPLIANCE_RELEASE",
+          journeyInstanceId: journeyId,
+          result: "SUCCESS",
+        },
+      }),
+    ]);
+
+    expect(approvedRecommendation).toMatchObject({
+      clientVisible: false,
+      status: "COMPLIANCE_PENDING",
+    });
+    expect(unreleasedDecision.status).not.toBe("RELEASED_TO_CLIENT");
+    expect(unreleasedDecision.releasedToClientAt?.toISOString() ?? null).toBe(
+      decisionBeforeApproval.releasedToClientAt?.toISOString() ?? null,
+    );
+    expect(releaseRunBeforeCompliance).toBeNull();
+
+    const advisorRelease = await command(request, journeyId, advisorJwt, {
+      clientSafeSummary: "Advisor role must not release client-safe content.",
+      command: "COMPLIANCE_RELEASE",
+      confirmationPhrase: "RELEASE CLIENT-SAFE JOURNEY",
+      reason: "Advisor attempts compliance release after advisor approval.",
+    });
+    const advisorReleaseBody = await advisorRelease.json();
+    expect(advisorRelease.status(), JSON.stringify(advisorReleaseBody)).toBe(403);
+    expect(advisorReleaseBody.mutated).toBe(false);
+    expect(advisorReleaseBody.issues).toContain("gate_role_denied");
+    expect(advisorReleaseBody.issues).toContain("compliance_release_requires_compliance_officer");
+
+    const [recommendationAfterAdvisorReleaseAttempt, decisionAfterAdvisorReleaseAttempt] = await Promise.all([
+      prisma.recommendation.findUniqueOrThrow({
+        select: {
+          clientVisible: true,
+          status: true,
+        },
+        where: { id: recommendationId },
+      }),
+      prisma.decision.findUniqueOrThrow({
+        select: {
+          releasedToClientAt: true,
+          status: true,
+        },
+        where: { id: decisionId },
+      }),
+    ]);
+
+    expect(recommendationAfterAdvisorReleaseAttempt).toMatchObject({
+      clientVisible: false,
+      status: "COMPLIANCE_PENDING",
+    });
+    expect(decisionAfterAdvisorReleaseAttempt.status).not.toBe("RELEASED_TO_CLIENT");
+    expect(decisionAfterAdvisorReleaseAttempt.releasedToClientAt?.toISOString() ?? null).toBe(
+      decisionBeforeApproval.releasedToClientAt?.toISOString() ?? null,
+    );
 
     const reviewStep = await command(request, journeyId, advisorJwt, {
       command: "COMPLETE_STEP",
