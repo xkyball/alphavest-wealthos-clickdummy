@@ -9,6 +9,7 @@ import {
 } from "@/lib/capture-screen-model-context";
 import { demoAuthSessionCookieName } from "@/lib/demo/demo-auth-session";
 import { routeToSmokePath, screenRoutes, type ScreenRoute } from "@/lib/route-registry";
+import { visualStateForRoute } from "@/lib/visual-contract";
 
 type CaptureMode = "drawer" | "modal";
 
@@ -252,6 +253,14 @@ function stateSlug(state: string) {
 
 function fileNameFor(route: ScreenRoute, kind: CaptureMode | "screen", state: string) {
   return `${route.pageId}-route-${routeSlug(routeToSmokePath(route.route))}-${kind}-${stateSlug(state)}.png`;
+}
+
+function captureUrlForRoute(route: ScreenRoute) {
+  const smokePath = routeToSmokePath(route.route);
+  const visualState = visualStateForRoute(route);
+  const pathname = visualState === "base" ? smokePath : `${smokePath}?state=${visualState}`;
+
+  return new URL(pathname, baseUrl).toString();
 }
 
 function sidecarNameFor(fileName: string, extension: "css" | "html") {
@@ -2158,7 +2167,8 @@ async function captureInteractionProofTrace(page: Page, item: CaptureItem, scree
 async function captureRoute(page: Page, route: ScreenRoute) {
   const items: CaptureItem[] = [];
   const modelContext = captureModelContextForRoute(route);
-  const url = new URL(routeToSmokePath(route.route), baseUrl).toString();
+  const visualState = visualStateForRoute(route);
+  const url = captureUrlForRoute(route);
   const baseFile = fileNameFor(route, "screen", "base");
   const baseItem: CaptureItem = {
     interactionProofTraceStatus: "not-tested",
@@ -2199,7 +2209,7 @@ async function captureRoute(page: Page, route: ScreenRoute) {
       url,
     };
 
-    const keepParentOverlayContext = overlay.label === "role-confirm-modal";
+    const keepParentOverlayContext = overlay.label === "role-confirm-modal" || visualState !== "base";
     if (!keepParentOverlayContext) await closeOverlayIfVisible(page, overlay.mode);
     const alreadyOpen = await isOverlayVisible(page, overlay.mode);
     const opened = screensOnly

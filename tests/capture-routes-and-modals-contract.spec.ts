@@ -42,6 +42,10 @@ test.describe("routes and modals capture contract", () => {
     const source = await readFile("scripts/capture-routes-and-modals.ts", "utf8");
 
     expect(source).toContain("routeToSmokePath(route.route)");
+    expect(source).toContain("visualStateForRoute(route)");
+    expect(source).toContain('const pathname = visualState === "base" ? smokePath : `${smokePath}?state=${visualState}`;');
+    expect(source).toContain("const url = captureUrlForRoute(route);");
+    expect(source).toContain('const keepParentOverlayContext = overlay.label === "role-confirm-modal" || visualState !== "base";');
     expect(source).toContain('${route.pageId}-route-${routeSlug(routeToSmokePath(route.route))}-${kind}-${stateSlug(state)}.png');
     expect(source).toContain('const baseFile = fileNameFor(route, "screen", "base");');
     expect(source).toContain("const overlayFile = fileNameFor(route, overlay.mode, overlay.label);");
