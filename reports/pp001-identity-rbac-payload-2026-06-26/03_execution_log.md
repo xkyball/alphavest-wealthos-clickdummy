@@ -11,10 +11,13 @@ Generated: 2026-06-26
 5. `IMPL-1.2 Tenant Membership and Cross-Tenant Denial Proof` - complete.
 6. `IMPL-1 Current User / Tenant / Role Proof Harness` - complete.
 7. `IMPL-2 Route / Action / Object Permission Enforcement & Tests` - complete with payload residual carried to `IMPL-3`.
+8. `IMPL-3.1 Payload Visibility Matrix Implementation / Alignment` - complete.
+9. `IMPL-3.2 Client/Internal/Admin Payload Negative Tests` - complete.
+10. `IMPL-3 Payload Visibility / Redaction Proof Surface & Tests` - complete.
 
 ## Stopped
 
-No active stop gate in this log entry. Next task in order: `IMPL-3 Payload Visibility / Redaction Proof Surface & Tests`.
+No active stop gate in this log entry. Next task in order: `IMPL-4 Admin Non-Bypass and Denied Audit Proofs`.
 
 ## Commands Run
 
@@ -28,6 +31,7 @@ pnpm guard:source
 PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm exec playwright test tests/providerless-scope.spec.ts tests/control-layer-p0-fixtures.spec.ts tests/client-visibility-projection.spec.ts --workers=1
 pnpm exec playwright test tests/auth-spine.spec.ts --workers=1
 PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm exec playwright test tests/providerless-scope.spec.ts --workers=1
+PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm exec playwright test tests/pp001-payload-visibility-contract.spec.ts tests/pp001-payload-negative.spec.ts --workers=1
 ```
 
 ## Command Results
@@ -39,6 +43,7 @@ PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm exec playwright test tests/providerless-scope.
 | Focused PP-001 proof slice | PASS, 14/14 tests: providerless scope, control-layer actor fixtures and client visibility projection. |
 | `IMPL-1` current-user bridge proof | PASS, 4/4 tests in `tests/auth-spine.spec.ts`. |
 | `IMPL-2` route/action/object proof | PASS, 10/10 tests in `tests/providerless-scope.spec.ts`; payload residual documented for `IMPL-3`. |
+| `IMPL-3` payload visibility proof | PASS, 4/4 tests in PP-001 payload matrix and negative payload suites. |
 
 ## Product Code Changes
 
