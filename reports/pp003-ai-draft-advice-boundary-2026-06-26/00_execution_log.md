@@ -19,8 +19,8 @@ Authority: `ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md`
 | 6 | IMPL-1.5 AI Draft Classification / Unsupported Claim Lifecycle & Tests | Complete | Added evidence-backed draft lifecycle gate; rejects unclassified drafts, open/waived unsupported claims, legacy/P44 evidence, unaudited sufficiency and PP003 client-visible release. |
 | 7 | IMPL-1.6 API / Client / Decision Projection Leakage Negative Tests | Complete | Added PP003 leakage negative tests for client portal/mobile projections, typed workflow API `clientProjection` payloads and decision projection fail-closed behavior. |
 | 8 | IMPL-1.7 Advisor Candidate Boundary and No-Release State Guard | Complete | Advisor-ready draft promotion now uses the PP003 lifecycle gate; tests prove advisor approval/candidate state stays non-release and non-client-visible. |
-| 9 | IMPL-1.8 Audit Proof for Draft Rejection/Rebuild/Boundary Decisions | Ready | Boundary transitions are now gated and can be audited/tested directly. |
-| 10 | IMPL-1.9 UX Safety Wording Overlay for AI/Internal-only/Unsupported Claims | Blocked | Requires approved labels/state taxonomy. |
+| 9 | IMPL-1.8 Audit Proof for Draft Rejection/Rebuild/Boundary Decisions | Complete | Added persisted audit/trace proof for unsupported-claim rejection, evidence-backed rebuild and denied boundary mutation. |
+| 10 | IMPL-1.9 UX Safety Wording Overlay for AI/Internal-only/Unsupported Claims | Ready | State taxonomy and boundary proof are in place. |
 | 11 | QA-1.10 PP-003 Integrated P0 Advice Boundary Validation | Blocked | Requires completed or explicitly deferred implementation tasks. |
 | 12 | DECISION-1.11 PP-004 Readiness Gate after PP-003 | Blocked | Requires QA-1.10 result. |
 
@@ -48,6 +48,11 @@ pnpm playwright test tests/pp003-advice-boundary-contract.spec.ts tests/pp003-ad
 pnpm typecheck
 pnpm guard:source
 pnpm db:validate
+pnpm playwright test tests/pp003-boundary-audit-proof.spec.ts --workers=1
+pnpm playwright test tests/pp003-boundary-audit-proof.spec.ts tests/pp003-advisor-candidate-boundary.spec.ts tests/demo-workflow-api.spec.ts --workers=1
+pnpm typecheck
+pnpm guard:source
+pnpm db:validate
 ```
 
 ## Preflight Result
@@ -62,4 +67,4 @@ guard:source: PASS, violations 0
 
 ## Current State
 
-Continue next with `IMPL-1.8` after the `IMPL-1.7` checkpoint is committed.
+Continue next with `IMPL-1.9` after the `IMPL-1.8` checkpoint is committed.
