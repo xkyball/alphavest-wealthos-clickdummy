@@ -58,6 +58,7 @@ import {
 import {
   runScreencastDemoAction,
 } from "@/lib/screencast-demo-client";
+import { runTenantGovernanceCommand } from "@/lib/tenant-governance-command-client";
 import {
   accessPolicyChecks,
   complianceAuditControls,
@@ -1944,7 +1945,7 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
     setMessage("Submitting the scoped governance invitation. Close and cancel are blocked until the workflow returns.");
 
     try {
-      const body = await runScreencastDemoAction("j07.sendInvitation");
+      const body = await runTenantGovernanceCommand("j07.sendInvitation");
       setStatus("success");
       setMessage(
         body.result?.auditEventId
@@ -2268,7 +2269,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
     setMessage("Checking the existing role-change workflow. Close and cancel are blocked until the request resolves.");
 
     try {
-      const body = await runScreencastDemoAction("j07.saveRoleChanges");
+      const body = await runTenantGovernanceCommand("j07.saveRoleChanges");
       setStatus("success");
       setMessage(
         body.result?.auditEventId
@@ -2592,7 +2593,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
     setMessage("Routing the scoped access approval review. Close and cancel are blocked until the workflow returns.");
 
     try {
-      const body = await runScreencastDemoAction("j07.approveAccess");
+      const body = await runTenantGovernanceCommand("j07.approveAccess");
       setStatus("success");
       setMessage(
         body.result?.auditEventId

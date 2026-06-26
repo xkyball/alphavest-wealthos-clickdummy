@@ -121,16 +121,6 @@ const workflowActions = [
   "j05.viewDetails",
   "j05.markReady",
   "j05.requestInfo",
-  "j06.newTenant",
-  "j06.continueTenant",
-  "j06.assignTeam",
-  "j06.openInvitation",
-  "j06.sendInvitation",
-  "j07.inviteUser",
-  "j07.sendInvitation",
-  "j07.saveRoleChanges",
-  "j07.approveAccess",
-  "j07.exportAudit",
   "j09.portalUpload",
   "j09.submitProfile",
   "j09.addMember",
@@ -380,6 +370,43 @@ test.describe("demo workflow API", () => {
       });
       expect(body.noClientRelease).toBe(true);
       expect(body.error).toContain("typed journey command API");
+    }
+  });
+
+  test("legacy demo workflow retires tenant governance actions to typed tenant governance commands", async ({ request }) => {
+    const actions = [
+      "j06.newTenant",
+      "j06.continueTenant",
+      "j06.assignTeam",
+      "j06.openInvitation",
+      "j06.sendInvitation",
+      "j07.inviteUser",
+      "j07.sendInvitation",
+      "j07.saveRoleChanges",
+      "j07.approveAccess",
+      "j07.exportAudit",
+    ];
+
+    for (const actionId of actions) {
+      const response = await request.post("/api/demo-workflow", {
+        data: { actionId },
+      });
+      const body = await response.json();
+
+      expect(response.status(), `${actionId}: ${JSON.stringify(body)}`).toBe(410);
+      expect(body.canonicalApiRoute).toBe("/api/tenant-governance/actions");
+      expect(body.legacyReasonCode).toBe("TENANT_GOVERNANCE_ACTIONS_MOVED");
+      expect(body.demoWorkflowBoundary).toMatchObject({
+        classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
+        reasonCode: "TENANT_GOVERNANCE_ACTIONS_MOVED",
+      });
+      expect(body.noClientRelease).toBe(true);
+      expect(body.safety).toMatchObject({
+        commandExecuted: false,
+        noAdviceExecution: true,
+        noClientRelease: true,
+      });
+      expect(body.error).toContain("/api/tenant-governance/actions");
     }
   });
 

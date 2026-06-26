@@ -58,11 +58,12 @@ function requiredTruthsForReport(reportPath: string) {
       "DEMO_COMMAND_BACKED_PARTIAL",
       "/api/demo-workflow",
       "/api/export-workflow",
+      "/api/tenant-governance/actions",
     ];
   }
 
   if (reportPath.endsWith("02_codebase_inventory.md")) {
-    return ["Registered routes | 71", "Models | 53", "Enums | 31", "API route files found: `28`"];
+    return ["Registered routes | 71", "Models | 53", "Enums | 31", "API route files found: `29`", "app/api/tenant-governance/actions/route.ts"];
   }
 
   return ["53", "71"];
@@ -181,4 +182,3 @@ export function validateCapabilityReportDrift(
     violations: [...violations, ...result.violations],
   };
 }
-

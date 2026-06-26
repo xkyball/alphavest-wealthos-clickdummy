@@ -104,6 +104,6 @@ test.describe("UXP3-005 invite user drawer lifecycle", () => {
     expect(source).toContain('data-testid="uxp3-invite-user-drawer-lifecycle"');
     expect(source).toContain('data-ux-lifecycle-trigger="invite-user-drawer"');
     expect(source).toContain('onClose={status === "submitting" ? undefined : handleClose}');
-    expect(source).toContain('void runScreencastDemoAction("j06.sendInvitation");');
+    expect(source).toContain('void runTenantGovernanceCommand("j06.sendInvitation");');
   });
 });

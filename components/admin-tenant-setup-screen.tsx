@@ -71,6 +71,7 @@ import { permissionEngine } from "@/lib/permission-engine";
 import type { ScreenRoute } from "@/lib/route-registry";
 import { runScreencastDemoAction } from "@/lib/screencast-demo-client";
 import { buildScopeControlSnapshot, type ScopeControlRow, type StaticWorkspaceControl } from "@/lib/scope-control";
+import { runTenantGovernanceCommand } from "@/lib/tenant-governance-command-client";
 import type { VisualState } from "@/lib/visual-contract";
 
 type AdminTenantSetupScreenProps = {
@@ -879,7 +880,7 @@ function TenantsPage() {
       <ActionBar>
         <StatusChip label={loadState === "error" ? "DB snapshot unavailable" : "DB tenant rows"} status={loadState === "error" ? "FAILED" : "ACTIVE"} />
         <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />CSV export held</span>
-        <button className={primaryButtonClass} data-testid="j06-new-tenant" onClick={() => { void runScreencastDemoAction("j06.newTenant", "/tenants/new"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add Tenant</button>
+        <button className={primaryButtonClass} data-testid="j06-new-tenant" onClick={() => { void runTenantGovernanceCommand("j06.newTenant", "/tenants/new"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add Tenant</button>
       </ActionBar>
       <Card>
         <CardContent className="grid gap-3 md:grid-cols-[1fr_0.75fr_auto]">
@@ -973,7 +974,7 @@ function CreateTenantPage() {
 
     setStatus("success");
     setMessage(`${body.result.tenant.displayName} created as ${body.result.setupState ?? body.result.tenant.status}. Team, policy and invitation gates remain locked.`);
-    void runScreencastDemoAction("j06.newTenant");
+    void runTenantGovernanceCommand("j06.newTenant");
   }
 
   return (
@@ -1025,7 +1026,7 @@ function CreateTenantPage() {
             <StatePanel detail={message} state={status === "success" ? "success" : status === "error" ? "blocked" : "restricted"} title="Tenant draft command" />
             <ActionBar>
               <button className={secondaryButtonClass} onClick={() => { void createTenant(); }} type="button">{status === "submitting" ? "Saving" : "Save draft"}</button>
-              <button className={primaryButtonClass} data-testid="j06-continue-tenant" onClick={() => { void runScreencastDemoAction("j06.continueTenant", "/tenants/demo/setup"); }} type="button">Continue to team setup <ArrowRight aria-hidden="true" className="size-4" /></button>
+              <button className={primaryButtonClass} data-testid="j06-continue-tenant" onClick={() => { void runTenantGovernanceCommand("j06.continueTenant", "/tenants/demo/setup"); }} type="button">Continue to team setup <ArrowRight aria-hidden="true" className="size-4" /></button>
             </ActionBar>
           </CardContent>
         </Card>
@@ -1128,7 +1129,7 @@ function TenantTeamPage() {
       <ActionBar>
         <StatusBadge status="Draft" />
         <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Assignment preview held</span>
-        <button className={primaryButtonClass} data-testid="j06-assign-team" onClick={() => { void runScreencastDemoAction("j06.assignTeam", "/tenants/demo/policies"); }} type="button">Save changes</button>
+        <button className={primaryButtonClass} data-testid="j06-assign-team" onClick={() => { void runTenantGovernanceCommand("j06.assignTeam", "/tenants/demo/policies"); }} type="button">Save changes</button>
       </ActionBar>
       <section className="grid gap-5 xl:grid-cols-[1fr_0.45fr]">
         <Card>
@@ -1210,7 +1211,7 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
           data-ux-lifecycle-result="opens-invite-user-drawer"
           data-ux-lifecycle-trigger="invite-user-drawer"
           onClick={() => {
-            void runScreencastDemoAction("j06.openInvitation");
+            void runTenantGovernanceCommand("j06.openInvitation");
             onInvite();
           }}
           type="button"
@@ -1474,7 +1475,7 @@ function InviteUserDrawer({ onClose, open }: { onClose: () => void; open: boolea
     setInviteToken(body.result.inviteToken);
     setStatus("success");
     setMessage(`${body.result.user.email} is now invited for ${body.result.user.roleName ?? roleKey} in ${body.result.user.tenantName ?? tenantSlug}.`);
-    void runScreencastDemoAction("j06.sendInvitation");
+    void runTenantGovernanceCommand("j06.sendInvitation");
   }
 
   return (

@@ -72,10 +72,10 @@ const groupTemplates: Record<NavigationGroupKey, ContextTemplate> = {
   },
   platform: {
     capability: {
-      apiEvidence: ["app/api/admin-tenants/route.ts"],
+      apiEvidence: ["app/api/admin-tenants/route.ts", "app/api/tenant-governance/actions/route.ts"],
       guardEvidence: ["Permission and audit boundaries require focused runtime proof per action."],
       proofPosture: "Admin/platform setup is partially API-backed; static controls stay conservative.",
-      serviceEvidence: ["lib/p44-phase2-admin-foundation.ts", "lib/admin-tenant-readmodel-service.ts"],
+      serviceEvidence: ["lib/p44-phase2-admin-foundation.ts", "lib/admin-tenant-readmodel-service.ts", "lib/tenant-governance-workflow-actions.ts"],
       status: "API_BACKED_PARTIAL",
     },
     modelFamilies: ["tenant-user-rbac", "policy-export-evidence"],
@@ -84,15 +84,15 @@ const groupTemplates: Record<NavigationGroupKey, ContextTemplate> = {
   },
   tenant_setup: {
     capability: {
-      apiEvidence: ["app/api/admin-tenants/route.ts"],
+      apiEvidence: ["app/api/admin-tenants/route.ts", "app/api/tenant-governance/actions/route.ts"],
       guardEvidence: ["Auth, permission and validation responses are partial proof only."],
-      proofPosture: "Tenant setup has API/service evidence, but capture remains partial until focused runtime proof runs.",
-      serviceEvidence: ["lib/p44-phase2-admin-foundation.ts", "lib/demo/demo-auth-provider-service.ts"],
+      proofPosture: "Tenant setup has typed tenant-governance command evidence, but capture remains partial until focused runtime proof runs.",
+      serviceEvidence: ["lib/p44-phase2-admin-foundation.ts", "lib/demo/demo-auth-provider-service.ts", "lib/tenant-governance-command-client.ts", "lib/tenant-governance-workflow-actions.ts"],
       status: "API_BACKED_PARTIAL",
     },
     modelFamilies: ["tenant-user-rbac"],
     models: ["ClientTenant", "User", "UserProfile", "Role", "UserRole", "PolicyDefinition", ...sharedAuditModels],
-    warnings: ["Tenant screenshots do not prove every admin mutation path."],
+    warnings: ["Tenant screenshots do not prove every admin mutation path; J06 uses typed tenant-governance commands, not /api/demo-workflow."],
   },
   client_workspace: {
     capability: {
@@ -175,15 +175,15 @@ const groupTemplates: Record<NavigationGroupKey, ContextTemplate> = {
   },
   decisions_evidence: {
     capability: {
-      apiEvidence: ["app/api/audit-events/route.ts", "app/api/documents/review/route.ts", "app/api/journeys/[id]/client-projection/route.ts"],
+      apiEvidence: ["app/api/audit-events/route.ts", "app/api/documents/review/route.ts", "app/api/journeys/[id]/client-projection/route.ts", "app/api/tenant-governance/actions/route.ts"],
       guardEvidence: ["Permission engine, visibility engine and workflow gate evidence required for safety-sensitive states."],
-      proofPosture: "Decision/evidence surfaces are service-backed internally; client projection remains fail-closed.",
-      serviceEvidence: ["lib/visibility-engine.ts", "lib/workflow-gate.ts", "lib/audit-service.ts", "lib/evidence-review-service.ts"],
+      proofPosture: "Decision/evidence surfaces are service-backed internally; J07 governance actions use typed tenant-governance commands while client projection remains fail-closed.",
+      serviceEvidence: ["lib/visibility-engine.ts", "lib/workflow-gate.ts", "lib/audit-service.ts", "lib/evidence-review-service.ts", "lib/tenant-governance-workflow-actions.ts"],
       status: "SERVICE_BACKED_INTERNAL",
     },
     modelFamilies: ["documents-evidence", "advisory-recommendation-draft", "tenant-user-rbac"],
     models: ["EvidenceRecord", "EvidenceItem", "EvidenceSufficiencyDecision", "Decision", "DecisionParticipant", "DocumentReview", ...sharedSafetyModels, ...sharedAuditModels],
-    warnings: ["Evidence screenshots are not release proof without no-leakage and gate proof."],
+    warnings: ["Evidence screenshots are not release proof without no-leakage and gate proof; J07 governance commands use tenant-governance typed commands but remain no-client-release."],
   },
   communication: {
     capability: {
@@ -199,15 +199,15 @@ const groupTemplates: Record<NavigationGroupKey, ContextTemplate> = {
   },
   export: {
     capability: {
-      apiEvidence: ["app/api/export-workflow/route.ts"],
+      apiEvidence: ["app/api/export-workflow/route.ts", "app/api/tenant-governance/actions/route.ts"],
       guardEvidence: ["Export safety guards; direct approval/download UI/API truth tests from the audit baseline."],
       proofPosture: "Strong export command-spine candidate; full lifecycle DB/browser proof still controls completion claims.",
-      serviceEvidence: ["lib/export-workflow-command-service.ts", "lib/export-workflow-readmodel-service.ts"],
+      serviceEvidence: ["lib/export-workflow-command-service.ts", "lib/export-workflow-readmodel-service.ts", "lib/tenant-governance-workflow-actions.ts"],
       status: "STRONG_VERTICAL_CANDIDATE",
     },
     modelFamilies: ["audit-monitoring-communication-export", "documents-evidence"],
     models: ["ExportRequest", "Document", "DocumentVersion", "EvidenceItem", ...sharedAuditModels],
-    warnings: ["Export preview is not approval/download; remaining J08 demo paths stay separate."],
+    warnings: ["Export preview is not approval/download; J07 audit export control uses typed tenant-governance commands and remaining J08 demo paths stay separate."],
   },
   operations: {
     capability: {

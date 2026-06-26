@@ -1,4 +1,5 @@
 import { isReviewMonitoringWorkflowAction } from "@/lib/review-monitoring-workflow-actions";
+import { isTenantGovernanceWorkflowAction } from "@/lib/tenant-governance-action-contract";
 
 export type DemoWorkflowActionBoundary =
   | {
@@ -13,14 +14,16 @@ export type DemoWorkflowActionBoundary =
         | "/api/export-workflow"
         | "/api/journeys/[id]/commands"
         | "/api/recommendation-review-workflow"
-        | "/api/review-monitoring/actions";
+        | "/api/review-monitoring/actions"
+        | "/api/tenant-governance/actions";
       classification: "MOVED_TO_TYPED_PRODUCT_COMMAND";
       productCommandAllowed: true;
       reasonCode:
         | "LEGACY_EXPORT_DEMO_ACTION_RETIRED"
         | "PHASE_B_C_JOURNEY_COMMANDS_MOVED"
         | "ADVISOR_APPROVAL_WORKFLOW_MOVED"
-        | "REVIEW_MONITORING_ACTION_MOVED";
+        | "REVIEW_MONITORING_ACTION_MOVED"
+        | "TENANT_GOVERNANCE_ACTIONS_MOVED";
     }
   | {
       allowedOnDemoWorkflow: false;
@@ -56,16 +59,6 @@ export const demoOnlyWorkflowActionIds = [
   "j05.viewDetails",
   "j05.markReady",
   "j05.requestInfo",
-  "j06.newTenant",
-  "j06.continueTenant",
-  "j06.assignTeam",
-  "j06.openInvitation",
-  "j06.sendInvitation",
-  "j07.inviteUser",
-  "j07.sendInvitation",
-  "j07.saveRoleChanges",
-  "j07.approveAccess",
-  "j07.exportAudit",
   "j09.portalUpload",
   "j09.submitProfile",
   "j09.addMember",
@@ -129,6 +122,16 @@ export function demoWorkflowActionBoundaryFor(actionId: string): DemoWorkflowAct
       classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
       productCommandAllowed: true,
       reasonCode: "REVIEW_MONITORING_ACTION_MOVED",
+    };
+  }
+
+  if (isTenantGovernanceWorkflowAction(actionId)) {
+    return {
+      allowedOnDemoWorkflow: false,
+      canonicalApiRoute: "/api/tenant-governance/actions",
+      classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
+      productCommandAllowed: true,
+      reasonCode: "TENANT_GOVERNANCE_ACTIONS_MOVED",
     };
   }
 

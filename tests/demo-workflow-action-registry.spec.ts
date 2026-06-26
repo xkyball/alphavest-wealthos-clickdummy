@@ -8,7 +8,7 @@ import {
 
 test.describe("demo workflow action registry", () => {
   test("keeps executable demo workflow actions explicitly demo-only", () => {
-    expect(demoOnlyWorkflowActionIds.length).toBeGreaterThan(30);
+    expect(demoOnlyWorkflowActionIds.length).toBeGreaterThan(20);
 
     for (const actionId of demoOnlyWorkflowActionIds) {
       expect(demoWorkflowActionBoundaryFor(actionId), actionId).toMatchObject({
@@ -51,6 +51,18 @@ test.describe("demo workflow action registry", () => {
       canonicalApiRoute: "/api/review-monitoring/actions",
       classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
       reasonCode: "REVIEW_MONITORING_ACTION_MOVED",
+    });
+    expect(demoWorkflowActionBoundaryFor("j06.continueTenant")).toMatchObject({
+      allowedOnDemoWorkflow: false,
+      canonicalApiRoute: "/api/tenant-governance/actions",
+      classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
+      reasonCode: "TENANT_GOVERNANCE_ACTIONS_MOVED",
+    });
+    expect(demoWorkflowActionBoundaryFor("j07.exportAudit")).toMatchObject({
+      allowedOnDemoWorkflow: false,
+      canonicalApiRoute: "/api/tenant-governance/actions",
+      classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
+      reasonCode: "TENANT_GOVERNANCE_ACTIONS_MOVED",
     });
   });
 

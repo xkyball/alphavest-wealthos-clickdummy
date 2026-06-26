@@ -83,7 +83,7 @@ import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@
 import type { ExportWorkflowSnapshot } from "@/lib/export-workflow-readmodel-service";
 import type { OpsSlaSnapshot } from "@/lib/ops-sla-readmodel-service";
 import type { ScreenRoute } from "@/lib/route-registry";
-import { runScreencastDemoAction } from "@/lib/screencast-demo-client";
+import { runTenantGovernanceCommand } from "@/lib/tenant-governance-command-client";
 import type { VisualState } from "@/lib/visual-contract";
 
 type CommunicationExportOpsScreenProps = {
@@ -1028,7 +1028,7 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
               className={secondaryButtonClass}
               data-testid="j07-export-audit"
               onClick={() => {
-                void runScreencastDemoAction("j07.exportAudit");
+                void runTenantGovernanceCommand("j07.exportAudit");
               }}
               type="button"
             >

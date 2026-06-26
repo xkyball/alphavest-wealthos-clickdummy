@@ -41,4 +41,23 @@ test.describe("normal screen capture model context", () => {
       expect.arrayContaining(["Document", "DocumentVersion", "DocumentExtraction", "EvidenceRecord", "EvidenceItem", "AuditEvent"]),
     );
   });
+
+  test("keeps tenant and governance captures tied to typed tenant-governance commands", () => {
+    const tenantUsersRoute = screenRoutes.find((route) => route.pageId === "018");
+    const governanceRoleRoute = screenRoutes.find((route) => route.pageId === "049");
+    const accessApprovalRoute = screenRoutes.find((route) => route.pageId === "050");
+    const auditExportRoute = screenRoutes.find((route) => route.pageId === "051");
+
+    expect(tenantUsersRoute).toBeTruthy();
+    expect(governanceRoleRoute).toBeTruthy();
+    expect(accessApprovalRoute).toBeTruthy();
+    expect(auditExportRoute).toBeTruthy();
+
+    for (const route of [tenantUsersRoute!, governanceRoleRoute!, accessApprovalRoute!, auditExportRoute!]) {
+      const context = captureModelContextForRoute(route);
+      expect(context.capability.apiEvidence).toContain("app/api/tenant-governance/actions/route.ts");
+      expect(context.capability.serviceEvidence).toContain("lib/tenant-governance-workflow-actions.ts");
+      expect(context.warnings.join(" ")).toContain("tenant-governance");
+    }
+  });
 });

@@ -311,7 +311,7 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
   });
 
   test("surfaces J06 tenant wizard mutations in the admin tenant snapshot", async ({ request }) => {
-    const mutationResponse = await request.post("/api/demo-workflow", { data: { actionId: "j06.continueTenant" } });
+    const mutationResponse = await request.post("/api/tenant-governance/actions", { data: { actionId: "j06.continueTenant" } });
     const mutationBody = await mutationResponse.json();
 
     expect(mutationResponse.ok(), JSON.stringify(mutationBody)).toBe(true);
@@ -322,7 +322,7 @@ test.describe("DBTF P00-P10 DB-backed table/form APIs", () => {
 
     expect(snapshotResponse.ok(), JSON.stringify(snapshotBody)).toBe(true);
     expect(snapshotBody.snapshot.tenantRows.some((row: { name: string; status: string }) => row.name.includes("Morgan") && row.status === "Onboarding")).toBe(true);
-    expect(snapshotBody.snapshot.auditProof.some((event: { eventType: string }) => event.eventType === "screencast.tenant.details_saved")).toBe(true);
+    expect(snapshotBody.snapshot.auditProof.some((event: { eventType: string }) => event.eventType === "tenant_governance.tenant.details_saved")).toBe(true);
   });
 
   test("surfaces J08 export wizard lifecycle from ExportRequest rows", async ({ request }) => {
