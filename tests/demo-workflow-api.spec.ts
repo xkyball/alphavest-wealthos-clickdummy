@@ -174,6 +174,14 @@ test.describe("demo workflow API", () => {
 
       expect(response.ok(), `${actionId}: ${JSON.stringify(body)}`).toBe(true);
       expect(body.actionId).toBe(actionId);
+      expect(body.demoOnly).toBe(true);
+      expect(body.productCommandAllowed).toBe(false);
+      expect(body.demoWorkflowBoundary).toMatchObject({
+        allowedOnDemoWorkflow: true,
+        classification: "DEMO_ONLY_COMPATIBILITY",
+        productCommandAllowed: false,
+        reasonCode: "SCREENCAST_DEMO_ACTION_ONLY",
+      });
       expect(body.result).toBeTruthy();
 
       if (Object.prototype.hasOwnProperty.call(wp05LegacyDemoReleaseActionDirectness, actionId)) {
@@ -200,6 +208,13 @@ test.describe("demo workflow API", () => {
       expect(body.reasonCode).toBe("SAFE_ERROR");
       expect(body.legacyReasonCode).toBe("LEGACY_EXPORT_DEMO_ACTION_RETIRED");
       expect(body.canonicalApiRoute).toBe("/api/export-workflow");
+      expect(body.demoWorkflowBoundary).toMatchObject({
+        allowedOnDemoWorkflow: false,
+        canonicalApiRoute: "/api/export-workflow",
+        classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
+        productCommandAllowed: true,
+        reasonCode: "LEGACY_EXPORT_DEMO_ACTION_RETIRED",
+      });
       expect(body.mutated).toBe(false);
       expect(body.noClientRelease).toBe(true);
       expect(body.safety.commandExecuted).toBe(false);
@@ -412,6 +427,13 @@ test.describe("demo workflow API", () => {
     expect(response.status(), JSON.stringify(body)).toBe(410);
     expect(body.noClientRelease).toBe(true);
     expect(body.canonicalApiRoute).toBe("/api/recommendation-review-workflow");
+    expect(body.demoWorkflowBoundary).toMatchObject({
+      allowedOnDemoWorkflow: false,
+      canonicalApiRoute: "/api/recommendation-review-workflow",
+      classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
+      productCommandAllowed: true,
+      reasonCode: "ADVISOR_APPROVAL_WORKFLOW_MOVED",
+    });
     expect(body.legacyReasonCode).toBe("ADVISOR_APPROVAL_WORKFLOW_MOVED");
     expect(body.proofDirectness).toBeUndefined();
     expect(body.workflowType).toBe("advisor-approval");
@@ -428,6 +450,13 @@ test.describe("demo workflow API", () => {
     expect(response.status(), JSON.stringify(body)).toBe(410);
     expect(body.noClientRelease).toBe(true);
     expect(body.canonicalApiRoute).toBe("/api/journeys/[id]/commands");
+    expect(body.demoWorkflowBoundary).toMatchObject({
+      allowedOnDemoWorkflow: false,
+      canonicalApiRoute: "/api/journeys/[id]/commands",
+      classification: "UNSUPPORTED_REQUIRES_TYPED_COMMAND",
+      productCommandAllowed: true,
+      reasonCode: "UNSUPPORTED_DEMO_WORKFLOW_ACTION_BLOCKED",
+    });
     expect(body.legacyReasonCode).toBe("UNSUPPORTED_DEMO_WORKFLOW_ACTION_BLOCKED");
     expect(afterCount).toBe(beforeCount);
   });

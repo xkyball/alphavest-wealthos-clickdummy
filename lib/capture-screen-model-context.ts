@@ -133,19 +133,19 @@ const groupTemplates: Record<NavigationGroupKey, ContextTemplate> = {
       apiEvidence: ["app/api/demo-workflow/route.ts"],
       guardEvidence: ["Per-action classification is required; generic demo persistence claim is forbidden."],
       proofPosture: "Visible wealth/action controls are demo-command-backed unless individually proven.",
-      serviceEvidence: ["lib/typed-workflow-command-bus.ts"],
+      serviceEvidence: ["lib/demo-workflow-action-registry.ts", "lib/typed-workflow-command-bus.ts"],
       status: "DEMO_COMMAND_BACKED_PARTIAL",
     },
     modelFamilies: ["client-wealth-objects", "advisory-recommendation-draft"],
     models: ["Entity", "EntityParticipant", "Asset", "Trigger", "ActionItem", "Recommendation", "EvidenceItem", ...sharedAuditModels],
-    warnings: ["Do not treat runScreencastDemoAction calls as product API proof."],
+    warnings: ["Do not treat runScreencastDemoAction calls as product API proof; the action registry must keep them demo-only or moved."],
   },
   advisory_workflow: {
     capability: {
       apiEvidence: ["app/api/demo-workflow/route.ts", "app/api/recommendation-review-workflow/route.ts"],
       guardEvidence: ["Advisor approval is not compliance release; client-visible AI draft remains forbidden."],
       proofPosture: "Internal service-backed workflow with demo bus ambiguity that should be split into typed domain APIs.",
-      serviceEvidence: ["lib/typed-workflow-command-bus.ts", "lib/internal-draft-governance-spine.ts"],
+      serviceEvidence: ["lib/demo-workflow-action-registry.ts", "lib/typed-workflow-command-bus.ts", "lib/internal-draft-governance-spine.ts"],
       status: "SERVICE_BACKED_INTERNAL",
     },
     modelFamilies: ["advisory-recommendation-draft", "audit-safety"],
@@ -273,4 +273,3 @@ export function captureModelContextForRoute(route: ScreenRoute): CaptureScreenMo
     warnings,
   };
 }
-

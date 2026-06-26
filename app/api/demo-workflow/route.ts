@@ -30,6 +30,10 @@ import {
   wp05LegacyDemoReleaseActionDirectnessFor,
   wp05TypedAdvisorWorkflowDirectnessFor,
 } from "@/lib/advisory-workflow-contract";
+import {
+  demoWorkflowActionBoundaryFor,
+  typedAdvisorApprovalWorkflowBoundary,
+} from "@/lib/demo-workflow-action-registry";
 import { parseDemoWorkflowRequestBody } from "@/lib/demo-workflow-validation";
 import { dataQualityService } from "@/lib/data-quality-service";
 import {
@@ -38,7 +42,6 @@ import {
 } from "@/lib/typed-workflow-command-bus";
 import { fileMetadataService } from "@/lib/file-metadata-service";
 import type { PermissionDecision } from "@/lib/permission-engine";
-import { isReviewMonitoringWorkflowAction } from "@/lib/review-monitoring-workflow-actions";
 import { workflowGate } from "@/lib/workflow-gate";
 import { suitabilityGateCandidate } from "@/lib/suitability-ips-demo-data";
 import type {
@@ -175,10 +178,6 @@ function stableId(label: string) {
 
 function stableEvidenceHash(label: string) {
   return createHash("sha256").update(`alphavest-wealthos:${label}`).digest("hex");
-}
-
-function isLegacyExportDemoAction(actionId: string) {
-  return actionId.startsWith("j08.");
 }
 
 function tenantId(slug: string) {
@@ -3219,10 +3218,11 @@ export async function POST(request: Request) {
     return failClosedJson(
       {
         action: parsedValue.action,
-        canonicalApiRoute: "/api/recommendation-review-workflow",
+        canonicalApiRoute: typedAdvisorApprovalWorkflowBoundary.canonicalApiRoute,
+        demoWorkflowBoundary: typedAdvisorApprovalWorkflowBoundary,
         error:
           "Typed advisor approval workflow actions have moved out of /api/demo-workflow. Use /api/recommendation-review-workflow.",
-        legacyReasonCode: "ADVISOR_APPROVAL_WORKFLOW_MOVED",
+        legacyReasonCode: typedAdvisorApprovalWorkflowBoundary.reasonCode,
         proofDirectness: wp05TypedAdvisorWorkflowDirectnessFor(parsedValue.action),
         reasonCode: "SAFE_ERROR",
         workflowType: "advisor-approval",
@@ -3242,36 +3242,46 @@ export async function POST(request: Request) {
   }
 
   const actionId = parsedValue.actionId;
+  const demoWorkflowBoundary = demoWorkflowActionBoundaryFor(actionId);
 
-  if (isLegacyExportDemoAction(actionId)) {
+  if (demoWorkflowBoundary.classification === "MOVED_TO_TYPED_PRODUCT_COMMAND") {
+    const exportSafety =
+      demoWorkflowBoundary.canonicalApiRoute === "/api/export-workflow"
+        ? {
+            commandExecuted: false,
+            hiddenRowsDisclosed: false,
+            noClientRelease: true,
+            noExportApproval: true,
+            noExportDownload: true,
+            scoped: false,
+          }
+        : undefined;
     return failClosedJson(
       {
         actionId,
-        canonicalApiRoute: "/api/export-workflow",
-        error: "Legacy demo export actions are retired from /api/demo-workflow. Use the typed export workflow API.",
-        legacyReasonCode: "LEGACY_EXPORT_DEMO_ACTION_RETIRED",
+        canonicalApiRoute: demoWorkflowBoundary.canonicalApiRoute,
+        demoWorkflowBoundary,
+        error:
+          demoWorkflowBoundary.canonicalApiRoute === "/api/export-workflow"
+            ? "Legacy demo export actions are retired from /api/demo-workflow. Use the typed export workflow API."
+            : "Review monitoring actions have moved out of /api/demo-workflow. Use /api/review-monitoring/actions.",
+        legacyReasonCode: demoWorkflowBoundary.reasonCode,
         reasonCode: "SAFE_ERROR",
-        safety: {
-          commandExecuted: false,
-          hiddenRowsDisclosed: false,
-          noClientRelease: true,
-          noExportApproval: true,
-          noExportDownload: true,
-          scoped: false,
-        },
+        ...(exportSafety ? { safety: exportSafety } : {}),
       },
       { status: 410 },
     );
   }
 
-  if (isReviewMonitoringWorkflowAction(actionId)) {
+  if (demoWorkflowBoundary.classification === "UNSUPPORTED_REQUIRES_TYPED_COMMAND") {
     return failClosedJson(
       {
         actionId,
-        canonicalApiRoute: "/api/review-monitoring/actions",
+        canonicalApiRoute: demoWorkflowBoundary.canonicalApiRoute,
+        demoWorkflowBoundary,
         error:
-          "Review monitoring actions have moved out of /api/demo-workflow. Use /api/review-monitoring/actions.",
-        legacyReasonCode: "REVIEW_MONITORING_ACTION_MOVED",
+          "Unsupported demo workflow actions are blocked. Move real journey commands to the typed journey command API before enabling them.",
+        legacyReasonCode: demoWorkflowBoundary.reasonCode,
         reasonCode: "SAFE_ERROR",
       },
       { status: 410 },
@@ -3294,8 +3304,11 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       actionId,
+      demoWorkflowBoundary,
+      demoOnly: true,
       noClientRelease: !releasedToClient,
       ok: true,
+      productCommandAllowed: false,
       proofDirectness,
       result,
     });
