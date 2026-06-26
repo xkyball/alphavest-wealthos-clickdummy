@@ -136,15 +136,90 @@ Finished: `ANALYSIS-2.1`.
 
 ## ANALYSIS-2.2 - API, Service And Workflow Data Flow
 
-Status: `PENDING`
+Status: `DONE`
 
-Next required step: map the `ANALYSIS-2.1` UI/API/typed-command candidates to API handlers, services, workflow parsers, validation rules and response safety envelopes. No data-flow completion claim is made yet in this current ordered run.
+### Ticket Requirement
+
+`ANALYSIS-2.2` requires local API routes, handlers, services, server actions, workflow functions and state transitions to be connected back to the UI candidates from `ANALYSIS-2.1`. The goal is to prove which visible/system actions actually enter logic, validation or workflow-state processing. This ticket is analysis-only; it does not make DB editability or full vertical-slice completion claims.
+
+### API / Service Inventory
+
+| Flow family | API/handler evidence | Service/workflow evidence | Input handling | Safety/error pattern | Current classification |
+| --- | --- | --- | --- | --- | --- |
+| Admin tenant foundation | `app/api/admin-tenants/route.ts` `GET`/`POST` | `getAdminTenantSnapshot`, `inviteDemoAuthUser`, `createP44ClientTenant`, `updateP44PlatformSetting`, `updateP44SecurityConfiguration`, `createP44PolicyVersion`, `requireP44EffectivePolicy`, `assignP44TeamMember` | JSON body with `payload.action`; action switch in handler | Validation, auth-provider and permission errors return non-release safety envelopes | `API_SERVICE_WORKFLOW_CANDIDATE` |
+| Auth/demo session | `app/api/auth/providers`, `provider-login`, `mfa/verify`, `dummy`, `logout` | Demo auth provider/current-user services | JSON request or GET, role/provider/MFA values | Auth failure safety, `noClientRelease: true` | `DEMO_AUTH_API_CANDIDATE` |
+| Profile DBTF form | `app/api/profile/route.ts` `GET`/`PATCH` | `getDbtfClientProfile`, `saveDbtfClientProfile` | Query context for GET; JSON payload with tenant/role/action for PATCH | Invalid scope, permission, validation and not-found branches; PATCH returns `noClientRelease: true` | `FORM_API_SERVICE_CANDIDATE` |
+| Family members | `app/api/family-members/route.ts` `GET`/`PATCH` | `listDbtfFamilyMembers`, `updateDbtfFamilyMember` | Query filters for list; JSON payload for update | Scope/actor-tenant checks; permission denial can carry audit event ID | `FORM_API_SERVICE_CANDIDATE` |
+| Entities | `app/api/entities/route.ts` `GET`/`POST` | `listDbtfEntities`, `saveDbtfEntityWizard` | Query filters for list; JSON payload with save/submit mode for POST | Scope/actor-tenant checks, validation and permission branches | `FORM_API_SERVICE_CANDIDATE` |
+| Documents list/upload | `app/api/documents/route.ts` `GET`; `app/api/documents/upload/route.ts` `POST` | `listUploadedDocuments`, `uploadDocument` | Query filters for list; multipart `FormData` for upload with file, tenant, role and metadata | Upload route validates multipart/file/scope and returns a safe document result only | `STRONG_API_SERVICE_CANDIDATE` |
+| Evidence/document review | `app/api/documents/review/route.ts` `POST` | `reviewDocumentEvidence` | JSON payload: document ID, tenant, role, action and sufficiency booleans | Validation, not-found, permission, insufficiency and audit-unavailable fail-closed branches | `STRONG_API_SERVICE_CANDIDATE` |
+| Export workflow | `app/api/export-workflow/route.ts` `GET`/`POST` | `getExportWorkflowSnapshot`, `parseExportWorkflowCommandRequest`, `executeExportWorkflowCommand` | Tenant/role query for snapshot; typed command request for scope/redaction/preview/approve/generate/download/share | `ExportWorkflowCommandError` converted to fail-closed response with no approval/download on errors | `STRONG_TYPED_COMMAND_API_CANDIDATE` |
+| Journey workflow | `app/api/journeys/**` | `listJourneysForCurrentUser`, `createJourneyForCurrentUser`, `executeJourneyCommandForCurrentUser`, projection/evidence/audit services | Current user resolved from request; journey command parsed by `parseJourneyCommandRequest` | Normalized route errors fail closed before state advance; client projection suppresses internals | `STRONG_TYPED_JOURNEY_COMMAND_CANDIDATE` |
+| Advisor review J01 | `app/api/advisor-review/actions/route.ts` `POST` | `isAdvisorReviewWorkflowAction`, `runAdvisorReviewWorkflowAction`, `runDemoWorkflowMutation` | JSON action ID allow-list for `j01.routeToAdvisor` / `j01.escalateAdvisor` | Requires DB URL; invalid action and audit-unavailable paths fail closed; no advice/client release | `TYPED_ADVISOR_REVIEW_COMMAND_CANDIDATE` |
+| Advice/release-history J02/J03 | `app/api/advice-release-history/actions/route.ts` `POST` | `runAdviceReleaseHistoryWorkflowAction`, `workflowGate`, `dataQualityService`, `runDemoWorkflowMutation` | JSON action ID allow-list plus audit failure simulation flag | Client-visible result only if service result explicitly reports `clientVisible: true`; fail-closed on audit-unavailable | `TYPED_ADVICE_RELEASE_HISTORY_COMMAND_CANDIDATE` |
+| Data maintenance J04/J05/J09 | `app/api/data-maintenance/actions/route.ts` `POST` | `runDataMaintenanceWorkflowAction`, `fileMetadataService`, `runDemoWorkflowMutation` | JSON action ID allow-list | Invalid action and audit-unavailable fail closed; no advice/release | `TYPED_DATA_MAINTENANCE_COMMAND_CANDIDATE` |
+| Tenant governance J06/J07 | `app/api/tenant-governance/actions/route.ts` `POST` | `runTenantGovernanceWorkflowAction`, `runDemoWorkflowMutation` | JSON action ID allow-list | Invalid action and audit-unavailable fail closed; no advice/release | `TYPED_TENANT_GOVERNANCE_COMMAND_CANDIDATE` |
+| Platform admin J10 | `app/api/platform-admin/actions/route.ts` `POST` | `runPlatformAdminWorkflowAction` | JSON action ID allow-list | Writes audit-shaped result and returns no advice/release; safe error response on failure | `TYPED_PLATFORM_ADMIN_COMMAND_CANDIDATE` |
+| Recommendation review workflow | `app/api/recommendation-review-workflow/route.ts` `POST` | `handleRecommendationReviewWorkflowRequest`, `parseDemoWorkflowRequestBody`, `runAdvisorApprovalWorkflowMutation` | Typed `workflowType: advisor-approval` request | Fail-closed on missing DB, invalid request and workflow gate errors | `TYPED_ADVISOR_APPROVAL_WORKFLOW_CANDIDATE` |
+| Review monitoring J16/J17 | `app/api/review-monitoring/actions/route.ts` `POST`; read snapshot route exists separately | `runReviewMonitoringWorkflowAction` | JSON action ID allow-list | DB URL required; invalid action fail closed; response says no client release | `TYPED_REVIEW_MONITORING_COMMAND_CANDIDATE` |
+| Legacy demo workflow | `app/api/demo-workflow/route.ts` `POST` | `parseDemoWorkflowRequestBody`, `demoWorkflowActionBoundaryFor`, local `runDemoWorkflowAction` | Legacy `actionId` or retired advisor workflow payload | Moved product commands return `410` with canonical typed route; unsupported demo actions blocked; only demo-only path remains direct | `LEGACY_DEMO_ONLY_BOUNDARY` |
+
+### Workflow / State Transition Candidate Matrix
+
+| Candidate | Handler-to-service trace | Processing observed in code | Current status |
+| --- | --- | --- | --- |
+| Profile edit | `ClientIntakeScreen` -> `/api/profile` PATCH -> `saveDbtfClientProfile` | Parses tenant/role/action, validates DBTF payload and returns no-release result | `TRACEABLE_TO_SERVICE` |
+| Family edit | `ClientIntakeScreen` -> `/api/family-members` PATCH -> `updateDbtfFamilyMember` | Parses actor/tenant/role scope, validates update and handles permission/not-found | `TRACEABLE_TO_SERVICE` |
+| Entity wizard | `ClientIntakeScreen` -> `/api/entities` POST -> `saveDbtfEntityWizard` | Saves draft or submit mode, with validation and permission branches | `TRACEABLE_TO_SERVICE` |
+| Document upload | `ClientIntakeScreen` -> `/api/documents/upload` POST -> `uploadDocument` | Multipart validation, metadata parsing, safe result projection | `TRACEABLE_TO_SERVICE_STRONG` |
+| Evidence review | `ClientIntakeScreen` -> `/api/documents/review` POST -> `reviewDocumentEvidence` | Action allow-list, sufficiency booleans, scoped document lookup and fail-closed errors | `TRACEABLE_TO_SERVICE_STRONG` |
+| Export lifecycle | Export UI/API candidate -> `/api/export-workflow` POST -> `parseExportWorkflowCommandRequest` -> `executeExportWorkflowCommand` | Command parser covers scope/redaction/preview/approve/generate/download/share requirements; service gates role, scope, redaction, status and data quality | `TRACEABLE_TO_TYPED_COMMAND_SERVICE_STRONG` |
+| Journey command spine | Journey UI/client -> `/api/journeys/[id]/commands` POST -> `parseJourneyCommandRequest` -> `executeJourneyCommandForCurrentUser` | Current user, scoped journey, role permission and command-family dispatch before state advance | `TRACEABLE_TO_TYPED_COMMAND_SERVICE_STRONG` |
+| J01 advisor review | Product screen -> `runAdvisorReviewCommand` -> `/api/advisor-review/actions` -> `runAdvisorReviewWorkflowAction` | Action allow-list updates recommendation/trigger/approval state via shared audit mutation wrapper | `TRACEABLE_TYPED_COMMAND` |
+| J02/J03 advice/release-history | Product screen -> `runAdviceReleaseHistoryCommand` -> `/api/advice-release-history/actions` -> `runAdviceReleaseHistoryWorkflowAction` | Command allow-list includes compliance evidence/release and released decision/evidence history actions; gate/data-quality service references observed | `TRACEABLE_TYPED_COMMAND_SAFETY_SENSITIVE` |
+| J04/J05/J09 data maintenance | Product screens -> `runDataMaintenanceCommand` -> `/api/data-maintenance/actions` -> `runDataMaintenanceWorkflowAction` | Command-family dispatch for documents, entities/actions, profile/family/relationships; no release default | `TRACEABLE_TYPED_COMMAND` |
+| J06/J07 tenant governance | Product screens -> `runTenantGovernanceCommand` -> `/api/tenant-governance/actions` -> `runTenantGovernanceWorkflowAction` | Tenant/user/role/access/export-audit commands dispatch through typed endpoint, not `/api/demo-workflow` | `TRACEABLE_TYPED_COMMAND` |
+| J10 platform admin | Product screen -> `runPlatformAdminCommand` -> `/api/platform-admin/actions` -> `runPlatformAdminWorkflowAction` | Audit-event command record for platform/security/admin changes | `TRACEABLE_TYPED_COMMAND` |
+| Review monitoring | Product screen candidate -> `/api/review-monitoring/actions` -> `runReviewMonitoringWorkflowAction` | J16/J17 action allow-list dispatches review calendar and rebalance monitoring workflows | `TRACEABLE_TYPED_COMMAND` |
+| Legacy `/api/demo-workflow` | Legacy client path -> `/api/demo-workflow` | Product-like moved actions return `410` with canonical API route; direct execution remains only for demo-only `j01.requestData` | `NOT_PRODUCT_API_BOUNDARY` |
+
+### Process I/O Draft Matrix
+
+| Process | Inputs | Validation / processing | Outputs | Open proof boundary |
+| --- | --- | --- | --- | --- |
+| DBTF profile save | Tenant slug, role key, actor tenant, form payload, save/submit mode | Scope parsed in API route, DBTF validation in service | Safe result, no client release | DB writes and audit rows are `ANALYSIS-2.3` proof. |
+| Family member update | Tenant slug, role key, actor tenant, member payload | API scope checks, service validation/permission handling | Updated result or fail-closed denial with optional audit ID | Model/field editability belongs to `ANALYSIS-2.3`. |
+| Entity wizard save/submit | Tenant slug, role key, actor tenant, entity payload, mode | API scope checks, service validation/permission handling | Entity result, no client release | Persistence scope and field coverage belongs to `ANALYSIS-2.3`. |
+| Document upload | Multipart file, document metadata, tenant slug, role key, audit simulation flag | Multipart/file/scope validation, service upload pipeline, safe projection | Safe document metadata, evidence/extraction/version IDs, no release | File and DB row effects belong to `ANALYSIS-2.3`. |
+| Evidence review | Document ID, action, notes, sufficiency booleans, tenant, role, audit simulation flag | Action allow-list, tenant/role validation, service permission/sufficiency/audit checks | Review result with service safety or fail-closed reason | DB review/evidence mutations belong to `ANALYSIS-2.3`. |
+| Export command | Command ID, tenant, role, export request, redaction profile, scope items, payload/share flags | Parser enforces command-specific required fields; service gates role, scope, redaction, status, data quality and export safety | Export workflow result, audit ID/request ID/status depending on command; no approval/download on errors | Exact persistence and package artifacts belong to `ANALYSIS-2.3`. |
+| Journey command | Journey ID, current user, typed journey command payload | Current user resolution, route scoped journey load, command registry parse, role permission checks | Journey command result, updated projection, safety envelope | Command-specific persistence belongs to `ANALYSIS-2.3`. |
+| Typed action clients | Action ID for a typed family | Endpoint allow-list rejects actions outside family; service dispatches only known actions | Command result, audit/safety fields, no client release unless explicit release-history service result says otherwise | Each command's exact model writes belong to `ANALYSIS-2.3`. |
+| Recommendation review workflow | Advisor approval workflow payload: action, actor role, target, reason, evidence IDs, confirmation | Parsed through shared workflow validation, then typed command bus release/gate logic | Advisor approval workflow result or gate failure | Gate/persistence/test proof belongs to `ANALYSIS-2.3/2.4`. |
+| Legacy demo-only action | `actionId` routed to `/api/demo-workflow` | Boundary registry classifies moved/unsupported/demo-only actions; product-like commands are rejected with canonical route | `410` for moved/unsupported product-like calls; direct result only for demo-only action | This path must not be used as product capability evidence. |
+
+### Dynamic / Unclear Code Paths
+
+| Area | Status | Why it remains open |
+| --- | --- | --- |
+| Field-level editability | `OPEN_FOR_ANALYSIS-2.3` | `ANALYSIS-2.2` proves handler/service reachability, not exact model/field coverage. |
+| Runtime success of every command | `OPEN_FOR_QA` | This ticket used static local code inspection. Runtime/browser/API proof belongs to later validation tickets. |
+| Remaining `lib/screencast-demo-client.ts` | `QUARANTINED_LEGACY_SUPPORT` | The client still exists, but product-like moved actions are fail-closed at `/api/demo-workflow`; deletion/quarantine decisions belong to implementation cleanup tickets, not this analysis ticket. |
+| Reference-only route affordances | `NOT_WORKFLOW_PROOF` | Route/UI existence without handler linkage remains static/display-only. |
+
+### ANALYSIS-2.2 Result
+
+Relevant handlers and services are locally traceable. The strongest workflow data-flow candidates are document upload/review, export workflow commands, journey commands, DBTF profile/family/entity forms, typed advisor/release-history/data-maintenance/tenant-governance/platform-admin action endpoints and recommendation review workflow commands.
+
+The important cleanup finding is structural: `/api/demo-workflow` is now a legacy demo-only boundary, not a shadow product API. Product-like moved actions fail closed with `410` and point to canonical typed routes.
+
+Finished: `ANALYSIS-2.2`.
 
 ## ANALYSIS-2.3 - DB Editability, Persistence And Process I/O
 
 Status: `PENDING`
 
-Blocked until `ANALYSIS-2.2` establishes the actual API, service and workflow data-flow paths that deserve DB/persistence inspection.
+Next required step: inspect schema/model operations for the `ANALYSIS-2.2` handler and typed-command candidates, then classify read-only, create, update, derived, workflow-owned and unbound data.
 
 ## ANALYSIS-2.4 - Security, Guard, Audit And Test Evidence
 
