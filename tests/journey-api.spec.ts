@@ -349,6 +349,18 @@ test.describe("Wave 0-2 Journey APIs and command execution", () => {
     expect(decisionBeforeApproval.status).not.toBe("RELEASED_TO_CLIENT");
     expect(releaseRunBeforeApproval).toBeNull();
 
+    const releaseWithoutAdvisor = await command(request, journeyId, complianceJwt, {
+      clientSafeSummary: "Client-safe summary cannot release before advisor approval.",
+      command: "COMPLIANCE_RELEASE",
+      confirmationPhrase: "RELEASE CLIENT-SAFE JOURNEY",
+      reason: "Attempt release before advisor approval.",
+    });
+    const releaseWithoutAdvisorBody = await releaseWithoutAdvisor.json();
+    expect(releaseWithoutAdvisor.status(), JSON.stringify(releaseWithoutAdvisorBody)).toBe(400);
+    expect(releaseWithoutAdvisorBody.mutated).toBe(false);
+    expect(releaseWithoutAdvisorBody.issues).toContain("release_preconditions_failed");
+    expect(releaseWithoutAdvisorBody.issues).toContain("advisor_approval");
+
     const approval = await command(request, journeyId, advisorJwt, {
       command: "ADVISOR_APPROVE",
       reason: "Advisor approval completed; compliance release remains separate.",
@@ -439,6 +451,17 @@ test.describe("Wave 0-2 Journey APIs and command execution", () => {
     });
     expect(reviewStep.ok(), await reviewStep.text()).toBe(true);
 
+    const missingPayload = await command(request, journeyId, complianceJwt, {
+      command: "COMPLIANCE_RELEASE",
+      confirmationPhrase: "RELEASE CLIENT-SAFE JOURNEY",
+      reason: "Attempt release without client-safe payload.",
+    });
+    const missingPayloadBody = await missingPayload.json();
+    expect(missingPayload.status(), JSON.stringify(missingPayloadBody)).toBe(400);
+    expect(missingPayloadBody.mutated).toBe(false);
+    expect(missingPayloadBody.issues).toContain("release_preconditions_failed");
+    expect(missingPayloadBody.issues).toContain("payload_ready");
+
     const missingPhrase = await command(request, journeyId, complianceJwt, {
       clientSafeSummary: "Client-safe liquidity governance next step.",
       command: "COMPLIANCE_RELEASE",
@@ -450,6 +473,53 @@ test.describe("Wave 0-2 Journey APIs and command execution", () => {
     expect(missingPhraseBody.mutated).toBe(false);
     expect(missingPhraseBody.issues).toContain("release_preconditions_failed");
     expect(missingPhraseBody.issues).toContain("release_confirmation_phrase");
+
+    const auditUnavailable = await command(request, journeyId, complianceJwt, {
+      clientSafeSummary: "Client-safe liquidity governance next step.",
+      command: "COMPLIANCE_RELEASE",
+      confirmationPhrase: "RELEASE CLIENT-SAFE JOURNEY",
+      reason: "Attempt release while audit persistence is unavailable.",
+      simulateAuditPersistenceFailure: true,
+    });
+    const auditUnavailableBody = await auditUnavailable.json();
+    expect(auditUnavailable.status(), JSON.stringify(auditUnavailableBody)).toBe(409);
+    expect(auditUnavailableBody.reasonCode).toBe("AUDIT_PERSISTENCE_UNAVAILABLE");
+    expect(auditUnavailableBody.mutated).toBe(false);
+    expect(auditUnavailableBody.noClientRelease).toBe(true);
+
+    const [recommendationAfterAuditOutage, decisionAfterAuditOutage, releaseRunAfterAuditOutage] = await Promise.all([
+      prisma.recommendation.findUniqueOrThrow({
+        select: {
+          clientVisible: true,
+          status: true,
+        },
+        where: { id: recommendationId },
+      }),
+      prisma.decision.findUniqueOrThrow({
+        select: {
+          releasedToClientAt: true,
+          status: true,
+        },
+        where: { id: decisionId },
+      }),
+      prisma.journeyCommandRun.findFirst({
+        where: {
+          commandKey: "COMPLIANCE_RELEASE",
+          journeyInstanceId: journeyId,
+          result: "SUCCESS",
+        },
+      }),
+    ]);
+
+    expect(recommendationAfterAuditOutage).toMatchObject({
+      clientVisible: false,
+      status: "COMPLIANCE_PENDING",
+    });
+    expect(decisionAfterAuditOutage.status).not.toBe("RELEASED_TO_CLIENT");
+    expect(decisionAfterAuditOutage.releasedToClientAt?.toISOString() ?? null).toBe(
+      decisionBeforeApproval.releasedToClientAt?.toISOString() ?? null,
+    );
+    expect(releaseRunAfterAuditOutage).toBeNull();
 
     const release = await command(request, journeyId, complianceJwt, {
       clientSafeSummary: "Client-safe liquidity governance next step.",
@@ -479,7 +549,12 @@ test.describe("Wave 0-2 Journey APIs and command execution", () => {
     const cfoJwt = await jwtFor(request, "cfo.bennett@example.demo");
     const morganJwt = await jwtFor(request, "cfo.morgan@example.demo");
     const complianceJwt = await jwtFor(request, "naledi.compliance@alphavest.demo");
-    const { evidenceRecordId, requirementKey } = await seededJourneyContext("MJ-003");
+    const {
+      evidenceRecordId,
+      journeyId: seededJourneyId,
+      recommendationId: seededRecommendationId,
+      requirementKey,
+    } = await seededJourneyContext("MJ-003");
     const createResponse = await request.post("/api/journeys", {
       data: { journeyKey: "MJ-003" },
       headers: bearer(cfoJwt),
@@ -589,5 +664,115 @@ test.describe("Wave 0-2 Journey APIs and command execution", () => {
     const adminReleaseBody = await adminRelease.json();
     expect(adminRelease.status(), JSON.stringify(adminReleaseBody)).toBe(403);
     expect(adminReleaseBody.issues).toContain("admin_non_bypass");
+
+    const requestEvidence = await command(request, seededJourneyId, complianceJwt, {
+      command: "COMPLIANCE_REQUEST_EVIDENCE",
+      reason: "Compliance requests more evidence instead of release.",
+    });
+    const requestEvidenceBody = await requestEvidence.json();
+    expect(requestEvidence.ok(), JSON.stringify(requestEvidenceBody)).toBe(true);
+    expect(requestEvidenceBody.noClientRelease).toBe(true);
+    expect(requestEvidenceBody.detail.status).toBe("BLOCKED");
+    expect(JSON.stringify(requestEvidenceBody)).not.toMatch(/clientProjection|COMPLIANCE_RELEASED_CLIENT_SAFE/);
+
+    const [evidenceRequestRecommendation, evidenceRequestReview, evidenceRequestAudit] = await Promise.all([
+      prisma.recommendation.findUniqueOrThrow({
+        select: {
+          clientVisible: true,
+          status: true,
+        },
+        where: { id: seededRecommendationId },
+      }),
+      prisma.complianceReview.findFirstOrThrow({
+        select: {
+          evidenceComplete: true,
+          status: true,
+        },
+        where: {
+          targetId: seededRecommendationId,
+          targetType: "RECOMMENDATION",
+        },
+      }),
+      prisma.auditEvent.findUniqueOrThrow({
+        select: {
+          eventType: true,
+          metadataJson: true,
+          result: true,
+        },
+        where: { id: requestEvidenceBody.auditEventId as string },
+      }),
+    ]);
+
+    expect(evidenceRequestRecommendation).toMatchObject({
+      clientVisible: false,
+      status: "MORE_DATA_REQUESTED",
+    });
+    expect(evidenceRequestReview).toMatchObject({
+      evidenceComplete: false,
+      status: "NEEDS_EVIDENCE",
+    });
+    expect(evidenceRequestAudit).toMatchObject({
+      eventType: "journey.compliance.evidence_requested",
+      result: "BLOCKED",
+    });
+    expect(evidenceRequestAudit.metadataJson).toMatchObject({
+      blockerCode: "COMPLIANCE_EVIDENCE_REQUESTED",
+      clientVisible: false,
+    });
+
+    const block = await command(request, seededJourneyId, complianceJwt, {
+      command: "COMPLIANCE_BLOCK",
+      reason: "Compliance blocks unsafe release path.",
+    });
+    const blockBody = await block.json();
+    expect(block.ok(), JSON.stringify(blockBody)).toBe(true);
+    expect(blockBody.noClientRelease).toBe(true);
+    expect(blockBody.detail.status).toBe("BLOCKED");
+    expect(JSON.stringify(blockBody)).not.toMatch(/clientProjection|COMPLIANCE_RELEASED_CLIENT_SAFE/);
+
+    const [blockedRecommendation, blockedReview, blockedAudit] = await Promise.all([
+      prisma.recommendation.findUniqueOrThrow({
+        select: {
+          clientVisible: true,
+          status: true,
+        },
+        where: { id: seededRecommendationId },
+      }),
+      prisma.complianceReview.findFirstOrThrow({
+        select: {
+          evidenceComplete: true,
+          status: true,
+        },
+        where: {
+          targetId: seededRecommendationId,
+          targetType: "RECOMMENDATION",
+        },
+      }),
+      prisma.auditEvent.findUniqueOrThrow({
+        select: {
+          eventType: true,
+          metadataJson: true,
+          result: true,
+        },
+        where: { id: blockBody.auditEventId as string },
+      }),
+    ]);
+
+    expect(blockedRecommendation).toMatchObject({
+      clientVisible: false,
+      status: "BLOCKED",
+    });
+    expect(blockedReview).toMatchObject({
+      evidenceComplete: false,
+      status: "BLOCKED",
+    });
+    expect(blockedAudit).toMatchObject({
+      eventType: "journey.compliance.blocked",
+      result: "BLOCKED",
+    });
+    expect(blockedAudit.metadataJson).toMatchObject({
+      blockerCode: "COMPLIANCE_BLOCKED",
+      clientVisible: false,
+    });
   });
 });
