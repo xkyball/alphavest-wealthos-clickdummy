@@ -117,22 +117,22 @@ const sensitiveWorkflowCopy: Record<
   compliance_block: {
     action: "compliance_block",
     defaultReason: "Compliance blocked release because required evidence is incomplete.",
-    description: "Block client visibility for this recommendation and record a compliance audit event.",
+    description: "Block client release for this recommendation and record a compliance audit event. This is not client acceptance.",
     evidenceIds: [advisorApprovalDemoTargets.morgan.evidenceId],
     phrase: "BLOCK RELEASE",
-    submitLabel: "Block Release",
+    submitLabel: "Block client release",
     targetId: advisorApprovalDemoTargets.morgan.recommendationId,
-    title: "Confirm Compliance Block",
+    title: "Confirm Compliance Block - No Client Release",
   },
   request_evidence: {
     action: "request_evidence",
     defaultReason: "Compliance requested missing evidence before client release.",
-    description: "Request missing evidence while keeping the recommendation blocked from client visibility.",
+    description: "Request missing evidence while keeping the recommendation blocked from client release and client visibility.",
     evidenceIds: [advisorApprovalDemoTargets.morgan.evidenceId],
     phrase: "REQUEST EVIDENCE",
-    submitLabel: "Request Evidence",
+    submitLabel: "Request evidence, keep release blocked",
     targetId: advisorApprovalDemoTargets.morgan.recommendationId,
-    title: "Confirm Evidence Request",
+    title: "Confirm Evidence Request - No Client Release",
   },
 };
 
@@ -1380,7 +1380,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
                   }}
                   type="button"
                 >
-                  <Check aria-hidden="true" className="size-4" />Approve as advisor
+                  <Check aria-hidden="true" className="size-4" />Approve for compliance review
                 </button>
                 <p className={secondaryButtonClass + " w-full"} data-testid="ux-cta-ai-rebuild" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Draft rebuild remains analyst-owned</p>
                 <p className={secondaryButtonClass + " w-full"} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Evidence request remains compliance-owned</p>
@@ -1425,7 +1425,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
           />
           <ScfP04P06FlowPanel mode="advisory" />
           <UxDetailStandardPanel
-            actionLabel="Approve as advisor"
+            actionLabel="Approve for compliance review"
             actionState="Advisor approval records an advisor candidate only; compliance release remains required before client visibility."
             evidenceItems={["Reviewed documents", "Client objective", "Recommendation rationale"]}
             facts={[

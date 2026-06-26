@@ -57,7 +57,8 @@ test.describe("Wave 0-2 client work UI", () => {
     await expect(page.getByRole("heading", { name: "Audit spine" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Client projection preview" })).toBeVisible();
     await expect(page.getByText("Work state is orientation only", { exact: true }).first()).toBeVisible();
-    await expect(page.getByText("command acceptance never equals client release or advice execution")).toBeVisible();
+    await expect(page.getByText("command acceptance never equals compliance release, client acceptance or advice execution")).toBeVisible();
+    await expect(page.getByText("Released summary", { exact: false }).first()).toBeVisible();
     await expect(page.getByRole("button", { name: "COMPLETE_STEP" })).toHaveAttribute("data-run2-action-state", "permission-denied");
 
     await page.screenshot({

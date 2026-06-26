@@ -43,6 +43,7 @@ export type JourneyProjection = {
     objectType: string;
     title?: string;
   }[];
+  releasedSummary?: string;
   status: string;
   steps?: JourneyStepProjection[];
   title: string;

@@ -190,13 +190,22 @@ function ClientProjectionPanel({ projection }: { projection: JourneyClientProjec
     <section className="rounded-md border border-alphavest-border bg-alphavest-panel/72 p-4">
       <h2 className="font-display text-xl text-alphavest-ivory">Client projection preview</h2>
       <p className="mt-2 text-xs leading-5 text-alphavest-muted">
-        Preview shows client-safe status only. It is not a release event and does not expose internal payloads.
+        Preview shows client-safe status only. Released summary appears only after compliance release; internal payloads stay hidden.
       </p>
       {clientProjection ? (
         <div className="mt-4 rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/42 p-4">
           <p className="text-xs font-semibold uppercase text-alphavest-gold-soft">{clientProjection.journeyKey}</p>
           <h3 className="mt-1 text-sm font-semibold text-alphavest-ivory">{clientProjection.title}</h3>
           <p className="mt-2 text-sm leading-6 text-alphavest-muted">{clientProjection.nextAction.detail}</p>
+          {clientProjection.releasedSummary ? (
+            <p className="mt-3 rounded-md border border-emerald-300/35 bg-emerald-400/10 p-3 text-sm leading-6 text-emerald-100" data-testid="journey-released-summary">
+              Released client-safe summary: {clientProjection.releasedSummary}
+            </p>
+          ) : (
+            <p className="mt-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/30 p-3 text-xs leading-5 text-alphavest-muted" data-testid="journey-release-summary-held">
+              Released summary held until compliance release succeeds.
+            </p>
+          )}
           <p className="mt-3 text-xs font-semibold uppercase text-alphavest-subtle">
             Safe state: {clientProjection.status}
           </p>
@@ -464,7 +473,7 @@ export function JourneyDetail({ journeyId }: { journeyId: string }) {
           <section className="rounded-md border border-alphavest-border bg-alphavest-panel/72 p-4">
             <h2 className="font-display text-xl text-alphavest-ivory">Available action</h2>
             <p className="mt-2 text-xs leading-5 text-alphavest-muted">
-              Only API-supported commands are exposed. Permission denial leaves state unchanged, and command acceptance never equals client release or advice execution.
+              Only API-supported commands are exposed. Permission denial leaves state unchanged; command acceptance never equals compliance release, client acceptance or advice execution.
             </p>
             <div className="mt-4 rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/42 p-3">
               <p className="text-xs font-semibold uppercase text-alphavest-gold-soft">
