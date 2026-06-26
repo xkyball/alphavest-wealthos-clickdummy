@@ -56,7 +56,7 @@ Top-level app pages:
 | `app/journeys/page.tsx`, `app/journeys/[id]/page.tsx` | Journey UI pages. |
 | `app/layout.tsx`, `app/error.tsx`, `app/loading.tsx`, `app/not-found.tsx`, `app/globals.css` | Framework shell and styling. |
 
-API route files found:
+API route files found: `28`
 
 | API file | Methods observed |
 | --- | --- |
@@ -85,6 +85,8 @@ API route files found:
 | `app/api/journeys/route.ts` | `GET`, `POST` |
 | `app/api/ops-sla/route.ts` | `GET` |
 | `app/api/profile/route.ts` | `GET`, `PATCH` |
+| `app/api/recommendation-review-workflow/route.ts` | `POST` |
+| `app/api/review-monitoring/actions/route.ts` | `POST` |
 | `app/api/review-monitoring/route.ts` | `GET` |
 
 Structural interpretation: the repo has real API handler surfaces beyond a static clickdummy. This does not by itself prove complete vertical slices; capability claims require UI-to-handler-to-service-to-DB/workflow proof.
@@ -146,7 +148,7 @@ Evidence: `prisma/schema.prisma`, `prisma/migrations/**`, `prisma/seed.ts`.
 | Metric | Current local result |
 | --- | ---: |
 | Enums | 31 |
-| Models | 49 |
+| Models | 53 |
 | Migrations | 5 migration directories plus lock |
 | Latest migration directory observed | `20260625143000_internal_draft_governance_spine` |
 
@@ -211,4 +213,3 @@ Inventory boundary: test existence supports proof planning and static claim chec
 | Local scripts/tests documented | Yes. |
 | Schema/DB sources documented | Yes. |
 | Concrete start points for `ANALYSIS-2` | Yes: route registry, primary screen components, API routes, Prisma-touching services, safety/control modules and focused test families. |
-

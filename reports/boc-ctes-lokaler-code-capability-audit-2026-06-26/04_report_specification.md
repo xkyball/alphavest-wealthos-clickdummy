@@ -16,7 +16,7 @@ Purpose: conservative local capability taxonomy for the final report.
 | E5 | `RUNTIME_PROVEN_THIS_RUN` | Command/test/browser/API proof was executed during this audit. | Yes, if all required layers are also present |
 | E6 | `RUNTIME_AND_ARTIFACT_PROVEN` | Current-run proof plus artifact/screenshot/log/report bundle. | Yes |
 
-Current-run E5 evidence so far: `pnpm guard:source` PASS only.
+Current-run E5 evidence so far: `pnpm guard:source` PASS; `pnpm db:validate` PASS; `pnpm exec playwright test tests/schema-alignment.spec.ts tests/export-command-spine-contract.spec.ts tests/true-ux-api-service-ui-truth.spec.ts --workers=1` PASS (`13/13`).
 
 ## Capability Status Labels
 
@@ -46,7 +46,7 @@ No capability may be marked `COMPLETE_VERTICAL_SLICE` unless every criterion bel
 7. Negative proof exists for sensitive actions: no unauthorized release, no client leakage, no silent state advance, no mutation on invalid input.
 8. Output state and user-visible claim do not overclaim beyond the proven layers.
 
-Because this audit only executed `pnpm guard:source`, this report should avoid `COMPLETE_VERTICAL_SLICE` for product capabilities unless a focused test is executed later in the same run.
+Because this audit executed source/schema/export static-contract proof but not full DB/browser vertical suites for every product flow, this report should avoid broad `COMPLETE_VERTICAL_SLICE` claims for product capabilities unless a focused end-to-end test is executed in the same run.
 
 ## Required Report Sections
 
@@ -87,5 +87,4 @@ QA decision labels:
 | `NEEDS_REWORK` | Report structure is useful but overclaims or missing evidence must be corrected. |
 | `FAIL` | Report cannot be used as baseline. |
 
-Expected decision for this run unless additional tests are executed: `PASS_WITH_LIMITATIONS`.
-
+Expected decision for this run: `PASS_WITH_LIMITATIONS`, with stronger current-run proof for source hierarchy, schema alignment and export UI/API command-spine truth.

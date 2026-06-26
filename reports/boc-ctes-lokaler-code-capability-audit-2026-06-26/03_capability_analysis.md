@@ -29,7 +29,7 @@ Primary screen renderer mapping:
 | Review monitoring | `ReviewMonitoringScreen` gated by `isReviewMonitoringPageId` | Monitoring surface with `/api/demo-workflow` and fail-closed API read candidates. |
 | Committee review | `CommitteeReviewScreen` gated by `isCommitteeReviewPageId` | Mostly safety-decision UI with static/disabled controls for incomplete gates. |
 | Decisions/governance/evidence | `DecisionsGovernanceScreen` gated by `isDecisionsGovernancePageId` | Mixed UI: governance access request lifecycle, evidence/decision surfaces, many demo actions. |
-| Communication/export/ops | `CommunicationExportOpsScreen` gated by `isCommunicationExportOpsPageId` | Export workflow and ops/communication surface; export actions mostly via demo action client in UI, with separate API route evidence to inspect in later tickets. |
+| Communication/export/ops | `CommunicationExportOpsScreen` gated by `isCommunicationExportOpsPageId` | Export workflow and ops/communication surface; current export approval/download UI calls `/api/export-workflow` directly, while some older support actions still use demo action IDs. |
 
 ### Route Surface Matrix
 
@@ -69,7 +69,7 @@ Primary screen renderer mapping:
 | Document upload | `ClientIntakeScreen` -> `/api/documents/upload` POST with `FormData` | `MUTATION_CANDIDATE_API_BACKED` |
 | Document review/sufficiency | `ClientIntakeScreen` -> `/api/documents/review` POST | `MUTATION_CANDIDATE_API_BACKED` |
 | Demo workflow actions | Multiple screens -> `/api/demo-workflow` via `runScreencastDemoAction` or direct fetch | `MUTATION_CANDIDATE_ACTION_ID_DEPENDENT` |
-| Export workflow | Export routes and `/api/export-workflow` route exist; UI mostly invokes demo action client | `PARTIAL_UI_TO_API_CANDIDATE` |
+| Export workflow | Export routes, `/api/export-workflow`, export truth panel, approval modal and download confirmation call the canonical API directly | `STRONG_UI_API_SERVICE_CANDIDATE` |
 | Journey commands | Journey UI/client and `/api/journeys/[id]/commands` exist | `MUTATION_CANDIDATE_JOURNEY_SPINE` |
 
 ### UI-Only / Static / Blocked Register
@@ -108,7 +108,7 @@ Status: `DONE`
 | Document upload | `app/api/documents/upload/route.ts` `POST` | `uploadDocument` | Multipart `FormData`; validates file, role, tenant, metadata; `runtime = nodejs` | Returns safe document result only; safety explicitly says upload-only, review pending, no release, no client visibility | `STRONG_API_SERVICE_WORKFLOW_CANDIDATE` |
 | Document list | `app/api/documents/route.ts` `GET` | `listUploadedDocuments` | Query filters for tenant/role/search/sensitivity/source/status/type | fail-closed invalid scope; no advice/no release safety | `READ_API_SERVICE_CANDIDATE` |
 | Evidence/document review | `app/api/documents/review/route.ts` `POST` | `reviewDocumentEvidence` | JSON body validates role, tenant, document ID and action (`mark_reviewed`, `request_clarification`, `accept_sufficiency`) | fail-closed invalid/permission/not-found/insufficient/audit-unavailable paths; returns service safety | `STRONG_API_SERVICE_WORKFLOW_CANDIDATE` |
-| Export workflow | `app/api/export-workflow/route.ts` `GET`/`POST` | `getExportWorkflowSnapshot`, `executeExportWorkflowCommand`, `parseExportWorkflowCommandRequest` | Tenant/role query for GET; parsed JSON command request for POST | fail-closed errors prevent approval/download; command response reports commandExecuted and noClientRelease | `API_SERVICE_WORKFLOW_CANDIDATE` |
+| Export workflow | `app/api/export-workflow/route.ts` `GET`/`POST` | `getExportWorkflowSnapshot`, `executeExportWorkflowCommand`, `parseExportWorkflowCommandRequest` | Tenant/role query for GET; parsed JSON command request for POST; current export UI calls the API for approval/download | fail-closed errors prevent approval/download; command response reports commandExecuted and noClientRelease | `STRONG_API_SERVICE_WORKFLOW_CANDIDATE` |
 | Journey list/create | `app/api/journeys/route.ts` `GET`/`POST` | `resolveCurrentUserFromRequest`, `listJourneysForCurrentUser`, `createJourneyForCurrentUser` | Current user resolved from request; JSON body for create | fail-closed route errors; no advice/no client release | `API_SERVICE_WORKFLOW_CANDIDATE` |
 | Journey commands | `app/api/journeys/[id]/commands/route.ts` `POST` | `parseJourneyCommandRequest`, `executeJourneyCommandForCurrentUser` | Parsed JSON command; current user and route journey ID | fail-closed before state advance; commandExecuted safety | `STRONG_API_SERVICE_WORKFLOW_CANDIDATE` |
 | Journey evidence/client/audit reads | `app/api/journeys/[id]/evidence-sufficiency/route.ts`, `client-projection/route.ts`, `audit/route.ts` | `getJourneyEvidenceSufficiencyForCurrentUser`, `getJourneyClientProjectionForCurrentUser`, audit query services | Current user plus journey ID | fail-closed reads; client projection says no internal payload and no client release | `READ_API_SERVICE_CANDIDATE` |
@@ -176,7 +176,7 @@ Evidence: static Prisma operation scan over `app/api/**/route.ts` and `lib/**/*.
 | Advisory/recommendation | `Trigger`, `ActionItem`, `Recommendation`, `RecommendationOption`, `Approval`, `ComplianceReview`, `Decision`, `DecisionParticipant` | create/update/upsert/find in demo workflow, journey API, phase services and typed command bus | Internal workflow screens and `/api/demo-workflow`; journey commands | `DEMO_COMMAND_AND_SERVICE_BACKED_WORKFLOW` |
 | Internal draft governance | `InternalDraft`, `DraftClassification`, `UnsupportedClaim`, `DraftTrace` | upsert/update/create in `internal-draft-governance-spine` and `typed-workflow-command-bus` | Advisor/compliance command bus rather than broad route UI | `SERVICE_BACKED_INTERNAL_WORKFLOW` |
 | Journey spine | `JourneyInstance`, `JourneyStepInstance`, `JourneyObjectLink`, `JourneyCommandRun`, `JourneyEvidenceRequirement`, `JourneyDefinition` | create/update/find/createMany; command runs/audit written in `journey-api-service` | `/app/journeys` UI and `/api/journeys/**` endpoints | `API_BACKED_WORKFLOW_SPINE` |
-| Export | `ExportRequest`, generated `Document`/`DocumentVersion`, `AuditEvent`, `EvidenceItem` | create/update/find in `export-workflow-command-service` and demo workflow; read snapshot in readmodel service | `/api/export-workflow` exists; export UI currently uses many demo actions too | `API_BACKED_COMMAND_SPINE_WITH_UI_GAP_TO_VERIFY` |
+| Export | `ExportRequest`, generated `Document`/`DocumentVersion`, `AuditEvent`, `EvidenceItem` | create/update/find in `export-workflow-command-service` and demo workflow; read snapshot in readmodel service | Current approval/download UI calls `/api/export-workflow`; older J08 demo action compatibility remains separately classifiable | `STRONG_API_BACKED_COMMAND_SPINE` |
 | Audit | `AuditEvent` | create/findMany across many services | `/api/audit-events`, audit timelines, workflow responses | `BROAD_SERVICE_BACKED_AUDIT_LAYER` |
 | Ops/monitoring/data quality | `ReviewSchedule`, `QueueItem`, `DataQualityIssue` | find/update/create in review/data-quality/ops services and demo workflow | Review monitoring UI/API; ops readmodel API | `SERVICE_BACKED_PARTIAL` |
 | RBAC/access | `AccessRequest`, `SecondConfirmation`, `RolePermission`, `Permission` | access request update, second confirmation upsert/update, role permission upsert/findMany | Governance UI/demo workflow; permission engine uses role/permission data | `DEMO_COMMAND_AND_SERVICE_BACKED_PARTIAL` |
@@ -216,7 +216,7 @@ Static scan found local Prisma operations for the following model families:
 2. Document upload and evidence review are the clearest UI -> API -> service -> DB process chain candidates.
 3. Profile, family member and entity maintenance have real API-backed persistence, but still need test/runtime proof before `COMPLETE_VERTICAL_SLICE`.
 4. Advisory/compliance/release workflows are heavily persisted but split between demo action IDs, journey commands and typed command bus. They should be reported as workflow-backed, not as generic free-form UI editability.
-5. Export has a strong command service, but the visible export UI appears more demo-action-driven than directly `/api/export-workflow`-driven in the inspected UI. This is a key partial/gap candidate.
+5. Export now has direct visible UI calls into `/api/export-workflow` for approval and controlled download, plus command-service persistence and safety tests. It remains below `COMPLETE_VERTICAL_SLICE` until focused runtime proof runs the lifecycle in this audit context.
 6. Any field-level editability not shown in UI/API/service evidence remains `SCHEMA_ONLY_IN_THIS_AUDIT`.
 
 ## ANALYSIS-2.4 - Security, Guard, Audit And Test Evidence
@@ -251,7 +251,7 @@ Only `pnpm guard:source` was executed in this audit run. The other tests listed 
 | Workflow gates/P0 safety | `tests/workflow-gate.spec.ts`, `tests/p0-acceptance.spec.ts`, `tests/true-ux-p0-safety.spec.ts` | No unapproved advice, compliance release gates, evidence/advisor/permission conditions. |
 | API fail-closed | `tests/fail-closed-error-envelope.spec.ts`, `tests/auth-spine.spec.ts` | Safe error envelope, no silent advancement, no client release, auth denies safely. |
 | UI lifecycle/static affordance | `tests/*lifecycle*.spec.ts`, `tests/card-kpi-affordance-pruning.spec.ts`, `tests/button-cta-lifecycle-pruning.spec.ts`, `tests/true-ux-cta-state.spec.ts` | Modal/drawer/confirmation lifecycle, disabled/static controls, no misleading success states. |
-| Schema alignment | `tests/schema-alignment.spec.ts` | Schema field availability and no patch-schema takeover. Note: static schema model count in this current audit observed 49 models, while this test file contains historical expectations that may need current-run validation before use as truth. |
+| Schema alignment | `tests/schema-alignment.spec.ts` | Schema field availability and no patch-schema takeover. Current-run proof passed with 53 models. |
 
 ### Assurance Findings
 
@@ -269,11 +269,13 @@ Only `pnpm guard:source` was executed in this audit run. The other tests listed 
 | Gap / limit | Why it matters |
 | --- | --- |
 | Most tests were not executed during this audit run. | Static test presence cannot be reported as current green runtime proof. |
-| UI-to-export-command directness is mixed. | Export command service is strong, but inspected export UI uses many demo action calls; direct `/api/export-workflow` UI binding needs narrower proof. |
+| Export lifecycle still needs full vertical proof. | Export command service and approval/download UI directness are strong, but full stateful API/browser lifecycle proof was not run in this audit. |
 | `/api/demo-workflow` is broad and action-ID-specific. | Some actions persist strongly; others may be navigation/audit placeholders. Each action needs individual proof before complete vertical-slice claims. |
-| Schema/test count drift warning. | Current static schema inventory found 49 models; a historical `schema-alignment.spec.ts` snippet references 53. This is a current-run warning, not a failure, because that test was not executed here. |
+| Schema/test count drift warning. | Resolved in current verification: static schema inventory found 53 models and `tests/schema-alignment.spec.ts` expects 53. |
 | DB runtime availability was not tested. | DB-backed claims are code-path claims unless verified by running API/tests against a local DB. |
 
 ### ANALYSIS-2.4 Conclusion
 
 Security and proof architecture is substantial: RBAC, visibility, workflow gates, audit fail-closed behavior and negative tests are present locally. The report can safely say AlphaVest has a strong local guard/test architecture. It must not say all safety tests currently pass unless those suites are executed in the current run.
+
+Current-run update: `pnpm db:validate` passed, and `pnpm exec playwright test tests/schema-alignment.spec.ts tests/export-command-spine-contract.spec.ts tests/true-ux-api-service-ui-truth.spec.ts --workers=1` passed `13/13`, proving the schema-count alignment, canonical export command spine, and export UI/API truth contract for this audit run.

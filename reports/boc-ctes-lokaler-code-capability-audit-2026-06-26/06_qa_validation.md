@@ -9,8 +9,10 @@ QA decision: `PASS_WITH_LIMITATIONS`
 | Command | Result | Notes |
 | --- | --- | --- |
 | `pnpm guard:source` | `PASS` | Source hierarchy guard checked `AGENTS.md`, True-UX handoff files and required scripts; violations `0`. |
-| `git diff --check` | `PASS` | No whitespace or patch-format issues reported. |
-| `git status --short` | `PASS` | Report package changes are visible as new/modified report files only. |
+| `pnpm db:validate` | `PASS` | Prisma schema is valid. |
+| `pnpm exec playwright test tests/schema-alignment.spec.ts tests/export-command-spine-contract.spec.ts tests/true-ux-api-service-ui-truth.spec.ts --workers=1` | `PASS` | `13/13` passed; proves 53-model schema alignment, canonical export command spine and export UI/API truth contract. |
+| `git diff --check` | `PASS` | No whitespace errors after report refresh. |
+| `git status --short --branch` | `PASS_WITH_EXPECTED_REPORT_DIFF` | Only the seven refreshed audit report files are modified; branch is `full-workflow` ahead of `origin/full-workflow`. |
 
 ## Spec Validation
 
@@ -18,7 +20,7 @@ QA decision: `PASS_WITH_LIMITATIONS`
 | --- | --- | --- |
 | Local evidence only | `PASS` | Report relies on inspected local routes, components, API files, services, schema, tests and current guard output. |
 | No stale context contamination | `PASS` | Older docs/reports were not elevated into code fact; True-UX authority was used as execution boundary. |
-| Conservative complete claims | `PASS` | No product capability is marked `COMPLETE_VERTICAL_SLICE`; only source guard has current-run runtime proof. |
+| Conservative complete claims | `PASS` | No broad product capability is marked `COMPLETE_VERTICAL_SLICE`; source/schema/export static-contract proof is current-run, full DB/browser vertical proof remains pending. |
 | UI static separation | `PASS` | Static/held/disabled controls are separated as `UI_ONLY_STATIC` or `BLOCKED_UI_SAFETY_STATE`. |
 | Schema-only separation | `PASS` | Schema breadth is reported separately from data editability and vertical-slice proof. |
 | Test honesty | `PASS` | Test files are treated as local test intent unless executed in this run. |
@@ -27,11 +29,11 @@ QA decision: `PASS_WITH_LIMITATIONS`
 
 ## Claim Control Notes
 
-- `COMPLETE_VERTICAL_SLICE` is intentionally unused for product capabilities because focused API/browser/DB suites were not executed in this audit.
+- `COMPLETE_VERTICAL_SLICE` is intentionally unused for broad product capabilities because full API/browser/DB vertical suites were not executed in this audit.
 - `STRONG_VERTICAL_CANDIDATE` means static local UI/API/service/DB/guard/test-intent chain is strong, not that runtime proof passed.
 - `/api/demo-workflow` is classified as `DEMO_COMMAND_BACKED_PARTIAL` because it is broad and action-ID-dependent.
-- Export remains `API_BACKED_PARTIAL` because service/API evidence is strong but inspected UI binding appears mixed with demo action paths.
-- Schema/test drift remains a warning: current static schema inventory observed 49 models, while historical test expectation text references 53.
+- Export is upgraded to `STRONG_VERTICAL_CANDIDATE` for the command spine because current UI approval/download paths call `/api/export-workflow`, and export command-spine/UI-truth tests passed.
+- Schema/test drift warning is resolved for this run: current schema inventory has 53 models and schema-alignment proof passed.
 
 ## Residual Risks
 
@@ -39,8 +41,8 @@ QA decision: `PASS_WITH_LIMITATIONS`
 | --- | --- | --- |
 | DB-backed suites may fail in current environment | Medium | Run focused document/profile/entity/export/journey tests against local DB. |
 | Demo action IDs may be unevenly persisted/guarded | High | Inventory each action ID and classify state/guard/audit/test proof. |
-| Export UI may still depend on demo actions | High | Runtime proof or direct rewire to `/api/export-workflow`. |
-| Schema alignment stale expectation may mask drift | Medium | Run/update schema alignment suite after deciding 49 vs 53 model truth. |
+| Export lifecycle still needs full vertical proof | Medium | Run direct export lifecycle API/browser tests that exercise stateful DB transitions. |
+| Schema alignment may drift again later | Low | Keep `tests/schema-alignment.spec.ts` and source-reality gates in the proof pack. |
 | Static action controls may remain visually product-like | Medium | Purge, wire or visibly quarantine them. |
 
 ## QA Result
