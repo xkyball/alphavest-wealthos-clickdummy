@@ -2,17 +2,23 @@
 
 Generated: 2026-06-26
 
-Status: `NEEDS_HUMAN_DECISION`
+Status: `APPROVED`
 
 Source ticket: `DECISION-1.11`
 
-## Decision Required
+## Decision
 
-Choose one:
+Approved by human:
 
-1. `APPROVE_PP005_CANONICAL_RELEASE_OUTPUTS_ONLY`
-2. `APPROVE_PP005_TESTS_ONLY_PREP`
-3. `BLOCK_PP005_PENDING_RELEASE_AUTHORITY_CLEANUP`
+- `APPROVE_PP005_CANONICAL_RELEASE_OUTPUTS_ONLY`
+
+Approval date: 2026-06-26
+
+## Decision Options Reviewed
+
+1. `APPROVE_PP005_CANONICAL_RELEASE_OUTPUTS_ONLY` - APPROVED
+2. `APPROVE_PP005_TESTS_ONLY_PREP` - rejected
+3. `BLOCK_PP005_PENDING_RELEASE_AUTHORITY_CLEANUP` - rejected
 
 ## Recommendation
 
@@ -54,7 +60,7 @@ Carry-forward non-blocking risks:
 
 - Existing unused-symbol lint warnings should be removed in a cleanup lane because they add noise to safety-critical QA.
 - Existing Turbopack broad file tracing through `lib/document-storage-adapter.ts` should be tightened before export/document packaging becomes central in PP-005.
-- PP-005 must not start implementation until this decision gate is explicitly approved.
+- PP-005 may now be prepared, but must remain inside the approved canonical release-output boundary.
 
 ## Option 2 Impact
 
@@ -70,6 +76,18 @@ This is the most radical legacy-removal path, but it may disrupt screencast/demo
 
 ## Stop Condition
 
-Execution stops here until the human decision is made.
+Decision gate is complete.
 
 No PP-005 task has been started.
+
+## Approved Next Boundary
+
+PP-005 task materialization may start from the approved canonical contract:
+
+- canonical release authority: `/api/journeys/[id]/commands`;
+- canonical released client-safe output: typed journey client projections;
+- forbidden export payload source: PP-001/PP-003 field classifications;
+- evidence sufficiency source: PP-002 canonical sufficiency;
+- release-boundary source: PP-004 QA and directness classification.
+
+PP-005 must not use `/api/demo-workflow` as release authority.
