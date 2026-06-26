@@ -1,7 +1,7 @@
 # Local Capability Reality Report
 
 Tickets: `IMPL-1.4.1`, `IMPL-1.4.2`, `IMPL-1.4.3`
-Current completed slice: `IMPL-1.4.1`
+Current completed slice: `IMPL-1.4.3`
 Scope: report-only local code capability audit.
 Evidence rule: local code/test/runtime evidence only; documentation and older reports are not product fact unless corroborated by local files in this run.
 
@@ -28,6 +28,8 @@ AlphaVest is not only a static clickdummy. Static local inspection found a real 
 The strongest local capability candidates are document upload/review, export workflow, journey commands, data maintenance, tenant governance, advice/release-history and DBTF profile/family/entity maintenance. None is promoted to `COMPLETE_VERTICAL_SLICE` in this matrix because this ticket did not execute every required positive and negative vertical proof layer for each flow.
 
 The most important semantic cleanup finding is that `/api/demo-workflow` must not be treated as a product API. Current code and tests classify moved product-like Jxx families through typed APIs and leave only explicit demo-only compatibility under the legacy route.
+
+Decision summary: accept this report as a conservative baseline only if `PASS_WITH_LIMITATIONS` is acceptable. A stricter `PASS` requires focused DB/browser/API proof for the strongest vertical candidates.
 
 ## Capability Matrix
 
@@ -147,10 +149,56 @@ The most important semantic cleanup finding is that `/api/demo-workflow` must no
 | Platform admin command persistence is audit-record-only | Do not call platform admin a full platform/security settings CRUD surface. |
 | Legacy screencast client file remains present | Keep `/api/demo-workflow` classified as legacy demo-only boundary until deletion/quarantine is authorized and proved. |
 
+## Limitations
+
+| Limitation | Consequence |
+| --- | --- |
+| Full DB/browser/API vertical suites were not run for every flow | No product capability is marked `COMPLETE_VERTICAL_SLICE`. |
+| Current-run proof pack targeted source/capture/report/demo-boundary drift | It proves the drift boundary, not the runtime behavior of every capability. |
+| Field-level editability is not exhaustively validated | Editability claims stay at model/process-family level. |
+| Platform-admin command persistence is audit-record-only in inspected code | Do not overclaim full platform/security settings CRUD. |
+| Legacy screencast client still exists | `/api/demo-workflow` remains a legacy support boundary until deletion/quarantine is separately authorized and tested. |
+| Four pre-existing generated/source JSON files are dirty outside this slice | They remain excluded from this report run unless separately reconciled. |
+
+## Overclaim Risk Register
+
+| Risk | Why it is dangerous | Required correction |
+| --- | --- | --- |
+| Calling the whole app complete | The repo has real workflows, but also static/blocked/partial/unrun surfaces | Use per-capability labels only. |
+| Treating `/api/demo-workflow` as a product API | It is now a legacy demo-only boundary; product-like Jxx families must use typed APIs | Keep moved actions on typed routes and delete/quarantine remaining demo support when possible. |
+| Treating schema breadth as editability | 53 models do not imply field-level UI/API editing | Require handler/service/write-path proof per data family. |
+| Treating test existence as current pass proof | Most tests were inventoried, not run | Mark unrun tests as `TEST_INTENT`; list current-run commands verbatim. |
+| Treating visible UI as workflow proof | Buttons/drawers/routes may be static, held or safety-blocked | Require API/service/DB/guard mapping before capability claims. |
+| Treating platform-admin as full settings CRUD | Current typed path writes audit command records, not broad platform setting persistence | Keep status as typed command/audit-backed until product setting model writes are authorized and proved. |
+| Treating client projection as release | Projection code can hide internal data, but release requires separate gate proof | Keep projection, permission and release gates separate in all reports. |
+| Letting generated report channels drift | JSON/PDF/Markdown source layers can reintroduce stale counts or demo wording | Keep `capability-report-drift-gate` and capture context as generator gates. |
+
+## Bold Legacy-Cleanup Recommendations
+
+1. Delete or hard-quarantine `lib/screencast-demo-client.ts` from product screens after confirming no remaining seed/screencast dependency needs it. Do not leave it as a semi-official product client.
+2. Move the remaining J01 demo-only choreography behind a typed intake/advisor-review command surface, or explicitly isolate it as screencast seed support only. This is the last meaningful cleanup to stop `/api/demo-workflow` from looking like a shadow product API.
+3. Promote typed command clients as the only acceptable product-like action path: data maintenance, tenant governance, platform admin, advice/release history, advisor review, export and journeys.
+4. Add a hard report-generation gate that fails on stale `32` API-route truth, stale model counts, `COMPLETE_VERTICAL_SLICE` overclaims and product-like demo-workflow language.
+5. Remove static controls from product routes unless they are safety-blocked with explicit data-driven reasons. If a control is not intended to work, either make that state honest or delete it.
+6. Run a focused proof pack before any higher maturity claim: document upload/review, DBTF form maintenance, export lifecycle, journey commands, tenant governance, platform admin and advice/release-history.
+7. Keep reference pages as reference pages. Do not let roadmap/state/service-blueprint screens count toward product capability acceptance.
+
+## Candidate Follow-Up Register
+
+| Candidate | Goal | Recommendation |
+| --- | --- | --- |
+| Focused runtime proof pack | Run the strongest vertical candidates end to end with DB/API/browser proof | High priority before any complete-slice claim. |
+| J01 final split | Type J01 intake/advisor-review commands or quarantine remaining `j01.requestData` as seed support | Highest cleanup priority for demo-workflow retirement. |
+| Screencast client deletion audit | Verify no product screen imports or runtime paths need `runScreencastDemoAction`, then delete or isolate the client | Bold cleanup; avoids future shadow API drift. |
+| Generated JSON/PDF/Markdown source reconciliation | Bring all generated/source channels to the same `LEGACY_DEMO_ONLY_BOUNDARY` and typed-command terminology | Prevents later copy steps from reintroducing stale semantics. |
+| Platform-admin persistence decision | Decide whether platform/security commands should remain audit-record-only or receive real settings persistence | Human decision required before implementation. |
+| Static affordance purge | Delete/wire/quarantine static/held product-looking controls | Recommended after proof baseline acceptance. |
+| Capability status generator | Generate capability matrices directly from route/API/service/test maps | Useful to prevent future manual report drift. |
+
 ## IMPL Ticket Completion
 
 | Ticket | Current result |
 | --- | --- |
 | `IMPL-1.4.1` | Capability Matrix and Vertical Slice Matrix produced. |
 | `IMPL-1.4.2` | Workflow I/O, data editability and guard/test proof sections produced. |
-| `IMPL-1.4.3` | Pending: executive summary refinement, limitations, overclaim risks and follow-up register. |
+| `IMPL-1.4.3` | Executive summary, limitations, overclaim risks and follow-up register produced. |
