@@ -1530,6 +1530,7 @@ export async function getJourneyEvidenceSufficiencyForCurrentUser(
         })
       : [];
   const decisions = await latestSufficiencyDecisions(prisma, instance);
+  const clientSafeDecisionView = isClientRole(currentRoleKey(currentUser));
 
   const requirements = definition.evidenceRequirements.map((requirement) => {
     const linkedRecord = records.find((record) => record.status && requirement.requiredObjectType === "EVIDENCE_RECORD");
@@ -1544,12 +1545,17 @@ export async function getJourneyEvidenceSufficiencyForCurrentUser(
 
     return {
       decision: latestDecision
-        ? {
-            decidedAt: latestDecision.createdAt.toISOString(),
-            decision: latestDecision.decision,
-            evidenceRecordId: latestDecision.evidenceRecordId,
-            reason: latestDecision.reason,
-          }
+        ? clientSafeDecisionView
+          ? {
+              decidedAt: latestDecision.createdAt.toISOString(),
+              decision: latestDecision.decision,
+            }
+          : {
+              decidedAt: latestDecision.createdAt.toISOString(),
+              decision: latestDecision.decision,
+              evidenceRecordId: latestDecision.evidenceRecordId,
+              reason: latestDecision.reason,
+            }
         : null,
       key: requirement.key,
       linkedObjectType: requirement.requiredObjectType,
