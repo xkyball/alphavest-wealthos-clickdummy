@@ -1,12 +1,18 @@
 # DECISION-1.11 PP-004 Readiness Gate after PP-003
 
-Status: Awaiting user decision
+Status: Complete
 
 Source ticket: `DECISION-1.11`
 
-## Decision Needed
+## Decision
 
-Decide whether PP004 may start after PP003.
+User approved:
+
+`PP004_READY_WITH_STRICT_PP003_GATE_CONSUMPTION`
+
+Decision timestamp: 2026-06-26
+
+PP004 may start after PP003 only under the strict conditions below.
 
 ## Evidence
 
@@ -67,12 +73,16 @@ PP004 should not introduce:
 
 Do not extend PP003 with more exceptions. PP004 should delete or bypass older release shortcuts by routing all materialization through the new PP003 gate/matrix contracts.
 
-## Approval Phrase
+## Approved Phrase
 
-Approve with:
+Approved with:
 
 `PP004_READY_WITH_STRICT_PP003_GATE_CONSUMPTION`
 
-Alternative if you want a narrower stop:
+Rejected alternative:
 
 `PP004_NOT_READY_NEEDS_RELEASE_PATH_DESIGN`
+
+## Final State
+
+PP003 is complete. No PP004 implementation is started by this decision record; PP004 execution requires a PP004 source/task pack or explicit successor instruction.

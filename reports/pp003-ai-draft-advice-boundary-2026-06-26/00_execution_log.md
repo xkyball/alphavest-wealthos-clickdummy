@@ -22,7 +22,7 @@ Authority: `ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md`
 | 9 | IMPL-1.8 Audit Proof for Draft Rejection/Rebuild/Boundary Decisions | Complete | Added persisted audit/trace proof for unsupported-claim rejection, evidence-backed rebuild and denied boundary mutation. |
 | 10 | IMPL-1.9 UX Safety Wording Overlay for AI/Internal-only/Unsupported Claims | Complete | Advisor/detail safety copy now distinguishes internal draft, unsupported claims, advisor candidate, not released, no export and no client acceptance. Screenshot captured. |
 | 11 | QA-1.10 PP-003 Integrated P0 Advice Boundary Validation | Complete | Integrated PP001/PP002/PP003/workflow/UI suite passed 50/50 plus typecheck, guard and DB validation. |
-| 12 | DECISION-1.11 PP-004 Readiness Gate after PP-003 | Awaiting user decision | Recommendation prepared: approve PP004 readiness only with strict PP003 gate/matrix consumption and no new release vocabulary. |
+| 12 | DECISION-1.11 PP-004 Readiness Gate after PP-003 | Complete | User approved `PP004_READY_WITH_STRICT_PP003_GATE_CONSUMPTION`; PP004 may start only by directly consuming PP003 gates/matrix and PP002 canonical evidence. |
 
 ## Commands Run
 
@@ -73,6 +73,6 @@ diff stat: empty
 guard:source: PASS, violations 0
 ```
 
-## Current State
+## Final State
 
-Stop for user decision on `DECISION-1.11`.
+PP003 upload ticket tree complete. PP004 is approved as `PP004_READY_WITH_STRICT_PP003_GATE_CONSUMPTION`; next work must start from a PP004 source/task pack or explicit user instruction.
