@@ -156,7 +156,7 @@ Callouts:
   - Evidence/audit: Routing, request-data, and recommendation-prep actions should create traceable events
   - Next role sees: The next role sees the resulting state, not the entire internal preparation history.
 
-Demo boundary: The J01 subset has demo-executable workflow actions; broad signal governance remains partial.
+Demo boundary: The J01 subset is on the canonical typed boundary (legacy compatibility bridge); full signal governance remains the typed boundary implementation gap.
 
 ### WS-005. Advisor-approved package becomes compliance-controlled client visibility
 

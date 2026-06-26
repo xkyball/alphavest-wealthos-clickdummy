@@ -136,7 +136,7 @@ Generated: 2026-06-16T07:47:11+02:00
 | --- | --- | --- |
 | Route/asset coverage | High | 63 assets counted and manifests/routes scanned. |
 | Data model coverage | High | Prisma schema and seed inspected. |
-| J01 persisted demo status | High | API code and prior QA reports show J01 persisted actions. |
+| J01 canonical typed boundary status | High | API code and prior QA reports show J01 actions through the canonical typed boundary (legacy compatibility bridge). |
 | J02-J10 non-persisted status | High | journey structure and generic fallback support conservative classification. |
 | Every individual button behavior | Medium | source search finds major CTAs, but this pass did not browser-click every button. |
 | Runtime database state after this turn | Medium | no DB query was run after edits; analysis is source/proof-file based. |

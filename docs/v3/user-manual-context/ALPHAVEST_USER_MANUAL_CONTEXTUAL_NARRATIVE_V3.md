@@ -379,7 +379,7 @@ The manual should repeatedly explain that blocked states are protective controls
 - data request workflows
 - advisor approval packages
 - internal action tracking
-- audit-backed triage for the J01 subset
+- canonical typed boundary triage for the J01 subset
 
 ### Step Context
 
@@ -405,7 +405,7 @@ The manual should repeatedly explain that blocked states are protective controls
 
 **Future-readiness note:** This prepares the workflow for broader signal governance, triage metrics, automated queueing, and safer recommendation preparation.
 
-**Demo-boundary note:** In the current demo, J01 signal/advisor behavior is intentionally handled via the legacy compatibility bridge. Full canonical typed signal governance is not yet implemented across all paths.
+**Demo-boundary note:** In the current demo, J01 signal/advisor behavior is handled on the canonical typed boundary (legacy compatibility bridge). Full canonical typed signal governance is not yet implemented across all paths.
 
 **Reader takeaway:** Signal review turns ambiguity into internal work without turning it into client advice.
 
@@ -457,7 +457,7 @@ The manual should repeatedly explain that blocked states are protective controls
 
 **Future-readiness note:** This prepares the workflow for clearer advisor accountability, package quality metrics, and compliance-ready recommendation records.
 
-**Demo-boundary note:** In the current demo, J01 advisor actions are legacy compatibility actions. Canonical advisor governance remains a typed recommendation-review command boundary.
+**Demo-boundary note:** In the current demo, J01 advisor actions are handled on the canonical typed boundary (legacy compatibility bridge). Canonical advisor governance remains a typed recommendation-review command boundary.
 
 **Reader takeaway:** Advisor approval is human review, not client release.
 

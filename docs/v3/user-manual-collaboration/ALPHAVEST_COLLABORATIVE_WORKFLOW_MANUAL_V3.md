@@ -142,7 +142,7 @@ The state path moves from new to analyst_review to awaiting_info or advisor_revi
 
 Reader takeaway: The system keeps signals useful without letting them masquerade as advice.
 
-Demo boundary: The J01 subset has demo-executable workflow actions; broad signal governance remains partial.
+Demo boundary: The J01 subset is on the canonical typed boundary (legacy compatibility bridge); full signal governance remains the typed boundary implementation gap.
 
 ### WS-005. Advisor-approved package becomes compliance-controlled client visibility
 

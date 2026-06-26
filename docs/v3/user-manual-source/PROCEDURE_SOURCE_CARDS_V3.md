@@ -355,14 +355,14 @@ Step-by-step source:
 
 | Step | UI Location | User Action | UI Target Label | Input Data | Expected UI Response | State Change | Screenshot ID | Evidence/Audit | Source Proof |
 | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | /signals | Open the task entry screen and verify the role/tenant context. | Signal Review | signal ID; missing beneficial owner | The Process a signal and route internal work context is visible. | Progresses to the next planned screen/state without client-visibility overclaim. | SS-07-01 | J01 request/route actions are backed by demo workflow API and audit rows when database is available. | MT-007; UF-07; W-07; PF-E |
-| 2 | /workbench | Select the next relevant action, tab, drawer, modal, or navigation item. | Visible UI control or navigation link | purpose of wire; source of funds; analyst note | The Process a signal and route internal work context is visible. | Progresses to the next planned screen/state without client-visibility overclaim. | SS-07-02 | J01 request/route actions are backed by demo workflow API and audit rows when database is available. | MT-007; UF-07; W-07; PF-E |
-| 3 | /workbench/triggers/demo | Select the next relevant action, tab, drawer, modal, or navigation item. | Visible UI control or navigation link | purpose of wire; source of funds; analyst note | The Process a signal and route internal work context is visible. | Progresses to the next planned screen/state without client-visibility overclaim. | SS-07-03 | J01 request/route actions are backed by demo workflow API and audit rows when database is available. | MT-007; UF-07; W-07; PF-E |
-| 4 | /actions | Review the final task state and confirm the result or blocked condition. | Visible UI control or navigation link | purpose of wire; source of funds; analyst note | The Process a signal and route internal work context is visible. | Trigger moves toward awaiting information or advisor review while staying internal-only. | SS-07-04 | J01 request/route actions are backed by demo workflow API and audit rows when database is available. | MT-007; UF-07; W-07; PF-E |
+| 1 | /signals | Open the task entry screen and verify the role/tenant context. | Signal Review | signal ID; missing beneficial owner | The Process a signal and route internal work context is visible. | Progresses to the next planned screen/state without client-visibility overclaim. | SS-07-01 | J01 request-data actions use the canonical typed boundary (legacy compatibility bridge); typed recommendation-review boundaries define the canonical product path and carry audit expectations. | MT-007; UF-07; W-07; PF-E |
+| 2 | /workbench | Select the next relevant action, tab, drawer, modal, or navigation item. | Visible UI control or navigation link | purpose of wire; source of funds; analyst note | The Process a signal and route internal work context is visible. | Progresses to the next planned screen/state without client-visibility overclaim. | SS-07-02 | J01 request-data actions use the canonical typed boundary (legacy compatibility bridge); typed recommendation-review boundaries define the canonical product path and carry audit expectations. | MT-007; UF-07; W-07; PF-E |
+| 3 | /workbench/triggers/demo | Select the next relevant action, tab, drawer, modal, or navigation item. | Visible UI control or navigation link | purpose of wire; source of funds; analyst note | The Process a signal and route internal work context is visible. | Progresses to the next planned screen/state without client-visibility overclaim. | SS-07-03 | J01 request-data actions use the canonical typed boundary (legacy compatibility bridge); typed recommendation-review boundaries define the canonical product path and carry audit expectations. | MT-007; UF-07; W-07; PF-E |
+| 4 | /actions | Review the final task state and confirm the result or blocked condition. | Visible UI control or navigation link | purpose of wire; source of funds; analyst note | The Process a signal and route internal work context is visible. | Trigger moves toward awaiting information or advisor review while staying internal-only. | SS-07-04 | J01 request-data actions use the canonical typed boundary (legacy compatibility bridge); typed recommendation-review boundaries define the canonical product path and carry audit expectations. | MT-007; UF-07; W-07; PF-E |
 
 Expected result: Trigger moves toward awaiting information or advisor review while staying internal-only.
 
-Evidence created or referenced: J01 request/route actions are backed by demo workflow API and audit rows when database is available.
+Evidence created or referenced: J01 request-data actions use the canonical typed boundary (legacy compatibility bridge); typed recommendation-review boundaries define the canonical product path and carry audit expectations.
 
 Audit created or expected: Sensitive create/edit/upload/review/approve/release/block/export/invite/assign/revoke/manage actions require audit.
 
@@ -372,7 +372,7 @@ Variants and branches: Happy path, blocked/restricted state, missing evidence, p
 
 Troubleshooting / blocked states: Check role, tenant, evidence completeness, compliance status, redaction status and current workflow state.
 
-Current implementation status: E4 demo-state executable for J01 subset; not fully governed across all signals.
+Current implementation status: canonical typed boundary (legacy compatibility bridge) for J01 request-data; full signal governance is not yet implemented.
 
 Source proof: AGENTS.md; CODEX_MASTER_TASK.md; PAGEFLOW_USERFLOW_MAPPING_V3.md; PAGE_SPECS_V3.md; USER_JOURNEY_PLAYBOOK_V3.md; route-registry.ts; relevant component/demo data.
 
@@ -408,12 +408,12 @@ Step-by-step source:
 
 | Step | UI Location | User Action | UI Target Label | Input Data | Expected UI Response | State Change | Screenshot ID | Evidence/Audit | Source Proof |
 | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | /advisor-approval | Open the task entry screen and verify the role/tenant context. | Advisor Approval Queue | recommendation ID; advisor decision | The Review an advisor approval package context is visible. | Progresses to the next planned screen/state without client-visibility overclaim. | SS-08-01 | Advisor approval should audit; J01 approve/escalate actions are demo-executable. | MT-008; UF-08; W-08; PF-E |
-| 2 | /advisor-approval/demo | Review the final task state and confirm the result or blocked condition. | Visible UI control or navigation link | rationale; conditions; escalation reason | The Review an advisor approval package context is visible. | Advisor decision is recorded or routed; compliance release remains required. | SS-08-02 | Advisor approval should audit; J01 approve/escalate actions are demo-executable. | MT-008; UF-08; W-08; PF-E |
+| 1 | /advisor-approval | Open the task entry screen and verify the role/tenant context. | Advisor Approval Queue | recommendation ID; advisor decision | The Review an advisor approval package context is visible. | Progresses to the next planned screen/state without client-visibility overclaim. | SS-08-01 | Advisor approval should audit; J01 approve/escalate is on the canonical typed boundary (legacy compatibility bridge), while typed recommendation-review commands are the canonical product path. | MT-008; UF-08; W-08; PF-E |
+| 2 | /advisor-approval/demo | Review the final task state and confirm the result or blocked condition. | Visible UI control or navigation link | rationale; conditions; escalation reason | The Review an advisor approval package context is visible. | Advisor decision is recorded or routed; compliance release remains required. | SS-08-02 | Advisor approval should audit; J01 approve/escalate is on the canonical typed boundary (legacy compatibility bridge), while typed recommendation-review commands are the canonical product path. | MT-008; UF-08; W-08; PF-E |
 
 Expected result: Advisor decision is recorded or routed; compliance release remains required.
 
-Evidence created or referenced: Advisor approval should audit; J01 approve/escalate actions are demo-executable.
+Evidence created or referenced: Advisor approval should audit; J01 approve/escalate is on the canonical typed boundary (legacy compatibility bridge), while typed recommendation-review commands are the canonical product path.
 
 Audit created or expected: Sensitive create/edit/upload/review/approve/release/block/export/invite/assign/revoke/manage actions require audit.
 
@@ -423,7 +423,7 @@ Variants and branches: Happy path, blocked/restricted state, missing evidence, p
 
 Troubleshooting / blocked states: Check role, tenant, evidence completeness, compliance status, redaction status and current workflow state.
 
-Current implementation status: E4 for J01 advisor action; advisor approval is explicitly not client visibility.
+Current implementation status: canonical typed boundary (legacy compatibility bridge) for J01 advisor actions; advisor approval is internal and not client visibility.
 
 Source proof: AGENTS.md; CODEX_MASTER_TASK.md; PAGEFLOW_USERFLOW_MAPPING_V3.md; PAGE_SPECS_V3.md; USER_JOURNEY_PLAYBOOK_V3.md; route-registry.ts; relevant component/demo data.
 
