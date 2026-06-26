@@ -283,8 +283,8 @@
         "route decision"
       ],
       "result": "Trigger moves toward awaiting information or advisor review while staying internal-only.",
-      "evidence": "J01 request/route actions are backed by demo workflow API and audit rows when database is available.",
-      "status": "E4 demo-state executable for J01 subset; not fully governed across all signals."
+      "evidence": "J01 request-data actions use the canonical typed boundary (legacy compatibility bridge); typed recommendation-review command APIs define the canonical product path and carry audit expectations.",
+      "status": "canonical typed boundary (legacy compatibility bridge) for J01 request-data; full signal governance is not yet implemented."
     },
     {
       "id": "MT-008",
@@ -307,8 +307,8 @@
         "escalation reason"
       ],
       "result": "Advisor decision is recorded or routed; compliance release remains required.",
-      "evidence": "Advisor approval should audit; J01 approve/escalate actions are demo-executable.",
-      "status": "E4 for J01 advisor action; advisor approval is explicitly not client visibility."
+      "evidence": "Advisor approval should audit; J01 approve/escalate remains on the canonical typed boundary (legacy compatibility bridge), while typed recommendation-review commands are the canonical product path.",
+      "status": "canonical typed boundary (legacy compatibility bridge) for J01 advisor actions; advisor approval is internal and not client visibility."
     },
     {
       "id": "MT-009",
@@ -642,7 +642,7 @@
         "analyst note",
         "route decision"
       ],
-      "status": "E4 demo-state executable for J01 subset; not fully governed across all signals.",
+      "status": "canonical typed boundary (legacy compatibility bridge) for J01 request-data; full signal governance is not yet implemented.",
       "clientVisibilityRule": "No unapproved advice reaches the client"
     },
     {
@@ -661,7 +661,7 @@
         "conditions",
         "escalation reason"
       ],
-      "status": "E4 for J01 advisor action; advisor approval is explicitly not client visibility.",
+      "status": "canonical typed boundary (legacy compatibility bridge) for J01 advisor actions; advisor approval is internal and not client visibility.",
       "clientVisibilityRule": "No unapproved advice reaches the client"
     },
     {
@@ -967,7 +967,7 @@
         "route decision"
       ],
       "expectedResult": "Trigger moves toward awaiting information or advisor review while staying internal-only.",
-      "status": "E4 demo-state executable for J01 subset; not fully governed across all signals."
+      "status": "canonical typed boundary (legacy compatibility bridge) for J01 request-data; full signal governance is not yet implemented."
     },
     {
       "manualTaskId": "MT-008",
@@ -986,7 +986,7 @@
         "escalation reason"
       ],
       "expectedResult": "Advisor decision is recorded or routed; compliance release remains required.",
-      "status": "E4 for J01 advisor action; advisor approval is explicitly not client visibility."
+      "status": "canonical typed boundary (legacy compatibility bridge) for J01 advisor actions; advisor approval is internal and not client visibility."
     },
     {
       "manualTaskId": "MT-009",
@@ -3451,11 +3451,11 @@
     },
     {
       "manualTaskId": "MT-007",
-      "status": "E4 demo-state executable for J01 subset; not fully governed across all signals."
+      "status": "canonical typed boundary (legacy compatibility bridge) for J01 request-data; full signal governance is not yet implemented."
     },
     {
       "manualTaskId": "MT-008",
-      "status": "E4 for J01 advisor action; advisor approval is explicitly not client visibility."
+      "status": "canonical typed boundary (legacy compatibility bridge) for J01 advisor actions; advisor approval is internal and not client visibility."
     },
     {
       "manualTaskId": "MT-009",
