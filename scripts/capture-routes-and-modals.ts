@@ -2,6 +2,11 @@ import { chromium, type BrowserContext, type Locator, type Page, type Request, t
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
+import {
+  captureModelContextForRoute,
+  captureScreenModelAuditBaseline,
+  type CaptureScreenModelContext,
+} from "@/lib/capture-screen-model-context";
 import { demoAuthSessionCookieName } from "@/lib/demo/demo-auth-session";
 import { routeToSmokePath, screenRoutes, type ScreenRoute } from "@/lib/route-registry";
 
@@ -27,6 +32,7 @@ type CaptureItem = {
   domStatus?: "captured" | "failed-dom";
   interactionProofTracePath?: string;
   interactionProofTraceStatus?: "captured" | "failed-interaction-proof" | "not-tested";
+  modelContext: CaptureScreenModelContext;
   pageId: string;
   path: string;
   reactSourceTracePath?: string;
@@ -64,6 +70,8 @@ const runTs =
   process.env.AVS_CAPTURE_OUTPUT ??
   new Date().toISOString().replace(/[.:]/g, "-").replace("T", "_").slice(0, 19);
 const outputDir = path.join(process.cwd(), "artifacts", "routes-and-modals", runTs);
+const cliArgs = new Set(process.argv.slice(2));
+const screensOnly = cliArgs.has("--screens-only") || process.env.AVS_CAPTURE_SCREENS_ONLY === "1";
 const modalSelector = '[data-testid="ux-a11y-modal"][role="dialog"]';
 const drawerSelector = '[data-testid="ux-a11y-drawer"][role="complementary"], aside[aria-label="Action Details"]';
 const pageIdFilter = process.env.AVS_CAPTURE_PAGE_IDS
@@ -208,24 +216,26 @@ const overlayPlans: Record<string, OverlayStep[]> = {
   "/compliance/reviews/:id/release": [{ label: "release-confirm-modal", mode: "modal", open: (page) => clickSelector(page, '[data-testid="j02-release-client"]') }],
   "/compliance/reviews/:id/block": [{ label: "block-request-modal", mode: "modal", open: (page) => clickText(page, "Manage Block") }],
   "/decisions/:id": [{ label: "decision-confirm-option", mode: "modal", open: (page) => clickSelector(page, '[data-testid="j03-accept-option"]') }],
-  "/evidence": [{ label: "evidence-drawer", mode: "drawer", open: (page) => clickText(page, "Open Selected Evidence") }],
+  "/evidence": [{ label: "evidence-drawer", mode: "drawer", open: (page) => clickSelector(page, '[data-testid="j03-open-evidence-drawer"]') }],
   "/governance": [{ label: "user-drawer", mode: "drawer", open: (page) => clickSelector(page, '[data-testid="j07-invite-user"]') }],
   "/governance/roles/:id": [
-    { label: "role-drawer", mode: "drawer", open: (page) => clickText(page, "Create scoped role") },
+    { label: "role-drawer", mode: "drawer", open: (page) => clickSelector(page, '[data-testid="j07-open-role-drawer"]') },
     {
       label: "role-confirm-modal",
       mode: "modal",
       open: async (page) => {
         if (!(await isOverlayVisible(page, "drawer"))) {
-          const openedDrawer = await clickText(page, "Create scoped role");
+          const openedDrawer = await clickSelector(page, '[data-testid="j07-open-role-drawer"]');
           if (!openedDrawer || !(await waitForOverlay(page, "drawer"))) return false;
         }
-        return clickText(page, "Review scoped changes");
+        await checkFirstVisibleCheckbox(page);
+        return clickSelector(page, '[data-testid="j07-review-role-changes"]');
       },
     },
   ],
-  "/governance/access-requests/:id": [{ label: "access-request-drawer", mode: "drawer", open: (page) => clickText(page, "Review policy-checked request") }],
-  "/export/:id/download": [{ label: "download-confirmation-modal", mode: "modal", open: (page) => clickSelector(page, '[data-testid="j08-download-export"]') }],
+  "/governance/access-requests/:id": [{ label: "access-request-drawer", mode: "drawer", open: (page) => clickSelector(page, '[data-testid="j07-open-access-request-drawer"]') }],
+  "/export/:id/approval": [{ label: "export-approval-modal", mode: "modal", open: (page) => clickSelector(page, '[data-testid="j08-open-export-approval"]') }],
+  "/export/:id/download": [{ label: "download-confirmation-modal", mode: "modal", open: (page) => clickSelector(page, '[data-testid="j08-open-download-confirmation"]') }],
 };
 
 function isAuthRoute(route: string) {
@@ -539,6 +549,18 @@ async function clickText(page: Page, text: string) {
   }
 }
 
+async function checkFirstVisibleCheckbox(page: Page) {
+  const locator = page.locator('input[type="checkbox"]').first();
+  if ((await locator.count()) === 0) return false;
+  try {
+    await locator.waitFor({ state: "visible", timeout: 1500 });
+    await locator.check({ timeout: 2000 });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function isOverlayVisible(page: Page, mode: CaptureMode) {
   const selector = mode === "drawer" ? drawerSelector : modalSelector;
   const locator = page.locator(selector).first();
@@ -579,8 +601,9 @@ async function gotoReady(page: Page, url: string) {
 
 async function captureScreenshot(page: Page, item: CaptureItem, fileName: string, overlay: RuntimeOverlayMeta) {
   try {
-    await annotateRuntimeSourceIds(page);
+    if (!screensOnly) await annotateRuntimeSourceIds(page);
     await page.screenshot({ fullPage: true, path: path.join(outputDir, fileName) });
+    if (screensOnly) return;
     await captureRenderedDom(page, item, fileName);
     await captureRuntimeComponents(page, item, fileName, overlay);
     await captureDomRectTrace(page, item, fileName, overlay);
@@ -2130,10 +2153,12 @@ async function captureInteractionProofTrace(page: Page, item: CaptureItem, scree
 
 async function captureRoute(page: Page, route: ScreenRoute) {
   const items: CaptureItem[] = [];
+  const modelContext = captureModelContextForRoute(route);
   const url = new URL(routeToSmokePath(route.route), baseUrl).toString();
   const baseFile = fileNameFor(route, "base");
   const baseItem: CaptureItem = {
     interactionProofTraceStatus: "not-tested",
+    modelContext,
     pageId: route.pageId,
     path: `routes-and-modals/${runTs}/${baseFile}`,
     route: route.route,
@@ -2159,6 +2184,8 @@ async function captureRoute(page: Page, route: ScreenRoute) {
   for (const overlay of overlayPlans[route.route] ?? []) {
     const overlayFile = fileNameFor(route, overlay.label);
     const overlayItem: CaptureItem = {
+      interactionProofTraceStatus: screensOnly ? "not-tested" : undefined,
+      modelContext,
       pageId: route.pageId,
       path: `routes-and-modals/${runTs}/${overlayFile}`,
       route: route.route,
@@ -2171,7 +2198,9 @@ async function captureRoute(page: Page, route: ScreenRoute) {
     const keepParentOverlayContext = overlay.label === "role-confirm-modal";
     if (!keepParentOverlayContext) await closeOverlayIfVisible(page, overlay.mode);
     const alreadyOpen = await isOverlayVisible(page, overlay.mode);
-    const opened = await captureInteractionProofTrace(page, overlayItem, overlayFile, overlay, alreadyOpen);
+    const opened = screensOnly
+      ? alreadyOpen || (await overlay.open(page))
+      : await captureInteractionProofTrace(page, overlayItem, overlayFile, overlay, alreadyOpen);
     if (!opened) {
       overlayItem.status = "missing-trigger";
     } else if (!(await waitForOverlay(page, overlay.mode))) {
@@ -2203,19 +2232,36 @@ function mergeItems(items: CaptureItem[]) {
 }
 
 function writeIndex(items: CaptureItem[]) {
-  writeFileSync(path.join(outputDir, "index.json"), `${JSON.stringify({ baseUrl, generatedAt: new Date().toISOString(), items }, null, 2)}\n`);
+  writeFileSync(
+    path.join(outputDir, "index.json"),
+    `${JSON.stringify(
+      {
+        auditBaseline: captureScreenModelAuditBaseline,
+        baseUrl,
+        captureMode: screensOnly ? "screens-only" : "full-runtime",
+        generatedAt: new Date().toISOString(),
+        items,
+        sidecarsEnabled: !screensOnly,
+      },
+      null,
+      2,
+    )}\n`,
+  );
 
   const lines = [
     "# Routes and Drawer/Modal captures",
     "",
     `Base URL: ${baseUrl}`,
     `Run: ${runTs}`,
+    `Capture mode: ${screensOnly ? "screens-only" : "full-runtime"}`,
+    `Sidecars: ${screensOnly ? "disabled" : "enabled"}`,
+    `Audit baseline: ${captureScreenModelAuditBaseline.registeredRoutes} routes, ${captureScreenModelAuditBaseline.schemaModels} models, ${captureScreenModelAuditBaseline.schemaEnums} enums`,
     "",
-    "| Page | Route | State | Status | Screenshot | Rendered DOM | Rendered CSS | Runtime Components | Runtime Summary | Runtime Confidence | DOM Rect Trace | React Source Trace | Interaction Proof Trace |",
-    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    "| Page | Route | State | Status | Capability | Models | Screenshot | Rendered DOM | Rendered CSS | Runtime Components | Runtime Summary | Runtime Confidence | DOM Rect Trace | React Source Trace | Interaction Proof Trace |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ...items.map(
       (item) =>
-        `| ${item.pageId} | ${item.route} | ${item.state} | ${item.status} | ${item.path} | ${item.domPath ?? ""} | ${item.cssPath ?? ""} | ${item.componentRuntimePath ?? ""} | ${item.componentRuntimeMarkdownPath ?? ""} | ${item.componentRuntimeConfidence ?? ""} | ${item.domRectTracePath ?? ""} | ${item.reactSourceTracePath ?? ""} | ${item.interactionProofTracePath ?? ""} |`,
+        `| ${item.pageId} | ${item.route} | ${item.state} | ${item.status} | ${item.modelContext.capability.status} | ${item.modelContext.models.join(", ")} | ${item.path} | ${item.domPath ?? ""} | ${item.cssPath ?? ""} | ${item.componentRuntimePath ?? ""} | ${item.componentRuntimeMarkdownPath ?? ""} | ${item.componentRuntimeConfidence ?? ""} | ${item.domRectTracePath ?? ""} | ${item.reactSourceTracePath ?? ""} | ${item.interactionProofTracePath ?? ""} |`,
     ),
   ];
   writeFileSync(path.join(outputDir, "index.md"), `${lines.join("\n")}\n`);
@@ -2227,8 +2273,10 @@ async function main() {
   const browser = await chromium.launch();
   const unauthContext = await browser.newContext({ viewport: { height: 1000, width: 1440 } });
   const authContext = await browser.newContext({ viewport: { height: 1000, width: 1440 } });
-  await installReactReflectionHook(unauthContext);
-  await installReactReflectionHook(authContext);
+  if (!screensOnly) {
+    await installReactReflectionHook(unauthContext);
+    await installReactReflectionHook(authContext);
+  }
   await authContext.addCookies([
     {
       httpOnly: true,

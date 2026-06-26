@@ -77,10 +77,10 @@ test.describe("UXP3-015 export download confirmation lifecycle", () => {
   });
 
   test("opens download confirmation without workflow mutation and cancels safely", async ({ page }) => {
-    const workflowRequests: string[] = [];
+    const mutationRequests: string[] = [];
     page.on("request", (request) => {
-      if (request.url().includes("/api/export-workflow")) {
-        workflowRequests.push(request.method());
+      if (request.url().includes("/api/export-workflow") && request.method() !== "GET") {
+        mutationRequests.push(request.method());
       }
     });
 
@@ -105,7 +105,7 @@ test.describe("UXP3-015 export download confirmation lifecycle", () => {
     await dialog.getByRole("button", { name: "Cancel" }).click();
     await expect(dialog).toBeHidden();
     await expect(trigger).toBeFocused();
-    expect(workflowRequests).toEqual([]);
+    expect(mutationRequests).toEqual([]);
   });
 
   test("requires acknowledgement and records only the controlled download event", async ({ page, request }) => {
@@ -169,10 +169,10 @@ test.describe("UXP3-015 export download confirmation lifecycle", () => {
   });
 
   test("Escape closes download confirmation without submitting", async ({ page }) => {
-    const workflowRequests: string[] = [];
+    const mutationRequests: string[] = [];
     page.on("request", (request) => {
-      if (request.url().includes("/api/export-workflow")) {
-        workflowRequests.push(request.method());
+      if (request.url().includes("/api/export-workflow") && request.method() !== "GET") {
+        mutationRequests.push(request.method());
       }
     });
 
@@ -183,6 +183,6 @@ test.describe("UXP3-015 export download confirmation lifecycle", () => {
     await expect(dialog).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
-    expect(workflowRequests).toEqual([]);
+    expect(mutationRequests).toEqual([]);
   });
 });
