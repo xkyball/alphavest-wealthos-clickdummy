@@ -20,8 +20,8 @@ Current head at execution start: `2f746c6 chore(docs): align J01 markdown bounda
 | 8 | `IMPL-1.4.1` Capability Matrix und Vertical-Slice Matrix erzeugen | `DONE` | Capability Matrix and Vertical Slice Matrix regenerated with current taxonomy, 33 API-route truth, typed-command statuses and `/api/demo-workflow` as `LEGACY_DEMO_ONLY_BOUNDARY`. |
 | 9 | `IMPL-1.4.2` Workflow-I/O-, Datenpflege- und Absicherungsreport erzeugen | `DONE` | Workflow I/O, data editability, security/audit/test proof and missing-proof sections added to the capability report. |
 | 10 | `IMPL-1.4.3` Befunde, Grenzen, Overclaim-Warnungen und Folgearbeit konsolidieren | `DONE` | Executive summary, limitations, overclaim risk register, bold legacy-cleanup recommendations and candidate follow-up register added. |
-| 11 | `QA-1` Report validieren und Claim-Kontrolle durchführen | `PENDING` | Next ticket: validate report structure, claims, proof boundaries and overclaim risks. |
-| 12 | `DECISION-1` Menschliche Abnahme der Report-Baseline | `PENDING_HUMAN_DECISION` | Stop condition after QA, not reached yet. |
+| 11 | `QA-1` Report validieren und Claim-Kontrolle durchführen | `DONE` | QA decision `PASS_WITH_LIMITATIONS`: stale QA claims removed, capability drift gate updated, focused proof pack passed `12/12`, and `pnpm gate:capability-report` passed against current 53-model / 33-API-route report truth. |
+| 12 | `DECISION-1` Menschliche Abnahme der Report-Baseline | `PENDING_HUMAN_DECISION` | Stop condition after QA; next ticket requires human baseline decision before deriving implementation work. |
 
 ## Current Proof Pack
 
@@ -40,9 +40,10 @@ focused handler/service inspection for typed command routes, export workflow, jo
 static Prisma operation scan over app/api and lib; schema, migration and seed inventory
 guard/security/test inventory over lib, app/api and tests
 PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm exec playwright test tests/demo-workflow-action-registry.spec.ts tests/capture-screen-model-context.spec.ts tests/capability-report-drift-gate.spec.ts --workers=1
+pnpm gate:capability-report
 ```
 
-Result so far: `ANALYSIS-1`, all `ANALYSIS-2` subtasks, `SPEC-1` and all `IMPL-1` report slices completed with source guard `PASS`, targeted drift proof pack `12 passed`, and no UI changes.
+Result so far: `ANALYSIS-1`, all `ANALYSIS-2` subtasks, `SPEC-1`, all `IMPL-1` report slices and `QA-1` completed with source guard `PASS`, targeted drift proof pack `12 passed`, capability report gate `PASS`, QA decision `PASS_WITH_LIMITATIONS`, and no UI changes.
 
 ## Current Workspace Boundary
 
@@ -57,4 +58,4 @@ They are excluded from `ANALYSIS-1` unless a later ordered ticket explicitly rec
 
 ## Next Ticket
 
-Proceed to `QA-1`: Report validieren und Claim-Kontrolle durchführen.
+Proceed to `DECISION-1`: Menschliche Abnahme der Report-Baseline. This is a human decision gate; do not derive implementation tickets from the baseline until the decision is recorded.

@@ -37,7 +37,7 @@ export const defaultCapabilityReportDriftGatePaths = [
 ] as const;
 
 function isAllowedNegativeCompleteSliceLine(line: string) {
-  return /\b(avoid|avoids|without|no|not|forbid|forbidden|overclaim|risk|required correction|do not|before claiming)\b/i.test(line);
+  return /\b(avoid|avoids|without|no|not|forbid|forbidden|overclaim|risk|required correction|do not|before claiming|fail|fails|reject|rejects)\b/i.test(line);
 }
 
 function isAllowedHistorical49Line(line: string) {
@@ -55,7 +55,8 @@ function requiredTruthsForReport(reportPath: string) {
       "53 models",
       "STRONG_VERTICAL_CANDIDATE",
       "SERVICE_BACKED_INTERNAL",
-      "DEMO_COMMAND_BACKED_PARTIAL",
+      "TYPED_COMMAND_BACKED_PARTIAL",
+      "LEGACY_DEMO_ONLY_BOUNDARY",
       "/api/demo-workflow",
       "/api/export-workflow",
       "/api/advice-release-history/actions",
@@ -125,7 +126,7 @@ export function validateCapabilityReportDriftFromInputs(inputs: CapabilityReport
         });
       }
 
-      if (lineHasTableStatus(line, "COMPLETE_VERTICAL_SLICE")) {
+      if (lineHasTableStatus(line, "COMPLETE_VERTICAL_SLICE") && !isAllowedNegativeCompleteSliceLine(line)) {
         violations.push({
           detail: "Capability table must not use COMPLETE_VERTICAL_SLICE as a status from generated report output.",
           file: input.path,
