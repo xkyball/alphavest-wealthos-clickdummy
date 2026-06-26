@@ -2,6 +2,12 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { chromium, type Page } from "@playwright/test";
+import {
+  captureModelContextForRoute,
+  captureScreenModelAuditBaseline,
+  type CaptureScreenModelContext
+} from "@/lib/capture-screen-model-context";
+import { demoAuthSessionCookieName } from "@/lib/demo/demo-auth-session";
 import { routeToSmokePath, screenRoutes } from "@/lib/route-registry";
 import { visualStateForRoute } from "@/lib/visual-contract";
 
@@ -9,6 +15,7 @@ type ViewportName = "desktop" | "mobile";
 
 type CaptureMetric = {
   consoleMessages: string[];
+  modelContext: CaptureScreenModelContext;
   metrics: {
     crampedText: string[];
     document: {
@@ -31,6 +38,10 @@ const outputName =
   process.env.STRICT_VISUAL_OUTPUT ??
   new Date().toISOString().replace(/[:.]/g, "-").replace("T", "_").slice(0, 19);
 const outputDir = path.join(root, "artifacts", "strict-visual-review", outputName);
+const pageIdFilter = process.env.STRICT_VISUAL_PAGE_IDS
+  ? new Set(process.env.STRICT_VISUAL_PAGE_IDS.split(",").map((item) => item.trim()).filter(Boolean))
+  : null;
+const captureRoutes = pageIdFilter ? screenRoutes.filter((route) => pageIdFilter.has(route.pageId)) : screenRoutes;
 
 const viewports: Record<ViewportName, { height: number; width: number }> = {
   desktop: { width: 1440, height: 1000 },
@@ -43,9 +54,17 @@ function ensureDir(dir: string) {
   }
 }
 
+function markdownText(value: string) {
+  return value.replace(/\|/g, "\\|");
+}
+
 function slugFor(route: (typeof screenRoutes)[number], viewport: ViewportName) {
   const assetName = path.basename(route.visualAsset).replace(/\.png$/i, "");
   return `${assetName}-${viewport}.png`;
+}
+
+function isAuthRoute(route: string) {
+  return route === "/login" || route === "/mfa" || route.startsWith("/onboarding/");
 }
 
 async function collectMetrics(page: Page) {
@@ -95,17 +114,26 @@ function routeUrl(route: (typeof screenRoutes)[number]) {
   return new URL(pathname, baseUrl).toString();
 }
 
-async function captureViewport(page: Page, viewport: ViewportName) {
-  await page.setViewportSize(viewports[viewport]);
+function shouldRecordConsoleMessage(text: string) {
+  return !text.includes("/_next/webpack-hmr");
+}
+
+async function captureViewport(pages: { auth: Page; unauth: Page }, viewport: ViewportName) {
+  await pages.auth.setViewportSize(viewports[viewport]);
+  await pages.unauth.setViewportSize(viewports[viewport]);
   ensureDir(path.join(outputDir, viewport));
 
   const metrics: CaptureMetric[] = [];
 
-  for (const route of screenRoutes) {
+  for (const route of captureRoutes) {
+    const page = isAuthRoute(route.route) ? pages.unauth : pages.auth;
     const consoleMessages: string[] = [];
     const onConsole = (message: { text: () => string; type: () => string }) => {
       if (message.type() === "error" || message.type() === "warning") {
-        consoleMessages.push(message.text());
+        const text = message.text();
+        if (shouldRecordConsoleMessage(text)) {
+          consoleMessages.push(text);
+        }
       }
     };
     page.on("console", onConsole);
@@ -123,6 +151,7 @@ async function captureViewport(page: Page, viewport: ViewportName) {
 
     metrics.push({
       consoleMessages,
+      modelContext: captureModelContextForRoute(route),
       metrics: pageMetrics,
       pageId: route.pageId,
       route: route.route,
@@ -142,19 +171,67 @@ function writeIndex(metrics: CaptureMetric[]) {
     "",
     `Base URL: ${baseUrl}`,
     `Output: ${path.relative(root, outputDir)}`,
+    `Audit model baseline: ${captureScreenModelAuditBaseline.schemaModels} Prisma models / ${captureScreenModelAuditBaseline.schemaEnums} enums`,
     "",
-    "| Page | Route | Viewport | Screenshot | Overflow | Cramped candidates |",
-    "| --- | --- | --- | --- | --- | --- |"
+    "| Page | Route | Viewport | Capability | Prisma models | Screenshot | Overflow | Cramped candidates |",
+    "| --- | --- | --- | --- | ---: | --- | --- | --- |"
   ];
 
   for (const item of metrics) {
     const overflow = item.metrics.document.scrollWidth > item.metrics.document.clientWidth ? "yes" : "no";
     lines.push(
-      `| ${item.pageId} | \`${item.route}\` | ${item.viewport} | [png](${item.screenshot}) | ${overflow} | ${item.metrics.crampedText.length} |`
+      `| ${item.pageId} | \`${item.route}\` | ${item.viewport} | ${item.modelContext.capability.status} | ${item.modelContext.models.length} | [png](${item.screenshot}) | ${overflow} | ${item.metrics.crampedText.length} |`
     );
   }
 
   writeFileSync(path.join(outputDir, "index.md"), `${lines.join("\n")}\n`);
+}
+
+function writeModelContext() {
+  const contexts = captureRoutes.map((route) => captureModelContextForRoute(route));
+  const statusCounts = contexts.reduce<Record<string, number>>((acc, context) => {
+    acc[context.capability.status] = (acc[context.capability.status] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  writeFileSync(
+    path.join(outputDir, "normal-screen-model-context.json"),
+    `${JSON.stringify(
+      {
+        auditBaseline: captureScreenModelAuditBaseline,
+        generatedAt: new Date().toISOString(),
+        routeCount: contexts.length,
+        routes: contexts,
+        statusCounts
+      },
+      null,
+      2
+    )}\n`
+  );
+
+  const lines = [
+    "# Normal Screen Model Context",
+    "",
+    `Routes: ${contexts.length}`,
+    `Schema baseline: ${captureScreenModelAuditBaseline.schemaModels} models / ${captureScreenModelAuditBaseline.schemaEnums} enums`,
+    `Capability report: ${captureScreenModelAuditBaseline.capabilityReport}`,
+    "",
+    "| Page | Route | Scope | Capability | Model families | Models | Warnings |",
+    "| --- | --- | --- | --- | --- | --- | --- |",
+    ...contexts.map((context) =>
+      [
+        context.route.pageId,
+        `\`${context.route.path}\``,
+        context.route.routeScope,
+        context.capability.status,
+        markdownText(context.modelFamilies.join(", ")),
+        markdownText(context.models.join(", ")),
+        markdownText(context.warnings.join(" ")),
+      ].join(" | ")
+    ).map((row) => `| ${row} |`),
+  ];
+
+  writeFileSync(path.join(outputDir, "normal-screen-model-context.md"), `${lines.join("\n")}\n`);
 }
 
 function writeContactSheet(viewport: ViewportName, metrics: CaptureMetric[]) {
@@ -196,20 +273,37 @@ async function main() {
   ensureDir(outputDir);
 
   const browser = await chromium.launch();
-  const page = await browser.newPage();
+  const unauthContext = await browser.newContext();
+  const authContext = await browser.newContext();
+  await authContext.addCookies([
+    {
+      httpOnly: true,
+      name: demoAuthSessionCookieName,
+      sameSite: "Lax",
+      url: baseUrl,
+      value: "av-session-playwright-authenticated"
+    }
+  ]);
+  const pages = {
+    auth: await authContext.newPage(),
+    unauth: await unauthContext.newPage()
+  };
   const metrics = [
-    ...(await captureViewport(page, "desktop")),
-    ...(await captureViewport(page, "mobile"))
+    ...(await captureViewport(pages, "desktop")),
+    ...(await captureViewport(pages, "mobile"))
   ];
 
   writeFileSync(path.join(outputDir, "strict-review-dom-metrics.json"), `${JSON.stringify(metrics, null, 2)}\n`);
   writeIndex(metrics);
+  writeModelContext();
 
   const desktopSheet = writeContactSheet("desktop", metrics);
   const mobileSheet = writeContactSheet("mobile", metrics);
-  await screenshotContactSheet(page, desktopSheet, "desktop");
-  await screenshotContactSheet(page, mobileSheet, "mobile");
+  await screenshotContactSheet(pages.auth, desktopSheet, "desktop");
+  await screenshotContactSheet(pages.auth, mobileSheet, "mobile");
 
+  await unauthContext.close();
+  await authContext.close();
   await browser.close();
 
   const errors = metrics.filter((item) => item.consoleMessages.length > 0).length;
@@ -220,6 +314,8 @@ async function main() {
     JSON.stringify(
       {
         screenshots: metrics.length,
+        modelContexts: captureRoutes.length,
+        schemaModels: captureScreenModelAuditBaseline.schemaModels,
         errors,
         loadingStillPresent,
         overflow,
