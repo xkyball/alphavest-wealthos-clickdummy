@@ -1,45 +1,68 @@
 # Human Decision Gate
 
 Ticket: `DECISION-1`
-Status: `PENDING_HUMAN_DECISION_CURRENT_RUN`
-Decision source: current refreshed audit run on 2026-06-26; no new baseline acceptance has been assumed.
-Codex recommendation: `ACCEPT_WITH_LIMITATIONS_AND_AUTHORIZE_PROOF_PLUS_CLEANUP`
+Status: `PENDING_HUMAN_DECISION`
+Decision source: refreshed local capability audit run on 2026-06-26; no human baseline acceptance has been assumed.
+QA decision: `PASS_WITH_LIMITATIONS`
+Codex recommendation: `ACCEPT_WITH_LIMITATIONS_AND_AUTHORIZE_TYPED_BOUNDARY_PROOF_PLUS_CLEANUP`
 
 ## Decision Needed
 
-The local capability report is ready for human baseline decision. The QA result is `PASS_WITH_LIMITATIONS`: the report is evidence-bound and useful, and this refresh added current-run proof for source guard, Prisma schema validation, 53-model schema alignment, capture/generator drift gating, export command spine/UI truth, tenant-governance typed API and platform-admin typed API/source wiring. It is still not a full runtime acceptance certificate because full browser vertical suites were not executed for every product flow.
+The local capability report is ready for human baseline decision. The current QA result is `PASS_WITH_LIMITATIONS`: the report is evidence-bound, source-only, reproducible from local artefacts and protected by the capability report drift gate.
+
+This baseline is not a release certificate and not a full runtime vertical-slice proof. The current proof is deliberately narrower:
+
+- `pnpm guard:source` passed before ordered execution.
+- The focused Playwright proof pack passed `12/12` for capture model context, demo workflow action boundaries and capability report drift rejection.
+- `pnpm gate:capability-report` passed against the current `53`-model schema truth and required report taxonomy.
+- Full DB-backed browser/API lifecycle proof was not run in `QA-1`.
 
 ## Baseline Options
 
 | Option | Meaning | Codex recommendation |
 | --- | --- | --- |
-| `Accept` | Accept the report as the current conservative code-reality baseline. | Not bold enough unless paired with immediate proof/cleanup. |
-| `Accept with Corrections` | Accept baseline and add targeted corrections before follow-up work. | Good if you want wording tweaks first. |
-| `Rework` | Send report back for more analysis before any follow-up. | Not recommended; the current bottleneck is proof execution and legacy cleanup, not more static analysis. |
-| `Reject` | Do not use the report as baseline. | Not recommended unless a named source/evidence error is found. |
+| `Accept` | Accept the report as the current conservative code-reality baseline. | Usable, but too weak alone because it can let follow-up work drift into soft language. |
+| `Accept with Limitations + Cleanup Authorization` | Accept the baseline exactly as conservative truth, preserve its limits, and authorize the next proof/cleanup slice. | Strong recommendation. This creates a working baseline without pretending it is runtime certification. |
+| `Accept with Corrections` | Accept baseline after named wording or evidence corrections. | Good only if you see a concrete source/evidence error. |
+| `Rework` | Send report back for more static analysis before follow-up. | Not recommended; the bottleneck is runtime proof and legacy removal, not more inventory. |
+| `Reject` | Do not use the report as baseline. | Not recommended unless a named local evidence error is found. |
 
 ## Recommended Decision
 
-Choose `Accept with Corrections` only if you want wording changes; otherwise choose `Accept`, and immediately authorize the next proof/cleanup slice:
+Choose `Accept with Limitations + Cleanup Authorization`.
 
-1. Run a focused browser/runtime proof pack for document upload/review, profile/family/entity, export workflow, tenant governance and platform admin typed commands.
-2. Continue splitting `/api/demo-workflow` into a demo-only action bus plus typed domain command APIs.
-3. Keep `j04/j05/j09` on the typed data-maintenance command surface; migrate `j02/j03` only after Advice/Release-History is separated.
-4. Purge static controls that look like real product actions unless they are wired or visibly safety-blocked by data.
-5. Keep the 53-model schema alignment gate in the proof pack and reject future stale 49-model claims.
+The next move should be wide-reaching rather than cosmetic:
 
-This is the cleanest route to remove legacy ambiguity instead of hiding it behind broader “demo works” language.
+1. Make the capability report drift gate mandatory for future capture/report generation so stale model counts, stale API-route counts and broad `COMPLETE_VERTICAL_SLICE` language cannot re-enter generated truth.
+2. Run a focused browser/runtime proof pack for export, tenant governance and platform admin typed command surfaces.
+3. Cut the remaining J01 ambiguity: build a typed intake/advisor-review command boundary or quarantine J01 as pure screencast seed support.
+4. Keep J02/J03 behind a clean Advice/Release-History command boundary; do not stabilize them as demo-workflow product behavior.
+5. Remove `runScreencastDemoAction` from product-like screens once the last typed command boundary is in place, instead of maintaining `/api/demo-workflow` as a shadow product API.
+6. Purge, wire or visibly safety-block static controls that still look like real product actions.
+
+This is the cleanest route because it treats `/api/demo-workflow` as legacy demo infrastructure, not as a convenient half-product command bus.
 
 ## Follow-Up Authorization State
 
 | Follow-up | Current status | Needs human authorization? |
 | --- | --- | --- |
-| Focused browser/runtime proof pack | Ready to derive | Yes |
-| Remaining demo workflow family migration | Ready to derive for `j02/j03` after Advice/Release-History split; J04/J05/J09 are already typed data-maintenance commands | Yes |
-| Export/tenant/platform lifecycle runtime proof | Ready to derive | Yes |
-| Static affordance purge | Ready to derive | Yes |
-| Schema alignment regression gate | Current-run proven; keep in follow-up proof pack | Yes |
+| Accept local report baseline with explicit QA limitations | Ready for human decision | Yes |
+| Browser/runtime proof pack for export, tenant governance and platform admin | Ready to derive | Yes |
+| J01 typed intake/advisor-review boundary or screencast-seed quarantine | Ready to derive | Yes |
+| Advice/Release-History typed command boundary for J02/J03 | Ready to derive after baseline acceptance | Yes |
+| Removal of `runScreencastDemoAction` from product-like screens | Ready after typed boundaries are complete | Yes |
+| Static affordance purge/wire/safety-block pass | Ready to derive | Yes |
 
 ## Stop Condition
 
-Current run stops here unless you explicitly accept the refreshed baseline and authorize follow-up execution. Recommended authorization: focused browser/runtime proof pack plus a hard cleanup slice that migrates the remaining product-like demo families out of `runScreencastDemoAction` and purges or wires product-looking static controls.
+Current ordered execution stops here. Do not derive implementation tickets or continue cleanup until the human decision is recorded.
+
+Recommended human response:
+
+```text
+Decision = Accept with Limitations + Cleanup Authorization
+Authorize proof pack = Yes
+Authorize J01 typed boundary/quarantine = Yes
+Authorize Advice/Release-History typed boundary for J02/J03 = Yes
+Authorize removal of product-like runScreencastDemoAction usage = Yes
+```
