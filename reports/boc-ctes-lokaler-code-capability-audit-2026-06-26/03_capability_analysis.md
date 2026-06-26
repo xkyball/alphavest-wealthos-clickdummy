@@ -149,6 +149,13 @@ Status: `DONE`
 4. Fail-closed and no-overclaim response patterns are visible in multiple handlers, especially document, export and journey routes.
 5. `ANALYSIS-2.3` must now classify exactly which DB entities are create/update/read/write targets and where UI/API/service paths actually persist.
 
+Current typed-command update:
+
+- J06/J07 tenant, user, role and governance actions are now routed through `/api/tenant-governance/actions`, `lib/tenant-governance-workflow-actions.ts` and `lib/tenant-governance-command-client.ts`.
+- J10 platform/security/admin actions are now routed through `/api/platform-admin/actions`, `lib/platform-admin-workflow-actions.ts` and `lib/platform-admin-command-client.ts`.
+- `/api/demo-workflow` returns fail-closed `410` responses for moved tenant-governance, platform-admin, export, Phase B/C journey and review-monitoring families with canonical route guidance.
+- Static UI scan found remaining `runScreencastDemoAction` product-like calls only in `j02`, `j03`, `j04`, `j05` and `j09` families; no current `j06`, `j07`, `j08`, `j10`, `j12`, `j13`, `j14`, `j16` or `j17` screen call remains on that client.
+
 ## ANALYSIS-2.3 - DB Editability, Persistence And Process I/O
 
 Status: `DONE`
@@ -278,4 +285,4 @@ Only `pnpm guard:source` was executed in this audit run. The other tests listed 
 
 Security and proof architecture is substantial: RBAC, visibility, workflow gates, audit fail-closed behavior and negative tests are present locally. The report can safely say AlphaVest has a strong local guard/test architecture. It must not say all safety tests currently pass unless those suites are executed in the current run.
 
-Current-run update: `pnpm db:validate` passed, and `pnpm exec playwright test tests/schema-alignment.spec.ts tests/export-command-spine-contract.spec.ts tests/true-ux-api-service-ui-truth.spec.ts --workers=1` passed `13/13`, proving the schema-count alignment, canonical export command spine, and export UI/API truth contract for this audit run.
+Current-run update: `pnpm db:validate` passed, and `pnpm exec playwright test tests/schema-alignment.spec.ts tests/export-command-spine-contract.spec.ts tests/true-ux-api-service-ui-truth.spec.ts tests/demo-workflow-action-registry.spec.ts tests/tenant-governance-actions-api.spec.ts tests/platform-admin-actions-api.spec.ts tests/platform-admin-command-client-source.spec.ts tests/capture-screen-model-context.spec.ts tests/capability-report-drift-gate.spec.ts --workers=1` passed `28/28`, proving schema alignment, capture-model context alignment, capability report drift gating, export command spine/UI truth, tenant-governance typed actions and platform-admin typed actions for this audit run.

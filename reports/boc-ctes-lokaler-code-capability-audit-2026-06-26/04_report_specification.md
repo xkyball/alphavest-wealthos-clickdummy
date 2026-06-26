@@ -16,7 +16,7 @@ Purpose: conservative local capability taxonomy for the final report.
 | E5 | `RUNTIME_PROVEN_THIS_RUN` | Command/test/browser/API proof was executed during this audit. | Yes, if all required layers are also present |
 | E6 | `RUNTIME_AND_ARTIFACT_PROVEN` | Current-run proof plus artifact/screenshot/log/report bundle. | Yes |
 
-Current-run E5 evidence so far: `pnpm guard:source` PASS; `pnpm db:validate` PASS; `pnpm exec playwright test tests/schema-alignment.spec.ts tests/export-command-spine-contract.spec.ts tests/true-ux-api-service-ui-truth.spec.ts --workers=1` PASS (`13/13`).
+Current-run E5 evidence so far: `pnpm guard:source` PASS; `pnpm db:validate` PASS; `pnpm exec playwright test tests/schema-alignment.spec.ts tests/export-command-spine-contract.spec.ts tests/true-ux-api-service-ui-truth.spec.ts tests/demo-workflow-action-registry.spec.ts tests/tenant-governance-actions-api.spec.ts tests/platform-admin-actions-api.spec.ts tests/platform-admin-command-client-source.spec.ts tests/capture-screen-model-context.spec.ts tests/capability-report-drift-gate.spec.ts --workers=1` PASS (`28/28`).
 
 ## Capability Status Labels
 

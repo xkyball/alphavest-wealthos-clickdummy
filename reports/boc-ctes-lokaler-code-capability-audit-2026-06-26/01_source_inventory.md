@@ -9,9 +9,9 @@ Scope: local evidence boundary for the capability reality audit.
 | Check | Result |
 | --- | --- |
 | Branch | `full-workflow` |
-| Latest commit | `0630b87 docs: prepare pp005 export redaction gate` |
-| Working tree | one pre-existing modified file outside this audit: `reports/pp005-export-redaction-2026-06-26/04_decision_1_3_export_policy_gate.md` |
-| Diff stat before this audit edit | one PP005 report file changed, `16` lines touched; preserved as unrelated user/worktree state |
+| Latest commit | `7de6dde api: migrate platform admin actions to typed commands` |
+| Working tree | clean before current report refresh |
+| Diff stat before this audit edit | no local file diffs before current report refresh |
 | Package manager | `pnpm@9.15.9` from `package.json` |
 | Source guard | `pnpm guard:source` PASS, `violations: 0` |
 | Operative AlphaVest authority | `AGENTS.md` -> `ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md` |
