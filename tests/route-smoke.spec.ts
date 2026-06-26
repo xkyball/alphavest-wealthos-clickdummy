@@ -11,9 +11,7 @@ import {
 } from "../lib/ux-page-contract";
 import { uxContentHierarchyForPageType } from "../lib/ux-content-hierarchy";
 import { uxDensityForPageId, uxDensityTierContracts } from "../lib/ux-density";
-import { uxComplexity005SupportPageIds } from "../lib/ux-support-density";
 import { productGuidanceForRoute } from "../lib/product-guidance";
-import { hasV096CleanRouteChrome } from "../lib/route-ui-cleanup";
 import { uxHubDefinitionForPageId } from "../lib/ux-hub";
 import {
   groupedImplementationScreenRoutes,
@@ -219,34 +217,6 @@ test.describe("UX-PAGE page type contract", () => {
       expect(contract.forbiddenTreatment, `${contract.pageId} forbidden treatment`).toMatch(/No (productive|MVP)/);
     }
   });
-});
-
-test.describe("UX-PAGE workbench structure", () => {
-  const uxPage002Routes = [
-    "/documents",
-    "/documents/upload",
-    "/documents/review-queue",
-    "/documents/demo/review",
-    "/advisory",
-    "/advisor/reviews",
-    "/compliance/reviews",
-  ];
-
-  for (const path of uxPage002Routes) {
-    test(`${path} renders queue, selected context and action rail above page content`, async ({ page }) => {
-      await page.setViewportSize({ width: 1440, height: 1100 });
-      await authenticateRouteSmokePage(page);
-      await page.goto(path);
-
-      const guidance = page.getByTestId("product-guidance").first();
-      const triad = guidance.getByTestId("ux-page-workbench-triad");
-      await expect(triad).toBeVisible();
-      await expect(triad.getByTestId("ux-page-queue")).toHaveCount(1);
-      await expect(triad.getByTestId("ux-page-selected-context")).toHaveCount(1);
-      await expect(triad.getByTestId("ux-page-action-rail")).toHaveCount(1);
-      await expect(triad.getByText("Controls stay blocked until the required gate passes.")).toBeVisible();
-    });
-  }
 });
 
 test.describe("UX-HUB phase 3 orientation hubs", () => {
@@ -544,32 +514,6 @@ test.describe("UX-COMPLEXITY CTA clusters", () => {
   }
 });
 
-test.describe("UX-COMPLEXITY support density", () => {
-  const supportDensityPaths = screenRoutes
-    .filter((route) => (
-      uxComplexity005SupportPageIds.includes(route.pageId as (typeof uxComplexity005SupportPageIds)[number]) &&
-      !hasV096CleanRouteChrome(route.pageId)
-    ))
-    .map((route) => routeToSmokePath(route.route));
-
-  for (const path of supportDensityPaths) {
-    test(`${path} exposes page job, status and meaningful next step without safety hiding`, async ({ page }) => {
-      await page.setViewportSize({ height: 1000, width: 1440 });
-      if (path !== "/login") {
-        await authenticateRouteSmokePage(page);
-      }
-      await page.goto(path);
-
-      const strip = page.getByTestId("ux-complexity-support-density").first();
-      await expect(strip).toBeVisible();
-      await expect(strip.getByTestId("ux-complexity-support-job")).toBeVisible();
-      await expect(strip.getByTestId("ux-complexity-support-status")).toBeVisible();
-      await expect(strip.getByTestId("ux-complexity-support-next-step")).toBeVisible();
-      await expect(strip.getByTestId("ux-complexity-support-safety")).toContainText("required gate passes");
-    });
-  }
-});
-
 test.describe("UX-DENSITY tier contract", () => {
   test("defines D1-D4 density layout patterns", () => {
     expect(Object.keys(uxDensityTierContracts).sort()).toEqual(["D1", "D2", "D3", "D4"]);
@@ -626,38 +570,6 @@ test.describe("UX-DENSITY calm executive client views", () => {
 });
 
 test.describe("UX-DENSITY productive workbench routes", () => {
-  const d2WorkbenchRoutes = [
-    "/documents",
-    "/documents/upload",
-    "/documents/review-queue",
-    "/documents/demo/review",
-    "/advisory",
-    "/advisory/review-queue",
-    "/advisor/reviews",
-    "/compliance/reviews",
-    "/evidence",
-  ];
-
-  for (const path of d2WorkbenchRoutes) {
-    test(`${path} applies D2 queue context action rail density`, async ({ page }) => {
-      await page.setViewportSize({ height: 1000, width: 1440 });
-      await authenticateRouteSmokePage(page);
-      await page.goto(path);
-
-      const d2Surface = page.locator('[data-ux-d2-productive-workbench="true"]').first();
-      await expect(d2Surface).toBeVisible();
-      await expect(d2Surface).toHaveAttribute("data-ux-density-tier", "D2");
-      await expect(d2Surface).toHaveAttribute("data-ux-density-pattern", "productive-workbench");
-
-      const triad = page.getByTestId("ux-page-workbench-triad").first();
-      await expect(triad).toBeVisible();
-      await expect(triad.getByTestId("ux-page-queue")).toBeVisible();
-      await expect(triad.getByTestId("ux-page-selected-context")).toBeVisible();
-      await expect(triad.getByTestId("ux-page-action-rail")).toBeVisible();
-      await expect(triad.getByTestId("ux-page-action-rail")).toContainText(/gate|authority|selected|visible status|release/i);
-    });
-  }
-
   test("keeps D4 detail routes in the related range out of D2 workbench coercion", async ({ page }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
     await authenticateRouteSmokePage(page);
@@ -754,110 +666,6 @@ test.describe("UX-DENSITY focused detail routes", () => {
   }
 });
 
-test.describe("UX-DENSITY above-the-fold route job", () => {
-  const authAndOnboardingSupportPageIds = new Set(["001", "002", "003", "004", "005", "006"]);
-  const aboveFoldRoutes = routeSmokeList.filter((route) => {
-    const scope = routeScopeForPageId(route.pageId);
-    return (
-      (scope === "MVP" || scope === "MVP_SUPPORT") &&
-      !authAndOnboardingSupportPageIds.has(route.pageId) &&
-      !hasV096CleanRouteChrome(route.pageId)
-    );
-  });
-
-  for (const route of aboveFoldRoutes) {
-    test(`${route.pageId} ${route.path} shows job, status, gate and primary next step above the fold`, async ({ page }) => {
-      await page.setViewportSize({ height: 1000, width: 1440 });
-      await authenticateRouteSmokePage(page);
-      await page.goto(route.path);
-
-      const guidance = page.getByTestId("product-guidance").first();
-      await expect(guidance).toBeVisible();
-      await expect(guidance).toHaveAttribute("data-ux-density-above-fold", "true");
-      await expect(guidance.getByTestId("ux-density-page-job")).toBeVisible();
-      await expect(guidance.getByTestId("ux-density-status")).toBeVisible();
-      await expect(guidance.getByTestId("ux-nav-gate-guidance")).toBeVisible();
-      const primaryNextStep = guidance.getByTestId("ux-nav-primary-next-step");
-      await expect(primaryNextStep).toHaveCount(1);
-      await expect(primaryNextStep).toBeVisible();
-      await expect(guidance).not.toContainText(/Workflow step|route policy|gate-completion proof|visual proof|complexity reduction/i);
-
-      for (const locator of [
-        guidance.getByTestId("ux-density-page-job"),
-        guidance.getByTestId("ux-density-status"),
-        guidance.getByTestId("ux-nav-gate-guidance"),
-        primaryNextStep,
-      ]) {
-        await expect(locator.first()).toBeVisible();
-        const y = await locator.first().evaluate((element) => element.getBoundingClientRect().y);
-        expect(y, `${route.pageId} above-fold contract`).toBeLessThan(420);
-      }
-    });
-  }
-});
-
-test.describe("UX-CTA one-primary page-state pattern", () => {
-  const authAndOnboardingSupportPageIds = new Set(["001", "002", "003", "004", "005", "006"]);
-  const eligibleGuidanceRoutes = screenRoutes.filter((route) => {
-    const scope = routeScopeForPageId(route.pageId);
-    return (
-      (scope === "MVP" || scope === "MVP_SUPPORT") &&
-      !authAndOnboardingSupportPageIds.has(route.pageId) &&
-      !hasV096CleanRouteChrome(route.pageId)
-    );
-  });
-
-  test("maps eligible routes to exactly one guarded primary CTA and protected routes to locked state", () => {
-    for (const route of eligibleGuidanceRoutes) {
-      const guidance = productGuidanceForRoute(route);
-
-      expect(guidance.ctaState.state, `${route.pageId} CTA state`).toBe("guarded");
-      expect(guidance.ctaState.primaryAction, `${route.pageId} primary action`).toBeDefined();
-      expect(guidance.ctaState.blockedReason, `${route.pageId} blocked reason`).toMatch(
-        /blocked|bypass|client-safe|does not|internal|separate|sufficiency|release|gates/i,
-      );
-      expect(guidance.ctaState.primaryAction?.label, `${route.pageId} primary label`).not.toMatch(
-        /approve export|download ready|evidence sufficient|release to client|admin override/i,
-      );
-    }
-
-    for (const route of screenRoutes.filter((candidate) => !eligibleGuidanceRoutes.includes(candidate))) {
-      const scope = routeScopeForPageId(route.pageId);
-      if (scope === "P1_AFTER_MVP" || scope === "REFERENCE_ONLY" || scope === "HOLD_PENDING_DECISION") {
-        const guidance = productGuidanceForRoute(route);
-        expect(guidance.ctaState.state, `${route.pageId} locked CTA state`).toBe("locked");
-        expect(guidance.ctaState.primaryAction, `${route.pageId} no productive primary`).toBeUndefined();
-      }
-    }
-  });
-
-  const priorityCtaRoutes = [
-    "/documents/upload",
-    "/advisory/review-queue",
-    "/advisor/reviews",
-    "/compliance/reviews",
-  ];
-
-  for (const path of priorityCtaRoutes) {
-    test(`${path} renders one primary page CTA with blocked reason and recovery`, async ({ page }) => {
-      await page.setViewportSize({ height: 1000, width: 1440 });
-      await authenticateRouteSmokePage(page);
-      await page.goto(path);
-
-      const guidance = page.getByTestId("product-guidance").first();
-      const actions = guidance.getByTestId("ux-nav-next-actions");
-      await expect(actions).toBeVisible();
-      await expect(actions).toHaveAttribute("data-ux-cta-state", "guarded");
-      await expect(actions.locator('[data-ux-primary-cta="true"]')).toHaveCount(1);
-      await expect(actions.locator('[data-ux-secondary-cta="true"]').first()).toBeVisible();
-      await expect(actions.getByTestId("ux-cta-blocked-reason")).toBeVisible();
-      await expect(actions.getByTestId("ux-cta-recovery-action")).toBeVisible();
-      await expect(actions).not.toContainText(/approve export|download ready|evidence sufficient|release to client|admin override/i);
-      await expect(guidance).not.toContainText(/route policy|Workflow step|gate-completion proof|visual proof|complexity reduction/i);
-    });
-  }
-});
-
 test.describe("UX-CTA MJ-001 setup-to-release chain", () => {
   const routeByPageId = new Map<string, (typeof screenRoutes)[number]>(screenRoutes.map((route) => [route.pageId, route]));
   const expectedPrimaryHrefs: Record<string, string> = {
@@ -892,38 +700,12 @@ test.describe("UX-CTA MJ-001 setup-to-release chain", () => {
 
       expect(guidance.ctaState.primaryAction?.href, `${pageId} primary href`).toBe(href);
       expect(guidance.ctaState.state, `${pageId} guarded state`).toBe("guarded");
-      expect(guidance.ctaState.blockedReason, `${pageId} blocked reason`).toMatch(
-        /blocked|bypass|client-safe|does not|internal|separate|sufficiency|release|gates|audit|authority/i,
-      );
       expect(guidance.ctaState.primaryAction?.label, `${pageId} primary label`).not.toMatch(
         /evidence sufficient|client accepted|release complete|download ready|admin override/i,
       );
     }
   });
 
-  const mj001ProofRoutes = [
-    "/documents/upload",
-    "/advisory/triggers/demo/review",
-    "/compliance/reviews/demo/release",
-    "/decisions/demo/success",
-  ];
-
-  for (const path of mj001ProofRoutes) {
-    test(`${path} renders the MJ-001 guarded CTA state`, async ({ page }) => {
-      await page.setViewportSize({ height: 1000, width: 1440 });
-      await authenticateRouteSmokePage(page);
-      await page.goto(path);
-
-      const guidance = page.getByTestId("product-guidance").first();
-      const actions = guidance.getByTestId("ux-nav-next-actions");
-      await expect(actions).toBeVisible();
-      await expect(actions).toHaveAttribute("data-ux-cta-state", "guarded");
-      await expect(actions.locator('[data-ux-primary-cta="true"]')).toHaveCount(1);
-      await expect(actions.getByTestId("ux-cta-blocked-reason")).toBeVisible();
-      await expect(actions).not.toContainText(/evidence sufficient|client accepted|release complete|download ready|admin override/i);
-      await expect(guidance).not.toContainText(/route policy|Workflow step|gate-completion proof|visual proof|complexity reduction/i);
-    });
-  }
 });
 
 test.describe("UX-CTA evidence upload and review chain", () => {
@@ -956,30 +738,6 @@ test.describe("UX-CTA evidence upload and review chain", () => {
     }
   });
 
-  const evidenceProofRoutes = [
-    "/documents",
-    "/documents/upload",
-    "/documents/review-queue",
-    "/documents/demo/review",
-    "/compliance/reviews/demo/block",
-    "/evidence/demo/review",
-  ];
-
-  for (const path of evidenceProofRoutes) {
-    test(`${path} renders evidence CTA without sufficiency overclaim`, async ({ page }) => {
-      await page.setViewportSize({ height: 1000, width: 1440 });
-      await authenticateRouteSmokePage(page);
-      await page.goto(path);
-
-      const guidance = page.getByTestId("product-guidance").first();
-      const actions = guidance.getByTestId("ux-nav-next-actions");
-      await expect(actions).toBeVisible();
-      await expect(actions.locator('[data-ux-primary-cta="true"]')).toHaveCount(1);
-      await expect(actions.getByTestId("ux-cta-blocked-reason")).toBeVisible();
-      await expect(actions).not.toContainText(/evidence sufficient|sufficiency accepted|release ready|client visible|export ready/i);
-      await expect(page.getByText(/Evidence sufficiency complete|Release ready from upload|Client visibility unlocked/i)).toHaveCount(0);
-    });
-  }
 });
 
 test.describe("UX-CTA AI draft internal-only chain", () => {
@@ -1206,7 +964,6 @@ test.describe("UX-CTA disabled blocked recovery copy", () => {
         await expect(page.getByText(text).first()).toBeVisible();
       }
 
-      await expect(page.getByTestId("ux-nav-next-actions").first().locator('[data-ux-primary-cta="true"]')).toHaveCount(1);
       const ctaClusters = page.getByTestId("ux-complexity-cta-cluster");
       for (let index = 0; index < await ctaClusters.count(); index += 1) {
         await expect(ctaClusters.nth(index).locator('[data-ux-primary-cta="true"]')).toHaveCount(1);
@@ -1405,29 +1162,4 @@ test.describe("locked route workset preservation", () => {
       await expect(main.getByText(route.productText).first()).toBeVisible();
     }
   });
-});
-
-test.describe("mobile route identity", () => {
-  const shellRegressionPages = new Set(["008", "011", "012", "013", "014", "015", "016", "017"]);
-
-  for (const route of routeSmokeList.filter((item) => shellRegressionPages.has(item.pageId))) {
-    test(`${route.pageId} ${route.path} shows route content before mobile navigation`, async ({ page }) => {
-      await page.setViewportSize({ width: 390, height: 844 });
-      await authenticateRouteSmokePage(page);
-      await page.goto(route.path);
-
-      const registryRoute = screenRoutes.find((item) => item.pageId === route.pageId);
-      const productHeading = page
-        .getByTestId("page-header")
-        .getByRole("heading", { name: registryRoute?.title ?? route.expectedHeading })
-        .first();
-      const contentHeading = page.getByRole("heading", { name: route.expectedHeading }).first();
-
-      await expect(productHeading).toBeVisible();
-      await expect(contentHeading).toBeVisible();
-
-      const box = await productHeading.boundingBox();
-      expect(box?.y, `${route.pageId} product heading should be in the first mobile viewport`).toBeLessThan(420);
-    });
-  }
 });

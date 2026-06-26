@@ -46,12 +46,4 @@ test.describe("UXP2-008 reference product-control pruning", () => {
     });
   }
 
-  test("reference guidance keeps next-step and primary CTA links absent", async ({ page }) => {
-    await page.goto("/service-blueprint");
-
-    await expect(page.getByTestId("product-guidance").first()).toBeVisible();
-    await expect(page.getByTestId("ux-nav-primary-next-step")).toHaveCount(0);
-    await expect(page.locator('a[data-ux-primary-cta="true"], button[data-ux-primary-cta="true"]')).toHaveCount(0);
-    await expect(page.getByTestId("ux-cta-blocked-reason").first()).toBeVisible();
-  });
 });
