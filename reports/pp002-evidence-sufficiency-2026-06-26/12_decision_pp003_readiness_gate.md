@@ -4,7 +4,11 @@ Generated: 2026-06-26
 
 Task: `DECISION-2 PP-003 Readiness Gate after PP-002`
 
-Status: `WAITING_FOR_USER_DECISION`
+Status: `COMPLETE`
+
+Approved Decision: `PP003_READY_WITH_LIMITATIONS`
+
+Approval Source: user message on 2026-06-26, `approve PP003_READY_WITH_LIMITATIONS`
 
 ## Decision Options
 
@@ -53,8 +57,8 @@ PP-002 first-wave validation is green and sufficient for PP-003 to materialize a
 
 ## Stop Condition
 
-Human decision required before PP-003 materialization:
+Human decision completed. PP-003 materialization may proceed only under the approved limited-readiness boundary:
 
-- Approve recommended path with `PP003_READY_WITH_LIMITATIONS`.
-- Override with `PP003_READY_ON_PP002_OUTPUTS` only if PP003 may treat the first-wave canonical PP-002 contract as fully sufficient for its scope.
-- Override with `PP003_BLOCKED_BY_PP002_GAPS` if PP003 must wait for legacy/P44 evidence consolidation before materialization.
+- PP003 may use accepted PP-002 first-wave outputs listed above.
+- PP003 must quarantine legacy/P44 evidence paths unless adapted into the canonical PP-002 sufficiency contract.
+- PP003 must add hard negative gates for upload-as-proof, internal leakage and unaudited evidence sufficiency assumptions.

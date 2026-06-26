@@ -17,7 +17,7 @@ Generated: 2026-06-26
 | 8 | IMPL-5 | Complete | Audit matrix documented across upload, review, sufficiency and re-request proof; combined proof run passed 22/22. |
 | 9 | IMPL-6 | Complete | UX evidence state and safety wording verified as zero-delta product code; scoped UI/API proof run passed 14/14. |
 | 10 | QA-1 | Complete | Integrated P0 validation passed: source guard, typecheck, lint with warnings only, Prisma validate and 38/38 Playwright proof. |
-| 11 | DECISION-2 | Waiting for user decision | Recommendation recorded: `PP003_READY_WITH_LIMITATIONS`; PP003 should consume only the canonical PP-002 first-wave outputs and should not treat legacy/P44 paths as accepted dependencies. |
+| 11 | DECISION-2 | Complete | User approved `PP003_READY_WITH_LIMITATIONS`; PP003 may consume only the canonical PP-002 first-wave outputs and must not treat legacy/P44 paths as accepted dependencies. |
 
 ## Commands Run
 
