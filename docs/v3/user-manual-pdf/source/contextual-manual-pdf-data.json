@@ -849,7 +849,7 @@
       "entry": "Signal Review",
       "outcome": "The analyst reviews an internal-only trigger, requests data or routes to advisor, and keeps client visibility blocked.",
       "result": "Trigger moves toward awaiting information or advisor review while staying internal-only.",
-      "sourceStatus": "E4 demo-state executable for J01 subset; not fully governed across all signals.",
+      "sourceStatus": "legacy bridge status for J01 subset; full signal governance is not yet within canonical typed boundaries.",
       "whyThisTaskExists": "Signals may indicate missing ownership data, funding questions, document gaps, or workflow triggers. Analyst review separates internal triage from client-visible recommendations.",
       "whatTheUserIsTryingToAchieve": "The user is trying to understand the signal, add internal context, and choose the next safe route without creating client-visible advice.",
       "whatThisEnablesNext": [
@@ -954,7 +954,7 @@
         "F-012"
       ],
       "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-007-signal-review.png",
-      "demoBoundaryNote": "In the current demo, the J01 signal/advisor subset has the strongest executable proof. Not every signal path is fully governed.",
+      "demoBoundaryNote": "In the current demo, J01 signal/advisor behavior is intentionally handled via the legacy compatibility bridge. Full canonical typed signal governance is not yet implemented across all paths.",
       "futureReadinessNote": "This prepares the workflow for broader signal governance, triage metrics, automated queueing, and safer recommendation preparation."
     },
     {
@@ -968,7 +968,7 @@
       "entry": "Advisor Approval Queue",
       "outcome": "Advisor approves, revises, requests more data, or escalates without releasing to the client.",
       "result": "Advisor decision is recorded or routed; compliance release remains required.",
-      "sourceStatus": "E4 for J01 advisor action; advisor approval is explicitly not client visibility.",
+      "sourceStatus": "Legacy bridge path for J01; advisor approval is internal and not client visibility.",
       "whyThisTaskExists": "Advisor review is the human judgment stage between analyst work and compliance release. It lets advisors approve, revise, request more data, or escalate without granting client visibility.",
       "whatTheUserIsTryingToAchieve": "The user is trying to review the recommendation package, record a defensible advisor decision, and route the work to the next gate.",
       "whatThisEnablesNext": [

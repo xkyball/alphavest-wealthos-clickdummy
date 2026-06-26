@@ -405,7 +405,7 @@ The manual should repeatedly explain that blocked states are protective controls
 
 **Future-readiness note:** This prepares the workflow for broader signal governance, triage metrics, automated queueing, and safer recommendation preparation.
 
-**Demo-boundary note:** In the current demo, the J01 signal/advisor subset has the strongest executable proof. Not every signal path is fully governed.
+**Demo-boundary note:** In the current demo, J01 signal/advisor behavior is intentionally handled via the legacy compatibility bridge. Full canonical typed signal governance is not yet implemented across all paths.
 
 **Reader takeaway:** Signal review turns ambiguity into internal work without turning it into client advice.
 
@@ -457,7 +457,7 @@ The manual should repeatedly explain that blocked states are protective controls
 
 **Future-readiness note:** This prepares the workflow for clearer advisor accountability, package quality metrics, and compliance-ready recommendation records.
 
-**Demo-boundary note:** In the current demo, J01 advisor actions are executable. Broader advisor-governance coverage is not claimed across every package type.
+**Demo-boundary note:** In the current demo, J01 advisor actions are legacy compatibility actions. Canonical advisor governance remains a typed recommendation-review command boundary.
 
 **Reader takeaway:** Advisor approval is human review, not client release.
 

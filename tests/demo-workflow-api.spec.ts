@@ -137,7 +137,7 @@ test.describe("demo workflow API", () => {
     await prisma?.$disconnect();
   });
 
-  test("implemented J01 compatibility actions return successful demo-only mutation responses", async ({ request }) => {
+  test("implemented J01 compatibility actions return successful legacy-bridge mutation responses", async ({ request }) => {
     for (const actionId of workflowActions) {
       const response = await request.post("/api/demo-workflow", {
         data: { actionId },

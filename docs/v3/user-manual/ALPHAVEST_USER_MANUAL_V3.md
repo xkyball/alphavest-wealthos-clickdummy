@@ -237,7 +237,7 @@ Use this task to review an internal-only signal and route it without creating cl
 
 **If you cannot continue:** Check whether evidence is missing, the signal is restricted, or the action would create client-visible advice.
 
-**Current implementation note:** The J01 signal/advisor subset has the strongest demo workflow proof. Not every signal path is fully governed.
+**Current implementation note:** The J01 signal/advisor subset is a legacy compatibility bridge path. Full typed signal governance remains a separate canonical migration target.
 
 ### MT-008 Review An Advisor Approval Package
 
@@ -260,7 +260,7 @@ Use this task to review an advisor package and approve, revise, request more dat
 
 **If you cannot continue:** Check missing evidence, incomplete rationale, escalation conditions, or a compliance-pending state.
 
-**Current implementation note:** Advisor action is demo-executable for the J01 subset. Advisor approval is explicitly not client visibility.
+**Current implementation note:** Advisor action in J01 is a legacy bridge path for migration; advisor approval remains internal and is not client visibility.
 
 ### MT-009 Release, Block, Or Request Evidence For Advice-Like Content
 
@@ -461,6 +461,6 @@ Use this task to review internal operations queues, SLA risk, service blueprint,
 
 ## Implementation Status Notes
 
-The current manual covers all 14 source-package tasks. The strongest executable proof is around selected demo workflow actions, especially the signal/advisor path and related audit/evidence behavior. Other areas are navigable, visually rich, and useful for training, but not all visible controls are fully persisted workflow transactions.
+The current manual covers all 14 source-package tasks. Verified proof currently concentrates on typed-command and compatibility-path boundaries that are explicitly surfaced, especially the J01 bridge plus related audit/evidence behavior. Other areas are navigable and visually rich, but not all visible controls are fully persisted workflow transactions.
 
 Use the screenshot index and traceability file when updating this manual. If a workflow becomes fully implemented, update its implementation note, evidence level, screenshot capture, and QA record together.

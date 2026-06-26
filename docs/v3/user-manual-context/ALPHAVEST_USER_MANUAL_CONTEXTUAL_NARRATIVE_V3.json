@@ -1174,7 +1174,7 @@
         }
       ],
       "futureReadinessNote": "This prepares the workflow for broader signal governance, triage metrics, automated queueing, and safer recommendation preparation.",
-      "demoBoundaryNote": "In the current demo, the J01 signal/advisor subset has the strongest executable proof. Not every signal path is fully governed.",
+      "demoBoundaryNote": "In the current demo, J01 signal/advisor behavior is intentionally handled via the legacy compatibility bridge. Full canonical typed signal governance is not yet implemented across all paths.",
       "readerTakeaway": "Signal review turns ambiguity into internal work without turning it into client advice.",
       "sourceTrace": [
         "ROLE_TASK_INVENTORY_V3.md",
@@ -1287,7 +1287,7 @@
         }
       ],
       "futureReadinessNote": "This prepares the workflow for clearer advisor accountability, package quality metrics, and compliance-ready recommendation records.",
-      "demoBoundaryNote": "In the current demo, J01 advisor actions are executable. Broader advisor-governance coverage is not claimed across every package type.",
+      "demoBoundaryNote": "In the current demo, J01 advisor actions are legacy compatibility actions. Canonical advisor governance remains a typed recommendation-review command boundary.",
       "readerTakeaway": "Advisor approval is human review, not client release.",
       "sourceTrace": [
         "ROLE_TASK_INVENTORY_V3.md",

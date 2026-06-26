@@ -41,8 +41,8 @@ This file maps the user-facing manual to its source evidence. User-facing chapte
 | MT-004 | Submit client profile and family context | UF-04 / W-04 / PF-C | E3 navigable |
 | MT-005 | Create an entity and review wealth structure | UF-05 / W-05 / PF-C | E3 navigable |
 | MT-006 | Upload and verify a document | UF-06 / W-06 / PF-D | E3 navigable |
-| MT-007 | Process a signal and route internal work | UF-07 / W-07 / PF-E | E4 demo-state executable for subset |
-| MT-008 | Review an advisor approval package | UF-08 / W-08 / PF-E | E4 demo action subset |
+| MT-007 | Process a signal and route internal work | UF-07 / W-07 / PF-E | Legacy compatibility bridge (J01) |
+| MT-008 | Review an advisor approval package | UF-08 / W-08 / PF-E | Legacy bridge path for advisor handoff |
 | MT-009 | Release, block, or request evidence | UF-09 / W-09 / PF-F | E3/E4 mixed demo states |
 | MT-010 | Review and submit a released client decision | UF-10 / W-10 / PF-F | E3 navigable with demo actions |
 | MT-011 | Review evidence and create a controlled export | UF-11 / W-11 / PF-I | E3 visual/navigable |
