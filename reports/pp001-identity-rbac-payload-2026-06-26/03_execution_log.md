@@ -24,6 +24,14 @@ Generated: 2026-06-26
 
 Stop gate reached. Next task in order: `DECISION-2 PP-002 Readiness / Auth Integration Boundary`.
 
+Pending human decision:
+
+`AUTHORIZE_PP002_SPECIFICATION_WITH_PP001_DEPENDENCIES`
+
+or
+
+`BLOCK_PP002_PENDING_PP001_REWORK`
+
 ## Commands Run
 
 ```bash
