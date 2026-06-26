@@ -21,8 +21,8 @@ Authority: `ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md`
 | 8 | IMPL-1.7 Advisor Candidate Boundary and No-Release State Guard | Complete | Advisor-ready draft promotion now uses the PP003 lifecycle gate; tests prove advisor approval/candidate state stays non-release and non-client-visible. |
 | 9 | IMPL-1.8 Audit Proof for Draft Rejection/Rebuild/Boundary Decisions | Complete | Added persisted audit/trace proof for unsupported-claim rejection, evidence-backed rebuild and denied boundary mutation. |
 | 10 | IMPL-1.9 UX Safety Wording Overlay for AI/Internal-only/Unsupported Claims | Complete | Advisor/detail safety copy now distinguishes internal draft, unsupported claims, advisor candidate, not released, no export and no client acceptance. Screenshot captured. |
-| 11 | QA-1.10 PP-003 Integrated P0 Advice Boundary Validation | Ready | PP003 implementation tasks complete. |
-| 12 | DECISION-1.11 PP-004 Readiness Gate after PP-003 | Blocked | Requires QA-1.10 result. |
+| 11 | QA-1.10 PP-003 Integrated P0 Advice Boundary Validation | Complete | Integrated PP001/PP002/PP003/workflow/UI suite passed 50/50 plus typecheck, guard and DB validation. |
+| 12 | DECISION-1.11 PP-004 Readiness Gate after PP-003 | Ready | QA-1.10 passed; PP004 readiness decision can now be made. |
 
 ## Commands Run
 
@@ -57,6 +57,10 @@ pnpm playwright test tests/scf-p04-p06-flow-ui.spec.ts tests/route-smoke.spec.ts
 pnpm typecheck
 pnpm guard:source
 pnpm db:validate
+pnpm playwright test tests/pp001-payload-visibility-contract.spec.ts tests/pp002-evidence-sufficiency-canonical.spec.ts tests/pp003-advice-boundary-contract.spec.ts tests/pp003-leakage-negative.spec.ts tests/pp003-advisor-candidate-boundary.spec.ts tests/pp003-boundary-audit-proof.spec.ts tests/scf-p04-p06-flow-ui.spec.ts tests/client-visibility-projection.spec.ts tests/demo-workflow-api.spec.ts --workers=1
+pnpm typecheck
+pnpm guard:source
+pnpm db:validate
 ```
 
 ## Preflight Result
@@ -71,4 +75,4 @@ guard:source: PASS, violations 0
 
 ## Current State
 
-Continue next with `QA-1.10` after the `IMPL-1.9` checkpoint is committed.
+Continue next with `DECISION-1.11`.
