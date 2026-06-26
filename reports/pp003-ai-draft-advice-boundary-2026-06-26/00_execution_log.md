@@ -14,8 +14,8 @@ Authority: `ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md`
 | 1 | DECISION-1.0 PP-001 / PP-002 Dependency Acceptance for PP-003 | Complete | Approved as `PP003_DEPENDENCY_BASELINE_ACCEPTED_WITH_LIMITATIONS`; PP-002 may be consumed only through the canonical first-wave journey sufficiency contract. |
 | 2 | ANALYSIS-1.1 PP-003 AI Draft / Advice Boundary Readiness & Dependency Preflight | Complete | Current repo surfaces, schema, payload fields, tests and leakage paths inventoried. |
 | 3 | SPEC-1.2 PP-003 AI Draft Internal-only and Advice Boundary Proof Contract | Complete | Spec created with `PP003_CANONICAL_PATH_ONLY` boundary and implementation non-goals. |
-| 4 | DECISION-1.3 PP-003 Advice Boundary Policy and Execution Boundary Approval | Pending human decision | Implementation tasks remain blocked until SPEC-1.2 is approved by the user/product owner. |
-| 5 | IMPL-1.4 Forbidden Internal Payload Dictionary & Redaction Map | Blocked | Requires SPEC-1.2 and DECISION-1.3. |
+| 4 | DECISION-1.3 PP-003 Advice Boundary Policy and Execution Boundary Approval | Complete | User approved `PP003_ADVICE_BOUNDARY_POLICY_APPROVED_WITH_CANONICAL_PATH_ONLY`. |
+| 5 | IMPL-1.4 Forbidden Internal Payload Dictionary & Redaction Map | Complete | Added PP003 field register, surface redaction matrix and focused tests; `tests/pp003-advice-boundary-contract.spec.ts` passed 6/6. |
 | 6 | IMPL-1.5 AI Draft Classification / Unsupported Claim Lifecycle & Tests | Blocked | Requires SPEC-1.2, DECISION-1.3 and PP-002 canonical sufficiency usage. |
 | 7 | IMPL-1.6 API / Client / Decision Projection Leakage Negative Tests | Blocked | Requires forbidden payload map and approved surface rules. |
 | 8 | IMPL-1.7 Advisor Candidate Boundary and No-Release State Guard | Blocked | Requires approved state taxonomy. |
@@ -47,4 +47,4 @@ guard:source: PASS, violations 0
 
 ## Current Stop State
 
-Stop at `DECISION-1.3`. No implementation task may start until the user/product owner approves the PP-003 advice-boundary policy and execution boundary.
+Continue next with `IMPL-1.5` only after the `IMPL-1.4` checkpoint is validated and committed.
