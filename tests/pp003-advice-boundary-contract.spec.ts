@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import {
   classifyPp003AdviceBoundaryField,
+  evaluatePp003DraftLifecycleGate,
   inspectPp003PayloadSurface,
   pp003AllowedClientSafeCandidateFields,
   pp003FieldClassificationRegister,
@@ -116,6 +117,80 @@ test.describe("PP-003 advice boundary field contract", () => {
     expect(unknownInternal.missing).toEqual([
       "pp003_forbidden_surface_field:internal_workbench:llmConfidenceNarrative",
       "pp003_requires_decision:llmConfidenceNarrative",
+    ]);
+  });
+
+  test("allows internal review while keeping draft state internal-only", () => {
+    const gate = evaluatePp003DraftLifecycleGate({
+      canonicalEvidenceAudited: false,
+      canonicalEvidencePath: "NONE",
+      canonicalEvidenceSufficient: false,
+      classified: false,
+      clientVisible: false,
+      draftStatus: "CREATED",
+      promotionTarget: "internal_review",
+      unsupportedClaims: [],
+    });
+
+    expect(gate.allowed).toBe(true);
+    expect(gate.missing).toEqual([]);
+  });
+
+  test("blocks advisor candidate promotion until classified, rebuilt with canonical evidence and unsupported claims are resolved", () => {
+    const blocked = evaluatePp003DraftLifecycleGate({
+      canonicalEvidenceAudited: false,
+      canonicalEvidencePath: "LEGACY_OR_P44",
+      canonicalEvidenceSufficient: false,
+      classified: false,
+      clientVisible: false,
+      draftStatus: "REVISION_REQUESTED",
+      promotionTarget: "advisor_candidate",
+      unsupportedClaims: [{ status: "NEEDS_EVIDENCE" }],
+    });
+
+    expect(blocked.allowed).toBe(false);
+    expect(blocked.missing).toEqual([
+      "draft_classification_required",
+      "evidence_backed_rebuild_required",
+      "unsupported_claims_require_evidence",
+      "pp002_canonical_journey_evidence_required",
+      "canonical_evidence_sufficiency_required",
+      "canonical_evidence_audit_required",
+    ]);
+
+    const allowed = evaluatePp003DraftLifecycleGate({
+      canonicalEvidenceAudited: true,
+      canonicalEvidencePath: "PP002_CANONICAL_JOURNEY",
+      canonicalEvidenceSufficient: true,
+      classified: true,
+      clientVisible: false,
+      draftStatus: "REBUILT_WITH_EVIDENCE",
+      promotionTarget: "advisor_candidate",
+      unsupportedClaims: [{ status: "RESOLVED" }],
+    });
+
+    expect(allowed.allowed).toBe(true);
+    expect(allowed.missing).toEqual([]);
+  });
+
+  test("rejects unsupported claim waivers, legacy evidence and client-visible release in PP003", () => {
+    const gate = evaluatePp003DraftLifecycleGate({
+      canonicalEvidenceAudited: true,
+      canonicalEvidencePath: "LEGACY_OR_P44",
+      canonicalEvidenceSufficient: true,
+      classified: true,
+      clientVisible: true,
+      draftStatus: "ADVISOR_READY",
+      promotionTarget: "client_visible_release",
+      unsupportedClaims: [{ status: "WAIVED" }],
+    });
+
+    expect(gate.allowed).toBe(false);
+    expect(gate.missing).toEqual([
+      "pp003_draft_must_not_be_client_visible",
+      "pp003_does_not_authorize_client_visible_release",
+      "unsupported_claim_waiver_not_pp003_canonical_proof",
+      "pp002_canonical_journey_evidence_required",
     ]);
   });
 });

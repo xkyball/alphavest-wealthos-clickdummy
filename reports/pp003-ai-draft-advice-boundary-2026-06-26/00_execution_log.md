@@ -16,8 +16,8 @@ Authority: `ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md`
 | 3 | SPEC-1.2 PP-003 AI Draft Internal-only and Advice Boundary Proof Contract | Complete | Spec created with `PP003_CANONICAL_PATH_ONLY` boundary and implementation non-goals. |
 | 4 | DECISION-1.3 PP-003 Advice Boundary Policy and Execution Boundary Approval | Complete | User approved `PP003_ADVICE_BOUNDARY_POLICY_APPROVED_WITH_CANONICAL_PATH_ONLY`. |
 | 5 | IMPL-1.4 Forbidden Internal Payload Dictionary & Redaction Map | Complete | Added PP003 field register, surface redaction matrix and focused tests; `tests/pp003-advice-boundary-contract.spec.ts` passed 6/6. |
-| 6 | IMPL-1.5 AI Draft Classification / Unsupported Claim Lifecycle & Tests | Blocked | Requires SPEC-1.2, DECISION-1.3 and PP-002 canonical sufficiency usage. |
-| 7 | IMPL-1.6 API / Client / Decision Projection Leakage Negative Tests | Blocked | Requires forbidden payload map and approved surface rules. |
+| 6 | IMPL-1.5 AI Draft Classification / Unsupported Claim Lifecycle & Tests | Complete | Added evidence-backed draft lifecycle gate; rejects unclassified drafts, open/waived unsupported claims, legacy/P44 evidence, unaudited sufficiency and PP003 client-visible release. |
+| 7 | IMPL-1.6 API / Client / Decision Projection Leakage Negative Tests | Ready | Forbidden payload map, surface rules and lifecycle gates are in place. |
 | 8 | IMPL-1.7 Advisor Candidate Boundary and No-Release State Guard | Blocked | Requires approved state taxonomy. |
 | 9 | IMPL-1.8 Audit Proof for Draft Rejection/Rebuild/Boundary Decisions | Blocked | Requires approved audit/action mapping. |
 | 10 | IMPL-1.9 UX Safety Wording Overlay for AI/Internal-only/Unsupported Claims | Blocked | Requires approved labels/state taxonomy. |
@@ -33,6 +33,11 @@ git log -1 --oneline
 git diff --stat
 cat package.json
 pnpm guard:source
+pnpm playwright test tests/pp003-advice-boundary-contract.spec.ts --workers=1
+pnpm typecheck
+pnpm playwright test tests/pp001-payload-visibility-contract.spec.ts tests/internal-draft-governance-spine.spec.ts tests/pp003-advice-boundary-contract.spec.ts --workers=1
+pnpm db:validate
+pnpm playwright test tests/pp002-evidence-sufficiency-canonical.spec.ts tests/pp003-advice-boundary-contract.spec.ts --workers=1
 ```
 
 ## Preflight Result
@@ -45,6 +50,6 @@ diff stat: empty
 guard:source: PASS, violations 0
 ```
 
-## Current Stop State
+## Current State
 
-Continue next with `IMPL-1.5` only after the `IMPL-1.4` checkpoint is validated and committed.
+Continue next with `IMPL-1.6` after the `IMPL-1.5` checkpoint is committed.

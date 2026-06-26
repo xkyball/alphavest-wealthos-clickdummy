@@ -27,6 +27,21 @@ export type Pp003Surface =
   | "internal_workbench";
 
 export type Pp003SurfaceRule = "allow" | "allow_internal_only" | "block" | "hide" | "redact";
+export type Pp003DraftLifecycleStatus =
+  | "ADVISOR_READY"
+  | "ARCHIVED"
+  | "CLASSIFIED"
+  | "CREATED"
+  | "REBUILT_WITH_EVIDENCE"
+  | "REJECTED"
+  | "REVISION_REQUESTED";
+export type Pp003UnsupportedClaimStatus = "NEEDS_EVIDENCE" | "RESOLVED" | "WAIVED";
+export type Pp003CanonicalEvidencePath = "PP002_CANONICAL_JOURNEY" | "LEGACY_OR_P44" | "NONE";
+export type Pp003DraftPromotionTarget =
+  | "advisor_candidate"
+  | "client_safe_summary_candidate"
+  | "client_visible_release"
+  | "internal_review";
 
 export type Pp003FieldClassification = {
   av27Class?: Av27Phase6PayloadClassification;
@@ -46,6 +61,23 @@ export type Pp003SurfaceInspection = {
   missing: string[];
   surface: Pp003Surface;
   unknownFields: string[];
+};
+
+export type Pp003DraftLifecycleGateInput = {
+  canonicalEvidenceAudited: boolean;
+  canonicalEvidencePath: Pp003CanonicalEvidencePath;
+  canonicalEvidenceSufficient: boolean;
+  classified: boolean;
+  clientVisible: boolean;
+  draftStatus: Pp003DraftLifecycleStatus;
+  promotionTarget: Pp003DraftPromotionTarget;
+  unsupportedClaims: Array<{ status: Pp003UnsupportedClaimStatus }>;
+};
+
+export type Pp003DraftLifecycleGate = {
+  allowed: boolean;
+  missing: string[];
+  target: Pp003DraftPromotionTarget;
 };
 
 const aiDraftFields = [
@@ -278,5 +310,60 @@ export function inspectPp003PayloadSurface(
     missing,
     surface,
     unknownFields,
+  };
+}
+
+export function evaluatePp003DraftLifecycleGate(input: Pp003DraftLifecycleGateInput): Pp003DraftLifecycleGate {
+  const missing: string[] = [];
+  const openUnsupportedClaims = input.unsupportedClaims.filter((claim) => claim.status === "NEEDS_EVIDENCE");
+
+  if (input.clientVisible) {
+    missing.push("pp003_draft_must_not_be_client_visible");
+  }
+
+  if (input.promotionTarget === "internal_review") {
+    return {
+      allowed: missing.length === 0,
+      missing,
+      target: input.promotionTarget,
+    };
+  }
+
+  if (input.promotionTarget === "client_visible_release") {
+    missing.push("pp003_does_not_authorize_client_visible_release");
+  }
+
+  if (!input.classified) {
+    missing.push("draft_classification_required");
+  }
+
+  if (input.draftStatus !== "REBUILT_WITH_EVIDENCE" && input.draftStatus !== "ADVISOR_READY") {
+    missing.push("evidence_backed_rebuild_required");
+  }
+
+  if (openUnsupportedClaims.length > 0) {
+    missing.push("unsupported_claims_require_evidence");
+  }
+
+  if (input.unsupportedClaims.some((claim) => claim.status === "WAIVED")) {
+    missing.push("unsupported_claim_waiver_not_pp003_canonical_proof");
+  }
+
+  if (input.canonicalEvidencePath !== "PP002_CANONICAL_JOURNEY") {
+    missing.push("pp002_canonical_journey_evidence_required");
+  }
+
+  if (!input.canonicalEvidenceSufficient) {
+    missing.push("canonical_evidence_sufficiency_required");
+  }
+
+  if (!input.canonicalEvidenceAudited) {
+    missing.push("canonical_evidence_audit_required");
+  }
+
+  return {
+    allowed: missing.length === 0,
+    missing: [...new Set(missing)],
+    target: input.promotionTarget,
   };
 }
