@@ -56,12 +56,13 @@ Top-level app pages:
 | `app/journeys/page.tsx`, `app/journeys/[id]/page.tsx` | Journey UI pages. |
 | `app/layout.tsx`, `app/error.tsx`, `app/loading.tsx`, `app/not-found.tsx`, `app/globals.css` | Framework shell and styling. |
 
-API route files found: `32`
+API route files found: `33`
 
 | API file | Methods observed |
 | --- | --- |
 | `app/api/admin-tenants/route.ts` | `GET`, `POST` |
 | `app/api/advice-release-history/actions/route.ts` | `POST` |
+| `app/api/advisor-review/actions/route.ts` | `POST` |
 | `app/api/audit-events/route.ts` | `GET` |
 | `app/api/auth/dummy/route.ts` | `POST` |
 | `app/api/auth/logout/route.ts` | `POST` |
@@ -182,6 +183,17 @@ Important package scripts from `package.json`:
 | `test:route-smoke`, `test:workflow-gate`, `test:permissions`, `test:document-upload-api`, `test:document-upload-flow`, `test:file-export`, `test:client-visibility`, `test:v1-p0` | Focused Playwright/safety/API suites | Runtime proof only if executed during this run. |
 | `screencast:*`, `visual:*` | Screenshot/screencast/visual proof helpers | Use only if UI changes or screenshot proof is required. No UI changes in this audit so far. |
 
+Inventory metrics from this run:
+
+| Metric | Current local result |
+| --- | ---: |
+| API route files | 33 |
+| Test/source files under `tests/**` | 146 |
+| `lib/**` TypeScript files | 129 |
+| `components/**` TS/TSX files | 57 |
+| `scripts/**` files | 26 |
+| Prisma migration directories | 5 |
+
 ## Test Inventory
 
 The repo contains a broad Playwright/test suite. Relevant proof families include:
@@ -206,8 +218,9 @@ Inventory boundary: test existence supports proof planning and static claim chec
 | Package manager | Confirmed: `pnpm@9.15.9`. |
 | DB backend | PostgreSQL via Prisma; runtime DB availability not yet tested in this audit. |
 | Demo session/auth posture | Repo contains demo auth/session/provider modules and auth API routes; real-auth hardening is not assumed. |
-| Browser screenshots | Required for this implementation slice because product-like UI clients were rewired from screencast demo calls to typed command clients. |
+| Browser screenshots | Not required for ANALYSIS-1 because this ticket updates report/source inventory only and does not change UI. |
 | Product code changes | Out of scope for this audit unless the user later authorizes gap-fix implementation. |
+| Pre-existing unstaged JSON deltas | Present and excluded from ANALYSIS-1 unless separately reconciled. |
 
 ## ANALYSIS-1.1.2 Validation
 

@@ -9,9 +9,9 @@ Scope: local evidence boundary for the capability reality audit.
 | Check | Result |
 | --- | --- |
 | Branch | `full-workflow` |
-| Latest commit | `7de6dde api: migrate platform admin actions to typed commands` |
-| Working tree | clean before current report refresh |
-| Diff stat before this audit edit | no local file diffs before current report refresh |
+| Latest commit | `2f746c6 chore(docs): align J01 markdown boundary terminology` |
+| Working tree | four pre-existing unstaged JSON/doc-source deltas before this ticket: `docs/v3/gap-analysis.v3.json`, `docs/v3/user-manual-collaboration/ALPHAVEST_COLLABORATIVE_WORKFLOW_MANUAL_V3.json`, `docs/v3/user-manual-pdf/source/collaborative-workflow-manual-pdf-data.json`, `docs/v3/user-manual-visual-process/ALPHAVEST_VISUAL_PROCESS_MANUAL_BLUEPRINT_V3.json` |
+| Diff stat before this audit edit | 4 files changed, 4 insertions(+), 4 deletions(-), unrelated to the current ANALYSIS-1 report refresh |
 | Package manager | `pnpm@9.15.9` from `package.json` |
 | Source guard | `pnpm guard:source` PASS, `violations: 0` |
 | Operative AlphaVest authority | `AGENTS.md` -> `ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md` |
@@ -39,6 +39,7 @@ Scope: local evidence boundary for the capability reality audit.
 | Uploaded audit ticket file as code evidence | It is a task architecture source, not proof of AlphaVest implementation. | It defines what to audit, not what exists in this repo. |
 | Prior audit reports | Format/pattern reference only unless corroborated in current local code or runtime. | Upload explicitly forbids stale context becoming code truth. |
 | Chat context and memory | Not code evidence. | Useful for preferences, not implementation facts. |
+| Pre-existing dirty files | Treat as parallel workspace state unless directly inspected and intentionally included. | Prevents this audit from silently absorbing unrelated JSON/source-sync changes. |
 | Documentation-only feature claims | Must be downgraded to `DOC_CLAIM` unless code/test/runtime supports them. | Prevents report overclaims. |
 | Schema-only existence | Cannot prove editability or workflow processing. | A table/model is not a vertical slice. |
 | UI-only presence | Cannot prove mutation, persistence or guarded workflow. | A button/route/card is not a workflow. |
