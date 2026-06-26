@@ -21,7 +21,9 @@ Current head at execution start: `2f746c6 chore(docs): align J01 markdown bounda
 | 9 | `IMPL-1.4.2` Workflow-I/O-, Datenpflege- und Absicherungsreport erzeugen | `DONE` | Workflow I/O, data editability, security/audit/test proof and missing-proof sections added to the capability report. |
 | 10 | `IMPL-1.4.3` Befunde, Grenzen, Overclaim-Warnungen und Folgearbeit konsolidieren | `DONE` | Executive summary, limitations, overclaim risk register, bold legacy-cleanup recommendations and candidate follow-up register added. |
 | 11 | `QA-1` Report validieren und Claim-Kontrolle durchführen | `DONE` | QA decision `PASS_WITH_LIMITATIONS`: stale QA claims removed, capability drift gate updated, focused proof pack passed `12/12`, and `pnpm gate:capability-report` passed against current 53-model / 33-API-route report truth. |
-| 12 | `DECISION-1` Menschliche Abnahme der Report-Baseline | `PENDING_HUMAN_DECISION` | Decision gate refreshed from current QA truth. Ordered execution stops here until the human baseline decision and follow-up authorization are recorded. |
+| 12 | `DECISION-1` Menschliche Abnahme der Report-Baseline | `DONE_ACCEPTED_WITH_LIMITATIONS` | Human decision recorded: baseline accepted with limitations; proof pack, J01 boundary/quarantine, Advice/Release-History typed boundary and removal of product-like `runScreencastDemoAction` usage authorized. |
+| 13 | `FOLLOWUP-0` Decision acceptance record | `DONE` | Current user authorization captured in `07_decision_gate.md`; `pnpm guard:source` passed before follow-up execution resumed. |
+| 14 | `FOLLOWUP-1` Browser/runtime proof pack for typed command surfaces | `NEXT` | Run focused proof for export, tenant governance and platform admin typed command surfaces before further cleanup claims. |
 
 ## Current Proof Pack
 
@@ -43,7 +45,7 @@ PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm exec playwright test tests/demo-workflow-actio
 pnpm gate:capability-report
 ```
 
-Result so far: `ANALYSIS-1`, all `ANALYSIS-2` subtasks, `SPEC-1`, all `IMPL-1` report slices, `QA-1` and the `DECISION-1` gate preparation completed with source guard `PASS`, targeted drift proof pack `12 passed`, capability report gate `PASS`, QA decision `PASS_WITH_LIMITATIONS`, and no UI changes.
+Result so far: `ANALYSIS-1`, all `ANALYSIS-2` subtasks, `SPEC-1`, all `IMPL-1` report slices, `QA-1`, `DECISION-1` and `FOLLOWUP-0` completed with source guard `PASS`, targeted drift proof pack `12 passed`, capability report gate `PASS`, QA decision `PASS_WITH_LIMITATIONS`, human acceptance with cleanup authorization recorded, and no UI changes in `FOLLOWUP-0`.
 
 ## Current Workspace Boundary
 
@@ -56,6 +58,6 @@ The run started with four pre-existing unstaged JSON/source-doc deltas:
 
 They are excluded from `ANALYSIS-1` unless a later ordered ticket explicitly reconciles generated/source JSON.
 
-## Stop Point
+## Next Ticket
 
-Await human decision for `DECISION-1`: accept, correct, rework or reject the report baseline, and explicitly authorize or block follow-up ticket derivation.
+Proceed to `FOLLOWUP-1`: Browser/runtime proof pack for export, tenant governance and platform admin typed command surfaces.

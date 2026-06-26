@@ -1,14 +1,15 @@
 # Human Decision Gate
 
 Ticket: `DECISION-1`
-Status: `PENDING_HUMAN_DECISION`
-Decision source: refreshed local capability audit run on 2026-06-26; no human baseline acceptance has been assumed.
+Status: `ACCEPTED_WITH_LIMITATIONS_AND_CLEANUP_AUTHORIZATION`
+Decision source: refreshed local capability audit run on 2026-06-26; human baseline acceptance recorded after QA.
 QA decision: `PASS_WITH_LIMITATIONS`
 Codex recommendation: `ACCEPT_WITH_LIMITATIONS_AND_AUTHORIZE_TYPED_BOUNDARY_PROOF_PLUS_CLEANUP`
+Human decision: `ACCEPT_WITH_LIMITATIONS_AND_CLEANUP_AUTHORIZATION`
 
-## Decision Needed
+## Decision Recorded
 
-The local capability report is ready for human baseline decision. The current QA result is `PASS_WITH_LIMITATIONS`: the report is evidence-bound, source-only, reproducible from local artefacts and protected by the capability report drift gate.
+The local capability report has been accepted with limitations and cleanup authorization. The current QA result remains `PASS_WITH_LIMITATIONS`: the report is evidence-bound, source-only, reproducible from local artefacts and protected by the capability report drift gate.
 
 This baseline is not a release certificate and not a full runtime vertical-slice proof. The current proof is deliberately narrower:
 
@@ -46,18 +47,18 @@ This is the cleanest route because it treats `/api/demo-workflow` as legacy demo
 
 | Follow-up | Current status | Needs human authorization? |
 | --- | --- | --- |
-| Accept local report baseline with explicit QA limitations | Ready for human decision | Yes |
-| Browser/runtime proof pack for export, tenant governance and platform admin | Ready to derive | Yes |
-| J01 typed intake/advisor-review boundary or screencast-seed quarantine | Ready to derive | Yes |
-| Advice/Release-History typed command boundary for J02/J03 | Ready to derive after baseline acceptance | Yes |
-| Removal of `runScreencastDemoAction` from product-like screens | Ready after typed boundaries are complete | Yes |
-| Static affordance purge/wire/safety-block pass | Ready to derive | Yes |
+| Accept local report baseline with explicit QA limitations | Accepted | Authorized |
+| Browser/runtime proof pack for export, tenant governance and platform admin | Ready to derive | Authorized |
+| J01 typed intake/advisor-review boundary or screencast-seed quarantine | Ready to derive | Authorized |
+| Advice/Release-History typed command boundary for J02/J03 | Ready to derive after J01/boundary inspection | Authorized |
+| Removal of `runScreencastDemoAction` from product-like screens | Ready after typed boundaries are complete | Authorized |
+| Static affordance purge/wire/safety-block pass | Ready to derive | Authorized |
 
-## Stop Condition
+## Execution Control
 
-Current ordered execution stops here. Do not derive implementation tickets or continue cleanup until the human decision is recorded.
+The human decision is recorded. Follow-up work may proceed one ticket at a time, preserving the QA limitations: no `COMPLETE_VERTICAL_SLICE` claim without full UI/API/service/DB/security/test proof, and no use of `/api/demo-workflow` as product-like command infrastructure.
 
-Recommended human response:
+Recorded human response:
 
 ```text
 Decision = Accept with Limitations + Cleanup Authorization
