@@ -18,8 +18,8 @@ Current head at execution start: `2f746c6 chore(docs): align J01 markdown bounda
 | 6 | `ANALYSIS-2.4` Security-, Guard-, Audit- und Test-Beweise erfassen | `DONE` | Guard/test matrix completed. Targeted drift proof pack now passes 12/12 after updating the capability drift gate from 32 to 33 API route files and narrowing demo-only actions to `j01.requestData`. |
 | 7 | `SPEC-1` Report-Taxonomie, Evidence-Regeln und Acceptance Criteria spezifizieren | `DONE` | Report taxonomy, evidence hierarchy, typed-command/demo boundary rules, acceptance criteria and QA labels refreshed from current ANALYSIS findings and current-run proof boundaries. |
 | 8 | `IMPL-1.4.1` Capability Matrix und Vertical-Slice Matrix erzeugen | `DONE` | Capability Matrix and Vertical Slice Matrix regenerated with current taxonomy, 33 API-route truth, typed-command statuses and `/api/demo-workflow` as `LEGACY_DEMO_ONLY_BOUNDARY`. |
-| 9 | `IMPL-1.4.2` Workflow-I/O-, Datenpflege- und Absicherungsreport erzeugen | `PENDING` | Next ticket: add workflow I/O, data editability and security/test proof sections to the report. |
-| 10 | `IMPL-1.4.3` Befunde, Grenzen, Overclaim-Warnungen und Folgearbeit konsolidieren | `PENDING` | Blocked until implementation report sections exist. |
+| 9 | `IMPL-1.4.2` Workflow-I/O-, Datenpflege- und Absicherungsreport erzeugen | `DONE` | Workflow I/O, data editability, security/audit/test proof and missing-proof sections added to the capability report. |
+| 10 | `IMPL-1.4.3` Befunde, Grenzen, Overclaim-Warnungen und Folgearbeit konsolidieren | `PENDING` | Next ticket: consolidate findings, limitations, overclaim warnings and bold follow-up recommendations. |
 | 11 | `QA-1` Report validieren und Claim-Kontrolle durchführen | `PENDING` | Blocked until report assembly. |
 | 12 | `DECISION-1` Menschliche Abnahme der Report-Baseline | `PENDING_HUMAN_DECISION` | Stop condition after QA, not reached yet. |
 
@@ -42,7 +42,7 @@ guard/security/test inventory over lib, app/api and tests
 PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm exec playwright test tests/demo-workflow-action-registry.spec.ts tests/capture-screen-model-context.spec.ts tests/capability-report-drift-gate.spec.ts --workers=1
 ```
 
-Result so far: `ANALYSIS-1`, all `ANALYSIS-2` subtasks, `SPEC-1` and `IMPL-1.4.1` completed with source guard `PASS`, targeted drift proof pack `12 passed`, and no UI changes.
+Result so far: `ANALYSIS-1`, all `ANALYSIS-2` subtasks, `SPEC-1`, `IMPL-1.4.1` and `IMPL-1.4.2` completed with source guard `PASS`, targeted drift proof pack `12 passed`, and no UI changes.
 
 ## Current Workspace Boundary
 
@@ -57,4 +57,4 @@ They are excluded from `ANALYSIS-1` unless a later ordered ticket explicitly rec
 
 ## Next Ticket
 
-Proceed to `IMPL-1.4.2`: Workflow-I/O-, Datenpflege- und Absicherungsreport erzeugen.
+Proceed to `IMPL-1.4.3`: Befunde, Grenzen, Overclaim-Warnungen und Folgearbeit konsolidieren.

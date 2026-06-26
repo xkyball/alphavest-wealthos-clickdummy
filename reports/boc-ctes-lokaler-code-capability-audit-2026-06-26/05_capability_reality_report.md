@@ -85,10 +85,72 @@ The most important semantic cleanup finding is that `/api/demo-workflow` must no
 | Client projection | Partial | Yes | Yes | Derived/read | Yes | Yes | No focused projection run in this ticket | `SERVICE_BACKED_INTERNAL` |
 | Static/disabled controls | Yes | No exact handler proof | No | No | May be intentional | Static/lifecycle tests | No | `UI_ONLY_STATIC` or `BLOCKED_UI_SAFETY_STATE` |
 
+## Workflow I/O Matrix
+
+| Workflow | Inputs | Processing path | Outputs/state changes | Failure/safety path | Report classification |
+| --- | --- | --- | --- | --- | --- |
+| Document upload | Multipart file, tenant slug, role key, document metadata, audit simulation flag | `app/api/documents/upload/route.ts` validates multipart/file/scope -> `uploadDocument` | Safe document metadata plus document/version/extraction/evidence/audit IDs | Invalid multipart/file/scope/audit failures return fail-closed responses; no client release | `STRONG_VERTICAL_CANDIDATE` |
+| Evidence review | Document ID, action, notes, sufficiency booleans, tenant, role, audit simulation flag | `app/api/documents/review/route.ts` validates JSON/action/scope -> `reviewDocumentEvidence` | Review/link/evidence item and updated document/extraction/evidence state | Validation, not-found, permission, insufficiency and audit-unavailable branches fail closed | `STRONG_VERTICAL_CANDIDATE` |
+| DBTF profile save | Tenant slug, role key, actor tenant, profile payload, save/submit mode | `/api/profile` -> `saveDbtfClientProfile` | Updated `UserProfile` result with no client release | Invalid scope, permission, validation and not-found branches | `API_BACKED_PARTIAL` |
+| Family member update | Tenant slug, role key, actor tenant, family payload | `/api/family-members` -> `updateDbtfFamilyMember` | Updated family-member result | Scope/actor-tenant denial, validation, permission and not-found branches | `API_BACKED_PARTIAL` |
+| Entity wizard | Tenant slug, role key, actor tenant, entity payload, save/submit mode | `/api/entities` -> `saveDbtfEntityWizard` | Entity and participant state | Scope denial, validation and permission branches | `API_BACKED_PARTIAL` |
+| Data-maintenance typed actions | J04/J05/J09 action ID | `/api/data-maintenance/actions` allow-list -> `runDataMaintenanceWorkflowAction` | Document/entity/profile/family/relationship maintenance rows plus audit/evidence rows | Invalid family action and audit-unavailable failures block execution; no advice/client release | `TYPED_COMMAND_BACKED_PARTIAL` |
+| Tenant-governance typed actions | J06/J07 action ID | `/api/tenant-governance/actions` allow-list -> `runTenantGovernanceWorkflowAction` | Tenant/user/role/access/policy/export-audit support rows | Invalid action and audit-unavailable failures block execution; no advice/client release | `TYPED_COMMAND_BACKED_PARTIAL` |
+| Platform-admin typed actions | J10 action ID | `/api/platform-admin/actions` allow-list -> `runPlatformAdminWorkflowAction` | Audit event command record | Invalid action or service failure returns safe error; no product CRUD overclaim | `TYPED_COMMAND_BACKED_PARTIAL` |
+| Advisor review J01 typed actions | J01 advisor-review action ID | `/api/advisor-review/actions` allow-list -> `runAdvisorReviewWorkflowAction` | Trigger, recommendation, approval and audit state | Invalid action and audit-unavailable failures block execution; no advice/client release | `TYPED_COMMAND_BACKED_PARTIAL` |
+| Advice/release-history typed actions | J02/J03 action ID, audit failure simulation flag | `/api/advice-release-history/actions` -> `runAdviceReleaseHistoryWorkflowAction` | Compliance, recommendation, evidence, action, decision and participant transitions | Invalid action, audit-unavailable, workflow gate and data-quality blockers fail closed | `TYPED_COMMAND_BACKED_PARTIAL` |
+| Recommendation review workflow | Advisor approval workflow payload with action, actor role, target, reason, evidence IDs, confirmation | `/api/recommendation-review-workflow` -> `handleRecommendationReviewWorkflowRequest` -> `runAdvisorApprovalWorkflowMutation` | Advisor/release workflow state by command | Permission, audit and release-precondition failures return safe errors | `SERVICE_BACKED_INTERNAL` |
+| Journey command | Journey ID, current user, typed command body | `/api/journeys/[id]/commands` -> `parseJourneyCommandRequest` -> `executeJourneyCommandForCurrentUser` | Journey command runs, step/instance state, evidence/decision/recommendation state by command family | Missing user, invalid command, scope denial and permission failures block state advance | `STRONG_VERTICAL_CANDIDATE` |
+| Export workflow | Command ID, tenant, role, export request, scope/redaction/payload/share flags | `/api/export-workflow` -> `parseExportWorkflowCommandRequest` -> `executeExportWorkflowCommand` | Export request status, audit event and package metadata | Role, scope, redaction, status, data-quality and unsafe-payload blockers fail closed | `STRONG_VERTICAL_CANDIDATE` |
+| Legacy demo-only action | Demo-only action ID | `/api/demo-workflow` -> `demoWorkflowActionBoundaryFor` -> only demo-only execution path | Direct legacy result only for demo-only compatibility | Product-like moved actions return `410` with canonical typed API route | `LEGACY_DEMO_ONLY_BOUNDARY` |
+
+## Data Editability Matrix
+
+| Data family | Create | Update | Read/list | Derived/projection | Local classification |
+| --- | --- | --- | --- | --- | --- |
+| Documents | Yes via upload/service and typed commands | Yes via review/data-maintenance commands | Yes via document APIs/services | Evidence lifecycle and safe document projection | `STRONG_API_BACKED_EDITABLE_WORKFLOW` |
+| Evidence | Yes across upload/review/journey/typed commands | Yes across review/workflow commands | Yes through document/evidence/journey surfaces | Sufficiency and client/export readiness | `WORKFLOW_OWNED_EDITABLE` |
+| Profile | Not general create in UI path | Yes via profile PATCH and typed J09 command | Yes via profile GET | Scoped/hidden rows | `API_BACKED_EDITABLE_PARTIAL_FIELD_SCOPE` |
+| Family members | Seed/demo-backed create; typed upsert paths exist | Yes via PATCH and typed J09 commands | Yes via family API/table service | Relationship map support | `API_BACKED_EDITABLE_PARTIAL_FIELD_SCOPE` |
+| Relationships | Typed command upsert | Typed command upsert | Indirect through profile/family context | Family map | `TYPED_COMMAND_EDITABLE_NOT_GENERAL_FORM_CRUD` |
+| Entities | Yes via entity POST and typed J05 commands | Yes via typed command/update paths | Yes via entity list API | Entity wizard state | `API_AND_TYPED_COMMAND_EDITABLE` |
+| Journey spine | Yes via journey create | Yes via commands | Yes via journey APIs | Client projection/evidence sufficiency | `STRONG_TYPED_COMMAND_EDITABLE` |
+| Export requests | Yes via `SET_SCOPE` command | Yes via redaction/preview/approve/generate/download/share commands | Yes via readmodel | Package/download/share readiness | `STRONG_TYPED_COMMAND_EDITABLE` |
+| Tenant governance | Yes for tenant/user/role/access support objects through typed/admin flows | Yes through typed governance commands | Yes through admin/readmodel surfaces | Governance/audit state | `TYPED_COMMAND_EDITABLE_GOVERNANCE_SCOPE` |
+| Platform admin | No broad platform setting persistence proven in inspected command service | Audit-command records only | Read/context surfaces exist | Platform/security command audit trail | `AUDIT_RECORD_ONLY_FOR_PLATFORM_COMMANDS` |
+| Advice/release workflow | Yes/upsert paths by typed/internal services | Yes by typed workflow commands | Yes by workflow/readmodel surfaces | Client visibility/release projection | `TYPED_COMMAND_EDITABLE_SAFETY_SENSITIVE` |
+| Monitoring / ops | Some service-backed create/update | Yes for review schedule, queue, trigger, action, recommendation and data-quality state | Yes via monitoring/ops APIs | SLA/data-quality state | `SERVICE_BACKED_PARTIAL` |
+| Search/dashboard | No write claim | No write claim | Yes | Counts/derived readmodel | `READMODEL_ONLY` |
+| Messages/calls/assets/objectives/engagement | Seed/schema evidence only in this audit | No current non-seed app/lib write path found | Some display/read context may exist | N/A | `SCHEMA_SEED_ONLY_IN_THIS_AUDIT` |
+
+## Security / Audit / Test Proof Matrix
+
+| Assurance area | Local evidence | Current audit use | Claim boundary |
+| --- | --- | --- | --- |
+| Permission/RBAC | `lib/permission-engine.ts`, control-layer permission/scope helpers, `tests/permission-engine.spec.ts` | Supports route/action/payload scope separation and non-bypass logic | Unrun tests remain proof intent except targeted current-run pack. |
+| Visibility/client projection | `lib/visibility-engine.ts`, `lib/ui-clickflow-guards.ts`, client projection tests | Supports no-leakage and client-safe projection claims | Does not prove every route payload unless flow-specific proof runs. |
+| Workflow release gates | `lib/workflow-gate.ts`, journey release code, workflow gate tests | Supports no unapproved advice, evidence, suitability/IPS, data-quality and audit release blockers | Complete release claims require flow-specific runtime proof. |
+| Audit persistence | `lib/audit-service.ts`, typed command services, audit fail-closed tests | Supports no critical mutation without audit availability/minimum fields | External audit durability beyond local DB/service is not certified. |
+| Fail-closed API envelope | `lib/control-layer/error-envelope.ts`, routes using `failClosedJson` | Supports invalid/scope/permission/safe error handling | Per-route negative proof is needed for complete claims. |
+| Export safety | `lib/export-service.ts`, `lib/control-layer/export-safety.ts`, export workflow tests | Supports scope/redaction/approval/download/share separation and forbidden payload exclusion | Full package/binary realism is not claimed. |
+| Demo-workflow quarantine | `lib/demo-workflow-action-registry.ts`, `app/api/demo-workflow/route.ts`, current-run registry proof | Supports product-command split away from `/api/demo-workflow` | Legacy support file still exists; do not treat it as product API. |
+| Capture/report drift | `lib/capture-screen-model-context.ts`, `lib/capability-report-drift-gate.ts`, current-run drift proof | Prevents stale route/model/API counts and complete-slice overclaims | Guards report/capture truth, not functional runtime behavior. |
+| Source hierarchy | `scripts/source-target-guard.ts`, `lib/source-reality-gate.ts`, current-run `pnpm guard:source` | Confirms source hierarchy/current target constraints | Does not prove product workflow functionality. |
+| UI static/blocked states | lifecycle/static/a11y tests | Supports intentional static/disabled UI classification | UI state tests do not prove service persistence. |
+
+## Missing Proof Register For 1.4.2
+
+| Missing proof | Impact |
+| --- | --- |
+| Full DB/browser suites not run in this ticket | No product capability is promoted to `COMPLETE_VERTICAL_SLICE`. |
+| Field-level editability not exhaustively validated | Data matrix stays at process/model-family level. |
+| Platform admin command persistence is audit-record-only | Do not call platform admin a full platform/security settings CRUD surface. |
+| Legacy screencast client file remains present | Keep `/api/demo-workflow` classified as legacy demo-only boundary until deletion/quarantine is authorized and proved. |
+
 ## IMPL Ticket Completion
 
 | Ticket | Current result |
 | --- | --- |
 | `IMPL-1.4.1` | Capability Matrix and Vertical Slice Matrix produced. |
-| `IMPL-1.4.2` | Pending: workflow I/O, data editability and guard/test proof sections. |
+| `IMPL-1.4.2` | Workflow I/O, data editability and guard/test proof sections produced. |
 | `IMPL-1.4.3` | Pending: executive summary refinement, limitations, overclaim risks and follow-up register. |
