@@ -2,7 +2,7 @@
 
 Generated: 2026-06-26
 
-Status: `WAITING_FOR_HUMAN_DECISION`
+Status: `APPROVED`
 
 Source ticket: `DECISION-1.3`
 
@@ -10,7 +10,15 @@ Source ticket: `DECISION-1.3`
 
 The uploaded PP-005 architecture requires human approval before IMPL-1.4 through IMPL-1.9.
 
-DECISION-1.0, ANALYSIS-1.1 and SPEC-1.2 are complete in this report slice. Implementation remains blocked until this decision is made.
+DECISION-1.0, ANALYSIS-1.1 and SPEC-1.2 are complete in this report slice. The human has approved Option A, so IMPL-1.4 through IMPL-1.9 may proceed as zero-delta-first revalidation with narrow patches only for proven gaps.
+
+## Approved Decision
+
+Approved by human:
+
+`I approve PP005 Option A: use /api/export-workflow and lib/export-workflow-command-service.ts as the only PP005 export command authority; keep /api/demo-workflow export paths compatibility/demo-only; keep MVP export routes 054-058 only; add no new API, no schema migration and no real binary export in this wave; execute IMPL-1.4 through IMPL-1.9 as zero-delta-first revalidation, patching only proven gaps in scope/redaction/lifecycle/audit/wording/directness proof.`
+
+Approval date: 2026-06-26
 
 ## Recommended Decision
 
@@ -65,4 +73,6 @@ It is the best risk/reward move because it uses the already-approved PP-005 cano
 
 ## Stop Condition
 
-Implementation tickets `IMPL-1.4` through `IMPL-1.9` are blocked until this decision is approved.
+Decision gate is complete.
+
+Next ticket in uploaded order: `IMPL-1.4`.
