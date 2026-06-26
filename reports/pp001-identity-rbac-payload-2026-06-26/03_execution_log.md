@@ -18,10 +18,11 @@ Generated: 2026-06-26
 12. `IMPL-4.2 Denied/Sensitive Audit Event Proof` - complete.
 13. `IMPL-4 Admin Non-Bypass and Denied Audit Proofs` - complete.
 14. `IMPL-5 UX Safety-Clarity Overlay for PP-001 States` - complete.
+15. `QA-1 PP-001 Integrated P0 Proof Validation` - complete.
 
 ## Stopped
 
-No active stop gate in this log entry. Next task in order: `QA-1 PP-001 Integrated P0 Proof Validation`.
+Stop gate reached. Next task in order: `DECISION-2 PP-002 Readiness / Auth Integration Boundary`.
 
 ## Commands Run
 
@@ -38,6 +39,10 @@ PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm exec playwright test tests/providerless-scope.
 PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm exec playwright test tests/pp001-payload-visibility-contract.spec.ts tests/pp001-payload-negative.spec.ts --workers=1
 PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm exec playwright test tests/pp001-admin-audit-proof.spec.ts --workers=1
 PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm exec playwright test tests/pp001-ux-safety-clarity.spec.ts --workers=1
+PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm exec playwright test tests/providerless-scope.spec.ts tests/control-layer-p0-fixtures.spec.ts tests/client-visibility-projection.spec.ts tests/pp001-payload-visibility-contract.spec.ts tests/pp001-payload-negative.spec.ts tests/pp001-admin-audit-proof.spec.ts tests/pp001-ux-safety-clarity.spec.ts --workers=1
+pnpm typecheck
+PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm exec playwright test tests/p0-acceptance.spec.ts tests/source-reality-gate.spec.ts tests/foundation-guardrails.spec.ts --workers=1
+pnpm test:v1-p0
 ```
 
 ## Command Results
@@ -52,14 +57,19 @@ PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm exec playwright test tests/pp001-ux-safety-cla
 | `IMPL-3` payload visibility proof | PASS, 4/4 tests in PP-001 payload matrix and negative payload suites. |
 | `IMPL-4` admin/audit proof | PASS, 2/2 tests in PP-001 admin non-bypass and denied audit suite. |
 | `IMPL-5` UX safety clarity proof | PASS, 3/3 tests in PP-001 UX safety clarity suite. |
+| `QA-1` focused PP-001 no-server integration | PASS, 24/24 tests. |
+| `QA-1` auth spine/current-user proof | PASS, 4/4 tests. |
+| `QA-1` typecheck | PASS. |
+| `QA-1` affected P0/source/foundation guard slice | PASS, 29/29 tests. |
+| `QA-1` broad P0 proof script | PASS, 95/95 after consolidating the stale API universe guard. |
 
 ## Product Code Changes
 
-None. `IMPL-5` added proof only.
+`QA-1` consolidated stale API-universe guard duplication by making source-reality and foundation guardrails consume `p0ApiRouteUniverse`.
 
 ## UI Changes
 
-None. No screenshot was produced because this slice changed only tests and report artifacts.
+None. No screenshot was produced because this slice changed only tests, source guard metadata and report artifacts.
 
 ## Latest Human Decision
 

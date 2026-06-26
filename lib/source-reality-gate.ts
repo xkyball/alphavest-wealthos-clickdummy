@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 
+import { p0ApiRouteUniverse } from "./p0-acceptance-proof";
 import { routeRegistryCount, routeWorksetIntegrity, type RouteScopeLabel } from "./route-registry";
 
 export const phase0LockedRouteWorksetCounts: Record<RouteScopeLabel, number> = {
@@ -11,34 +12,7 @@ export const phase0LockedRouteWorksetCounts: Record<RouteScopeLabel, number> = {
   HOLD_PENDING_DECISION: 7,
 };
 
-export const phase0LockedApiRoutes = [
-  "app/api/admin-tenants/route.ts",
-  "app/api/audit-events/route.ts",
-  "app/api/auth/dummy/route.ts",
-  "app/api/auth/logout/route.ts",
-  "app/api/auth/mfa/verify/route.ts",
-  "app/api/auth/provider-login/route.ts",
-  "app/api/auth/providers/route.ts",
-  "app/api/current-user/route.ts",
-  "app/api/dashboard-metrics/route.ts",
-  "app/api/demo-workflow/route.ts",
-  "app/api/documents/review/route.ts",
-  "app/api/documents/route.ts",
-  "app/api/documents/upload/route.ts",
-  "app/api/entities/route.ts",
-  "app/api/export-workflow/route.ts",
-  "app/api/family-members/route.ts",
-  "app/api/global-search/route.ts",
-  "app/api/journeys/[id]/audit/route.ts",
-  "app/api/journeys/[id]/client-projection/route.ts",
-  "app/api/journeys/[id]/commands/route.ts",
-  "app/api/journeys/[id]/evidence-sufficiency/route.ts",
-  "app/api/journeys/[id]/route.ts",
-  "app/api/journeys/route.ts",
-  "app/api/ops-sla/route.ts",
-  "app/api/profile/route.ts",
-  "app/api/review-monitoring/route.ts",
-] as const;
+export const phase0LockedApiRoutes = p0ApiRouteUniverse;
 
 export const phase0LockedPrismaShape = {
   enumCount: 31,

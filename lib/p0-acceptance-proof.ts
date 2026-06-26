@@ -36,6 +36,8 @@ export const p0ApiRouteUniverse = [
   "app/api/journeys/route.ts",
   "app/api/ops-sla/route.ts",
   "app/api/profile/route.ts",
+  "app/api/recommendation-review-workflow/route.ts",
+  "app/api/review-monitoring/actions/route.ts",
   "app/api/review-monitoring/route.ts",
 ] as const;
 
