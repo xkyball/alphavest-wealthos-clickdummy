@@ -147,7 +147,7 @@ export const p44Phase1TicketCertifications: readonly P44Phase1TicketCertificatio
     coveredProcesses: ["B-009"],
     description: "Second confirmation audit and expiry proof.",
     id: "P44-1-T10",
-    proofFiles: ["tests/demo-workflow-api.spec.ts", "tests/confirmation-lifecycle.spec.ts", "tests/role-drawer-confirmation-lifecycle.spec.ts"],
+    proofFiles: ["tests/recommendation-review-workflow-api.spec.ts", "tests/confirmation-lifecycle.spec.ts", "tests/role-drawer-confirmation-lifecycle.spec.ts"],
     status: "IMPLEMENTED_WITH_BOUNDARY_PROOF",
   },
   {

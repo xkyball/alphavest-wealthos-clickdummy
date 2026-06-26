@@ -6,7 +6,7 @@ import { AuditResult, ObjectType, PrismaClient } from "@prisma/client";
 import { expect, test } from "@playwright/test";
 
 import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
-import { runDemoWorkflowMutation } from "../lib/typed-workflow-command-bus";
+import { runTypedWorkflowMutation } from "../lib/typed-workflow-command-bus";
 import { permissionEngine } from "../lib/permission-engine";
 import { visibilityEngine } from "../lib/visibility-engine";
 
@@ -251,7 +251,7 @@ test.describe("MVP Phase 2 governance non-bypass audit persistence", () => {
     const admin = createDemoSession({ roleKey: "admin", tenantSlug: "bennett" });
     let mutateCalled = false;
 
-    const result = await runDemoWorkflowMutation(
+    const result = await runTypedWorkflowMutation(
       prisma,
       {
         actionId: "phase02.adminDeniedEvidenceSufficiency",

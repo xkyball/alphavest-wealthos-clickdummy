@@ -126,7 +126,7 @@ Superseded prior register values are retained only as stale history for guard co
 | V0.96 domain | Existing API/service/test evidence |
 | --- | --- |
 | Evidence/document intake | `app/api/documents/**`, `lib/document-upload-service.ts`, `lib/evidence-review-service.ts`, `lib/evidence-service.ts`, `tests/document-upload-api.spec.ts`, `tests/document-upload-flow.spec.ts`, `tests/evidence-review-api.spec.ts` |
-| Analyst workbench / AI draft | `app/api/demo-workflow/route.ts`, `lib/typed-workflow-command-bus.ts`, `lib/demo-workflow-validation.ts`, `lib/internal-workflow-demo-data.ts`, `tests/workflow-gate.spec.ts`, `tests/true-ux-p0-safety.spec.ts` |
+| Analyst workbench / AI draft | `deleted generic workflow route`, `lib/typed-workflow-command-bus.ts`, `lib/recommendation-review-workflow-validation.ts`, `lib/internal-workflow-demo-data.ts`, `tests/workflow-gate.spec.ts`, `tests/true-ux-p0-safety.spec.ts` |
 | Advisor/compliance release | `lib/workflow-gate.ts`, `lib/visibility-engine.ts`, `lib/control-layer/client-visibility.ts`, `tests/workflow-gate.spec.ts`, `tests/client-visibility-projection.spec.ts`, `tests/true-ux-client-projection.spec.ts` |
 | Audit persistence | `app/api/audit-events/route.ts`, `lib/audit-service.ts`, `lib/control-layer/audit-guard.ts`, `tests/audit-fail-closed.spec.ts`, `tests/phase6-audit-persistence.spec.ts` |
 | Governance / non-bypass | `app/api/admin-tenants/route.ts`, `lib/permission-engine.ts`, `lib/control-layer/permission-decision.ts`, `tests/permission-engine.spec.ts`, `tests/governance-non-bypass.spec.ts` |
@@ -170,7 +170,7 @@ WP-00 schema decision: `PARTIAL_BUT_SUFFICIENT_FOR_NEXT_RECHECK`. No migration i
 | `AUDIT_API_REALITY` | `ALREADY_PRESENT_WITH_SAFE_ERROR_ENVELOPE` | `app/api/audit-events/route.ts` returns scoped rows from `listDbtfAuditEvents` and safe empty/error envelopes without raw metadata disclosure. |
 | `AUDIT_UI_REALITY` | `ACCEPTED_WITH_TARGETED_REFACTOR` | `components/ui/audit-timeline.tsx` now distinguishes `source-backed`, `pending`, `unavailable` and `display-only`; `components/decisions-governance-screen.tsx` labels compliance demo audit rows as display-only; `components/communication-export-ops-screen.tsx` exposes source-backed DB audit state. |
 | `AUDIT_TEST_REALITY` | `ACCEPTED_WITH_FOCUSED_TRUE_UX_PROOF` | `tests/true-ux-audit-surface.spec.ts` covers display-only timelines, compliance audit copy, safe API error envelopes and source-backed readmodel contracts. Existing P0 audit tests remain the service-level proof. |
-| `AUDIT_FAILURE_HANDLING_REALITY` | `ALREADY_PRESENT_WITH_CURRENT_PROOF` | `runDemoWorkflowMutation`, workflow gate tests and audit-fail-closed specs prevent critical mutations when required audit persistence is unavailable. |
+| `AUDIT_FAILURE_HANDLING_REALITY` | `ALREADY_PRESENT_WITH_CURRENT_PROOF` | `runTypedWorkflowMutation`, workflow gate tests and audit-fail-closed specs prevent critical mutations when required audit persistence is unavailable. |
 | `CLIENT_AUDIT_REDACTION_REALITY` | `ACCEPTED_WITH_PROJECTION_REDACTION_HARDENING` | `lib/visibility-engine.ts` treats audit actor/event/reason/metadata as internal decision fields; `tests/client-visibility-projection.spec.ts` proves released client-safe decision projection excludes them. |
 
 ## WP-09 Governance/Admin Reality Classification
@@ -181,8 +181,8 @@ WP-00 schema decision: `PARTIAL_BUT_SUFFICIENT_FOR_NEXT_RECHECK`. No migration i
 | `GOVERNANCE_UI_REALITY` | `PARTIAL_BEFORE_SLICE`, now `ACCEPTED_WITH_TARGETED_REFACTOR` | `components/decisions-governance-screen.tsx` already contains scoped invite, role drawer, second-confirmation modal, access-request drawer and audit-history surfaces; WP-09 adds visible allowed/denied capability taxonomy and "does not grant" summaries. |
 | `ADMIN_NAV_HEADER_REALITY` | `ALREADY_PRESENT_WITH_CURRENT_PROOF` | Current shell/page contracts and route-smoke tests group admin/governance as scoped configuration and access control, not superuser release authority. |
 | `PERMISSION_SERVICE_REALITY` | `ALREADY_PRESENT_WITH_CURRENT_PROOF` | `lib/permission-engine.ts`, `lib/control-layer/permission-decision.ts`, `tests/permission-engine.spec.ts` and `tests/governance-non-bypass.spec.ts` enforce route/action/object/payload separation. |
-| `GOVERNANCE_API_REALITY` | `ALREADY_PRESENT_FOR_CURRENT_SCOPE` | `app/api/admin-tenants/route.ts` and `app/api/demo-workflow/route.ts` support safe demo governance workflows; no new governance API was required for WP-09. |
-| `GOVERNANCE_AUDIT_REALITY` | `ALREADY_PRESENT_WITH_CURRENT_PROOF` | `runDemoWorkflowMutation`, `audit-service`, WP-08 source-backed audit UI and governance non-bypass tests record denied admin attempts and fail closed when audit is unavailable. |
+| `GOVERNANCE_API_REALITY` | `ALREADY_PRESENT_FOR_CURRENT_SCOPE` | `app/api/admin-tenants/route.ts` and `deleted generic workflow route` support safe demo governance workflows; no new governance API was required for WP-09. |
+| `GOVERNANCE_AUDIT_REALITY` | `ALREADY_PRESENT_WITH_CURRENT_PROOF` | `runTypedWorkflowMutation`, `audit-service`, WP-08 source-backed audit UI and governance non-bypass tests record denied admin attempts and fail closed when audit is unavailable. |
 | `GOVERNANCE_TEST_REALITY` | `ACCEPTED_WITH_FOCUSED_TRUE_UX_PROOF` | Existing P0 tests cover permission and audit non-bypass; WP-09 adds True-UX assertions for capability taxonomy, role/access boundaries and no superuser copy. |
 
 ## WP-10 Export Reality Classification
@@ -190,7 +190,7 @@ WP-00 schema decision: `PARTIAL_BUT_SUFFICIENT_FOR_NEXT_RECHECK`. No migration i
 | Required classification key | Current classification | Evidence |
 | --- | --- | --- |
 | `EXPORT_UI_REALITY` | `PARTIAL_BEFORE_SLICE`, now `ACCEPTED_WITH_TARGETED_REFACTOR` | `components/communication-export-ops-screen.tsx` already had Create/Scope/Redaction/Preview/Download route splits, modal lifecycles and no-overclaim copy. WP-10 adds a visible lifecycle boundary on export pages and a forbidden-payload boundary where scope/redaction context is reviewed. |
-| `EXPORT_API_REALITY` | `ALREADY_PRESENT_WITH_SAFE_READMODEL` | `app/api/export-workflow/route.ts` exposes tenant/role-scoped export readmodel snapshots and safe error envelopes; mutation remains in the existing demo workflow API and is not expanded by WP-10. |
+| `EXPORT_API_REALITY` | `ALREADY_PRESENT_WITH_SAFE_READMODEL` | `app/api/export-workflow/route.ts` exposes tenant/role-scoped export readmodel snapshots and safe error envelopes; mutation remains in the existing typed workflow API and is not expanded by WP-10. |
 | `EXPORT_SERVICE_REALITY` | `ALREADY_PRESENT_WITH_CURRENT_PROOF` | `lib/export-service.ts` and `lib/export-package-service.ts` classify forbidden payloads, validate scope, keep preview/approval/generation/download/share separate and block generation without redaction, approval, audit and selected request controls. |
 | `EXPORT_PROJECTION_REALITY` | `ALREADY_PRESENT_WITH_CURRENT_PROOF` | `visibility-engine` and export-service projection checks allow client-safe/released summaries and block AI Draft, internal rationale, compliance notes, unreleased evidence/recommendations and hidden fields. |
 | `EXPORT_AUDIT_REALITY` | `ALREADY_PRESENT_WITH_CURRENT_PROOF` | `phase8-export-workflow-api.spec.ts`, audit fail-closed services and WP-08 source-backed audit UI prove export approval/download/share actions require audit-backed workflow states. |

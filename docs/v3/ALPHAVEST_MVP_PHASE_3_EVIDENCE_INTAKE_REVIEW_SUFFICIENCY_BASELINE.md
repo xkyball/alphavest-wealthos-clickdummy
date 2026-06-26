@@ -37,7 +37,7 @@ This phase is a source-grounded documentation and acceptance-contract phase only
 - `app/api/documents/route.ts`
 - `lib/evidence-service.ts`
 - `lib/workflow-gate.ts`
-- `app/api/demo-workflow/route.ts`
+- `app/api/recommendation-review-workflow/route.ts`
 - `tests/document-upload-api.spec.ts`
 - `tests/document-upload-flow.spec.ts`
 - `tests/workflow-gate.spec.ts`
@@ -64,7 +64,7 @@ This phase is a source-grounded documentation and acceptance-contract phase only
 | Document list API | `/api/documents` requires a valid tenant slug and lists only documents from the mapped tenant ID. | Tenant-scoped reload/list path exists; role-aware evidence list and object-scope proof remain later obligations. |
 | Evidence sufficiency service | `lib/evidence-service.ts` requires sufficient status, reviewed, accepted, current, object-scoped and client-safe visibility before release/export impacts are allowed. `CREATED` or `LINKED` evidence remains review-pending. | This is the core Phase 3 acceptance contract. Upload-created evidence must not satisfy release/export gates. |
 | Workflow gate | `lib/workflow-gate.ts` treats merely created evidence as insufficient for client visibility. | Evidence gates remain part of no-unapproved-advice enforcement. |
-| Demo workflow J04 | `j04.uploadDocument` remains metadata fixture-backed; `j04.confirmFinalize` creates extraction review, document link and evidence item candidates. | Useful for screencast continuity, but fixture-backed J04 is not the same as generalized reviewed/accepted evidence sufficiency. |
+| Typed workflow J04 | `j04.uploadDocument` remains metadata fixture-backed; `j04.confirmFinalize` creates extraction review, document link and evidence item candidates. | Useful for screencast continuity, but fixture-backed J04 is not the same as generalized reviewed/accepted evidence sufficiency. |
 | Schema | Prisma includes `Document`, `DocumentVersion`, `DocumentExtraction`, `DocumentReview`, `DocumentLink`, `EvidenceRecord`, `EvidenceItem`, `ComplianceReview` and `AuditEvent`. | Schema supports the lifecycle. Schema presence alone is not proof that every route/API state is operational. |
 | Tests | Upload API/flow and workflow-gate specs cover multipart persistence, tenant reload, invalid upload, denied role audit and evidence sufficiency evaluation. | Existing tests are proof candidates only in this phase. They were not executed. |
 
@@ -72,7 +72,7 @@ This phase is a source-grounded documentation and acceptance-contract phase only
 
 | Capability | Current level | Target later level | Non-claim boundary |
 | --- | ---: | ---: | --- |
-| Evidence request/block before upload | E6 candidate through existing compliance/request-evidence demo workflow | E6/E7 with payloaded compliance request, durable audit/evidence rows and rerun tests | This phase did not execute or modify compliance request paths. |
+| Evidence request/block before upload | E6 candidate through existing compliance/request-evidence typed workflow | E6/E7 with payloaded compliance request, durable audit/evidence rows and rerun tests | This phase did not execute or modify compliance request paths. |
 | Multipart document upload | E7-style bounded demo path for local storage and persistence | E7 only with current tests rerun and explicit demo-storage boundary | Demo local filesystem storage is not production object storage or virus scanning. |
 | Extraction/document review lifecycle | E5-E6 candidate through J04 fixture and schema support | E7 when reviewer payloads, corrections and reload proof are implemented | Existing J04 review is fixture-backed and not generalized analyst review. |
 | Evidence linking/relevance/scope | E5-E6 candidate through document links and evidence service checks | E6/E7 with route/API/service proof for correct and wrong-scope evidence | Link presence does not make evidence accepted, current or client-safe. |
@@ -119,7 +119,7 @@ Later P0 acceptance must include or preserve:
 
 | Test obligation | Candidate current surface |
 | --- | --- |
-| Evidence request keeps release blocked before upload. | J02 compliance request/block demo workflow and `tests/demo-workflow-api.spec.ts`. |
+| Evidence request keeps release blocked before upload. | J02 compliance request/block typed workflow and `tests/recommendation-review-workflow-api.spec.ts`. |
 | Multipart upload creates document/version/extraction/evidence/audit rows but no release/export/client visibility. | `tests/document-upload-api.spec.ts`. |
 | Invalid file, invalid tenant and denied role create no document row and no sufficiency. | `tests/document-upload-api.spec.ts`. |
 | Upload list/reload stays tenant-scoped. | `/api/documents` and upload API/flow tests. |
@@ -133,7 +133,7 @@ Later P0 acceptance must include or preserve:
 | Area | Phase 3 decision |
 | --- | --- |
 | Routes `027-030`, `038-041`, `046-047`, `019` | No route changed. These remain affected surfaces for later evidence lifecycle UI/API work and proof. |
-| APIs `/api/documents/upload`, `/api/documents`, `/api/demo-workflow` | No API changed. Current upload/list/demo workflow paths are proof candidates; future evidence-review APIs remain unauthorized until explicit handoff. |
+| APIs `/api/documents/upload`, `/api/documents`, `/api/recommendation-review-workflow` | No API changed. Current upload/list/typed workflow paths are proof candidates; future evidence-review APIs remain unauthorized until explicit handoff. |
 | Schema/models | No schema changed. `Document`, `DocumentVersion`, `DocumentExtraction`, `DocumentReview`, `DocumentLink`, `EvidenceRecord`, `EvidenceItem`, `ComplianceReview` and `AuditEvent` remain the relevant model set. |
 | Services/components | No service/component changed. `document-upload-service`, document storage adapter, `evidence-service`, `workflow-gate` and audit/mutation surfaces remain relevant proof surfaces. |
 | Tests | No tests changed or run. `document-upload-api.spec.ts`, `document-upload-flow.spec.ts` and `workflow-gate.spec.ts` remain proof candidates. |

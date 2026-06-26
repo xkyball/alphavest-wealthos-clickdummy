@@ -1593,7 +1593,7 @@
         }
       ],
       "futureReadinessNote": "This prepares the workflow for richer family approval chains, review scheduling, evidence-backed decision history, and client-facing status clarity.",
-      "demoBoundaryNote": "In the current demo, decision screens are navigable and show demo workflow actions. Final decision and evidence package persistence remains incomplete.",
+      "demoBoundaryNote": "In the current demo, decision screens are navigable and show typed workflow actions. Final decision and evidence package persistence remains incomplete.",
       "readerTakeaway": "Client decisions begin only after release and should end with traceable proof.",
       "sourceTrace": [
         "ROLE_TASK_INVENTORY_V3.md",

@@ -1201,7 +1201,7 @@
       "entry": "Decision List",
       "outcome": "Client reviews only released content, chooses accept/defer/reject, and receives proof of submission.",
       "result": "Decision success page and linked evidence record show the completion proof.",
-      "sourceStatus": "E3 navigable UI with demo workflow actions; final decision/evidence package persistence remains incomplete.",
+      "sourceStatus": "E3 navigable UI with typed workflow actions; final decision/evidence package persistence remains incomplete.",
       "whyThisTaskExists": "Client decisions should be based only on material that has passed the release gate. The decision workflow records acceptance, deferral, rejection, or a request for more information with evidence context.",
       "whatTheUserIsTryingToAchieve": "The user is trying to understand the released decision context and record a response that can be traced later.",
       "whatThisEnablesNext": [
@@ -1306,7 +1306,7 @@
         "F-015"
       ],
       "screenshot": "artifacts/user-manual-source/20260616-232649Z/screenshots/ss-task-mt-010-decision-list.png",
-      "demoBoundaryNote": "In the current demo, decision screens are navigable and show demo workflow actions. Final decision and evidence package persistence remains incomplete.",
+      "demoBoundaryNote": "In the current demo, decision screens are navigable and show typed workflow actions. Final decision and evidence package persistence remains incomplete.",
       "futureReadinessNote": "This prepares the workflow for richer family approval chains, review scheduling, evidence-backed decision history, and client-facing status clarity."
     },
     {

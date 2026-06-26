@@ -37,13 +37,13 @@ This phase is a source-grounded documentation and acceptance-contract phase only
 - `lib/visibility-engine.ts`
 - `lib/export-service.ts`
 - `lib/typed-workflow-command-bus.ts`
-- `app/api/demo-workflow/route.ts`
+- `app/api/recommendation-review-workflow/route.ts`
 - `components/internal-workflow-screen.tsx`
 - `lib/internal-workflow-demo-data.ts`
 - `tests/workflow-gate.spec.ts`
 - `tests/client-visibility-proof.spec.ts`
 - `tests/file-export-realism.spec.ts`
-- `tests/demo-workflow-api.spec.ts`
+- `tests/recommendation-review-workflow-api.spec.ts`
 - `tests/p0-acceptance.spec.ts`
 - `tests/permission-engine.spec.ts`
 - `tests/ui-state-boundaries.spec.ts`
@@ -70,7 +70,7 @@ This phase is a source-grounded documentation and acceptance-contract phase only
 | Export gate | `lib/export-service.ts` classifies `AI_DRAFT`, `INTERNAL_RATIONALE`, `COMPLIANCE_NOTES`, `UNRELEASED_EVIDENCE`, `UNRELEASED_RECOMMENDATION` and `HIDDEN_FIELD` as forbidden client export payloads. | Export safety already has a service-level forbidden-payload vocabulary; binary export generation remains separate and lower readiness. |
 | Domain types/schema | `RecommendationStatus` includes `AI_DRAFT`, `ANALYST_REVIEWED`, `ADVISOR_PENDING`, `ADVISOR_APPROVED`, `COMPLIANCE_PENDING`, `RELEASED_TO_CLIENT` and blocked/rejected states. Prisma includes `Trigger`, `Recommendation`, `RecommendationOption`, `DocumentExtraction`, `EvidenceRecord` and `AuditEvent`. | State and model support exists. Model presence alone does not prove lifecycle execution. |
 | Typed J01 advisor-review boundary | `j01.requestData` and `j01.routeToAdvisor` run through `/api/advisor-review/actions` with `clientVisible=false`; `j01.approveAdvisor` routes to the typed recommendation-review workflow. | Useful canonical typed boundary proof for internal review and advisor-not-release separation, but not a generalized unsupported-claim payload workflow. |
-| Typed recommendation review workflow | `/api/demo-workflow` supports `workflowType: recommendation-review` paths for analyst submit, advisor approve and compliance release/block/request-evidence. | Stronger proof candidate for persisted review transitions; Phase 4 did not rerun or expand it. |
+| Typed recommendation review workflow | `/api/recommendation-review-workflow` supports `workflowType: recommendation-review` paths for analyst submit, advisor approve and compliance release/block/request-evidence. | Stronger proof candidate for persisted review transitions; Phase 4 did not rerun or expand it. |
 | Internal workflow UI/data | `components/internal-workflow-screen.tsx` and `lib/internal-workflow-demo-data.ts` show internal queues, AI draft copy, missing data and release gates. | UI/state surfaces exist, but this phase does not claim visual acceptance or payloaded analyst-review capability. |
 | Tests | Existing proof candidates cover internal projection, client-hidden AI draft, forbidden export payloads, advisor-not-release and some recommendation-review persistence. | Tests were inventoried only and were not run in this phase. Unsupported-claim rejection/rebuild-with-evidence negatives remain incomplete. |
 
@@ -129,7 +129,7 @@ Later P0 acceptance must include or preserve:
 | Client-safe release projection includes only released `clientSummary`. | `visibilityEngine.projectRecommendationPayload`; P0 acceptance tests. |
 | Export payload classification rejects `AI_DRAFT` and `INTERNAL_RATIONALE`. | `exportService.forbiddenExportPayloads`; `tests/file-export-realism.spec.ts`; P0 tests. |
 | Workflow gate blocks client visibility when AI draft/internal rationale is present. | `canBecomeClientVisible`; `tests/workflow-gate.spec.ts`. |
-| Analyst submit/review transition persists without client visibility. | `tests/demo-workflow-api.spec.ts` typed recommendation review workflow. |
+| Analyst submit/review transition persists without client visibility. | `tests/recommendation-review-workflow-api.spec.ts` typed recommendation review workflow. |
 | Unsupported claim rejection requires evidence and remains blocked/internal until rebuilt. | Later test required; no complete generalized proof candidate found. |
 | Rebuild-with-evidence cannot proceed without accepted, scoped evidence. | Later test required; reuse Phase 3 evidence sufficiency evaluator. |
 | Advisor approval after rebuild remains compliance-pending and not client-visible. | Existing advisor-not-release tests; Phase 5 must lock the full gate. |
@@ -139,10 +139,10 @@ Later P0 acceptance must include or preserve:
 | Area | Phase 4 decision |
 | --- | --- |
 | Routes `033-037`, `019-020`, `054-058` | No route changed. These remain affected surfaces for later internal draft, client projection and export redaction proof. |
-| APIs `/api/demo-workflow`, `/api/documents` | No API changed. Current demo workflow and visibility/export services are proof candidates; future internal draft API remains unauthorized until explicit handoff. |
+| APIs `/api/recommendation-review-workflow`, `/api/documents` | No API changed. Current typed workflow and visibility/export services are proof candidates; future internal draft API remains unauthorized until explicit handoff. |
 | Schema/models | No schema changed. `Trigger`, `Recommendation`, `RecommendationOption`, `DocumentExtraction`, `EvidenceRecord`, `DocumentLink`, `AuditEvent`, `Decision` and `ExportRequest` remain the relevant model set. |
 | Services/components | No service/component changed. `workflow-gate`, `visibility-engine`, `typed-workflow-command-bus`, `export-service` and internal workflow UI/data remain relevant proof surfaces. |
-| Tests | No tests changed or run. `workflow-gate.spec.ts`, `client-visibility-proof.spec.ts`, `file-export-realism.spec.ts`, `demo-workflow-api.spec.ts`, `p0-acceptance.spec.ts`, `permission-engine.spec.ts` and `ui-state-boundaries.spec.ts` remain proof candidates. |
+| Tests | No tests changed or run. `workflow-gate.spec.ts`, `client-visibility-proof.spec.ts`, `file-export-realism.spec.ts`, `recommendation-review-workflow-api.spec.ts`, `p0-acceptance.spec.ts`, `permission-engine.spec.ts` and `ui-state-boundaries.spec.ts` remain proof candidates. |
 
 ## 10. Exit Gate Decision
 

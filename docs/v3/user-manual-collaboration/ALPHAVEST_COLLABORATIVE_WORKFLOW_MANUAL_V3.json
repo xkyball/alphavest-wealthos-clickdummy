@@ -354,7 +354,7 @@
       "evidenceAuditSequence": ["Routing, request-data, and recommendation-prep actions should create traceable events"],
       "readerTakeaway": "The system keeps signals useful without letting them masquerade as advice.",
       "systemPrevents": ["AI draft or signal becoming client advice", "analyst review being treated as release", "unsupported advisor package"],
-      "demoBoundary": "The J01 subset has demo-executable workflow actions; broad signal governance remains partial.",
+      "demoBoundary": "The J01 subset is on a legacy compatibility bridge; full signal governance remains the typed boundary implementation gap.",
       "sourceTrace": ["PF-E", "UF-07", "DATA_MODEL_V3.md Trigger/Recommendation", "MT-007"]
     },
     {

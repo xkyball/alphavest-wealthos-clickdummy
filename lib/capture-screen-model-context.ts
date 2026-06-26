@@ -79,7 +79,7 @@ const groupTemplates: Record<NavigationGroupKey, ContextTemplate> = {
     },
     modelFamilies: ["tenant-user-rbac", "policy-export-evidence"],
     models: ["PlatformTenant", "PolicyDefinition", "ClientTenant", ...sharedSafetyModels, "EvidenceRecord", "ExportRequest", ...sharedAuditModels],
-    warnings: ["Platform screenshots are setup proof, not policy-change completion proof; J10 uses typed platform-admin commands, not /api/demo-workflow."],
+    warnings: ["Platform screenshots are setup proof, not policy-change completion proof; J10 uses typed platform-admin commands."],
   },
   tenant_setup: {
     capability: {
@@ -91,7 +91,7 @@ const groupTemplates: Record<NavigationGroupKey, ContextTemplate> = {
     },
     modelFamilies: ["tenant-user-rbac"],
     models: ["ClientTenant", "User", "UserProfile", "Role", "UserRole", "PolicyDefinition", ...sharedAuditModels],
-    warnings: ["Tenant screenshots do not prove every admin mutation path; J06 uses typed tenant-governance commands, not /api/demo-workflow."],
+    warnings: ["Tenant screenshots do not prove every admin mutation path; J06 uses typed tenant-governance commands."],
   },
   client_workspace: {
     capability: {
@@ -126,7 +126,7 @@ const groupTemplates: Record<NavigationGroupKey, ContextTemplate> = {
       "EvidenceSufficiencyDecision",
       ...sharedAuditModels,
     ],
-    warnings: ["Schema breadth does not prove every field is editable; J04/J05/J09 use typed data-maintenance commands, not /api/demo-workflow."],
+    warnings: ["Schema breadth does not prove every field is editable; J04/J05/J09 use typed data-maintenance commands."],
   },
   wealth_actions: {
     capability: {
@@ -138,17 +138,16 @@ const groupTemplates: Record<NavigationGroupKey, ContextTemplate> = {
     },
     modelFamilies: ["client-wealth-objects", "advisory-recommendation-draft"],
     models: ["Entity", "EntityParticipant", "Asset", "Trigger", "ActionItem", "Recommendation", "EvidenceItem", ...sharedAuditModels],
-    warnings: ["J05 wealth/action maintenance uses typed data-maintenance commands; advice/release-history actions use their own typed boundary, not /api/demo-workflow."],
+    warnings: ["J05 wealth/action maintenance uses typed data-maintenance commands; advice/release-history actions use their own typed boundary."],
   },
   advisory_workflow: {
     capability: {
-      apiEvidence: ["app/api/demo-workflow/route.ts", "app/api/journeys/[id]/commands/route.ts", "app/api/recommendation-review-workflow/route.ts", "app/api/advice-release-history/actions/route.ts"],
+      apiEvidence: ["app/api/journeys/[id]/commands/route.ts", "app/api/recommendation-review-workflow/route.ts", "app/api/advice-release-history/actions/route.ts"],
       guardEvidence: ["Advisor approval is not compliance release; client-visible AI draft remains forbidden; J02/J03 use typed advice-release-history commands."],
-      proofPosture: "Internal service-backed workflow with typed advisor-review and advice/release-history command boundaries; /api/demo-workflow remains a legacy 410 boundary, not a product command path.",
+      proofPosture: "Internal service-backed workflow with typed advisor-review and advice/release-history command boundaries; product proof no longer has a generic demo command route.",
       serviceEvidence: [
         "lib/advice-release-history-command-client.ts",
         "lib/advice-release-history-workflow-actions.ts",
-        "lib/demo-workflow-action-registry.ts",
         "lib/journeys/journey-api-service.ts",
         "lib/phase-b-c-journey-command-client.ts",
         "lib/typed-workflow-command-bus.ts",
@@ -173,7 +172,7 @@ const groupTemplates: Record<NavigationGroupKey, ContextTemplate> = {
       "EvidenceRecord",
       ...sharedAuditModels,
     ],
-    warnings: ["J01/J02/J03 advice and advisor-review actions use typed commands; J12/J13/J14 are typed journey commands; /api/demo-workflow is a legacy 410 boundary."],
+    warnings: ["J01/J02/J03 advice and advisor-review actions use typed commands; J12/J13/J14 are typed journey commands."],
   },
   decisions_evidence: {
     capability: {
@@ -185,7 +184,7 @@ const groupTemplates: Record<NavigationGroupKey, ContextTemplate> = {
     },
     modelFamilies: ["documents-evidence", "advisory-recommendation-draft", "tenant-user-rbac"],
     models: ["EvidenceRecord", "EvidenceItem", "EvidenceSufficiencyDecision", "Decision", "DecisionParticipant", "DocumentReview", ...sharedSafetyModels, ...sharedAuditModels],
-    warnings: ["Evidence screenshots are not release proof without no-leakage and gate proof; J07 uses tenant-governance typed commands and J03 evidence commands use advice-release-history typed commands, not /api/demo-workflow."],
+    warnings: ["Evidence screenshots are not release proof without no-leakage and gate proof; J07 uses tenant-governance typed commands and J03 evidence commands use advice-release-history typed commands."],
   },
   communication: {
     capability: {

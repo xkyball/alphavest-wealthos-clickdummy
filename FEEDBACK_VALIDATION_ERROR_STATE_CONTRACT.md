@@ -141,7 +141,7 @@ This artefact does **not** create code, tests, APIs, Prisma changes, migrations,
 | FVE-RULE-006 | Audit display is not persistence proof | Audit timeline visibility must not be presented as immutable persistence unless later audit contract/test proof exists. |
 | FVE-RULE-007 | Status chips are not gates | Status chips may label state but cannot be the proof of gate enforcement. |
 | FVE-RULE-008 | Buttons are not mutations | A clickable or visible button is not treated as production mutation unless API/schema/test proof exists later. |
-| FVE-RULE-009 | Demo actions are labelled as limited | Partial demo-workflow actions must have feedback that avoids production persistence claims. |
+| FVE-RULE-009 | Demo actions are labelled as limited | Partial typed-workflow actions must have feedback that avoids production persistence claims. |
 | FVE-RULE-010 | Hold routes remain blocked | Routes 064–067 and 069–071 receive no finalized MVP feedback contract. |
 
 ## 8. Route Workset Summary

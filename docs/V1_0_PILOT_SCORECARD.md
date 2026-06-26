@@ -12,7 +12,7 @@ Authority: ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md
 | No leakage | Zero client-visible AI draft, internal rationale, compliance notes or unreleased evidence leakage. | `pnpm test:v1-p0`; incident log. | Any client/export payload includes forbidden internal content. |
 | Evidence completeness | Every release candidate names linked, reviewed and scoped evidence. | evidence review API, workflow gate tests, audit notes. | Upload-only state is treated as release-ready. |
 | Review time | Pilot team can measure time from evidence request to compliance release decision. | action timestamps, audit rows, pilot notes. | No owner can explain where a case is stuck. |
-| Gate clarity | Advisor approval, compliance release, client visibility and export approval are distinguishable. | demo-workflow tests and buyer feedback. | Buyer believes advisor approval releases to client. |
+| Gate clarity | Advisor approval, compliance release, client visibility and export approval are distinguishable. | typed-workflow tests and buyer feedback. | Buyer believes advisor approval releases to client. |
 | Support incidents | P1/P2/P3 incidents are classified with owner, correlation id and safe status. | `docs/V1_0_PILOT_RUNBOOK.md`; incident notes. | Incident notes include sensitive payload or lack owner/severity. |
 | Feedback issues | Pilot feedback is sorted into product fit, workflow clarity, missing integration and safety blocker buckets. | weekly pilot review. | Feedback is only applause/screenshots and not decision-grade. |
 

@@ -25,7 +25,7 @@ test.describe("UXP3-009 decision confirmation lifecycle", () => {
   test("opens from a decision action and cancels without API mutation", async ({ page }) => {
     const workflowRequests: string[] = [];
     page.on("request", (request) => {
-      if (request.url().includes("/api/demo-workflow")) {
+      if (request.url().includes("/api/advice-release-history/actions")) {
         workflowRequests.push(request.method());
       }
     });

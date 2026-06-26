@@ -48,7 +48,7 @@ test.describe("data maintenance typed actions API", () => {
     await prisma?.$disconnect();
   });
 
-  test("executes J04/J05/J09 data maintenance commands outside demo workflow", async ({ request }) => {
+  test("executes J04/J05/J09 data maintenance commands through the typed surface", async ({ request }) => {
     for (const actionId of dataMaintenanceActions) {
       const response = await request.post(dataMaintenanceCanonicalApiRoute, {
         data: { actionId },

@@ -684,7 +684,7 @@
         "analyst review being treated as release",
         "unsupported advisor package"
       ],
-      "demoBoundary": "The J01 subset has demo-executable workflow actions; broad signal governance remains partial.",
+      "demoBoundary": "The J01 subset is on a legacy compatibility bridge; full signal governance remains the typed boundary implementation gap.",
       "screenshotPlan": {
         "storyId": "WS-004",
         "primaryScreenshots": [

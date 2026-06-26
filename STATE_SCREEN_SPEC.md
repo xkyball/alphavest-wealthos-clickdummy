@@ -249,7 +249,7 @@ AlphaVest MVP is a controlled, human-backed, evidence-backed Family Office workf
 | Field validation / form failure | 002–006, 009, 010, 014, 015, 018, 025, 028, 040, 041, 044, 048–050, 054–058 | Validation failed states must be present where input or confirmation preconditions exist. | `FEEDBACK_VALIDATION_ERROR_STATE_CONTRACT.md` |
 | Upload mechanics | 028 | Upload progress, failure and success states are required; sufficiency remains safety contract. | `FEEDBACK_VALIDATION_ERROR_STATE_CONTRACT.md`; `EVIDENCE_AUDIT_EXPORT_SAFETY_CONTRACT.md` |
 | Static or deterministic visual states | 001, 003, 004, 006, 008, 011–013, 016, 017, 021–024, 026, 034, 036, 038, 043, 045, 052, 053, 059–063 | Visual/static state must not be treated as implemented interaction. | Later contracts only if route is MVP/MVP_SUPPORT flow-relevant |
-| Partial demo workflow actions | 013, 014, 016, 018, 019, 021–025, 027–029, 033, 035, 037, 039–045, 047, 051, 054, 055, 057, 058 | State spec must not overclaim persistence, audit or API safety. | `API_CONTRACT_MATRIX.md`; `P0_TEST_ACCEPTANCE_MATRIX.md` |
+| Partial typed workflow actions | 013, 014, 016, 018, 019, 021–025, 027–029, 033, 035, 037, 039–045, 047, 051, 054, 055, 057, 058 | State spec must not overclaim persistence, audit or API safety. | `API_CONTRACT_MATRIX.md`; `P0_TEST_ACCEPTANCE_MATRIX.md` |
 
 ## 15. API / Evidence / Audit / Export Dependency Matrix
 

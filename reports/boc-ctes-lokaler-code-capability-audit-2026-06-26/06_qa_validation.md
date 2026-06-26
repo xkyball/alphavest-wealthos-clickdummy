@@ -9,14 +9,14 @@ QA decision: `PASS_WITH_LIMITATIONS`
 | Command | Result | Notes |
 | --- | --- | --- |
 | `pnpm guard:source` | `PASS` | Moving-baseline source hierarchy guard passed before ordered execution; violations `0`. |
-| `PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm exec playwright test tests/demo-workflow-action-registry.spec.ts tests/capture-screen-model-context.spec.ts tests/capability-report-drift-gate.spec.ts --workers=1` | `PASS` | `12/12` passed after QA fixes; proves capture model context, then-current demo boundary, typed-command family extraction and report drift rejection. |
+| `PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm exec playwright test tests/screencast-new-system-contract.spec.ts tests/capture-screen-model-context.spec.ts tests/capability-report-drift-gate.spec.ts --workers=1` | `PASS` | `12/12` passed after QA fixes; proves capture model context, then-current demo boundary, typed-command family extraction and report drift rejection. |
 | `pnpm gate:capability-report` | `PASS` | Checked the current capability report and inventory against the drift gate: `53` schema models, required status taxonomy present, stale complete-slice/report-truth claims rejected. |
 
 ## Defects Found During QA
 
 | Finding | Severity | Resolution |
 | --- | --- | --- |
-| Stale drift-gate truth still required `DEMO_COMMAND_BACKED_PARTIAL` even after product-like families were migrated away from `/api/demo-workflow`. | High | Gate updated to require `TYPED_COMMAND_BACKED_PARTIAL`; `FOLLOWUP-2` now tightens the demo boundary to `LEGACY_DEMO_410_BOUNDARY`. |
+| Stale drift-gate truth still required `DEMO_COMMAND_BACKED_PARTIAL` even after product-like families were migrated away from `/api/recommendation-review-workflow`. | High | Gate updated to require `TYPED_COMMAND_BACKED_PARTIAL`; `FOLLOWUP-2` now tightens the demo boundary to `DEMO_WORKFLOW_ROUTE_DELETED`. |
 | Drift gate treated negative `COMPLETE_VERTICAL_SLICE` warning lines as overclaims. | Medium | Gate wording parser now allows explicit negative/reject/fail contexts while still blocking positive broad complete-slice claims. |
 | Existing QA report contained stale current-run claims for `pnpm db:validate` and a broad `28/28` Playwright pack. | High | QA report rewritten to document only commands actually run in this QA ticket or the current ordered preflight. |
 
@@ -39,7 +39,7 @@ QA decision: `PASS_WITH_LIMITATIONS`
 
 - `COMPLETE_VERTICAL_SLICE` is intentionally unused for broad product capabilities because full API/browser/DB vertical suites were not executed in this audit ticket.
 - `STRONG_VERTICAL_CANDIDATE` means local UI/API/service/DB/test-intent evidence is strong, not that the full runtime lifecycle passed.
-- `/api/demo-workflow` is classified as `LEGACY_DEMO_410_BOUNDARY`; product-like J01/J02/J03/J04/J05/J06/J07/J09/J10/J16/J17 flows must remain on typed command surfaces.
+- `/api/recommendation-review-workflow` is classified as `DEMO_WORKFLOW_ROUTE_DELETED`; product-like J01/J02/J03/J04/J05/J06/J07/J09/J10/J16/J17 flows must remain on typed command surfaces.
 - `FOLLOWUP-2` moves the remaining demo-shaped J01 request-data surface behind the typed advisor-review command boundary.
 - The generator/report-drift gate is current-run proof that stale model counts, stale API-route truth, stale demo status terminology and broad complete-slice claims are rejected before generated report truth is accepted.
 
@@ -54,4 +54,4 @@ QA decision: `PASS_WITH_LIMITATIONS`
 
 ## QA Result
 
-`PASS_WITH_LIMITATIONS`: the report is usable as a conservative local capability-reality baseline and decision artifact. It is not a runtime release certificate, not a complete vertical-slice proof, and not authorization to keep `/api/demo-workflow` as a product-like shadow API.
+`PASS_WITH_LIMITATIONS`: the report is usable as a conservative local capability-reality baseline and decision artifact. It is not a runtime release certificate, not a complete vertical-slice proof, and not authorization to keep `/api/recommendation-review-workflow` as a product-like shadow API.

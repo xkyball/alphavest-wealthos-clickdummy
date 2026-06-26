@@ -26,7 +26,7 @@
       "currentRealityLabel": "new-system-journey-spine",
       "proofLevel": "PL4",
       "overclaimRisk": "A screencast can show journey state and safe next actions, but it is not production authorization.",
-      "caveat": "New-system screencasts must not call retired Jxx demo workflow actions or claim client release from command acceptance.",
+      "caveat": "New-system screencasts must not call retired Jxx typed workflow actions or claim client release from command acceptance.",
       "proofPath": [
         "lib/journeys/journey-registry.ts",
         "app/api/journeys/route.ts",
@@ -131,7 +131,7 @@
           ],
           "expectedStateChange": "The screencast reflects the seeded Journey Spine projection without calling retired Jxx actions.",
           "blockedActions": [
-            "Retired Jxx demo workflow compatibility path",
+            "Retired Jxx typed workflow compatibility path",
             "Advisor approval as client release"
           ],
           "clientVisibility": "Internal or gated until release conditions pass",
@@ -186,7 +186,7 @@
           ],
           "expectedStateChange": "The screencast reflects the seeded Journey Spine projection without calling retired Jxx actions.",
           "blockedActions": [
-            "Retired Jxx demo workflow compatibility path",
+            "Retired Jxx typed workflow compatibility path",
             "Advisor approval as client release"
           ],
           "clientVisibility": "Internal or gated until release conditions pass",
@@ -241,7 +241,7 @@
           ],
           "expectedStateChange": "The screencast reflects the seeded Journey Spine projection without calling retired Jxx actions.",
           "blockedActions": [
-            "Retired Jxx demo workflow compatibility path",
+            "Retired Jxx typed workflow compatibility path",
             "Advisor approval as client release"
           ],
           "clientVisibility": "Internal or gated until release conditions pass",
@@ -296,7 +296,7 @@
           ],
           "expectedStateChange": "The screencast reflects the seeded Journey Spine projection without calling retired Jxx actions.",
           "blockedActions": [
-            "Retired Jxx demo workflow compatibility path",
+            "Retired Jxx typed workflow compatibility path",
             "Advisor approval as client release"
           ],
           "clientVisibility": "Internal or gated until release conditions pass",
@@ -330,7 +330,7 @@
       "currentRealityLabel": "new-system-journey-spine",
       "proofLevel": "PL4",
       "overclaimRisk": "A screencast can show journey state and safe next actions, but it is not production authorization.",
-      "caveat": "New-system screencasts must not call retired Jxx demo workflow actions or claim client release from command acceptance.",
+      "caveat": "New-system screencasts must not call retired Jxx typed workflow actions or claim client release from command acceptance.",
       "proofPath": [
         "lib/journeys/journey-registry.ts",
         "app/api/journeys/route.ts",
@@ -419,7 +419,7 @@
             "app/api/journeys/route.ts",
             "app/api/journeys/[id]/commands/route.ts"
           ],
-          "caption": "MJ-002 is shown from the Wave 0-2 journey spine, not from the retired Jxx demo workflow.",
+          "caption": "MJ-002 is shown from the Wave 0-2 journey spine, not from the retired Jxx typed workflow.",
           "expectedVisibleText": [
             "Work Dashboard",
             "MJ-002",
@@ -428,7 +428,7 @@
           ],
           "expectedStateChange": "The screencast reflects the seeded Journey Spine projection without calling retired Jxx actions.",
           "blockedActions": [
-            "Retired Jxx demo workflow compatibility path",
+            "Retired Jxx typed workflow compatibility path",
             "Advisor approval as client release"
           ],
           "clientVisibility": "Internal or gated until release conditions pass",
@@ -483,7 +483,7 @@
           ],
           "expectedStateChange": "The screencast reflects the seeded Journey Spine projection without calling retired Jxx actions.",
           "blockedActions": [
-            "Retired Jxx demo workflow compatibility path",
+            "Retired Jxx typed workflow compatibility path",
             "Advisor approval as client release"
           ],
           "clientVisibility": "Internal or gated until release conditions pass",
@@ -538,7 +538,7 @@
           ],
           "expectedStateChange": "The screencast reflects the seeded Journey Spine projection without calling retired Jxx actions.",
           "blockedActions": [
-            "Retired Jxx demo workflow compatibility path",
+            "Retired Jxx typed workflow compatibility path",
             "Advisor approval as client release"
           ],
           "clientVisibility": "Internal or gated until release conditions pass",
@@ -572,7 +572,7 @@
       "currentRealityLabel": "new-system-journey-spine",
       "proofLevel": "PL4",
       "overclaimRisk": "A screencast can show journey state and safe next actions, but it is not production authorization.",
-      "caveat": "New-system screencasts must not call retired Jxx demo workflow actions or claim client release from command acceptance.",
+      "caveat": "New-system screencasts must not call retired Jxx typed workflow actions or claim client release from command acceptance.",
       "proofPath": [
         "lib/journeys/journey-registry.ts",
         "app/api/journeys/route.ts",
@@ -674,7 +674,7 @@
           ],
           "expectedStateChange": "The screencast reflects the seeded Journey Spine projection without calling retired Jxx actions.",
           "blockedActions": [
-            "Retired Jxx demo workflow compatibility path",
+            "Retired Jxx typed workflow compatibility path",
             "Advisor approval as client release"
           ],
           "clientVisibility": "Internal or gated until release conditions pass",
@@ -729,7 +729,7 @@
           ],
           "expectedStateChange": "The screencast reflects the seeded Journey Spine projection without calling retired Jxx actions.",
           "blockedActions": [
-            "Retired Jxx demo workflow compatibility path",
+            "Retired Jxx typed workflow compatibility path",
             "Advisor approval as client release"
           ],
           "clientVisibility": "Internal or gated until release conditions pass",
@@ -784,7 +784,7 @@
           ],
           "expectedStateChange": "The screencast reflects the seeded Journey Spine projection without calling retired Jxx actions.",
           "blockedActions": [
-            "Retired Jxx demo workflow compatibility path",
+            "Retired Jxx typed workflow compatibility path",
             "Advisor approval as client release"
           ],
           "clientVisibility": "Internal or gated until release conditions pass",
@@ -839,7 +839,7 @@
           ],
           "expectedStateChange": "The screencast reflects the seeded Journey Spine projection without calling retired Jxx actions.",
           "blockedActions": [
-            "Retired Jxx demo workflow compatibility path",
+            "Retired Jxx typed workflow compatibility path",
             "Advisor approval as client release"
           ],
           "clientVisibility": "Internal or gated until release conditions pass",
@@ -873,7 +873,7 @@
       "currentRealityLabel": "new-system-journey-spine",
       "proofLevel": "PL4",
       "overclaimRisk": "A screencast can show journey state and safe next actions, but it is not production authorization.",
-      "caveat": "New-system screencasts must not call retired Jxx demo workflow actions or claim client release from command acceptance.",
+      "caveat": "New-system screencasts must not call retired Jxx typed workflow actions or claim client release from command acceptance.",
       "proofPath": [
         "lib/journeys/journey-registry.ts",
         "app/api/journeys/route.ts",
@@ -971,7 +971,7 @@
           ],
           "expectedStateChange": "The screencast reflects the seeded Journey Spine projection without calling retired Jxx actions.",
           "blockedActions": [
-            "Retired Jxx demo workflow compatibility path",
+            "Retired Jxx typed workflow compatibility path",
             "Advisor approval as client release"
           ],
           "clientVisibility": "Internal or gated until release conditions pass",
@@ -1026,7 +1026,7 @@
           ],
           "expectedStateChange": "The screencast reflects the seeded Journey Spine projection without calling retired Jxx actions.",
           "blockedActions": [
-            "Retired Jxx demo workflow compatibility path",
+            "Retired Jxx typed workflow compatibility path",
             "Advisor approval as client release"
           ],
           "clientVisibility": "Internal or gated until release conditions pass",
@@ -1081,7 +1081,7 @@
           ],
           "expectedStateChange": "The screencast reflects the seeded Journey Spine projection without calling retired Jxx actions.",
           "blockedActions": [
-            "Retired Jxx demo workflow compatibility path",
+            "Retired Jxx typed workflow compatibility path",
             "Advisor approval as client release"
           ],
           "clientVisibility": "Client-visible only after release gate",
@@ -1115,7 +1115,7 @@
       "currentRealityLabel": "new-system-journey-spine",
       "proofLevel": "PL4",
       "overclaimRisk": "A screencast can show journey state and safe next actions, but it is not production authorization.",
-      "caveat": "New-system screencasts must not call retired Jxx demo workflow actions or claim client release from command acceptance.",
+      "caveat": "New-system screencasts must not call retired Jxx typed workflow actions or claim client release from command acceptance.",
       "proofPath": [
         "lib/journeys/journey-registry.ts",
         "app/api/journeys/route.ts",
@@ -1217,7 +1217,7 @@
           ],
           "expectedStateChange": "The screencast reflects the seeded Journey Spine projection without calling retired Jxx actions.",
           "blockedActions": [
-            "Retired Jxx demo workflow compatibility path",
+            "Retired Jxx typed workflow compatibility path",
             "Advisor approval as client release"
           ],
           "clientVisibility": "Internal or gated until release conditions pass",
@@ -1272,7 +1272,7 @@
           ],
           "expectedStateChange": "The screencast reflects the seeded Journey Spine projection without calling retired Jxx actions.",
           "blockedActions": [
-            "Retired Jxx demo workflow compatibility path",
+            "Retired Jxx typed workflow compatibility path",
             "Advisor approval as client release"
           ],
           "clientVisibility": "Internal or gated until release conditions pass",
@@ -1327,7 +1327,7 @@
           ],
           "expectedStateChange": "The screencast reflects the seeded Journey Spine projection without calling retired Jxx actions.",
           "blockedActions": [
-            "Retired Jxx demo workflow compatibility path",
+            "Retired Jxx typed workflow compatibility path",
             "Advisor approval as client release"
           ],
           "clientVisibility": "Internal or gated until release conditions pass",
@@ -1382,7 +1382,7 @@
           ],
           "expectedStateChange": "The screencast reflects the seeded Journey Spine projection without calling retired Jxx actions.",
           "blockedActions": [
-            "Retired Jxx demo workflow compatibility path",
+            "Retired Jxx typed workflow compatibility path",
             "Advisor approval as client release"
           ],
           "clientVisibility": "Internal or gated until release conditions pass",
@@ -1416,7 +1416,7 @@
       "currentRealityLabel": "new-system-journey-spine",
       "proofLevel": "PL4",
       "overclaimRisk": "A screencast can show journey state and safe next actions, but it is not production authorization.",
-      "caveat": "New-system screencasts must not call retired Jxx demo workflow actions or claim client release from command acceptance.",
+      "caveat": "New-system screencasts must not call retired Jxx typed workflow actions or claim client release from command acceptance.",
       "proofPath": [
         "lib/journeys/journey-registry.ts",
         "app/api/journeys/route.ts",
@@ -1516,7 +1516,7 @@
           ],
           "expectedStateChange": "The screencast reflects the seeded Journey Spine projection without calling retired Jxx actions.",
           "blockedActions": [
-            "Retired Jxx demo workflow compatibility path",
+            "Retired Jxx typed workflow compatibility path",
             "Advisor approval as client release"
           ],
           "clientVisibility": "Internal or gated until release conditions pass",
@@ -1571,7 +1571,7 @@
           ],
           "expectedStateChange": "The screencast reflects the seeded Journey Spine projection without calling retired Jxx actions.",
           "blockedActions": [
-            "Retired Jxx demo workflow compatibility path",
+            "Retired Jxx typed workflow compatibility path",
             "Advisor approval as client release"
           ],
           "clientVisibility": "Internal or gated until release conditions pass",
@@ -1626,7 +1626,7 @@
           ],
           "expectedStateChange": "The screencast reflects the seeded Journey Spine projection without calling retired Jxx actions.",
           "blockedActions": [
-            "Retired Jxx demo workflow compatibility path",
+            "Retired Jxx typed workflow compatibility path",
             "Advisor approval as client release"
           ],
           "clientVisibility": "Internal or gated until release conditions pass",
@@ -1681,7 +1681,7 @@
           ],
           "expectedStateChange": "The screencast reflects the seeded Journey Spine projection without calling retired Jxx actions.",
           "blockedActions": [
-            "Retired Jxx demo workflow compatibility path",
+            "Retired Jxx typed workflow compatibility path",
             "Advisor approval as client release"
           ],
           "clientVisibility": "Internal or gated until release conditions pass",
@@ -1715,7 +1715,7 @@
       "currentRealityLabel": "new-system-journey-spine",
       "proofLevel": "PL4",
       "overclaimRisk": "A screencast can show journey state and safe next actions, but it is not production authorization.",
-      "caveat": "New-system screencasts must not call retired Jxx demo workflow actions or claim client release from command acceptance.",
+      "caveat": "New-system screencasts must not call retired Jxx typed workflow actions or claim client release from command acceptance.",
       "proofPath": [
         "lib/journeys/journey-registry.ts",
         "app/api/journeys/route.ts",
@@ -1812,7 +1812,7 @@
           ],
           "expectedStateChange": "The screencast reflects the seeded Journey Spine projection without calling retired Jxx actions.",
           "blockedActions": [
-            "Retired Jxx demo workflow compatibility path",
+            "Retired Jxx typed workflow compatibility path",
             "Advisor approval as client release"
           ],
           "clientVisibility": "Internal or gated until release conditions pass",
@@ -1858,7 +1858,7 @@
             "app/api/journeys/route.ts",
             "app/api/journeys/[id]/commands/route.ts"
           ],
-          "caption": "MJ-012 is shown from the Wave 0-2 journey spine, not from the retired Jxx demo workflow.",
+          "caption": "MJ-012 is shown from the Wave 0-2 journey spine, not from the retired Jxx typed workflow.",
           "expectedVisibleText": [
             "Work Dashboard",
             "MJ-012",
@@ -1867,7 +1867,7 @@
           ],
           "expectedStateChange": "The screencast reflects the seeded Journey Spine projection without calling retired Jxx actions.",
           "blockedActions": [
-            "Retired Jxx demo workflow compatibility path",
+            "Retired Jxx typed workflow compatibility path",
             "Advisor approval as client release"
           ],
           "clientVisibility": "Internal or gated until release conditions pass",
@@ -1922,7 +1922,7 @@
           ],
           "expectedStateChange": "The screencast reflects the seeded Journey Spine projection without calling retired Jxx actions.",
           "blockedActions": [
-            "Retired Jxx demo workflow compatibility path",
+            "Retired Jxx typed workflow compatibility path",
             "Advisor approval as client release"
           ],
           "clientVisibility": "Internal or gated until release conditions pass",

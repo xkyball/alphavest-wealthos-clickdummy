@@ -15,7 +15,7 @@ Make `lib/export-workflow-command-service.ts` the single export command spine an
   - canonical API route: `/api/export-workflow`
   - command stages: `SET_SCOPE`, `VALIDATE_REDACTION`, `PREVIEW`, `APPROVE`, `GENERATE`, `DOWNLOAD`, `SHARE`
   - expected audit events: `export.workflow.*`
-- AV27 payload proof, AV27 payload sweep, WP10 export UX prompt, WCL export safety, file export realism, Phase 8 certification and demo-workflow export compatibility are explicitly classified behind the command spine.
+- AV27 payload proof, AV27 payload sweep, WP10 export UX prompt, WCL export safety, file export realism, Phase 8 certification and typed-workflow export compatibility are explicitly classified behind the command spine.
 - `lib/p44-phase8-export-command-closure.ts` now attaches every Phase 8 ticket evidence row to the command spine, even where the changed target files are helper modules.
 - `tests/export-command-spine-contract.spec.ts` fails if another export proof family becomes command authority or points away from `/api/export-workflow`.
 
@@ -41,4 +41,4 @@ Make `lib/export-workflow-command-service.ts` the single export command spine an
 
 ## Bold Recommendation
 
-The next cut should remove export semantics from `/api/demo-workflow` entirely and leave it as a compatibility shell that delegates to `/api/export-workflow` or the typed command bus. Keeping export-shaped branches in the old mutation path is now the largest remaining place for duplicate export truth to reappear.
+The next cut should remove export semantics from `deleted generic workflow route` entirely and leave it as a compatibility shell that delegates to `/api/export-workflow` or the typed command bus. Keeping export-shaped branches in the old mutation path is now the largest remaining place for duplicate export truth to reappear.

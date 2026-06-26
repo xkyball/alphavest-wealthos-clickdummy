@@ -2,7 +2,7 @@
 
 Status: `NEW_SYSTEM_SCREENCASTS_ONLY`
 
-The retired Jxx/portfolio screencast manifests are no longer active product proof. New recordings must be generated from the Wave 0-2 Journey Spine and must not preserve old `/api/demo-workflow` compatibility just to keep historical videos runnable.
+The retired Jxx/portfolio screencast manifests are no longer active product proof. New recordings must be generated from the Wave 0-2 Journey Spine and must not preserve old `/api/recommendation-review-workflow` compatibility just to keep historical videos runnable.
 
 ## Active Authority
 

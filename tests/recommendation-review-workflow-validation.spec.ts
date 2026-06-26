@@ -4,15 +4,13 @@ import {
   advisorApprovalConfirmationText,
   advisorApprovalWorkflowStateMachine,
   advisorApprovalTransitionFor,
-  parseDemoWorkflowRequestBody,
+  parseRecommendationReviewWorkflowRequestBody,
   type AdvisorApprovalWorkflowAction,
-} from "../lib/demo-workflow-validation";
+} from "../lib/recommendation-review-workflow-validation";
 import {
   wp05ComplianceReleaseConfirmationPhrase,
   wp05CanonicalJourneyCommandApiRoute,
-  wp05DemoWorkflowCompatibilityMode,
-  wp05LegacyDemoReleaseActionDirectness,
-  wp05LegacyDemoReleaseActionDirectnessFor,
+  wp05TypedWorkflowBoundaryMode,
   wp05TypedAdvisorWorkflowDirectness,
   wp05TypedAdvisorWorkflowDirectnessFor,
 } from "../lib/advisory-workflow-contract";
@@ -52,7 +50,7 @@ test.describe("advisor approval workflow state machine", () => {
     });
 
     expect(advisorApprovalConfirmationText.compliance_release).toBe(wp05ComplianceReleaseConfirmationPhrase);
-    expect(wp05DemoWorkflowCompatibilityMode).toBe("DEMO_WORKFLOW_COMPATIBILITY_ONLY");
+    expect(wp05TypedWorkflowBoundaryMode).toBe("TYPED_WORKFLOW_BOUNDARY");
 
     expect(advisorApprovalTransitionFor("compliance_block")).toMatchObject({
       auditResult: "BLOCKED",
@@ -72,7 +70,7 @@ test.describe("advisor approval workflow state machine", () => {
   });
 
   test("normalizes the legacy recommendation-review workflow type to advisor approval", () => {
-    const parsed = parseDemoWorkflowRequestBody({
+    const parsed = parseRecommendationReviewWorkflowRequestBody({
       action: "advisor_approve",
       actorRole: "senior_wealth_advisor",
       targetId: "3f164151-0bc4-54ff-a5a4-b7521c41826b",
@@ -91,26 +89,6 @@ test.describe("advisor approval workflow state machine", () => {
   });
 
   test("classifies PP004 release-related APIs by proof directness", () => {
-    expect(Object.keys(wp05LegacyDemoReleaseActionDirectness).sort()).toEqual([
-      "j01.approveAdvisor",
-      "j02.blockRelease",
-      "j02.confirmRequestEvidence",
-      "j02.releaseClient",
-      "j02.requestEvidence",
-      "j03.acceptOption",
-    ]);
-
-    for (const actionId of Object.keys(wp05LegacyDemoReleaseActionDirectness)) {
-      expect(wp05LegacyDemoReleaseActionDirectnessFor(actionId)).toMatchObject({
-        canonicalProofRoute: wp05CanonicalJourneyCommandApiRoute,
-        classification: "LEGACY_DEMO_COMPATIBILITY_ONLY",
-        demoWorkflowCompatibilityMode: wp05DemoWorkflowCompatibilityMode,
-        productProofBacked: false,
-        pp004CanonicalProofEligible: false,
-        proofBackedByStatePayloadAssertions: false,
-      });
-    }
-
     expect(Object.keys(wp05TypedAdvisorWorkflowDirectness).sort()).toEqual([
       "advisor_approve",
       "compliance_block",
@@ -120,7 +98,7 @@ test.describe("advisor approval workflow state machine", () => {
     expect(wp05TypedAdvisorWorkflowDirectnessFor("compliance_release")).toMatchObject({
       canonicalProofRoute: wp05CanonicalJourneyCommandApiRoute,
       classification: "DOMAIN_BACKED_TYPED_COMPATIBILITY",
-      demoWorkflowCompatibilityMode: wp05DemoWorkflowCompatibilityMode,
+      typedWorkflowBoundaryMode: wp05TypedWorkflowBoundaryMode,
       productProofBacked: true,
       pp004CanonicalProofEligible: false,
       proofBackedByStatePayloadAssertions: true,

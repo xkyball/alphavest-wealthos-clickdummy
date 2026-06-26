@@ -51,7 +51,7 @@ Completion Status Label: implemented + verified with documented limitations
 | Actor/user fixture | Existing demo session actors |
 | Seed objects | Summit export request, recommendation, evidence record and generated export document metadata |
 | Permission assumptions | Export requires permission, redaction, approval, audit persistence and safe payload classification |
-| Evidence/audit assumptions | Export actions are audited through `runDemoWorkflowMutation`; package remains metadata-only |
+| Evidence/audit assumptions | Export actions are audited through `runTypedWorkflowMutation`; package remains metadata-only |
 | Product behavior not being claimed | No real binary package generation, no production storage/download/share, no client acceptance |
 
 ## Visual Inputs

@@ -38,10 +38,10 @@ This phase is a source-grounded documentation and acceptance-contract phase only
 - `docs/v3/INPUT_MASK_AND_DATA_MAINTENANCE_REQUIREMENTS_V3.md`
 - `lib/workflow-gate.ts`
 - `lib/typed-workflow-command-bus.ts`
-- `app/api/demo-workflow/route.ts`
+- `app/api/recommendation-review-workflow/route.ts`
 - `lib/audit-service.ts`
 - `lib/visibility-engine.ts`
-- `tests/demo-workflow-api.spec.ts`
+- `tests/recommendation-review-workflow-api.spec.ts`
 - `tests/workflow-gate.spec.ts`
 - `tests/p0-acceptance.spec.ts`
 - `prisma/schema.prisma`
@@ -119,7 +119,7 @@ Later P0 acceptance must include or preserve:
 
 | Test obligation | Candidate current surface |
 | --- | --- |
-| Advisor approval persists and keeps `clientVisible=false`. | `runRecommendationReviewWorkflowMutation`; `tests/demo-workflow-api.spec.ts`. |
+| Advisor approval persists and keeps `clientVisible=false`. | `runRecommendationReviewWorkflowMutation`; `tests/recommendation-review-workflow-api.spec.ts`. |
 | Advisor-only state fails client visibility gate. | `workflowGate.canBecomeClientVisible`; `tests/workflow-gate.spec.ts`; `tests/p0-acceptance.spec.ts`. |
 | Compliance release fails before advisor/evidence/preconditions. | Typed recommendation-review workflow tests. |
 | Invalid release confirmation fails before mutation. | Typed recommendation-review workflow tests. |
@@ -135,10 +135,10 @@ Later P0 acceptance must include or preserve:
 | Area | Phase 5 decision |
 | --- | --- |
 | Routes `036-042`, `043-045`, `019-020` | No route changed. These remain affected surfaces for later advisor approval, compliance review, release, decision and client projection proof. |
-| API `/api/demo-workflow` | No API changed. Current typed recommendation-review workflow is a proof candidate; future release APIs remain unauthorized until explicit handoff. |
+| API `/api/recommendation-review-workflow` | No API changed. Current typed recommendation-review workflow is a proof candidate; future release APIs remain unauthorized until explicit handoff. |
 | Schema/models | No schema changed. `Approval`, `Recommendation`, `ComplianceReview`, `Decision`, `EvidenceRecord` and `AuditEvent` remain the relevant model set. |
 | Services/components | No service/component changed. `workflow-gate`, `typed-workflow-command-bus`, `audit-service` and `visibility-engine` remain relevant proof surfaces. |
-| Tests | No tests changed or run. `workflow-gate.spec.ts`, `demo-workflow-api.spec.ts`, `p0-acceptance.spec.ts` and permission/admin non-bypass tests remain proof candidates. |
+| Tests | No tests changed or run. `workflow-gate.spec.ts`, `recommendation-review-workflow-api.spec.ts`, `p0-acceptance.spec.ts` and permission/admin non-bypass tests remain proof candidates. |
 
 ## 10. Exit Gate Decision
 

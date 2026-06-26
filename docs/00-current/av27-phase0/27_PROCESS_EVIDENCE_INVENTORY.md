@@ -27,7 +27,7 @@ This inventory records known current evidence and missing proof layers for the 2
 | --- | --- |
 | Route registry | `lib/route-registry.ts` with 71 route entries |
 | Dynamic app surface | `app/[...segments]/page.tsx` |
-| APIs | `app/api/profile/route.ts`, `app/api/family-members/route.ts`, `app/api/entities/route.ts`, `app/api/documents/upload/route.ts`, `app/api/documents/review/route.ts`, `app/api/demo-workflow/route.ts`, `app/api/export-workflow/route.ts`, `app/api/review-monitoring/route.ts`, `app/api/audit-events/route.ts`, `app/api/current-user/route.ts` |
+| APIs | `app/api/profile/route.ts`, `app/api/family-members/route.ts`, `app/api/entities/route.ts`, `app/api/documents/upload/route.ts`, `app/api/documents/review/route.ts`, `deleted generic workflow route`, `app/api/export-workflow/route.ts`, `app/api/review-monitoring/route.ts`, `app/api/audit-events/route.ts`, `app/api/current-user/route.ts` |
 | Services | `lib/permission-engine.ts`, `lib/visibility-engine.ts`, `lib/workflow-gate.ts`, `lib/audit-service.ts`, `lib/document-upload-service.ts`, `lib/evidence-review-service.ts`, `lib/evidence-service.ts`, `lib/export-service.ts`, `lib/export-package-service.ts`, `lib/export-workflow-command-service.ts`, `lib/data-quality-service.ts`, `lib/review-monitoring-service.ts`, `lib/client-portal-projection-state.ts` |
 | Test inventory | route, permission, workflow, upload, export, visibility, audit, P0 and source-reality Playwright suites under `tests/` |
 
@@ -50,7 +50,7 @@ This inventory records known current evidence and missing proof layers for the 2
 | `D-008` | `/advisory`, `/advisory/review-queue`, `/ops` | `lib/data-quality-service.ts`; `lib/typed-workflow-command-bus.ts` | `tests/data-quality-service.spec.ts`; workflow tests | Issue creation tied to target object and blocker state proof |
 | `K-006` | `/ops`, `/ops/sla/:id`, review surfaces | `lib/data-quality-service.ts`; `lib/review-monitoring-service.ts`; `lib/control-layer/monitoring-guard.ts` | `tests/data-quality-service.spec.ts`; `tests/review-monitoring-service.spec.ts` | Release/export block enforcement proof |
 | `F-005` | `/advisor/reviews`, `/advisor/reviews/:id` | `lib/typed-workflow-command-bus.ts`; `lib/workflow-gate.ts` | `tests/workflow-gate.spec.ts`; `tests/wp05-advisory-workflow-contract.spec.ts` | Advisor-not-release negative proof for every release path |
-| `G-002` | `/compliance/reviews`, `/compliance/reviews/:id/decision-room` | `lib/workflow-gate.ts`; compliance demo workflow services | `tests/workflow-gate.spec.ts`; `tests/true-ux-p0-safety.spec.ts` | Complete precondition matrix |
+| `G-002` | `/compliance/reviews`, `/compliance/reviews/:id/decision-room` | `lib/workflow-gate.ts`; compliance typed workflow services | `tests/workflow-gate.spec.ts`; `tests/true-ux-p0-safety.spec.ts` | Complete precondition matrix |
 | `G-003` | `/compliance/reviews/:id/block` | workflow gate and audit services | workflow and audit tests | Evidence request state/audit proof |
 | `G-005` | `/compliance/reviews/:id/block` | workflow gate and data quality services | workflow, governance and audit tests | Block-state persistence and projection proof |
 | `G-006` | `/compliance/reviews/:id/release`, client projection surfaces | `lib/client-portal-projection-state.ts`; `lib/visibility-engine.ts`; `lib/control-layer/client-visibility.ts` | `tests/client-visibility-projection.spec.ts`; `tests/true-ux-client-projection.spec.ts` | Release precondition and projection proof across payloads |

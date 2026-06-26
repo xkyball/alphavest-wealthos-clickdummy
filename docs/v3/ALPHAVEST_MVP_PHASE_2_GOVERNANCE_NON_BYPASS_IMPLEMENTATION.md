@@ -15,7 +15,7 @@ Phase 2 was executed from `mega_journeys_1/ALPHAVEST_MVP_JOURNEY_IMPLEMENTATION_
 | Evidence non-bypass | Admin/security `APPROVE` on `EVIDENCE_RECORD` returns `DEMO_DENY_ADMIN_EVIDENCE_NON_BYPASS`. | `tests/governance-non-bypass.spec.ts`, `tests/p0-acceptance.spec.ts` |
 | Visibility non-bypass | Admin/security direct `RELEASE` on `DECISION`, `DOCUMENT` or `EVIDENCE_RECORD` returns `DEMO_DENY_ADMIN_VISIBILITY_NON_BYPASS`. | `tests/governance-non-bypass.spec.ts`, `tests/p0-acceptance.spec.ts` |
 | Export non-bypass | Admin/security `EXPORT` on `EXPORT_REQUEST` remains denied with `DEMO_DENY_ADMIN_NON_BYPASS`. | `tests/governance-non-bypass.spec.ts`, `tests/p0-acceptance.spec.ts` |
-| Denied audit proof | Denied admin evidence-sufficiency bypass uses `runDemoWorkflowMutation`, records `AuditResult.DENIED` and skips the mutation callback. | `tests/governance-non-bypass.spec.ts` |
+| Denied audit proof | Denied admin evidence-sufficiency bypass uses `runTypedWorkflowMutation`, records `AuditResult.DENIED` and skips the mutation callback. | `tests/governance-non-bypass.spec.ts` |
 
 ## Boundaries
 

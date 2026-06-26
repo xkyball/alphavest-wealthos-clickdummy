@@ -81,7 +81,7 @@ Use these when someone asks "how do you know?":
 
 - `docs/v3/IMPLEMENTATION_QA_REPORT.md` Phase 14 addenda for J02-J09 transaction proof.
 - `docs/v3/SCREENCAST_QA_REPORT_V3.md` for final J01-J10 captioned screencast proof.
-- `tests/demo-workflow-api.spec.ts` for API mutation regression.
+- `tests/recommendation-review-workflow-api.spec.ts` for API mutation regression.
 - `tests/permission-engine.spec.ts` for role-aware demo denials.
 - `tests/file-export-realism.spec.ts` for metadata-only file/export validation.
 - `docs/v3/FINAL_HANDOFF_REPORT.md` for intentional boundaries.

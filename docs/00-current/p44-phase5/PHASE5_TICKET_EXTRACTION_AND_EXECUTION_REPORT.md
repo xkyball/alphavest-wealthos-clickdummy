@@ -18,7 +18,7 @@ Mode: `max`
 - `cat package.json`: scripts verified; `guard:source`, `typecheck`, `lint`, `db:validate`, `build`, Playwright, `test:workflow-gate`, `test:workflow-api`, `test:client-visibility` and `test:export-safety` are present.
 - `pnpm guard:source`: PASS, 0 violations.
 - Route registry inspected: `lib/route-registry.ts`.
-- Target seams inspected: `lib/advisory-workflow-contract.ts`, `lib/demo-workflow-validation.ts`, `lib/typed-workflow-command-bus.ts`, `lib/workflow-gate.ts`, `lib/visibility-engine.ts`, `lib/export-service.ts`, `lib/export-package-service.ts`, `lib/av27-phase6-payload-contract.ts`, `tests/demo-workflow-api.spec.ts`, `tests/wp05-advisory-workflow-contract.spec.ts`, `tests/workflow-gate.spec.ts`, `tests/av27-phase6-payload-sweep.spec.ts`, and prior P44/AV27 reports.
+- Target seams inspected: `lib/advisory-workflow-contract.ts`, `lib/recommendation-review-workflow-validation.ts`, `lib/typed-workflow-command-bus.ts`, `lib/workflow-gate.ts`, `lib/visibility-engine.ts`, `lib/export-service.ts`, `lib/export-package-service.ts`, `lib/av27-phase6-payload-contract.ts`, `tests/recommendation-review-workflow-api.spec.ts`, `tests/wp05-advisory-workflow-contract.spec.ts`, `tests/workflow-gate.spec.ts`, `tests/av27-phase6-payload-sweep.spec.ts`, and prior P44/AV27 reports.
 
 ## Source Reconciliation
 
@@ -32,7 +32,7 @@ The downloaded index remains a navigation aid and does not replace the active Tr
 
 Detailed description: Identify exact current-state evidence, target files, flows, routes, APIs, services, schemas, tests, risks and split decisions for Phase 5. No code edits, schema migrations, test writing or visual generation are allowed inside this analysis task.
 
-Execution: Completed. The repo already contains useful advisor/compliance workflow pieces in `lib/typed-workflow-command-bus.ts`, `lib/demo-workflow-validation.ts`, `lib/advisory-workflow-contract.ts`, `lib/workflow-gate.ts`, `lib/visibility-engine.ts` and AV27 Phase 6 payload tests. Those pieces prove parts of AI draft/internal-rationale client exclusion and advisor/compliance release control. They do not provide a dedicated P44 E-domain AI draft governance module or one ordered certification suite for the 14 Phase 5 tickets.
+Execution: Completed. The repo already contains useful advisor/compliance workflow pieces in `lib/typed-workflow-command-bus.ts`, `lib/recommendation-review-workflow-validation.ts`, `lib/advisory-workflow-contract.ts`, `lib/workflow-gate.ts`, `lib/visibility-engine.ts` and AV27 Phase 6 payload tests. Those pieces prove parts of AI draft/internal-rationale client exclusion and advisor/compliance release control. They do not provide a dedicated P44 E-domain AI draft governance module or one ordered certification suite for the 14 Phase 5 tickets.
 
 Findings:
 - `submit_review`, `reject_unsupported_claim`, `rebuild_with_evidence`, `advisor_approve`, `request_evidence`, `compliance_block` and `compliance_release` already exist as advisor workflow actions.
@@ -244,7 +244,7 @@ Negative result:
 
 ## Bold Cleanup Recommendations
 
-1. Promote P44 Phase 5 into a named E-domain module instead of burying it inside generic `demo-workflow` language. The product can stay demo-data-first without naming its safety-critical core as disposable demo glue.
+1. Promote P44 Phase 5 into a named E-domain module instead of burying it inside generic `typed-workflow` language. The product can stay demo-data-first without naming its safety-critical core as disposable demo glue.
 2. Treat "AI draft" as a governed internal artifact, not a nullable text field. The no-schema path is acceptable for this ticket chain, but a future cleanup should introduce `InternalDraft`, `DraftClassification`, `UnsupportedClaim` and `DraftTrace` domain objects.
 3. Make every client/export projection inspect payload classification before release. Field-name blacklists are useful, but the durable model is classification-first.
 4. Remove any report-only closure pattern. If a ticket claims workflow behavior, it must have executable proof or an explicit blocker.

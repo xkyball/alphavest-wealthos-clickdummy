@@ -53,7 +53,7 @@ test.describe("UXP3-010 evidence drawer lifecycle", () => {
   test("cancel, Escape and backdrop close without workflow mutation", async ({ page }) => {
     const workflowRequests: string[] = [];
     page.on("request", (request) => {
-      if (request.url().includes("/api/demo-workflow")) {
+      if (request.url().includes("/api/advice-release-history/actions")) {
         workflowRequests.push(request.method());
       }
     });

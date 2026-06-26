@@ -25,19 +25,18 @@ export type Wp05CanonicalJourneyCommandId = (typeof wp05CanonicalJourneyCommandI
 
 export const wp05ComplianceReleaseConfirmationPhrase = "RELEASE CLIENT-SAFE JOURNEY";
 
-export const wp05DemoWorkflowCompatibilityMode = "DEMO_WORKFLOW_COMPATIBILITY_ONLY";
+export const wp05TypedWorkflowBoundaryMode = "TYPED_WORKFLOW_BOUNDARY";
 
 export const wp05CanonicalJourneyCommandApiRoute = "/api/journeys/[id]/commands";
 
 export type Wp05ReleaseProofDirectnessClassification =
   | "CANONICAL_TYPED_JOURNEY_COMMAND"
-  | "DOMAIN_BACKED_TYPED_COMPATIBILITY"
-  | "LEGACY_DEMO_COMPATIBILITY_ONLY";
+  | "DOMAIN_BACKED_TYPED_COMPATIBILITY";
 
 export type Wp05ReleaseProofDirectness = {
   canonicalProofRoute: typeof wp05CanonicalJourneyCommandApiRoute;
   classification: Wp05ReleaseProofDirectnessClassification;
-  demoWorkflowCompatibilityMode?: typeof wp05DemoWorkflowCompatibilityMode;
+  typedWorkflowBoundaryMode?: typeof wp05TypedWorkflowBoundaryMode;
   productProofBacked: boolean;
   pp004CanonicalProofEligible: boolean;
   proofBackedByStatePayloadAssertions: boolean;
@@ -53,7 +52,7 @@ export const wp05TypedAdvisorWorkflowDirectness = {
   advisor_approve: {
     canonicalProofRoute: wp05CanonicalJourneyCommandApiRoute,
     classification: "DOMAIN_BACKED_TYPED_COMPATIBILITY",
-    demoWorkflowCompatibilityMode: wp05DemoWorkflowCompatibilityMode,
+    typedWorkflowBoundaryMode: wp05TypedWorkflowBoundaryMode,
     productProofBacked: true,
     pp004CanonicalProofEligible: false,
     proofBackedByStatePayloadAssertions: true,
@@ -64,7 +63,7 @@ export const wp05TypedAdvisorWorkflowDirectness = {
   compliance_block: {
     canonicalProofRoute: wp05CanonicalJourneyCommandApiRoute,
     classification: "DOMAIN_BACKED_TYPED_COMPATIBILITY",
-    demoWorkflowCompatibilityMode: wp05DemoWorkflowCompatibilityMode,
+    typedWorkflowBoundaryMode: wp05TypedWorkflowBoundaryMode,
     productProofBacked: true,
     pp004CanonicalProofEligible: false,
     proofBackedByStatePayloadAssertions: true,
@@ -75,7 +74,7 @@ export const wp05TypedAdvisorWorkflowDirectness = {
   compliance_release: {
     canonicalProofRoute: wp05CanonicalJourneyCommandApiRoute,
     classification: "DOMAIN_BACKED_TYPED_COMPATIBILITY",
-    demoWorkflowCompatibilityMode: wp05DemoWorkflowCompatibilityMode,
+    typedWorkflowBoundaryMode: wp05TypedWorkflowBoundaryMode,
     productProofBacked: true,
     pp004CanonicalProofEligible: false,
     proofBackedByStatePayloadAssertions: true,
@@ -86,7 +85,7 @@ export const wp05TypedAdvisorWorkflowDirectness = {
   request_evidence: {
     canonicalProofRoute: wp05CanonicalJourneyCommandApiRoute,
     classification: "DOMAIN_BACKED_TYPED_COMPATIBILITY",
-    demoWorkflowCompatibilityMode: wp05DemoWorkflowCompatibilityMode,
+    typedWorkflowBoundaryMode: wp05TypedWorkflowBoundaryMode,
     productProofBacked: true,
     pp004CanonicalProofEligible: false,
     proofBackedByStatePayloadAssertions: true,
@@ -98,81 +97,6 @@ export const wp05TypedAdvisorWorkflowDirectness = {
   "advisor_approve" | "compliance_block" | "compliance_release" | "request_evidence",
   Wp05ReleaseProofDirectness
 >;
-
-export const wp05LegacyDemoReleaseActionDirectness = {
-  "j01.approveAdvisor": {
-    canonicalProofRoute: wp05CanonicalJourneyCommandApiRoute,
-    classification: "LEGACY_DEMO_COMPATIBILITY_ONLY",
-    demoWorkflowCompatibilityMode: wp05DemoWorkflowCompatibilityMode,
-    productProofBacked: false,
-    pp004CanonicalProofEligible: false,
-    proofBackedByStatePayloadAssertions: false,
-    releaseBoundary: "advisor_approval_not_release",
-    summary:
-      "Legacy demo advisor approval is not PP004 release proof and must not be used to prove client visibility or compliance release.",
-  },
-  "j02.blockRelease": {
-    canonicalProofRoute: wp05CanonicalJourneyCommandApiRoute,
-    classification: "LEGACY_DEMO_COMPATIBILITY_ONLY",
-    demoWorkflowCompatibilityMode: wp05DemoWorkflowCompatibilityMode,
-    productProofBacked: false,
-    pp004CanonicalProofEligible: false,
-    proofBackedByStatePayloadAssertions: false,
-    releaseBoundary: "compliance_negative_release_control",
-    summary:
-      "Legacy demo compliance block is not PP004 release proof; use typed journey commands for canonical negative release-control proof.",
-  },
-  "j02.confirmRequestEvidence": {
-    canonicalProofRoute: wp05CanonicalJourneyCommandApiRoute,
-    classification: "LEGACY_DEMO_COMPATIBILITY_ONLY",
-    demoWorkflowCompatibilityMode: wp05DemoWorkflowCompatibilityMode,
-    productProofBacked: false,
-    pp004CanonicalProofEligible: false,
-    proofBackedByStatePayloadAssertions: false,
-    releaseBoundary: "compliance_negative_release_control",
-    summary:
-      "Legacy demo evidence-request confirmation is not PP004 release proof; use typed journey commands for canonical evidence-request proof.",
-  },
-  "j02.releaseClient": {
-    canonicalProofRoute: wp05CanonicalJourneyCommandApiRoute,
-    classification: "LEGACY_DEMO_COMPATIBILITY_ONLY",
-    demoWorkflowCompatibilityMode: wp05DemoWorkflowCompatibilityMode,
-    productProofBacked: false,
-    pp004CanonicalProofEligible: false,
-    proofBackedByStatePayloadAssertions: false,
-    releaseBoundary: "compliance_release",
-    summary:
-      "Legacy demo client release may support screencast compatibility, but it is not PP004 canonical release proof.",
-  },
-  "j02.requestEvidence": {
-    canonicalProofRoute: wp05CanonicalJourneyCommandApiRoute,
-    classification: "LEGACY_DEMO_COMPATIBILITY_ONLY",
-    demoWorkflowCompatibilityMode: wp05DemoWorkflowCompatibilityMode,
-    productProofBacked: false,
-    pp004CanonicalProofEligible: false,
-    proofBackedByStatePayloadAssertions: false,
-    releaseBoundary: "compliance_negative_release_control",
-    summary:
-      "Legacy demo evidence request is not PP004 release proof; use typed journey commands for canonical evidence-request proof.",
-  },
-  "j03.acceptOption": {
-    canonicalProofRoute: wp05CanonicalJourneyCommandApiRoute,
-    classification: "LEGACY_DEMO_COMPATIBILITY_ONLY",
-    demoWorkflowCompatibilityMode: wp05DemoWorkflowCompatibilityMode,
-    productProofBacked: false,
-    pp004CanonicalProofEligible: false,
-    proofBackedByStatePayloadAssertions: false,
-    releaseBoundary: "client_decision_after_release",
-    summary:
-      "Legacy demo client acceptance happens after release and is not PP004 compliance-release proof.",
-  },
-} as const satisfies Record<string, Wp05ReleaseProofDirectness>;
-
-export function wp05LegacyDemoReleaseActionDirectnessFor(actionId: string) {
-  return wp05LegacyDemoReleaseActionDirectness[
-    actionId as keyof typeof wp05LegacyDemoReleaseActionDirectness
-  ];
-}
 
 export function wp05TypedAdvisorWorkflowDirectnessFor(action: string) {
   return wp05TypedAdvisorWorkflowDirectness[

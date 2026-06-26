@@ -12,6 +12,8 @@ export type P0AcceptanceProofEntry = {
 
 export const p0ApiRouteUniverse = [
   "app/api/admin-tenants/route.ts",
+  "app/api/advice-release-history/actions/route.ts",
+  "app/api/advisor-review/actions/route.ts",
   "app/api/audit-events/route.ts",
   "app/api/auth/dummy/route.ts",
   "app/api/auth/logout/route.ts",
@@ -20,7 +22,7 @@ export const p0ApiRouteUniverse = [
   "app/api/auth/providers/route.ts",
   "app/api/current-user/route.ts",
   "app/api/dashboard-metrics/route.ts",
-  "app/api/demo-workflow/route.ts",
+  "app/api/data-maintenance/actions/route.ts",
   "app/api/documents/review/route.ts",
   "app/api/documents/route.ts",
   "app/api/documents/upload/route.ts",
@@ -35,10 +37,12 @@ export const p0ApiRouteUniverse = [
   "app/api/journeys/[id]/route.ts",
   "app/api/journeys/route.ts",
   "app/api/ops-sla/route.ts",
+  "app/api/platform-admin/actions/route.ts",
   "app/api/profile/route.ts",
   "app/api/recommendation-review-workflow/route.ts",
   "app/api/review-monitoring/actions/route.ts",
   "app/api/review-monitoring/route.ts",
+  "app/api/tenant-governance/actions/route.ts",
 ] as const;
 
 export const p0RouteUiStateObligations = [
@@ -70,7 +74,7 @@ export const p0AcceptanceProofMap: P0AcceptanceProofEntry[] = [
     journeyId: "MJ-001",
     journeyName: "New Family Office onboarding to first client-safe decision",
     negativeProof: [
-      "tests/demo-workflow-api.spec.ts::release precondition blocks",
+      "tests/recommendation-review-workflow-api.spec.ts::release precondition blocks",
       "tests/p0-acceptance.spec.ts::AV-SLICE-P0-03",
       "tests/p0-acceptance.spec.ts::AV-SLICE-P0-08",
       "tests/client-visibility-proof.spec.ts",
@@ -82,7 +86,7 @@ export const p0AcceptanceProofMap: P0AcceptanceProofEntry[] = [
       "No client visibility before compliance release.",
     ],
     positiveProof: [
-      "tests/demo-workflow-api.spec.ts::typed advisor approval workflow",
+      "tests/recommendation-review-workflow-api.spec.ts::typed advisor approval workflow",
       "tests/p0-acceptance.spec.ts::AV-SLICE-P0-01",
       "tests/p0-acceptance.spec.ts::AV-SLICE-P0-03",
       "tests/ui-state-boundaries.spec.ts",
@@ -116,7 +120,7 @@ export const p0AcceptanceProofMap: P0AcceptanceProofEntry[] = [
     journeyName: "AI draft rejected and rebuilt with evidence",
     negativeProof: [
       "tests/p0-acceptance.spec.ts::AV-SLICE-P0-02",
-      "tests/demo-workflow-api.spec.ts::analyst rejects unsupported claim",
+      "tests/recommendation-review-workflow-api.spec.ts::analyst rejects unsupported claim",
       "tests/client-visibility-proof.spec.ts",
       "tests/file-export-realism.spec.ts",
     ],
@@ -125,8 +129,8 @@ export const p0AcceptanceProofMap: P0AcceptanceProofEntry[] = [
       "No autonomous advice execution.",
     ],
     positiveProof: [
-      "tests/demo-workflow-api.spec.ts::submit review persists analyst review state",
-      "tests/demo-workflow-api.spec.ts::Phase C J13/J14 actions keep advice visibility blocked",
+      "tests/recommendation-review-workflow-api.spec.ts::submit review persists analyst review state",
+      "tests/recommendation-review-workflow-api.spec.ts::Phase C J13/J14 actions keep advice visibility blocked",
       "tests/p0-acceptance.spec.ts::AV-SLICE-P0-02",
     ],
     status: "mapped",

@@ -19,7 +19,7 @@ Reported baseline:
 - Package manager: `pnpm@9.15.9`
 - Guard: `pnpm guard:source` PASS, 0 violations
 - Route registry: `lib/route-registry.ts` exists and contains WP05 routes 033-042.
-- Test inventory: WP05-relevant tests exist, including `tests/demo-workflow-api.spec.ts`, `tests/journey-api.spec.ts`, `tests/workflow-gate.spec.ts`, `tests/client-visibility-projection.spec.ts`, `tests/permission-engine.spec.ts`, `tests/governance-non-bypass.spec.ts`, `tests/true-ux-p0-safety.spec.ts`, `tests/scf-p04-p06-flow-ui.spec.ts` and route/navigation smoke tests.
+- Test inventory: WP05-relevant tests exist, including `tests/recommendation-review-workflow-api.spec.ts`, `tests/journey-api.spec.ts`, `tests/workflow-gate.spec.ts`, `tests/client-visibility-projection.spec.ts`, `tests/permission-engine.spec.ts`, `tests/governance-non-bypass.spec.ts`, `tests/true-ux-p0-safety.spec.ts`, `tests/scf-p04-p06-flow-ui.spec.ts` and route/navigation smoke tests.
 
 Decision: Preflight passes. `DECISION-WP05-1` was approved by the user on 2026-06-25 with Option A.
 
@@ -122,7 +122,7 @@ Required human outputs:
 Approved cutline:
 
 - Canonical API/command strategy: `/api/journeys/:id/commands` is the WP05 command spine.
-- Demo Workflow strategy: typed `/api/demo-workflow` recommendation-review remains compatibility/demo fixture only and must map to canonical WP05 commands/states.
+- Demo Workflow strategy: typed `deleted generic workflow route` recommendation-review remains compatibility/demo fixture only and must map to canonical WP05 commands/states.
 - Audit behavior: fail closed before mutation for critical gate actions.
 - Decision/Audit linkage: minimal linkage included in WP05 first wave.
 - API/schema: no new API and no schema migration in first wave.
@@ -206,12 +206,12 @@ Required proof:
 | --- | --- | --- | --- | --- |
 | 033 | `/advisory` | `InternalWorkflowScreen` -> `SignalsPage` | Implemented via process shell/hub | Orientation only; no mutation |
 | 034 | `/advisory/review-queue` | `InternalWorkflowScreen` -> `WorkbenchPage` | Implemented via hub | Queue surface; action detail lives elsewhere |
-| 035 | `/advisory/triggers/:id/review` | `TriggerDetailPage` | UI action posts `j01.routeToAdvisor` | Legacy demo action path; not the clean canonical WP05 command path |
+| 035 | `/advisory/triggers/:id/review` | `TriggerDetailPage` | UI action posts `j01.routeToAdvisor` | Retired generic action path; not the clean canonical WP05 command path |
 | 036 | `/advisor/reviews` | `AdvisorQueuePage` | Queue table and static states | Mostly UI; detail owns mutation |
-| 037 | `/advisor/reviews/:id` | `AdvisorDetailPage` | Calls `runRecommendationReviewWorkflowAction(advisor_approve)` | Real mutation path through `/api/demo-workflow` |
+| 037 | `/advisor/reviews/:id` | `AdvisorDetailPage` | Calls `runRecommendationReviewWorkflowAction(advisor_approve)` | Real mutation path through `deleted generic workflow route` |
 | 038 | `/compliance/reviews` | `ComplianceQueuePage` | Queue surface and process states | Mostly UI |
-| 039 | `/compliance/reviews/:id/decision-room` | `ComplianceReviewPage` | Request evidence/block modal uses typed recommendation review workflow | Real mutation path through `/api/demo-workflow` |
-| 040 | `/compliance/reviews/:id/release` | `ReleasePage` / `ReleaseModal` | Calls typed `compliance_release` | Real mutation path through `/api/demo-workflow` |
+| 039 | `/compliance/reviews/:id/decision-room` | `ComplianceReviewPage` | Request evidence/block modal uses typed recommendation review workflow | Real mutation path through `deleted generic workflow route` |
+| 040 | `/compliance/reviews/:id/release` | `ReleasePage` / `ReleaseModal` | Calls typed `compliance_release` | Real mutation path through `deleted generic workflow route` |
 | 041 | `/compliance/reviews/:id/block` | `DecisionsGovernanceScreen` -> `ComplianceBlockPage` | Implemented; contains request-evidence confirmation and blocked state | Corrected finding after deeper route dispatch read: route is not an InternalWorkflow fallback |
 | 042 | `/compliance/reviews/:id/audit` | `DecisionsGovernanceScreen` -> `ComplianceAuditPage` | Implemented; audit surface covered by SCF P04-P06 UI test | Corrected finding after deeper route dispatch read: route is not an InternalWorkflow fallback |
 
@@ -219,18 +219,18 @@ Required proof:
 
 | Surface | Current status | Finding |
 | --- | --- | --- |
-| `lib/demo-workflow-validation.ts` | Real typed state machine exists | Covers `submit_review`, `reject_unsupported_claim`, `rebuild_with_evidence`, `advisor_approve`, `compliance_release`, `compliance_block`, `request_evidence` |
+| `lib/recommendation-review-workflow-validation.ts` | Real typed state machine exists | Covers `submit_review`, `reject_unsupported_claim`, `rebuild_with_evidence`, `advisor_approve`, `compliance_release`, `compliance_block`, `request_evidence` |
 | `lib/typed-workflow-command-bus.ts` | Real mutating recommendation-review workflow exists | Writes Recommendation, Approval, ComplianceReview, EvidenceRecord, EvidenceItem and AuditEvent |
-| `app/api/demo-workflow/route.ts` | Mixed API for old `jXX.*` actions and typed recommendation-review | Functional but overloaded; this is the main cleanup target |
+| `deleted generic workflow route` | Mixed API for old `jXX.*` actions and typed recommendation-review | Functional but overloaded; this is the main cleanup target |
 | `lib/journeys/journey-api-service.ts` | Real journey command API exists | Covers `AI_DRAFT_INTERNAL`, `ADVISOR_APPROVE`, `COMPLIANCE_BLOCK`, `COMPLIANCE_REQUEST_EVIDENCE`, `COMPLIANCE_RELEASE`, sufficiency decisions and audit |
-| `app/api/journeys/[id]/commands/route.ts` | Canonical authenticated command endpoint exists | Stronger long-term foundation than ad hoc demo workflow actions |
+| `app/api/journeys/[id]/commands/route.ts` | Canonical authenticated command endpoint exists | Stronger long-term foundation than ad hoc typed workflow actions |
 | `lib/workflow-gate.ts` | Shared release/client visibility gate exists | `canPassComplianceReleaseGate` requires advisor, evidence, payload, permission and audit |
 | `lib/visibility-engine.ts` | Client-safe projection boundary exists | Redacts `clientSummaryDraft`, internal rationale, compliance notes, audit metadata and assumptions |
 | `lib/audit-service.ts` | Critical audit contract exists | Critical actions fail closed if audit persistence is unavailable |
 
 ### Current Positive Proof
 
-- `tests/demo-workflow-api.spec.ts` proves the typed recommendation-review spine:
+- `tests/recommendation-review-workflow-api.spec.ts` proves the typed recommendation-review spine:
   - analyst submit review;
   - unsupported claim rejection;
   - evidence-backed rebuild;
@@ -250,13 +250,13 @@ Required proof:
 ### Current Gaps / Risks
 
 1. Two command stacks exist in parallel:
-   - `/api/demo-workflow` typed `recommendation-review`.
+   - `deleted generic workflow route` typed `recommendation-review`.
    - `/api/journeys/:id/commands`.
    Both are real enough to pass P0 tests, but they can drift.
 2. Pre-implementation, `RecommendationStatus.COMPLIANCE_PENDING` existed in schema but the typed recommendation-review approval path set `ADVISOR_APPROVED` plus `ComplianceReview.status = PENDING`. This was changed in Option A implementation so advisor approval now outputs `COMPLIANCE_PENDING`.
 3. UI still mixes static Phase panels and real mutation controls. The critical controls are real, but several surrounding cards remain explanatory/static.
-4. Demo workflow release mutates `clientVisible: true` directly after passing gates. This remains acceptable in the current demo because release now uses the client-safe release phrase and projection proof; future work should move demo workflow behind the canonical journey command/service adapter.
-5. Decision linkage was stronger in `journey-api-service` than in typed `demo-workflow`. Option A implementation adds minimal release/block/request Decision linkage metadata and release Decision status linkage in demo workflow.
+4. Typed workflow release mutates `clientVisible: true` directly after passing gates. This remains acceptable in the current demo because release now uses the client-safe release phrase and projection proof; future work should move typed workflow behind the canonical journey command/service adapter.
+5. Decision linkage was stronger in `journey-api-service` than in typed `typed-workflow`. Option A implementation adds minimal release/block/request Decision linkage metadata and release Decision status linkage in typed workflow.
 
 ## 4. SPEC-WP05-1 Draft Contract
 
@@ -325,12 +325,12 @@ Recommended canonical WP05 state labels:
 ### Option A - Approved and Implemented in First Wave: Canonical Journey Command Path, Demo Workflow Compatibility Only
 
 Decision:
-Make `/api/journeys/:id/commands` the canonical WP05 command spine. Keep `/api/demo-workflow` typed recommendation-review only as compatibility/test/demo fixture until it can delegate to the same command/service contract.
+Make `/api/journeys/:id/commands` the canonical WP05 command spine. Keep `deleted generic workflow route` typed recommendation-review only as compatibility/test/demo fixture until it can delegate to the same command/service contract.
 
 Implementation cutline:
 
 - First wave: normalize state naming, route 041/042 rendering branches, UI copy and tests against the canonical command contract.
-- Second wave: extract shared advisory gate service or adapter so demo workflow and journey commands cannot drift.
+- Second wave: extract shared advisory gate service or adapter so typed workflow and journey commands cannot drift.
 - No new API.
 - No schema migration in first wave.
 - Include minimal Decision/Audit linkage for compliance release/block; full client acceptance remains downstream.
@@ -346,10 +346,10 @@ Why this is the cleanest aggressive path:
 - Avoids route/UI-only fixes.
 - Keeps WP05 inside True-UX boundaries without inventing new product scope.
 
-### Option B - Rejected: Faster but Dirtier `/api/demo-workflow` Authority
+### Option B - Rejected: Faster but Dirtier `deleted generic workflow route` Authority
 
 Decision:
-Keep typed `recommendation-review` in `/api/demo-workflow` as the WP05 authority and only patch UI/routes/tests around it.
+Keep typed `recommendation-review` in `deleted generic workflow route` as the WP05 authority and only patch UI/routes/tests around it.
 
 Pros:
 
@@ -359,7 +359,7 @@ Pros:
 Cons:
 
 - Leaves duplicate command logic next to journey commands.
-- Keeps demo-workflow overloaded with unrelated `jXX.*` actions.
+- Keeps typed-workflow overloaded with unrelated `jXX.*` actions.
 - Higher future drift risk.
 
 ### Option C - Rejected: New Dedicated Advisor/Compliance API
@@ -414,22 +414,22 @@ Implemented files:
 - `lib/advisory-workflow-contract.ts`
 - `lib/journeys/journey-command-registry.ts`
 - `lib/journeys/journey-api-service.ts`
-- `lib/demo-workflow-validation.ts`
+- `lib/recommendation-review-workflow-validation.ts`
 - `lib/typed-workflow-command-bus.ts`
 - `components/internal-workflow-screen.tsx`
-- `tests/demo-workflow-api.spec.ts`
-- `tests/demo-workflow-validation.spec.ts`
+- `tests/recommendation-review-workflow-api.spec.ts`
+- `tests/recommendation-review-workflow-validation.spec.ts`
 - `tests/confirmation-lifecycle.spec.ts`
 - `tests/wp05-advisory-workflow-contract.spec.ts`
 - `docs/00-current/ALPHAVEST_WP05_INTERNAL_DRAFT_ADVISOR_COMPLIANCE_FLOW_EXECUTION.md`
 
 Implementation notes:
 
-- Added `wp05CanonicalStates`, canonical Journey command IDs, client-safe release phrase and demo workflow compatibility mapping.
+- Added `wp05CanonicalStates`, canonical Journey command IDs, client-safe release phrase and typed workflow compatibility mapping.
 - `journeyCommandIds` now takes WP05-specific commands from the shared WP05 contract.
 - Journey advisor approval now sets recommendation state to `COMPLIANCE_PENDING`.
-- Typed demo workflow advisor approval now sets recommendation state to `COMPLIANCE_PENDING`.
-- Typed demo workflow returns/audits `canonicalCommand`, `canonicalState` and `DEMO_WORKFLOW_COMPATIBILITY_ONLY` metadata.
+- Typed typed workflow advisor approval now sets recommendation state to `COMPLIANCE_PENDING`.
+- Typed typed workflow returns/audits `canonicalCommand`, `canonicalState` and `TYPED_WORKFLOW_BOUNDARY` metadata.
 - Compliance release confirmation phrase is now `RELEASE CLIENT-SAFE JOURNEY`.
 - Compliance release updates linked Decision rows to `RELEASED_TO_CLIENT`, sets `releasedToClientAt` and links the evidence record while leaving client acceptance fields empty.
 - Compliance block/request evidence actions link available evidence into the Decision record without overclaiming release.
@@ -439,8 +439,8 @@ Implementation notes:
 Validation commands:
 
 - `pnpm typecheck` - PASS
-- `pnpm playwright test tests/wp05-advisory-workflow-contract.spec.ts tests/demo-workflow-validation.spec.ts --workers=1` - PASS, 2/2
-- `pnpm playwright test tests/demo-workflow-api.spec.ts --workers=1` - PASS, 15/15
+- `pnpm playwright test tests/wp05-advisory-workflow-contract.spec.ts tests/recommendation-review-workflow-validation.spec.ts --workers=1` - PASS, 2/2
+- `pnpm playwright test tests/recommendation-review-workflow-api.spec.ts --workers=1` - PASS, 15/15
 - `pnpm playwright test tests/journey-api.spec.ts --workers=1` - PASS, 8/8
 - `pnpm playwright test tests/workflow-gate.spec.ts tests/client-visibility-projection.spec.ts --workers=1` - PASS, 17/17
 - `pnpm playwright test tests/confirmation-lifecycle.spec.ts tests/scf-p04-p06-flow-ui.spec.ts --workers=1` - PASS, 7/7
@@ -493,7 +493,7 @@ Generated artefacts used as input or override:
 
 - This WP05 execution report, including the earlier accepted Option A implementation proof.
 - Earlier same-chain generated reports in `docs/00-current/` for WP00, WP01, WP02, WP03, WP04 and WP06, only where they encode accepted process results or reinforce safety constraints already revalidated against the current repo.
-- Explicit human decision already present in the thread: `I approve WP05 Option A: canonical Journey Command path, demo workflow compatibility only, fail-closed audit before mutation, minimal Decision/Audit linkage included, no new API and no schema migration in first wave.`
+- Explicit human decision already present in the thread: `I approve WP05 Option A: canonical Journey Command path, typed workflow compatibility only, fail-closed audit before mutation, minimal Decision/Audit linkage included, no new API and no schema migration in first wave.`
 
 ### ANALYSIS-WP05-1 Executed Analysis Result
 
@@ -526,18 +526,18 @@ Blueprint tasks/subtasks extracted:
 Live repo evidence:
 
 - WP05 route scope exists in `lib/route-registry.ts`: route IDs `033`, `034`, `035`, `036`, `037`, `038`, `039`, `040`, `041`, `042`.
-- `lib/advisory-workflow-contract.ts` defines canonical WP05 states, canonical Journey command IDs, `RELEASE CLIENT-SAFE JOURNEY`, and `DEMO_WORKFLOW_COMPATIBILITY_ONLY`.
+- `lib/advisory-workflow-contract.ts` defines canonical WP05 states, canonical Journey command IDs, `RELEASE CLIENT-SAFE JOURNEY`, and `TYPED_WORKFLOW_BOUNDARY`.
 - `lib/journeys/journey-command-registry.ts` includes the WP05 canonical Journey command IDs.
 - `lib/journeys/journey-api-service.ts` implements `AI_DRAFT_INTERNAL`, `ADVISOR_APPROVE`, evidence sufficiency decisions and `COMPLIANCE_RELEASE` with advisor/evidence/payload/permission/audit gates.
-- `lib/demo-workflow-validation.ts` maps typed recommendation-review actions to canonical Journey commands/states and keeps `advisor_approve` output at `COMPLIANCE_PENDING`, `clientVisibleAfterAction: false`.
+- `lib/recommendation-review-workflow-validation.ts` maps typed recommendation-review actions to canonical Journey commands/states and keeps `advisor_approve` output at `COMPLIANCE_PENDING`, `clientVisibleAfterAction: false`.
 - `lib/typed-workflow-command-bus.ts` implements typed recommendation-review mutations for unsupported claim rejection, evidence-backed rebuild, advisor approval, compliance block, request evidence and compliance release.
-- `app/api/demo-workflow/route.ts` routes typed `recommendation-review` payloads through `runRecommendationReviewWorkflowMutation` and returns fail-closed envelopes on errors.
+- `deleted generic workflow route` routes typed `recommendation-review` payloads through `runRecommendationReviewWorkflowMutation` and returns fail-closed envelopes on errors.
 - `components/internal-workflow-screen.tsx` renders advisor/compliance UI copy that says advisor approval is not release and release requires exact phrase plus compliance acknowledgement.
-- Tests cover the contract, typed demo workflow, canonical journey command path, workflow gates, client projection redaction, UI confirmation lifecycle and P04-P06 boundary panels.
+- Tests cover the contract, typed typed workflow, canonical journey command path, workflow gates, client projection redaction, UI confirmation lifecycle and P04-P06 boundary panels.
 
 Analysis conclusion:
 
-The approved WP05 first-wave implementation is already present in the current repo. No product-code gap was found for the blueprint's approved first-wave scope. Remaining cleanup is not new WP05 scope: extract a shared advisory gate adapter/service so `/api/demo-workflow` compatibility and canonical Journey commands cannot drift.
+The approved WP05 first-wave implementation is already present in the current repo. No product-code gap was found for the blueprint's approved first-wave scope. Remaining cleanup is not new WP05 scope: extract a shared advisory gate adapter/service so `deleted generic workflow route` compatibility and canonical Journey commands cannot drift.
 
 ### SPEC-WP05-1 Refined Specification
 
@@ -556,7 +556,7 @@ Refined first-wave contract:
 - Client-safe projection excludes internal draft, internal rationale, compliance notes, audit metadata internals and unreleased evidence.
 - Decision/Audit linkage is minimal in first wave: release/block/request evidence can link evidence/audit/decision records, but client acceptance remains downstream.
 - `/api/journeys/:id/commands` remains the canonical WP05 command spine.
-- `/api/demo-workflow` typed recommendation-review remains demo workflow compatibility only.
+- `deleted generic workflow route` typed recommendation-review remains typed workflow compatibility only.
 - No new API, route, schema migration or held-route unlock is authorized for this rerun.
 
 ### DECISION-WP05-1 Decision Result
@@ -567,7 +567,7 @@ Existing human approval applies:
 
 - Option A remains the accepted policy.
 - Canonical Journey command path is preferred.
-- Demo workflow remains compatibility only.
+- Typed workflow remains compatibility only.
 - Audit fails closed before critical mutation.
 - Minimal Decision/Audit linkage is included.
 - No new API and no schema migration in first wave.
@@ -609,8 +609,8 @@ Validation run:
 pnpm guard:source
 pnpm exec tsc --noEmit --pretty false
 pnpm db:validate
-pnpm exec playwright test tests/wp05-advisory-workflow-contract.spec.ts tests/demo-workflow-validation.spec.ts --workers=1 --reporter=line
-pnpm exec playwright test tests/demo-workflow-api.spec.ts --workers=1 --reporter=line
+pnpm exec playwright test tests/wp05-advisory-workflow-contract.spec.ts tests/recommendation-review-workflow-validation.spec.ts --workers=1 --reporter=line
+pnpm exec playwright test tests/recommendation-review-workflow-api.spec.ts --workers=1 --reporter=line
 PLAYWRIGHT_PORT=3037 pnpm exec playwright test tests/journey-api.spec.ts --workers=1 --reporter=line
 pnpm exec playwright test tests/workflow-gate.spec.ts tests/client-visibility-projection.spec.ts --workers=1 --reporter=line
 pnpm exec playwright test tests/confirmation-lifecycle.spec.ts tests/scf-p04-p06-flow-ui.spec.ts --workers=1 --reporter=line
@@ -622,7 +622,7 @@ Validation result:
 - TypeScript: PASS.
 - Prisma validate: PASS.
 - WP05 contract/compatibility mapping: PASS, 2 passed.
-- Typed demo workflow API: PASS, 15 passed.
+- Typed typed workflow API: PASS, 15 passed.
 - Canonical Journey command API: PASS, 8 passed after isolated rerun on `PLAYWRIGHT_PORT=3037`.
 - Workflow gate and client visibility projection: PASS, 17 passed.
 - UI confirmation lifecycle and P04-P06 boundary panels: PASS, 7 passed.
@@ -660,9 +660,9 @@ Screenshot proof:
 Residual risks:
 
 - This rerun did not execute full `pnpm phase:check`; it executed the focused WP05 proof set plus source guard, typecheck and Prisma validation.
-- `/api/demo-workflow` still contains compatibility and screencast-oriented paths. It is acceptable for first-wave demo compatibility but should not become the long-term product command authority.
+- `deleted generic workflow route` still contains compatibility and screencast-oriented paths. It is acceptable for first-wave demo compatibility but should not become the long-term product command authority.
 - Full export package proof and client acceptance workflow remain downstream, not WP05 first-wave scope.
 
 Aggressive clean-solution recommendation:
 
-Keep WP05 closed as `ZERO-DELTA PRODUCT CODE / COMPLETE_FOR_APPROVED_FIRST_WAVE`. Do not add a new API, route or schema migration here. The next clean debt-removal task should extract a shared advisory gate adapter/service used by both canonical Journey commands and `/api/demo-workflow` recommendation-review compatibility, then reduce duplicate release/precondition logic with focused journey/demo-workflow/client-visibility regression tests.
+Keep WP05 closed as `ZERO-DELTA PRODUCT CODE / COMPLETE_FOR_APPROVED_FIRST_WAVE`. Do not add a new API, route or schema migration here. The next clean debt-removal task should extract a shared advisory gate adapter/service used by both canonical Journey commands and `deleted generic workflow route` recommendation-review compatibility, then reduce duplicate release/precondition logic with focused journey/typed-workflow/client-visibility regression tests.

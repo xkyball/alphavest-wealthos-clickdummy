@@ -37,7 +37,7 @@ test.describe("export workflow command spine contract", () => {
       "AV27_PHASE7_PAYLOAD_SWEEP",
       "WCL_EXPORT_SAFETY",
       "FILE_EXPORT_REALISM",
-      "DEMO_WORKFLOW_EXPORT_COMPATIBILITY",
+      "RETIRED_EXPORT_ADAPTER",
     ];
     const families = exportWorkflowCommandSpineContract.proofFamilies.filter((family) =>
       legacyFamilyIds.includes(family.familyId),

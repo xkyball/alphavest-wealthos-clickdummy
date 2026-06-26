@@ -20,7 +20,7 @@ import {
   tenantGovernanceCommandForAction,
   type TenantGovernanceWorkflowAction,
 } from "@/lib/tenant-governance-action-contract";
-import { runDemoWorkflowMutation } from "@/lib/typed-workflow-command-bus";
+import { runTypedWorkflowMutation } from "@/lib/typed-workflow-command-bus";
 
 export {
   isTenantGovernanceWorkflowAction,
@@ -83,7 +83,7 @@ function exportExpiryDate(from: Date) {
 }
 
 async function runJ06TenantCreateIntent(prisma: PrismaClient, actionId: TenantGovernanceWorkflowAction) {
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
@@ -126,7 +126,7 @@ async function runJ06TenantCreateIntent(prisma: PrismaClient, actionId: TenantGo
 }
 
 async function runJ06ContinueTenant(prisma: PrismaClient, actionId: TenantGovernanceWorkflowAction) {
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
@@ -183,7 +183,7 @@ async function runJ06AssignTeam(prisma: PrismaClient, actionId: TenantGovernance
     ["success", "client_success"],
   ] as const;
 
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
@@ -299,7 +299,7 @@ async function runJ06AssignTeam(prisma: PrismaClient, actionId: TenantGovernance
 }
 
 async function runJ06OpenInvitation(prisma: PrismaClient, actionId: TenantGovernanceWorkflowAction) {
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
@@ -333,7 +333,7 @@ async function runJ06OpenInvitation(prisma: PrismaClient, actionId: TenantGovern
 async function runJ06SendInvitation(prisma: PrismaClient, actionId: TenantGovernanceWorkflowAction) {
   const now = new Date();
 
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
@@ -427,7 +427,7 @@ async function runJ06SendInvitation(prisma: PrismaClient, actionId: TenantGovern
 }
 
 async function runJ07InviteUser(prisma: PrismaClient, actionId: TenantGovernanceWorkflowAction) {
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
@@ -462,7 +462,7 @@ async function runJ07InviteUser(prisma: PrismaClient, actionId: TenantGovernance
 async function runJ07SendInvitation(prisma: PrismaClient, actionId: TenantGovernanceWorkflowAction) {
   const now = new Date();
 
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
@@ -571,7 +571,7 @@ async function runJ07SaveRoleChanges(prisma: PrismaClient, actionId: TenantGover
   const expiresAt = exportExpiryDate(now);
   const permissionKeys = ["documents.review", "exports.create", "audit.view"];
 
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
@@ -701,7 +701,7 @@ async function runJ07SaveRoleChanges(prisma: PrismaClient, actionId: TenantGover
 async function runJ07ApproveAccess(prisma: PrismaClient, actionId: TenantGovernanceWorkflowAction) {
   const now = new Date();
 
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
@@ -803,7 +803,7 @@ async function runJ07ApproveAccess(prisma: PrismaClient, actionId: TenantGoverna
 async function runJ07ExportAudit(prisma: PrismaClient, actionId: TenantGovernanceWorkflowAction) {
   const now = new Date();
 
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,

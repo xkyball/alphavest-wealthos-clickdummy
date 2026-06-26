@@ -24,7 +24,7 @@ import {
 } from "@/lib/advice-release-history-action-contract";
 import type { PermissionDecision } from "@/lib/permission-engine";
 import { stableId } from "@/lib/stable-id";
-import { runDemoWorkflowMutation } from "@/lib/typed-workflow-command-bus";
+import { runTypedWorkflowMutation } from "@/lib/typed-workflow-command-bus";
 import { workflowGate } from "@/lib/workflow-gate";
 import type {
   ComplianceStatus as DomainComplianceStatus,
@@ -102,7 +102,7 @@ async function runJ02RequestEvidence(
   const now = new Date();
   const isConfirmation = actionId === "j02.confirmRequestEvidence";
 
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
@@ -185,7 +185,7 @@ async function runJ02RequestEvidence(
 async function runJ02BlockRelease(prisma: PrismaClient, actionId: "j02.blockRelease") {
   const now = new Date();
 
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
@@ -282,7 +282,7 @@ async function runJ02ReleaseClient(
 ) {
   const now = new Date();
 
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
@@ -399,7 +399,7 @@ async function runJ02ReleaseClient(
 }
 
 async function runJ02ControlledExportAudit(prisma: PrismaClient, actionId: "j02.exportControlled") {
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
@@ -571,7 +571,7 @@ async function runJ03DecisionAction(
   };
   const actionMap = actionConfigs[actionId];
 
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
@@ -678,7 +678,7 @@ async function runJ03EvidenceAudit(
 ) {
   const isDownload = actionId === "j03.downloadEvidence";
 
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,

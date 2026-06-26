@@ -31,7 +31,7 @@ WP-10 rebases the API contract to the current 15-route repository reality and ha
 - `app/api/audit-events/route.ts`
 - `app/api/auth/dummy/route.ts`
 - `app/api/dashboard-metrics/route.ts`
-- `app/api/demo-workflow/route.ts`
+- `deleted generic workflow route`
 - `app/api/documents/route.ts`
 - `app/api/documents/review/route.ts`
 - `app/api/documents/upload/route.ts`
@@ -50,7 +50,7 @@ WP-10 rebases the API contract to the current 15-route repository reality and ha
 
 | Command | Result |
 |---|---|
-| `pnpm playwright test tests/fail-closed-error-envelope.spec.ts tests/p0-api-contract.spec.ts tests/demo-workflow-api.spec.ts tests/document-upload-api.spec.ts tests/evidence-review-api.spec.ts tests/phase8-export-workflow-api.spec.ts tests/phase9-support-hardening.spec.ts tests/review-monitoring-service.spec.ts tests/global-search-affordance.spec.ts tests/dbtf-tables-api.spec.ts` | PASS, 64 passed |
+| `pnpm playwright test tests/fail-closed-error-envelope.spec.ts tests/p0-api-contract.spec.ts tests/recommendation-review-workflow-api.spec.ts tests/document-upload-api.spec.ts tests/evidence-review-api.spec.ts tests/phase8-export-workflow-api.spec.ts tests/phase9-support-hardening.spec.ts tests/review-monitoring-service.spec.ts tests/global-search-affordance.spec.ts tests/dbtf-tables-api.spec.ts` | PASS, 64 passed |
 | `pnpm phase:check` | PASS with existing warnings |
 
 ## Known Warnings

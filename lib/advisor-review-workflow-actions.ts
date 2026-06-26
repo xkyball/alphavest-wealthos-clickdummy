@@ -6,7 +6,7 @@ import {
   type AdvisorReviewWorkflowAction,
 } from "@/lib/advisor-review-action-contract";
 import { stableId } from "@/lib/stable-id";
-import { runDemoWorkflowMutation } from "@/lib/typed-workflow-command-bus";
+import { runTypedWorkflowMutation } from "@/lib/typed-workflow-command-bus";
 
 export {
   advisorReviewCanonicalApiRoute,
@@ -90,7 +90,7 @@ async function runJ01RequestData(prisma: PrismaClient) {
   const actionId = "j01.requestData" satisfies AdvisorReviewWorkflowAction;
   const actionState = actionStateFor(actionId);
 
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
@@ -157,7 +157,7 @@ async function runJ01RouteToAdvisor(prisma: PrismaClient, actionId: AdvisorRevie
     throw new Error("Advisor-review route command target state is missing.");
   }
 
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,

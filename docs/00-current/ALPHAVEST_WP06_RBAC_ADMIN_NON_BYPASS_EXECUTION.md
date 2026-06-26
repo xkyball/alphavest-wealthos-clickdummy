@@ -23,7 +23,7 @@ Allowed specification inputs for this rerun:
   - `docs/00-current/ALPHAVEST_WP05_INTERNAL_DRAFT_ADVISOR_COMPLIANCE_FLOW_EXECUTION.md`
   - this WP06 execution artefact, as current rerun target.
 - Explicit human decision from the thread:
-  `I approve WP06 Option A: full first-wave route/action/object plus payload/API/service-level enforcement, admin non-bypass fail-closed, denied sensitive attempts audited before mutation, governance UI feedback included, no new API, no schema migration, demo workflow compatibility only.`
+  `I approve WP06 Option A: full first-wave route/action/object plus payload/API/service-level enforcement, admin non-bypass fail-closed, denied sensitive attempts audited before mutation, governance UI feedback included, no new API, no schema migration, typed workflow compatibility only.`
 
 Excluded as direct specification authority:
 
@@ -63,7 +63,7 @@ Current repo evidence:
 - Route/action/payload separation exists in `permissionEngine.evaluateRouteBoundary` and `permissionEngine.can`.
 - Admin/security non-bypass rules exist for recommendation release/block, advisor approval, evidence sufficiency, visibility release, export, governance management and internal advice payload in `lib/permission-engine.ts`.
 - Payload projection/redaction exists in `lib/visibility-engine.ts`; forbidden client projection fields include AI draft, internal rationale, compliance notes, audit internals, evidence internals and storage/file operational fields.
-- Demo workflow compatibility path uses WCL actor/scope/permission wrappers and denied-audit-before-mutation in `lib/typed-workflow-command-bus.ts`.
+- Typed workflow compatibility path uses WCL actor/scope/permission wrappers and denied-audit-before-mutation in `lib/typed-workflow-command-bus.ts`.
 - Canonical Journey command path denies admin/security bypass through operational-role checks and tenant-scope checks in `lib/journeys/journey-api-service.ts`.
 - Governance UI feedback/no-overclaim state exists in `components/decisions-governance-screen.tsx`, `components/admin-tenant-setup-screen.tsx`, `components/internal-workflow-screen.tsx` and UI state tests.
 
@@ -82,7 +82,7 @@ The first-wave contract for this rerun is Option A:
 - Denied sensitive attempts are audited before mutation where the action reaches the mutation helper.
 - Audit persistence failure blocks safety-sensitive mutations before state changes.
 - No new API, no schema migration, no production IAM expansion.
-- `/api/demo-workflow` remains compatibility-only; `/api/journeys/:id/commands` remains the cleaner canonical command spine.
+- `deleted generic workflow route` remains compatibility-only; `/api/journeys/:id/commands` remains the cleaner canonical command spine.
 
 Generated artefacts used as inputs/overrides:
 
@@ -137,7 +137,7 @@ Proof:
 
 Validation:
 
-- `pnpm exec playwright test tests/audit-fail-closed.spec.ts tests/phase6-audit-persistence.spec.ts tests/demo-workflow-api.spec.ts tests/journey-api.spec.ts --workers=1 --reporter=line`
+- `pnpm exec playwright test tests/audit-fail-closed.spec.ts tests/phase6-audit-persistence.spec.ts tests/recommendation-review-workflow-api.spec.ts tests/journey-api.spec.ts --workers=1 --reporter=line`
 - Result: PASS, `30/30`.
 
 #### IMPL-WP06-4 - Governance Console State and Feedback Hardening
@@ -197,7 +197,7 @@ Negative proof:
 - Revalidation: yes, focused WP06 guard/payload/audit/UI validations passed.
 - Blockers: none.
 - Residual risks:
-  - `/api/demo-workflow` remains broad compatibility; keep canonical future work on `/api/journeys/:id/commands`.
+  - `deleted generic workflow route` remains broad compatibility; keep canonical future work on `/api/journeys/:id/commands`.
   - Full route smoke was not used as final WP06 oracle because this rerun scope is RBAC/admin non-bypass and prior reports already identify stale broader route-smoke concerns.
   - This is not a production IAM audit; it is the approved demo-data-first first-wave RBAC/admin non-bypass proof.
 
@@ -343,12 +343,12 @@ Status: BLOCKED until implementation tasks are complete.
 | --- | --- | --- |
 | Actor context | `lib/control-layer/actor-context.ts`, `lib/demo-session.ts`, `lib/auth/current-user.ts` | Demo actor context is normalized in WCL, while Journey API uses current-user. This is workable but creates two enforcement entry points. |
 | Route registry / route shell | `lib/route-registry.ts`, `lib/permission-engine.ts`, `components/process-navigation.tsx`, screen components | Route metadata carries object/action and scope labels. `permissionEngine.evaluateRouteBoundary` separates shell accessibility from action and payload decisions. |
-| Action permission | `lib/permission-engine.ts`, `lib/control-layer/permission-decision.ts`, `lib/typed-workflow-command-bus.ts`, `lib/journeys/journey-api-service.ts` | Permission engine already denies admin release, admin evidence sufficiency, admin export and admin visibility bypass. Demo workflow and Journey API both perform pre-mutation checks, but they use related rather than identical guard wrappers. |
+| Action permission | `lib/permission-engine.ts`, `lib/control-layer/permission-decision.ts`, `lib/typed-workflow-command-bus.ts`, `lib/journeys/journey-api-service.ts` | Permission engine already denies admin release, admin evidence sufficiency, admin export and admin visibility bypass. Typed workflow and Journey API both perform pre-mutation checks, but they use related rather than identical guard wrappers. |
 | Object / tenant scope | `lib/control-layer/scope-resolver.ts`, `lib/permission-engine.ts`, `lib/journeys/journey-api-service.ts` | Tenant mismatch and object-scope gaps fail closed. Journey API also checks current-user tenant on load. |
 | Payload visibility | `lib/visibility-engine.ts`, `lib/control-layer/client-visibility.ts`, `lib/client-portal-projection-state.ts` | Recommendation, decision and document projections redact internal-only fields for client roles and fail closed for unreleased payloads. |
-| Audit fail-closed | `lib/audit-service.ts`, `lib/control-layer/audit-guard.ts`, `lib/typed-workflow-command-bus.ts`, `lib/journeys/journey-api-service.ts` | Critical actions require minimum audit fields and audit persistence. Demo workflow and Journey API block or error before mutation if audit persistence is unavailable. |
+| Audit fail-closed | `lib/audit-service.ts`, `lib/control-layer/audit-guard.ts`, `lib/typed-workflow-command-bus.ts`, `lib/journeys/journey-api-service.ts` | Critical actions require minimum audit fields and audit persistence. Typed workflow and Journey API block or error before mutation if audit persistence is unavailable. |
 | Governance UI | `components/decisions-governance-screen.tsx`, `components/admin-tenant-setup-screen.tsx` | UI already names governance capability boundaries, second-confirmation states and blocked states. It is strong copy/state proof, but implementation authority must remain in services/API. |
-| API surfaces | `app/api/demo-workflow/route.ts`, `app/api/journeys/[id]/commands/route.ts`, `app/api/journeys/[id]/client-projection/route.ts`, `app/api/documents/*`, `app/api/export-workflow/route.ts` | Main safety surfaces exist. `/api/demo-workflow` is broad compatibility; `/api/journeys/:id/commands` is the cleaner command spine after WP05. |
+| API surfaces | `deleted generic workflow route`, `app/api/journeys/[id]/commands/route.ts`, `app/api/journeys/[id]/client-projection/route.ts`, `app/api/documents/*`, `app/api/export-workflow/route.ts` | Main safety surfaces exist. `deleted generic workflow route` is broad compatibility; `/api/journeys/:id/commands` is the cleaner command spine after WP05. |
 
 ### Existing Test Coverage
 
@@ -357,13 +357,13 @@ Status: BLOCKED until implementation tasks are complete.
 - `tests/true-ux-governance-non-bypass.spec.ts`: governance UI boundary copy and admin non-bypass engine checks.
 - `tests/client-visibility-projection.spec.ts`, `tests/true-ux-client-projection.spec.ts`, `tests/client-visibility-proof.spec.ts`: client projection and forbidden-field absence.
 - `tests/audit-fail-closed.spec.ts`, `tests/phase6-audit-persistence.spec.ts`: audit persistence fail-closed behavior.
-- `tests/demo-workflow-api.spec.ts`: broad demo workflow mutation, audit and recommendation review coverage.
+- `tests/recommendation-review-workflow-api.spec.ts`: broad typed workflow mutation, audit and recommendation review coverage.
 - `tests/journey-api.spec.ts`, `tests/wave-0-2-p0-validation.spec.ts`: Journey command admin non-bypass and audit failure coverage.
 
 ### Gaps / Drift Risks
 
 1. Two guard language layers exist: WCL control-layer wrappers and direct Journey API/current-user logic. They are consistent today, but can drift.
-2. `/api/demo-workflow` remains a broad compatibility endpoint with many action cases. WP05 already marked this as demo compatibility only; WP06 should not make it the new source of truth.
+2. `deleted generic workflow route` remains a broad compatibility endpoint with many action cases. WP05 already marked this as demo compatibility only; WP06 should not make it the new source of truth.
 3. Some governance proof is source-copy based (`readFileSync` UI assertions). Useful as no-overclaim proof, but not enough as enforcement proof.
 4. Admin release denial reason for recommendation release is currently `DEMO_DENY_COMPLIANCE_RELEASE_REQUIRED`; semantically correct but less explicit than `ADMIN_NON_BYPASS` for audit/reporting.
 5. Route-smoke has known broader stale workbench-structure failures after WP05. WP06 should use focused route/API/UI tests instead of treating the whole route-smoke as final acceptance until that separate backlog is fixed.
@@ -407,7 +407,7 @@ Status: BLOCKED until implementation tasks are complete.
 ### Option A - Recommended: Full First-Wave Enforcement, No New API, No Schema Migration
 
 Decision:
-Include route/action/object guards, payload/API/service-level visibility, admin non-bypass, denied audit and governance UI feedback in the first WP06 implementation wave. Reuse existing WCL/control-layer, `permissionEngine`, `visibilityEngine`, `auditService`, Journey command service and demo workflow compatibility paths. Do not add schema or new API.
+Include route/action/object guards, payload/API/service-level visibility, admin non-bypass, denied audit and governance UI feedback in the first WP06 implementation wave. Reuse existing WCL/control-layer, `permissionEngine`, `visibilityEngine`, `auditService`, Journey command service and typed workflow compatibility paths. Do not add schema or new API.
 
 Why this is the cleanest aggressive path:
 - Removes the main Altlast: UI proof and service proof stay aligned.
@@ -419,12 +419,12 @@ Why this is the cleanest aggressive path:
 Implementation cutline:
 - Consolidate WP06 contract constants/metadata where useful.
 - Harden explicit admin non-bypass reason codes for safety-gate actions.
-- Add missing targeted tests for demo workflow and Journey API parity.
+- Add missing targeted tests for typed workflow and Journey API parity.
 - Extend payload projection tests for admin/security and client contexts.
 - Add one governance UI proof screenshot only if UI states change.
 
 Approval sentence:
-`I approve WP06 Option A: full first-wave route/action/object plus payload/API/service-level enforcement, admin non-bypass fail-closed, denied sensitive attempts audited before mutation, governance UI feedback included, no new API, no schema migration, demo workflow compatibility only.`
+`I approve WP06 Option A: full first-wave route/action/object plus payload/API/service-level enforcement, admin non-bypass fail-closed, denied sensitive attempts audited before mutation, governance UI feedback included, no new API, no schema migration, typed workflow compatibility only.`
 
 ### Option B - Narrow Route/Action Guard Wave
 
@@ -475,6 +475,6 @@ Next step after approval:
 
 1. `IMPL-WP06-1`: centralize/align first-wave guard contract and action/object proof.
 2. `IMPL-WP06-2`: harden payload projection and forbidden-field tests.
-3. `IMPL-WP06-3`: harden admin non-bypass reason/audit coverage across demo workflow and Journey API.
+3. `IMPL-WP06-3`: harden admin non-bypass reason/audit coverage across typed workflow and Journey API.
 4. `IMPL-WP06-4`: governance UI feedback only if guard outcomes need visible state changes.
-5. `QA-WP06-1`: focused `permission-engine`, `governance-non-bypass`, `client-visibility`, `audit-fail-closed`, `demo-workflow-api`, `journey-api` and screenshot if UI changed.
+5. `QA-WP06-1`: focused `permission-engine`, `governance-non-bypass`, `client-visibility`, `audit-fail-closed`, `typed-workflow-api`, `journey-api` and screenshot if UI changed.

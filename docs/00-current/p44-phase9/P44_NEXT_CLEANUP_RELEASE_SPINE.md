@@ -48,7 +48,7 @@ Before this cleanup, release readiness was re-derived across several places:
 - `evaluateP44ComplianceReleasePreconditions`
 - `exportService.canGenerateExport`
 - `runAdvisorApprovalWorkflowMutation`
-- `/api/demo-workflow`
+- `deleted generic workflow route`
 - journey and UI guard helpers
 
 That fragmentation lets old safety debt hide in tiny semantic differences. One module might check advisor approval and evidence, another might check audit persistence, another might check export redaction, while each caller believes it has the release truth.
@@ -64,7 +64,7 @@ Promote `ReleaseSpine` from pure typed surface to canonical release-readiness de
 - Make Phase 7 compliance release call `ReleaseSpine` for release preconditions.
 - Make workflow gate compliance release delegate to `ReleaseSpine` or share its canonical object.
 - Make export readiness consume `canExportAfterRelease` plus export-stage-specific checks.
-- Make `/api/demo-workflow` return the canonical `releasePreconditions` object rather than its private shape.
+- Make `deleted generic workflow route` return the canonical `releasePreconditions` object rather than its private shape.
 - Keep advisor review commands unable to set `canRelease` by themselves.
 
 ### Acceptance

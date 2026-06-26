@@ -568,7 +568,7 @@ The manual should repeatedly explain that blocked states are protective controls
 
 **Future-readiness note:** This prepares the workflow for richer family approval chains, review scheduling, evidence-backed decision history, and client-facing status clarity.
 
-**Demo-boundary note:** In the current demo, decision screens are navigable and show demo workflow actions. Final decision and evidence package persistence remains incomplete.
+**Demo-boundary note:** In the current demo, decision screens are navigable and show typed workflow actions. Final decision and evidence package persistence remains incomplete.
 
 **Reader takeaway:** Client decisions begin only after release and should end with traceable proof.
 

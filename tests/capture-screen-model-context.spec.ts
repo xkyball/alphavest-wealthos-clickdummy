@@ -44,7 +44,7 @@ test.describe("normal screen capture model context", () => {
     );
   });
 
-  test("keeps data-maintenance captures tied to typed commands instead of demo workflow", () => {
+  test("keeps data-maintenance captures tied to typed commands", () => {
     const clientRoutes = screenRoutes.filter((route) => route.navigationGroup === "client_workspace");
     const wealthRoutes = screenRoutes.filter((route) => route.navigationGroup === "wealth_actions");
 

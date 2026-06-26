@@ -120,14 +120,7 @@ export function advisorApprovalTransitionFor(action: AdvisorApprovalWorkflowActi
   return advisorApprovalWorkflowStateMachine[action];
 }
 
-export type DemoWorkflowActionIdRequestInput = {
-  actionId: string;
-  simulateAuditPersistenceFailure?: boolean;
-};
-
-export type DemoWorkflowRequestInput =
-  | DemoWorkflowActionIdRequestInput
-  | AdvisorApprovalWorkflowRequestInput;
+export type RecommendationReviewWorkflowRequestInput = AdvisorApprovalWorkflowRequestInput;
 
 type ValidationResult<T> =
   | {
@@ -139,7 +132,6 @@ type ValidationResult<T> =
       ok: false;
     };
 
-const demoWorkflowActionPattern = /^j\d{2}\.[a-zA-Z0-9]+$/;
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const advisorApprovalActions = new Set<AdvisorApprovalWorkflowAction>([
   "submit_review",
@@ -165,10 +157,6 @@ const demoActorRoles = new Set([
   "security_officer",
 ]);
 
-export function isDemoWorkflowActionId(value: unknown): value is string {
-  return typeof value === "string" && demoWorkflowActionPattern.test(value);
-}
-
 function hasAdvisorApprovalShape(body: Record<string, unknown>) {
   return (
     "workflowType" in body ||
@@ -185,7 +173,7 @@ function stringValue(body: Record<string, unknown>, field: string) {
   return typeof value === "string" ? value.trim() : undefined;
 }
 
-export function parseDemoWorkflowRequestBody(body: unknown): ValidationResult<DemoWorkflowRequestInput> {
+export function parseRecommendationReviewWorkflowRequestBody(body: unknown): ValidationResult<RecommendationReviewWorkflowRequestInput> {
   if (!body || typeof body !== "object" || Array.isArray(body)) {
     return {
       issues: [
@@ -200,35 +188,6 @@ export function parseDemoWorkflowRequestBody(body: unknown): ValidationResult<De
   }
 
   const record = body as Record<string, unknown>;
-  const actionId = record.actionId;
-  if (isDemoWorkflowActionId(actionId)) {
-    if (
-      "simulateAuditPersistenceFailure" in record &&
-      typeof record.simulateAuditPersistenceFailure !== "boolean"
-    ) {
-      return {
-        issues: [
-          {
-            code: "invalid_audit_persistence_simulation",
-            field: "simulateAuditPersistenceFailure",
-            message: "Audit persistence simulation must be a boolean when provided.",
-          },
-        ],
-        ok: false,
-      };
-    }
-
-    return {
-      ok: true,
-      value: {
-        actionId,
-        ...(record.simulateAuditPersistenceFailure === true
-          ? { simulateAuditPersistenceFailure: true }
-          : {}),
-      },
-    };
-  }
-
   if (hasAdvisorApprovalShape(record)) {
     const issues: ValidationIssue[] = [];
     const workflowType = stringValue(record, "workflowType");
@@ -331,25 +290,12 @@ export function parseDemoWorkflowRequestBody(body: unknown): ValidationResult<De
     };
   }
 
-  if (!isDemoWorkflowActionId(actionId)) {
-    return {
-      issues: [
-        {
-          code: "invalid_action_id",
-          field: "actionId",
-          message: "Action ID must use the demo workflow format, for example j02.releaseClient.",
-        },
-      ],
-      ok: false,
-    };
-  }
-
   return {
     issues: [
       {
-        code: "invalid_action_id",
-        field: "actionId",
-        message: "Action ID must use the demo workflow format, for example j02.releaseClient.",
+        code: "invalid_workflow_request",
+        field: "workflowType",
+        message: "Recommendation review workflow requests must include a typed advisor approval payload.",
       },
     ],
     ok: false,

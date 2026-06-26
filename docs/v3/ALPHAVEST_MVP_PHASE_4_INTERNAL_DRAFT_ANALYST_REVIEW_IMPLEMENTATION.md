@@ -12,7 +12,7 @@ Implementation executed from `mega_journeys_1/ALPHAVEST_MVP_JOURNEY_IMPLEMENTATI
 
 ## Implemented Behavior
 
-- Added first-class typed `/api/demo-workflow` recommendation-review actions:
+- Added first-class typed `/api/recommendation-review-workflow` recommendation-review actions:
   - `reject_unsupported_claim`
   - `rebuild_with_evidence`
 - Analyst unsupported-claim rejection now persists:
@@ -30,9 +30,9 @@ Implementation executed from `mega_journeys_1/ALPHAVEST_MVP_JOURNEY_IMPLEMENTATI
 
 ## Changed Files
 
-- `lib/demo-workflow-validation.ts`
+- `lib/recommendation-review-workflow-validation.ts`
 - `lib/typed-workflow-command-bus.ts`
-- `tests/demo-workflow-api.spec.ts`
+- `tests/recommendation-review-workflow-api.spec.ts`
 - `tests/client-visibility-proof.spec.ts`
 - `docs/v3/ALPHAVEST_MVP_PHASE_4_INTERNAL_DRAFT_ANALYST_REVIEW_IMPLEMENTATION.md`
 - `docs/v3/PHASE_EXECUTION_REPORT.md`
@@ -42,13 +42,13 @@ Implementation executed from `mega_journeys_1/ALPHAVEST_MVP_JOURNEY_IMPLEMENTATI
 
 - `pnpm typecheck` - passed.
 - `pnpm exec playwright test tests/client-visibility-proof.spec.ts` - passed, 6 tests.
-- `pnpm exec playwright test tests/demo-workflow-api.spec.ts --grep "typed recommendation review workflow"` - first attempt failed from a Playwright dev-server port collision caused by parallel execution; rerun by itself passed, 8 tests.
+- `pnpm exec playwright test tests/recommendation-review-workflow-api.spec.ts --grep "typed recommendation review workflow"` - first attempt failed from a Playwright dev-server port collision caused by parallel execution; rerun by itself passed, 8 tests.
 
 ## Not Implemented
 
 - No schema migration.
 - No production AI integration.
-- No generalized draft-generation API beyond the bounded typed demo workflow.
+- No generalized draft-generation API beyond the bounded typed typed workflow.
 - No product UI changes.
 - No advisor approval, compliance release, export generation or client visibility unlock beyond pre-existing Phase 5/6 paths.
 

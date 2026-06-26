@@ -178,7 +178,7 @@ const phaseEvidenceByProcess = {
     phase: "Phase 5",
     positive: "Advisor approval moves item to compliance pending.",
     negative: "Advisor approval does not set client-visible or released state.",
-    evidence: ["docs/00-current/av27-phase5/PHASE5_EXECUTION_REPORT.md", "tests/demo-workflow-api.spec.ts"],
+    evidence: ["docs/00-current/av27-phase5/PHASE5_EXECUTION_REPORT.md", "tests/recommendation-review-workflow-api.spec.ts"],
   },
   "G-002": {
     phase: "Phase 5",
@@ -190,19 +190,19 @@ const phaseEvidenceByProcess = {
     phase: "Phase 5",
     positive: "Compliance evidence request persists state and audit context.",
     negative: "Evidence request does not release or expose client payload.",
-    evidence: ["docs/00-current/av27-phase5/PHASE5_EXECUTION_REPORT.md", "tests/demo-workflow-api.spec.ts"],
+    evidence: ["docs/00-current/av27-phase5/PHASE5_EXECUTION_REPORT.md", "tests/recommendation-review-workflow-api.spec.ts"],
   },
   "G-005": {
     phase: "Phase 5",
     positive: "Compliance block persists and projects blocked state.",
     negative: "Non-compliance role cannot block or release.",
-    evidence: ["docs/00-current/av27-phase5/PHASE5_EXECUTION_REPORT.md", "tests/demo-workflow-api.spec.ts"],
+    evidence: ["docs/00-current/av27-phase5/PHASE5_EXECUTION_REPORT.md", "tests/recommendation-review-workflow-api.spec.ts"],
   },
   "G-006": {
     phase: "Phase 5",
     positive: "Compliance release sets released state and safe projection.",
     negative: "Release without preconditions is denied and audited.",
-    evidence: ["docs/00-current/av27-phase5/PHASE5_EXECUTION_REPORT.md", "tests/demo-workflow-api.spec.ts"],
+    evidence: ["docs/00-current/av27-phase5/PHASE5_EXECUTION_REPORT.md", "tests/recommendation-review-workflow-api.spec.ts"],
   },
   "G-009": {
     phase: "Phase 5",
@@ -226,7 +226,7 @@ const phaseEvidenceByProcess = {
     phase: "Phase 5",
     positive: "Released-context decision action persists actor, context and audit.",
     negative: "Decision action cannot complete from unreleased draft context.",
-    evidence: ["docs/00-current/av27-phase5/PHASE5_EXECUTION_REPORT.md", "tests/demo-workflow-api.spec.ts"],
+    evidence: ["docs/00-current/av27-phase5/PHASE5_EXECUTION_REPORT.md", "tests/recommendation-review-workflow-api.spec.ts"],
   },
   "I-004": {
     phase: "Phase 5",
@@ -339,7 +339,7 @@ export const av27RouteActionObjectPayloadNegativeSuite: readonly Av27NegativeSui
     processIds: ["A-003", "A-004", "B-007", "G-006"],
   },
   {
-    coveredBy: ["tests/av27-safety-foundation.spec.ts", "tests/demo-workflow-api.spec.ts"],
+    coveredBy: ["tests/av27-safety-foundation.spec.ts", "tests/recommendation-review-workflow-api.spec.ts"],
     id: "wrong_role",
     negativeAssertion: "Wrong role is denied for protected action and receives no authority expansion from route visibility.",
     processIds: ["B-006", "B-010", "G-005", "J-009"],
@@ -351,7 +351,7 @@ export const av27RouteActionObjectPayloadNegativeSuite: readonly Av27NegativeSui
     processIds: ["A-004", "C-005", "G-002", "K-006"],
   },
   {
-    coveredBy: ["tests/audit-fail-closed.spec.ts", "tests/demo-workflow-api.spec.ts", "tests/data-quality-service.spec.ts"],
+    coveredBy: ["tests/audit-fail-closed.spec.ts", "tests/recommendation-review-workflow-api.spec.ts", "tests/data-quality-service.spec.ts"],
     id: "no_audit",
     negativeAssertion: "Critical action cannot complete silently when durable audit is unavailable.",
     processIds: ["B-012", "G-006", "I-007"],
@@ -363,7 +363,7 @@ export const av27RouteActionObjectPayloadNegativeSuite: readonly Av27NegativeSui
     processIds: ["C-002", "C-004", "C-008", "G-002"],
   },
   {
-    coveredBy: ["tests/workflow-gate.spec.ts", "tests/demo-workflow-api.spec.ts"],
+    coveredBy: ["tests/workflow-gate.spec.ts", "tests/recommendation-review-workflow-api.spec.ts"],
     id: "advisor_not_release",
     negativeAssertion: "Advisor approval moves to compliance-pending only and cannot create client release.",
     processIds: ["F-005", "G-006", "G-009", "I-004"],

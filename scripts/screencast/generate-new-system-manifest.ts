@@ -46,7 +46,7 @@ function stepCaption(definition: JourneyDefinition, step: JourneyStepDefinition)
     return `${definition.journeyKey} separates linked evidence from final acceptance or release.`;
   }
 
-  return `${definition.journeyKey} is shown from the Wave 0-2 journey spine, not from the retired Jxx demo workflow.`;
+  return `${definition.journeyKey} is shown from the Wave 0-2 journey spine, not from the retired Jxx typed workflow path.`;
 }
 
 function screencastStep(definition: JourneyDefinition, step: JourneyStepDefinition, index: number): ScreencastStep {
@@ -74,7 +74,7 @@ function screencastStep(definition: JourneyDefinition, step: JourneyStepDefiniti
     caption: stepCaption(definition, step),
     expectedVisibleText: ["Work Dashboard", definition.journeyKey, definition.title, "Next safe action"],
     expectedStateChange: "The screencast reflects the seeded Journey Spine projection without calling retired Jxx actions.",
-    blockedActions: ["Retired Jxx demo workflow compatibility path", "Advisor approval as client release"],
+    blockedActions: ["Retired Jxx typed workflow compatibility path", "Advisor approval as client release"],
     clientVisibility: step.clientVisible ? "Client-visible only after release gate" : "Internal or gated until release conditions pass",
     evidence: step.requiresEvidence ? "Evidence requirement remains visible in the Journey Spine" : "No evidence sufficiency claim is made by the screencast",
     audit: step.requiresAudit ? "Audit is required before command acceptance" : "No audit completion is claimed by the screencast step",
@@ -106,7 +106,7 @@ function journeyForDefinition(definition: JourneyDefinition): ScreencastJourney 
     currentRealityLabel: "new-system-journey-spine",
     proofLevel: "PL4",
     overclaimRisk: "A screencast can show journey state and safe next actions, but it is not production authorization.",
-    caveat: "New-system screencasts must not call retired Jxx demo workflow actions or claim client release from command acceptance.",
+    caveat: "New-system screencasts must not call retired Jxx typed workflow actions or claim client release from command acceptance.",
     proofPath: [
       "lib/journeys/journey-registry.ts",
       "app/api/journeys/route.ts",

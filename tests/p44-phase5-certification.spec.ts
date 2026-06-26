@@ -389,7 +389,7 @@ test.describe("P44 Phase 5 AI draft governance certification", () => {
   test("P44-5-T13 creates closure notes without demo-only completion claim", () => {
     const notes = createP44DraftWorkflowClosureNotes({
       proofNotes: ["Internal draft creation, classification, reject/rebuild, trace, leakage and negative gates are covered."],
-      routeFiles: ["app/api/demo-workflow/route.ts"],
+      routeFiles: ["app/api/recommendation-review-workflow/route.ts"],
       serviceFiles: ["lib/internal-draft-governance-spine.ts"],
       testFiles: ["tests/p44-phase5-certification.spec.ts"],
     });
@@ -420,7 +420,7 @@ test.describe("P44 Phase 5 AI draft governance certification", () => {
     });
     const closureNotes = createP44DraftWorkflowClosureNotes({
       proofNotes: ["All P44 Phase 5 E-domain proof layers are mapped."],
-      routeFiles: ["app/api/demo-workflow/route.ts"],
+      routeFiles: ["app/api/recommendation-review-workflow/route.ts"],
       serviceFiles: ["lib/internal-draft-governance-spine.ts"],
       testFiles: ["tests/p44-phase5-certification.spec.ts"],
     });

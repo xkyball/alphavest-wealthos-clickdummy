@@ -14,7 +14,7 @@ Every phase or ticket that claims workflow execution, data maintenance, upload, 
 
 - Declare current and target capability level using E0-E7.
 - State the exact operational claim and the explicit non-claim boundary.
-- Static UI, local state, read-only fields, metadata-only file/export behavior, fixture mutation and `actionId`-only demo workflows are not operational capability.
+- Static UI, local state, read-only fields, metadata-only file/export behavior, fixture mutation and `actionId`-only typed workflows are not operational capability.
 - E5 or higher requires a typed payload or file payload path and a named service/API boundary.
 - E6 requires permission/workflow-gate proof, including denied or no-client-release behavior where relevant.
 - E7 requires validated user payload or file payload, persistence, reload proof, permission denial proof, audit/evidence proof where relevant, and success plus rejection tests.

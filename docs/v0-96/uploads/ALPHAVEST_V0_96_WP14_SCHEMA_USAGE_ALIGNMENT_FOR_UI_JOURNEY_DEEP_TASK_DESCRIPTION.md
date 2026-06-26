@@ -247,7 +247,7 @@ WP-14 converts these into a schema-usage and type-mapping task.
 ### APIs / services
 
 - `/api/documents`, `/api/documents/upload`, `/api/documents/review`
-- `/api/demo-workflow`
+- `deleted generic workflow route`
 - `/api/audit-events`
 - `/api/export-workflow`
 - `/api/admin-tenants`

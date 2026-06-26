@@ -26,7 +26,7 @@ This phase is a source-grounded documentation and acceptance-contract phase only
 - `docs/v3/INPUT_MASK_AND_DATA_MAINTENANCE_REQUIREMENTS_V3.md`
 - `lib/permission-engine.ts`
 - `lib/typed-workflow-command-bus.ts`
-- `lib/demo-workflow-validation.ts`
+- `lib/recommendation-review-workflow-validation.ts`
 - `lib/workflow-gate.ts`
 - `lib/audit-service.ts`
 - `components/admin-tenant-setup-screen.tsx`
@@ -143,19 +143,19 @@ Later P0 acceptance must include or preserve:
 | Admin cannot view unreleased internal advice payload. | `visibilityEngine.projectRecommendationPayload` and permission-engine internal payload denials. |
 | Admin cannot export restricted package by role authority alone. | `permissionEngine.can(..., "EXPORT", EXPORT_REQUEST)` and export-service checks. |
 | Upload-created evidence is not evidence sufficiency. | `evidenceService.evaluateEvidenceSufficiency` and workflow gate tests. |
-| Denied sensitive attempts are audited and do not mutate. | `runRecommendationReviewWorkflowMutation` denial paths and demo-workflow API tests. |
+| Denied sensitive attempts are audited and do not mutate. | `runRecommendationReviewWorkflowMutation` denial paths and typed-command API tests. |
 | Audit persistence unavailable blocks sensitive mutation. | Existing audit fail-closed tests where applicable; later governance APIs must add equivalents. |
-| Confirmation phrase invalid blocks mutation. | `demo-workflow-validation.ts`, `typed-workflow-command-bus.ts`, confirmation lifecycle tests. |
+| Confirmation phrase invalid blocks mutation. | `recommendation-review-workflow-validation.ts`, `typed-workflow-command-bus.ts`, confirmation lifecycle tests. |
 
 ## 11. Impact Matrix
 
 | Area | Phase 2 decision |
 | --- | --- |
 | Routes `007-010`, `017-018`, `040`, `048-051`, `057` | No route changed. These remain affected surfaces for later governance/non-bypass implementation and proof. |
-| API `/api/demo-workflow` | No API changed. Current recommendation-review paths are proof candidates. Future governance APIs remain unauthorized until explicit handoff. |
+| API `/api/recommendation-review-workflow` | No API changed. Current recommendation-review paths are proof candidates. Future governance APIs remain unauthorized until explicit handoff. |
 | Schema/models | No schema changed. `Role`, `Permission`, `RolePermission`, `UserRole`, `AccessRequest`, `SecondConfirmation`, `AuditEvent`, `PolicyDefinition` remain the relevant model set. |
 | Services/components | No service/component changed. `permission-engine`, `audit-service`, `typed-workflow-command-bus`, `workflow-gate`, export/evidence/visibility services remain the relevant proof surfaces. |
-| Tests | No tests changed or run. `permission-engine.spec.ts`, `demo-workflow-api.spec.ts`, `p0-acceptance.spec.ts`, `workflow-gate.spec.ts` and export/evidence tests remain proof candidates. |
+| Tests | No tests changed or run. `permission-engine.spec.ts`, `recommendation-review-workflow-api.spec.ts`, `p0-acceptance.spec.ts`, `workflow-gate.spec.ts` and export/evidence tests remain proof candidates. |
 
 ## 12. Exit Gate Decision
 

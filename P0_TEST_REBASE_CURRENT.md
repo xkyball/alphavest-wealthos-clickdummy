@@ -26,7 +26,7 @@ Companion source: /Users/chris/Downloads/ALPHAVEST_V1_0_DETAILED_IMPLEMENTATION_
 | Route / action / object / payload separation | ALREADY_PRESENT | `tests/p0-acceptance.spec.ts`; `tests/permission-engine.spec.ts` | registered-only P1/reference/hold routes cannot become MVP shells |
 | Evidence upload lifecycle | ALREADY_PRESENT | `tests/document-upload-api.spec.ts`; `tests/evidence-review-api.spec.ts` | upload success is not sufficiency, release or export proof |
 | AI draft internal-only | ALREADY_PRESENT | `tests/client-visibility-projection.spec.ts`; `tests/p0-acceptance.spec.ts` | AI draft, internal rationale, assumptions and compliance notes stay out of client/export payloads |
-| Advisor approval versus compliance release | ALREADY_PRESENT | `tests/demo-workflow-validation.spec.ts`; `tests/demo-workflow-api.spec.ts` | advisor approval remains compliance-pending, not client-visible release |
+| Advisor approval versus compliance release | ALREADY_PRESENT | `tests/recommendation-review-workflow-validation.spec.ts`; `tests/recommendation-review-workflow-api.spec.ts` | advisor approval remains compliance-pending, not client-visible release |
 | Client-safe projection | ALREADY_PRESENT | `tests/client-visibility-projection.spec.ts`; `tests/true-ux-client-projection.spec.ts` | unreleased/internal payloads fail closed for client roles |
 | Audit persistence fail-closed | ALREADY_PRESENT | `tests/audit-fail-closed.spec.ts`; `tests/phase6-audit-persistence.spec.ts` | audit-unavailable export/release gates block advancement |
 | Export redaction / approval package | ALREADY_PRESENT | `tests/export-safety.spec.ts`; `tests/file-export-realism.spec.ts` | missing approval, missing redaction profile and forbidden payloads block generation |

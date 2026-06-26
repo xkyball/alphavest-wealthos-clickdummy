@@ -335,7 +335,7 @@
 | State Requirements | loading, error, empty, permission denied, disabled/gated action, hidden/redacted, blocked, validation failed, audit unavailable, success; plus route-specific states from matrix. |
 | Data Inputs | actorUserId, clientTenantId, roleId, objectType, objectId, auditCorrelationId |
 | Expected Outputs / Results | UI state, visible/hidden/redacted payload projection, action result, audit event or held/denied state, next action guidance |
-| API / Service Impact | Use existing `/api/demo-workflow`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
+| API / Service Impact | Use existing `deleted generic workflow route`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
 | Schema Impact | Use existing Prisma baseline only through services; no schema replacement or migration authorized. |
 | Audit Requirements | Critical actions require AuditEvent or fail-closed/held state; audit display alone is not persistence proof. |
 | Positive Tests | Happy-path state/interaktion works for scoped actor and required visible content appears. |
@@ -367,7 +367,7 @@
 | State Requirements | loading, error, empty, permission denied, disabled/gated action, hidden/redacted, blocked, validation failed, audit unavailable, success; plus route-specific states from matrix. |
 | Data Inputs | actorUserId, clientTenantId, roleId, objectType, objectId, auditCorrelationId |
 | Expected Outputs / Results | UI state, visible/hidden/redacted payload projection, action result, audit event or held/denied state, next action guidance |
-| API / Service Impact | Use existing `/api/demo-workflow`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
+| API / Service Impact | Use existing `deleted generic workflow route`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
 | Schema Impact | Use existing Prisma baseline only through services; no schema replacement or migration authorized. |
 | Audit Requirements | Critical actions require AuditEvent or fail-closed/held state; audit display alone is not persistence proof. |
 | Positive Tests | Happy-path state/interaktion works for scoped actor and required visible content appears. |
@@ -399,7 +399,7 @@
 | State Requirements | loading, error, empty, permission denied, disabled/gated action, hidden/redacted, blocked, validation failed, audit unavailable, success; plus route-specific states from matrix. |
 | Data Inputs | actorUserId, clientTenantId, roleId, objectType, objectId, auditCorrelationId |
 | Expected Outputs / Results | UI state, visible/hidden/redacted payload projection, action result, audit event or held/denied state, next action guidance |
-| API / Service Impact | Use existing `/api/demo-workflow`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
+| API / Service Impact | Use existing `deleted generic workflow route`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
 | Schema Impact | Use existing Prisma baseline only through services; no schema replacement or migration authorized. |
 | Audit Requirements | Critical actions require AuditEvent or fail-closed/held state; audit display alone is not persistence proof. |
 | Positive Tests | Happy-path state/interaktion works for scoped actor and required visible content appears. |
@@ -431,7 +431,7 @@
 | State Requirements | loading, error, empty, permission denied, disabled/gated action, hidden/redacted, blocked, validation failed, audit unavailable, success; plus route-specific states from matrix. |
 | Data Inputs | actorUserId, clientTenantId, roleId, objectType, objectId, auditCorrelationId, documentId, file metadata, evidenceRecordId, evidenceStatus |
 | Expected Outputs / Results | UI state, visible/hidden/redacted payload projection, action result, audit event or held/denied state, next action guidance |
-| API / Service Impact | Use existing `/api/demo-workflow`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
+| API / Service Impact | Use existing `deleted generic workflow route`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
 | Schema Impact | Use existing Prisma baseline only through services; no schema replacement or migration authorized. |
 | Audit Requirements | Critical actions require AuditEvent or fail-closed/held state; audit display alone is not persistence proof. |
 | Positive Tests | Happy-path state/interaktion works for scoped actor and required visible content appears. |
@@ -463,7 +463,7 @@
 | State Requirements | loading, error, empty, permission denied, disabled/gated action, hidden/redacted, blocked, validation failed, audit unavailable, success; plus route-specific states from matrix. |
 | Data Inputs | actorUserId, clientTenantId, roleId, objectType, objectId, auditCorrelationId, documentId, file metadata, evidenceRecordId, evidenceStatus |
 | Expected Outputs / Results | UI state, visible/hidden/redacted payload projection, action result, audit event or held/denied state, next action guidance |
-| API / Service Impact | Use existing `/api/demo-workflow`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
+| API / Service Impact | Use existing `deleted generic workflow route`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
 | Schema Impact | Use existing Prisma baseline only through services; no schema replacement or migration authorized. |
 | Audit Requirements | Critical actions require AuditEvent or fail-closed/held state; audit display alone is not persistence proof. |
 | Positive Tests | Happy-path state/interaktion works for scoped actor and required visible content appears. |
@@ -495,7 +495,7 @@
 | State Requirements | loading, error, empty, permission denied, disabled/gated action, hidden/redacted, blocked, validation failed, audit unavailable, success; plus route-specific states from matrix. |
 | Data Inputs | actorUserId, clientTenantId, roleId, objectType, objectId, auditCorrelationId, triggerId, recommendationId, approvalId, complianceReviewId, decisionId, visibilityStatus |
 | Expected Outputs / Results | UI state, visible/hidden/redacted payload projection, action result, audit event or held/denied state, next action guidance |
-| API / Service Impact | Use existing `/api/demo-workflow`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
+| API / Service Impact | Use existing `deleted generic workflow route`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
 | Schema Impact | Use existing Prisma baseline only through services; no schema replacement or migration authorized. |
 | Audit Requirements | Critical actions require AuditEvent or fail-closed/held state; audit display alone is not persistence proof. |
 | Positive Tests | Happy-path state/interaktion works for scoped actor and required visible content appears. |
@@ -527,7 +527,7 @@
 | State Requirements | loading, error, empty, permission denied, disabled/gated action, hidden/redacted, blocked, validation failed, audit unavailable, success; plus route-specific states from matrix. |
 | Data Inputs | actorUserId, clientTenantId, roleId, objectType, objectId, auditCorrelationId, triggerId, recommendationId, approvalId, complianceReviewId, decisionId, visibilityStatus |
 | Expected Outputs / Results | UI state, visible/hidden/redacted payload projection, action result, audit event or held/denied state, next action guidance |
-| API / Service Impact | Use existing `/api/demo-workflow`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
+| API / Service Impact | Use existing `deleted generic workflow route`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
 | Schema Impact | Use existing Prisma baseline only through services; no schema replacement or migration authorized. |
 | Audit Requirements | Critical actions require AuditEvent or fail-closed/held state; audit display alone is not persistence proof. |
 | Positive Tests | Happy-path state/interaktion works for scoped actor and required visible content appears. |
@@ -559,7 +559,7 @@
 | State Requirements | loading, error, empty, permission denied, disabled/gated action, hidden/redacted, blocked, validation failed, audit unavailable, success; plus route-specific states from matrix. |
 | Data Inputs | actorUserId, clientTenantId, roleId, objectType, objectId, auditCorrelationId, triggerId, recommendationId, approvalId, complianceReviewId, decisionId, visibilityStatus |
 | Expected Outputs / Results | UI state, visible/hidden/redacted payload projection, action result, audit event or held/denied state, next action guidance |
-| API / Service Impact | Use existing `/api/demo-workflow`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
+| API / Service Impact | Use existing `deleted generic workflow route`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
 | Schema Impact | Use existing Prisma baseline only through services; no schema replacement or migration authorized. |
 | Audit Requirements | Critical actions require AuditEvent or fail-closed/held state; audit display alone is not persistence proof. |
 | Positive Tests | Happy-path state/interaktion works for scoped actor and required visible content appears. |
@@ -591,7 +591,7 @@
 | State Requirements | loading, error, empty, permission denied, disabled/gated action, hidden/redacted, blocked, validation failed, audit unavailable, success; plus route-specific states from matrix. |
 | Data Inputs | actorUserId, clientTenantId, roleId, objectType, objectId, auditCorrelationId, triggerId, recommendationId, approvalId, complianceReviewId, decisionId, visibilityStatus |
 | Expected Outputs / Results | UI state, visible/hidden/redacted payload projection, action result, audit event or held/denied state, next action guidance |
-| API / Service Impact | Use existing `/api/demo-workflow`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
+| API / Service Impact | Use existing `deleted generic workflow route`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
 | Schema Impact | Use existing Prisma baseline only through services; no schema replacement or migration authorized. |
 | Audit Requirements | Critical actions require AuditEvent or fail-closed/held state; audit display alone is not persistence proof. |
 | Positive Tests | Happy-path state/interaktion works for scoped actor and required visible content appears. |
@@ -623,7 +623,7 @@
 | State Requirements | loading, error, empty, permission denied, disabled/gated action, hidden/redacted, blocked, validation failed, audit unavailable, success; plus route-specific states from matrix. |
 | Data Inputs | actorUserId, clientTenantId, roleId, objectType, objectId, auditCorrelationId, triggerId, recommendationId, approvalId, complianceReviewId, decisionId, visibilityStatus |
 | Expected Outputs / Results | UI state, visible/hidden/redacted payload projection, action result, audit event or held/denied state, next action guidance |
-| API / Service Impact | Use existing `/api/demo-workflow`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
+| API / Service Impact | Use existing `deleted generic workflow route`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
 | Schema Impact | Use existing Prisma baseline only through services; no schema replacement or migration authorized. |
 | Audit Requirements | Critical actions require AuditEvent or fail-closed/held state; audit display alone is not persistence proof. |
 | Positive Tests | Happy-path state/interaktion works for scoped actor and required visible content appears. |
@@ -655,7 +655,7 @@
 | State Requirements | loading, error, empty, permission denied, disabled/gated action, hidden/redacted, blocked, validation failed, audit unavailable, success; plus route-specific states from matrix. |
 | Data Inputs | actorUserId, clientTenantId, roleId, objectType, objectId, auditCorrelationId, triggerId, recommendationId, approvalId, complianceReviewId, decisionId, visibilityStatus |
 | Expected Outputs / Results | UI state, visible/hidden/redacted payload projection, action result, audit event or held/denied state, next action guidance |
-| API / Service Impact | Use existing `/api/demo-workflow`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
+| API / Service Impact | Use existing `deleted generic workflow route`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
 | Schema Impact | Use existing Prisma baseline only through services; no schema replacement or migration authorized. |
 | Audit Requirements | Critical actions require AuditEvent or fail-closed/held state; audit display alone is not persistence proof. |
 | Positive Tests | Happy-path state/interaktion works for scoped actor and required visible content appears. |
@@ -687,7 +687,7 @@
 | State Requirements | loading, error, empty, permission denied, disabled/gated action, hidden/redacted, blocked, validation failed, audit unavailable, success; plus route-specific states from matrix. |
 | Data Inputs | actorUserId, clientTenantId, roleId, objectType, objectId, auditCorrelationId |
 | Expected Outputs / Results | UI state, visible/hidden/redacted payload projection, action result, audit event or held/denied state, next action guidance |
-| API / Service Impact | Use existing `/api/demo-workflow`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
+| API / Service Impact | Use existing `deleted generic workflow route`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
 | Schema Impact | Use existing Prisma baseline only through services; no schema replacement or migration authorized. |
 | Audit Requirements | Critical actions require AuditEvent or fail-closed/held state; audit display alone is not persistence proof. |
 | Positive Tests | Happy-path state/interaktion works for scoped actor and required visible content appears. |
@@ -719,7 +719,7 @@
 | State Requirements | loading, error, empty, permission denied, disabled/gated action, hidden/redacted, blocked, validation failed, audit unavailable, success; plus route-specific states from matrix. |
 | Data Inputs | actorUserId, clientTenantId, roleId, objectType, objectId, auditCorrelationId |
 | Expected Outputs / Results | UI state, visible/hidden/redacted payload projection, action result, audit event or held/denied state, next action guidance |
-| API / Service Impact | Use existing `/api/demo-workflow`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
+| API / Service Impact | Use existing `deleted generic workflow route`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
 | Schema Impact | Use existing Prisma baseline only through services; no schema replacement or migration authorized. |
 | Audit Requirements | Critical actions require AuditEvent or fail-closed/held state; audit display alone is not persistence proof. |
 | Positive Tests | Happy-path state/interaktion works for scoped actor and required visible content appears. |
@@ -751,7 +751,7 @@
 | State Requirements | loading, error, empty, permission denied, disabled/gated action, hidden/redacted, blocked, validation failed, audit unavailable, success; plus route-specific states from matrix. |
 | Data Inputs | actorUserId, clientTenantId, roleId, objectType, objectId, auditCorrelationId |
 | Expected Outputs / Results | UI state, visible/hidden/redacted payload projection, action result, audit event or held/denied state, next action guidance |
-| API / Service Impact | Use existing `/api/demo-workflow`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
+| API / Service Impact | Use existing `deleted generic workflow route`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
 | Schema Impact | Use existing Prisma baseline only through services; no schema replacement or migration authorized. |
 | Audit Requirements | Critical actions require AuditEvent or fail-closed/held state; audit display alone is not persistence proof. |
 | Positive Tests | Happy-path state/interaktion works for scoped actor and required visible content appears. |
@@ -783,7 +783,7 @@
 | State Requirements | loading, error, empty, permission denied, disabled/gated action, hidden/redacted, blocked, validation failed, audit unavailable, success; plus route-specific states from matrix. |
 | Data Inputs | actorUserId, clientTenantId, roleId, objectType, objectId, auditCorrelationId, exportRequestId, selectedObjectIds, redactionProfile, approvalStatus |
 | Expected Outputs / Results | UI state, visible/hidden/redacted payload projection, action result, audit event or held/denied state, next action guidance |
-| API / Service Impact | Use existing `/api/demo-workflow`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
+| API / Service Impact | Use existing `deleted generic workflow route`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
 | Schema Impact | Use existing Prisma baseline only through services; no schema replacement or migration authorized. |
 | Audit Requirements | Critical actions require AuditEvent or fail-closed/held state; audit display alone is not persistence proof. |
 | Positive Tests | Happy-path state/interaktion works for scoped actor and required visible content appears. |
@@ -815,7 +815,7 @@
 | State Requirements | loading, error, empty, permission denied, disabled/gated action, hidden/redacted, blocked, validation failed, audit unavailable, success; plus route-specific states from matrix. |
 | Data Inputs | actorUserId, clientTenantId, roleId, objectType, objectId, auditCorrelationId |
 | Expected Outputs / Results | UI state, visible/hidden/redacted payload projection, action result, audit event or held/denied state, next action guidance |
-| API / Service Impact | Use existing `/api/demo-workflow`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
+| API / Service Impact | Use existing `deleted generic workflow route`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
 | Schema Impact | Use existing Prisma baseline only through services; no schema replacement or migration authorized. |
 | Audit Requirements | Critical actions require AuditEvent or fail-closed/held state; audit display alone is not persistence proof. |
 | Positive Tests | P1 route renders safely and, if action exists, creates internal-only/queued state. |
@@ -847,7 +847,7 @@
 | State Requirements | loading, error, empty, permission denied, disabled/gated action, hidden/redacted, blocked, validation failed, audit unavailable, success; plus route-specific states from matrix. |
 | Data Inputs | actorUserId, clientTenantId, roleId, objectType, objectId, auditCorrelationId |
 | Expected Outputs / Results | UI state, visible/hidden/redacted payload projection, action result, audit event or held/denied state, next action guidance |
-| API / Service Impact | Use existing `/api/demo-workflow`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
+| API / Service Impact | Use existing `deleted generic workflow route`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
 | Schema Impact | Use existing Prisma baseline only through services; no schema replacement or migration authorized. |
 | Audit Requirements | Critical actions require AuditEvent or fail-closed/held state; audit display alone is not persistence proof. |
 | Positive Tests | P1 route renders safely and, if action exists, creates internal-only/queued state. |
@@ -879,7 +879,7 @@
 | State Requirements | loading, error, empty, permission denied, disabled/gated action, hidden/redacted, blocked, validation failed, audit unavailable, success; plus route-specific states from matrix. |
 | Data Inputs | actorUserId, clientTenantId, roleId, objectType, objectId, auditCorrelationId |
 | Expected Outputs / Results | UI state, visible/hidden/redacted payload projection, action result, audit event or held/denied state, next action guidance |
-| API / Service Impact | Use existing `/api/demo-workflow`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
+| API / Service Impact | Use existing `deleted generic workflow route`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
 | Schema Impact | Use existing Prisma baseline only through services; no schema replacement or migration authorized. |
 | Audit Requirements | Critical actions require AuditEvent or fail-closed/held state; audit display alone is not persistence proof. |
 | Positive Tests | P1 route renders safely and, if action exists, creates internal-only/queued state. |
@@ -911,7 +911,7 @@
 | State Requirements | loading, error, empty, permission denied, disabled/gated action, hidden/redacted, blocked, validation failed, audit unavailable, success; plus route-specific states from matrix. |
 | Data Inputs | actorUserId, clientTenantId, roleId, objectType, objectId, auditCorrelationId |
 | Expected Outputs / Results | UI state, visible/hidden/redacted payload projection, action result, audit event or held/denied state, next action guidance |
-| API / Service Impact | Use existing `/api/demo-workflow`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
+| API / Service Impact | Use existing `deleted generic workflow route`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
 | Schema Impact | Use existing Prisma baseline only through services; no schema replacement or migration authorized. |
 | Audit Requirements | Critical actions require AuditEvent or fail-closed/held state; audit display alone is not persistence proof. |
 | Positive Tests | Happy-path state/interaktion works for scoped actor and required visible content appears. |
@@ -943,7 +943,7 @@
 | State Requirements | loading, error, empty, permission denied, disabled/gated action, hidden/redacted, blocked, validation failed, audit unavailable, success; plus route-specific states from matrix. |
 | Data Inputs | actorUserId, clientTenantId, roleId, objectType, objectId, auditCorrelationId |
 | Expected Outputs / Results | UI state, visible/hidden/redacted payload projection, action result, audit event or held/denied state, next action guidance |
-| API / Service Impact | Use existing `/api/demo-workflow`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
+| API / Service Impact | Use existing `deleted generic workflow route`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
 | Schema Impact | Use existing Prisma baseline only through services; no schema replacement or migration authorized. |
 | Audit Requirements | Critical actions require AuditEvent or fail-closed/held state; audit display alone is not persistence proof. |
 | Positive Tests | Held-state visible with clear reason and no crash. |
@@ -975,7 +975,7 @@
 | State Requirements | loading, error, empty, permission denied, disabled/gated action, hidden/redacted, blocked, validation failed, audit unavailable, success; plus route-specific states from matrix. |
 | Data Inputs | actorUserId, clientTenantId, roleId, objectType, objectId, auditCorrelationId |
 | Expected Outputs / Results | UI state, visible/hidden/redacted payload projection, action result, audit event or held/denied state, next action guidance |
-| API / Service Impact | Use existing `/api/demo-workflow`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
+| API / Service Impact | Use existing `deleted generic workflow route`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
 | Schema Impact | Use existing Prisma baseline only through services; no schema replacement or migration authorized. |
 | Audit Requirements | Critical actions require AuditEvent or fail-closed/held state; audit display alone is not persistence proof. |
 | Positive Tests | Held-state visible with clear reason and no crash. |
@@ -1007,7 +1007,7 @@
 | State Requirements | loading, error, empty, permission denied, disabled/gated action, hidden/redacted, blocked, validation failed, audit unavailable, success; plus route-specific states from matrix. |
 | Data Inputs | actorUserId, clientTenantId, roleId, objectType, objectId, auditCorrelationId |
 | Expected Outputs / Results | UI state, visible/hidden/redacted payload projection, action result, audit event or held/denied state, next action guidance |
-| API / Service Impact | Use existing `/api/demo-workflow`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
+| API / Service Impact | Use existing `deleted generic workflow route`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
 | Schema Impact | Use existing Prisma baseline only through services; no schema replacement or migration authorized. |
 | Audit Requirements | Critical actions require AuditEvent or fail-closed/held state; audit display alone is not persistence proof. |
 | Positive Tests | Held-state visible with clear reason and no crash. |
@@ -1039,7 +1039,7 @@
 | State Requirements | loading, error, empty, permission denied, disabled/gated action, hidden/redacted, blocked, validation failed, audit unavailable, success; plus route-specific states from matrix. |
 | Data Inputs | actorUserId, clientTenantId, roleId, objectType, objectId, auditCorrelationId |
 | Expected Outputs / Results | UI state, visible/hidden/redacted payload projection, action result, audit event or held/denied state, next action guidance |
-| API / Service Impact | Use existing `/api/demo-workflow`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
+| API / Service Impact | Use existing `deleted generic workflow route`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
 | Schema Impact | Use existing Prisma baseline only through services; no schema replacement or migration authorized. |
 | Audit Requirements | Critical actions require AuditEvent or fail-closed/held state; audit display alone is not persistence proof. |
 | Positive Tests | Happy-path state/interaktion works for scoped actor and required visible content appears. |
@@ -1071,7 +1071,7 @@
 | State Requirements | loading, error, empty, permission denied, disabled/gated action, hidden/redacted, blocked, validation failed, audit unavailable, success; plus route-specific states from matrix. |
 | Data Inputs | actorUserId, clientTenantId, roleId, objectType, objectId, auditCorrelationId, offboardingReason, effectiveDate, userIds, retentionPolicy, legalHoldFlag, finalExportScope |
 | Expected Outputs / Results | UI state, visible/hidden/redacted payload projection, action result, audit event or held/denied state, next action guidance |
-| API / Service Impact | Use existing `/api/demo-workflow`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
+| API / Service Impact | Use existing `deleted generic workflow route`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
 | Schema Impact | Use existing Prisma baseline only through services; no schema replacement or migration authorized. |
 | Audit Requirements | Critical actions require AuditEvent or fail-closed/held state; audit display alone is not persistence proof. |
 | Positive Tests | P1 route renders safely and, if action exists, creates internal-only/queued state. |
@@ -1103,7 +1103,7 @@
 | State Requirements | loading, error, empty, permission denied, disabled/gated action, hidden/redacted, blocked, validation failed, audit unavailable, success; plus route-specific states from matrix. |
 | Data Inputs | actorUserId, clientTenantId, roleId, objectType, objectId, auditCorrelationId, documentId, file metadata, evidenceRecordId, evidenceStatus |
 | Expected Outputs / Results | UI state, visible/hidden/redacted payload projection, action result, audit event or held/denied state, next action guidance |
-| API / Service Impact | Use existing `/api/demo-workflow`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
+| API / Service Impact | Use existing `deleted generic workflow route`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring` and existing services where relevant; new API => `API_DECISION_REQUIRED`, not default task. |
 | Schema Impact | Use existing Prisma baseline only through services; no schema replacement or migration authorized. |
 | Audit Requirements | Critical actions require AuditEvent or fail-closed/held state; audit display alone is not persistence proof. |
 | Positive Tests | Happy-path state/interaktion works for scoped actor and required visible content appears. |
@@ -1137,7 +1137,7 @@
 
 | API Route | Related UI Flows | Request Validation Needed | Permission Check Needed | Payload Redaction Needed | UI State on Success | UI State on Failure | Audit Requirement | Tests |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| /api/demo-workflow | CJ-006, CJ-007, CJ-008, CJ-009, CJ-010, CJ-012, CJ-014, CJ-016, CJ-017, CJ-018, CJ-023 | action name, actor context, target ids, workflow preconditions | RBAC/action/object scope per action | no internal/client forbidden payload; noClientRelease honoured | success state must be named action only; no downstream gate overclaim | fail closed with denied/blocked/error; no state advance | critical mutations audited or held | demo workflow UI action and negative no-client-release tests |
+| deleted generic workflow route | CJ-006, CJ-007, CJ-008, CJ-009, CJ-010, CJ-012, CJ-014, CJ-016, CJ-017, CJ-018, CJ-023 | action name, actor context, target ids, workflow preconditions | RBAC/action/object scope per action | no internal/client forbidden payload; noClientRelease honoured | success state must be named action only; no downstream gate overclaim | fail closed with denied/blocked/error; no state advance | critical mutations audited or held | typed workflow UI action and negative no-client-release tests |
 | /api/documents | CJ-004, CJ-005, CJ-011, CJ-019, CJ-025 | tenant/object/document query scope | document list scoped by actor/object | document metadata redacted by role; no wrong-tenant rows | document list/empty/review-pending states | denied/empty/hidden on permission or scope failure | denied access audited if mutation/forbidden attempt | document list redaction and wrong-tenant tests |
 | /api/documents/upload | CJ-004, CJ-025, CJ-019 | multipart file, type, size, actor, tenant/object context | upload permission, object scope, allowed file types | response shows upload-only result; no sufficiency/release flags | upload success upload-only + evidence pending | invalid type/size/role/api error => retry/reselect and no sufficiency | upload/denied audit required | upload positive + invalid/denied/no-sufficiency UI tests |
 | /api/review-monitoring | CJ-016, CJ-018 | review schedule filters, actor/context | internal role/object scope | internal-only monitoring payload; no client advice | due/overdue/internal trigger state | no automatic advice/release; denied if not scoped | internal trigger audit if mutation occurs | no-auto-advice monitoring tests |
@@ -1150,7 +1150,7 @@
 | P0-UI-002 | CJ-013 / scoped routes | correct actor sees own scoped object | wrong tenant/object denied, no payload leak | Denied or hidden state visible; no sensitive rows/cards | API/DOM contains no wrong-tenant identifiers | permission-engine partial | missing route+payload E2E | tests/ui-scope-visibility.spec.ts | P0 |
 | P0-UI-003 | CJ-012 / governance | route visible for governance admin with scoped actions | route visible but action button disabled/denied without action permission | Button disabled/hidden/denied feedback | no mutation and no payload expansion | permission-engine partial | missing UI assertions | tests/ui-governance-actions.spec.ts | P0 |
 | P0-UI-004 | CJ-011 / client | client sees released summary | route visible but sensitive payload hidden/redacted | Client-safe content only | AI Draft/internal/compliance fields absent | visibility engine exists | missing client DOM/API redaction assertions | tests/ui-client-visibility.spec.ts | P0 |
-| P0-UI-005 | CJ-007 / 011 / 015 | AI draft visible only internally to assigned actor | client-visible AI Draft denied | Portal/export/decision room hide AI Draft | AI Draft absent from client/export payload | demo-workflow partial noClientRelease | missing full UI payload proof | tests/ui-ai-draft-boundary.spec.ts | P0 |
+| P0-UI-005 | CJ-007 / 011 / 015 | AI draft visible only internally to assigned actor | client-visible AI Draft denied | Portal/export/decision room hide AI Draft | AI Draft absent from client/export payload | typed-workflow partial noClientRelease | missing full UI payload proof | tests/ui-ai-draft-boundary.spec.ts | P0 |
 | P0-UI-006 | CJ-006..011 | approved/released client-safe path works after all gates | unapproved advice not shown in portal/mobile/export | Portal hidden/release-pending until compliance release | unreleased recommendation absent | workflow gate partial | missing E2E pageflow | tests/ui-no-unapproved-advice.spec.ts | P0 |
 | P0-UI-007 | CJ-008 | unsupported draft rejected and cannot advance | unsupported internal draft cannot advance visually without review | Reject/rebuild state; advisor CTA disabled | no advisor-ready status | workflow gate partial | missing unsupported draft UI test | tests/ui-analyst-review.spec.ts | P0 |
 | P0-UI-008 | CJ-009 | advisor approves recommendation and compliance queue receives it | advisor-approved state shows compliance pending and client visibility hidden | Compliance pending / client hidden status visible | client portal has no released payload | workflow gate partial | missing client hidden assertion | tests/ui-advisor-not-release.spec.ts | P0 |

@@ -22,10 +22,10 @@ No runtime product-code change was made in this WP09 run. Option A was approved,
   - `docs/00-current/ALPHAVEST_WP07_EXPORT_REDACTION_CLIENT_SAFE_PACKAGE_EXECUTION.md`
   - `docs/00-current/ALPHAVEST_WP08_API_HARDENING_FAIL_CLOSED_CONTRACTS_EXECUTION.md`
 - Explicit human decisions from this refactor chain:
-  - WP05 Option A: no new API, no schema migration, canonical Journey command path, `/api/demo-workflow` compatibility only.
+  - WP05 Option A: no new API, no schema migration, canonical Journey command path, `deleted generic workflow route` compatibility only.
   - WP06 Option A: route/action/object plus payload/API/service-level enforcement, admin non-bypass fail-closed, no new API, no schema migration.
   - WP07 Option A: existing `/api/export-workflow`, no new API, no schema migration, metadata-only redacted package proof, forbidden payload negative tests.
-  - WP08 Option A: existing API routes only, no new API, no schema migration, shared fail-closed/redaction/audit helpers allowed with limits, `/api/demo-workflow` compatibility/demo only.
+  - WP08 Option A: existing API routes only, no new API, no schema migration, shared fail-closed/redaction/audit helpers allowed with limits, `deleted generic workflow route` compatibility/demo only.
   - WP09 Option A: current `full-workflow` schema reality is authority, no Prisma schema replacement, no Prisma migrations in WP09 first wave, patch-only concepts remain blocked/deferred/quarantined, shared selector/projection helpers allowed with limits only when they reduce leakage risk, stale schema proof updated to 49 models / 27 enums and current migration list, implementation zero-delta-first.
 
 Excluded as specification authority: unrelated legacy planning docs, broad handoff docs, old KB/source artefacts, source refs and prior assumptions unless revalidated against current repo evidence.
@@ -231,7 +231,7 @@ Current safety-critical models include:
 Direct Prisma usage exists in these product/service surfaces:
 
 - API-local clients:
-  - `app/api/demo-workflow/route.ts`
+  - `deleted generic workflow route`
   - `app/api/review-monitoring/route.ts`
 - Shared Prisma client:
   - `lib/prisma.ts`
@@ -253,7 +253,7 @@ Direct Prisma usage exists in these product/service surfaces:
   - `lib/review-monitoring-service.ts`
 - Seed and test surfaces:
   - `prisma/seed.ts`
-  - Multiple focused API/service tests including document upload, evidence review, export workflow, demo workflow, governance, permission, journey and audit persistence specs.
+  - Multiple focused API/service tests including document upload, evidence review, export workflow, typed workflow, governance, permission, journey and audit persistence specs.
 
 ### Query and Projection Findings
 
@@ -296,7 +296,7 @@ Relevant existing tests:
 - `tests/document-upload-api.spec.ts`, `tests/document-upload-lifecycle-hardening.spec.ts`, `tests/evidence-review-api.spec.ts`: upload/evidence lifecycle and schema field semantics.
 - `tests/export-workflow-api.spec.ts`, `tests/export-safety.spec.ts`, `tests/file-export-realism.spec.ts`: export/redaction field proof.
 - `tests/permission-engine.spec.ts`, `tests/governance-non-bypass.spec.ts`: RBAC/admin non-bypass and object/action boundaries.
-- `tests/demo-workflow-api.spec.ts`, `tests/journey-api.spec.ts`, `tests/phase6-audit-persistence.spec.ts`: advisory/compliance/audit field usage.
+- `tests/recommendation-review-workflow-api.spec.ts`, `tests/journey-api.spec.ts`, `tests/phase6-audit-persistence.spec.ts`: advisory/compliance/audit field usage.
 
 ### Pre-Decision Validation
 

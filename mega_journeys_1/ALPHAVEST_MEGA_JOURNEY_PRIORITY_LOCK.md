@@ -50,18 +50,18 @@ AlphaVest should now be advanced **journey-first**, not screen-first and not by 
 
 | Journey ID | Name | Original Scope Signal | Primary Actors | Core Trigger | Core Outcome | Current Reality Label | Safety Critical? | Main Route/API/Schema Touchpoints |
 |---|---|---|---|---|---|---|---|---|
-| MJ-001 | New Family Office onboarding to first client-safe decision | MVP Core candidate | Principal, Family CFO, Admin, Analyst, Advisor, Compliance | New tenant created | First released client-safe decision after providerless user mapping, evidence, advisor approval and compliance release | PARTIALLY_IMPLEMENTED | YES | Routes 001-020, 027-045; APIs /api/demo-workflow, /api/documents; Models ClientTenant, User, Role, Document, Recommendation, Decision |
+| MJ-001 | New Family Office onboarding to first client-safe decision | MVP Core candidate | Principal, Family CFO, Admin, Analyst, Advisor, Compliance | New tenant created | First released client-safe decision after providerless user mapping, evidence, advisor approval and compliance release | PARTIALLY_IMPLEMENTED | YES | Routes 001-020, 027-045; APIs deleted generic workflow route, /api/documents; Models ClientTenant, User, Role, Document, Recommendation, Decision |
 | MJ-002 | Evidence missing to client upload to release | MVP Core candidate | Client, Analyst, Advisor, Compliance | Compliance blocks due missing evidence | Client evidence request, upload, verification and release-safe summary | PARTIALLY_IMPLEMENTED / STRONG_UPLOAD_SLICE | YES | Routes 027-030, 038-041, 019; APIs /api/documents/upload, /api/documents; Models Document, EvidenceRecord, ComplianceReview |
-| MJ-003 | AI draft rejected and rebuilt with evidence | MVP Core candidate | System/AI, Analyst, Advisor | Low-confidence or unsupported internal draft | AI/rules draft remains internal, is rejected/rebuilt with evidence, then advisor-reviewed | PRODUCT_LOGIC_INFERRED / PARTIALLY_IMPLEMENTED | YES | Routes 033-037; API /api/demo-workflow; Models Trigger, Recommendation, DocumentExtraction |
-| MJ-004 | High-risk recommendation to committee and dissent | Hold / P2 candidate | Advisor, Committee, Compliance | High-risk recommendation requires committee | Committee vote/dissent and evidence request before compliance action | HOLD_PENDING_DECISION | YES | Routes 036-040, 070-071; API /api/demo-workflow; Models Recommendation, Approval, ComplianceReview |
-| MJ-005 | Export package with forbidden internal payload redaction | MVP Core late-stage candidate | Advisor, Compliance, Client | Client-safe package requested | Scoped, redacted, approved export package without internal leakage | PARTIALLY_IMPLEMENTED / SERVICE_PROOF_SLICE | YES | Routes 054-058; API /api/demo-workflow; Models ExportRequest, Decision, EvidenceRecord |
-| MJ-006 | Cross-tenant access denied with audit proof | MVP Safety Spine | External Advisor, Security Admin | User tries unrelated tenant/object | Denied scoped access, audit event, no payload leak | PARTIALLY_IMPLEMENTED / STRONG_NEGATIVE_SLICE | YES | Routes 001, 018, 048-051; API /api/demo-workflow; Models UserRole, AccessRequest, AuditEvent |
-| MJ-007 | Source-of-wealth concern blocks suitability recommendation | Hold / P2 candidate | Analyst, Compliance, Client | SoW/KYC risk appears | Suitability recommendation blocked until evidence/compliance conditions pass | HOLD_PENDING_DECISION | YES | Routes 064-067, 038-041; APIs /api/demo-workflow, /api/documents/upload; Models Document, ComplianceReview, Recommendation |
+| MJ-003 | AI draft rejected and rebuilt with evidence | MVP Core candidate | System/AI, Analyst, Advisor | Low-confidence or unsupported internal draft | AI/rules draft remains internal, is rejected/rebuilt with evidence, then advisor-reviewed | PRODUCT_LOGIC_INFERRED / PARTIALLY_IMPLEMENTED | YES | Routes 033-037; API deleted generic workflow route; Models Trigger, Recommendation, DocumentExtraction |
+| MJ-004 | High-risk recommendation to committee and dissent | Hold / P2 candidate | Advisor, Committee, Compliance | High-risk recommendation requires committee | Committee vote/dissent and evidence request before compliance action | HOLD_PENDING_DECISION | YES | Routes 036-040, 070-071; API deleted generic workflow route; Models Recommendation, Approval, ComplianceReview |
+| MJ-005 | Export package with forbidden internal payload redaction | MVP Core late-stage candidate | Advisor, Compliance, Client | Client-safe package requested | Scoped, redacted, approved export package without internal leakage | PARTIALLY_IMPLEMENTED / SERVICE_PROOF_SLICE | YES | Routes 054-058; API deleted generic workflow route; Models ExportRequest, Decision, EvidenceRecord |
+| MJ-006 | Cross-tenant access denied with audit proof | MVP Safety Spine | External Advisor, Security Admin | User tries unrelated tenant/object | Denied scoped access, audit event, no payload leak | PARTIALLY_IMPLEMENTED / STRONG_NEGATIVE_SLICE | YES | Routes 001, 018, 048-051; API deleted generic workflow route; Models UserRole, AccessRequest, AuditEvent |
+| MJ-007 | Source-of-wealth concern blocks suitability recommendation | Hold / P2 candidate | Analyst, Compliance, Client | SoW/KYC risk appears | Suitability recommendation blocked until evidence/compliance conditions pass | HOLD_PENDING_DECISION | YES | Routes 064-067, 038-041; APIs deleted generic workflow route, /api/documents/upload; Models Document, ComplianceReview, Recommendation |
 | MJ-008 | Rebalance monitoring produces internal review not automatic advice | P1 candidate | System, Analyst, Advisor | Monitoring signal due | Internal review trigger, no automatic client advice | PARTIALLY_IMPLEMENTED / P1_SCOPE | YES | Routes 068-069, 033-037; API /api/review-monitoring; Models ReviewSchedule, Trigger, Recommendation |
-| MJ-009 | Client mobile request creates evidence-backed advisor workflow | P1 candidate | Client, Analyst, Advisor | Client asks via mobile | Client request creates internal evidence-backed workflow; released response only if advice passes gates | PARTIALLY_IMPLEMENTED / P1_COMMUNICATION_LAYER | YES | Routes 020, 027-030, 052; APIs /api/documents, /api/demo-workflow; Models Message, Document, Recommendation |
-| MJ-010 | Admin role change cannot bypass compliance release | MVP Governance Spine | Admin, Compliance, Security | Admin grants broad role or modifies permissions | Role update may pass governance, but release remains denied without compliance gate | PARTIALLY_IMPLEMENTED / STRONG_RBAC_SLICE | YES | Routes 009, 010, 048-051, 040; API /api/demo-workflow; Models Role, Permission, UserRole, AuditEvent |
+| MJ-009 | Client mobile request creates evidence-backed advisor workflow | P1 candidate | Client, Analyst, Advisor | Client asks via mobile | Client request creates internal evidence-backed workflow; released response only if advice passes gates | PARTIALLY_IMPLEMENTED / P1_COMMUNICATION_LAYER | YES | Routes 020, 027-030, 052; APIs /api/documents, deleted generic workflow route; Models Message, Document, Recommendation |
+| MJ-010 | Admin role change cannot bypass compliance release | MVP Governance Spine | Admin, Compliance, Security | Admin grants broad role or modifies permissions | Role update may pass governance, but release remains denied without compliance gate | PARTIALLY_IMPLEMENTED / STRONG_RBAC_SLICE | YES | Routes 009, 010, 048-051, 040; API deleted generic workflow route; Models Role, Permission, UserRole, AuditEvent |
 | MJ-011 | External advisor receives scoped document access only | MVP Support / P1 candidate | External Advisor, Client, Analyst | Guest needs one document | Providerless identity maps to user and object scope; no tenant-wide visibility | PARTIALLY_IMPLEMENTED / NEEDS_REAL_AUTH_MAPPING | YES | Routes 003, 018, 027, 028; API /api/documents; Models User, UserRole, Document |
-| MJ-012 | Data-quality issue blocks release until resolved | MVP Support / Parallel candidate | Analyst, Ops, Advisor, Compliance | High severity data issue detected | Readiness blocked until issue resolved and audited | PARTIALLY_IMPLEMENTED / SERVICE_PROOF_SLICE | YES | Routes 034, 059, 060, 038-040; API /api/demo-workflow; Models DataQualityIssue, ComplianceReview, AuditEvent |
+| MJ-012 | Data-quality issue blocks release until resolved | MVP Support / Parallel candidate | Analyst, Ops, Advisor, Compliance | High severity data issue detected | Readiness blocked until issue resolved and audited | PARTIALLY_IMPLEMENTED / SERVICE_PROOF_SLICE | YES | Routes 034, 059, 060, 038-040; API deleted generic workflow route; Models DataQualityIssue, ComplianceReview, AuditEvent |
 
 ---
 
@@ -131,9 +131,9 @@ Scoring uses 0–5 per criterion with weights: Product Proof 5, Client Value 4, 
 | Auth/User/Tenant Implication | Creates mapped user, role and tenant context before every other journey. |
 | Evidence/Audit/Visibility Implication | Evidence intake, audit events, release-to-visibility boundary. |
 | Routes | 001-020, 027-045 |
-| APIs | /api/demo-workflow, /api/documents |
+| APIs | deleted generic workflow route, /api/documents |
 | Schema / Models | ClientTenant, User, Role, UserRole, Document, Recommendation, Approval, ComplianceReview, Decision, AuditEvent |
-| Existing Test Slices | route-smoke, permission-engine, workflow-gate, demo-workflow-api, document-upload tests as slices |
+| Existing Test Slices | route-smoke, permission-engine, workflow-gate, typed-workflow-api, document-upload tests as slices |
 | Missing Tests | real session/current-user mapping; route guard negatives; release happy path; client no-leakage; admin non-bypass within umbrella |
 | Current Gaps | Do not implement all tenant/client/admin features at once; define the minimum proof path. |
 | Must Not Overbuild | Do not implement all tenant/client/admin features at once; define the minimum proof path. |
@@ -152,7 +152,7 @@ Scoring uses 0–5 per criterion with weights: Product Proof 5, Client Value 4, 
 | Auth/User/Tenant Implication | User/tenant/object scope determines who may upload and view documents. |
 | Evidence/Audit/Visibility Implication | Evidence review, audit of upload/review/request/release, visibility after release. |
 | Routes | 027-030, 038-041, 019 |
-| APIs | /api/documents/upload, /api/documents, /api/demo-workflow |
+| APIs | /api/documents/upload, /api/documents, deleted generic workflow route |
 | Schema / Models | Document, DocumentVersion, DocumentExtraction, DocumentReview, DocumentLink, EvidenceRecord, EvidenceItem, ComplianceReview, AuditEvent |
 | Existing Test Slices | document-upload-api, document-upload-flow, permission-engine, workflow-gate |
 | Missing Tests | invalid file UI negatives; denied-role UI; evidence insufficiency; release blocked until accepted evidence; audit failure fail-closed |
@@ -173,9 +173,9 @@ Scoring uses 0–5 per criterion with weights: Product Proof 5, Client Value 4, 
 | Auth/User/Tenant Implication | Mapped analyst/advisor roles determine who can view/reject/rebuild drafts. |
 | Evidence/Audit/Visibility Implication | AI draft rejection/rebuild must be auditable and linked to evidence/source material. |
 | Routes | 033-037 |
-| APIs | /api/demo-workflow; future candidate internal draft API only after requirements lock |
+| APIs | deleted generic workflow route; future candidate internal draft API only after requirements lock |
 | Schema / Models | Trigger, Recommendation, RecommendationOption, DocumentExtraction, EvidenceRecord, AuditEvent |
-| Existing Test Slices | demo-workflow-api, workflow-gate as partial slices |
+| Existing Test Slices | typed-workflow-api, workflow-gate as partial slices |
 | Missing Tests | AI draft redaction; unsupported-claim negative; advisor approval not release; client payload never includes internal draft |
 | Current Gaps | Do not build production AI model integration; use internal draft state and source/evidence trace semantics first. |
 | Must Not Overbuild | Do not build production AI model integration; use internal draft state and source/evidence trace semantics first. |
@@ -194,9 +194,9 @@ Scoring uses 0–5 per criterion with weights: Product Proof 5, Client Value 4, 
 | Auth/User/Tenant Implication | Core proof that providerless auth still has real user/tenant/role semantics. |
 | Evidence/Audit/Visibility Implication | Role change and denied release attempt must be audited. |
 | Routes | 009, 010, 048-051, 040 |
-| APIs | /api/demo-workflow; future governance APIs after requirements lock |
+| APIs | deleted generic workflow route; future governance APIs after requirements lock |
 | Schema / Models | Role, Permission, UserRole, RolePermission, AccessRequest, SecondConfirmation, AuditEvent, ComplianceReview |
-| Existing Test Slices | permission-engine, demo-workflow-api as partial slices |
+| Existing Test Slices | permission-engine, typed-workflow-api as partial slices |
 | Missing Tests | role assignment positive; self-approval negative; admin release bypass negative; stale/cached privilege negative |
 | Current Gaps | Do not let admin UI imply unrestricted payload visibility. |
 | Must Not Overbuild | Do not let admin UI imply unrestricted payload visibility. |
@@ -215,7 +215,7 @@ Scoring uses 0–5 per criterion with weights: Product Proof 5, Client Value 4, 
 | Auth/User/Tenant Implication | User/tenant/object scope is required after providerless login. |
 | Evidence/Audit/Visibility Implication | Denied access and no-payload-leak event must be auditable. |
 | Routes | 001, 018, 048-051 |
-| APIs | /api/demo-workflow; future current-user/access APIs after requirements lock |
+| APIs | deleted generic workflow route; future current-user/access APIs after requirements lock |
 | Schema / Models | User, UserRole, AccessRequest, AuditEvent, RolePermission |
 | Existing Test Slices | permission-engine strong slice; route-smoke shell only |
 | Missing Tests | route-shell denial; API payload no-leak; export/document/decision object-scope negatives |
@@ -236,7 +236,7 @@ Scoring uses 0–5 per criterion with weights: Product Proof 5, Client Value 4, 
 | Auth/User/Tenant Implication | Export actor must be mapped and authorized by tenant/object/release state. |
 | Evidence/Audit/Visibility Implication | Export scope, redaction, approval and download/share must be audited. |
 | Routes | 054-058 |
-| APIs | /api/demo-workflow; future export API contracts after requirements lock |
+| APIs | deleted generic workflow route; future export API contracts after requirements lock |
 | Schema / Models | ExportRequest, Decision, EvidenceRecord, Document, AuditEvent |
 | Existing Test Slices | file-export-realism service slice; permission-engine partial |
 | Missing Tests | forbidden internal payload; no approval no download; redaction missing; audit failure blocks; client-safe manifest positive |
@@ -303,8 +303,8 @@ Scoring uses 0–5 per criterion with weights: Product Proof 5, Client Value 4, 
 | 007-018 admin/tenant/governance setup | MJ-001, MJ-010, MJ-006 | Tenant/user/role administration and non-bypass controls. | MVP_SUPPORT; partial interactions. | Need real CRUD semantics or deterministic MVP mutations, second confirmation, denial and audit proof. |
 | 019-020 client portal/mobile | MJ-001, MJ-002, MJ-009 | Client-safe released projection. | MVP; partial/static. | Need fail-closed payload projection and no-leakage tests. |
 | 027-030 documents/evidence | MJ-002, MJ-011 | Upload, list, review and evidence request path. | MVP; strongest upload interaction. | Need sufficiency lifecycle, invalid/retry/denied UI, object scope and audit failure handling. |
-| 033-037 signals/workbench/advisor | MJ-001, MJ-003, MJ-008 | Internal-only draft and human review. | MVP; demo workflow partial. | Need internal draft state, advisor not release, AI redaction and evidence linkage. |
-| 038-042 compliance/release/audit | MJ-001, MJ-002, MJ-003, MJ-010 | Compliance release/block/evidence request; audit log. | MVP; demo workflow partial. | Need gate separation, block/release confirmations, audit persistence and negative tests. |
+| 033-037 signals/workbench/advisor | MJ-001, MJ-003, MJ-008 | Internal-only draft and human review. | MVP; typed workflow partial. | Need internal draft state, advisor not release, AI redaction and evidence linkage. |
+| 038-042 compliance/release/audit | MJ-001, MJ-002, MJ-003, MJ-010 | Compliance release/block/evidence request; audit log. | MVP; typed workflow partial. | Need gate separation, block/release confirmations, audit persistence and negative tests. |
 | 043-045 decisions | MJ-001, MJ-005 | Decision record and submitted state. | MVP; partial/visual. | Need immutable decision semantics and client-safe projection after release. |
 | 048-051 governance/access/audit | MJ-006, MJ-010 | Access requests, role governance, audit history. | MVP; visual/partial. | Need real user/role/object scope, non-bypass and denial-audit proof. |
 | 054-058 export | MJ-005 | Redacted client-safe export package. | MVP; service proof slice. | Need route/API-facing export contract, forbidden payload negatives and audit. |
@@ -314,7 +314,7 @@ Scoring uses 0–5 per criterion with weights: Product Proof 5, Client Value 4, 
 
 | API | Related MVP Journey | Current Role | Needed Contract | Gap |
 |---|---|---|---|---|
-| /api/demo-workflow | MJ-001, MJ-003, MJ-005, MJ-006, MJ-010 | Demo action transport and proof slices. | Action-level authorization, current-user mapping, idempotency, safe errors, audit result, no client release unless gate passes. | Not production persistence proof. |
+| deleted generic workflow route | MJ-001, MJ-003, MJ-005, MJ-006, MJ-010 | Demo action transport and proof slices. | Action-level authorization, current-user mapping, idempotency, safe errors, audit result, no client release unless gate passes. | Not production persistence proof. |
 | /api/documents | MJ-002, MJ-011 | Document list/reload. | Tenant/user/object filtered list; client-safe document projection; raw internal fields hidden. | Need redaction and denied/empty/error tests. |
 | /api/documents/upload | MJ-002, MJ-011 | Strong upload mechanics. | Current user/tenant/object scope, file validation, duplicate/malicious/oversize/unsupported negatives, audit failure fail-closed. | Upload still not evidence sufficiency. |
 | /api/review-monitoring | MJ-008, MJ-012 | Review monitoring snapshot. | Internal-only monitoring; no auto advice; role-scoped output. | P1 unless elevated. |
@@ -341,9 +341,9 @@ Scoring uses 0–5 per criterion with weights: Product Proof 5, Client Value 4, 
 |---|---|---|---|---|
 | Providerless auth not anonymous demo | MJ-001, MJ-006, MJ-010 | No complete test; demo session only. | Mapped user resolves tenant/role/object scope. | Unknown/unmapped user denied; wrong tenant hidden. |
 | Evidence upload not sufficiency | MJ-002 | document-upload-api and document-upload-flow. | Upload + review + link + accepted evidence can unlock next step. | Upload success alone cannot release/export/client visibility. |
-| AI draft internal-only | MJ-003 | demo-workflow/workflow-gate partial. | Internal draft can be rebuilt with evidence and advisor-reviewed. | Client/API/export never includes AI draft/internal rationale. |
+| AI draft internal-only | MJ-003 | typed-workflow/workflow-gate partial. | Internal draft can be rebuilt with evidence and advisor-reviewed. | Client/API/export never includes AI draft/internal rationale. |
 | Advisor approval not release | MJ-001, MJ-003 | workflow-gate partial. | Advisor approval progresses to compliance pending. | Client visibility remains hidden until compliance release. |
-| Compliance release | MJ-001, MJ-002 | workflow-gate/demo-workflow partial. | Compliance release after preconditions makes client-safe view available. | Missing evidence/advisor approval blocks release. |
+| Compliance release | MJ-001, MJ-002 | workflow-gate/typed-workflow partial. | Compliance release after preconditions makes client-safe view available. | Missing evidence/advisor approval blocks release. |
 | Cross-tenant/object scope | MJ-006, MJ-011 | permission-engine strong slice. | Scoped user can access own object. | Wrong tenant/object sees safe denial and no payload. |
 | Admin non-bypass | MJ-010 | permission-engine partial. | Admin role changes obey governance process. | Admin cannot force release, visibility, evidence sufficiency or export. |
 | Audit persistence/fail-closed | all MVP safety journeys | permission/demo slices write some audit rows. | Critical actions write audit with actor/role/target/result. | If audit cannot persist, safety action does not complete silently. |
@@ -361,7 +361,7 @@ Scoring uses 0–5 per criterion with weights: Product Proof 5, Client Value 4, 
 | Cross-tenant isolation | MJ-006 | MJ-011, MJ-009, integrations | Permission-engine proof slices. | Route/API/export/document no-leak tests. | Wrong tenant/object returns safe denial and audit, no sensitive payload. |
 | Object scoped permissions | MJ-006, MJ-010, MJ-011 support | MJ-007, MJ-004 | UserRole objectType/objectId exists. | Complete object/action matrix. | Route access, action permission and payload visibility remain separate. |
 | No unapproved advice | MJ-001, MJ-003, MJ-002 | MJ-004, MJ-007, MJ-008, MJ-009 | Workflow-gate/demo slices. | Client payload/export no-leakage test. | Internal drafts/recommendations hidden until advisor + compliance + evidence gates pass. |
-| AI draft internal-only | MJ-003 | MJ-008, future AI/integrations | Product contract; partial demo workflow. | Concrete AI draft field/source/redaction semantics. | AI/rules content never appears in client/API/export payload. |
+| AI draft internal-only | MJ-003 | MJ-008, future AI/integrations | Product contract; partial typed workflow. | Concrete AI draft field/source/redaction semantics. | AI/rules content never appears in client/API/export payload. |
 | Advisor approval not release | MJ-001, MJ-003 | MJ-004, MJ-007 | Workflow-gate slices. | End-to-end route/API/client proof. | Advisor approval moves to compliance pending, not client visible. |
 | Compliance release | MJ-001, MJ-002 | MJ-004, MJ-007, MJ-009 | Compliance routes/models exist. | Release happy path and blocked negatives. | Only compliance release creates client-safe visibility. |
 | Upload not sufficiency | MJ-002 | MJ-011, MJ-009 | Strong upload tests. | UI/API release/export negatives. | Upload success message states upload-only; gates remain locked. |

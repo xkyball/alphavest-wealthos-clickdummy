@@ -8,7 +8,7 @@ This report executes the uploaded WP08 blueprint as a strict process chain:
 
 Blueprint task -> executed analysis result -> refined specification -> derived implementation task -> implementation or zero-delta implementation -> QA/proof -> report.
 
-No product-code change was made in this WP08 completion run. After the human approved WP08 Option A, all implementation tasks were executed as zero-delta product-code revalidation against the current repository. The existing implementation already satisfies the approved first-wave contract: existing API routes only, no new API, no schema migration, shared fail-closed/redaction/audit helpers allowed with limits, `/api/review-monitoring` as internal-only MVP support, `/api/demo-workflow` as compatibility/demo transport only, and canonical Journey/export/document APIs as MVP authority.
+No product-code change was made in this WP08 completion run. After the human approved WP08 Option A, all implementation tasks were executed as zero-delta product-code revalidation against the current repository. The existing implementation already satisfies the approved first-wave contract: existing API routes only, no new API, no schema migration, shared fail-closed/redaction/audit helpers allowed with limits, `/api/review-monitoring` as internal-only MVP support, `deleted generic workflow route` as compatibility/demo transport only, and canonical Journey/export/document APIs as MVP authority.
 
 ## Source Scope Used
 
@@ -21,10 +21,10 @@ No product-code change was made in this WP08 completion run. After the human app
   - `docs/00-current/ALPHAVEST_WP06_RBAC_ADMIN_NON_BYPASS_EXECUTION.md`
   - `docs/00-current/ALPHAVEST_WP07_EXPORT_REDACTION_CLIENT_SAFE_PACKAGE_EXECUTION.md`
 - Explicit human decisions from this refactor chain:
-  - WP05 Option A: canonical Journey command path, `/api/demo-workflow` compatibility only, fail-closed audit before mutation, no new API, no schema migration.
-  - WP06 Option A: route/action/object plus payload/API/service-level enforcement, admin non-bypass fail-closed, denied sensitive attempts audited before mutation, no new API, no schema migration, demo workflow compatibility only.
-  - WP07 Option A: MVP export routes `054-058` only, existing `/api/export-workflow` only, no new API, no schema migration, metadata-only redacted package manifest proof, forbidden payload negative tests mandatory, `/api/demo-workflow` export actions compatibility/demo only.
-  - WP08 Option A approved: existing API routes only, no new API, no schema migration, shared fail-closed/redaction/audit helpers allowed with limits, `/api/review-monitoring` internal-only MVP support, `/api/demo-workflow` compatibility/demo transport only, canonical Journey/export/document APIs remain MVP authority, and implementation starts with zero-delta revalidation before new code.
+  - WP05 Option A: canonical Journey command path, `deleted generic workflow route` compatibility only, fail-closed audit before mutation, no new API, no schema migration.
+  - WP06 Option A: route/action/object plus payload/API/service-level enforcement, admin non-bypass fail-closed, denied sensitive attempts audited before mutation, no new API, no schema migration, typed workflow compatibility only.
+  - WP07 Option A: MVP export routes `054-058` only, existing `/api/export-workflow` only, no new API, no schema migration, metadata-only redacted package manifest proof, forbidden payload negative tests mandatory, `deleted generic workflow route` export actions compatibility/demo only.
+  - WP08 Option A approved: existing API routes only, no new API, no schema migration, shared fail-closed/redaction/audit helpers allowed with limits, `/api/review-monitoring` internal-only MVP support, `deleted generic workflow route` compatibility/demo transport only, canonical Journey/export/document APIs remain MVP authority, and implementation starts with zero-delta revalidation before new code.
 
 Excluded as specification authority: unrelated legacy planning docs, broad handoff docs, source refs, old KB/source artefacts and prior assumptions unless revalidated against current repo evidence.
 
@@ -52,7 +52,7 @@ Detailed description: harden existing AlphaVest API surfaces against unsafe requ
 
 Primary API surfaces:
 
-- `/api/demo-workflow`
+- `deleted generic workflow route`
 - `/api/documents`
 - `/api/documents/upload`
 - `/api/review-monitoring`
@@ -65,7 +65,7 @@ Out of scope unless explicitly approved later:
 - State-screen image generation.
 - Blind safety weakening.
 - Client-visible internal payload expansion.
-- Treating demo workflow compatibility as the new canonical MVP command API.
+- Treating typed workflow compatibility as the new canonical MVP command API.
 
 ### ANALYSIS-WP08-1: Existing API Surface and Safety Gap Audit
 
@@ -91,13 +91,13 @@ DoD:
 
 - First-wave API boundary is unambiguous.
 - Shared helper strategy is explicit.
-- Demo workflow compatibility versus canonical command API is explicit.
+- Typed workflow compatibility versus canonical command API is explicit.
 - Review monitoring internal-only behavior is explicit.
 - Acceptance criteria cover positive and negative cases.
 
 ### DECISION-WP08-1: Approve Enforcement Depth and No-New-API Boundary
 
-Detailed description: obtain human approval for first-wave API hardening depth, no-new-API default, shared helper strategy, review-monitoring MVP depth and `/api/demo-workflow` status.
+Detailed description: obtain human approval for first-wave API hardening depth, no-new-API default, shared helper strategy, review-monitoring MVP depth and `deleted generic workflow route` status.
 
 Required decision notes from the blueprint:
 
@@ -127,14 +127,14 @@ Dependencies: `SPEC-WP08-1` and `DECISION-WP08-1`.
 
 ### IMPL-WP08-2: Demo Workflow Action Hardening
 
-Detailed description: harden `/api/demo-workflow` as a compatibility/demo transport without treating it as the canonical MVP action API. Typed recommendation-review actions must validate role, target, evidence, confirmation, audit and release gates. Generic screencast actions must not overclaim production API safety.
+Detailed description: harden `deleted generic workflow route` as a compatibility/demo transport without treating it as the canonical MVP action API. Typed recommendation-review actions must validate role, target, evidence, confirmation, audit and release gates. Generic screencast actions must not overclaim production API safety.
 
 Subtasks:
 
 - Preserve malformed request fail-closed behavior.
 - Keep recommendation-review actions role/gate/audit checked.
 - Keep generic `jXX.*` action behavior classified as demo compatibility.
-- Do not widen canonical command authority through demo workflow.
+- Do not widen canonical command authority through typed workflow.
 
 Dependencies: `SPEC-WP08-1` and `DECISION-WP08-1`.
 
@@ -214,22 +214,22 @@ Test evidence:
 - `tests/review-monitoring-service.spec.ts` proves internal snapshot behavior, invalid `asOf` fail-closed behavior and J16/J17 monitoring actions with no client release.
 - `tests/p0-api-contract.spec.ts` proves invalid monitoring query returns no advice and no release.
 
-### `/api/demo-workflow`
+### `deleted generic workflow route`
 
 Current implementation is mixed by design:
 
-- `app/api/demo-workflow/route.ts` uses `failClosedJson` for missing DB, invalid JSON/body, validation issues, audit persistence failure and typed workflow errors.
-- `lib/demo-workflow-validation.ts` validates typed `recommendation-review` requests with action, actor role, target UUID, evidence IDs, confirmation and audit simulation fields.
+- `deleted generic workflow route` uses `failClosedJson` for missing DB, invalid JSON/body, validation issues, audit persistence failure and typed workflow errors.
+- `lib/recommendation-review-workflow-validation.ts` validates typed `recommendation-review` requests with action, actor role, target UUID, evidence IDs, confirmation and audit simulation fields.
 - `lib/typed-workflow-command-bus.ts` enforces role, tenant/object scope, permission, evidence, payload, compliance release and audit gates for typed recommendation-review actions.
-- The same endpoint also accepts any `jNN.actionToken` shape through `demoWorkflowActionPattern`. Unknown generic screencast actions fall through to a deterministic audit-only compatibility path in `app/api/demo-workflow/route.ts`.
+- The same endpoint also accepts any `jNN.actionToken` shape through `typedWorkflowActionPattern`. Unknown generic screencast actions fall through to a deterministic audit-only compatibility path in `deleted generic workflow route`.
 
-That fallback is acceptable only if WP08 explicitly keeps `/api/demo-workflow` as demo compatibility transport. It must not be overclaimed as a controlled MVP action API. This aligns with the accepted WP05, WP06 and WP07 decisions.
+That fallback is acceptable only if WP08 explicitly keeps `deleted generic workflow route` as demo compatibility transport. It must not be overclaimed as a controlled MVP action API. This aligns with the accepted WP05, WP06 and WP07 decisions.
 
 Test evidence:
 
-- `tests/demo-workflow-validation.spec.ts` proves the explicit compatibility marker `DEMO_WORKFLOW_COMPATIBILITY_ONLY` and typed advisor/compliance state transitions.
-- `tests/demo-workflow-api.spec.ts` proves malformed action payloads and malformed JSON fail closed; typed advisor approval does not release; compliance release requires advisor approval, evidence, payload readiness, confirmation and audit persistence.
-- `tests/p0-api-contract.spec.ts` proves invalid demo workflow requests fail closed with no mutation and no client release.
+- `tests/recommendation-review-workflow-validation.spec.ts` proves the explicit compatibility marker `TYPED_WORKFLOW_BOUNDARY` and typed advisor/compliance state transitions.
+- `tests/recommendation-review-workflow-api.spec.ts` proves malformed action payloads and malformed JSON fail closed; typed advisor approval does not release; compliance release requires advisor approval, evidence, payload readiness, confirmation and audit persistence.
+- `tests/p0-api-contract.spec.ts` proves invalid typed workflow requests fail closed with no mutation and no client release.
 
 ### Shared Error, Audit and Safety Helpers
 
@@ -255,9 +255,9 @@ Inputs and overrides used:
 - `ANALYSIS-WP08-1` executed result above.
 - WP03 generated spec/report: canonical client-safe projection boundary and source-upload metadata exception.
 - WP04 generated spec/report: upload is never sufficiency; release/export stay locked until review/linkage/sufficiency/compliance gates.
-- WP05 generated spec/report and human Option A: canonical Journey command path, `/api/demo-workflow` compatibility only, fail-closed audit before mutation.
+- WP05 generated spec/report and human Option A: canonical Journey command path, `deleted generic workflow route` compatibility only, fail-closed audit before mutation.
 - WP06 generated spec/report and human Option A: admin non-bypass, route/action/object/payload/API/service enforcement, no new API/schema.
-- WP07 generated spec/report and human Option A: existing export API only; `/api/demo-workflow` export actions compatibility/demo only.
+- WP07 generated spec/report and human Option A: existing export API only; `deleted generic workflow route` export actions compatibility/demo only.
 
 ### Contract
 
@@ -269,7 +269,7 @@ Inputs and overrides used:
 - Document upload success is upload-only. It never implies evidence sufficiency, advisor approval, compliance release, export readiness or client visibility.
 - Document listing must return projected/safe rows only and must not disclose hidden rows, storage keys, checksums or internal evidence state.
 - Review monitoring is internal-only. It may expose monitoring/rebalance snapshot data for the internal application, but cannot execute advice, release content, advance state silently or create client-visible outcomes.
-- `/api/demo-workflow` remains compatibility/demo transport unless explicitly upgraded in a later work package. It may be used for screencast/demo actions and typed recommendation-review compatibility proof, but the canonical MVP command path remains the Journey command surface from WP05.
+- `deleted generic workflow route` remains compatibility/demo transport unless explicitly upgraded in a later work package. It may be used for screencast/demo actions and typed recommendation-review compatibility proof, but the canonical MVP command path remains the Journey command surface from WP05.
 - Shared helpers are allowed where they already exist or where a narrowly scoped local alignment reduces duplicate unsafe behavior. They must not create a new public API, weaken safety, or hide route-specific semantics.
 
 ### Acceptance Criteria
@@ -284,8 +284,8 @@ Positive proof:
 
 Negative proof:
 
-- Invalid demo workflow payload fails closed with no mutation and no client release.
-- Malformed demo workflow JSON fails closed.
+- Invalid typed workflow payload fails closed with no mutation and no client release.
+- Malformed typed workflow JSON fails closed.
 - Invalid document tenant/role fails closed and returns no hidden rows.
 - Invalid upload metadata/file/type fails closed and creates no release/export side effect.
 - Unauthorized upload role is denied and audited.
@@ -299,7 +299,7 @@ Status: COMPLETE
 
 The user approved Option A after the decision-ready report:
 
-`I approve WP08 Option A: existing API routes only, no new API, no schema migration, shared fail-closed/redaction/audit helpers allowed with limits, /api/review-monitoring internal-only MVP support, /api/demo-workflow compatibility/demo transport only, canonical Journey/export/document APIs remain MVP authority, and implementation starts with zero-delta revalidation before new code.`
+`I approve WP08 Option A: existing API routes only, no new API, no schema migration, shared fail-closed/redaction/audit helpers allowed with limits, /api/review-monitoring internal-only MVP support, deleted generic workflow route compatibility/demo transport only, canonical Journey/export/document APIs remain MVP authority, and implementation starts with zero-delta revalidation before new code.`
 
 ### Option A - Recommended: Existing Routes, Shared Helpers, Demo Compatibility Only
 
@@ -312,7 +312,7 @@ Approve first-wave hardening as zero-delta-first revalidation against the curren
 - No schema migration.
 - Shared fail-closed/redaction/audit helpers allowed with limits.
 - `/api/review-monitoring` remains internal-only MVP support.
-- `/api/demo-workflow` remains demo/compatibility transport, not canonical MVP API.
+- `deleted generic workflow route` remains demo/compatibility transport, not canonical MVP API.
 - Canonical Journey command/export/document APIs remain the authority for MVP proof.
 - Implementation starts by proving zero-delta where the repo already satisfies the refined spec; only real gaps get code changes.
 
@@ -320,19 +320,19 @@ Aggressive clean-solution recommendation: approve Option A. It preserves the cle
 
 Approval text:
 
-`I approve WP08 Option A: existing API routes only, no new API, no schema migration, shared fail-closed/redaction/audit helpers allowed with limits, /api/review-monitoring internal-only MVP support, /api/demo-workflow compatibility/demo transport only, canonical Journey/export/document APIs remain MVP authority, and implementation starts with zero-delta revalidation before new code.`
+`I approve WP08 Option A: existing API routes only, no new API, no schema migration, shared fail-closed/redaction/audit helpers allowed with limits, /api/review-monitoring internal-only MVP support, deleted generic workflow route compatibility/demo transport only, canonical Journey/export/document APIs remain MVP authority, and implementation starts with zero-delta revalidation before new code.`
 
 ### Option B - Strict Demo Workflow Allowlist
 
-Keep no new API/schema, but tighten `/api/demo-workflow` so unknown `jNN.*` actions fail closed instead of recording generic screencast audit events.
+Keep no new API/schema, but tighten `deleted generic workflow route` so unknown `jNN.*` actions fail closed instead of recording generic screencast audit events.
 
 Benefit: stronger endpoint hardening.
 
-Cost: higher screencast/demo compatibility risk and likely more fixture/test churn. This conflicts with the accepted WP05-WP07 posture that `/api/demo-workflow` is compatibility/demo only.
+Cost: higher screencast/demo compatibility risk and likely more fixture/test churn. This conflicts with the accepted WP05-WP07 posture that `deleted generic workflow route` is compatibility/demo only.
 
 ### Option C - New Controlled API
 
-Create a new action API and migrate callers away from `/api/demo-workflow`.
+Create a new action API and migrate callers away from `deleted generic workflow route`.
 
 Benefit: clean long-term command surface.
 
@@ -361,15 +361,15 @@ Product-code delta: none.
 
 Status: ZERO-DELTA IMPLEMENTATION
 
-Derived implementation task: prove that `/api/demo-workflow` remains compatibility/demo transport only while typed recommendation-review actions enforce validation, role, object, evidence, confirmation, audit and release gates.
+Derived implementation task: prove that `deleted generic workflow route` remains compatibility/demo transport only while typed recommendation-review actions enforce validation, role, object, evidence, confirmation, audit and release gates.
 
 Proof:
 
-- `app/api/demo-workflow/route.ts` uses `failClosedJson` for missing DB, invalid JSON/body, validation issues, typed workflow errors and audit persistence failure.
-- `lib/demo-workflow-validation.ts` defines typed recommendation-review actions and deterministic transition metadata, and separately accepts generic `jNN.*` action IDs as compatibility action IDs.
+- `deleted generic workflow route` uses `failClosedJson` for missing DB, invalid JSON/body, validation issues, typed workflow errors and audit persistence failure.
+- `lib/recommendation-review-workflow-validation.ts` defines typed recommendation-review actions and deterministic transition metadata, and separately accepts generic `jNN.*` action IDs as compatibility action IDs.
 - `lib/typed-workflow-command-bus.ts` enforces typed role, permission, object scope, evidence, payload, compliance release and audit gates.
-- The generic `jNN.*` fallback in `app/api/demo-workflow/route.ts` remains a deterministic screencast audit compatibility path by approved Option A. It is not MVP API authority.
-- `tests/demo-workflow-validation.spec.ts`, `tests/demo-workflow-api.spec.ts`, `tests/p0-api-contract.spec.ts` and `tests/phase6-audit-persistence.spec.ts` prove malformed requests fail closed, advisor approval does not release, compliance release requires gates and audit outage blocks mutation.
+- The generic `jNN.*` fallback in `deleted generic workflow route` remains a deterministic screencast audit compatibility path by approved Option A. It is not MVP API authority.
+- `tests/recommendation-review-workflow-validation.spec.ts`, `tests/recommendation-review-workflow-api.spec.ts`, `tests/p0-api-contract.spec.ts` and `tests/phase6-audit-persistence.spec.ts` prove malformed requests fail closed, advisor approval does not release, compliance release requires gates and audit outage blocks mutation.
 
 Product-code delta: none.
 
@@ -398,7 +398,7 @@ Proof:
 
 - `lib/control-layer/error-envelope.ts` builds fail-closed responses with `ok: false`, `mutated: false`, `noAdviceExecution: true`, `noClientRelease: true`, `safety.failClosed: true` and `safety.silentStateAdvance: false`.
 - `failClosedJson` merges route-specific extras while writing the critical envelope fields after extras and preserving fail-closed safety fields.
-- Relevant API routes already use `failClosedJson`, including demo workflow, documents, document upload, document review, review monitoring, export workflow, journeys and audit events.
+- Relevant API routes already use `failClosedJson`, including typed workflow, documents, document upload, document review, review monitoring, export workflow, journeys and audit events.
 - `tests/fail-closed-error-envelope.spec.ts`, `tests/true-ux-api-service-ui-truth.spec.ts` and `tests/p0-api-contract.spec.ts` prove helper defaults, no override of safety-critical fields and core API fail-closed usage.
 
 Product-code delta: none.
@@ -409,7 +409,7 @@ Status: COMPLETE
 
 Final QA command:
 
-`pnpm guard:source && pnpm exec tsc --noEmit --pretty false && pnpm db:validate && pnpm exec playwright test tests/fail-closed-error-envelope.spec.ts tests/p0-api-contract.spec.ts tests/document-upload-api.spec.ts tests/document-upload-lifecycle-hardening.spec.ts tests/demo-workflow-validation.spec.ts tests/demo-workflow-api.spec.ts tests/review-monitoring-service.spec.ts tests/true-ux-api-service-ui-truth.spec.ts tests/audit-fail-closed.spec.ts tests/phase6-audit-persistence.spec.ts --workers=1 --reporter=line`
+`pnpm guard:source && pnpm exec tsc --noEmit --pretty false && pnpm db:validate && pnpm exec playwright test tests/fail-closed-error-envelope.spec.ts tests/p0-api-contract.spec.ts tests/document-upload-api.spec.ts tests/document-upload-lifecycle-hardening.spec.ts tests/recommendation-review-workflow-validation.spec.ts tests/recommendation-review-workflow-api.spec.ts tests/review-monitoring-service.spec.ts tests/true-ux-api-service-ui-truth.spec.ts tests/audit-fail-closed.spec.ts tests/phase6-audit-persistence.spec.ts --workers=1 --reporter=line`
 
 Result:
 
@@ -428,7 +428,7 @@ Positive proof:
 
 Negative proof:
 
-- Malformed demo workflow payloads and malformed JSON fail closed.
+- Malformed typed workflow payloads and malformed JSON fail closed.
 - Invalid document scope returns empty no-release payload.
 - Invalid upload metadata cannot mutate, release or imply sufficiency.
 - Invalid review monitoring query remains internal and no-advice.
@@ -445,8 +445,8 @@ None.
 
 ## Residual Risks
 
-- `/api/demo-workflow` still accepts unknown `jNN.*` action IDs as demo compatibility and writes a deterministic audit event. This is acceptable only under Option A's explicit compatibility-only decision.
-- `/api/demo-workflow` must not be referenced as canonical MVP command authority in future specs; Journey/export/document APIs remain the authority.
+- `deleted generic workflow route` still accepts unknown `jNN.*` action IDs as demo compatibility and writes a deterministic audit event. This is acceptable only under Option A's explicit compatibility-only decision.
+- `deleted generic workflow route` must not be referenced as canonical MVP command authority in future specs; Journey/export/document APIs remain the authority.
 - No screenshots are required for this WP08 completion because no UI changes were made.
 
 ## Method Compliance Checklist
@@ -464,5 +464,5 @@ None.
 ## Honest Limitations
 
 - This is a final WP08 Option A implementation report, but it is intentionally zero-delta product code.
-- The generic `/api/demo-workflow` fallback remains compatibility debt by explicit approval, not a controlled MVP API.
+- The generic `deleted generic workflow route` fallback remains compatibility debt by explicit approval, not a controlled MVP API.
 - Full `phase:check` was not run because WP08 scope is API hardening and the focused guard/typecheck/schema/API/fail-closed/audit validation is the stronger task-matched proof.

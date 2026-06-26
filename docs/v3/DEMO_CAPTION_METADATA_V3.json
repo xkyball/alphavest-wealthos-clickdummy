@@ -43,7 +43,7 @@
       "nextImplementationNeed": "Repository-backed UI reload of the advisor/compliance handoff state.",
       "relatedRoutes": ["/signals", "/workbench", "/workbench/triggers/demo", "/advisor-approval", "/advisor-approval/demo"],
       "relatedDataObjects": ["Trigger", "ActionItem", "Recommendation", "Approval", "AuditEvent"],
-      "evidenceRefs": ["app/api/demo-workflow/route.ts", "docs/v3/SCREENCAST_QA_REPORT_V3.md"],
+      "evidenceRefs": ["app/api/recommendation-review-workflow/route.ts", "docs/v3/SCREENCAST_QA_REPORT_V3.md"],
       "screenshotMoments": ["signal queue", "request data action", "advisor approval detail", "client visibility blocked"],
       "screencastStepIds": ["J01-S01", "J01-S02", "J01-S03", "J01-S04", "J01-S05", "J01-S06", "J01-S07", "J01-S08"]
     },

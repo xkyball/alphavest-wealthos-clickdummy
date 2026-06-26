@@ -23,7 +23,7 @@
     "PL1": "Route/static visual proof",
     "PL2": "Screencast manifest navigation proof",
     "PL3": "Fixture-backed demo state",
-    "PL4": "Specific demo workflow action exists",
+    "PL4": "Specific typed workflow action exists",
     "PL5": "Automated/direct proof exists",
     "PL6": "Customer-sendable recording passed"
   },
@@ -59,7 +59,7 @@
     "proofLevel": "PL4",
     "overclaimRisk": "Viewer may assume advisor approval releases to client.",
     "caveat": "Advisor approval remains internal until compliance release.",
-    "proofPath": ["app/api/demo-workflow/route.ts", "docs/v3/IMPLEMENTATION_QA_REPORT.md"],
+    "proofPath": ["app/api/recommendation-review-workflow/route.ts", "docs/v3/IMPLEMENTATION_QA_REPORT.md"],
     "customerSendable": true
   }
 }

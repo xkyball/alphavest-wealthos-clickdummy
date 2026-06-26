@@ -40,7 +40,7 @@ No route, schema, migration or broad audit analytics product was added. Existing
 
 | File | Change |
 | --- | --- |
-| `components/ui/audit-timeline.tsx` | Added source-state contract, persisted-proof DOM attributes, source reference display, empty/unavailable state handling and display-only default for legacy demo rows. |
+| `components/ui/audit-timeline.tsx` | Added source-state contract, persisted-proof DOM attributes, source reference display, empty/unavailable state handling and display-only default for retired generic rows. |
 | `lib/dbtf-table-service.ts` | Marks tenant-scoped `AuditEvent` rows as `source-backed` with `sourceRef`. |
 | `lib/export-workflow-readmodel-service.ts` | Marks export workflow timeline events from persisted audit rows as `source-backed`. |
 | `components/communication-export-ops-screen.tsx` | Shows DB audit source-backed state, safe loading/unavailable audit states and source state/ref in selected-event detail. |

@@ -11,7 +11,7 @@ import {
   demoTenants,
   type DemoTenantSlug,
 } from "../lib/demo-session";
-import { AuditPersistenceUnavailableError, runDemoWorkflowMutation } from "../lib/typed-workflow-command-bus";
+import { AuditPersistenceUnavailableError, runTypedWorkflowMutation } from "../lib/typed-workflow-command-bus";
 import { permissionEngine } from "../lib/permission-engine";
 import { visibilityEngine } from "../lib/visibility-engine";
 
@@ -470,7 +470,7 @@ test.describe("Phase 16 demo role-aware permissions", () => {
   });
 });
 
-test.describe("Phase 16 demo workflow deny audit", () => {
+test.describe("Phase 16 typed workflow deny audit", () => {
   let prisma: PrismaClient | undefined;
 
   test.beforeAll(() => {
@@ -493,7 +493,7 @@ test.describe("Phase 16 demo workflow deny audit", () => {
     let mutateCalled = false;
     const bennettTenantId = tenantId("bennett");
 
-    const result = await runDemoWorkflowMutation(
+    const result = await runTypedWorkflowMutation(
       prisma,
       {
         actionId: "phase16.principalDeniedRelease",
@@ -545,7 +545,7 @@ test.describe("Phase 16 demo workflow deny audit", () => {
     const bennettTenantId = tenantId("bennett");
 
     await expect(
-      runDemoWorkflowMutation(
+      runTypedWorkflowMutation(
         prisma,
         {
           actionId: "phase06.auditUnavailableRelease",

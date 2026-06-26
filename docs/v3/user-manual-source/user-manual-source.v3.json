@@ -27,11 +27,11 @@
     "lib/permission-engine.ts",
     "lib/workflow-gate.ts",
     "app/[...segments]/page.tsx",
-    "app/api/demo-workflow/route.ts",
+    "app/api/recommendation-review-workflow/route.ts",
     "components/*-screen.tsx",
     "prisma/schema.prisma",
     "tests/route-smoke.spec.ts",
-    "tests/demo-workflow-api.spec.ts",
+    "tests/recommendation-review-workflow-api.spec.ts",
     "tests/permission-engine.spec.ts"
   ],
   "externalDocumentationSources": [
@@ -362,7 +362,7 @@
       ],
       "result": "Decision success page and linked evidence record show the completion proof.",
       "evidence": "Decision event and evidence package should be immutable/audited.",
-      "status": "E3 navigable UI with demo workflow actions; final decision/evidence package persistence remains incomplete."
+      "status": "E3 navigable UI with typed workflow actions; final decision/evidence package persistence remains incomplete."
     },
     {
       "id": "MT-011",
@@ -705,7 +705,7 @@
         "comment",
         "request-more-information reason"
       ],
-      "status": "E3 navigable UI with demo workflow actions; final decision/evidence package persistence remains incomplete.",
+      "status": "E3 navigable UI with typed workflow actions; final decision/evidence package persistence remains incomplete.",
       "clientVisibilityRule": "No unapproved advice reaches the client"
     },
     {
@@ -1030,7 +1030,7 @@
         "request-more-information reason"
       ],
       "expectedResult": "Decision success page and linked evidence record show the completion proof.",
-      "status": "E3 navigable UI with demo workflow actions; final decision/evidence package persistence remains incomplete."
+      "status": "E3 navigable UI with typed workflow actions; final decision/evidence package persistence remains incomplete."
     },
     {
       "manualTaskId": "MT-011",
@@ -3463,7 +3463,7 @@
     },
     {
       "manualTaskId": "MT-010",
-      "status": "E3 navigable UI with demo workflow actions; final decision/evidence package persistence remains incomplete."
+      "status": "E3 navigable UI with typed workflow actions; final decision/evidence package persistence remains incomplete."
     },
     {
       "manualTaskId": "MT-011",

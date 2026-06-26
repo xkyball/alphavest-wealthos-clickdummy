@@ -48,7 +48,7 @@ export type ExportWorkflowProofFamilyId =
   | "AV27_PHASE7_PAYLOAD_SWEEP"
   | "WCL_EXPORT_SAFETY"
   | "FILE_EXPORT_REALISM"
-  | "DEMO_WORKFLOW_EXPORT_COMPATIBILITY";
+  | "RETIRED_EXPORT_ADAPTER";
 
 export type ExportWorkflowProofFamily = {
   familyId: ExportWorkflowProofFamilyId;
@@ -143,10 +143,10 @@ export const exportWorkflowCommandSpineContract = {
       authority: "COMPATIBILITY_ADAPTER",
       canonicalApiRoute: exportWorkflowCanonicalApiRoute,
       canonicalCommandService: exportWorkflowCommandSpinePath,
-      familyId: "DEMO_WORKFLOW_EXPORT_COMPATIBILITY",
-      helperFiles: ["app/api/demo-workflow/route.ts", "lib/typed-workflow-command-bus.ts"],
-      proofFiles: ["tests/demo-workflow-api.spec.ts", "tests/phase8-export-workflow-api.spec.ts"],
-      rule: "Demo workflow export branches are compatibility only and must not become new export command truth.",
+      familyId: "RETIRED_EXPORT_ADAPTER",
+      helperFiles: ["lib/typed-workflow-command-bus.ts"],
+      proofFiles: ["tests/recommendation-review-workflow-api.spec.ts", "tests/phase8-export-workflow-api.spec.ts"],
+      rule: "Retired export adapter proof is historical only; export command truth belongs to the typed export workflow route.",
     },
   ],
 } as const satisfies ExportWorkflowCommandSpineContract;

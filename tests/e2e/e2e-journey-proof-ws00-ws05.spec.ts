@@ -25,12 +25,11 @@ const requiredTargetFiles = [
   "components/internal-workflow-screen.tsx",
   "components/decisions-governance-screen.tsx",
   "components/demo-session-provider.tsx",
-  "app/api/demo-workflow/route.ts",
   "app/api/documents/route.ts",
   "app/api/documents/upload/route.ts",
   "lib/audit-service.ts",
   "lib/typed-workflow-command-bus.ts",
-  "lib/demo-workflow-validation.ts",
+  "lib/recommendation-review-workflow-validation.ts",
   "lib/document-storage-adapter.ts",
   "lib/document-upload-service.ts",
   "lib/evidence-service.ts",
@@ -64,7 +63,7 @@ test.describe("E2E-WS-00..05 canonical journey proof harness", () => {
     expect(packageJson.scripts.typecheck).toBe("tsc --noEmit");
     expect(packageJson.scripts.lint).toBe("eslint .");
     expect(packageJson.scripts["db:validate"]).toBe("prisma validate");
-    expect(packageJson.scripts["test:workflow-api"]).toContain("tests/demo-workflow-api.spec.ts");
+    expect(packageJson.scripts["test:workflow-api"]).toContain("tests/recommendation-review-workflow-api.spec.ts");
     expect(packageJson.scripts["test:permissions"]).toContain("tests/permission-engine.spec.ts");
   });
 

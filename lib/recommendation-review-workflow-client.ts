@@ -3,7 +3,7 @@
 import type {
   AdvisorApprovalWorkflowAction,
   AdvisorApprovalWorkflowRequestInput,
-} from "@/lib/demo-workflow-validation";
+} from "@/lib/recommendation-review-workflow-validation";
 
 export const advisorApprovalDemoTargets = {
   morgan: {

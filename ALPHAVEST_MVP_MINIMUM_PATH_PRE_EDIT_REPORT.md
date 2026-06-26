@@ -62,13 +62,13 @@ The branch tracks `origin/full-workflow` and is currently ahead by 17 commits. N
 - `package.json`
 - `prisma/schema.prisma`
 - `lib/prisma.ts`
-- `app/api/demo-workflow/route.ts`
+- `deleted generic workflow route`
 - `app/api/documents/route.ts`
 - `app/api/documents/upload/route.ts`
 - `app/api/review-monitoring/route.ts`
 - `lib/document-upload-service.ts`
 - `lib/typed-workflow-command-bus.ts`
-- `lib/demo-workflow-validation.ts`
+- `lib/recommendation-review-workflow-validation.ts`
 - `lib/workflow-gate.ts`
 - `lib/visibility-engine.ts`
 - `lib/permission-engine.ts`
@@ -80,7 +80,7 @@ The branch tracks `origin/full-workflow` and is currently ahead by 17 commits. N
 - `lib/demo-session.ts`
 - `tests/committee-review-routes.spec.ts`
 - `tests/data-quality-service.spec.ts`
-- `tests/demo-workflow-api.spec.ts`
+- `tests/recommendation-review-workflow-api.spec.ts`
 - `tests/document-upload-api.spec.ts`
 - `tests/document-upload-flow.spec.ts`
 - `tests/file-export-realism.spec.ts`
@@ -105,8 +105,8 @@ Likely for Prompt 02:
 
 Likely for later prompts, if reached in order:
 
-- `app/api/demo-workflow/route.ts`
-- `lib/demo-workflow-validation.ts`
+- `deleted generic workflow route`
+- `lib/recommendation-review-workflow-validation.ts`
 - `lib/typed-workflow-command-bus.ts`
 - `lib/workflow-gate.ts`
 - `lib/visibility-engine.ts`
@@ -200,7 +200,7 @@ Test files found:
 
 - `tests/committee-review-routes.spec.ts`
 - `tests/data-quality-service.spec.ts`
-- `tests/demo-workflow-api.spec.ts`
+- `tests/recommendation-review-workflow-api.spec.ts`
 - `tests/document-upload-api.spec.ts`
 - `tests/document-upload-flow.spec.ts`
 - `tests/file-export-realism.spec.ts`
@@ -244,7 +244,7 @@ Readiness classification:
 4. `/api/documents` accepts `tenantSlug`, but it has no actor/role header or session auth. It is demo-session scoped by query and existing tenant slug validation.
 5. Some existing tests mutate the DB through `pnpm db:seed`; Prompt 01 forbids mutating DB commands.
 6. Existing P0 tests and safety tests are proof slices only; they cannot be treated as P0 passed.
-7. Typed persistent Review -> Advisor Approval -> Compliance workflow will probably require extending existing `/api/demo-workflow` validation beyond `actionId`; whether to create a new API is explicitly forbidden by default.
+7. Typed persistent Review -> Advisor Approval -> Compliance workflow will probably require extending existing `deleted generic workflow route` validation beyond `actionId`; whether to create a new API is explicitly forbidden by default.
 8. Schema appears broad enough for later workflow work, but this baseline did not prove that every later typed workflow field can be implemented without schema changes.
 9. Confirmation lifecycle surfaces are partially reactive but action submission remains actionId/demo-oriented in current inspected UI.
 10. Review monitoring API is DB-backed, but route scope and Prompt Pack order keep it outside Prompt 01 and outside the first implementation phase.
@@ -259,7 +259,7 @@ Readiness classification:
 | 4 | `/api/documents` is query-scoped rather than auth-scoped. | `PROOF_NOT_SUFFICIENT` | Do not claim production tenant auth. Preserve existing API and prove demo tenant isolation. |
 | 5 | DB-mutating tests exist. | `TECHNICAL_CHOICE_ALLOWED` | Do not run in Prompt 01; select safe targeted execution later after implementation. |
 | 6 | Existing P0 proof slices are incomplete. | `PROOF_NOT_SUFFICIENT` | Do not claim P0. Add/run required proof only in later prompts. |
-| 7 | Workflow typed payload likely needs existing API hardening. | `TECHNICAL_CHOICE_ALLOWED` for extending existing route, `API_DECISION_REQUIRED` if a new API seems necessary | Prompt 03 must use `/api/demo-workflow` unless a blocker is classified. |
+| 7 | Workflow typed payload likely needs existing API hardening. | `TECHNICAL_CHOICE_ALLOWED` for extending existing route, `API_DECISION_REQUIRED` if a new API seems necessary | Prompt 03 must use `deleted generic workflow route` unless a blocker is classified. |
 | 8 | Possible later schema need. | `SCHEMA_DECISION_REQUIRED` if encountered later | No schema change authorized by Prompt 01 or Prompt 02 by default. |
 | 9 | Partial confirmation lifecycle. | `TECHNICAL_CHOICE_ALLOWED` within Prompt 04; `PROOF_NOT_SUFFICIENT` now | Do not claim lifecycle done. Harden only when Prompt 04 is reached. |
 | 10 | Review monitoring API/UI mismatch. | `OUT_OF_SCOPE` for Prompt 01 and Prompt 02 | Do not patch until a later authorized prompt/scope. |

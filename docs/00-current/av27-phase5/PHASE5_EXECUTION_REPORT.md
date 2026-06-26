@@ -38,7 +38,7 @@ No product code, route, schema, migration, API route, visual asset, screen image
 Detailed description: Advisor approval sets compliance-pending state only. Positive acceptance: advisor approves and item moves to compliance. Negative acceptance: advisor approval does not set `clientVisible` or released state.
 
 Execution:
-- A: inspected current proof in `lib/typed-workflow-command-bus.ts`, `lib/workflow-gate.ts`, `lib/demo-workflow-validation.ts`, `tests/demo-workflow-api.spec.ts`, and `tests/workflow-gate.spec.ts`.
+- A: inspected current proof in `lib/typed-workflow-command-bus.ts`, `lib/workflow-gate.ts`, `lib/recommendation-review-workflow-validation.ts`, `tests/recommendation-review-workflow-api.spec.ts`, and `tests/workflow-gate.spec.ts`.
 - S: locked target behavior to the existing `advisor_approve` command and canonical state `COMPLIANCE_PENDING`.
 - I: no code delta required; current implementation updates approval to `APPROVED`, recommendation to `COMPLIANCE_PENDING`, compliance review to `PENDING`, and keeps `clientVisible=false`.
 - Q: `pnpm test:workflow-api` proves advisor approval persists without client release; `pnpm test:workflow-gate` proves advisor approval is separate from compliance release and client visibility.
@@ -145,7 +145,7 @@ Status: DONE.
 
 - `pnpm guard:source`: PASS.
 - `pnpm test:workflow-gate`: PASS, 13 passed.
-- `pnpm exec playwright test tests/demo-workflow-validation.spec.ts`: PASS, 1 passed after sequential rerun.
+- `pnpm exec playwright test tests/recommendation-review-workflow-validation.spec.ts`: PASS, 1 passed after sequential rerun.
 - `pnpm test:client-visibility`: PASS, 4 passed after sequential rerun.
 - `pnpm test:workflow-api`: PASS, 15 passed.
 
@@ -171,7 +171,7 @@ Because current code already contained the central Phase 5 spine, the correct re
 
 ## Bold Cleanup Recommendations
 
-1. Promote `lib/typed-workflow-command-bus.ts` advisor-approval behavior into a named `advisor-approval-service.ts` and leave the API route as a thin transport adapter. This would retire the last "demo workflow" naming around a genuinely safety-critical spine.
+1. Promote `lib/typed-workflow-command-bus.ts` advisor-approval behavior into a named `advisor-approval-service.ts` and leave the API route as a thin transport adapter. This would retire the last "typed workflow" naming around a genuinely safety-critical spine.
 2. Merge legacy SCF/Phase 5 constants into one AV27 phase contract module. Keep `advisory-workflow-contract.ts` as the canonical command/state vocabulary and stop scattering release boundary strings across UI copy.
 3. Replace seeded decision linkage assumptions with an explicit released-context decision service when the next phase authorizes it. That is the biggest remaining structural debt: the current slice proves released-context decision actions, not arbitrary decision creation from domain inputs.
 4. Make audit history a first-class read model for decision/advisor approval pages. Do not rely on visual audit timelines as proof; derive timelines from persisted `AuditEvent` rows only.

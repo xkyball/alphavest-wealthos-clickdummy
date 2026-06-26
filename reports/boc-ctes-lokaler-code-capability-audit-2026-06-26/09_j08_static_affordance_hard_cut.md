@@ -10,10 +10,10 @@ Completed for the requested scope.
 
 ## Changes
 
-- Deleted the internal legacy export helper implementation path from `app/api/demo-workflow/route.ts`.
-- Removed `j08.*` from the internal `DemoWorkflowAction` union and the demo-workflow action switch.
-- Preserved only the public legacy fail-closed guard: incoming `j08.*` requests still return `410 LEGACY_EXPORT_DEMO_ACTION_RETIRED` and point to `/api/export-workflow`.
-- Removed J08-only dead imports and constants from the demo-workflow route.
+- Deleted the internal legacy export helper implementation path before the generic route was removed entirely.
+- Removed `j08.*` from the retired generic action union and the typed-command action switch.
+- Current boundary: J08 export commands execute through `/api/export-workflow`; the generic action-id route is deleted.
+- Removed J08-only dead imports and constants from the typed-command route.
 - Replaced remaining `data-ux-affordance="static-control-note"` markers in app components with explicit `data-ux-affordance="blocked-static-control"` markers and disabled reasons.
 - Converted Phase 6 decision-room static confirm/cancel affordances into real disabled buttons with explicit blocked reasons.
 - Updated the Phase 6 route smoke assertion from passive static-note detection to real disabled-control proof.
@@ -25,9 +25,9 @@ Completed for the requested scope.
 - `pnpm lint` passed with existing warnings only.
 - `git diff --check` passed.
 - `rg "static-control-note" app components lib tests -n` returned no matches.
-- `rg "runJ08|case \"j08|j08\\." app/api/demo-workflow/route.ts -n` returns only the intended legacy `startsWith("j08.")` guard.
+- `rg "runJ08|case \"j08|j08\\." app/api app components lib tests -n` is expected to find only typed export workflow references.
 - Focused Runtime-Proof-Pack passed: 42/42.
-  - `tests/demo-workflow-api.spec.ts`
+  - `tests/recommendation-review-workflow-api.spec.ts`
   - `tests/export-workflow-api.spec.ts`
   - `tests/phase8-export-workflow-api.spec.ts`
   - `tests/export-approval-lifecycle.spec.ts`

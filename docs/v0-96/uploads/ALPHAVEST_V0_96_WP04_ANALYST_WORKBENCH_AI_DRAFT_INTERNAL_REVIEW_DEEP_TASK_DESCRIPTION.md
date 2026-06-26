@@ -60,7 +60,7 @@ This WP is P0 because AlphaVest’s V0.96 claim depends on proving that AI-assis
 | No-overclaim microcopy is a safety surface. | Feedback Contract | AI draft/review success/error copy | Copy / safety | High | Copy must say “Draft rebuilt for advisor review” or “Evidence required”, never “Advice ready for client”. |
 | Tables/filters/kanban and state panels are often visual support only. | Interaction Reality Audit | Workbench queue, Signal list, Action list | Interaction lifecycle | High | Implement real loading/empty/error/permission/blocked states and avoid unimplemented filter/kanban claims. |
 | Modal/drawer primitives exist but lifecycle proof is partial. | Drawer/Modal Interaction Contract | Reject/rebuild/request evidence flows | Interaction lifecycle | High | Any modal/drawer used for analyst action needs open/cancel/submit/loading/error/success/focus semantics. |
-| P0 tests are proof slices only. | P0 Test Acceptance Matrix | `workflow-gate`, `demo-workflow-api`, true-UX tests | Acceptance proof | Critical | Add/update targeted positive and negative tests for AI internal-only and analyst gate behaviour. |
+| P0 tests are proof slices only. | P0 Test Acceptance Matrix | `workflow-gate`, `typed-workflow-api`, true-UX tests | Acceptance proof | Critical | Add/update targeted positive and negative tests for AI internal-only and analyst gate behaviour. |
 
 ---
 
@@ -76,9 +76,9 @@ The available snapshot already contains several WP-04-relevant surfaces. These m
 |---|---|---|
 | Analyst/workflow UI | `components/internal-workflow-screen.tsx` exists and is large. | Treat as primary surface to refactor/harden; do not create parallel workbench unless WP-00 proves current structure cannot support V0.96. |
 | UX helpers | `components/ux-detail-standard-panel.tsx`, `components/ux-cta-cluster.tsx`, `components/ui/state-panel.tsx`, `components/ui/guarded-action-button.tsx` exist. | Reuse for page job, density, CTA and state feedback rather than building one-off UI patterns. |
-| Demo workflow API | `app/api/demo-workflow/route.ts` exists and is substantial. | Inspect current actions before adding/renaming actions; preserve API contract and safe error behaviour. |
+| Typed workflow API | `deleted generic workflow route` exists and is substantial. | Inspect current actions before adding/renaming actions; preserve API contract and safe error behaviour. |
 | Workflow services | `lib/internal-workflow-demo-data.ts`, `lib/typed-workflow-command-bus.ts`, `lib/workflow-gate.ts`, `lib/visibility-engine.ts`, `lib/audit-service.ts` exist. | Reuse/harden existing workflow/gate/visibility/audit concepts; do not bypass them in UI state. |
-| Tests | `tests/demo-workflow-api.spec.ts`, `tests/workflow-gate.spec.ts`, `tests/true-ux-p0-safety.spec.ts`, `tests/true-ux-client-projection.spec.ts` exist. | Extend existing proof slices with WP-04 positive and negative assertions. |
+| Tests | `tests/recommendation-review-workflow-api.spec.ts`, `tests/workflow-gate.spec.ts`, `tests/true-ux-p0-safety.spec.ts`, `tests/true-ux-client-projection.spec.ts` exist. | Extend existing proof slices with WP-04 positive and negative assertions. |
 
 ### 4.2 Files / modules to inspect before edits
 
@@ -88,11 +88,11 @@ The available snapshot already contains several WP-04-relevant surfaces. These m
 | Analyst UI | `components/internal-workflow-screen.tsx` | Locate signal/workbench/trigger/advisor rendering branches, current draft panels, CTA clusters, state chips and queue/detail layout. |
 | Detail/layout helpers | `components/ux-detail-standard-panel.tsx`, `components/ux-cta-cluster.tsx`, `components/ux-secondary-context-tabs.tsx`, `components/product-guidance-panel.tsx` | Reuse page-type and density system from WP-02. |
 | State/action helpers | `components/ui/state-panel.tsx`, `components/ui/guarded-action-button.tsx`, `components/ui/modal.tsx`, `components/ui/drawer.tsx` | Implement honest states and guarded analyst actions without visual-only controls. |
-| Workflow API | `app/api/demo-workflow/route.ts` | Confirm action names, validation, state transitions, no-client-release flags, audit IDs and safe error shapes. |
-| Services/gates | `lib/internal-workflow-demo-data.ts`, `lib/typed-workflow-command-bus.ts`, `lib/demo-workflow-validation.ts`, `lib/workflow-gate.ts`, `lib/permission-engine.ts`, `lib/visibility-engine.ts`, `lib/audit-service.ts` | Confirm analyst action preconditions, role checks, AI draft visibility and audit path. |
+| Workflow API | `deleted generic workflow route` | Confirm action names, validation, state transitions, no-client-release flags, audit IDs and safe error shapes. |
+| Services/gates | `lib/internal-workflow-demo-data.ts`, `lib/typed-workflow-command-bus.ts`, `lib/recommendation-review-workflow-validation.ts`, `lib/workflow-gate.ts`, `lib/permission-engine.ts`, `lib/visibility-engine.ts`, `lib/audit-service.ts` | Confirm analyst action preconditions, role checks, AI draft visibility and audit path. |
 | Client/export projection | `lib/visibility-engine.ts`, `lib/export-service.ts`, `lib/export-package-service.ts`, `components/client-intake-screen.tsx`, `components/communication-export-ops-screen.tsx` | Verify AI Draft/internal rationale never appear in client/export surfaces after analyst actions. |
 | Schema | `prisma/schema.prisma` | Confirm fields/enums for `Trigger`, `Recommendation`, `RecommendationOption`, `Approval`, `ComplianceReview`, `Decision`, `EvidenceRecord`, `AuditEvent`. |
-| Tests | `tests/demo-workflow-api.spec.ts`, `tests/workflow-gate.spec.ts`, `tests/true-ux-p0-safety.spec.ts`, `tests/true-ux-client-projection.spec.ts`, `tests/true-ux-cta-state.spec.ts`, `tests/true-ux-density.spec.ts` | Identify existing coverage and add missing positive/negative/UX tests. |
+| Tests | `tests/recommendation-review-workflow-api.spec.ts`, `tests/workflow-gate.spec.ts`, `tests/true-ux-p0-safety.spec.ts`, `tests/true-ux-client-projection.spec.ts`, `tests/true-ux-cta-state.spec.ts`, `tests/true-ux-density.spec.ts` | Identify existing coverage and add missing positive/negative/UX tests. |
 
 ### 4.3 Current reality labels Codex must assign before implementation
 
@@ -203,12 +203,12 @@ WP-04 is **not** responsible for full advisor approval (WP-05), compliance relea
 | `WP04-T04-SPLIT-QUEUE-DETAIL-STRUCTURE` | Reduce long/conflated workbench sprawl. | Internal workbench needs compact queue and detailed review area. | `components/internal-workflow-screen.tsx`, `components/ux-detail-standard-panel.tsx`, `components/ux-secondary-context-tabs.tsx`, `components/ui/data-table.tsx` | Structure page into queue summary, selected draft detail, evidence support, internal notes, actions. Move secondary context to tabs/drawers. | Above-fold user can see item, gate, blocker and primary action. | `tests/true-ux-density.spec.ts`, `tests/route-smoke.spec.ts`. | Yes. | Do not create new screens/assets. |
 | `WP04-T05-IMPLEMENT-INTERNAL-ONLY-AI-DRAFT-PANEL` | Make AI/rules draft visibly internal-only and not advice. | AI Draft cannot be client visible. | `components/internal-workflow-screen.tsx`, `lib/internal-workflow-demo-data.ts`, `lib/visibility-engine.ts` | Add internal-only label, rationale boundary, source/evidence support markers and no-client warning. Avoid “recommended to client” language. | UI states clearly mark AI/rules draft as internal preparation. | `tests/true-ux-p0-safety.spec.ts`, client projection negative test. | Yes. | Stop if copy implies autonomous/client advice. |
 | `WP04-T06-UNSUPPORTED-CLAIM-BLOCKER-STATES` | Surface unsupported claims as blockers with recovery paths. | `MJ-003` requires rejected/rebuilt with evidence. | `components/internal-workflow-screen.tsx`, `lib/workflow-gate.ts`, `lib/internal-workflow-demo-data.ts`, `components/ui/state-panel.tsx` | Add states for unsupported claim, needs evidence, evidence insufficient. Show blocker reason and one primary recovery CTA. | Unsupported claims cannot be sent to advisor without recovery/evidence path. | `tests/workflow-gate.spec.ts`, UI state test. | Yes. | Do not let status chip alone unblock flow. |
-| `WP04-T07-GUARDED-ANALYST-ACTIONS` | Implement analyst reject/rebuild/request-evidence/send-to-advisor as guarded actions. | Analyst actions are human-control steps, not release. | `components/ui/guarded-action-button.tsx`, `components/ux-cta-cluster.tsx`, `app/api/demo-workflow/route.ts`, `lib/typed-workflow-command-bus.ts`, `lib/permission-engine.ts`, `lib/audit-service.ts` | Wire actions through existing API/service; include role/object preconditions, loading/error/success feedback and audit expectation where supported. | Wrong role/object denied; action changes only analyst/advisor-routing state, not client visibility. | `tests/demo-workflow-api.spec.ts`, `tests/permission-engine.spec.ts`, `tests/true-ux-cta-state.spec.ts`. | Yes. | Stop if action releases to client or skips advisor/compliance. |
+| `WP04-T07-GUARDED-ANALYST-ACTIONS` | Implement analyst reject/rebuild/request-evidence/send-to-advisor as guarded actions. | Analyst actions are human-control steps, not release. | `components/ui/guarded-action-button.tsx`, `components/ux-cta-cluster.tsx`, `deleted generic workflow route`, `lib/typed-workflow-command-bus.ts`, `lib/permission-engine.ts`, `lib/audit-service.ts` | Wire actions through existing API/service; include role/object preconditions, loading/error/success feedback and audit expectation where supported. | Wrong role/object denied; action changes only analyst/advisor-routing state, not client visibility. | `tests/recommendation-review-workflow-api.spec.ts`, `tests/permission-engine.spec.ts`, `tests/true-ux-cta-state.spec.ts`. | Yes. | Stop if action releases to client or skips advisor/compliance. |
 | `WP04-T08-EVIDENCE-LINK-ON-REBUILD` | Link rebuilt draft to evidence references when available. | Rebuild must be evidence-backed, not AI confidence theatre. | `lib/evidence-service.ts`, `lib/evidence-review-service.ts`, `lib/typed-workflow-command-bus.ts`, `lib/workflow-gate.ts`, schema models for Recommendation/Evidence | Use existing evidence relation/service if present; show evidence link status. If missing, document dependency for WP-03/WP-14, do not invent schema blindly. | Rebuilt draft can identify supporting evidence or remains `needs_evidence`. | `tests/workflow-gate.spec.ts`, evidence/review tests if present. | Indirect UI. | Stop if schema change is required without decision. |
 | `WP04-T09-ANALYST-NOTES-INTERNAL-ONLY` | Prevent analyst notes/internal rationale from entering client/export payloads. | Internal notes are safety-sensitive. | `components/internal-workflow-screen.tsx`, `lib/visibility-engine.ts`, `lib/export-service.ts`, `lib/export-package-service.ts`, client/export components | Tag internal notes; verify projection/export services exclude them. Add tests for absence. | Analyst notes visible only to authorized internal roles. | `tests/true-ux-client-projection.spec.ts`, `tests/export-safety.spec.ts` if present. | Yes, label and separation. | Stop if client/export receives analyst notes. |
 | `WP04-T10-MODAL-DRAWER-LIFECYCLE-FOR-REJECT-REBUILD` | Harden overlays used by analyst actions. | Visible modal/drawer is not lifecycle proof. | `components/ui/modal.tsx`, `components/ui/drawer.tsx`, `components/internal-workflow-screen.tsx`, `components/ux-cta-cluster.tsx` | If modal/drawer is used, implement open/cancel/submit/loading/validation/error/success and focus/escape expectations. | Overlay cannot silently mutate; cancel preserves state; submit validates reason/evidence where required. | `tests/interaction-lifecycle.spec.ts` if present; true-UX interaction test. | Yes. | Do not add overlay if inline action/state is clearer. |
 | `WP04-T11-NO-OVERCLAIM-MICROCOPY` | Replace misleading analyst workflow copy. | Copy is a safety surface. | `components/internal-workflow-screen.tsx`, shared copy constants if any | Use copy such as “Internal draft”, “Evidence required”, “Draft rebuilt for advisor review”, “Ready for advisor review”. Avoid “advice ready”, “client ready”, “released”. | No touched copy implies client-visible advice before advisor/compliance gates. | Text assertions in true-UX/P0 tests. | Yes. | Stop if copy overclaims. |
-| `WP04-T12-P0-AND-TRUE-UX-PROOF` | Add/extend required tests for WP-04. | Existing tests are proof slices only. | `tests/demo-workflow-api.spec.ts`, `tests/workflow-gate.spec.ts`, `tests/true-ux-p0-safety.spec.ts`, `tests/true-ux-client-projection.spec.ts`, `tests/true-ux-cta-state.spec.ts`, `tests/true-ux-density.spec.ts` | Add positive and negative tests listed in sections 14–16. Ensure test names clearly map to WP-04. | All WP-04 positive/negative tests pass and fail for expected regressions. | Full WP-04 test set. | Yes, true-UX tests. | Do not mark WP complete without negative leakage tests. |
+| `WP04-T12-P0-AND-TRUE-UX-PROOF` | Add/extend required tests for WP-04. | Existing tests are proof slices only. | `tests/recommendation-review-workflow-api.spec.ts`, `tests/workflow-gate.spec.ts`, `tests/true-ux-p0-safety.spec.ts`, `tests/true-ux-client-projection.spec.ts`, `tests/true-ux-cta-state.spec.ts`, `tests/true-ux-density.spec.ts` | Add positive and negative tests listed in sections 14–16. Ensure test names clearly map to WP-04. | All WP-04 positive/negative tests pass and fail for expected regressions. | Full WP-04 test set. | Yes, true-UX tests. | Do not mark WP complete without negative leakage tests. |
 
 ---
 
@@ -244,9 +244,9 @@ WP-04 is **not** responsible for full advisor approval (WP-05), compliance relea
 
 | API / Service | WP-04 Use |
 |---|---|
-| `app/api/demo-workflow/route.ts` | Existing action transport for analyst/rebuild/request-evidence/send-to-advisor where available. |
+| `deleted generic workflow route` | Existing action transport for analyst/rebuild/request-evidence/send-to-advisor where available. |
 | `lib/typed-workflow-command-bus.ts` | Workflow mutation baseline; must not bypass gates. |
-| `lib/demo-workflow-validation.ts` | Request/action validation baseline. |
+| `lib/recommendation-review-workflow-validation.ts` | Request/action validation baseline. |
 | `lib/internal-workflow-demo-data.ts` | Current data/readmodel for drafts/triggers/recommendations. |
 | `lib/workflow-gate.ts` | Gate preconditions for analyst/advisor/compliance separation. |
 | `lib/permission-engine.ts` | Role/action/object authorization. |
@@ -324,7 +324,7 @@ Do not replace schema. Recheck existing fields before any schema-related proposa
 | Audit | Reject/rebuild/request-evidence/send-to-advisor actions must write or route audit events where existing audit service supports it. If audit is required and unavailable, the action must not silently succeed. |
 | Export | AI Draft/internal rationale/analyst notes must be excluded from export payloads and package manifest. |
 | Admin Non-Bypass | Admin role must not mark analyst-reviewed or client-visible outside the workflow gate. |
-| API Safety | Demo workflow actions must validate action payload, actor context, tenant/object scope and safe errors. |
+| API Safety | Typed workflow actions must validate action payload, actor context, tenant/object scope and safe errors. |
 | Schema | Use existing schema fields; do not create `AiDraft` patch model blindly. If field mapping is inadequate, document WP-14 blocker. |
 
 ---
@@ -375,9 +375,9 @@ Codex must reuse existing tests where possible and add/update only what is neces
 |---|---|
 | `tests/workflow-gate.spec.ts` | `blocks advisor routing when analyst draft has unsupported claims` |
 | `tests/workflow-gate.spec.ts` | `allows send to advisor only after analyst review preconditions pass` |
-| `tests/demo-workflow-api.spec.ts` | `analyst reject draft keeps draft internal and writes audit expectation` |
-| `tests/demo-workflow-api.spec.ts` | `analyst rebuild draft does not set clientVisible or releasedToClient` |
-| `tests/demo-workflow-api.spec.ts` | `analyst request evidence does not release recommendation` |
+| `tests/recommendation-review-workflow-api.spec.ts` | `analyst reject draft keeps draft internal and writes audit expectation` |
+| `tests/recommendation-review-workflow-api.spec.ts` | `analyst rebuild draft does not set clientVisible or releasedToClient` |
+| `tests/recommendation-review-workflow-api.spec.ts` | `analyst request evidence does not release recommendation` |
 | `tests/true-ux-p0-safety.spec.ts` | `analyst workbench labels ai draft as internal only and not advice` |
 | `tests/true-ux-p0-safety.spec.ts` | `unsupported claim state shows blocker and recovery action` |
 | `tests/true-ux-client-projection.spec.ts` | `client projection excludes ai draft internal rationale and analyst notes` |
@@ -410,7 +410,7 @@ Fallback if project scripts differ:
 
 ```bash
 pnpm exec playwright test tests/workflow-gate.spec.ts
-pnpm exec playwright test tests/demo-workflow-api.spec.ts
+pnpm exec playwright test tests/recommendation-review-workflow-api.spec.ts
 pnpm exec playwright test tests/true-ux-p0-safety.spec.ts
 pnpm exec playwright test tests/true-ux-client-projection.spec.ts
 ```

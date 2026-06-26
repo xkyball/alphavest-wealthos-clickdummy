@@ -216,7 +216,7 @@ This contract inherits and does not overwrite the prior safety contract:
 | EAE-RULE-015 | Admin cannot force evidence sufficiency, suppress audit, bypass redaction or force export release. | Admin non-bypass applies to evidence, audit and export paths. |
 | EAE-RULE-016 | Client-safe export content must be released, redacted, approved and evidence/audit safe. | Export payload is a projection, not raw internal data. |
 | EAE-RULE-017 | Export success must not imply client acceptance, decision execution or investment action. | Success wording and state must be limited to package/download/share completion. |
-| EAE-RULE-018 | Demo workflow actions are not production persistence proof. | Demo action feedback must remain limited until API/schema/test proof exists. |
+| EAE-RULE-018 | Typed workflow actions are not production persistence proof. | Demo action feedback must remain limited until API/schema/test proof exists. |
 | EAE-RULE-019 | Existing tests are proof slices only. | Missing negative tests route to `P0_TEST_ACCEPTANCE_MATRIX.md`. |
 | EAE-RULE-020 | Codex remains blocked. | This contract prepares later artefacts; it does not authorize implementation. |
 
@@ -510,7 +510,7 @@ The MVP patch/control spec may define evidence sufficiency, audit and export con
 
 The current target codebase has four API routes:
 
-* `/api/demo-workflow`
+* `deleted generic workflow route`
 * `/api/documents`
 * `/api/documents/upload`
 * `/api/review-monitoring`
@@ -521,7 +521,7 @@ This artefact does not create or modify APIs. It routes expected behaviour to `A
 |---|---|---|---|
 | `/api/documents/upload` | Upload mechanics, document/document-version creation, upload success/error | Validate permission, file type/size, tenant/object scope, audit expectation and upload-only success | Upload might be mistaken for sufficiency |
 | `/api/documents` | Document listing / retrieval | Enforce tenant/object RBAC, visibility, redaction and evidence state filtering | Row visibility leakage |
-| `/api/demo-workflow` | Demo workflow transitions | Distinguish demo mutation from production persistence; map audit/evidence/export expectations | Demo action overclaim |
+| `deleted generic workflow route` | Typed workflow transitions | Distinguish demo mutation from production persistence; map audit/evidence/export expectations | Demo action overclaim |
 | `/api/review-monitoring` | Review rhythm / monitoring support | Keep P1/hold status unless elevated; avoid advice execution implications | Advice execution leakage |
 
 If export safety requires runtime API behaviour that is not represented by these existing routes, mark it as `API_CONTRACT_REQUIRED`; do not invent implementation here.

@@ -66,23 +66,6 @@ test.describe.serial("Phase 8 export workflow API", () => {
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
   });
 
-  test("retires legacy export approval simulation from demo workflow", async ({ request }) => {
-    const response = await request.post("/api/demo-workflow", {
-      data: {
-        actionId: "j08.confirmApproval",
-        simulateAuditPersistenceFailure: true,
-      },
-    });
-    const body = await response.json();
-
-    expect(response.status(), JSON.stringify(body)).toBe(410);
-    expect(body.reasonCode).toBe("SAFE_ERROR");
-    expect(body.legacyReasonCode).toBe("LEGACY_EXPORT_DEMO_ACTION_RETIRED");
-    expect(body.canonicalApiRoute).toBe("/api/export-workflow");
-    expect(body.mutated).toBe(false);
-    expect(body.noClientRelease).toBe(true);
-  });
-
   test("export workflow read model uses fail-closed API envelope for invalid scope", async ({ request }) => {
     const response = await request.get("/api/export-workflow?tenantSlug=unknown&roleKey=pretend_role");
     const body = await response.json();

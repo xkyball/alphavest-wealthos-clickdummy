@@ -802,7 +802,7 @@
         "analyst review being treated as release",
         "unsupported advisor package"
       ],
-      "demoBoundary": "The J01 subset has demo-executable workflow actions; broad signal governance remains partial.",
+      "demoBoundary": "The J01 subset uses the canonical typed boundary (legacy compatibility bridge); broad signal governance remains outside this typed surface.",
       "sourceTrace": [
         "PF-E",
         "UF-07",

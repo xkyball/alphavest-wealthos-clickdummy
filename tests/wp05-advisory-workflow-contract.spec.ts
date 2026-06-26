@@ -6,16 +6,16 @@ import {
   wp05CanonicalJourneyCommandIds,
   wp05CanonicalStates,
   wp05ComplianceReleaseConfirmationPhrase,
-  wp05DemoWorkflowCompatibilityMode,
+  wp05TypedWorkflowBoundaryMode,
 } from "../lib/advisory-workflow-contract";
 import {
   advisorApprovalConfirmationText,
   advisorApprovalTransitionFor,
-} from "../lib/demo-workflow-validation";
+} from "../lib/recommendation-review-workflow-validation";
 import { journeyCommandIds } from "../lib/journeys/journey-command-registry";
 
 test.describe("WP05 advisory workflow contract", () => {
-  test("keeps Journey Commands canonical and demo workflow compatibility mapped", () => {
+  test("keeps Journey Commands canonical and recommendation review boundary mapped", () => {
     expect(journeyCommandIds).toEqual(expect.arrayContaining([...wp05CanonicalJourneyCommandIds]));
     expect(wp05CanonicalStates).toEqual([
       "DRAFT_INTERNAL_ONLY",
@@ -54,6 +54,6 @@ test.describe("WP05 advisory workflow contract", () => {
       nextRecommendationStatus: "RELEASED_TO_CLIENT",
     });
     expect(advisorApprovalConfirmationText.compliance_release).toBe(wp05ComplianceReleaseConfirmationPhrase);
-    expect(wp05DemoWorkflowCompatibilityMode).toBe("DEMO_WORKFLOW_COMPATIBILITY_ONLY");
+    expect(wp05TypedWorkflowBoundaryMode).toBe("TYPED_WORKFLOW_BOUNDARY");
   });
 });

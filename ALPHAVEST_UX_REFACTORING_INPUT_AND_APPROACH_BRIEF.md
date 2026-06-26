@@ -75,7 +75,7 @@ The following hierarchy was applied. Existing artefacts were treated as binding 
 | Interaction reality | Document upload is strongest implemented interaction; many other interactions are partial/static/demo/visual. | UX refactor must convert fake/static UI into real lifecycle where necessary. | Requires route-level target behaviour. |
 | Feedback rules | Upload success is upload-only; advisor approval is not release; compliance release is not client acceptance. | UX wording must prevent false confidence. | Needs exact copy/content implementation later. |
 | Safety | Route access ≠ action permission ≠ payload visibility; client visibility fails closed; AI Draft internal-only. | Navigation, CTAs and page content must be role- and payload-safe. | Needs P0 tests for final task acceptance. |
-| API baseline | Four existing APIs: `/api/demo-workflow`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring`. | UX tasks must harden existing API surfaces, not invent new ones by default. | API safety remains contract-driven, not proven by presence. |
+| API baseline | Four existing APIs: `deleted generic workflow route`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring`. | UX tasks must harden existing API surfaces, not invent new ones by default. | API safety remains contract-driven, not proven by presence. |
 | Schema baseline | Full-workflow Prisma schema has 42 models and 22 enums. | UX tasks should align to existing model semantics. | No blind schema expansion for UX wishes. |
 | P0 proof | 10 test files exist; proof is partial. | UX refactor must add or update tests where it changes safety-critical flows. | Existing tests do not close all gates. |
 | No-generation gate | No current screen/state-screen/image generation is authorized. | UX refactor must use existing visual references and code. | Missing visual refs do not authorize new screens. |
@@ -536,7 +536,7 @@ Each flow must be documented like this before Codex tasks are created.
 | Interaction Area | Current Reality | UX Refactor Treatment |
 |---|---|---|
 | Document upload route `028` | Implemented interaction for upload mechanics. | Preserve and improve UX states; do not imply evidence sufficiency. |
-| Demo workflow actions | Partially implemented/demo action transport. | Can support demos; must not be represented as production persistence. |
+| Typed workflow actions | Partially implemented/demo action transport. | Can support demos; must not be represented as production persistence. |
 | Demo role/tenant switcher | Implemented as demo session state. | Useful for role-aware UX testing; not production auth proof. |
 | Drawer/modal primitives | Partial reusable primitives. | Need real lifecycle: trigger, focus, escape, submit, error, audit. |
 | Wizard steppers | Visual state support. | Need real progression, validation, back/cancel/save. |
@@ -708,7 +708,7 @@ The following stop rules apply to this brief and to every downstream UX refactor
 - Do not make fake interactions look real.
 - Do not add CTAs without permission/object/payload semantics.
 - Do not make client-facing pages show internal-only drafts, rationale, compliance notes or unreleased evidence.
-- Do not turn demo workflow actions into claims of production persistence.
+- Do not turn typed workflow actions into claims of production persistence.
 
 ### 16.3 Scope-specific route stop rules
 

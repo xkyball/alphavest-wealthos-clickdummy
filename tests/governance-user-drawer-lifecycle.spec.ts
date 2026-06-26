@@ -25,7 +25,7 @@ test.describe("UXP3-011 governance user drawer lifecycle", () => {
   test("opens governance user drawer without workflow mutation and cancels safely", async ({ page }) => {
     const workflowRequests: string[] = [];
     page.on("request", (request) => {
-      if (request.url().includes("/api/demo-workflow")) {
+      if (request.url().includes("/api/tenant-governance/actions")) {
         workflowRequests.push(request.method());
       }
     });
@@ -72,13 +72,13 @@ test.describe("UXP3-011 governance user drawer lifecycle", () => {
       "submits-scoped-governance-invite",
     );
 
-    await page.route("**/api/demo-workflow", async (route) => {
+    await page.route("**/api/tenant-governance/actions", async (route) => {
       await new Promise((resolve) => setTimeout(resolve, 150));
       await route.continue();
     });
 
     const responsePromise = page.waitForResponse(
-      (response) => response.url().includes("/api/demo-workflow") && response.request().method() === "POST",
+      (response) => response.url().includes("/api/tenant-governance/actions") && response.request().method() === "POST",
     );
 
     await page.getByTestId("j07-send-invitation").click();
@@ -98,7 +98,7 @@ test.describe("UXP3-011 governance user drawer lifecycle", () => {
   test("Escape closes the drawer without submitting", async ({ page }) => {
     const workflowRequests: string[] = [];
     page.on("request", (request) => {
-      if (request.url().includes("/api/demo-workflow")) {
+      if (request.url().includes("/api/tenant-governance/actions")) {
         workflowRequests.push(request.method());
       }
     });

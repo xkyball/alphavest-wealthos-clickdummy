@@ -8,7 +8,7 @@ This report executes the uploaded WP07 blueprint as a strict process chain:
 
 Blueprint task -> executed analysis result -> refined specification -> derived implementation task -> implementation or zero-delta implementation -> QA/proof -> report.
 
-No product-code change was made in this WP07 run. After the human approved WP07 Option A, all implementation tasks were executed as zero-delta product-code revalidation. The current repository already contains the approved first-wave export safety implementation: MVP export routes `054-058`, existing `/api/export-workflow`, no new API, no schema migration, metadata-only redacted package manifest proof, Share as audited state/action after controlled download, mandatory forbidden-payload negative tests, and `/api/demo-workflow` export actions as compatibility/demo only.
+No product-code change was made in this WP07 run. After the human approved WP07 Option A, all implementation tasks were executed as zero-delta product-code revalidation. The current repository already contains the approved first-wave export safety implementation: MVP export routes `054-058`, existing `/api/export-workflow`, no new API, no schema migration, metadata-only redacted package manifest proof, Share as audited state/action after controlled download, mandatory forbidden-payload negative tests, and `deleted generic workflow route` export actions as compatibility/demo only.
 
 ## Source Scope Used
 
@@ -20,9 +20,9 @@ No product-code change was made in this WP07 run. After the human approved WP07 
   - `docs/00-current/ALPHAVEST_WP05_INTERNAL_DRAFT_ADVISOR_COMPLIANCE_FLOW_EXECUTION.md`
   - `docs/00-current/ALPHAVEST_WP06_RBAC_ADMIN_NON_BYPASS_EXECUTION.md`
 - Explicit human decisions from this refactor chain:
-  - WP05 Option A approved: canonical Journey command path, demo workflow compatibility only, fail-closed audit before mutation, no new API, no schema migration in first wave.
-  - WP06 Option A approved: full route/action/object plus payload/API/service enforcement, admin non-bypass fail-closed, denied sensitive attempts audited before mutation, no new API, no schema migration, demo workflow compatibility only.
-  - WP07 Option A approved: MVP export routes `054-058` only, existing `/api/export-workflow` only, no new API, no schema migration, metadata-only redacted package manifest proof for first wave, Share as audited state/action after controlled download, forbidden payload negative tests mandatory, `/api/demo-workflow` export actions compatibility/demo only.
+  - WP05 Option A approved: canonical Journey command path, typed workflow compatibility only, fail-closed audit before mutation, no new API, no schema migration in first wave.
+  - WP06 Option A approved: full route/action/object plus payload/API/service enforcement, admin non-bypass fail-closed, denied sensitive attempts audited before mutation, no new API, no schema migration, typed workflow compatibility only.
+  - WP07 Option A approved: MVP export routes `054-058` only, existing `/api/export-workflow` only, no new API, no schema migration, metadata-only redacted package manifest proof for first wave, Share as audited state/action after controlled download, forbidden payload negative tests mandatory, `deleted generic workflow route` export actions compatibility/demo only.
 
 Excluded as specification authority: unrelated legacy planning docs, broad handoff docs, source refs, old KB/source artefacts and prior assumptions unless revalidated against current repo evidence.
 
@@ -241,7 +241,7 @@ Status: COMPLETE
   - POST parses and executes command requests.
   - invalid scope and command failures use fail-closed envelopes.
   - No new API is required for Option A first wave.
-- `/api/demo-workflow` still contains export demo actions. It is a compatibility/demo surface, not the clean canonical export command path.
+- `deleted generic workflow route` still contains export demo actions. It is a compatibility/demo surface, not the clean canonical export command path.
 
 ### UI Reality
 
@@ -292,7 +292,7 @@ The first wave should harden/revalidate only MVP export routes `054-058` and the
 - WCL wrapper: `lib/control-layer/export-safety.ts`
 - Command service: `lib/export-workflow-command-service.ts`
 - Read model/API: `lib/export-workflow-readmodel-service.ts`, `app/api/export-workflow/route.ts`
-- Compatibility/demo actions: `/api/demo-workflow`, proof-only unless explicitly routed through the canonical export command service later.
+- Compatibility/demo actions: `deleted generic workflow route`, proof-only unless explicitly routed through the canonical export command service later.
 
 No new API, route or schema migration is part of first-wave WP07 unless the human rejects Option A.
 
@@ -344,20 +344,20 @@ Status: COMPLETE
 
 The human approved WP07 Option A:
 
-`I approve WP07 Option A: MVP export routes 054-058 only, existing /api/export-workflow only, no new API, no schema migration, metadata-only redacted package manifest proof for first wave, Share as audited state/action after controlled download, forbidden payload negative tests mandatory, /api/demo-workflow export actions compatibility/demo only, and revalidate as likely zero-delta product-code implementation before any new code.`
+`I approve WP07 Option A: MVP export routes 054-058 only, existing /api/export-workflow only, no new API, no schema migration, metadata-only redacted package manifest proof for first wave, Share as audited state/action after controlled download, forbidden payload negative tests mandatory, deleted generic workflow route export actions compatibility/demo only, and revalidate as likely zero-delta product-code implementation before any new code.`
 
 ### Options
 
 Approved Option A - aggressive clean solution:
 
-Approve WP07 first wave as MVP export routes `054-058` only, existing `/api/export-workflow` only, no new API, no schema migration, metadata-only redacted package manifest proof, Share as an audited state/action after controlled download, forbidden payload negative tests mandatory, `/api/demo-workflow` export actions compatibility/demo only.
+Approve WP07 first wave as MVP export routes `054-058` only, existing `/api/export-workflow` only, no new API, no schema migration, metadata-only redacted package manifest proof, Share as an audited state/action after controlled download, forbidden payload negative tests mandatory, `deleted generic workflow route` export actions compatibility/demo only.
 
 Why this is cleanest now:
 
 - It preserves the same clean policy shape already approved in WP05 and WP06.
 - It avoids widening export scope into P1/HOLD/reference contexts.
 - It treats the current strong implementation as a likely zero-delta product-code first wave after approval.
-- It removes debt by making `/api/export-workflow` the canonical WP07 path and demoting `/api/demo-workflow` export actions to compatibility/demo status.
+- It removes debt by making `/api/export-workflow` the canonical WP07 path and demoting `deleted generic workflow route` export actions to compatibility/demo status.
 - It avoids pretending a metadata manifest is a real downloadable ZIP.
 
 Rejected Option B:
@@ -427,11 +427,11 @@ None.
 ## Residual Risks
 
 - Current export package is metadata-only by approved Option A. This must not be overclaimed as a real binary/ZIP export.
-- `/api/demo-workflow` still has export compatibility actions. They are acceptable as demo compatibility but should not be treated as the canonical WP07 export command spine.
+- `deleted generic workflow route` still has export compatibility actions. They are acceptable as demo compatibility but should not be treated as the canonical WP07 export command spine.
 - Route `057` uses `/export/:id/approval` while the upload references `/export/:id/preview`. Current semantics pass, but literal route naming should not be changed without route-evolution approval.
 
 ## Completion Recommendation
 
 Keep WP07 closed for approved Option A as `ZERO-DELTA PRODUCT CODE / COMPLETE_FOR_APPROVED_FIRST_WAVE`.
 
-Next aggressive cleanup should be a narrow follow-up outside WP07 Option A: consolidate `/api/demo-workflow` export compatibility actions behind the canonical `/api/export-workflow` command service, or explicitly mark them as demo-only in tests and reports. Do not add real ZIP/binary export until a separate decision approves storage, retention, content-inspection and download semantics.
+Next aggressive cleanup should be a narrow follow-up outside WP07 Option A: consolidate `deleted generic workflow route` export compatibility actions behind the canonical `/api/export-workflow` command service, or explicitly mark them as demo-only in tests and reports. Do not add real ZIP/binary export until a separate decision approves storage, retention, content-inspection and download semantics.

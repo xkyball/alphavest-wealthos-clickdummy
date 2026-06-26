@@ -598,7 +598,7 @@ This task inherits the AlphaVest rules: full-workflow only, main as false-gap, v
 - `components/internal-workflow-screen.tsx`
 - `components/ui/state-panel.tsx`
 - `components/ui/evidence-list.tsx`
-- `app/api/demo-workflow/route.ts`
+- `deleted generic workflow route`
 - `lib/typed-workflow-command-bus.ts`
 - `lib/workflow-gate.ts`
 - `lib/visibility-engine.ts`
@@ -658,7 +658,7 @@ This task inherits the AlphaVest rules: full-workflow only, main as false-gap, v
 - `components/internal-workflow-screen.tsx`
 - `components/decisions-governance-screen.tsx`
 - `components/ui/audit-timeline.tsx`
-- `app/api/demo-workflow/route.ts`
+- `deleted generic workflow route`
 - `lib/workflow-gate.ts`
 - `lib/audit-service.ts`
 - `tests/workflow-gate.spec.ts`
@@ -717,7 +717,7 @@ This task inherits the AlphaVest rules: full-workflow only, main as false-gap, v
 - `components/decisions-governance-screen.tsx`
 - `components/ui/modal.tsx`
 - `components/ui/state-panel.tsx`
-- `app/api/demo-workflow/route.ts`
+- `deleted generic workflow route`
 - `lib/workflow-gate.ts`
 - `lib/audit-service.ts`
 - `lib/visibility-engine.ts`
@@ -1192,7 +1192,7 @@ UI state must come from services, APIs and gates. Do not leave static chips or d
 This task inherits the AlphaVest rules: full-workflow only, main as false-gap, visual presence is not behaviour proof, route access is not action permission, action permission is not payload visibility, client visibility is derived and fail-closed, AI draft is internal-only, upload is not sufficiency, advisor approval is not compliance release, and audit/export claims require proof.
 
 ### Likely target files/modules to inspect
-- `app/api/demo-workflow/route.ts`
+- `deleted generic workflow route`
 - `app/api/documents/route.ts`
 - `app/api/documents/upload/route.ts`
 - `app/api/documents/review/route.ts`

@@ -96,34 +96,34 @@ Erst danach sollen User Journeys, Canonical Paths und Demo-/Produktpfade als Pro
 
 | Process ID | Process Name | Scope / Treatment | Covered By Layer | Task ID(s) | Implementation Strategy | Target Files / Areas | Required Tests | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| SP-001 | Current User Resolution | IMPLEMENTATION_READY / FOUNDATION | WCL-01 | WCL-SP-001 | Resolver bauen/härten; unbekannte Akteure fail-closed; ActorContext als Standard-Input für APIs/Services etablieren. | lib/control-layer/actor-context.ts; components/demo-session-provider.tsx; app/api/demo-workflow/route.ts; prisma/seed.ts | tests/control-layer-actor-scope.spec.ts; tests/permission-engine.spec.ts | IMPLEMENTATION_READY |
-| SP-002 | Tenant Selection and Scope Resolution | IMPLEMENTATION_READY / FOUNDATION | WCL-02 | WCL-SP-002 | Tenant/Object Scope Resolver vor jede safety-relevante Serviceaktion setzen. | lib/control-layer/scope-resolver.ts; lib/permission-engine.ts; app/api/demo-workflow/route.ts | tests/control-layer-actor-scope.spec.ts; tests/permission-engine.spec.ts | IMPLEMENTATION_READY |
-| SP-003 | Role/Permission Evaluation | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-03 | WCL-SP-003 | PermissionDecision-Objekt standardisieren und Route/Action/Object trennen. | lib/permission-engine.ts; lib/control-layer/permission-decision.ts; tests/permission-engine.spec.ts | tests/permission-engine.spec.ts; tests/demo-workflow-api.spec.ts | IMPLEMENTATION_READY |
-| SP-004 | Payload Visibility Evaluation | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-04 | WCL-SP-004 | VisibilityProjection-Objekt für hidden/redacted/visible payloads einführen. | lib/visibility-engine.ts; lib/control-layer/visibility-projection.ts; app/api/documents/route.ts; app/api/demo-workflow/route.ts | tests/payload-visibility.spec.ts; tests/permission-engine.spec.ts | IMPLEMENTATION_READY |
-| SP-005 | Client Visibility Projection | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-04 | WCL-SP-005 | Client-safe Projection aus Release, Redaction und Role Scope ableiten, default hidden. | lib/visibility-engine.ts; components/client-intake-screen.tsx; app/api/demo-workflow/route.ts | tests/client-visibility-projection.spec.ts; tests/demo-workflow-api.spec.ts | IMPLEMENTATION_READY |
+| SP-001 | Current User Resolution | IMPLEMENTATION_READY / FOUNDATION | WCL-01 | WCL-SP-001 | Resolver bauen/härten; unbekannte Akteure fail-closed; ActorContext als Standard-Input für APIs/Services etablieren. | lib/control-layer/actor-context.ts; components/demo-session-provider.tsx; deleted generic workflow route; prisma/seed.ts | tests/control-layer-actor-scope.spec.ts; tests/permission-engine.spec.ts | IMPLEMENTATION_READY |
+| SP-002 | Tenant Selection and Scope Resolution | IMPLEMENTATION_READY / FOUNDATION | WCL-02 | WCL-SP-002 | Tenant/Object Scope Resolver vor jede safety-relevante Serviceaktion setzen. | lib/control-layer/scope-resolver.ts; lib/permission-engine.ts; deleted generic workflow route | tests/control-layer-actor-scope.spec.ts; tests/permission-engine.spec.ts | IMPLEMENTATION_READY |
+| SP-003 | Role/Permission Evaluation | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-03 | WCL-SP-003 | PermissionDecision-Objekt standardisieren und Route/Action/Object trennen. | lib/permission-engine.ts; lib/control-layer/permission-decision.ts; tests/permission-engine.spec.ts | tests/permission-engine.spec.ts; tests/recommendation-review-workflow-api.spec.ts | IMPLEMENTATION_READY |
+| SP-004 | Payload Visibility Evaluation | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-04 | WCL-SP-004 | VisibilityProjection-Objekt für hidden/redacted/visible payloads einführen. | lib/visibility-engine.ts; lib/control-layer/visibility-projection.ts; app/api/documents/route.ts; deleted generic workflow route | tests/payload-visibility.spec.ts; tests/permission-engine.spec.ts | IMPLEMENTATION_READY |
+| SP-005 | Client Visibility Projection | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-04 | WCL-SP-005 | Client-safe Projection aus Release, Redaction und Role Scope ableiten, default hidden. | lib/visibility-engine.ts; components/client-intake-screen.tsx; deleted generic workflow route | tests/client-visibility-projection.spec.ts; tests/recommendation-review-workflow-api.spec.ts | IMPLEMENTATION_READY |
 | SP-006 | Document Upload Processing | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-05 | WCL-SP-006 | Upload-Flow härten; success bleibt upload-only; RBAC/validation/audit prüfen. | lib/document-upload-service.ts; app/api/documents/upload/route.ts; components/client-intake-screen.tsx | tests/document-upload-api.spec.ts; tests/document-upload-flow.spec.ts | IMPLEMENTATION_READY |
 | SP-007 | Document Versioning and Storage Key Generation | IMPLEMENTATION_READY / SUPPORT | WCL-05 | WCL-SP-007 | Versioning/storage metadata deterministisch machen und Checksums/StorageKey prüfen. | lib/document-upload-service.ts; lib/document-storage-adapter.ts; prisma/schema.prisma | tests/document-upload-api.spec.ts | IMPLEMENTATION_READY |
-| SP-008 | Extraction and Review Queueing | IMPLEMENTATION_READY / SUPPORT | WCL-05 | WCL-SP-008 | Extraction/review queue als pending/review-needed state abbilden. | lib/document-upload-service.ts; components/client-intake-screen.tsx; app/api/demo-workflow/route.ts | tests/document-upload-api.spec.ts; tests/document-upload-flow.spec.ts | IMPLEMENTATION_READY |
-| SP-009 | Evidence Linking | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-06 | WCL-SP-009 | Evidence-Zielverknüpfung tenant-/object-scoped machen. | lib/evidence-service.ts; lib/document-upload-service.ts; app/api/demo-workflow/route.ts | tests/evidence-sufficiency.spec.ts; tests/demo-workflow-api.spec.ts | IMPLEMENTATION_READY |
-| SP-010 | Evidence Sufficiency Evaluation | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-06 | WCL-SP-010 | Sufficiency-Result als eigener Gate-Output; upload nie ausreichend. | lib/evidence-service.ts; lib/workflow-gate.ts; app/api/demo-workflow/route.ts | tests/evidence-sufficiency.spec.ts; tests/workflow-gate.spec.ts | IMPLEMENTATION_READY |
-| SP-011 | Trigger Creation | IMPLEMENTATION_READY / INTERNAL_ONLY | WCL-07 | WCL-SP-011 | Trigger nur internal; Monitoring/Signal darf keine client release erzeugen. | lib/typed-workflow-command-bus.ts; lib/review-monitoring-service.ts; app/api/demo-workflow/route.ts | tests/demo-workflow-api.spec.ts; tests/review-monitoring-service.spec.ts | IMPLEMENTATION_READY |
-| SP-012 | Internal Draft Generation / Rules Drafting | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-07 | WCL-SP-012 | Internal Draft als AI_DRAFT_INTERNAL_ONLY absichern. | lib/workflow-gate.ts; lib/typed-workflow-command-bus.ts; app/api/demo-workflow/route.ts | tests/workflow-gate.spec.ts; tests/demo-workflow-api.spec.ts | IMPLEMENTATION_READY |
-| SP-013 | Analyst Review | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-07 | WCL-SP-013 | Analyst Review kann unsupported claims blocken. | lib/workflow-gate.ts; lib/typed-workflow-command-bus.ts; components/internal-workflow-screen.tsx | tests/workflow-gate.spec.ts; tests/demo-workflow-api.spec.ts | IMPLEMENTATION_READY |
-| SP-014 | Advisor Approval | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-07 | WCL-SP-014 | Advisor Approval erzeugt CompliancePending, keine Client Visibility. | lib/workflow-gate.ts; lib/typed-workflow-command-bus.ts; components/internal-workflow-screen.tsx | tests/workflow-gate.spec.ts; tests/demo-workflow-api.spec.ts | IMPLEMENTATION_READY |
-| SP-015 | Compliance Review | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-07 | WCL-SP-015 | Compliance Review prüft Advisor/Evidence/Audit-Preconditions. | lib/workflow-gate.ts; lib/typed-workflow-command-bus.ts; components/internal-workflow-screen.tsx | tests/workflow-gate.spec.ts; tests/demo-workflow-api.spec.ts | IMPLEMENTATION_READY |
-| SP-016 | Compliance Block / Request Evidence | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-06; WCL-07 | WCL-SP-016 | Block/Request Evidence als kontrollierten Gate-Zustand implementieren. | lib/workflow-gate.ts; lib/evidence-service.ts; lib/typed-workflow-command-bus.ts | tests/workflow-gate.spec.ts; tests/evidence-sufficiency.spec.ts; tests/demo-workflow-api.spec.ts | IMPLEMENTATION_READY |
-| SP-017 | Compliance Release | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-07 | WCL-SP-017 | Release nur bei Advisor+Evidence+Audit+Visibility Preconditions. | lib/workflow-gate.ts; lib/visibility-engine.ts; lib/typed-workflow-command-bus.ts | tests/workflow-gate.spec.ts; tests/client-visibility-projection.spec.ts; tests/demo-workflow-api.spec.ts | IMPLEMENTATION_READY |
-| SP-018 | Decision Record Creation | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-07 | WCL-SP-018 | Decision Record als auditierbaren Release-/Submission-Datensatz erzeugen. | lib/typed-workflow-command-bus.ts; lib/workflow-gate.ts; components/decisions-governance-screen.tsx | tests/workflow-gate.spec.ts; tests/demo-workflow-api.spec.ts | IMPLEMENTATION_READY |
-| SP-019 | Audit Event Writing | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-08 | WCL-SP-019 | AuditEvent als verpflichtender Append vor/mit kritischer Mutation. | lib/audit-service.ts; lib/control-layer/audit-guard.ts; app/api/demo-workflow/route.ts | tests/audit-fail-closed.spec.ts; tests/permission-engine.spec.ts | IMPLEMENTATION_READY |
+| SP-008 | Extraction and Review Queueing | IMPLEMENTATION_READY / SUPPORT | WCL-05 | WCL-SP-008 | Extraction/review queue als pending/review-needed state abbilden. | lib/document-upload-service.ts; components/client-intake-screen.tsx; deleted generic workflow route | tests/document-upload-api.spec.ts; tests/document-upload-flow.spec.ts | IMPLEMENTATION_READY |
+| SP-009 | Evidence Linking | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-06 | WCL-SP-009 | Evidence-Zielverknüpfung tenant-/object-scoped machen. | lib/evidence-service.ts; lib/document-upload-service.ts; deleted generic workflow route | tests/evidence-sufficiency.spec.ts; tests/recommendation-review-workflow-api.spec.ts | IMPLEMENTATION_READY |
+| SP-010 | Evidence Sufficiency Evaluation | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-06 | WCL-SP-010 | Sufficiency-Result als eigener Gate-Output; upload nie ausreichend. | lib/evidence-service.ts; lib/workflow-gate.ts; deleted generic workflow route | tests/evidence-sufficiency.spec.ts; tests/workflow-gate.spec.ts | IMPLEMENTATION_READY |
+| SP-011 | Trigger Creation | IMPLEMENTATION_READY / INTERNAL_ONLY | WCL-07 | WCL-SP-011 | Trigger nur internal; Monitoring/Signal darf keine client release erzeugen. | lib/typed-workflow-command-bus.ts; lib/review-monitoring-service.ts; deleted generic workflow route | tests/recommendation-review-workflow-api.spec.ts; tests/review-monitoring-service.spec.ts | IMPLEMENTATION_READY |
+| SP-012 | Internal Draft Generation / Rules Drafting | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-07 | WCL-SP-012 | Internal Draft als AI_DRAFT_INTERNAL_ONLY absichern. | lib/workflow-gate.ts; lib/typed-workflow-command-bus.ts; deleted generic workflow route | tests/workflow-gate.spec.ts; tests/recommendation-review-workflow-api.spec.ts | IMPLEMENTATION_READY |
+| SP-013 | Analyst Review | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-07 | WCL-SP-013 | Analyst Review kann unsupported claims blocken. | lib/workflow-gate.ts; lib/typed-workflow-command-bus.ts; components/internal-workflow-screen.tsx | tests/workflow-gate.spec.ts; tests/recommendation-review-workflow-api.spec.ts | IMPLEMENTATION_READY |
+| SP-014 | Advisor Approval | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-07 | WCL-SP-014 | Advisor Approval erzeugt CompliancePending, keine Client Visibility. | lib/workflow-gate.ts; lib/typed-workflow-command-bus.ts; components/internal-workflow-screen.tsx | tests/workflow-gate.spec.ts; tests/recommendation-review-workflow-api.spec.ts | IMPLEMENTATION_READY |
+| SP-015 | Compliance Review | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-07 | WCL-SP-015 | Compliance Review prüft Advisor/Evidence/Audit-Preconditions. | lib/workflow-gate.ts; lib/typed-workflow-command-bus.ts; components/internal-workflow-screen.tsx | tests/workflow-gate.spec.ts; tests/recommendation-review-workflow-api.spec.ts | IMPLEMENTATION_READY |
+| SP-016 | Compliance Block / Request Evidence | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-06; WCL-07 | WCL-SP-016 | Block/Request Evidence als kontrollierten Gate-Zustand implementieren. | lib/workflow-gate.ts; lib/evidence-service.ts; lib/typed-workflow-command-bus.ts | tests/workflow-gate.spec.ts; tests/evidence-sufficiency.spec.ts; tests/recommendation-review-workflow-api.spec.ts | IMPLEMENTATION_READY |
+| SP-017 | Compliance Release | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-07 | WCL-SP-017 | Release nur bei Advisor+Evidence+Audit+Visibility Preconditions. | lib/workflow-gate.ts; lib/visibility-engine.ts; lib/typed-workflow-command-bus.ts | tests/workflow-gate.spec.ts; tests/client-visibility-projection.spec.ts; tests/recommendation-review-workflow-api.spec.ts | IMPLEMENTATION_READY |
+| SP-018 | Decision Record Creation | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-07 | WCL-SP-018 | Decision Record als auditierbaren Release-/Submission-Datensatz erzeugen. | lib/typed-workflow-command-bus.ts; lib/workflow-gate.ts; components/decisions-governance-screen.tsx | tests/workflow-gate.spec.ts; tests/recommendation-review-workflow-api.spec.ts | IMPLEMENTATION_READY |
+| SP-019 | Audit Event Writing | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-08 | WCL-SP-019 | AuditEvent als verpflichtender Append vor/mit kritischer Mutation. | lib/audit-service.ts; lib/control-layer/audit-guard.ts; deleted generic workflow route | tests/audit-fail-closed.spec.ts; tests/permission-engine.spec.ts | IMPLEMENTATION_READY |
 | SP-020 | Audit Failure Handling | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-08 | WCL-SP-020 | Audit-Failure hält/verweigert Safety-Aktion. | lib/audit-service.ts; lib/control-layer/audit-guard.ts; lib/workflow-gate.ts | tests/audit-fail-closed.spec.ts; tests/workflow-gate.spec.ts | IMPLEMENTATION_READY |
 | SP-021 | Export Scope Selection | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-09 | WCL-SP-021 | Export scope darf Permission/Visibility nicht überschreiten. | lib/export-service.ts; lib/export-package-service.ts; components/communication-export-ops-screen.tsx | tests/file-export-realism.spec.ts; tests/export-safety.spec.ts | IMPLEMENTATION_READY |
 | SP-022 | Export Redaction | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-04; WCL-09 | WCL-SP-022 | Forbidden internal payload wird aus Export entfernt. | lib/export-service.ts; lib/export-package-service.ts; lib/visibility-engine.ts | tests/file-export-realism.spec.ts; tests/export-safety.spec.ts | IMPLEMENTATION_READY |
-| SP-023 | Export Approval | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-09 | WCL-SP-023 | Approval separiert von preview und download/share. | lib/export-service.ts; lib/export-package-service.ts; app/api/demo-workflow/route.ts | tests/file-export-realism.spec.ts; tests/export-safety.spec.ts | IMPLEMENTATION_READY |
+| SP-023 | Export Approval | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-09 | WCL-SP-023 | Approval separiert von preview und download/share. | lib/export-service.ts; lib/export-package-service.ts; deleted generic workflow route | tests/file-export-realism.spec.ts; tests/export-safety.spec.ts | IMPLEMENTATION_READY |
 | SP-024 | Export Package Generation / Download / Share | IMPLEMENTATION_READY / SAFETY_CRITICAL | WCL-09 | WCL-SP-024 | Package generation nur nach Scope+Redaction+Approval+Audit. | lib/export-package-service.ts; lib/export-service.ts; components/communication-export-ops-screen.tsx | tests/file-export-realism.spec.ts; tests/export-safety.spec.ts | IMPLEMENTATION_READY |
 | SP-025 | Data Quality Detection and Blocking | CONDITIONAL_SUPPORT | WCL-10 | WCL-SP-025 | Data-quality blockers als conditional support integrieren. | lib/data-quality-service.ts or TARGET_FILE_TO_VERIFY; tests/data-quality-service.spec.ts | tests/data-quality-service.spec.ts | CONDITIONAL_SUPPORT |
 | SP-026 | Review Schedule Evaluation | P1_DEFERRED unless internal proof support | WCL-10 | WCL-SP-026 | Review schedule nur deferred/internal; kein MVP overbuild. | lib/review-monitoring-service.ts; app/api/review-monitoring/route.ts | tests/review-monitoring-service.spec.ts | P1_DEFERRED unless internal proof support |
-| SP-027 | Review Monitoring / Rebalance Triggering without automatic advice | P1_DEFERRED / INTERNAL_ONLY_GUARD | WCL-10 | WCL-SP-027 | Rebalance monitoring erzeugt internal trigger only, noClientRelease. | lib/review-monitoring-service.ts; app/api/review-monitoring/route.ts; app/api/demo-workflow/route.ts | tests/review-monitoring-service.spec.ts | P1_DEFERRED |
-| SP-028 | Access Request / Second Confirmation | IMPLEMENTATION_READY / MVP_SUPPORT | WCL-03 | WCL-SP-028 | Sensitive access/role changes mit access request + second confirmation. | lib/permission-engine.ts; lib/typed-workflow-command-bus.ts; components/decisions-governance-screen.tsx | tests/permission-engine.spec.ts; tests/demo-workflow-api.spec.ts | IMPLEMENTATION_READY |
+| SP-027 | Review Monitoring / Rebalance Triggering without automatic advice | P1_DEFERRED / INTERNAL_ONLY_GUARD | WCL-10 | WCL-SP-027 | Rebalance monitoring erzeugt internal trigger only, noClientRelease. | lib/review-monitoring-service.ts; app/api/review-monitoring/route.ts; deleted generic workflow route | tests/review-monitoring-service.spec.ts | P1_DEFERRED |
+| SP-028 | Access Request / Second Confirmation | IMPLEMENTATION_READY / MVP_SUPPORT | WCL-03 | WCL-SP-028 | Sensitive access/role changes mit access request + second confirmation. | lib/permission-engine.ts; lib/typed-workflow-command-bus.ts; components/decisions-governance-screen.tsx | tests/permission-engine.spec.ts; tests/recommendation-review-workflow-api.spec.ts | IMPLEMENTATION_READY |
 | SP-029 | Offboarding Access Revocation | SPEC_REQUIRED / CONTROL_LAYER_CANDIDATE | WCL-11 | WCL-SP-029 | Offboarding revocation als Control-Layer-Contract/Stub vorbereiten. | lib/control-layer/offboarding-service.ts (candidate); lib/permission-engine.ts; lib/audit-service.ts | tests/offboarding-control.spec.ts | SPEC_REQUIRED |
 | SP-030 | Retention / Archive / Legal Hold | SPEC_REQUIRED / CONTROL_LAYER_CANDIDATE | WCL-11 | WCL-SP-030 | Retention/legal hold als Contract/Stub vorbereiten. | lib/control-layer/retention-service.ts (candidate); lib/audit-service.ts | tests/offboarding-control.spec.ts | SPEC_REQUIRED |
 | SP-031 | Final Client Export / Handover | SPEC_REQUIRED / CONTROL_LAYER_CANDIDATE | WCL-09; WCL-11 | WCL-SP-031 | Final export/handover über Export Safety Layer nur spec-ready. | lib/export-package-service.ts; lib/control-layer/offboarding-service.ts (candidate) | tests/offboarding-control.spec.ts; tests/export-safety.spec.ts | SPEC_REQUIRED |
@@ -169,7 +169,7 @@ Erst danach sollen User Journeys, Canonical Paths und Demo-/Produktpfade als Pro
 | Scope Label | `IMPLEMENTATION_READY / FOUNDATION` |
 | Product Intent | Current User Resolution ist nötig, damit WealthOS-Workflows nicht nur sichtbar, sondern kontrolliert, tenant-scoped, auditierbar und client-safe beweisbar sind. |
 | Implementation Objective | Baue oder härte den generischen Control-Layer-Mechanismus für diesen Prozess; Journey-spezifische Pfade müssen diesen Mechanismus nutzen, statt eigene Sonderlogik zu erfinden. |
-| Target Files / Areas | `lib/control-layer/actor-context.ts; components/demo-session-provider.tsx; app/api/demo-workflow/route.ts; prisma/seed.ts` |
+| Target Files / Areas | `lib/control-layer/actor-context.ts; components/demo-session-provider.tsx; deleted generic workflow route; prisma/seed.ts` |
 | Allowed Changes | Bestehende Services/Engines härten; interne Result-/Guard-Typen ergänzen; bestehende API-Validierung/Redaction/Failure Behaviour ergänzen; Tests/Fixtures hinzufügen; vorhandene UI-States nur verdrahten, nicht neu designen. |
 | Forbidden Changes | Keine neue Route; keine Prisma-Migration; keine Screen-/State-Screen-/Image-Generierung; keine main-derived Änderungen; keine autonome Advice-Entscheidung; keine Success-Message, die downstream gates überclaimt. |
 | Data Inputs | `actorUserId, session token/providerless actor hint, clientTenantId, roleKeys` |
@@ -227,7 +227,7 @@ Erst danach sollen User Journeys, Canonical Paths und Demo-/Produktpfade als Pro
 | Scope Label | `IMPLEMENTATION_READY / FOUNDATION` |
 | Product Intent | Tenant Selection and Scope Resolution ist nötig, damit WealthOS-Workflows nicht nur sichtbar, sondern kontrolliert, tenant-scoped, auditierbar und client-safe beweisbar sind. |
 | Implementation Objective | Baue oder härte den generischen Control-Layer-Mechanismus für diesen Prozess; Journey-spezifische Pfade müssen diesen Mechanismus nutzen, statt eigene Sonderlogik zu erfinden. |
-| Target Files / Areas | `lib/control-layer/scope-resolver.ts; lib/permission-engine.ts; app/api/demo-workflow/route.ts` |
+| Target Files / Areas | `lib/control-layer/scope-resolver.ts; lib/permission-engine.ts; deleted generic workflow route` |
 | Allowed Changes | Bestehende Services/Engines härten; interne Result-/Guard-Typen ergänzen; bestehende API-Validierung/Redaction/Failure Behaviour ergänzen; Tests/Fixtures hinzufügen; vorhandene UI-States nur verdrahten, nicht neu designen. |
 | Forbidden Changes | Keine neue Route; keine Prisma-Migration; keine Screen-/State-Screen-/Image-Generierung; keine main-derived Änderungen; keine autonome Advice-Entscheidung; keine Success-Message, die downstream gates überclaimt. |
 | Data Inputs | `clientTenantId, platformTenantId, objectType, objectId, actorUserId` |
@@ -295,7 +295,7 @@ Erst danach sollen User Journeys, Canonical Paths und Demo-/Produktpfade als Pro
 | UI / State Impact | Falls UI betroffen: bestehende States/Feedback fail-closed verdrahten; keine neuen Screens generieren. |
 | Audit Requirements | Safety-relevante Allow/Deny/Mutation muss AuditEvent oder Audit-Failure-Guard berücksichtigen; Audit Failure darf keine stille Mutation erlauben. |
 | Safety Critical? | Ja |
-| Validation Commands | `pnpm typecheck`; `pnpm lint`; `pnpm db:validate`; targeted Playwright spec(s): `tests/permission-engine.spec.ts; tests/demo-workflow-api.spec.ts`; final `pnpm phase:check` wenn Repo bereit ist. |
+| Validation Commands | `pnpm typecheck`; `pnpm lint`; `pnpm db:validate`; targeted Playwright spec(s): `tests/permission-engine.spec.ts; tests/recommendation-review-workflow-api.spec.ts`; final `pnpm phase:check` wenn Repo bereit ist. |
 | Stop Rules | Stoppen und berichten, wenn Target Files fehlen, bestehende API/Schema nicht passt, Migration nötig wäre, P1/HOLD-Elevation nötig wäre, oder Safety-Negativtest nicht formulierbar ist. |
 | Reporting Requirement | Changed files, Task ID, SP coverage, positive/negative tests, safety proof, skipped blockers, known gaps. |
 
@@ -343,7 +343,7 @@ Erst danach sollen User Journeys, Canonical Paths und Demo-/Produktpfade als Pro
 | Scope Label | `IMPLEMENTATION_READY / SAFETY_CRITICAL` |
 | Product Intent | Payload Visibility Evaluation ist nötig, damit WealthOS-Workflows nicht nur sichtbar, sondern kontrolliert, tenant-scoped, auditierbar und client-safe beweisbar sind. |
 | Implementation Objective | Baue oder härte den generischen Control-Layer-Mechanismus für diesen Prozess; Journey-spezifische Pfade müssen diesen Mechanismus nutzen, statt eigene Sonderlogik zu erfinden. |
-| Target Files / Areas | `lib/visibility-engine.ts; lib/control-layer/visibility-projection.ts; app/api/documents/route.ts; app/api/demo-workflow/route.ts` |
+| Target Files / Areas | `lib/visibility-engine.ts; lib/control-layer/visibility-projection.ts; app/api/documents/route.ts; deleted generic workflow route` |
 | Allowed Changes | Bestehende Services/Engines härten; interne Result-/Guard-Typen ergänzen; bestehende API-Validierung/Redaction/Failure Behaviour ergänzen; Tests/Fixtures hinzufügen; vorhandene UI-States nur verdrahten, nicht neu designen. |
 | Forbidden Changes | Keine neue Route; keine Prisma-Migration; keine Screen-/State-Screen-/Image-Generierung; keine main-derived Änderungen; keine autonome Advice-Entscheidung; keine Success-Message, die downstream gates überclaimt. |
 | Data Inputs | `actorRole, sensitivity, visibilityStatus, objectScope, payload fields` |
@@ -401,7 +401,7 @@ Erst danach sollen User Journeys, Canonical Paths und Demo-/Produktpfade als Pro
 | Scope Label | `IMPLEMENTATION_READY / SAFETY_CRITICAL` |
 | Product Intent | Client Visibility Projection ist nötig, damit WealthOS-Workflows nicht nur sichtbar, sondern kontrolliert, tenant-scoped, auditierbar und client-safe beweisbar sind. |
 | Implementation Objective | Baue oder härte den generischen Control-Layer-Mechanismus für diesen Prozess; Journey-spezifische Pfade müssen diesen Mechanismus nutzen, statt eigene Sonderlogik zu erfinden. |
-| Target Files / Areas | `lib/visibility-engine.ts; components/client-intake-screen.tsx; app/api/demo-workflow/route.ts` |
+| Target Files / Areas | `lib/visibility-engine.ts; components/client-intake-screen.tsx; deleted generic workflow route` |
 | Allowed Changes | Bestehende Services/Engines härten; interne Result-/Guard-Typen ergänzen; bestehende API-Validierung/Redaction/Failure Behaviour ergänzen; Tests/Fixtures hinzufügen; vorhandene UI-States nur verdrahten, nicht neu designen. |
 | Forbidden Changes | Keine neue Route; keine Prisma-Migration; keine Screen-/State-Screen-/Image-Generierung; keine main-derived Änderungen; keine autonome Advice-Entscheidung; keine Success-Message, die downstream gates überclaimt. |
 | Data Inputs | `decisionId, recommendationId, releaseStatus, redactionProfile, clientTenantId` |
@@ -411,7 +411,7 @@ Erst danach sollen User Journeys, Canonical Paths und Demo-/Produktpfade als Pro
 | UI / State Impact | Falls UI betroffen: bestehende States/Feedback fail-closed verdrahten; keine neuen Screens generieren. |
 | Audit Requirements | Safety-relevante Allow/Deny/Mutation muss AuditEvent oder Audit-Failure-Guard berücksichtigen; Audit Failure darf keine stille Mutation erlauben. |
 | Safety Critical? | Ja |
-| Validation Commands | `pnpm typecheck`; `pnpm lint`; `pnpm db:validate`; targeted Playwright spec(s): `tests/client-visibility-projection.spec.ts; tests/demo-workflow-api.spec.ts`; final `pnpm phase:check` wenn Repo bereit ist. |
+| Validation Commands | `pnpm typecheck`; `pnpm lint`; `pnpm db:validate`; targeted Playwright spec(s): `tests/client-visibility-projection.spec.ts; tests/recommendation-review-workflow-api.spec.ts`; final `pnpm phase:check` wenn Repo bereit ist. |
 | Stop Rules | Stoppen und berichten, wenn Target Files fehlen, bestehende API/Schema nicht passt, Migration nötig wäre, P1/HOLD-Elevation nötig wäre, oder Safety-Negativtest nicht formulierbar ist. |
 | Reporting Requirement | Changed files, Task ID, SP coverage, positive/negative tests, safety proof, skipped blockers, known gaps. |
 
@@ -575,7 +575,7 @@ Erst danach sollen User Journeys, Canonical Paths und Demo-/Produktpfade als Pro
 | Scope Label | `IMPLEMENTATION_READY / SUPPORT` |
 | Product Intent | Extraction and Review Queueing ist nötig, damit WealthOS-Workflows nicht nur sichtbar, sondern kontrolliert, tenant-scoped, auditierbar und client-safe beweisbar sind. |
 | Implementation Objective | Baue oder härte den generischen Control-Layer-Mechanismus für diesen Prozess; Journey-spezifische Pfade müssen diesen Mechanismus nutzen, statt eigene Sonderlogik zu erfinden. |
-| Target Files / Areas | `lib/document-upload-service.ts; components/client-intake-screen.tsx; app/api/demo-workflow/route.ts` |
+| Target Files / Areas | `lib/document-upload-service.ts; components/client-intake-screen.tsx; deleted generic workflow route` |
 | Allowed Changes | Bestehende Services/Engines härten; interne Result-/Guard-Typen ergänzen; bestehende API-Validierung/Redaction/Failure Behaviour ergänzen; Tests/Fixtures hinzufügen; vorhandene UI-States nur verdrahten, nicht neu designen. |
 | Forbidden Changes | Keine neue Route; keine Prisma-Migration; keine Screen-/State-Screen-/Image-Generierung; keine main-derived Änderungen; keine autonome Advice-Entscheidung; keine Success-Message, die downstream gates überclaimt. |
 | Data Inputs | `documentId, extractionStatus, confidenceScore, extractedFieldsJson` |
@@ -633,7 +633,7 @@ Erst danach sollen User Journeys, Canonical Paths und Demo-/Produktpfade als Pro
 | Scope Label | `IMPLEMENTATION_READY / SAFETY_CRITICAL` |
 | Product Intent | Evidence Linking ist nötig, damit WealthOS-Workflows nicht nur sichtbar, sondern kontrolliert, tenant-scoped, auditierbar und client-safe beweisbar sind. |
 | Implementation Objective | Baue oder härte den generischen Control-Layer-Mechanismus für diesen Prozess; Journey-spezifische Pfade müssen diesen Mechanismus nutzen, statt eigene Sonderlogik zu erfinden. |
-| Target Files / Areas | `lib/evidence-service.ts; lib/document-upload-service.ts; app/api/demo-workflow/route.ts` |
+| Target Files / Areas | `lib/evidence-service.ts; lib/document-upload-service.ts; deleted generic workflow route` |
 | Allowed Changes | Bestehende Services/Engines härten; interne Result-/Guard-Typen ergänzen; bestehende API-Validierung/Redaction/Failure Behaviour ergänzen; Tests/Fixtures hinzufügen; vorhandene UI-States nur verdrahten, nicht neu designen. |
 | Forbidden Changes | Keine neue Route; keine Prisma-Migration; keine Screen-/State-Screen-/Image-Generierung; keine main-derived Änderungen; keine autonome Advice-Entscheidung; keine Success-Message, die downstream gates überclaimt. |
 | Data Inputs | `documentId, evidenceRecordId, targetType, targetId, actorUserId` |
@@ -643,7 +643,7 @@ Erst danach sollen User Journeys, Canonical Paths und Demo-/Produktpfade als Pro
 | UI / State Impact | Falls UI betroffen: bestehende States/Feedback fail-closed verdrahten; keine neuen Screens generieren. |
 | Audit Requirements | Safety-relevante Allow/Deny/Mutation muss AuditEvent oder Audit-Failure-Guard berücksichtigen; Audit Failure darf keine stille Mutation erlauben. |
 | Safety Critical? | Ja |
-| Validation Commands | `pnpm typecheck`; `pnpm lint`; `pnpm db:validate`; targeted Playwright spec(s): `tests/evidence-sufficiency.spec.ts; tests/demo-workflow-api.spec.ts`; final `pnpm phase:check` wenn Repo bereit ist. |
+| Validation Commands | `pnpm typecheck`; `pnpm lint`; `pnpm db:validate`; targeted Playwright spec(s): `tests/evidence-sufficiency.spec.ts; tests/recommendation-review-workflow-api.spec.ts`; final `pnpm phase:check` wenn Repo bereit ist. |
 | Stop Rules | Stoppen und berichten, wenn Target Files fehlen, bestehende API/Schema nicht passt, Migration nötig wäre, P1/HOLD-Elevation nötig wäre, oder Safety-Negativtest nicht formulierbar ist. |
 | Reporting Requirement | Changed files, Task ID, SP coverage, positive/negative tests, safety proof, skipped blockers, known gaps. |
 
@@ -691,7 +691,7 @@ Erst danach sollen User Journeys, Canonical Paths und Demo-/Produktpfade als Pro
 | Scope Label | `IMPLEMENTATION_READY / SAFETY_CRITICAL` |
 | Product Intent | Evidence Sufficiency Evaluation ist nötig, damit WealthOS-Workflows nicht nur sichtbar, sondern kontrolliert, tenant-scoped, auditierbar und client-safe beweisbar sind. |
 | Implementation Objective | Baue oder härte den generischen Control-Layer-Mechanismus für diesen Prozess; Journey-spezifische Pfade müssen diesen Mechanismus nutzen, statt eigene Sonderlogik zu erfinden. |
-| Target Files / Areas | `lib/evidence-service.ts; lib/workflow-gate.ts; app/api/demo-workflow/route.ts` |
+| Target Files / Areas | `lib/evidence-service.ts; lib/workflow-gate.ts; deleted generic workflow route` |
 | Allowed Changes | Bestehende Services/Engines härten; interne Result-/Guard-Typen ergänzen; bestehende API-Validierung/Redaction/Failure Behaviour ergänzen; Tests/Fixtures hinzufügen; vorhandene UI-States nur verdrahten, nicht neu designen. |
 | Forbidden Changes | Keine neue Route; keine Prisma-Migration; keine Screen-/State-Screen-/Image-Generierung; keine main-derived Änderungen; keine autonome Advice-Entscheidung; keine Success-Message, die downstream gates überclaimt. |
 | Data Inputs | `evidenceRecordId, reviewStatus, relevance, scope, reviewerUserId, gateId` |
@@ -749,7 +749,7 @@ Erst danach sollen User Journeys, Canonical Paths und Demo-/Produktpfade als Pro
 | Scope Label | `IMPLEMENTATION_READY / INTERNAL_ONLY` |
 | Product Intent | Trigger Creation ist nötig, damit WealthOS-Workflows nicht nur sichtbar, sondern kontrolliert, tenant-scoped, auditierbar und client-safe beweisbar sind. |
 | Implementation Objective | Baue oder härte den generischen Control-Layer-Mechanismus für diesen Prozess; Journey-spezifische Pfade müssen diesen Mechanismus nutzen, statt eigene Sonderlogik zu erfinden. |
-| Target Files / Areas | `lib/typed-workflow-command-bus.ts; lib/review-monitoring-service.ts; app/api/demo-workflow/route.ts` |
+| Target Files / Areas | `lib/typed-workflow-command-bus.ts; lib/review-monitoring-service.ts; deleted generic workflow route` |
 | Allowed Changes | Bestehende Services/Engines härten; interne Result-/Guard-Typen ergänzen; bestehende API-Validierung/Redaction/Failure Behaviour ergänzen; Tests/Fixtures hinzufügen; vorhandene UI-States nur verdrahten, nicht neu designen. |
 | Forbidden Changes | Keine neue Route; keine Prisma-Migration; keine Screen-/State-Screen-/Image-Generierung; keine main-derived Änderungen; keine autonome Advice-Entscheidung; keine Success-Message, die downstream gates überclaimt. |
 | Data Inputs | `clientTenantId, source, triggerType, severity, noClientRelease` |
@@ -759,7 +759,7 @@ Erst danach sollen User Journeys, Canonical Paths und Demo-/Produktpfade als Pro
 | UI / State Impact | Falls UI betroffen: bestehende States/Feedback fail-closed verdrahten; keine neuen Screens generieren. |
 | Audit Requirements | Safety-relevante Allow/Deny/Mutation muss AuditEvent oder Audit-Failure-Guard berücksichtigen; Audit Failure darf keine stille Mutation erlauben. |
 | Safety Critical? | Teilweise |
-| Validation Commands | `pnpm typecheck`; `pnpm lint`; `pnpm db:validate`; targeted Playwright spec(s): `tests/demo-workflow-api.spec.ts; tests/review-monitoring-service.spec.ts`; final `pnpm phase:check` wenn Repo bereit ist. |
+| Validation Commands | `pnpm typecheck`; `pnpm lint`; `pnpm db:validate`; targeted Playwright spec(s): `tests/recommendation-review-workflow-api.spec.ts; tests/review-monitoring-service.spec.ts`; final `pnpm phase:check` wenn Repo bereit ist. |
 | Stop Rules | Stoppen und berichten, wenn Target Files fehlen, bestehende API/Schema nicht passt, Migration nötig wäre, P1/HOLD-Elevation nötig wäre, oder Safety-Negativtest nicht formulierbar ist. |
 | Reporting Requirement | Changed files, Task ID, SP coverage, positive/negative tests, safety proof, skipped blockers, known gaps. |
 
@@ -807,7 +807,7 @@ Erst danach sollen User Journeys, Canonical Paths und Demo-/Produktpfade als Pro
 | Scope Label | `IMPLEMENTATION_READY / SAFETY_CRITICAL` |
 | Product Intent | Internal Draft Generation / Rules Drafting ist nötig, damit WealthOS-Workflows nicht nur sichtbar, sondern kontrolliert, tenant-scoped, auditierbar und client-safe beweisbar sind. |
 | Implementation Objective | Baue oder härte den generischen Control-Layer-Mechanismus für diesen Prozess; Journey-spezifische Pfade müssen diesen Mechanismus nutzen, statt eigene Sonderlogik zu erfinden. |
-| Target Files / Areas | `lib/workflow-gate.ts; lib/typed-workflow-command-bus.ts; app/api/demo-workflow/route.ts` |
+| Target Files / Areas | `lib/workflow-gate.ts; lib/typed-workflow-command-bus.ts; deleted generic workflow route` |
 | Allowed Changes | Bestehende Services/Engines härten; interne Result-/Guard-Typen ergänzen; bestehende API-Validierung/Redaction/Failure Behaviour ergänzen; Tests/Fixtures hinzufügen; vorhandene UI-States nur verdrahten, nicht neu designen. |
 | Forbidden Changes | Keine neue Route; keine Prisma-Migration; keine Screen-/State-Screen-/Image-Generierung; keine main-derived Änderungen; keine autonome Advice-Entscheidung; keine Success-Message, die downstream gates überclaimt. |
 | Data Inputs | `triggerId, evidenceIds, sourceModelVersion, draftText, assumptionsJson` |
@@ -817,7 +817,7 @@ Erst danach sollen User Journeys, Canonical Paths und Demo-/Produktpfade als Pro
 | UI / State Impact | Falls UI betroffen: bestehende States/Feedback fail-closed verdrahten; keine neuen Screens generieren. |
 | Audit Requirements | Safety-relevante Allow/Deny/Mutation muss AuditEvent oder Audit-Failure-Guard berücksichtigen; Audit Failure darf keine stille Mutation erlauben. |
 | Safety Critical? | Ja |
-| Validation Commands | `pnpm typecheck`; `pnpm lint`; `pnpm db:validate`; targeted Playwright spec(s): `tests/workflow-gate.spec.ts; tests/demo-workflow-api.spec.ts`; final `pnpm phase:check` wenn Repo bereit ist. |
+| Validation Commands | `pnpm typecheck`; `pnpm lint`; `pnpm db:validate`; targeted Playwright spec(s): `tests/workflow-gate.spec.ts; tests/recommendation-review-workflow-api.spec.ts`; final `pnpm phase:check` wenn Repo bereit ist. |
 | Stop Rules | Stoppen und berichten, wenn Target Files fehlen, bestehende API/Schema nicht passt, Migration nötig wäre, P1/HOLD-Elevation nötig wäre, oder Safety-Negativtest nicht formulierbar ist. |
 | Reporting Requirement | Changed files, Task ID, SP coverage, positive/negative tests, safety proof, skipped blockers, known gaps. |
 
@@ -875,7 +875,7 @@ Erst danach sollen User Journeys, Canonical Paths und Demo-/Produktpfade als Pro
 | UI / State Impact | Falls UI betroffen: bestehende States/Feedback fail-closed verdrahten; keine neuen Screens generieren. |
 | Audit Requirements | Safety-relevante Allow/Deny/Mutation muss AuditEvent oder Audit-Failure-Guard berücksichtigen; Audit Failure darf keine stille Mutation erlauben. |
 | Safety Critical? | Ja |
-| Validation Commands | `pnpm typecheck`; `pnpm lint`; `pnpm db:validate`; targeted Playwright spec(s): `tests/workflow-gate.spec.ts; tests/demo-workflow-api.spec.ts`; final `pnpm phase:check` wenn Repo bereit ist. |
+| Validation Commands | `pnpm typecheck`; `pnpm lint`; `pnpm db:validate`; targeted Playwright spec(s): `tests/workflow-gate.spec.ts; tests/recommendation-review-workflow-api.spec.ts`; final `pnpm phase:check` wenn Repo bereit ist. |
 | Stop Rules | Stoppen und berichten, wenn Target Files fehlen, bestehende API/Schema nicht passt, Migration nötig wäre, P1/HOLD-Elevation nötig wäre, oder Safety-Negativtest nicht formulierbar ist. |
 | Reporting Requirement | Changed files, Task ID, SP coverage, positive/negative tests, safety proof, skipped blockers, known gaps. |
 
@@ -933,7 +933,7 @@ Erst danach sollen User Journeys, Canonical Paths und Demo-/Produktpfade als Pro
 | UI / State Impact | Falls UI betroffen: bestehende States/Feedback fail-closed verdrahten; keine neuen Screens generieren. |
 | Audit Requirements | Safety-relevante Allow/Deny/Mutation muss AuditEvent oder Audit-Failure-Guard berücksichtigen; Audit Failure darf keine stille Mutation erlauben. |
 | Safety Critical? | Ja |
-| Validation Commands | `pnpm typecheck`; `pnpm lint`; `pnpm db:validate`; targeted Playwright spec(s): `tests/workflow-gate.spec.ts; tests/demo-workflow-api.spec.ts`; final `pnpm phase:check` wenn Repo bereit ist. |
+| Validation Commands | `pnpm typecheck`; `pnpm lint`; `pnpm db:validate`; targeted Playwright spec(s): `tests/workflow-gate.spec.ts; tests/recommendation-review-workflow-api.spec.ts`; final `pnpm phase:check` wenn Repo bereit ist. |
 | Stop Rules | Stoppen und berichten, wenn Target Files fehlen, bestehende API/Schema nicht passt, Migration nötig wäre, P1/HOLD-Elevation nötig wäre, oder Safety-Negativtest nicht formulierbar ist. |
 | Reporting Requirement | Changed files, Task ID, SP coverage, positive/negative tests, safety proof, skipped blockers, known gaps. |
 
@@ -991,7 +991,7 @@ Erst danach sollen User Journeys, Canonical Paths und Demo-/Produktpfade als Pro
 | UI / State Impact | Falls UI betroffen: bestehende States/Feedback fail-closed verdrahten; keine neuen Screens generieren. |
 | Audit Requirements | Safety-relevante Allow/Deny/Mutation muss AuditEvent oder Audit-Failure-Guard berücksichtigen; Audit Failure darf keine stille Mutation erlauben. |
 | Safety Critical? | Ja |
-| Validation Commands | `pnpm typecheck`; `pnpm lint`; `pnpm db:validate`; targeted Playwright spec(s): `tests/workflow-gate.spec.ts; tests/demo-workflow-api.spec.ts`; final `pnpm phase:check` wenn Repo bereit ist. |
+| Validation Commands | `pnpm typecheck`; `pnpm lint`; `pnpm db:validate`; targeted Playwright spec(s): `tests/workflow-gate.spec.ts; tests/recommendation-review-workflow-api.spec.ts`; final `pnpm phase:check` wenn Repo bereit ist. |
 | Stop Rules | Stoppen und berichten, wenn Target Files fehlen, bestehende API/Schema nicht passt, Migration nötig wäre, P1/HOLD-Elevation nötig wäre, oder Safety-Negativtest nicht formulierbar ist. |
 | Reporting Requirement | Changed files, Task ID, SP coverage, positive/negative tests, safety proof, skipped blockers, known gaps. |
 
@@ -1049,7 +1049,7 @@ Erst danach sollen User Journeys, Canonical Paths und Demo-/Produktpfade als Pro
 | UI / State Impact | Falls UI betroffen: bestehende States/Feedback fail-closed verdrahten; keine neuen Screens generieren. |
 | Audit Requirements | Safety-relevante Allow/Deny/Mutation muss AuditEvent oder Audit-Failure-Guard berücksichtigen; Audit Failure darf keine stille Mutation erlauben. |
 | Safety Critical? | Ja |
-| Validation Commands | `pnpm typecheck`; `pnpm lint`; `pnpm db:validate`; targeted Playwright spec(s): `tests/workflow-gate.spec.ts; tests/evidence-sufficiency.spec.ts; tests/demo-workflow-api.spec.ts`; final `pnpm phase:check` wenn Repo bereit ist. |
+| Validation Commands | `pnpm typecheck`; `pnpm lint`; `pnpm db:validate`; targeted Playwright spec(s): `tests/workflow-gate.spec.ts; tests/evidence-sufficiency.spec.ts; tests/recommendation-review-workflow-api.spec.ts`; final `pnpm phase:check` wenn Repo bereit ist. |
 | Stop Rules | Stoppen und berichten, wenn Target Files fehlen, bestehende API/Schema nicht passt, Migration nötig wäre, P1/HOLD-Elevation nötig wäre, oder Safety-Negativtest nicht formulierbar ist. |
 | Reporting Requirement | Changed files, Task ID, SP coverage, positive/negative tests, safety proof, skipped blockers, known gaps. |
 
@@ -1107,7 +1107,7 @@ Erst danach sollen User Journeys, Canonical Paths und Demo-/Produktpfade als Pro
 | UI / State Impact | Falls UI betroffen: bestehende States/Feedback fail-closed verdrahten; keine neuen Screens generieren. |
 | Audit Requirements | Safety-relevante Allow/Deny/Mutation muss AuditEvent oder Audit-Failure-Guard berücksichtigen; Audit Failure darf keine stille Mutation erlauben. |
 | Safety Critical? | Ja |
-| Validation Commands | `pnpm typecheck`; `pnpm lint`; `pnpm db:validate`; targeted Playwright spec(s): `tests/workflow-gate.spec.ts; tests/client-visibility-projection.spec.ts; tests/demo-workflow-api.spec.ts`; final `pnpm phase:check` wenn Repo bereit ist. |
+| Validation Commands | `pnpm typecheck`; `pnpm lint`; `pnpm db:validate`; targeted Playwright spec(s): `tests/workflow-gate.spec.ts; tests/client-visibility-projection.spec.ts; tests/recommendation-review-workflow-api.spec.ts`; final `pnpm phase:check` wenn Repo bereit ist. |
 | Stop Rules | Stoppen und berichten, wenn Target Files fehlen, bestehende API/Schema nicht passt, Migration nötig wäre, P1/HOLD-Elevation nötig wäre, oder Safety-Negativtest nicht formulierbar ist. |
 | Reporting Requirement | Changed files, Task ID, SP coverage, positive/negative tests, safety proof, skipped blockers, known gaps. |
 
@@ -1165,7 +1165,7 @@ Erst danach sollen User Journeys, Canonical Paths und Demo-/Produktpfade als Pro
 | UI / State Impact | Falls UI betroffen: bestehende States/Feedback fail-closed verdrahten; keine neuen Screens generieren. |
 | Audit Requirements | Safety-relevante Allow/Deny/Mutation muss AuditEvent oder Audit-Failure-Guard berücksichtigen; Audit Failure darf keine stille Mutation erlauben. |
 | Safety Critical? | Ja |
-| Validation Commands | `pnpm typecheck`; `pnpm lint`; `pnpm db:validate`; targeted Playwright spec(s): `tests/workflow-gate.spec.ts; tests/demo-workflow-api.spec.ts`; final `pnpm phase:check` wenn Repo bereit ist. |
+| Validation Commands | `pnpm typecheck`; `pnpm lint`; `pnpm db:validate`; targeted Playwright spec(s): `tests/workflow-gate.spec.ts; tests/recommendation-review-workflow-api.spec.ts`; final `pnpm phase:check` wenn Repo bereit ist. |
 | Stop Rules | Stoppen und berichten, wenn Target Files fehlen, bestehende API/Schema nicht passt, Migration nötig wäre, P1/HOLD-Elevation nötig wäre, oder Safety-Negativtest nicht formulierbar ist. |
 | Reporting Requirement | Changed files, Task ID, SP coverage, positive/negative tests, safety proof, skipped blockers, known gaps. |
 
@@ -1213,7 +1213,7 @@ Erst danach sollen User Journeys, Canonical Paths und Demo-/Produktpfade als Pro
 | Scope Label | `IMPLEMENTATION_READY / SAFETY_CRITICAL` |
 | Product Intent | Audit Event Writing ist nötig, damit WealthOS-Workflows nicht nur sichtbar, sondern kontrolliert, tenant-scoped, auditierbar und client-safe beweisbar sind. |
 | Implementation Objective | Baue oder härte den generischen Control-Layer-Mechanismus für diesen Prozess; Journey-spezifische Pfade müssen diesen Mechanismus nutzen, statt eigene Sonderlogik zu erfinden. |
-| Target Files / Areas | `lib/audit-service.ts; lib/control-layer/audit-guard.ts; app/api/demo-workflow/route.ts` |
+| Target Files / Areas | `lib/audit-service.ts; lib/control-layer/audit-guard.ts; deleted generic workflow route` |
 | Allowed Changes | Bestehende Services/Engines härten; interne Result-/Guard-Typen ergänzen; bestehende API-Validierung/Redaction/Failure Behaviour ergänzen; Tests/Fixtures hinzufügen; vorhandene UI-States nur verdrahten, nicht neu designen. |
 | Forbidden Changes | Keine neue Route; keine Prisma-Migration; keine Screen-/State-Screen-/Image-Generierung; keine main-derived Änderungen; keine autonome Advice-Entscheidung; keine Success-Message, die downstream gates überclaimt. |
 | Data Inputs | `actorUserId, actorRoleKey, targetType, targetId, action, previousState, nextState, result, reason, correlationId` |
@@ -1445,7 +1445,7 @@ Erst danach sollen User Journeys, Canonical Paths und Demo-/Produktpfade als Pro
 | Scope Label | `IMPLEMENTATION_READY / SAFETY_CRITICAL` |
 | Product Intent | Export Approval ist nötig, damit WealthOS-Workflows nicht nur sichtbar, sondern kontrolliert, tenant-scoped, auditierbar und client-safe beweisbar sind. |
 | Implementation Objective | Baue oder härte den generischen Control-Layer-Mechanismus für diesen Prozess; Journey-spezifische Pfade müssen diesen Mechanismus nutzen, statt eigene Sonderlogik zu erfinden. |
-| Target Files / Areas | `lib/export-service.ts; lib/export-package-service.ts; app/api/demo-workflow/route.ts` |
+| Target Files / Areas | `lib/export-service.ts; lib/export-package-service.ts; deleted generic workflow route` |
 | Allowed Changes | Bestehende Services/Engines härten; interne Result-/Guard-Typen ergänzen; bestehende API-Validierung/Redaction/Failure Behaviour ergänzen; Tests/Fixtures hinzufügen; vorhandene UI-States nur verdrahten, nicht neu designen. |
 | Forbidden Changes | Keine neue Route; keine Prisma-Migration; keine Screen-/State-Screen-/Image-Generierung; keine main-derived Änderungen; keine autonome Advice-Entscheidung; keine Success-Message, die downstream gates überclaimt. |
 | Data Inputs | `exportRequestId, approvedByUserId, approvalDecision, auditCorrelationId` |
@@ -1677,7 +1677,7 @@ Erst danach sollen User Journeys, Canonical Paths und Demo-/Produktpfade als Pro
 | Scope Label | `P1_DEFERRED / INTERNAL_ONLY_GUARD` |
 | Product Intent | Review Monitoring / Rebalance Triggering without automatic advice ist nötig, damit WealthOS-Workflows nicht nur sichtbar, sondern kontrolliert, tenant-scoped, auditierbar und client-safe beweisbar sind. |
 | Implementation Objective | Baue oder härte den generischen Control-Layer-Mechanismus für diesen Prozess; Journey-spezifische Pfade müssen diesen Mechanismus nutzen, statt eigene Sonderlogik zu erfinden. |
-| Target Files / Areas | `lib/review-monitoring-service.ts; app/api/review-monitoring/route.ts; app/api/demo-workflow/route.ts` |
+| Target Files / Areas | `lib/review-monitoring-service.ts; app/api/review-monitoring/route.ts; deleted generic workflow route` |
 | Allowed Changes | Nur interne Guard-/No-Auto-Advice-Absicherung und Tests; keine vollständige P1-Feature-Implementierung. |
 | Forbidden Changes | Keine neue Route; keine Prisma-Migration; keine Screen-/State-Screen-/Image-Generierung; keine main-derived Änderungen; keine autonome Advice-Entscheidung; keine Success-Message, die downstream gates überclaimt. |
 | Data Inputs | `reviewScheduleId, triggerType, noClientRelease, clientVisible=false` |
@@ -1745,7 +1745,7 @@ Erst danach sollen User Journeys, Canonical Paths und Demo-/Produktpfade als Pro
 | UI / State Impact | Falls UI betroffen: bestehende States/Feedback fail-closed verdrahten; keine neuen Screens generieren. |
 | Audit Requirements | Safety-relevante Allow/Deny/Mutation muss AuditEvent oder Audit-Failure-Guard berücksichtigen; Audit Failure darf keine stille Mutation erlauben. |
 | Safety Critical? | Ja |
-| Validation Commands | `pnpm typecheck`; `pnpm lint`; `pnpm db:validate`; targeted Playwright spec(s): `tests/permission-engine.spec.ts; tests/demo-workflow-api.spec.ts`; final `pnpm phase:check` wenn Repo bereit ist. |
+| Validation Commands | `pnpm typecheck`; `pnpm lint`; `pnpm db:validate`; targeted Playwright spec(s): `tests/permission-engine.spec.ts; tests/recommendation-review-workflow-api.spec.ts`; final `pnpm phase:check` wenn Repo bereit ist. |
 | Stop Rules | Stoppen und berichten, wenn Target Files fehlen, bestehende API/Schema nicht passt, Migration nötig wäre, P1/HOLD-Elevation nötig wäre, oder Safety-Negativtest nicht formulierbar ist. |
 | Reporting Requirement | Changed files, Task ID, SP coverage, positive/negative tests, safety proof, skipped blockers, known gaps. |
 
@@ -2096,7 +2096,7 @@ Erst danach sollen User Journeys, Canonical Paths und Demo-/Produktpfade als Pro
 
 | API Route | Related SPs | Required Request Validation | Required Permission Check | Required Payload Redaction | Required Audit | Failure Behaviour | Tests |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| /api/demo-workflow | SP-003, SP-011..SP-018, SP-019, SP-020, SP-021..SP-024, SP-027, SP-028 | Action payload, actor context, tenantId, objectId, action type, noClientRelease flag | PermissionDecision + ObjectScope vor Mutation | AI draft/internal rationale/compliance notes hidden for client-facing actions | Audit for gate actions and denials | 400 for malformed action; 403/hidden for denied; no workflow advance on error | tests/demo-workflow-api.spec.ts; tests/workflow-gate.spec.ts; tests/audit-fail-closed.spec.ts |
+| deleted generic workflow route | SP-003, SP-011..SP-018, SP-019, SP-020, SP-021..SP-024, SP-027, SP-028 | Action payload, actor context, tenantId, objectId, action type, noClientRelease flag | PermissionDecision + ObjectScope vor Mutation | AI draft/internal rationale/compliance notes hidden for client-facing actions | Audit for gate actions and denials | 400 for malformed action; 403/hidden for denied; no workflow advance on error | tests/recommendation-review-workflow-api.spec.ts; tests/workflow-gate.spec.ts; tests/audit-fail-closed.spec.ts |
 | /api/documents | SP-002, SP-004, SP-005, SP-006, SP-009, SP-010 | clientTenantId/query scope, actor role, document visibility state | Tenant/Object Scope + document list permission | Document rows filtered/redacted by VisibilityProjection | Audit denied access if sensitive | Denied returns safe empty/hidden or 403 without row leak | tests/document-upload-api.spec.ts; tests/payload-visibility.spec.ts |
 | /api/documents/upload | SP-001, SP-002, SP-003, SP-006, SP-007, SP-008, SP-019 | multipart file, mimeType, fileSize, actorUserId, clientTenantId, metadata | Upload permission + tenant membership + file validation | Upload response excludes internal storage details unless role-safe | Audit success/denial/rejection | Unsupported file rejected no row; forbidden role denied + audit; upload success not sufficiency | tests/document-upload-api.spec.ts; tests/document-upload-flow.spec.ts |
 | /api/review-monitoring | SP-026, SP-027 | reviewScheduleId/date range/tenant context; noClientRelease expected | Internal role or scoped analyst/advisor only | No client-visible advice payload; due/overdue state internal only | Audit only when trigger created or sensitive state changes | Monitoring errors do not create advice/release; clientVisible false | tests/review-monitoring-service.spec.ts |
@@ -2130,7 +2130,7 @@ Erst danach sollen User Journeys, Canonical Paths und Demo-/Produktpfade als Pro
 | P0-NEG-002 | SP-002, SP-003, SP-004 | Scoped actor accesses own object | Wrong tenant/object denied; no payload leak | tests/permission-engine.spec.ts partial | Add API/list payload leak assertions | tests/permission-engine.spec.ts; tests/payload-visibility.spec.ts |
 | P0-NEG-003 | SP-003 | Route shell may render for allowed actor | Route access does not grant action permission | permission-engine partial | Route/API distinction test | tests/permission-engine.spec.ts |
 | P0-NEG-004 | SP-004, SP-005 | Allowed payload fields visible after release | Route access does not grant payload visibility | partial visibility engine proof | Client/API payload redaction test missing | tests/payload-visibility.spec.ts |
-| P0-NEG-005 | SP-012, SP-005, SP-022 | Internal draft can be reviewed internally | Client-visible AI Draft denied in portal/API/export | demo workflow noClientRelease partial | Explicit forbidden payload assertions | tests/client-visibility-projection.spec.ts; tests/export-safety.spec.ts |
+| P0-NEG-005 | SP-012, SP-005, SP-022 | Internal draft can be reviewed internally | Client-visible AI Draft denied in portal/API/export | typed workflow noClientRelease partial | Explicit forbidden payload assertions | tests/client-visibility-projection.spec.ts; tests/export-safety.spec.ts |
 | P0-NEG-006 | SP-011..SP-018 | Approved/released decision appears only after gates | Unapproved advice not client-visible | workflow-gate partial | End-to-end client payload hidden before release | tests/workflow-gate.spec.ts; tests/client-visibility-projection.spec.ts |
 | P0-NEG-007 | SP-014, SP-017 | Advisor approval creates approval record | Advisor approval does not release or set client visibility | workflow-gate partial | Explicit advisor-not-release test | tests/workflow-gate.spec.ts |
 | P0-NEG-008 | SP-015, SP-017, SP-019 | Compliance release succeeds with advisor/evidence/audit | Compliance release requires evidence and audit | workflow-gate partial | Audit failure + missing evidence negatives | tests/audit-fail-closed.spec.ts; tests/evidence-sufficiency.spec.ts |
@@ -2200,7 +2200,7 @@ Die folgenden Befehle sind aus `package.json` des `full-workflow`-Snapshots als 
 | `pnpm db:validate` | Prisma schema validation | After schema usage changes; no migration | Does not authorize migration. |
 | `pnpm test:permissions` | Permission engine proof | WS-02 and admin non-bypass | Targeted safety suite. |
 | `pnpm test:workflow-gate` | Workflow/advice boundary proof | WS-04 | Advisor-not-release and compliance preconditions. |
-| `pnpm test:workflow-api` | Demo workflow API proof | WS-04 / WS-05 / WS-07 | Validate noClientRelease and API behaviour. |
+| `pnpm test:workflow-api` | Typed workflow API proof | WS-04 / WS-05 / WS-07 | Validate noClientRelease and API behaviour. |
 | `pnpm test:file-export` | Export package proof slice | WS-07 | Must be supplemented by forbidden-payload tests. |
 | `pnpm test:data-quality` | Data quality proof slice | WS-08 | Conditional support. |
 | `pnpm test:phase-d` | Review monitoring proof slice | WS-08 | Must remain no-auto-advice. |

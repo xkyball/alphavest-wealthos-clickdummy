@@ -18,11 +18,9 @@ import {
 import { expect, test, type APIRequestContext } from "@playwright/test";
 
 import { stableId } from "../lib/stable-id";
-import { scfCriticalGateAuditContract } from "../lib/audit-service";
 import {
   wp05CanonicalJourneyCommandApiRoute,
   wp05ComplianceReleaseConfirmationPhrase,
-  wp05LegacyDemoReleaseActionDirectness,
 } from "../lib/advisory-workflow-contract";
 
 const demoTargets = {
@@ -40,8 +38,6 @@ const demoTargets = {
   },
 };
 
-const bennettDecisionId = stableId("decision:bennett:liquidity-review");
-const bennettRecommendationId = stableId("recommendation:bennett:liquidity-review");
 const summitDecisionId = stableId("decision:summit:liquidity-review");
 const safeExportPayload = {
   clientSummary: "Released client-safe export summary.",
@@ -54,7 +50,7 @@ const safeExportPayload = {
 function safeScopeItem(label: string) {
   return {
     access: "Allowed",
-    id: stableId(`demo-workflow-export-boundary:${label}`),
+    id: stableId(`recommendation-review-export-boundary:${label}`),
     name: "Released client-safe decision summary",
     payloadClassifications: ["CLIENT_SAFE_SUMMARY", "RELEASED_EVIDENCE_SUMMARY"],
     selected: true,
@@ -69,7 +65,7 @@ async function exportCommand(request: APIRequestContext, data: Record<string, un
 async function createGeneratedExport(request: APIRequestContext, label: string) {
   const scope = await exportCommand(request, {
     command: "SET_SCOPE",
-    reason: "Select client-safe released objects for demo workflow boundary proof.",
+    reason: "Select client-safe released objects for recommendation-review boundary proof.",
     redactionProfile: "client-safe-redacted",
     roleKey: "compliance_officer",
     scopeItems: [safeScopeItem(label)],
@@ -99,23 +95,7 @@ async function createGeneratedExport(request: APIRequestContext, label: string) 
   throw new Error("Export generation proof did not return.");
 }
 
-const advisorReviewActions = ["j01.requestData", "j01.routeToAdvisor", "j01.escalateAdvisor"] as const;
-
-const adviceReleaseHistoryActions = [
-  "j02.requestEvidence",
-  "j02.confirmRequestEvidence",
-  "j02.blockRelease",
-  "j02.releaseClient",
-  "j02.exportControlled",
-  "j03.requestMoreInformation",
-  "j03.deferDecision",
-  "j03.rejectDecision",
-  "j03.acceptOption",
-  "j03.viewEvidenceRecord",
-  "j03.downloadEvidence",
-] as const;
-
-test.describe("demo workflow API", () => {
+test.describe("recommendation review workflow API", () => {
   let prisma: PrismaClient;
 
   test.beforeAll(() => {
@@ -123,7 +103,7 @@ test.describe("demo workflow API", () => {
 
     const connectionString = process.env.DATABASE_URL;
     if (!connectionString) {
-      throw new Error("DATABASE_URL is required for demo workflow API tests.");
+      throw new Error("DATABASE_URL is required for recommendation review workflow API tests.");
     }
 
     prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
@@ -132,484 +112,6 @@ test.describe("demo workflow API", () => {
   test.afterAll(async () => {
     await prisma?.$disconnect();
   });
-
-  test("legacy J01 request-data/route/escalate advisor-review actions are retired to advisor-review commands", async ({ request }) => {
-    for (const actionId of advisorReviewActions) {
-      const response = await request.post("/api/demo-workflow", {
-        data: { actionId },
-      });
-      const body = await response.json();
-
-      expect(response.status(), `${actionId}: ${JSON.stringify(body)}`).toBe(410);
-      expect(body.reasonCode).toBe("SAFE_ERROR");
-      expect(body.legacyReasonCode).toBe("ADVISOR_REVIEW_WORKFLOW_ACTIONS_MOVED");
-      expect(body.canonicalApiRoute).toBe("/api/advisor-review/actions");
-      expect(body.demoWorkflowBoundary).toMatchObject({
-        allowedOnDemoWorkflow: false,
-        canonicalApiRoute: "/api/advisor-review/actions",
-        classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
-        productCommandAllowed: true,
-        reasonCode: "ADVISOR_REVIEW_WORKFLOW_ACTIONS_MOVED",
-      });
-      expect(body.safety).toMatchObject({
-        commandExecuted: false,
-        hiddenRowsDisclosed: false,
-        noAdviceExecution: true,
-        noClientRelease: true,
-        scoped: false,
-      });
-      expect(body.result).toBeUndefined();
-      expect(body.demoOnly).toBeFalsy();
-      expect(body.mutated).toBeFalsy();
-    }
-  });
-
-  test("legacy J01 approve advisor action is retired to advisor approval workflow API", async ({ request }) => {
-    const response = await request.post("/api/demo-workflow", {
-      data: { actionId: "j01.approveAdvisor" },
-    });
-    const body = await response.json();
-
-    expect(response.status(), JSON.stringify(body)).toBe(410);
-    expect(body.reasonCode).toBe("SAFE_ERROR");
-    expect(body.legacyReasonCode).toBe("ADVISOR_APPROVAL_WORKFLOW_MOVED");
-    expect(body.canonicalApiRoute).toBe("/api/recommendation-review-workflow");
-    expect(body.demoWorkflowBoundary).toMatchObject({
-      allowedOnDemoWorkflow: false,
-      canonicalApiRoute: "/api/recommendation-review-workflow",
-      classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
-      productCommandAllowed: true,
-      reasonCode: "ADVISOR_APPROVAL_WORKFLOW_MOVED",
-    });
-    expect(body.mutated).toBe(false);
-  });
-
-  test("legacy advice and release-history demo actions are retired to the typed API", async ({ request }) => {
-    for (const actionId of adviceReleaseHistoryActions) {
-      const response = await request.post("/api/demo-workflow", {
-        data: { actionId },
-      });
-      const body = await response.json();
-
-      expect(response.status(), `${actionId}: ${JSON.stringify(body)}`).toBe(410);
-      expect(body.reasonCode).toBe("SAFE_ERROR");
-      expect(body.legacyReasonCode).toBe("ADVICE_RELEASE_HISTORY_ACTIONS_MOVED");
-      expect(body.canonicalApiRoute).toBe("/api/advice-release-history/actions");
-      expect(body.demoWorkflowBoundary).toMatchObject({
-        allowedOnDemoWorkflow: false,
-        canonicalApiRoute: "/api/advice-release-history/actions",
-        classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
-        productCommandAllowed: true,
-        reasonCode: "ADVICE_RELEASE_HISTORY_ACTIONS_MOVED",
-      });
-      expect(body.mutated).toBe(false);
-      expect(body.noClientRelease).toBe(true);
-      expect(body.safety).toMatchObject({
-        commandExecuted: false,
-        hiddenRowsDisclosed: false,
-        noAdviceExecution: true,
-        noClientRelease: true,
-        scoped: false,
-      });
-    }
-  });
-
-  test("typed advice and release-history API executes controlled J02/J03 commands", async ({ request }) => {
-    const requestEvidence = await request.post("/api/advice-release-history/actions", {
-      data: { actionId: "j02.requestEvidence" },
-    });
-    const requestEvidenceBody = await requestEvidence.json();
-
-    expect(requestEvidence.ok(), JSON.stringify(requestEvidenceBody)).toBe(true);
-    expect(requestEvidenceBody.canonicalApiRoute).toBe("/api/advice-release-history/actions");
-    expect(requestEvidenceBody.command).toBe("COMPLIANCE_REQUEST_EVIDENCE");
-    expect(requestEvidenceBody.noAdviceExecution).toBe(true);
-    expect(requestEvidenceBody.noClientRelease).toBe(true);
-    expect(requestEvidenceBody.safety).toMatchObject({
-      commandExecuted: true,
-      hiddenRowsDisclosed: false,
-      noAdviceExecution: true,
-      noClientRelease: true,
-      scoped: true,
-    });
-
-    const controlledExport = await request.post("/api/advice-release-history/actions", {
-      data: { actionId: "j02.exportControlled" },
-    });
-    const controlledExportBody = await controlledExport.json();
-
-    expect(controlledExport.ok(), JSON.stringify(controlledExportBody)).toBe(true);
-    expect(controlledExportBody.command).toBe("RELEASE_HISTORY_EXPORT_CONTROLLED");
-    expect(controlledExportBody.noClientRelease).toBe(true);
-    expect(controlledExportBody.result).toMatchObject({
-      exportApproved: false,
-      exportDownloadCreated: false,
-    });
-
-    const controlledAudit = await prisma.auditEvent.findUniqueOrThrow({
-      where: { id: controlledExportBody.result.auditEventId },
-    });
-    expect(controlledAudit.eventType).toBe("advice_release_history.release_history.export_controlled");
-    expect(controlledAudit.targetType).toBe(ObjectType.EXPORT_REQUEST);
-  });
-
-  test("legacy J08 export demo actions are retired in favor of the typed export workflow API", async ({ request }) => {
-    for (const actionId of ["j08.selectDataExtract", "j08.clearScope", "j08.confirmApproval", "j08.downloadExport", "j08.shareExport"]) {
-      const response = await request.post("/api/demo-workflow", {
-        data: { actionId },
-      });
-      const body = await response.json();
-
-      expect(response.status(), `${actionId}: ${JSON.stringify(body)}`).toBe(410);
-      expect(body.reasonCode).toBe("SAFE_ERROR");
-      expect(body.legacyReasonCode).toBe("LEGACY_EXPORT_DEMO_ACTION_RETIRED");
-      expect(body.canonicalApiRoute).toBe("/api/export-workflow");
-      expect(body.demoWorkflowBoundary).toMatchObject({
-        allowedOnDemoWorkflow: false,
-        canonicalApiRoute: "/api/export-workflow",
-        classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
-        productCommandAllowed: true,
-        reasonCode: "LEGACY_EXPORT_DEMO_ACTION_RETIRED",
-      });
-      expect(body.mutated).toBe(false);
-      expect(body.noClientRelease).toBe(true);
-      expect(body.safety.commandExecuted).toBe(false);
-      expect(body.safety.noExportApproval).toBe(true);
-      expect(body.safety.noExportDownload).toBe(true);
-    }
-  });
-
-  test("rejects malformed action payloads with validation issues", async ({ request }) => {
-    const invalidPayloads = [{}, { actionId: 42 }, { actionId: "releaseClient" }];
-
-    for (const payload of invalidPayloads) {
-      const response = await request.post("/api/demo-workflow", {
-        data: payload,
-      });
-      const body = await response.json();
-
-      expect(response.status(), JSON.stringify(body)).toBe(400);
-      expect(body.error).toBe("Invalid demo workflow request.");
-      expect(body.issues?.[0]?.field).toBe("actionId");
-      expect(body.issues?.[0]?.code).toBe("invalid_action_id");
-      expect(body.mutated).toBe(false);
-      expect(body.noClientRelease).toBe(true);
-      expect(body.ok).toBe(false);
-    }
-  });
-
-  test("malformed JSON body fails closed without mutation or client release", async ({ request }) => {
-    const response = await request.post("/api/demo-workflow", {
-      data: "[",
-      headers: {
-        "content-type": "application/json",
-      },
-    });
-    const body = await response.json();
-
-    expect(response.status(), JSON.stringify(body)).toBe(400);
-    expect(body.error).toBe("Invalid demo workflow request.");
-    expect(body.issues?.[0]?.code).toBe("invalid_body");
-    expect(body.mutated).toBe(false);
-    expect(body.noClientRelease).toBe(true);
-    expect(body.ok).toBe(false);
-  });
-
-  test("Phase 6 decision record actions require audit persistence and write minimum audit fields", async ({ request }) => {
-    await prisma.decision.update({
-      data: {
-        decisionAction: null,
-        decisionAt: null,
-        decisionByUserId: null,
-        decisionReason: null,
-        releasedToClientAt: new Date("2026-06-20T10:00:00.000Z"),
-        status: DecisionStatus.RELEASED_TO_CLIENT,
-      },
-      where: { id: bennettDecisionId },
-    });
-    await prisma.recommendation.update({
-      data: {
-        clientVisible: true,
-        status: RecommendationStatus.RELEASED_TO_CLIENT,
-      },
-      where: { id: bennettRecommendationId },
-    });
-
-    const auditCountBeforeFailure = await prisma.auditEvent.count({
-      where: { eventType: "advice_release_history.decision.accepted" },
-    });
-    const failureResponse = await request.post("/api/advice-release-history/actions", {
-      data: {
-        actionId: "j03.acceptOption",
-        simulateAuditPersistenceFailure: true,
-      },
-    });
-    const failureBody = await failureResponse.json();
-    const auditCountAfterFailure = await prisma.auditEvent.count({
-      where: { eventType: "advice_release_history.decision.accepted" },
-    });
-    const unchangedDecision = await prisma.decision.findUniqueOrThrow({
-      where: { id: bennettDecisionId },
-    });
-
-    expect(failureResponse.status(), JSON.stringify(failureBody)).toBe(409);
-    expect(failureBody.reasonCode).toBe("AUDIT_PERSISTENCE_UNAVAILABLE");
-    expect(failureBody.mutated).toBe(false);
-    expect(failureBody.noClientRelease).toBe(true);
-    expect(auditCountAfterFailure).toBe(auditCountBeforeFailure);
-    expect(unchangedDecision.status).toBe(DecisionStatus.RELEASED_TO_CLIENT);
-    expect(unchangedDecision.decisionAction).toBeNull();
-    expect(unchangedDecision.decisionAt).toBeNull();
-
-    const successResponse = await request.post("/api/advice-release-history/actions", {
-      data: { actionId: "j03.acceptOption" },
-    });
-    const successBody = await successResponse.json();
-
-    expect(successResponse.ok(), JSON.stringify(successBody)).toBe(true);
-    expect(successBody.canonicalApiRoute).toBe("/api/advice-release-history/actions");
-    expect(successBody.command).toBe("CLIENT_DECISION_ACCEPT");
-    expect(successBody.result.decisionRows).toBe(1);
-    expect(successBody.result.auditRows).toBe(1);
-    expect(successBody.result.gatePassed).toBe(true);
-
-    const decision = await prisma.decision.findUniqueOrThrow({
-      where: { id: bennettDecisionId },
-    });
-    const audit = await prisma.auditEvent.findUniqueOrThrow({
-      where: { id: successBody.result.auditEventId },
-    });
-    const metadata = audit.metadataJson as {
-      auditContract?: string;
-      auditMinimumFields?: string[];
-      criticalActionFamily?: string;
-      decisionRecord?: {
-        action?: string;
-        decisionId?: string;
-        nextStatus?: string;
-        previousStatus?: string;
-        recommendationId?: string;
-      };
-      failClosedOnAuditPersistence?: boolean;
-      phasePackage?: string;
-    } | null;
-
-    expect(decision.status).toBe(DecisionStatus.ACCEPTED);
-    expect(decision.decisionAction).toBe("accept");
-    expect(decision.decisionAt).toBeTruthy();
-    expect(decision.decisionByUserId).toBeTruthy();
-    expect(audit.targetType).toBe(ObjectType.DECISION);
-    expect(audit.targetId).toBe(bennettDecisionId);
-    expect(audit.previousState).toBe(DecisionStatus.RELEASED_TO_CLIENT);
-    expect(audit.nextState).toBe(DecisionStatus.ACCEPTED);
-    expect(audit.result).toBe(AuditResult.SUCCESS);
-    expect(audit.actorRoleKey).toBe("principal");
-    expect(metadata?.auditContract).toBe(scfCriticalGateAuditContract);
-    expect(metadata?.criticalActionFamily).toBe("review");
-    expect(metadata?.failClosedOnAuditPersistence).toBe(true);
-    expect(metadata?.phasePackage).toBe("BP-09");
-    expect(metadata?.decisionRecord).toMatchObject({
-      action: "accept",
-      decisionId: bennettDecisionId,
-      nextStatus: DecisionStatus.ACCEPTED,
-      previousStatus: DecisionStatus.RELEASED_TO_CLIENT,
-      recommendationId: bennettRecommendationId,
-    });
-    expect(metadata?.auditMinimumFields).toEqual(
-      expect.arrayContaining(["actorUserId", "actorRoleKey", "targetId", "previousState", "nextState", "result", "reason"]),
-    );
-  });
-
-  test("legacy demo workflow retires Phase B/C actions to typed journey commands", async ({ request }) => {
-    const actions = [
-      "j12.requestKycEvidence",
-      "j12.completeKycReview",
-      "j12.escalateSourceOfWealth",
-      "j12.linkSourceEvidence",
-      "j13.requestSuitabilityEvidence",
-      "j13.markSuitabilityReviewed",
-      "j14.requestIpsMandateChanges",
-      "j14.linkIpsEvidence",
-    ];
-
-    for (const actionId of actions) {
-      const response = await request.post("/api/demo-workflow", {
-        data: { actionId },
-      });
-      const body = await response.json();
-
-      expect(response.status(), `${actionId}: ${JSON.stringify(body)}`).toBe(410);
-      expect(body.canonicalApiRoute).toBe("/api/journeys/[id]/commands");
-      expect(body.demoWorkflowBoundary).toMatchObject({
-        classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
-        reasonCode: "PHASE_B_C_JOURNEY_COMMANDS_MOVED",
-      });
-      expect(body.noClientRelease).toBe(true);
-      expect(body.error).toContain("typed journey command API");
-    }
-  });
-
-  test("legacy demo workflow retires tenant governance actions to typed tenant governance commands", async ({ request }) => {
-    const actions = [
-      "j06.newTenant",
-      "j06.continueTenant",
-      "j06.assignTeam",
-      "j06.openInvitation",
-      "j06.sendInvitation",
-      "j07.inviteUser",
-      "j07.sendInvitation",
-      "j07.saveRoleChanges",
-      "j07.approveAccess",
-      "j07.exportAudit",
-    ];
-
-    for (const actionId of actions) {
-      const response = await request.post("/api/demo-workflow", {
-        data: { actionId },
-      });
-      const body = await response.json();
-
-      expect(response.status(), `${actionId}: ${JSON.stringify(body)}`).toBe(410);
-      expect(body.canonicalApiRoute).toBe("/api/tenant-governance/actions");
-      expect(body.legacyReasonCode).toBe("TENANT_GOVERNANCE_ACTIONS_MOVED");
-      expect(body.demoWorkflowBoundary).toMatchObject({
-        classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
-        reasonCode: "TENANT_GOVERNANCE_ACTIONS_MOVED",
-      });
-      expect(body.noClientRelease).toBe(true);
-      expect(body.safety).toMatchObject({
-        commandExecuted: false,
-        noAdviceExecution: true,
-        noClientRelease: true,
-      });
-      expect(body.error).toContain("/api/tenant-governance/actions");
-    }
-  });
-
-  test("legacy demo workflow retires data maintenance actions to typed data maintenance commands", async ({ request }) => {
-    const actions = [
-      "j04.portalUpload",
-      "j04.openUploadDocument",
-      "j04.uploadDocument",
-      "j04.confirmFinalize",
-      "j04.viewDetails",
-      "j05.createEntity",
-      "j05.continueEntity",
-      "j05.editEntity",
-      "j05.viewDetails",
-      "j05.markReady",
-      "j05.requestInfo",
-      "j09.portalUpload",
-      "j09.submitProfile",
-      "j09.addMember",
-      "j09.saveFamilyChanges",
-      "j09.openFamilyMap",
-      "j09.addRelationship",
-    ];
-
-    for (const actionId of actions) {
-      const response = await request.post("/api/demo-workflow", {
-        data: { actionId },
-      });
-      const body = await response.json();
-
-      expect(response.status(), `${actionId}: ${JSON.stringify(body)}`).toBe(410);
-      expect(body.canonicalApiRoute).toBe("/api/data-maintenance/actions");
-      expect(body.legacyReasonCode).toBe("DATA_MAINTENANCE_ACTIONS_MOVED");
-      expect(body.demoWorkflowBoundary).toMatchObject({
-        classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
-        reasonCode: "DATA_MAINTENANCE_ACTIONS_MOVED",
-      });
-      expect(body.noClientRelease).toBe(true);
-      expect(body.safety).toMatchObject({
-        commandExecuted: false,
-        noAdviceExecution: true,
-        noClientRelease: true,
-      });
-      expect(body.error).toContain("/api/data-maintenance/actions");
-    }
-  });
-
-  test("legacy demo workflow retires platform admin actions to typed platform admin commands", async ({ request }) => {
-    const actions = [
-      "j10.savePlatform",
-      "j10.viewAudit",
-      "j10.reviewPermission",
-      "j10.saveSecurity",
-    ];
-
-    for (const actionId of actions) {
-      const response = await request.post("/api/demo-workflow", {
-        data: { actionId },
-      });
-      const body = await response.json();
-
-      expect(response.status(), `${actionId}: ${JSON.stringify(body)}`).toBe(410);
-      expect(body.canonicalApiRoute).toBe("/api/platform-admin/actions");
-      expect(body.legacyReasonCode).toBe("PLATFORM_ADMIN_ACTIONS_MOVED");
-      expect(body.demoWorkflowBoundary).toMatchObject({
-        classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
-        reasonCode: "PLATFORM_ADMIN_ACTIONS_MOVED",
-      });
-      expect(body.noClientRelease).toBe(true);
-      expect(body.safety).toMatchObject({
-        commandExecuted: false,
-        noAdviceExecution: true,
-        noClientRelease: true,
-      });
-      expect(body.error).toContain("/api/platform-admin/actions");
-    }
-  });
-
-  test("legacy demo workflow path blocks typed advisor approval and points to the canonical API", async ({ request }) => {
-    const response = await request.post("/api/demo-workflow", {
-      data: {
-        action: "submit_review",
-        actorRole: "analyst",
-        reason: "Legacy path should not execute typed advisor approval.",
-        targetId: demoTargets.northbridge.recommendationId,
-        workflowType: "advisor-approval",
-      },
-    });
-    const body = await response.json();
-
-    expect(response.status(), JSON.stringify(body)).toBe(410);
-    expect(body.noClientRelease).toBe(true);
-    expect(body.canonicalApiRoute).toBe("/api/recommendation-review-workflow");
-    expect(body.demoWorkflowBoundary).toMatchObject({
-      allowedOnDemoWorkflow: false,
-      canonicalApiRoute: "/api/recommendation-review-workflow",
-      classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
-      productCommandAllowed: true,
-      reasonCode: "ADVISOR_APPROVAL_WORKFLOW_MOVED",
-    });
-    expect(body.legacyReasonCode).toBe("ADVISOR_APPROVAL_WORKFLOW_MOVED");
-    expect(body.proofDirectness).toBeUndefined();
-    expect(body.workflowType).toBe("advisor-approval");
-  });
-
-  test("unsupported legacy demo workflow action is blocked instead of recorded as fake audit", async ({ request }) => {
-    const beforeCount = await prisma.auditEvent.count();
-    const response = await request.post("/api/demo-workflow", {
-      data: { actionId: "j99.fakeAction" },
-    });
-    const body = await response.json();
-    const afterCount = await prisma.auditEvent.count();
-
-    expect(response.status(), JSON.stringify(body)).toBe(410);
-    expect(body.noClientRelease).toBe(true);
-    expect(body.canonicalApiRoute).toBe("/api/journeys/[id]/commands");
-    expect(body.demoWorkflowBoundary).toMatchObject({
-      allowedOnDemoWorkflow: false,
-      canonicalApiRoute: "/api/journeys/[id]/commands",
-      classification: "UNSUPPORTED_REQUIRES_TYPED_COMMAND",
-      productCommandAllowed: true,
-      reasonCode: "UNSUPPORTED_DEMO_WORKFLOW_ACTION_BLOCKED",
-    });
-    expect(body.legacyReasonCode).toBe("UNSUPPORTED_DEMO_WORKFLOW_ACTION_BLOCKED");
-    expect(afterCount).toBe(beforeCount);
-  });
-
   test.describe.serial("typed advisor approval workflow", () => {
     test.beforeEach(() => {
       execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
@@ -1252,7 +754,7 @@ test.describe("demo workflow API", () => {
           decisionRows?: number;
           mode?: string;
         };
-        demoWorkflowCompatibilityMode?: string;
+        typedWorkflowBoundaryMode?: string;
       } | null;
 
       expect(audit.result).toBe(AuditResult.SUCCESS);
@@ -1265,7 +767,7 @@ test.describe("demo workflow API", () => {
           decisionRows: 1,
           mode: "released_to_client",
         },
-        demoWorkflowCompatibilityMode: "DEMO_WORKFLOW_COMPATIBILITY_ONLY",
+        typedWorkflowBoundaryMode: "TYPED_WORKFLOW_BOUNDARY",
       });
       expect(decision.status).toBe(DecisionStatus.RELEASED_TO_CLIENT);
       expect(decision.releasedToClientAt).toBeTruthy();

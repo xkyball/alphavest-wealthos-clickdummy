@@ -43,4 +43,4 @@ Use the server-required suite for API/UI proof:
 pnpm test:av27:server
 ```
 
-Do not mix `tests/av27-client-context-closure.spec.ts` or `tests/demo-workflow-api.spec.ts` into no-server AV27 commands. Those API suites require the Playwright web server, and the old mixed shape caused the previous `ECONNREFUSED` orchestration failure.
+Do not mix `tests/av27-client-context-closure.spec.ts` or `tests/recommendation-review-workflow-api.spec.ts` into no-server AV27 commands. Those API suites require the Playwright web server, and the old mixed shape caused the previous `ECONNREFUSED` orchestration failure.

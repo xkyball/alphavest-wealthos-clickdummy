@@ -8,9 +8,9 @@ test.describe("Phase 10 P0 API fail-closed contract", () => {
     execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
   });
 
-  test("invalid demo workflow request fails closed without advice execution or client release", async ({ request }) => {
-    const response = await request.post("/api/demo-workflow", {
-      data: { actionId: "releaseClient" },
+  test("invalid recommendation review request fails closed without advice execution or client release", async ({ request }) => {
+    const response = await request.post("/api/recommendation-review-workflow", {
+      data: { action: "releaseClient" },
     });
     const body = await response.json();
 

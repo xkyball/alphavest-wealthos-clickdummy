@@ -33,7 +33,7 @@ This slice reused the existing permission engine, workflow mutation audit path, 
 | `GOVERNANCE_UI_REALITY` | `ACCEPTED_WITH_TARGETED_REFACTOR` | `components/decisions-governance-screen.tsx` now exposes a governance capability boundary on user, role and access-request surfaces. |
 | `ADMIN_NAV_HEADER_REALITY` | `ALREADY_PRESENT_WITH_CURRENT_PROOF` | Existing shell/page contracts and route-smoke tests keep admin/governance as scoped configuration and access control. |
 | `PERMISSION_SERVICE_REALITY` | `ALREADY_PRESENT_WITH_CURRENT_PROOF` | `permission-engine`, control-layer decisions and P0 tests deny admin release/evidence/export/client-visibility bypasses. |
-| `GOVERNANCE_API_REALITY` | `ALREADY_PRESENT_FOR_CURRENT_SCOPE` | Existing admin and demo-workflow APIs support the current demo governance workflows; WP-09 did not require a new route. |
+| `GOVERNANCE_API_REALITY` | `ALREADY_PRESENT_FOR_CURRENT_SCOPE` | Existing admin and typed-workflow APIs support the current demo governance workflows; WP-09 did not require a new route. |
 | `GOVERNANCE_AUDIT_REALITY` | `ALREADY_PRESENT_WITH_CURRENT_PROOF` | Denied admin attempts and governance mutations use the existing audit/fail-closed path. |
 | `GOVERNANCE_TEST_REALITY` | `ACCEPTED_WITH_FOCUSED_TRUE_UX_PROOF` | Added `tests/true-ux-governance-non-bypass.spec.ts` and reused existing governance/permission specs. |
 
@@ -71,7 +71,7 @@ This slice reused the existing permission engine, workflow mutation audit path, 
 - `lib/audit-service.ts`
 - `lib/typed-workflow-command-bus.ts`
 - `app/api/admin-tenants/route.ts`
-- `app/api/demo-workflow/route.ts`
+- `deleted generic workflow route`
 - `prisma/schema.prisma`
 - `tests/governance-non-bypass.spec.ts`
 - `tests/permission-engine.spec.ts`

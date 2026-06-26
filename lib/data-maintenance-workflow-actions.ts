@@ -20,7 +20,7 @@ import {
 } from "@/lib/data-maintenance-action-contract";
 import { fileMetadataService } from "@/lib/file-metadata-service";
 import { stableId } from "@/lib/stable-id";
-import { runDemoWorkflowMutation } from "@/lib/typed-workflow-command-bus";
+import { runTypedWorkflowMutation } from "@/lib/typed-workflow-command-bus";
 
 export {
   dataMaintenanceCanonicalApiRoute,
@@ -76,7 +76,7 @@ function familyMemberId(slug: string, key: string) {
 }
 
 async function runJ04DocumentNavigationAudit(prisma: PrismaClient, actionId: DataMaintenanceWorkflowAction) {
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
@@ -135,7 +135,7 @@ async function runJ04UploadDocument(prisma: PrismaClient, actionId: DataMaintena
     throw new Error(`Invalid J04 file metadata: ${fileMetadata.issues.join(", ")}`);
   }
 
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
@@ -256,7 +256,7 @@ async function runJ04UploadDocument(prisma: PrismaClient, actionId: DataMaintena
 async function runJ04ConfirmFinalize(prisma: PrismaClient, actionId: DataMaintenanceWorkflowAction) {
   const now = new Date();
 
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
@@ -386,7 +386,7 @@ async function runJ04ConfirmFinalize(prisma: PrismaClient, actionId: DataMainten
 }
 
 async function runJ05CreateEntityIntent(prisma: PrismaClient, actionId: DataMaintenanceWorkflowAction) {
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
@@ -425,7 +425,7 @@ async function runJ05CreateEntityIntent(prisma: PrismaClient, actionId: DataMain
 async function runJ05ContinueEntity(prisma: PrismaClient, actionId: DataMaintenanceWorkflowAction) {
   const now = new Date();
 
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
@@ -531,7 +531,7 @@ async function runJ05ContinueEntity(prisma: PrismaClient, actionId: DataMaintena
 }
 
 async function runJ05EditEntity(prisma: PrismaClient, actionId: DataMaintenanceWorkflowAction) {
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
@@ -582,7 +582,7 @@ async function runJ05ActionGate(prisma: PrismaClient, actionId: DataMaintenanceW
   const isView = actionId === "j05.viewDetails";
   const isMarkReady = actionId === "j05.markReady";
 
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
@@ -662,7 +662,7 @@ async function runJ05ActionGate(prisma: PrismaClient, actionId: DataMaintenanceW
 }
 
 async function runJ09PortalUpload(prisma: PrismaClient, actionId: DataMaintenanceWorkflowAction) {
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
@@ -700,7 +700,7 @@ async function runJ09PortalUpload(prisma: PrismaClient, actionId: DataMaintenanc
 async function runJ09SubmitProfile(prisma: PrismaClient, actionId: DataMaintenanceWorkflowAction) {
   const now = new Date();
 
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
@@ -766,7 +766,7 @@ async function runJ09FamilyMember(prisma: PrismaClient, actionId: DataMaintenanc
   const isSave = actionId === "j09.saveFamilyChanges";
   const dateOfBirth = new Date("2003-04-14T00:00:00.000Z");
 
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,
@@ -845,7 +845,7 @@ async function runJ09Relationship(prisma: PrismaClient, actionId: DataMaintenanc
   const now = new Date();
   const isOpen = actionId === "j09.openFamilyMap";
 
-  return runDemoWorkflowMutation(
+  return runTypedWorkflowMutation(
     prisma,
     {
       actionId,

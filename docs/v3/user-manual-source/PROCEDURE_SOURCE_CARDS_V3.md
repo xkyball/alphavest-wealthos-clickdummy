@@ -530,7 +530,7 @@ Variants and branches: Happy path, blocked/restricted state, missing evidence, p
 
 Troubleshooting / blocked states: Check role, tenant, evidence completeness, compliance status, redaction status and current workflow state.
 
-Current implementation status: E3 navigable UI with demo workflow actions; final decision/evidence package persistence remains incomplete.
+Current implementation status: E3 navigable UI with typed workflow actions; final decision/evidence package persistence remains incomplete.
 
 Source proof: AGENTS.md; CODEX_MASTER_TASK.md; PAGEFLOW_USERFLOW_MAPPING_V3.md; PAGE_SPECS_V3.md; USER_JOURNEY_PLAYBOOK_V3.md; route-registry.ts; relevant component/demo data.
 

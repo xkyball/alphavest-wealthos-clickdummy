@@ -73,4 +73,4 @@ Notes:
 
 ## Recommendation
 
-Bold next cleanup: stop extending the legacy all-purpose demo workflow mutation for advisor/compliance/release semantics. Promote the P44 phase modules into a single typed workflow command bus with separate command families for analyst draft, advisor review, compliance release and export. That removes the current compatibility layer as a future hiding place for safety regressions.
+Bold next cleanup: stop extending the legacy all-purpose typed workflow mutation for advisor/compliance/release semantics. Promote the P44 phase modules into a single typed workflow command bus with separate command families for analyst draft, advisor review, compliance release and export. That removes the current compatibility layer as a future hiding place for safety regressions.

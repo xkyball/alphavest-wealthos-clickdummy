@@ -263,7 +263,7 @@ Evidence:
 
 - `auditService.assertCriticalAuditWritable` defines required fields and fail-closed behavior.
 - Upload asserts critical audit writable before creating document/evidence rows.
-- `runDemoWorkflowMutation` asserts audit writable before mutation.
+- `runTypedWorkflowMutation` asserts audit writable before mutation.
 - Audit events include actor, role, tenant, target, previous/next state, result and reason.
 
 Gap:

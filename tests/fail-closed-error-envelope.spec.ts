@@ -5,14 +5,14 @@ import { buildFailClosedErrorEnvelope, failClosedJson } from "../lib/control-lay
 test.describe("WCL WS-10 fail-closed error envelope", () => {
   test("standardizes safe API errors without silent advancement", () => {
     const envelope = buildFailClosedErrorEnvelope({
-      error: "Invalid demo workflow request.",
+      error: "Invalid recommendation review request.",
       issues: ["action_required"],
       reasonCode: "INVALID_REQUEST",
     });
 
     expect(envelope).toEqual({
       apiState: "VALIDATION_ERROR",
-      error: "Invalid demo workflow request.",
+      error: "Invalid recommendation review request.",
       issues: ["action_required"],
       mutated: false,
       noAdviceExecution: true,
@@ -29,7 +29,7 @@ test.describe("WCL WS-10 fail-closed error envelope", () => {
 
   test("marks retryable infrastructure failures without relaxing release gates", () => {
     const envelope = buildFailClosedErrorEnvelope({
-      error: "DATABASE_URL is required for demo workflow actions.",
+      error: "DATABASE_URL is required for typed workflow actions.",
       reasonCode: "DATABASE_URL_REQUIRED",
       retryAllowed: true,
     });

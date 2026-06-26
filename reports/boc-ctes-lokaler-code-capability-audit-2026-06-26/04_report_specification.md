@@ -37,7 +37,7 @@ Current-run E5 evidence for this execution:
 
 ```text
 pnpm guard:source
-PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm exec playwright test tests/demo-workflow-action-registry.spec.ts tests/capture-screen-model-context.spec.ts tests/capability-report-drift-gate.spec.ts --workers=1
+PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm exec playwright test tests/screencast-new-system-contract.spec.ts tests/capture-screen-model-context.spec.ts tests/capability-report-drift-gate.spec.ts --workers=1
 ```
 
 Current-run proof result:
@@ -53,19 +53,19 @@ Current-run proof result:
 | `COMPLETE_VERTICAL_SLICE` | UI entry, API/handler, service/workflow, DB or justified non-persistence, guard/audit/visibility and current-run positive and negative proof are all present. |
 | `STRONG_VERTICAL_CANDIDATE` | UI/API/service/DB/guard layers are statically present and local tests exist, but full current-run end-to-end execution is missing. |
 | `API_BACKED_PARTIAL` | Real API/service/DB path exists, but a layer is missing, unrun, indirectly UI-bound or not fully guarded/test-proven. |
-| `TYPED_COMMAND_BACKED_PARTIAL` | Typed command endpoint/client/service exists and is no longer routed through `/api/demo-workflow`, but full vertical runtime proof is incomplete. |
+| `TYPED_COMMAND_BACKED_PARTIAL` | Typed command endpoint/client/service exists and is no longer routed through a generic workflow bus, but full vertical runtime proof is incomplete. |
 | `SERVICE_BACKED_INTERNAL` | Service or command bus mutates/guards data, but UI binding or user-facing workflow is indirect. |
 | `READMODEL_ONLY` | Read API/service exists; no write/edit workflow is proven. |
 | `UI_ONLY_STATIC` | UI visible, but no local mutation/handler proof; includes explicit static-control notes. |
 | `BLOCKED_UI_SAFETY_STATE` | UI intentionally disables or blocks action due to safety/permission/workflow state. |
 | `SCHEMA_ONLY` | Prisma model/field exists, but no local UI/API/service operation was found. |
-| `LEGACY_DEMO_410_BOUNDARY` | `/api/demo-workflow` or screencast support exists only as a fail-closed legacy boundary; no direct product or demo-only mutation may execute there. |
+| `DEMO_WORKFLOW_ROUTE_DELETED` | The retired generic workflow route is absent; no direct product-like mutation may execute through a generic action-id bus. |
 | `UNPROVEN` | Insufficient evidence for a capability claim. |
 
 Forbidden status usage:
 
 - Do not classify product-like Jxx commands as `DEMO_COMMAND_BACKED_PARTIAL`.
-- Do not use `/api/demo-workflow` as a product API layer.
+- Do not use a generic workflow route as a product API layer.
 - Do not use `COMPLETE_VERTICAL_SLICE` in generated capability tables unless E5/E6 current-run proof covers every required layer.
 
 ## Complete Vertical Slice Criteria
@@ -93,7 +93,7 @@ No capability may be marked `COMPLETE_VERTICAL_SLICE` unless every criterion bel
 | Audit UI is not audit persistence | Audit display surfaces must be separated from audit write/storage paths and tests. |
 | Test honesty | Unrun tests are proof intent, not pass claims. Current-run commands must be listed verbatim. |
 | Drift gate authority | Capture/report generator context must reject stale route/model/API counts and generated `COMPLETE_VERTICAL_SLICE` overclaims. |
-| Demo boundary | `/api/demo-workflow` is a legacy fail-closed 410 boundary. Moved typed product commands must point to canonical typed APIs. |
+| Deleted generic route boundary | The retired generic workflow route is absent. Product commands must point to canonical typed APIs. |
 | Internet boundary | Internet may support methodology/tooling only; it cannot be used as evidence for local project facts. |
 
 ## Required Report Sections
@@ -120,7 +120,7 @@ No capability may be marked `COMPLETE_VERTICAL_SLICE` unless every criterion bel
 | Conservative complete claims | No `COMPLETE_VERTICAL_SLICE` without current-run positive and negative proof. |
 | UI static separation | UI-only/static/disabled controls are explicitly separated from mutations. |
 | Schema-only separation | Schema breadth is not treated as editability. |
-| Typed command separation | Product-like migrated Jxx families are reported through typed command routes, not `/api/demo-workflow`. |
+| Typed command separation | Product-like migrated Jxx families are reported through typed command routes, not `/api/recommendation-review-workflow`. |
 | Test honesty | Unrun tests are listed as local proof intent, not pass claims. |
 | Safety honesty | Client visibility, advice, release, export and admin bypass claims require guard and negative proof. |
 | Decision readiness | Report ends with baseline acceptance options and follow-up authorization state. |

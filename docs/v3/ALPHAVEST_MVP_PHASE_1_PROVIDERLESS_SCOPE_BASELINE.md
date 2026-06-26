@@ -143,7 +143,7 @@ Minimum later test targets:
 | Area | Phase 1 Impact |
 | --- | --- |
 | Routes | 001-006, 013-018, 019-020, 027-030, 048-051 are mapped as affected; 008-010 and 054-058 remain relevant for route/action/payload separation. No route changed. |
-| APIs | `/api/demo-workflow`, `/api/documents`, `/api/documents/upload` are affected surfaces; candidate current-user/access API remains unauthorized until later handoff. No API changed. |
+| APIs | `/api/recommendation-review-workflow`, `/api/documents`, `/api/documents/upload` are affected surfaces; candidate current-user/access API remains unauthorized until later handoff. No API changed. |
 | Models | `User`, `UserProfile`, `ClientTenant`, `Role`, `Permission`, `UserRole`, `RolePermission`, plus object-scope models `Document`, `EvidenceRecord`, `Decision`, `ExportRequest`, `AuditEvent`. No schema changed. |
 | Services | `demo-session-provider`, `permission-engine`, `visibility-engine`, route guards/session context, document upload/list and export projection surfaces. No service changed. |
 | Tests | Existing permission/client-visibility/upload/export specs are proof candidates. No tests were added or run. |

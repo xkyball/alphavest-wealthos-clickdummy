@@ -33,14 +33,14 @@ WP-04 proves that AI/rules drafts, assumptions, internal rationale and complianc
 - `lib/control-layer/export-safety.ts`
 - `lib/control-layer/visibility-projection.ts`
 - `lib/typed-workflow-command-bus.ts`
-- `lib/demo-workflow-validation.ts`
+- `lib/recommendation-review-workflow-validation.ts`
 - `lib/domain-types.ts`
 - `lib/export-service.ts`
 - `lib/internal-workflow-demo-data.ts`
 - `lib/visibility-engine.ts`
 - `lib/workflow-gate.ts`
 - `tests/client-visibility-projection.spec.ts`
-- `tests/demo-workflow-api.spec.ts`
+- `tests/recommendation-review-workflow-api.spec.ts`
 - `tests/export-safety.spec.ts`
 - `tests/route-smoke.spec.ts`
 - `tests/true-ux-client-projection.spec.ts`
@@ -51,7 +51,7 @@ WP-04 proves that AI/rules drafts, assumptions, internal rationale and complianc
 
 | Command | Result |
 |---|---|
-| `pnpm playwright test tests/client-visibility-projection.spec.ts tests/export-safety.spec.ts tests/true-ux-client-projection.spec.ts tests/true-ux-p0-safety.spec.ts tests/demo-workflow-api.spec.ts` | PASS, 37 passed |
+| `pnpm playwright test tests/client-visibility-projection.spec.ts tests/export-safety.spec.ts tests/true-ux-client-projection.spec.ts tests/true-ux-p0-safety.spec.ts tests/recommendation-review-workflow-api.spec.ts` | PASS, 37 passed |
 | `pnpm phase:check` | PASS with existing warnings |
 
 ## Known Warnings

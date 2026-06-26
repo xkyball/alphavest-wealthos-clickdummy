@@ -56,7 +56,7 @@ Top-level app pages:
 | `app/journeys/page.tsx`, `app/journeys/[id]/page.tsx` | Journey UI pages. |
 | `app/layout.tsx`, `app/error.tsx`, `app/loading.tsx`, `app/not-found.tsx`, `app/globals.css` | Framework shell and styling. |
 
-API route files found: `33`
+API route files found: `32`
 
 | API file | Methods observed |
 | --- | --- |
@@ -72,7 +72,6 @@ API route files found: `33`
 | `app/api/current-user/route.ts` | `GET` |
 | `app/api/dashboard-metrics/route.ts` | `GET` |
 | `app/api/data-maintenance/actions/route.ts` | `POST` |
-| `app/api/demo-workflow/route.ts` | `POST` |
 | `app/api/documents/review/route.ts` | `POST` |
 | `app/api/documents/route.ts` | `GET` |
 | `app/api/documents/upload/route.ts` | `POST` |
@@ -123,7 +122,7 @@ DB-backed or Prisma-touching code files found by static search:
 
 | Area | Files |
 | --- | --- |
-| API DB transaction hub | `app/api/demo-workflow/route.ts`, `app/api/advice-release-history/actions/route.ts`, `app/api/data-maintenance/actions/route.ts`, `app/api/platform-admin/actions/route.ts`, `app/api/tenant-governance/actions/route.ts` |
+| API DB transaction hub | `app/api/recommendation-review-workflow/route.ts`, `app/api/advice-release-history/actions/route.ts`, `app/api/data-maintenance/actions/route.ts`, `app/api/platform-admin/actions/route.ts`, `app/api/tenant-governance/actions/route.ts` |
 | Tenant/profile/family/entity/data services | `lib/admin-tenant-readmodel-service.ts`, `lib/data-maintenance-workflow-actions.ts`, `lib/data-quality-repository.ts`, `lib/data-quality-service.ts`, `lib/dbtf-form-service.ts`, `lib/dbtf-table-service.ts` |
 | Auth/current user | `lib/auth/current-user.ts`, `lib/demo/demo-auth-provider-service.ts` |
 | Documents/evidence | `lib/document-upload-service.ts`, `lib/evidence-review-service.ts` |
@@ -187,7 +186,7 @@ Inventory metrics from this run:
 
 | Metric | Current local result |
 | --- | ---: |
-| API route files | 33 |
+| API route files | 32 |
 | Test/source files under `tests/**` | 146 |
 | `lib/**` TypeScript files | 129 |
 | `components/**` TS/TSX files | 57 |
@@ -201,7 +200,7 @@ The repo contains a broad Playwright/test suite. Relevant proof families include
 | Family | Examples |
 | --- | --- |
 | Route/navigation/UI shell | `route-smoke.spec.ts`, `navigation-shell.spec.ts`, `journey-ui.spec.ts` |
-| API/service contracts | `demo-workflow-api.spec.ts`, `document-upload-api.spec.ts`, `evidence-review-api.spec.ts`, `export-workflow-api.spec.ts`, `journey-api.spec.ts`, `data-quality-service.spec.ts` |
+| API/service contracts | `recommendation-review-workflow-api.spec.ts`, `document-upload-api.spec.ts`, `evidence-review-api.spec.ts`, `export-workflow-api.spec.ts`, `journey-api.spec.ts`, `data-quality-service.spec.ts` |
 | Safety/RBAC/no leakage | `permission-engine.spec.ts`, `governance-non-bypass.spec.ts`, `workflow-gate.spec.ts`, `client-visibility-projection.spec.ts`, `true-ux-p0-safety.spec.ts` |
 | Interaction lifecycle | `modal-lifecycle-hardening.spec.ts`, `drawer-lifecycle-hardening.spec.ts`, `confirmation-lifecycle.spec.ts`, `document-upload-lifecycle-hardening.spec.ts` |
 | Schema/alignment | `schema-alignment.spec.ts`, `source-reality-gate.spec.ts` |

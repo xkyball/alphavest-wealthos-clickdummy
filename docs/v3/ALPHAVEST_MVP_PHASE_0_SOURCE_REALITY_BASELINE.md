@@ -73,7 +73,7 @@ Phase 0 did not change product code, UI routes, API routes, Prisma schema, migra
 | Reference-only route workset | 3 | `061`, `062`, `063`. |
 | Hold-pending-decision route workset | 7 | `064`, `065`, `066`, `067`, `069`, `070`, `071`. |
 | Clean page visual assets | 63 | `public/reference/page_ui_v3/clean_pages/` contains 63 files. |
-| API route handlers | 4 | `app/api/demo-workflow/route.ts`, `app/api/documents/route.ts`, `app/api/documents/upload/route.ts`, `app/api/review-monitoring/route.ts`. |
+| API route handlers | 4 | `app/api/recommendation-review-workflow/route.ts`, `app/api/documents/route.ts`, `app/api/documents/upload/route.ts`, `app/api/review-monitoring/route.ts`. |
 | Prisma models | 42 | `prisma/schema.prisma`. |
 | Prisma enums | 22 | `prisma/schema.prisma`. |
 | Test spec files | 17 | `tests/*.spec.ts`. |
@@ -86,7 +86,7 @@ Inventory note: the current route registry contains 71 screen route entries. It 
 
 | API | Phase 0 Status |
 | --- | --- |
-| `/api/demo-workflow` | Existing demo workflow action transport. Request-shape validation is covered by existing tests, but was not rerun in Phase 0. |
+| `/api/recommendation-review-workflow` | Existing typed workflow action transport. Request-shape validation is covered by existing tests, but was not rerun in Phase 0. |
 | `/api/documents` | Existing scoped document list route. Presence does not prove all future object-scope requirements. |
 | `/api/documents/upload` | Existing multipart upload route using `request.formData()` and `document-upload-service`. Phase 0 records presence only; it does not rerun upload proof or claim production upload readiness. |
 | `/api/review-monitoring` | Existing review monitoring API surface. It remains P1/support guarded by journey scope and no-auto-advice rules. |

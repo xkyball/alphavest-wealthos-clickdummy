@@ -1,7 +1,7 @@
 {
   "auditDate": "2026-06-17",
   "mode": "Max mixed ENGINE_v2 + ENGINE_v3",
-  "verdict": "AlphaVest is a strong demo workflow simulator, but it does not yet support real document upload and does not yet provide generalized operational data maintenance for many visible workflows.",
+  "verdict": "AlphaVest is a strong typed workflow simulator, but it does not yet support real document upload and does not yet provide generalized operational data maintenance for many visible workflows.",
   "classificationScale": {
     "E0": "Not present",
     "E1": "Visual only",
@@ -21,7 +21,7 @@
       "evidence": [
         "components/client-intake-screen.tsx document upload screen is visual/static",
         "Legacy lib/screencast-demo-client.ts has been deleted; product-like command surfaces must use typed command clients",
-        "app/api/demo-workflow/route.ts is a fail-closed legacy boundary for moved product-like actions",
+        "app/api/recommendation-review-workflow/route.ts is a deleted generic route boundary for moved product-like actions",
         "lib/file-metadata-service.ts validates metadata, not bytes",
         "tests/file-export-realism.spec.ts asserts metadata-only behavior"
       ],

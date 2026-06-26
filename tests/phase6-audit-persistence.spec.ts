@@ -13,7 +13,7 @@ import {
 import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
 import {
   AuditPersistenceUnavailableError,
-  runDemoWorkflowMutation,
+  runTypedWorkflowMutation,
 } from "../lib/typed-workflow-command-bus";
 
 test.describe("SCF-P06 critical gate audit persistence", () => {
@@ -54,7 +54,7 @@ test.describe("SCF-P06 critical gate audit persistence", () => {
   test("writes SCF-P06 audit metadata for critical successful mutations", async () => {
     const compliance = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "summit" });
 
-    const result = await runDemoWorkflowMutation(
+    const result = await runTypedWorkflowMutation(
       prisma,
       {
         actionId: "phase06.complianceReleaseAuditMetadata",
@@ -105,7 +105,7 @@ test.describe("SCF-P06 critical gate audit persistence", () => {
     let mutateCalled = false;
 
     await expect(
-      runDemoWorkflowMutation(
+      runTypedWorkflowMutation(
         prisma,
         {
           actionId: "phase06.auditUnavailableCriticalAction",

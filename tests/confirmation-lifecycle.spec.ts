@@ -26,7 +26,7 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
   test("release confirmation cannot submit while invalid and cancel performs no API mutation", async ({ page }) => {
     const workflowRequests: string[] = [];
     page.on("request", (request) => {
-      if (request.url().includes("/api/demo-workflow")) {
+      if (request.url().includes("/api/recommendation-review-workflow")) {
         workflowRequests.push(request.method());
       }
     });
@@ -68,7 +68,7 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
     await expect(page.getByTestId("j02-release-client")).toHaveAttribute("data-ux-lifecycle-result", "submits-audited-release");
 
     const responsePromise = page.waitForResponse(
-      (response) => response.url().includes("/api/demo-workflow") && response.request().method() === "POST",
+      (response) => response.url().includes("/api/recommendation-review-workflow") && response.request().method() === "POST",
     );
 
     await page.getByTestId("j02-release-client").click();
@@ -113,7 +113,7 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
       "submits-audited-evidence-request",
     );
     const responsePromise = page.waitForResponse(
-      (response) => response.url().includes("/api/demo-workflow") && response.request().method() === "POST",
+      (response) => response.url().includes("/api/recommendation-review-workflow") && response.request().method() === "POST",
     );
 
     await page.getByTestId("j02-confirm-request-evidence").click();
@@ -133,7 +133,7 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
   test("compliance block keep-blocked paths close without API mutation", async ({ page }) => {
     const workflowRequests: string[] = [];
     page.on("request", (request) => {
-      if (request.url().includes("/api/demo-workflow")) {
+      if (request.url().includes("/api/recommendation-review-workflow")) {
         workflowRequests.push(request.method());
       }
     });

@@ -37,7 +37,7 @@ Result: `26 passed`.
 
 - This upgrades the listed typed command surfaces from static/source evidence to focused runtime proof for this run.
 - This does not certify every product route, every role, every tenant, every DB transition or every visual state.
-- This does not authorize `/api/demo-workflow` as a product-like command API.
+- This does not authorize `/api/recommendation-review-workflow` as a product-like command API.
 - This does not complete J01 or J02/J03 cleanup; those remain separate authorized follow-up tickets.
 
 ## Screenshot Note

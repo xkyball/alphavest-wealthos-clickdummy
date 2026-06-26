@@ -19,21 +19,21 @@ WP-05 proves that advisor approval, compliance release, compliance block and evi
 
 ## Changed Files
 
-- `lib/demo-workflow-validation.ts`
+- `lib/recommendation-review-workflow-validation.ts`
 - `lib/typed-workflow-command-bus.ts`
-- `tests/demo-workflow-validation.spec.ts`
+- `tests/recommendation-review-workflow-validation.spec.ts`
 - `V1_0_WP05_ADVISOR_COMPLIANCE_RELEASE_REPORT.md`
 
 ## Inspected Files
 
-- `app/api/demo-workflow/route.ts`
+- `deleted generic workflow route`
 - `components/internal-workflow-screen.tsx`
 - `components/decisions-governance-screen.tsx`
 - `lib/control-layer/client-visibility.ts`
 - `lib/typed-workflow-command-bus.ts`
-- `lib/demo-workflow-validation.ts`
+- `lib/recommendation-review-workflow-validation.ts`
 - `lib/workflow-gate.ts`
-- `tests/demo-workflow-api.spec.ts`
+- `tests/recommendation-review-workflow-api.spec.ts`
 - `tests/workflow-gate.spec.ts`
 - `tests/ui-clickflow-phase01-05.spec.ts`
 - `tests/scf-p04-p06-flow-ui.spec.ts`
@@ -42,7 +42,7 @@ WP-05 proves that advisor approval, compliance release, compliance block and evi
 
 | Command | Result |
 |---|---|
-| `pnpm playwright test tests/demo-workflow-validation.spec.ts tests/demo-workflow-api.spec.ts tests/workflow-gate.spec.ts tests/ui-clickflow-phase01-05.spec.ts tests/scf-p04-p06-flow-ui.spec.ts` | PASS, 37 passed |
+| `pnpm playwright test tests/recommendation-review-workflow-validation.spec.ts tests/recommendation-review-workflow-api.spec.ts tests/workflow-gate.spec.ts tests/ui-clickflow-phase01-05.spec.ts tests/scf-p04-p06-flow-ui.spec.ts` | PASS, 37 passed |
 | `pnpm phase:check` | PASS with existing warnings |
 
 ## Known Warnings

@@ -19,7 +19,7 @@ test.describe("WCL WS-00 to WS-04 control layer spine", () => {
     expect(packageJson.scripts["db:validate"]).toBe("prisma validate");
     expect(packageJson.scripts["test:permissions"]).toContain("tests/permission-engine.spec.ts");
     expect(packageJson.scripts["test:workflow-gate"]).toContain("tests/workflow-gate.spec.ts");
-    expect(packageJson.scripts["test:workflow-api"]).toContain("tests/demo-workflow-api.spec.ts");
+    expect(packageJson.scripts["test:workflow-api"]).toContain("tests/recommendation-review-workflow-api.spec.ts");
     expect(packageJson.scripts["phase:check"]).toContain("pnpm typecheck");
   });
 

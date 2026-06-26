@@ -56,7 +56,7 @@ Default customer video captions stay concise and English-first because the app a
 | --- | --- |
 | `route-static` | Route exists and can be rendered, but no workflow execution is claimed. |
 | `fixture-backed` | Deterministic demo data/fixture exists. |
-| `demo-action-executable` | A specific demo workflow action exists. |
+| `demo-action-executable` | A specific typed workflow action exists. |
 | `test-proven` | Automated or direct proof exists. |
 | `customer-recording-ready` | Ready for customer recording after QA-fast pass. |
 | `policy-frame-only` | Used as narrative/policy frame, not mutation proof. |

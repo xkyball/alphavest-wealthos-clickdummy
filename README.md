@@ -6,7 +6,7 @@ AlphaVest WealthOS is being built as a demo-data-first web application for wealt
 
 This repository is at Phase 19: Hardening and Final Handoff. The handoff pack and visual references are present, the application shell renders at `/`, the local PostgreSQL database can be migrated and seeded with deterministic AlphaVest demo data, the shell exposes demo role and tenant context switching without real authentication, every catalogue route renders through the central route registry, and all 63 catalogue pages render through normalized AlphaVest UI groups.
 
-Phases 14-18 added stateful demo workflow coverage for J02-J09, a shared audited mutation wrapper, role-aware demo permission denials, API request validation, data-quality service checks, deterministic file metadata and metadata-only export package manifests. Phase 19 adds hardened loading, error and unknown-route states plus final handoff documentation.
+Phases 14-18 added stateful typed workflow coverage for J02-J09, a shared audited mutation wrapper, role-aware demo permission denials, API request validation, data-quality service checks, deterministic file metadata and metadata-only export package manifests. Phase 19 adds hardened loading, error and unknown-route states plus final handoff documentation.
 
 The app still intentionally avoids real authentication, real client data, final financial/legal/tax advice, real object storage, binary upload/download streaming and production identity-provider authorization. Compliance release remains the guard for client visibility, and no unapproved advice should reach the client.
 

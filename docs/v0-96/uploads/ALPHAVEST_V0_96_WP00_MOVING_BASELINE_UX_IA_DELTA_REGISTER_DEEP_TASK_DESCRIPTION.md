@@ -96,7 +96,7 @@ app/api/admin-tenants/route.ts
 app/api/audit-events/route.ts
 app/api/auth/dummy/route.ts
 app/api/dashboard-metrics/route.ts
-app/api/demo-workflow/route.ts
+deleted generic workflow route
 app/api/documents/review/route.ts
 app/api/documents/route.ts
 app/api/documents/upload/route.ts
@@ -125,7 +125,7 @@ tests/document-upload-api.spec.ts
 tests/document-upload-flow.spec.ts
 tests/evidence-review-api.spec.ts
 tests/workflow-gate.spec.ts
-tests/demo-workflow-api.spec.ts
+tests/recommendation-review-workflow-api.spec.ts
 tests/permission-engine.spec.ts
 tests/governance-non-bypass.spec.ts
 tests/audit-fail-closed.spec.ts
@@ -295,7 +295,7 @@ WP-00 must not:
 |---|---|
 | Auth/providerless/session | Mapped user/tenant/role context. |
 | Documents/evidence APIs | Upload, list, review, evidence sufficiency support. |
-| Demo workflow / workflow gate | Analyst/advisor/compliance state transitions. |
+| Typed workflow / workflow gate | Analyst/advisor/compliance state transitions. |
 | Visibility engine | Client-safe projection and redaction. |
 | Permission engine | Route/action/object/payload separation. |
 | Audit service / audit events API | Persisted audit proof. |

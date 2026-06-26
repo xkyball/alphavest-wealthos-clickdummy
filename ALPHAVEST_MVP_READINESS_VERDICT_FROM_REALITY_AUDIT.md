@@ -16,7 +16,7 @@
 |---|---|
 | Sieht es nach fertigem MVP aus? | **Nein.** Es sieht nicht nach einem fertigen MVP aus. Es sieht nach einer fortgeschrittenen, teilweise DB-gestützten Demo / einem MVP-nahen Prototypen mit realen Teil-Vertikalen aus. |
 | Wenn nein: wie weit ist es wirklich? | Weiter als ein reiner Clickdummy, aber noch nicht fertig genug für MVP-Claim. Die stärkste echte Vertikale ist Document Upload mit DB/API/Prisma/Audit/Evidence-Pfad. Viele andere Workflows bleiben static/demo/actionId/local-state. |
-| Was ist schon echt? | Real reactive Drawer/Modal primitives, real multipart upload path, persisted uploaded document rows, seeded demo workflow mutations, review-monitoring API reads, broad Prisma schema and some service logic. |
+| Was ist schon echt? | Real reactive Drawer/Modal primitives, real multipart upload path, persisted uploaded document rows, seeded typed workflow mutations, review-monitoring API reads, broad Prisma schema and some service logic. |
 | Was ist noch Demo / partial / static? | Review/approval/compliance/export/governance/client-visibility workflows are still largely seeded actionId demos, static data, metadata-only artefacts, local state, partial lifecycle or insufficient proof. |
 | Was blockiert MVP-Readiness? | Missing typed UI payload → API → service → Prisma → reload proof across core workflows; missing executed P0/validation proof; incomplete interaction lifecycle; incomplete role/client visibility/export/evidence/audit proof. |
 | Was wäre der Minimum Path to MVP? | Patch one vertical at a time: tenant-scoped upload reload, one real review/approval/release workflow, hardened confirmations, live review monitoring, evidence sufficiency, export realism or truth-labeling, then validation/test proof. |
@@ -43,8 +43,8 @@ The project has moved beyond pure clickdummy because document upload and some se
 | Drawer / Modal Lifecycle | Shared primitives are real; some page-level drawers/modals are reactive; several drawer-like/detail surfaces are static/permanent or partial. | Interaction foundation exists, but product workflows are not fully lifecycle-driven. | `PARTIAL` |
 | Upload Vertical | Multipart document upload has real API/service/storage/Prisma/audit/evidence path. | Strongest MVP-like vertical. | `PASS_WITH_LIMITS` |
 | DB / Prisma Reality | Prisma schema exists with broad model coverage; some APIs/services use DB. Many UI areas still bypass DB with static/demo data. | DB exists and is partially wired, but not generally enough for MVP. | `PARTIAL` |
-| API Persistence | `/api/documents/upload` is strongest; `/api/documents` reads persisted uploads; `/api/demo-workflow` mutates seeded fixtures; `/api/review-monitoring` reads snapshots. | APIs exist, but many are demo/seeded or read-only rather than full workflow APIs. | `PARTIAL` |
-| Workflow Persistence | Seeded demo workflow mutations persist some records, but many workflows are fixed actionId paths rather than typed payloaded user workflows. | Blocks finished MVP claim. | `FAIL_FOR_FINISHED_MVP` |
+| API Persistence | `/api/documents/upload` is strongest; `/api/documents` reads persisted uploads; `deleted generic workflow route` mutates seeded fixtures; `/api/review-monitoring` reads snapshots. | APIs exist, but many are demo/seeded or read-only rather than full workflow APIs. | `PARTIAL` |
+| Workflow Persistence | Seeded typed workflow mutations persist some records, but many workflows are fixed actionId paths rather than typed payloaded user workflows. | Blocks finished MVP claim. | `FAIL_FOR_FINISHED_MVP` |
 | Review / Approval / Compliance | Can start in demo screens and actionId paths; not proven as typed end-to-end workflow. | Core MVP workflow remains partial. | `PARTIAL_MAJOR_GAP` |
 | Client Visibility | Visibility logic exists and fails closed at logic level; full UI/API/client role round-trip not proven. | Blocks MVP readiness. | `PARTIAL_MAJOR_GAP` |
 | Evidence / Audit / Export | Upload creates evidence/audit rows; audit exists in selected paths; export is metadata-only or partial. | Evidence/audit partially real; export not MVP-real. | `PARTIAL_MAJOR_GAP` |
@@ -80,7 +80,7 @@ The project has moved beyond pure clickdummy because document upload and some se
 | Multipart document upload | Upload form posts multipart data to `/api/documents/upload`; service validates file/role/tenant, stores bytes, creates DB rows and audit/evidence records. | Strong but mostly one vertical; tenant reload is hardcoded and evidence review lifecycle incomplete. |
 | Uploaded document listing | `/api/documents` reads persisted uploaded documents by tenant slug. | UI uses hardcoded `tenantSlug=morgan` and merges static data. |
 | Prisma baseline | Broad Prisma schema exists with document/evidence/audit/review/export/queue models. | Schema existence is not proof of app wiring. |
-| Demo workflow DB mutations | `/api/demo-workflow` mutates seeded DB records by fixed actionId and writes some audit rows. | Not a general typed workflow API. |
+| Typed workflow DB mutations | `deleted generic workflow route` mutates seeded DB records by fixed actionId and writes some audit rows. | Not a general typed workflow API. |
 | Review monitoring API | `/api/review-monitoring` reads DB-backed monitoring snapshots. | UI still imports static review rows instead of using the live API. |
 | Some permission/gate logic | Permission, workflow gate, visibility and safety logic exists in services. | Not proven end-to-end across UI/API/roles. |
 

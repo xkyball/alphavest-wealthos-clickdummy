@@ -968,7 +968,7 @@ Every task below must cite and obey `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`.
 | Problem | UX can accidentally imply safety gates are passed because a state, chip, button or route is visible. |
 | User Impact | Users may trust or act on incomplete/unapproved/unauthorized information. |
 | Refactoring Intent | Make safety boundaries visible and test-backed without making UX alarmist or confusing. |
-| Target Files | Relevant screen components; lib/permission-engine.ts; lib/visibility-engine.ts; lib/workflow-gate.ts; tests/permission-engine.spec.ts; tests/workflow-gate.spec.ts; tests/demo-workflow-api.spec.ts; tests/document-upload-api.spec.ts; tests/file-export-realism.spec.ts |
+| Target Files | Relevant screen components; lib/permission-engine.ts; lib/visibility-engine.ts; lib/workflow-gate.ts; tests/permission-engine.spec.ts; tests/workflow-gate.spec.ts; tests/recommendation-review-workflow-api.spec.ts; tests/document-upload-api.spec.ts; tests/file-export-realism.spec.ts |
 | Allowed Changes | Add fail-closed UI states, disabled reasons, explicit caveats and tests; wire to existing services/engines where present. |
 | Forbidden Changes | No weakening of safety; no manual override; no bypass; no payload expansion; no schema replacement. |
 | Implementation Steps | 1. Identify route/UI safety claim. 2. Add safe state/copy/disabled reason. 3. Add positive and negative tests. 4. Confirm no route/task changes P1/Hold/Reference scope. |
@@ -990,7 +990,7 @@ Every task below must cite and obey `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`.
 | Problem | UX can accidentally imply safety gates are passed because a state, chip, button or route is visible. |
 | User Impact | Users may trust or act on incomplete/unapproved/unauthorized information. |
 | Refactoring Intent | Make safety boundaries visible and test-backed without making UX alarmist or confusing. |
-| Target Files | Relevant screen components; lib/permission-engine.ts; lib/visibility-engine.ts; lib/workflow-gate.ts; tests/permission-engine.spec.ts; tests/workflow-gate.spec.ts; tests/demo-workflow-api.spec.ts; tests/document-upload-api.spec.ts; tests/file-export-realism.spec.ts |
+| Target Files | Relevant screen components; lib/permission-engine.ts; lib/visibility-engine.ts; lib/workflow-gate.ts; tests/permission-engine.spec.ts; tests/workflow-gate.spec.ts; tests/recommendation-review-workflow-api.spec.ts; tests/document-upload-api.spec.ts; tests/file-export-realism.spec.ts |
 | Allowed Changes | Add fail-closed UI states, disabled reasons, explicit caveats and tests; wire to existing services/engines where present. |
 | Forbidden Changes | No weakening of safety; no manual override; no bypass; no payload expansion; no schema replacement. |
 | Implementation Steps | 1. Identify route/UI safety claim. 2. Add safe state/copy/disabled reason. 3. Add positive and negative tests. 4. Confirm no route/task changes P1/Hold/Reference scope. |
@@ -1012,7 +1012,7 @@ Every task below must cite and obey `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`.
 | Problem | UX can accidentally imply safety gates are passed because a state, chip, button or route is visible. |
 | User Impact | Users may trust or act on incomplete/unapproved/unauthorized information. |
 | Refactoring Intent | Make safety boundaries visible and test-backed without making UX alarmist or confusing. |
-| Target Files | Relevant screen components; lib/permission-engine.ts; lib/visibility-engine.ts; lib/workflow-gate.ts; tests/permission-engine.spec.ts; tests/workflow-gate.spec.ts; tests/demo-workflow-api.spec.ts; tests/document-upload-api.spec.ts; tests/file-export-realism.spec.ts |
+| Target Files | Relevant screen components; lib/permission-engine.ts; lib/visibility-engine.ts; lib/workflow-gate.ts; tests/permission-engine.spec.ts; tests/workflow-gate.spec.ts; tests/recommendation-review-workflow-api.spec.ts; tests/document-upload-api.spec.ts; tests/file-export-realism.spec.ts |
 | Allowed Changes | Add fail-closed UI states, disabled reasons, explicit caveats and tests; wire to existing services/engines where present. |
 | Forbidden Changes | No weakening of safety; no manual override; no bypass; no payload expansion; no schema replacement. |
 | Implementation Steps | 1. Identify route/UI safety claim. 2. Add safe state/copy/disabled reason. 3. Add positive and negative tests. 4. Confirm no route/task changes P1/Hold/Reference scope. |
@@ -1034,7 +1034,7 @@ Every task below must cite and obey `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`.
 | Problem | UX can accidentally imply safety gates are passed because a state, chip, button or route is visible. |
 | User Impact | Users may trust or act on incomplete/unapproved/unauthorized information. |
 | Refactoring Intent | Make safety boundaries visible and test-backed without making UX alarmist or confusing. |
-| Target Files | Relevant screen components; lib/permission-engine.ts; lib/visibility-engine.ts; lib/workflow-gate.ts; tests/permission-engine.spec.ts; tests/workflow-gate.spec.ts; tests/demo-workflow-api.spec.ts; tests/document-upload-api.spec.ts; tests/file-export-realism.spec.ts |
+| Target Files | Relevant screen components; lib/permission-engine.ts; lib/visibility-engine.ts; lib/workflow-gate.ts; tests/permission-engine.spec.ts; tests/workflow-gate.spec.ts; tests/recommendation-review-workflow-api.spec.ts; tests/document-upload-api.spec.ts; tests/file-export-realism.spec.ts |
 | Allowed Changes | Add fail-closed UI states, disabled reasons, explicit caveats and tests; wire to existing services/engines where present. |
 | Forbidden Changes | No weakening of safety; no manual override; no bypass; no payload expansion; no schema replacement. |
 | Implementation Steps | 1. Identify route/UI safety claim. 2. Add safe state/copy/disabled reason. 3. Add positive and negative tests. 4. Confirm no route/task changes P1/Hold/Reference scope. |
@@ -1056,7 +1056,7 @@ Every task below must cite and obey `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`.
 | Problem | UX can accidentally imply safety gates are passed because a state, chip, button or route is visible. |
 | User Impact | Users may trust or act on incomplete/unapproved/unauthorized information. |
 | Refactoring Intent | Make safety boundaries visible and test-backed without making UX alarmist or confusing. |
-| Target Files | Relevant screen components; lib/permission-engine.ts; lib/visibility-engine.ts; lib/workflow-gate.ts; tests/permission-engine.spec.ts; tests/workflow-gate.spec.ts; tests/demo-workflow-api.spec.ts; tests/document-upload-api.spec.ts; tests/file-export-realism.spec.ts |
+| Target Files | Relevant screen components; lib/permission-engine.ts; lib/visibility-engine.ts; lib/workflow-gate.ts; tests/permission-engine.spec.ts; tests/workflow-gate.spec.ts; tests/recommendation-review-workflow-api.spec.ts; tests/document-upload-api.spec.ts; tests/file-export-realism.spec.ts |
 | Allowed Changes | Add fail-closed UI states, disabled reasons, explicit caveats and tests; wire to existing services/engines where present. |
 | Forbidden Changes | No weakening of safety; no manual override; no bypass; no payload expansion; no schema replacement. |
 | Implementation Steps | 1. Identify route/UI safety claim. 2. Add safe state/copy/disabled reason. 3. Add positive and negative tests. 4. Confirm no route/task changes P1/Hold/Reference scope. |
@@ -1078,7 +1078,7 @@ Every task below must cite and obey `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`.
 | Problem | UX can accidentally imply safety gates are passed because a state, chip, button or route is visible. |
 | User Impact | Users may trust or act on incomplete/unapproved/unauthorized information. |
 | Refactoring Intent | Make safety boundaries visible and test-backed without making UX alarmist or confusing. |
-| Target Files | Relevant screen components; lib/permission-engine.ts; lib/visibility-engine.ts; lib/workflow-gate.ts; tests/permission-engine.spec.ts; tests/workflow-gate.spec.ts; tests/demo-workflow-api.spec.ts; tests/document-upload-api.spec.ts; tests/file-export-realism.spec.ts |
+| Target Files | Relevant screen components; lib/permission-engine.ts; lib/visibility-engine.ts; lib/workflow-gate.ts; tests/permission-engine.spec.ts; tests/workflow-gate.spec.ts; tests/recommendation-review-workflow-api.spec.ts; tests/document-upload-api.spec.ts; tests/file-export-realism.spec.ts |
 | Allowed Changes | Add fail-closed UI states, disabled reasons, explicit caveats and tests; wire to existing services/engines where present. |
 | Forbidden Changes | No weakening of safety; no manual override; no bypass; no payload expansion; no schema replacement. |
 | Implementation Steps | 1. Identify route/UI safety claim. 2. Add safe state/copy/disabled reason. 3. Add positive and negative tests. 4. Confirm no route/task changes P1/Hold/Reference scope. |
@@ -1100,7 +1100,7 @@ Every task below must cite and obey `ALPHAVEST_UX_ROUTE_POLICY_MATRIX.md`.
 | Problem | UX can accidentally imply safety gates are passed because a state, chip, button or route is visible. |
 | User Impact | Users may trust or act on incomplete/unapproved/unauthorized information. |
 | Refactoring Intent | Make safety boundaries visible and test-backed without making UX alarmist or confusing. |
-| Target Files | Relevant screen components; lib/permission-engine.ts; lib/visibility-engine.ts; lib/workflow-gate.ts; tests/permission-engine.spec.ts; tests/workflow-gate.spec.ts; tests/demo-workflow-api.spec.ts; tests/document-upload-api.spec.ts; tests/file-export-realism.spec.ts |
+| Target Files | Relevant screen components; lib/permission-engine.ts; lib/visibility-engine.ts; lib/workflow-gate.ts; tests/permission-engine.spec.ts; tests/workflow-gate.spec.ts; tests/recommendation-review-workflow-api.spec.ts; tests/document-upload-api.spec.ts; tests/file-export-realism.spec.ts |
 | Allowed Changes | Add fail-closed UI states, disabled reasons, explicit caveats and tests; wire to existing services/engines where present. |
 | Forbidden Changes | No weakening of safety; no manual override; no bypass; no payload expansion; no schema replacement. |
 | Implementation Steps | 1. Identify route/UI safety claim. 2. Add safe state/copy/disabled reason. 3. Add positive and negative tests. 4. Confirm no route/task changes P1/Hold/Reference scope. |

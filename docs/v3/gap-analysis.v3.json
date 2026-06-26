@@ -22,7 +22,7 @@
     "docs/v3/VISUAL_ASSET_MANIFEST_V3.md",
     "docs/v3/VISUAL_ASSET_MANIFEST_V3.json",
     "app/[...segments]/page.tsx",
-    "app/api/demo-workflow/route.ts",
+    "app/api/recommendation-review-workflow/route.ts",
     "components/",
     "lib/",
     "prisma/schema.prisma",
@@ -215,7 +215,7 @@
   ],
   "confidenceNotes": [
     { "claim": "All mandatory source files were present", "confidence": "high" },
-    { "claim": "J01 selected actions are persisted demo executable", "confidence": "high" },
+    { "claim": "J01 selected actions use compatibility seams with typed command handoff, not demo-execution-as-product", "confidence": "high" },
     { "claim": "Most J02-J10 actions are not domain-persisted", "confidence": "high" },
     { "claim": "Every individual button behavior", "confidence": "medium because this run did not click every route in browser" }
   ],

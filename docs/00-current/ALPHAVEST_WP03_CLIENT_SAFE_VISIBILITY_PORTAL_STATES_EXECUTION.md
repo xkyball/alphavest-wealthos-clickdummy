@@ -180,7 +180,7 @@ Execution status: Blocked until IMPL-1, IMPL-2 and IMPL-3 are complete.
 | `visibilityEngine.projectDocumentPayload` source upload path | `family_cfo` can receive `fileName`, `fileSizeBytes`, `sensitivity`, `status` for own uploaded source documents | Conflict/decision required: this is intentional upload metadata behavior, but `fileName` and `fileSizeBytes` are globally forbidden in `trueUxClientProjectionNoLeakageContract` |
 | `/api/documents` | Calls `listUploadedDocuments`, which projects each document through `visibilityEngine.projectDocumentPayload` | Good boundary reuse, but source-document metadata exception must be explicitly specified |
 | `/api/journeys/[id]/client-projection` | Returns client journey projection and blocks on data-quality gate; response safety marks `internalPayloadReturned: false` | Strong existing route-level safe API pattern |
-| `/api/demo-workflow` | Contains demo workflow actions and client projection assertions in tests | Relevant for release/advisor/upload semantics; do not use as raw client payload source |
+| `deleted generic workflow route` | Contains typed workflow actions and client projection assertions in tests | Relevant for release/advisor/upload semantics; do not use as raw client payload source |
 
 ### Field Exposure Findings
 
@@ -224,7 +224,7 @@ Execution status: Blocked until IMPL-1, IMPL-2 and IMPL-3 are complete.
 | `tests/client-visibility-projection.spec.ts` | WCL wrapper for recommendation/decision/document projection | Strong service-boundary proof |
 | `tests/client-visibility-proof.spec.ts` | Legacy/minimum projection and export checks | Partial regression proof |
 | `tests/document-upload-api.spec.ts` | Upload-only semantics, source-document projection, blocked/released document API projection | Strong upload/API proof; exposes source metadata exception |
-| `tests/demo-workflow-api.spec.ts` | Workflow actions, no client release through intermediate actions, client projection after release | Strong workflow semantics proof |
+| `tests/recommendation-review-workflow-api.spec.ts` | Workflow actions, no client release through intermediate actions, client projection after release | Strong workflow semantics proof |
 | `tests/journey-api.spec.ts` | Journey client projection, no internal leakage, advisor/compliance release flow | Strong API/journey proof |
 | `tests/run2-safety-boundary.spec.ts` | Data-quality blocker turns client projection to blocked | Strong blocked-state API proof |
 | `tests/permission-engine.spec.ts` | Role/permission/visibility restrictions | Partial; not full client portal payload proof |

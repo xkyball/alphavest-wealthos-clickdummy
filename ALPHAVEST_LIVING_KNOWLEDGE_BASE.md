@@ -100,7 +100,7 @@ This Living KB exists to prevent the project from restarting every time the anal
 | Routing model | `full-workflow` uses `app/[...segments]/page.tsx` and `lib/route-registry.ts`. | Zip inventory | `VALIDATED_AGAINST_FULL_WORKFLOW` | Yes: full route map required. |
 | Route count | `lib/route-registry.ts` contains 71 route entries. | Route registry parse | `VALIDATED_AGAINST_FULL_WORKFLOW` | Yes: route classification still needed. |
 | API routes | `full-workflow` has 4 API routes. | Zip inventory | `VALIDATED_AGAINST_FULL_WORKFLOW` | Yes: API contract readiness needed. |
-| API route names | `/api/demo-workflow`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring`. | Zip inventory | `VALIDATED_AGAINST_FULL_WORKFLOW` | Yes: acceptance and safety mapping needed. |
+| API route names | `deleted generic workflow route`, `/api/documents`, `/api/documents/upload`, `/api/review-monitoring`. | Zip inventory | `VALIDATED_AGAINST_FULL_WORKFLOW` | Yes: acceptance and safety mapping needed. |
 | Prisma | `full-workflow` has `prisma/schema.prisma`, migrations and seed support. | Zip inventory | `VALIDATED_AGAINST_FULL_WORKFLOW` | Yes: schema/domain reconciliation needed. |
 | Prisma models | Full-workflow schema contains 42 models. | Prisma parse | `VALIDATED_AGAINST_FULL_WORKFLOW` | Yes: model-by-model mapping needed. |
 | Tests | `full-workflow` has 10 test/spec files. | Zip inventory | `VALIDATED_AGAINST_FULL_WORKFLOW` | Yes: P0 safety coverage unproven. |
@@ -227,7 +227,7 @@ Key full-workflow Prisma models currently known include: `PlatformTenant`, `Clie
 |---|---|---|---|---|
 | Main tests | `main` has no tests. | Nothing for target. | All target proof must come from full-workflow or new tests. | Not target. |
 | Full-workflow tests | 10 test/spec files exist. | Some route/API/service/permission/workflow slices. | Full P0 MVP safety coverage. | Prompt 8. |
-| Existing test files | `committee-review-routes.spec.ts`, `data-quality-service.spec.ts`, `demo-workflow-api.spec.ts`, `document-upload-api.spec.ts`, `document-upload-flow.spec.ts`, `file-export-realism.spec.ts`, `permission-engine.spec.ts`, `review-monitoring-service.spec.ts`, `route-smoke.spec.ts`, `workflow-gate.spec.ts`. | Useful proof base. | Coverage against MVP acceptance gates not yet mapped. | Prompt 8. |
+| Existing test files | `committee-review-routes.spec.ts`, `data-quality-service.spec.ts`, `recommendation-review-workflow-api.spec.ts`, `document-upload-api.spec.ts`, `document-upload-flow.spec.ts`, `file-export-realism.spec.ts`, `permission-engine.spec.ts`, `review-monitoring-service.spec.ts`, `route-smoke.spec.ts`, `workflow-gate.spec.ts`. | Useful proof base. | Coverage against MVP acceptance gates not yet mapped. | Prompt 8. |
 | Route smoke | Test exists. | Likely proves route renderability for a route list. | Does not prove MVP safety. | Prompt 8. |
 | Permission tests | Test exists. | Likely proves part of permission engine. | Admin bypass, payload redaction and route-level negative cases may remain. | Prompt 8. |
 | Workflow gate tests | Test exists. | Likely proves some gate rules. | No-unapproved-advice end-to-end and client visibility release/block may remain. | Prompt 8. |

@@ -155,14 +155,14 @@ Status: `DONE`
 | Evidence/document review | `app/api/documents/review/route.ts` `POST` | `reviewDocumentEvidence` | JSON payload: document ID, tenant, role, action and sufficiency booleans | Validation, not-found, permission, insufficiency and audit-unavailable fail-closed branches | `STRONG_API_SERVICE_CANDIDATE` |
 | Export workflow | `app/api/export-workflow/route.ts` `GET`/`POST` | `getExportWorkflowSnapshot`, `parseExportWorkflowCommandRequest`, `executeExportWorkflowCommand` | Tenant/role query for snapshot; typed command request for scope/redaction/preview/approve/generate/download/share | `ExportWorkflowCommandError` converted to fail-closed response with no approval/download on errors | `STRONG_TYPED_COMMAND_API_CANDIDATE` |
 | Journey workflow | `app/api/journeys/**` | `listJourneysForCurrentUser`, `createJourneyForCurrentUser`, `executeJourneyCommandForCurrentUser`, projection/evidence/audit services | Current user resolved from request; journey command parsed by `parseJourneyCommandRequest` | Normalized route errors fail closed before state advance; client projection suppresses internals | `STRONG_TYPED_JOURNEY_COMMAND_CANDIDATE` |
-| Advisor review J01 | `app/api/advisor-review/actions/route.ts` `POST` | `isAdvisorReviewWorkflowAction`, `runAdvisorReviewWorkflowAction`, `runDemoWorkflowMutation` | JSON action ID allow-list for `j01.routeToAdvisor` / `j01.escalateAdvisor` | Requires DB URL; invalid action and audit-unavailable paths fail closed; no advice/client release | `TYPED_ADVISOR_REVIEW_COMMAND_CANDIDATE` |
-| Advice/release-history J02/J03 | `app/api/advice-release-history/actions/route.ts` `POST` | `runAdviceReleaseHistoryWorkflowAction`, `workflowGate`, `dataQualityService`, `runDemoWorkflowMutation` | JSON action ID allow-list plus audit failure simulation flag | Client-visible result only if service result explicitly reports `clientVisible: true`; fail-closed on audit-unavailable | `TYPED_ADVICE_RELEASE_HISTORY_COMMAND_CANDIDATE` |
-| Data maintenance J04/J05/J09 | `app/api/data-maintenance/actions/route.ts` `POST` | `runDataMaintenanceWorkflowAction`, `fileMetadataService`, `runDemoWorkflowMutation` | JSON action ID allow-list | Invalid action and audit-unavailable fail closed; no advice/release | `TYPED_DATA_MAINTENANCE_COMMAND_CANDIDATE` |
-| Tenant governance J06/J07 | `app/api/tenant-governance/actions/route.ts` `POST` | `runTenantGovernanceWorkflowAction`, `runDemoWorkflowMutation` | JSON action ID allow-list | Invalid action and audit-unavailable fail closed; no advice/release | `TYPED_TENANT_GOVERNANCE_COMMAND_CANDIDATE` |
+| Advisor review J01 | `app/api/advisor-review/actions/route.ts` `POST` | `isAdvisorReviewWorkflowAction`, `runAdvisorReviewWorkflowAction`, `runTypedWorkflowMutation` | JSON action ID allow-list for `j01.routeToAdvisor` / `j01.escalateAdvisor` | Requires DB URL; invalid action and audit-unavailable paths fail closed; no advice/client release | `TYPED_ADVISOR_REVIEW_COMMAND_CANDIDATE` |
+| Advice/release-history J02/J03 | `app/api/advice-release-history/actions/route.ts` `POST` | `runAdviceReleaseHistoryWorkflowAction`, `workflowGate`, `dataQualityService`, `runTypedWorkflowMutation` | JSON action ID allow-list plus audit failure simulation flag | Client-visible result only if service result explicitly reports `clientVisible: true`; fail-closed on audit-unavailable | `TYPED_ADVICE_RELEASE_HISTORY_COMMAND_CANDIDATE` |
+| Data maintenance J04/J05/J09 | `app/api/data-maintenance/actions/route.ts` `POST` | `runDataMaintenanceWorkflowAction`, `fileMetadataService`, `runTypedWorkflowMutation` | JSON action ID allow-list | Invalid action and audit-unavailable fail closed; no advice/release | `TYPED_DATA_MAINTENANCE_COMMAND_CANDIDATE` |
+| Tenant governance J06/J07 | `app/api/tenant-governance/actions/route.ts` `POST` | `runTenantGovernanceWorkflowAction`, `runTypedWorkflowMutation` | JSON action ID allow-list | Invalid action and audit-unavailable fail closed; no advice/release | `TYPED_TENANT_GOVERNANCE_COMMAND_CANDIDATE` |
 | Platform admin J10 | `app/api/platform-admin/actions/route.ts` `POST` | `runPlatformAdminWorkflowAction` | JSON action ID allow-list | Writes audit-shaped result and returns no advice/release; safe error response on failure | `TYPED_PLATFORM_ADMIN_COMMAND_CANDIDATE` |
-| Recommendation review workflow | `app/api/recommendation-review-workflow/route.ts` `POST` | `handleRecommendationReviewWorkflowRequest`, `parseDemoWorkflowRequestBody`, `runAdvisorApprovalWorkflowMutation` | Typed `workflowType: advisor-approval` request | Fail-closed on missing DB, invalid request and workflow gate errors | `TYPED_ADVISOR_APPROVAL_WORKFLOW_CANDIDATE` |
+| Recommendation review workflow | `app/api/recommendation-review-workflow/route.ts` `POST` | `handleRecommendationReviewWorkflowRequest`, `parseRecommendationReviewWorkflowRequestBody`, `runAdvisorApprovalWorkflowMutation` | Typed `workflowType: advisor-approval` request | Fail-closed on missing DB, invalid request and workflow gate errors | `TYPED_ADVISOR_APPROVAL_WORKFLOW_CANDIDATE` |
 | Review monitoring J16/J17 | `app/api/review-monitoring/actions/route.ts` `POST`; read snapshot route exists separately | `runReviewMonitoringWorkflowAction` | JSON action ID allow-list | DB URL required; invalid action fail closed; response says no client release | `TYPED_REVIEW_MONITORING_COMMAND_CANDIDATE` |
-| Legacy demo workflow | `app/api/demo-workflow/route.ts` `POST` | `parseDemoWorkflowRequestBody`, `demoWorkflowActionBoundaryFor` | Legacy `actionId` or retired advisor workflow payload | Moved product commands return `410` with canonical typed route; unsupported demo actions blocked; no executable demo-only mutation path remains | `LEGACY_DEMO_410_BOUNDARY` |
+| Deleted generic workflow route | `app/api/recommendation-review-workflow/route.ts` `POST` | `parseRecommendationReviewWorkflowRequestBody`, typed command clients | Typed recommendation-review payload | Product commands execute only through canonical typed routes; generic action-id routing is removed | `DEMO_WORKFLOW_ROUTE_DELETED` |
 
 ### Workflow / State Transition Candidate Matrix
 
@@ -178,10 +178,10 @@ Status: `DONE`
 | J01 advisor review | Product screen -> `runAdvisorReviewCommand` -> `/api/advisor-review/actions` -> `runAdvisorReviewWorkflowAction` | Action allow-list updates recommendation/trigger/approval state via shared audit mutation wrapper | `TRACEABLE_TYPED_COMMAND` |
 | J02/J03 advice/release-history | Product screen -> `runAdviceReleaseHistoryCommand` -> `/api/advice-release-history/actions` -> `runAdviceReleaseHistoryWorkflowAction` | Command allow-list includes compliance evidence/release and released decision/evidence history actions; gate/data-quality service references observed | `TRACEABLE_TYPED_COMMAND_SAFETY_SENSITIVE` |
 | J04/J05/J09 data maintenance | Product screens -> `runDataMaintenanceCommand` -> `/api/data-maintenance/actions` -> `runDataMaintenanceWorkflowAction` | Command-family dispatch for documents, entities/actions, profile/family/relationships; no release default | `TRACEABLE_TYPED_COMMAND` |
-| J06/J07 tenant governance | Product screens -> `runTenantGovernanceCommand` -> `/api/tenant-governance/actions` -> `runTenantGovernanceWorkflowAction` | Tenant/user/role/access/export-audit commands dispatch through typed endpoint, not `/api/demo-workflow` | `TRACEABLE_TYPED_COMMAND` |
+| J06/J07 tenant governance | Product screens -> `runTenantGovernanceCommand` -> `/api/tenant-governance/actions` -> `runTenantGovernanceWorkflowAction` | Tenant/user/role/access/export-audit commands dispatch through their typed endpoint, not through a generic workflow bus | `TRACEABLE_TYPED_COMMAND` |
 | J10 platform admin | Product screen -> `runPlatformAdminCommand` -> `/api/platform-admin/actions` -> `runPlatformAdminWorkflowAction` | Audit-event command record for platform/security/admin changes | `TRACEABLE_TYPED_COMMAND` |
 | Review monitoring | Product screen candidate -> `/api/review-monitoring/actions` -> `runReviewMonitoringWorkflowAction` | J16/J17 action allow-list dispatches review calendar and rebalance monitoring workflows | `TRACEABLE_TYPED_COMMAND` |
-| Legacy `/api/demo-workflow` | Legacy client path -> `/api/demo-workflow` | Product-like and former demo-only actions return `410` with canonical API route; direct execution is retired | `NOT_PRODUCT_API_BOUNDARY` |
+| Deleted generic workflow route | Former generic client path removed | Product-like actions now use canonical typed API routes; direct generic execution is retired | `DEMO_WORKFLOW_ROUTE_DELETED` |
 
 ### Process I/O Draft Matrix
 
@@ -196,7 +196,7 @@ Status: `DONE`
 | Journey command | Journey ID, current user, typed journey command payload | Current user resolution, route scoped journey load, command registry parse, role permission checks | Journey command result, updated projection, safety envelope | Command-specific persistence belongs to `ANALYSIS-2.3`. |
 | Typed action clients | Action ID for a typed family | Endpoint allow-list rejects actions outside family; service dispatches only known actions | Command result, audit/safety fields, no client release unless explicit release-history service result says otherwise | Each command's exact model writes belong to `ANALYSIS-2.3`. |
 | Recommendation review workflow | Advisor approval workflow payload: action, actor role, target, reason, evidence IDs, confirmation | Parsed through shared workflow validation, then typed command bus release/gate logic | Advisor approval workflow result or gate failure | Gate/persistence/test proof belongs to `ANALYSIS-2.3/2.4`. |
-| Legacy demo route | `actionId` routed to `/api/demo-workflow` | Boundary registry classifies moved/unsupported actions; product-like commands are rejected with canonical route | `410` for moved/unsupported calls; no direct demo mutation result remains | This path must not be used as product capability evidence. |
+| Retired generic route | Generic `actionId` routing removed | Product-like commands belong to typed API routes | No direct generic mutation result remains | This path must not be used as product capability evidence. |
 
 ### Dynamic / Unclear Code Paths
 
@@ -204,14 +204,14 @@ Status: `DONE`
 | --- | --- | --- |
 | Field-level editability | `OPEN_FOR_ANALYSIS-2.3` | `ANALYSIS-2.2` proves handler/service reachability, not exact model/field coverage. |
 | Runtime success of every command | `OPEN_FOR_QA` | This ticket used static local code inspection. Runtime/browser/API proof belongs to later validation tickets. |
-| Remaining `lib/screencast-demo-client.ts` | `DELETED_IN_FOLLOWUP-4` | The client file was removed after typed command boundaries were proven; product-like moved actions remain fail-closed at `/api/demo-workflow`. |
+| Remaining `lib/screencast-demo-client.ts` | `DELETED_IN_FOLLOWUP-4` | The client file was removed after typed command boundaries were proven; product-like moved actions remain on typed API routes. |
 | Reference-only route affordances | `NOT_WORKFLOW_PROOF` | Route/UI existence without handler linkage remains static/display-only. |
 
 ### ANALYSIS-2.2 Result
 
 Relevant handlers and services are locally traceable. The strongest workflow data-flow candidates are document upload/review, export workflow commands, journey commands, DBTF profile/family/entity forms, typed advisor/release-history/data-maintenance/tenant-governance/platform-admin action endpoints and recommendation review workflow commands.
 
-The important cleanup finding is structural: `/api/demo-workflow` is now a legacy fail-closed boundary, not a shadow product API. Product-like and former demo-only actions fail closed with `410` and point to canonical typed routes.
+The important cleanup finding is structural: the generic workflow route is deleted, so product-like actions point only to canonical typed routes.
 
 Finished: `ANALYSIS-2.2`.
 
@@ -290,7 +290,7 @@ Static operation scan result, grouped by persistence meaning:
 | Journey workflow | UI command -> journey API -> journey service -> journey instance/step/object/evidence/command-run writes plus domain-object writes for command families | `STRONG_TYPED_COMMAND` |
 | Tenant governance | UI command -> tenant-governance API -> command service -> tenant/user/role/access/policy/export-audit writes | `STRONG_TYPED_COMMAND_SEEDED_SCOPE` |
 | Platform admin | UI command -> platform-admin API -> service -> audit event write | `AUDIT_RECORD_ONLY_FOR_PLATFORM_COMMANDS` |
-| Legacy `/api/demo-workflow` 410 boundary | Legacy action ID -> demo boundary -> moved product commands 410; no executable demo-only direct action remains | `NO_PRODUCT_PERSISTENCE` |
+| Legacy `/api/recommendation-review-workflow` 410 boundary | Legacy action ID -> demo boundary -> moved product commands 410; no executable demo-only direct action remains | `NO_PRODUCT_PERSISTENCE` |
 
 ### Process I/O Matrix Update
 
@@ -335,10 +335,10 @@ Status: `DONE`
 | RBAC / action permission | `lib/permission-engine.ts`, `lib/control-layer/permission-decision.ts`, `lib/control-layer/scope-resolver.ts` | Cross-tenant access, route shell vs action permission, payload scope, non-bypass admin/security roles, export/advice/evidence action authorization | `CODE_AND_TEST_EVIDENCE_STRONG` |
 | Client projection / visibility | `lib/visibility-engine.ts`, `lib/ui-clickflow-guards.ts` | Internal drafts, rationale, compliance notes, unreleased decisions/documents/evidence, client-safe projection | `CODE_AND_TEST_EVIDENCE_STRONG` |
 | Workflow release gates | `lib/workflow-gate.ts`, `lib/release-spine-command-surface.ts`, journey release code in `lib/journeys/journey-api-service.ts` | No unapproved advice, advisor approval separated from compliance release, evidence sufficiency, audit persistence, data quality, suitability/IPS and committee prerequisites | `CODE_AND_TEST_EVIDENCE_STRONG` |
-| Audit persistence guard | `lib/audit-service.ts`, `runDemoWorkflowMutation` and typed command services | Critical actions require minimum audit fields and fail closed when audit persistence is unavailable | `CODE_AND_TEST_EVIDENCE_STRONG` |
+| Audit persistence guard | `lib/audit-service.ts`, `runTypedWorkflowMutation` and typed command services | Critical actions require minimum audit fields and fail closed when audit persistence is unavailable | `CODE_AND_TEST_EVIDENCE_STRONG` |
 | Fail-closed API envelope | `lib/control-layer/error-envelope.ts`; routes using `failClosedJson` | Invalid request, permission denial, scope denial, audit failure and safe errors do not silently mutate/release | `CODE_AND_TEST_EVIDENCE_STRONG` |
 | Export safety | `lib/export-service.ts`, `lib/control-layer/export-safety.ts`, `lib/export-workflow-command-service.ts` | Scope/redaction/approval/generation/download/share separation and forbidden internal payload exclusion | `CODE_AND_TEST_EVIDENCE_STRONG` |
-| Demo-workflow quarantine | `lib/demo-workflow-action-registry.ts`, `app/api/demo-workflow/route.ts` | Prevents moved product-like Jxx actions from being treated as `/api/demo-workflow` product API | `RUNTIME_PROVEN_THIS_RUN` |
+| Typed-command quarantine | `deleted typed-boundary action registry`, `app/api/recommendation-review-workflow/route.ts` | Prevents moved product-like Jxx actions from being treated as `/api/recommendation-review-workflow` product API | `RUNTIME_PROVEN_THIS_RUN` |
 | Capture/report drift gate | `lib/capture-screen-model-context.ts`, `lib/capability-report-drift-gate.ts` | Prevents stale route/model/API counts and `COMPLETE_VERTICAL_SLICE` report drift from becoming generator truth | `RUNTIME_PROVEN_THIS_RUN` |
 | Source hierarchy guard | `scripts/source-target-guard.ts`, `lib/source-reality-gate.ts` | True-UX source hierarchy, target-codebase contract and current target restrictions | `RUNTIME_PROVEN_THIS_RUN` via `pnpm guard:source` |
 
@@ -347,7 +347,7 @@ Status: `DONE`
 | Capability / risk area | Local test evidence | What is proven | Claim boundary |
 | --- | --- | --- | --- |
 | Source truth | `tests/source-reality-gate.spec.ts`; current run `pnpm guard:source` | Source hierarchy/current target restrictions | Does not prove product runtime behavior. |
-| Demo-workflow quarantine | `tests/demo-workflow-action-registry.spec.ts` | No demo-only executable actions remain; moved families point to typed APIs; unregistered demo-shaped actions blocked | Does not delete the legacy client file by itself. |
+| Typed-command quarantine | `tests/screencast-new-system-contract.spec.ts` | No demo-only executable actions remain; moved families point to typed APIs; unregistered demo-shaped actions blocked | Does not delete the legacy client file by itself. |
 | Capture/report drift | `tests/capture-screen-model-context.spec.ts`, `tests/capability-report-drift-gate.spec.ts` | 71 routes, 53 models, 31 enums, 33 API-route truth, no complete-slice overclaim, typed command context for migrated families | Does not run every product workflow. |
 | Permission and non-bypass | `tests/permission-engine.spec.ts`, `tests/governance-non-bypass.spec.ts`, `tests/true-ux-governance-non-bypass.spec.ts` | Cross-tenant denial, route-access vs action permission, admin/security non-bypass | Test scope is role/action/object cases, not every field. |
 | Audit fail closed | `tests/audit-fail-closed.spec.ts`, `tests/phase6-audit-persistence.spec.ts`, command API specs | Critical actions block when audit persistence/minimum fields are missing | Does not prove external audit backend durability beyond local DB/service behavior. |
@@ -355,7 +355,7 @@ Status: `DONE`
 | DBTF/data maintenance | `tests/dbtf-tables-api.spec.ts`, `tests/av27-client-context-closure.spec.ts`, `tests/data-maintenance-actions-api.spec.ts`, `tests/data-maintenance-command-client-source.spec.ts` | Profile/family/entity/data-maintenance paths and typed command client separation | Field-level coverage remains bounded. |
 | Export workflow/safety | `tests/export-workflow-api.spec.ts`, `tests/export-safety.spec.ts`, `tests/file-export-realism.spec.ts`, `tests/phase8-export-workflow-api.spec.ts`, `tests/export-command-spine-contract.spec.ts` | Scope/redaction/preview/approval/generate/download/share separation, forbidden payload blocking, no real binary overclaim | Runtime package realism is bounded by metadata/no-real-binary assertions. |
 | Journey spine | `tests/journey-api.spec.ts`, `tests/phase-b-c-journey-command-api.spec.ts`, `tests/journey-spine.spec.ts`, `tests/wave-0-2-p0-validation.spec.ts` | Current-user scope, command parsing, audit/run records, Phase B/C typed commands and no client release | Does not prove every future journey family. |
-| Tenant governance / platform admin | `tests/tenant-governance-actions-api.spec.ts`, `tests/platform-admin-actions-api.spec.ts`, source-client specs, `tests/platform-admin-browser-runtime.spec.ts` | J06/J07/J10 typed actions execute outside demo workflow and reject unsupported actions | Platform-admin DB effect is audit-record command evidence, not full platform CRUD. |
+| Tenant governance / platform admin | `tests/tenant-governance-actions-api.spec.ts`, `tests/platform-admin-actions-api.spec.ts`, source-client specs, `tests/platform-admin-browser-runtime.spec.ts` | J06/J07/J10 typed actions execute outside typed workflow and reject unsupported actions | Platform-admin DB effect is audit-record command evidence, not full platform CRUD. |
 | Advice/release history/advisor review | `tests/advisor-review-command-api.spec.ts`, `tests/advice-release-history-command-client-source.spec.ts`, `tests/workflow-gate.spec.ts`, `tests/client-visibility-projection.spec.ts`, `tests/client-visibility-proof.spec.ts`, `tests/true-ux-p0-safety.spec.ts` | Typed J01/J02/J03 boundary, no unapproved advice, advisor approval separated from release, projection hides internal payloads | Complete release claims require flow-specific runtime proof. |
 | UI blocked/static affordances | lifecycle/a11y/affordance tests such as `tests/true-ux-cta-state.spec.ts`, `tests/button-cta-lifecycle-pruning.spec.ts`, `tests/disabled-control-a11y-messaging.spec.ts`, `tests/ui-state-boundaries.spec.ts` | Static/disabled/held UI states are explicit and not misleading action proof | UI state tests do not prove service persistence. |
 
@@ -365,18 +365,18 @@ Executed:
 
 ```text
 pnpm guard:source
-PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm exec playwright test tests/demo-workflow-action-registry.spec.ts tests/capture-screen-model-context.spec.ts tests/capability-report-drift-gate.spec.ts --workers=1
+PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm exec playwright test tests/screencast-new-system-contract.spec.ts tests/capture-screen-model-context.spec.ts tests/capability-report-drift-gate.spec.ts --workers=1
 ```
 
 Results:
 
 - `pnpm guard:source`: `PASS`, `violations: 0`.
 - First drift proof run: failed on two stale proof expectations:
-  - `lib/capability-report-drift-gate.ts` still required `API route files found: \`32\`` although current inventory is `33`.
-  - `tests/demo-workflow-action-registry.spec.ts` originally expected four executable demo-only actions; the earlier hard boundary had already narrowed this to `j01.requestData`.
+  - `lib/capability-report-drift-gate.ts` had stale API-route-count expectations during earlier cleanup.
+  - `tests/screencast-new-system-contract.spec.ts` originally expected four executable demo-only actions; the earlier hard boundary had already narrowed this to `j01.requestData`.
 - Fix applied:
-  - `lib/capability-report-drift-gate.ts` now requires `API route files found: \`33\``.
-  - `FOLLOWUP-2` moves `j01.requestData` to `/api/advisor-review/actions`; `tests/demo-workflow-action-registry.spec.ts` now expects `demoOnlyWorkflowActionIds` to equal `[]`.
+  - `lib/capability-report-drift-gate.ts` now requires `API route files found: \`32\`` after the generic route deletion.
+  - `FOLLOWUP-2` moves `j01.requestData` to `/api/advisor-review/actions`; `tests/screencast-new-system-contract.spec.ts` now expects `demoOnlyWorkflowActionIds` to equal `[]`.
 - Rerun result: `12 passed`.
 
 ### Negative Proof / Missing Proof Register
@@ -386,12 +386,12 @@ Results:
 | Full Playwright suite not run in this ticket | QA-1 must not claim global green status from this targeted proof pack. |
 | Field-level DB editability not exhaustively tested | Capability report must stay at process/model-family level unless a specific test proves field behavior. |
 | Screenshot/browser visual proof not generated here | No UI changed in this ticket; visual proof is not required for report/test-source updates. |
-| `/api/demo-workflow` client file was deleted in follow-up cleanup | Product capability evidence must come from typed command clients and typed APIs, not legacy screencast helpers. |
+| `/api/recommendation-review-workflow` client file was deleted in follow-up cleanup | Product capability evidence must come from typed command clients and typed APIs, not legacy screencast helpers. |
 | Platform-admin typed command writes audit record rather than mutating broad platform settings directly | Must not be reported as full platform CRUD. |
 
 ### ANALYSIS-2.4 Result
 
-Security, guard, audit and test evidence is broad and locally grounded. The strongest guarded candidates remain document upload/review, export workflow, journey commands, tenant governance, data maintenance and advice/release workflow. The current-run proof pack specifically verifies the drift boundary that prevents stale `32` API-route and broad demo-workflow assumptions from returning.
+Security, guard, audit and test evidence is broad and locally grounded. The strongest guarded candidates remain document upload/review, export workflow, journey commands, tenant governance, data maintenance and advice/release workflow. The current-run proof pack specifically verifies the drift boundary that prevents stale `32` API-route and broad typed-command assumptions from returning.
 
 Finished: `ANALYSIS-2.4`.
 

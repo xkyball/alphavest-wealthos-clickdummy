@@ -79,7 +79,7 @@ test.describe("UXP3-014 export approval lifecycle", () => {
   test("opens approval modal without workflow mutation and cancels safely", async ({ page }) => {
     const workflowRequests: string[] = [];
     page.on("request", (request) => {
-      if (request.url().includes("/api/demo-workflow")) {
+      if (request.url().includes("/api/export-workflow")) {
         workflowRequests.push(request.method());
       }
     });
@@ -186,7 +186,7 @@ test.describe("UXP3-014 export approval lifecycle", () => {
   test("Escape closes approval modal without submitting", async ({ page }) => {
     const workflowRequests: string[] = [];
     page.on("request", (request) => {
-      if (request.url().includes("/api/demo-workflow")) {
+      if (request.url().includes("/api/export-workflow")) {
         workflowRequests.push(request.method());
       }
     });

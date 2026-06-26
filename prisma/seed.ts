@@ -1570,7 +1570,7 @@ async function seedWorkflowObjects() {
       notes:
         tenant.slug === "summit"
           ? "Advisor approved the draft, but compliance release is still pending."
-          : "Advisor review completed for demo workflow.",
+          : "Advisor review completed for typed workflow.",
       approvedAt: tenant.slug === "northbridge" ? null : date(-2),
       createdAt: seedDate,
     })),

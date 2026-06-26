@@ -14,14 +14,14 @@ Implemented Phase 5 as a bounded workflow/API proof rather than a docs-only cont
 | Capability | Current level | Target level reached | Non-claim boundary |
 | --- | ---: | ---: | --- |
 | Advisor approval as human review | E6 candidate | E6 tested | Not production auth, not client release, not client acceptance. |
-| Compliance release precondition matrix | E6 candidate | E6 tested | Not a generalized arbitrary recommendation API beyond the typed demo workflow. |
+| Compliance release precondition matrix | E6 candidate | E6 tested | Not a generalized arbitrary recommendation API beyond the typed typed workflow. |
 | Compliance block/request evidence | E6 candidate | E6 preserved | Does not create export/download/share readiness. |
 | Release evidence and payload readiness | E5/E6 candidate | E6 tested | No schema migration or production evidence review engine added. |
 
 ## Implemented Changes
 
 - Added typed compliance release preconditions in `lib/typed-workflow-command-bus.ts`: advisor approval, compliance permission, accepted/scoped evidence, payload readiness and audit readiness.
-- Made failed recommendation-review release responses return `gateMissing` and `releasePreconditions` through `/api/demo-workflow`.
+- Made failed recommendation-review release responses return `gateMissing` and `releasePreconditions` through `/api/recommendation-review-workflow`.
 - Restricted release evidence mutation to the selected accepted/scoped evidence record.
 - Extended the API test suite to prove advisor-only release failure, missing evidence failure, payload-readiness failure and successful compliance release.
 

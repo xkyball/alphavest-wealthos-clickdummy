@@ -423,12 +423,12 @@ Mega Journey Matrix makes AI governance a V0.96 core proof. Safety contracts for
 - `components/ux-cta-cluster.tsx`
 - `components/ui/state-panel.tsx`
 - `components/ui/guarded-action-button.tsx`
-- `app/api/demo-workflow/route.ts`
+- `deleted generic workflow route`
 - `lib/internal-workflow-demo-data.ts`
 - `lib/typed-workflow-command-bus.ts`
 - `lib/workflow-gate.ts`
 - `lib/visibility-engine.ts`
-- `tests/demo-workflow-api.spec.ts`
+- `tests/recommendation-review-workflow-api.spec.ts`
 - `tests/workflow-gate.spec.ts`
 - `tests/true-ux-p0-safety.spec.ts`
 - `tests/true-ux-client-projection.spec.ts`
@@ -485,7 +485,7 @@ Task/safety KB requires advisor approval and compliance release to remain separa
 - `components/ux-dense-operations-panel.tsx`
 - `components/ux-detail-standard-panel.tsx`
 - `components/ux-cta-cluster.tsx`
-- `app/api/demo-workflow/route.ts`
+- `deleted generic workflow route`
 - `lib/workflow-gate.ts`
 - `lib/permission-engine.ts`
 - `lib/audit-service.ts`
@@ -546,7 +546,7 @@ Compliance gate is central in UX evidence. Safety contracts require release/bloc
 - `components/ui/modal.tsx`
 - `components/ui/state-panel.tsx`
 - `components/ui/guarded-action-button.tsx`
-- `app/api/demo-workflow/route.ts`
+- `deleted generic workflow route`
 - `lib/workflow-gate.ts`
 - `lib/permission-engine.ts`
 - `lib/evidence-service.ts`
@@ -959,7 +959,7 @@ Ensure UI states and actions are sourced from existing APIs/services where possi
 API contract says route presence is not API safety proof. Current snapshot has 15 API routes, so Codex must harden/reuse existing APIs rather than inventing parallel APIs. UI must reflect service truth.
 
 ### Target files / modules to inspect before edits
-- `app/api/demo-workflow/route.ts`
+- `deleted generic workflow route`
 - `app/api/documents/route.ts`
 - `app/api/documents/upload/route.ts`
 - `app/api/documents/review/route.ts`
@@ -967,7 +967,7 @@ API contract says route presence is not API safety proof. Current snapshot has 1
 - `app/api/audit-events/route.ts`
 - `app/api/auth/dummy/route.ts`
 - `app/api/admin-tenants/route.ts`
-- `lib/demo-workflow-validation.ts`
+- `lib/recommendation-review-workflow-validation.ts`
 - `lib/typed-workflow-command-bus.ts`
 - `lib/permission-engine.ts`
 - `lib/visibility-engine.ts`
@@ -999,7 +999,7 @@ API contract says route presence is not API safety proof. Current snapshot has 1
 - `pnpm test:phase10`
 - `pnpm playwright test tests/p0-api-contract.spec.ts`
 - `pnpm playwright test tests/fail-closed-error-envelope.spec.ts`
-- Targeted API tests for documents/review, export-workflow, audit-events, demo-workflow.
+- Targeted API tests for documents/review, export-workflow, audit-events, typed-workflow.
 
 ### Stop rules
 - Task requires broad new API architecture.

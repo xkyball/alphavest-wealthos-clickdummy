@@ -10,10 +10,10 @@ Chosen path: delete the dead legacy client instead of keeping a quarantined help
 | Area | Result |
 | --- | --- |
 | Product imports | Current scan found no product-screen imports of `runScreencastDemoAction`. |
-| Legacy client | Deleted `lib/screencast-demo-client.ts`, which posted raw `actionId` payloads to `/api/demo-workflow`. |
+| Legacy client | Deleted `lib/screencast-demo-client.ts`, which posted raw `actionId` payloads to `/api/recommendation-review-workflow`. |
 | Screencast guard | Added the deleted client to `tests/screencast-new-system-contract.spec.ts` retired-source assertions. |
 | Source terminology | Updated active audit/source text that still cited the deleted client as evidence. |
-| Demo workflow API | Kept `/api/demo-workflow` as a fail-closed legacy boundary for moved/unsupported action IDs; no product-like client path points to it. |
+| Typed workflow API | Kept `/api/recommendation-review-workflow` as a deleted generic route boundary for moved/unsupported action IDs; no product-like client path points to it. |
 
 ## Files Changed
 
@@ -30,7 +30,7 @@ Chosen path: delete the dead legacy client instead of keeping a quarantined help
 
 ```bash
 rg -n "runScreencastDemoAction" app components lib tests --glob '!test-results/**'
-pnpm exec playwright test tests/screencast-new-system-contract.spec.ts tests/demo-workflow-action-registry.spec.ts tests/data-maintenance-command-client-source.spec.ts tests/advice-release-history-command-client-source.spec.ts tests/platform-admin-command-client-source.spec.ts --workers=1
+pnpm exec playwright test tests/screencast-new-system-contract.spec.ts tests/screencast-new-system-contract.spec.ts tests/data-maintenance-command-client-source.spec.ts tests/advice-release-history-command-client-source.spec.ts tests/platform-admin-command-client-source.spec.ts --workers=1
 pnpm typecheck
 pnpm gate:capability-report
 git diff --check
@@ -45,5 +45,5 @@ Results:
 ## Claim Boundary
 
 - This removes the legacy `runScreencastDemoAction` implementation path from product code.
-- This does not delete `/api/demo-workflow`; that route remains as a fail-closed compatibility boundary with typed-route guidance.
+- This does not delete `/api/recommendation-review-workflow`; that route remains as a fail-closed compatibility boundary with typed-route guidance.
 - No UI implementation changed in this ticket; no screenshot proof is required.

@@ -60,7 +60,7 @@ No route scope was reclassified during WP-00.
 - `app/api/audit-events/route.ts`
 - `app/api/auth/dummy/route.ts`
 - `app/api/dashboard-metrics/route.ts`
-- `app/api/demo-workflow/route.ts`
+- `deleted generic workflow route`
 - `app/api/documents/review/route.ts`
 - `app/api/documents/route.ts`
 - `app/api/documents/upload/route.ts`
@@ -92,7 +92,7 @@ Current spec count: 77.
 - `tests/dbtf-tables-api.spec.ts`
 - `tests/decision-confirmation-lifecycle.spec.ts`
 - `tests/demo-session-panel-copy.spec.ts`
-- `tests/demo-workflow-api.spec.ts`
+- `tests/recommendation-review-workflow-api.spec.ts`
 - `tests/disabled-control-a11y-messaging.spec.ts`
 - `tests/document-upload-api.spec.ts`
 - `tests/document-upload-flow.spec.ts`

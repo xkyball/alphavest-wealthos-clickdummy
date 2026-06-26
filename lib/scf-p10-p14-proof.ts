@@ -14,7 +14,7 @@ const p10P14MasterTasks = scfMasterTasksForPhases(scfP10P14PhaseIds);
 const p10P14Subtasks = scfSubtasksForPhases(scfP10P14PhaseIds);
 
 export const scfP10P14ClosureProof = {
-  apiRoutesHardened: ["/api/demo-workflow", "/api/documents", "/api/documents/upload", "/api/review-monitoring"],
+  apiRoutesHardened: ["/api/recommendation-review-workflow", "/api/documents", "/api/documents/upload", "/api/review-monitoring"],
   blockedScopeRegister: scfDoNotImplementRegister.map((entry) => entry.id),
   implementedSurfaces: [
     "/documents search, filters and scoped list",

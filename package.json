@@ -27,7 +27,7 @@
     "gate:capability-report": "tsx scripts/capability-report-drift-gate.ts",
     "test:av27:claims": "tsx scripts/av27-claim-gate.ts",
     "test:av27:no-server": "PLAYWRIGHT_SKIP_WEB_SERVER=1 playwright test tests/av27-phase7-certification.spec.ts tests/av27-safety-foundation.spec.ts tests/av27-phase6-payload-sweep.spec.ts tests/workflow-gate.spec.ts tests/client-visibility-projection.spec.ts tests/file-export-realism.spec.ts --workers=1",
-    "test:av27:server": "playwright test tests/av27-client-context-closure.spec.ts tests/demo-workflow-api.spec.ts --workers=1",
+    "test:av27:server": "playwright test tests/av27-client-context-closure.spec.ts tests/recommendation-review-workflow-api.spec.ts --workers=1",
     "visual:contract": "tsx scripts/visual-qa-contract.ts",
     "visual:strict": "tsx scripts/strict-visual-capture.ts",
     "screencast:journey": "tsx scripts/screencast/run-journey.ts",
@@ -55,7 +55,7 @@
     "test:phase-d": "playwright test tests/review-monitoring-service.spec.ts",
     "test:phase9": "playwright test tests/phase9-support-hardening.spec.ts",
     "test:phase10": "playwright test tests/p0-acceptance.spec.ts tests/p0-api-contract.spec.ts",
-    "test:v1-p0": "playwright test tests/p0-acceptance.spec.ts tests/p0-api-contract.spec.ts tests/demo-workflow-api.spec.ts tests/document-upload-api.spec.ts tests/evidence-review-api.spec.ts tests/providerless-scope.spec.ts tests/governance-non-bypass.spec.ts tests/export-safety.spec.ts tests/audit-fail-closed.spec.ts tests/fail-closed-error-envelope.spec.ts tests/client-visibility-projection.spec.ts tests/file-export-realism.spec.ts --workers=1",
+    "test:v1-p0": "playwright test tests/p0-acceptance.spec.ts tests/p0-api-contract.spec.ts tests/recommendation-review-workflow-api.spec.ts tests/document-upload-api.spec.ts tests/evidence-review-api.spec.ts tests/providerless-scope.spec.ts tests/governance-non-bypass.spec.ts tests/export-safety.spec.ts tests/audit-fail-closed.spec.ts tests/fail-closed-error-envelope.spec.ts tests/client-visibility-projection.spec.ts tests/file-export-realism.spec.ts --workers=1",
     "test:v1-ops": "playwright test tests/pilot-operational-readiness.spec.ts",
     "test:v1-gtm": "playwright test tests/pilot-gtm-proof.spec.ts",
     "test:offboarding-control": "playwright test tests/offboarding-control.spec.ts",
@@ -66,7 +66,7 @@
     "test:v0-96-wp17-api-truth": "playwright test tests/true-ux-api-service-ui-truth.spec.ts tests/p0-api-contract.spec.ts --workers=1",
     "test:v0-96-p0-true-ux": "playwright test tests/v0-96-p0-true-ux-acceptance.spec.ts tests/p0-acceptance.spec.ts tests/true-ux-p0-safety.spec.ts --workers=1",
     "test:workflow-gate": "playwright test tests/workflow-gate.spec.ts",
-    "test:workflow-api": "playwright test tests/demo-workflow-api.spec.ts",
+    "test:workflow-api": "playwright test tests/recommendation-review-workflow-api.spec.ts",
     "phase:check": "pnpm typecheck && pnpm lint && pnpm db:validate && pnpm build"
   },
   "dependencies": {

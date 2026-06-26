@@ -30,8 +30,8 @@ import {
   advisorApprovalConfirmationText,
   advisorApprovalTransitionFor,
   type AdvisorApprovalWorkflowAction,
-} from "@/lib/demo-workflow-validation";
-import { wp05DemoWorkflowCompatibilityMode } from "@/lib/advisory-workflow-contract";
+} from "@/lib/recommendation-review-workflow-validation";
+import { wp05TypedWorkflowBoundaryMode } from "@/lib/advisory-workflow-contract";
 import type { PermissionDecision } from "@/lib/permission-engine";
 import {
   evaluatePp003DraftLifecycleGate,
@@ -51,7 +51,7 @@ import type {
   WorkflowStatus,
 } from "@/lib/domain-types";
 
-type DemoWorkflowMutationInput = {
+type TypedWorkflowMutationInput = {
   actionId: string;
   auditPersistenceAvailable?: boolean;
   actorRoleKey: DemoRoleKey;
@@ -172,12 +172,12 @@ export class AdvisorApprovalWorkflowError extends Error {
   }
 }
 
-type DemoWorkflowMutationHelpers = {
+type TypedWorkflowMutationHelpers = {
   permission: PermissionDecision;
   session: ReturnType<typeof requireDemoSession>;
 };
 
-export type DemoWorkflowMutationResult<T extends Record<string, unknown>> = T & {
+export type TypedWorkflowMutationResult<T extends Record<string, unknown>> = T & {
   auditEventId: string;
   auditRows: number;
   permission: {
@@ -188,14 +188,14 @@ export type DemoWorkflowMutationResult<T extends Record<string, unknown>> = T & 
   };
 };
 
-export async function runDemoWorkflowMutation<T extends Record<string, unknown>>(
+export async function runTypedWorkflowMutation<T extends Record<string, unknown>>(
   prisma: PrismaClient,
-  input: DemoWorkflowMutationInput,
+  input: TypedWorkflowMutationInput,
   mutate: (
     tx: Prisma.TransactionClient,
-    helpers: DemoWorkflowMutationHelpers,
+    helpers: TypedWorkflowMutationHelpers,
   ) => Promise<T>,
-): Promise<DemoWorkflowMutationResult<T>> {
+): Promise<TypedWorkflowMutationResult<T>> {
   const actorContext = requireActorContext({
     roleKey: input.actorRoleKey,
     tenantSlug: input.tenantSlug,
@@ -302,7 +302,7 @@ export async function runDemoWorkflowMutation<T extends Record<string, unknown>>
           requiresAudit: permission.requiresAudit,
           requiresComplianceReview: permission.requiresComplianceReview,
         },
-      } as DemoWorkflowMutationResult<T>;
+      } as TypedWorkflowMutationResult<T>;
     }
 
     try {
@@ -945,7 +945,7 @@ export async function runAdvisorApprovalWorkflowMutation(
             action: input.action,
             canonicalCommand: typedCanonicalCommand(input.action),
             canonicalState: typedCanonicalState(input.action),
-            demoWorkflowCompatibilityMode: wp05DemoWorkflowCompatibilityMode,
+            typedWorkflowBoundaryMode: wp05TypedWorkflowBoundaryMode,
             ...auditService.criticalAuditMetadata({
               action: permissionAction,
               actorRoleKey: session.role.key,
@@ -1372,7 +1372,7 @@ export async function runAdvisorApprovalWorkflowMutation(
           action: input.action,
           canonicalCommand: typedCanonicalCommand(input.action),
           canonicalState: typedCanonicalState(input.action),
-          demoWorkflowCompatibilityMode: wp05DemoWorkflowCompatibilityMode,
+          typedWorkflowBoundaryMode: wp05TypedWorkflowBoundaryMode,
           ...auditService.criticalAuditMetadata({
             action: permissionAction,
             actorRoleKey: session.role.key,

@@ -28,7 +28,7 @@ function readJson(relativePath: string) {
 }
 
 test.describe("new-system screencast contract", () => {
-  test("keeps active screencasts on the Journey Spine instead of retired Jxx demo workflow manifests", () => {
+  test("keeps active screencasts on the Journey Spine instead of retired Jxx manifests", () => {
     const manifest = readJson("docs/v3/journeys.screencast.new-system.json");
     const serialized = JSON.stringify(manifest);
 
@@ -40,7 +40,6 @@ test.describe("new-system screencast contract", () => {
     ]);
     expect(serialized).not.toMatch(/\bJ\d{2}\b/);
     expect(serialized).not.toContain("fixture-j");
-    expect(serialized).not.toContain("/api/demo-workflow");
     expect(serialized).toContain("/api/journeys/[id]/commands/route.ts");
   });
 

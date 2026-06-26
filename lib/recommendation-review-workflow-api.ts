@@ -6,7 +6,7 @@ import {
   wp05CanonicalJourneyCommandApiRoute,
   wp05TypedAdvisorWorkflowDirectnessFor,
 } from "@/lib/advisory-workflow-contract";
-import { parseDemoWorkflowRequestBody } from "@/lib/demo-workflow-validation";
+import { parseRecommendationReviewWorkflowRequestBody } from "@/lib/recommendation-review-workflow-validation";
 import type { DemoRoleKey } from "@/lib/demo-session";
 import {
   AdvisorApprovalWorkflowError,
@@ -26,7 +26,7 @@ export async function handleRecommendationReviewWorkflowRequest(request: Request
   }
 
   const body = await request.json().catch(() => undefined);
-  const parsedBody = parseDemoWorkflowRequestBody(body);
+  const parsedBody = parseRecommendationReviewWorkflowRequestBody(body);
   if (!parsedBody.ok) {
     return failClosedJson(
       {

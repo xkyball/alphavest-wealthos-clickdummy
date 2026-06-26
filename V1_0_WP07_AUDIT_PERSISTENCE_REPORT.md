@@ -33,7 +33,7 @@ WP-07 proves that critical safety actions require audit persistence, minimum aud
 - `lib/permission-engine.ts`
 - `prisma/schema.prisma`
 - `tests/audit-fail-closed.spec.ts`
-- `tests/demo-workflow-api.spec.ts`
+- `tests/recommendation-review-workflow-api.spec.ts`
 - `tests/document-upload-api.spec.ts`
 - `tests/evidence-review-api.spec.ts`
 - `tests/governance-non-bypass.spec.ts`
@@ -44,7 +44,7 @@ WP-07 proves that critical safety actions require audit persistence, minimum aud
 
 | Command | Result |
 |---|---|
-| `pnpm playwright test tests/audit-fail-closed.spec.ts tests/demo-workflow-api.spec.ts tests/document-upload-api.spec.ts tests/evidence-review-api.spec.ts tests/governance-non-bypass.spec.ts tests/phase6-audit-persistence.spec.ts tests/scf-p10-p14-closure.spec.ts` | PASS, 42 passed |
+| `pnpm playwright test tests/audit-fail-closed.spec.ts tests/recommendation-review-workflow-api.spec.ts tests/document-upload-api.spec.ts tests/evidence-review-api.spec.ts tests/governance-non-bypass.spec.ts tests/phase6-audit-persistence.spec.ts tests/scf-p10-p14-closure.spec.ts` | PASS, 42 passed |
 | `pnpm phase:check` | PASS with existing warnings |
 
 ## Known Warnings

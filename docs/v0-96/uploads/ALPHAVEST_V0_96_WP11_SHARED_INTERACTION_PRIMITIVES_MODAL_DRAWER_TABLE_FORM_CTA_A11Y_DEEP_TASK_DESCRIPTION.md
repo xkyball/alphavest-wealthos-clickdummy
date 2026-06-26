@@ -208,7 +208,7 @@ WP-11 should not implement API/schema changes directly. It must expose UI contra
 
 - Permission engine / visibility engine
 - Evidence service / audit service / export service
-- `/api/demo-workflow`, `/api/documents`, `/api/documents/upload`, relevant current APIs after WP-00 rebase
+- `deleted generic workflow route`, `/api/documents`, `/api/documents/upload`, relevant current APIs after WP-00 rebase
 - Prisma models: `AuditEvent`, `EvidenceRecord`, `Document`, `Recommendation`, `Approval`, `ComplianceReview`, `Decision`, `ExportRequest`, `Role`, `Permission`, `UserRole`
 
 ---

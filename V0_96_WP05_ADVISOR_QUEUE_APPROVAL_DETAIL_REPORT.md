@@ -59,13 +59,13 @@ Catch-up artefact: `V0_96_REFACTOR_FIRST_COMPLIANCE_AUDIT_WP01_WP05.md`
 Real implementation paths inspected for WP05:
 
 - `components/internal-workflow-screen.tsx`
-- `app/api/demo-workflow/route.ts`
-- `lib/demo-workflow-validation.ts`
+- `deleted generic workflow route`
+- `lib/recommendation-review-workflow-validation.ts`
 - `lib/typed-workflow-command-bus.ts`
 - `lib/workflow-gate.ts`
 - `lib/permission-engine.ts`
 - `lib/visibility-engine.ts`
-- `tests/demo-workflow-api.spec.ts`
+- `tests/recommendation-review-workflow-api.spec.ts`
 - `tests/workflow-gate.spec.ts`
 - `tests/route-smoke.spec.ts`
 
@@ -82,15 +82,15 @@ Refactor-first decision:
 - `lib/navigation.ts`
 - `lib/ux-route-policy.ts`
 - `components/internal-workflow-screen.tsx`
-- `app/api/demo-workflow/route.ts`
+- `deleted generic workflow route`
 - `lib/typed-workflow-command-bus.ts`
-- `lib/demo-workflow-validation.ts`
+- `lib/recommendation-review-workflow-validation.ts`
 - `lib/workflow-gate.ts`
 - `lib/permission-engine.ts`
 - `lib/visibility-engine.ts`
 - `lib/export-service.ts`
 - `lib/audit-service.ts`
-- `tests/demo-workflow-api.spec.ts`
+- `tests/recommendation-review-workflow-api.spec.ts`
 - `tests/workflow-gate.spec.ts`
 - `tests/permission-engine.spec.ts`
 - `tests/true-ux-p0-safety.spec.ts`

@@ -26,7 +26,7 @@ This is not an MVP-ready claim. The result remains bounded by demo-session ident
 
 Current tracked modified files:
 
-- `app/api/demo-workflow/route.ts`
+- `deleted generic workflow route`
 - `components/client-intake-screen.tsx`
 - `components/decisions-governance-screen.tsx`
 - `components/demo-session-provider.tsx`
@@ -34,10 +34,10 @@ Current tracked modified files:
 - `docs/v3/IMPLEMENTATION_QA_REPORT.md`
 - `docs/v3/PHASE_EXECUTION_REPORT.md`
 - `lib/typed-workflow-command-bus.ts`
-- `lib/demo-workflow-validation.ts`
+- `lib/recommendation-review-workflow-validation.ts`
 - `lib/screencast-demo-client.ts`
 - `next-env.d.ts`
-- `tests/demo-workflow-api.spec.ts`
+- `tests/recommendation-review-workflow-api.spec.ts`
 - `tests/document-upload-api.spec.ts`
 - `tests/document-upload-flow.spec.ts`
 
@@ -83,7 +83,7 @@ Status: `PASSED_WITH_LIMITATIONS`
 
 Implemented and tested:
 
-- Existing `/api/demo-workflow` route now supports typed `recommendation-review` payloads.
+- Existing `deleted generic workflow route` route now supports typed `recommendation-review` payloads.
 - Review, advisor approval, compliance release, compliance block, and request-evidence transitions persist through Prisma-backed workflow service logic.
 - Advisor approval persists without setting `clientVisible=true`.
 - Compliance release requires advisor approval, evidence sufficiency, permission, and workflow-gate alignment.
@@ -92,7 +92,7 @@ Implemented and tested:
 
 Proof:
 
-- `tests/demo-workflow-api.spec.ts`
+- `tests/recommendation-review-workflow-api.spec.ts`
 - `pnpm test:workflow-api` passed, 11 tests.
 
 Limitations:
@@ -116,7 +116,7 @@ Implemented and tested:
 Proof:
 
 - `tests/confirmation-lifecycle.spec.ts`
-- `tests/demo-workflow-api.spec.ts`
+- `tests/recommendation-review-workflow-api.spec.ts`
 - Covered in `pnpm test:playwright`.
 
 Limitations:
@@ -182,7 +182,7 @@ Added or updated test coverage in the current patch state:
 
 - `tests/document-upload-api.spec.ts`
 - `tests/document-upload-flow.spec.ts`
-- `tests/demo-workflow-api.spec.ts`
+- `tests/recommendation-review-workflow-api.spec.ts`
 - `tests/confirmation-lifecycle.spec.ts`
 - `tests/client-visibility-proof.spec.ts`
 

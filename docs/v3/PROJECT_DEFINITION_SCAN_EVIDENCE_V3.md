@@ -45,7 +45,7 @@ Generated: 2026-06-16T07:47:11+02:00
 | Permission engine | present but permissive | `allowed: true`, Phase 16 enforcement note. |
 | Visibility/workflow gate | present | helper enforces release candidate conditions when called. |
 | Evidence/audit/export services | present but mostly preview/gate | evidence placeholder, audit preview, export gate. |
-| J01 demo workflow API | present | selected persisted trigger/action/recommendation/approval/audit mutations. |
+| J01 typed workflow API | present | selected persisted trigger/action/recommendation/approval/audit mutations. |
 | J02-J10 domain mutations | incomplete | generic audit fallback, route-hop-heavy journeys. |
 
 ## Route-Level Screen And Clickflow Evidence

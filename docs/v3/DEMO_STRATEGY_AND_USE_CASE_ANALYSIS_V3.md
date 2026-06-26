@@ -18,9 +18,9 @@ The strongest AlphaVest demo is not "a wealth dashboard"; it is a governed visib
 - `lib/route-registry.ts` maps routes to pageflows, user workflows, role families, object types and permission actions.
 - `docs/v3/journeys.screencast.v3.json` contains 10 journeys and 73 steps with captions and required interactions.
 - `scripts/screencast/lib/journey-fixtures.ts` provides deterministic fixture IDs, roles, tenant slugs, form inputs, click paths and expected mutations.
-- The final handoff reports Phase 19 status: all 63 routes render; J02-J09 have stateful demo workflow API coverage; demo role-aware permission denials exist; file/export realism is metadata-only.
-- `app/api/demo-workflow/route.ts` contains specific demo workflow actions for J01-J09 and a generic validated action fallback pattern for unhandled `jNN.action` IDs.
-- `runDemoWorkflowMutation()` centralizes demo permission checks, audit writes and mutation callbacks for J02-J09 style actions.
+- The final handoff reports Phase 19 status: all 63 routes render; J02-J09 have stateful typed workflow API coverage; demo role-aware permission denials exist; file/export realism is metadata-only.
+- `app/api/recommendation-review-workflow/route.ts` contains specific typed workflow actions for J01-J09 and a generic validated action fallback pattern for unhandled `jNN.action` IDs.
+- `runTypedWorkflowMutation()` centralizes demo permission checks, audit writes and mutation callbacks for J02-J09 style actions.
 - Some visible page groups still render static demo data rather than re-reading every updated Prisma workflow row.
 
 ### Assumptions
@@ -62,7 +62,7 @@ The strongest AlphaVest demo is not "a wealth dashboard"; it is a governed visib
 | `journeys.screencast.v3.json` | 10 journeys, 73 steps, burned-in captions in final proof reports. | Metadata can attach to existing step IDs. |
 | `SCREENCAST_*` docs | Runner provisions fixture data, records cursor/captions and writes QA artifacts. | Demo can be live or video-backed with audit trails. |
 | `journey-fixtures.ts` | Fixture IDs, tenants, roles, refs, form inputs and expected mutations exist. | This is the best data contract for demo preparation. |
-| `demo-workflow` API/tests | J02-J09 stateful demo actions and permission tests exist. | Claim persisted demo actions for J02-J09, with caveats. |
+| `typed-command` API/tests | J02-J09 stateful demo actions and permission tests exist. | Claim persisted demo actions for J02-J09, with caveats. |
 | `FINAL_HANDOFF_REPORT.md` | Phase 19 status with intentional boundaries. | Final demo must repeat those boundaries plainly. |
 
 ## V3 Mission Card
@@ -173,7 +173,7 @@ J10 short frame -> J09 client context -> J04 document evidence -> J01 signal/adv
 
 | Journey | Tenant | Role / actor | Required records | Fixture refs / inputs | State before -> after | Evidence / audit | Visibility / permission | Blocked actions | Proof path |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| J01 Signal -> Advisor | `northbridge` / Northbridge Family Office | `analyst`, then advisor | `Trigger`, `ActionItem`, `Recommendation`, `Approval`, `AuditEvent` | `fixture-j01-signal-advisor-gate`; notes for request-data/advisor review | trigger new/internal -> advisor review/approval, client remains blocked | audit rows for request/route/approve/escalate | internal only; advisor approval not release | Publish/client decision | `app/api/demo-workflow/route.ts`, `SCREENCAST_QA_REPORT_V3.md` |
+| J01 Signal -> Advisor | `northbridge` / Northbridge Family Office | `analyst`, then advisor | `Trigger`, `ActionItem`, `Recommendation`, `Approval`, `AuditEvent` | `fixture-j01-signal-advisor-gate`; notes for request-data/advisor review | trigger new/internal -> advisor review/approval, client remains blocked | audit rows for request/route/approve/escalate | internal only; advisor approval not release | Publish/client decision | `app/api/recommendation-review-workflow/route.ts`, `SCREENCAST_QA_REPORT_V3.md` |
 | J02 Compliance release/block | `morgan` for block, `summit` for release | `compliance_officer` | `ComplianceReview`, `Recommendation`, `EvidenceRecord`, `EvidenceItem`, `AuditEvent` | `fixture-j02-compliance-release-block`; `requestEvidenceNote`, `blockReason` | needs evidence/block or pending -> released | compliance request/block/release evidence items and audit | release requires gate; clientVisible true only on passed Summit release | Release without evidence/gate | `workflowGate`, Phase 14 Slice 1 QA |
 | J03 Client decision/evidence | `bennett` | `principal` | `Decision`, `DecisionParticipant`, `Recommendation`, `EvidenceRecord`, `EvidenceItem`, `AuditEvent` | `fixture-j03-client-decision-evidence`; `decisionComment`, `reviewDate` | released decision -> accepted/deferred/rejected/request more info | decision evidence items, evidence access/download audit | released content guard before action | Decision on unreleased content | Phase 14 Slice 2 QA |
 | J04 Document upload/verification | `morgan` | `family_cfo` | `Document`, `DocumentVersion`, `DocumentExtraction`, `DocumentReview`, `DocumentLink`, `EvidenceItem`, `AuditEvent` | `fixture-j04-document-upload-verification`; file metadata, extraction correction | empty/uploaded -> analyst_review_pending | document extraction review evidence, audit | clientVisible false for extraction; review required | Treat AI extraction as verified advice | Phase 14 Slice 3 QA, file metadata validation |
@@ -244,7 +244,7 @@ Recommended: Option A for first presentation, Option B for product/ops follow-up
 
 | Risk | Why it matters | Safe wording |
 | --- | --- | --- |
-| Route coverage overclaimed as workflow execution | 63 routes render, but rendering is not the same as all business mutations. | "All catalogue routes render; selected demo workflows have stateful actions." |
+| Route coverage overclaimed as workflow execution | 63 routes render, but rendering is not the same as all business mutations. | "All catalogue routes render; selected typed workflows have stateful actions." |
 | Demo transaction overclaimed as production compliance | Demo mode has deterministic role/tenant rules, not real identity-provider sessions. | "Demo-scoped transaction with audit/evidence proof." |
 | Seed data overclaimed as user action proof | Seed rows exist before clicks. | "Seed data provisions the scenario; API actions prove selected transitions." |
 | UI static data overclaimed as live read model | Some screens do not reload all Prisma changes. | "Action writes are proven by API/tests; screen content remains demo-rendered in places." |
@@ -305,7 +305,7 @@ Wrong frame to avoid: a financial advice app where attractive recommendations ar
 
 ### SIT Closed World
 
-Closed-world resources: route registry, journey JSON, fixtures, Prisma seed, demo workflow API, permission engine, workflow gate, evidence/audit/export services, screencast runner, QA reports and 63 visual references.
+Closed-world resources: route registry, journey JSON, fixtures, Prisma seed, typed workflow API, permission engine, workflow gate, evidence/audit/export services, screencast runner, QA reports and 63 visual references.
 
 | Operator | Move |
 | --- | --- |
@@ -395,7 +395,7 @@ CCA keeps:
 | Claim | Proof path |
 | --- | --- |
 | 63 routes render | `lib/route-registry.ts`, `tests/route-smoke.spec.ts`, `FINAL_HANDOFF_REPORT.md`. |
-| J02-J09 stateful demo actions exist | `app/api/demo-workflow/route.ts`, `tests/demo-workflow-api.spec.ts`, `IMPLEMENTATION_QA_REPORT.md` Phase 14 addenda. |
+| J02-J09 stateful demo actions exist | `app/api/recommendation-review-workflow/route.ts`, `tests/recommendation-review-workflow-api.spec.ts`, `IMPLEMENTATION_QA_REPORT.md` Phase 14 addenda. |
 | Compliance release controls visibility | `lib/workflow-gate.ts`, J02 Slice 1 QA, seed invariant in `prisma/seed.ts`. |
 | Demo role-aware denials exist | `lib/permission-engine.ts`, `tests/permission-engine.spec.ts`, Phase 16 QA addendum. |
 | File/export realism is metadata-only | `lib/file-metadata-service.ts`, `lib/export-package-service.ts`, `tests/file-export-realism.spec.ts`, Phase 18 QA addendum. |

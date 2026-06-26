@@ -41,7 +41,7 @@ test.describe("tenant governance typed actions API", () => {
     await prisma?.$disconnect();
   });
 
-  test("executes J06/J07 tenant, user, role and governance commands outside demo workflow", async ({ request }) => {
+  test("executes J06/J07 tenant, user, role and governance commands through the typed surface", async ({ request }) => {
     for (const actionId of tenantGovernanceActions) {
       const response = await request.post(tenantGovernanceCanonicalApiRoute, {
         data: { actionId },

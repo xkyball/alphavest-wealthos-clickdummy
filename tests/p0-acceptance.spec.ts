@@ -4,7 +4,7 @@ import path from "node:path";
 import { expect, test } from "@playwright/test";
 
 import { createDemoSession, demoPlatformTenantId } from "../lib/demo-session";
-import { parseDemoWorkflowRequestBody } from "../lib/demo-workflow-validation";
+import { parseRecommendationReviewWorkflowRequestBody } from "../lib/recommendation-review-workflow-validation";
 import { evidenceService } from "../lib/evidence-service";
 import { exportPackageService } from "../lib/export-package-service";
 import { exportService } from "../lib/export-service";
@@ -483,21 +483,33 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
   });
 
   test("AV-SLICE-P0-08 validates existing API request shapes and preserves the P0 API universe", () => {
-    expect(parseDemoWorkflowRequestBody({ actionId: "j02.releaseClient" })).toEqual({
+    expect(
+      parseRecommendationReviewWorkflowRequestBody({
+        action: "submit_review",
+        actorRole: "analyst",
+        targetId: "7788c210-4907-5d7e-a27b-ddd07898d893",
+        workflowType: "advisor-approval",
+      }),
+    ).toEqual({
       ok: true,
-      value: { actionId: "j02.releaseClient" },
+      value: {
+        action: "submit_review",
+        actorRole: "analyst",
+        targetId: "7788c210-4907-5d7e-a27b-ddd07898d893",
+        workflowType: "advisor-approval",
+      },
     });
-    expect(parseDemoWorkflowRequestBody({ actionId: "releaseClient" })).toEqual({
+    expect(parseRecommendationReviewWorkflowRequestBody({ actionId: "releaseClient" })).toEqual({
       issues: [
         {
-          code: "invalid_action_id",
-          field: "actionId",
-          message: "Action ID must use the demo workflow format, for example j02.releaseClient.",
+          code: "invalid_workflow_request",
+          field: "workflowType",
+          message: "Recommendation review workflow requests must include a typed advisor approval payload.",
         },
       ],
       ok: false,
     });
-    expect(parseDemoWorkflowRequestBody(null)).toEqual({
+    expect(parseRecommendationReviewWorkflowRequestBody(null)).toEqual({
       issues: [
         {
           code: "invalid_body",
@@ -641,7 +653,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
       "SCF-P14-T002",
     ]);
     expect(scfProofCommandBaseline).toContain("pnpm test:permissions");
-    expect(scfProofCommandBaseline.join(" ")).toContain("tests/demo-workflow-api.spec.ts");
+    expect(scfProofCommandBaseline.join(" ")).toContain("tests/recommendation-review-workflow-api.spec.ts");
     expect(scfProofCommandBaseline.join(" ")).toContain("tests/client-visibility-proof.spec.ts");
     expect(scfProofCommandBaseline.join(" ")).toContain("tests/file-export-realism.spec.ts");
     expect(scfProofCommandBaseline.join(" ")).toContain("tests/scf-p10-p14-closure.spec.ts");

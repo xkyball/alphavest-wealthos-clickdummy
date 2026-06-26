@@ -34,15 +34,15 @@ No application code or test source was changed for WP-04 in this execution. The 
 ## Inspected Files
 
 - `components/internal-workflow-screen.tsx`
-- `app/api/demo-workflow/route.ts`
+- `deleted generic workflow route`
 - `lib/typed-workflow-command-bus.ts`
-- `lib/demo-workflow-validation.ts`
+- `lib/recommendation-review-workflow-validation.ts`
 - `lib/workflow-gate.ts`
 - `lib/visibility-engine.ts`
 - `lib/export-service.ts`
 - `lib/permission-engine.ts`
 - `lib/audit-service.ts`
-- `tests/demo-workflow-api.spec.ts`
+- `tests/recommendation-review-workflow-api.spec.ts`
 - `tests/workflow-gate.spec.ts`
 - `tests/true-ux-p0-safety.spec.ts`
 - `tests/true-ux-client-projection.spec.ts`

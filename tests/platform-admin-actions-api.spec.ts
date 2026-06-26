@@ -35,7 +35,7 @@ test.describe("platform admin typed actions API", () => {
     await prisma?.$disconnect();
   });
 
-  test("executes J10 platform and security commands outside demo workflow", async ({ request }) => {
+  test("executes J10 platform and security commands through the typed surface", async ({ request }) => {
     for (const actionId of platformAdminActions) {
       const response = await request.post(platformAdminCanonicalApiRoute, {
         data: { actionId },

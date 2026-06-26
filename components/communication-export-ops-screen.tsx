@@ -1381,7 +1381,7 @@ function ExportScopePage({ title }: { title: string }) {
             <DataTable compact columns={availableColumns} getRowId={(row) => `${row.id}-selected`} onSortChange={handleStaticSortChange} responsiveMode="table" rows={scopeRows.filter((item) => item.selected)} sortDirection="asc" sortKey="name" />
             <StatePanel className="mt-4" detail={`${summary.blocked} restricted or not-permitted objects are excluded. Limited items remain in scope only after redaction review.`} state="restricted" title="Object-level permission checks" />
             <p className="mt-2 text-xs leading-5 text-alphavest-muted" id="j08-clear-scope-reason">
-              Scope reset is blocked until it is implemented as a typed export workflow command; the legacy demo action is no longer a product path.
+              Scope reset is blocked until it is implemented as a typed export workflow command; the retired generic action is no longer a product path.
             </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               <FieldPill label="Included" value={`${summary.included} objects`} />

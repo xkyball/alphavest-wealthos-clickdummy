@@ -8,7 +8,7 @@ This manual explains how to use the current application through visible UI tasks
 
 ## Current Demo Boundaries
 
-The current AlphaVest application is a rich demo workflow prototype. Many screens are navigable and visually complete, and selected workflow actions are backed by demo API and audit/evidence logic. The manual uses conservative wording where a workflow is visible but not fully persisted.
+The current AlphaVest application is a rich typed workflow prototype. Many screens are navigable and visually complete, and selected workflow actions are backed by demo API and audit/evidence logic. The manual uses conservative wording where a workflow is visible but not fully persisted.
 
 Keep these boundaries in mind:
 
@@ -308,7 +308,7 @@ Use this task to review released content, choose a decision outcome, and receive
 
 **If you cannot continue:** Check whether the item is released to the client, whether your role has scope, or whether required acknowledgement is missing.
 
-**Current implementation note:** The UI is navigable with demo workflow actions. Final decision/evidence persistence remains incomplete.
+**Current implementation note:** The UI is navigable with typed workflow actions. Final decision/evidence persistence remains incomplete.
 
 ### MT-011 Review Evidence And Create A Controlled Export
 

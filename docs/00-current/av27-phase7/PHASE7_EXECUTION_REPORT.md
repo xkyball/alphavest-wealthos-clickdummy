@@ -15,7 +15,7 @@ Active repo authority: `ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md`
 - `git diff --stat`: empty before edits
 - `package.json`: scripts verified, including `guard:source`, `phase:check`, `test:permissions`, `test:client-visibility`, `test:file-export`, `test:workflow-gate`
 - `lib/route-registry.ts`: inspected and present
-- `tests/`: inspected; Phase 7 targets include `tests/av27-phase7-certification.spec.ts`, `tests/av27-safety-foundation.spec.ts`, `tests/av27-phase6-payload-sweep.spec.ts`, `tests/workflow-gate.spec.ts`, `tests/demo-workflow-api.spec.ts`, `tests/client-visibility-projection.spec.ts`, `tests/file-export-realism.spec.ts`
+- `tests/`: inspected; Phase 7 targets include `tests/av27-phase7-certification.spec.ts`, `tests/av27-safety-foundation.spec.ts`, `tests/av27-phase6-payload-sweep.spec.ts`, `tests/workflow-gate.spec.ts`, `tests/recommendation-review-workflow-api.spec.ts`, `tests/client-visibility-projection.spec.ts`, `tests/file-export-realism.spec.ts`
 - `pnpm guard:source`: PASS
 
 ## Phase Extract
@@ -100,7 +100,7 @@ No product UI changed. Screenshot proof is not applicable for this slice.
 - `pnpm test:av27:claims`: PASS.
 - `pnpm typecheck`: PASS.
 - `PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm playwright test tests/av27-phase7-certification.spec.ts tests/av27-safety-foundation.spec.ts tests/av27-phase6-payload-sweep.spec.ts --workers=1`: PASS, 15/15.
-- `PLAYWRIGHT_PORT=3047 pnpm playwright test tests/demo-workflow-api.spec.ts --workers=1`: PASS, 15/15.
+- `PLAYWRIGHT_PORT=3047 pnpm playwright test tests/recommendation-review-workflow-api.spec.ts --workers=1`: PASS, 15/15.
 - `pnpm test:av27:no-server`: PASS.
 - `PLAYWRIGHT_PORT=3048 pnpm test:av27:server`: PASS.
 - `pnpm lint`: PASS with 22 pre-existing warnings, 0 errors.
