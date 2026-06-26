@@ -2245,6 +2245,10 @@ function mergeItems(items: CaptureItem[]) {
   return Array.from(merged.values()).sort((a, b) => a.pageId.localeCompare(b.pageId) || a.state.localeCompare(b.state));
 }
 
+function markdownCell(value: string) {
+  return value.replace(/\|/g, "\\|").replace(/\n/g, "<br>");
+}
+
 function writeIndex(items: CaptureItem[]) {
   writeFileSync(
     path.join(outputDir, "index.json"),
@@ -2271,11 +2275,11 @@ function writeIndex(items: CaptureItem[]) {
     `Sidecars: ${screensOnly ? "disabled" : "enabled"}`,
     `Audit baseline: ${captureScreenModelAuditBaseline.registeredRoutes} routes, ${captureScreenModelAuditBaseline.schemaModels} models, ${captureScreenModelAuditBaseline.schemaEnums} enums`,
     "",
-    "| Page | Route | State | Status | Capability | Models | Screenshot | Rendered DOM | Rendered CSS | Runtime Components | Runtime Summary | Runtime Confidence | DOM Rect Trace | React Source Trace | Interaction Proof Trace |",
-    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    "| Page | Route | State | Status | UX Mode | Audience | Proof Posture | Productive | Capability | No-overclaim Rule | Scope Warnings | Models | Screenshot | Rendered DOM | Rendered CSS | Runtime Components | Runtime Summary | Runtime Confidence | DOM Rect Trace | React Source Trace | Interaction Proof Trace |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ...items.map(
       (item) =>
-        `| ${item.pageId} | ${item.route} | ${item.state} | ${item.status} | ${item.modelContext.capability.status} | ${item.modelContext.models.join(", ")} | ${item.path} | ${item.domPath ?? ""} | ${item.cssPath ?? ""} | ${item.componentRuntimePath ?? ""} | ${item.componentRuntimeMarkdownPath ?? ""} | ${item.componentRuntimeConfidence ?? ""} | ${item.domRectTracePath ?? ""} | ${item.reactSourceTracePath ?? ""} | ${item.interactionProofTracePath ?? ""} |`,
+        `| ${item.pageId} | ${item.route} | ${item.state} | ${item.status} | ${item.modelContext.uxOperatingModel.mode} | ${item.modelContext.uxOperatingModel.audience} | ${item.modelContext.uxOperatingModel.proofPosture} | ${item.modelContext.uxOperatingModel.productiveUxEligible ? "yes" : "no"} | ${item.modelContext.capability.status} | ${markdownCell(item.modelContext.uxOperatingModel.noOverclaimRule)} | ${markdownCell(item.modelContext.warnings.join("<br>"))} | ${item.modelContext.models.join(", ")} | ${item.path} | ${item.domPath ?? ""} | ${item.cssPath ?? ""} | ${item.componentRuntimePath ?? ""} | ${item.componentRuntimeMarkdownPath ?? ""} | ${item.componentRuntimeConfidence ?? ""} | ${item.domRectTracePath ?? ""} | ${item.reactSourceTracePath ?? ""} | ${item.interactionProofTracePath ?? ""} |`,
     ),
   ];
   writeFileSync(path.join(outputDir, "index.md"), `${lines.join("\n")}\n`);

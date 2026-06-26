@@ -35,6 +35,11 @@ test.describe("routes and modals capture contract", () => {
     expect(source).toContain("modelContext: CaptureScreenModelContext");
     expect(source).toContain("auditBaseline: captureScreenModelAuditBaseline");
     expect(source).toContain("item.modelContext.capability.status");
+    expect(source).toContain("item.modelContext.uxOperatingModel.mode");
+    expect(source).toContain("item.modelContext.uxOperatingModel.audience");
+    expect(source).toContain("item.modelContext.uxOperatingModel.proofPosture");
+    expect(source).toContain("item.modelContext.uxOperatingModel.noOverclaimRule");
+    expect(source).toContain("item.modelContext.warnings.join");
     expect(source).toContain("item.modelContext.models.join");
   });
 
