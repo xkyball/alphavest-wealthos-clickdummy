@@ -67,7 +67,7 @@ Primary screen renderer mapping:
 | Tenant setup | 6 routes: `/admin/tenants`, `/tenants/new`, setup/team/policies/users | Wizard/normal/invite modal | UI exists; tenant/governance actions have typed tenant-governance command client evidence. |
 | Client workspace | 12 routes: `/client/profile`, `/client/family-members`, `/entities`, `/documents/upload` | View/create/upload/review route metadata | Strong real interaction candidates: profile PATCH, family PATCH, entity POST, document upload and review POST. |
 | Wealth/actions | 2 routes: `/wealth-map`, `/actions` | Drawer pages | Mixed: visible controls, typed data-maintenance commands and explicit static/disabled notes. |
-| Advisory/internal workflow | 17 routes including advisory, advisor, KYC/IPS, review, committee, compliance | Review/approve/release/block metadata, many sensitive routes | UI exists with safety/gate language. J01 advisor review has typed command surface; J02/J03 remain advice/release-history command candidates. |
+| Advisory/internal workflow | 17 routes including advisory, advisor, KYC/IPS, review, committee, compliance | Review/approve/release/block metadata, many sensitive routes | UI exists with safety/gate language. J01 advisor review and J02/J03 advice/release-history controls use typed command surfaces. |
 | Decisions/evidence/governance | 9 routes: decisions/evidence/governance | Drawer/modals/approval detail routes | Mixed: governance actions use typed client; evidence/review affordances need downstream proof. |
 | Communication | 2 routes | Preview/schedule | Mostly support/context UI; no advice/release claim without handler proof. |
 | Export | 5 routes | Create/scope/redaction/approval/download sequence | Staged UI exists. Export workflow has direct API candidates and migrated typed command support from earlier cleanup. |
@@ -82,7 +82,7 @@ Client-sensitive route examples in the current registry include `/admin/policies
 | Real API fetch/read | `ClientIntakeScreen` fetches profile, family, entities and documents APIs; `AdminTenantSetupScreen` fetches `/api/admin-tenants`; auth screens fetch auth APIs; export screens call export workflow APIs. | `READ_INTERACTION_CANDIDATE`; downstream API/service mapping required. |
 | Real API mutation candidate | Client intake calls `/api/profile` PATCH, `/api/family-members` PATCH, `/api/entities` POST, `/api/documents/upload` POST and `/api/documents/review` POST; admin tenant UI calls `/api/admin-tenants` POST; export UI submits workflow commands. | `MUTATION_CANDIDATE`; not yet a complete vertical slice until service, DB, audit and test proof are mapped. |
 | Typed product-like command client | Current screen code imports `runAdvisorReviewCommand`, `runDataMaintenanceCommand`, `runTenantGovernanceCommand`, `runPlatformAdminCommand`, `runAdviceReleaseHistoryCommand` and `runRecommendationReviewWorkflowAction`. | `TYPED_COMMAND_CANDIDATE`; command-specific proof must be gathered in `ANALYSIS-2.2` and `ANALYSIS-2.3`. |
-| Legacy screencast/demo client path | `lib/screencast-demo-client.ts` still posts to `/api/demo-workflow`, but current grep found no product screen imports of `runScreencastDemoAction`. | `QUARANTINED_LEGACY_CLIENT_PATH`; not acceptable as product API evidence. |
+| Legacy screencast/demo client path | `lib/screencast-demo-client.ts` deleted in `FOLLOWUP-4`; current grep finds no product screen imports of `runScreencastDemoAction`. | `DELETED_LEGACY_CLIENT_PATH`; not acceptable as product API evidence. |
 | Explicit static/non-interactive control | `data-ux-interactive="false"`, `data-ux-affordance="static-control-note"`, disabled buttons and held labels occur across committee, suitability, wealth actions, client intake, governance and export surfaces. | `UI_ONLY_STATIC_OR_HELD` unless paired with a real handler. |
 | Disabled safety controls | Committee approval disabled until vote/evidence gates, KYC/client release disabled, suitability release disabled, document upload disabled until a file is selected. | `BLOCKED_UI_SAFETY_STATE`; positive safety signal, not completion proof. |
 | Local state interaction | Drawers, modals, tabs, filters, wizard steps, selects and local form state in screen components. | `LOCAL_UI_INTERACTION`; local state alone does not prove persistence. |
@@ -118,7 +118,7 @@ Client-sensitive route examples in the current registry include `/admin/policies
 | Document folder creation, draft save, download held | Static-control-note labels in document surfaces | `UI_ONLY_STATIC_OR_HELD` |
 | Admin import/template/export/preview controls | Held/static controls in admin setup screens | `UI_ONLY_STATIC_OR_HELD` |
 | Evidence and stage panels | `data-testid` proof surfaces without handler evidence by themselves | `DISPLAY_PROOF_SURFACE` |
-| `runScreencastDemoAction` product-screen path | No current product screen import found; client still exists in `lib/screencast-demo-client.ts` | `LEGACY_SUPPORT_ONLY_UNTIL_DELETED_OR_SEEDED` |
+| `runScreencastDemoAction` product-screen path | No current product screen import found; `lib/screencast-demo-client.ts` deleted | `DELETED_LEGACY_CLIENT_PATH` |
 
 ### ANALYSIS-2.1 Result
 
@@ -204,7 +204,7 @@ Status: `DONE`
 | --- | --- | --- |
 | Field-level editability | `OPEN_FOR_ANALYSIS-2.3` | `ANALYSIS-2.2` proves handler/service reachability, not exact model/field coverage. |
 | Runtime success of every command | `OPEN_FOR_QA` | This ticket used static local code inspection. Runtime/browser/API proof belongs to later validation tickets. |
-| Remaining `lib/screencast-demo-client.ts` | `QUARANTINED_LEGACY_SUPPORT` | The client still exists, but product-like moved actions are fail-closed at `/api/demo-workflow`; deletion/quarantine decisions belong to implementation cleanup tickets, not this analysis ticket. |
+| Remaining `lib/screencast-demo-client.ts` | `DELETED_IN_FOLLOWUP-4` | The client file was removed after typed command boundaries were proven; product-like moved actions remain fail-closed at `/api/demo-workflow`. |
 | Reference-only route affordances | `NOT_WORKFLOW_PROOF` | Route/UI existence without handler linkage remains static/display-only. |
 
 ### ANALYSIS-2.2 Result
@@ -386,7 +386,7 @@ Results:
 | Full Playwright suite not run in this ticket | QA-1 must not claim global green status from this targeted proof pack. |
 | Field-level DB editability not exhaustively tested | Capability report must stay at process/model-family level unless a specific test proves field behavior. |
 | Screenshot/browser visual proof not generated here | No UI changed in this ticket; visual proof is not required for report/test-source updates. |
-| `/api/demo-workflow` client file still exists | It is a legacy support path, not product capability evidence; later cleanup can delete/quarantine it further if no seed/screencast dependency remains. |
+| `/api/demo-workflow` client file was deleted in follow-up cleanup | Product capability evidence must come from typed command clients and typed APIs, not legacy screencast helpers. |
 | Platform-admin typed command writes audit record rather than mutating broad platform settings directly | Must not be reported as full platform CRUD. |
 
 ### ANALYSIS-2.4 Result

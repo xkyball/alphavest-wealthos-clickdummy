@@ -14,6 +14,7 @@ const retiredPaths = [
   "docs/v3/journeys.screencast.p2.v3.json",
   "docs/v3/DEMO_JOURNEY_LEGACY_TO_PORTFOLIO_MAP_V3.json",
   "docs/v3/DEMO_JOURNEY_OPPORTUNITY_BACKLOG_V3.json",
+  "lib/screencast-demo-client.ts",
   "scripts/screencast/generate-portfolio-manifests.ts",
   "scripts/screencast/lib/journey-fixtures.ts",
 ];

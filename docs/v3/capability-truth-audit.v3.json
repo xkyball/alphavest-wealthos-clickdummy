@@ -20,8 +20,8 @@
       "status": "not operational",
       "evidence": [
         "components/client-intake-screen.tsx document upload screen is visual/static",
-        "lib/screencast-demo-client.ts posts JSON actionId only",
-        "app/api/demo-workflow/route.ts parses request.json()",
+        "Legacy lib/screencast-demo-client.ts has been deleted; product-like command surfaces must use typed command clients",
+        "app/api/demo-workflow/route.ts is a fail-closed legacy boundary for moved product-like actions",
         "lib/file-metadata-service.ts validates metadata, not bytes",
         "tests/file-export-realism.spec.ts asserts metadata-only behavior"
       ],
