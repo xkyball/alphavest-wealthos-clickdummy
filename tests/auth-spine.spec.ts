@@ -5,6 +5,12 @@ import { AuditResult, PrismaClient } from "@prisma/client";
 import { expect, test } from "@playwright/test";
 
 import { authJwtCookieName, decodeAuthJwtPayload } from "../lib/auth/auth-jwt";
+import {
+  createDemoSession,
+  demoPlatformTenantId,
+  tryCreateDemoSession,
+} from "../lib/demo-session";
+import { permissionEngine } from "../lib/permission-engine";
 
 function cookieHeader(setCookie: string) {
   return setCookie.split(";")[0];
@@ -164,6 +170,62 @@ test.describe("Wave 0-2 auth spine", () => {
     ]);
     expect(currentBody.currentUser.objectScopes).toEqual([]);
     expect(JSON.stringify(currentBody)).not.toMatch(/recommendation|evidenceRecord|complianceNote|clientPayload/i);
+
+    const bridgeSession = tryCreateDemoSession({
+      roleKey: currentBody.currentUser.role.key,
+      tenantSlug: claims.tenantSlug,
+    });
+
+    expect(bridgeSession.ok).toBe(true);
+    if (!bridgeSession.ok) throw new Error(`Current-user bridge failed: ${bridgeSession.issues.join(", ")}`);
+
+    expect(bridgeSession.session.actor.id).toBe(currentBody.currentUser.actor.id);
+    expect(bridgeSession.session.actor.email).toBe(email);
+    expect(bridgeSession.session.tenant.id).toBe(currentBody.currentUser.tenant.id);
+    expect(bridgeSession.session.tenantMembership).toMatchObject({
+      actorId: currentBody.currentUser.actor.id,
+      roleKey: "family_cfo",
+      tenantId: currentBody.currentUser.tenant.id,
+      tenantSlug: "bennett",
+    });
+
+    const bridgePermission = permissionEngine.can(
+      bridgeSession.session.actor,
+      "VIEW",
+      {
+        clientTenantId: bridgeSession.session.tenant.id,
+        objectType: "DOCUMENT",
+        visibilityStatus: "CLIENT_VISIBLE",
+      },
+      {
+        clientTenantId: bridgeSession.session.tenant.id,
+        platformTenantId: demoPlatformTenantId,
+      },
+      bridgeSession.session.role,
+    );
+
+    expect(bridgePermission.allowed).toBe(true);
+    expect(bridgePermission.reasonCode).toBe("DEMO_ROLE_AWARE_ALLOW");
+
+    const foreignTenant = createDemoSession({ roleKey: "principal", tenantSlug: "morgan" }).tenant;
+    const crossTenantPermission = permissionEngine.can(
+      bridgeSession.session.actor,
+      "VIEW",
+      {
+        clientTenantId: foreignTenant.id,
+        objectType: "DOCUMENT",
+        visibilityStatus: "CLIENT_VISIBLE",
+      },
+      {
+        clientTenantId: foreignTenant.id,
+        platformTenantId: demoPlatformTenantId,
+      },
+      bridgeSession.session.role,
+    );
+
+    expect(crossTenantPermission.allowed).toBe(false);
+    expect(crossTenantPermission.reasonCode).toBe("DEMO_DENY_ACTOR_TENANT_CONTEXT_MISMATCH");
+    expect(crossTenantPermission.requiresAudit).toBe(true);
 
     const audit = await prisma.auditEvent.findFirstOrThrow({
       orderBy: { createdAt: "desc" },
