@@ -48,6 +48,7 @@ export type ClientJourneyProjection = {
     detail: string;
     type: "CLIENT_SAFE_STATUS" | "DONE" | "BLOCKED";
   };
+  releasedSummary?: string;
   status: "IN_PROGRESS" | "BLOCKED" | "COMPLETE" | "NOT_AVAILABLE";
   title: string;
 };
@@ -114,9 +115,10 @@ export function buildClientJourneyProjection(input: JourneyProjectionInput): Cli
     return {
       journeyKey: definition.journeyKey,
       nextAction: {
-        detail: "The work item is complete.",
+        detail: input.journey.clientSafeSummary ?? "The work item is complete.",
         type: "DONE",
       },
+      ...(input.journey.clientSafeSummary ? { releasedSummary: input.journey.clientSafeSummary } : {}),
       status: "COMPLETE",
       title: definition.title,
     };

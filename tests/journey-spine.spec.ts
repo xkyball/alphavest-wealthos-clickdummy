@@ -154,6 +154,20 @@ test.describe("Wave 0-2 Journey Orchestration and Database Spine", () => {
     expect(clientProjection.nextAction.detail).toContain("AlphaVest team");
     expect(clientProjection as Record<string, unknown>).not.toHaveProperty("blockerReason");
     expect(clientProjection as Record<string, unknown>).not.toHaveProperty("objectLinks");
+
+    const releasedProjection = buildClientJourneyProjection({
+      journey: {
+        ...blocked,
+        clientSafeSummary: "Released client-safe export summary.",
+        status: "COMPLETED",
+      },
+    });
+
+    expect(releasedProjection.status).toBe("COMPLETE");
+    expect(releasedProjection.releasedSummary).toBe("Released client-safe export summary.");
+    expect(releasedProjection.nextAction.detail).toBe("Released client-safe export summary.");
+    expect(releasedProjection as Record<string, unknown>).not.toHaveProperty("blockerReason");
+    expect(releasedProjection as Record<string, unknown>).not.toHaveProperty("objectLinks");
   });
 
   test("seed persists definitions, accepted instances and queryable object links while hold journeys stay metadata-only", async () => {

@@ -406,6 +406,18 @@ test.describe("Wave 0-2 Journey APIs and command execution", () => {
     );
     expect(releaseRunBeforeCompliance).toBeNull();
 
+    const advisorOnlyProjection = await request.get(`/api/journeys/${journeyId}/client-projection`, {
+      headers: bearer(cfoJwt),
+    });
+    const advisorOnlyProjectionBody = await advisorOnlyProjection.json();
+    expect(advisorOnlyProjection.ok(), JSON.stringify(advisorOnlyProjectionBody)).toBe(true);
+    expect(advisorOnlyProjectionBody.projection.status).not.toBe("COMPLETE");
+    expect(advisorOnlyProjectionBody.projection.releasedSummary).toBeUndefined();
+    expect(advisorOnlyProjectionBody.safety.internalPayloadReturned).toBe(false);
+    expect(JSON.stringify(advisorOnlyProjectionBody)).not.toMatch(
+      /internalRationale|objectLinks|complianceNotes|releasedToClientAt|COMPLIANCE_RELEASED_CLIENT_SAFE/,
+    );
+
     const advisorRelease = await command(request, journeyId, advisorJwt, {
       clientSafeSummary: "Advisor role must not release client-safe content.",
       command: "COMPLIANCE_RELEASE",
@@ -538,8 +550,10 @@ test.describe("Wave 0-2 Journey APIs and command execution", () => {
     const clientProjectionBody = await clientProjection.json();
     expect(clientProjection.ok(), JSON.stringify(clientProjectionBody)).toBe(true);
     expect(clientProjectionBody.projection.status).toBe("COMPLETE");
+    expect(clientProjectionBody.projection.releasedSummary).toBe("Client-safe liquidity governance next step.");
+    expect(clientProjectionBody.projection.nextAction.detail).toBe("Client-safe liquidity governance next step.");
     expect(clientProjectionBody.safety.internalPayloadReturned).toBe(false);
-    expect(JSON.stringify(clientProjectionBody)).not.toMatch(/internalRationale|objectLinks|complianceNotes/);
+    expect(JSON.stringify(clientProjectionBody)).not.toMatch(/internalRationale|objectLinks|complianceNotes|clientSummaryDraft|aiDraft/);
   });
 
   test("keeps upload-only, advisor-only, admin and cross-tenant paths fail-closed", async ({ request }) => {
@@ -720,6 +734,18 @@ test.describe("Wave 0-2 Journey APIs and command execution", () => {
       clientVisible: false,
     });
 
+    const evidenceRequestProjection = await request.get(`/api/journeys/${seededJourneyId}/client-projection`, {
+      headers: bearer(cfoJwt),
+    });
+    const evidenceRequestProjectionBody = await evidenceRequestProjection.json();
+    expect(evidenceRequestProjection.ok(), JSON.stringify(evidenceRequestProjectionBody)).toBe(true);
+    expect(evidenceRequestProjectionBody.projection.status).toBe("BLOCKED");
+    expect(evidenceRequestProjectionBody.projection.releasedSummary).toBeUndefined();
+    expect(evidenceRequestProjectionBody.safety.internalPayloadReturned).toBe(false);
+    expect(JSON.stringify(evidenceRequestProjectionBody)).not.toMatch(
+      /internalRationale|objectLinks|complianceNotes|releasedToClientAt|COMPLIANCE_RELEASED_CLIENT_SAFE/,
+    );
+
     const block = await command(request, seededJourneyId, complianceJwt, {
       command: "COMPLIANCE_BLOCK",
       reason: "Compliance blocks unsafe release path.",
@@ -774,5 +800,17 @@ test.describe("Wave 0-2 Journey APIs and command execution", () => {
       blockerCode: "COMPLIANCE_BLOCKED",
       clientVisible: false,
     });
+
+    const blockedProjection = await request.get(`/api/journeys/${seededJourneyId}/client-projection`, {
+      headers: bearer(cfoJwt),
+    });
+    const blockedProjectionBody = await blockedProjection.json();
+    expect(blockedProjection.ok(), JSON.stringify(blockedProjectionBody)).toBe(true);
+    expect(blockedProjectionBody.projection.status).toBe("BLOCKED");
+    expect(blockedProjectionBody.projection.releasedSummary).toBeUndefined();
+    expect(blockedProjectionBody.safety.internalPayloadReturned).toBe(false);
+    expect(JSON.stringify(blockedProjectionBody)).not.toMatch(
+      /internalRationale|objectLinks|complianceNotes|releasedToClientAt|COMPLIANCE_RELEASED_CLIENT_SAFE/,
+    );
   });
 });

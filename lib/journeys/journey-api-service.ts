@@ -340,10 +340,17 @@ function objectLinksProjection(instance: JourneyInstanceWithGraph): JourneyObjec
 
 function runtimeFromInstance(instance: JourneyInstanceWithGraph): JourneyRuntime {
   const definition = requireJourneyDefinition(instance.definition.journeyKey);
+  const metadata = metadataObject(instance.metadataJson);
+  const coreMetadata = metadataObject(metadata.coreJourneyGates as Prisma.JsonValue | undefined);
+  const clientSafeSummary =
+    coreMetadata.complianceReleased === true && typeof coreMetadata.clientSafeSummary === "string"
+      ? coreMetadata.clientSafeSummary
+      : undefined;
 
   return {
     blockerCode: instance.blockerCode ?? undefined,
     blockerReason: instance.blockerReason ?? undefined,
+    clientSafeSummary,
     completedAt: instance.completedAt?.toISOString(),
     currentStageKey: instance.currentStageKey ?? undefined,
     currentStepKey: instance.currentStepKey ?? undefined,

@@ -22,6 +22,7 @@ export type JourneyStepRuntime = JourneyStepDefinition & {
 export type JourneyRuntime = {
   blockerCode?: string;
   blockerReason?: string;
+  clientSafeSummary?: string;
   completedAt?: string;
   currentStageKey?: string;
   currentStepKey?: string;
