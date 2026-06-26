@@ -2079,7 +2079,8 @@ export async function POST(request: Request) {
             noExportDownload: true,
             scoped: false,
           }
-        : demoWorkflowBoundary.canonicalApiRoute === "/api/tenant-governance/actions"
+        : demoWorkflowBoundary.canonicalApiRoute === "/api/tenant-governance/actions" ||
+            demoWorkflowBoundary.canonicalApiRoute === "/api/platform-admin/actions"
           ? {
               commandExecuted: false,
               hiddenRowsDisclosed: false,
@@ -2100,7 +2101,9 @@ export async function POST(request: Request) {
               ? "Legacy Phase B/C demo actions are retired from /api/demo-workflow. Use the typed journey command API."
               : demoWorkflowBoundary.canonicalApiRoute === "/api/tenant-governance/actions"
                 ? "Legacy tenant governance demo actions are retired from /api/demo-workflow. Use /api/tenant-governance/actions."
-                : "Review monitoring actions have moved out of /api/demo-workflow. Use /api/review-monitoring/actions.",
+                : demoWorkflowBoundary.canonicalApiRoute === "/api/platform-admin/actions"
+                  ? "Legacy platform admin demo actions are retired from /api/demo-workflow. Use /api/platform-admin/actions."
+                  : "Review monitoring actions have moved out of /api/demo-workflow. Use /api/review-monitoring/actions.",
         legacyReasonCode: demoWorkflowBoundary.reasonCode,
         reasonCode: "SAFE_ERROR",
         ...(movedActionSafety ? { safety: movedActionSafety } : {}),

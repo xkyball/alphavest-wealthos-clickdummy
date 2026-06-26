@@ -410,6 +410,37 @@ test.describe("demo workflow API", () => {
     }
   });
 
+  test("legacy demo workflow retires platform admin actions to typed platform admin commands", async ({ request }) => {
+    const actions = [
+      "j10.savePlatform",
+      "j10.viewAudit",
+      "j10.reviewPermission",
+      "j10.saveSecurity",
+    ];
+
+    for (const actionId of actions) {
+      const response = await request.post("/api/demo-workflow", {
+        data: { actionId },
+      });
+      const body = await response.json();
+
+      expect(response.status(), `${actionId}: ${JSON.stringify(body)}`).toBe(410);
+      expect(body.canonicalApiRoute).toBe("/api/platform-admin/actions");
+      expect(body.legacyReasonCode).toBe("PLATFORM_ADMIN_ACTIONS_MOVED");
+      expect(body.demoWorkflowBoundary).toMatchObject({
+        classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
+        reasonCode: "PLATFORM_ADMIN_ACTIONS_MOVED",
+      });
+      expect(body.noClientRelease).toBe(true);
+      expect(body.safety).toMatchObject({
+        commandExecuted: false,
+        noAdviceExecution: true,
+        noClientRelease: true,
+      });
+      expect(body.error).toContain("/api/platform-admin/actions");
+    }
+  });
+
   test("legacy demo workflow path blocks typed advisor approval and points to the canonical API", async ({ request }) => {
     const response = await request.post("/api/demo-workflow", {
       data: {

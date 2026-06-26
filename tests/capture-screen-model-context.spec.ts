@@ -60,4 +60,19 @@ test.describe("normal screen capture model context", () => {
       expect(context.warnings.join(" ")).toContain("tenant-governance");
     }
   });
+
+  test("keeps platform admin captures tied to typed platform-admin commands", () => {
+    const platformRoute = screenRoutes.find((route) => route.pageId === "007");
+    const securityRoute = screenRoutes.find((route) => route.pageId === "010");
+
+    expect(platformRoute).toBeTruthy();
+    expect(securityRoute).toBeTruthy();
+
+    for (const route of [platformRoute!, securityRoute!]) {
+      const context = captureModelContextForRoute(route);
+      expect(context.capability.apiEvidence).toContain("app/api/platform-admin/actions/route.ts");
+      expect(context.capability.serviceEvidence).toContain("lib/platform-admin-workflow-actions.ts");
+      expect(context.warnings.join(" ")).toContain("platform-admin");
+    }
+  });
 });

@@ -64,6 +64,12 @@ test.describe("demo workflow action registry", () => {
       classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
       reasonCode: "TENANT_GOVERNANCE_ACTIONS_MOVED",
     });
+    expect(demoWorkflowActionBoundaryFor("j10.saveSecurity")).toMatchObject({
+      allowedOnDemoWorkflow: false,
+      canonicalApiRoute: "/api/platform-admin/actions",
+      classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
+      reasonCode: "PLATFORM_ADMIN_ACTIONS_MOVED",
+    });
   });
 
   test("blocks unregistered demo-shaped actions until a typed command exists", () => {

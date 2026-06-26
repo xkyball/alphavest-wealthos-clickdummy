@@ -72,15 +72,15 @@ const groupTemplates: Record<NavigationGroupKey, ContextTemplate> = {
   },
   platform: {
     capability: {
-      apiEvidence: ["app/api/admin-tenants/route.ts", "app/api/tenant-governance/actions/route.ts"],
+      apiEvidence: ["app/api/admin-tenants/route.ts", "app/api/platform-admin/actions/route.ts", "app/api/tenant-governance/actions/route.ts"],
       guardEvidence: ["Permission and audit boundaries require focused runtime proof per action."],
-      proofPosture: "Admin/platform setup is partially API-backed; static controls stay conservative.",
-      serviceEvidence: ["lib/p44-phase2-admin-foundation.ts", "lib/admin-tenant-readmodel-service.ts", "lib/tenant-governance-workflow-actions.ts"],
+      proofPosture: "Admin/platform setup is partially API-backed; J10 platform/security actions use typed platform-admin commands.",
+      serviceEvidence: ["lib/p44-phase2-admin-foundation.ts", "lib/admin-tenant-readmodel-service.ts", "lib/platform-admin-workflow-actions.ts", "lib/tenant-governance-workflow-actions.ts"],
       status: "API_BACKED_PARTIAL",
     },
     modelFamilies: ["tenant-user-rbac", "policy-export-evidence"],
     models: ["PlatformTenant", "PolicyDefinition", "ClientTenant", ...sharedSafetyModels, "EvidenceRecord", "ExportRequest", ...sharedAuditModels],
-    warnings: ["Platform screenshots are setup proof, not policy-change completion proof."],
+    warnings: ["Platform screenshots are setup proof, not policy-change completion proof; J10 uses typed platform-admin commands, not /api/demo-workflow."],
   },
   tenant_setup: {
     capability: {

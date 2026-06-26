@@ -68,8 +68,8 @@ import { cn } from "@/lib/cn";
 import { demoPlatformTenantId, demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import type { AdminTenantSnapshot } from "@/lib/admin-tenant-readmodel-service";
 import { permissionEngine } from "@/lib/permission-engine";
+import { runPlatformAdminCommand } from "@/lib/platform-admin-command-client";
 import type { ScreenRoute } from "@/lib/route-registry";
-import { runScreencastDemoAction } from "@/lib/screencast-demo-client";
 import { buildScopeControlSnapshot, type ScopeControlRow, type StaticWorkspaceControl } from "@/lib/scope-control";
 import { runTenantGovernanceCommand } from "@/lib/tenant-governance-command-client";
 import type { VisualState } from "@/lib/visual-contract";
@@ -490,7 +490,7 @@ function PlatformSettingsPage({ onConfirm, route }: { onConfirm: () => void; rou
           className={primaryButtonClass}
           data-testid="j10-save-platform"
           onClick={() => {
-            void runScreencastDemoAction("j10.savePlatform");
+            void runPlatformAdminCommand("j10.savePlatform");
             onConfirm();
           }}
           type="button"
@@ -593,7 +593,7 @@ function AdviceBoundaryPage() {
           </CardContent>
         </Card>
       </section>
-      <AuditBanner action={<button className={primaryButtonClass} data-testid="j10-view-audit" onClick={() => { void runScreencastDemoAction("j10.viewAudit", "/admin/roles"); }} type="button">View audit log <ArrowRight aria-hidden="true" className="size-4" /></button>}>
+      <AuditBanner action={<button className={primaryButtonClass} data-testid="j10-view-audit" onClick={() => { void runPlatformAdminCommand("j10.viewAudit", "/admin/roles"); }} type="button">View audit log <ArrowRight aria-hidden="true" className="size-4" /></button>}>
         No unapproved advice reaches the client. This policy is enforced across workflows and channels.
       </AuditBanner>
     </div>
@@ -643,7 +643,7 @@ function RolesPage({ onPermissionModal, route }: { onPermissionModal: () => void
               className={secondaryButtonClass}
               data-testid="j10-review-permission"
               onClick={() => {
-                void runScreencastDemoAction("j10.reviewPermission", "/admin/security");
+                void runPlatformAdminCommand("j10.reviewPermission", "/admin/security");
                 onPermissionModal();
               }}
               type="button"
@@ -694,7 +694,7 @@ function SecurityPage({ onConfirm }: { onConfirm: () => void }) {
           className={primaryButtonClass}
           data-testid="j10-save-security"
           onClick={() => {
-            void runScreencastDemoAction("j10.saveSecurity");
+            void runPlatformAdminCommand("j10.saveSecurity");
             onConfirm();
           }}
           type="button"
