@@ -34,6 +34,18 @@ function bearer(jwt: string) {
   };
 }
 
+function auditIdFromIssues(issues: unknown[]) {
+  const auditId = issues.find((issue) => typeof issue === "string" && /^[0-9a-f-]{36}$/.test(issue));
+
+  expect(auditId).toBeTruthy();
+
+  return auditId as string;
+}
+
+function metadataJson(value: unknown) {
+  return value as Record<string, unknown>;
+}
+
 async function seededJourneyContext(journeyKey: string) {
   const prisma = prismaClient();
   const instance = await prisma.journeyInstance.findFirstOrThrow({
@@ -361,6 +373,29 @@ test.describe("Wave 0-2 Journey APIs and command execution", () => {
     expect(releaseWithoutAdvisorBody.issues).toContain("release_preconditions_failed");
     expect(releaseWithoutAdvisorBody.issues).toContain("advisor_approval");
 
+    const releaseWithoutAdvisorAudit = await prisma.auditEvent.findUniqueOrThrow({
+      where: { id: auditIdFromIssues(releaseWithoutAdvisorBody.issues) },
+    });
+    const releaseWithoutAdvisorMetadata = metadataJson(releaseWithoutAdvisorAudit.metadataJson);
+    expect(releaseWithoutAdvisorAudit).toMatchObject({
+      actorRoleKey: "compliance_officer",
+      clientTenantId: expect.any(String),
+      eventType: "journey.compliance.release_denied",
+      nextState: expect.any(String),
+      platformTenantId: expect.any(String),
+      previousState: expect.any(String),
+      reason: "Attempt release before advisor approval.",
+      result: "DENIED",
+      targetId: journeyId,
+      targetType: "JOURNEY",
+    });
+    expect(releaseWithoutAdvisorMetadata).toMatchObject({
+      clientVisible: false,
+      expectedConfirmationPhrase: "RELEASE CLIENT-SAFE JOURNEY",
+      recommendationId,
+    });
+    expect(releaseWithoutAdvisorMetadata.missing).toEqual(expect.arrayContaining(["advisor_approval"]));
+
     const approval = await command(request, journeyId, advisorJwt, {
       command: "ADVISOR_APPROVE",
       reason: "Advisor approval completed; compliance release remains separate.",
@@ -371,6 +406,27 @@ test.describe("Wave 0-2 Journey APIs and command execution", () => {
     expect(approvalBody.detail.status).not.toBe("COMPLETED");
     expect(approvalBody.clientProjection).toBeUndefined();
     expect(JSON.stringify(approvalBody)).not.toMatch(/releasedToClientAt|COMPLIANCE_RELEASED_CLIENT_SAFE/);
+
+    const advisorApprovalAudit = await prisma.auditEvent.findUniqueOrThrow({
+      where: { id: approvalBody.auditEventId as string },
+    });
+    expect(advisorApprovalAudit).toMatchObject({
+      actorRoleKey: "senior_wealth_advisor",
+      clientTenantId: expect.any(String),
+      eventType: "journey.advisor.approved",
+      nextState: expect.any(String),
+      platformTenantId: expect.any(String),
+      previousState: expect.any(String),
+      reason: "Advisor approval completed; compliance release remains separate.",
+      result: "SUCCESS",
+      targetId: journeyId,
+      targetType: "JOURNEY",
+    });
+    expect(metadataJson(advisorApprovalAudit.metadataJson)).toMatchObject({
+      advisorApprovalIsNotRelease: true,
+      noClientRelease: true,
+      recommendationId,
+    });
 
     const [approvedRecommendation, unreleasedDecision, releaseRunBeforeCompliance] = await Promise.all([
       prisma.recommendation.findUniqueOrThrow({
@@ -544,6 +600,28 @@ test.describe("Wave 0-2 Journey APIs and command execution", () => {
     expect(releaseBody.noClientRelease).toBe(false);
     expect(releaseBody.detail.status).toBe("COMPLETED");
 
+    const releaseAudit = await prisma.auditEvent.findUniqueOrThrow({
+      where: { id: releaseBody.auditEventId as string },
+    });
+    expect(releaseAudit).toMatchObject({
+      actorRoleKey: "compliance_officer",
+      clientTenantId: expect.any(String),
+      eventType: "journey.compliance.released",
+      nextState: "COMPLETED",
+      platformTenantId: expect.any(String),
+      previousState: expect.any(String),
+      reason: "Compliance release after evidence, advisor and audit gates.",
+      result: "SUCCESS",
+      targetId: journeyId,
+      targetType: "JOURNEY",
+    });
+    expect(metadataJson(releaseAudit.metadataJson)).toMatchObject({
+      clientVisible: true,
+      gatePassed: true,
+      noClientRelease: false,
+      recommendationId,
+    });
+
     const clientProjection = await request.get(`/api/journeys/${journeyId}/client-projection`, {
       headers: bearer(cfoJwt),
     });
@@ -707,14 +785,7 @@ test.describe("Wave 0-2 Journey APIs and command execution", () => {
           targetType: "RECOMMENDATION",
         },
       }),
-      prisma.auditEvent.findUniqueOrThrow({
-        select: {
-          eventType: true,
-          metadataJson: true,
-          result: true,
-        },
-        where: { id: requestEvidenceBody.auditEventId as string },
-      }),
+      prisma.auditEvent.findUniqueOrThrow({ where: { id: requestEvidenceBody.auditEventId as string } }),
     ]);
 
     expect(evidenceRequestRecommendation).toMatchObject({
@@ -726,8 +797,16 @@ test.describe("Wave 0-2 Journey APIs and command execution", () => {
       status: "NEEDS_EVIDENCE",
     });
     expect(evidenceRequestAudit).toMatchObject({
+      actorRoleKey: "compliance_officer",
+      clientTenantId: expect.any(String),
       eventType: "journey.compliance.evidence_requested",
+      nextState: "BLOCKED",
+      platformTenantId: expect.any(String),
+      previousState: expect.any(String),
+      reason: "Compliance requests more evidence instead of release.",
       result: "BLOCKED",
+      targetId: seededJourneyId,
+      targetType: "JOURNEY",
     });
     expect(evidenceRequestAudit.metadataJson).toMatchObject({
       blockerCode: "COMPLIANCE_EVIDENCE_REQUESTED",
@@ -774,14 +853,7 @@ test.describe("Wave 0-2 Journey APIs and command execution", () => {
           targetType: "RECOMMENDATION",
         },
       }),
-      prisma.auditEvent.findUniqueOrThrow({
-        select: {
-          eventType: true,
-          metadataJson: true,
-          result: true,
-        },
-        where: { id: blockBody.auditEventId as string },
-      }),
+      prisma.auditEvent.findUniqueOrThrow({ where: { id: blockBody.auditEventId as string } }),
     ]);
 
     expect(blockedRecommendation).toMatchObject({
@@ -793,8 +865,16 @@ test.describe("Wave 0-2 Journey APIs and command execution", () => {
       status: "BLOCKED",
     });
     expect(blockedAudit).toMatchObject({
+      actorRoleKey: "compliance_officer",
+      clientTenantId: expect.any(String),
       eventType: "journey.compliance.blocked",
+      nextState: "BLOCKED",
+      platformTenantId: expect.any(String),
+      previousState: expect.any(String),
+      reason: "Compliance blocks unsafe release path.",
       result: "BLOCKED",
+      targetId: seededJourneyId,
+      targetType: "JOURNEY",
     });
     expect(blockedAudit.metadataJson).toMatchObject({
       blockerCode: "COMPLIANCE_BLOCKED",

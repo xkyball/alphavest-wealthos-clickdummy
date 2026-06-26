@@ -1069,7 +1069,7 @@ async function executeComplianceReleaseCommand(input: {
 
   requireOperationalRole(input.roleKey, input.request.command, ["compliance_officer"]);
 
-  const audit = await input.prisma.$transaction(async (tx) => {
+  const releaseResult = await input.prisma.$transaction(async (tx) => {
     const recommendation = await linkedRecommendation(tx, input.instance);
     const metadata = metadataObject(input.instance.metadataJson);
     const coreMetadata = metadataObject(metadata.coreJourneyGates as Prisma.JsonValue | undefined);
@@ -1128,7 +1128,7 @@ async function executeComplianceReleaseCommand(input: {
     ];
 
     if (missing.length > 0) {
-    const deniedAudit = await createJourneyAuditAndRun(tx, {
+      const deniedAudit = await createJourneyAuditAndRun(tx, {
         auditPersistenceAvailable: input.request.simulateAuditPersistenceFailure === true ? false : undefined,
         command: input.request.command,
         currentUser: input.currentUser,
@@ -1149,11 +1149,10 @@ async function executeComplianceReleaseCommand(input: {
         roleKey: input.roleKey,
       });
 
-      throw new JourneyApiError("Compliance release preconditions failed.", 400, "INVALID_REQUEST", [
-        "release_preconditions_failed",
-        deniedAudit.id,
-        ...new Set(missing),
-      ]);
+      return {
+        audit: deniedAudit,
+        deniedIssues: ["release_preconditions_failed", deniedAudit.id, ...new Set(missing)],
+      };
     }
 
     if (recommendation) {
@@ -1240,7 +1239,7 @@ async function executeComplianceReleaseCommand(input: {
       },
     });
 
-    return createJourneyAuditAndRun(tx, {
+    const audit = await createJourneyAuditAndRun(tx, {
       auditPersistenceAvailable: input.request.simulateAuditPersistenceFailure === true ? false : undefined,
       command: input.request.command,
       currentUser: input.currentUser,
@@ -1258,10 +1257,19 @@ async function executeComplianceReleaseCommand(input: {
       result: AuditResult.SUCCESS,
       roleKey: input.roleKey,
     });
+
+    return {
+      audit,
+      deniedIssues: null,
+    };
   });
 
+  if (releaseResult.deniedIssues) {
+    throw new JourneyApiError("Compliance release preconditions failed.", 400, "INVALID_REQUEST", releaseResult.deniedIssues);
+  }
+
   return {
-    auditEventId: audit.id,
+    auditEventId: releaseResult.audit.id,
     command: input.request.command,
     detail: await getJourneyDetailForCurrentUser(input.prisma, input.currentUser, input.instance.id),
     mutated: true,
