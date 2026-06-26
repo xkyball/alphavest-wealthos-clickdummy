@@ -5,7 +5,7 @@ async function main() {
   const definitions = await loadDefinitions(options.manifestPath);
 
   if (!options.journeyId) {
-    throw new Error("Missing journey id. Example: pnpm screencast:journey -- J01");
+    throw new Error("Missing journey id. Example: pnpm screencast:journey -- MJ-001");
   }
 
   const journey = findJourney(definitions, options.journeyId);

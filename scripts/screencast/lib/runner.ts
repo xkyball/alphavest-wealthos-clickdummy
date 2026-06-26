@@ -17,7 +17,7 @@ import type {
 } from "@/scripts/screencast/lib/types";
 
 const root = process.cwd();
-const defaultDefinitionPath = path.join(root, "docs", "v3", "journeys.screencast.v3.json");
+const defaultDefinitionPath = path.join(root, "docs", "v3", "journeys.screencast.new-system.json");
 const outputRoot = path.join(root, "artifacts", "screencasts");
 const viewport = { width: 1440, height: 960 };
 
