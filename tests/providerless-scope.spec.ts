@@ -171,6 +171,35 @@ test.describe("Mega-journey Phase 1 providerless scope gate", () => {
     expect(payloadLevel.reasonCode).toBe("DEMO_ROLE_AWARE_ALLOW");
   });
 
+  test("allows route shell access while denying action authority", () => {
+    const principal = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
+    const advisorApprovalRoute = screenRoutes.find((route) => route.pageId === "037");
+    if (!advisorApprovalRoute) throw new Error("Advisor approval detail route missing.");
+
+    const recommendationId = "recommendation:bennett:advisor-approval";
+    const boundary = permissionEngine.evaluateRouteBoundary(
+      principal.actor,
+      principal.role,
+      advisorApprovalRoute,
+      {
+        clientTenantId: principal.tenant.id,
+        objectId: recommendationId,
+        objectScope: {
+          clientTenantId: principal.tenant.id,
+          objectIds: [recommendationId],
+          objectType: "RECOMMENDATION",
+        },
+        objectScopeIds: [recommendationId],
+        platformTenantId: demoPlatformTenantId,
+      },
+    );
+
+    expect(boundary.routeShellAccessible).toBe(true);
+    expect(boundary.actionDecision.allowed).toBe(false);
+    expect(boundary.actionDecision.reasonCode).toBe("DEMO_DENY_ADVISOR_APPROVAL_REQUIRED");
+    expect(boundary.actionDecision.requiresAudit).toBe(true);
+  });
+
   test("fails closed when object-scoped payload access targets the wrong object", () => {
     const analyst = createDemoSession({ roleKey: "analyst", tenantSlug: "bennett" });
     const decision = permissionEngine.can(
