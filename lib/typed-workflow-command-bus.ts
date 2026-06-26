@@ -33,6 +33,11 @@ import {
 } from "@/lib/demo-workflow-validation";
 import { wp05DemoWorkflowCompatibilityMode } from "@/lib/advisory-workflow-contract";
 import type { PermissionDecision } from "@/lib/permission-engine";
+import {
+  evaluatePp003DraftLifecycleGate,
+  type Pp003DraftLifecycleStatus,
+  type Pp003UnsupportedClaimStatus,
+} from "@/lib/pp003-advice-boundary-contract";
 import { runReleaseSpineCommand } from "@/lib/release-spine-command-surface";
 import { stableId } from "@/lib/stable-id";
 import { visibilityEngine, type RecommendationPayloadProjection } from "@/lib/visibility-engine";
@@ -476,6 +481,14 @@ const advisorApprovalInternalDraftKey = "typed-advisor-approval-release-spine";
 const advisorApprovalClientSafeSummary =
   "Compliance-ready client summary for a released liquidity governance next step.";
 
+function pp003DraftStatus(status: InternalDraftStatus): Pp003DraftLifecycleStatus {
+  return status;
+}
+
+function pp003UnsupportedClaimStatus(status: UnsupportedClaimStatus): Pp003UnsupportedClaimStatus {
+  return status;
+}
+
 async function upsertAdvisorApprovalInternalDraft(
   tx: Prisma.TransactionClient,
   input: {
@@ -569,7 +582,8 @@ async function markAdvisorApprovalInternalDraftReady(
 ) {
   const draft = await tx.internalDraft.findFirst({
     include: {
-      unsupportedClaims: { where: { status: UnsupportedClaimStatus.NEEDS_EVIDENCE } },
+      classifications: { orderBy: { createdAt: "desc" }, take: 1 },
+      unsupportedClaims: true,
     },
     orderBy: { updatedAt: "desc" },
     where: {
@@ -578,7 +592,44 @@ async function markAdvisorApprovalInternalDraftReady(
     },
   });
 
-  if (!draft || draft.status !== InternalDraftStatus.REBUILT_WITH_EVIDENCE || draft.unsupportedClaims.length > 0) {
+  if (!draft) {
+    return null;
+  }
+
+  const evidenceRecords = await tx.evidenceRecord.findMany({
+    include: { items: true },
+    where: {
+      OR: [
+        {
+          relatedObjectId: input.recommendationId,
+          relatedObjectType: ObjectType.RECOMMENDATION,
+        },
+        {
+          items: {
+            some: {
+              sourceObjectId: input.recommendationId,
+              sourceObjectType: ObjectType.RECOMMENDATION,
+            },
+          },
+        },
+      ],
+    },
+  });
+  const canonicalEvidenceReady = acceptedScopedEvidenceRecords(evidenceRecords, input.recommendationId).length > 0;
+  const lifecycleGate = evaluatePp003DraftLifecycleGate({
+    canonicalEvidenceAudited: canonicalEvidenceReady,
+    canonicalEvidencePath: canonicalEvidenceReady ? "PP002_CANONICAL_JOURNEY" : "NONE",
+    canonicalEvidenceSufficient: canonicalEvidenceReady,
+    classified: Boolean(draft.classifications[0]),
+    clientVisible: false,
+    draftStatus: pp003DraftStatus(draft.status),
+    promotionTarget: "advisor_candidate",
+    unsupportedClaims: draft.unsupportedClaims.map((claim) => ({
+      status: pp003UnsupportedClaimStatus(claim.status),
+    })),
+  });
+
+  if (!lifecycleGate.allowed) {
     return null;
   }
 
