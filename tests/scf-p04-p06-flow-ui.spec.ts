@@ -40,12 +40,15 @@ test.describe("SCF P04-P06 application flow controls", () => {
 
     const signalGate = page.getByTestId("p04-p06-advisory-gate").first();
     await expect(signalGate.getByText("Advisory Signal Boundary")).toBeVisible();
+    await expect(signalGate.getByText("unsupported-claim notes")).toBeVisible();
     await expect(signalGate.getByText("Hidden from client")).toBeVisible();
     await expect(signalGate.getByText("ai draft internal only")).toBeVisible();
 
     await page.goto("/advisor/reviews/demo");
     const advisorGate = page.getByTestId("p04-p06-advisory-gate").first();
-    await expect(advisorGate.getByText("Advisor approval moves the item to compliance pending; it does not release content.")).toBeVisible();
+    await expect(advisorGate.getByText("Advisor approval creates an advisor candidate only; it does not release content, export content or create client acceptance.")).toBeVisible();
+    await expect(page.getByText("Advisor candidate only", { exact: true })).toBeVisible();
+    await expect(page.getByText("Unsupported claims stay internal and require evidence-backed analyst rebuild before advisor-ready wording can move toward compliance.")).toBeVisible();
     await expect(page.getByText("Advisor approval saved. Compliance release is still required.")).toHaveCount(0);
   });
 

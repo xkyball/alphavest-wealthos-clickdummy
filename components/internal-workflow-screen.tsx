@@ -1334,14 +1334,14 @@ function AdvisorDetailPage({ title }: { title: string }) {
   const [decisionStatus, setDecisionStatus] = useState<string | null>(null);
 
   async function approveRecommendation() {
-    setDecisionStatus("Saving advisor approval...");
+    setDecisionStatus("Saving advisor candidate. No release, export or client visibility will be created.");
     await runAdvisorApprovalWorkflowAction({
       action: "advisor_approve",
       actorRole: "senior_wealth_advisor",
       reason: "Advisor approved the package; compliance release remains required.",
       targetId: advisorApprovalDemoTargets.northbridge.recommendationId,
     });
-    setDecisionStatus("Advisor approval saved. Compliance pending; release still requires Compliance.");
+    setDecisionStatus("Advisor candidate saved. Compliance pending; no client visibility, export, release or client acceptance was created.");
   }
 
   async function escalateToCall() {
@@ -1366,7 +1366,10 @@ function AdvisorDetailPage({ title }: { title: string }) {
             <Card>
               <CardHeader><CardTitle>Advisor Decision</CardTitle></CardHeader>
               <CardContent className="space-y-3">
-                <StatePanel detail="Please review all details before taking action. This does not release content to the client." state="restricted" title="No client visibility" />
+                <StatePanel detail="Please review all details before taking action. This can create an advisor candidate only; it does not release content, export content or create client acceptance." state="restricted" title="Advisor candidate only" />
+                <p className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 text-sm leading-6 text-alphavest-muted">
+                  Unsupported claims stay internal and require evidence-backed analyst rebuild before advisor-ready wording can move toward compliance.
+                </p>
                 <button
                   className={primaryButtonClass + " w-full"}
                   data-testid="j01-approve-advisor"
@@ -1400,7 +1403,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
                 ) : null}
               </CardContent>
             </Card>
-            <StatePanel detail="Once approved by advisor, the recommendation is queued for compliance review. Until then, client visibility remains blocked." state="blocked" title="Compliance pending" />
+            <StatePanel detail="Advisor candidate is a review state only. Compliance release, client visibility, export and client acceptance remain blocked until their own audited gates pass." state="blocked" title="Not released" />
             <ScfP04P06FlowPanel mode="compliance" />
           </aside>
         }
@@ -1417,13 +1420,13 @@ function AdvisorDetailPage({ title }: { title: string }) {
         <section className="min-w-0 space-y-5">
           <PageHeading
             badge={<Badge tone="gold">{selectedApproval.status}</Badge>}
-            subtitle="Internal only. Advisor approval sends the package to compliance; client visibility remains blocked."
+            subtitle="Internal only. Advisor approval creates an advisor candidate for compliance; client visibility, export and client acceptance remain blocked."
             title={title}
           />
           <ScfP04P06FlowPanel mode="advisory" />
           <UxDetailStandardPanel
             actionLabel="Approve as advisor"
-            actionState="Advisor approval records advisor review only; compliance release remains required before client visibility."
+            actionState="Advisor approval records an advisor candidate only; compliance release remains required before client visibility."
             evidenceItems={["Reviewed documents", "Client objective", "Recommendation rationale"]}
             facts={[
               { label: "Client", value: selectedApproval.client },
@@ -1434,9 +1437,9 @@ function AdvisorDetailPage({ title }: { title: string }) {
             objectTitle={selectedApproval.recommendationId}
             objectType="Advisor approval detail"
             routeId="037"
-            safetyNote="No unapproved advice reaches the client; AI draft content remains internal until all release gates pass."
+            safetyNote="No unapproved advice reaches the client; AI draft and unsupported-claim content remain internal until evidence-backed rebuild and all release gates pass."
             status={selectedApproval.status}
-            timelineItems={["Analyst submitted", "Advisor reviewing", "Compliance not released"]}
+            timelineItems={["Analyst submitted", "Advisor candidate", "Compliance not released"]}
           />
           <Card>
             <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
@@ -1485,7 +1488,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
             </Card>
           </div>
           <div className="grid gap-5 2xl:grid-cols-4">
-            <Card className="xl:col-span-2"><CardHeader><CardTitle>Internal Draft Recommendation</CardTitle></CardHeader><CardContent><p className="text-sm leading-6 text-alphavest-muted">{selectedApproval.recommendation}</p><div className="mt-4 grid gap-3 sm:grid-cols-4">{["6.4% Return", "10.2% Volatility", "82% Scenario Fit", "89/100 Tax Score"].map((item) => <Badge key={item} tone="green">{item}</Badge>)}</div><p className="mt-4 rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3 text-sm text-alphavest-gold-soft">Internal draft only. Advisor escalation or analyst rebuild keeps client visibility blocked until advisor and compliance gates pass.</p></CardContent></Card>
+            <Card className="xl:col-span-2"><CardHeader><CardTitle>Internal Draft Recommendation</CardTitle></CardHeader><CardContent><p className="text-sm leading-6 text-alphavest-muted">{selectedApproval.recommendation}</p><div className="mt-4 grid gap-3 sm:grid-cols-4">{["6.4% Return", "10.2% Volatility", "82% Scenario Fit", "89/100 Tax Score"].map((item) => <Badge key={item} tone="green">{item}</Badge>)}</div><p className="mt-4 rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3 text-sm text-alphavest-gold-soft">Internal draft only, not client advice. Unsupported claims require evidence-backed rebuild; advisor candidate and compliance review keep client visibility blocked until audited release gates pass.</p></CardContent></Card>
             <Card><CardHeader><CardTitle>Risk View</CardTitle></CardHeader><CardContent><p className="text-center text-xl font-semibold text-alphavest-gold">Moderate (5/10)</p><ProgressBar value={50} /><p className="mt-3 text-sm text-alphavest-muted">Key considerations: equity allocation, interest rate sensitivity and sequence risk.</p></CardContent></Card>
             <Card><CardHeader><CardTitle>Alternatives</CardTitle></CardHeader><CardContent className="space-y-2">{selectedApproval.alternatives.map((item, index) => <div className="flex justify-between text-sm" key={item}><span className="text-alphavest-muted">{item}</span><Badge tone="gold">Score {84 - index * 5}</Badge></div>)}</CardContent></Card>
           </div>

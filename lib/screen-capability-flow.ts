@@ -107,7 +107,7 @@ const auditUnavailableGate = workflowGate.canPassComplianceReleaseGate({
 
 export const p04P06FlowPanels = {
   advisory: {
-    detail: "Signals can create internal draft work, but AI/rules draft, internal rationale and advisor notes stay internal until compliance release.",
+    detail: "Signals can create internal draft work, but AI/rules draft, unsupported-claim notes, internal rationale and advisor notes stay internal until evidence-backed rebuild and compliance release.",
     gateLabel: internalDraftGate.blockedReason ?? "Internal-only draft boundary",
     missing: internalDraftGate.missing,
     state: "restricted",
@@ -119,15 +119,15 @@ export const p04P06FlowPanels = {
         tone: "blue",
       },
       {
-        detail: "AI/rules draft and rationale are visible to Analyst and Advisor only.",
+        detail: "AI/rules draft, unsupported claims and rationale are visible to Analyst and Advisor only until canonical evidence rebuild clears them.",
         label: "Draft boundary",
         status: "Hidden from client",
         tone: "red",
       },
       {
-        detail: "Advisor approval moves the item to compliance pending; it does not release content.",
+        detail: "Advisor approval creates an advisor candidate only; it does not release content, export content or create client acceptance.",
         label: "Advisor approval",
-        status: advisorApprovalGate.passed ? "Released" : "Compliance pending",
+        status: advisorApprovalGate.passed ? "Ready for compliance" : "Not released",
         tone: "gold",
       },
     ],
