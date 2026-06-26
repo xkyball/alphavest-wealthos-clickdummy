@@ -1,6 +1,10 @@
+import { createHash } from "node:crypto";
+
 import {
+  AdviceClassification,
   AuditResult,
   ComplianceStatus,
+  DocumentStatus,
   EvidenceSufficiencyDecisionStatus,
   EvidenceStatus,
   JourneyInstanceStatus as PrismaJourneyInstanceStatus,
@@ -11,6 +15,8 @@ import {
   type PrismaClient,
   RecommendationStatus,
   ReviewStatus,
+  Sensitivity,
+  VisibilityStatus,
 } from "@prisma/client";
 
 import type { CurrentUserContext } from "../auth/current-user";
@@ -18,7 +24,9 @@ import { dataQualityService } from "../data-quality-service";
 import { auditService, AuditPersistenceRequiredError } from "../audit-service";
 import { wp05ComplianceReleaseConfirmationPhrase } from "../advisory-workflow-contract";
 import { evidenceService } from "../evidence-service";
+import { stableId } from "../stable-id";
 import { workflowGate } from "../workflow-gate";
+import { suitabilityGateCandidate } from "../suitability-ips-demo-data";
 import {
   buildClientJourneyProjection,
   buildInternalJourneyProjection,
@@ -46,6 +54,20 @@ const clientRoleKeys = new Set(["principal", "family_cfo", "trustee", "next_gen"
 const genericJourneyCommands = new Set(["START", "COMPLETE_STEP", "BLOCK", "RESUME", "CANCEL"]);
 const adminBypassRoleKeys = new Set(["admin", "security_officer"]);
 const releaseConfirmationPhrase = wp05ComplianceReleaseConfirmationPhrase;
+const phaseBCommandIds = new Set(["KYC_REQUEST_EVIDENCE", "KYC_COMPLETE_REVIEW", "SOURCE_OF_WEALTH_ESCALATE", "SOURCE_OF_WEALTH_LINK_EVIDENCE"]);
+const phaseCCommandIds = new Set(["SUITABILITY_REQUEST_EVIDENCE", "SUITABILITY_MARK_REVIEWED", "IPS_REQUEST_MANDATE_CHANGES", "IPS_LINK_EVIDENCE"]);
+const morganTaxDocumentId = stableId("document:morgan:missing-tax");
+const morganSourceOfWealthDocumentId = stableId("document:morgan:source-of-wealth");
+const morganKycComplianceReviewId = stableId("compliance:morgan:kyc-aml-source-of-wealth");
+const morganKycEvidenceRecordId = stableId("evidence:morgan:kyc-aml-source-of-wealth");
+const morganSuitabilityProfileId = stableId("suitability:morgan:profile");
+const morganSuitabilityEvidenceRecordId = stableId("evidence:morgan:suitability-profile");
+const morganIpsMandateId = stableId("ips:morgan:mandate");
+const morganIpsEvidenceRecordId = stableId("evidence:morgan:ips-mandate");
+
+function stableEvidenceHash(label: string) {
+  return createHash("sha256").update(`alphavest-wealthos:${label}`).digest("hex");
+}
 export class JourneyApiError extends Error {
   constructor(
     message: string,
@@ -807,6 +829,365 @@ async function executeEvidenceSufficiencyDecisionCommand(input: {
   };
 }
 
+async function upsertKycDocument(
+  tx: Prisma.TransactionClient,
+  input: {
+    clientTenantId: string;
+    documentId: string;
+    documentType: string;
+    fileName: string;
+    ownerUserId: string;
+    status: DocumentStatus;
+    title: string;
+  },
+) {
+  return tx.document.upsert({
+    where: { id: input.documentId },
+    create: {
+      id: input.documentId,
+      checksum: stableEvidenceHash(`document:${input.documentId}:typed-command-checksum`),
+      clientTenantId: input.clientTenantId,
+      clientVisible: false,
+      documentType: input.documentType,
+      fileName: input.fileName,
+      fileSizeBytes: 428_000,
+      mimeType: "application/pdf",
+      retentionPolicy: "KYC_REVIEW_7Y",
+      sensitivity: Sensitivity.RESTRICTED,
+      source: "typed_phase_b_kyc",
+      status: input.status,
+      storageKey: `typed/morgan/kyc/${input.fileName}`,
+      title: input.title,
+      uploadedByUserId: input.ownerUserId,
+    },
+    update: {
+      clientVisible: false,
+      documentType: input.documentType,
+      fileName: input.fileName,
+      mimeType: "application/pdf",
+      retentionPolicy: "KYC_REVIEW_7Y",
+      sensitivity: Sensitivity.RESTRICTED,
+      source: "typed_phase_b_kyc",
+      status: input.status,
+      title: input.title,
+    },
+  });
+}
+
+async function executePhaseBJ12Command(input: {
+  currentUser: CurrentUserContext;
+  instance: JourneyInstanceWithGraph;
+  platformTenantId: string;
+  prisma: PrismaClient;
+  request: JourneyCommandRequest;
+  roleKey: string;
+}) {
+  const isSourceAction =
+    input.request.command === "SOURCE_OF_WEALTH_ESCALATE" ||
+    input.request.command === "SOURCE_OF_WEALTH_LINK_EVIDENCE";
+  const isCompleteAction =
+    input.request.command === "KYC_COMPLETE_REVIEW" ||
+    input.request.command === "SOURCE_OF_WEALTH_LINK_EVIDENCE";
+  const targetDocumentId = isSourceAction ? morganSourceOfWealthDocumentId : morganTaxDocumentId;
+  const documentStatus = isCompleteAction ? DocumentStatus.LINKED_TO_EVIDENCE : DocumentStatus.NEEDS_CLARIFICATION;
+  const previousState = isSourceAction ? "SOURCE_REVIEW_PENDING" : "KYC_REVIEW_PENDING";
+  const nextState = isCompleteAction ? "EVIDENCE_LINKED" : "AWAITING_INFO";
+  const evidenceStatus = isCompleteAction ? EvidenceStatus.LINKED : EvidenceStatus.CREATED;
+  const complianceStatus = isCompleteAction ? ComplianceStatus.IN_REVIEW : ComplianceStatus.NEEDS_EVIDENCE;
+
+  requireOperationalRole(
+    input.roleKey,
+    input.request.command,
+    isCompleteAction ? ["compliance_officer"] : ["analyst", "compliance_officer"],
+  );
+
+  const commandResult = await input.prisma.$transaction(async (tx) => {
+    const document = await upsertKycDocument(tx, {
+      clientTenantId: input.instance.clientTenantId,
+      documentId: targetDocumentId,
+      documentType: isSourceAction ? "source_of_wealth" : "kyc_fica",
+      fileName: isSourceAction ? "morgan-source-of-wealth-trail.pdf" : "morgan-kyc-fica-pack.pdf",
+      ownerUserId: input.currentUser.actor.id,
+      status: documentStatus,
+      title: isSourceAction ? "Morgan Source-of-Wealth Trail" : "Morgan KYC/FICA Review Pack",
+    });
+
+    const complianceReview = await tx.complianceReview.upsert({
+      where: { id: morganKycComplianceReviewId },
+      create: {
+        id: morganKycComplianceReviewId,
+        adviceClassification: AdviceClassification.WORKFLOW,
+        clientTenantId: input.instance.clientTenantId,
+        evidenceComplete: isCompleteAction,
+        kycFicaStatus: isCompleteAction ? "review_ready" : "needs_evidence",
+        popiaConsentStatus: "verified",
+        recordOfAdviceRequired: false,
+        releaseNotes: "Phase B KYC/AML/Source-of-Wealth workflow is internal only. No client advice or release.",
+        reviewerUserId: input.currentUser.actor.id,
+        status: complianceStatus,
+        targetId: targetDocumentId,
+        targetType: ObjectType.DOCUMENT,
+      },
+      update: {
+        evidenceComplete: isCompleteAction,
+        kycFicaStatus: isCompleteAction ? "review_ready" : "needs_evidence",
+        popiaConsentStatus: "verified",
+        releaseNotes: "Phase B KYC/AML/Source-of-Wealth workflow is internal only. No client advice or release.",
+        reviewerUserId: input.currentUser.actor.id,
+        status: complianceStatus,
+        targetId: targetDocumentId,
+        targetType: ObjectType.DOCUMENT,
+      },
+    });
+
+    const evidenceRecord = await tx.evidenceRecord.upsert({
+      where: { id: morganKycEvidenceRecordId },
+      create: {
+        id: morganKycEvidenceRecordId,
+        clientTenantId: input.instance.clientTenantId,
+        createdByUserId: input.currentUser.actor.id,
+        relatedObjectId: targetDocumentId,
+        relatedObjectType: ObjectType.DOCUMENT,
+        retentionPolicy: "KYC_REVIEW_7Y",
+        status: evidenceStatus,
+        summary: "Typed Phase B KYC/AML/Source-of-Wealth evidence package. Internal only; not client advice.",
+        title: "Morgan KYC/AML/Source-of-Wealth Evidence Package",
+        visibilityStatus: VisibilityStatus.INTERNAL_ONLY,
+      },
+      update: {
+        relatedObjectId: targetDocumentId,
+        relatedObjectType: ObjectType.DOCUMENT,
+        retentionPolicy: "KYC_REVIEW_7Y",
+        status: evidenceStatus,
+        summary: "Typed Phase B KYC/AML/Source-of-Wealth evidence package. Internal only; not client advice.",
+        visibilityStatus: VisibilityStatus.INTERNAL_ONLY,
+      },
+    });
+
+    const evidenceItem = await tx.evidenceItem.upsert({
+      where: { id: stableId(`evidence-item:morgan:typed-phase-b:${input.request.command}`) },
+      create: {
+        id: stableId(`evidence-item:morgan:typed-phase-b:${input.request.command}`),
+        evidenceRecordId: evidenceRecord.id,
+        hash: stableEvidenceHash(`typed-phase-b:${input.request.command}:${targetDocumentId}`),
+        itemType: isSourceAction ? "source_of_wealth_review" : "kyc_aml_review",
+        sourceObjectId: document.id,
+        sourceObjectType: ObjectType.DOCUMENT,
+        title: isSourceAction ? "Source-of-wealth review action" : "KYC/AML review action",
+        visibilityStatus: VisibilityStatus.INTERNAL_ONLY,
+      },
+      update: {
+        hash: stableEvidenceHash(`typed-phase-b:${input.request.command}:${targetDocumentId}`),
+        sourceObjectId: document.id,
+        sourceObjectType: ObjectType.DOCUMENT,
+        title: isSourceAction ? "Source-of-wealth review action" : "KYC/AML review action",
+        visibilityStatus: VisibilityStatus.INTERNAL_ONLY,
+      },
+    });
+
+    const audit = await createJourneyAuditAndRun(tx, {
+      auditPersistenceAvailable: input.request.simulateAuditPersistenceFailure === true ? false : undefined,
+      command: input.request.command,
+      currentUser: input.currentUser,
+      eventType: isSourceAction ? "journey.phase_b.source_of_wealth.reviewed" : "journey.phase_b.kyc_aml.reviewed",
+      evidenceRecordId: evidenceRecord.id,
+      instance: input.instance,
+      metadataJson: {
+        commandFamily: "PHASE_B_KYC_AML_SOURCE_OF_WEALTH",
+        documentId: document.id,
+        evidenceItemId: evidenceItem.id,
+        noClientRelease: true,
+        phase: "B",
+        previousDemoActionFamily: "j12",
+        typedCommand: true,
+      },
+      nextState,
+      platformTenantId: input.platformTenantId,
+      previousState,
+      reason:
+        input.request.reason ??
+        (isCompleteAction
+          ? "Phase B evidence package linked for compliance review; client release remains blocked."
+          : "Phase B evidence gap recorded and routed for human review."),
+      result: isCompleteAction ? AuditResult.SUCCESS : AuditResult.PENDING,
+      roleKey: input.roleKey,
+    });
+
+    return {
+      audit,
+      complianceReview,
+      document,
+      evidenceItem,
+      evidenceRecord,
+    };
+  });
+
+  return {
+    auditEventId: commandResult.audit.id,
+    command: input.request.command,
+    detail: await getJourneyDetailForCurrentUser(input.prisma, input.currentUser, input.instance.id),
+    mutated: true,
+    noAdviceExecution: true,
+    noClientRelease: true,
+    result: {
+      clientVisible: false,
+      complianceReviewId: commandResult.complianceReview.id,
+      complianceStatus: commandResult.complianceReview.status,
+      documentId: commandResult.document.id,
+      documentStatus: commandResult.document.status,
+      evidenceItemId: commandResult.evidenceItem.id,
+      evidenceRecordId: commandResult.evidenceRecord.id,
+      evidenceStatus: commandResult.evidenceRecord.status,
+      message: isCompleteAction
+        ? "Phase B evidence package linked for compliance review. No client release occurred."
+        : "Phase B evidence gap recorded for human review. No client release occurred.",
+      workflowState: nextState,
+    },
+  };
+}
+
+async function executePhaseCJ13J14Command(input: {
+  currentUser: CurrentUserContext;
+  instance: JourneyInstanceWithGraph;
+  platformTenantId: string;
+  prisma: PrismaClient;
+  request: JourneyCommandRequest;
+  roleKey: string;
+}) {
+  const isIpsAction =
+    input.request.command === "IPS_REQUEST_MANDATE_CHANGES" ||
+    input.request.command === "IPS_LINK_EVIDENCE";
+  const isEvidenceLinkAction =
+    input.request.command === "SUITABILITY_MARK_REVIEWED" ||
+    input.request.command === "IPS_LINK_EVIDENCE";
+  const targetId = isIpsAction ? morganIpsMandateId : morganSuitabilityProfileId;
+  const targetType = isIpsAction ? ObjectType.POLICY : ObjectType.ENGAGEMENT;
+  const evidenceRecordId = isIpsAction ? morganIpsEvidenceRecordId : morganSuitabilityEvidenceRecordId;
+  const evidenceStatus = isEvidenceLinkAction ? EvidenceStatus.LINKED : EvidenceStatus.CREATED;
+  const previousState = isIpsAction ? "IPS_DRAFT" : "SUITABILITY_IN_REVIEW";
+  const nextState = isEvidenceLinkAction ? "EVIDENCE_LINKED_FOR_REVIEW" : "AWAITING_SUITABILITY_EVIDENCE";
+  const gate = workflowGate.canReleaseAdviceWithSuitabilityIps(suitabilityGateCandidate);
+
+  requireOperationalRole(
+    input.roleKey,
+    input.request.command,
+    isIpsAction ? ["senior_wealth_advisor", "compliance_officer"] : ["analyst", "compliance_officer"],
+  );
+
+  const commandResult = await input.prisma.$transaction(async (tx) => {
+    const evidenceRecord = await tx.evidenceRecord.upsert({
+      where: { id: evidenceRecordId },
+      create: {
+        id: evidenceRecordId,
+        clientTenantId: input.instance.clientTenantId,
+        createdByUserId: input.currentUser.actor.id,
+        relatedObjectId: targetId,
+        relatedObjectType: targetType,
+        retentionPolicy: isIpsAction ? "IPS_MANDATE_7Y" : "SUITABILITY_PROFILE_7Y",
+        status: evidenceStatus,
+        summary: isIpsAction
+          ? "Typed Phase C IPS mandate evidence package. Internal only; not client advice."
+          : "Typed Phase C suitability profile evidence package. Internal only; not client advice.",
+        title: isIpsAction ? "Morgan IPS / Mandate Evidence Package" : "Morgan Suitability Profile Evidence Package",
+        visibilityStatus: VisibilityStatus.INTERNAL_ONLY,
+      },
+      update: {
+        relatedObjectId: targetId,
+        relatedObjectType: targetType,
+        retentionPolicy: isIpsAction ? "IPS_MANDATE_7Y" : "SUITABILITY_PROFILE_7Y",
+        status: evidenceStatus,
+        summary: isIpsAction
+          ? "Typed Phase C IPS mandate evidence package. Internal only; not client advice."
+          : "Typed Phase C suitability profile evidence package. Internal only; not client advice.",
+        visibilityStatus: VisibilityStatus.INTERNAL_ONLY,
+      },
+    });
+
+    const evidenceItem = await tx.evidenceItem.upsert({
+      where: { id: stableId(`evidence-item:morgan:typed-phase-c:${input.request.command}`) },
+      create: {
+        id: stableId(`evidence-item:morgan:typed-phase-c:${input.request.command}`),
+        evidenceRecordId: evidenceRecord.id,
+        hash: stableEvidenceHash(`typed-phase-c:${input.request.command}:${targetId}`),
+        itemType: isIpsAction ? "ips_mandate_review" : "suitability_profile_review",
+        sourceObjectId: targetId,
+        sourceObjectType: targetType,
+        title: isIpsAction ? "IPS mandate review action" : "Suitability profile review action",
+        visibilityStatus: VisibilityStatus.INTERNAL_ONLY,
+      },
+      update: {
+        hash: stableEvidenceHash(`typed-phase-c:${input.request.command}:${targetId}`),
+        sourceObjectId: targetId,
+        sourceObjectType: targetType,
+        title: isIpsAction ? "IPS mandate review action" : "Suitability profile review action",
+        visibilityStatus: VisibilityStatus.INTERNAL_ONLY,
+      },
+    });
+
+    const audit = await createJourneyAuditAndRun(tx, {
+      auditPersistenceAvailable: input.request.simulateAuditPersistenceFailure === true ? false : undefined,
+      command: input.request.command,
+      currentUser: input.currentUser,
+      eventType: isIpsAction ? "journey.phase_c.ips_mandate.reviewed" : "journey.phase_c.suitability_profile.reviewed",
+      evidenceRecordId: evidenceRecord.id,
+      instance: input.instance,
+      metadataJson: {
+        commandFamily: "PHASE_C_SUITABILITY_IPS",
+        evidenceItemId: evidenceItem.id,
+        gateMissing: gate.missing,
+        gateName: gate.gateName,
+        gatePassed: gate.passed,
+        noClientRelease: true,
+        phase: "C",
+        previousDemoActionFamily: isIpsAction ? "j14" : "j13",
+        targetId,
+        targetType,
+        typedCommand: true,
+      },
+      nextState,
+      platformTenantId: input.platformTenantId,
+      previousState,
+      reason:
+        input.request.reason ??
+        (isEvidenceLinkAction
+          ? "Phase C Suitability/IPS evidence was linked for human review; client release remains blocked by local gate."
+          : "Phase C Suitability/IPS evidence gap was recorded; client release remains blocked by local gate."),
+      result: isEvidenceLinkAction ? AuditResult.SUCCESS : AuditResult.PENDING,
+      roleKey: input.roleKey,
+    });
+
+    return {
+      audit,
+      evidenceItem,
+      evidenceRecord,
+    };
+  });
+
+  return {
+    auditEventId: commandResult.audit.id,
+    command: input.request.command,
+    detail: await getJourneyDetailForCurrentUser(input.prisma, input.currentUser, input.instance.id),
+    mutated: true,
+    noAdviceExecution: true,
+    noClientRelease: true,
+    result: {
+      clientVisible: false,
+      evidenceItemId: commandResult.evidenceItem.id,
+      evidenceRecordId: commandResult.evidenceRecord.id,
+      evidenceStatus: commandResult.evidenceRecord.status,
+      gateMissing: gate.missing,
+      gateName: gate.gateName,
+      gatePassed: gate.passed,
+      message: isEvidenceLinkAction
+        ? "Phase C evidence linked for review. No client release occurred."
+        : "Phase C evidence gap recorded. No client release occurred.",
+      targetId,
+      targetType,
+      workflowState: nextState,
+    },
+  };
+}
+
 async function executeAiDraftInternalCommand(input: {
   currentUser: CurrentUserContext;
   instance: JourneyInstanceWithGraph;
@@ -1319,6 +1700,16 @@ export async function executeJourneyCommandForCurrentUser(
       request,
       roleKey,
     });
+  }
+
+  if (phaseBCommandIds.has(request.command)) {
+    requireJourneyManagePermission(permissionKeys);
+    return executePhaseBJ12Command({ currentUser, instance, platformTenantId: role.platformTenantId, prisma, request, roleKey });
+  }
+
+  if (phaseCCommandIds.has(request.command)) {
+    requireJourneyManagePermission(permissionKeys);
+    return executePhaseCJ13J14Command({ currentUser, instance, platformTenantId: role.platformTenantId, prisma, request, roleKey });
   }
 
   if (request.command === "AI_DRAFT_INTERNAL") {

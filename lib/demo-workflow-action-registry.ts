@@ -9,11 +9,16 @@ export type DemoWorkflowActionBoundary =
     }
   | {
       allowedOnDemoWorkflow: false;
-      canonicalApiRoute: "/api/export-workflow" | "/api/recommendation-review-workflow" | "/api/review-monitoring/actions";
+      canonicalApiRoute:
+        | "/api/export-workflow"
+        | "/api/journeys/[id]/commands"
+        | "/api/recommendation-review-workflow"
+        | "/api/review-monitoring/actions";
       classification: "MOVED_TO_TYPED_PRODUCT_COMMAND";
       productCommandAllowed: true;
       reasonCode:
         | "LEGACY_EXPORT_DEMO_ACTION_RETIRED"
+        | "PHASE_B_C_JOURNEY_COMMANDS_MOVED"
         | "ADVISOR_APPROVAL_WORKFLOW_MOVED"
         | "REVIEW_MONITORING_ACTION_MOVED";
     }
@@ -67,14 +72,6 @@ export const demoOnlyWorkflowActionIds = [
   "j09.saveFamilyChanges",
   "j09.openFamilyMap",
   "j09.addRelationship",
-  "j12.requestKycEvidence",
-  "j12.completeKycReview",
-  "j12.escalateSourceOfWealth",
-  "j12.linkSourceEvidence",
-  "j13.requestSuitabilityEvidence",
-  "j13.markSuitabilityReviewed",
-  "j14.requestIpsMandateChanges",
-  "j14.linkIpsEvidence",
 ] as const;
 
 const demoOnlyWorkflowActions = new Set<string>(demoOnlyWorkflowActionIds);
@@ -89,6 +86,10 @@ export const typedAdvisorApprovalWorkflowBoundary = {
 
 function isLegacyExportDemoAction(actionId: string) {
   return actionId.startsWith("j08.");
+}
+
+function isPhaseBCJourneyDemoAction(actionId: string) {
+  return actionId.startsWith("j12.") || actionId.startsWith("j13.") || actionId.startsWith("j14.");
 }
 
 export function demoWorkflowActionBoundaryFor(actionId: string): DemoWorkflowActionBoundary {
@@ -108,6 +109,16 @@ export function demoWorkflowActionBoundaryFor(actionId: string): DemoWorkflowAct
       classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
       productCommandAllowed: true,
       reasonCode: "LEGACY_EXPORT_DEMO_ACTION_RETIRED",
+    };
+  }
+
+  if (isPhaseBCJourneyDemoAction(actionId)) {
+    return {
+      allowedOnDemoWorkflow: false,
+      canonicalApiRoute: "/api/journeys/[id]/commands",
+      classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
+      productCommandAllowed: true,
+      reasonCode: "PHASE_B_C_JOURNEY_COMMANDS_MOVED",
     };
   }
 

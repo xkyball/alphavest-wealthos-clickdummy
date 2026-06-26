@@ -137,14 +137,6 @@ const workflowActions = [
   "j09.saveFamilyChanges",
   "j09.openFamilyMap",
   "j09.addRelationship",
-  "j12.requestKycEvidence",
-  "j12.completeKycReview",
-  "j12.escalateSourceOfWealth",
-  "j12.linkSourceEvidence",
-  "j13.requestSuitabilityEvidence",
-  "j13.markSuitabilityReviewed",
-  "j14.requestIpsMandateChanges",
-  "j14.linkIpsEvidence",
 ];
 
 test.describe("demo workflow API", () => {
@@ -362,31 +354,12 @@ test.describe("demo workflow API", () => {
     );
   });
 
-  test("Phase B J12 KYC workflow actions return evidence and audit boundaries", async ({ request }) => {
+  test("legacy demo workflow retires Phase B/C actions to typed journey commands", async ({ request }) => {
     const actions = [
       "j12.requestKycEvidence",
       "j12.completeKycReview",
       "j12.escalateSourceOfWealth",
       "j12.linkSourceEvidence",
-    ];
-
-    for (const actionId of actions) {
-      const response = await request.post("/api/demo-workflow", {
-        data: { actionId },
-      });
-      const body = await response.json();
-
-      expect(response.ok(), `${actionId}: ${JSON.stringify(body)}`).toBe(true);
-      expect(body.noClientRelease).toBe(true);
-      expect(body.result.auditRows).toBe(1);
-      expect(body.result.evidenceRecordId).toBeTruthy();
-      expect(body.result.evidenceItemId).toBeTruthy();
-      expect(body.result.clientVisible).toBe(false);
-    }
-  });
-
-  test("Phase C J13/J14 Suitability and IPS actions keep advice visibility blocked", async ({ request }) => {
-    const actions = [
       "j13.requestSuitabilityEvidence",
       "j13.markSuitabilityReviewed",
       "j14.requestIpsMandateChanges",
@@ -399,16 +372,14 @@ test.describe("demo workflow API", () => {
       });
       const body = await response.json();
 
-      expect(response.ok(), `${actionId}: ${JSON.stringify(body)}`).toBe(true);
+      expect(response.status(), `${actionId}: ${JSON.stringify(body)}`).toBe(410);
+      expect(body.canonicalApiRoute).toBe("/api/journeys/[id]/commands");
+      expect(body.demoWorkflowBoundary).toMatchObject({
+        classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
+        reasonCode: "PHASE_B_C_JOURNEY_COMMANDS_MOVED",
+      });
       expect(body.noClientRelease).toBe(true);
-      expect(body.result.auditRows).toBe(1);
-      expect(body.result.evidenceRecordId).toBeTruthy();
-      expect(body.result.evidenceItemId).toBeTruthy();
-      expect(body.result.clientVisible).toBe(false);
-      expect(body.result.gateName).toBe("NO_UNAPPROVED_ADVICE");
-      expect(body.result.gatePassed).toBe(false);
-      expect(body.result.gateMissing).toContain("compliance_release");
-      expect(body.result.gateMissing).toContain("ips_mandate_acknowledged");
+      expect(body.error).toContain("typed journey command API");
     }
   });
 

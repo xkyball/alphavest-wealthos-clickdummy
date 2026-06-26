@@ -8,6 +8,14 @@ export const journeyCommandIds = [
   "CANCEL",
   "LINK_EVIDENCE",
   "DECIDE_EVIDENCE_SUFFICIENCY",
+  "KYC_REQUEST_EVIDENCE",
+  "KYC_COMPLETE_REVIEW",
+  "SOURCE_OF_WEALTH_ESCALATE",
+  "SOURCE_OF_WEALTH_LINK_EVIDENCE",
+  "SUITABILITY_REQUEST_EVIDENCE",
+  "SUITABILITY_MARK_REVIEWED",
+  "IPS_REQUEST_MANDATE_CHANGES",
+  "IPS_LINK_EVIDENCE",
   ...wp05CanonicalJourneyCommandIds,
 ] as const;
 
@@ -102,6 +110,22 @@ export function parseJourneyCommandRequest(body: unknown): JourneyCommandValidat
     typeof record.reason !== "string"
   ) {
     issues.push("gate_reason_required");
+  }
+
+  if (
+    [
+      "KYC_REQUEST_EVIDENCE",
+      "KYC_COMPLETE_REVIEW",
+      "SOURCE_OF_WEALTH_ESCALATE",
+      "SOURCE_OF_WEALTH_LINK_EVIDENCE",
+      "SUITABILITY_REQUEST_EVIDENCE",
+      "SUITABILITY_MARK_REVIEWED",
+      "IPS_REQUEST_MANDATE_CHANGES",
+      "IPS_LINK_EVIDENCE",
+    ].includes(String(record.command)) &&
+    typeof record.reason !== "string"
+  ) {
+    issues.push("journey_family_reason_required");
   }
 
   if (issues.length > 0) {

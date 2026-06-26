@@ -142,10 +142,16 @@ const groupTemplates: Record<NavigationGroupKey, ContextTemplate> = {
   },
   advisory_workflow: {
     capability: {
-      apiEvidence: ["app/api/demo-workflow/route.ts", "app/api/recommendation-review-workflow/route.ts"],
+      apiEvidence: ["app/api/demo-workflow/route.ts", "app/api/journeys/[id]/commands/route.ts", "app/api/recommendation-review-workflow/route.ts"],
       guardEvidence: ["Advisor approval is not compliance release; client-visible AI draft remains forbidden."],
       proofPosture: "Internal service-backed workflow with demo bus ambiguity that should be split into typed domain APIs.",
-      serviceEvidence: ["lib/demo-workflow-action-registry.ts", "lib/typed-workflow-command-bus.ts", "lib/internal-draft-governance-spine.ts"],
+      serviceEvidence: [
+        "lib/demo-workflow-action-registry.ts",
+        "lib/journeys/journey-api-service.ts",
+        "lib/phase-b-c-journey-command-client.ts",
+        "lib/typed-workflow-command-bus.ts",
+        "lib/internal-draft-governance-spine.ts",
+      ],
       status: "SERVICE_BACKED_INTERNAL",
     },
     modelFamilies: ["advisory-recommendation-draft", "audit-safety"],
@@ -165,7 +171,7 @@ const groupTemplates: Record<NavigationGroupKey, ContextTemplate> = {
       "EvidenceRecord",
       ...sharedAuditModels,
     ],
-    warnings: ["Broad demo workflow actions must stay demoted until typed command proof exists per action."],
+    warnings: ["Broad demo workflow actions must stay demoted until typed command proof exists per action; J12/J13/J14 are typed journey commands, not demo-workflow proof."],
   },
   decisions_evidence: {
     capability: {

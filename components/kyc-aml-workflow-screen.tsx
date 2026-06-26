@@ -46,8 +46,8 @@ import {
   sourceRiskFindings,
 } from "@/lib/kyc-aml-demo-data";
 import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { runPhaseBCJourneyCommand, type PhaseBCDemoActionId } from "@/lib/phase-b-c-journey-command-client";
 import type { ScreenRoute } from "@/lib/route-registry";
-import { runScreencastDemoAction } from "@/lib/screencast-demo-client";
 
 type KycAmlWorkflowScreenProps = {
   route: ScreenRoute;
@@ -272,9 +272,9 @@ function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pag
 function KycReviewPage({ title }: { title: string }) {
   const [status, setStatus] = useState<string | null>(null);
 
-  async function run(actionId: string, next: string) {
+  async function run(actionId: PhaseBCDemoActionId, next: string) {
     setStatus(next);
-    await runScreencastDemoAction(actionId);
+    await runPhaseBCJourneyCommand(actionId);
   }
 
   return (
@@ -394,9 +394,9 @@ const sourceDocumentColumns: Array<DataTableColumn<(typeof sourceDocuments)[numb
 function SourceOfWealthPage({ title }: { title: string }) {
   const [status, setStatus] = useState<string | null>(null);
 
-  async function run(actionId: string, next: string) {
+  async function run(actionId: PhaseBCDemoActionId, next: string) {
     setStatus(next);
-    await runScreencastDemoAction(actionId);
+    await runPhaseBCJourneyCommand(actionId);
   }
 
   return (

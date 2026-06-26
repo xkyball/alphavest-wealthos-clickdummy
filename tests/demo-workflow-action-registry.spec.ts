@@ -8,7 +8,7 @@ import {
 
 test.describe("demo workflow action registry", () => {
   test("keeps executable demo workflow actions explicitly demo-only", () => {
-    expect(demoOnlyWorkflowActionIds.length).toBeGreaterThan(40);
+    expect(demoOnlyWorkflowActionIds.length).toBeGreaterThan(30);
 
     for (const actionId of demoOnlyWorkflowActionIds) {
       expect(demoWorkflowActionBoundaryFor(actionId), actionId).toMatchObject({
@@ -34,6 +34,18 @@ test.describe("demo workflow action registry", () => {
       classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
       reasonCode: "LEGACY_EXPORT_DEMO_ACTION_RETIRED",
     });
+    expect(demoWorkflowActionBoundaryFor("j12.completeKycReview")).toMatchObject({
+      allowedOnDemoWorkflow: false,
+      canonicalApiRoute: "/api/journeys/[id]/commands",
+      classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
+      reasonCode: "PHASE_B_C_JOURNEY_COMMANDS_MOVED",
+    });
+    expect(demoWorkflowActionBoundaryFor("j14.linkIpsEvidence")).toMatchObject({
+      allowedOnDemoWorkflow: false,
+      canonicalApiRoute: "/api/journeys/[id]/commands",
+      classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
+      reasonCode: "PHASE_B_C_JOURNEY_COMMANDS_MOVED",
+    });
     expect(demoWorkflowActionBoundaryFor("j16.scheduleReview")).toMatchObject({
       allowedOnDemoWorkflow: false,
       canonicalApiRoute: "/api/review-monitoring/actions",
@@ -52,4 +64,3 @@ test.describe("demo workflow action registry", () => {
     });
   });
 });
-

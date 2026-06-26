@@ -1,7 +1,6 @@
 import { createHash } from "node:crypto";
 import { PrismaPg } from "@prisma/adapter-pg";
 import {
-  AdviceClassification,
   AuditResult,
   ComplianceStatus,
   DecisionStatus,
@@ -43,7 +42,6 @@ import {
 import { fileMetadataService } from "@/lib/file-metadata-service";
 import type { PermissionDecision } from "@/lib/permission-engine";
 import { workflowGate } from "@/lib/workflow-gate";
-import { suitabilityGateCandidate } from "@/lib/suitability-ips-demo-data";
 import type {
   ComplianceStatus as DomainComplianceStatus,
   EvidenceStatus as DomainEvidenceStatus,
@@ -95,15 +93,7 @@ type DemoWorkflowAction =
   | "j09.addMember"
   | "j09.saveFamilyChanges"
   | "j09.openFamilyMap"
-  | "j09.addRelationship"
-  | "j12.requestKycEvidence"
-  | "j12.completeKycReview"
-  | "j12.escalateSourceOfWealth"
-  | "j12.linkSourceEvidence"
-  | "j13.requestSuitabilityEvidence"
-  | "j13.markSuitabilityReviewed"
-  | "j14.requestIpsMandateChanges"
-  | "j14.linkIpsEvidence";
+  | "j09.addRelationship";
 
 type DemoWorkflowActionOptions = {
   auditPersistenceAvailable?: boolean;
@@ -141,13 +131,6 @@ const morganRecommendationId = recommendationId("morgan");
 const morganComplianceReviewId = complianceReviewId("morgan");
 const morganEvidenceRecordId = evidenceRecordId("morgan");
 const morganTaxDocumentId = documentId("morgan", "missing-tax");
-const morganKycComplianceReviewId = stableId("compliance:morgan:kyc-aml-source-of-wealth");
-const morganKycEvidenceRecordId = stableId("evidence:morgan:kyc-aml-source-of-wealth");
-const morganSourceOfWealthDocumentId = documentId("morgan", "source-of-wealth");
-const morganSuitabilityProfileId = stableId("suitability:morgan:profile");
-const morganSuitabilityEvidenceRecordId = stableId("evidence:morgan:suitability-profile");
-const morganIpsMandateId = stableId("ips:morgan:mandate");
-const morganIpsEvidenceRecordId = stableId("evidence:morgan:ips-mandate");
 const morganPrincipalUserId = userId("morgan:principal");
 const summitTenantId = tenantId("summit");
 const summitRecommendationId = recommendationId("summit");
@@ -2618,304 +2601,6 @@ async function runJ09AddRelationship(prisma: PrismaClient, actionId: DemoWorkflo
   );
 }
 
-async function upsertKycDocument(
-  tx: Prisma.TransactionClient,
-  input: {
-    documentId: string;
-    documentType: string;
-    fileName: string;
-    status: DocumentStatus;
-    title: string;
-  },
-) {
-  return tx.document.upsert({
-    where: { id: input.documentId },
-    create: {
-      id: input.documentId,
-      checksum: stableEvidenceHash(`document:${input.documentId}:demo-checksum`),
-      clientTenantId: morganTenantId,
-      clientVisible: false,
-      documentType: input.documentType,
-      fileName: input.fileName,
-      fileSizeBytes: 428_000,
-      mimeType: "application/pdf",
-      retentionPolicy: "KYC_REVIEW_7Y",
-      sensitivity: Sensitivity.RESTRICTED,
-      source: "demo_phase_b_kyc",
-      status: input.status,
-      storageKey: `demo/morgan/kyc/${input.fileName}`,
-      title: input.title,
-      uploadedByUserId: userId("morgan:cfo"),
-    },
-    update: {
-      clientVisible: false,
-      documentType: input.documentType,
-      fileName: input.fileName,
-      mimeType: "application/pdf",
-      retentionPolicy: "KYC_REVIEW_7Y",
-      sensitivity: Sensitivity.RESTRICTED,
-      source: "demo_phase_b_kyc",
-      status: input.status,
-      title: input.title,
-    },
-  });
-}
-
-async function runJ12KycWorkflow(prisma: PrismaClient, actionId: DemoWorkflowAction) {
-  const isSourceAction = actionId === "j12.escalateSourceOfWealth" || actionId === "j12.linkSourceEvidence";
-  const isCompleteAction = actionId === "j12.completeKycReview" || actionId === "j12.linkSourceEvidence";
-  const targetDocumentId = isSourceAction ? morganSourceOfWealthDocumentId : morganTaxDocumentId;
-  const documentStatus = isCompleteAction ? DocumentStatus.LINKED_TO_EVIDENCE : DocumentStatus.NEEDS_CLARIFICATION;
-  const previousState = isSourceAction ? "SOURCE_REVIEW_PENDING" : "KYC_REVIEW_PENDING";
-  const nextState = isCompleteAction ? "EVIDENCE_LINKED" : "AWAITING_INFO";
-  const evidenceStatus = isCompleteAction ? EvidenceStatus.LINKED : EvidenceStatus.CREATED;
-  const complianceStatus = isCompleteAction ? ComplianceStatus.IN_REVIEW : ComplianceStatus.NEEDS_EVIDENCE;
-  const actorRoleKey = actionId === "j12.completeKycReview" ? "compliance_officer" : "analyst";
-
-  return runDemoWorkflowMutation(
-    prisma,
-    {
-      actionId,
-      actorRoleKey,
-      auditResult: isCompleteAction ? AuditResult.SUCCESS : AuditResult.PENDING,
-      clientTenantId: morganTenantId,
-      eventType: isSourceAction ? "phase_b.source_of_wealth.reviewed" : "phase_b.kyc_aml.reviewed",
-      evidenceRecordId: morganKycEvidenceRecordId,
-      metadataJson: {
-        demoMode: true,
-        evidenceBoundary: "Demo evidence record/item persisted by J12 handler.",
-        imageGenReferenceOnly: true,
-        noClientRelease: true,
-        noProductionProviderClaim: true,
-        phase: "B",
-        tickets: ["B-01", "B-02", "B-03", "B-08", "B-09", "B-10", "B-11", "B-12"],
-      },
-      nextState,
-      permissionAction: "REVIEW",
-      permissionObjectType: ObjectType.DOCUMENT,
-      previousState,
-      reason: isCompleteAction
-        ? "Phase B KYC/Source-of-Wealth evidence package linked for compliance review; client release remains blocked."
-        : "Phase B KYC/Source-of-Wealth evidence gap recorded and routed for human review.",
-      sensitivity: "RESTRICTED",
-      targetId: targetDocumentId,
-      targetType: ObjectType.DOCUMENT,
-      tenantSlug: "morgan",
-      visibilityStatus: "INTERNAL_ONLY",
-      workflowState: isCompleteAction ? "IN_REVIEW" : "AWAITING_INFO",
-    },
-    async (tx) => {
-      const document = await upsertKycDocument(tx, {
-        documentId: targetDocumentId,
-        documentType: isSourceAction ? "source_of_wealth" : "kyc_fica",
-        fileName: isSourceAction ? "morgan-source-of-wealth-trail.pdf" : "morgan-kyc-fica-pack.pdf",
-        status: documentStatus,
-        title: isSourceAction ? "Morgan Source-of-Wealth Trail" : "Morgan KYC/FICA Review Pack",
-      });
-
-      const complianceReview = await tx.complianceReview.upsert({
-        where: { id: morganKycComplianceReviewId },
-        create: {
-          id: morganKycComplianceReviewId,
-          adviceClassification: AdviceClassification.WORKFLOW,
-          clientTenantId: morganTenantId,
-          evidenceComplete: isCompleteAction,
-          kycFicaStatus: isCompleteAction ? "review_ready" : "needs_evidence",
-          popiaConsentStatus: "verified",
-          recordOfAdviceRequired: false,
-          releaseNotes: "Phase B KYC/AML/Source-of-Wealth workflow is internal only. No client advice or release.",
-          reviewerUserId: userId("compliance"),
-          status: complianceStatus,
-          targetId: targetDocumentId,
-          targetType: ObjectType.DOCUMENT,
-        },
-        update: {
-          evidenceComplete: isCompleteAction,
-          kycFicaStatus: isCompleteAction ? "review_ready" : "needs_evidence",
-          popiaConsentStatus: "verified",
-          releaseNotes: "Phase B KYC/AML/Source-of-Wealth workflow is internal only. No client advice or release.",
-          status: complianceStatus,
-          targetId: targetDocumentId,
-          targetType: ObjectType.DOCUMENT,
-        },
-      });
-
-      const evidenceRecord = await tx.evidenceRecord.upsert({
-        where: { id: morganKycEvidenceRecordId },
-        create: {
-          id: morganKycEvidenceRecordId,
-          clientTenantId: morganTenantId,
-          createdByUserId: userId("compliance"),
-          relatedObjectId: targetDocumentId,
-          relatedObjectType: ObjectType.DOCUMENT,
-          retentionPolicy: "KYC_REVIEW_7Y",
-          status: evidenceStatus,
-          summary: "Demo Phase B KYC/AML/Source-of-Wealth evidence package. Internal only; not client advice.",
-          title: "Morgan KYC/AML/Source-of-Wealth Evidence Package",
-          visibilityStatus: VisibilityStatus.INTERNAL_ONLY,
-        },
-        update: {
-          relatedObjectId: targetDocumentId,
-          relatedObjectType: ObjectType.DOCUMENT,
-          retentionPolicy: "KYC_REVIEW_7Y",
-          status: evidenceStatus,
-          summary: "Demo Phase B KYC/AML/Source-of-Wealth evidence package. Internal only; not client advice.",
-          visibilityStatus: VisibilityStatus.INTERNAL_ONLY,
-        },
-      });
-
-      const evidenceItem = await tx.evidenceItem.upsert({
-        where: { id: stableId(`evidence-item:morgan:phase-b:${actionId}`) },
-        create: {
-          id: stableId(`evidence-item:morgan:phase-b:${actionId}`),
-          evidenceRecordId: evidenceRecord.id,
-          hash: stableEvidenceHash(`phase-b:${actionId}:${targetDocumentId}`),
-          itemType: isSourceAction ? "source_of_wealth_review" : "kyc_aml_review",
-          sourceObjectId: document.id,
-          sourceObjectType: ObjectType.DOCUMENT,
-          title: isSourceAction ? "Source-of-wealth review action" : "KYC/AML review action",
-          visibilityStatus: VisibilityStatus.INTERNAL_ONLY,
-        },
-        update: {
-          hash: stableEvidenceHash(`phase-b:${actionId}:${targetDocumentId}`),
-          sourceObjectId: document.id,
-          sourceObjectType: ObjectType.DOCUMENT,
-          title: isSourceAction ? "Source-of-wealth review action" : "KYC/AML review action",
-          visibilityStatus: VisibilityStatus.INTERNAL_ONLY,
-        },
-      });
-
-      return {
-        clientVisible: false,
-        complianceReviewId: complianceReview.id,
-        complianceStatus: complianceReview.status,
-        documentId: document.id,
-        documentStatus: document.status,
-        evidenceItemId: evidenceItem.id,
-        evidenceRecordId: evidenceRecord.id,
-        evidenceStatus: evidenceRecord.status,
-        message: isCompleteAction
-          ? "Phase B evidence package linked for compliance review. No client release occurred."
-          : "Phase B evidence gap recorded for human review. No client release occurred.",
-        workflowState: nextState,
-      };
-    },
-  );
-}
-
-async function runJ13J14SuitabilityIpsWorkflow(prisma: PrismaClient, actionId: DemoWorkflowAction) {
-  const isIpsAction = actionId.startsWith("j14.");
-  const isEvidenceLinkAction = actionId === "j13.markSuitabilityReviewed" || actionId === "j14.linkIpsEvidence";
-  const targetId = isIpsAction ? morganIpsMandateId : morganSuitabilityProfileId;
-  const targetType = isIpsAction ? ObjectType.POLICY : ObjectType.ENGAGEMENT;
-  const evidenceRecordId = isIpsAction ? morganIpsEvidenceRecordId : morganSuitabilityEvidenceRecordId;
-  const evidenceStatus = isEvidenceLinkAction ? EvidenceStatus.LINKED : EvidenceStatus.CREATED;
-  const previousState = isIpsAction ? "IPS_DRAFT" : "SUITABILITY_IN_REVIEW";
-  const nextState = isEvidenceLinkAction ? "EVIDENCE_LINKED_FOR_REVIEW" : "AWAITING_SUITABILITY_EVIDENCE";
-  const gate = workflowGate.canReleaseAdviceWithSuitabilityIps(suitabilityGateCandidate);
-
-  return runDemoWorkflowMutation(
-    prisma,
-    {
-      actionId,
-      actorRoleKey: isIpsAction ? "senior_wealth_advisor" : "analyst",
-      auditResult: isEvidenceLinkAction ? AuditResult.SUCCESS : AuditResult.PENDING,
-      clientTenantId: morganTenantId,
-      eventType: isIpsAction ? "phase_c.ips_mandate.reviewed" : "phase_c.suitability_profile.reviewed",
-      evidenceRecordId,
-      metadataJson: {
-        demoMode: true,
-        gateName: gate.gateName,
-        gateMissing: gate.missing,
-        gatePassed: gate.passed,
-        noClientRelease: true,
-        noProductionProviderClaim: true,
-        phase: "C",
-        tickets: ["C-01", "C-02", "C-03", "C-08", "C-09", "C-04", "C-05", "C-06", "C-07", "C-10", "C-11", "C-12"],
-      },
-      nextState,
-      permissionAction: "REVIEW",
-      permissionObjectType: targetType,
-      previousState,
-      reason: isEvidenceLinkAction
-        ? "Phase C Suitability/IPS evidence was linked for human review; client release remains blocked by local gate."
-        : "Phase C Suitability/IPS evidence gap was recorded; client release remains blocked by local gate.",
-      sensitivity: "RESTRICTED",
-      targetId,
-      targetType,
-      tenantSlug: "morgan",
-      visibilityStatus: "INTERNAL_ONLY",
-      workflowState: isEvidenceLinkAction ? "IN_REVIEW" : "AWAITING_INFO",
-    },
-    async (tx) => {
-      const evidenceRecord = await tx.evidenceRecord.upsert({
-        where: { id: evidenceRecordId },
-        create: {
-          id: evidenceRecordId,
-          clientTenantId: morganTenantId,
-          createdByUserId: userId(isIpsAction ? "advisor" : "analyst"),
-          relatedObjectId: targetId,
-          relatedObjectType: targetType,
-          retentionPolicy: isIpsAction ? "IPS_MANDATE_7Y" : "SUITABILITY_PROFILE_7Y",
-          status: evidenceStatus,
-          summary: isIpsAction
-            ? "Demo Phase C IPS mandate evidence package. Internal only; not client advice."
-            : "Demo Phase C suitability profile evidence package. Internal only; not client advice.",
-          title: isIpsAction ? "Morgan IPS / Mandate Evidence Package" : "Morgan Suitability Profile Evidence Package",
-          visibilityStatus: VisibilityStatus.INTERNAL_ONLY,
-        },
-        update: {
-          relatedObjectId: targetId,
-          relatedObjectType: targetType,
-          retentionPolicy: isIpsAction ? "IPS_MANDATE_7Y" : "SUITABILITY_PROFILE_7Y",
-          status: evidenceStatus,
-          summary: isIpsAction
-            ? "Demo Phase C IPS mandate evidence package. Internal only; not client advice."
-            : "Demo Phase C suitability profile evidence package. Internal only; not client advice.",
-          visibilityStatus: VisibilityStatus.INTERNAL_ONLY,
-        },
-      });
-
-      const evidenceItem = await tx.evidenceItem.upsert({
-        where: { id: stableId(`evidence-item:morgan:phase-c:${actionId}`) },
-        create: {
-          id: stableId(`evidence-item:morgan:phase-c:${actionId}`),
-          evidenceRecordId: evidenceRecord.id,
-          hash: stableEvidenceHash(`phase-c:${actionId}:${targetId}`),
-          itemType: isIpsAction ? "ips_mandate_review" : "suitability_profile_review",
-          sourceObjectId: targetId,
-          sourceObjectType: targetType,
-          title: isIpsAction ? "IPS mandate review action" : "Suitability profile review action",
-          visibilityStatus: VisibilityStatus.INTERNAL_ONLY,
-        },
-        update: {
-          hash: stableEvidenceHash(`phase-c:${actionId}:${targetId}`),
-          sourceObjectId: targetId,
-          sourceObjectType: targetType,
-          title: isIpsAction ? "IPS mandate review action" : "Suitability profile review action",
-          visibilityStatus: VisibilityStatus.INTERNAL_ONLY,
-        },
-      });
-
-      return {
-        clientVisible: false,
-        evidenceItemId: evidenceItem.id,
-        evidenceRecordId: evidenceRecord.id,
-        evidenceStatus: evidenceRecord.status,
-        gateMissing: gate.missing,
-        gateName: gate.gateName,
-        gatePassed: gate.passed,
-        message: isEvidenceLinkAction
-          ? "Phase C evidence linked for review. No client release occurred."
-          : "Phase C evidence gap recorded. No client release occurred.",
-        targetId,
-        targetType,
-        workflowState: nextState,
-      };
-    },
-  );
-}
-
 async function runDemoWorkflowAction(
   prisma: PrismaClient,
   actionId: DemoWorkflowAction,
@@ -3169,18 +2854,6 @@ async function runDemoWorkflowAction(
     case "j09.addRelationship":
       return runJ09AddRelationship(prisma, actionId);
 
-    case "j12.requestKycEvidence":
-    case "j12.completeKycReview":
-    case "j12.escalateSourceOfWealth":
-    case "j12.linkSourceEvidence":
-      return runJ12KycWorkflow(prisma, actionId);
-
-    case "j13.requestSuitabilityEvidence":
-    case "j13.markSuitabilityReviewed":
-    case "j14.requestIpsMandateChanges":
-    case "j14.linkIpsEvidence":
-      return runJ13J14SuitabilityIpsWorkflow(prisma, actionId);
-
     default:
       throw new UnsupportedLegacyDemoWorkflowActionError(actionId as string);
   }
@@ -3264,7 +2937,9 @@ export async function POST(request: Request) {
         error:
           demoWorkflowBoundary.canonicalApiRoute === "/api/export-workflow"
             ? "Legacy demo export actions are retired from /api/demo-workflow. Use the typed export workflow API."
-            : "Review monitoring actions have moved out of /api/demo-workflow. Use /api/review-monitoring/actions.",
+            : demoWorkflowBoundary.canonicalApiRoute === "/api/journeys/[id]/commands"
+              ? "Legacy Phase B/C demo actions are retired from /api/demo-workflow. Use the typed journey command API."
+              : "Review monitoring actions have moved out of /api/demo-workflow. Use /api/review-monitoring/actions.",
         legacyReasonCode: demoWorkflowBoundary.reasonCode,
         reasonCode: "SAFE_ERROR",
         ...(exportSafety ? { safety: exportSafety } : {}),

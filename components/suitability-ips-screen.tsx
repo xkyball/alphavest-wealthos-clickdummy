@@ -45,7 +45,7 @@ import {
   suitabilityWorkflowSteps,
   toneForSuitability,
 } from "@/lib/suitability-ips-demo-data";
-import { runScreencastDemoAction } from "@/lib/screencast-demo-client";
+import { runPhaseBCJourneyCommand, type PhaseBCDemoActionId } from "@/lib/phase-b-c-journey-command-client";
 import type { ScreenRoute } from "@/lib/route-registry";
 
 type SuitabilityIpsScreenProps = {
@@ -238,9 +238,9 @@ function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pag
 function SuitabilityProfilePage({ title }: { title: string }) {
   const [status, setStatus] = useState<string | null>(null);
 
-  async function run(actionId: string, next: string) {
+  async function run(actionId: PhaseBCDemoActionId, next: string) {
     setStatus(next);
-    await runScreencastDemoAction(actionId);
+    await runPhaseBCJourneyCommand(actionId);
   }
 
   return (
@@ -355,9 +355,9 @@ const documentColumns: Array<DataTableColumn<(typeof ipsDocuments)[number]>> = [
 function IpsMandatePage({ title }: { title: string }) {
   const [status, setStatus] = useState<string | null>(null);
 
-  async function run(actionId: string, next: string) {
+  async function run(actionId: PhaseBCDemoActionId, next: string) {
     setStatus(next);
-    await runScreencastDemoAction(actionId);
+    await runPhaseBCJourneyCommand(actionId);
   }
 
   return (
