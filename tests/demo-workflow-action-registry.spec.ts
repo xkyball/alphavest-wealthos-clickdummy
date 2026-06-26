@@ -8,7 +8,7 @@ import {
 
 test.describe("demo workflow action registry", () => {
   test("keeps executable demo workflow actions explicitly demo-only", () => {
-    expect(demoOnlyWorkflowActionIds).toHaveLength(4);
+    expect(demoOnlyWorkflowActionIds).toEqual(["j01.requestData"]);
 
     for (const actionId of demoOnlyWorkflowActionIds) {
       expect(demoWorkflowActionBoundaryFor(actionId), actionId).toMatchObject({

@@ -15,8 +15,8 @@ Current head at execution start: `2f746c6 chore(docs): align J01 markdown bounda
 | 3 | `ANALYSIS-2.1` UI-, Route-, Screen- und Interaktionsflächen erfassen | `DONE` | Current route/UI inventory captured: 71 registered routes, current visual-mode distribution, typed command candidates, API mutation candidates, static/blocked controls and quarantined legacy screencast client path. |
 | 4 | `ANALYSIS-2.2` API-, Service- und Workflow-Datenfluss erfassen | `DONE` | Handler/service map refreshed: form APIs, document/evidence APIs, export workflow, journey commands, typed J01/J02/J03/J04/J05/J06/J07/J09/J10/J16/J17 command routes and `/api/demo-workflow` legacy 410 boundary classified. |
 | 5 | `ANALYSIS-2.3` DB-Editierbarkeit, Persistenz und Prozess-I/O erfassen | `DONE` | Schema/migration/seed inventory and model operation scan completed: 53 Prisma models, 5 migrations, 45 models with app/lib operation evidence, editability classified by process family. |
-| 6 | `ANALYSIS-2.4` Security-, Guard-, Audit- und Test-Beweise erfassen | `PENDING` | Next ticket: map guards, audit mechanics and tests onto the capability candidates from `ANALYSIS-2.1` through `ANALYSIS-2.3`. |
-| 7 | `SPEC-1` Report-Taxonomie, Evidence-Regeln und Acceptance Criteria spezifizieren | `PENDING` | Blocked until `ANALYSIS-1` and relevant `ANALYSIS-2` findings are complete. |
+| 6 | `ANALYSIS-2.4` Security-, Guard-, Audit- und Test-Beweise erfassen | `DONE` | Guard/test matrix completed. Targeted drift proof pack now passes 12/12 after updating the capability drift gate from 32 to 33 API route files and narrowing demo-only actions to `j01.requestData`. |
+| 7 | `SPEC-1` Report-Taxonomie, Evidence-Regeln und Acceptance Criteria spezifizieren | `PENDING` | Next ticket: define the report taxonomy, evidence rules and acceptance criteria from the completed ANALYSIS findings. |
 | 8 | `IMPL-1.4.1` Capability Matrix und Vertical-Slice Matrix erzeugen | `PENDING` | Blocked until `SPEC-1`. |
 | 9 | `IMPL-1.4.2` Workflow-I/O-, Datenpflege- und Absicherungsreport erzeugen | `PENDING` | Blocked until `SPEC-1`. |
 | 10 | `IMPL-1.4.3` Befunde, Grenzen, Overclaim-Warnungen und Folgearbeit konsolidieren | `PENDING` | Blocked until implementation report sections exist. |
@@ -38,9 +38,11 @@ schema enum/model count from prisma/schema.prisma
 static UI/API/typed-command scans via rg over components, app/api and lib
 focused handler/service inspection for typed command routes, export workflow, journey commands and DBTF/document/evidence APIs
 static Prisma operation scan over app/api and lib; schema, migration and seed inventory
+guard/security/test inventory over lib, app/api and tests
+PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm exec playwright test tests/demo-workflow-action-registry.spec.ts tests/capture-screen-model-context.spec.ts tests/capability-report-drift-gate.spec.ts --workers=1
 ```
 
-Result so far: `ANALYSIS-1`, `ANALYSIS-2.1`, `ANALYSIS-2.2` and `ANALYSIS-2.3` completed with source guard `PASS` and no UI changes.
+Result so far: `ANALYSIS-1` and all `ANALYSIS-2` subtasks completed with source guard `PASS`, targeted drift proof pack `12 passed`, and no UI changes.
 
 ## Current Workspace Boundary
 
@@ -55,4 +57,4 @@ They are excluded from `ANALYSIS-1` unless a later ordered ticket explicitly rec
 
 ## Next Ticket
 
-Proceed to `ANALYSIS-2.4`: Security-, Guard-, Audit- und Test-Beweise erfassen.
+Proceed to `SPEC-1`: Report-Taxonomie, Evidence-Regeln und Acceptance Criteria spezifizieren.

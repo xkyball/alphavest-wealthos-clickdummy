@@ -70,7 +70,7 @@ function requiredTruthsForReport(reportPath: string) {
       "Registered routes | 71",
       "Models | 53",
       "Enums | 31",
-      "API route files found: `32`",
+      "API route files found: `33`",
       "app/api/advice-release-history/actions/route.ts",
       "app/api/data-maintenance/actions/route.ts",
       "app/api/platform-admin/actions/route.ts",

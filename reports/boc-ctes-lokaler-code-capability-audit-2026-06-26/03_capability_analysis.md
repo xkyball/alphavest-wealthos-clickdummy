@@ -322,6 +322,77 @@ Finished: `ANALYSIS-2.3`.
 
 ## ANALYSIS-2.4 - Security, Guard, Audit And Test Evidence
 
-Status: `PENDING`
+Status: `DONE`
+
+### Ticket Requirement
+
+`ANALYSIS-2.4` requires local security, role, guard, validation, audit and test evidence to be mapped to the capability candidates. Existing tests count as evidence only within their asserted scope. They do not automatically make a capability complete.
+
+### Security / Guard / Audit Matrix
+
+| Guard family | Local evidence | Protects | Current classification |
+| --- | --- | --- | --- |
+| RBAC / action permission | `lib/permission-engine.ts`, `lib/control-layer/permission-decision.ts`, `lib/control-layer/scope-resolver.ts` | Cross-tenant access, route shell vs action permission, payload scope, non-bypass admin/security roles, export/advice/evidence action authorization | `CODE_AND_TEST_EVIDENCE_STRONG` |
+| Client projection / visibility | `lib/visibility-engine.ts`, `lib/ui-clickflow-guards.ts` | Internal drafts, rationale, compliance notes, unreleased decisions/documents/evidence, client-safe projection | `CODE_AND_TEST_EVIDENCE_STRONG` |
+| Workflow release gates | `lib/workflow-gate.ts`, `lib/release-spine-command-surface.ts`, journey release code in `lib/journeys/journey-api-service.ts` | No unapproved advice, advisor approval separated from compliance release, evidence sufficiency, audit persistence, data quality, suitability/IPS and committee prerequisites | `CODE_AND_TEST_EVIDENCE_STRONG` |
+| Audit persistence guard | `lib/audit-service.ts`, `runDemoWorkflowMutation` and typed command services | Critical actions require minimum audit fields and fail closed when audit persistence is unavailable | `CODE_AND_TEST_EVIDENCE_STRONG` |
+| Fail-closed API envelope | `lib/control-layer/error-envelope.ts`; routes using `failClosedJson` | Invalid request, permission denial, scope denial, audit failure and safe errors do not silently mutate/release | `CODE_AND_TEST_EVIDENCE_STRONG` |
+| Export safety | `lib/export-service.ts`, `lib/control-layer/export-safety.ts`, `lib/export-workflow-command-service.ts` | Scope/redaction/approval/generation/download/share separation and forbidden internal payload exclusion | `CODE_AND_TEST_EVIDENCE_STRONG` |
+| Demo-workflow quarantine | `lib/demo-workflow-action-registry.ts`, `app/api/demo-workflow/route.ts` | Prevents moved product-like Jxx actions from being treated as `/api/demo-workflow` product API | `RUNTIME_PROVEN_THIS_RUN` |
+| Capture/report drift gate | `lib/capture-screen-model-context.ts`, `lib/capability-report-drift-gate.ts` | Prevents stale route/model/API counts and `COMPLETE_VERTICAL_SLICE` report drift from becoming generator truth | `RUNTIME_PROVEN_THIS_RUN` |
+| Source hierarchy guard | `scripts/source-target-guard.ts`, `lib/source-reality-gate.ts` | True-UX source hierarchy, target-codebase contract and current target restrictions | `RUNTIME_PROVEN_THIS_RUN` via `pnpm guard:source` |
+
+### Test Proof Matrix
+
+| Capability / risk area | Local test evidence | What is proven | Claim boundary |
+| --- | --- | --- | --- |
+| Source truth | `tests/source-reality-gate.spec.ts`; current run `pnpm guard:source` | Source hierarchy/current target restrictions | Does not prove product runtime behavior. |
+| Demo-workflow quarantine | `tests/demo-workflow-action-registry.spec.ts` | Only `j01.requestData` remains demo-only executable; moved families point to typed APIs; unregistered demo-shaped actions blocked | Does not delete the legacy client file by itself. |
+| Capture/report drift | `tests/capture-screen-model-context.spec.ts`, `tests/capability-report-drift-gate.spec.ts` | 71 routes, 53 models, 31 enums, 33 API-route truth, no complete-slice overclaim, typed command context for migrated families | Does not run every product workflow. |
+| Permission and non-bypass | `tests/permission-engine.spec.ts`, `tests/governance-non-bypass.spec.ts`, `tests/true-ux-governance-non-bypass.spec.ts` | Cross-tenant denial, route-access vs action permission, admin/security non-bypass | Test scope is role/action/object cases, not every field. |
+| Audit fail closed | `tests/audit-fail-closed.spec.ts`, `tests/phase6-audit-persistence.spec.ts`, command API specs | Critical actions block when audit persistence/minimum fields are missing | Does not prove external audit backend durability beyond local DB/service behavior. |
+| Document upload/review | `tests/document-upload-api.spec.ts`, `tests/document-upload-flow.spec.ts`, `tests/evidence-review-api.spec.ts`, `tests/document-upload-lifecycle-hardening.spec.ts` | Upload writes document/version/extraction/evidence/audit; review/sufficiency paths deny unsafe roles/scope and keep no-release | Does not claim arbitrary document CRUD. |
+| DBTF/data maintenance | `tests/dbtf-tables-api.spec.ts`, `tests/av27-client-context-closure.spec.ts`, `tests/data-maintenance-actions-api.spec.ts`, `tests/data-maintenance-command-client-source.spec.ts` | Profile/family/entity/data-maintenance paths and typed command client separation | Field-level coverage remains bounded. |
+| Export workflow/safety | `tests/export-workflow-api.spec.ts`, `tests/export-safety.spec.ts`, `tests/file-export-realism.spec.ts`, `tests/phase8-export-workflow-api.spec.ts`, `tests/export-command-spine-contract.spec.ts` | Scope/redaction/preview/approval/generate/download/share separation, forbidden payload blocking, no real binary overclaim | Runtime package realism is bounded by metadata/no-real-binary assertions. |
+| Journey spine | `tests/journey-api.spec.ts`, `tests/phase-b-c-journey-command-api.spec.ts`, `tests/journey-spine.spec.ts`, `tests/wave-0-2-p0-validation.spec.ts` | Current-user scope, command parsing, audit/run records, Phase B/C typed commands and no client release | Does not prove every future journey family. |
+| Tenant governance / platform admin | `tests/tenant-governance-actions-api.spec.ts`, `tests/platform-admin-actions-api.spec.ts`, source-client specs, `tests/platform-admin-browser-runtime.spec.ts` | J06/J07/J10 typed actions execute outside demo workflow and reject unsupported actions | Platform-admin DB effect is audit-record command evidence, not full platform CRUD. |
+| Advice/release history/advisor review | `tests/advisor-review-command-api.spec.ts`, `tests/advice-release-history-command-client-source.spec.ts`, `tests/workflow-gate.spec.ts`, `tests/client-visibility-projection.spec.ts`, `tests/client-visibility-proof.spec.ts`, `tests/true-ux-p0-safety.spec.ts` | Typed J01/J02/J03 boundary, no unapproved advice, advisor approval separated from release, projection hides internal payloads | Complete release claims require flow-specific runtime proof. |
+| UI blocked/static affordances | lifecycle/a11y/affordance tests such as `tests/true-ux-cta-state.spec.ts`, `tests/button-cta-lifecycle-pruning.spec.ts`, `tests/disabled-control-a11y-messaging.spec.ts`, `tests/ui-state-boundaries.spec.ts` | Static/disabled/held UI states are explicit and not misleading action proof | UI state tests do not prove service persistence. |
+
+### Current-Run Proof Pack
+
+Executed:
+
+```text
+pnpm guard:source
+PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm exec playwright test tests/demo-workflow-action-registry.spec.ts tests/capture-screen-model-context.spec.ts tests/capability-report-drift-gate.spec.ts --workers=1
+```
+
+Results:
+
+- `pnpm guard:source`: `PASS`, `violations: 0`.
+- First drift proof run: failed on two stale proof expectations:
+  - `lib/capability-report-drift-gate.ts` still required `API route files found: \`32\`` although current inventory is `33`.
+  - `tests/demo-workflow-action-registry.spec.ts` still expected four executable demo-only actions although the current hard boundary leaves only `j01.requestData`.
+- Fix applied:
+  - `lib/capability-report-drift-gate.ts` now requires `API route files found: \`33\``.
+  - `tests/demo-workflow-action-registry.spec.ts` now expects `demoOnlyWorkflowActionIds` to equal `["j01.requestData"]`.
+- Rerun result: `12 passed`.
+
+### Negative Proof / Missing Proof Register
+
+| Missing or bounded proof | Consequence |
+| --- | --- |
+| Full Playwright suite not run in this ticket | QA-1 must not claim global green status from this targeted proof pack. |
+| Field-level DB editability not exhaustively tested | Capability report must stay at process/model-family level unless a specific test proves field behavior. |
+| Screenshot/browser visual proof not generated here | No UI changed in this ticket; visual proof is not required for report/test-source updates. |
+| `/api/demo-workflow` client file still exists | It is a legacy support path, not product capability evidence; later cleanup can delete/quarantine it further if no seed/screencast dependency remains. |
+| Platform-admin typed command writes audit record rather than mutating broad platform settings directly | Must not be reported as full platform CRUD. |
+
+### ANALYSIS-2.4 Result
+
+Security, guard, audit and test evidence is broad and locally grounded. The strongest guarded candidates remain document upload/review, export workflow, journey commands, tenant governance, data maintenance and advice/release workflow. The current-run proof pack specifically verifies the drift boundary that prevents stale `32` API-route and broad demo-workflow assumptions from returning.
+
+Finished: `ANALYSIS-2.4`.
 
 Blocked until `ANALYSIS-2.2` and `ANALYSIS-2.3` identify the concrete capability claims that require guard, audit and test evidence.
