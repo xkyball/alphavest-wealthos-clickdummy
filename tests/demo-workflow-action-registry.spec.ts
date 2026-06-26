@@ -8,7 +8,7 @@ import {
 
 test.describe("demo workflow action registry", () => {
   test("keeps executable demo workflow actions explicitly demo-only", () => {
-    expect(demoOnlyWorkflowActionIds).toHaveLength(14);
+    expect(demoOnlyWorkflowActionIds).toHaveLength(4);
 
     for (const actionId of demoOnlyWorkflowActionIds) {
       expect(demoWorkflowActionBoundaryFor(actionId), actionId).toMatchObject({
@@ -87,6 +87,24 @@ test.describe("demo workflow action registry", () => {
       canonicalApiRoute: "/api/data-maintenance/actions",
       classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
       reasonCode: "DATA_MAINTENANCE_ACTIONS_MOVED",
+    });
+    expect(demoWorkflowActionBoundaryFor("j02.releaseClient")).toMatchObject({
+      allowedOnDemoWorkflow: false,
+      canonicalApiRoute: "/api/advice-release-history/actions",
+      classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
+      reasonCode: "ADVICE_RELEASE_HISTORY_ACTIONS_MOVED",
+    });
+    expect(demoWorkflowActionBoundaryFor("j02.exportControlled")).toMatchObject({
+      allowedOnDemoWorkflow: false,
+      canonicalApiRoute: "/api/advice-release-history/actions",
+      classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
+      reasonCode: "ADVICE_RELEASE_HISTORY_ACTIONS_MOVED",
+    });
+    expect(demoWorkflowActionBoundaryFor("j03.acceptOption")).toMatchObject({
+      allowedOnDemoWorkflow: false,
+      canonicalApiRoute: "/api/advice-release-history/actions",
+      classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
+      reasonCode: "ADVICE_RELEASE_HISTORY_ACTIONS_MOVED",
     });
   });
 

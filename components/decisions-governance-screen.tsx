@@ -55,9 +55,7 @@ import {
   advisorApprovalDemoTargets,
   runAdvisorApprovalWorkflowAction,
 } from "@/lib/recommendation-review-workflow-client";
-import {
-  runScreencastDemoAction,
-} from "@/lib/screencast-demo-client";
+import { runAdviceReleaseHistoryCommand } from "@/lib/advice-release-history-command-client";
 import { runTenantGovernanceCommand } from "@/lib/tenant-governance-command-client";
 import {
   accessPolicyChecks,
@@ -942,7 +940,7 @@ function ComplianceAuditPage({ title }: { title: string }) {
                 className={secondaryButtonClass}
                 data-testid="j02-export-controlled"
                 onClick={() => {
-                  void runScreencastDemoAction("j02.exportControlled");
+                  void runAdviceReleaseHistoryCommand("j02.exportControlled");
                 }}
                 type="button"
               >
@@ -1139,7 +1137,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
     setMessage("Submitting the audited client decision action. Close and cancel are blocked until the request resolves.");
 
     try {
-      const body = await runScreencastDemoAction(activeAction.actionId, activeAction.nextRoute);
+      const body = await runAdviceReleaseHistoryCommand(activeAction.actionId, activeAction.nextRoute);
       setStatus("success");
       setMessage(
         body.result?.auditEventId
@@ -1546,7 +1544,7 @@ function DecisionSuccessPage({ title }: { title: string }) {
                 className={primaryButtonClass}
                 data-testid="j03-view-evidence-record"
                 onClick={() => {
-                  void runScreencastDemoAction("j03.viewEvidenceRecord", "/evidence/demo");
+                  void runAdviceReleaseHistoryCommand("j03.viewEvidenceRecord", "/evidence/demo");
                 }}
                 type="button"
               >
@@ -1762,7 +1760,7 @@ function EvidenceRecordDetailPage({ title }: { title: string }) {
                     primary={{ label: "Open" }}
                     recoveryAction={{ href: "/documents/upload", label: "Request review" }}
                     secondary={[
-                      { label: "Download", onClick: () => { void runScreencastDemoAction("j03.downloadEvidence"); }, testId: "j03-download-evidence" },
+                      { label: "Download", onClick: () => { void runAdviceReleaseHistoryCommand("j03.downloadEvidence"); }, testId: "j03-download-evidence" },
                       {
                         disabled: true,
                         disabledReason: "Share needs evidence sufficiency, release and payload checks first.",

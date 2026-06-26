@@ -100,17 +100,25 @@ async function createGeneratedExport(request: APIRequestContext, label: string) 
 }
 
 const workflowActions = [
+  "j01.requestData",
+  "j01.routeToAdvisor",
+  "j01.approveAdvisor",
+  "j01.escalateAdvisor",
+] as const;
+
+const adviceReleaseHistoryActions = [
   "j02.requestEvidence",
   "j02.confirmRequestEvidence",
   "j02.blockRelease",
   "j02.releaseClient",
+  "j02.exportControlled",
   "j03.requestMoreInformation",
   "j03.deferDecision",
   "j03.rejectDecision",
   "j03.acceptOption",
   "j03.viewEvidenceRecord",
   "j03.downloadEvidence",
-];
+] as const;
 
 test.describe("demo workflow API", () => {
   let prisma: PrismaClient;
@@ -130,7 +138,7 @@ test.describe("demo workflow API", () => {
     await prisma?.$disconnect();
   });
 
-  test("implemented journey actions return successful mutation responses", async ({ request }) => {
+  test("implemented J01 compatibility actions return successful demo-only mutation responses", async ({ request }) => {
     for (const actionId of workflowActions) {
       const response = await request.post("/api/demo-workflow", {
         data: { actionId },
@@ -160,6 +168,75 @@ test.describe("demo workflow API", () => {
         expect(body.proofDirectness).toBeUndefined();
       }
     }
+  });
+
+  test("legacy advice and release-history demo actions are retired to the typed API", async ({ request }) => {
+    for (const actionId of adviceReleaseHistoryActions) {
+      const response = await request.post("/api/demo-workflow", {
+        data: { actionId },
+      });
+      const body = await response.json();
+
+      expect(response.status(), `${actionId}: ${JSON.stringify(body)}`).toBe(410);
+      expect(body.reasonCode).toBe("SAFE_ERROR");
+      expect(body.legacyReasonCode).toBe("ADVICE_RELEASE_HISTORY_ACTIONS_MOVED");
+      expect(body.canonicalApiRoute).toBe("/api/advice-release-history/actions");
+      expect(body.demoWorkflowBoundary).toMatchObject({
+        allowedOnDemoWorkflow: false,
+        canonicalApiRoute: "/api/advice-release-history/actions",
+        classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
+        productCommandAllowed: true,
+        reasonCode: "ADVICE_RELEASE_HISTORY_ACTIONS_MOVED",
+      });
+      expect(body.mutated).toBe(false);
+      expect(body.noClientRelease).toBe(true);
+      expect(body.safety).toMatchObject({
+        commandExecuted: false,
+        hiddenRowsDisclosed: false,
+        noAdviceExecution: true,
+        noClientRelease: true,
+        scoped: false,
+      });
+    }
+  });
+
+  test("typed advice and release-history API executes controlled J02/J03 commands", async ({ request }) => {
+    const requestEvidence = await request.post("/api/advice-release-history/actions", {
+      data: { actionId: "j02.requestEvidence" },
+    });
+    const requestEvidenceBody = await requestEvidence.json();
+
+    expect(requestEvidence.ok(), JSON.stringify(requestEvidenceBody)).toBe(true);
+    expect(requestEvidenceBody.canonicalApiRoute).toBe("/api/advice-release-history/actions");
+    expect(requestEvidenceBody.command).toBe("COMPLIANCE_REQUEST_EVIDENCE");
+    expect(requestEvidenceBody.noAdviceExecution).toBe(true);
+    expect(requestEvidenceBody.noClientRelease).toBe(true);
+    expect(requestEvidenceBody.safety).toMatchObject({
+      commandExecuted: true,
+      hiddenRowsDisclosed: false,
+      noAdviceExecution: true,
+      noClientRelease: true,
+      scoped: true,
+    });
+
+    const controlledExport = await request.post("/api/advice-release-history/actions", {
+      data: { actionId: "j02.exportControlled" },
+    });
+    const controlledExportBody = await controlledExport.json();
+
+    expect(controlledExport.ok(), JSON.stringify(controlledExportBody)).toBe(true);
+    expect(controlledExportBody.command).toBe("RELEASE_HISTORY_EXPORT_CONTROLLED");
+    expect(controlledExportBody.noClientRelease).toBe(true);
+    expect(controlledExportBody.result).toMatchObject({
+      exportApproved: false,
+      exportDownloadCreated: false,
+    });
+
+    const controlledAudit = await prisma.auditEvent.findUniqueOrThrow({
+      where: { id: controlledExportBody.result.auditEventId },
+    });
+    expect(controlledAudit.eventType).toBe("advice_release_history.release_history.export_controlled");
+    expect(controlledAudit.targetType).toBe(ObjectType.EXPORT_REQUEST);
   });
 
   test("legacy J08 export demo actions are retired in favor of the typed export workflow API", async ({ request }) => {
@@ -245,9 +322,9 @@ test.describe("demo workflow API", () => {
     });
 
     const auditCountBeforeFailure = await prisma.auditEvent.count({
-      where: { eventType: "screencast.decision.accepted" },
+      where: { eventType: "advice_release_history.decision.accepted" },
     });
-    const failureResponse = await request.post("/api/demo-workflow", {
+    const failureResponse = await request.post("/api/advice-release-history/actions", {
       data: {
         actionId: "j03.acceptOption",
         simulateAuditPersistenceFailure: true,
@@ -255,7 +332,7 @@ test.describe("demo workflow API", () => {
     });
     const failureBody = await failureResponse.json();
     const auditCountAfterFailure = await prisma.auditEvent.count({
-      where: { eventType: "screencast.decision.accepted" },
+      where: { eventType: "advice_release_history.decision.accepted" },
     });
     const unchangedDecision = await prisma.decision.findUniqueOrThrow({
       where: { id: bennettDecisionId },
@@ -270,12 +347,14 @@ test.describe("demo workflow API", () => {
     expect(unchangedDecision.decisionAction).toBeNull();
     expect(unchangedDecision.decisionAt).toBeNull();
 
-    const successResponse = await request.post("/api/demo-workflow", {
+    const successResponse = await request.post("/api/advice-release-history/actions", {
       data: { actionId: "j03.acceptOption" },
     });
     const successBody = await successResponse.json();
 
     expect(successResponse.ok(), JSON.stringify(successBody)).toBe(true);
+    expect(successBody.canonicalApiRoute).toBe("/api/advice-release-history/actions");
+    expect(successBody.command).toBe("CLIENT_DECISION_ACCEPT");
     expect(successBody.result.decisionRows).toBe(1);
     expect(successBody.result.auditRows).toBe(1);
     expect(successBody.result.gatePassed).toBe(true);
@@ -628,19 +707,15 @@ test.describe("demo workflow API", () => {
       });
       expect(releaseBody.result.releasePreconditions.canonicalMissing).toEqual([]);
 
-      const decisionResponse = await request.post("/api/demo-workflow", {
+      const decisionResponse = await request.post("/api/advice-release-history/actions", {
         data: { actionId: "j03.acceptOption" },
       });
       const decisionBody = await decisionResponse.json();
 
       expect(decisionResponse.ok(), JSON.stringify(decisionBody)).toBe(true);
+      expect(decisionBody.canonicalApiRoute).toBe("/api/advice-release-history/actions");
+      expect(decisionBody.command).toBe("CLIENT_DECISION_ACCEPT");
       expect(decisionBody.noClientRelease).toBe(false);
-      expect(decisionBody.proofDirectness).toMatchObject({
-        canonicalProofRoute: wp05CanonicalJourneyCommandApiRoute,
-        classification: "LEGACY_DEMO_COMPATIBILITY_ONLY",
-        pp004CanonicalProofEligible: false,
-        releaseBoundary: "client_decision_after_release",
-      });
       expect(decisionBody.result.gatePassed).toBe(true);
       expect(decisionBody.result.decisionRows).toBe(1);
 
@@ -657,7 +732,7 @@ test.describe("demo workflow API", () => {
       expect(releaseAudit.result).toBe(AuditResult.SUCCESS);
       expect(releaseAudit.eventType).toBe("advisor_approval.compliance_release");
       expect(decisionAudit.result).toBe(AuditResult.SUCCESS);
-      expect(decisionAudit.eventType).toBe("screencast.decision.accepted");
+      expect(decisionAudit.eventType).toBe("advice_release_history.decision.accepted");
       expect(exportAudit.result).toBe(AuditResult.SUCCESS);
       expect(exportAudit.eventType).toBe("export.workflow.generate");
     });

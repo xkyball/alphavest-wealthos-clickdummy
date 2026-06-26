@@ -139,14 +139,16 @@ const groupTemplates: Record<NavigationGroupKey, ContextTemplate> = {
     },
     modelFamilies: ["client-wealth-objects", "advisory-recommendation-draft"],
     models: ["Entity", "EntityParticipant", "Asset", "Trigger", "ActionItem", "Recommendation", "EvidenceItem", ...sharedAuditModels],
-    warnings: ["J05 wealth/action maintenance uses typed data-maintenance commands; remaining advice/release history actions must stay demoted until a separate cut."],
+    warnings: ["J05 wealth/action maintenance uses typed data-maintenance commands; advice/release-history actions use their own typed boundary, not /api/demo-workflow."],
   },
   advisory_workflow: {
     capability: {
-      apiEvidence: ["app/api/demo-workflow/route.ts", "app/api/journeys/[id]/commands/route.ts", "app/api/recommendation-review-workflow/route.ts"],
-      guardEvidence: ["Advisor approval is not compliance release; client-visible AI draft remains forbidden."],
-      proofPosture: "Internal service-backed workflow with demo bus ambiguity that should be split into typed domain APIs.",
+      apiEvidence: ["app/api/demo-workflow/route.ts", "app/api/journeys/[id]/commands/route.ts", "app/api/recommendation-review-workflow/route.ts", "app/api/advice-release-history/actions/route.ts"],
+      guardEvidence: ["Advisor approval is not compliance release; client-visible AI draft remains forbidden; J02/J03 use typed advice-release-history commands."],
+      proofPosture: "Internal service-backed workflow with typed advisor-review and advice/release-history command boundaries; J01 remains explicit demo-only compatibility.",
       serviceEvidence: [
+        "lib/advice-release-history-command-client.ts",
+        "lib/advice-release-history-workflow-actions.ts",
         "lib/demo-workflow-action-registry.ts",
         "lib/journeys/journey-api-service.ts",
         "lib/phase-b-c-journey-command-client.ts",
@@ -172,19 +174,19 @@ const groupTemplates: Record<NavigationGroupKey, ContextTemplate> = {
       "EvidenceRecord",
       ...sharedAuditModels,
     ],
-    warnings: ["Broad demo workflow actions must stay demoted until typed command proof exists per action; J12/J13/J14 are typed journey commands, not demo-workflow proof."],
+    warnings: ["J02/J03 advice/release-history actions use typed commands; J12/J13/J14 are typed journey commands; only J01 remains demo-only compatibility."],
   },
   decisions_evidence: {
     capability: {
-      apiEvidence: ["app/api/audit-events/route.ts", "app/api/documents/review/route.ts", "app/api/journeys/[id]/client-projection/route.ts", "app/api/tenant-governance/actions/route.ts"],
-      guardEvidence: ["Permission engine, visibility engine and workflow gate evidence required for safety-sensitive states."],
-      proofPosture: "Decision/evidence surfaces are service-backed internally; J07 governance actions use typed tenant-governance commands while client projection remains fail-closed.",
-      serviceEvidence: ["lib/visibility-engine.ts", "lib/workflow-gate.ts", "lib/audit-service.ts", "lib/evidence-review-service.ts", "lib/tenant-governance-workflow-actions.ts"],
+      apiEvidence: ["app/api/audit-events/route.ts", "app/api/documents/review/route.ts", "app/api/journeys/[id]/client-projection/route.ts", "app/api/tenant-governance/actions/route.ts", "app/api/advice-release-history/actions/route.ts"],
+      guardEvidence: ["Permission engine, visibility engine, workflow gate and typed J02/J03 command evidence required for safety-sensitive states."],
+      proofPosture: "Decision/evidence surfaces are service-backed internally; J03 decision/evidence actions use typed advice-release-history commands while client projection remains fail-closed.",
+      serviceEvidence: ["lib/visibility-engine.ts", "lib/workflow-gate.ts", "lib/audit-service.ts", "lib/evidence-review-service.ts", "lib/tenant-governance-workflow-actions.ts", "lib/advice-release-history-workflow-actions.ts"],
       status: "SERVICE_BACKED_INTERNAL",
     },
     modelFamilies: ["documents-evidence", "advisory-recommendation-draft", "tenant-user-rbac"],
     models: ["EvidenceRecord", "EvidenceItem", "EvidenceSufficiencyDecision", "Decision", "DecisionParticipant", "DocumentReview", ...sharedSafetyModels, ...sharedAuditModels],
-    warnings: ["Evidence screenshots are not release proof without no-leakage and gate proof; J07 governance commands use tenant-governance typed commands but remain no-client-release."],
+    warnings: ["Evidence screenshots are not release proof without no-leakage and gate proof; J07 uses tenant-governance typed commands and J03 evidence commands use advice-release-history typed commands, not /api/demo-workflow."],
   },
   communication: {
     capability: {

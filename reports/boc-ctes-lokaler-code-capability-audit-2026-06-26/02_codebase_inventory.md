@@ -56,11 +56,12 @@ Top-level app pages:
 | `app/journeys/page.tsx`, `app/journeys/[id]/page.tsx` | Journey UI pages. |
 | `app/layout.tsx`, `app/error.tsx`, `app/loading.tsx`, `app/not-found.tsx`, `app/globals.css` | Framework shell and styling. |
 
-API route files found: `31`
+API route files found: `32`
 
 | API file | Methods observed |
 | --- | --- |
 | `app/api/admin-tenants/route.ts` | `GET`, `POST` |
+| `app/api/advice-release-history/actions/route.ts` | `POST` |
 | `app/api/audit-events/route.ts` | `GET` |
 | `app/api/auth/dummy/route.ts` | `POST` |
 | `app/api/auth/logout/route.ts` | `POST` |
@@ -121,14 +122,14 @@ DB-backed or Prisma-touching code files found by static search:
 
 | Area | Files |
 | --- | --- |
-| API DB transaction hub | `app/api/demo-workflow/route.ts`, `app/api/data-maintenance/actions/route.ts`, `app/api/platform-admin/actions/route.ts`, `app/api/tenant-governance/actions/route.ts` |
+| API DB transaction hub | `app/api/demo-workflow/route.ts`, `app/api/advice-release-history/actions/route.ts`, `app/api/data-maintenance/actions/route.ts`, `app/api/platform-admin/actions/route.ts`, `app/api/tenant-governance/actions/route.ts` |
 | Tenant/profile/family/entity/data services | `lib/admin-tenant-readmodel-service.ts`, `lib/data-maintenance-workflow-actions.ts`, `lib/data-quality-repository.ts`, `lib/data-quality-service.ts`, `lib/dbtf-form-service.ts`, `lib/dbtf-table-service.ts` |
 | Auth/current user | `lib/auth/current-user.ts`, `lib/demo/demo-auth-provider-service.ts` |
 | Documents/evidence | `lib/document-upload-service.ts`, `lib/evidence-review-service.ts` |
 | Export | `lib/export-workflow-command-service.ts`, `lib/export-workflow-readmodel-service.ts` |
 | Search/ops/review | `lib/global-search-service.ts`, `lib/ops-sla-readmodel-service.ts`, `lib/review-monitoring-service.ts` |
 | Journey spine | `lib/journeys/journey-api-service.ts` |
-| Governance/release command surfaces | `lib/internal-draft-governance-spine.ts`, `lib/platform-admin-workflow-actions.ts`, `lib/typed-workflow-command-bus.ts`, `lib/tenant-governance-workflow-actions.ts` |
+| Governance/release command surfaces | `lib/internal-draft-governance-spine.ts`, `lib/advice-release-history-workflow-actions.ts`, `lib/platform-admin-workflow-actions.ts`, `lib/typed-workflow-command-bus.ts`, `lib/tenant-governance-workflow-actions.ts` |
 | Certification/phase services | `lib/p44-phase2-admin-foundation.ts`, `lib/p44-phase3-evidence-lifecycle.ts`, `lib/p44-phase4-signal-workbench.ts`, `lib/p44-phase6-advisor-review-closure.ts`, `lib/p44-phase7-compliance-rationale-closure.ts` |
 
 Core safety/control modules observed:

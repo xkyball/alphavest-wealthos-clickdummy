@@ -117,7 +117,7 @@ test.describe.serial("Phase 9 support hardening", () => {
     if (!prisma) throw new Error("Prisma client was not initialized.");
     await createSummitHighSeverityIssue(prisma);
 
-    const response = await request.post("/api/demo-workflow", {
+    const response = await request.post("/api/advice-release-history/actions", {
       data: { actionId: "j02.releaseClient" },
     });
     const body = await response.json();
@@ -133,7 +133,7 @@ test.describe.serial("Phase 9 support hardening", () => {
   });
 
   test("permits release when only non-high data quality issues are open", async ({ request }) => {
-    const response = await request.post("/api/demo-workflow", {
+    const response = await request.post("/api/advice-release-history/actions", {
       data: { actionId: "j02.releaseClient" },
     });
     const body = await response.json();

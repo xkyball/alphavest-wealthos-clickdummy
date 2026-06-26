@@ -136,10 +136,10 @@ test.describe("SCF-P06 critical gate audit persistence", () => {
 
   test("API reports audit outage as fail-closed without client release", async ({ request }) => {
     const beforeCount = await prisma.auditEvent.count({
-      where: { eventType: "screencast.compliance.release_client" },
+      where: { eventType: "advice_release_history.compliance.release_client" },
     });
 
-    const response = await request.post("/api/demo-workflow", {
+    const response = await request.post("/api/advice-release-history/actions", {
       data: {
         actionId: "j02.releaseClient",
         simulateAuditPersistenceFailure: true,
@@ -148,7 +148,7 @@ test.describe("SCF-P06 critical gate audit persistence", () => {
     const body = await response.json();
 
     const afterCount = await prisma.auditEvent.count({
-      where: { eventType: "screencast.compliance.release_client" },
+      where: { eventType: "advice_release_history.compliance.release_client" },
     });
 
     expect(response.status(), JSON.stringify(body)).toBe(409);

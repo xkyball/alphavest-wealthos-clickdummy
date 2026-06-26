@@ -2,6 +2,7 @@ import { isPlatformAdminWorkflowAction } from "@/lib/platform-admin-action-contr
 import { isReviewMonitoringWorkflowAction } from "@/lib/review-monitoring-workflow-actions";
 import { isTenantGovernanceWorkflowAction } from "@/lib/tenant-governance-action-contract";
 import { isDataMaintenanceWorkflowAction } from "@/lib/data-maintenance-action-contract";
+import { isAdviceReleaseHistoryWorkflowAction } from "@/lib/advice-release-history-action-contract";
 
 export type DemoWorkflowActionBoundary =
   | {
@@ -15,6 +16,7 @@ export type DemoWorkflowActionBoundary =
       canonicalApiRoute:
         | "/api/export-workflow"
         | "/api/data-maintenance/actions"
+        | "/api/advice-release-history/actions"
         | "/api/journeys/[id]/commands"
         | "/api/platform-admin/actions"
         | "/api/recommendation-review-workflow"
@@ -26,6 +28,7 @@ export type DemoWorkflowActionBoundary =
         | "LEGACY_EXPORT_DEMO_ACTION_RETIRED"
         | "PHASE_B_C_JOURNEY_COMMANDS_MOVED"
         | "ADVISOR_APPROVAL_WORKFLOW_MOVED"
+        | "ADVICE_RELEASE_HISTORY_ACTIONS_MOVED"
         | "DATA_MAINTENANCE_ACTIONS_MOVED"
         | "PLATFORM_ADMIN_ACTIONS_MOVED"
         | "REVIEW_MONITORING_ACTION_MOVED"
@@ -44,16 +47,6 @@ export const demoOnlyWorkflowActionIds = [
   "j01.routeToAdvisor",
   "j01.approveAdvisor",
   "j01.escalateAdvisor",
-  "j02.requestEvidence",
-  "j02.confirmRequestEvidence",
-  "j02.blockRelease",
-  "j02.releaseClient",
-  "j03.requestMoreInformation",
-  "j03.deferDecision",
-  "j03.rejectDecision",
-  "j03.acceptOption",
-  "j03.viewEvidenceRecord",
-  "j03.downloadEvidence",
 ] as const;
 
 const demoOnlyWorkflowActions = new Set<string>(demoOnlyWorkflowActionIds);
@@ -121,6 +114,16 @@ export function demoWorkflowActionBoundaryFor(actionId: string): DemoWorkflowAct
       classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
       productCommandAllowed: true,
       reasonCode: "DATA_MAINTENANCE_ACTIONS_MOVED",
+    };
+  }
+
+  if (isAdviceReleaseHistoryWorkflowAction(actionId)) {
+    return {
+      allowedOnDemoWorkflow: false,
+      canonicalApiRoute: "/api/advice-release-history/actions",
+      classification: "MOVED_TO_TYPED_PRODUCT_COMMAND",
+      productCommandAllowed: true,
+      reasonCode: "ADVICE_RELEASE_HISTORY_ACTIONS_MOVED",
     };
   }
 

@@ -92,4 +92,21 @@ test.describe("normal screen capture model context", () => {
       expect(context.warnings.join(" ")).toContain("platform-admin");
     }
   });
+
+  test("keeps advice and release-history captures tied to typed commands", () => {
+    const decisionRoomRoute = screenRoutes.find((route) => route.pageId === "044");
+    const evidenceDetailRoute = screenRoutes.find((route) => route.pageId === "047");
+    const advisoryRoutes = screenRoutes.filter((route) => route.navigationGroup === "advisory_workflow");
+
+    expect(decisionRoomRoute).toBeTruthy();
+    expect(evidenceDetailRoute).toBeTruthy();
+    expect(advisoryRoutes.length).toBeGreaterThan(0);
+
+    for (const route of [decisionRoomRoute!, evidenceDetailRoute!, ...advisoryRoutes]) {
+      const context = captureModelContextForRoute(route);
+      expect(context.capability.apiEvidence).toContain("app/api/advice-release-history/actions/route.ts");
+      expect(context.capability.serviceEvidence).toContain("lib/advice-release-history-workflow-actions.ts");
+      expect(context.warnings.join(" ")).toContain("typed commands");
+    }
+  });
 });
