@@ -748,7 +748,7 @@ test.describe("UX-CTA AI draft internal-only chain", () => {
 
     await expect(page.getByRole("heading", { name: "Internal Draft Recommendation" })).toBeVisible();
     await expect(page.getByText("Internal draft only, not client advice. Unsupported claims require evidence-backed rebuild; advisor candidate and compliance review keep client visibility blocked until audited release gates pass.")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Approve as advisor" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Approve for compliance review" })).toBeVisible();
     await expect(page.getByTestId("ux-cta-ai-rebuild")).toBeVisible();
     await expect(page.getByTestId("ux-cta-ai-rebuild")).toHaveAttribute("data-ux-interactive", "false");
     await expect(page.getByTestId("ux-cta-ai-rebuild")).toContainText("Draft rebuild remains analyst-owned");

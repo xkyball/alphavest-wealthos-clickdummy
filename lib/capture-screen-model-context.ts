@@ -4,6 +4,12 @@ import {
   type NavigationGroupKey,
   type ScreenRoute,
 } from "@/lib/route-registry";
+import {
+  uxOperatingModelForRoute,
+  type UxOperatingAudience,
+  type UxOperatingMode,
+  type UxProofPosture,
+} from "@/lib/ux-operating-model";
 
 export type CaptureCapabilityStatus =
   | "STRONG_VERTICAL_CANDIDATE"
@@ -36,6 +42,13 @@ export type CaptureScreenModelContext = {
     visualMode: ScreenRoute["visualMode"];
     workflow: string;
   };
+  uxOperatingModel: {
+    audience: UxOperatingAudience;
+    mode: UxOperatingMode;
+    noOverclaimRule: string;
+    productiveUxEligible: boolean;
+    proofPosture: UxProofPosture;
+  };
   warnings: string[];
 };
 
@@ -54,7 +67,7 @@ export const captureScreenModelAuditBaseline = {
 const sharedAuditModels = ["AuditEvent"];
 const sharedSafetyModels = ["Role", "Permission", "UserRole", "RolePermission", "AccessRequest", "SecondConfirmation"];
 
-type ContextTemplate = Omit<CaptureScreenModelContext, "auditBaseline" | "route">;
+type ContextTemplate = Omit<CaptureScreenModelContext, "auditBaseline" | "route" | "uxOperatingModel">;
 
 const groupTemplates: Record<NavigationGroupKey, ContextTemplate> = {
   access: {
@@ -241,9 +254,11 @@ function safetyBlockedStatus(route: ScreenRoute, current: CaptureCapabilityStatu
 
 export function captureModelContextForRoute(route: ScreenRoute): CaptureScreenModelContext {
   const accessDecision = routeImplementationAccessDecision(route);
+  const operatingModel = uxOperatingModelForRoute(route);
   const template = groupTemplates[route.navigationGroup];
   const referenceOnly = accessDecision.routeScope === "REFERENCE_ONLY";
   const holdPending = accessDecision.routeScope === "HOLD_PENDING_DECISION";
+  const deferred = accessDecision.routeScope === "P1_AFTER_MVP";
   const status = referenceOnly
     ? "UI_ONLY_STATIC"
     : holdPending
@@ -254,6 +269,7 @@ export function captureModelContextForRoute(route: ScreenRoute): CaptureScreenMo
     ...template.warnings,
     ...(referenceOnly ? ["Reference-only route: capture is visual/context proof only."] : []),
     ...(holdPending ? ["Hold-pending route: do not promote as product capability without unlock decision."] : []),
+    ...(deferred ? ["Deferred route: capture is registered context only and not MVP product proof."] : []),
     ...(captureScreenModelAuditBaseline.schemaModels === 53 ? [] : ["Schema model count drift detected; rerun schema alignment before using capture metadata."]),
   ];
 
@@ -276,6 +292,13 @@ export function captureModelContextForRoute(route: ScreenRoute): CaptureScreenMo
       title: route.title,
       visualMode: route.visualMode,
       workflow: route.workflowName,
+    },
+    uxOperatingModel: {
+      audience: operatingModel.audience,
+      mode: operatingModel.mode,
+      noOverclaimRule: operatingModel.noOverclaimRule,
+      productiveUxEligible: operatingModel.productiveUxEligible,
+      proofPosture: operatingModel.proofPosture,
     },
     warnings,
   };

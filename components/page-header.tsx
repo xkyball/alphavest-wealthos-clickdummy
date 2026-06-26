@@ -265,7 +265,7 @@ export function PageHeader({
           ) : null}
           {blockedReason ? (
             <div className="max-w-sm text-left text-xs leading-5 text-alphavest-subtle lg:text-right" data-testid="page-header-cta-blocked-reason">
-              <p>{blockedReason}</p>
+              <p data-testid="ux-cta-blocked-reason">{blockedReason}</p>
               {recoveryAction ? (
                 <div className="mt-2 flex justify-start lg:justify-end">
                   <HeaderAction action={recoveryAction} recovery />
