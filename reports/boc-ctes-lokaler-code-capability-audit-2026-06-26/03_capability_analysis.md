@@ -217,9 +217,108 @@ Finished: `ANALYSIS-2.2`.
 
 ## ANALYSIS-2.3 - DB Editability, Persistence And Process I/O
 
-Status: `PENDING`
+Status: `DONE`
 
-Next required step: inspect schema/model operations for the `ANALYSIS-2.2` handler and typed-command candidates, then classify read-only, create, update, derived, workflow-owned and unbound data.
+### Ticket Requirement
+
+`ANALYSIS-2.3` requires local data models, tables, entities and documents to be inventoried and classified by editability. Schema existence alone is not enough. A data structure is only editable in this audit when a local UI/API/service/DB write path is visible.
+
+### DB / Schema Inventory
+
+Evidence:
+
+- `prisma/schema.prisma` contains 31 enums and 53 models.
+- Five migration directories exist under `prisma/migrations`.
+- `prisma/seed.ts` seeds the local demo-data model and explicitly guards against real-client-data mode.
+- Static Prisma operation scan over `app/api/**/*.ts` and `lib/**/*.ts` found local operation evidence for 45 of 53 schema models.
+
+Migration inventory:
+
+| Migration | Interpretation |
+| --- | --- |
+| `20260614201128_init_phase_02` | Initial phase-02 schema foundation. |
+| `20260614202332_phase_03_data_model_seed` | Phase-03 data model/seed expansion. |
+| `20260624190000_wave_0_2_journey_spine` | Journey spine persistence. |
+| `20260624213000_wave_0_2_core_journey_gates` | Core journey gate persistence. |
+| `20260625143000_internal_draft_governance_spine` | Internal draft governance spine persistence. |
+
+### Model Operation Coverage
+
+Static operation scan result, grouped by persistence meaning:
+
+| Persistence class | Models | Operation evidence |
+| --- | --- | --- |
+| Strong create/update/read workflow models | `Document`, `DocumentVersion`, `DocumentExtraction`, `DocumentReview`, `DocumentLink`, `EvidenceRecord`, `EvidenceItem`, `AuditEvent` | Upload/review/evidence services create, update, list and audit these models. |
+| DBTF/client maintenance models | `UserProfile`, `FamilyMember`, `Relationship`, `Entity`, `EntityParticipant` | Profile/family/entity services and typed data-maintenance actions update/upsert/create these models. |
+| Advisory/release/governance workflow models | `Trigger`, `ActionItem`, `Recommendation`, `RecommendationOption`, `Approval`, `ComplianceReview`, `Decision`, `DecisionParticipant`, `InternalDraft`, `DraftClassification`, `UnsupportedClaim`, `DraftTrace` | Typed workflow command bus, advisor/release-history actions and internal draft governance services read/write these models. |
+| Tenant/governance/platform models | `ClientTenant`, `User`, `Role`, `Permission`, `UserRole`, `RolePermission`, `AccessRequest`, `SecondConfirmation`, `ConsentRecord`, `PolicyDefinition` | Admin tenant foundation, tenant-governance actions, auth provider services and read models read/write these models. `Permission` itself is seeded/readmodel-backed in inspected app/lib paths, while `RolePermission` is writable. |
+| Journey spine models | `JourneyDefinition`, `JourneyInstance`, `JourneyStepInstance`, `JourneyObjectLink`, `JourneyEvidenceRequirement`, `JourneyCommandRun`, `EvidenceSufficiencyDecision` | Journey API service creates instances/steps/links/command runs and writes evidence sufficiency decisions; definitions/requirements are mostly seeded/read. |
+| Export / ops / monitoring models | `ExportRequest`, `ReviewSchedule`, `QueueItem`, `DataQualityIssue` | Export workflow, review monitoring and data-quality services create/update/read these models. |
+| Readmodel/search-only in inspected app/lib paths | `MessageThread`, `Message`, `CallEvent`, `Asset`, `Engagement`, `ClientObjective`, `PlatformTenant` | Present in schema/seed and relationships; no direct non-seed app/lib write path found in the current operation scan. |
+
+### Data Editability Matrix
+
+| Data family | UI/API/service linkage from `ANALYSIS-2.2` | Write-path models | Editability classification |
+| --- | --- | --- | --- |
+| Profile/client intake | `/api/profile` PATCH -> `saveDbtfClientProfile`; typed J09 profile command | `UserProfile`, plus audit/evidence in typed command path | `API_BACKED_EDITABLE_PARTIAL_FIELD_SCOPE` |
+| Family members | `/api/family-members` PATCH -> `updateDbtfFamilyMember`; typed J09 family command | `FamilyMember`, `EvidenceItem` in typed command path | `API_BACKED_EDITABLE_PARTIAL_FIELD_SCOPE` |
+| Relationships | Typed J09 relationship command | `Relationship`, `EvidenceItem` | `TYPED_COMMAND_EDITABLE_NOT_GENERAL_FORM_CRUD` |
+| Entities | `/api/entities` POST -> `saveDbtfEntityWizard`; typed J05 entity commands | `Entity`, `EntityParticipant`, `EvidenceItem` | `API_AND_TYPED_COMMAND_EDITABLE` |
+| Documents | `/api/documents/upload`; `/api/documents/review`; typed J04 commands | `Document`, `DocumentVersion`, `DocumentExtraction`, `DocumentReview`, `DocumentLink`, `EvidenceRecord`, `EvidenceItem`, `AuditEvent` | `STRONG_API_BACKED_EDITABLE_WORKFLOW` |
+| Evidence records/items | Upload/review APIs, advice-release-history commands, journey commands, internal draft services | `EvidenceRecord`, `EvidenceItem`, `EvidenceSufficiencyDecision` | `WORKFLOW_OWNED_EDITABLE` |
+| Export lifecycle | `/api/export-workflow` -> `executeExportWorkflowCommand`; typed migration boundary blocks old demo path | `ExportRequest`, `AuditEvent`; generated document relation exists | `STRONG_TYPED_COMMAND_EDITABLE` |
+| Journey workflow | `/api/journeys` create, `/api/journeys/[id]/commands` execute | `JourneyInstance`, `JourneyStepInstance`, `JourneyObjectLink`, `JourneyCommandRun`, `EvidenceSufficiencyDecision`, related evidence/recommendation/approval/compliance/decision models by command | `STRONG_TYPED_COMMAND_EDITABLE` |
+| Advisor review J01 | `/api/advisor-review/actions` -> `runAdvisorReviewWorkflowAction` | `Trigger`, `Recommendation`, `Approval`, `AuditEvent` | `TYPED_COMMAND_EDITABLE_SEEDED_FIXTURE_SCOPE` |
+| Advice/release-history J02/J03 | `/api/advice-release-history/actions` -> `runAdviceReleaseHistoryWorkflowAction` | `ComplianceReview`, `Recommendation`, `EvidenceRecord`, `EvidenceItem`, `ActionItem`, `Approval`, `Decision`, `DecisionParticipant`, `AuditEvent` | `TYPED_COMMAND_EDITABLE_SAFETY_SENSITIVE` |
+| Data maintenance J04/J05/J09 | `/api/data-maintenance/actions` -> `runDataMaintenanceWorkflowAction` | Documents, entities, action items, profile/family/relationship models, evidence/audit support models | `TYPED_COMMAND_EDITABLE_FAMILY_SCOPE` |
+| Tenant governance J06/J07 | `/api/tenant-governance/actions` -> `runTenantGovernanceWorkflowAction` | `ClientTenant`, `User`, `UserProfile`, `UserRole`, `Role`, `RolePermission`, `SecondConfirmation`, `AccessRequest`, `ConsentRecord`, `PolicyDefinition`, `ExportRequest`, `EvidenceItem`, `AuditEvent` | `TYPED_COMMAND_EDITABLE_GOVERNANCE_SCOPE` |
+| Platform admin J10 | `/api/platform-admin/actions` -> `runPlatformAdminWorkflowAction` | `AuditEvent` only in inspected service | `AUDIT_BACKED_COMMAND_RECORD_NOT_FULL_PLATFORM_CRUD` |
+| Review monitoring J16/J17 | `/api/review-monitoring/actions` -> `runReviewMonitoringWorkflowAction` | `ReviewSchedule`, `QueueItem`, `Trigger`, `ActionItem`, `Recommendation`, `AuditEvent` | `TYPED_COMMAND_EDITABLE_MONITORING_SCOPE` |
+| Admin tenant foundation | `/api/admin-tenants` `POST` action switch | `ClientTenant`, `PolicyDefinition`, `User`, `UserRole`, `ConsentRecord`, `AuditEvent` | `API_BACKED_ADMIN_EDITABLE` |
+| Search/read dashboards | `/api/global-search`, `/api/dashboard-metrics`, readmodel services | Multiple find/count operations | `READ_ONLY_FROM_CURRENT_UI_PATH` |
+| Communication/message/call surfaces | Schema and seed rows exist; communication UI/context exists | `MessageThread`, `Message`, `CallEvent` only seed evidence in current app/lib operation scan | `SEEDED_OR_DISPLAY_ONLY_IN_THIS_AUDIT` |
+| Assets/objectives/engagement | Schema and seed rows exist | `Asset`, `ClientObjective`, `Engagement` only seed/schema evidence in current app/lib operation scan | `SCHEMA_SEED_ONLY_IN_THIS_AUDIT` |
+
+### Persistence Mapping
+
+| Vertical candidate | Persistence path | Current persistence strength |
+| --- | --- | --- |
+| Document upload | UI `FormData` -> upload API -> `uploadDocument` -> `Document`, `DocumentVersion`, `DocumentExtraction`, `EvidenceRecord`, `EvidenceItem`, `AuditEvent` | `STRONG` |
+| Evidence review | UI JSON -> review API -> `reviewDocumentEvidence` -> `DocumentReview`, updated `Document`/`DocumentExtraction`/`EvidenceRecord`, `DocumentLink`, `EvidenceItem`, `AuditEvent` | `STRONG` |
+| DBTF form maintenance | UI JSON -> profile/family/entities APIs -> DBTF services -> profile/family/entity writes and audit handling | `MEDIUM_TO_STRONG` |
+| Export workflow | UI command -> export API -> parser/service -> `ExportRequest` create/update plus `AuditEvent`; status-gated command sequence | `STRONG_TYPED_COMMAND` |
+| Journey workflow | UI command -> journey API -> journey service -> journey instance/step/object/evidence/command-run writes plus domain-object writes for command families | `STRONG_TYPED_COMMAND` |
+| Tenant governance | UI command -> tenant-governance API -> command service -> tenant/user/role/access/policy/export-audit writes | `STRONG_TYPED_COMMAND_SEEDED_SCOPE` |
+| Platform admin | UI command -> platform-admin API -> service -> audit event write | `AUDIT_RECORD_ONLY_FOR_PLATFORM_COMMANDS` |
+| Legacy demo-only `/api/demo-workflow` | Legacy action ID -> demo boundary -> only demo-only `j01.requestData` direct execution; moved product commands 410 | `DEMO_ONLY_NOT_PRODUCT_PERSISTENCE` |
+
+### Process I/O Matrix Update
+
+| Process | DB input objects | DB outputs/state changes | Editability boundary |
+| --- | --- | --- | --- |
+| Profile save | Seeded tenant/user/profile/family context | Profile fields updated; evidence/audit may be recorded through typed command path | Partial fields, not general user/profile admin CRUD. |
+| Family update | Seeded family member and tenant context | Family member updates or upsert through typed path | Partial fields, tenant-scoped. |
+| Entity creation/maintenance | Tenant context, entity payload or typed action | Entity create/upsert/update, participant upsert, evidence item | Editable by wizard/typed commands; field-level completeness not proven. |
+| Document upload/review | Uploaded file or review decision plus seeded tenant/evidence context | Document lifecycle rows, extraction/review/link/evidence/audit rows | Strong workflow-owned editability; not arbitrary file/document CRUD. |
+| Advice/release-history | Seeded recommendation/compliance/evidence/decision context | Recommendation, compliance, evidence, action item, decision and participant transitions | Safety-sensitive command editability; release visibility must be proven by guards/tests. |
+| Export command | Export scope/request/status plus command payload | Export request create/update and audit row | Strong command editability; generated binary/package realism is a separate proof dimension. |
+| Journey command | Journey instance, current user, command payload | Journey run/step/status/object/evidence writes and domain writes by command family | Strong command editability; command-specific completeness varies. |
+| Governance commands | Seeded tenant/user/role/access/policy context | Tenant, user, role, permission mapping, access request, confirmation, consent, policy and export audit writes | Strong governance command editability; not unrestricted admin CRUD. |
+
+### Unbound / Lower-Confidence Register
+
+| Model/data area | Current finding |
+| --- | --- |
+| `MessageThread`, `Message`, `CallEvent` | Seed/schema and display/context evidence exist, but no current app/lib write operation was found outside seed. |
+| `Asset`, `Engagement`, `ClientObjective` | Seed/schema evidence exists; no current app/lib write operation was found outside seed. |
+| `PlatformTenant` | Seed/schema/root relation evidence exists; inspected platform-admin command records audit events rather than directly mutating `PlatformTenant`. |
+| Field-level editability | Not fully proven by this ticket. The report classifies model/process-level editability and keeps field-level claims bounded. |
+
+### ANALYSIS-2.3 Result
+
+Local persistence is real and broad, but it is not generic CRUD. The strongest editable vertical candidates are document upload/review, export workflow, journey commands, tenant governance, advice/release-history, data maintenance and DBTF form maintenance. The report must keep schema-only or seed-only data out of product editability claims.
+
+Finished: `ANALYSIS-2.3`.
 
 ## ANALYSIS-2.4 - Security, Guard, Audit And Test Evidence
 
