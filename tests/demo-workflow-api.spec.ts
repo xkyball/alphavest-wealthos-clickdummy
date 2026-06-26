@@ -383,13 +383,47 @@ test.describe("demo workflow API", () => {
     }
   });
 
+  test("legacy demo workflow path blocks typed advisor approval and points to the canonical API", async ({ request }) => {
+    const response = await request.post("/api/demo-workflow", {
+      data: {
+        action: "submit_review",
+        actorRole: "analyst",
+        reason: "Legacy path should not execute typed advisor approval.",
+        targetId: demoTargets.northbridge.recommendationId,
+        workflowType: "advisor-approval",
+      },
+    });
+    const body = await response.json();
+
+    expect(response.status(), JSON.stringify(body)).toBe(410);
+    expect(body.noClientRelease).toBe(true);
+    expect(body.canonicalApiRoute).toBe("/api/recommendation-review-workflow");
+    expect(body.legacyReasonCode).toBe("ADVISOR_APPROVAL_WORKFLOW_MOVED");
+    expect(body.workflowType).toBe("advisor-approval");
+  });
+
+  test("unsupported legacy demo workflow action is blocked instead of recorded as fake audit", async ({ request }) => {
+    const beforeCount = await prisma.auditEvent.count();
+    const response = await request.post("/api/demo-workflow", {
+      data: { actionId: "j99.fakeAction" },
+    });
+    const body = await response.json();
+    const afterCount = await prisma.auditEvent.count();
+
+    expect(response.status(), JSON.stringify(body)).toBe(410);
+    expect(body.noClientRelease).toBe(true);
+    expect(body.canonicalApiRoute).toBe("/api/journeys/[id]/commands");
+    expect(body.legacyReasonCode).toBe("UNSUPPORTED_DEMO_WORKFLOW_ACTION_BLOCKED");
+    expect(afterCount).toBe(beforeCount);
+  });
+
   test.describe.serial("typed advisor approval workflow", () => {
     test.beforeEach(() => {
       execFileSync("pnpm", ["db:seed"], { stdio: "inherit" });
     });
 
     test("First Build P0 positive spine reaches client-safe release, decision audit and export boundary", async ({ request }) => {
-      const submitReviewResponse = await request.post("/api/demo-workflow", {
+      const submitReviewResponse = await request.post("/api/recommendation-review-workflow", {
         data: {
           action: "submit_review",
           actorRole: "analyst",
@@ -407,7 +441,7 @@ test.describe("demo workflow API", () => {
       );
       expect(submitReviewBody.result.reloadedState.recommendation.clientVisible).toBe(false);
 
-      const rebuildResponse = await request.post("/api/demo-workflow", {
+      const rebuildResponse = await request.post("/api/recommendation-review-workflow", {
         data: {
           action: "rebuild_with_evidence",
           actorRole: "analyst",
@@ -425,7 +459,7 @@ test.describe("demo workflow API", () => {
       expect(rebuildBody.result.reloadedState.complianceReview.evidenceComplete).toBe(true);
       expect(rebuildBody.result.reloadedState.recommendation.clientVisible).toBe(false);
 
-      const advisorResponse = await request.post("/api/demo-workflow", {
+      const advisorResponse = await request.post("/api/recommendation-review-workflow", {
         data: {
           action: "advisor_approve",
           actorRole: "senior_wealth_advisor",
@@ -444,7 +478,7 @@ test.describe("demo workflow API", () => {
       );
       expect(advisorBody.result.reloadedState.recommendation.clientVisible).toBe(false);
 
-      const releaseResponse = await request.post("/api/demo-workflow", {
+      const releaseResponse = await request.post("/api/recommendation-review-workflow", {
         data: {
           action: "compliance_release",
           actorRole: "compliance_officer",
@@ -517,7 +551,7 @@ test.describe("demo workflow API", () => {
     });
 
     test("submit review persists analyst review state and reload proof", async ({ request }) => {
-      const response = await request.post("/api/demo-workflow", {
+      const response = await request.post("/api/recommendation-review-workflow", {
         data: {
           action: "submit_review",
           actorRole: "analyst",
@@ -550,7 +584,7 @@ test.describe("demo workflow API", () => {
 
     test("analyst rejects unsupported claim and keeps draft internal-only", async ({ request }) => {
       const reason = "Projected tax impact references an unsupported stale document.";
-      const response = await request.post("/api/demo-workflow", {
+      const response = await request.post("/api/recommendation-review-workflow", {
         data: {
           action: "reject_unsupported_claim",
           actorRole: "analyst",
@@ -593,7 +627,7 @@ test.describe("demo workflow API", () => {
     });
 
     test("analyst rebuild requires accepted evidence and remains unreleased", async ({ request }) => {
-      const blockedResponse = await request.post("/api/demo-workflow", {
+      const blockedResponse = await request.post("/api/recommendation-review-workflow", {
         data: {
           action: "rebuild_with_evidence",
           actorRole: "analyst",
@@ -621,7 +655,7 @@ test.describe("demo workflow API", () => {
         where: { id: demoTargets.northbridge.evidenceId },
       });
 
-      const wrongScopeResponse = await request.post("/api/demo-workflow", {
+      const wrongScopeResponse = await request.post("/api/recommendation-review-workflow", {
         data: {
           action: "rebuild_with_evidence",
           actorRole: "analyst",
@@ -639,7 +673,7 @@ test.describe("demo workflow API", () => {
       expect(wrongScopeBody.noClientRelease).toBe(true);
 
       const reason = "Rebuilt after accepted liquidity evidence review.";
-      const response = await request.post("/api/demo-workflow", {
+      const response = await request.post("/api/recommendation-review-workflow", {
         data: {
           action: "rebuild_with_evidence",
           actorRole: "analyst",
@@ -697,7 +731,7 @@ test.describe("demo workflow API", () => {
     });
 
     test("advisor approval persists without client release", async ({ request }) => {
-      const response = await request.post("/api/demo-workflow", {
+      const response = await request.post("/api/recommendation-review-workflow", {
         data: {
           action: "advisor_approve",
           actorRole: "senior_wealth_advisor",
@@ -738,7 +772,7 @@ test.describe("demo workflow API", () => {
     });
 
     test("compliance release fails before prerequisites and persists after gates pass", async ({ request }) => {
-      const blockedResponse = await request.post("/api/demo-workflow", {
+      const blockedResponse = await request.post("/api/recommendation-review-workflow", {
         data: {
           action: "compliance_release",
           actorRole: "compliance_officer",
@@ -766,7 +800,7 @@ test.describe("demo workflow API", () => {
       expect(blockedRecommendation.clientVisible).toBe(false);
       expect(blockedRecommendation.status).not.toBe(RecommendationStatus.RELEASED_TO_CLIENT);
 
-      const advisorHandoffResponse = await request.post("/api/demo-workflow", {
+      const advisorHandoffResponse = await request.post("/api/recommendation-review-workflow", {
         data: {
           action: "advisor_approve",
           actorRole: "senior_wealth_advisor",
@@ -782,7 +816,7 @@ test.describe("demo workflow API", () => {
         RecommendationStatus.COMPLIANCE_PENDING,
       );
 
-      const invalidConfirmationResponse = await request.post("/api/demo-workflow", {
+      const invalidConfirmationResponse = await request.post("/api/recommendation-review-workflow", {
         data: {
           action: "compliance_release",
           actorRole: "compliance_officer",
@@ -806,7 +840,7 @@ test.describe("demo workflow API", () => {
       expect(summitBeforeRelease.clientVisible).toBe(false);
       expect(summitBeforeRelease.status).toBe(RecommendationStatus.COMPLIANCE_PENDING);
 
-      const missingEvidenceResponse = await request.post("/api/demo-workflow", {
+      const missingEvidenceResponse = await request.post("/api/recommendation-review-workflow", {
         data: {
           action: "compliance_release",
           actorRole: "compliance_officer",
@@ -853,7 +887,7 @@ test.describe("demo workflow API", () => {
         },
       });
 
-      const internalDraftBlockedResponse = await request.post("/api/demo-workflow", {
+      const internalDraftBlockedResponse = await request.post("/api/recommendation-review-workflow", {
         data: {
           action: "compliance_release",
           actorRole: "compliance_officer",
@@ -889,7 +923,7 @@ test.describe("demo workflow API", () => {
         },
       });
 
-      const payloadBlockedResponse = await request.post("/api/demo-workflow", {
+      const payloadBlockedResponse = await request.post("/api/recommendation-review-workflow", {
         data: {
           action: "compliance_release",
           actorRole: "compliance_officer",
@@ -917,7 +951,7 @@ test.describe("demo workflow API", () => {
         where: { id: summitInternalDraftId },
       });
 
-      const auditFailureResponse = await request.post("/api/demo-workflow", {
+      const auditFailureResponse = await request.post("/api/recommendation-review-workflow", {
         data: {
           action: "compliance_release",
           actorRole: "compliance_officer",
@@ -952,7 +986,7 @@ test.describe("demo workflow API", () => {
       expect(auditBlockedComplianceReview.status).not.toBe(ComplianceStatus.RELEASED);
       expect(auditBlockedComplianceReview.releasedAt).toBeNull();
 
-      const releaseResponse = await request.post("/api/demo-workflow", {
+      const releaseResponse = await request.post("/api/recommendation-review-workflow", {
         data: {
           action: "compliance_release",
           actorRole: "compliance_officer",
@@ -1040,7 +1074,7 @@ test.describe("demo workflow API", () => {
     });
 
     test("compliance block prevents client visibility and records audit", async ({ request }) => {
-      const response = await request.post("/api/demo-workflow", {
+      const response = await request.post("/api/recommendation-review-workflow", {
         data: {
           action: "compliance_block",
           actorRole: "compliance_officer",
@@ -1068,7 +1102,7 @@ test.describe("demo workflow API", () => {
 
     test("request evidence persists reason and comment state", async ({ request }) => {
       const reason = "Need refreshed tax certificate and source proof before release.";
-      const response = await request.post("/api/demo-workflow", {
+      const response = await request.post("/api/recommendation-review-workflow", {
         data: {
           action: "request_evidence",
           actorRole: "compliance_officer",
@@ -1099,7 +1133,7 @@ test.describe("demo workflow API", () => {
     });
 
     test("wrong role, action and object fail closed", async ({ request }) => {
-      const wrongRoleResponse = await request.post("/api/demo-workflow", {
+      const wrongRoleResponse = await request.post("/api/recommendation-review-workflow", {
         data: {
           action: "advisor_approve",
           actorRole: "analyst",
@@ -1120,7 +1154,7 @@ test.describe("demo workflow API", () => {
 
       expect(deniedAudit.result).toBe(AuditResult.DENIED);
 
-      const wrongActionResponse = await request.post("/api/demo-workflow", {
+      const wrongActionResponse = await request.post("/api/recommendation-review-workflow", {
         data: {
           action: "publish",
           actorRole: "compliance_officer",
@@ -1133,7 +1167,7 @@ test.describe("demo workflow API", () => {
       expect(wrongActionResponse.status(), JSON.stringify(wrongActionBody)).toBe(400);
       expect(wrongActionBody.issues?.[0]?.field).toBe("action");
 
-      const invalidAuditSimulationResponse = await request.post("/api/demo-workflow", {
+      const invalidAuditSimulationResponse = await request.post("/api/recommendation-review-workflow", {
         data: {
           action: "compliance_release",
           actorRole: "compliance_officer",
@@ -1151,7 +1185,7 @@ test.describe("demo workflow API", () => {
         field: "simulateAuditPersistenceFailure",
       });
 
-      const wrongObjectResponse = await request.post("/api/demo-workflow", {
+      const wrongObjectResponse = await request.post("/api/recommendation-review-workflow", {
         data: {
           action: "compliance_release",
           actorRole: "compliance_officer",

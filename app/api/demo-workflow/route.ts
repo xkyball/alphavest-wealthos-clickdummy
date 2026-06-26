@@ -30,13 +30,11 @@ import { parseDemoWorkflowRequestBody } from "@/lib/demo-workflow-validation";
 import { dataQualityService } from "@/lib/data-quality-service";
 import {
   AuditPersistenceUnavailableError,
-  AdvisorApprovalWorkflowError,
   runDemoWorkflowMutation,
-  runAdvisorApprovalWorkflowMutation,
 } from "@/lib/typed-workflow-command-bus";
 import { fileMetadataService } from "@/lib/file-metadata-service";
-import type { DemoRoleKey } from "@/lib/demo-session";
 import type { PermissionDecision } from "@/lib/permission-engine";
+import { isReviewMonitoringWorkflowAction } from "@/lib/review-monitoring-workflow-actions";
 import { workflowGate } from "@/lib/workflow-gate";
 import { suitabilityGateCandidate } from "@/lib/suitability-ips-demo-data";
 import type {
@@ -98,24 +96,17 @@ type DemoWorkflowAction =
   | "j13.requestSuitabilityEvidence"
   | "j13.markSuitabilityReviewed"
   | "j14.requestIpsMandateChanges"
-  | "j14.linkIpsEvidence"
-  | "j16.scheduleReview"
-  | "j16.escalateOverdueReview"
-  | "j17.blockRebalanceTrigger"
-  | "j17.routeRebalanceReview"
-  | string;
+  | "j14.linkIpsEvidence";
 
 type DemoWorkflowActionOptions = {
   auditPersistenceAvailable?: boolean;
 };
 
-type JourneyTarget = {
-  actorRoleKey: string;
-  actorUserId: string;
-  clientTenantId: string;
-  targetType: ObjectType;
-  targetId: string;
-};
+class UnsupportedLegacyDemoWorkflowActionError extends Error {
+  constructor(readonly actionId: string) {
+    super(`Unsupported legacy demo workflow action: ${actionId}`);
+  }
+}
 
 const platformTenantId = stableId("platform:alphavest");
 const bennettTenantId = tenantId("bennett");
@@ -133,8 +124,6 @@ const northbridgeTriggerId = triggerId("northbridge", "liquidity");
 const northbridgeRecommendationId = recommendationId("northbridge");
 const northbridgeApprovalId = approvalId("northbridge");
 const northbridgeEvidenceRecordId = evidenceRecordId("northbridge");
-const northbridgeReviewScheduleId = stableId("review-schedule:northbridge:decision");
-const northbridgeComplianceQueueId = stableId("queue:northbridge:compliance");
 const northbridgeAccessRequestId = accessRequestId("northbridge");
 const northbridgeExportRequestId = exportRequestId("northbridge");
 const northbridgeExternalUserId = userId("northbridge:external");
@@ -153,7 +142,6 @@ const morganSuitabilityEvidenceRecordId = stableId("evidence:morgan:suitability-
 const morganIpsMandateId = stableId("ips:morgan:mandate");
 const morganIpsEvidenceRecordId = stableId("evidence:morgan:ips-mandate");
 const morganPrincipalUserId = userId("morgan:principal");
-const morganReviewScheduleId = stableId("review-schedule:morgan:decision");
 const summitTenantId = tenantId("summit");
 const summitRecommendationId = recommendationId("summit");
 const summitApprovalId = approvalId("summit");
@@ -237,10 +225,6 @@ function documentId(slug: string, key: string) {
   return stableId(`document:${slug}:${key}`);
 }
 
-function engagementId(slug: string) {
-  return stableId(`engagement:${slug}:annual-governance-review`);
-}
-
 function entityId(slug: string, key: string) {
   return stableId(`entity:${slug}:${key}`);
 }
@@ -255,10 +239,6 @@ function exportRequestId(slug: string) {
 
 function accessRequestId(slug: string) {
   return stableId(`access-request:${slug}:external`);
-}
-
-function policyDefinitionId(key: string) {
-  return stableId(`policy:platform:${key}:v1`);
 }
 
 function exportExpiryDate(from: Date) {
@@ -277,96 +257,6 @@ function prismaClient() {
   });
 
   return globalForPrisma.alphaVestDemoWorkflowPrisma;
-}
-
-function toSnakeCase(value: string) {
-  return value.replace(/[A-Z]/g, (match) => `_${match.toLowerCase()}`);
-}
-
-function genericTargetForAction(actionId: string): JourneyTarget {
-  const journeyId = actionId.slice(0, 3).toUpperCase();
-  switch (journeyId) {
-    case "J02":
-      return {
-        actorRoleKey: "compliance_officer",
-        actorUserId: userId("compliance"),
-        clientTenantId: tenantId("morgan"),
-        targetType: ObjectType.RECOMMENDATION,
-        targetId: recommendationId("morgan"),
-      };
-    case "J03":
-      return {
-        actorRoleKey: "principal",
-        actorUserId: userId("bennett:principal"),
-        clientTenantId: tenantId("bennett"),
-        targetType: ObjectType.DECISION,
-        targetId: decisionId("bennett"),
-      };
-    case "J04":
-      return {
-        actorRoleKey: "family_cfo",
-        actorUserId: userId("morgan:cfo"),
-        clientTenantId: tenantId("morgan"),
-        targetType: ObjectType.DOCUMENT,
-        targetId: documentId("morgan", "missing-tax"),
-      };
-    case "J05":
-      return {
-        actorRoleKey: "principal",
-        actorUserId: userId("summit:principal"),
-        clientTenantId: tenantId("summit"),
-        targetType: ObjectType.ENTITY,
-        targetId: entityId("summit", "trust"),
-      };
-    case "J06":
-      return {
-        actorRoleKey: "admin",
-        actorUserId: userId("admin"),
-        clientTenantId: tenantId("morgan"),
-        targetType: ObjectType.TENANT,
-        targetId: tenantId("morgan"),
-      };
-    case "J07":
-      return {
-        actorRoleKey: "principal",
-        actorUserId: userId("northbridge:principal"),
-        clientTenantId: tenantId("northbridge"),
-        targetType: ObjectType.USER,
-        targetId: accessRequestId("northbridge"),
-      };
-    case "J08":
-      return {
-        actorRoleKey: "principal",
-        actorUserId: userId("summit:principal"),
-        clientTenantId: tenantId("summit"),
-        targetType: ObjectType.EVIDENCE_RECORD,
-        targetId: exportRequestId("summit"),
-      };
-    case "J09":
-      return {
-        actorRoleKey: "principal",
-        actorUserId: userId("bennett:principal"),
-        clientTenantId: tenantId("bennett"),
-        targetType: ObjectType.FAMILY_MEMBER,
-        targetId: stableId("family:bennett:principal"),
-      };
-    case "J10":
-      return {
-        actorRoleKey: "security_officer",
-        actorUserId: userId("security"),
-        clientTenantId: tenantId("northbridge"),
-        targetType: ObjectType.PERMISSION,
-        targetId: policyDefinitionId("advice-boundary"),
-      };
-    default:
-      return {
-        actorRoleKey: "system",
-        actorUserId: userId("admin"),
-        clientTenantId: northbridgeTenantId,
-        targetType: ObjectType.PLATFORM,
-        targetId: platformTenantId,
-      };
-  }
 }
 
 async function writeAuditEvent(
@@ -774,7 +664,18 @@ async function runJ03DecisionAction(
   options: DemoWorkflowActionOptions = {},
 ) {
   const now = new Date();
-  const actionMap = {
+  const actionConfigs: Partial<Record<DemoWorkflowAction, {
+    auditResult: AuditResult;
+    decisionAction: string;
+    decisionReason: string;
+    decisionStatus: DecisionStatus;
+    eventType: string;
+    evidenceItemType: string;
+    evidenceTitle: string;
+    message: string;
+    participantStatus: ReviewStatus;
+    recommendationStatus: RecommendationStatus;
+  }>> = {
     "j03.acceptOption": {
       auditResult: AuditResult.SUCCESS,
       decisionAction: "accept",
@@ -823,7 +724,9 @@ async function runJ03DecisionAction(
       participantStatus: ReviewStatus.REQUEST_MORE_DATA,
       recommendationStatus: RecommendationStatus.CLIENT_DEFERRED,
     },
-  }[actionId];
+  };
+
+  const actionMap = actionConfigs[actionId];
 
   if (!actionMap) {
     throw new Error(`Unsupported J03 decision action: ${actionId}`);
@@ -3010,151 +2913,6 @@ async function runJ13J14SuitabilityIpsWorkflow(prisma: PrismaClient, actionId: D
   );
 }
 
-async function runJ16ReviewCalendarWorkflow(prisma: PrismaClient, actionId: DemoWorkflowAction) {
-  const now = new Date();
-  const isEscalation = actionId === "j16.escalateOverdueReview";
-  const targetReviewScheduleId = isEscalation ? northbridgeReviewScheduleId : morganReviewScheduleId;
-  const targetTenantId = isEscalation ? northbridgeTenantId : morganTenantId;
-  const targetQueueId = isEscalation ? northbridgeComplianceQueueId : stableId("queue:morgan:compliance");
-  const nextReviewDate = isEscalation ? new Date("2026-06-16T00:00:00.000Z") : new Date("2026-06-24T00:00:00.000Z");
-
-  const result = await prisma.$transaction(async (tx) => {
-    const reviewSchedule = await tx.reviewSchedule.updateMany({
-      where: {
-        clientTenantId: targetTenantId,
-        id: targetReviewScheduleId,
-      },
-      data: {
-        nextReviewDate,
-        status: WorkflowStatus.IN_REVIEW,
-        lastCompletedAt: isEscalation ? null : now,
-      },
-    });
-    const queueItem = await tx.queueItem.updateMany({
-      where: {
-        clientTenantId: targetTenantId,
-        id: targetQueueId,
-      },
-      data: {
-        escalated: isEscalation,
-        slaDueAt: isEscalation ? new Date("2026-06-16T12:00:00.000Z") : new Date("2026-06-24T12:00:00.000Z"),
-        status: isEscalation ? WorkflowStatus.BLOCKED : WorkflowStatus.IN_REVIEW,
-      },
-    });
-    await writeAuditEvent(tx, {
-      actorUserId: userId("analyst"),
-      actorRoleKey: "analyst",
-      eventType: isEscalation ? "phase_d.review_calendar.escalate_overdue" : "phase_d.review_calendar.schedule_human_review",
-      targetType: ObjectType.REVIEW_SCHEDULE,
-      targetId: targetReviewScheduleId,
-      clientTenantId: targetTenantId,
-      previousState: isEscalation ? "DUE_SOON" : "SCHEDULED",
-      nextState: isEscalation ? "OVERDUE_ESCALATED" : "HUMAN_REVIEW_SCHEDULED",
-      reason: isEscalation
-        ? "Phase D overdue review escalated for internal follow-up. No client release occurred."
-        : "Phase D human review was scheduled from review calendar. No client release occurred.",
-      actionId,
-    });
-
-    return {
-      queueRows: queueItem.count,
-      reviewRows: reviewSchedule.count,
-    };
-  });
-
-  return {
-    auditRows: 1,
-    clientVisible: false,
-    message: isEscalation
-      ? "Overdue review escalated. Internal audit state recorded; no client release occurred."
-      : "Human review scheduled. Internal audit state recorded; no client release occurred.",
-    noClientRelease: true,
-    targetReviewScheduleId,
-    ...result,
-  };
-}
-
-async function runJ17RebalanceMonitoringWorkflow(prisma: PrismaClient, actionId: DemoWorkflowAction) {
-  const isBlockAction = actionId === "j17.blockRebalanceTrigger";
-  const result = await prisma.$transaction(async (tx) => {
-    const trigger = await tx.trigger.updateMany({
-      where: {
-        clientTenantId: northbridgeTenantId,
-        id: northbridgeTriggerId,
-      },
-      data: {
-        clientVisible: false,
-        status: isBlockAction ? WorkflowStatus.BLOCKED : WorkflowStatus.ADVISOR_REVIEW,
-      },
-    });
-    const actionItem = await tx.actionItem.updateMany({
-      where: {
-        clientTenantId: northbridgeTenantId,
-        id: actionItemId("northbridge", "blocked-release"),
-      },
-      data: {
-        blockedReason: isBlockAction
-          ? "Phase D rebalance monitoring blocked productive action pending human review."
-          : "Phase D rebalance monitoring routed for human advisor review.",
-        clientVisible: false,
-        status: isBlockAction ? WorkflowStatus.BLOCKED : WorkflowStatus.IN_REVIEW,
-      },
-    });
-    const queueItem = await tx.queueItem.updateMany({
-      where: {
-        clientTenantId: northbridgeTenantId,
-        id: northbridgeComplianceQueueId,
-      },
-      data: {
-        escalated: isBlockAction,
-        status: isBlockAction ? WorkflowStatus.BLOCKED : WorkflowStatus.ADVISOR_REVIEW,
-      },
-    });
-    const recommendation = await tx.recommendation.updateMany({
-      where: {
-        clientTenantId: northbridgeTenantId,
-        id: northbridgeRecommendationId,
-      },
-      data: {
-        clientVisible: false,
-        status: isBlockAction ? RecommendationStatus.BLOCKED : RecommendationStatus.ADVISOR_PENDING,
-      },
-    });
-    await writeAuditEvent(tx, {
-      actorUserId: userId("analyst"),
-      actorRoleKey: "analyst",
-      eventType: isBlockAction ? "phase_d.rebalance_monitoring.block_trigger" : "phase_d.rebalance_monitoring.route_human_review",
-      targetType: ObjectType.TRIGGER,
-      targetId: northbridgeTriggerId,
-      clientTenantId: northbridgeTenantId,
-      previousState: "ANALYST_REVIEW",
-      nextState: isBlockAction ? "BLOCKED" : "ADVISOR_REVIEW",
-      reason: isBlockAction
-        ? "Phase D rebalance trigger was blocked before any advice or execution path."
-        : "Phase D rebalance trigger was routed for human review without client release.",
-      actionId,
-    });
-
-    return {
-      actionItemRows: actionItem.count,
-      queueRows: queueItem.count,
-      recommendationRows: recommendation.count,
-      triggerRows: trigger.count,
-    };
-  });
-
-  return {
-    auditRows: 1,
-    clientVisible: false,
-    message: isBlockAction
-      ? "Rebalance trigger blocked. Trigger/action/queue state recorded; no client release occurred."
-      : "Rebalance trigger routed for human review. No client release occurred.",
-    noClientRelease: true,
-    targetTriggerId: northbridgeTriggerId,
-    ...result,
-  };
-}
-
 async function runDemoWorkflowAction(
   prisma: PrismaClient,
   actionId: DemoWorkflowAction,
@@ -3420,36 +3178,8 @@ async function runDemoWorkflowAction(
     case "j14.linkIpsEvidence":
       return runJ13J14SuitabilityIpsWorkflow(prisma, actionId);
 
-    case "j16.scheduleReview":
-    case "j16.escalateOverdueReview":
-      return runJ16ReviewCalendarWorkflow(prisma, actionId);
-
-    case "j17.blockRebalanceTrigger":
-    case "j17.routeRebalanceReview":
-      return runJ17RebalanceMonitoringWorkflow(prisma, actionId);
-
-    default: {
-      const target = genericTargetForAction(actionId);
-      const [journeyToken, actionToken] = actionId.split(".");
-      await writeAuditEvent(prisma, {
-        actorUserId: target.actorUserId,
-        actorRoleKey: target.actorRoleKey,
-        eventType: `screencast.${journeyToken}.${toSnakeCase(actionToken ?? "action")}`,
-        targetType: target.targetType,
-        targetId: target.targetId,
-        clientTenantId: target.clientTenantId,
-        previousState: "SEEDED_FIXTURE",
-        nextState: actionToken ? toSnakeCase(actionToken).toUpperCase() : "ACTION_RECORDED",
-        reason: "Screencast demo action recorded against deterministic fixture data.",
-        actionId,
-      });
-      return {
-        message: "Screencast demo action recorded.",
-        auditRows: 1,
-        targetType: target.targetType,
-        targetId: target.targetId,
-      };
-    }
+    default:
+      throw new UnsupportedLegacyDemoWorkflowActionError(actionId as string);
   }
 }
 
@@ -3482,44 +3212,18 @@ export async function POST(request: Request) {
   const parsedValue = parsedBody.value;
 
   if ("workflowType" in parsedValue && parsedValue.workflowType === "advisor-approval") {
-    try {
-      const result = await runAdvisorApprovalWorkflowMutation(prisma, {
+    return failClosedJson(
+      {
         action: parsedValue.action,
-        actorRoleKey: parsedValue.actorRole as DemoRoleKey,
-        auditPersistenceAvailable:
-          parsedValue.simulateAuditPersistenceFailure === true ? false : undefined,
-        confirmationText: parsedValue.confirmationText,
-        evidenceIds: parsedValue.evidenceIds,
-        reason: parsedValue.reason,
-        targetId: parsedValue.targetId,
-      });
-
-      return NextResponse.json({
-        action: parsedValue.action,
-        noClientRelease: !result.clientVisible,
-        ok: true,
-        result,
+        canonicalApiRoute: "/api/recommendation-review-workflow",
+        error:
+          "Typed advisor approval workflow actions have moved out of /api/demo-workflow. Use /api/recommendation-review-workflow.",
+        legacyReasonCode: "ADVISOR_APPROVAL_WORKFLOW_MOVED",
+        reasonCode: "SAFE_ERROR",
         workflowType: "advisor-approval",
-      });
-    } catch (error) {
-      return failClosedJson(
-        {
-          action: parsedValue.action,
-          error:
-            error instanceof AdvisorApprovalWorkflowError
-              ? error.message
-              : "Advisor approval workflow action failed.",
-          gateMissing: error instanceof AdvisorApprovalWorkflowError ? error.details?.gateMissing : undefined,
-          reasonCode: "SAFE_ERROR",
-          releasePreconditions:
-            error instanceof AdvisorApprovalWorkflowError
-              ? error.details?.releasePreconditions
-              : undefined,
-          workflowType: "advisor-approval",
-        },
-        { status: error instanceof AdvisorApprovalWorkflowError ? error.status : 409 },
-      );
-    }
+      },
+      { status: 410 },
+    );
   }
 
   if (!("actionId" in parsedValue)) {
@@ -3555,6 +3259,20 @@ export async function POST(request: Request) {
     );
   }
 
+  if (isReviewMonitoringWorkflowAction(actionId)) {
+    return failClosedJson(
+      {
+        actionId,
+        canonicalApiRoute: "/api/review-monitoring/actions",
+        error:
+          "Review monitoring actions have moved out of /api/demo-workflow. Use /api/review-monitoring/actions.",
+        legacyReasonCode: "REVIEW_MONITORING_ACTION_MOVED",
+        reasonCode: "SAFE_ERROR",
+      },
+      { status: 410 },
+    );
+  }
+
   const demoWorkflowActionId = actionId as DemoWorkflowAction;
 
   try {
@@ -3575,6 +3293,20 @@ export async function POST(request: Request) {
       result,
     });
   } catch (error) {
+    if (error instanceof UnsupportedLegacyDemoWorkflowActionError) {
+      return failClosedJson(
+        {
+          actionId: error.actionId,
+          canonicalApiRoute: "/api/journeys/[id]/commands",
+          error:
+            "Unsupported demo workflow actions are blocked. Move real journey commands to the typed journey command API before enabling them.",
+          legacyReasonCode: "UNSUPPORTED_DEMO_WORKFLOW_ACTION_BLOCKED",
+          reasonCode: "SAFE_ERROR",
+        },
+        { status: 410 },
+      );
+    }
+
     if (error instanceof AuditPersistenceUnavailableError) {
       return failClosedJson(
         {

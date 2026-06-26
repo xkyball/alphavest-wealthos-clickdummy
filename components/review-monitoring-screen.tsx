@@ -263,7 +263,7 @@ function Phase4WorkbenchPanel({
 }
 
 async function postPhaseDAction(actionId: string) {
-  const response = await fetch("/api/demo-workflow", {
+  const response = await fetch("/api/review-monitoring/actions", {
     body: JSON.stringify({ actionId }),
     headers: { "Content-Type": "application/json" },
     method: "POST",
@@ -526,7 +526,7 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
                 <div className="grid gap-3 md:grid-cols-3">
                   {[
                     { icon: Route, label: "API snapshot", value: "GET /api/review-monitoring" },
-                    { icon: ClipboardCheck, label: "Audit action", value: "POST j17.blockRebalanceTrigger" },
+                    { icon: ClipboardCheck, label: "Audit action", value: "POST /api/review-monitoring/actions" },
                     { icon: EyeOff, label: "Visibility", value: "clientVisible=false" },
                   ].map((item) => {
                     const Icon = item.icon;

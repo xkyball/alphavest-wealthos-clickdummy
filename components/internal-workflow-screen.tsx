@@ -51,7 +51,7 @@ import { wp05ComplianceReleaseConfirmationPhrase } from "@/lib/advisory-workflow
 import {
   advisorApprovalDemoTargets,
   runAdvisorApprovalWorkflowAction,
-} from "@/lib/screencast-demo-client";
+} from "@/lib/recommendation-review-workflow-client";
 import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import {
   advisorQueue,

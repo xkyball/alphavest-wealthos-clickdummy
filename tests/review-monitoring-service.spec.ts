@@ -62,9 +62,21 @@ test.describe("Phase D review calendar and rebalance monitoring", () => {
     expect(body.issues).toContain("valid_as_of_required");
   });
 
+  test("legacy demo workflow path blocks review monitoring actions and points to the canonical API", async ({ request }) => {
+    const response = await request.post("/api/demo-workflow", {
+      data: { actionId: "j16.scheduleReview" },
+    });
+    const body = await response.json();
+
+    expect(response.status(), JSON.stringify(body)).toBe(410);
+    expect(body.noClientRelease).toBe(true);
+    expect(body.canonicalApiRoute).toBe("/api/review-monitoring/actions");
+    expect(body.legacyReasonCode).toBe("REVIEW_MONITORING_ACTION_MOVED");
+  });
+
   test("J16 review calendar actions persist internal audit state without client release", async ({ request }) => {
     for (const actionId of ["j16.scheduleReview", "j16.escalateOverdueReview"]) {
-      const response = await request.post("/api/demo-workflow", {
+      const response = await request.post("/api/review-monitoring/actions", {
         data: { actionId },
       });
       const body = await response.json();
@@ -83,7 +95,7 @@ test.describe("Phase D review calendar and rebalance monitoring", () => {
   });
 
   test("J17 rebalance monitoring actions persist trigger state without advice execution", async ({ request }) => {
-    const blockResponse = await request.post("/api/demo-workflow", {
+    const blockResponse = await request.post("/api/review-monitoring/actions", {
       data: { actionId: "j17.blockRebalanceTrigger" },
     });
     const blockBody = await blockResponse.json();
@@ -100,7 +112,7 @@ test.describe("Phase D review calendar and rebalance monitoring", () => {
     expect(snapshotAfterBlock.rebalance.blocked).toBeGreaterThan(0);
     expect(snapshotAfterBlock.auditProof.latestEventTypes).toContain("phase_d.rebalance_monitoring.block_trigger");
 
-    const routeResponse = await request.post("/api/demo-workflow", {
+    const routeResponse = await request.post("/api/review-monitoring/actions", {
       data: { actionId: "j17.routeRebalanceReview" },
     });
     const routeBody = await routeResponse.json();

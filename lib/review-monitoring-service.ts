@@ -287,5 +287,5 @@ export async function getReviewMonitoringSnapshot(
 export const reviewMonitoringProofLabels = {
   dueState: "Derived from ReviewSchedule.nextReviewDate, QueueItem.slaDueAt and ActionItem.dueDate.",
   noClientRelease: "Rebalance trigger rows remain internal unless trigger.clientVisible is true; Phase D actions keep it false.",
-  persistence: "Only POST /api/demo-workflow J16/J17 actions claim mutations, and tests assert the API response plus GET snapshot.",
+  persistence: "Only POST /api/review-monitoring/actions J16/J17 actions claim mutations, and tests assert the API response plus GET snapshot.",
 };

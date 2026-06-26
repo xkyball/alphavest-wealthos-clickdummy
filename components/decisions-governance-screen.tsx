@@ -54,6 +54,8 @@ import { cn } from "@/lib/cn";
 import {
   advisorApprovalDemoTargets,
   runAdvisorApprovalWorkflowAction,
+} from "@/lib/recommendation-review-workflow-client";
+import {
   runScreencastDemoAction,
 } from "@/lib/screencast-demo-client";
 import {
