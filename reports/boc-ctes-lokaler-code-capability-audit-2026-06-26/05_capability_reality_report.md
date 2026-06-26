@@ -76,7 +76,7 @@ Decision summary: accept this report as a conservative baseline only if `PASS_WI
 | Tenant-governance commands | Yes | Yes | Yes | Yes | Yes | Yes | No focused API/browser command run in this ticket | `TYPED_COMMAND_BACKED_PARTIAL` |
 | Platform-admin commands | Yes | Yes | Yes | Audit write | Yes | Yes | No focused API/browser command run in this ticket | `TYPED_COMMAND_BACKED_PARTIAL` |
 | Advisor review J01 commands | Yes | Yes | Yes | Yes | Yes | Yes | No focused API/browser command run in this ticket | `TYPED_COMMAND_BACKED_PARTIAL` |
-| Advice/release-history J02/J03 commands | Yes | Yes | Yes | Yes | Yes | Yes | Source/drift proof only; full release journey not run | `TYPED_COMMAND_BACKED_PARTIAL` |
+| Advice/release-history J02/J03 commands | Yes | Yes | Yes | Yes | Yes | Yes | Focused typed-boundary proof pack passed after migrating stale lifecycle proof off `/api/demo-workflow`; full release journey still not certified | `TYPED_COMMAND_BACKED_PARTIAL` |
 | Recommendation review workflow | Indirect | Yes | Yes | Yes | Yes | Yes | Not run end-to-end in this ticket | `SERVICE_BACKED_INTERNAL` |
 | Journey command execution | Yes | Yes | Yes | Yes | Yes | Yes | No focused journey command run in this ticket | `STRONG_VERTICAL_CANDIDATE` |
 | Export workflow command | Yes | Yes | Yes | Yes | Yes | Yes | No focused export lifecycle run in this ticket | `STRONG_VERTICAL_CANDIDATE` |

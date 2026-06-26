@@ -72,7 +72,7 @@ test.describe("UXP3-009 decision confirmation lifecycle", () => {
     );
 
     const responsePromise = page.waitForResponse(
-      (response) => response.url().includes("/api/demo-workflow") && response.request().method() === "POST",
+      (response) => response.url().includes("/api/advice-release-history/actions") && response.request().method() === "POST",
     );
 
     await page.getByTestId("j03-confirm-decision").click();

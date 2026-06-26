@@ -25,7 +25,8 @@ Current head at execution start: `2f746c6 chore(docs): align J01 markdown bounda
 | 13 | `FOLLOWUP-0` Decision acceptance record | `DONE` | Current user authorization captured in `07_decision_gate.md`; `pnpm guard:source` passed before follow-up execution resumed. |
 | 14 | `FOLLOWUP-1` Browser/runtime proof pack for typed command surfaces | `DONE` | Focused Playwright proof pack passed `26/26` for export API/lifecycle, tenant-governance typed API, platform-admin typed API/browser runtime and source command-client wiring. |
 | 15 | `FOLLOWUP-2` J01 typed intake/advisor-review boundary | `DONE` | `j01.requestData` moved to `/api/advisor-review/actions`; `/api/demo-workflow` is now a fail-closed 410 boundary with no executable demo-only actions; focused J01/demo/capture proof pack passed `43/43`. |
-| 16 | `FOLLOWUP-3` Advice/Release-History typed boundary proof for J02/J03 | `NEXT` | Verify and harden J02/J03 typed advice-release-history boundary, then continue removing product-like screencast client paths. |
+| 16 | `FOLLOWUP-3` Advice/Release-History typed boundary proof for J02/J03 | `DONE` | J03 lifecycle proof migrated from `/api/demo-workflow` to `/api/advice-release-history/actions`; focused J02/J03 typed-boundary proof pack passed `46/46`. |
+| 17 | `FOLLOWUP-4` Remove product-like screencast client path usage | `NEXT` | Inspect remaining `runScreencastDemoAction` references and remove or isolate any product-like screen/test paths now that J01/J02/J03/J04/J05/J06/J07/J09/J10 have typed boundaries. |
 
 ## Current Proof Pack
 
@@ -46,9 +47,11 @@ guard/security/test inventory over lib, app/api and tests
 PLAYWRIGHT_SKIP_WEB_SERVER=1 pnpm exec playwright test tests/demo-workflow-action-registry.spec.ts tests/capture-screen-model-context.spec.ts tests/capability-report-drift-gate.spec.ts --workers=1
 pnpm gate:capability-report
 pnpm exec playwright test tests/export-workflow-api.spec.ts tests/phase8-export-workflow-api.spec.ts tests/export-approval-lifecycle.spec.ts tests/export-download-confirmation-lifecycle.spec.ts tests/tenant-governance-actions-api.spec.ts tests/platform-admin-actions-api.spec.ts tests/platform-admin-browser-runtime.spec.ts tests/platform-admin-command-client-source.spec.ts tests/export-command-spine-contract.spec.ts --workers=1
+pnpm exec playwright test tests/decision-confirmation-lifecycle.spec.ts --workers=1
+pnpm exec playwright test tests/advice-release-history-command-client-source.spec.ts tests/demo-workflow-api.spec.ts tests/decision-confirmation-lifecycle.spec.ts tests/client-visibility-projection.spec.ts tests/workflow-gate.spec.ts tests/demo-workflow-action-registry.spec.ts --workers=1
 ```
 
-Result so far: `ANALYSIS-1`, all `ANALYSIS-2` subtasks, `SPEC-1`, all `IMPL-1` report slices, `QA-1`, `DECISION-1`, `FOLLOWUP-0`, `FOLLOWUP-1` and `FOLLOWUP-2` completed with source guard `PASS`, targeted drift proof pack `12 passed`, capability report gate `PASS`, focused runtime proof pack `26 passed`, focused J01/demo/capture proof pack `43 passed`, QA decision `PASS_WITH_LIMITATIONS`, human acceptance with cleanup authorization recorded, and no UI changes in `FOLLOWUP-0` or `FOLLOWUP-1`.
+Result so far: `ANALYSIS-1`, all `ANALYSIS-2` subtasks, `SPEC-1`, all `IMPL-1` report slices, `QA-1`, `DECISION-1`, `FOLLOWUP-0`, `FOLLOWUP-1`, `FOLLOWUP-2` and `FOLLOWUP-3` completed with source guard `PASS`, targeted drift proof pack `12 passed`, capability report gate `PASS`, focused runtime proof pack `26 passed`, focused J01/demo/capture proof pack `43 passed`, focused J02/J03 typed-boundary proof pack `46 passed`, QA decision `PASS_WITH_LIMITATIONS`, human acceptance with cleanup authorization recorded, and no UI changes in these follow-up report/API-boundary tickets.
 
 ## Current Workspace Boundary
 
@@ -63,4 +66,4 @@ They are excluded from `ANALYSIS-1` unless a later ordered ticket explicitly rec
 
 ## Next Ticket
 
-Proceed to `FOLLOWUP-3`: Advice/Release-History typed boundary proof for J02/J03.
+Proceed to `FOLLOWUP-4`: remove or isolate remaining product-like `runScreencastDemoAction` usage now that the typed command boundaries are in place.
