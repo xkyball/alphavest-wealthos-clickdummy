@@ -243,11 +243,15 @@ function isAuthRoute(route: string) {
 }
 
 function routeSlug(route: string) {
-  return route.replace(/[^a-zA-Z0-9]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 48) || "root";
+  return route.replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 96) || "root";
 }
 
-function fileNameFor(route: ScreenRoute, suffix: string) {
-  return `${route.pageId}-${routeSlug(route.route)}-${suffix}.png`;
+function stateSlug(state: string) {
+  return routeSlug(state.replace(/-(modal|drawer)$/i, ""));
+}
+
+function fileNameFor(route: ScreenRoute, kind: CaptureMode | "screen", state: string) {
+  return `${route.pageId}-route-${routeSlug(routeToSmokePath(route.route))}-${kind}-${stateSlug(state)}.png`;
 }
 
 function sidecarNameFor(fileName: string, extension: "css" | "html") {
@@ -2155,7 +2159,7 @@ async function captureRoute(page: Page, route: ScreenRoute) {
   const items: CaptureItem[] = [];
   const modelContext = captureModelContextForRoute(route);
   const url = new URL(routeToSmokePath(route.route), baseUrl).toString();
-  const baseFile = fileNameFor(route, "base");
+  const baseFile = fileNameFor(route, "screen", "base");
   const baseItem: CaptureItem = {
     interactionProofTraceStatus: "not-tested",
     modelContext,
@@ -2182,7 +2186,7 @@ async function captureRoute(page: Page, route: ScreenRoute) {
   items.push(baseItem);
 
   for (const overlay of overlayPlans[route.route] ?? []) {
-    const overlayFile = fileNameFor(route, overlay.label);
+    const overlayFile = fileNameFor(route, overlay.mode, overlay.label);
     const overlayItem: CaptureItem = {
       interactionProofTraceStatus: screensOnly ? "not-tested" : undefined,
       modelContext,

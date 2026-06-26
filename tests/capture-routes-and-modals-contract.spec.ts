@@ -37,4 +37,14 @@ test.describe("routes and modals capture contract", () => {
     expect(source).toContain("item.modelContext.capability.status");
     expect(source).toContain("item.modelContext.models.join");
   });
+
+  test("uses screenshot filenames that expose route and interaction kind", async () => {
+    const source = await readFile("scripts/capture-routes-and-modals.ts", "utf8");
+
+    expect(source).toContain("routeToSmokePath(route.route)");
+    expect(source).toContain('${route.pageId}-route-${routeSlug(routeToSmokePath(route.route))}-${kind}-${stateSlug(state)}.png');
+    expect(source).toContain('const baseFile = fileNameFor(route, "screen", "base");');
+    expect(source).toContain("const overlayFile = fileNameFor(route, overlay.mode, overlay.label);");
+    expect(source).toContain('state.replace(/-(modal|drawer)$/i, "")');
+  });
 });
