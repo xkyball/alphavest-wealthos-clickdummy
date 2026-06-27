@@ -50,6 +50,7 @@ import {
   DataTable,
   MetricCard,
   StatePanel,
+  ValidationFeedback,
   WizardStepper,
   type BadgeTone,
   type DataTableColumn
@@ -2461,14 +2462,13 @@ function DocumentUploadForm() {
               </div>
             </div>
           ) : null}
-          <div
-            className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4 text-sm text-alphavest-muted"
-            data-testid="document-upload-validation-state"
-            data-ux-lifecycle-validation={uploadValidationState}
+          <ValidationFeedback
             id="document-upload-validation"
-          >
-            {uploadValidationMessage}
-          </div>
+            intent={hasSelectedFile ? "pending" : "validation"}
+            message={uploadValidationMessage}
+            subject="upload"
+            testId="document-upload-validation-state"
+          />
           {uploadState === "error" ? (
             <div className="rounded-md border border-alphavest-red/40 bg-alphavest-red/10 p-4">
               <div className="flex items-center justify-between gap-4">

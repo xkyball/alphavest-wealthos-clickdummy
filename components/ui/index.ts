@@ -11,5 +11,6 @@ export * from "@/components/ui/metric-card";
 export * from "@/components/ui/modal";
 export * from "@/components/ui/state-panel";
 export * from "@/components/ui/status-chip";
+export * from "@/components/ui/validation-feedback";
 export * from "@/components/ui/wizard-stepper";
 export * from "@/components/ui/workflow-badge";

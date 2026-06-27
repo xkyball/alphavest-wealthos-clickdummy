@@ -1920,6 +1920,12 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
           {status === "idle" ? (
             <StatePanel
               detail={acknowledged ? "Export approval can be submitted through the canonical export workflow API." : "Export approval remains blocked until the scoped approval acknowledgement is checked."}
+              feedback={{
+                actionMeaning: "export_approval",
+                intent: "validation",
+                placement: "modal_status",
+                subject: "export_approval",
+              }}
               state={acknowledged ? "validation" : "blocked"}
               testId="j08-export-approval-validation-state"
               title={acknowledged ? "Export approval valid" : "Export approval blocked"}
@@ -1928,6 +1934,12 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
           {status === "submitting" ? (
             <StatePanel
               detail={message ?? "Routing export approval through /api/export-workflow."}
+              feedback={{
+                actionMeaning: "export_approval",
+                intent: "pending",
+                placement: "modal_status",
+                subject: "export_approval",
+              }}
               state="loading"
               testId="j08-export-approval-loading-state"
               title="Export approval submitting"
@@ -1936,6 +1948,12 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
           {status === "success" ? (
             <StatePanel
               detail={message ?? "Export approval was recorded through /api/export-workflow; generation, download, share, client acceptance and advice release remain separate controls."}
+              feedback={{
+                actionMeaning: "export_approval",
+                intent: "success",
+                placement: "modal_status",
+                subject: "export_approval",
+              }}
               state="success"
               testId="j08-export-approval-success-state"
               title="Export approval recorded"
@@ -1944,6 +1962,12 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
           {status === "error" ? (
             <StatePanel
               detail={message ?? "Export approval workflow failed without generation, download, share, client acceptance or advice release change."}
+              feedback={{
+                actionMeaning: "export_approval",
+                intent: "fail_closed",
+                placement: "modal_status",
+                subject: "export_approval",
+              }}
               state="error"
               testId="j08-export-approval-error-state"
               title="Export approval failed"
@@ -2272,6 +2296,12 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
           {status === "idle" ? (
             <StatePanel
               detail={acknowledged ? "Controlled download can be recorded through the canonical export workflow API." : "Download remains blocked until the controlled-download acknowledgement is checked."}
+              feedback={{
+                actionMeaning: "download",
+                intent: "validation",
+                placement: "modal_status",
+                subject: "download",
+              }}
               state={acknowledged ? "validation" : "blocked"}
               testId="j08-export-download-validation-state"
               title={acknowledged ? "Download confirmation valid" : "Download confirmation blocked"}
@@ -2280,6 +2310,12 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
           {status === "submitting" ? (
             <StatePanel
               detail={message ?? "Recording the controlled export download."}
+              feedback={{
+                actionMeaning: "download",
+                intent: "pending",
+                placement: "modal_status",
+                subject: "download",
+              }}
               state="loading"
               testId="j08-export-download-loading-state"
               title="Download recording"
@@ -2288,6 +2324,12 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
           {status === "success" ? (
             <StatePanel
               detail={message ?? "Controlled export download was recorded through /api/export-workflow; secure share, client acceptance and advice release remain separate controls."}
+              feedback={{
+                actionMeaning: "download",
+                intent: "success",
+                placement: "modal_status",
+                subject: "download",
+              }}
               state="success"
               testId="j08-export-download-success-state"
               title="Download recorded"
@@ -2296,6 +2338,12 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
           {status === "error" ? (
             <StatePanel
               detail={message ?? "Export download workflow failed without download, share, client acceptance or advice release change."}
+              feedback={{
+                actionMeaning: "download",
+                intent: "fail_closed",
+                placement: "modal_status",
+                subject: "download",
+              }}
               state="error"
               testId="j08-export-download-error-state"
               title="Download failed closed"

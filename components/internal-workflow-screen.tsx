@@ -33,6 +33,7 @@ import {
   DataTable,
   Modal,
   StatePanel,
+  FieldFeedback,
   type BadgeTone,
   type DataTableColumn
 } from "@/components/ui";
@@ -2030,7 +2031,12 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
           <CardHeader><CardTitle>Confirm release</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm leading-6 text-alphavest-muted">You must have release permission to continue. Confirm that all information is accurate and compliant.</p>
-            <p className="sr-only" id="release-confirmation-validation">{validationMessage}</p>
+            <FieldFeedback
+              actionMeaning="release"
+              id="release-confirmation-validation"
+              message={validationMessage}
+              subject="compliance_release"
+            />
             <label className="flex items-start gap-3 text-sm text-alphavest-muted">
               <input
                 aria-describedby="release-confirmation-validation"
