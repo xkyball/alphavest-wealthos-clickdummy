@@ -1,5 +1,5 @@
 import { chromium, type BrowserContext, type Locator, type Page, type Request, type Response } from "@playwright/test";
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 import {
@@ -11,6 +11,7 @@ import { demoAuthSessionCookieName } from "@/lib/demo/demo-auth-session";
 import { routeToSmokePath, screenRoutes, type ScreenRoute } from "@/lib/route-registry";
 import { uxCaptureVariantForFileKind, type UxCaptureVariant } from "@/lib/ux-lifecycle-state-contract";
 import { visualStateForRoute } from "@/lib/visual-contract";
+import { runCaptureQa } from "./capture-qa-contract";
 
 type CaptureMode = "drawer" | "modal";
 type CaptureFileKind = CaptureMode | "screen";
@@ -94,6 +95,7 @@ const pageIdFilter = process.env.AVS_CAPTURE_PAGE_IDS
   : null;
 const sourceTraceEnabled = process.env.AVS_CAPTURE_SOURCE_TRACE !== "0";
 const sourceRoots = ["app", "components", "lib", "hooks", "contexts", "styles"].map((folder) => path.join(process.cwd(), folder)).filter(existsSync);
+const captureQaAfterRun = process.env.AVS_CAPTURE_QA_AFTER_RUN !== "0";
 
 type SourceFileIndexEntry = {
   absPath: string;
@@ -2313,6 +2315,20 @@ function writeIndex(items: CaptureItem[]) {
   writeFileSync(path.join(outputDir, "index.md"), `${lines.join("\n")}\n`);
 }
 
+function runCaptureQaForOutput() {
+  if (!captureQaAfterRun) return;
+
+  const result = runCaptureQa({
+    failOnWarnings: process.env.CAPTURE_QA_FAIL_ON_WARNINGS === "1",
+    inputRoot: outputDir,
+    outputDir: path.join(outputDir, "capture-qa"),
+  });
+
+  if (result.status === "fail") {
+    throw new Error(`Capture QA failed for ${path.relative(process.cwd(), outputDir)} with ${result.failures.length} failures.`);
+  }
+}
+
 async function main() {
   mkdirSync(outputDir, { recursive: true });
 
@@ -2347,6 +2363,7 @@ async function main() {
   await browser.close();
 
   writeIndex(mergeItems(items));
+  runCaptureQaForOutput();
 }
 
 void main().catch((error) => {

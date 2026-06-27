@@ -2,8 +2,16 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSy
 import path from "node:path";
 import { routeSmokeList, routeToSmokePath, screenRoutes } from "@/lib/route-registry";
 import { forbiddenVisualChromeTerms, visualStateForRoute } from "@/lib/visual-contract";
+import { runCaptureQa } from "./capture-qa-contract";
 
 type ContractResult = {
+  captureQa?: {
+    checkedCaptures: number;
+    duplicateClusters: number;
+    longScreenRisks: number;
+    status: string;
+    warnings: number;
+  };
   checkedRoutes: number;
   checkedAssets: number;
   failures: string[];
@@ -121,6 +129,26 @@ async function main() {
     failures,
     fetchedRoutes
   };
+
+  if (process.env.VISUAL_QA_CAPTURE_QA === "1") {
+    const captureQa = runCaptureQa({
+      failOnWarnings: process.env.CAPTURE_QA_FAIL_ON_WARNINGS === "1",
+      inputRoot: process.env.CAPTURE_QA_INPUT ?? path.join(root, "artifacts"),
+      outputDir: path.join(artifactDir, "capture-qa"),
+    });
+
+    result.captureQa = {
+      checkedCaptures: captureQa.checkedCaptures,
+      duplicateClusters: captureQa.duplicateClusters.length,
+      longScreenRisks: captureQa.longScreenRisks.length,
+      status: captureQa.status,
+      warnings: captureQa.warnings.length,
+    };
+
+    if (captureQa.status === "fail") {
+      failures.push(`capture QA failed with ${captureQa.failures.length} failures`);
+    }
+  }
 
   writeFileSync(path.join(artifactDir, "visual-contract-result.json"), `${JSON.stringify(result, null, 2)}\n`);
 

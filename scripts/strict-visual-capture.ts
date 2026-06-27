@@ -11,6 +11,7 @@ import { demoAuthSessionCookieName } from "@/lib/demo/demo-auth-session";
 import { routeToSmokePath, screenRoutes } from "@/lib/route-registry";
 import { uxCaptureVariantForFileKind, type UxCaptureVariant } from "@/lib/ux-lifecycle-state-contract";
 import { visualStateForRoute } from "@/lib/visual-contract";
+import { runCaptureQa } from "./capture-qa-contract";
 
 type ViewportName = "desktop" | "mobile";
 
@@ -22,9 +23,14 @@ type CaptureMetric = {
     crampedText: string[];
     document: {
       clientWidth: number;
+      scrollHeight: number;
       scrollWidth: number;
     };
     loadingTextPresent: boolean;
+    viewport: {
+      height: number;
+      width: number;
+    };
   };
   pageId: string;
   route: string;
@@ -102,11 +108,30 @@ async function collectMetrics(page: Page) {
       crampedText,
       document: {
         clientWidth: document.documentElement.clientWidth,
+        scrollHeight: document.documentElement.scrollHeight,
         scrollWidth: document.documentElement.scrollWidth
       },
-      loadingTextPresent: document.body.innerText.includes("Loading workspace")
+      loadingTextPresent: document.body.innerText.includes("Loading workspace"),
+      viewport: {
+        height: window.innerHeight,
+        width: window.innerWidth
+      }
     };
   });
+}
+
+function runCaptureQaForOutput() {
+  if (process.env.STRICT_VISUAL_CAPTURE_QA_AFTER_RUN === "0") return;
+
+  const result = runCaptureQa({
+    failOnWarnings: process.env.CAPTURE_QA_FAIL_ON_WARNINGS === "1",
+    inputRoot: outputDir,
+    outputDir: path.join(outputDir, "capture-qa"),
+  });
+
+  if (result.status === "fail") {
+    throw new Error(`Capture QA failed for ${path.relative(root, outputDir)} with ${result.failures.length} failures.`);
+  }
 }
 
 function routeUrl(route: (typeof screenRoutes)[number]) {
@@ -300,6 +325,7 @@ async function main() {
   writeFileSync(path.join(outputDir, "strict-review-dom-metrics.json"), `${JSON.stringify(metrics, null, 2)}\n`);
   writeIndex(metrics);
   writeModelContext();
+  runCaptureQaForOutput();
 
   const desktopSheet = writeContactSheet("desktop", metrics);
   const mobileSheet = writeContactSheet("mobile", metrics);
