@@ -237,6 +237,7 @@ function addCaptureReleaseViolations(
 ) {
   const parsed = JSON.parse(packageJsonText) as { scripts?: Record<string, string> };
   const releaseScript = parsed.scripts?.["visual:capture-qa:release"] ?? "";
+  const releaseCaptureGeneratorScript = parsed.scripts?.["visual:capture-routes:release-candidate"] ?? "";
   const requiredReleaseFragments = [
     "CAPTURE_QA_FAIL_ON_WARNINGS=1",
     "CAPTURE_QA_REQUIRE_CAPTURES=1",
@@ -244,7 +245,17 @@ function addCaptureReleaseViolations(
     "CAPTURE_QA_OUTPUT=artifacts/capture-qa/release-current",
     "scripts/capture-qa-contract.ts",
   ];
-  const missingFragments = requiredReleaseFragments.filter((fragment) => !releaseScript.includes(fragment));
+  const requiredGeneratorFragments = [
+    "scripts/capture-routes-and-modals.ts",
+    "--release-candidate",
+    "--screens-only",
+  ];
+  const missingFragments = [
+    ...requiredReleaseFragments.filter((fragment) => !releaseScript.includes(fragment)),
+    ...requiredGeneratorFragments
+      .filter((fragment) => !releaseCaptureGeneratorScript.includes(fragment))
+      .map((fragment) => `visual:capture-routes:release-candidate:${fragment}`),
+  ];
 
   if (missingFragments.length > 0) {
     violations.push({

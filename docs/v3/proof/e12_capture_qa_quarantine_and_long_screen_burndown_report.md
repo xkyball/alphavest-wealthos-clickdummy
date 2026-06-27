@@ -12,6 +12,7 @@ Date: 2026-06-27
 | Legacy capture handling | Historical audit only through `pnpm visual:capture-qa` |
 | Release capture input | `artifacts/release-candidate/current` |
 | Release capture output | `artifacts/capture-qa/release-current` |
+| Release capture generator | `pnpm visual:capture-routes:release-candidate` |
 | Fresh capture requirement | `CAPTURE_QA_REQUIRE_CAPTURES=1` |
 | Warning behavior | `CAPTURE_QA_FAIL_ON_WARNINGS=1` |
 | Burndown register | `docs/ux/ALPHAVEST_E12_LONG_SCREEN_BURNDOWN_REGISTER.md` |

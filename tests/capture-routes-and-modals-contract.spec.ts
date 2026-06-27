@@ -14,6 +14,21 @@ test.describe("routes and modals capture contract", () => {
     expect(source).toMatch(/screensOnly\s+\?\s+alreadyOpen \|\| \(await overlay\.open\(page\)\)/);
   });
 
+  test("supports E12 release-candidate output for hard capture QA", async () => {
+    const source = await readFile("scripts/capture-routes-and-modals.ts", "utf8");
+    const packageJson = JSON.parse(await readFile("package.json", "utf8")) as { scripts: Record<string, string> };
+
+    expect(source).toContain('cliArgs.has("--release-candidate")');
+    expect(source).toContain('process.env.AVS_CAPTURE_RELEASE_CANDIDATE === "1"');
+    expect(source).toContain('const outputArtifactPrefix = releaseCandidate ? "release-candidate/current" : `routes-and-modals/${runTs}`;');
+    expect(source).toContain("path.join(process.cwd(), \"artifacts\", outputArtifactPrefix)");
+    expect(source).toContain("captureScope: releaseCandidate ? \"release-candidate\" : \"audit\"");
+    expect(source).toContain("releaseCandidate");
+    expect(source).toContain("requireCaptures: releaseCandidate");
+    expect(source).toContain("failOnWarnings: releaseCandidate || process.env.CAPTURE_QA_FAIL_ON_WARNINGS === \"1\"");
+    expect(packageJson.scripts["visual:capture-routes:release-candidate"]).toBe("tsx scripts/capture-routes-and-modals.ts --release-candidate --screens-only");
+  });
+
   test("keeps modal capture triggers aligned to lifecycle-tested surfaces", async () => {
     const source = await readFile("scripts/capture-routes-and-modals.ts", "utf8");
 

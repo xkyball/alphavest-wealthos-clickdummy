@@ -74,6 +74,7 @@
     "test:workflow-api": "playwright test tests/recommendation-review-workflow-api.spec.ts",
     "visual:capture-routes": "tsx scripts/capture-routes-and-modals.ts",
     "visual:capture-routes:screens-only": "tsx scripts/capture-routes-and-modals.ts --screens-only",
+    "visual:capture-routes:release-candidate": "tsx scripts/capture-routes-and-modals.ts --release-candidate --screens-only",
     "phase:check": "pnpm typecheck && pnpm lint && pnpm db:validate && pnpm build"
   },
   "dependencies": {

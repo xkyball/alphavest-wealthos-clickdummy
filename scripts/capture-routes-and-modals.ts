@@ -81,12 +81,14 @@ const captureVariantContract = {
   requiredVariantKinds: ["base", "modal", "drawer", "confirmation"],
 };
 
+const cliArgs = new Set(process.argv.slice(2));
 const baseUrl = process.env.AVS_BASE_URL ?? process.env.BASE_URL ?? "http://localhost:3095";
+const releaseCandidate = cliArgs.has("--release-candidate") || process.env.AVS_CAPTURE_RELEASE_CANDIDATE === "1";
 const runTs =
   process.env.AVS_CAPTURE_OUTPUT ??
-  new Date().toISOString().replace(/[.:]/g, "-").replace("T", "_").slice(0, 19);
-const outputDir = path.join(process.cwd(), "artifacts", "routes-and-modals", runTs);
-const cliArgs = new Set(process.argv.slice(2));
+  (releaseCandidate ? "current" : new Date().toISOString().replace(/[.:]/g, "-").replace("T", "_").slice(0, 19));
+const outputArtifactPrefix = releaseCandidate ? "release-candidate/current" : `routes-and-modals/${runTs}`;
+const outputDir = path.join(process.cwd(), "artifacts", outputArtifactPrefix);
 const screensOnly = cliArgs.has("--screens-only") || process.env.AVS_CAPTURE_SCREENS_ONLY === "1";
 const modalSelector = '[data-testid="ux-a11y-modal"][role="dialog"]';
 const drawerSelector = '[data-testid="ux-a11y-drawer"][role="complementary"], aside[aria-label="Action Details"]';
@@ -719,8 +721,8 @@ async function captureRenderedDom(page: Page, item: CaptureItem, screenshotFileN
 
     writeFileSync(path.join(outputDir, htmlFile), snapshot.html);
     writeFileSync(path.join(outputDir, cssFile), snapshot.css);
-    item.domPath = `routes-and-modals/${runTs}/${htmlFile}`;
-    item.cssPath = `routes-and-modals/${runTs}/${cssFile}`;
+    item.domPath = `${outputArtifactPrefix}/${htmlFile}`;
+    item.cssPath = `${outputArtifactPrefix}/${cssFile}`;
     item.domStatus = "captured";
   } catch {
     item.domStatus = "failed-dom";
@@ -854,7 +856,7 @@ async function captureDomRectTrace(page: Page, item: CaptureItem, screenshotFile
     );
 
     writeFileSync(path.join(outputDir, jsonFile), `${JSON.stringify(trace, null, 2)}\n`);
-    item.domRectTracePath = `routes-and-modals/${runTs}/${jsonFile}`;
+    item.domRectTracePath = `${outputArtifactPrefix}/${jsonFile}`;
     item.domRectTraceStatus = "captured";
   } catch (error) {
     item.domRectTraceStatus = "failed-dom-rect-trace";
@@ -1221,7 +1223,7 @@ async function captureReactSourceTrace(page: Page, item: CaptureItem, screenshot
     );
 
     writeFileSync(path.join(outputDir, jsonFile), `${JSON.stringify(enrichReactSourceTrace(trace), null, 2)}\n`);
-    item.reactSourceTracePath = `routes-and-modals/${runTs}/${jsonFile}`;
+    item.reactSourceTracePath = `${outputArtifactPrefix}/${jsonFile}`;
     item.reactSourceTraceStatus = "captured";
   } catch (error) {
     item.reactSourceTraceStatus = "failed-react-source-trace";
@@ -1744,8 +1746,8 @@ async function captureRuntimeComponents(page: Page, item: CaptureItem, screensho
 
     writeFileSync(path.join(outputDir, jsonFile), `${JSON.stringify(snapshot, null, 2)}\n`);
     writeFileSync(path.join(outputDir, mdFile), componentRuntimeMarkdown(snapshot));
-    item.componentRuntimePath = `routes-and-modals/${runTs}/${jsonFile}`;
-    item.componentRuntimeMarkdownPath = `routes-and-modals/${runTs}/${mdFile}`;
+    item.componentRuntimePath = `${outputArtifactPrefix}/${jsonFile}`;
+    item.componentRuntimeMarkdownPath = `${outputArtifactPrefix}/${mdFile}`;
     item.componentRuntimeStatus = "captured";
     item.componentRuntimeStrategy = snapshot.runtimeReflection.strategy;
     item.componentRuntimeConfidence = snapshot.runtimeReflection.confidence;
@@ -2169,7 +2171,7 @@ async function captureInteractionProofTrace(page: Page, item: CaptureItem, scree
     };
 
     writeFileSync(path.join(outputDir, jsonFile), `${JSON.stringify(trace, null, 2)}\n`);
-    item.interactionProofTracePath = `routes-and-modals/${runTs}/${jsonFile}`;
+    item.interactionProofTracePath = `${outputArtifactPrefix}/${jsonFile}`;
     item.interactionProofTraceStatus = "captured";
     return opened;
   } catch (error) {
@@ -2193,7 +2195,7 @@ async function captureRoute(page: Page, route: ScreenRoute) {
     interactionProofTraceStatus: "not-tested",
     modelContext,
     pageId: route.pageId,
-    path: `routes-and-modals/${runTs}/${baseFile}`,
+    path: `${outputArtifactPrefix}/${baseFile}`,
     route: route.route,
     state: "base",
     status: "captured",
@@ -2223,7 +2225,7 @@ async function captureRoute(page: Page, route: ScreenRoute) {
       interactionProofTraceStatus: screensOnly ? "not-tested" : undefined,
       modelContext,
       pageId: route.pageId,
-      path: `routes-and-modals/${runTs}/${overlayFile}`,
+      path: `${outputArtifactPrefix}/${overlayFile}`,
       route: route.route,
       state: overlay.label,
       status: "captured",
@@ -2285,10 +2287,13 @@ function writeIndex(items: CaptureItem[]) {
         auditBaseline: captureScreenModelAuditBaseline,
         baseUrl,
         captureMode: screensOnly ? "screens-only" : "full-runtime",
+        captureScope: releaseCandidate ? "release-candidate" : "audit",
         captureVariantContract,
         captureVariantCounts,
         generatedAt: new Date().toISOString(),
         items,
+        outputArtifactPrefix,
+        releaseCandidate,
         sidecarsEnabled: !screensOnly,
       },
       null,
@@ -2301,6 +2306,8 @@ function writeIndex(items: CaptureItem[]) {
     "",
     `Base URL: ${baseUrl}`,
     `Run: ${runTs}`,
+    `Scope: ${releaseCandidate ? "release-candidate" : "audit"}`,
+    `Artifact prefix: ${outputArtifactPrefix}`,
     `Capture mode: ${screensOnly ? "screens-only" : "full-runtime"}`,
     `Sidecars: ${screensOnly ? "disabled" : "enabled"}`,
     `Audit baseline: ${captureScreenModelAuditBaseline.registeredRoutes} routes, ${captureScreenModelAuditBaseline.schemaModels} models, ${captureScreenModelAuditBaseline.schemaEnums} enums`,
@@ -2319,9 +2326,10 @@ function runCaptureQaForOutput() {
   if (!captureQaAfterRun) return;
 
   const result = runCaptureQa({
-    failOnWarnings: process.env.CAPTURE_QA_FAIL_ON_WARNINGS === "1",
+    failOnWarnings: releaseCandidate || process.env.CAPTURE_QA_FAIL_ON_WARNINGS === "1",
     inputRoot: outputDir,
     outputDir: path.join(outputDir, "capture-qa"),
+    requireCaptures: releaseCandidate,
   });
 
   if (result.status === "fail") {

@@ -84,6 +84,7 @@ Legacy capture bundles are historical evidence only. They must not be cleaned up
 New release-candidate capture folders must be treated differently:
 
 - Primary visual-review proof must come from an E09-compliant capture run.
+- Generate the current release-candidate capture with `pnpm visual:capture-routes:release-candidate`.
 - Release-candidate capture QA must run with `CAPTURE_QA_FAIL_ON_WARNINGS=1`.
 - Release-candidate capture QA must run with `CAPTURE_QA_REQUIRE_CAPTURES=1`.
 - Release-candidate capture QA must use `CAPTURE_QA_INPUT=artifacts/release-candidate/current`.

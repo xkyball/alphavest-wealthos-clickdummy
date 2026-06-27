@@ -196,6 +196,7 @@ test.describe("E12 contract fulfillment gate", () => {
       packageJsonText: JSON.stringify({
         scripts: {
           "visual:capture-qa:release": "tsx scripts/capture-qa-contract.ts",
+          "visual:capture-routes:release-candidate": "tsx scripts/capture-routes-and-modals.ts",
           "release:contract-check": "pnpm guard:source && pnpm test:contract-fulfillment && pnpm test:route-smoke",
         },
       }),
@@ -220,6 +221,7 @@ test.describe("E12 contract fulfillment gate", () => {
       packageJsonText: JSON.stringify({
         scripts: {
           "visual:capture-qa:release": "CAPTURE_QA_FAIL_ON_WARNINGS=1 CAPTURE_QA_REQUIRE_CAPTURES=1 CAPTURE_QA_INPUT=artifacts/release-candidate/current CAPTURE_QA_OUTPUT=artifacts/capture-qa/release-current tsx scripts/capture-qa-contract.ts",
+          "visual:capture-routes:release-candidate": "tsx scripts/capture-routes-and-modals.ts --release-candidate --screens-only",
           "release:contract-check": "pnpm guard:source && pnpm test:contract-fulfillment",
         },
       }),
