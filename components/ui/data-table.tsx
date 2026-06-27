@@ -5,21 +5,39 @@ import { useMemo, useState } from "react";
 import { DisabledControlReason, disabledControlReasonId } from "@/components/ui/disabled-control-reason";
 import { StatePanel, type ComponentState } from "@/components/ui/state-panel";
 import { cn } from "@/lib/cn";
+import {
+  uxDataFieldAttributesFor,
+  uxDataSurfaceActionAttributesFor,
+  uxDataSurfaceActionContractFor,
+  uxDataSurfaceAttributesFor,
+  type UxDataFieldPriority,
+  type UxDataSurfaceActionPolicy,
+  type UxDataSurfaceDensity,
+  type UxDataSurfaceFamily,
+  type UxDataSurfaceFilterState,
+  type UxMasterDetailMode,
+} from "@/lib/ux-data-surface-contract";
 
 export type DataTableColumn<T> = {
   key: string;
   header: string;
   render: (row: T) => React.ReactNode;
   className?: string;
+  priority?: UxDataFieldPriority;
   mobileHidden?: boolean;
   sortable?: boolean;
 };
 
 type DataTableProps<T> = {
+  actionPolicy?: UxDataSurfaceActionPolicy;
   columns: Array<DataTableColumn<T>>;
   compact?: boolean;
+  density?: UxDataSurfaceDensity;
   emptyMessage?: string;
+  family?: UxDataSurfaceFamily;
+  filterState?: UxDataSurfaceFilterState;
   getRowId: (row: T) => string;
+  masterDetailMode?: UxMasterDetailMode;
   mobileCardTitle?: (row: T) => React.ReactNode;
   onRowAction?: (row: T) => void;
   responsiveMode?: "cards" | "table";
@@ -54,10 +72,15 @@ const stateCopy: Record<ComponentState, { detail: string; title: string }> = {
 };
 
 export function DataTable<T>({
+  actionPolicy,
   columns,
   compact = false,
+  density,
   emptyMessage,
+  family = "table",
+  filterState,
   getRowId,
+  masterDetailMode,
   mobileCardTitle,
   onRowAction,
   onSortChange,
@@ -106,26 +129,49 @@ export function DataTable<T>({
     return activeSortDirection === "desc" ? "descending" : "ascending";
   }
 
+  const densityPreset = density ?? (compact ? "compact_operations" : "standard_review");
+  const resolvedActionPolicy = actionPolicy ?? (onRowAction ? "open_detail" : "disabled_unavailable");
+  const rendersRowAction = uxDataSurfaceActionContractFor(resolvedActionPolicy).rendersAffordance;
+  const tableAttributes = uxDataSurfaceAttributesFor({
+    actionPolicy: resolvedActionPolicy,
+    density: densityPreset,
+    family,
+    filterState,
+    masterDetailMode,
+    stickyHeader: false,
+    stickyRail: false,
+  });
+
+  function columnPriorityFor(column: DataTableColumn<T>, index: number): UxDataFieldPriority {
+    if (column.priority) return column.priority;
+    if (column.mobileHidden) return "mobile_hidden";
+    if (index === 0) return "identity";
+    return "secondary_metadata";
+  }
+
   function RowAction({ row }: { row: T }) {
     const actionLabel = rowActionLabel?.(row) ?? `Open row action for ${getRowId(row)}`;
-    const disabledReason = onRowAction ? undefined : rowActionUnavailableLabel;
+    const disabledByPolicy = resolvedActionPolicy === "blocked_static" || resolvedActionPolicy === "disabled_unavailable";
+    const disabledReason = onRowAction && !disabledByPolicy ? undefined : rowActionUnavailableLabel;
     const disabledReasonId = disabledReason ? disabledControlReasonId(`row-action-${getRowId(row)}`) : undefined;
+    const actionEnabled = Boolean(onRowAction) && !disabledByPolicy;
 
     return (
       <button
         aria-describedby={disabledReason ? disabledReasonId : undefined}
-        aria-label={onRowAction ? actionLabel : rowActionUnavailableLabel}
+        aria-label={actionEnabled ? actionLabel : rowActionUnavailableLabel}
         className="ml-auto grid size-8 place-items-center rounded-md border border-transparent text-alphavest-subtle transition enabled:hover:border-alphavest-border enabled:hover:text-alphavest-ivory disabled:cursor-not-allowed disabled:opacity-45"
         data-testid="ux-data-table-row-action"
         data-ux-affordance="row-action"
         data-ux-disabled-message={disabledReason ? "accessible" : undefined}
         data-ux-disabled-reason={disabledReason}
-        data-ux-interactive={onRowAction ? "true" : "false"}
-        data-ux-row-action-state={onRowAction ? "enabled" : "disabled"}
-        disabled={!onRowAction}
-        onClick={onRowAction ? () => onRowAction(row) : undefined}
-        title={onRowAction ? actionLabel : rowActionUnavailableLabel}
+        data-ux-interactive={actionEnabled ? "true" : "false"}
+        data-ux-row-action-state={actionEnabled ? "enabled" : "disabled"}
+        disabled={!actionEnabled}
+        onClick={actionEnabled ? () => onRowAction?.(row) : undefined}
+        title={actionEnabled ? actionLabel : rowActionUnavailableLabel}
         type="button"
+        {...uxDataSurfaceActionAttributesFor(resolvedActionPolicy)}
       >
         <MoreHorizontal aria-hidden="true" className="size-4" />
         {disabledReason ? <DisabledControlReason id={disabledReasonId} reason={disabledReason} /> : null}
@@ -141,12 +187,14 @@ export function DataTable<T>({
     <div
       className="min-w-0 max-w-full overflow-x-auto overflow-y-visible rounded-md border border-alphavest-border/70 [contain:inline-size]"
       data-testid="ux-data-table"
+      {...tableAttributes}
     >
       <table className={tablePadding + " border-collapse text-left text-sm"}>
         <thead className="bg-alphavest-panel/75 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">
           <tr>
-            {columns.map((column) => {
+            {columns.map((column, index) => {
               const columnSortState = sortStateForColumn(column);
+              const columnPriority = columnPriorityFor(column, index);
 
               return (
                 <th
@@ -158,6 +206,7 @@ export function DataTable<T>({
                     column.className
                   )}
                   key={column.key}
+                  {...uxDataFieldAttributesFor(columnPriority)}
                 >
                   {column.sortable ? (
                     <button
@@ -182,32 +231,37 @@ export function DataTable<T>({
                 </th>
               );
             })}
-            <th className="min-h-12 w-14 border-b border-alphavest-border/70 px-5">
-              <span className="sr-only">Actions</span>
-            </th>
+            {rendersRowAction ? (
+              <th className="min-h-12 w-14 border-b border-alphavest-border/70 px-5" {...uxDataFieldAttributesFor("action")}>
+                <span className="sr-only">Actions</span>
+              </th>
+            ) : null}
           </tr>
         </thead>
         <tbody>
           {sortedRows.length === 0 ? (
             <tr>
-              <td className="px-4 py-6 text-alphavest-muted" colSpan={columns.length + 1}>
+              <td className="px-4 py-6 text-alphavest-muted" colSpan={columns.length + (rendersRowAction ? 1 : 0)}>
                 {emptyMessage ?? "No records available."}
               </td>
             </tr>
           ) : (
             sortedRows.map((row) => (
               <tr className={cn("border-b border-alphavest-border/55 last:border-0", rowMinHeight)} key={getRowId(row)}>
-                {columns.map((column) => (
+                {columns.map((column, index) => (
                   <td
                     className={cn("min-w-0 break-words align-top leading-5 text-alphavest-muted", cellPadding, column.className)}
                     key={column.key}
+                    {...uxDataFieldAttributesFor(columnPriorityFor(column, index))}
                   >
                     {column.render(row)}
                   </td>
                 ))}
-                <td className="px-5 py-4 text-right text-alphavest-subtle">
-                  <RowAction row={row} />
-                </td>
+                {rendersRowAction ? (
+                  <td className="px-5 py-4 text-right text-alphavest-subtle" {...uxDataFieldAttributesFor("action")}>
+                    <RowAction row={row} />
+                  </td>
+                ) : null}
               </tr>
             ))
           )}
@@ -222,7 +276,18 @@ export function DataTable<T>({
 
   return (
     <div>
-      <div className="md:hidden">
+      <div
+        className="md:hidden"
+        {...uxDataSurfaceAttributesFor({
+          actionPolicy: resolvedActionPolicy,
+          density: "mobile_card_projection",
+          family,
+          filterState,
+          masterDetailMode,
+          stickyHeader: false,
+          stickyRail: false,
+        })}
+      >
         {sortedRows.length === 0 ? (
           <div className="rounded-md border border-alphavest-border/70 px-4 py-6 text-sm text-alphavest-muted">
             {emptyMessage ?? "No records available."}
@@ -232,16 +297,16 @@ export function DataTable<T>({
             {sortedRows.map((row) => (
                 <article className="rounded-md border border-alphavest-border/70 bg-alphavest-midnight/45 p-5" key={getRowId(row)}>
                   <div className="mb-3 flex items-start justify-between gap-3">
-                  <div className="min-w-0 text-sm font-semibold text-alphavest-ivory">
+                  <div className="min-w-0 text-sm font-semibold text-alphavest-ivory" {...uxDataFieldAttributesFor("identity")}>
                     {mobileCardTitle ? mobileCardTitle(row) : columns[0]?.render(row)}
                   </div>
-                  <RowAction row={row} />
+                  {rendersRowAction ? <RowAction row={row} /> : null}
                 </div>
                 <dl className="grid gap-3">
-                  {columns.slice(mobileCardTitle ? 0 : 1).filter((column) => !column.mobileHidden).map((column) => (
+                  {columns.slice(mobileCardTitle ? 0 : 1).filter((column) => !column.mobileHidden).map((column, index) => (
                     <div className="grid gap-1 border-t border-alphavest-border/45 pt-3 first:border-t-0 first:pt-0" key={column.key}>
                       <dt className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">{column.header}</dt>
-                      <dd className="min-w-0 text-sm text-alphavest-muted">{column.render(row)}</dd>
+                      <dd className="min-w-0 text-sm text-alphavest-muted" {...uxDataFieldAttributesFor(columnPriorityFor(column, index))}>{column.render(row)}</dd>
                     </div>
                   ))}
                 </dl>

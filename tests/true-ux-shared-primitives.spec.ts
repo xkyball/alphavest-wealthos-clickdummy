@@ -14,47 +14,58 @@ test.describe("V0.96 WP-11 shared interaction primitives", () => {
   test("classifies modal and drawer lifecycle hooks as shared primitive proof", () => {
     const modal = readSource("components", "ui", "modal.tsx");
     const drawer = readSource("components", "ui", "drawer.tsx");
+    const lifecycleContract = readSource("lib", "ux-lifecycle-state-contract.ts");
 
     for (const source of [modal, drawer]) {
       expect(source).toContain("aria-describedby");
       expect(source).toContain("aria-labelledby");
       expect(source).toContain("focusableSelector");
       expect(source).toContain("previouslyFocusedRef");
-      expect(source).toContain('data-ux-lifecycle-cancel="no-submit-no-mutation"');
-      expect(source).toContain('data-ux-lifecycle-open="controlled-by-owner-state"');
-      expect(source).toContain('data-ux-no-overclaim="true"');
+      expect(source).toContain("uxLifecycleAttributesForKind");
+      expect(source).toContain("{...lifecycleAttributes}");
       expect(source).toContain('role="status"');
       expect(source).toContain("Escape");
     }
 
+    expect(lifecycleContract).toContain('"data-ux-lifecycle-cancel": contract.cancel');
+    expect(lifecycleContract).toContain('"data-ux-lifecycle-open": contract.open');
+    expect(lifecycleContract).toContain('"data-ux-no-overclaim": contract.noOverclaim');
     expect(modal).toContain('aria-modal="true"');
     expect(modal).toContain('role="dialog"');
     expect(drawer).toContain('role="complementary"');
-    expect(drawer).toContain('data-ux-a11y-focus-return="trigger"');
+    expect(lifecycleContract).toContain('"data-ux-a11y-focus-return": contract.focusReturn');
   });
 
   test("classifies tables, CTA cluster and state feedback as truth-state primitives", () => {
     const dataTable = readSource("components", "ui", "data-table.tsx");
     const ctaCluster = readSource("components", "ux-cta-cluster.tsx");
+    const actionContract = readSource("lib", "ux-action-hierarchy-contract.ts");
     const statePanel = readSource("components", "ui", "state-panel.tsx");
+    const lifecycleContract = readSource("lib", "ux-lifecycle-state-contract.ts");
     const a11yStatus = readSource("components", "ui", "a11y-status.tsx");
 
     expect(dataTable).toContain('state?: ComponentState | "ready"');
     expect(dataTable).toContain('state !== "ready"');
     expect(dataTable).toContain("rowActionUnavailableLabel");
-    expect(dataTable).toContain('data-ux-row-action-state={onRowAction ? "enabled" : "disabled"}');
+    expect(dataTable).toContain('data-ux-row-action-state={actionEnabled ? "enabled" : "disabled"}');
+    expect(dataTable).toContain("uxDataSurfaceAttributesFor");
+    expect(dataTable).toContain("uxDataFieldAttributesFor");
+    expect(dataTable).toContain("uxDataSurfaceActionAttributesFor");
     expect(dataTable).toContain("No scoped row action for this table state.");
 
-    expect(ctaCluster).toContain('data-ux-primary-cta');
-    expect(ctaCluster).toContain('data-ux-secondary-cta');
-    expect(ctaCluster).toContain('data-ux-recovery-cta');
-    expect(ctaCluster).toContain("This action is held until an authorized lifecycle is wired.");
+    expect(ctaCluster).toContain("uxActionAttributesFor");
+    expect(actionContract).toContain('"data-ux-primary-cta": input.priority === "primary" ? "true" : undefined');
+    expect(actionContract).toContain('"data-ux-secondary-cta": input.priority === "secondary" || input.priority === "tertiary" ? "true" : undefined');
+    expect(actionContract).toContain('"data-ux-recovery-cta": input.priority === "recovery" ? "true" : undefined');
+    expect(actionContract).toContain("This action is held until an authorized lifecycle is wired.");
     expect(ctaCluster).toContain('testId="ux-cta-disabled-reason" visible');
 
-    expect(statePanel).toContain('data-ux-state={state}');
+    expect(statePanel).toContain("uxStateAttributesForComponentState");
+    expect(statePanel).toContain("{...stateAttributes}");
+    expect(lifecycleContract).toContain('"data-ux-state": contract.componentState');
     expect(statePanel).toContain('"audit-unavailable"');
     expect(statePanel).toContain('"export-pending"');
-    expect(statePanel).toContain('"redacted"');
+    expect(statePanel).toContain("redacted:");
 
     expect(a11yStatus).toContain('data-ux-a11y-keyboard="tab-escape-cancel-return"');
     expect(a11yStatus).toContain('data-ux-a11y-status="polite-live-region"');
@@ -63,20 +74,24 @@ test.describe("V0.96 WP-11 shared interaction primitives", () => {
 
   test("guarded action button exposes denied disabled loading success and error lifecycle states", () => {
     const guardedButton = readSource("components", "ui", "guarded-action-button.tsx");
+    const actionContract = readSource("lib", "ux-action-hierarchy-contract.ts");
+    const feedbackContract = readSource("lib", "ux-feedback-message-contract.ts");
     const guardTypes = readSource("lib", "ui-clickflow-guards.ts");
 
     expect(guardTypes).toContain('"enabled" | "disabled" | "denied" | "error" | "hidden" | "loading" | "success"');
     expect(guardedButton).toContain("type GuardedActionLifecycleState");
+    expect(guardedButton).toContain("uxActionAttributesFor");
+    expect(guardedButton).toContain("{...actionAttributes}");
     expect(guardedButton).toContain('data-ux-action-guard-state={effectiveStatus}');
     expect(guardedButton).toContain('data-ux-lifecycle-status={effectiveStatus}');
-    expect(guardedButton).toContain('data-ux-requires-audit={requiresAudit ? "true" : "false"}');
-    expect(guardedButton).toContain('data-ux-requires-confirmation={requiresConfirmation ? "true" : "false"}');
-    expect(guardedButton).toContain('data-ux-requires-permission={requiresPermission ? "true" : "false"}');
-    expect(guardedButton).toContain('data-ux-no-overclaim="true"');
+    expect(actionContract).toContain('"data-ux-requires-audit": (input.requiresAudit ?? meaningContract.requiresAudit) ? "true" : "false"');
+    expect(actionContract).toContain('"data-ux-requires-confirmation": (input.requiresConfirmation ?? meaningContract.requiresConfirmation) ? "true" : "false"');
+    expect(actionContract).toContain('"data-ux-requires-permission": input.requiresPermission === false ? "false" : "true"');
+    expect(actionContract).toContain('"data-ux-no-overclaim": "true"');
     expect(guardedButton).toContain("disabled={disabled}");
     expect(guardedButton).toContain("onClick={disabled ? undefined : onClick}");
     expect(guardedButton).toContain("Action pending. Duplicate execution is blocked.");
-    expect(guardedButton).toContain("Downstream gates remain separate unless explicitly stated.");
+    expect(feedbackContract).toContain("Action recorded for this control only; evidence, release, export, share, visibility and permission gates remain separate unless explicitly completed.");
     expect(guardedButton).toContain("Action failed closed. Review the blocker before retry.");
   });
 
