@@ -47,6 +47,7 @@ import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
 import { UxComplexityPriorityPanel } from "@/components/ux-complexity-priority-panel";
 import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
+import { uxActionAttributesFor } from "@/lib/ux-action-hierarchy-contract";
 import { wp05ComplianceReleaseConfirmationPhrase } from "@/lib/advisory-workflow-contract";
 import {
   advisorApprovalDemoTargets,
@@ -1603,19 +1604,33 @@ function ComplianceReviewPage({ title }: { title: string }) {
                 <span
                   className={secondaryButtonClass + " w-full cursor-not-allowed opacity-60"}
                   data-testid="wp06-release-blocked-control"
-                  data-ux-interactive="false"
                   role="status"
+                  {...uxActionAttributesFor({
+                    availability: "blocked_static",
+                    disabledReason: "Release remains blocked until evidence, policy, reviewer and approver gates pass.",
+                    meaning: "release",
+                    placement: "sticky_rail",
+                    priority: "blocked",
+                    requiresPermission: false,
+                  })}
                 >
                   <LockKeyhole aria-hidden="true" className="size-4" />Release blocked until preconditions pass
                 </span>
                 <button
                   className={primaryButtonClass + " w-full"}
                   data-testid="j02-request-evidence"
-                  data-ux-primary-cta="true"
                   onClick={() => {
                     setConfirmationAction("request_evidence");
                   }}
                   type="button"
+                  {...uxActionAttributesFor({
+                    availability: "enabled",
+                    meaning: "request_evidence",
+                    placement: "sticky_rail",
+                    priority: "primary",
+                    requiresAudit: true,
+                    requiresConfirmation: true,
+                  })}
                 >
                   <MessageSquare aria-hidden="true" className="size-4" />Request Evidence
                 </button>
@@ -1626,6 +1641,14 @@ function ComplianceReviewPage({ title }: { title: string }) {
                     setConfirmationAction("compliance_block");
                   }}
                   type="button"
+                  {...uxActionAttributesFor({
+                    availability: "enabled",
+                    meaning: "block",
+                    placement: "sticky_rail",
+                    priority: "destructive",
+                    requiresAudit: true,
+                    requiresConfirmation: true,
+                  })}
                 >
                   Keep Blocked
                 </button>
@@ -1845,6 +1868,16 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
     : !acknowledged
       ? "Release is blocked until the compliance acknowledgement is checked and the exact release phrase is entered."
       : `Release is blocked until the confirmation text exactly matches ${releasePhrase}.`;
+  const releaseActionAvailability =
+    status === "submitting"
+      ? "loading"
+      : status === "success"
+        ? "success"
+        : status === "error"
+          ? "error"
+          : submitDisabled
+            ? "disabled"
+            : "enabled";
 
   function resetAndClose() {
     setAcknowledged(false);
@@ -1911,6 +1944,15 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
               void submitRelease();
             }}
             type="button"
+            {...uxActionAttributesFor({
+              availability: releaseActionAvailability,
+              disabledReason: submitDisabled ? validationMessage : undefined,
+              meaning: "release",
+              placement: "modal_footer",
+              priority: "primary",
+              requiresAudit: true,
+              requiresConfirmation: true,
+            })}
           >
             <LockKeyhole aria-hidden="true" className="size-4" />{status === "submitting" ? "Submitting..." : "Release client-safe journey"}
           </button>

@@ -55,6 +55,7 @@ import { UxCtaCluster } from "@/components/ux-cta-cluster";
 import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
 import { WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
+import { uxActionAttributesFor } from "@/lib/ux-action-hierarchy-contract";
 import {
   blueprintRows,
   blueprintStages,
@@ -1621,6 +1622,23 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
   const timeline = loadState === "error" ? [] : snapshot?.timeline.length ? snapshot.timeline : exportTimeline;
   const lifecycleStatus = status === "submitting" ? "loading" : status;
   const validationState = acknowledged ? "valid-export-approval-review" : "blocked-acknowledgement-required";
+  const approvalSubmitDisabled = !acknowledged || status === "submitting" || status === "success";
+  const approvalActionAvailability =
+    status === "submitting"
+      ? "loading"
+      : status === "success"
+        ? "success"
+        : status === "error"
+          ? "error"
+          : approvalSubmitDisabled
+            ? "disabled"
+            : "enabled";
+  const approvalDisabledReason =
+    approvalSubmitDisabled
+      ? acknowledged
+        ? "Export approval action is unavailable while the workflow is submitting or already recorded."
+        : "Export approval remains blocked until the scoped approval acknowledgement is checked."
+      : undefined;
 
   function openExportApprovalModal() {
     setModalOpen(true);
@@ -1727,6 +1745,14 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
             data-ux-lifecycle-trigger="export-approval-modal"
             onClick={openExportApprovalModal}
             type="button"
+            {...uxActionAttributesFor({
+              availability: "enabled",
+              meaning: "export_approval",
+              placement: "inline_cluster",
+              priority: "primary",
+              requiresAudit: true,
+              requiresConfirmation: true,
+            })}
           >
             Review export approval
           </button>
@@ -1840,11 +1866,20 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
               className={primaryButtonClass}
               data-testid="j08-confirm-approval"
               data-ux-lifecycle-result={acknowledged ? "submits-export-approval-only" : "blocked-validation-required"}
-              disabled={!acknowledged || status === "submitting" || status === "success"}
+              disabled={approvalSubmitDisabled}
               onClick={() => {
                 void submitExportApproval();
               }}
               type="button"
+              {...uxActionAttributesFor({
+                availability: approvalActionAvailability,
+                disabledReason: approvalDisabledReason,
+                meaning: "export_approval",
+                placement: "modal_footer",
+                priority: "primary",
+                requiresAudit: true,
+                requiresConfirmation: true,
+              })}
             >
               {status === "submitting" ? "Confirming..." : "Confirm Export Approval"}
             </button>
@@ -1921,6 +1956,23 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
   const timeline = loadState === "error" ? [] : snapshot?.timeline.length ? snapshot.timeline : exportTimeline;
   const lifecycleStatus = status === "submitting" ? "loading" : status;
   const validationState = acknowledged ? "valid-export-download-review" : "blocked-acknowledgement-required";
+  const downloadSubmitDisabled = !acknowledged || status === "submitting" || status === "success";
+  const downloadActionAvailability =
+    status === "submitting"
+      ? "loading"
+      : status === "success"
+        ? "success"
+        : status === "error"
+          ? "error"
+          : downloadSubmitDisabled
+            ? "disabled"
+            : "enabled";
+  const downloadDisabledReason =
+    downloadSubmitDisabled
+      ? acknowledged
+        ? "Download action is unavailable while the workflow is submitting or already recorded."
+        : "Download remains blocked until the controlled-download acknowledgement is checked."
+      : undefined;
 
   function openDownloadConfirmation() {
     setModalOpen(true);
@@ -2068,6 +2120,14 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
                   data-ux-lifecycle-trigger="export-download-confirmation-modal"
                   onClick={openDownloadConfirmation}
                   type="button"
+                  {...uxActionAttributesFor({
+                    availability: "enabled",
+                    meaning: "download",
+                    placement: "inline_cluster",
+                    priority: "primary",
+                    requiresAudit: true,
+                    requiresConfirmation: true,
+                  })}
                 >
                   <Download aria-hidden="true" className="size-4" />
                   Download package
@@ -2088,7 +2148,24 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
                   { label: "Watermark", value: <Badge tone="green">Prepared</Badge> }
                 ]}
               />
-              <button aria-describedby="j08-share-export-reason" className={secondaryButtonClass + " mt-4 w-full"} data-testid="j08-share-export" disabled type="button">Share after download</button>
+              <button
+                aria-describedby="j08-share-export-reason"
+                className={secondaryButtonClass + " mt-4 w-full"}
+                data-testid="j08-share-export"
+                disabled
+                type="button"
+                {...uxActionAttributesFor({
+                  availability: "disabled",
+                  disabledReason: "Secure share is blocked until the download event is recorded and audited.",
+                  meaning: "share",
+                  placement: "inline_cluster",
+                  priority: "secondary",
+                  requiresAudit: true,
+                  requiresConfirmation: true,
+                })}
+              >
+                Share after download
+              </button>
               <StatePanel className="mt-4" detail="Record the package download before creating an external share." state="blocked" title="Share blocked" />
               <p className="mt-2 text-xs leading-5 text-alphavest-muted" data-testid="ux-cta-disabled-reason" id="j08-share-export-reason">
                 Secure share is blocked until the download event is recorded and audited.
@@ -2120,11 +2197,20 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
               className={primaryButtonClass}
               data-testid="j08-download-export"
               data-ux-lifecycle-result={acknowledged ? "submits-controlled-download-only" : "blocked-validation-required"}
-              disabled={!acknowledged || status === "submitting" || status === "success"}
+              disabled={downloadSubmitDisabled}
               onClick={() => {
                 void submitExportDownload();
               }}
               type="button"
+              {...uxActionAttributesFor({
+                availability: downloadActionAvailability,
+                disabledReason: downloadDisabledReason,
+                meaning: "download",
+                placement: "modal_footer",
+                priority: "primary",
+                requiresAudit: true,
+                requiresConfirmation: true,
+              })}
             >
               {status === "submitting" ? "Recording..." : "Confirm controlled download"}
             </button>
