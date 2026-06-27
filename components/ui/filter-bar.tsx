@@ -3,25 +3,33 @@ import { Badge } from "@/components/ui/badge";
 import { DisabledControlReason, disabledControlReasonId } from "@/components/ui/disabled-control-reason";
 import {
   uxDataSurfaceAttributesFor,
-  type UxDataSurfaceDensity,
+  type UxDataSurfaceDensityInput,
   type UxDataSurfaceFamily,
   type UxDataSurfaceFilterState,
   type UxMasterDetailMode,
 } from "@/lib/ux-data-surface-contract";
 
 type FilterOption = {
+  disabledAriaLabel?: string;
   label: string;
   value: string;
 };
 
 type FilterBarProps = {
-  density?: UxDataSurfaceDensity;
+  activeFilterCount?: number;
+  activeStateLabel?: string;
+  density?: UxDataSurfaceDensityInput;
   family?: UxDataSurfaceFamily;
   filters?: FilterOption[];
   filterState?: UxDataSurfaceFilterState;
   masterDetailMode?: UxMasterDetailMode;
   mobilePlaceholder?: string;
+  onReset?: () => void;
+  onQueryChange?: (value: string) => void;
   placeholder?: string;
+  queryValue?: string;
+  resetLabel?: string;
+  searchTestId?: string;
   tabs?: FilterOption[];
 };
 
@@ -29,16 +37,46 @@ const inputClass =
   "h-[var(--field-height)] w-full rounded-md border border-alphavest-border bg-alphavest-midnight/70 px-9 text-sm text-alphavest-ivory outline-none placeholder:text-alphavest-subtle focus:border-alphavest-gold";
 
 export function FilterBar({
+  activeFilterCount = 0,
+  activeStateLabel,
   density = "standard_review",
   family = "list",
   filters = [],
   filterState,
   masterDetailMode = "none",
   mobilePlaceholder,
+  onReset,
+  onQueryChange,
   placeholder = "Search...",
+  queryValue = "",
+  resetLabel = "Reset filters",
+  searchTestId,
   tabs = [],
 }: FilterBarProps) {
-  const resolvedFilterState = filterState ?? (filters.length > 0 ? "disabled_static" : tabs.length > 0 ? "active_filter" : "inactive");
+  const hasQuery = queryValue.trim().length > 0;
+  const hasActiveFilter = activeFilterCount > 0 || tabs.length > 0;
+  const resolvedFilterState =
+    filterState ??
+    (hasQuery && hasActiveFilter
+      ? "active_query_and_filter"
+      : hasQuery
+        ? "active_query"
+        : hasActiveFilter
+          ? "active_filter"
+          : filters.length > 0
+            ? "disabled_static"
+            : "inactive");
+  const activeSummary =
+    activeStateLabel ??
+    (resolvedFilterState === "active_query_and_filter"
+      ? `Query and ${activeFilterCount || tabs.length} filter ${activeFilterCount === 1 ? "state" : "states"} active.`
+      : resolvedFilterState === "active_query"
+        ? `Query active: ${queryValue}.`
+        : resolvedFilterState === "active_filter"
+          ? `${activeFilterCount || tabs.length} filter ${activeFilterCount === 1 ? "state" : "states"} active.`
+          : resolvedFilterState === "disabled_static"
+            ? "Filters are visible as disabled controls only; no backend filtering is implied."
+            : "No query or filter is active.");
 
   return (
     <div
@@ -63,6 +101,25 @@ export function FilterBar({
         </div>
       ) : null}
 
+      <div
+        aria-live="polite"
+        className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-alphavest-border/60 bg-alphavest-navy/30 px-3 py-2 text-xs leading-5 text-alphavest-muted"
+        data-testid="ux-filter-active-state"
+        data-ux-data-surface-filter-state={resolvedFilterState}
+      >
+        <span>{activeSummary}</span>
+        {onReset && resolvedFilterState !== "inactive" && resolvedFilterState !== "disabled_static" ? (
+          <button
+            className="text-alphavest-gold-soft underline-offset-4 hover:underline"
+            data-testid="ux-filter-reset"
+            onClick={onReset}
+            type="button"
+          >
+            {resetLabel}
+          </button>
+        ) : null}
+      </div>
+
       <div className="flex flex-col gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-3 lg:flex-row lg:items-center">
         <label className="relative min-w-0 flex-1">
           <span className="sr-only">{placeholder}</span>
@@ -70,14 +127,20 @@ export function FilterBar({
           <input
             className={`${inputClass} sm:hidden`}
             data-ux-data-surface-filter-state={resolvedFilterState}
+            data-testid={searchTestId ? `${searchTestId}-mobile` : undefined}
+            onChange={(event) => onQueryChange?.(event.target.value)}
             placeholder={mobilePlaceholder ?? placeholder}
             type="search"
+            value={queryValue}
           />
           <input
             className={`${inputClass} hidden sm:block`}
             data-ux-data-surface-filter-state={resolvedFilterState}
+            data-testid={searchTestId}
+            onChange={(event) => onQueryChange?.(event.target.value)}
             placeholder={placeholder}
             type="search"
+            value={queryValue}
           />
         </label>
 
@@ -87,23 +150,24 @@ export function FilterBar({
             const disabledReasonId = disabledControlReasonId(`filter-${filter.value}`);
 
             return (
-              <span
+              <button
                 aria-describedby={disabledReasonId}
-                aria-label={`${filter.label} filter is not wired in this release`}
+                aria-label={filter.disabledAriaLabel ?? `${filter.label} filter is static in this demo queue`}
                 className="inline-flex h-[var(--field-height)] items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-midnight/70 px-3 text-sm text-alphavest-muted opacity-65"
                 data-ux-affordance="blocked-filter-button"
                 data-ux-data-surface-filter-state="disabled_static"
                 data-ux-disabled-message="accessible"
                 data-ux-disabled-reason={disabledReason}
                 data-ux-interactive="false"
+                disabled
                 key={filter.value}
-                role="status"
                 title={disabledReason}
+                type="button"
               >
                 <SlidersHorizontal aria-hidden="true" className="size-4" />
                 {filter.label}
                 <DisabledControlReason id={disabledReasonId} reason={disabledReason} />
-              </span>
+              </button>
             );
           })}
         </div>

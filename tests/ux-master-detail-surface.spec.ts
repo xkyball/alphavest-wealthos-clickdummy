@@ -8,7 +8,7 @@ function readSource(...segments: string[]) {
   return readFileSync(join(repoRoot, ...segments), "utf8");
 }
 
-test.describe("E07 master-detail surface adoption", () => {
+test.describe("E06 master-detail surface adoption", () => {
   test("provides a reusable master-detail adapter backed by the data-surface contract", () => {
     const source = readSource("components", "ui", "master-detail-surface.tsx");
     const exports = readSource("components", "ui", "index.ts");
@@ -18,6 +18,9 @@ test.describe("E07 master-detail surface adoption", () => {
     expect(source).toContain("masterDetailMode");
     expect(source).toContain("data-ux-master-detail-selected-object");
     expect(source).toContain("data-ux-master-detail-selected-state");
+    expect(source).toContain("data-testid=\"ux-master-detail-master\"");
+    expect(source).toContain("data-testid=\"ux-master-detail-detail\"");
+    expect(source).toContain("data-testid=\"ux-master-detail-selected-summary\"");
     expect(exports).toContain('export * from "@/components/ui/master-detail-surface"');
   });
 
@@ -28,6 +31,9 @@ test.describe("E07 master-detail surface adoption", () => {
     expect(source).toContain('actionPolicy="route_handoff"');
     expect(source).toContain('masterDetailMode="route_detail"');
     expect(source).toContain('filterState={searchTerm.length > 0 ? "active_query" : "inactive"}');
+    expect(source).toContain("<MasterDetailSurface");
+    expect(source).toContain("Advisor queue keeps list context");
+    expect(source).toContain("Compliance queue keeps list context");
   });
 
   test("marks the wealth action board as the representative board-to-detail surface", () => {

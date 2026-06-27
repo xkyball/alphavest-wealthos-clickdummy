@@ -16,6 +16,13 @@ export type UxDataSurfaceDensity =
   | "spacious_detail_support"
   | "mobile_card_projection";
 
+export type UxDataSurfaceDensityPreset =
+  | "compact"
+  | "default"
+  | "comfortable";
+
+export type UxDataSurfaceDensityInput = UxDataSurfaceDensity | UxDataSurfaceDensityPreset;
+
 export type UxDataFieldPriority =
   | "identity"
   | "primary_status"
@@ -60,7 +67,8 @@ export type UxDataSurfaceActionContract = {
 
 export type UxDataSurfaceProjectionInput = {
   actionPolicy?: UxDataSurfaceActionPolicy;
-  density: UxDataSurfaceDensity;
+  density: UxDataSurfaceDensityInput;
+  densityPreset?: UxDataSurfaceDensityPreset;
   family: UxDataSurfaceFamily;
   filterState?: UxDataSurfaceFilterState;
   masterDetailMode?: UxMasterDetailMode;
@@ -85,6 +93,12 @@ export const uxDataSurfaceDensities = [
   "spacious_detail_support",
   "mobile_card_projection",
 ] as const satisfies readonly UxDataSurfaceDensity[];
+
+export const uxDataSurfaceDensityPresets = [
+  "compact",
+  "default",
+  "comfortable",
+] as const satisfies readonly UxDataSurfaceDensityPreset[];
 
 export const uxDataFieldPriorities = [
   "identity",
@@ -178,12 +192,33 @@ export function uxDataSurfaceActionContractFor(policy: UxDataSurfaceActionPolicy
   return uxDataSurfaceActionContracts[policy];
 }
 
+export function uxDataSurfaceDensityForPreset(density: UxDataSurfaceDensityInput): UxDataSurfaceDensity {
+  if (density === "compact") return "compact_operations";
+  if (density === "default") return "standard_review";
+  if (density === "comfortable") return "spacious_detail_support";
+  return density;
+}
+
+export function uxDataSurfacePresetForDensity(
+  density: UxDataSurfaceDensityInput,
+  explicitPreset?: UxDataSurfaceDensityPreset,
+): UxDataSurfaceDensityPreset {
+  if (explicitPreset) return explicitPreset;
+  if (density === "compact" || density === "default" || density === "comfortable") return density;
+  if (density === "compact_operations") return "compact";
+  if (density === "spacious_detail_support" || density === "mobile_card_projection") return "comfortable";
+  return "default";
+}
+
 export function uxDataSurfaceAttributesFor(input: UxDataSurfaceProjectionInput): UxDataSurfaceRuntimeAttributes {
   const actionPolicy = input.actionPolicy ?? "none";
+  const density = uxDataSurfaceDensityForPreset(input.density);
+  const densityPreset = uxDataSurfacePresetForDensity(input.density, input.densityPreset);
 
   return {
     "data-ux-data-surface-action-policy": actionPolicy,
-    "data-ux-data-surface-density": input.density,
+    "data-ux-data-surface-density": density,
+    "data-ux-data-surface-density-preset": densityPreset,
     "data-ux-data-surface-family": input.family,
     "data-ux-data-surface-filter-state": input.filterState,
     "data-ux-master-detail-mode": input.masterDetailMode,

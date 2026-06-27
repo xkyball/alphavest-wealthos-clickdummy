@@ -7,6 +7,8 @@ import {
   uxDataSurfaceActionAttributesFor,
   uxDataSurfaceActionContractFor,
   uxDataSurfaceAttributesFor,
+  uxDataSurfaceDensityForPreset,
+  uxDataSurfaceDensityPresets,
   uxDataSurfaceActionPolicies,
   uxDataSurfaceDensities,
   uxDataSurfaceFamilies,
@@ -20,8 +22,8 @@ function readSource(...segments: string[]) {
   return readFileSync(join(repoRoot, ...segments), "utf8");
 }
 
-test.describe("E07 data surface contract", () => {
-  test("defines the canonical surface vocabulary approved by SPEC-E07-1", () => {
+test.describe("E06 data surface contract", () => {
+  test("defines the canonical surface vocabulary approved by E06", () => {
     expect(uxDataSurfaceFamilies).toEqual([
       "table",
       "list",
@@ -38,6 +40,14 @@ test.describe("E07 data surface contract", () => {
       "spacious_detail_support",
       "mobile_card_projection",
     ]);
+    expect(uxDataSurfaceDensityPresets).toEqual([
+      "compact",
+      "default",
+      "comfortable",
+    ]);
+    expect(uxDataSurfaceDensityForPreset("compact")).toBe("compact_operations");
+    expect(uxDataSurfaceDensityForPreset("default")).toBe("standard_review");
+    expect(uxDataSurfaceDensityForPreset("comfortable")).toBe("spacious_detail_support");
     expect(uxDataSurfaceActionPolicies).toEqual([
       "none",
       "open_detail",
@@ -63,6 +73,7 @@ test.describe("E07 data surface contract", () => {
     })).toMatchObject({
       "data-ux-data-surface-action-policy": "open_detail",
       "data-ux-data-surface-density": "standard_review",
+      "data-ux-data-surface-density-preset": "default",
       "data-ux-data-surface-family": "queue",
       "data-ux-data-surface-filter-state": "active_query",
       "data-ux-master-detail-mode": "route_detail",
@@ -94,7 +105,7 @@ test.describe("E07 data surface contract", () => {
     expect(uxDataSurfaceActionContractFor("command_handoff").noOverclaimRule).toContain("explicit action contract");
   });
 
-  test("DataTable projects E07 density field priority and row action metadata", () => {
+  test("DataTable projects E06 density field priority and row action metadata", () => {
     const dataTable = readSource("components", "ui", "data-table.tsx");
 
     expect(dataTable).toContain("type UxDataSurfaceDensity");
@@ -103,7 +114,8 @@ test.describe("E07 data surface contract", () => {
     expect(dataTable).toContain("uxDataSurfaceAttributesFor");
     expect(dataTable).toContain("uxDataFieldAttributesFor");
     expect(dataTable).toContain("uxDataSurfaceActionAttributesFor");
-    expect(dataTable).toContain('densityPreset = density ?? (compact ? "compact_operations" : "standard_review")');
+    expect(dataTable).toContain('uxDataSurfaceDensityForPreset(density ?? (compact ? "compact" : "default"))');
+    expect(dataTable).toContain("data-ux-data-surface-row-action-priority");
     expect(dataTable).toContain('resolvedActionPolicy = actionPolicy ?? (onRowAction ? "open_detail" : "disabled_unavailable")');
     expect(dataTable).toContain('data-ux-row-action-state={actionEnabled ? "enabled" : "disabled"}');
     expect(dataTable).toContain('"mobile_card_projection"');

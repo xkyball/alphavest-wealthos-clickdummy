@@ -1,4 +1,4 @@
-# AlphaVest E07 Data Surface And Master-Detail Refactor Pattern Specification
+# AlphaVest Deprecated E07 Data Surface And Master-Detail Refactor Pattern Specification
 
 Date: 2026-06-27
 
@@ -9,11 +9,11 @@ Date: 2026-06-27
 | Ticket | `SPEC-E07-1` |
 | Parent epic | `E07 Data Surface and Master-Detail Refactor Patterns` |
 | Source analysis | `docs/v3/proof/e07_data_surface_master_detail_analysis.md` |
-| Spec status | `DECISION_READY` |
-| Implementation status | `BLOCKED_PENDING_HUMAN_APPROVAL` |
-| Recommended approval | `APPROVE_E07_CANONICAL_DATA_SURFACE_CONTRACT` |
+| Spec status | `SUPERSEDED_BY_E06_UPLOAD_ARCHITECTURE` |
+| Implementation status | `DO_NOT_USE_AS_OPERATIVE_EPIC_NUMBER` |
+| Replacement | `docs/ux/ALPHAVEST_E06_DATA_SURFACE_MASTER_DETAIL_SPEC.md` |
 
-This specification defines the target rules and acceptance criteria for E07. It does not authorize implementation until the human approval gate is cleared.
+This earlier specification used the wrong epic number for data surfaces. The uploaded architecture defines data surfaces and master-detail as E06. Use the E06 implementation spec as operative source for this run.
 
 ## Target State
 

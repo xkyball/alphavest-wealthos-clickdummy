@@ -11,11 +11,9 @@ import {
   ClipboardCheck,
   Clock3,
   Download,
-  Filter,
   LockKeyhole,
   MessageSquare,
   RefreshCw,
-  Search,
   ShieldAlert,
   ShieldCheck,
   UsersRound,
@@ -32,6 +30,8 @@ import {
   CardHeader,
   CardTitle,
   DataTable,
+  FilterBar,
+  MasterDetailSurface,
   Modal,
   StatePanel,
   StickyActionZone,
@@ -1233,47 +1233,53 @@ function AdvisorQueuePage({ title }: { title: string }) {
               <Card key={label}><p className="text-sm text-alphavest-muted">{label}</p><p className={cn("mt-2 text-3xl font-semibold", label === "Overdue" ? "text-alphavest-red" : "text-alphavest-gold")}>{value}</p></Card>
             ))}
           </div>
-          <div className="grid gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-panel/55 p-3 lg:grid-cols-[1fr_repeat(4,10rem)_auto]">
-            <label className="relative min-w-0">
-              <Search aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-              <input
-                className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm outline-none focus:border-alphavest-gold"
-                data-testid="ux-interaction-advisor-search"
-                onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Search queue..."
-                type="search"
-                value={searchTerm}
-              />
-            </label>
-            {["Type", "Priority", "Risk Level", "Assigned To"].map((filter) => <FilterButton key={filter} label={filter} />)}
-            <button aria-label="Additional advisor filters are static in this demo queue" className={secondaryButtonClass} disabled type="button"><Filter aria-hidden="true" className="size-4" />Filters</button>
-          </div>
-          <DataTable
+          <MasterDetailSurface
             actionPolicy="route_handoff"
-            columns={advisorColumns}
-            density="standard_review"
-            emptyMessage="No advisor queue rows match this search."
+            density="default"
             family="queue"
-            filterState={searchTerm.length > 0 ? "active_query" : "inactive"}
-            getRowId={(row) => row.client}
+            filterState={searchTerm.length > 0 ? "active_query" : "disabled_static"}
+            master={
+              <div className="space-y-4">
+                <FilterBar
+                  activeFilterCount={4}
+                  activeStateLabel={searchTerm.length > 0 ? `Advisor queue query active: ${searchTerm}. Static filters remain visible only.` : "Advisor queue filters are visible as disabled demo controls only."}
+                  filters={[
+                    { label: "Type", value: "type" },
+                    { label: "Priority", value: "priority" },
+                    { label: "Risk Level", value: "risk" },
+                    { label: "Assigned To", value: "assigned" },
+                  ]}
+                  filterState={searchTerm.length > 0 ? "active_query" : "disabled_static"}
+                  onQueryChange={setSearchTerm}
+                  onReset={() => setSearchTerm("")}
+                  placeholder="Search queue..."
+                  queryValue={searchTerm}
+                  searchTestId="ux-interaction-advisor-search"
+                />
+                <DataTable
+                  actionPolicy="route_handoff"
+                  columns={advisorColumns}
+                  density="default"
+                  emptyMessage="No advisor queue rows match this search."
+                  family="queue"
+                  filterState={searchTerm.length > 0 ? "active_query" : "inactive"}
+                  getRowId={(row) => row.client}
+                  masterDetailMode="route_detail"
+                  onRowAction={() => router.push("/advisor/reviews/demo")}
+                  rowActionLabel={(row) => `Open advisor review for ${row.client}`}
+                  rows={visibleRows}
+                />
+              </div>
+            }
             masterDetailMode="route_detail"
-            onRowAction={() => router.push("/advisor/reviews/demo")}
-            rowActionLabel={(row) => `Open advisor review for ${row.client}`}
-            rows={visibleRows}
+            selectedObjectId={visibleRows[0]?.client ?? "no-advisor-row"}
+            selectedObjectState={visibleRows.length > 0 ? visibleRows[0].status : "empty"}
+            selectedSummary={<span>Advisor queue keeps list context while row actions hand off to route detail only; no advisor row approves, releases, exports or creates client visibility.</span>}
           />
         </section>
       </div>
       </WorksurfaceShell>
     </InternalShell>
-  );
-}
-
-function FilterButton({ label }: { label: string }) {
-  return (
-    <button aria-label={`${label} filter is static in this demo queue`} className="flex h-11 items-center justify-between gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted disabled:cursor-not-allowed disabled:opacity-65" disabled type="button">
-      <span>{label}: All</span>
-      <ChevronDown aria-hidden="true" className="size-4" />
-    </button>
   );
 }
 
@@ -1567,34 +1573,50 @@ function ComplianceQueuePage({ title }: { title: string }) {
           title={title}
         />
         <ScfP04P06FlowPanel mode="compliance" />
-        <div className="grid gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-panel/55 p-3 lg:grid-cols-[1fr_repeat(4,10rem)_auto_auto]">
-          <label className="relative min-w-0">
-            <Search aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-            <input
-              className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm outline-none focus:border-alphavest-gold"
-              data-testid="ux-interaction-compliance-search"
-              onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Search by client, advisor, ID, or keyword..."
-              type="search"
-              value={searchTerm}
-            />
-          </label>
-          {["Classification", "Risk Status", "Evidence Status", "Publish Status"].map((filter) => <FilterButton key={filter} label={filter} />)}
-          <button aria-label="Additional compliance filters are static in this demo queue" className={secondaryButtonClass} disabled type="button"><Filter aria-hidden="true" className="size-4" />More Filters</button>
-          <button className="px-3 text-sm font-semibold text-alphavest-gold disabled:cursor-not-allowed disabled:opacity-55" disabled={searchTerm.length === 0} onClick={() => setSearchTerm("")} type="button">Clear</button>
-        </div>
-        <DataTable
+        <MasterDetailSurface
           actionPolicy="route_handoff"
-          columns={complianceColumns}
-          density="standard_review"
-          emptyMessage="No compliance queue rows match this search."
+          density="default"
           family="queue"
-          filterState={searchTerm.length > 0 ? "active_query" : "inactive"}
-          getRowId={(row) => row.id}
+          filterState={searchTerm.length > 0 ? "active_query" : "disabled_static"}
+          master={
+            <div className="space-y-4">
+              <FilterBar
+                activeFilterCount={4}
+                activeStateLabel={searchTerm.length > 0 ? `Compliance queue query active: ${searchTerm}. Static filters remain visible only.` : "Compliance queue filters are visible as disabled demo controls only."}
+                  filters={[
+                  { label: "Classification", value: "classification" },
+                  { label: "Risk Status", value: "risk" },
+                  { label: "Evidence Status", value: "evidence" },
+                  { label: "Publish Status", value: "publish" },
+                  { disabledAriaLabel: "Additional compliance filters are static in this demo queue", label: "More Filters", value: "more" },
+                ]}
+                filterState={searchTerm.length > 0 ? "active_query" : "disabled_static"}
+                onQueryChange={setSearchTerm}
+                onReset={() => setSearchTerm("")}
+                placeholder="Search by client, advisor, ID, or keyword..."
+                queryValue={searchTerm}
+                resetLabel="Clear"
+                searchTestId="ux-interaction-compliance-search"
+              />
+              <DataTable
+                actionPolicy="route_handoff"
+                columns={complianceColumns}
+                density="default"
+                emptyMessage="No compliance queue rows match this search."
+                family="queue"
+                filterState={searchTerm.length > 0 ? "active_query" : "inactive"}
+                getRowId={(row) => row.id}
+                masterDetailMode="route_detail"
+                onRowAction={(row) => router.push(`/compliance/reviews/${row.id}/decision-room`)}
+                rowActionLabel={(row) => `Open compliance review ${row.id}`}
+                rows={visibleRows}
+              />
+            </div>
+          }
           masterDetailMode="route_detail"
-          onRowAction={(row) => router.push(`/compliance/reviews/${row.id}/decision-room`)}
-          rowActionLabel={(row) => `Open compliance review ${row.id}`}
-          rows={visibleRows}
+          selectedObjectId={visibleRows[0]?.id ?? "no-compliance-row"}
+          selectedObjectState={visibleRows.length > 0 ? visibleRows[0].publish : "empty"}
+          selectedSummary={<span>Compliance queue keeps list context while row actions hand off to decision-room detail only; queue rows cannot release, block, export or expose client-visible content.</span>}
         />
       </div>
       </WorksurfaceShell>

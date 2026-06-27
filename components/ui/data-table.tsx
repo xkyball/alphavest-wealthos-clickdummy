@@ -10,9 +10,11 @@ import {
   uxDataSurfaceActionAttributesFor,
   uxDataSurfaceActionContractFor,
   uxDataSurfaceAttributesFor,
+  uxDataSurfaceDensityForPreset,
+  uxDataSurfacePresetForDensity,
   type UxDataFieldPriority,
   type UxDataSurfaceActionPolicy,
-  type UxDataSurfaceDensity,
+  type UxDataSurfaceDensityInput,
   type UxDataSurfaceFamily,
   type UxDataSurfaceFilterState,
   type UxMasterDetailMode,
@@ -32,7 +34,7 @@ type DataTableProps<T> = {
   actionPolicy?: UxDataSurfaceActionPolicy;
   columns: Array<DataTableColumn<T>>;
   compact?: boolean;
-  density?: UxDataSurfaceDensity;
+  density?: UxDataSurfaceDensityInput;
   emptyMessage?: string;
   family?: UxDataSurfaceFamily;
   filterState?: UxDataSurfaceFilterState;
@@ -42,6 +44,7 @@ type DataTableProps<T> = {
   onRowAction?: (row: T) => void;
   responsiveMode?: "cards" | "table";
   rowActionLabel?: (row: T) => string;
+  rowActionPriority?: "primary" | "secondary";
   rowActionUnavailableLabel?: string;
   rows: T[];
   onSortChange?: (key: string) => void;
@@ -87,6 +90,7 @@ export function DataTable<T>({
   onSortChange,
   responsiveMode = "cards",
   rowActionLabel,
+  rowActionPriority = "secondary",
   rowActionUnavailableLabel = "No scoped row action for this table state.",
   rows,
   sortDirection,
@@ -131,12 +135,14 @@ export function DataTable<T>({
     return activeSortDirection === "desc" ? "descending" : "ascending";
   }
 
-  const densityPreset = density ?? (compact ? "compact_operations" : "standard_review");
+  const densityPreset = uxDataSurfaceDensityForPreset(density ?? (compact ? "compact" : "default"));
+  const e06DensityPreset = uxDataSurfacePresetForDensity(density ?? (compact ? "compact" : "default"));
   const resolvedActionPolicy = actionPolicy ?? (onRowAction ? "open_detail" : "disabled_unavailable");
   const rendersRowAction = uxDataSurfaceActionContractFor(resolvedActionPolicy).rendersAffordance;
   const tableAttributes = uxDataSurfaceAttributesFor({
     actionPolicy: resolvedActionPolicy,
     density: densityPreset,
+    densityPreset: e06DensityPreset,
     family,
     filterState,
     masterDetailMode,
@@ -167,6 +173,7 @@ export function DataTable<T>({
         data-ux-affordance="row-action"
         data-ux-disabled-message={disabledReason ? "accessible" : undefined}
         data-ux-disabled-reason={disabledReason}
+        data-ux-data-surface-row-action-priority={rowActionPriority}
         data-ux-interactive={actionEnabled ? "true" : "false"}
         data-ux-row-action-state={actionEnabled ? "enabled" : "disabled"}
         disabled={!actionEnabled}
@@ -283,6 +290,7 @@ export function DataTable<T>({
         {...uxDataSurfaceAttributesFor({
           actionPolicy: resolvedActionPolicy,
           density: "mobile_card_projection",
+          densityPreset: "comfortable",
           family,
           filterState,
           masterDetailMode,

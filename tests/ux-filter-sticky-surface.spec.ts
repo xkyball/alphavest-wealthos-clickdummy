@@ -8,13 +8,15 @@ function readSource(...segments: string[]) {
   return readFileSync(join(repoRoot, ...segments), "utf8");
 }
 
-test.describe("E07 filter and sticky data-surface conventions", () => {
+test.describe("E06 filter and sticky data-surface conventions", () => {
   test("FilterBar projects inactive active and disabled-static filter metadata", () => {
     const source = readSource("components", "ui", "filter-bar.tsx");
 
     expect(source).toContain("type UxDataSurfaceFilterState");
     expect(source).toContain("uxDataSurfaceAttributesFor");
-    expect(source).toContain('filters.length > 0 ? "disabled_static" : tabs.length > 0 ? "active_filter" : "inactive"');
+    expect(source).toContain("active_query_and_filter");
+    expect(source).toContain("data-testid=\"ux-filter-active-state\"");
+    expect(source).toContain("data-testid=\"ux-filter-reset\"");
     expect(source).toContain('data-ux-data-surface-filter-state="active_filter"');
     expect(source).toContain('data-ux-data-surface-filter-state={resolvedFilterState}');
     expect(source).toContain('data-ux-data-surface-filter-state="disabled_static"');
@@ -34,6 +36,8 @@ test.describe("E07 filter and sticky data-surface conventions", () => {
     const wealthActions = readSource("components", "wealth-actions-screen.tsx");
 
     expect(internalWorkflow).toContain('filterState={searchTerm.length > 0 ? "active_query" : "inactive"}');
+    expect(internalWorkflow).toContain('searchTestId="ux-interaction-advisor-search"');
+    expect(internalWorkflow).toContain('searchTestId="ux-interaction-compliance-search"');
     expect(wealthActions).toContain('filterState="disabled_static"');
   });
 });
