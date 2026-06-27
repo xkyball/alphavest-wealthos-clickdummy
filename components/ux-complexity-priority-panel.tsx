@@ -1,5 +1,6 @@
 "use client";
 
+import { UxActionRail } from "@/components/ux-action-rail";
 import { cn } from "@/lib/cn";
 import { uxDensityForPageId } from "@/lib/ux-density";
 
@@ -63,12 +64,12 @@ export function UxComplexityPriorityPanel({
           ))}
         </div>
       </div>
-      <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4" data-testid="ux-complexity-action-rail" data-ux-content-tier="must-see">
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold-soft">Action rail</p>
-        <p className="mt-3 text-lg font-semibold text-alphavest-ivory">{actionLabel}</p>
-        <p className="mt-2 text-sm leading-6 text-alphavest-muted">{actionState}</p>
-        <p className="mt-3 rounded-md border border-alphavest-gold/30 bg-alphavest-navy/30 p-3 text-xs leading-5 text-alphavest-gold-soft">{safetyNote}</p>
-      </div>
+      <UxActionRail
+        actionLabel={actionLabel}
+        actionState={actionState}
+        safetyNote={safetyNote}
+        testId="ux-complexity-action-rail"
+      />
     </section>
   );
 }

@@ -1,5 +1,6 @@
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, StatePanel, type BadgeTone } from "@/components/ui";
 import { cn } from "@/lib/cn";
+import { uxActionAttributesFor } from "@/lib/ux-action-hierarchy-contract";
 import { uxPageTemplateForPageId } from "@/lib/ux-page-template-system";
 
 type WorksurfaceStatusItem = {
@@ -64,6 +65,15 @@ export function WorksurfaceShell({
   worksurfaceId,
 }: WorksurfaceShellProps) {
   const template = uxPageTemplateForPageId(routeId);
+  const railPlacement = template.actionZoneBehavior === "sticky_action_zone" ? "sticky_rail" : "adjacent_rail";
+  const railActionAttributes = uxActionAttributesFor({
+    availability: "blocked_static",
+    disabledReason: safetyNote,
+    meaning: "navigate",
+    placement: railPlacement,
+    priority: "blocked",
+    requiresPermission: false,
+  });
 
   return (
     <section
@@ -112,6 +122,7 @@ export function WorksurfaceShell({
           <aside
             className="min-w-0 space-y-4 2xl:sticky 2xl:top-24 2xl:self-start"
             data-testid="wp02-worksurface-rail"
+            {...railActionAttributes}
             data-ux-long-page-region="sticky_rail"
             data-ux-sticky-action-zone={template.actionZoneBehavior === "adjacent_action_rail" || template.actionZoneBehavior === "sticky_action_zone" ? "true" : undefined}
             data-ux-template-zone="action_zone"
