@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { GlobalSearchBox } from "@/components/global-search-box";
 import { ProcessSidebar } from "@/components/process-navigation";
-import { AuditTimeline, Badge, Card, CardContent, CardHeader, CardTitle, StatePanel, type BadgeTone } from "@/components/ui";
+import { AuditTimeline, Badge, Card, CardContent, CardHeader, CardTitle, MasterDetailSurface, StatePanel, type BadgeTone } from "@/components/ui";
 import { DisabledControlReason, disabledControlReasonId } from "@/components/ui/disabled-control-reason";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { ProductGuidanceContent } from "@/components/product-guidance-panel";
@@ -470,7 +470,17 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
       <WorksurfaceShell
         description="Action board for relationship and evidence-linked work, normalized into the shared process worksurface."
         eyebrow="WP02 Client Context"
-        primary={<div className={cn("grid gap-5", drawerOpen ? "2xl:grid-cols-[1fr_30rem]" : "")}>
+        primary={<MasterDetailSurface
+          actionPolicy="open_detail"
+          className={cn("grid gap-5", drawerOpen ? "2xl:grid-cols-[1fr_30rem]" : "")}
+          density="standard_review"
+          family="board"
+          filterState="disabled_static"
+          masterDetailMode={drawerOpen ? "drawer_detail" : "inline_detail_rail"}
+          selectedObjectId={selectedAction.id}
+          selectedObjectState={selectedAction.evidenceState}
+          stickyRail={drawerOpen}
+        >
         <section className="min-w-0 space-y-5">
           <PageHeading
             action={
@@ -598,7 +608,7 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
           <SafeGateBanner />
         </section>
         {drawerOpen ? <ActionDrawer onClose={() => setDrawerOpen(false)} /> : null}
-      </div>}
+      </MasterDetailSurface>}
         rail={drawerOpen ? undefined : <WealthContextRail />}
         routeId="032"
         safetyNote="Action context can prioritize work only. Evidence, audit, workflow and approval gates still control readiness and visibility."

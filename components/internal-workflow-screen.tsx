@@ -1247,9 +1247,14 @@ function AdvisorQueuePage({ title }: { title: string }) {
             <button aria-label="Additional advisor filters are static in this demo queue" className={secondaryButtonClass} disabled type="button"><Filter aria-hidden="true" className="size-4" />Filters</button>
           </div>
           <DataTable
+            actionPolicy="route_handoff"
             columns={advisorColumns}
+            density="standard_review"
             emptyMessage="No advisor queue rows match this search."
+            family="queue"
+            filterState={searchTerm.length > 0 ? "active_query" : "inactive"}
             getRowId={(row) => row.client}
+            masterDetailMode="route_detail"
             onRowAction={() => router.push("/advisor/reviews/demo")}
             rowActionLabel={(row) => `Open advisor review for ${row.client}`}
             rows={visibleRows}
@@ -1577,9 +1582,14 @@ function ComplianceQueuePage({ title }: { title: string }) {
           <button className="px-3 text-sm font-semibold text-alphavest-gold disabled:cursor-not-allowed disabled:opacity-55" disabled={searchTerm.length === 0} onClick={() => setSearchTerm("")} type="button">Clear</button>
         </div>
         <DataTable
+          actionPolicy="route_handoff"
           columns={complianceColumns}
+          density="standard_review"
           emptyMessage="No compliance queue rows match this search."
+          family="queue"
+          filterState={searchTerm.length > 0 ? "active_query" : "inactive"}
           getRowId={(row) => row.id}
+          masterDetailMode="route_detail"
           onRowAction={(row) => router.push(`/compliance/reviews/${row.id}/decision-room`)}
           rowActionLabel={(row) => `Open compliance review ${row.id}`}
           rows={visibleRows}
