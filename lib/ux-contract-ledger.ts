@@ -1,0 +1,666 @@
+export type ContractFamily =
+  | "release_gate"
+  | "operating_model"
+  | "design_system"
+  | "page_template"
+  | "proof_reviewer"
+  | "lifecycle_state"
+  | "action_feedback"
+  | "data_surface"
+  | "client_visibility"
+  | "visual_accessibility"
+  | "capture_qa"
+  | "register_debt"
+  | "backend_query_truth"
+  | "contract_fulfillment";
+
+export type ProofType =
+  | "source_gate"
+  | "runtime_test"
+  | "api_test"
+  | "screenshot"
+  | "capture_qa"
+  | "typed_contract"
+  | "generated_report"
+  | "manual_decision";
+
+export type FulfillmentStatus =
+  | "fulfilled"
+  | "partial"
+  | "exception"
+  | "blocked"
+  | "retired"
+  | "historical"
+  | "planned";
+
+export type GateBehavior =
+  | "pass"
+  | "warn_existing"
+  | "fail_new"
+  | "fail_always"
+  | "report_only";
+
+export type ContractSourceKind =
+  | "upload"
+  | "markdown_spec"
+  | "markdown_register"
+  | "typed_contract"
+  | "source_gate"
+  | "api_test"
+  | "manual_decision";
+
+export type ContractSource = {
+  kind: ContractSourceKind;
+  ref: string;
+};
+
+export type EvidenceAnchor = {
+  kind: "file" | "test" | "command" | "script" | "api" | "route" | "report" | "decision";
+  ref: string;
+  result?: "pass" | "fail" | "not_run" | "historical" | "planned";
+  notes?: string;
+};
+
+export type OwnerSurface = {
+  kind: "file" | "route" | "api" | "script" | "test" | "report" | "package_script";
+  ref: string;
+};
+
+export type UxContractLedgerEntry = {
+  id: string;
+  title: string;
+  source: ContractSource[];
+  contractFamily: ContractFamily;
+  ownerSurface: OwnerSurface[];
+  obligation: string;
+  proofType: ProofType[];
+  status: FulfillmentStatus;
+  evidence: EvidenceAnchor[];
+  gateBehavior: GateBehavior;
+  expiresOrFollowUp: string | null;
+  notes?: string;
+};
+
+export type UxContractMetaContract = {
+  id: "ALPHAVEST_E12_CONTRACT_META_CONTRACT";
+  approvalToken: "APPROVE_E12_HYBRID_LEDGER_WARN_EXISTING_FAIL_NEW_GENERATE_MARKDOWN_AFTER_Q1";
+  activeContractFamilies: ContractFamily[];
+  activeTypedContracts: string[];
+  activeMarkdownRegisters: string[];
+  releaseRelevantCommands: string[];
+  exceptionPolicy: {
+    existingRegisteredDebt: "warn_existing";
+    newUnregisteredDebt: "fail_new";
+    requireExpiresOrFollowUp: true;
+  };
+  markdownPolicy: "hybrid_transition";
+  phaseCheckPolicy: "add_contract_script_first_hardwire_after_q1";
+};
+
+export const uxContractMetaContract: UxContractMetaContract = {
+  id: "ALPHAVEST_E12_CONTRACT_META_CONTRACT",
+  approvalToken: "APPROVE_E12_HYBRID_LEDGER_WARN_EXISTING_FAIL_NEW_GENERATE_MARKDOWN_AFTER_Q1",
+  activeContractFamilies: [
+    "release_gate",
+    "operating_model",
+    "design_system",
+    "page_template",
+    "proof_reviewer",
+    "lifecycle_state",
+    "action_feedback",
+    "data_surface",
+    "client_visibility",
+    "visual_accessibility",
+    "capture_qa",
+    "register_debt",
+    "backend_query_truth",
+    "contract_fulfillment",
+  ],
+  activeTypedContracts: [
+    "lib/ux-operating-model.ts",
+    "lib/ux-page-contract.ts",
+    "lib/ux-action-hierarchy-contract.ts",
+    "lib/ux-data-surface-contract.ts",
+    "lib/ux-lifecycle-state-contract.ts",
+    "lib/ux-feedback-message-contract.ts",
+    "lib/data-surface-query-contract.ts",
+    "lib/ux-proof-reviewer-mode.ts",
+    "lib/capture-screen-model-context.ts",
+  ],
+  activeMarkdownRegisters: [
+    "docs/ux/ALPHAVEST_E10_ACTION_ZONE_MIGRATION_REGISTER.md",
+    "docs/ux/ALPHAVEST_E10_DATA_SURFACE_FILTER_EXCEPTION_REGISTER.md",
+    "docs/ux/ALPHAVEST_E10_RETIRED_PROOF_UI_REGISTER.md",
+    "docs/ux/ALPHAVEST_E11_BACKEND_DATA_SURFACE_COVERAGE_REGISTER.md",
+  ],
+  releaseRelevantCommands: [
+    "pnpm guard:source",
+    "pnpm test:route-smoke",
+    "pnpm test:contract-fulfillment",
+    "pnpm visual:capture-qa:release",
+  ],
+  exceptionPolicy: {
+    existingRegisteredDebt: "warn_existing",
+    newUnregisteredDebt: "fail_new",
+    requireExpiresOrFollowUp: true,
+  },
+  markdownPolicy: "hybrid_transition",
+  phaseCheckPolicy: "add_contract_script_first_hardwire_after_q1",
+};
+
+const uploadSource: ContractSource = {
+  kind: "upload",
+  ref: "/Users/chris/Downloads/alphavest/ALPHAVEST_E12_CONTRACT_FULFILLMENT_LEDGER_GATE_TICKET_STRUCTURE.json",
+};
+
+function markdownSpec(ref: string): ContractSource {
+  return { kind: "markdown_spec", ref };
+}
+
+function markdownRegister(ref: string): ContractSource {
+  return { kind: "markdown_register", ref };
+}
+
+function typedContract(ref: string): ContractSource {
+  return { kind: "typed_contract", ref };
+}
+
+function owner(kind: OwnerSurface["kind"], ref: string): OwnerSurface {
+  return { kind, ref };
+}
+
+function evidence(kind: EvidenceAnchor["kind"], ref: string, result: EvidenceAnchor["result"] = "pass"): EvidenceAnchor {
+  return { kind, ref, result };
+}
+
+export const uxContractLedgerEntries = [
+  {
+    id: "E00-IMPLEMENTATION-FIRST",
+    title: "Implementation-first contract governance",
+    source: [markdownSpec("docs/ux/ALPHAVEST_E00_IMPLEMENTATION_FIRST_RULES.md")],
+    contractFamily: "release_gate",
+    ownerSurface: [
+      owner("script", "scripts/source-target-guard.ts"),
+      owner("test", "tests/source-reality-gate.spec.ts"),
+    ],
+    obligation: "Contracts/specifications are prerequisites and acceptance anchors, not delivery completion.",
+    proofType: ["source_gate", "generated_report"],
+    status: "partial",
+    evidence: [
+      evidence("command", "pnpm guard:source"),
+      evidence("test", "tests/source-reality-gate.spec.ts"),
+      evidence("report", "docs/v3/proof/e12_contract_fulfillment_inventory_report.md"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E12-Q1 validates contract fulfillment gate before release use.",
+  },
+  {
+    id: "E01-OPERATING-MODEL",
+    title: "Canonical UX operating model",
+    source: [
+      markdownSpec("docs/ux/ALPHAVEST_E01_UX_OPERATING_MODEL_SPEC.md"),
+      typedContract("lib/ux-operating-model.ts"),
+    ],
+    contractFamily: "operating_model",
+    ownerSurface: [
+      owner("file", "lib/ux-operating-model.ts"),
+      owner("file", "lib/ux-page-contract.ts"),
+      owner("file", "lib/capture-screen-model-context.ts"),
+      owner("test", "tests/ux-operating-model.spec.ts"),
+    ],
+    obligation: "Every route resolves to one canonical operating mode, audience and proof posture.",
+    proofType: ["typed_contract", "source_gate", "runtime_test"],
+    status: "fulfilled",
+    evidence: [
+      evidence("file", "lib/ux-operating-model.ts"),
+      evidence("test", "tests/ux-operating-model.spec.ts"),
+    ],
+    gateBehavior: "pass",
+    expiresOrFollowUp: null,
+  },
+  {
+    id: "E01-DESIGN-SYSTEM",
+    title: "Design-system primitive foundation",
+    source: [markdownSpec("docs/ux/ALPHAVEST_E01_DESIGN_SYSTEM_FOUNDATION_SPEC.md")],
+    contractFamily: "design_system",
+    ownerSurface: [
+      owner("file", "lib/ux-design-system-foundation.ts"),
+      owner("test", "tests/ux-design-system-foundation.spec.ts"),
+    ],
+    obligation: "Primitive density, text role and semantic status behavior projects from shared contracts.",
+    proofType: ["typed_contract", "runtime_test"],
+    status: "partial",
+    evidence: [
+      evidence("file", "lib/ux-design-system-foundation.ts"),
+      evidence("test", "tests/ux-design-system-foundation.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E12-Q1 classifies remaining primitive proof gaps.",
+  },
+  {
+    id: "E02-PAGE-TEMPLATE-SYSTEM",
+    title: "Canonical page template system",
+    source: [markdownSpec("docs/ux/ALPHAVEST_E02_PAGE_TEMPLATE_SYSTEM_SPEC.md")],
+    contractFamily: "page_template",
+    ownerSurface: [
+      owner("file", "lib/ux-page-template-system.ts"),
+      owner("file", "components/ui/page-template.tsx"),
+      owner("test", "tests/e02-page-template-runtime.spec.ts"),
+    ],
+    obligation: "Page/template hierarchy and route family proof placement resolve through shared page contracts.",
+    proofType: ["typed_contract", "runtime_test"],
+    status: "partial",
+    evidence: [
+      evidence("file", "lib/ux-page-template-system.ts"),
+      evidence("test", "tests/e02-page-template-runtime.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E12-Q1 classifies template proof completeness.",
+  },
+  {
+    id: "E03-PROOF-REVIEWER-SEPARATION",
+    title: "Operational UI versus proof reviewer separation",
+    source: [
+      markdownSpec("docs/ux/ALPHAVEST_E03_OPERATIONAL_PROOF_SEPARATION_SPEC.md"),
+      typedContract("lib/ux-proof-reviewer-mode.ts"),
+    ],
+    contractFamily: "proof_reviewer",
+    ownerSurface: [
+      owner("file", "lib/ux-proof-reviewer-mode.ts"),
+      owner("file", "components/proof-reviewer-mode-slot.tsx"),
+      owner("file", "components/ux-proof-reviewer-secondary-surface.tsx"),
+      owner("test", "tests/ux-proof-reviewer-mode.spec.ts"),
+    ],
+    obligation: "Operational default UI stays separated from reviewer/capture proof surfaces and client-mode suppression.",
+    proofType: ["typed_contract", "runtime_test", "source_gate"],
+    status: "fulfilled",
+    evidence: [
+      evidence("file", "lib/ux-proof-reviewer-mode.ts"),
+      evidence("test", "tests/ux-proof-reviewer-mode.spec.ts"),
+    ],
+    gateBehavior: "pass",
+    expiresOrFollowUp: null,
+  },
+  {
+    id: "E04-LIFECYCLE-STATE",
+    title: "Lifecycle state and capture variant contract",
+    source: [
+      markdownSpec("docs/ux/ALPHAVEST_E04_STATE_MODAL_DRAWER_LIFECYCLE_SPEC.md"),
+      typedContract("lib/ux-lifecycle-state-contract.ts"),
+    ],
+    contractFamily: "lifecycle_state",
+    ownerSurface: [
+      owner("file", "lib/ux-lifecycle-state-contract.ts"),
+      owner("file", "components/ui/modal.tsx"),
+      owner("file", "components/ui/drawer.tsx"),
+      owner("file", "components/ui/state-panel.tsx"),
+      owner("test", "tests/ux-lifecycle-state-contract.spec.ts"),
+    ],
+    obligation: "Modal, drawer, base state and capture variants use canonical lifecycle/state metadata.",
+    proofType: ["typed_contract", "runtime_test", "capture_qa"],
+    status: "fulfilled",
+    evidence: [
+      evidence("file", "lib/ux-lifecycle-state-contract.ts"),
+      evidence("test", "tests/ux-lifecycle-state-contract.spec.ts"),
+    ],
+    gateBehavior: "pass",
+    expiresOrFollowUp: null,
+  },
+  {
+    id: "E05-ACTION-FEEDBACK",
+    title: "Action hierarchy and no-overclaim feedback",
+    source: [
+      markdownSpec("docs/ux/ALPHAVEST_E05_ACTION_HIERARCHY_SPEC.md"),
+      markdownSpec("docs/ux/ALPHAVEST_E05_ACTION_FEEDBACK_IMPLEMENTATION_SPEC.md"),
+      typedContract("lib/ux-action-hierarchy-contract.ts"),
+      typedContract("lib/ux-feedback-message-contract.ts"),
+    ],
+    contractFamily: "action_feedback",
+    ownerSurface: [
+      owner("file", "lib/ux-action-hierarchy-contract.ts"),
+      owner("file", "lib/ux-feedback-message-contract.ts"),
+      owner("file", "components/ui/action-zone.tsx"),
+      owner("test", "tests/ux-action-hierarchy-contract.spec.ts"),
+      owner("test", "tests/ux-feedback-message-contract.spec.ts"),
+    ],
+    obligation: "Action hierarchy, availability, disabled reasons and feedback messages project from canonical contracts.",
+    proofType: ["typed_contract", "source_gate", "runtime_test"],
+    status: "partial",
+    evidence: [
+      evidence("file", "lib/ux-action-hierarchy-contract.ts"),
+      evidence("file", "lib/ux-feedback-message-contract.ts"),
+      evidence("test", "tests/ux-action-hierarchy-contract.spec.ts"),
+      evidence("test", "tests/ux-feedback-message-contract.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E12-I2.1 maps remaining E10 action-zone debt into ledger entries.",
+  },
+  {
+    id: "E06-DATA-SURFACE-MASTER-DETAIL",
+    title: "Data surface and master-detail contract",
+    source: [
+      markdownSpec("docs/ux/ALPHAVEST_E06_DATA_SURFACE_MASTER_DETAIL_SPEC.md"),
+      typedContract("lib/ux-data-surface-contract.ts"),
+    ],
+    contractFamily: "data_surface",
+    ownerSurface: [
+      owner("file", "lib/ux-data-surface-contract.ts"),
+      owner("file", "components/ui/data-table.tsx"),
+      owner("file", "components/ui/filter-bar.tsx"),
+      owner("test", "tests/ux-data-surface-contract.spec.ts"),
+    ],
+    obligation: "Shared table/filter/master-detail surfaces expose accurate density, filter-state and source-truth claims.",
+    proofType: ["typed_contract", "runtime_test", "api_test"],
+    status: "partial",
+    evidence: [
+      evidence("file", "lib/ux-data-surface-contract.ts"),
+      evidence("test", "tests/ux-data-surface-contract.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E12-I2.2 maps E11 backend data-surface proof obligations.",
+  },
+  {
+    id: "E07-CLIENT-INTERNAL-SEPARATION",
+    title: "Client-safe and internal UI separation",
+    source: [markdownSpec("docs/ux/ALPHAVEST_E07_CLIENT_INTERNAL_SEPARATION_SPEC.md")],
+    contractFamily: "client_visibility",
+    ownerSurface: [
+      owner("file", "lib/ux-client-safe-ui-boundary.ts"),
+      owner("file", "lib/ux-proof-reviewer-mode.ts"),
+      owner("test", "tests/client-visibility-proof.spec.ts"),
+      owner("test", "tests/true-ux-client-projection.spec.ts"),
+    ],
+    obligation: "Client-facing UI suppresses internal rationale, debug/proof metadata and unreleased payloads.",
+    proofType: ["typed_contract", "runtime_test", "source_gate"],
+    status: "partial",
+    evidence: [
+      evidence("file", "lib/ux-client-safe-ui-boundary.ts"),
+      evidence("test", "tests/client-visibility-proof.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E12-Q1 confirms no-leakage proof coverage used by contract fulfillment.",
+  },
+  {
+    id: "E08-VISUAL-DENSITY-A11Y",
+    title: "Visual density, focus and semantic status",
+    source: [markdownSpec("docs/ux/ALPHAVEST_E08_VISUAL_DENSITY_ACCESSIBILITY_SPEC.md")],
+    contractFamily: "visual_accessibility",
+    ownerSurface: [
+      owner("file", "lib/ux-design-system-foundation.ts"),
+      owner("test", "tests/ux-design-system-foundation.spec.ts"),
+      owner("test", "tests/true-ux-a11y.spec.ts"),
+    ],
+    obligation: "Focus, selected, semantic status and density states are shared primitive behavior.",
+    proofType: ["typed_contract", "runtime_test", "screenshot"],
+    status: "partial",
+    evidence: [
+      evidence("file", "lib/ux-design-system-foundation.ts"),
+      evidence("test", "tests/ux-design-system-foundation.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E12-Q1 confirms current visual/accessibility proof coverage.",
+  },
+  {
+    id: "E09-CAPTURE-QA-RELEASE-PROOF",
+    title: "Capture QA release proof",
+    source: [markdownSpec("docs/ux/ALPHAVEST_E09_CAPTURE_QA_SPEC.md")],
+    contractFamily: "capture_qa",
+    ownerSurface: [
+      owner("script", "scripts/capture-qa-contract.ts"),
+      owner("script", "scripts/visual-qa-contract.ts"),
+      owner("package_script", "visual:capture-qa:release"),
+      owner("test", "tests/capture-qa-contract.spec.ts"),
+      owner("test", "tests/e09-capture-release-policy.spec.ts"),
+    ],
+    obligation: "Current release capture proof must pass E09 QA with warnings treated as failures.",
+    proofType: ["capture_qa", "source_gate", "generated_report"],
+    status: "partial",
+    evidence: [
+      evidence("script", "scripts/capture-qa-contract.ts"),
+      evidence("test", "tests/e09-capture-release-policy.spec.ts"),
+      evidence("command", "pnpm visual:capture-qa:release", "not_run"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "Run release capture QA when new release captures are produced or certified.",
+  },
+  {
+    id: "E10-ACTION-ZONE-REGISTER",
+    title: "Action-zone migration register debt",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E10_ACTION_ZONE_MIGRATION_REGISTER.md")],
+    contractFamily: "register_debt",
+    ownerSurface: [
+      owner("file", "docs/ux/ALPHAVEST_E10_ACTION_ZONE_MIGRATION_REGISTER.md"),
+      owner("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    obligation: "Local action-class vocabularies are registered migration debt and cannot grow outside the ledger.",
+    proofType: ["source_gate", "typed_contract"],
+    status: "exception",
+    evidence: [
+      evidence("file", "docs/ux/ALPHAVEST_E10_ACTION_ZONE_MIGRATION_REGISTER.md"),
+      evidence("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E12-I2.1 converts action-zone rows into ledger IDs and follow-ups.",
+  },
+  {
+    id: "E10-DATA-SURFACE-FILTER-REGISTER",
+    title: "Disabled/static filter exception register debt",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E10_DATA_SURFACE_FILTER_EXCEPTION_REGISTER.md")],
+    contractFamily: "register_debt",
+    ownerSurface: [
+      owner("file", "docs/ux/ALPHAVEST_E10_DATA_SURFACE_FILTER_EXCEPTION_REGISTER.md"),
+      owner("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    obligation: "Disabled/static filter controls require canonical metadata or explicit temporary exception IDs.",
+    proofType: ["source_gate", "runtime_test"],
+    status: "exception",
+    evidence: [
+      evidence("file", "docs/ux/ALPHAVEST_E10_DATA_SURFACE_FILTER_EXCEPTION_REGISTER.md"),
+      evidence("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E12-I2.1 converts filter exception rows into ledger IDs and follow-ups.",
+  },
+  {
+    id: "E10-RETIRED-PROOF-UI-REGISTER",
+    title: "Retired proof UI remains retired",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E10_RETIRED_PROOF_UI_REGISTER.md")],
+    contractFamily: "register_debt",
+    ownerSurface: [
+      owner("file", "docs/ux/ALPHAVEST_E10_RETIRED_PROOF_UI_REGISTER.md"),
+      owner("test", "tests/e10-register-reconciliation.spec.ts"),
+      owner("test", "tests/route-smoke.spec.ts"),
+    ],
+    obligation: "Retired ProductGuidance proof/debug UI must not re-enter active operational surfaces.",
+    proofType: ["source_gate"],
+    status: "fulfilled",
+    evidence: [
+      evidence("test", "tests/e10-register-reconciliation.spec.ts"),
+      evidence("file", "components/route-context-chip.tsx"),
+    ],
+    gateBehavior: "pass",
+    expiresOrFollowUp: null,
+  },
+  {
+    id: "E11-BACKEND-DATA-SURFACE-TRUTH",
+    title: "Backend data-surface query truth",
+    source: [
+      markdownSpec("docs/ux/ALPHAVEST_E11_BACKEND_DATA_SURFACE_QUERY_SPEC.md"),
+      markdownRegister("docs/ux/ALPHAVEST_E11_BACKEND_DATA_SURFACE_COVERAGE_REGISTER.md"),
+      typedContract("lib/data-surface-query-contract.ts"),
+    ],
+    contractFamily: "backend_query_truth",
+    ownerSurface: [
+      owner("file", "lib/data-surface-query-contract.ts"),
+      owner("file", "components/ui/data-table.tsx"),
+      owner("api", "app/api/family-members/route.ts"),
+      owner("api", "app/api/entities/route.ts"),
+      owner("api", "app/api/documents/route.ts"),
+      owner("api", "app/api/admin-tenants/route.ts"),
+      owner("api", "app/api/review-monitoring/route.ts"),
+      owner("test", "tests/e11-backend-data-surface-truth.spec.ts"),
+    ],
+    obligation: "Every backend_query_backed UI surface has API meta, sourceTruth and UI consumption proof.",
+    proofType: ["api_test", "runtime_test", "source_gate"],
+    status: "partial",
+    evidence: [
+      evidence("file", "lib/data-surface-query-contract.ts"),
+      evidence("test", "tests/e11-backend-data-surface-truth.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E12-I2.2 maps E11-DS-001 through E11-DS-008 into ledger entries.",
+  },
+  {
+    id: "E12-CONTRACT-FULFILLMENT-LEDGER-GATE",
+    title: "Contract fulfillment ledger and global gate",
+    source: [
+      uploadSource,
+      markdownSpec("docs/ux/ALPHAVEST_E12_CONTRACT_FULFILLMENT_SPEC.md"),
+      { kind: "manual_decision", ref: "APPROVE_E12_HYBRID_LEDGER_WARN_EXISTING_FAIL_NEW_GENERATE_MARKDOWN_AFTER_Q1" },
+    ],
+    contractFamily: "contract_fulfillment",
+    ownerSurface: [
+      owner("file", "lib/ux-contract-ledger.ts"),
+      owner("test", "tests/ux-contract-ledger.spec.ts"),
+      owner("report", "docs/v3/proof/e12_contract_fulfillment_decision_report.md"),
+    ],
+    obligation: "E12 ledger, gate and report chain makes contract fulfillment machine-readable and release-relevant.",
+    proofType: ["typed_contract", "manual_decision", "generated_report"],
+    status: "partial",
+    evidence: [
+      evidence("file", "lib/ux-contract-ledger.ts"),
+      evidence("test", "tests/ux-contract-ledger.spec.ts"),
+      evidence("decision", "APPROVE_E12_HYBRID_LEDGER_WARN_EXISTING_FAIL_NEW_GENERATE_MARKDOWN_AFTER_Q1"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E12-I3 builds the global contract fulfillment gate; E12-Q1 validates it.",
+  },
+] as const satisfies UxContractLedgerEntry[];
+
+export const requiredSeedContractIds = [
+  "E00-IMPLEMENTATION-FIRST",
+  "E01-OPERATING-MODEL",
+  "E01-DESIGN-SYSTEM",
+  "E02-PAGE-TEMPLATE-SYSTEM",
+  "E03-PROOF-REVIEWER-SEPARATION",
+  "E04-LIFECYCLE-STATE",
+  "E05-ACTION-FEEDBACK",
+  "E06-DATA-SURFACE-MASTER-DETAIL",
+  "E07-CLIENT-INTERNAL-SEPARATION",
+  "E08-VISUAL-DENSITY-A11Y",
+  "E09-CAPTURE-QA-RELEASE-PROOF",
+  "E10-ACTION-ZONE-REGISTER",
+  "E10-DATA-SURFACE-FILTER-REGISTER",
+  "E10-RETIRED-PROOF-UI-REGISTER",
+  "E11-BACKEND-DATA-SURFACE-TRUTH",
+  "E12-CONTRACT-FULFILLMENT-LEDGER-GATE",
+] as const;
+
+export function contractLedgerEntryById(id: string) {
+  return uxContractLedgerEntries.find((entry) => entry.id === id);
+}
+
+export function duplicateContractLedgerIds(entries: readonly UxContractLedgerEntry[] = uxContractLedgerEntries) {
+  const seen = new Set<string>();
+  const duplicates = new Set<string>();
+
+  for (const entry of entries) {
+    if (seen.has(entry.id)) duplicates.add(entry.id);
+    seen.add(entry.id);
+  }
+
+  return [...duplicates].sort();
+}
+
+export function ledgerEntriesMissingRequiredFollowUp(entries: readonly UxContractLedgerEntry[] = uxContractLedgerEntries) {
+  return entries.filter((entry) =>
+    ["partial", "exception", "blocked"].includes(entry.status) && !entry.expiresOrFollowUp
+  );
+}
+
+export function ledgerEntriesMissingOwnerSurface(entries: readonly UxContractLedgerEntry[] = uxContractLedgerEntries) {
+  return entries.filter((entry) =>
+    !["historical", "planned"].includes(entry.status) && entry.ownerSurface.length === 0
+  );
+}
+
+export function fulfilledEntriesWithMarkdownOnlyEvidence(entries: readonly UxContractLedgerEntry[] = uxContractLedgerEntries) {
+  return entries.filter((entry) =>
+    entry.status === "fulfilled" &&
+    entry.evidence.length > 0 &&
+    entry.evidence.every((anchor) => anchor.kind === "file" && anchor.ref.endsWith(".md"))
+  );
+}
+
+export function fulfilledEntriesWithManualDecisionOnlyEvidence(entries: readonly UxContractLedgerEntry[] = uxContractLedgerEntries) {
+  return entries.filter((entry) =>
+    entry.status === "fulfilled" &&
+    entry.evidence.length > 0 &&
+    entry.evidence.every((anchor) => anchor.kind === "decision")
+  );
+}
+
+export function screenshotOnlyApiTruthEntries(entries: readonly UxContractLedgerEntry[] = uxContractLedgerEntries) {
+  return entries.filter((entry) =>
+    ["backend_query_truth", "data_surface"].includes(entry.contractFamily) &&
+    entry.status === "fulfilled" &&
+    entry.proofType.includes("screenshot") &&
+    !entry.proofType.some((proofType) => proofType === "api_test" || proofType === "runtime_test" || proofType === "typed_contract")
+  );
+}
+
+function emptyContractFamilyGroups(): Record<ContractFamily, UxContractLedgerEntry[]> {
+  return {
+    action_feedback: [],
+    backend_query_truth: [],
+    capture_qa: [],
+    client_visibility: [],
+    contract_fulfillment: [],
+    data_surface: [],
+    design_system: [],
+    lifecycle_state: [],
+    operating_model: [],
+    page_template: [],
+    proof_reviewer: [],
+    register_debt: [],
+    release_gate: [],
+    visual_accessibility: [],
+  };
+}
+
+function emptyStatusGroups(): Record<FulfillmentStatus, UxContractLedgerEntry[]> {
+  return {
+    blocked: [],
+    exception: [],
+    fulfilled: [],
+    historical: [],
+    partial: [],
+    planned: [],
+    retired: [],
+  };
+}
+
+export function ledgerEntriesByContractFamily(entries: readonly UxContractLedgerEntry[] = uxContractLedgerEntries) {
+  return entries.reduce<Record<ContractFamily, UxContractLedgerEntry[]>>((groups, entry) => {
+    groups[entry.contractFamily].push(entry);
+    return groups;
+  }, emptyContractFamilyGroups());
+}
+
+export function ledgerEntriesByStatus(entries: readonly UxContractLedgerEntry[] = uxContractLedgerEntries) {
+  return entries.reduce<Record<FulfillmentStatus, UxContractLedgerEntry[]>>((groups, entry) => {
+    groups[entry.status].push(entry);
+    return groups;
+  }, emptyStatusGroups());
+}
+
+export const uxContractLedgerIntegrity = {
+  totalEntries: uxContractLedgerEntries.length,
+  duplicateIds: duplicateContractLedgerIds(),
+  missingFollowUps: ledgerEntriesMissingRequiredFollowUp().map((entry) => entry.id),
+  missingOwnerSurfaces: ledgerEntriesMissingOwnerSurface().map((entry) => entry.id),
+  markdownOnlyFulfilled: fulfilledEntriesWithMarkdownOnlyEvidence().map((entry) => entry.id),
+  manualDecisionOnlyFulfilled: fulfilledEntriesWithManualDecisionOnlyEvidence().map((entry) => entry.id),
+  screenshotOnlyApiTruth: screenshotOnlyApiTruthEntries().map((entry) => entry.id),
+  missingSeedIds: requiredSeedContractIds.filter((id) => !contractLedgerEntryById(id)),
+};
