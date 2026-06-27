@@ -8,8 +8,8 @@ import { DisabledControlReason, disabledControlReasonId } from "@/components/ui/
 import { StatusChip, type StatusChipStatus } from "@/components/ui/status-chip";
 import { WizardStepper, type WizardStep } from "@/components/ui/wizard-stepper";
 import { cn } from "@/lib/cn";
-import { matchRouteBySegments, routeScopeForPageId, routeScopeLabels } from "@/lib/route-registry";
-import { uxFlowStepsForPageId, uxRoutePolicyForRoute, uxWorkspaceLabels } from "@/lib/ux-route-policy";
+import { matchRouteBySegments } from "@/lib/route-registry";
+import { uxFlowStepsForPageId, uxRoutePolicyForRoute } from "@/lib/ux-route-policy";
 
 export type PageHeaderAction = {
   disabledReason?: string;
@@ -168,9 +168,6 @@ export function PageHeader({
   const pathname = usePathname();
   const currentRoute = routeForPathname(pathname);
   const currentPolicy = currentRoute ? uxRoutePolicyForRoute(currentRoute) : null;
-  const currentScope = currentRoute ? routeScopeForPageId(currentRoute.pageId) : null;
-  const routeIsClientVisibilitySensitive =
-    currentRoute && "clientVisibilitySensitive" in currentRoute ? Boolean(currentRoute.clientVisibilitySensitive) : false;
   const derivedSteps = steps ?? (currentRoute ? uxFlowStepsForPageId(currentRoute.pageId) : []);
   const previousStep = derivedSteps.filter((step) => step.status === "complete" && step.href).at(-1);
   const effectivePrimaryAction = primaryAction;
@@ -219,33 +216,6 @@ export function PageHeader({
         </div>
         <div className="flex min-w-0 flex-col items-start gap-2 lg:items-end">
           <StatusChip label={statusLabel ?? "No unapproved advice reaches the client"} status={status} />
-          {currentRoute && currentPolicy ? (
-            <div className="sr-only" data-testid="page-header-route-context">
-              <span
-                className="max-w-72 truncate rounded-full border border-alphavest-gold/35 bg-alphavest-gold/10 px-3 py-1 font-semibold text-alphavest-gold-soft"
-                data-testid="page-header-page-job"
-                title={currentPolicy.pageType}
-              >
-                {currentPolicy.pageType}
-              </span>
-              <span
-                className="max-w-96 truncate rounded-full border border-alphavest-gold/35 bg-alphavest-gold/10 px-3 py-1 font-semibold text-alphavest-gold-soft"
-                data-testid="page-header-current-gate"
-                title={currentPolicy.primaryCtaRule}
-              >
-                {currentPolicy.primaryCtaRule}
-              </span>
-              <span className="rounded-full border border-alphavest-border bg-alphavest-charcoal/55 px-3 py-1 font-semibold text-alphavest-muted">
-                {uxWorkspaceLabels[currentPolicy.workspace]}
-              </span>
-              <span className="rounded-full border border-alphavest-border bg-alphavest-charcoal/55 px-3 py-1 font-semibold text-alphavest-muted">
-                {currentScope ? routeScopeLabels[currentScope] : "Scoped"} · {currentRoute.objectType.replaceAll("_", " ").toLowerCase()}
-              </span>
-              <span className="rounded-full border border-alphavest-border bg-alphavest-charcoal/55 px-3 py-1 font-semibold text-alphavest-muted">
-                {routeIsClientVisibilitySensitive ? "Internal until release" : "Client-safe context"}
-              </span>
-            </div>
-          ) : null}
           <A11yStatusSupportPanel
             className="max-w-xl"
             routeLabel={currentRoute ? currentRoute.title : title}

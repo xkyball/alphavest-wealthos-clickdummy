@@ -88,7 +88,7 @@ export const uxHubDefinitions: Record<string, UxHubDefinition> = {
     primaryAction: linkForPageId("027", "Open document status", "Review client-safe document status and evidence requests."),
     priorityCards: [
       { detail: "Only released or redacted client-safe content belongs here.", label: "Released view", tone: "green", value: "Client-safe" },
-      { detail: "Internal rationale, compliance notes and AI draft fields stay hidden.", label: "Hidden state", tone: "red", value: "Fail closed" },
+      { detail: "Restricted working notes and draft fields stay hidden.", label: "Hidden state", tone: "red", value: "Fail closed" },
       { detail: "Evidence upload is input only, never sufficiency.", label: "Next action", tone: "blue", value: "Scoped" },
     ],
     queue: [
@@ -272,7 +272,7 @@ export const uxHubDefinitions: Record<string, UxHubDefinition> = {
       { detail: "Decision submission is not client acceptance.", label: "Boundary", tone: "red", value: "No acceptance" },
     ],
     queue: [
-      linkForPageId("046", "Open evidence vault", "Check evidence context without exposing internal rationale."),
+      linkForPageId("046", "Open evidence vault", "Check evidence context without exposing restricted working notes."),
       linkForPageId("051", "Review audit history", "Inspect traceability from governance."),
       linkForPageId("045", "Review submitted state", "Inspect submitted-state detail."),
     ],

@@ -53,58 +53,35 @@ test.describe("AlphaVest product guidance shell", () => {
     await expect(page.getByTestId("demo-actor-handoff-current")).toContainText("Principal");
   });
 
-  test("workbench guidance explains purpose and next controlled step", async ({ page }) => {
+  test("default operational shell suppresses retired guidance and reviewer surfaces", async ({ page }) => {
     await page.goto("/advisory/review-queue");
 
-    const guidance = page.getByTestId("product-guidance");
-    await expect(guidance.getByTestId("ux-density-page-job").first()).toHaveText("Workbench");
-    await expect(guidance.getByText("Advisory workflow").first()).toBeVisible();
-    await expect(guidance.getByText("Internal draft only. Advisor approval and compliance release are separate downstream gates.").first()).toBeVisible();
-    await expect(guidance.getByRole("link", { name: "Send to advisor review" })).toHaveAttribute("href", "/advisor/reviews");
-    await expect(guidance.getByRole("link", { name: "Open compliance queue" }).first()).toHaveAttribute("href", "/compliance/reviews");
+    const operationalSurface = page.getByTestId("ux-operational-default-surface").first();
+    await expect(operationalSurface).toHaveAttribute("data-ux-proof-mode", "operational_default");
+    await expect(operationalSurface).toHaveAttribute("data-ux-proof-debug-default-visible", "false");
+    await expect(operationalSurface).toHaveAttribute("data-ux-reviewer-secondary-surface", "not-rendered");
+    await expect(page.getByTestId("product-guidance")).toHaveCount(0);
+    await expect(page.getByTestId("ux-proof-reviewer-secondary-surface")).toHaveCount(0);
+    await expect(page.getByTestId("page-header-route-context")).toHaveCount(0);
   });
 
-  test("document upload guidance keeps upload separate from evidence sufficiency", async ({ page }) => {
-    await page.goto("/documents/upload");
+  test("topbar keeps only operational route context in the default workflow", async ({ page }) => {
+    await page.setViewportSize({ width: 1600, height: 1000 });
+    await page.goto("/advisory/review-queue");
 
-    const guidance = page.getByTestId("product-guidance");
-    await expect(guidance.getByTestId("ux-density-page-job").first()).toHaveText("Document upload");
-    await expect(guidance.getByText("Upload is not evidence sufficiency. Human review, scope, currentness and linkage still have to pass.").first()).toBeVisible();
-    await expect(guidance.getByRole("link", { name: "Review extraction" })).toHaveAttribute("href", "/documents/review-queue");
-    await expect(guidance.getByText(/release now|client visibility unlocked|evidence sufficiency complete/i)).toHaveCount(0);
+    const routeContext = page.getByTestId("ux-nav-route-context").first();
+    await expect(routeContext).toBeVisible();
+    await expect(routeContext).toHaveAttribute("data-ux-proof-mode", "operational_default");
+    await expect(routeContext).toHaveAttribute("data-ux-proof-content-class", "route_context");
+    await expect(routeContext).toContainText("Workbench");
+    await expect(routeContext).not.toContainText(/034|route id|ux proof|debug|capture/i);
   });
 
-  test("client portal guidance communicates client-safe released visibility", async ({ page }) => {
+  test("client portal default workflow stays free of reviewer-only metadata", async ({ page }) => {
     await page.goto("/client/home");
 
-    const guidance = page.getByTestId("product-guidance");
-    await expect(guidance.getByTestId("ux-density-page-job").first()).toHaveText("Client portal");
-    await expect(guidance.getByText("Client-facing view: only released, client-safe content should be visible here.").first()).toBeVisible();
-    await expect(guidance.getByRole("link", { name: "Upload source for review" })).toHaveAttribute("href", "/documents/upload");
-  });
-
-  test("compliance and export guidance preserve release, redaction and approval boundaries", async ({ page }) => {
-    await page.goto("/compliance/reviews");
-
-    let guidance = page.getByTestId("product-guidance");
-    await expect(guidance.getByText("Compliance release controls client visibility. Missing evidence or audit blocks release.").first()).toBeVisible();
-    await expect(guidance.getByRole("link", { name: "Open compliance review" })).toHaveAttribute("href", "/compliance/reviews/demo/decision-room");
-
-    await page.goto("/export/new");
-    guidance = page.getByTestId("product-guidance");
-    await expect(guidance.getByText("Export starts with scope only; redaction, preview, approval, download and share remain separate.").first()).toBeVisible();
-    await expect(guidance.getByRole("link", { name: "Select export scope" })).toHaveAttribute("href", "/export/demo/scope");
-  });
-
-  test("support, reference and elevated routes expose current True-UX scope labels", async ({ page }) => {
-    await page.goto("/communication/demo/context");
-    await expect(page.getByTestId("product-guidance").getByTestId("ux-density-status").first()).toHaveText("P1 / later");
-    await expect(page.getByTestId("product-guidance").getByText("Communication adds context only. Advice-like copy and client delivery remain release-controlled.").first()).toBeVisible();
-
-    await page.goto("/service-blueprint");
-    await expect(page.getByTestId("product-guidance").getByTestId("ux-density-status").first()).toHaveText("Reference only");
-
-    await page.goto("/committee/reviews");
-    await expect(page.getByTestId("product-guidance").getByTestId("ux-density-status").first()).toHaveText("Held / not MVP");
+    await expect(page.getByTestId("product-guidance")).toHaveCount(0);
+    await expect(page.getByTestId("ux-proof-reviewer-secondary-surface")).toHaveCount(0);
+    await expect(page.getByText(/route id|ux proof tag|capture warning|debug metadata|internal rationale/i)).toHaveCount(0);
   });
 });
