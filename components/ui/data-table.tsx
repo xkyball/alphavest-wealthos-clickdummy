@@ -48,6 +48,7 @@ type DataTableProps<T> = {
   sortDirection?: "asc" | "desc";
   sortKey?: string;
   state?: ComponentState | "ready";
+  stickyHeader?: boolean;
 };
 
 const stateCopy: Record<ComponentState, { detail: string; title: string }> = {
@@ -90,7 +91,8 @@ export function DataTable<T>({
   rows,
   sortDirection,
   sortKey,
-  state = "ready"
+  state = "ready",
+  stickyHeader = false
 }: DataTableProps<T>) {
   const [internalSort, setInternalSort] = useState<{ direction: "asc" | "desc"; key: string | undefined }>({
     direction: sortDirection ?? "asc",
@@ -138,7 +140,7 @@ export function DataTable<T>({
     family,
     filterState,
     masterDetailMode,
-    stickyHeader: false,
+    stickyHeader,
     stickyRail: false,
   });
 
@@ -190,7 +192,7 @@ export function DataTable<T>({
       {...tableAttributes}
     >
       <table className={tablePadding + " border-collapse text-left text-sm"}>
-        <thead className="bg-alphavest-panel/75 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">
+        <thead className={cn("bg-alphavest-panel/75 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle", stickyHeader && "sticky top-0 z-10")}>
           <tr>
             {columns.map((column, index) => {
               const columnSortState = sortStateForColumn(column);
