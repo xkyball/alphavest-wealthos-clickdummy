@@ -2,11 +2,11 @@
 
 import { Compass } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { productGuidanceForPathname } from "@/lib/product-guidance";
+import { operationalRouteGuidanceForPathname } from "@/lib/operational-route-guidance";
 
 export function RouteContextChip({ className = "" }: { className?: string }) {
   const pathname = usePathname();
-  const routeContext = productGuidanceForPathname(pathname);
+  const routeContext = operationalRouteGuidanceForPathname(pathname);
 
   return (
     <span

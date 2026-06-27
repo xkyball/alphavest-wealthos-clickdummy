@@ -543,8 +543,10 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
                     aria-label={`${filter} filter is static in this action board`}
                     className="flex h-10 items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted opacity-65"
                     data-ux-affordance="blocked-static-control"
+                    data-ux-data-surface-filter-state="disabled_static"
                     data-ux-disabled-message="accessible"
                     data-ux-disabled-reason={disabledReason}
+                    data-ux-e10-filter-exception-id="DSF-007"
                     data-ux-interactive="false"
                     key={filter}
                     role="status"

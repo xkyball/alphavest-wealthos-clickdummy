@@ -11,37 +11,37 @@ import {
 import { uxFlowStepsForPageId, uxRoutePolicyForRoute, type UxFlowStep, type UxWorkspaceKey } from "@/lib/ux-route-policy";
 import type { UxDensityTier } from "@/lib/ux-route-policy";
 
-export type ProductGuidanceLink = {
+export type OperationalRouteGuidanceLink = {
   href: string;
   label: string;
 };
 
-export type ProductGuidance = {
+export type OperationalRouteGuidance = {
   area: string;
-  ctaState: ProductGuidanceCtaState;
+  ctaState: OperationalRouteGuidanceCtaState;
   densityTier?: UxDensityTier;
   gateHint: string;
-  nextStep?: ProductGuidanceLink;
-  primaryAction?: ProductGuidanceLink;
+  nextStep?: OperationalRouteGuidanceLink;
+  primaryAction?: OperationalRouteGuidanceLink;
   purpose: string;
-  relatedRoutes: ProductGuidanceLink[];
+  relatedRoutes: OperationalRouteGuidanceLink[];
   routeId?: string;
   routePolicyLabels: string[];
   shortTitle: string;
   steps: UxFlowStep[];
   tier: RouteScopeLabel | "ROOT";
   tierLabel: string;
-  workbenchStructure?: ProductGuidanceWorkbenchStructure;
+  workbenchStructure?: OperationalRouteGuidanceWorkbenchStructure;
 };
 
-export type ProductGuidanceCtaState = {
+export type OperationalRouteGuidanceCtaState = {
   blockedReason?: string;
-  primaryAction?: ProductGuidanceLink;
-  recovery?: ProductGuidanceLink;
+  primaryAction?: OperationalRouteGuidanceLink;
+  recovery?: OperationalRouteGuidanceLink;
   state: "ready" | "guarded" | "locked";
 };
 
-export type ProductGuidanceWorkbenchStructure = {
+export type OperationalRouteGuidanceWorkbenchStructure = {
   actionRail: string;
   context: string;
   queue: string;
@@ -49,12 +49,12 @@ export type ProductGuidanceWorkbenchStructure = {
 };
 
 type GuidanceOverride = Partial<
-  Pick<ProductGuidance, "area" | "gateHint" | "nextStep" | "primaryAction" | "purpose" | "relatedRoutes" | "shortTitle">
+  Pick<OperationalRouteGuidance, "area" | "gateHint" | "nextStep" | "primaryAction" | "purpose" | "relatedRoutes" | "shortTitle">
 >;
 
 const routeByPageId = new Map<string, ScreenRoute>(screenRoutes.map((route) => [route.pageId, route]));
 
-function linkForPageId(pageId: string, label: string): ProductGuidanceLink {
+function linkForPageId(pageId: string, label: string): OperationalRouteGuidanceLink {
   const route = routeByPageId.get(pageId);
 
   if (!route) {
@@ -461,7 +461,7 @@ function routeFromPathname(pathname: string) {
   return matchRouteBySegments(normalized.split("/").filter(Boolean)) ?? null;
 }
 
-function journeyGuidanceForPathname(pathname: string): ProductGuidance | null {
+function journeyGuidanceForPathname(pathname: string): OperationalRouteGuidance | null {
   const cleanPath = pathname.split("?")[0]?.split("#")[0] ?? "/";
   const normalized = cleanPath.length > 1 ? cleanPath.replace(/\/+$/, "") : cleanPath;
 
@@ -500,7 +500,7 @@ function journeyGuidanceForPathname(pathname: string): ProductGuidance | null {
   };
 }
 
-function workbenchStructureForRoute(route: ScreenRoute, guidance: Pick<ProductGuidance, "area" | "gateHint" | "primaryAction" | "shortTitle" | "tierLabel">) {
+function workbenchStructureForRoute(route: ScreenRoute, guidance: Pick<OperationalRouteGuidance, "area" | "gateHint" | "primaryAction" | "shortTitle" | "tierLabel">) {
   if (!uxPage002WorkbenchRouteIds.has(route.pageId)) return undefined;
 
   return {
@@ -510,10 +510,10 @@ function workbenchStructureForRoute(route: ScreenRoute, guidance: Pick<ProductGu
     context: `${guidance.shortTitle} selected in ${guidance.area}.`,
     queue: `${guidance.shortTitle} open items and blocked states.`,
     safety: `${guidance.gateHint} Controls stay blocked until the required gate passes.`,
-  } satisfies ProductGuidanceWorkbenchStructure;
+  } satisfies OperationalRouteGuidanceWorkbenchStructure;
 }
 
-function fallbackPrimaryActionForRoute(route: ScreenRoute, tier: RouteScopeLabel, steps: UxFlowStep[]): ProductGuidanceLink | undefined {
+function fallbackPrimaryActionForRoute(route: ScreenRoute, tier: RouteScopeLabel, steps: UxFlowStep[]): OperationalRouteGuidanceLink | undefined {
   if (tier !== "MVP" && tier !== "MVP_SUPPORT") return undefined;
 
   const routeHref = routeToSmokePath(route.route);
@@ -549,9 +549,9 @@ function ctaBlockedReasonForWorkspace(workspace: UxWorkspaceKey) {
 }
 
 function recoveryActionForCta(
-  primaryAction: ProductGuidanceLink | undefined,
-  nextStep: ProductGuidanceLink | undefined,
-  relatedRoutes: ProductGuidanceLink[],
+  primaryAction: OperationalRouteGuidanceLink | undefined,
+  nextStep: OperationalRouteGuidanceLink | undefined,
+  relatedRoutes: OperationalRouteGuidanceLink[],
 ) {
   if (nextStep && nextStep.href !== primaryAction?.href) return nextStep;
   return relatedRoutes.find((route) => route.href !== primaryAction?.href);
@@ -560,10 +560,10 @@ function recoveryActionForCta(
 function ctaStateForRoute(
   tier: RouteScopeLabel,
   workspace: UxWorkspaceKey,
-  primaryAction: ProductGuidanceLink | undefined,
-  nextStep: ProductGuidanceLink | undefined,
-  relatedRoutes: ProductGuidanceLink[],
-): ProductGuidanceCtaState {
+  primaryAction: OperationalRouteGuidanceLink | undefined,
+  nextStep: OperationalRouteGuidanceLink | undefined,
+  relatedRoutes: OperationalRouteGuidanceLink[],
+): OperationalRouteGuidanceCtaState {
   if (tier !== "MVP" && tier !== "MVP_SUPPORT") {
     return {
       blockedReason: ctaBlockedReasonForWorkspace(workspace),
@@ -579,7 +579,7 @@ function ctaStateForRoute(
   };
 }
 
-export function productGuidanceForRoute(route: ScreenRoute): ProductGuidance {
+export function operationalRouteGuidanceForRoute(route: ScreenRoute): OperationalRouteGuidance {
   const tier = routeScopeForPageId(route.pageId);
   const policy = uxRoutePolicyForRoute(route);
   const override = guidanceOverrides[route.pageId] ?? {};
@@ -614,7 +614,7 @@ export function productGuidanceForRoute(route: ScreenRoute): ProductGuidance {
   };
 }
 
-export function productGuidanceForPathname(pathname: string): ProductGuidance {
+export function operationalRouteGuidanceForPathname(pathname: string): OperationalRouteGuidance {
   const journeyGuidance = journeyGuidanceForPathname(pathname);
 
   if (journeyGuidance) {
@@ -624,7 +624,7 @@ export function productGuidanceForPathname(pathname: string): ProductGuidance {
   const route = routeFromPathname(pathname);
 
   if (route) {
-    return productGuidanceForRoute(route);
+    return operationalRouteGuidanceForRoute(route);
   }
 
   return {

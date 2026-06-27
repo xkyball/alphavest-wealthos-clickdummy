@@ -66,6 +66,7 @@ import {
 } from "@/lib/admin-tenant-setup-demo-data";
 import { cn } from "@/lib/cn";
 import { demoPlatformTenantId, demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { uxActionClassForPriority } from "@/lib/ux-action-hierarchy-contract";
 import type { AdminTenantSnapshot } from "@/lib/admin-tenant-readmodel-service";
 import { permissionEngine } from "@/lib/permission-engine";
 import { runPlatformAdminCommand } from "@/lib/platform-admin-command-client";
@@ -81,14 +82,9 @@ type AdminTenantSetupScreenProps = {
 
 type ConfirmationKind = "platform" | "security" | null;
 
-const primaryButtonClass =
-  "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md bg-alphavest-gold px-4 text-sm font-semibold text-alphavest-navy transition hover:bg-alphavest-gold-soft";
-
-const secondaryButtonClass =
-  "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/60 px-4 text-sm font-semibold text-alphavest-ivory transition hover:border-alphavest-gold/60 hover:text-alphavest-gold-soft";
-
-const staticButtonClass =
-  "inline-flex h-[var(--button-height)] cursor-not-allowed items-center justify-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/40 px-4 text-sm font-semibold text-alphavest-subtle opacity-75";
+const primaryButtonClass = uxActionClassForPriority("primary");
+const secondaryButtonClass = uxActionClassForPriority("secondary");
+const staticButtonClass = uxActionClassForPriority("blocked", { unavailable: true });
 
 const adminTenantWorksurfaceMeta: Record<AdminTenantSetupPageId, { safetyNote: string; status: string; tone?: BadgeTone; worksurfaceId: string }> = {
   "007": {
@@ -904,7 +900,18 @@ function TenantsPage() {
               <option key={status} value={status}>{status}</option>
             ))}
           </select>
-          <button aria-label="Additional tenant filters are static in this directory" className={secondaryButtonClass} disabled title="Search and status already filter this directory." type="button">
+          <button
+            aria-label="Additional tenant filters are static in this directory"
+            className={secondaryButtonClass}
+            data-ux-data-surface-filter-state="disabled_static"
+            data-ux-disabled-message="explicit"
+            data-ux-disabled-reason="Search and status already filter this directory."
+            data-ux-e10-filter-exception-id="DSF-001"
+            data-ux-interactive="false"
+            disabled
+            title="Search and status already filter this directory."
+            type="button"
+          >
             <Filter aria-hidden="true" className="size-4" />
             Filters
           </button>
@@ -1232,7 +1239,18 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
             <CardTitle>User Access</CardTitle>
             <CardDescription>Manage users, assign roles and control access across the organization.</CardDescription>
           </div>
-          <button aria-label="Tenant user filters are not wired in this release" className={secondaryButtonClass} disabled title="User access filters are not wired in this release." type="button">
+          <button
+            aria-label="Tenant user filters are not wired in this release"
+            className={secondaryButtonClass}
+            data-ux-data-surface-filter-state="disabled_static"
+            data-ux-disabled-message="explicit"
+            data-ux-disabled-reason="User access filters are not wired in this release."
+            data-ux-e10-filter-exception-id="DSF-002"
+            data-ux-interactive="false"
+            disabled
+            title="User access filters are not wired in this release."
+            type="button"
+          >
             <SlidersHorizontal aria-hidden="true" className="size-4" />
             Filters
           </button>

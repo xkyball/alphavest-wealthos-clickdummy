@@ -81,6 +81,7 @@ import {
 import { createDemoSession, demoPlatformTenantId, demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import type { ScreenRoute } from "@/lib/route-registry";
 import { runDataMaintenanceCommand } from "@/lib/data-maintenance-command-client";
+import { uxActionClassForPriority } from "@/lib/ux-action-hierarchy-contract";
 import { uxFeedbackSuccessMessageForSubject } from "@/lib/ux-feedback-message-contract";
 import { visibilityEngine, type DecisionVisibilityPayload } from "@/lib/visibility-engine";
 
@@ -88,11 +89,8 @@ type ClientIntakeScreenProps = {
   route: ScreenRoute;
 };
 
-const primaryButtonClass =
-  "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md bg-alphavest-gold px-4 text-sm font-semibold text-alphavest-navy transition hover:bg-alphavest-gold-soft";
-
-const secondaryButtonClass =
-  "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-4 text-sm font-semibold text-alphavest-ivory transition hover:border-alphavest-gold/60 hover:text-alphavest-gold-soft";
+const primaryButtonClass = uxActionClassForPriority("primary");
+const secondaryButtonClass = uxActionClassForPriority("secondary");
 
 const mobileQuickActions: Array<{ icon: LucideIcon; label: string }> = [
   { icon: Upload, label: "Upload" },
@@ -2087,11 +2085,33 @@ function DocumentsPageContent({ title }: { title: string }) {
               <DocumentFilterSelect label="Types" onChange={setTypeFilter} options={typeOptions} testId="p10-document-type-filter" value={typeFilter} />
               <DocumentFilterSelect label="Statuses" onChange={setStatusFilter} options={statusOptions} testId="p10-document-status-filter" value={statusFilter} />
               <DocumentFilterSelect label="Sensitivities" onChange={setSensitivityFilter} options={sensitivityOptions} testId="p10-document-sensitivity-filter" value={sensitivityFilter} />
-              <button aria-disabled="true" className="flex h-11 cursor-not-allowed items-center justify-between gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-left text-sm text-alphavest-muted opacity-65" disabled title="Entity scope is fixed to the current tenant and role." type="button">
+              <button
+                aria-disabled="true"
+                className="flex h-11 cursor-not-allowed items-center justify-between gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-left text-sm text-alphavest-muted opacity-65"
+                data-ux-data-surface-filter-state="disabled_static"
+                data-ux-disabled-message="explicit"
+                data-ux-disabled-reason="Entity scope is fixed to the current tenant and role."
+                data-ux-e10-filter-exception-id="DSF-008"
+                data-ux-interactive="false"
+                disabled
+                title="Entity scope is fixed to the current tenant and role."
+                type="button"
+              >
                 <span className="truncate">Scoped Entities</span>
                 <ShieldCheck aria-hidden="true" className="size-4 text-alphavest-subtle" />
               </button>
-              <button aria-disabled="true" className="flex h-11 cursor-not-allowed items-center justify-between gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-left text-sm text-alphavest-muted opacity-65" disabled title="Access filtering is fixed to the current actor." type="button">
+              <button
+                aria-disabled="true"
+                className="flex h-11 cursor-not-allowed items-center justify-between gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-left text-sm text-alphavest-muted opacity-65"
+                data-ux-data-surface-filter-state="disabled_static"
+                data-ux-disabled-message="explicit"
+                data-ux-disabled-reason="Access filtering is fixed to the current actor."
+                data-ux-e10-filter-exception-id="DSF-008"
+                data-ux-interactive="false"
+                disabled
+                title="Access filtering is fixed to the current actor."
+                type="button"
+              >
                 <span className="truncate">Accessible to Me</span>
                 <Shield aria-hidden="true" className="size-4 text-alphavest-subtle" />
               </button>

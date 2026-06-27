@@ -11,7 +11,7 @@ import {
 } from "../lib/ux-page-contract";
 import { uxContentHierarchyForPageType } from "../lib/ux-content-hierarchy";
 import { uxDensityForPageId, uxDensityTierContracts } from "../lib/ux-density";
-import { productGuidanceForRoute } from "../lib/product-guidance";
+import { operationalRouteGuidanceForRoute } from "../lib/operational-route-guidance";
 import { uxHubDefinitionForPageId } from "../lib/ux-hub";
 import {
   groupedImplementationScreenRoutes,
@@ -728,7 +728,7 @@ test.describe("UX-CTA MJ-001 setup-to-release chain", () => {
     for (const [pageId, href] of Object.entries(expectedPrimaryHrefs)) {
       const route = routeByPageId.get(pageId);
       expect(route, `${pageId} registered route`).toBeDefined();
-      const guidance = productGuidanceForRoute(route!);
+      const guidance = operationalRouteGuidanceForRoute(route!);
 
       expect(guidance.ctaState.primaryAction?.href, `${pageId} primary href`).toBe(href);
       expect(guidance.ctaState.state, `${pageId} guarded state`).toBe("guarded");
@@ -758,7 +758,7 @@ test.describe("UX-CTA evidence upload and review chain", () => {
     for (const [pageId, href] of Object.entries(evidencePrimaryHrefs)) {
       const route = routeByPageId.get(pageId);
       expect(route, `${pageId} registered route`).toBeDefined();
-      const guidance = productGuidanceForRoute(route!);
+      const guidance = operationalRouteGuidanceForRoute(route!);
 
       expect(guidance.ctaState.primaryAction?.href, `${pageId} evidence primary href`).toBe(href);
       expect(guidance.ctaState.blockedReason, `${pageId} evidence blocked reason`).toMatch(
@@ -845,7 +845,7 @@ test.describe("UX-CTA governance admin non-bypass chain", () => {
       const route = screenRoutes.find((candidate) => candidate.pageId === pageId);
       expect(route, `${pageId} route`).toBeDefined();
 
-      const guidance = productGuidanceForRoute(route!);
+      const guidance = operationalRouteGuidanceForRoute(route!);
       expect(guidance.ctaState.state, `${pageId} CTA state`).toBe("guarded");
       expect(guidance.ctaState.primaryAction?.label, `${pageId} primary label`).not.toMatch(
         /admin override|force release|release to client|evidence sufficient|approve export|download ready|suppress audit/i,
@@ -894,7 +894,7 @@ test.describe("UX-CTA export lifecycle separation", () => {
     for (const [pageId, labelPattern] of Object.entries(expectedPrimaryLabels)) {
       const route = routeByPageId.get(pageId);
       expect(route, `${pageId} route`).toBeDefined();
-      const guidance = productGuidanceForRoute(route!);
+      const guidance = operationalRouteGuidanceForRoute(route!);
 
       expect(guidance.ctaState.state, `${pageId} CTA state`).toBe("guarded");
       expect(guidance.ctaState.primaryAction?.label, `${pageId} primary label`).toMatch(labelPattern);

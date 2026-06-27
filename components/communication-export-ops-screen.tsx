@@ -58,6 +58,7 @@ import { UxCtaCluster } from "@/components/ux-cta-cluster";
 import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
 import { WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
+import { uxActionClassForPriority } from "@/lib/ux-action-hierarchy-contract";
 import { uxFeedbackSuccessMessageForSubject } from "@/lib/ux-feedback-message-contract";
 import {
   blueprintRows,
@@ -111,11 +112,8 @@ type AuditEventTableRow = {
   timestamp: string;
 };
 
-const primaryButtonClass =
-  "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md bg-alphavest-gold px-4 text-sm font-semibold text-alphavest-navy transition hover:bg-alphavest-gold-soft disabled:cursor-not-allowed disabled:opacity-55";
-
-const secondaryButtonClass =
-  "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-4 text-sm font-semibold text-alphavest-ivory transition hover:border-alphavest-gold/60 hover:text-alphavest-gold-soft";
+const primaryButtonClass = uxActionClassForPriority("primary");
+const secondaryButtonClass = uxActionClassForPriority("secondary");
 
 
 
@@ -2364,7 +2362,18 @@ function OpsQueuesPage({ title }: { title: string }) {
         <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <CardTitle>Queue Overview</CardTitle>
           <div className="flex flex-wrap gap-2">
-            <button aria-label="Queue filters are not wired in this release" className={secondaryButtonClass} disabled title="Queue filters are not wired in this release." type="button">
+            <button
+              aria-label="Queue filters are not wired in this release"
+              className={secondaryButtonClass}
+              data-ux-data-surface-filter-state="disabled_static"
+              data-ux-disabled-message="explicit"
+              data-ux-disabled-reason="Queue filters are not wired in this release."
+              data-ux-e10-filter-exception-id="DSF-003"
+              data-ux-interactive="false"
+              disabled
+              title="Queue filters are not wired in this release."
+              type="button"
+            >
               <Filter aria-hidden="true" className="size-4" />
               Filters
             </button>

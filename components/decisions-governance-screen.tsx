@@ -86,17 +86,15 @@ import { createDemoSession, demoPlatformTenantId, demoRoles, demoTenants, type D
 import type { ScreenRoute } from "@/lib/route-registry";
 import type { VisualState } from "@/lib/visual-contract";
 import { visibilityEngine, type DecisionVisibilityPayload } from "@/lib/visibility-engine";
+import { uxActionClassForPriority } from "@/lib/ux-action-hierarchy-contract";
 
 type DecisionsGovernanceScreenProps = {
   route: ScreenRoute;
   visualState?: VisualState;
 };
 
-const primaryButtonClass =
-  "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md bg-alphavest-gold px-4 text-sm font-semibold text-alphavest-navy transition hover:bg-alphavest-gold-soft disabled:cursor-not-allowed disabled:opacity-55";
-
-const secondaryButtonClass =
-  "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-4 text-sm font-semibold text-alphavest-ivory transition hover:border-alphavest-gold/60 hover:text-alphavest-gold-soft";
+const primaryButtonClass = uxActionClassForPriority("primary");
+const secondaryButtonClass = uxActionClassForPriority("secondary");
 
 const inputClass =
   "mt-2 h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold disabled:cursor-not-allowed disabled:opacity-60";
@@ -104,8 +102,7 @@ const inputClass =
 const textareaClass =
   "mt-2 min-h-24 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 py-2 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold disabled:cursor-not-allowed disabled:opacity-60";
 
-const destructiveButtonClass =
-  "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-red/60 bg-alphavest-red/10 px-4 text-sm font-semibold text-alphavest-red transition hover:bg-alphavest-red/16";
+const destructiveButtonClass = uxActionClassForPriority("destructive");
 
 const wp07InternalDecisionSession = createDemoSession({ roleKey: "analyst", tenantSlug: "summit" });
 const wp07ClientDecisionSession = createDemoSession({ roleKey: "principal", tenantSlug: "summit" });
@@ -1622,15 +1619,51 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-[minmax(14rem,1fr)_repeat(4,minmax(9rem,10rem))_auto]">
               <label className="relative min-w-0 sm:col-span-2 lg:col-span-1">
                 <Search aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-                <input className="h-11 w-full cursor-not-allowed rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm opacity-65 outline-none focus:border-alphavest-gold" disabled placeholder="Evidence search unavailable" title="Evidence list filters are not wired in this release." />
+                <input
+                  className="h-11 w-full cursor-not-allowed rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm opacity-65 outline-none focus:border-alphavest-gold"
+                  data-ux-data-surface-filter-state="disabled_static"
+                  data-ux-disabled-message="explicit"
+                  data-ux-disabled-reason="Evidence list filters are not wired in this release."
+                  data-ux-e10-filter-exception-id="DSF-004"
+                  data-ux-interactive="false"
+                  disabled
+                  placeholder="Evidence search unavailable"
+                  title="Evidence list filters are not wired in this release."
+                />
               </label>
               {["Category", "Evidence Type", "Status", "Date Range"].map((filter) => (
-                <button aria-label={`${filter} filter is static in this evidence list`} className="flex h-11 min-w-0 cursor-not-allowed items-center justify-between gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted opacity-65" disabled key={filter} title="Evidence list filters are not wired in this release." type="button">
+                <button
+                  aria-label={`${filter} filter is static in this evidence list`}
+                  className="flex h-11 min-w-0 cursor-not-allowed items-center justify-between gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted opacity-65"
+                  data-ux-data-surface-filter-state="disabled_static"
+                  data-ux-disabled-message="explicit"
+                  data-ux-disabled-reason="Evidence list filters are not wired in this release."
+                  data-ux-e10-filter-exception-id="DSF-004"
+                  data-ux-interactive="false"
+                  disabled
+                  key={filter}
+                  title="Evidence list filters are not wired in this release."
+                  type="button"
+                >
                   <span className="truncate">{filter}</span>
                   <ChevronDown aria-hidden="true" className="size-4 shrink-0" />
                 </button>
               ))}
-              <button aria-label="Additional evidence filters are not wired in this release" className={secondaryButtonClass} disabled title="Evidence list filters are not wired in this release." type="button"><Filter aria-hidden="true" className="size-4" />Filters</button>
+              <button
+                aria-label="Additional evidence filters are not wired in this release"
+                className={secondaryButtonClass}
+                data-ux-data-surface-filter-state="disabled_static"
+                data-ux-disabled-message="explicit"
+                data-ux-disabled-reason="Evidence list filters are not wired in this release."
+                data-ux-e10-filter-exception-id="DSF-004"
+                data-ux-interactive="false"
+                disabled
+                title="Evidence list filters are not wired in this release."
+                type="button"
+              >
+                <Filter aria-hidden="true" className="size-4" />
+                Filters
+              </button>
             </div>
             <DataTable columns={evidenceColumns} getRowId={(row) => row.title} rows={evidenceRows} />
           </div>
