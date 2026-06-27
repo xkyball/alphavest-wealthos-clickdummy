@@ -289,3 +289,246 @@ S1 recommendation:
 ## No-UI Confirmation
 
 E12-S1 is a specification artifact only. No visible UI changed, no screenshot was warranted, and no screen/image/state-screen asset was generated.
+
+---
+
+# E12-S2 Contract Gate Rules And Release Definition
+
+Ticket: E12-S2 - Contract Gate Rules and Hardened Release Definition Specification
+Status: `E12_S2_SPEC_READY_FOR_D1_APPROVAL`
+
+## Gate Script Contract
+
+Planned script: `scripts/contract-fulfillment-gate.ts`
+
+Required inputs:
+
+| Input | Source | Required |
+| --- | --- | --- |
+| Contract ledger | `lib/ux-contract-ledger.ts` or D1-approved equivalent | yes |
+| E10 action-zone register | `docs/ux/ALPHAVEST_E10_ACTION_ZONE_MIGRATION_REGISTER.md` | yes until generated/read-only |
+| E10 data-surface filter register | `docs/ux/ALPHAVEST_E10_DATA_SURFACE_FILTER_EXCEPTION_REGISTER.md` | yes until generated/read-only |
+| E10 retired proof UI register | `docs/ux/ALPHAVEST_E10_RETIRED_PROOF_UI_REGISTER.md` | yes until generated/read-only |
+| E11 backend data-surface register | `docs/ux/ALPHAVEST_E11_BACKEND_DATA_SURFACE_COVERAGE_REGISTER.md` | yes until generated/read-only |
+| package scripts | `package.json` | yes |
+| source scan roots | `components`, `lib`, `app/api`, `scripts`, `tests`, `docs/ux` | yes |
+
+Required outputs:
+
+| Output | Path | Required |
+| --- | --- | --- |
+| JSON report | `reports/contract-fulfillment/latest.json` | yes |
+| Markdown report | `docs/v3/proof/e12_contract_fulfillment_report.md` | yes |
+| Process exit | `0` when no failures, non-zero when failure rules trip | yes |
+
+The JSON report must include:
+
+- `status`: `pass`, `warn`, or `fail`.
+- `countsByStatus`.
+- `countsByFamily`.
+- `warnings`.
+- `failures`.
+- `exceptions`.
+- `blocked`.
+- `releaseCommands`.
+- `generatedAt`.
+
+## Gate Rule Families
+
+| Rule ID | Severity | Inputs | Failure Message |
+| --- | --- | --- | --- |
+| `E12-GATE-LEDGER-PARSE` | failure | ledger module or JSON snapshot | `E12 ledger could not be loaded or parsed.` |
+| `E12-GATE-ID-UNIQUENESS` | failure | all ledger entries | `Duplicate contract ledger id: <id>.` |
+| `E12-GATE-REQUIRED-FIELDS` | failure | every active ledger entry | `Contract <id> is missing required field <field>.` |
+| `E12-GATE-FULFILLED-EVIDENCE` | failure | `fulfilled` entries | `Contract <id> is fulfilled without non-markdown evidence.` |
+| `E12-GATE-FOLLOWUP-REQUIRED` | failure | `partial`, `exception`, `blocked` entries | `Contract <id> is <status> without expiresOrFollowUp.` |
+| `E12-GATE-HISTORICAL-NOT-RELEASE` | failure | `historical` entries used as release proof | `Contract <id> uses historical evidence as current release proof.` |
+| `E12-GATE-SCREENSHOT-NOT-API-PROOF` | failure | entries with API/filter/pagination obligations | `Contract <id> uses screenshot evidence for API/filter/pagination truth.` |
+| `E12-GATE-MANUAL-DECISION-NOT-FULFILLMENT` | failure | `fulfilled` entries with only manual decision evidence | `Contract <id> is fulfilled by manual decision only.` |
+| `E12-GATE-REGISTER-ID-SYNC` | failure | E10/E11 register IDs and ledger IDs | `Register id <id> has no matching ledger entry.` |
+| `E12-GATE-NO-NEW-ACTION-DEBT` | failure | `components/**/*.tsx` and registered E10-AZ owners | `Unregistered local action-class vocabulary found in <file>.` |
+| `E12-GATE-NO-NEW-FAKE-FILTERS` | failure | route component filter/search controls and E10-DSF IDs | `Unregistered disabled/static filter debt found in <file>.` |
+| `E12-GATE-RETIRED-PROOF-UI` | failure | active implementation files | `Retired ProductGuidance proof UI path re-entered active code: <file>.` |
+| `E12-GATE-BACKEND-META` | failure | E11 `backend_query_backed` entries | `Backend query surface <id> lacks required API metadata proof.` |
+| `E12-GATE-UI-SOURCE-TRUTH` | failure | E11 UI owner surfaces | `Backend query surface <id> lacks UI source-truth consumption proof.` |
+| `E12-GATE-CAPTURE-RELEASE-WARNINGS` | failure for release mode | package scripts and capture reports | `Release capture proof must run with CAPTURE_QA_FAIL_ON_WARNINGS=1.` |
+| `E12-GATE-PHASE-CHECK-INTEGRATION` | warning or failure by D1/I4 policy | `package.json` | `phase:check does not include contract fulfillment gate.` |
+
+## Rule Details
+
+### Ledger Integrity
+
+The gate must validate the ledger before any source scan:
+
+1. Load the D1-approved ledger source.
+2. Check duplicate IDs.
+3. Check required fields.
+4. Check proof/status/follow-up invariants.
+5. Check that every referenced owner surface exists unless the entry is `planned`, `historical` or explicitly `blocked`.
+
+Expected negative test cases:
+
+- Duplicate ID fails.
+- Missing `ownerSurface` fails for active entries.
+- `exception` without follow-up fails.
+- `fulfilled` with markdown-only evidence fails.
+
+### E10 Action And Filter Debt
+
+The gate must not rely on prose only. It must scan for the concrete debt signatures already governed by E10:
+
+- `primaryButtonClass`
+- `secondaryButtonClass`
+- `staticButtonClass`
+- `destructiveButtonClass`
+- `data-ux-e10-filter-exception-id`
+- `data-ux-data-surface-filter-state="disabled_static"`
+
+Rules:
+
+- Existing registered E10-AZ and E10-DSF files may warn under the approved transition policy.
+- New unregistered files fail immediately.
+- Registered entries must carry a ledger ID and follow-up.
+- First-slice files must continue projecting from the canonical contracts where E10 already requires it.
+
+Expected negative test cases:
+
+- Add a fixture component with `const primaryButtonClass =` and no ledger/register ID: fail.
+- Add a disabled filter without `data-ux-e10-filter-exception-id`: fail.
+- Add a registered exception without follow-up: fail.
+
+### Retired Proof UI
+
+The gate must enforce retirement, not just documentation.
+
+Forbidden in active implementation code:
+
+- `components/product-guidance-panel.tsx`
+- `lib/product-guidance.ts`
+- Active imports from `@/lib/product-guidance`
+- Active imports from `@/components/product-guidance-panel`
+
+Allowed:
+
+- Historical docs and proof reports.
+- Explicit deprecated shim only if D1 or later user approval names it and the gate marks it as `retired`/`exception` with follow-up.
+
+Expected negative test case:
+
+- Fixture file imports `@/lib/product-guidance`: fail with `E12-GATE-RETIRED-PROOF-UI`.
+
+### E11 Backend Query Truth
+
+For every ledger entry that claims `backend_query_backed`, the gate must require:
+
+- API/readmodel metadata proof with `sourceTruth: "backend_query_backed"`.
+- Required meta fields: `page`, `pageSize`, `returnedRows`, `totalRows`, `totalPages`, `hasNextPage`, `hasPreviousPage`, `sortKey`, `sortDirection`, `query`.
+- Safety metadata proof with `hiddenRowsDisclosed: false` and scoped access.
+- UI source-truth consumption proof for visible DB-backed/filter/pagination claims.
+
+Expected negative test cases:
+
+- Ledger marks E11 surface fulfilled but evidence lacks API test: fail.
+- API metadata lacks `totalRows`: fail.
+- UI claims DB-backed but lacks source-truth owner/proof: fail.
+- Screenshot is the only proof for pagination: fail.
+
+### Capture QA Release Proof
+
+Capture QA is a release-proof contract, not a screenshot convention.
+
+Rules:
+
+- Old capture bundles are `historical` unless the current run and E09 report prove otherwise.
+- New release captures must use `pnpm visual:capture-qa:release`.
+- `visual:capture-qa:release` must include `CAPTURE_QA_FAIL_ON_WARNINGS=1`.
+- Capture warnings cannot satisfy release proof in release mode.
+- No screen/image/state-screen assets are generated by E12 unless a later UI ticket explicitly changes visible UI and requests screenshots.
+
+Expected negative test cases:
+
+- Release report points only to an old artifact folder: fail.
+- Package script drops `CAPTURE_QA_FAIL_ON_WARNINGS=1`: fail.
+- New release-capture proof has warnings and is marked fulfilled: fail.
+
+## Hardened Release Definition
+
+Minimum release-relevant command bundle:
+
+```bash
+pnpm guard:source
+pnpm test:route-smoke
+pnpm test:contract-fulfillment
+```
+
+Conditional release commands:
+
+```bash
+pnpm visual:capture-qa:release
+```
+
+Run this when new release captures are produced or when release capture proof is part of the certification claim.
+
+Focused touched-contract tests:
+
+| Contract Area | Focused Command |
+| --- | --- |
+| E10 registers | `playwright test tests/e10-register-reconciliation.spec.ts` |
+| E11 backend data surfaces | `playwright test tests/e11-backend-data-surface-truth.spec.ts tests/ux-data-surface-contract.spec.ts` |
+| E09 capture QA | `playwright test tests/capture-qa-contract.spec.ts tests/e09-capture-release-policy.spec.ts` |
+| Action / feedback | `playwright test tests/ux-action-hierarchy-contract.spec.ts tests/ux-feedback-message-contract.spec.ts` |
+| Proof reviewer | `playwright test tests/ux-proof-reviewer-mode.spec.ts` |
+| Lifecycle state | `playwright test tests/ux-lifecycle-state-contract.spec.ts` |
+| Client visibility | `playwright test tests/client-visibility-proof.spec.ts tests/true-ux-client-projection.spec.ts` |
+
+`phase:check` policy:
+
+- E12-I4 must add `test:contract-fulfillment` as a package script.
+- `phase:check` should not be hard-wired until D1/I4 approval unless the current report is clean.
+- Bold recommendation: after Q1 produces a clean or explicitly excepted report, add `pnpm test:contract-fulfillment` to `phase:check` so contract fulfillment is no longer optional.
+
+## Implementation Subtasks For E12-I3
+
+| Subtask | Scope |
+| --- | --- |
+| `E12-I3.1` | Ledger parse, duplicate ID, required field and exception follow-up checks. |
+| `E12-I3.2` | Action/filter/proof UI debt source-scan checks. |
+| `E12-I3.3` | Backend query metadata and UI source-truth proof checks. |
+| `E12-I3.4` | Retired proof UI and capture release-warning checks. |
+| `E12-I3.5` | Positive and negative gate test suite plus JSON/markdown report checks. |
+
+## D1 Decisions Required Before Implementation
+
+E12-D1 must approve:
+
+1. Ledger format and canonical storage.
+2. Markdown register policy.
+3. Existing exception hardening policy.
+4. Whether `phase:check` integration is immediate or after Q1.
+
+Recommended approval token:
+
+`APPROVE_E12_HYBRID_LEDGER_WARN_EXISTING_FAIL_NEW_GENERATE_MARKDOWN_AFTER_Q1`
+
+Meaning:
+
+- Canonical source is `lib/ux-contract-ledger.ts`.
+- JSON/report artifacts are generated or script-produced outputs.
+- Markdown registers are validate-only during I1/I2, then generated/read-only after Q1 if stable.
+- Existing registered exceptions warn for one burn-down pass.
+- New unregistered debt fails immediately.
+- `test:contract-fulfillment` is added first; `phase:check` hard-wiring happens after Q1 unless the user explicitly approves immediate hard CI.
+
+## E12-S2 Acceptance Result
+
+| E12-S2 Criterion | Result |
+| --- | --- |
+| Every gate rule has testable inputs and failure messages. | PASS |
+| Every exception requires `expiresOrFollowUp`. | PASS |
+| Release definition separates source guard, smoke, contract fulfillment, visual capture QA and focused tests. | PASS |
+| Rules are split into implementation subtasks. | PASS |
+| Retired Pattern and Capture-QA checks are testable gate contracts. | PASS |
+
+## No-UI Confirmation
+
+E12-S2 is a specification artifact only. No visible UI changed, no screenshot was warranted, and no screen/image/state-screen asset was generated.
