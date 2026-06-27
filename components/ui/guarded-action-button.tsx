@@ -10,6 +10,10 @@ import {
   type UxActionPlacement,
   type UxActionPriority,
 } from "@/lib/ux-action-hierarchy-contract";
+import {
+  uxPrimitiveInteractionAttributesFor,
+  uxPrimitiveInteractionClassFor,
+} from "@/lib/ux-design-system-foundation";
 import { uxFeedbackSuccessMessageForSubject } from "@/lib/ux-feedback-message-contract";
 import type { UiActionGuard, UiActionGuardStatus } from "@/lib/ui-clickflow-guards";
 
@@ -106,10 +110,12 @@ export function GuardedActionButton({
         aria-disabled={disabled}
         className={cn(
           uxActionClassForPriority(disabled && priority === "primary" ? "blocked" : priority),
+          uxPrimitiveInteractionClassFor(disabled ? "disabled" : "focus-visible"),
           className,
         )}
         data-testid={testId}
         {...actionAttributes}
+        {...uxPrimitiveInteractionAttributesFor(disabled ? "disabled" : "focus-visible")}
         data-ux-action-guard-state={effectiveStatus}
         data-ux-lifecycle-status={effectiveStatus}
         disabled={disabled}

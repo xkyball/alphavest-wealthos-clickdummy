@@ -1,3 +1,13 @@
+import {
+  AlertTriangle,
+  Ban,
+  CheckCircle2,
+  Circle,
+  Info,
+  LockKeyhole,
+  ShieldAlert,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
 import {
   uxPrimitiveAttributesFor,
@@ -6,6 +16,8 @@ import {
   uxPrimitiveStatusClassFor,
   type UxPrimitiveDensity,
   type UxPrimitiveStatusFamily,
+  type UxPrimitiveStatusHierarchy,
+  type UxPrimitiveStatusMeaning,
   type UxPrimitiveTextRole,
 } from "@/lib/ux-design-system-foundation";
 import type { HTMLAttributes } from "react";
@@ -24,7 +36,10 @@ type BadgeProps = HTMLAttributes<HTMLSpanElement> & {
   children: React.ReactNode;
   className?: string;
   density?: UxPrimitiveDensity;
+  statusCue?: "auto" | "none";
   statusFamily?: UxPrimitiveStatusFamily;
+  statusHierarchy?: UxPrimitiveStatusHierarchy;
+  statusMeaning?: UxPrimitiveStatusMeaning;
   textRole?: UxPrimitiveTextRole;
   tone?: BadgeTone;
 };
@@ -49,17 +64,32 @@ const toneStatusFamily: Record<BadgeTone, UxPrimitiveStatusFamily> = {
   teal: "success"
 };
 
+const statusCueIcon: Record<UxPrimitiveStatusFamily, LucideIcon> = {
+  critical: AlertTriangle,
+  info: Info,
+  internal: ShieldAlert,
+  neutral: Circle,
+  restricted: LockKeyhole,
+  success: CheckCircle2,
+  warning: Ban,
+};
+
 export function Badge({
   ariaLabel,
   children,
   className,
   density = "compact",
+  statusCue = "auto",
   statusFamily,
+  statusHierarchy,
+  statusMeaning,
   textRole = "metadata",
   tone = "muted",
   ...attributes
 }: BadgeProps) {
   const resolvedStatusFamily = statusFamily ?? toneStatusFamily[tone];
+  const StatusCueIcon = statusCueIcon[resolvedStatusFamily];
+  const rendersStatusCue = statusCue === "auto" && resolvedStatusFamily !== "neutral";
 
   return (
     <span
@@ -73,10 +103,15 @@ export function Badge({
       )}
       data-ux-affordance="static-badge"
       data-ux-interactive="false"
+      data-ux-status-cue-rendered={rendersStatusCue ? "icon" : "component-or-label"}
       {...uxPrimitiveAttributesFor({ density, primitive: "badge", textRole })}
-      {...uxPrimitiveStatusAttributesFor(resolvedStatusFamily)}
+      {...uxPrimitiveStatusAttributesFor(resolvedStatusFamily, {
+        hierarchy: statusHierarchy,
+        meaning: statusMeaning,
+      })}
       {...attributes}
     >
+      {rendersStatusCue ? <StatusCueIcon aria-hidden="true" className="size-3.5 shrink-0" /> : null}
       {children}
     </span>
   );

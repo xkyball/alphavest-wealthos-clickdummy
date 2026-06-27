@@ -67,6 +67,7 @@ export function WorkflowBadge({ className, label, sourceDescription = "Workflow 
       className={cn("gap-1.5", className)}
       data-ux-completion-gate="false"
       data-ux-state-source={sourceDescription}
+      statusCue="none"
       statusFamily={meta.family}
       tone={meta.tone}
     >

@@ -29,6 +29,19 @@ test.describe("UX-A11Y phase 10 keyboard, focus and status proof", () => {
     ]));
   });
 
+  test("E08 shared primitives expose focus, active, selected and semantic status cues", async ({ page }) => {
+    await page.goto("/advisor/reviews");
+
+    await expect(page.locator("[data-ux-focus-visible='required']").first()).toBeVisible();
+    await expect(page.locator("[data-ux-interaction-state='selected']").first()).toBeVisible();
+    await page.getByTestId("ux-data-table-sort").first().click();
+
+    await expect(page.locator("[data-ux-focus-visible='required']").first()).toBeVisible();
+    await expect(page.locator("[data-ux-interaction-state='active']").first()).toBeVisible();
+    await expect(page.locator("[data-ux-status-color-only='false'][data-ux-status-meaning]").first()).toBeVisible();
+    await expect(page.locator("[data-ux-status-cue-rendered='icon']").first()).toBeVisible();
+  });
+
   test("UX-A11Y-001 and UX-A11Y-003 modal exposes ARIA description, live status, focus and Escape recovery", async ({ page }) => {
     await page.goto("/governance/roles/demo?state=base");
 

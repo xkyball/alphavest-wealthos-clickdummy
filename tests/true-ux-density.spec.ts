@@ -58,6 +58,17 @@ test.describe("UX-DENSITY phase 9 hierarchy and layout proof", () => {
     ]));
   });
 
+  test("E08 shared cards, filters and data tables expose density readability contracts", async ({ page }) => {
+    await authenticate(page);
+    await page.goto("/advisor/reviews");
+
+    await expect(page.locator("[data-ux-primitive='card'][data-ux-density-readability='true']").first()).toBeVisible();
+    await expect(page.locator("[data-ux-data-surface-density-preset][data-ux-density-readability='true']").first()).toBeVisible();
+    await expect(page.locator("[data-ux-data-surface-density-preset='default']").first()).toBeVisible();
+    await expect(page.locator("[data-ux-primitive-density='comfortable']").first()).toBeVisible();
+    await expect(page.locator(".av-readable-surface").first()).toBeVisible();
+  });
+
   for (const route of phase9Routes) {
     test(route.taskId + " " + route.path + " exposes above-fold density hierarchy and retained safety", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 1200 });

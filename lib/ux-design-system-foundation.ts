@@ -18,7 +18,21 @@ export type UxPrimitiveStatusFamily =
   | "success"
   | "warning";
 
+export type UxPrimitiveStatusMeaning =
+  | "blocked"
+  | "destructive"
+  | "info"
+  | "internal"
+  | "neutral"
+  | "restricted"
+  | "success"
+  | "warning";
+
+export type UxPrimitiveStatusHierarchy = "critical" | "standard" | "supporting";
+
 export type UxPrimitiveStatusSeverity = "critical" | "info" | "neutral" | "success" | "warning";
+
+export type UxPrimitiveInteractionState = "active" | "disabled" | "focus-visible" | "selected";
 
 export type UxDesignSystemRuntimeAttributes = Record<`data-${string}`, string>;
 
@@ -37,8 +51,17 @@ export type UxPrimitiveTextRoleContract = {
 export type UxPrimitiveStatusContract = {
   colorOnly: "false";
   family: UxPrimitiveStatusFamily;
+  hierarchy: UxPrimitiveStatusHierarchy;
+  meaning: UxPrimitiveStatusMeaning;
   nonColorCue: "icon-and-label" | "label";
   severity: UxPrimitiveStatusSeverity;
+  token: string;
+};
+
+export type UxPrimitiveInteractionContract = {
+  cue: "disabled-reason" | "marker-and-label" | "outline-and-shadow";
+  focusVisible?: "required";
+  state: UxPrimitiveInteractionState;
   token: string;
 };
 
@@ -90,6 +113,8 @@ export const uxPrimitiveStatusContracts = {
   critical: {
     colorOnly: "false",
     family: "critical",
+    hierarchy: "critical",
+    meaning: "destructive",
     nonColorCue: "icon-and-label",
     severity: "critical",
     token: "av-status-critical",
@@ -97,6 +122,8 @@ export const uxPrimitiveStatusContracts = {
   info: {
     colorOnly: "false",
     family: "info",
+    hierarchy: "standard",
+    meaning: "info",
     nonColorCue: "icon-and-label",
     severity: "info",
     token: "av-status-info",
@@ -104,6 +131,8 @@ export const uxPrimitiveStatusContracts = {
   internal: {
     colorOnly: "false",
     family: "internal",
+    hierarchy: "standard",
+    meaning: "internal",
     nonColorCue: "icon-and-label",
     severity: "warning",
     token: "av-status-internal",
@@ -111,6 +140,8 @@ export const uxPrimitiveStatusContracts = {
   neutral: {
     colorOnly: "false",
     family: "neutral",
+    hierarchy: "supporting",
+    meaning: "neutral",
     nonColorCue: "label",
     severity: "neutral",
     token: "av-status-neutral",
@@ -118,6 +149,8 @@ export const uxPrimitiveStatusContracts = {
   restricted: {
     colorOnly: "false",
     family: "restricted",
+    hierarchy: "critical",
+    meaning: "blocked",
     nonColorCue: "icon-and-label",
     severity: "warning",
     token: "av-status-restricted",
@@ -125,6 +158,8 @@ export const uxPrimitiveStatusContracts = {
   success: {
     colorOnly: "false",
     family: "success",
+    hierarchy: "standard",
+    meaning: "success",
     nonColorCue: "icon-and-label",
     severity: "success",
     token: "av-status-success",
@@ -132,11 +167,37 @@ export const uxPrimitiveStatusContracts = {
   warning: {
     colorOnly: "false",
     family: "warning",
+    hierarchy: "standard",
+    meaning: "warning",
     nonColorCue: "icon-and-label",
     severity: "warning",
     token: "av-status-warning",
   },
 } as const satisfies Record<UxPrimitiveStatusFamily, UxPrimitiveStatusContract>;
+
+export const uxPrimitiveInteractionContracts = {
+  active: {
+    cue: "marker-and-label",
+    state: "active",
+    token: "av-active-state",
+  },
+  disabled: {
+    cue: "disabled-reason",
+    state: "disabled",
+    token: "av-disabled-state",
+  },
+  "focus-visible": {
+    cue: "outline-and-shadow",
+    focusVisible: "required",
+    state: "focus-visible",
+    token: "av-focus-ring",
+  },
+  selected: {
+    cue: "marker-and-label",
+    state: "selected",
+    token: "av-selected-state",
+  },
+} as const satisfies Record<UxPrimitiveInteractionState, UxPrimitiveInteractionContract>;
 
 export const uxPrimitiveDensities = Object.keys(uxPrimitiveDensityContracts) as UxPrimitiveDensity[];
 
@@ -144,16 +205,22 @@ export const uxPrimitiveTextRoles = Object.keys(uxPrimitiveTextRoleContracts) as
 
 export const uxPrimitiveStatusFamilies = Object.keys(uxPrimitiveStatusContracts) as UxPrimitiveStatusFamily[];
 
-export function uxPrimitiveDensityContractFor(density: UxPrimitiveDensity) {
+export const uxPrimitiveInteractionStates = Object.keys(uxPrimitiveInteractionContracts) as UxPrimitiveInteractionState[];
+
+export function uxPrimitiveDensityContractFor(density: UxPrimitiveDensity): UxPrimitiveDensityContract {
   return uxPrimitiveDensityContracts[density];
 }
 
-export function uxPrimitiveTextRoleContractFor(role: UxPrimitiveTextRole) {
+export function uxPrimitiveTextRoleContractFor(role: UxPrimitiveTextRole): UxPrimitiveTextRoleContract {
   return uxPrimitiveTextRoleContracts[role];
 }
 
-export function uxPrimitiveStatusContractFor(family: UxPrimitiveStatusFamily) {
+export function uxPrimitiveStatusContractFor(family: UxPrimitiveStatusFamily): UxPrimitiveStatusContract {
   return uxPrimitiveStatusContracts[family];
+}
+
+export function uxPrimitiveInteractionContractFor(state: UxPrimitiveInteractionState): UxPrimitiveInteractionContract {
+  return uxPrimitiveInteractionContracts[state];
 }
 
 export function uxPrimitiveAttributesFor(input: {
@@ -176,14 +243,34 @@ export function uxPrimitiveAttributesFor(input: {
   };
 }
 
-export function uxPrimitiveStatusAttributesFor(family: UxPrimitiveStatusFamily): UxDesignSystemRuntimeAttributes {
+export function uxPrimitiveStatusAttributesFor(
+  family: UxPrimitiveStatusFamily,
+  overrides: {
+    hierarchy?: UxPrimitiveStatusHierarchy;
+    meaning?: UxPrimitiveStatusMeaning;
+  } = {},
+): UxDesignSystemRuntimeAttributes {
   const contract = uxPrimitiveStatusContractFor(family);
 
   return {
     "data-ux-status-color-only": contract.colorOnly,
     "data-ux-status-family": contract.family,
+    "data-ux-status-hierarchy": overrides.hierarchy ?? contract.hierarchy,
+    "data-ux-status-meaning": overrides.meaning ?? contract.meaning,
     "data-ux-status-non-color-cue": contract.nonColorCue,
     "data-ux-status-severity": contract.severity,
+  };
+}
+
+export function uxPrimitiveInteractionAttributesFor(state: UxPrimitiveInteractionState): UxDesignSystemRuntimeAttributes {
+  const contract = uxPrimitiveInteractionContractFor(state);
+
+  return {
+    "data-ux-interaction-state": contract.state,
+    ...(contract.focusVisible ? { "data-ux-focus-visible": contract.focusVisible } : {}),
+    ...(state === "selected" ? { "data-ux-selected-cue": contract.cue } : {}),
+    ...(state === "active" ? { "data-ux-active-cue": contract.cue } : {}),
+    ...(state === "disabled" ? { "data-ux-disabled-cue": contract.cue } : {}),
   };
 }
 
@@ -197,4 +284,8 @@ export function uxPrimitiveTextClassFor(role: UxPrimitiveTextRole) {
 
 export function uxPrimitiveStatusClassFor(family: UxPrimitiveStatusFamily) {
   return uxPrimitiveStatusContractFor(family).token;
+}
+
+export function uxPrimitiveInteractionClassFor(state: UxPrimitiveInteractionState) {
+  return uxPrimitiveInteractionContractFor(state).token;
 }

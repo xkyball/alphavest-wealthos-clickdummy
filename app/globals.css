@@ -61,10 +61,28 @@
   --av-status-critical-border: rgba(239, 91, 91, 0.35);
   --av-status-restricted-border: rgba(215, 166, 75, 0.4);
   --av-status-internal-border: rgba(240, 201, 130, 0.4);
+  --av-readable-surface: rgba(16, 37, 54, 0.72);
+  --av-selected-border: rgba(215, 166, 75, 0.66);
+  --av-selected-surface: rgba(215, 166, 75, 0.12);
+  --av-active-border: rgba(90, 167, 216, 0.58);
+  --av-active-surface: rgba(90, 167, 216, 0.12);
 }
 
 * {
   box-sizing: border-box;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border-width: 0;
 }
 
 html {
@@ -211,6 +229,20 @@ select {
   text-wrap: pretty;
 }
 
+.av-readable-surface {
+  background-color: var(--av-readable-surface);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+}
+
+.av-readable-secondary {
+  color: #b9c4d1;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+}
+
 .av-density-compact {
   gap: var(--av-density-compact-gap);
   min-block-size: var(--av-density-compact-block);
@@ -277,7 +309,26 @@ select {
 }
 
 .av-focus-ring:focus-visible {
+  border-color: rgba(215, 166, 75, 0.72);
+  outline-color: rgba(215, 166, 75, 0.86);
   box-shadow: var(--av-focus-ring);
+}
+
+.av-selected-state {
+  border-color: var(--av-selected-border);
+  background: linear-gradient(90deg, var(--av-selected-surface), transparent 70%);
+  box-shadow: inset 3px 0 0 rgba(215, 166, 75, 0.82);
+}
+
+.av-active-state {
+  border-color: var(--av-active-border);
+  background: linear-gradient(90deg, var(--av-active-surface), transparent 70%);
+  box-shadow: inset 0 -2px 0 rgba(90, 167, 216, 0.7);
+}
+
+.av-disabled-state {
+  cursor: not-allowed;
+  opacity: 0.58;
 }
 
 .av-status-neutral {

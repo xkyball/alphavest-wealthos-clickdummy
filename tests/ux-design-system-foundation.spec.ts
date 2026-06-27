@@ -5,6 +5,9 @@ import {
   uxPrimitiveAttributesFor,
   uxPrimitiveDensities,
   uxPrimitiveDensityClassFor,
+  uxPrimitiveInteractionAttributesFor,
+  uxPrimitiveInteractionClassFor,
+  uxPrimitiveInteractionStates,
   uxPrimitiveStatusAttributesFor,
   uxPrimitiveStatusClassFor,
   uxPrimitiveStatusFamilies,
@@ -62,8 +65,39 @@ test.describe("E01 design-system foundation", () => {
     expect(uxPrimitiveStatusAttributesFor("critical")).toMatchObject({
       "data-ux-status-color-only": "false",
       "data-ux-status-family": "critical",
+      "data-ux-status-hierarchy": "critical",
+      "data-ux-status-meaning": "destructive",
       "data-ux-status-non-color-cue": "icon-and-label",
       "data-ux-status-severity": "critical",
+    });
+    expect(uxPrimitiveStatusAttributesFor("restricted")).toMatchObject({
+      "data-ux-status-family": "restricted",
+      "data-ux-status-hierarchy": "critical",
+      "data-ux-status-meaning": "blocked",
+    });
+    expect(uxPrimitiveStatusAttributesFor("critical", { meaning: "blocked" })).toMatchObject({
+      "data-ux-status-family": "critical",
+      "data-ux-status-meaning": "blocked",
+    });
+  });
+
+  test("defines E08 interaction states with visible non-color cues", () => {
+    expect(uxPrimitiveInteractionStates).toEqual(["active", "disabled", "focus-visible", "selected"]);
+    expect(uxPrimitiveInteractionClassFor("focus-visible")).toBe("av-focus-ring");
+    expect(uxPrimitiveInteractionClassFor("selected")).toBe("av-selected-state");
+    expect(uxPrimitiveInteractionClassFor("active")).toBe("av-active-state");
+
+    expect(uxPrimitiveInteractionAttributesFor("focus-visible")).toMatchObject({
+      "data-ux-focus-visible": "required",
+      "data-ux-interaction-state": "focus-visible",
+    });
+    expect(uxPrimitiveInteractionAttributesFor("selected")).toMatchObject({
+      "data-ux-interaction-state": "selected",
+      "data-ux-selected-cue": "marker-and-label",
+    });
+    expect(uxPrimitiveInteractionAttributesFor("active")).toMatchObject({
+      "data-ux-active-cue": "marker-and-label",
+      "data-ux-interaction-state": "active",
     });
   });
 
@@ -78,9 +112,11 @@ test.describe("E01 design-system foundation", () => {
     expect(badge).toContain("uxPrimitiveStatusAttributesFor");
     expect(statusChip).toContain("family: \"success\"");
     expect(statusChip).toContain("statusFamily={meta.family}");
+    expect(statusChip).toContain("statusCue=\"none\"");
     expect(workflowBadge).toContain("statusFamily={meta.family}");
+    expect(workflowBadge).toContain("statusCue=\"none\"");
     expect(statePanel).toContain("uxPrimitiveDensityClassFor(\"comfortable\")");
-    expect(statePanel).toContain("uxPrimitiveStatusAttributesFor(primitiveStatusFamily)");
+    expect(statePanel).toContain("uxPrimitiveStatusAttributesFor(primitiveStatusFamily,");
     expect(uiIndex).toContain('export * from "@/components/ui/a11y-status";');
     expect(uiIndex).toContain('export * from "@/components/ui/disabled-control-reason";');
   });

@@ -6,6 +6,10 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { useDemoSession } from "@/components/demo-session-provider";
 import { cn } from "@/lib/cn";
+import {
+  uxPrimitiveInteractionAttributesFor,
+  uxPrimitiveInteractionClassFor,
+} from "@/lib/ux-design-system-foundation";
 import { isActiveNavigationItem, navigationGroupsForRole } from "@/lib/navigation";
 
 type ProcessNavigationProps = {
@@ -44,12 +48,14 @@ export function ProcessJourneyLink({ onNavigate }: { onNavigate?: () => void }) 
       className={cn(
         "flex min-h-12 items-start gap-3 rounded-md border px-3 py-2.5 text-xs transition",
         pathname.startsWith("/journeys")
-          ? "border-alphavest-gold/55 bg-alphavest-gold/12 text-alphavest-gold-soft"
-          : "border-alphavest-border/55 bg-alphavest-charcoal/42 text-alphavest-muted hover:border-alphavest-gold/60 hover:text-alphavest-gold-soft"
+          ? cn("border-alphavest-gold/55 bg-alphavest-gold/12 text-alphavest-gold-soft", uxPrimitiveInteractionClassFor("selected"))
+          : "border-alphavest-border/55 bg-alphavest-charcoal/42 text-alphavest-muted hover:border-alphavest-gold/60 hover:text-alphavest-gold-soft",
+        uxPrimitiveInteractionClassFor("focus-visible"),
       )}
       data-testid="journey-first-navigation"
       href="/journeys"
       onClick={onNavigate}
+      {...uxPrimitiveInteractionAttributesFor(pathname.startsWith("/journeys") ? "selected" : "focus-visible")}
     >
       <Route aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
       <span className="min-w-0 flex-1">
@@ -82,13 +88,15 @@ export function ProcessNavigation({ className, onNavigate, variant = "grouped" }
               className={cn(
                 "flex min-h-10 items-center gap-3 rounded-md border px-3 py-2 text-sm transition",
                 active
-                  ? "border-alphavest-gold/45 bg-alphavest-gold/12 text-alphavest-gold-soft"
-                  : "border-transparent text-alphavest-muted hover:border-alphavest-border hover:bg-alphavest-panel/65 hover:text-alphavest-ivory"
+                  ? cn("border-alphavest-gold/45 bg-alphavest-gold/12 text-alphavest-gold-soft", uxPrimitiveInteractionClassFor("selected"))
+                  : "border-transparent text-alphavest-muted hover:border-alphavest-border hover:bg-alphavest-panel/65 hover:text-alphavest-ivory",
+                uxPrimitiveInteractionClassFor("focus-visible"),
               )}
               data-navigation-item-tier={item.tier}
               href={item.href}
               key={item.label}
               onClick={onNavigate}
+              {...uxPrimitiveInteractionAttributesFor(active ? "selected" : "focus-visible")}
             >
               <Icon aria-hidden="true" className="size-4 shrink-0" />
               <span className="min-w-0 flex-1 leading-5">{item.label}</span>
@@ -181,14 +189,16 @@ export function ProcessNavigation({ className, onNavigate, variant = "grouped" }
                       "group flex min-h-9 items-start gap-3 rounded-md border text-xs transition",
                       item.tier === "secondary" ? "ml-2 px-2.5 py-1.5" : "px-3 py-2",
                       active
-                        ? "border-alphavest-gold/55 bg-alphavest-gold/12 text-alphavest-gold-soft"
+                        ? cn("border-alphavest-gold/55 bg-alphavest-gold/12 text-alphavest-gold-soft", uxPrimitiveInteractionClassFor("selected"))
                         : "border-transparent text-alphavest-muted hover:border-alphavest-border hover:bg-alphavest-panel-soft/70 hover:text-alphavest-ivory",
-                      item.tier === "secondary" && !active && "text-alphavest-subtle hover:text-alphavest-muted"
+                      item.tier === "secondary" && !active && "text-alphavest-subtle hover:text-alphavest-muted",
+                      uxPrimitiveInteractionClassFor("focus-visible"),
                     )}
                     data-navigation-item-tier={item.tier}
                     href={item.href}
                     key={item.label}
                     onClick={onNavigate}
+                    {...uxPrimitiveInteractionAttributesFor(active ? "selected" : "focus-visible")}
                   >
                     <Icon
                       aria-hidden="true"

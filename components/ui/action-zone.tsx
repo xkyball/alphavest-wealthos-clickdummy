@@ -11,6 +11,10 @@ import {
   type UxActionPlacement,
   type UxActionPriority,
 } from "@/lib/ux-action-hierarchy-contract";
+import {
+  uxPrimitiveInteractionAttributesFor,
+  uxPrimitiveInteractionClassFor,
+} from "@/lib/ux-design-system-foundation";
 
 type ActionZoneLayout = "inline" | "stack" | "rail";
 
@@ -128,12 +132,17 @@ export function ActionButton({
   });
   const sharedProps = {
     "aria-describedby": [describedBy, reasonId].filter(Boolean).join(" ") || undefined,
-    className: cn(uxActionClassForPriority(priority, { unavailable: !isExecutable }), className),
+    className: cn(
+      uxActionClassForPriority(priority, { unavailable: !isExecutable }),
+      uxPrimitiveInteractionClassFor(isExecutable ? "focus-visible" : "disabled"),
+      className,
+    ),
     "data-testid": testId,
     "data-ux-lifecycle-result": lifecycleResult,
     "data-ux-lifecycle-trigger": lifecycleTrigger,
     title: reason ?? title,
     ...actionAttributes,
+    ...uxPrimitiveInteractionAttributesFor(isExecutable ? "focus-visible" : "disabled"),
   };
   const reasonElement = reason ? (
     <DisabledControlReason id={reasonId} reason={reason} testId="ux-action-disabled-reason" visible={visibleDisabledReason} />

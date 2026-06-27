@@ -61,6 +61,7 @@ export function StatusChip({ className, label, sourceDescription = "Status chip 
       className={cn("gap-1.5", className)}
       data-ux-completion-gate="false"
       data-ux-state-source={sourceDescription}
+      statusCue="none"
       statusFamily={meta.family}
       tone={meta.tone}
     >

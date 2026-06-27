@@ -6,6 +6,10 @@ import { DisabledControlReason, disabledControlReasonId } from "@/components/ui/
 import { StatePanel, type ComponentState } from "@/components/ui/state-panel";
 import { cn } from "@/lib/cn";
 import {
+  uxPrimitiveInteractionAttributesFor,
+  uxPrimitiveInteractionClassFor,
+} from "@/lib/ux-design-system-foundation";
+import {
   uxDataFieldAttributesFor,
   uxDataSurfaceActionAttributesFor,
   uxDataSurfaceActionContractFor,
@@ -137,6 +141,27 @@ export function DataTable<T>({
 
   const densityPreset = uxDataSurfaceDensityForPreset(density ?? (compact ? "compact" : "default"));
   const e06DensityPreset = uxDataSurfacePresetForDensity(density ?? (compact ? "compact" : "default"));
+  const densityPresentation = {
+    compact: {
+      cellPadding: "px-3 py-2.5",
+      mobileCardPadding: "p-4",
+      rowMinHeight: "min-h-[var(--table-row-height-compact)]",
+      tableLayout: "table-fixed",
+    },
+    comfortable: {
+      cellPadding: "px-5 py-3.5",
+      mobileCardPadding: "p-5",
+      rowMinHeight: "min-h-[var(--table-row-height)]",
+      tableLayout: "table-auto",
+    },
+    default: {
+      cellPadding: "px-4 py-3",
+      mobileCardPadding: "p-4",
+      rowMinHeight: "min-h-[var(--table-row-height-compact)]",
+      tableLayout: "table-auto",
+    },
+  } as const;
+  const densityClasses = densityPresentation[e06DensityPreset];
   const resolvedActionPolicy = actionPolicy ?? (onRowAction ? "open_detail" : "disabled_unavailable");
   const rendersRowAction = uxDataSurfaceActionContractFor(resolvedActionPolicy).rendersAffordance;
   const tableAttributes = uxDataSurfaceAttributesFor({
@@ -168,7 +193,10 @@ export function DataTable<T>({
       <button
         aria-describedby={disabledReason ? disabledReasonId : undefined}
         aria-label={actionEnabled ? actionLabel : rowActionUnavailableLabel}
-        className="ml-auto grid size-8 place-items-center rounded-md border border-transparent text-alphavest-subtle transition enabled:hover:border-alphavest-border enabled:hover:text-alphavest-ivory disabled:cursor-not-allowed disabled:opacity-45"
+        className={cn(
+          "ml-auto grid size-8 place-items-center rounded-md border border-transparent text-alphavest-subtle transition enabled:hover:border-alphavest-border enabled:hover:text-alphavest-ivory disabled:cursor-not-allowed disabled:opacity-45",
+          uxPrimitiveInteractionClassFor(actionEnabled ? "focus-visible" : "disabled"),
+        )}
         data-testid="ux-data-table-row-action"
         data-ux-affordance="row-action"
         data-ux-disabled-message={disabledReason ? "accessible" : undefined}
@@ -180,6 +208,7 @@ export function DataTable<T>({
         onClick={actionEnabled ? () => onRowAction?.(row) : undefined}
         title={actionEnabled ? actionLabel : rowActionUnavailableLabel}
         type="button"
+        {...uxPrimitiveInteractionAttributesFor(actionEnabled ? "focus-visible" : "disabled")}
         {...uxDataSurfaceActionAttributesFor(resolvedActionPolicy)}
       >
         <MoreHorizontal aria-hidden="true" className="size-4" />
@@ -188,17 +217,18 @@ export function DataTable<T>({
     );
   }
 
-  const cellPadding = compact ? "px-4 py-3" : "px-5 py-3.5";
-  const rowMinHeight = compact ? "min-h-[var(--table-row-height-compact)]" : "min-h-[var(--table-row-height)]";
-  const tablePadding = compact ? "w-full min-w-0 table-fixed" : "w-full min-w-0 table-auto";
+  const cellPadding = densityClasses.cellPadding;
+  const rowMinHeight = densityClasses.rowMinHeight;
+  const tablePadding = cn("w-full min-w-0", densityClasses.tableLayout);
 
   const table = (
     <div
-      className="min-w-0 max-w-full overflow-x-auto overflow-y-visible rounded-md border border-alphavest-border/70 [contain:inline-size]"
+      className="av-readable-surface min-w-0 max-w-full overflow-x-auto overflow-y-visible rounded-md border border-alphavest-border/70 [contain:inline-size]"
+      data-ux-density-readability="true"
       data-testid="ux-data-table"
       {...tableAttributes}
     >
-      <table className={tablePadding + " border-collapse text-left text-sm"}>
+      <table className={cn(tablePadding, "border-collapse text-left text-sm")}>
         <thead className={cn("bg-alphavest-panel/75 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle", stickyHeader && "sticky top-0 z-10")}>
           <tr>
             {columns.map((column, index) => {
@@ -220,11 +250,16 @@ export function DataTable<T>({
                   {column.sortable ? (
                     <button
                       aria-label={`Sort by ${column.header}${activeSortKey === column.key ? `, currently ${columnSortState}` : ""}`}
-                      className="inline-flex max-w-full items-center gap-1 text-left uppercase"
+                      className={cn(
+                        "inline-flex max-w-full items-center gap-1 rounded-sm text-left uppercase",
+                        uxPrimitiveInteractionClassFor("focus-visible"),
+                        activeSortKey === column.key && uxPrimitiveInteractionClassFor("active"),
+                      )}
                       data-testid="ux-data-table-sort"
                       onClick={() => handleSort(column.key)}
                       title={`Sort table by ${column.header}${activeSortKey === column.key ? `, currently ${columnSortState}` : ""}.`}
                       type="button"
+                      {...uxPrimitiveInteractionAttributesFor(activeSortKey === column.key ? "active" : "focus-visible")}
                     >
                       <span className="truncate">{column.header}</span>
                       <span aria-hidden="true" className="text-[0.68rem] text-alphavest-subtle">
@@ -256,10 +291,10 @@ export function DataTable<T>({
             </tr>
           ) : (
             sortedRows.map((row) => (
-              <tr className={cn("border-b border-alphavest-border/55 last:border-0", rowMinHeight)} key={getRowId(row)}>
+              <tr className={cn("border-b border-alphavest-border/55 last:border-0", rowMinHeight)} data-ux-density-readability="true" key={getRowId(row)}>
                 {columns.map((column, index) => (
                   <td
-                    className={cn("min-w-0 break-words align-top leading-5 text-alphavest-muted", cellPadding, column.className)}
+                    className={cn("av-readable-secondary min-w-0 break-words align-top text-sm", cellPadding, column.className)}
                     key={column.key}
                     {...uxDataFieldAttributesFor(columnPriorityFor(column, index))}
                   >
@@ -267,7 +302,7 @@ export function DataTable<T>({
                   </td>
                 ))}
                 {rendersRowAction ? (
-                  <td className="px-5 py-4 text-right text-alphavest-subtle" {...uxDataFieldAttributesFor("action")}>
+                  <td className={cn(cellPadding, "text-right text-alphavest-subtle")} {...uxDataFieldAttributesFor("action")}>
                     <RowAction row={row} />
                   </td>
                 ) : null}
@@ -305,7 +340,11 @@ export function DataTable<T>({
         ) : (
           <div className="grid gap-3">
             {sortedRows.map((row) => (
-                <article className="rounded-md border border-alphavest-border/70 bg-alphavest-midnight/45 p-5" key={getRowId(row)}>
+                <article
+                  className={cn("av-readable-surface rounded-md border border-alphavest-border/70 bg-alphavest-midnight/45", densityClasses.mobileCardPadding)}
+                  data-ux-density-readability="true"
+                  key={getRowId(row)}
+                >
                   <div className="mb-3 flex items-start justify-between gap-3">
                   <div className="min-w-0 text-sm font-semibold text-alphavest-ivory" {...uxDataFieldAttributesFor("identity")}>
                     {mobileCardTitle ? mobileCardTitle(row) : columns[0]?.render(row)}
