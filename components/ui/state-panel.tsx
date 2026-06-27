@@ -1,30 +1,18 @@
 import { AlertTriangle, Ban, CheckCircle2, EyeOff, FileSearch, LoaderCircle, ShieldAlert } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
+import {
+  uxStateAttributesForComponentState,
+  type UxComponentState,
+  type UxLifecycleKind,
+} from "@/lib/ux-lifecycle-state-contract";
 
-export type ComponentState =
-  | "audit-unavailable"
-  | "blocked"
-  | "denied"
-  | "empty"
-  | "error"
-  | "export-failed"
-  | "export-pending"
-  | "export-redaction"
-  | "hidden"
-  | "hold-blocked"
-  | "internal-only"
-  | "loading"
-  | "p1-deferred"
-  | "redacted"
-  | "reference-only"
-  | "restricted"
-  | "success"
-  | "validation";
+export type ComponentState = UxComponentState;
 
 type StatePanelProps = {
   className?: string;
   detail: string;
+  lifecycleKind?: UxLifecycleKind;
   state: ComponentState;
   testId?: string;
   title: string;
@@ -51,11 +39,12 @@ const stateMeta: Record<ComponentState, { icon: LucideIcon; style: string }> = {
   validation: { icon: AlertTriangle, style: "border-alphavest-gold/40 bg-alphavest-gold/10 text-alphavest-gold-soft" }
 };
 
-export function StatePanel({ className, detail, state, testId, title }: StatePanelProps) {
+export function StatePanel({ className, detail, lifecycleKind, state, testId, title }: StatePanelProps) {
   const Icon = stateMeta[state].icon;
+  const stateAttributes = uxStateAttributesForComponentState(state, { lifecycleKind });
 
   return (
-    <div className={cn("rounded-md border p-4", stateMeta[state].style, className)} data-testid={testId} data-ux-state={state}>
+    <div className={cn("rounded-md border p-4", stateMeta[state].style, className)} data-testid={testId} {...stateAttributes}>
       <div className="flex items-center gap-2 text-sm font-semibold">
         <Icon aria-hidden="true" className={cn("size-4", state === "loading" && "animate-spin")} />
         {title}

@@ -2,10 +2,13 @@ import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 
 import {
+  uxComponentStates,
   uxLifecycleAttributesForKind,
   uxLifecycleCloseForOwner,
   uxLifecycleContractForKind,
   uxLifecycleKinds,
+  uxStateAttributesForComponentState,
+  uxStateContractForComponentState,
 } from "../lib/ux-lifecycle-state-contract";
 
 test.describe("E04 canonical lifecycle and overlay contract", () => {
@@ -74,5 +77,66 @@ test.describe("E04 canonical lifecycle and overlay contract", () => {
     expect(drawerSource).toContain('uxLifecycleAttributesForKind("drawer"');
     expect(modalSource).not.toContain('data-ux-lifecycle-submit="owner-owned-confirmation-only"');
     expect(drawerSource).not.toContain('data-ux-lifecycle-submit="owner-owned-where-present"');
+  });
+
+  test("maps every StatePanel component state to a canonical state family", () => {
+    expect(uxComponentStates).toEqual([
+      "audit-unavailable",
+      "blocked",
+      "denied",
+      "empty",
+      "error",
+      "export-failed",
+      "export-pending",
+      "export-redaction",
+      "hidden",
+      "hold-blocked",
+      "internal-only",
+      "loading",
+      "p1-deferred",
+      "redacted",
+      "reference-only",
+      "restricted",
+      "success",
+      "validation",
+    ]);
+
+    for (const componentState of uxComponentStates) {
+      const contract = uxStateContractForComponentState(componentState);
+
+      expect(contract.componentState).toBe(componentState);
+      expect(contract.family).toMatch(/^(loading|empty|error|validation|permission_denied|blocked|restricted|success|hidden|reference|deferred|audit_unavailable|export_pending|export_redaction|export_failed)$/);
+      expect(contract.severity).toMatch(/^(neutral|info|success|warning|critical)$/);
+      expect(contract.noOverclaimRule.length).toBeGreaterThan(20);
+    }
+  });
+
+  test("projects StatePanel runtime metadata from the canonical state contract", () => {
+    expect(uxStateAttributesForComponentState("success")).toMatchObject({
+      "data-ux-state": "success",
+      "data-ux-state-capture-kind": "base",
+      "data-ux-state-family": "success",
+      "data-ux-state-lifecycle-kind": "base",
+      "data-ux-state-severity": "success",
+    });
+    expect(uxStateAttributesForComponentState("denied")).toMatchObject({
+      "data-ux-state": "denied",
+      "data-ux-state-family": "permission_denied",
+      "data-ux-state-severity": "critical",
+    });
+    expect(uxStateAttributesForComponentState("validation", { lifecycleKind: "confirmation" })).toMatchObject({
+      "data-ux-state": "validation",
+      "data-ux-state-family": "validation",
+      "data-ux-state-lifecycle-kind": "confirmation",
+      "data-ux-state-severity": "warning",
+    });
+  });
+
+  test("StatePanel imports the canonical state contract", () => {
+    const statePanelSource = readFileSync("components/ui/state-panel.tsx", "utf8");
+
+    expect(statePanelSource).toContain("uxStateAttributesForComponentState");
+    expect(statePanelSource).toContain("type UxComponentState");
+    expect(statePanelSource).toContain("{...stateAttributes}");
   });
 });

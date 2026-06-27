@@ -43,6 +43,54 @@ export type UxLifecycleContract = {
 
 export type UxLifecycleRuntimeAttributes = Record<`data-${string}`, string>;
 
+export type UxStateFamily =
+  | "loading"
+  | "empty"
+  | "error"
+  | "validation"
+  | "permission_denied"
+  | "blocked"
+  | "restricted"
+  | "success"
+  | "hidden"
+  | "reference"
+  | "deferred"
+  | "audit_unavailable"
+  | "export_pending"
+  | "export_redaction"
+  | "export_failed";
+
+export type UxStateSeverity = "neutral" | "info" | "success" | "warning" | "critical";
+
+export type UxComponentState =
+  | "audit-unavailable"
+  | "blocked"
+  | "denied"
+  | "empty"
+  | "error"
+  | "export-failed"
+  | "export-pending"
+  | "export-redaction"
+  | "hidden"
+  | "hold-blocked"
+  | "internal-only"
+  | "loading"
+  | "p1-deferred"
+  | "redacted"
+  | "reference-only"
+  | "restricted"
+  | "success"
+  | "validation";
+
+export type UxStateContract = {
+  captureKind: UxLifecycleKind;
+  componentState: UxComponentState;
+  family: UxStateFamily;
+  lifecycleKind: UxLifecycleKind;
+  noOverclaimRule: string;
+  severity: UxStateSeverity;
+};
+
 export const uxLifecycleContracts = {
   base: {
     a11yEscapeBlocked: "not-applicable",
@@ -123,8 +171,161 @@ export const uxLifecycleContracts = {
 
 export const uxLifecycleKinds = Object.keys(uxLifecycleContracts) as UxLifecycleKind[];
 
+export const uxStateContracts = {
+  "audit-unavailable": {
+    captureKind: "base",
+    componentState: "audit-unavailable",
+    family: "audit_unavailable",
+    lifecycleKind: "base",
+    noOverclaimRule: "Audit visibility or outage state is not proof of audit persistence.",
+    severity: "critical",
+  },
+  blocked: {
+    captureKind: "base",
+    componentState: "blocked",
+    family: "blocked",
+    lifecycleKind: "base",
+    noOverclaimRule: "Blocked state prevents downstream completion until owner gates pass.",
+    severity: "critical",
+  },
+  denied: {
+    captureKind: "base",
+    componentState: "denied",
+    family: "permission_denied",
+    lifecycleKind: "base",
+    noOverclaimRule: "Permission denied state is fail-closed and cannot imply bypass authority.",
+    severity: "critical",
+  },
+  empty: {
+    captureKind: "base",
+    componentState: "empty",
+    family: "empty",
+    lifecycleKind: "base",
+    noOverclaimRule: "Empty state is absence of available content, not product completion.",
+    severity: "neutral",
+  },
+  error: {
+    captureKind: "base",
+    componentState: "error",
+    family: "error",
+    lifecycleKind: "base",
+    noOverclaimRule: "Error state blocks downstream success claims.",
+    severity: "critical",
+  },
+  "export-failed": {
+    captureKind: "base",
+    componentState: "export-failed",
+    family: "export_failed",
+    lifecycleKind: "base",
+    noOverclaimRule: "Export failure cannot imply approval, download, share or client acceptance.",
+    severity: "critical",
+  },
+  "export-pending": {
+    captureKind: "base",
+    componentState: "export-pending",
+    family: "export_pending",
+    lifecycleKind: "base",
+    noOverclaimRule: "Export pending is not approval, download, share or client acceptance.",
+    severity: "info",
+  },
+  "export-redaction": {
+    captureKind: "base",
+    componentState: "export-redaction",
+    family: "export_redaction",
+    lifecycleKind: "base",
+    noOverclaimRule: "Redaction review is not export approval or delivery.",
+    severity: "warning",
+  },
+  hidden: {
+    captureKind: "base",
+    componentState: "hidden",
+    family: "hidden",
+    lifecycleKind: "base",
+    noOverclaimRule: "Hidden state suppresses content and must not imply client-safe availability.",
+    severity: "warning",
+  },
+  "hold-blocked": {
+    captureKind: "base",
+    componentState: "hold-blocked",
+    family: "blocked",
+    lifecycleKind: "base",
+    noOverclaimRule: "Hold state remains blocked until an explicit scope unlock exists.",
+    severity: "critical",
+  },
+  "internal-only": {
+    captureKind: "base",
+    componentState: "internal-only",
+    family: "restricted",
+    lifecycleKind: "base",
+    noOverclaimRule: "Internal-only state is not client-visible output.",
+    severity: "warning",
+  },
+  loading: {
+    captureKind: "base",
+    componentState: "loading",
+    family: "loading",
+    lifecycleKind: "base",
+    noOverclaimRule: "Loading state is pending work, not completion.",
+    severity: "info",
+  },
+  "p1-deferred": {
+    captureKind: "base",
+    componentState: "p1-deferred",
+    family: "deferred",
+    lifecycleKind: "base",
+    noOverclaimRule: "Deferred state is registered context only and not MVP readiness.",
+    severity: "warning",
+  },
+  redacted: {
+    captureKind: "base",
+    componentState: "redacted",
+    family: "hidden",
+    lifecycleKind: "base",
+    noOverclaimRule: "Redacted state hides content and does not prove release completion.",
+    severity: "warning",
+  },
+  "reference-only": {
+    captureKind: "base",
+    componentState: "reference-only",
+    family: "reference",
+    lifecycleKind: "base",
+    noOverclaimRule: "Reference state is visual/context only and not product workflow capability.",
+    severity: "neutral",
+  },
+  restricted: {
+    captureKind: "base",
+    componentState: "restricted",
+    family: "restricted",
+    lifecycleKind: "base",
+    noOverclaimRule: "Restricted state limits access and cannot imply bypass authority.",
+    severity: "warning",
+  },
+  success: {
+    captureKind: "base",
+    componentState: "success",
+    family: "success",
+    lifecycleKind: "base",
+    noOverclaimRule: "Success state is local to the stated action and cannot imply downstream completion.",
+    severity: "success",
+  },
+  validation: {
+    captureKind: "base",
+    componentState: "validation",
+    family: "validation",
+    lifecycleKind: "base",
+    noOverclaimRule: "Validation state blocks submission until the owner workflow accepts inputs.",
+    severity: "warning",
+  },
+} as const satisfies Record<UxComponentState, UxStateContract>;
+
+export const uxComponentStates = Object.keys(uxStateContracts) as UxComponentState[];
+
 export function uxLifecycleContractForKind(kind: UxLifecycleKind): UxLifecycleContract {
   return uxLifecycleContracts[kind];
+}
+
+export function uxStateContractForComponentState(componentState: UxComponentState): UxStateContract {
+  return uxStateContracts[componentState];
 }
 
 export function uxLifecycleCloseForOwner(kind: "modal" | "drawer" | "confirmation", closeAvailable: boolean): UxLifecycleCloseSemantics {
@@ -151,5 +352,22 @@ export function uxLifecycleAttributesForKind(
     "data-ux-lifecycle-submit": contract.submit,
     "data-ux-no-overclaim": contract.noOverclaim,
     "data-ux-phase10-tasks": contract.phase10Tasks,
+  };
+}
+
+export function uxStateAttributesForComponentState(
+  componentState: UxComponentState,
+  options: { lifecycleKind?: UxLifecycleKind } = {},
+): UxLifecycleRuntimeAttributes {
+  const contract = uxStateContractForComponentState(componentState);
+  const lifecycleKind = options.lifecycleKind ?? contract.lifecycleKind;
+
+  return {
+    "data-ux-state": contract.componentState,
+    "data-ux-state-capture-kind": contract.captureKind,
+    "data-ux-state-family": contract.family,
+    "data-ux-state-lifecycle-kind": lifecycleKind,
+    "data-ux-state-no-overclaim": contract.noOverclaimRule,
+    "data-ux-state-severity": contract.severity,
   };
 }

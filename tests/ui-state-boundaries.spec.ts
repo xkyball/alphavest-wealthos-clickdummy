@@ -61,7 +61,7 @@ test.describe("Phase 03 UI state boundaries", () => {
     await page.goto("/export/demo/approval?state=approval");
     await expect(page.getByRole("dialog", { name: "Approve Export Package" })).toBeVisible();
     await expect(page.getByText("Approval confirmation")).toBeVisible();
-    await expect(page.getByText("Approval can record only the export approval and metadata-generation step. Download, share, client acceptance and advice release remain separate controlled events.")).toBeVisible();
+    await expect(page.getByText("Approval can record only the export approval step through /api/export-workflow. Generation, download, share, client acceptance and advice release remain separate controlled events.")).toBeVisible();
   });
 
   test("export delivery state does not imply client acceptance", async ({ page }) => {
@@ -133,7 +133,7 @@ test.describe("Phase 05 feedback no-overclaim boundaries", () => {
     await expect(page.getByRole("dialog", { name: "Approve Export Package" })).toBeVisible();
     await expect(page.getByTestId("j08-confirm-approval")).toBeVisible();
     await expect(page.getByText("Generation, download and share remain separate controlled steps.")).toBeVisible();
-    await expect(page.getByText("Approval can record only the export approval and metadata-generation step.")).toBeVisible();
+    await expect(page.getByText("Approval can record only the export approval step through /api/export-workflow.")).toBeVisible();
   });
 
   test("audit-sensitive feedback states audit requirements rather than claiming persistence", async ({ page }) => {
