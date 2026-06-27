@@ -35,6 +35,7 @@ test.describe("E12 contract fulfillment gate", () => {
       "E12-GATE-UI-SOURCE-TRUTH",
       "E12-GATE-RETIRED-PROOF-UI",
       "E12-GATE-CAPTURE-RELEASE-WARNINGS",
+      "E12-GATE-RELEASE-CONTRACT-CHECK",
     ]);
   });
 
@@ -46,6 +47,7 @@ test.describe("E12 contract fulfillment gate", () => {
     expect(report.violations).toEqual([]);
     expect(report.countsByStatus.exception).toBeGreaterThan(0);
     expect(report.countsByFamily.contract_fulfillment).toBe(1);
+    expect(report.countsByFamily.release_gate).toBeGreaterThan(0);
   });
 
   test("fails duplicate IDs, missing fields and missing follow-ups", () => {
@@ -194,6 +196,7 @@ test.describe("E12 contract fulfillment gate", () => {
       packageJsonText: JSON.stringify({
         scripts: {
           "visual:capture-qa:release": "tsx scripts/capture-qa-contract.ts",
+          "release:contract-check": "pnpm guard:source && pnpm test:contract-fulfillment && pnpm test:route-smoke",
         },
       }),
       sourceFiles: [
@@ -208,6 +211,25 @@ test.describe("E12 contract fulfillment gate", () => {
     expect(violationIds(report.violations)).toEqual(expect.arrayContaining([
       "E12-GATE-RETIRED-PROOF-UI",
       "E12-GATE-CAPTURE-RELEASE-WARNINGS",
+      "E12-GATE-RELEASE-CONTRACT-CHECK",
     ]));
+  });
+
+  test("fails release contract checks that omit required source, truth, route or capture gates", () => {
+    const report = evaluateContractFulfillmentGate(uxContractLedgerEntries, "2026-06-27T00:00:00.000Z", {
+      packageJsonText: JSON.stringify({
+        scripts: {
+          "visual:capture-qa:release": "CAPTURE_QA_FAIL_ON_WARNINGS=1 tsx scripts/capture-qa-contract.ts",
+          "release:contract-check": "pnpm guard:source && pnpm test:contract-fulfillment",
+        },
+      }),
+      sourceFiles: [],
+    });
+
+    expect(report.status).toBe("fail");
+    expect(report.violations).toContainEqual(expect.objectContaining({
+      entryId: "E12-RELEASE-GATE-001",
+      ruleId: "E12-GATE-RELEASE-CONTRACT-CHECK",
+    }));
   });
 });

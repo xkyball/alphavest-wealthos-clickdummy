@@ -1,8 +1,8 @@
 # E12 Contract Fulfillment Gate Report
 
-Generated: 2026-06-27T18:08:37.422Z
+Generated: 2026-06-27T18:30:16.091Z
 Status: `pass`
-Total entries: 44
+Total entries: 45
 
 ## Violations
 
@@ -16,3 +16,4 @@ Total entries: 44
 - `pnpm test:route-smoke`
 - `pnpm test:contract-fulfillment`
 - `pnpm visual:capture-qa:release`
+- `pnpm release:contract-check`

@@ -48,7 +48,7 @@ Date: 2026-06-27
 
 `pnpm phase:check` passed. It emitted existing lint warnings for unused symbols in pre-existing files and existing Turbopack/NFT warnings around `lib/document-storage-adapter.ts`; there were no E12 failures.
 
-`phase:check` intentionally does not yet include `pnpm test:contract-fulfillment`. D1 approved adding the script first and hard-wiring it after Q1 clean/excepted evidence. Q1 is now clean, so the recommended next decision is to approve adding `pnpm test:contract-fulfillment` to `phase:check`.
+`phase:check` intentionally remains the normal code/build gate. After Q1, `APPROVE_E12_RELEASE_CONTRACT_CHECK_LEDGER_GATE` moved the stricter release truth check into a separate `pnpm release:contract-check` command so artefact-dependent capture QA can block release certification without making every build check depend on capture artefacts.
 
 ## Contract Outcomes
 
@@ -67,7 +67,7 @@ Date: 2026-06-27
 
 ## Remaining Follow-Up
 
-- Add `pnpm test:contract-fulfillment` to `phase:check` after explicit approval.
+- Burn down or quarantine existing capture-QA warnings before claiming a release candidate is clean under `pnpm release:contract-check`.
 - Move E10/E11 markdown registers toward generated/read-only from the ledger after the phase-check integration is approved.
 - Continue later burn-down of existing warn-existing E10 exceptions.
 

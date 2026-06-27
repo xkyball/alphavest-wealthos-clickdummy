@@ -51,6 +51,7 @@ export const contractFulfillmentGateRuleIds = [
   "E12-GATE-UI-SOURCE-TRUTH",
   "E12-GATE-RETIRED-PROOF-UI",
   "E12-GATE-CAPTURE-RELEASE-WARNINGS",
+  "E12-GATE-RELEASE-CONTRACT-CHECK",
 ] as const;
 
 export type ContractFulfillmentGateSourceFile = {
@@ -246,6 +247,33 @@ function addCaptureReleaseViolations(
   }
 }
 
+function addReleaseContractCheckViolations(
+  violations: ContractFulfillmentGateViolation[],
+  packageJsonText: string,
+) {
+  const parsed = JSON.parse(packageJsonText) as { scripts?: Record<string, string> };
+  const releaseContractCheck = parsed.scripts?.["release:contract-check"] ?? "";
+  const requiredFragments = [
+    "pnpm guard:source",
+    "pnpm test:contract-fulfillment",
+    "tests/e10-register-reconciliation.spec.ts",
+    "tests/e11-backend-data-surface-truth.spec.ts",
+    "tests/e09-capture-release-policy.spec.ts",
+    "pnpm test:route-smoke",
+    "pnpm visual:capture-qa:release",
+  ];
+  const missingFragments = requiredFragments.filter((fragment) => !releaseContractCheck.includes(fragment));
+
+  if (missingFragments.length > 0) {
+    violations.push({
+      entryId: "E12-RELEASE-GATE-001",
+      message: `release:contract-check is missing required gate fragments: ${missingFragments.join(", ")}.`,
+      ruleId: "E12-GATE-RELEASE-CONTRACT-CHECK",
+      severity: "failure",
+    });
+  }
+}
+
 export function evaluateContractFulfillmentGate(
   entries: readonly UxContractLedgerEntry[] = uxContractLedgerEntries,
   generatedAt = new Date().toISOString(),
@@ -325,7 +353,9 @@ export function evaluateContractFulfillmentGate(
   addActionAndFilterDebtViolations(violations, componentSourceFilesForOptions(options));
   addBackendTruthViolations(violations, entries);
   addRetiredProofUiViolations(violations, sourceFiles);
-  addCaptureReleaseViolations(violations, packageJsonTextForOptions(options));
+  const packageJsonText = packageJsonTextForOptions(options);
+  addCaptureReleaseViolations(violations, packageJsonText);
+  addReleaseContractCheckViolations(violations, packageJsonText);
 
   const hasFailures = violations.some((violation) => violation.severity === "failure");
   const hasWarnings = violations.some((violation) => violation.severity === "warning");
