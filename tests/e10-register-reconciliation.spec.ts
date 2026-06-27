@@ -3,33 +3,17 @@ import path from "node:path";
 
 import { expect, test } from "@playwright/test";
 
+import {
+  e10ActionZoneLedgerEntries,
+  e10FirstSliceActionFiles,
+  e10RegisteredActionFiles,
+} from "../lib/ux-contract-ledger";
+
 const root = process.cwd();
 
 function read(relativePath: string) {
   return readFileSync(path.join(root, relativePath), "utf8");
 }
-
-const registeredActionFiles = [
-  "components/admin-tenant-setup-screen.tsx",
-  "components/auth-onboarding-screen.tsx",
-  "components/client-intake-screen.tsx",
-  "components/committee-review-screen.tsx",
-  "components/communication-export-ops-screen.tsx",
-  "components/decisions-governance-screen.tsx",
-  "components/internal-workflow-screen.tsx",
-  "components/kyc-aml-workflow-screen.tsx",
-  "components/review-monitoring-screen.tsx",
-  "components/suitability-ips-screen.tsx",
-  "components/wealth-actions-screen.tsx",
-];
-
-const firstSliceActionFiles = [
-  "components/admin-tenant-setup-screen.tsx",
-  "components/client-intake-screen.tsx",
-  "components/communication-export-ops-screen.tsx",
-  "components/decisions-governance-screen.tsx",
-  "components/internal-workflow-screen.tsx",
-];
 
 const registeredFilterExceptionIds = ["DSF-001", "DSF-002", "DSF-003", "DSF-004", "DSF-007", "DSF-008"];
 
@@ -65,13 +49,54 @@ test.describe("E10 register reconciliation gates", () => {
       const source = read(file);
       const hasLocalActionAlias = /const\s+(primaryButtonClass|secondaryButtonClass|staticButtonClass|destructiveButtonClass)\s*=/.test(source);
       if (hasLocalActionAlias) {
-        expect(registeredActionFiles, `${file} must be registered before local action aliases may remain`).toContain(file);
+        expect(e10RegisteredActionFiles, `${file} must be registered before local action aliases may remain`).toContain(file);
       }
     }
 
-    for (const file of firstSliceActionFiles) {
+    for (const file of e10FirstSliceActionFiles) {
       const source = read(file);
       expect(source, `${file} first-slice action classes must project from E05 contract`).toContain("uxActionClassForPriority");
+    }
+  });
+
+  test("maps E10 action-zone register rows into the E12 ledger", () => {
+    expect(e10ActionZoneLedgerEntries.map((entry) => entry.sourceRegisterId)).toEqual([
+      "AZ-001",
+      "AZ-002",
+      "AZ-003",
+      "AZ-004",
+      "AZ-005",
+      "AZ-006",
+      "AZ-007",
+      "AZ-008",
+      "AZ-009",
+      "AZ-010",
+      "AZ-011",
+    ]);
+    expect(e10RegisteredActionFiles).toEqual([
+      "components/admin-tenant-setup-screen.tsx",
+      "components/auth-onboarding-screen.tsx",
+      "components/client-intake-screen.tsx",
+      "components/committee-review-screen.tsx",
+      "components/communication-export-ops-screen.tsx",
+      "components/decisions-governance-screen.tsx",
+      "components/internal-workflow-screen.tsx",
+      "components/kyc-aml-workflow-screen.tsx",
+      "components/review-monitoring-screen.tsx",
+      "components/suitability-ips-screen.tsx",
+      "components/wealth-actions-screen.tsx",
+    ]);
+    expect(e10FirstSliceActionFiles).toEqual([
+      "components/admin-tenant-setup-screen.tsx",
+      "components/client-intake-screen.tsx",
+      "components/communication-export-ops-screen.tsx",
+      "components/decisions-governance-screen.tsx",
+      "components/internal-workflow-screen.tsx",
+    ]);
+    for (const entry of e10ActionZoneLedgerEntries) {
+      expect(entry.status, entry.id).toBe("exception");
+      expect(entry.gateBehavior, entry.id).toBe("warn_existing");
+      expect(entry.expiresOrFollowUp, entry.id).toBeTruthy();
     }
   });
 

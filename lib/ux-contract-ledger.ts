@@ -78,6 +78,8 @@ export type UxContractLedgerEntry = {
   evidence: EvidenceAnchor[];
   gateBehavior: GateBehavior;
   expiresOrFollowUp: string | null;
+  sourceRegisterId?: string;
+  registerDecision?: "migrate_first_slice" | "temporary_exception" | "migrate_later" | "migrate_with_data_surface" | "keep_canonical" | "retire_now" | "rename_or_retire" | "migrate_now" | "keep_historical";
   notes?: string;
 };
 
@@ -173,7 +175,7 @@ function evidence(kind: EvidenceAnchor["kind"], ref: string, result: EvidenceAnc
   return { kind, ref, result };
 }
 
-export const uxContractLedgerEntries = [
+export const uxContractLedgerEntries: readonly UxContractLedgerEntry[] = [
   {
     id: "E00-IMPLEMENTATION-FIRST",
     title: "Implementation-first contract governance",
@@ -443,6 +445,237 @@ export const uxContractLedgerEntries = [
     expiresOrFollowUp: "E12-I2.1 converts action-zone rows into ledger IDs and follow-ups.",
   },
   {
+    id: "E10-AZ-001",
+    title: "Admin tenant setup action-zone migration",
+    sourceRegisterId: "AZ-001",
+    registerDecision: "migrate_first_slice",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E10_ACTION_ZONE_MIGRATION_REGISTER.md")],
+    contractFamily: "register_debt",
+    ownerSurface: [
+      owner("file", "components/admin-tenant-setup-screen.tsx"),
+      owner("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    obligation: "Admin tenant setup local action-class vocabulary remains registered debt and must project from the E05 action contract when touched.",
+    proofType: ["source_gate", "typed_contract"],
+    status: "exception",
+    evidence: [
+      evidence("file", "components/admin-tenant-setup-screen.tsx"),
+      evidence("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E10-I1",
+  },
+  {
+    id: "E10-AZ-002",
+    title: "Auth onboarding action-zone exception",
+    sourceRegisterId: "AZ-002",
+    registerDecision: "temporary_exception",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E10_ACTION_ZONE_MIGRATION_REGISTER.md")],
+    contractFamily: "register_debt",
+    ownerSurface: [
+      owner("file", "components/auth-onboarding-screen.tsx"),
+      owner("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    obligation: "Auth/onboarding local action classes remain a temporary exception until form semantics are separated from workflow action zones.",
+    proofType: ["source_gate"],
+    status: "exception",
+    evidence: [
+      evidence("file", "components/auth-onboarding-screen.tsx"),
+      evidence("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E10-I1-followup-auth",
+  },
+  {
+    id: "E10-AZ-003",
+    title: "Client intake action-zone migration",
+    sourceRegisterId: "AZ-003",
+    registerDecision: "migrate_first_slice",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E10_ACTION_ZONE_MIGRATION_REGISTER.md")],
+    contractFamily: "register_debt",
+    ownerSurface: [
+      owner("file", "components/client-intake-screen.tsx"),
+      owner("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    obligation: "Client intake action groups remain registered migration debt and should expand ActionZone adoption around document/entity actions.",
+    proofType: ["source_gate", "typed_contract"],
+    status: "exception",
+    evidence: [
+      evidence("file", "components/client-intake-screen.tsx"),
+      evidence("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E10-I1",
+  },
+  {
+    id: "E10-AZ-004",
+    title: "Committee review action-zone exception",
+    sourceRegisterId: "AZ-004",
+    registerDecision: "temporary_exception",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E10_ACTION_ZONE_MIGRATION_REGISTER.md")],
+    contractFamily: "register_debt",
+    ownerSurface: [
+      owner("file", "components/committee-review-screen.tsx"),
+      owner("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    obligation: "Committee P1/HOLD action classes remain registered hold-scope debt until route unlock.",
+    proofType: ["source_gate"],
+    status: "exception",
+    evidence: [
+      evidence("file", "components/committee-review-screen.tsx"),
+      evidence("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E10-I1-followup-hold",
+  },
+  {
+    id: "E10-AZ-005",
+    title: "Communication/export action-zone migration",
+    sourceRegisterId: "AZ-005",
+    registerDecision: "migrate_first_slice",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E10_ACTION_ZONE_MIGRATION_REGISTER.md")],
+    contractFamily: "register_debt",
+    ownerSurface: [
+      owner("file", "components/communication-export-ops-screen.tsx"),
+      owner("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    obligation: "Communication/export actions remain registered migration debt and should separate export approval/download/share via ActionButton.",
+    proofType: ["source_gate", "typed_contract"],
+    status: "exception",
+    evidence: [
+      evidence("file", "components/communication-export-ops-screen.tsx"),
+      evidence("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E10-I1",
+  },
+  {
+    id: "E10-AZ-006",
+    title: "Decisions governance action-zone migration",
+    sourceRegisterId: "AZ-006",
+    registerDecision: "migrate_first_slice",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E10_ACTION_ZONE_MIGRATION_REGISTER.md")],
+    contractFamily: "register_debt",
+    ownerSurface: [
+      owner("file", "components/decisions-governance-screen.tsx"),
+      owner("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    obligation: "Decision/governance release, block and evidence actions remain registered migration debt and must not expand outside the ledger.",
+    proofType: ["source_gate", "typed_contract"],
+    status: "exception",
+    evidence: [
+      evidence("file", "components/decisions-governance-screen.tsx"),
+      evidence("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E10-I1",
+  },
+  {
+    id: "E10-AZ-007",
+    title: "Internal workflow action-zone migration",
+    sourceRegisterId: "AZ-007",
+    registerDecision: "migrate_first_slice",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E10_ACTION_ZONE_MIGRATION_REGISTER.md")],
+    contractFamily: "register_debt",
+    ownerSurface: [
+      owner("file", "components/internal-workflow-screen.tsx"),
+      owner("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    obligation: "Internal workflow action classes remain registered migration debt and must project through canonical action hierarchy.",
+    proofType: ["source_gate", "typed_contract"],
+    status: "exception",
+    evidence: [
+      evidence("file", "components/internal-workflow-screen.tsx"),
+      evidence("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E10-I1",
+  },
+  {
+    id: "E10-AZ-008",
+    title: "KYC workflow action-zone exception",
+    sourceRegisterId: "AZ-008",
+    registerDecision: "temporary_exception",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E10_ACTION_ZONE_MIGRATION_REGISTER.md")],
+    contractFamily: "register_debt",
+    ownerSurface: [
+      owner("file", "components/kyc-aml-workflow-screen.tsx"),
+      owner("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    obligation: "KYC workflow action classes remain a registered safety workflow exception until action meanings are mapped.",
+    proofType: ["source_gate"],
+    status: "exception",
+    evidence: [
+      evidence("file", "components/kyc-aml-workflow-screen.tsx"),
+      evidence("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E10-I1-followup-kyc",
+  },
+  {
+    id: "E10-AZ-009",
+    title: "Review monitoring action-zone migration",
+    sourceRegisterId: "AZ-009",
+    registerDecision: "migrate_later",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E10_ACTION_ZONE_MIGRATION_REGISTER.md")],
+    contractFamily: "register_debt",
+    ownerSurface: [
+      owner("file", "components/review-monitoring-screen.tsx"),
+      owner("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    obligation: "Review monitoring action classes remain registered debt until filter exception cleanup is stable.",
+    proofType: ["source_gate"],
+    status: "exception",
+    evidence: [
+      evidence("file", "components/review-monitoring-screen.tsx"),
+      evidence("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E10-I2-followup",
+  },
+  {
+    id: "E10-AZ-010",
+    title: "Suitability IPS action-zone exception",
+    sourceRegisterId: "AZ-010",
+    registerDecision: "temporary_exception",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E10_ACTION_ZONE_MIGRATION_REGISTER.md")],
+    contractFamily: "register_debt",
+    ownerSurface: [
+      owner("file", "components/suitability-ips-screen.tsx"),
+      owner("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    obligation: "Suitability/IPS action classes remain registered debt until advice/release safety action meanings are mapped.",
+    proofType: ["source_gate"],
+    status: "exception",
+    evidence: [
+      evidence("file", "components/suitability-ips-screen.tsx"),
+      evidence("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E10-I1-followup-suitability",
+  },
+  {
+    id: "E10-AZ-011",
+    title: "Wealth actions board action-zone migration",
+    sourceRegisterId: "AZ-011",
+    registerDecision: "migrate_with_data_surface",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E10_ACTION_ZONE_MIGRATION_REGISTER.md")],
+    contractFamily: "register_debt",
+    ownerSurface: [
+      owner("file", "components/wealth-actions-screen.tsx"),
+      owner("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    obligation: "Wealth action board controls remain registered debt and should migrate with board/data-surface filter cleanup.",
+    proofType: ["source_gate"],
+    status: "exception",
+    evidence: [
+      evidence("file", "components/wealth-actions-screen.tsx"),
+      evidence("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E10-I2",
+  },
+  {
     id: "E10-DATA-SURFACE-FILTER-REGISTER",
     title: "Disabled/static filter exception register debt",
     source: [markdownRegister("docs/ux/ALPHAVEST_E10_DATA_SURFACE_FILTER_EXCEPTION_REGISTER.md")],
@@ -535,7 +768,7 @@ export const uxContractLedgerEntries = [
     gateBehavior: "warn_existing",
     expiresOrFollowUp: "E12-I3 builds the global contract fulfillment gate; E12-Q1 validates it.",
   },
-] as const satisfies UxContractLedgerEntry[];
+];
 
 export const requiredSeedContractIds = [
   "E00-IMPLEMENTATION-FIRST",
@@ -559,6 +792,20 @@ export const requiredSeedContractIds = [
 export function contractLedgerEntryById(id: string) {
   return uxContractLedgerEntries.find((entry) => entry.id === id);
 }
+
+export const e10ActionZoneLedgerEntries = uxContractLedgerEntries.filter((entry) =>
+  entry.id.startsWith("E10-AZ-")
+);
+
+export const e10RegisteredActionFiles = e10ActionZoneLedgerEntries.flatMap((entry) =>
+  entry.ownerSurface.filter((surface) => surface.kind === "file" && surface.ref.startsWith("components/")).map((surface) => surface.ref)
+);
+
+export const e10FirstSliceActionFiles = e10ActionZoneLedgerEntries
+  .filter((entry) => entry.registerDecision === "migrate_first_slice")
+  .flatMap((entry) =>
+    entry.ownerSurface.filter((surface) => surface.kind === "file" && surface.ref.startsWith("components/")).map((surface) => surface.ref)
+  );
 
 export function duplicateContractLedgerIds(entries: readonly UxContractLedgerEntry[] = uxContractLedgerEntries) {
   const seen = new Set<string>();
