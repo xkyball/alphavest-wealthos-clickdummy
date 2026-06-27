@@ -1,0 +1,136 @@
+{
+  "artifact": {
+    "name": "BD_06_A_INTERNAL_DRAFT_STATE_CONTRACT.json",
+    "kind": "subtask_execution_evidence",
+    "created_at": "2026-06-27",
+    "ticket_id": "TICKET-BD-06",
+    "subtask_id": "BD-06-A",
+    "source_burndown_id": "BD-06",
+    "title": "Internal draft/rebuild state contract",
+    "status": "COMPLETED_SPEC_LOCK",
+    "product_code_changed": false,
+    "ui_changed": false,
+    "screenshot_required_for_chat": false
+  },
+  "ticket_contract": {
+    "priority": "P0",
+    "ticket_kind": "confidential_draft_gate",
+    "work_type": "Internal Draft Workflow / Client Projection Safety",
+    "unique_shape": "Fail-closed internal-only ticket; its core acceptance is absence of client leakage, not visible feature richness.",
+    "overclaim_guard": "Analyst-visible drafts must remain invisible to clients until compliance release."
+  },
+  "state_contract": {
+    "canonical_storage": [
+      {
+        "model": "InternalDraft",
+        "purpose": "Owns analyst/internal draft text, internal rationale, source context, process id, draft status and current trace pointer.",
+        "client_projection": "never direct"
+      },
+      {
+        "model": "DraftClassification",
+        "purpose": "Records internal classification, risk level and unsupported-claim clearance decision.",
+        "client_projection": "never direct"
+      },
+      {
+        "model": "UnsupportedClaim",
+        "purpose": "Records claim key, evidence requirement, source reference and blocker status.",
+        "client_projection": "never direct"
+      },
+      {
+        "model": "DraftTrace",
+        "purpose": "Connects draft events to audit rows and accepted evidence records.",
+        "client_projection": "client sees only absence of trace availability"
+      }
+    ],
+    "legacy_fallback_position": {
+      "decision": "No new draft workflow may write overloaded Recommendation.assumptionsJson or Recommendation.clientSummaryDraft fields.",
+      "reason": "Drafts need a first-class internal spine so client projection cannot accidentally inherit internal text from the recommendation row.",
+      "proof": "tests/internal-draft-governance-spine.spec.ts scans production recommendation mutations for overloaded draft-field writes."
+    },
+    "allowed_status_progression": [
+      {
+        "from": "CREATED",
+        "to": "CLASSIFIED",
+        "requires": ["internal analyst/advisor role", "DraftClassification row", "unsupported claims clear"]
+      },
+      {
+        "from": "CLASSIFIED",
+        "to": "REVISION_REQUESTED",
+        "requires": ["unsupported claim recorded", "EvidenceRecord placeholder", "audit event"]
+      },
+      {
+        "from": "REVISION_REQUESTED",
+        "to": "REJECTED",
+        "requires": ["internal rejection reason", "approval/compliance reset", "audit event"]
+      },
+      {
+        "from": "REVISION_REQUESTED",
+        "to": "REBUILT_WITH_EVIDENCE",
+        "requires": ["accepted scoped evidence", "UnsupportedClaim resolved", "DraftTrace with evidence record"]
+      },
+      {
+        "from": "REBUILT_WITH_EVIDENCE",
+        "to": "ADVISOR_READY",
+        "requires": ["clear reclassification", "analyst reviewed recommendation state", "no leakage blockers"]
+      }
+    ],
+    "non_bypass_rules": [
+      "Advisor handoff requires classification plus evidence-backed rebuild when unsupported claims existed.",
+      "Rejected drafts cannot move to advisor, compliance, release, export or client visibility.",
+      "Admin governance cannot force draft clearance, evidence sufficiency, release, export or internal payload visibility.",
+      "Client-safe projection cannot expose internal draft trace, internal rationale, unsupported claim detail or source refs."
+    ]
+  },
+  "source_evidence": [
+    {
+      "path": "prisma/schema.prisma",
+      "role": "Defines InternalDraft, DraftClassification, UnsupportedClaim and DraftTrace as first-class models."
+    },
+    {
+      "path": "prisma/migrations/20260625143000_internal_draft_governance_spine/migration.sql",
+      "role": "Creates internal draft governance tables."
+    },
+    {
+      "path": "lib/internal-draft-governance-spine.ts",
+      "role": "Implements draft creation, classification, unsupported claim persistence, rejection, rebuild, trace map, negative gate matrix and exit certification."
+    },
+    {
+      "path": "tests/internal-draft-governance-spine.spec.ts",
+      "role": "Proves first-class models and forbids legacy overloaded Recommendation-field fallback."
+    },
+    {
+      "path": "tests/p44-phase5-certification.spec.ts",
+      "role": "Proves the ordered internal draft workflow, including negative gates."
+    }
+  ],
+  "acceptance_mapping": {
+    "internal_draft_state_contract": "satisfied",
+    "analyst_rebuild_contract": "satisfied through accepted scoped evidence requirement and DraftTrace evidence linkage",
+    "absence_of_client_feature_claim": "satisfied; this subtask does not claim visible feature richness"
+  },
+  "validation": {
+    "commands_run": [
+      {
+        "command": "pnpm playwright test tests/internal-draft-governance-spine.spec.ts tests/p44-phase5-certification.spec.ts tests/client-visibility-projection.spec.ts tests/true-ux-p0-safety.spec.ts tests/export-safety.spec.ts --workers=1",
+        "status": "PASS",
+        "result": "33 passed"
+      },
+      {
+        "command": "pnpm guard:source",
+        "status": "PASS",
+        "result": "0 violations"
+      }
+    ],
+    "positive_acceptance_result": "Internal drafts have a canonical internal spine and evidence-backed rebuild path.",
+    "negative_acceptance_result": "Legacy Recommendation-field fallback, unclassified handoff, unsupported-claim handoff and rejected-draft progress are blocked by tests."
+  },
+  "bold_cleanup_recommendations": [
+    "Deprecate Recommendation.clientSummaryDraft and Recommendation.assumptionsJson for new internal draft workflows instead of keeping them as silent compatibility surfaces.",
+    "Make InternalDraft the only accepted write target for analyst draft content, model prompts, source refs and internal rationale.",
+    "Promote DraftTrace to the canonical audit/evidence map for internal draft proof and forbid UI components from reconstructing this trace from display payloads."
+  ],
+  "remaining_limits": [
+    "The Recommendation table still contains historical draft-like nullable fields; BD-06 locks non-use for new production writes but does not migrate old columns away.",
+    "This subtask did not add a new UI state machine screen because the ticket's acceptance is confidentiality and negative proof."
+  ]
+}

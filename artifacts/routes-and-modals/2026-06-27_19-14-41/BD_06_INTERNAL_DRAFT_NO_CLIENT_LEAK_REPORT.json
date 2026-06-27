@@ -1,0 +1,202 @@
+{
+  "artifact": {
+    "name": "BD_06_INTERNAL_DRAFT_NO_CLIENT_LEAK_REPORT.json",
+    "kind": "ticket_execution_evidence",
+    "created_at": "2026-06-27",
+    "ticket_id": "TICKET-BD-06",
+    "source_burndown_id": "BD-06",
+    "title": "Internal draft, analyst rebuild and no-client-leak gate",
+    "status": "COMPLETED_SPEC_AND_PROOF_LOCK",
+    "product_code_changed": false,
+    "ui_changed": false,
+    "screenshot_required_for_chat": false
+  },
+  "ticket_contract": {
+    "priority": "P0",
+    "ticket_kind": "confidential_draft_gate",
+    "work_type": "Internal Draft Workflow / Client Projection Safety",
+    "readiness": "READY_FOR_SPEC_LOCK",
+    "unique_shape": "Fail-closed internal-only ticket; its core acceptance is absence of client leakage, not visible feature richness.",
+    "ctes_total": 18,
+    "ctes_class": "Must split before implementation",
+    "execution_decision": "Separate internal draft model, rebuild action and client projection negative proof.",
+    "dependencies": ["BD-04", "BD-05"],
+    "overclaim_guard": "Analyst-visible drafts must remain invisible to clients until compliance release."
+  },
+  "completed_subtasks": [
+    {
+      "id": "BD-06-A",
+      "name": "Internal draft/rebuild state contract",
+      "status": "COMPLETED_SPEC_LOCK",
+      "artifact_path": "artifacts/routes-and-modals/2026-06-27_19-14-41/BD_06_A_INTERNAL_DRAFT_STATE_CONTRACT.json",
+      "summary": "Locked the first-class InternalDraft/DraftClassification/UnsupportedClaim/DraftTrace spine, allowed state progression, rebuild requirements and legacy Recommendation-field non-use."
+    },
+    {
+      "id": "BD-06-B",
+      "name": "No-client-leak projection guard",
+      "status": "COMPLETED_PROOF_LOCK",
+      "artifact_path": "artifacts/routes-and-modals/2026-06-27_19-14-41/BD_06_B_CLIENT_VISIBILITY_NEGATIVE_PROOF_MATRIX.json",
+      "summary": "Locked negative proof matrix for API, client-route, client projection, export and admin non-bypass leakage cases."
+    }
+  ],
+  "dependency_decisions_applied": [
+    {
+      "dependency": "BD-04",
+      "effect": "Evidence-backed rebuild requires accepted scoped evidence and cannot be substituted by upload, placeholder evidence or generic review."
+    },
+    {
+      "dependency": "BD-05",
+      "effect": "Internal workbench/task-board affordances may route analysts to draft/rebuild work, but cannot turn queue visibility into client projection, export or release."
+    },
+    {
+      "dependency": "DG-02",
+      "accepted_token": "APPROVE_DG02_ADMIN_GOVERNANCE_NON_BYPASS_ONLY",
+      "effect": "Admin/security governance cannot override internal draft clearance, sufficiency, compliance release, export approval or internal payload visibility."
+    }
+  ],
+  "source_evidence": [
+    {
+      "path": "BOC_CTES_P0_PROCESS_FIRST_TICKET_STRUCTURE.json",
+      "role": "Ticket source defining BD-06 split and acceptance evidence."
+    },
+    {
+      "path": "lib/internal-draft-governance-spine.ts",
+      "role": "Canonical internal draft workflow implementation."
+    },
+    {
+      "path": "lib/visibility-engine.ts",
+      "role": "Client projection fail-closed implementation."
+    },
+    {
+      "path": "lib/av27-phase6-payload-contract.ts",
+      "role": "Payload allow/forbid field contract."
+    },
+    {
+      "path": "tests/p44-phase5-certification.spec.ts",
+      "role": "End-to-end internal draft governance certification."
+    },
+    {
+      "path": "tests/client-visibility-projection.spec.ts",
+      "role": "Client visibility projection proof."
+    },
+    {
+      "path": "tests/true-ux-p0-safety.spec.ts",
+      "role": "P0 safety proof for draft, release, export, admin and audit gates."
+    },
+    {
+      "path": "tests/export-safety.spec.ts",
+      "role": "Export no-leak and approval/redaction proof."
+    }
+  ],
+  "process_first_result": {
+    "decision": "BD-06 is satisfied as a spec/proof lock over existing implementation; no additional UI was needed.",
+    "reason": "The ticket's success metric is a confidential draft gate and negative client leakage proof, not screen richness.",
+    "client_visible_change": "none",
+    "internal_process_change": "contractualized and proven through JSON artifacts plus existing tests"
+  },
+  "method_artifacts": {
+    "facts": [
+      "Internal draft models exist in prisma/schema.prisma.",
+      "Production recommendation mutations are tested against overloaded draft-field writes.",
+      "P44 Phase 5 tests cover draft creation, classification, unsupported claim, rejection, evidence-backed rebuild, trace map, leakage sweep, advisor handoff and exit certification.",
+      "Client projection and export safety tests block internal fields."
+    ],
+    "assumptions": [
+      "Historical nullable Recommendation draft fields remain for compatibility, but are not accepted for new draft workflow writes.",
+      "Future raw JSON endpoints are outside this proof unless they consume visibilityEngine or the AV27 payload contract."
+    ],
+    "killed_weak_branches": [
+      {
+        "branch": "Add more visible draft UI",
+        "reason": "Would optimize the wrong metric; BD-06 asks for absence of client leakage, not extra UI decoration."
+      },
+      {
+        "branch": "Keep Recommendation fields as normal compatibility fallback",
+        "reason": "This preserves a leak-prone second truth surface and contradicts process-first traceability."
+      },
+      {
+        "branch": "Rely on admin override for emergency release",
+        "reason": "Rejected by DG-02; admin governance is non-bypass only."
+      }
+    ],
+    "adversarial_qa": [
+      {
+        "attack": "Client role receives an AI draft before compliance release.",
+        "expected_defense": "visibilityEngine returns hidden fail-closed payload."
+      },
+      {
+        "attack": "Export packages raw internal fields even when UI hides them.",
+        "expected_defense": "export safety rejects forbidden payload classifications and missing redaction controls."
+      },
+      {
+        "attack": "Analyst rebuilds after upload but before accepted scoped evidence.",
+        "expected_defense": "rebuildP44DraftWithEvidence throws unless accepted scoped evidence is present."
+      },
+      {
+        "attack": "Admin bypasses draft governance or payload visibility.",
+        "expected_defense": "P0 safety/admin non-bypass tests deny force-release, sufficiency, export and internal payload visibility."
+      }
+    ],
+    "measurement_plan": [
+      "Keep internal draft governance certification green before claiming draft workflow completion.",
+      "Run no-leak projection tests whenever adding client routes, export paths or draft fields.",
+      "Add a source guard or static scan if future routes expose raw recommendation/draft rows."
+    ],
+    "ethics_and_fairness": {
+      "client_protection": "No unapproved advice or internal rationale reaches clients.",
+      "advisor_protection": "Analysts get rebuild and unsupported-claim feedback without leaking it externally.",
+      "governance_protection": "Admin power is restricted to governance/configuration and cannot launder unsafe advice into release."
+    }
+  },
+  "acceptance_evidence": {
+    "internal_draft_state_contract": "BD_06_A_INTERNAL_DRAFT_STATE_CONTRACT.json",
+    "negative_client_leak_tests": [
+      "tests/p44-phase5-certification.spec.ts",
+      "tests/client-visibility-projection.spec.ts",
+      "tests/true-ux-p0-safety.spec.ts",
+      "tests/export-safety.spec.ts"
+    ],
+    "projection_gate_proof": "BD_06_B_CLIENT_VISIBILITY_NEGATIVE_PROOF_MATRIX.json"
+  },
+  "validation": {
+    "commands_run": [
+      {
+        "command": "pnpm playwright test tests/internal-draft-governance-spine.spec.ts tests/p44-phase5-certification.spec.ts tests/client-visibility-projection.spec.ts tests/true-ux-p0-safety.spec.ts tests/export-safety.spec.ts --workers=1",
+        "status": "PASS",
+        "result": "33 passed"
+      },
+      {
+        "command": "pnpm guard:source",
+        "status": "PASS",
+        "result": "0 violations"
+      }
+    ],
+    "positive_acceptance_result": "Internal draft creation, classification, unsupported-claim handling, rejection, evidence-backed rebuild and advisor-readiness gating are proven.",
+    "negative_acceptance_result": "Client/export leakage, unclassified handoff, unsupported-claim handoff, rejected progress, upload-only rebuild and admin bypass are blocked."
+  },
+  "product_code_delta": {
+    "changed": false,
+    "reason": "Existing implementation already satisfies BD-06 state and no-leak proof requirements. This ticket produced contract/proof artifacts."
+  },
+  "ui_delta": {
+    "changed": false,
+    "screenshot_required": false,
+    "reason": "No UI changed; screenshot evidence would not prove payload absence."
+  },
+  "bold_cleanup_recommendations": [
+    "Make InternalDraft the only write surface for internal draft content and actively remove new use of Recommendation.clientSummaryDraft / assumptionsJson in workflow code.",
+    "Require every future client-facing route, export path and downloadable package to consume the same no-leak projection contract.",
+    "Add a hard CI scan for raw InternalDraft, DraftTrace and internal Recommendation fields in app/api client-facing responses before the next broad UI tranche.",
+    "Remove or quarantine any historical draft-compatible UI that cannot prove its payload path through visibilityEngine."
+  ],
+  "remaining_limits": [
+    "Historical nullable Recommendation draft fields still exist in schema; removing them would be a later migration decision.",
+    "BD-06 does not implement new visible workbench controls; BD-05 already identified that as a separate action-board extraction problem.",
+    "BD-06 proof is only as complete as the registered typed routes and tests; future ad hoc endpoints need the same guard."
+  ],
+  "next_ticket": {
+    "id": "TICKET-BD-07",
+    "source_burndown_id": "BD-07",
+    "status": "READY_TO_INSPECT_AFTER_BD_06_COMMIT"
+  }
+}
