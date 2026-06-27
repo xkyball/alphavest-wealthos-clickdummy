@@ -1,0 +1,104 @@
+{
+  "artifact": {
+    "name": "BD_08_C_RELEASE_OUTPUT_AUDIT_MAPPING.json",
+    "kind": "subtask_execution_evidence",
+    "created_at": "2026-06-27",
+    "ticket_id": "TICKET-BD-08",
+    "subtask_id": "BD-08-C",
+    "source_burndown_id": "BD-08",
+    "title": "Release projection side effects",
+    "status": "COMPLETED_PROOF_LOCK",
+    "product_code_changed": false,
+    "ui_changed": false,
+    "screenshot_required_for_chat": false
+  },
+  "release_output_mapping": [
+    {
+      "action": "request_evidence",
+      "audit_event": "advisor_approval.request_evidence or p44.compliance.requested_evidence",
+      "audit_result": "BLOCKED",
+      "recommendation_effect": "MORE_DATA_REQUESTED, clientVisible false",
+      "compliance_effect": "NEEDS_EVIDENCE, releasedAt null",
+      "evidence_effect": "PLACEHOLDER / COMPLIANCE_VISIBLE",
+      "client_projection_effect": "hidden"
+    },
+    {
+      "action": "compliance_block",
+      "audit_event": "advisor_approval.compliance_block",
+      "audit_result": "BLOCKED",
+      "recommendation_effect": "BLOCKED, clientVisible false",
+      "compliance_effect": "BLOCKED",
+      "evidence_effect": "unchanged or blocker-linked",
+      "client_projection_effect": "hidden"
+    },
+    {
+      "action": "compliance_release",
+      "audit_event": "advisor_approval.compliance_release or journey.compliance.released",
+      "audit_result": "SUCCESS",
+      "recommendation_effect": "RELEASED_TO_CLIENT, clientVisible true",
+      "compliance_effect": "RELEASED, releasedAt set",
+      "decision_effect": "RELEASED_TO_CLIENT, releasedToClientAt set, evidenceRecordId linked",
+      "evidence_effect": "RELEASED / CLIENT_VISIBLE for selected evidence",
+      "client_projection_effect": "visible with clientSummary only; internal draft/rationale/compliance notes hidden"
+    },
+    {
+      "action": "release_denied",
+      "audit_event": "journey.compliance.release_denied",
+      "audit_result": "DENIED",
+      "recommendation_effect": "unchanged, clientVisible false",
+      "compliance_effect": "unchanged",
+      "decision_effect": "not released",
+      "client_projection_effect": "hidden"
+    }
+  ],
+  "client_projection_contract": {
+    "released_payload_allowed_fields": ["clientSummary"],
+    "forbidden_fields": ["clientSummaryDraft", "internalRationale", "complianceNotes", "auditMetadata", "assumptionsJson"],
+    "proof": "recommendation-review-workflow API release test asserts visible projection payload equals clientSummary and forbidden fields are absent."
+  },
+  "audit_requirements": [
+    "Every block/release/request evidence outcome must write actor role, target, previous/next state, result and reason.",
+    "Release denied must still write denial audit with missing preconditions.",
+    "Audit persistence failure is fail-closed and must leave no client release.",
+    "Decision linkage after release must be metadata-only until release succeeds, then released_to_client."
+  ],
+  "source_evidence": [
+    {
+      "path": "tests/recommendation-review-workflow-api.spec.ts",
+      "role": "Verifies release side effects, client projection payload, audit metadata, block audit and request evidence state."
+    },
+    {
+      "path": "tests/journey-api.spec.ts",
+      "role": "Verifies journey command release denial, advisor-only fail-closed path and successful compliance release."
+    },
+    {
+      "path": "lib/typed-workflow-command-bus.ts",
+      "role": "Writes release, block, evidence request, audit and client projection side effects."
+    },
+    {
+      "path": "lib/visibility-engine.ts",
+      "role": "Projects client-safe payload without internal fields."
+    }
+  ],
+  "validation": {
+    "commands_run": [
+      {
+        "command": "pnpm playwright test tests/journey-api.spec.ts -g \"runs MJ-001 through explicit evidence\" --workers=1",
+        "status": "PASS",
+        "result": "1 passed after initial transient scope-denied suite result"
+      },
+      {
+        "command": "pnpm playwright test tests/p44-phase7-certification.spec.ts tests/scf-p04-p06-flow-ui.spec.ts tests/release-spine-command-surface.spec.ts tests/recommendation-review-workflow-api.spec.ts tests/journey-api.spec.ts --workers=1",
+        "status": "PASS",
+        "result": "33 passed on rerun"
+      }
+    ],
+    "positive_acceptance_result": "Successful compliance release updates recommendation, compliance review, decision, selected evidence and client-safe projection.",
+    "negative_acceptance_result": "Denied release, request evidence, block, advisor-only, missing payload and audit-unavailable paths remain fail-closed."
+  },
+  "bold_cleanup_recommendations": [
+    "Make release audit mapping generated from the same typed action registry that drives the decision-room controls.",
+    "Promote release_denied audit cases to first-class acceptance artifacts instead of treating them as test internals.",
+    "Forbid release success messaging unless a persisted audit id and reloaded released state are present."
+  ]
+}

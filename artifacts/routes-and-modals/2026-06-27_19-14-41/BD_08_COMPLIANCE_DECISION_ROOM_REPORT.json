@@ -1,0 +1,140 @@
+{
+  "artifact": {
+    "name": "BD_08_COMPLIANCE_DECISION_ROOM_REPORT.json",
+    "kind": "ticket_execution_evidence",
+    "created_at": "2026-06-27",
+    "ticket_id": "TICKET-BD-08",
+    "source_burndown_id": "BD-08",
+    "title": "Compliance decision room, block and release process workspace",
+    "status": "COMPLETED_SPEC_ROUTE_AND_PROOF_LOCK",
+    "product_code_changed": false,
+    "ui_changed": false,
+    "screenshot_required_for_chat": false
+  },
+  "ticket_contract": {
+    "priority": "P0",
+    "ticket_kind": "decision_room_slice",
+    "work_type": "Compliance Workflow / Decision Room / Block-Release State Machine",
+    "readiness": "READY_FOR_BACKLOG_DERIVATION",
+    "unique_shape": "Decision-room ticket; combines role workspace with auditable block/release outcomes.",
+    "ctes_total": 18,
+    "ctes_class": "Must split before implementation",
+    "execution_decision": "Split into decision model, workspace UI and audit/projection effects.",
+    "dependencies": ["BD-04", "BD-07"]
+  },
+  "completed_subtasks": [
+    {
+      "id": "BD-08-A",
+      "name": "Compliance decision state machine",
+      "status": "COMPLETED_PROOF_LOCK",
+      "artifact_path": "artifacts/routes-and-modals/2026-06-27_19-14-41/BD_08_A_COMPLIANCE_DECISION_STATE_MACHINE.json",
+      "summary": "Locked compliance pending, needs-evidence, blocked and released-client-safe states plus block/release effects."
+    },
+    {
+      "id": "BD-08-B",
+      "name": "Decision room interaction surface",
+      "status": "COMPLETED_ROUTE_COMPONENT_CONTRACT",
+      "artifact_path": "artifacts/routes-and-modals/2026-06-27_19-14-41/BD_08_B_DECISION_ROOM_ROUTE_COMPONENT_CONTRACT.json",
+      "summary": "Locked queue, decision-room and release-confirmation route/component responsibilities."
+    },
+    {
+      "id": "BD-08-C",
+      "name": "Release projection side effects",
+      "status": "COMPLETED_PROOF_LOCK",
+      "artifact_path": "artifacts/routes-and-modals/2026-06-27_19-14-41/BD_08_C_RELEASE_OUTPUT_AUDIT_MAPPING.json",
+      "summary": "Locked release, block, request-evidence and release-denied audit/projection effects."
+    }
+  ],
+  "dependency_decisions_applied": [
+    {
+      "dependency": "BD-04",
+      "effect": "Compliance release consumes evidence sufficiency and cannot be replaced by upload or review presence."
+    },
+    {
+      "dependency": "BD-07",
+      "effect": "Advisor approval remains prerequisite only; compliance decision room owns block/release outcome semantics."
+    }
+  ],
+  "process_first_result": {
+    "decision": "BD-08 is satisfied by existing implementation plus explicit JSON contract/proof lock.",
+    "reason": "Compliance decision room, state machine and release/audit/client projection effects already exist and are covered by tests.",
+    "product_code_delta": "none",
+    "ui_delta": "none",
+    "screenshot_rationale": "No UI changed; existing UI proof is test-based. Screenshot would not add new evidence."
+  },
+  "source_evidence": [
+    {
+      "path": "components/internal-workflow-screen.tsx",
+      "role": "Compliance queue, decision room and release confirmation UI."
+    },
+    {
+      "path": "lib/p44-phase7-compliance-rationale-closure.ts",
+      "role": "Compliance queue/rationale closure model."
+    },
+    {
+      "path": "lib/release-spine-command-surface.ts",
+      "role": "Canonical release precondition model."
+    },
+    {
+      "path": "lib/typed-workflow-command-bus.ts",
+      "role": "Command-side state, audit and projection mutations."
+    },
+    {
+      "path": "tests/p44-phase7-certification.spec.ts",
+      "role": "Compliance state machine and rationale proof."
+    },
+    {
+      "path": "tests/recommendation-review-workflow-api.spec.ts",
+      "role": "Block/release/request-evidence API side-effect proof."
+    },
+    {
+      "path": "tests/journey-api.spec.ts",
+      "role": "Journey command release and client projection proof."
+    },
+    {
+      "path": "tests/scf-p04-p06-flow-ui.spec.ts",
+      "role": "Decision-room and compliance/audit UI proof."
+    }
+  ],
+  "acceptance_evidence": {
+    "block_release_state_machine": "BD_08_A_COMPLIANCE_DECISION_STATE_MACHINE.json",
+    "decision_audit_mapping": "BD_08_C_RELEASE_OUTPUT_AUDIT_MAPPING.json",
+    "client_projection_proof": [
+      "tests/recommendation-review-workflow-api.spec.ts",
+      "tests/journey-api.spec.ts",
+      "tests/client-visibility-projection.spec.ts"
+    ]
+  },
+  "validation": {
+    "commands_run": [
+      {
+        "command": "pnpm playwright test tests/p44-phase7-certification.spec.ts tests/scf-p04-p06-flow-ui.spec.ts tests/release-spine-command-surface.spec.ts tests/recommendation-review-workflow-api.spec.ts tests/journey-api.spec.ts --workers=1",
+        "status": "WARN_THEN_PASS",
+        "result": "Initial combined run: 32 passed, 1 transient SCOPE_DENIED in journey-api advisor approval step; isolated journey test passed; full rerun passed 33/33."
+      },
+      {
+        "command": "pnpm playwright test tests/journey-api.spec.ts -g \"runs MJ-001 through explicit evidence\" --workers=1",
+        "status": "PASS",
+        "result": "1 passed"
+      }
+    ],
+    "positive_acceptance_result": "Decision room and API can complete audited release with client-safe projection only after all gates pass.",
+    "negative_acceptance_result": "Request evidence, block, denied release, advisor-only release, missing payload, wrong phrase and audit-unavailable paths fail closed."
+  },
+  "bold_cleanup_recommendations": [
+    "Extract ComplianceDecisionRoom and ReleaseConfirmation into dedicated modules; the current broad InternalWorkflowScreen is carrying too much process authority.",
+    "Unify UI actions and API commands through one typed decision-room action registry, including required preconditions, confirmation phrase, audit event and side effects.",
+    "Delete static queue-level export/refresh affordances unless they receive typed handlers; held controls are better removed than normalized as product UI.",
+    "Make ReleaseSpine plus audit-id-plus-reloaded-state the sole definition of release success."
+  ],
+  "remaining_limits": [
+    "No UI refactor was performed in BD-08; the existing decision room is proven but still lives inside a large multi-surface component.",
+    "The first combined test run exposed a transient scope-denied journey test result that did not reproduce in isolated or repeated full validation.",
+    "BD-08 does not solve later export workflow, client acceptance or audit-history consolidation tickets."
+  ],
+  "next_ticket": {
+    "id": "TICKET-BD-09",
+    "source_burndown_id": "BD-09",
+    "status": "READY_TO_INSPECT_AFTER_BD_08_COMMIT"
+  }
+}
