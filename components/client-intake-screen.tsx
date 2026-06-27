@@ -34,7 +34,6 @@ import { DemoActorHandoffBar } from "@/components/demo-actor-handoff-bar";
 import { GlobalSearchBox } from "@/components/global-search-box";
 import { ProcessSidebar } from "@/components/process-navigation";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
-import { RouteContextChip } from "@/components/route-context-chip";
 import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
 import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
@@ -47,6 +46,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  ClientSafeUiBoundary,
   DataTable,
   MetricCard,
   ActionButton,
@@ -60,6 +60,7 @@ import {
 import { cn } from "@/lib/cn";
 import {
   clientPortalProjectionState,
+  clientPortalProjectionStatePanelCopy,
   type ClientPortalProjectionViewModel,
 } from "@/lib/client-portal-projection-state";
 import {
@@ -592,7 +593,7 @@ function ClientContextRail() {
   return (
     <>
       <WorksurfacePanel
-        description="Household, relationship and entity context stay advisory workspace context only."
+        description="Household and relationship context shown here is limited to client-safe summary information."
         title="Client context scope"
       >
         <div className="space-y-3">
@@ -604,9 +605,9 @@ function ClientContextRail() {
         </div>
       </WorksurfacePanel>
       <StatePanel
-        detail="Context panels can inform advisor work, but cannot expose internal payloads or create client-visible advice."
-        state="internal-only"
-        title="Context is not release"
+        detail="Additional review detail stays unavailable until the AlphaVest team releases a client-safe summary."
+        state="hidden"
+        title="More detail is not available yet"
       />
     </>
   );
@@ -616,20 +617,20 @@ function EvidenceLifecycleRail() {
   return (
     <>
       <WorksurfacePanel
-        description="Upload, extraction and review remain separate lifecycle steps."
+        description="Evidence steps are shown as client-safe availability milestones."
         title="Evidence lifecycle"
       >
         <div className="space-y-3">
           <WorksurfaceInfoRow label="Upload" value="Creates intake item only" />
-          <WorksurfaceInfoRow label="Extraction" value="Draft fields need human review" />
-          <WorksurfaceInfoRow label="Sufficiency" value="Scoped gate, never implied" />
-          <WorksurfaceInfoRow label="Client visibility" value="Compliance release required" />
+          <WorksurfaceInfoRow label="Review" value="Team review in progress" />
+          <WorksurfaceInfoRow label="Availability" value="Released summary only" />
+          <WorksurfaceInfoRow label="Next step" value="We will request more if needed" />
         </div>
       </WorksurfacePanel>
       <StatePanel
-        detail="Uploaded files, extracted fields and evidence records are not equivalent to release-ready evidence."
-        state="restricted"
-        title="No sufficiency shortcut"
+        detail="Documents that are not ready for client-safe display stay hidden and show a simple availability status."
+        state="hidden"
+        title="Unavailable items stay hidden"
       />
     </>
   );
@@ -685,7 +686,6 @@ function ClientTopBar() {
       <div className="flex min-h-12 flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <GlobalSearchBox className="xl:w-[28rem]" />
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-          <RouteContextChip />
           <label className="grid gap-1 text-[0.66rem] font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">
             <span>Tenant context</span>
             <span className="relative block">
@@ -742,7 +742,7 @@ function ClientTopBar() {
   );
 }
 
-function ClientShell({ children }: { activePageId: string; children: React.ReactNode }) {
+function ClientShell({ activePageId, children }: { activePageId: string; children: React.ReactNode }) {
   return (
     <DemoSessionProvider>
       <div className="av-surface av-surface-client av-shell-grid">
@@ -751,7 +751,11 @@ function ClientShell({ children }: { activePageId: string; children: React.React
           <ClientTopBar />
           <DemoActorHandoffBar />
           <main className="px-4 py-6 md:px-6">
-            <OperationalDefaultSurface>{children}</OperationalDefaultSurface>
+            <OperationalDefaultSurface>
+              <ClientSafeUiBoundary family={activePageId === "020" ? "mobile_client" : undefined} pageId={activePageId}>
+                {children}
+              </ClientSafeUiBoundary>
+            </OperationalDefaultSurface>
           </main>
         </div>
       </div>
@@ -787,64 +791,6 @@ function SafeClientBanner({ children = "No unapproved advice reaches the client.
       <ShieldCheck aria-hidden="true" className="size-4 shrink-0" />
       <span>{children}</span>
     </div>
-  );
-}
-
-
-
-type Phase5DetailSplitPanelProps = {
-  decisionSupport: string;
-  objectLabel: string;
-  objectState: string;
-  pageJob: string;
-  safetyBoundary: string;
-  splitTaskId?: string;
-  taskId: string;
-};
-
-
-
-type Phase7ClientProjectionPanelProps = {
-  allowedFields: string;
-  failClosed: string;
-  forbiddenFields: string;
-  recovery: string;
-  routeLabel: string;
-  taskId: string;
-  visibilityEngineOutput: string;
-};
-
-function Phase7ClientProjectionPanel({ allowedFields, failClosed, forbiddenFields, recovery, routeLabel, taskId, visibilityEngineOutput }: Phase7ClientProjectionPanelProps) {
-  return (
-    <section className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-4" data-testid="ux-phase7-client-projection" data-ux-phase7-task={taskId}>
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-green">Client-safe projection</p>
-          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{routeLabel}</h2>
-          <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted">Client view stays fail-closed and never exposes internal payloads.</p>
-        </div>
-        <Badge tone="green">{taskId}</Badge>
-      </div>
-      <div className="mt-4 grid gap-3 lg:grid-cols-4">
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase7-visibility-engine">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Visibility engine</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{visibilityEngineOutput}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase7-safe-fields">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Allowed client fields</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{allowedFields}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3" data-testid="ux-phase7-forbidden-fields">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-red">Forbidden payloads</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{forbiddenFields}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3" data-testid="ux-phase7-fail-closed">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-gold">Fail closed</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{failClosed}</p>
-        </div>
-      </div>
-      <div className="mt-4" data-testid="ux-phase7-recovery"><StatePanel detail={recovery} state="restricted" title="Unavailable content" /></div>
-    </section>
   );
 }
 
@@ -895,7 +841,7 @@ function ClientSafeProjectionCard({ density = "desktop" }: { density?: "desktop"
         </div>
         <ClientPortalProjectionStatePanel model={blockedState} testId="wp07-client-fail-closed-state" />
         <p className="rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-3 text-xs leading-5 text-alphavest-muted" data-testid="wp07-client-projection-boundary">
-          Traceability is retained by AlphaVest. This client view contains only the released summary and permitted metadata.
+          This client view contains only the released summary and permitted metadata. Details that are not ready stay unavailable.
         </p>
       </CardContent>
     </Card>
@@ -909,45 +855,20 @@ function ClientPortalProjectionStatePanel({
   model: ClientPortalProjectionViewModel;
   testId?: string;
 }) {
-  if (model.state === "released") {
-    return (
-      <StatePanel
-        detail="This view is derived from compliance release and projection rules. Release does not mean client acceptance."
-        state="success"
-        testId={testId}
-        title="Client-safe summary is now available"
-      />
-    );
-  }
-
-  if (model.state === "permission_denied") {
-    return (
-      <StatePanel
-        detail="This account cannot view the requested client-safe projection. No internal object detail is disclosed."
-        state="restricted"
-        testId={testId}
-        title="Access restricted"
-      />
-    );
-  }
-
-  if (model.state === "source_upload") {
-    return (
-      <StatePanel
-        detail="Your upload is available as source-document status only. It is not evidence sufficiency, release readiness or advice."
-        state="validation"
-        testId={testId}
-        title="Source upload received"
-      />
-    );
-  }
+  const copy = clientPortalProjectionStatePanelCopy(model);
 
   return (
     <StatePanel
-      detail="Your AlphaVest team is still reviewing this item. No decision body or supporting detail is shown until a released projection exists."
-      state={model.state === "blocked" ? "blocked" : "empty"}
+      detail={copy.detail}
+      feedback={{
+        audience: "client_safe",
+        intent: model.visible ? "success" : "fail_closed",
+        placement: "page_state",
+        subject: "client_visibility",
+      }}
+      state={copy.componentState}
       testId={testId}
-      title="No released content is available yet"
+      title={copy.title}
     />
   );
 }
@@ -961,86 +882,6 @@ function ClientProjectionField({ label, value }: { label: string; value: string 
   );
 }
 
-function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pageJob, safetyBoundary, splitTaskId, taskId }: Phase5DetailSplitPanelProps) {
-  return (
-    <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Detail state</p>
-          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectLabel}</h2>
-        </div>
-        <Badge tone="gold">{taskId}</Badge>
-      </div>
-      <div className="mt-4 grid gap-3 lg:grid-cols-4">
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-object-state">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Object state</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{objectState}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-decision-support">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Decision support</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{decisionSupport}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-drawer-boundary">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Drawer boundary</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">Drawer-only context cannot approve, release, delete, export or mutate payload visibility. {safetyBoundary}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-page-job">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Focus</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{pageJob}</p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Phase4WorkbenchPanel({
-  activeTask,
-  blocker,
-  context,
-  primaryAction,
-  queueLabel,
-  safetyNote,
-  taskId,
-}: {
-  activeTask: string;
-  blocker: string;
-  context: string;
-  primaryAction: string;
-  queueLabel: string;
-  safetyNote: string;
-  taskId: string;
-}) {
-  return (
-    <section className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4" data-testid="ux-workbench-phase4" data-ux-workbench-task={taskId}>
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <Badge tone="gold">{taskId}</Badge>
-          <h3 className="mt-3 font-display text-2xl text-alphavest-ivory">Active task workbench</h3>
-          <p className="mt-2 text-sm leading-6 text-alphavest-muted">One selected item, one guarded action rail and one explicit blocker. Queue visibility does not change release, export or client visibility state.</p>
-        </div>
-        <button className={primaryButtonClass} data-testid="ux-workbench-primary-cta" disabled type="button">{primaryAction}</button>
-      </div>
-      <div className="mt-4 grid gap-3 lg:grid-cols-3" data-testid="ux-workbench-triad">
-        <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-3" data-testid="ux-workbench-queue">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Queue</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{queueLabel}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-3" data-testid="ux-workbench-active-context">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Active context</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{activeTask}</p>
-          <p className="mt-2 text-sm leading-6 text-alphavest-muted">{context}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3" data-testid="ux-workbench-action-rail">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-red">Action rail</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{primaryAction}</p>
-          <p className="mt-2 text-sm leading-6 text-alphavest-muted" data-testid="ux-workbench-blocker">{blocker}</p>
-        </div>
-      </div>
-      <p className="mt-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 text-sm leading-6 text-alphavest-muted" data-testid="ux-workbench-safety-note">{safetyNote}</p>
-    </section>
-  );
-}
-
 function PortalPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="019">
@@ -1051,8 +892,6 @@ function PortalPage({ title }: { title: string }) {
         primary={
           <>
             <ClientSafeProjectionCard />
-            <Phase5DetailSplitPanel decisionSupport="Client projection stays separated from internal review and release gates." objectLabel="Client home projection split" objectState="Released client-safe state only" pageJob="Client portal shows released context without becoming mobile, evidence or decision detail." safetyBoundary="Client projection cannot expose internal payloads." splitTaskId="UX-PAGE-SPLIT-007" taskId="UX-PAGE-SPLIT-007" />
-            <Phase7ClientProjectionPanel allowedFields="clientSummary, releasedAt, redacted document title and status only" failClosed="Unavailable content explains release, evidence and permission blockers without showing the hidden object." forbiddenFields="No internal payload, manual override, unreleased evidence, AI Draft, compliance notes or storage keys." recovery="The client sees safe next steps only: wait for release, upload requested evidence or contact the advisor through controlled support." routeLabel="Client home released projection" taskId="UX-CLIENT-PROJECTION-001" visibilityEngineOutput="DEMO_CLIENT_SAFE_PROJECTION or DEMO_CLIENT_VISIBILITY_FAIL_CLOSED" />
             <UxHubPage pageId="019" />
           </>
         }
@@ -2073,7 +1912,11 @@ function EntityDetailPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="026">
       <ScreenTitle>{title}</ScreenTitle>
-      <Phase5DetailSplitPanel decisionSupport="Entity facts support object understanding without hiding destructive changes in drawers." objectLabel="Entity detail review" objectState="Entity active; permissioned family office context" pageJob="Entity detail explains one object and routes edits to explicit actions." safetyBoundary="Entity drawers cannot change release, advice or visibility state." splitTaskId="UX-PAGE-SPLIT-007" taskId="UX-DETAIL-002" />
+      <StatePanel
+        detail="Entity details are shown as client-safe profile information. Changes that affect visibility or advice remain unavailable until the team completes its review."
+        state="restricted"
+        title="Client-safe entity profile"
+      />
       <div className="space-y-5">
         <Card>
           <CardContent className="grid gap-5 p-5 xl:grid-cols-[1fr_24rem]">
@@ -2296,8 +2139,11 @@ function DocumentsPage({ title }: { title: string }) {
         safetyNote="The document hub lists scoped intake state only; it cannot mark review complete, prove sufficiency or release content."
         secondary={
           <>
-            <Phase7ClientProjectionPanel allowedFields="request title, document type, redacted status and uploaded date only" failClosed="Unreleased evidence requests show safe unavailable state and never expose extraction or evidence internals." forbiddenFields="No unreleased evidence, extraction state, checksum, storage key, AI Draft or compliance notes." recovery="Client can upload requested evidence or wait for human review; sufficiency and release remain internal gates." routeLabel="Client evidence request projection" taskId="UX-CLIENT-PROJECTION-003" visibilityEngineOutput="DEMO_CLIENT_DOCUMENT_SAFE_PROJECTION or DEMO_CLIENT_DOCUMENT_FAIL_CLOSED" />
-            <Phase5DetailSplitPanel decisionSupport="Document hub stays separate from review queue and evidence detail." objectLabel="Document workspace split" objectState="Document intake overview" pageJob="Documents page lists intake status and routes to queue/detail without marking evidence review complete." safetyBoundary="Document list context cannot mark evidence review complete." splitTaskId="UX-PAGE-SPLIT-002" taskId="UX-PAGE-SPLIT-002" />
+            <StatePanel
+              detail="Requests and document statuses are shown only when they are safe for this client view. Items still under review remain unavailable."
+              state="hidden"
+              title="Client-safe document availability"
+            />
           </>
         }
         statusItems={[
@@ -2577,7 +2423,7 @@ function DocumentUploadForm() {
             <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4" data-testid="document-upload-latest-card">
               <p className="text-sm font-semibold text-alphavest-ivory">{latestDocument.fileName ?? latestDocument.title}</p>
               <p className="mt-1 text-xs text-alphavest-muted">{latestDocument.fileSizeBytes ? formatBytes(latestDocument.fileSizeBytes) : "Size hidden"} · {labelFromEnum(latestDocument.status)}</p>
-              <p className="mt-2 text-xs text-alphavest-muted">Version: v{latestDocument.latestVersionNumber ?? 1} of {latestDocument.versionCount ?? 1} · checksum proof stored internally</p>
+              <p className="mt-2 text-xs text-alphavest-muted">Version: v{latestDocument.latestVersionNumber ?? 1} of {latestDocument.versionCount ?? 1} · verification details held by AlphaVest</p>
               <p className="mt-2 text-xs text-alphavest-muted">Lifecycle: {labelFromEnum(latestDocument.evidenceLifecycleStatus ?? "review_pending")}</p>
               <p className="mt-2 text-xs text-alphavest-muted">Extraction: {latestDocument.extractionStatus ?? "pending"}</p>
             </div>
@@ -2689,7 +2535,7 @@ function ExtractionReviewActionPanel() {
             <p className="mt-1 text-xs text-alphavest-muted">
               Document: {labelFromEnum(latestDocument.status)} · Evidence: {latestDocument.evidenceStatus ? labelFromEnum(latestDocument.evidenceStatus) : "Created"}
             </p>
-            <p className="mt-2 text-xs text-alphavest-muted">Version: v{latestDocument.latestVersionNumber ?? 1} of {latestDocument.versionCount ?? 1} · checksum proof stored internally</p>
+            <p className="mt-2 text-xs text-alphavest-muted">Version: v{latestDocument.latestVersionNumber ?? 1} of {latestDocument.versionCount ?? 1} · verification details held by AlphaVest</p>
             <p className="mt-2 text-xs text-alphavest-muted">Lifecycle: {labelFromEnum(latestDocument.evidenceLifecycleStatus ?? "review_pending")}</p>
             <p className="mt-2 text-xs text-alphavest-muted">Visibility: {latestDocument.evidenceVisibilityStatus ? labelFromEnum(latestDocument.evidenceVisibilityStatus) : "Internal Only"}</p>
           </div>
@@ -2755,10 +2601,9 @@ function ExtractionReviewPage({ title }: { title: string }) {
         eyebrow="WP02 Evidence"
         primary={
           <>
-            <Phase5DetailSplitPanel decisionSupport="Extraction review remains human review of draft fields, not final evidence." objectLabel="Document review queue split" objectState="Extraction draft needs human review" pageJob="Review queue resolves extraction work separately from document hub and evidence detail." safetyBoundary="Queue context cannot finalize sufficiency or release." splitTaskId="UX-PAGE-SPLIT-002" taskId="UX-PAGE-SPLIT-002" />
             <div className="space-y-5">
-              <SectionTitle action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Draft save held</span><button className={primaryButtonClass} data-testid="j04-confirm-finalize" onClick={() => { void runDataMaintenanceCommand("j04.confirmFinalize", "/documents/:id/review"); }} type="button"><Check aria-hidden="true" className="size-4" />Confirm & Finalize</button></div>} subtitle="Review AI-extracted data. This is a draft and not final evidence." title={title} />
-              <SafeClientBanner>AI Draft Mode: extracted data requires human review. Not final. Not evidence.</SafeClientBanner>
+              <SectionTitle action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Save held</span><button className={primaryButtonClass} data-testid="j04-confirm-finalize" onClick={() => { void runDataMaintenanceCommand("j04.confirmFinalize", "/documents/:id/review"); }} type="button"><Check aria-hidden="true" className="size-4" />Confirm review</button></div>} subtitle="Review extracted information before any final evidence status is shown." title={title} />
+              <SafeClientBanner>Human review is required before this information can be treated as final evidence.</SafeClientBanner>
               <ScfP04P06FlowPanel mode="evidence" />
               <div className="grid gap-5 xl:grid-cols-[0.9fr_0.84fr_20rem]">
           <Card>
@@ -2830,8 +2675,11 @@ function VerificationPendingPage({ title }: { title: string }) {
         eyebrow="WP02 Evidence"
         primary={
           <>
-            <Phase4WorkbenchPanel activeTask="Document DOC-118 selected for extraction review" blocker="Upload-created evidence is review-pending and cannot satisfy release gates." context="Reviewer checks extracted fields, source quality and linkage before evidence sufficiency." primaryAction="Mark extraction reviewed" queueLabel="Document review queue" safetyNote="UX-WORKBENCH-002: upload-only success remains separate from reviewed, linked and current evidence sufficiency." taskId="UX-WORKBENCH-002" />
-            <Phase5DetailSplitPanel decisionSupport="Selected document state explains source quality, linkage and unresolved blockers before any next action." objectLabel="Document object review" objectState="Review pending; evidence sufficiency not proven" pageJob="Document detail supports one active object review without overloading the queue." safetyBoundary="Detail context cannot unlock release, export or client visibility." splitTaskId="UX-PAGE-SPLIT-002" taskId="UX-PAGE-SPLIT-002" />
+            <StatePanel
+              detail="A submitted document is under review. The client view shows review status and safe next steps only."
+              state="loading"
+              title="Review in progress"
+            />
             <div className="space-y-5">
               <SectionTitle action={<span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />Download held</span>} icon={FileText} subtitle="Your submitted information is under human review. No final validation has been completed." title={title} />
               <StatePanel detail="A member of our operations team is reviewing your documents and information." state="loading" title="Under Human Review" />

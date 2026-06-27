@@ -104,7 +104,16 @@ test.describe("AlphaVest product guidance shell", () => {
 
     await expect(page.getByTestId("product-guidance")).toHaveCount(0);
     await expect(page.getByTestId("ux-proof-reviewer-secondary-surface")).toHaveCount(0);
+    await expect(page.getByTestId("ux-nav-route-context")).toHaveCount(0);
+    await expect(page.getByTestId("ux-phase5-detail-split")).toHaveCount(0);
+    await expect(page.getByTestId("ux-phase7-client-projection")).toHaveCount(0);
     await expect(page.getByText(/route id|ux proof tag|capture warning|debug metadata|internal rationale/i)).toHaveCount(0);
+
+    const clientBoundary = page.getByTestId("e07-client-safe-ui-boundary").first();
+    await expect(clientBoundary).toHaveAttribute("data-e07-client-safe-ui-boundary", "true");
+    await expect(clientBoundary).toHaveAttribute("data-e07-client-safe-family", "client_portal");
+    await expect(clientBoundary).toHaveAttribute("data-e07-suppressed-classes", /ux_task_id/);
+    await expect(clientBoundary).toHaveAttribute("data-e07-suppressed-classes", /proof_scaffolding/);
 
     const hub = page.getByTestId("ux-hub-page").first();
     await expect(hub).toHaveAttribute("data-ux-client-mode", "client_mode");

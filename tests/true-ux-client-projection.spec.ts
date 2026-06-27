@@ -272,27 +272,28 @@ test.describe("UX-CLIENT-PROJECTION phase 7 no-leakage contract", () => {
   });
 });
 
-test.describe("UX-CLIENT-PROJECTION phase 7 route proof", () => {
+test.describe("E07 client-safe UI route proof", () => {
   const routes = [
-    { path: "/client/home", taskId: "UX-CLIENT-PROJECTION-001" },
-    { path: "/decisions/demo", taskId: "UX-CLIENT-PROJECTION-002" },
-    { path: "/documents", taskId: "UX-CLIENT-PROJECTION-003" },
-    { path: "/export/demo/download", taskId: "UX-CLIENT-PROJECTION-004" },
+    { family: "client_portal", path: "/client/home", testId: "e07-client-safe-ui-boundary" },
+    { family: "client_portal", path: "/documents", testId: "e07-client-safe-ui-boundary" },
+    { family: "export_client_package", path: "/export/demo/download", testId: "e07-export-client-package-boundary" },
   ];
 
   for (const route of routes) {
-    test(route.taskId + " " + route.path + " renders fail-closed client projection proof", async ({ page }) => {
+    test(route.path + " renders client-safe UI boundary without proof scaffolding", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 1200 });
       await authenticate(page);
       await page.goto(route.path);
 
-      const panel = page.locator('[data-testid="ux-phase7-client-projection"][data-ux-phase7-task="' + route.taskId + '"]').first();
-      await expect(panel).toBeVisible();
-      await expect(panel.getByTestId("ux-phase7-visibility-engine")).toContainText(/DEMO_CLIENT|client projection|export package/i);
-      await expect(panel.getByTestId("ux-phase7-safe-fields")).toContainText(/client|redacted|released|summary|status/i);
-      await expect(panel.getByTestId("ux-phase7-forbidden-fields")).toContainText(/No internal payload|AI Draft|unreleased evidence/i);
-      await expect(panel.getByTestId("ux-phase7-fail-closed")).toContainText(/blocked|Unavailable|Download stays blocked|hide/i);
-      await expect(panel.getByTestId("ux-phase7-recovery")).toBeVisible();
+      const boundary = page.getByTestId(route.testId).first();
+      await expect(boundary).toBeVisible();
+      await expect(boundary).toHaveAttribute("data-e07-client-safe-ui-boundary", "true");
+      await expect(boundary).toHaveAttribute("data-e07-client-safe-family", route.family);
+      await expect(boundary).toHaveAttribute("data-e07-allowed-visible-classes", /client_safe_summary/);
+      await expect(boundary).toHaveAttribute("data-e07-suppressed-classes", /ai_draft/);
+      await expect(boundary).toHaveAttribute("data-e07-suppressed-classes", /compliance_note/);
+      await expect(page.getByTestId("ux-phase7-client-projection")).toHaveCount(0);
+      await expect(page.getByText(/UX-CLIENT-PROJECTION|Forbidden payloads|AI Draft|internal rationale|compliance notes|storage key|checksum/i)).toHaveCount(0);
     });
   }
 });

@@ -37,6 +37,7 @@ This reconciliation does not authorize new product scope. It removes stale paral
 
 - Treat `docs/ux/ALPHAVEST_E06_DATA_SURFACE_MASTER_DETAIL_SPEC.md` as the current operative E06 spec.
 - Treat `docs/ux/ALPHAVEST_E06_FEEDBACK_MESSAGING_SPEC.md` as historical feedback-message documentation, not the current E06 epic number.
+- Treat `docs/ux/ALPHAVEST_E07_CLIENT_INTERNAL_SEPARATION_SPEC.md` as the current operative E07 spec; old E07 data-surface material remains superseded by current E06.
 - Do not resurrect visible proof/debug scaffolding in default operational UI.
 - Do not treat disabled/static filter controls as backend filtering.
 - Do not count broad route-family local button/filter cleanup as complete unless the file is migrated to a canonical primitive or explicitly exception-marked.

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { uxActionAttributesFor } from "@/lib/ux-action-hierarchy-contract";
+import { uxClientSafeFamilyForPageId } from "@/lib/ux-client-safe-ui-boundary";
 import { uxPageTemplateForPageId } from "@/lib/ux-page-template-system";
 
 type WorksurfaceStatusItem = {
@@ -77,6 +78,10 @@ export function WorksurfaceShell({
   worksurfaceId,
 }: WorksurfaceShellProps) {
   const template = uxPageTemplateForPageId(routeId);
+  const isClientSafeSurface = Boolean(uxClientSafeFamilyForPageId(routeId));
+  const clientSafeStatusItems = isClientSafeSurface
+    ? statusItems.filter((item) => !["route", "route id", "page id"].includes(item.label.toLowerCase()))
+    : statusItems;
   const railPlacement = template.actionZoneBehavior === "sticky_action_zone" ? "sticky_rail" : "adjacent_rail";
   const sectionIds = {
     action: `${worksurfaceId}-action`,
@@ -119,7 +124,7 @@ export function WorksurfaceShell({
             <h2 className="mt-2 font-display text-3xl leading-tight text-alphavest-ivory">{title}</h2>
             <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted">{description}</p>
           </div>
-          <PageTemplateSummaryRail actions={actions} items={statusItems} />
+          <PageTemplateSummaryRail actions={actions} items={clientSafeStatusItems} />
         </div>
       </div>
       <PageTemplateSectionNav sections={sections} />
@@ -148,7 +153,7 @@ export function WorksurfaceShell({
           detail={safetyNote}
           state="restricted"
           testId="wp02-worksurface-safety-boundary"
-          title="Worksurface safety boundary"
+          title={isClientSafeSurface ? "Client-safe availability" : "Worksurface safety boundary"}
         />
       </div>
     </PageTemplateFrame>

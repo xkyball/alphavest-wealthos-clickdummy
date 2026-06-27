@@ -3,6 +3,7 @@ export * from "@/components/ui/action-zone";
 export * from "@/components/ui/audit-timeline";
 export * from "@/components/ui/badge";
 export * from "@/components/ui/card";
+export * from "@/components/ui/client-safe-ui-boundary";
 export * from "@/components/ui/data-table";
 export * from "@/components/ui/disabled-control-reason";
 export * from "@/components/ui/drawer";

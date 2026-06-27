@@ -35,6 +35,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  ClientSafeUiBoundary,
   DataTable,
   Drawer,
   Modal,
@@ -181,47 +182,38 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, de
 
 
 
-type Phase7ClientProjectionPanelProps = {
-  allowedFields: string;
-  failClosed: string;
-  forbiddenFields: string;
-  recovery: string;
-  routeLabel: string;
-  taskId: string;
-  visibilityEngineOutput: string;
-};
-
-function Phase7ClientProjectionPanel({ allowedFields, failClosed, forbiddenFields, recovery, routeLabel, taskId, visibilityEngineOutput }: Phase7ClientProjectionPanelProps) {
+function ExportClientPackageProjectionPanel() {
   return (
-    <section className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-4" data-testid="ux-phase7-client-projection" data-ux-phase7-task={taskId}>
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-green">Client-safe projection</p>
-          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{routeLabel}</h2>
-          <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted">Client view stays fail-closed and never exposes internal payloads.</p>
+    <ClientSafeUiBoundary family="export_client_package" pageId="058" testId="e07-export-client-package-boundary">
+      <section className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-4" data-testid="e07-export-client-package-projection">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-green">Client package projection</p>
+            <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">Package availability is based on released, redacted content.</h2>
+            <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted">
+              The package view shows availability, release status, redaction status and safe next steps only.
+            </p>
+          </div>
+          <Badge tone="green">Client safe</Badge>
         </div>
-        <Badge tone="green">{taskId}</Badge>
-      </div>
-      <div className="mt-4 grid gap-3 lg:grid-cols-4">
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase7-visibility-engine">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Visibility engine</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{visibilityEngineOutput}</p>
+        <div className="mt-4 grid gap-3 lg:grid-cols-3">
+          <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="e07-export-package-safe-fields">
+            <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Shown in package view</p>
+            <p className="mt-2 text-sm font-semibold text-alphavest-ivory">Manifest id, redacted title, released status and watermark state.</p>
+          </div>
+          <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="e07-export-package-availability">
+            <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Availability</p>
+            <p className="mt-2 text-sm font-semibold text-alphavest-ivory">Download remains gated until package checks pass.</p>
+          </div>
+          <StatePanel
+            detail="If the package is not ready, the view shows an unavailable state and routes the user back to approval or redaction."
+            state="restricted"
+            testId="e07-export-package-fail-closed"
+            title="Package not ready until checks pass"
+          />
         </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase7-safe-fields">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Allowed client fields</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{allowedFields}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3" data-testid="ux-phase7-forbidden-fields">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-red">Forbidden payloads</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{forbiddenFields}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3" data-testid="ux-phase7-fail-closed">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-gold">Fail closed</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{failClosed}</p>
-        </div>
-      </div>
-      <div className="mt-4" data-testid="ux-phase7-recovery"><StatePanel detail={recovery} state="restricted" title="Unavailable content" /></div>
-    </section>
+      </section>
+    </ClientSafeUiBoundary>
   );
 }
 
@@ -2050,8 +2042,7 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
           <Phase5DetailSplitPanel decisionSupport="Delivery detail separates approved package, download event and share gate." objectLabel="Export delivery split" objectState="Approved package; share still blocked" pageJob="Download page handles controlled delivery without client acceptance overclaim." safetyBoundary="Delivery detail cannot mark share complete or client acceptance achieved." splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-PAGE-SPLIT-005" />
           <ExportStageBoundary activeStage="package" />
           <ExportWorkflowTruthPanel apiState={apiState} loadState={loadState} />
-          <Phase7ClientProjectionPanel allowedFields="manifest id, redacted title, document type, released status and watermark state only" failClosed="Download stays blocked when projection is not visible, not released, not redacted or contains forbidden payload fields." forbiddenFields="No internal payload, unreleased evidence, AI Draft, compliance notes, storage key, checksum or raw file metadata." recovery="The user sees why the package is unavailable and can return to approval/redaction without generating or sharing unsafe content." routeLabel="Client-safe export package projection" taskId="UX-CLIENT-PROJECTION-004" visibilityEngineOutput="client projection clean check plus export package forbidden-field check" />
-          <ScfP07P09TrustPanel mode="export" />
+          <ExportClientPackageProjectionPanel />
           <UxDetailStandardPanel
         actionLabel="Download package"
         actionState="Download is available after approval; secure share remains blocked until download is recorded."
