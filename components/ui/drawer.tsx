@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { uxLifecycleAttributesForKind } from "@/lib/ux-lifecycle-state-contract";
 
 type DrawerProps = {
   children: React.ReactNode;
@@ -30,7 +31,7 @@ export function Drawer({ children, className, context, description, footer, onCl
   const panelRef = useRef<HTMLElement | null>(null);
   const onCloseRef = useRef(onClose);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
-  const closeLifecycle = onClose ? "escape-backdrop-close-button-safe" : "blocked-while-submitting";
+  const lifecycleAttributes = uxLifecycleAttributesForKind("drawer", { closeAvailable: Boolean(onClose) });
 
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -119,16 +120,7 @@ export function Drawer({ children, className, context, description, footer, onCl
           className
         )}
         data-testid="ux-a11y-drawer"
-        data-ux-a11y-escape={onClose ? "enabled" : "blocked"}
-        data-ux-a11y-focus-return="trigger"
-        data-ux-interaction-lifecycle="drawer"
-        data-ux-lifecycle-cancel="no-submit-no-mutation"
-        data-ux-lifecycle-close={closeLifecycle}
-        data-ux-lifecycle-open="controlled-by-owner-state"
-        data-ux-lifecycle-status="owner-handles-validation-loading-success-error-blocked"
-        data-ux-lifecycle-submit="owner-owned-where-present"
-        data-ux-no-overclaim="true"
-        data-ux-phase10-tasks="UX-A11Y-001 UX-A11Y-002"
+        {...lifecycleAttributes}
         ref={panelRef}
         role="complementary"
         onMouseDown={(event) => event.stopPropagation()}

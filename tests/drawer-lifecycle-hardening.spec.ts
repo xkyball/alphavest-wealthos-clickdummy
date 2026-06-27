@@ -73,10 +73,13 @@ test.describe("UXP3-002 shared drawer primitive lifecycle hardening", () => {
   test("drawer source keeps close blocking available to owner workflows", () => {
     const drawerSource = readFileSync("components/ui/drawer.tsx", "utf8");
     const ownerSource = readFileSync("components/decisions-governance-screen.tsx", "utf8");
+    const contractSource = readFileSync("lib/ux-lifecycle-state-contract.ts", "utf8");
 
-    expect(drawerSource).toContain('data-ux-lifecycle-close={closeLifecycle}');
-    expect(drawerSource).toContain('"blocked-while-submitting"');
-    expect(drawerSource).toContain('data-ux-lifecycle-submit="owner-owned-where-present"');
+    expect(drawerSource).toContain('uxLifecycleAttributesForKind("drawer"');
+    expect(drawerSource).toContain("{...lifecycleAttributes}");
+    expect(contractSource).toContain('"data-ux-lifecycle-close": uxLifecycleCloseForOwner(kind, options.closeAvailable)');
+    expect(contractSource).toContain('"blocked-while-submitting"');
+    expect(contractSource).toContain('submit: "owner-owned-where-present"');
     expect(ownerSource).toContain("function closeRoleDrawer()");
     expect(ownerSource).toContain('onClose={status === "submitting" ? undefined : closeRoleDrawer}');
   });

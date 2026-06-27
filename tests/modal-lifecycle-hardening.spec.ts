@@ -80,10 +80,13 @@ test.describe("UXP3-001 shared modal primitive lifecycle hardening", () => {
   test("modal source keeps close blocking delegated to owner submitting state", () => {
     const modalSource = readFileSync("components/ui/modal.tsx", "utf8");
     const ownerSource = readFileSync("components/internal-workflow-screen.tsx", "utf8");
+    const contractSource = readFileSync("lib/ux-lifecycle-state-contract.ts", "utf8");
 
-    expect(modalSource).toContain('data-ux-lifecycle-close={closeLifecycle}');
-    expect(modalSource).toContain('"blocked-while-submitting"');
-    expect(modalSource).toContain('data-ux-lifecycle-submit="owner-owned-confirmation-only"');
+    expect(modalSource).toContain('uxLifecycleAttributesForKind("modal"');
+    expect(modalSource).toContain("{...lifecycleAttributes}");
+    expect(contractSource).toContain('"data-ux-lifecycle-close": uxLifecycleCloseForOwner(kind, options.closeAvailable)');
+    expect(contractSource).toContain('"blocked-while-submitting"');
+    expect(contractSource).toContain('submit: "owner-owned-confirmation-only"');
     expect(ownerSource).toContain('onClose={status === "submitting" ? undefined : resetAndClose}');
   });
 });

@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { uxLifecycleAttributesForKind } from "@/lib/ux-lifecycle-state-contract";
 
 type ModalProps = {
   children: React.ReactNode;
@@ -30,7 +31,7 @@ export function Modal({ children, className, context, description, footer, onClo
   const dialogRef = useRef<HTMLElement | null>(null);
   const onCloseRef = useRef(onClose);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
-  const closeLifecycle = onClose ? "escape-backdrop-close-button-safe" : "blocked-while-submitting";
+  const lifecycleAttributes = uxLifecycleAttributesForKind("modal", { closeAvailable: Boolean(onClose) });
 
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -112,16 +113,7 @@ export function Modal({ children, className, context, description, footer, onClo
           className
         )}
         data-testid="ux-a11y-modal"
-        data-ux-a11y-escape={onClose ? "enabled" : "blocked-while-submitting"}
-        data-ux-a11y-focus-return="parent-context"
-        data-ux-interaction-lifecycle="modal"
-        data-ux-lifecycle-cancel="no-submit-no-mutation"
-        data-ux-lifecycle-close={closeLifecycle}
-        data-ux-lifecycle-open="controlled-by-owner-state"
-        data-ux-lifecycle-status="owner-handles-validation-loading-success-error-blocked"
-        data-ux-lifecycle-submit="owner-owned-confirmation-only"
-        data-ux-no-overclaim="true"
-        data-ux-phase10-tasks="UX-A11Y-001 UX-A11Y-003"
+        {...lifecycleAttributes}
         ref={dialogRef}
         role="dialog"
         onMouseDown={(event) => event.stopPropagation()}
