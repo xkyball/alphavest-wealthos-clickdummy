@@ -3,9 +3,13 @@
 import { useEffect, useId, useRef } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { uxLifecycleAttributesForKind } from "@/lib/ux-lifecycle-state-contract";
+import {
+  uxCaptureVariantAttributesForFileKind,
+  uxLifecycleAttributesForKind,
+} from "@/lib/ux-lifecycle-state-contract";
 
 type ModalProps = {
+  captureStateLabel?: string;
   children: React.ReactNode;
   className?: string;
   context?: React.ReactNode;
@@ -25,13 +29,24 @@ const focusableSelector = [
   "[tabindex]:not([tabindex='-1'])",
 ].join(",");
 
-export function Modal({ children, className, context, description, footer, onClose, open, title }: ModalProps) {
+export function Modal({
+  captureStateLabel = "modal",
+  children,
+  className,
+  context,
+  description,
+  footer,
+  onClose,
+  open,
+  title,
+}: ModalProps) {
   const titleId = useId();
   const descriptionId = useId();
   const dialogRef = useRef<HTMLElement | null>(null);
   const onCloseRef = useRef(onClose);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   const lifecycleAttributes = uxLifecycleAttributesForKind("modal", { closeAvailable: Boolean(onClose) });
+  const captureVariantAttributes = uxCaptureVariantAttributesForFileKind("modal", captureStateLabel);
 
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -113,6 +128,7 @@ export function Modal({ children, className, context, description, footer, onClo
           className
         )}
         data-testid="ux-a11y-modal"
+        {...captureVariantAttributes}
         {...lifecycleAttributes}
         ref={dialogRef}
         role="dialog"

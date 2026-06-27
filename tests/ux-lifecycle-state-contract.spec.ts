@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 
 import {
   uxComponentStates,
+  uxCaptureVariantAttributesForFileKind,
   uxCaptureVariantForFileKind,
   uxLifecycleAttributesForKind,
   uxLifecycleCloseForOwner,
@@ -11,6 +12,10 @@ import {
   uxStateAttributesForComponentState,
   uxStateContractForComponentState,
 } from "../lib/ux-lifecycle-state-contract";
+import {
+  standardStateBoundaryKinds,
+  stateBoundaryToComponentState,
+} from "../components/ui/state-boundary";
 
 test.describe("E04 canonical lifecycle and overlay contract", () => {
   test("defines the approved lifecycle kinds", () => {
@@ -76,6 +81,10 @@ test.describe("E04 canonical lifecycle and overlay contract", () => {
 
     expect(modalSource).toContain('uxLifecycleAttributesForKind("modal"');
     expect(drawerSource).toContain('uxLifecycleAttributesForKind("drawer"');
+    expect(modalSource).toContain('uxCaptureVariantAttributesForFileKind("modal"');
+    expect(drawerSource).toContain('uxCaptureVariantAttributesForFileKind("drawer"');
+    expect(modalSource).toContain("captureStateLabel = \"modal\"");
+    expect(drawerSource).toContain("captureStateLabel = \"drawer\"");
     expect(modalSource).not.toContain('data-ux-lifecycle-submit="owner-owned-confirmation-only"');
     expect(drawerSource).not.toContain('data-ux-lifecycle-submit="owner-owned-where-present"');
   });
@@ -141,6 +150,33 @@ test.describe("E04 canonical lifecycle and overlay contract", () => {
     expect(statePanelSource).toContain("{...stateAttributes}");
   });
 
+  test("standard state boundary helper maps common UI boundaries to canonical states", () => {
+    expect(standardStateBoundaryKinds).toEqual([
+      "blocked",
+      "empty",
+      "error",
+      "internal-only",
+      "loading",
+      "permission-denied",
+      "success",
+    ]);
+
+    expect(stateBoundaryToComponentState).toMatchObject({
+      blocked: "blocked",
+      empty: "empty",
+      error: "error",
+      "internal-only": "internal-only",
+      loading: "loading",
+      "permission-denied": "denied",
+      success: "success",
+    });
+
+    const stateBoundarySource = readFileSync("components/ui/state-boundary.tsx", "utf8");
+    expect(stateBoundarySource).toContain('data-ux-state-boundary="standard"');
+    expect(stateBoundarySource).toContain("StatePanel");
+    expect(stateBoundarySource).toContain("stateBoundaryToComponentState[kind]");
+  });
+
   test("classifies capture variants for base, modal, drawer and confirmation screenshots", () => {
     expect(uxCaptureVariantForFileKind("screen", "base")).toMatchObject({
       fileKind: "screen",
@@ -161,6 +197,28 @@ test.describe("E04 canonical lifecycle and overlay contract", () => {
       fileKind: "modal",
       isOverlay: true,
       lifecycleKind: "confirmation",
+    });
+  });
+
+  test("projects capture variant runtime attributes for UI primitives and capture scripts", () => {
+    expect(uxCaptureVariantAttributesForFileKind("screen", "base")).toEqual({
+      "data-ux-capture-file-kind": "screen",
+      "data-ux-capture-is-overlay": "false",
+      "data-ux-capture-state-label": "base",
+      "data-ux-capture-variant-kind": "base",
+    });
+
+    expect(uxCaptureVariantAttributesForFileKind("modal", "role-confirm-modal")).toMatchObject({
+      "data-ux-capture-file-kind": "modal",
+      "data-ux-capture-is-overlay": "true",
+      "data-ux-capture-state-label": "role-confirm-modal",
+      "data-ux-capture-variant-kind": "confirmation",
+    });
+
+    expect(uxCaptureVariantAttributesForFileKind("drawer", "role-drawer")).toMatchObject({
+      "data-ux-capture-file-kind": "drawer",
+      "data-ux-capture-is-overlay": "true",
+      "data-ux-capture-variant-kind": "drawer",
     });
   });
 });

@@ -3,9 +3,13 @@
 import { useEffect, useId, useRef } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { uxLifecycleAttributesForKind } from "@/lib/ux-lifecycle-state-contract";
+import {
+  uxCaptureVariantAttributesForFileKind,
+  uxLifecycleAttributesForKind,
+} from "@/lib/ux-lifecycle-state-contract";
 
 type DrawerProps = {
+  captureStateLabel?: string;
   children: React.ReactNode;
   className?: string;
   context?: React.ReactNode;
@@ -25,13 +29,24 @@ const focusableSelector = [
   "[tabindex]:not([tabindex='-1'])",
 ].join(",");
 
-export function Drawer({ children, className, context, description, footer, onClose, open, title }: DrawerProps) {
+export function Drawer({
+  captureStateLabel = "drawer",
+  children,
+  className,
+  context,
+  description,
+  footer,
+  onClose,
+  open,
+  title,
+}: DrawerProps) {
   const titleId = useId();
   const descriptionId = useId();
   const panelRef = useRef<HTMLElement | null>(null);
   const onCloseRef = useRef(onClose);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   const lifecycleAttributes = uxLifecycleAttributesForKind("drawer", { closeAvailable: Boolean(onClose) });
+  const captureVariantAttributes = uxCaptureVariantAttributesForFileKind("drawer", captureStateLabel);
 
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -120,6 +135,7 @@ export function Drawer({ children, className, context, description, footer, onCl
           className
         )}
         data-testid="ux-a11y-drawer"
+        {...captureVariantAttributes}
         {...lifecycleAttributes}
         ref={panelRef}
         role="complementary"

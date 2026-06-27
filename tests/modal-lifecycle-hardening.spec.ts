@@ -44,6 +44,10 @@ test.describe("UXP3-001 shared modal primitive lifecycle hardening", () => {
     await expect(dialog).toHaveAttribute("data-ux-lifecycle-submit", "owner-owned-confirmation-only");
     await expect(dialog).toHaveAttribute("data-ux-lifecycle-status", "owner-handles-validation-loading-success-error-blocked");
     await expect(dialog).toHaveAttribute("data-ux-no-overclaim", "true");
+    await expect(dialog).toHaveAttribute("data-ux-capture-file-kind", "modal");
+    await expect(dialog).toHaveAttribute("data-ux-capture-is-overlay", "true");
+    await expect(dialog).toHaveAttribute("data-ux-capture-state-label", "modal");
+    await expect(dialog).toHaveAttribute("data-ux-capture-variant-kind", "modal");
     await expect(dialog.getByTestId("ux-phase10-modal-status")).toContainText(/recover context without submitting/i);
     await expect(dialog).not.toContainText(/client visibility unlocked|release complete|download ready|client accepted/i);
     await expect(dialog).toContainText("cannot release advice, mark evidence review complete, approve export or bypass audit persistence");

@@ -3,7 +3,7 @@
 import { RotateCcw } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
-import { StatePanel } from "@/components/ui/state-panel";
+import { StateBoundary } from "@/components/ui/state-boundary";
 
 type ErrorPageProps = {
   error: Error & { digest?: string };
@@ -14,9 +14,10 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
   return (
     <AppShell>
       <div className="space-y-4">
-        <StatePanel
+        <StateBoundary
           detail={error.digest ? `Reference ${error.digest}` : "The current view could not be rendered."}
-          state="error"
+          kind="error"
+          testId="workspace-error-state-boundary"
           title="Workspace error"
         />
         <button

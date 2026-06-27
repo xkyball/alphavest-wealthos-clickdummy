@@ -41,6 +41,7 @@ test.describe("V0.96 WP-11 shared interaction primitives", () => {
     const ctaCluster = readSource("components", "ux-cta-cluster.tsx");
     const actionContract = readSource("lib", "ux-action-hierarchy-contract.ts");
     const statePanel = readSource("components", "ui", "state-panel.tsx");
+    const stateBoundary = readSource("components", "ui", "state-boundary.tsx");
     const lifecycleContract = readSource("lib", "ux-lifecycle-state-contract.ts");
     const a11yStatus = readSource("components", "ui", "a11y-status.tsx");
 
@@ -66,6 +67,9 @@ test.describe("V0.96 WP-11 shared interaction primitives", () => {
     expect(statePanel).toContain('"audit-unavailable"');
     expect(statePanel).toContain('"export-pending"');
     expect(statePanel).toContain("redacted:");
+    expect(stateBoundary).toContain("stateBoundaryToComponentState");
+    expect(stateBoundary).toContain('"permission-denied": "denied"');
+    expect(stateBoundary).toContain('data-ux-state-boundary="standard"');
 
     expect(a11yStatus).toContain('data-ux-a11y-keyboard="tab-escape-cancel-return"');
     expect(a11yStatus).toContain('data-ux-a11y-status="polite-live-region"');

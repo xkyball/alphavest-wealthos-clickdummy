@@ -399,3 +399,17 @@ export function uxCaptureVariantForFileKind(fileKind: UxCaptureFileKind, stateLa
     stateLabel,
   };
 }
+
+export function uxCaptureVariantAttributesForFileKind(
+  fileKind: UxCaptureFileKind,
+  stateLabel: string,
+): UxLifecycleRuntimeAttributes {
+  const captureVariant = uxCaptureVariantForFileKind(fileKind, stateLabel);
+
+  return {
+    "data-ux-capture-file-kind": captureVariant.fileKind,
+    "data-ux-capture-is-overlay": captureVariant.isOverlay ? "true" : "false",
+    "data-ux-capture-state-label": captureVariant.stateLabel,
+    "data-ux-capture-variant-kind": captureVariant.lifecycleKind,
+  };
+}

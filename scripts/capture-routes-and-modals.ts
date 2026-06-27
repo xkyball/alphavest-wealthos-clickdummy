@@ -70,6 +70,16 @@ type RuntimePlausibilityCheck = {
   warnings: string[];
 };
 
+const captureVariantContract = {
+  markerAttributes: [
+    "data-ux-capture-file-kind",
+    "data-ux-capture-is-overlay",
+    "data-ux-capture-state-label",
+    "data-ux-capture-variant-kind",
+  ],
+  requiredVariantKinds: ["base", "modal", "drawer", "confirmation"],
+};
+
 const baseUrl = process.env.AVS_BASE_URL ?? process.env.BASE_URL ?? "http://localhost:3095";
 const runTs =
   process.env.AVS_CAPTURE_OUTPUT ??
@@ -2261,6 +2271,11 @@ function markdownCell(value: string) {
 }
 
 function writeIndex(items: CaptureItem[]) {
+  const captureVariantCounts = items.reduce<Record<string, number>>((acc, item) => {
+    acc[item.captureVariant.lifecycleKind] = (acc[item.captureVariant.lifecycleKind] ?? 0) + 1;
+    return acc;
+  }, {});
+
   writeFileSync(
     path.join(outputDir, "index.json"),
     `${JSON.stringify(
@@ -2268,6 +2283,8 @@ function writeIndex(items: CaptureItem[]) {
         auditBaseline: captureScreenModelAuditBaseline,
         baseUrl,
         captureMode: screensOnly ? "screens-only" : "full-runtime",
+        captureVariantContract,
+        captureVariantCounts,
         generatedAt: new Date().toISOString(),
         items,
         sidecarsEnabled: !screensOnly,
@@ -2286,11 +2303,11 @@ function writeIndex(items: CaptureItem[]) {
     `Sidecars: ${screensOnly ? "disabled" : "enabled"}`,
     `Audit baseline: ${captureScreenModelAuditBaseline.registeredRoutes} routes, ${captureScreenModelAuditBaseline.schemaModels} models, ${captureScreenModelAuditBaseline.schemaEnums} enums`,
     "",
-    "| Page | Route | State | Capture Variant | Status | UX Mode | Audience | Proof Posture | Productive | Capability | No-overclaim Rule | Scope Warnings | Models | Screenshot | Rendered DOM | Rendered CSS | Runtime Components | Runtime Summary | Runtime Confidence | DOM Rect Trace | React Source Trace | Interaction Proof Trace |",
-    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    "| Page | Route | State | Capture Variant | File Kind | Overlay | Status | UX Mode | Audience | Proof Posture | Productive | Capability | No-overclaim Rule | Scope Warnings | Models | Screenshot | Rendered DOM | Rendered CSS | Runtime Components | Runtime Summary | Runtime Confidence | DOM Rect Trace | React Source Trace | Interaction Proof Trace |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ...items.map(
       (item) =>
-        `| ${item.pageId} | ${item.route} | ${item.state} | ${item.captureVariant.lifecycleKind} | ${item.status} | ${item.modelContext.uxOperatingModel.mode} | ${item.modelContext.uxOperatingModel.audience} | ${item.modelContext.uxOperatingModel.proofPosture} | ${item.modelContext.uxOperatingModel.productiveUxEligible ? "yes" : "no"} | ${item.modelContext.capability.status} | ${markdownCell(item.modelContext.uxOperatingModel.noOverclaimRule)} | ${markdownCell(item.modelContext.warnings.join("<br>"))} | ${item.modelContext.models.join(", ")} | ${item.path} | ${item.domPath ?? ""} | ${item.cssPath ?? ""} | ${item.componentRuntimePath ?? ""} | ${item.componentRuntimeMarkdownPath ?? ""} | ${item.componentRuntimeConfidence ?? ""} | ${item.domRectTracePath ?? ""} | ${item.reactSourceTracePath ?? ""} | ${item.interactionProofTracePath ?? ""} |`,
+        `| ${item.pageId} | ${item.route} | ${item.state} | ${item.captureVariant.lifecycleKind} | ${item.captureVariant.fileKind} | ${item.captureVariant.isOverlay ? "yes" : "no"} | ${item.status} | ${item.modelContext.uxOperatingModel.mode} | ${item.modelContext.uxOperatingModel.audience} | ${item.modelContext.uxOperatingModel.proofPosture} | ${item.modelContext.uxOperatingModel.productiveUxEligible ? "yes" : "no"} | ${item.modelContext.capability.status} | ${markdownCell(item.modelContext.uxOperatingModel.noOverclaimRule)} | ${markdownCell(item.modelContext.warnings.join("<br>"))} | ${item.modelContext.models.join(", ")} | ${item.path} | ${item.domPath ?? ""} | ${item.cssPath ?? ""} | ${item.componentRuntimePath ?? ""} | ${item.componentRuntimeMarkdownPath ?? ""} | ${item.componentRuntimeConfidence ?? ""} | ${item.domRectTracePath ?? ""} | ${item.reactSourceTracePath ?? ""} | ${item.interactionProofTracePath ?? ""} |`,
     ),
   ];
   writeFileSync(path.join(outputDir, "index.md"), `${lines.join("\n")}\n`);

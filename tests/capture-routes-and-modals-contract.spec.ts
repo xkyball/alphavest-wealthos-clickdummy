@@ -65,6 +65,21 @@ test.describe("routes and modals capture contract", () => {
     expect(source).toContain("captureVariant: baseItem.captureVariant");
     expect(source).toContain("captureVariant: overlayItem.captureVariant");
     expect(source).toContain("captureVariant.lifecycleKind");
-    expect(source).toContain("| State | Capture Variant | Status |");
+    expect(source).toContain("captureVariantContract");
+    expect(source).toContain("captureVariantCounts");
+    expect(source).toContain('"data-ux-capture-variant-kind"');
+    expect(source).toContain("| State | Capture Variant | File Kind | Overlay | Status |");
+    expect(source).toContain("item.captureVariant.fileKind");
+    expect(source).toContain('item.captureVariant.isOverlay ? "yes" : "no"');
+  });
+
+  test("strict visual capture labels normal screenshots as base variants", async () => {
+    const source = await readFile("scripts/strict-visual-capture.ts", "utf8");
+
+    expect(source).toContain("uxCaptureVariantForFileKind");
+    expect(source).toContain('uxCaptureVariantForFileKind("screen", "base")');
+    expect(source).toContain("${assetName}-${captureVariant.lifecycleKind}-${viewport}.png");
+    expect(source).toContain("captureVariant: UxCaptureVariant");
+    expect(source).toContain("| Capture Variant | File Kind | Overlay |");
   });
 });

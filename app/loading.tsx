@@ -1,12 +1,13 @@
 import { AppShell } from "@/components/app-shell";
-import { StatePanel } from "@/components/ui/state-panel";
+import { StateBoundary } from "@/components/ui/state-boundary";
 
 export default function Loading() {
   return (
     <AppShell>
-      <StatePanel
+      <StateBoundary
         detail="Preparing the current AlphaVest workspace view."
-        state="loading"
+        kind="loading"
+        testId="workspace-loading-state-boundary"
         title="Loading workspace"
       />
     </AppShell>

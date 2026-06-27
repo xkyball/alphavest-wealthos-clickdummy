@@ -9,12 +9,14 @@ import {
 } from "@/lib/capture-screen-model-context";
 import { demoAuthSessionCookieName } from "@/lib/demo/demo-auth-session";
 import { routeToSmokePath, screenRoutes } from "@/lib/route-registry";
+import { uxCaptureVariantForFileKind, type UxCaptureVariant } from "@/lib/ux-lifecycle-state-contract";
 import { visualStateForRoute } from "@/lib/visual-contract";
 
 type ViewportName = "desktop" | "mobile";
 
 type CaptureMetric = {
   consoleMessages: string[];
+  captureVariant: UxCaptureVariant;
   modelContext: CaptureScreenModelContext;
   metrics: {
     crampedText: string[];
@@ -60,7 +62,8 @@ function markdownText(value: string) {
 
 function slugFor(route: (typeof screenRoutes)[number], viewport: ViewportName) {
   const assetName = path.basename(route.visualAsset).replace(/\.png$/i, "");
-  return `${assetName}-${viewport}.png`;
+  const captureVariant = uxCaptureVariantForFileKind("screen", "base");
+  return `${assetName}-${captureVariant.lifecycleKind}-${viewport}.png`;
 }
 
 function isAuthRoute(route: string) {
@@ -151,6 +154,7 @@ async function captureViewport(pages: { auth: Page; unauth: Page }, viewport: Vi
 
     metrics.push({
       consoleMessages,
+      captureVariant: uxCaptureVariantForFileKind("screen", "base"),
       modelContext: captureModelContextForRoute(route),
       metrics: pageMetrics,
       pageId: route.pageId,
@@ -173,14 +177,14 @@ function writeIndex(metrics: CaptureMetric[]) {
     `Output: ${path.relative(root, outputDir)}`,
     `Audit model baseline: ${captureScreenModelAuditBaseline.schemaModels} Prisma models / ${captureScreenModelAuditBaseline.schemaEnums} enums`,
     "",
-    "| Page | Route | Viewport | Capability | Prisma models | Screenshot | Overflow | Cramped candidates |",
-    "| --- | --- | --- | --- | ---: | --- | --- | --- |"
+    "| Page | Route | Capture Variant | File Kind | Overlay | Viewport | Capability | Prisma models | Screenshot | Overflow | Cramped candidates |",
+    "| --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- |"
   ];
 
   for (const item of metrics) {
     const overflow = item.metrics.document.scrollWidth > item.metrics.document.clientWidth ? "yes" : "no";
     lines.push(
-      `| ${item.pageId} | \`${item.route}\` | ${item.viewport} | ${item.modelContext.capability.status} | ${item.modelContext.models.length} | [png](${item.screenshot}) | ${overflow} | ${item.metrics.crampedText.length} |`
+      `| ${item.pageId} | \`${item.route}\` | ${item.captureVariant.lifecycleKind} | ${item.captureVariant.fileKind} | ${item.captureVariant.isOverlay ? "yes" : "no"} | ${item.viewport} | ${item.modelContext.capability.status} | ${item.modelContext.models.length} | [png](${item.screenshot}) | ${overflow} | ${item.metrics.crampedText.length} |`
     );
   }
 
