@@ -9,10 +9,10 @@ Date: 2026-06-27
 | Ticket | `E01-S1` |
 | Parent epic | `E01 Design-System Implementation Foundation` |
 | Source analysis | `docs/v3/proof/e01_design_system_foundation_analysis.md` |
-| Spec status | `APPROVED_FOR_IMPLEMENTATION_BY_E00_RULES` |
-| Implementation status | `READY_FOR_E01_I1` |
+| Spec status | `IMPLEMENTED_CURRENT_REPO_TRUTH` |
+| Implementation status | `E01_IMPLEMENTED_AND_VALIDATED` |
 
-This specification defines the shared design-system foundation for E01. It authorizes only shared primitive, token, export and focused test changes. It does not authorize route-specific redesign, new routes, product-scope changes, schema/API work, generated visual assets or proof/debug scaffolding in default operational UI.
+This specification defines the implemented shared design-system foundation for E01. The current repo truth includes `lib/ux-design-system-foundation.ts`, global E01 token utilities, hardened shared primitives, normalized exports and focused E01 tests. It does not authorize route-specific redesign, new routes, product-scope changes, schema/API work, generated visual assets or proof/debug scaffolding in default operational UI.
 
 ## Target State
 
@@ -182,11 +182,11 @@ Screenshot proof is required only if a visible UI review is performed after styl
 
 | Ticket | Status | Scope |
 | --- | --- | --- |
-| `E01-I1` | Ready | Implement spacing, typography and density tokens via global CSS and E01 contract helpers. |
-| `E01-I2` | Blocked until `E01-I1` | Harden status, badge and state primitives using E01 semantic status metadata. |
-| `E01-I3` | Blocked until `E01-I2` | Normalize exports and focused E01 design-system tests. |
-| `E01-Q1` | Blocked until implementation | Validate design-system foundation. |
+| `E01-I1` | Complete | Spacing, typography and density tokens exist through global CSS and E01 contract helpers. |
+| `E01-I2` | Complete | Status, badge and state primitives use E01 semantic status metadata. |
+| `E01-I3` | Complete | Exports and focused E01 design-system tests are normalized. |
+| `E01-Q1` | Complete | Design-system foundation has been validated. |
 
 ## Ticket Result
 
-`E01-S1` is complete. `E01-I1` is enabled.
+`E01-S1` is complete as current repo truth. `E01-I1`, `E01-I2`, `E01-I3` and `E01-Q1` are executable as validation/closure against the implemented E01 design-system foundation.
