@@ -7,9 +7,18 @@ import {
 } from "@/lib/ux-feedback-message-contract";
 import {
   uxStateAttributesForComponentState,
+  uxStateContractForComponentState,
   type UxComponentState,
   type UxLifecycleKind,
 } from "@/lib/ux-lifecycle-state-contract";
+import {
+  uxPrimitiveAttributesFor,
+  uxPrimitiveDensityClassFor,
+  uxPrimitiveStatusAttributesFor,
+  uxPrimitiveStatusClassFor,
+  uxPrimitiveTextClassFor,
+  type UxPrimitiveStatusFamily,
+} from "@/lib/ux-design-system-foundation";
 
 export type ComponentState = UxComponentState;
 
@@ -44,18 +53,50 @@ const stateMeta: Record<ComponentState, { icon: LucideIcon; style: string }> = {
   validation: { icon: AlertTriangle, style: "border-alphavest-gold/40 bg-alphavest-gold/10 text-alphavest-gold-soft" }
 };
 
+const stateFamilyToPrimitiveStatus: Record<ReturnType<typeof uxStateContractForComponentState>["family"], UxPrimitiveStatusFamily> = {
+  audit_unavailable: "critical",
+  blocked: "critical",
+  deferred: "warning",
+  empty: "neutral",
+  error: "critical",
+  export_failed: "critical",
+  export_pending: "info",
+  export_redaction: "warning",
+  hidden: "restricted",
+  loading: "info",
+  permission_denied: "critical",
+  reference: "neutral",
+  restricted: "restricted",
+  success: "success",
+  validation: "warning",
+};
+
 export function StatePanel({ className, detail, feedback, lifecycleKind, state, testId, title }: StatePanelProps) {
   const Icon = stateMeta[state].icon;
+  const primitiveStatusFamily = stateFamilyToPrimitiveStatus[uxStateContractForComponentState(state).family];
   const stateAttributes = uxStateAttributesForComponentState(state, { lifecycleKind });
   const feedbackAttributes = feedback ? uxFeedbackAttributesFor(feedback) : {};
 
   return (
-    <div className={cn("rounded-md border p-4", stateMeta[state].style, className)} data-testid={testId} {...stateAttributes} {...feedbackAttributes}>
-      <div className="flex items-center gap-2 text-sm font-semibold">
+    <div
+      className={cn(
+        "rounded-md border p-4",
+        uxPrimitiveDensityClassFor("comfortable"),
+        uxPrimitiveStatusClassFor(primitiveStatusFamily),
+        stateMeta[state].style,
+        className
+      )}
+      data-testid={testId}
+      {...uxPrimitiveAttributesFor({ density: "comfortable", primitive: "state-panel", textRole: "body" })}
+      {...uxPrimitiveStatusAttributesFor(primitiveStatusFamily)}
+      {...stateAttributes}
+      {...feedbackAttributes}
+    >
+      <div className={cn("flex items-center gap-2 text-sm font-semibold", uxPrimitiveTextClassFor("heading"))}>
         <Icon aria-hidden="true" className={cn("size-4", state === "loading" && "animate-spin")} />
         {title}
       </div>
-      <p className="mt-2 text-sm leading-6 text-alphavest-muted">{detail}</p>
+      <p className={cn("mt-2 text-sm leading-6 text-alphavest-muted", uxPrimitiveTextClassFor("body"))}>{detail}</p>
     </div>
   );
 }

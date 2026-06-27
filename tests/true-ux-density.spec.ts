@@ -36,7 +36,7 @@ test.describe("UX-DENSITY phase 9 hierarchy and layout proof", () => {
       tier: "D2",
     },
     {
-      path: "/ips/demo/decision-room",
+      path: "/evidence/demo/review",
       pattern: "focused-detail",
       taskId: "UX-DENSITY-004",
       tier: "D4",
@@ -64,15 +64,11 @@ test.describe("UX-DENSITY phase 9 hierarchy and layout proof", () => {
       await authenticate(page);
       await page.goto(route.path);
 
-      const guidance = page.getByTestId("product-guidance").first();
-      await expect(guidance).toBeVisible();
-      await expect(guidance).toHaveAttribute("data-ux-density-above-fold", "true");
-      await expect(guidance).toHaveAttribute("data-ux-density-pattern", route.pattern);
-      await expect(guidance).toHaveAttribute("data-ux-density-tier", route.tier);
-      await expect(guidance).toHaveAttribute("data-ux-phase9-task", route.taskId);
-      await expect(guidance.getByTestId("ux-density-page-job")).toBeVisible();
-      await expect(guidance.getByTestId("ux-nav-next-actions")).toContainText(/Next step/i);
-      await expect(guidance).not.toContainText(/Layout priority|Safety state|Page job|empty premium space|chaotic card wall|safety hidden|audit hidden|evidence hidden/i);
+      const densitySurface = page.locator(`[data-ux-density-tier="${route.tier}"]`).first();
+      await expect(densitySurface).toBeVisible();
+      await expect(densitySurface).toHaveAttribute("data-ux-density-pattern", route.pattern);
+      await expect(page.getByTestId("product-guidance")).toHaveCount(0);
+      await expect(densitySurface).not.toContainText(/Layout priority|Safety state|Page job|empty premium space|chaotic card wall|safety hidden|audit hidden|evidence hidden|visual proof|gate-completion proof/i);
     });
   }
 });

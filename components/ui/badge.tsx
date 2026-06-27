@@ -1,4 +1,13 @@
 import { cn } from "@/lib/cn";
+import {
+  uxPrimitiveAttributesFor,
+  uxPrimitiveDensityClassFor,
+  uxPrimitiveStatusAttributesFor,
+  uxPrimitiveStatusClassFor,
+  type UxPrimitiveDensity,
+  type UxPrimitiveStatusFamily,
+  type UxPrimitiveTextRole,
+} from "@/lib/ux-design-system-foundation";
 import type { HTMLAttributes } from "react";
 
 export type BadgeTone =
@@ -14,6 +23,9 @@ type BadgeProps = HTMLAttributes<HTMLSpanElement> & {
   ariaLabel?: string;
   children: React.ReactNode;
   className?: string;
+  density?: UxPrimitiveDensity;
+  statusFamily?: UxPrimitiveStatusFamily;
+  textRole?: UxPrimitiveTextRole;
   tone?: BadgeTone;
 };
 
@@ -27,17 +39,42 @@ const toneClass: Record<BadgeTone, string> = {
   teal: "border-teal-300/35 bg-teal-300/10 text-teal-200"
 };
 
-export function Badge({ ariaLabel, children, className, tone = "muted", ...attributes }: BadgeProps) {
+const toneStatusFamily: Record<BadgeTone, UxPrimitiveStatusFamily> = {
+  blue: "info",
+  gold: "warning",
+  green: "success",
+  muted: "neutral",
+  purple: "restricted",
+  red: "critical",
+  teal: "success"
+};
+
+export function Badge({
+  ariaLabel,
+  children,
+  className,
+  density = "compact",
+  statusFamily,
+  textRole = "metadata",
+  tone = "muted",
+  ...attributes
+}: BadgeProps) {
+  const resolvedStatusFamily = statusFamily ?? toneStatusFamily[tone];
+
   return (
     <span
       aria-label={ariaLabel}
       className={cn(
         "inline-flex h-[var(--status-chip-height)] w-fit items-center rounded-full border px-3 text-xs font-semibold",
+        uxPrimitiveDensityClassFor(density),
+        uxPrimitiveStatusClassFor(resolvedStatusFamily),
         toneClass[tone],
         className
       )}
       data-ux-affordance="static-badge"
       data-ux-interactive="false"
+      {...uxPrimitiveAttributesFor({ density, primitive: "badge", textRole })}
+      {...uxPrimitiveStatusAttributesFor(resolvedStatusFamily)}
       {...attributes}
     >
       {children}
