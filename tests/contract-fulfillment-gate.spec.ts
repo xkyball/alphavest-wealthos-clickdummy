@@ -170,4 +170,26 @@ test.describe("E12 contract fulfillment gate", () => {
       "E12-GATE-UI-SOURCE-TRUTH",
     ]));
   });
+
+  test("fails retired ProductGuidance imports and soft release capture QA scripts", () => {
+    const report = evaluateContractFulfillmentGate(uxContractLedgerEntries, "2026-06-27T00:00:00.000Z", {
+      packageJsonText: JSON.stringify({
+        scripts: {
+          "visual:capture-qa:release": "tsx scripts/capture-qa-contract.ts",
+        },
+      }),
+      sourceFiles: [
+        {
+          path: "components/example.tsx",
+          text: 'import { ProductGuidancePanel } from "@/components/product-guidance-panel";',
+        },
+      ],
+    });
+
+    expect(report.status).toBe("fail");
+    expect(violationIds(report.violations)).toEqual(expect.arrayContaining([
+      "E12-GATE-RETIRED-PROOF-UI",
+      "E12-GATE-CAPTURE-RELEASE-WARNINGS",
+    ]));
+  });
 });

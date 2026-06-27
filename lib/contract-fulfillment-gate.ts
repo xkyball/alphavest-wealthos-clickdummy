@@ -44,6 +44,7 @@ export type ContractFulfillmentGateSourceFile = {
 };
 
 export type ContractFulfillmentGateOptions = {
+  packageJsonText?: string;
   sourceFiles?: readonly ContractFulfillmentGateSourceFile[];
   sourceRoot?: string;
 };
@@ -80,7 +81,7 @@ function countsByStatus(entries: readonly UxContractLedgerEntry[]) {
   ) as Record<FulfillmentStatus, number>;
 }
 
-function collectSourceFiles(root: string, relativeDir = "components"): ContractFulfillmentGateSourceFile[] {
+function collectSourceFiles(root: string, relativeDir: string): ContractFulfillmentGateSourceFile[] {
   const absoluteDir = path.join(root, relativeDir);
 
   if (!existsSync(absoluteDir)) return [];
@@ -101,7 +102,25 @@ function collectSourceFiles(root: string, relativeDir = "components"): ContractF
 }
 
 function sourceFilesForOptions(options: ContractFulfillmentGateOptions) {
-  return options.sourceFiles ?? collectSourceFiles(options.sourceRoot ?? process.cwd());
+  const root = options.sourceRoot ?? process.cwd();
+
+  return options.sourceFiles ?? [
+    ...collectSourceFiles(root, "components"),
+    ...collectSourceFiles(root, "lib"),
+  ];
+}
+
+function componentSourceFilesForOptions(options: ContractFulfillmentGateOptions) {
+  return options.sourceFiles ?? collectSourceFiles(options.sourceRoot ?? process.cwd(), "components");
+}
+
+function packageJsonTextForOptions(options: ContractFulfillmentGateOptions) {
+  if (options.packageJsonText !== undefined) return options.packageJsonText;
+
+  const packagePath = path.join(options.sourceRoot ?? process.cwd(), "package.json");
+  if (!existsSync(packagePath)) return "{}";
+
+  return readFileSync(packagePath, "utf8");
 }
 
 function addActionAndFilterDebtViolations(
@@ -172,6 +191,43 @@ function addBackendTruthViolations(
         severity: "failure",
       });
     }
+  }
+}
+
+function addRetiredProofUiViolations(
+  violations: ContractFulfillmentGateViolation[],
+  sourceFiles: readonly ContractFulfillmentGateSourceFile[],
+) {
+  const retiredPaths = new Set([
+    "components/product-guidance-panel.tsx",
+    "lib/product-guidance.ts",
+  ]);
+  const retiredImportPattern = /from\s+["'][^"']*(?:product-guidance|components\/product-guidance-panel)["']/;
+
+  for (const sourceFile of sourceFiles) {
+    if (retiredPaths.has(sourceFile.path) || retiredImportPattern.test(sourceFile.text)) {
+      violations.push({
+        message: `Retired ProductGuidance proof UI path re-entered active code: ${sourceFile.path}.`,
+        ruleId: "E12-GATE-RETIRED-PROOF-UI",
+        severity: "failure",
+      });
+    }
+  }
+}
+
+function addCaptureReleaseViolations(
+  violations: ContractFulfillmentGateViolation[],
+  packageJsonText: string,
+) {
+  const parsed = JSON.parse(packageJsonText) as { scripts?: Record<string, string> };
+  const releaseScript = parsed.scripts?.["visual:capture-qa:release"] ?? "";
+
+  if (!releaseScript.includes("CAPTURE_QA_FAIL_ON_WARNINGS=1") || !releaseScript.includes("scripts/capture-qa-contract.ts")) {
+    violations.push({
+      message: "Release capture proof must run with CAPTURE_QA_FAIL_ON_WARNINGS=1.",
+      ruleId: "E12-GATE-CAPTURE-RELEASE-WARNINGS",
+      severity: "failure",
+    });
   }
 }
 
@@ -249,8 +305,12 @@ export function evaluateContractFulfillmentGate(
     });
   }
 
-  addActionAndFilterDebtViolations(violations, sourceFilesForOptions(options));
+  const sourceFiles = sourceFilesForOptions(options);
+
+  addActionAndFilterDebtViolations(violations, componentSourceFilesForOptions(options));
   addBackendTruthViolations(violations, entries);
+  addRetiredProofUiViolations(violations, sourceFiles);
+  addCaptureReleaseViolations(violations, packageJsonTextForOptions(options));
 
   const hasFailures = violations.some((violation) => violation.severity === "failure");
   const hasWarnings = violations.some((violation) => violation.severity === "warning");
