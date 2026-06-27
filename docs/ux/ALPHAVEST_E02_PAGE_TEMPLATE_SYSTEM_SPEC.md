@@ -9,11 +9,11 @@ Date: 2026-06-27
 | Ticket | `SPEC-E02-1` |
 | Parent epic | `E02 Page Architecture and Template System` |
 | Source analysis | `docs/v3/proof/e02_page_architecture_analysis.md` |
-| Spec status | `DECISION_READY` |
-| Implementation status | `BLOCKED_PENDING_HUMAN_APPROVAL` |
-| Recommended approval | `APPROVE_E02_CANONICAL_TEMPLATE_CONTRACT` |
+| Spec status | `IMPLEMENTED_CURRENT_REPO_TRUTH` |
+| Implementation status | `E02_IMPLEMENTED_AND_VALIDATED` |
+| Approved path | `APPROVE_E02_CANONICAL_TEMPLATE_CONTRACT` |
 
-This specification defines the target page-template system for E02. It does not authorize implementation until the human approval gate is cleared.
+This specification defines the implemented page-template system for E02. The canonical-template path is current repo truth through `lib/ux-page-template-system.ts`, the shared renderer metadata, and focused E02 tests.
 
 ## Target State
 
@@ -134,7 +134,7 @@ Every template family must declare:
 
 ## Implementation Boundaries
 
-Allowed after approval:
+Implemented scope:
 
 - Add `lib/ux-page-template-system.ts` or extend `lib/ux-page-contract.ts` if the fallback is chosen.
 - Project template family and required zones from the E01 operating model and existing page contract.
@@ -212,21 +212,15 @@ Screenshots are not required for this specification task because no UI changed.
 
 | Ticket | Status | Required Scope |
 | --- | --- | --- |
-| `IMPL-E02-1` | Blocked pending approval | Add the canonical typed template contract and normalize shared page-template primitives. |
-| `IMPL-E02-2` | Blocked pending approval and `IMPL-E02-1` | Apply template mapping to eligible app-wide page families while preserving route scope and visual references. |
-| `IMPL-E02-3` | Blocked pending approval | Implement long-page navigation and sticky action-zone conventions where approved templates require them. |
-| `QA-E02-1` | Blocked pending implementation | Validate template adoption, representative visible behavior and no-overclaim/safety boundaries. |
+| `E02-I1` / `IMPL-E02-1` | Complete | Canonical typed template contract exists in `lib/ux-page-template-system.ts`. |
+| `E02-I2` / `IMPL-E02-3` | Complete | Long-page anchors, template zones and sticky action-zone conventions exist on shared renderers. |
+| `E02-I3` / `IMPL-E02-2` | Complete | Template mapping is projected into shared page-family renderers while preserving route scope. |
+| `E02-Q1` / `QA-E02-1` | Complete | Template adoption, representative runtime behavior and no-overclaim/safety boundaries are validated. |
 
-## Post-Spec Approval Gate
+## Approval / Cleanup Note
 
-Implementation must not start until the user approves one of these choices:
-
-| Approval Choice | Recommendation | Consequence |
-| --- | --- | --- |
-| `APPROVE_E02_CANONICAL_TEMPLATE_CONTRACT` | Recommended | Add a narrow canonical typed template contract that projects from E01, then make page contracts/components/tests consume it. Best path to retire template/density/page-type drift. |
-| `APPROVE_E02_EXTEND_UX_PAGE_CONTRACT_ONLY` | Acceptable fallback | Avoids a new file, but keeps template, density and page-contract concerns bundled together. Less clean. |
-| `REJECT_E02_IMPLEMENTATION` | Not recommended | Leaves E02 as analysis/spec only and preserves implicit page-template authority in scattered components. |
+The approved and implemented path is the bold canonical-template contract. Do not re-open the fallback that extends only `ux-page-contract`, and do not restore docs-only or `product-guidance`-based template proof as an equal authority.
 
 ## Ticket Result
 
-`SPEC-E02-1` is complete and decision-ready. `IMPL-E02-1`, `IMPL-E02-2`, `IMPL-E02-3` and `QA-E02-1` remain blocked until the post-spec approval gate is cleared.
+`E02-S1` / `SPEC-E02-1` is complete as current repo truth. `E02-I1`, `E02-I2`, `E02-I3` and `E02-Q1` are executable as validation/closure against the implemented canonical-template path.

@@ -48,24 +48,18 @@ The implementation creates a canonical typed page-template contract, projects it
 - PASS: `./node_modules/.bin/tsx scripts/source-target-guard.ts`
 - PASS: `PLAYWRIGHT_SKIP_WEB_SERVER=1 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3020 ./node_modules/.bin/playwright test tests/e02-page-template-runtime.spec.ts`
   - Result: 3 passed
-- PARTIAL / Known external stale test: `PLAYWRIGHT_SKIP_WEB_SERVER=1 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3020 ./node_modules/.bin/playwright test tests/wp02-worksurface-shell.spec.ts tests/true-ux-density.spec.ts`
-  - Result: 53 passed, 3 failed
-  - Passing portion: all `tests/wp02-worksurface-shell.spec.ts` checks passed.
-  - Failing portion: `tests/true-ux-density.spec.ts` expects `data-testid="product-guidance"` on `/client/home`, `/advisory/review-queue` and `/ips/demo/decision-room`.
+- PASS after E01/E02 cleanup: `PLAYWRIGHT_SKIP_WEB_SERVER=1 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3020 ./node_modules/.bin/playwright test tests/e02-page-template-runtime.spec.ts tests/wp02-worksurface-shell.spec.ts tests/true-ux-density.spec.ts --workers=1`
+  - Result: 59 passed
+  - Runtime note: Playwright's configured `pnpm dev` server command hit the pnpm ignored-build-scripts wrapper before tests executed. The app was started with `./node_modules/.bin/next dev --hostname 127.0.0.1 --port 3020`, then the same browser-backed tests were run with `PLAYWRIGHT_SKIP_WEB_SERVER=1`.
+  - Proof-surface note: current density expectations validate canonical density/template runtime metadata instead of legacy visible `product-guidance`.
 
-## Known Non-E02 Browser Failure
+## Stale Proof-Surface Cleanup
 
-The `true-ux-density` failures are not introduced by E02. They assert the legacy `product-guidance` surface, which prior repo reports already identify as absent from current runtime shells:
-
-- `docs/00-current/ALPHAVEST_WP03_CLIENT_SAFE_VISIBILITY_PORTAL_STATES_EXECUTION.md` records the same unrelated `product-guidance` mismatch on client routes.
-- `docs/00-current/ALPHAVEST_WP01_PROCESS_FIRST_ROUTE_NAV_SHELL_EXECUTION.md` records stale `product-guidance` / workbench-triad broad-smoke expectations as external to WP01.
-- `reports/boc-ctes-lokaler-code-capability-audit-2026-06-26/09_j08_static_affordance_hard_cut.md` recommends retiring stale broad-smoke expectations around missing product-guidance/support-density surfaces.
-
-E02 deliberately validates its new canonical template metadata through `tests/e02-page-template-runtime.spec.ts` instead of reviving the stale `product-guidance` compatibility surface.
+The previous `true-ux-density` caveat around visible `product-guidance` is retired. E00 Option A and the current E02 implementation make canonical runtime metadata the page-structure proof surface. Do not restore `product-guidance` as a compatibility shell.
 
 ## Screenshot Note
 
-No screenshot is warranted for E02 in this run. The implementation adds typed contracts and semantic DOM metadata to existing regions; it does not change visible layout, copy, routes or UI pixels. Browser runtime validation passed for representative pages.
+No screenshot was warranted for the original E02 implementation slice because it added typed contracts and semantic DOM metadata to existing regions without intentional pixel redesign. Current representative runtime screenshots may still be captured by later visible UI work built on E02.
 
 ## Boundaries Confirmed
 
@@ -79,10 +73,8 @@ No screenshot is warranted for E02 in this run. The implementation adds typed co
 
 ## Recommendation
 
-Close E02 as implemented and validated for the approved canonical-template path.
-
-Bold follow-up: create a separate cleanup ticket to delete or rewrite the stale `product-guidance` density expectations and make the E02 template contract the authoritative page-structure proof surface. Do not restore `product-guidance` as a compatibility shell just to satisfy old tests.
+Keep E02 closed as implemented and validated for the approved canonical-template path. The stale `product-guidance` density expectation has been retired; the E02 template contract remains the authoritative page-structure proof surface.
 
 ## Ticket Result
 
-`QA-E02-1` is complete. E02 can be closed with the known non-E02 stale-test caveat documented above.
+`E02-Q1` / `QA-E02-1` is complete. E02 is closed for the approved canonical-template path with the stale `product-guidance` caveat retired.
