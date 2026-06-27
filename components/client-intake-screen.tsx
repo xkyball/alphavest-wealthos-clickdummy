@@ -2509,6 +2509,11 @@ function DocumentUploadForm() {
           </label>
           <StatePanel
             detail={hasSelectedFile ? "Upload can create a pending internal review item only. Sufficiency, release, export and client visibility remain locked." : "Select a supported source file before an extraction review item can be queued."}
+            feedback={{
+              intent: hasSelectedFile ? "pending" : "validation",
+              placement: "page_state",
+              subject: "upload",
+            }}
             state={hasSelectedFile ? "validation" : "empty"}
             title={hasSelectedFile ? "Extraction queue pending" : "Upload blocked"}
           />

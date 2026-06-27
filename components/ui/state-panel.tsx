@@ -2,6 +2,10 @@ import { AlertTriangle, Ban, CheckCircle2, EyeOff, FileSearch, LoaderCircle, Shi
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
 import {
+  uxFeedbackAttributesFor,
+  type UxFeedbackProjectionInput,
+} from "@/lib/ux-feedback-message-contract";
+import {
   uxStateAttributesForComponentState,
   type UxComponentState,
   type UxLifecycleKind,
@@ -12,6 +16,7 @@ export type ComponentState = UxComponentState;
 type StatePanelProps = {
   className?: string;
   detail: string;
+  feedback?: UxFeedbackProjectionInput;
   lifecycleKind?: UxLifecycleKind;
   state: ComponentState;
   testId?: string;
@@ -39,12 +44,13 @@ const stateMeta: Record<ComponentState, { icon: LucideIcon; style: string }> = {
   validation: { icon: AlertTriangle, style: "border-alphavest-gold/40 bg-alphavest-gold/10 text-alphavest-gold-soft" }
 };
 
-export function StatePanel({ className, detail, lifecycleKind, state, testId, title }: StatePanelProps) {
+export function StatePanel({ className, detail, feedback, lifecycleKind, state, testId, title }: StatePanelProps) {
   const Icon = stateMeta[state].icon;
   const stateAttributes = uxStateAttributesForComponentState(state, { lifecycleKind });
+  const feedbackAttributes = feedback ? uxFeedbackAttributesFor(feedback) : {};
 
   return (
-    <div className={cn("rounded-md border p-4", stateMeta[state].style, className)} data-testid={testId} {...stateAttributes}>
+    <div className={cn("rounded-md border p-4", stateMeta[state].style, className)} data-testid={testId} {...stateAttributes} {...feedbackAttributes}>
       <div className="flex items-center gap-2 text-sm font-semibold">
         <Icon aria-hidden="true" className={cn("size-4", state === "loading" && "animate-spin")} />
         {title}

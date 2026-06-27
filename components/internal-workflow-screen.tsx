@@ -1600,7 +1600,17 @@ function ComplianceReviewPage({ title }: { title: string }) {
             <Card>
               <CardHeader><CardTitle>Decision</CardTitle></CardHeader>
               <CardContent className="space-y-3">
-                <StatePanel detail="This item cannot be released until all required evidence is complete and policy checks pass." state="blocked" title="Release gates not satisfied" />
+                <StatePanel
+                  detail="This item cannot be released until all required evidence is complete and policy checks pass."
+                  feedback={{
+                    actionMeaning: "release",
+                    intent: "blocked",
+                    placement: "action_rail",
+                    subject: "compliance_release",
+                  }}
+                  state="blocked"
+                  title="Release gates not satisfied"
+                />
                 <span
                   className={secondaryButtonClass + " w-full cursor-not-allowed opacity-60"}
                   data-testid="wp06-release-blocked-control"
@@ -2046,6 +2056,12 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
             {status === "idle" ? (
               <StatePanel
                 detail={validationMessage}
+                feedback={{
+                  actionMeaning: "release",
+                  intent: "validation",
+                  placement: "modal_status",
+                  subject: "compliance_release",
+                }}
                 state={releaseValid ? "validation" : "blocked"}
                 testId="j02-release-validation-state"
                 title={releaseValid ? "Release confirmation valid" : "Release confirmation blocked"}
@@ -2054,6 +2070,12 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
             {status === "submitting" ? (
               <StatePanel
                 detail={message ?? "Submitting the audited compliance release request."}
+                feedback={{
+                  actionMeaning: "release",
+                  intent: "pending",
+                  placement: "modal_status",
+                  subject: "compliance_release",
+                }}
                 state="loading"
                 testId="j02-release-loading-state"
                 title="Release request submitting"
@@ -2062,6 +2084,12 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
             {status === "success" ? (
               <StatePanel
                 detail={message ?? "Compliance release persisted for this reviewed package only; export, download, share and client acceptance remain separate controls."}
+                feedback={{
+                  actionMeaning: "release",
+                  intent: "success",
+                  placement: "modal_status",
+                  subject: "compliance_release",
+                }}
                 state="success"
                 testId="j02-release-success-state"
                 title="Released successfully"
@@ -2070,6 +2098,12 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
             {status === "error" ? (
               <StatePanel
                 detail={message ?? "No release mutation or client visibility change was completed."}
+                feedback={{
+                  actionMeaning: "release",
+                  intent: "fail_closed",
+                  placement: "modal_status",
+                  subject: "compliance_release",
+                }}
                 state="blocked"
                 testId="j02-release-error-state"
                 title="Release failed"

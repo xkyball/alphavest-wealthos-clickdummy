@@ -1896,7 +1896,17 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
           data-ux-lifecycle-validation={validationState}
           data-ux-no-overclaim="true"
         >
-          <StatePanel detail="Approval can record only the export approval step through /api/export-workflow. Generation, download, share, client acceptance and advice release remain separate controlled events." state="restricted" title="Approval confirmation" />
+          <StatePanel
+            detail="Approval can record only the export approval step through /api/export-workflow. Generation, download, share, client acceptance and advice release remain separate controlled events."
+            feedback={{
+              actionMeaning: "export_approval",
+              intent: "validation",
+              placement: "modal_body",
+              subject: "export_approval",
+            }}
+            state="restricted"
+            title="Approval confirmation"
+          />
           <label className="flex items-start gap-3 text-sm leading-6 text-alphavest-muted">
             <input
               checked={acknowledged}
@@ -2166,7 +2176,18 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
               >
                 Share after download
               </button>
-              <StatePanel className="mt-4" detail="Record the package download before creating an external share." state="blocked" title="Share blocked" />
+              <StatePanel
+                className="mt-4"
+                detail="Record the package download before creating an external share."
+                feedback={{
+                  actionMeaning: "share",
+                  intent: "blocked",
+                  placement: "inline_cluster",
+                  subject: "share",
+                }}
+                state="blocked"
+                title="Share blocked"
+              />
               <p className="mt-2 text-xs leading-5 text-alphavest-muted" data-testid="ux-cta-disabled-reason" id="j08-share-export-reason">
                 Secure share is blocked until the download event is recorded and audited.
               </p>
@@ -2227,7 +2248,17 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
           data-ux-lifecycle-validation={validationState}
           data-ux-no-overclaim="true"
         >
-          <StatePanel detail="Download confirmation records only the controlled download event. It cannot create a share link, imply client acceptance or release advice." state="restricted" title="Download confirmation" />
+          <StatePanel
+            detail="Download confirmation records only the controlled download event. It cannot create a share link, imply client acceptance or release advice."
+            feedback={{
+              actionMeaning: "download",
+              intent: "validation",
+              placement: "modal_body",
+              subject: "download",
+            }}
+            state="restricted"
+            title="Download confirmation"
+          />
           <label className="flex items-start gap-3 text-sm leading-6 text-alphavest-muted">
             <input
               checked={acknowledged}
