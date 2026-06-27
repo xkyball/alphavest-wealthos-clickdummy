@@ -1,0 +1,842 @@
+{
+  "$schema": "https://alphavest.local/schemas/ux-contract-fulfillment-implementation-plan.v1.json",
+  "planId": "ALPHAVEST_E12_F0_CONTRACT_FULFILLMENT_SYSTEM_PLAN",
+  "createdAt": "2026-06-27",
+  "status": "plan_ready_for_approval",
+  "scope": {
+    "epic": "E12",
+    "crossCuttingFrame": "F0",
+    "title": "Contract Fulfillment Ledger And Gate",
+    "objective": "Make every UX/API/proof contract from E00-E11 traceable to source, runtime, API, screenshot/capture or exception proof, and prevent markdown/register drift from being accepted as fulfillment.",
+    "executionRule": "Execute one ticket at a time, in the listed order. Stop at decision gates before widening CI or changing canonical source ownership.",
+    "sourceOnlyScreenshotRule": "No screenshot is required for ledger, source-gate, report, package-script or documentation-only changes. Screenshots are required only when visible UI changes are made during later burn-down tickets."
+  },
+  "inputsReviewed": [
+    {
+      "id": "UPLOAD-UX-BOC-CTES-V2",
+      "path": "/tmp/codex-remote-attachments/019f0884-6dd5-7652-a2e1-ffb8b2b20574/E4A37C8D-6C5E-4048-8A5B-520448641556/1-ALPHAVEST_OVERARCHING_UX_BOC_IMPLEMENTATION_TASK_ARCHITECTURE_CTES_v2.md",
+      "role": "Primary E00-E09 task architecture and CTES hierarchy.",
+      "criticalFindings": [
+        "Contracts/specifications are enablers, not delivery completion.",
+        "Each epic must contain analysis, specification, implementation and QA, not contract-only closure.",
+        "Broad UI, state, feedback, data-surface, accessibility and capture work must be split into ordered delivery chains."
+      ]
+    },
+    {
+      "id": "E10-REGISTERS",
+      "paths": [
+        "docs/ux/ALPHAVEST_E10_ACTION_ZONE_MIGRATION_REGISTER.md",
+        "docs/ux/ALPHAVEST_E10_DATA_SURFACE_FILTER_EXCEPTION_REGISTER.md",
+        "docs/ux/ALPHAVEST_E10_RETIRED_PROOF_UI_REGISTER.md",
+        "docs/ux/ALPHAVEST_E10_REGISTER_RECONCILIATION_SPEC.md",
+        "tests/e10-register-reconciliation.spec.ts"
+      ],
+      "role": "Current hard-retire and migration debt source for action zones, fake/static filters and retired proof UI.",
+      "criticalFindings": [
+        "The registers are useful inventory, but they are still markdown-first and can drift from source gates.",
+        "Existing E10 tests duplicate register truth in arrays instead of consuming one canonical ledger.",
+        "Temporary exceptions need owner, expiry/follow-up and blocking behavior."
+      ]
+    },
+    {
+      "id": "E11-BACKEND-DATA-SURFACE-TRUTH",
+      "paths": [
+        "docs/ux/ALPHAVEST_E11_BACKEND_DATA_SURFACE_QUERY_SPEC.md",
+        "docs/ux/ALPHAVEST_E11_BACKEND_DATA_SURFACE_COVERAGE_REGISTER.md",
+        "lib/data-surface-query-contract.ts",
+        "tests/e11-backend-data-surface-truth.spec.ts"
+      ],
+      "role": "Canonical backend filtering, sorting, pagination and source-truth surface rules.",
+      "criticalFindings": [
+        "DB-backed, filtered and paginated claims must be backed by API/readmodel metadata.",
+        "Static/demo/local snapshot surfaces must not imply backend query behavior.",
+        "DataTable server mode and API meta must become contract obligations, not scattered assertions."
+      ]
+    },
+    {
+      "id": "E09-CAPTURE-QA",
+      "paths": [
+        "docs/ux/ALPHAVEST_E09_CAPTURE_QA_SPEC.md",
+        "scripts/capture-qa-contract.ts",
+        "scripts/visual-qa-contract.ts",
+        "tests/capture-qa-contract.spec.ts",
+        "tests/e09-capture-release-policy.spec.ts",
+        "package.json"
+      ],
+      "role": "Capture metadata, duplicate/long-screen QA and release-mode warning enforcement.",
+      "criticalFindings": [
+        "Old capture bundles remain historical evidence only.",
+        "New release captures must use CAPTURE_QA_FAIL_ON_WARNINGS=1.",
+        "Capture proof must be represented as current-run proof status, not a manual screenshot convention."
+      ]
+    },
+    {
+      "id": "TYPED-CONTRACTS",
+      "paths": [
+        "lib/ux-operating-model.ts",
+        "lib/ux-page-contract.ts",
+        "lib/ux-action-hierarchy-contract.ts",
+        "lib/ux-data-surface-contract.ts",
+        "lib/ux-lifecycle-state-contract.ts",
+        "lib/ux-feedback-message-contract.ts",
+        "lib/data-surface-query-contract.ts",
+        "lib/ux-proof-reviewer-mode.ts",
+        "lib/capture-screen-model-context.ts"
+      ],
+      "role": "Existing source-level contract families that should stay leading for their domain while the new ledger becomes the meta-contract."
+    }
+  ],
+  "targetArchitecture": {
+    "canonicalTruth": {
+      "primaryArtifact": "lib/ux-contract-ledger.ts",
+      "optionalGeneratedArtifact": "docs/ux/contract-ledger.json",
+      "humanReadableReports": [
+        "docs/ux/ALPHAVEST_E12_CONTRACT_FULFILLMENT_SPEC.md",
+        "docs/v3/proof/e12_contract_fulfillment_report.md"
+      ],
+      "rule": "Markdown registers and reports are review surfaces. The ledger is the machine-readable fulfillment truth. Long-term, E10/E11 markdown tables should be generated from or validated against the ledger."
+    },
+    "gate": {
+      "script": "scripts/contract-fulfillment-gate.ts",
+      "test": "tests/contract-fulfillment-gate.spec.ts",
+      "packageScript": "test:contract-fulfillment",
+      "jsonOutput": "reports/contract-fulfillment/latest.json",
+      "markdownOutput": "docs/v3/proof/e12_contract_fulfillment_report.md",
+      "phaseCheckTarget": "phase:check should include pnpm test:contract-fulfillment only after one approved hardening step.",
+      "releaseCaptureRule": "New release capture proof must run pnpm visual:capture-qa:release, which sets CAPTURE_QA_FAIL_ON_WARNINGS=1."
+    },
+    "metaContract": {
+      "purpose": "Declare which typed contracts and markdown/register obligations are active, which owner surfaces must fulfill them, which exceptions are allowed and when they expire.",
+      "activeTypedContracts": [
+        "ux-operating-model",
+        "ux-page-contract",
+        "ux-action-hierarchy-contract",
+        "ux-data-surface-contract",
+        "ux-lifecycle-state-contract",
+        "ux-feedback-message-contract",
+        "data-surface-query-contract",
+        "ux-proof-reviewer-mode",
+        "capture-screen-model-context"
+      ],
+      "activeMarkdownRegisters": [
+        "E10 action-zone migration register",
+        "E10 data-surface filter exception register",
+        "E10 retired proof UI register",
+        "E11 backend data surface coverage register"
+      ]
+    }
+  },
+  "ledgerSchema": {
+    "typeName": "UxContractLedgerEntry",
+    "requiredFields": [
+      "id",
+      "title",
+      "source",
+      "contractFamily",
+      "ownerSurface",
+      "obligation",
+      "proofType",
+      "status",
+      "evidence",
+      "gateBehavior",
+      "expiresOrFollowUp"
+    ],
+    "fieldDefinitions": {
+      "id": "Stable ID such as E05-ACTION-HIERARCHY, E10-DSF-001 or E11-DS-004.",
+      "title": "Short human-readable obligation title.",
+      "source": "Origin artifact: upload task, markdown spec/register, typed contract, source gate or API test.",
+      "contractFamily": "operating_model | page_template | proof_reviewer | lifecycle_state | action_feedback | data_surface | client_visibility | visual_accessibility | capture_qa | register_debt | backend_query_truth | release_gate",
+      "ownerSurface": "Files, routes, APIs, scripts or tests that own fulfillment.",
+      "obligation": "The concrete statement that must be true in source/runtime/API/capture.",
+      "proofType": "source_gate | runtime_test | api_test | screenshot | capture_qa | typed_contract | generated_report | manual_decision",
+      "status": "fulfilled | partial | exception | blocked | retired | historical | planned",
+      "evidence": "List of source files, tests, commands and optional report paths proving the current status.",
+      "gateBehavior": "pass | warn_existing | fail_new | fail_always | report_only",
+      "expiresOrFollowUp": "Required for partial, exception and blocked entries. Must be a date, named follow-up ticket or explicit decision gate.",
+      "notes": "Optional narrow context. Must not carry the only proof."
+    },
+    "hardSchemaRules": [
+      "Every ID must be unique.",
+      "A status of fulfilled requires at least one proof anchor and one ownerSurface.",
+      "A status of exception, partial or blocked requires expiresOrFollowUp.",
+      "A status of historical cannot satisfy current release proof.",
+      "A source of markdown_register cannot be the only evidence for fulfilled.",
+      "A proofType of screenshot cannot satisfy API/filter/pagination truth without API or runtime proof."
+    ]
+  },
+  "initialLedgerSeed": [
+    {
+      "id": "E00-IMPLEMENTATION-FIRST",
+      "contractFamily": "release_gate",
+      "source": "docs/ux/ALPHAVEST_E00_IMPLEMENTATION_FIRST_RULES.md and uploaded E00",
+      "ownerSurface": [
+        "docs/ux",
+        "tests/source-reality-gate.spec.ts"
+      ],
+      "obligation": "Contracts/specs are prerequisites and acceptance anchors, not delivery completion.",
+      "proofType": [
+        "source_gate",
+        "generated_report"
+      ],
+      "expectedInitialStatus": "partial"
+    },
+    {
+      "id": "E01-OPERATING-MODEL",
+      "contractFamily": "operating_model",
+      "source": "docs/ux/ALPHAVEST_E01_UX_OPERATING_MODEL_SPEC.md",
+      "ownerSurface": [
+        "lib/ux-operating-model.ts",
+        "lib/ux-page-contract.ts",
+        "lib/capture-screen-model-context.ts",
+        "tests/ux-operating-model.spec.ts"
+      ],
+      "obligation": "Every route resolves to one canonical operating mode, audience and proof posture.",
+      "proofType": [
+        "typed_contract",
+        "source_gate",
+        "runtime_test"
+      ],
+      "expectedInitialStatus": "fulfilled"
+    },
+    {
+      "id": "E02-PAGE-TEMPLATE-SYSTEM",
+      "contractFamily": "page_template",
+      "source": "docs/ux/ALPHAVEST_E02_PAGE_TEMPLATE_SYSTEM_SPEC.md",
+      "ownerSurface": [
+        "lib/ux-page-contract.ts",
+        "lib/ux-page-template-system.ts",
+        "components"
+      ],
+      "obligation": "Page/template hierarchy, route family and proof placement are resolved through shared page contracts rather than local route folklore.",
+      "proofType": [
+        "typed_contract",
+        "source_gate",
+        "runtime_test"
+      ],
+      "expectedInitialStatus": "partial"
+    },
+    {
+      "id": "E03-PROOF-REVIEWER-SEPARATION",
+      "contractFamily": "proof_reviewer",
+      "source": "docs/ux/ALPHAVEST_E03_OPERATIONAL_PROOF_SEPARATION_SPEC.md",
+      "ownerSurface": [
+        "lib/ux-proof-reviewer-mode.ts",
+        "components/proof-reviewer-mode-slot.tsx",
+        "components/ux-proof-reviewer-secondary-surface.tsx",
+        "tests/ux-proof-reviewer-mode.spec.ts"
+      ],
+      "obligation": "Operational default UI must stay separated from reviewer/capture proof surfaces, with client-mode suppression.",
+      "proofType": [
+        "typed_contract",
+        "runtime_test",
+        "source_gate"
+      ],
+      "expectedInitialStatus": "fulfilled"
+    },
+    {
+      "id": "E04-LIFECYCLE-STATE",
+      "contractFamily": "lifecycle_state",
+      "source": "docs/ux/ALPHAVEST_E04_STATE_MODAL_DRAWER_LIFECYCLE_SPEC.md",
+      "ownerSurface": [
+        "lib/ux-lifecycle-state-contract.ts",
+        "components/ui/modal.tsx",
+        "components/ui/drawer.tsx",
+        "components/ui/state-panel.tsx",
+        "tests/ux-lifecycle-state-contract.spec.ts"
+      ],
+      "obligation": "Modal, drawer, base state and capture variants use canonical lifecycle/state metadata.",
+      "proofType": [
+        "typed_contract",
+        "runtime_test",
+        "capture_qa"
+      ],
+      "expectedInitialStatus": "fulfilled"
+    },
+    {
+      "id": "E05-ACTION-FEEDBACK",
+      "contractFamily": "action_feedback",
+      "source": "docs/ux/ALPHAVEST_E05_ACTION_HIERARCHY_SPEC.md and docs/ux/ALPHAVEST_E05_ACTION_FEEDBACK_IMPLEMENTATION_SPEC.md",
+      "ownerSurface": [
+        "lib/ux-action-hierarchy-contract.ts",
+        "lib/ux-feedback-message-contract.ts",
+        "components/ui/action-zone.tsx",
+        "components/ui/validation-feedback.tsx",
+        "tests/ux-action-hierarchy-contract.spec.ts",
+        "tests/ux-feedback-message-contract.spec.ts"
+      ],
+      "obligation": "Action hierarchy, availability, disabled reasons and feedback messages project from canonical contracts.",
+      "proofType": [
+        "typed_contract",
+        "source_gate",
+        "runtime_test"
+      ],
+      "expectedInitialStatus": "partial"
+    },
+    {
+      "id": "E06-E07-DATA-SURFACE-MASTER-DETAIL",
+      "contractFamily": "data_surface",
+      "source": "docs/ux/ALPHAVEST_E06_DATA_SURFACE_MASTER_DETAIL_SPEC.md and docs/ux/ALPHAVEST_E07_DATA_SURFACE_MASTER_DETAIL_SPEC.md",
+      "ownerSurface": [
+        "lib/ux-data-surface-contract.ts",
+        "components/ui/data-table.tsx",
+        "components/ui/filter-bar.tsx",
+        "components/ui/master-detail-surface.tsx",
+        "tests/ux-data-surface-contract.spec.ts"
+      ],
+      "obligation": "Shared table/filter/master-detail surfaces expose accurate density, filter-state and source-truth claims.",
+      "proofType": [
+        "typed_contract",
+        "runtime_test",
+        "api_test"
+      ],
+      "expectedInitialStatus": "partial"
+    },
+    {
+      "id": "E07-CLIENT-INTERNAL-SEPARATION",
+      "contractFamily": "client_visibility",
+      "source": "docs/ux/ALPHAVEST_E07_CLIENT_INTERNAL_SEPARATION_SPEC.md",
+      "ownerSurface": [
+        "lib/ux-proof-reviewer-mode.ts",
+        "lib/ux-client-safe-ui-boundary.ts",
+        "tests/client-visibility-proof.spec.ts"
+      ],
+      "obligation": "Client-facing UI must suppress internal rationale, debug/proof metadata, compliance notes and unreleased payloads.",
+      "proofType": [
+        "typed_contract",
+        "runtime_test",
+        "source_gate"
+      ],
+      "expectedInitialStatus": "partial"
+    },
+    {
+      "id": "E08-VISUAL-DENSITY-A11Y",
+      "contractFamily": "visual_accessibility",
+      "source": "docs/ux/ALPHAVEST_E08_VISUAL_DENSITY_ACCESSIBILITY_SPEC.md",
+      "ownerSurface": [
+        "lib/ux-design-system-foundation.ts",
+        "components/ui",
+        "tests"
+      ],
+      "obligation": "Focus, selected, semantic status and density states are shared primitive behavior, not local taste.",
+      "proofType": [
+        "typed_contract",
+        "runtime_test",
+        "screenshot"
+      ],
+      "expectedInitialStatus": "partial"
+    },
+    {
+      "id": "E09-CAPTURE-QA-RELEASE-PROOF",
+      "contractFamily": "capture_qa",
+      "source": "docs/ux/ALPHAVEST_E09_CAPTURE_QA_SPEC.md",
+      "ownerSurface": [
+        "scripts/capture-qa-contract.ts",
+        "scripts/visual-qa-contract.ts",
+        "tests/capture-qa-contract.spec.ts",
+        "tests/e09-capture-release-policy.spec.ts",
+        "package.json"
+      ],
+      "obligation": "Current release capture proof must pass E09 QA with warnings treated as failures.",
+      "proofType": [
+        "capture_qa",
+        "source_gate",
+        "generated_report"
+      ],
+      "expectedInitialStatus": "partial"
+    },
+    {
+      "id": "E10-ACTION-ZONE-REGISTER",
+      "contractFamily": "register_debt",
+      "source": "docs/ux/ALPHAVEST_E10_ACTION_ZONE_MIGRATION_REGISTER.md",
+      "ownerSurface": [
+        "components/admin-tenant-setup-screen.tsx",
+        "components/client-intake-screen.tsx",
+        "components/communication-export-ops-screen.tsx",
+        "components/decisions-governance-screen.tsx",
+        "components/internal-workflow-screen.tsx",
+        "tests/e10-register-reconciliation.spec.ts"
+      ],
+      "obligation": "Local action-class vocabularies are registered migration debt and cannot grow outside the ledger.",
+      "proofType": [
+        "source_gate",
+        "typed_contract"
+      ],
+      "expectedInitialStatus": "exception"
+    },
+    {
+      "id": "E10-DATA-SURFACE-FILTER-REGISTER",
+      "contractFamily": "register_debt",
+      "source": "docs/ux/ALPHAVEST_E10_DATA_SURFACE_FILTER_EXCEPTION_REGISTER.md",
+      "ownerSurface": [
+        "components/admin-tenant-setup-screen.tsx",
+        "components/client-intake-screen.tsx",
+        "components/communication-export-ops-screen.tsx",
+        "components/decisions-governance-screen.tsx",
+        "components/wealth-actions-screen.tsx",
+        "tests/e10-register-reconciliation.spec.ts"
+      ],
+      "obligation": "Disabled/static filter controls require canonical metadata or explicit temporary exception IDs.",
+      "proofType": [
+        "source_gate",
+        "runtime_test"
+      ],
+      "expectedInitialStatus": "exception"
+    },
+    {
+      "id": "E10-RETIRED-PROOF-UI-REGISTER",
+      "contractFamily": "register_debt",
+      "source": "docs/ux/ALPHAVEST_E10_RETIRED_PROOF_UI_REGISTER.md",
+      "ownerSurface": [
+        "components/route-context-chip.tsx",
+        "lib/operational-route-guidance.ts",
+        "tests/route-smoke.spec.ts",
+        "tests/e10-register-reconciliation.spec.ts"
+      ],
+      "obligation": "Retired ProductGuidance proof/debug UI must not re-enter active operational surfaces.",
+      "proofType": [
+        "source_gate"
+      ],
+      "expectedInitialStatus": "fulfilled"
+    },
+    {
+      "id": "E11-BACKEND-DATA-SURFACE-TRUTH",
+      "contractFamily": "backend_query_truth",
+      "source": "docs/ux/ALPHAVEST_E11_BACKEND_DATA_SURFACE_COVERAGE_REGISTER.md",
+      "ownerSurface": [
+        "lib/data-surface-query-contract.ts",
+        "components/ui/data-table.tsx",
+        "app/api/family-members/route.ts",
+        "app/api/entities/route.ts",
+        "app/api/documents/route.ts",
+        "app/api/admin-tenants/route.ts",
+        "app/api/review-monitoring/route.ts",
+        "tests/e11-backend-data-surface-truth.spec.ts"
+      ],
+      "obligation": "Every backend_query_backed UI surface must have API meta, sourceTruth and UI consumption proof for filtering, sorting and pagination claims.",
+      "proofType": [
+        "api_test",
+        "runtime_test",
+        "source_gate"
+      ],
+      "expectedInitialStatus": "partial"
+    }
+  ],
+  "gateRules": [
+    {
+      "id": "GATE-ID-UNIQUENESS",
+      "severity": "failure",
+      "rule": "All ledger IDs and migrated register IDs must be unique."
+    },
+    {
+      "id": "GATE-EXCEPTION-FOLLOWUP",
+      "severity": "failure",
+      "rule": "Every exception, partial and blocked ledger entry must include expiresOrFollowUp."
+    },
+    {
+      "id": "GATE-NO-NEW-LOCAL-ACTION-DEBT",
+      "severity": "failure",
+      "rule": "No new primaryButtonClass, secondaryButtonClass, staticButtonClass or destructiveButtonClass definitions outside ledger-registered owner surfaces."
+    },
+    {
+      "id": "GATE-NO-NEW-FAKE-FILTERS",
+      "severity": "failure",
+      "rule": "No new route-local disabled/static filter/search controls without canonical data-surface metadata and ledger/register ID."
+    },
+    {
+      "id": "GATE-DB-BACKED-META",
+      "severity": "failure",
+      "rule": "Every backend_query_backed surface must have API/readmodel metadata: sourceTruth, page, pageSize, returnedRows, totalRows, totalPages, hasNextPage, hasPreviousPage, sortKey, sortDirection and query."
+    },
+    {
+      "id": "GATE-UI-SOURCE-TRUTH",
+      "severity": "failure",
+      "rule": "Visible DB-backed, filtered, sorted or paginated claims require matching UI source-truth consumption proof."
+    },
+    {
+      "id": "GATE-RETIRED-PROOF-UI",
+      "severity": "failure",
+      "rule": "Retired ProductGuidance proof/debug implementation imports and visible resurrection are blocked outside historical docs."
+    },
+    {
+      "id": "GATE-CAPTURE-RELEASE-WARNINGS",
+      "severity": "failure_for_release",
+      "rule": "New release capture proof must run with CAPTURE_QA_FAIL_ON_WARNINGS=1. Historical capture bundles are archival and cannot satisfy current release proof."
+    },
+    {
+      "id": "GATE-MARKDOWN-NOT-FULFILLMENT",
+      "severity": "failure",
+      "rule": "Markdown-only evidence cannot mark a contract fulfilled."
+    },
+    {
+      "id": "GATE-RETIREMENT-STAYS-RETIRED",
+      "severity": "failure",
+      "rule": "Retired UI patterns remain retired unless a new explicit user decision reverses them."
+    }
+  ],
+  "ticketSequence": [
+    {
+      "id": "E12-A1",
+      "order": 1,
+      "title": "Inventory all E00-E11 contracts and proof anchors",
+      "type": "analysis_inventory",
+      "ctes": 8,
+      "dependsOn": [],
+      "workItems": [
+        "Parse E00-E09 from the upload into contract obligations and implementation outputs.",
+        "Inventory E10 registers and E11 coverage rows as debt/fulfillment obligations.",
+        "Inventory typed contracts, source gates, API tests, capture scripts and package commands.",
+        "Classify each item as fulfilled, partial, exception, blocked, retired, historical or planned.",
+        "Identify duplicate truth surfaces and choose the canonical owner."
+      ],
+      "targetArtifacts": [
+        "docs/ux/ALPHAVEST_E12_CONTRACT_FULFILLMENT_INVENTORY.md",
+        "docs/v3/proof/e12_contract_fulfillment_inventory_report.md"
+      ],
+      "acceptanceCriteria": [
+        "Every E00-E11 contract family has an inventory row.",
+        "Markdown-only entries are not marked fulfilled.",
+        "Every exception has a candidate follow-up or decision gate.",
+        "The inventory names the typed contract or source/test gap for each obligation."
+      ],
+      "validation": [
+        "pnpm guard:source",
+        "manual review against upload headings and current docs/ux/lib/tests/scripts files"
+      ],
+      "screenshotRequired": false,
+      "finishMessage": "Finished E12-A1 after inventory and gap classification are committed or reported."
+    },
+    {
+      "id": "E12-S1",
+      "order": 2,
+      "title": "Define ledger schema, status model and hard rules",
+      "type": "specification",
+      "ctes": 9,
+      "dependsOn": [
+        "E12-A1"
+      ],
+      "workItems": [
+        "Write the formal E12 fulfillment spec.",
+        "Define ledger states, proof types, gate behavior and exception expiry rules.",
+        "Define markdown/register generation or validation policy.",
+        "Define exact failure semantics for new debt versus existing registered debt.",
+        "Define the release validation bundle beyond phase:check."
+      ],
+      "targetArtifacts": [
+        "docs/ux/ALPHAVEST_E12_CONTRACT_FULFILLMENT_SPEC.md"
+      ],
+      "acceptanceCriteria": [
+        "The spec states that markdown/register prose is not proof by itself.",
+        "The spec makes DB-backed/filter/pagination claims fail without API metadata.",
+        "The spec states that CAPTURE_QA_FAIL_ON_WARNINGS=1 is mandatory for new release captures.",
+        "The spec names the commands required for release definition: pnpm guard:source, pnpm test:route-smoke, pnpm test:contract-fulfillment, pnpm visual:capture-qa:release when new release captures are produced, plus focused API/UI tests for touched contracts."
+      ],
+      "validation": [
+        "pnpm guard:source",
+        "review against E10/E11/E09 specs"
+      ],
+      "screenshotRequired": false,
+      "decisionGate": {
+        "id": "DG-E12-S1-EXCEPTION-POLICY",
+        "question": "Should existing registered exceptions fail immediately or warn first?",
+        "recommendation": "Warn for existing registered exceptions, fail new unregistered debt immediately, then flip remaining exceptions to hard failure after one burn-down pass.",
+        "approvalToken": "APPROVE_E12_WARN_EXISTING_FAIL_NEW_DEBT"
+      },
+      "finishMessage": "Finished E12-S1 after the status model and gate rules are specified."
+    },
+    {
+      "id": "E12-I1",
+      "order": 3,
+      "title": "Introduce canonical typed contract ledger",
+      "type": "implementation",
+      "ctes": 11,
+      "dependsOn": [
+        "E12-S1"
+      ],
+      "workItems": [
+        "Create lib/ux-contract-ledger.ts with schema types, statuses, proof types and gate behavior.",
+        "Seed E00-E11 entries, including E10 register debt and E11 backend data-surface obligations.",
+        "Add helper queries for duplicate IDs, missing evidence, expired exceptions, retired pattern enforcement and incomplete backend truth.",
+        "Optionally add docs/ux/contract-ledger.json as generated snapshot only if useful for non-TypeScript tooling.",
+        "Add focused ledger tests."
+      ],
+      "targetArtifacts": [
+        "lib/ux-contract-ledger.ts",
+        "tests/ux-contract-ledger.spec.ts",
+        "docs/ux/contract-ledger.json"
+      ],
+      "acceptanceCriteria": [
+        "Ledger compiles under TypeScript.",
+        "Every ledger entry has id, source, ownerSurface, obligation, proofType, status, evidence, gateBehavior and expiresOrFollowUp where required.",
+        "Duplicate IDs fail tests.",
+        "Fulfilled entries without proof anchors fail tests.",
+        "Partial/exception/blocked entries without follow-up fail tests."
+      ],
+      "validation": [
+        "pnpm typecheck",
+        "playwright test tests/ux-contract-ledger.spec.ts"
+      ],
+      "screenshotRequired": false,
+      "finishMessage": "Finished E12-I1 after the typed ledger and ledger unit tests are green."
+    },
+    {
+      "id": "E12-I2",
+      "order": 4,
+      "title": "Make E10/E11 markdown registers ledger-backed",
+      "type": "implementation",
+      "ctes": 12,
+      "dependsOn": [
+        "E12-I1"
+      ],
+      "workItems": [
+        "Convert E10 AZ, DSF and RPU rows into ledger entries with stable IDs such as E10-AZ-001, E10-DSF-001 and E10-RPU-001.",
+        "Convert E11 coverage rows into ledger entries with IDs such as E11-DS-001 through E11-DS-008.",
+        "Update E10/E11 tests to consume ledger exports where practical instead of local duplicate arrays.",
+        "Mark markdown registers as ledger-validated now, with a later option to generate them from the ledger.",
+        "Keep historical docs untouched and explicitly non-authoritative for current fulfillment."
+      ],
+      "targetArtifacts": [
+        "lib/ux-contract-ledger.ts",
+        "tests/e10-register-reconciliation.spec.ts",
+        "tests/e11-backend-data-surface-truth.spec.ts",
+        "docs/ux/ALPHAVEST_E10_ACTION_ZONE_MIGRATION_REGISTER.md",
+        "docs/ux/ALPHAVEST_E10_DATA_SURFACE_FILTER_EXCEPTION_REGISTER.md",
+        "docs/ux/ALPHAVEST_E10_RETIRED_PROOF_UI_REGISTER.md",
+        "docs/ux/ALPHAVEST_E11_BACKEND_DATA_SURFACE_COVERAGE_REGISTER.md"
+      ],
+      "acceptanceCriteria": [
+        "E10/E11 source gates and ledger use the same IDs.",
+        "Every exception has a follow-up.",
+        "No active retired proof UI import can pass.",
+        "Backend query-backed surfaces cannot pass without API meta and UI source-truth obligations."
+      ],
+      "validation": [
+        "pnpm typecheck",
+        "playwright test tests/e10-register-reconciliation.spec.ts tests/e11-backend-data-surface-truth.spec.ts"
+      ],
+      "screenshotRequired": false,
+      "decisionGate": {
+        "id": "DG-E12-I2-MARKDOWN-GENERATION",
+        "question": "Should E10/E11 markdown registers become generated/read-only from the ledger?",
+        "recommendation": "Yes. Make the ledger canonical and markdown generated/read-only to remove the drift class permanently.",
+        "approvalToken": "APPROVE_E12_GENERATE_MARKDOWN_REGISTERS_FROM_LEDGER"
+      },
+      "finishMessage": "Finished E12-I2 after register IDs and tests are ledger-aligned."
+    },
+    {
+      "id": "E12-I3",
+      "order": 5,
+      "title": "Build global contract fulfillment gate",
+      "type": "implementation",
+      "ctes": 10,
+      "dependsOn": [
+        "E12-I1",
+        "E12-I2"
+      ],
+      "workItems": [
+        "Create scripts/contract-fulfillment-gate.ts.",
+        "Read ledger entries and evaluate all gateRules.",
+        "Emit JSON and markdown reports with counts by status, family, proof type and severity.",
+        "Fail for duplicate IDs, missing follow-ups, markdown-only fulfilled entries, retired UI resurrection, new unregistered local action/filter debt and backend-query claims without metadata.",
+        "Support environment flags for staged hardening, including fail-on-existing-exceptions after burn-down.",
+        "Add fixture-based positive and negative tests."
+      ],
+      "targetArtifacts": [
+        "scripts/contract-fulfillment-gate.ts",
+        "tests/contract-fulfillment-gate.spec.ts",
+        "reports/contract-fulfillment/latest.json",
+        "docs/v3/proof/e12_contract_fulfillment_report.md"
+      ],
+      "acceptanceCriteria": [
+        "The gate exits zero only when all failure rules pass.",
+        "The gate distinguishes warnings from failures.",
+        "The JSON report is stable and machine-readable.",
+        "The markdown report is concise enough for release review.",
+        "Negative tests prove failures are not cosmetic."
+      ],
+      "validation": [
+        "tsx scripts/contract-fulfillment-gate.ts",
+        "playwright test tests/contract-fulfillment-gate.spec.ts"
+      ],
+      "screenshotRequired": false,
+      "finishMessage": "Finished E12-I3 after the global gate and report tests are green."
+    },
+    {
+      "id": "E12-I4",
+      "order": 6,
+      "title": "Wire package scripts and release definition",
+      "type": "implementation",
+      "ctes": 7,
+      "dependsOn": [
+        "E12-I3"
+      ],
+      "workItems": [
+        "Add package.json script test:contract-fulfillment.",
+        "Add a release command bundle to the E12 report/spec.",
+        "Do not add the gate to phase:check until explicitly approved after Q1 unless the user approves immediate hard CI.",
+        "Document focused follow-up command selection for touched contracts."
+      ],
+      "targetArtifacts": [
+        "package.json",
+        "docs/ux/ALPHAVEST_E12_CONTRACT_FULFILLMENT_SPEC.md",
+        "docs/v3/proof/e12_contract_fulfillment_report.md"
+      ],
+      "acceptanceCriteria": [
+        "pnpm test:contract-fulfillment runs the gate deterministically.",
+        "phase:check remains unchanged unless approved.",
+        "Release definition names guard:source, route smoke, contract fulfillment, capture QA release and focused touched-contract tests."
+      ],
+      "validation": [
+        "pnpm test:contract-fulfillment",
+        "pnpm typecheck"
+      ],
+      "screenshotRequired": false,
+      "decisionGate": {
+        "id": "DG-E12-I4-PHASE-CHECK",
+        "question": "Should test:contract-fulfillment be added to phase:check now?",
+        "recommendation": "Not before Q1 unless the current report is clean. Add the focused script first, then hard-wire phase:check after the first clean or explicitly accepted exception report.",
+        "approvalToken": "APPROVE_E12_ADD_CONTRACT_GATE_TO_PHASE_CHECK"
+      },
+      "finishMessage": "Finished E12-I4 after package scripts and release command boundaries are in place."
+    },
+    {
+      "id": "E12-I5",
+      "order": 7,
+      "title": "Enforce capture QA as fulfillment proof",
+      "type": "implementation",
+      "ctes": 8,
+      "dependsOn": [
+        "E12-I3",
+        "E12-I4"
+      ],
+      "workItems": [
+        "Represent historical capture bundles as historical evidence only in the ledger/report.",
+        "Represent current release-capture status as no_capture_needed, archival_only, current_warning, current_pass or current_fail.",
+        "Make the fulfillment report point to pnpm visual:capture-qa:release for new release captures.",
+        "Ensure capture warnings cannot satisfy release proof when CAPTURE_QA_FAIL_ON_WARNINGS=1 is required."
+      ],
+      "targetArtifacts": [
+        "lib/ux-contract-ledger.ts",
+        "scripts/contract-fulfillment-gate.ts",
+        "tests/contract-fulfillment-gate.spec.ts",
+        "tests/e09-capture-release-policy.spec.ts"
+      ],
+      "acceptanceCriteria": [
+        "Old capture bundles cannot be primary release proof.",
+        "The report states when no screenshot/capture was warranted.",
+        "New release captures require CAPTURE_QA_FAIL_ON_WARNINGS=1."
+      ],
+      "validation": [
+        "pnpm visual:capture-qa",
+        "pnpm visual:capture-qa:release",
+        "playwright test tests/e09-capture-release-policy.spec.ts tests/contract-fulfillment-gate.spec.ts"
+      ],
+      "screenshotRequired": false,
+      "finishMessage": "Finished E12-I5 after capture proof semantics are ledger/gate-backed."
+    },
+    {
+      "id": "E12-Q1",
+      "order": 8,
+      "title": "Run full E12 validation and produce fulfillment proof report",
+      "type": "qa_validation",
+      "ctes": 10,
+      "dependsOn": [
+        "E12-I1",
+        "E12-I2",
+        "E12-I3",
+        "E12-I4",
+        "E12-I5"
+      ],
+      "workItems": [
+        "Run source guard.",
+        "Run typecheck.",
+        "Run ledger and gate tests.",
+        "Run E10, E11 and E09 focused tests.",
+        "Run route smoke if any UI routing/shell behavior changed.",
+        "Run visual:capture-qa:release only when new release captures are produced or existing current release proof is being certified.",
+        "Produce a proof report with fulfilled, partial, blocked, exception and retired counts."
+      ],
+      "targetArtifacts": [
+        "reports/contract-fulfillment/latest.json",
+        "docs/v3/proof/e12_contract_fulfillment_validation_report.md"
+      ],
+      "acceptanceCriteria": [
+        "The validation report lists every command and result.",
+        "The report names remaining exceptions and recommended burn-down tickets.",
+        "No contract is marked fulfilled from markdown alone.",
+        "No UI screenshot is claimed unless visible UI actually changed."
+      ],
+      "validation": [
+        "pnpm guard:source",
+        "pnpm typecheck",
+        "pnpm test:contract-fulfillment",
+        "playwright test tests/ux-contract-ledger.spec.ts tests/contract-fulfillment-gate.spec.ts tests/e10-register-reconciliation.spec.ts tests/e11-backend-data-surface-truth.spec.ts tests/e09-capture-release-policy.spec.ts"
+      ],
+      "screenshotRequired": "only_if_visible_ui_changed",
+      "finishMessage": "Finished E12-Q1 after the validation report is written and remaining gaps are explicit."
+    }
+  ],
+  "releaseDefinitionTarget": {
+    "minimumCommands": [
+      "pnpm guard:source",
+      "pnpm test:route-smoke",
+      "pnpm test:contract-fulfillment",
+      "pnpm visual:capture-qa:release when new release captures are produced"
+    ],
+    "touchedContractFocusedTests": {
+      "E10_registers": "playwright test tests/e10-register-reconciliation.spec.ts",
+      "E11_backend_data_surfaces": "playwright test tests/e11-backend-data-surface-truth.spec.ts tests/ux-data-surface-contract.spec.ts",
+      "E09_capture": "playwright test tests/capture-qa-contract.spec.ts tests/e09-capture-release-policy.spec.ts",
+      "action_feedback": "playwright test tests/ux-action-hierarchy-contract.spec.ts tests/ux-feedback-message-contract.spec.ts",
+      "proof_reviewer": "playwright test tests/ux-proof-reviewer-mode.spec.ts",
+      "lifecycle_state": "playwright test tests/ux-lifecycle-state-contract.spec.ts"
+    },
+    "phaseCheckRecommendation": "After Q1, add pnpm test:contract-fulfillment to phase:check only if the current report is clean or every remaining exception is explicitly approved with expiry."
+  },
+  "decisionGates": [
+    {
+      "id": "DG-E12-001",
+      "afterTicket": "E12-S1",
+      "decision": "Existing exception failure mode",
+      "boldRecommendation": "Fail all new debt immediately, warn existing registered exceptions for one burn-down pass, then flip all unexpired exceptions to hard failure.",
+      "approvalToken": "APPROVE_E12_WARN_EXISTING_FAIL_NEW_DEBT"
+    },
+    {
+      "id": "DG-E12-002",
+      "afterTicket": "E12-I2",
+      "decision": "Markdown register authority",
+      "boldRecommendation": "Make E10/E11 markdown registers generated/read-only from the ledger. Hand-edited markdown should fail validation.",
+      "approvalToken": "APPROVE_E12_GENERATE_MARKDOWN_REGISTERS_FROM_LEDGER"
+    },
+    {
+      "id": "DG-E12-003",
+      "afterTicket": "E12-I4",
+      "decision": "CI hardening",
+      "boldRecommendation": "Do not keep this as a soft audit. Once Q1 has a clean or explicitly excepted report, add pnpm test:contract-fulfillment to phase:check.",
+      "approvalToken": "APPROVE_E12_ADD_CONTRACT_GATE_TO_PHASE_CHECK"
+    }
+  ],
+  "risksAndMitigations": [
+    {
+      "risk": "The ledger becomes another duplicate truth layer.",
+      "mitigation": "Make it the meta-contract only: typed domain contracts remain domain truth, the ledger records obligations, ownership and proof status."
+    },
+    {
+      "risk": "Markdown registers drift after ledger introduction.",
+      "mitigation": "Move to generated/read-only markdown after E12-I2 approval."
+    },
+    {
+      "risk": "Existing exceptions block momentum if hard-failed immediately.",
+      "mitigation": "Fail new debt now, warn existing registered debt for one pass, require follow-up/expiry on every exception."
+    },
+    {
+      "risk": "Backend data-surface claims are over-validated by source string checks only.",
+      "mitigation": "Require API metadata tests and UI source-truth consumption, especially for backend_query_backed surfaces."
+    },
+    {
+      "risk": "Capture proof is confused with historical screenshots.",
+      "mitigation": "Archive old bundles as historical only and require E09-compliant current runs for release proof."
+    }
+  ],
+  "approvalRecommendedNext": "APPROVE_E12_CONTRACT_FULFILLMENT_LEDGER_AND_GATE",
+  "commitRecommendation": "Commit this plan alone as a planning artifact. Implementation should be committed ticket-by-ticket after each E12 step passes its focused validation."
+}
