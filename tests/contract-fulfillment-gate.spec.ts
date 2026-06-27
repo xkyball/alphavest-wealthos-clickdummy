@@ -6,6 +6,7 @@ import { expect, test } from "@playwright/test";
 
 import {
   contractFulfillmentGateMarkdown,
+  contractFulfillmentGateRuleIds,
   evaluateContractFulfillmentGate,
   writeContractFulfillmentGateReport,
   type ContractFulfillmentGateViolation,
@@ -20,6 +21,23 @@ function violationIds(violations: ContractFulfillmentGateViolation[]) {
 }
 
 test.describe("E12 contract fulfillment gate", () => {
+  test("declares the consolidated E12-I3 rule families", () => {
+    expect(contractFulfillmentGateRuleIds).toEqual([
+      "E12-GATE-ID-UNIQUENESS",
+      "E12-GATE-REQUIRED-FIELDS",
+      "E12-GATE-FOLLOWUP-REQUIRED",
+      "E12-GATE-FULFILLED-EVIDENCE",
+      "E12-GATE-MANUAL-DECISION-NOT-FULFILLMENT",
+      "E12-GATE-SCREENSHOT-NOT-API-PROOF",
+      "E12-GATE-NO-NEW-ACTION-DEBT",
+      "E12-GATE-NO-NEW-FAKE-FILTERS",
+      "E12-GATE-BACKEND-META",
+      "E12-GATE-UI-SOURCE-TRUTH",
+      "E12-GATE-RETIRED-PROOF-UI",
+      "E12-GATE-CAPTURE-RELEASE-WARNINGS",
+    ]);
+  });
+
   test("passes the current ledger integrity rules", () => {
     const report = evaluateContractFulfillmentGate(uxContractLedgerEntries, "2026-06-27T00:00:00.000Z");
 

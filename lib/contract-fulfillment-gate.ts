@@ -38,6 +38,21 @@ export type ContractFulfillmentGateReport = {
   violations: ContractFulfillmentGateViolation[];
 };
 
+export const contractFulfillmentGateRuleIds = [
+  "E12-GATE-ID-UNIQUENESS",
+  "E12-GATE-REQUIRED-FIELDS",
+  "E12-GATE-FOLLOWUP-REQUIRED",
+  "E12-GATE-FULFILLED-EVIDENCE",
+  "E12-GATE-MANUAL-DECISION-NOT-FULFILLMENT",
+  "E12-GATE-SCREENSHOT-NOT-API-PROOF",
+  "E12-GATE-NO-NEW-ACTION-DEBT",
+  "E12-GATE-NO-NEW-FAKE-FILTERS",
+  "E12-GATE-BACKEND-META",
+  "E12-GATE-UI-SOURCE-TRUTH",
+  "E12-GATE-RETIRED-PROOF-UI",
+  "E12-GATE-CAPTURE-RELEASE-WARNINGS",
+] as const;
+
 export type ContractFulfillmentGateSourceFile = {
   path: string;
   text: string;
