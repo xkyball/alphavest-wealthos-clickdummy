@@ -14,7 +14,7 @@ Route-local search/filter controls must either use `FilterBar` / `DataTable` / t
 | ID | File | Current Finding | Decision | Target | Follow-up |
 | --- | --- | --- | --- | --- | --- |
 | DSF-001 | `components/admin-tenant-setup-screen.tsx` | Tenant directory has local search input and local disabled additional-filter button. | migrate_first_slice | Move to `FilterBar` or add explicit `data-ux-data-surface-filter-state`/exception marker. | E10-I2 |
-| DSF-002 | `components/admin-tenant-setup-screen.tsx` | Tenant users has disabled filter button. | migrate_first_slice | Convert disabled filter to canonical disabled-static metadata. | E10-I2 |
+| DSF-002 | `components/admin-tenant-setup-screen.tsx` | Tenant users no longer has a disabled filter button; E11 backend-query metadata owns the users filter truth. | retired_by_backend_query_contract | Keep retired unless a new disabled/static filter is introduced with a new ledger ID. | E12-I2.3 |
 | DSF-003 | `components/communication-export-ops-screen.tsx` | Export/communication queue has disabled queue filters. | migrate_first_slice | Convert to `FilterBar` disabled-static or exception marker. | E10-I2 |
 | DSF-004 | `components/decisions-governance-screen.tsx` | Evidence list has local disabled search input and disabled category/source/more filters. | migrate_first_slice | Move to `FilterBar` disabled-static. | E10-I2 |
 | DSF-005 | `components/internal-workflow-screen.tsx` | Advisor/compliance queues already use `FilterBar` with disabled-static state when static filters are visible. | keep_canonical | No migration needed; keep as proof exemplar. | none |

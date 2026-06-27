@@ -5,8 +5,10 @@ import { expect, test } from "@playwright/test";
 
 import {
   e10ActionZoneLedgerEntries,
+  e10DataSurfaceFilterLedgerEntries,
   e10FirstSliceActionFiles,
   e10RegisteredActionFiles,
+  e10SourceRequiredFilterExceptionIds,
 } from "../lib/ux-contract-ledger";
 
 const root = process.cwd();
@@ -14,8 +16,6 @@ const root = process.cwd();
 function read(relativePath: string) {
   return readFileSync(path.join(root, relativePath), "utf8");
 }
-
-const registeredFilterExceptionIds = ["DSF-001", "DSF-002", "DSF-003", "DSF-004", "DSF-007", "DSF-008"];
 
 test.describe("E10 register reconciliation gates", () => {
   test("keeps the approved E10 registers and hard spec in the repo", () => {
@@ -112,11 +112,35 @@ test.describe("E10 register reconciliation gates", () => {
     const joinedSource = touchedFiles.map(read).join("\n");
     const ids = Array.from(joinedSource.matchAll(/data-ux-e10-filter-exception-id="([^"]+)"/g)).map((match) => match[1]);
 
-    expect(new Set(ids)).toEqual(new Set(registeredFilterExceptionIds));
-    for (const id of registeredFilterExceptionIds) {
+    expect(new Set(ids)).toEqual(new Set(e10SourceRequiredFilterExceptionIds));
+    for (const id of e10SourceRequiredFilterExceptionIds) {
       expect(joinedSource, `${id} must carry disabled-static metadata`).toContain(`data-ux-e10-filter-exception-id="${id}"`);
     }
     expect(joinedSource).toContain('data-ux-data-surface-filter-state="disabled_static"');
+  });
+
+  test("maps E10 data-surface filter register rows into the E12 ledger", () => {
+    expect(e10DataSurfaceFilterLedgerEntries.map((entry) => entry.sourceRegisterId)).toEqual([
+      "DSF-001",
+      "DSF-002",
+      "DSF-003",
+      "DSF-004",
+      "DSF-005",
+      "DSF-006",
+      "DSF-007",
+      "DSF-008",
+      "DSF-009",
+    ]);
+    expect(e10SourceRequiredFilterExceptionIds).toEqual(["DSF-001", "DSF-003", "DSF-004", "DSF-007", "DSF-008"]);
+    expect(e10DataSurfaceFilterLedgerEntries.find((entry) => entry.sourceRegisterId === "DSF-002")).toMatchObject({
+      gateBehavior: "pass",
+      registerDecision: "retired_by_backend_query_contract",
+      status: "retired",
+    });
+    for (const entry of e10DataSurfaceFilterLedgerEntries.filter((candidate) => candidate.status === "exception")) {
+      expect(entry.gateBehavior, entry.id).toBe("warn_existing");
+      expect(entry.expiresOrFollowUp, entry.id).toBeTruthy();
+    }
   });
 
   test("retires active ProductGuidance proof UI paths from implementation code", () => {

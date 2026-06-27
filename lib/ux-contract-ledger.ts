@@ -79,7 +79,7 @@ export type UxContractLedgerEntry = {
   gateBehavior: GateBehavior;
   expiresOrFollowUp: string | null;
   sourceRegisterId?: string;
-  registerDecision?: "migrate_first_slice" | "temporary_exception" | "migrate_later" | "migrate_with_data_surface" | "keep_canonical" | "retire_now" | "rename_or_retire" | "migrate_now" | "keep_historical";
+  registerDecision?: "migrate_first_slice" | "temporary_exception" | "migrate_later" | "migrate_with_data_surface" | "keep_canonical" | "keep_backend_backed_with_exception" | "retire_now" | "retired_by_backend_query_contract" | "rename_or_retire" | "migrate_now" | "keep_historical";
   currentClass?: string;
   targetClass?: string;
   notes?: string;
@@ -697,6 +697,197 @@ export const uxContractLedgerEntries: readonly UxContractLedgerEntry[] = [
     expiresOrFollowUp: "E12-I2.1 converts filter exception rows into ledger IDs and follow-ups.",
   },
   {
+    id: "E10-DSF-001",
+    title: "Admin tenant directory disabled filter exception",
+    sourceRegisterId: "DSF-001",
+    registerDecision: "migrate_first_slice",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E10_DATA_SURFACE_FILTER_EXCEPTION_REGISTER.md")],
+    contractFamily: "register_debt",
+    ownerSurface: [
+      owner("file", "components/admin-tenant-setup-screen.tsx"),
+      owner("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    obligation: "Tenant directory static filter affordance requires disabled-static metadata and a ledger/register ID until migrated.",
+    proofType: ["source_gate", "runtime_test"],
+    status: "exception",
+    evidence: [
+      evidence("file", "components/admin-tenant-setup-screen.tsx"),
+      evidence("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E10-I2",
+  },
+  {
+    id: "E10-DSF-002",
+    title: "Admin tenant users disabled filter exception retired",
+    sourceRegisterId: "DSF-002",
+    registerDecision: "retired_by_backend_query_contract",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E10_DATA_SURFACE_FILTER_EXCEPTION_REGISTER.md")],
+    contractFamily: "register_debt",
+    ownerSurface: [
+      owner("file", "components/admin-tenant-setup-screen.tsx"),
+      owner("api", "app/api/admin-tenants/route.ts"),
+      owner("test", "tests/e10-register-reconciliation.spec.ts"),
+      owner("test", "tests/e11-backend-data-surface-truth.spec.ts"),
+    ],
+    obligation: "Tenant users no longer carry a disabled filter exception in source because E11 backend query metadata owns the filter truth.",
+    proofType: ["source_gate", "api_test"],
+    status: "retired",
+    evidence: [
+      evidence("file", "components/admin-tenant-setup-screen.tsx"),
+      evidence("test", "tests/e11-backend-data-surface-truth.spec.ts"),
+    ],
+    gateBehavior: "pass",
+    expiresOrFollowUp: null,
+  },
+  {
+    id: "E10-DSF-003",
+    title: "Communication/export queue disabled filter exception",
+    sourceRegisterId: "DSF-003",
+    registerDecision: "migrate_first_slice",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E10_DATA_SURFACE_FILTER_EXCEPTION_REGISTER.md")],
+    contractFamily: "register_debt",
+    ownerSurface: [
+      owner("file", "components/communication-export-ops-screen.tsx"),
+      owner("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    obligation: "Export/communication queue disabled filters require disabled-static metadata and a ledger/register ID until migrated.",
+    proofType: ["source_gate", "runtime_test"],
+    status: "exception",
+    evidence: [
+      evidence("file", "components/communication-export-ops-screen.tsx"),
+      evidence("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E10-I2",
+  },
+  {
+    id: "E10-DSF-004",
+    title: "Decision governance evidence filter exception",
+    sourceRegisterId: "DSF-004",
+    registerDecision: "migrate_first_slice",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E10_DATA_SURFACE_FILTER_EXCEPTION_REGISTER.md")],
+    contractFamily: "register_debt",
+    ownerSurface: [
+      owner("file", "components/decisions-governance-screen.tsx"),
+      owner("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    obligation: "Evidence list disabled/static filters require canonical disabled-static metadata and a ledger/register ID until migrated.",
+    proofType: ["source_gate", "runtime_test"],
+    status: "exception",
+    evidence: [
+      evidence("file", "components/decisions-governance-screen.tsx"),
+      evidence("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E10-I2",
+  },
+  {
+    id: "E10-DSF-005",
+    title: "Internal workflow canonical disabled filter exemplar",
+    sourceRegisterId: "DSF-005",
+    registerDecision: "keep_canonical",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E10_DATA_SURFACE_FILTER_EXCEPTION_REGISTER.md")],
+    contractFamily: "register_debt",
+    ownerSurface: [
+      owner("file", "components/internal-workflow-screen.tsx"),
+      owner("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    obligation: "Advisor/compliance queues already use canonical FilterBar disabled-static state and remain the proof exemplar.",
+    proofType: ["source_gate", "runtime_test"],
+    status: "fulfilled",
+    evidence: [
+      evidence("file", "components/internal-workflow-screen.tsx"),
+      evidence("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    gateBehavior: "pass",
+    expiresOrFollowUp: null,
+  },
+  {
+    id: "E10-DSF-006",
+    title: "Review monitoring disabled filter exception",
+    sourceRegisterId: "DSF-006",
+    registerDecision: "migrate_later",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E10_DATA_SURFACE_FILTER_EXCEPTION_REGISTER.md")],
+    contractFamily: "register_debt",
+    ownerSurface: [
+      owner("file", "components/review-monitoring-screen.tsx"),
+      owner("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    obligation: "Review schedule local disabled filter controls remain registered debt until the filter gate is stable.",
+    proofType: ["source_gate"],
+    status: "exception",
+    evidence: [
+      evidence("file", "components/review-monitoring-screen.tsx"),
+      evidence("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E10-I2-followup",
+  },
+  {
+    id: "E10-DSF-007",
+    title: "Wealth actions board disabled filter exception",
+    sourceRegisterId: "DSF-007",
+    registerDecision: "migrate_first_slice",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E10_DATA_SURFACE_FILTER_EXCEPTION_REGISTER.md")],
+    contractFamily: "register_debt",
+    ownerSurface: [
+      owner("file", "components/wealth-actions-screen.tsx"),
+      owner("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    obligation: "Action board disabled filters and summaries require canonical disabled-static metadata or a board adapter.",
+    proofType: ["source_gate", "runtime_test"],
+    status: "exception",
+    evidence: [
+      evidence("file", "components/wealth-actions-screen.tsx"),
+      evidence("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E10-I2",
+  },
+  {
+    id: "E10-DSF-008",
+    title: "Client intake access filter disabled-static boundary",
+    sourceRegisterId: "DSF-008",
+    registerDecision: "keep_backend_backed_with_exception",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E10_DATA_SURFACE_FILTER_EXCEPTION_REGISTER.md")],
+    contractFamily: "register_debt",
+    ownerSurface: [
+      owner("file", "components/client-intake-screen.tsx"),
+      owner("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    obligation: "Document page real DB-backed filters may remain, but the access filter boundary must stay explicitly disabled-static.",
+    proofType: ["source_gate", "runtime_test"],
+    status: "exception",
+    evidence: [
+      evidence("file", "components/client-intake-screen.tsx"),
+      evidence("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E10-I2",
+  },
+  {
+    id: "E10-DSF-009",
+    title: "KYC workflow search exception",
+    sourceRegisterId: "DSF-009",
+    registerDecision: "temporary_exception",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E10_DATA_SURFACE_FILTER_EXCEPTION_REGISTER.md")],
+    contractFamily: "register_debt",
+    ownerSurface: [
+      owner("file", "components/kyc-aml-workflow-screen.tsx"),
+      owner("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    obligation: "KYC search controls remain registered debt until safety wording and route state are audited.",
+    proofType: ["source_gate"],
+    status: "exception",
+    evidence: [
+      evidence("file", "components/kyc-aml-workflow-screen.tsx"),
+      evidence("test", "tests/e10-register-reconciliation.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E10-I2-followup-kyc",
+  },
+  {
     id: "E10-RETIRED-PROOF-UI-REGISTER",
     title: "Retired proof UI remains retired",
     source: [markdownRegister("docs/ux/ALPHAVEST_E10_RETIRED_PROOF_UI_REGISTER.md")],
@@ -1003,6 +1194,18 @@ export const e10FirstSliceActionFiles = e10ActionZoneLedgerEntries
 export const e11BackendDataSurfaceLedgerEntries = uxContractLedgerEntries.filter((entry) =>
   entry.id.startsWith("E11-DS-")
 );
+
+export const e10DataSurfaceFilterLedgerEntries = uxContractLedgerEntries.filter((entry) =>
+  entry.id.startsWith("E10-DSF-")
+);
+
+export const e10SourceRequiredFilterExceptionIds = e10DataSurfaceFilterLedgerEntries
+  .filter((entry) =>
+    entry.status === "exception" &&
+    ["migrate_first_slice", "keep_backend_backed_with_exception"].includes(entry.registerDecision ?? "")
+  )
+  .map((entry) => entry.sourceRegisterId)
+  .filter((id): id is string => Boolean(id));
 
 export function duplicateContractLedgerIds(entries: readonly UxContractLedgerEntry[] = uxContractLedgerEntries) {
   const seen = new Set<string>();
