@@ -1,0 +1,553 @@
+{
+  "artifact": {
+    "name": "BD_03_ADMIN_GOVERNANCE_NON_BYPASS_SPEC.json",
+    "kind": "ticket_execution_evidence",
+    "created_at": "2026-06-27",
+    "ticket_id": "TICKET-BD-03",
+    "source_burndown_id": "BD-03",
+    "title": "Admin governance and non-bypass process",
+    "status": "COMPLETED_AWAITING_HUMAN_DECISION",
+    "human_gate": "DG-02",
+    "product_code_changed": false,
+    "ui_changed": false,
+    "screenshot_required_for_chat": false
+  },
+  "ticket_contract": {
+    "priority": "P0",
+    "ticket_kind": "governance_process_spec",
+    "work_type": "Specification / Admin Process / Non-bypass Guard",
+    "unique_shape": "Governance cutline ticket; must decide whether admin is narrow non-bypass control or broader admin module.",
+    "ctes_total": 16,
+    "ctes_class": "Split / Decision-led",
+    "dependency_status": {
+      "depends_on": ["BD-02"],
+      "bd_02_status": "COMPLETED_SPEC_LOCK",
+      "bd_02_artifacts": [
+        "BD_02_A_SESSION_CONTEXT_CONTRACT.json",
+        "BD_02_B_ROLE_OBJECT_SCOPE_MATRIX.json",
+        "BD_02_C_NEGATIVE_ACCESS_PROOF_PLAN.json",
+        "BD_02_FOUNDATION_SPEC_LOCK_REPORT.json"
+      ]
+    },
+    "execution_sequence_completed": [
+      {
+        "step": "Non-bypass scenario inventory",
+        "output": "Admin Non-bypass Scenario Matrix",
+        "validation": "Every scenario names actor, attempted shortcut, required block and audit result.",
+        "status": "COMPLETED"
+      },
+      {
+        "step": "Admin scope cutline",
+        "output": "P0 Admin Cutline",
+        "validation": "No broad admin feature is marked P0 without direct process safety dependency.",
+        "status": "COMPLETED_AWAITING_DG_02_DECISION"
+      }
+    ]
+  },
+  "facts": [
+    {
+      "id": "F-01",
+      "claim": "The permission engine treats admin and security_officer as governance roles but also as adminNonBypassRoles.",
+      "evidence": "lib/permission-engine.ts"
+    },
+    {
+      "id": "F-02",
+      "claim": "Admin and security can manage sensitive role/policy access, but cannot force compliance release, evidence sufficiency, direct client visibility, export, or internal advice payload visibility.",
+      "evidence": "tests/governance-non-bypass.spec.ts; tests/true-ux-governance-non-bypass.spec.ts"
+    },
+    {
+      "id": "F-03",
+      "claim": "Platform admin commands are limited to platform settings, audit viewing, permission review, and security configuration, and return noClientRelease/noAdviceExecution/clientVisible false safety fields.",
+      "evidence": "lib/platform-admin-action-contract.ts; lib/platform-admin-workflow-actions.ts; app/api/platform-admin/actions/route.ts; tests/platform-admin-actions-api.spec.ts"
+    },
+    {
+      "id": "F-04",
+      "claim": "Tenant governance commands are typed and scoped; supported commands include tenant/user/role/access/audit controls, not release/export approval bypass.",
+      "evidence": "lib/tenant-governance-workflow-actions.ts; tests/tenant-governance-actions-api.spec.ts"
+    },
+    {
+      "id": "F-05",
+      "claim": "The route registry still contains a broad historical admin/platform/tenant/governance surface, so DG-02 must decide the P0 cutline rather than letting the route catalog imply scope.",
+      "evidence": "lib/route-registry.ts"
+    },
+    {
+      "id": "F-06",
+      "claim": "The P0 acceptance matrix already names WP15-G15-ADMIN-NON-BYPASS as covered by governance non-bypass tests.",
+      "evidence": "lib/v0-96-p0-true-ux-acceptance.ts"
+    }
+  ],
+  "assumptions": [
+    {
+      "id": "A-01",
+      "assumption": "DG-02 is a scope decision, not an instruction to create a broad admin product module during BD-03."
+    },
+    {
+      "id": "A-02",
+      "assumption": "Screenshots from the 2026-06-27 capture folder remain supporting reference only unless BD-01 proof eligibility allows stronger claims."
+    }
+  ],
+  "admin_non_bypass_scenario_matrix": [
+    {
+      "scenario_id": "BD03-NB-001",
+      "actor": "admin",
+      "allowed_governance_action": "MANAGE ROLE or POLICY configuration with audit and second confirmation",
+      "attempted_shortcut": "Use governance authority to release a recommendation to the client.",
+      "required_block": {
+        "permission_allowed": false,
+        "reason_code": "DEMO_DENY_COMPLIANCE_RELEASE_REQUIRED",
+        "no_client_release": true,
+        "requires_audit": true,
+        "requires_second_confirmation": true
+      },
+      "audit_result": "Denied audit required; mutation must not run.",
+      "proof_anchor": "tests/governance-non-bypass.spec.ts"
+    },
+    {
+      "scenario_id": "BD03-NB-002",
+      "actor": "admin",
+      "allowed_governance_action": "Configure role template or permission context.",
+      "attempted_shortcut": "Force evidence sufficiency by approving an EVIDENCE_RECORD.",
+      "required_block": {
+        "permission_allowed": false,
+        "reason_code": "DEMO_DENY_ADMIN_EVIDENCE_NON_BYPASS",
+        "no_evidence_sufficiency": true,
+        "requires_audit": true,
+        "requires_second_confirmation": true
+      },
+      "audit_result": "DENIED audit row; nextState remains previousState.",
+      "proof_anchor": "tests/governance-non-bypass.spec.ts"
+    },
+    {
+      "scenario_id": "BD03-NB-003",
+      "actor": "security_officer",
+      "allowed_governance_action": "ASSIGN or REVOKE role/permission with audit.",
+      "attempted_shortcut": "Force client visibility on a decision/document/evidence record.",
+      "required_block": {
+        "permission_allowed": false,
+        "reason_code": "DEMO_DENY_ADMIN_VISIBILITY_NON_BYPASS",
+        "client_visible": false,
+        "requires_second_confirmation": true
+      },
+      "audit_result": "Denied or blocked safety event required before any visibility mutation.",
+      "proof_anchor": "tests/governance-non-bypass.spec.ts"
+    },
+    {
+      "scenario_id": "BD03-NB-004",
+      "actor": "admin",
+      "allowed_governance_action": "Open platform audit or manage platform setting.",
+      "attempted_shortcut": "Approve or generate a restricted export package.",
+      "required_block": {
+        "permission_allowed": false,
+        "reason_code": "DEMO_DENY_ADMIN_NON_BYPASS",
+        "no_export_approval": true,
+        "no_export_download": true
+      },
+      "audit_result": "No export approval/download state may be created.",
+      "proof_anchor": "tests/governance-non-bypass.spec.ts; tests/export-safety.spec.ts"
+    },
+    {
+      "scenario_id": "BD03-NB-005",
+      "actor": "admin or security_officer",
+      "allowed_governance_action": "Route shell access to admin/governance surfaces.",
+      "attempted_shortcut": "View internal AI draft, internal rationale, compliance notes, or advice payload by governance authority alone.",
+      "required_block": {
+        "projection_visible": false,
+        "reason_code": "DEMO_DENY_ADMIN_ADVICE_PAYLOAD_NON_BYPASS",
+        "payload": {},
+        "hidden_fields_redacted": true
+      },
+      "audit_result": "Projection fails closed and exposes no hidden advice payload.",
+      "proof_anchor": "tests/governance-non-bypass.spec.ts; lib/visibility-engine.ts"
+    },
+    {
+      "scenario_id": "BD03-NB-006",
+      "actor": "platform admin command API caller",
+      "allowed_governance_action": "Run one of j10.savePlatform, j10.viewAudit, j10.reviewPermission, j10.saveSecurity.",
+      "attempted_shortcut": "Send an unsupported workflow action such as j01.requestData through platform-admin API.",
+      "required_block": {
+        "http_status": 400,
+        "reason_code": "INVALID_REQUEST",
+        "command_executed": false,
+        "hidden_rows_disclosed": false,
+        "no_advice_execution": true,
+        "no_client_release": true
+      },
+      "audit_result": "No command mutation; safe error envelope only.",
+      "proof_anchor": "tests/platform-admin-actions-api.spec.ts; app/api/platform-admin/actions/route.ts"
+    },
+    {
+      "scenario_id": "BD03-NB-007",
+      "actor": "tenant governance command API caller",
+      "allowed_governance_action": "Run scoped J06/J07 tenant, user, role and access commands.",
+      "attempted_shortcut": "Send an unsupported action through tenant-governance API.",
+      "required_block": {
+        "http_status": 400,
+        "reason_code": "INVALID_REQUEST",
+        "command_executed": false,
+        "hidden_rows_disclosed": false,
+        "no_advice_execution": true,
+        "no_client_release": true
+      },
+      "audit_result": "No command mutation; safe error envelope only.",
+      "proof_anchor": "tests/tenant-governance-actions-api.spec.ts"
+    },
+    {
+      "scenario_id": "BD03-NB-008",
+      "actor": "admin/governance UI user",
+      "allowed_governance_action": "Use scoped admin/governance UI flows.",
+      "attempted_shortcut": "Use UI copy or CTA state to imply admin override, force release, evidence sufficiency, export approval, download readiness, or audit suppression.",
+      "required_block": {
+        "forbidden_copy_patterns_absent": true,
+        "cta_state": "guarded",
+        "no_overclaim": true
+      },
+      "audit_result": "UI must keep scoped action lifecycle separate from downstream gate success.",
+      "proof_anchor": "tests/true-ux-governance-non-bypass.spec.ts; tests/route-smoke.spec.ts"
+    }
+  ],
+  "p0_admin_cutline": {
+    "recommended_cutline": "P0 admin is a narrow governance and non-bypass control layer, not a broad admin module.",
+    "p0_in_scope": [
+      {
+        "capability": "Role, permission and policy configuration boundaries",
+        "why_p0": "Directly protects action authority, route/action/payload separation and object-scope correctness.",
+        "proof_needed": "Permission decision, reasonCode, audit requirement and no downstream gate mutation."
+      },
+      {
+        "capability": "Security configuration with second confirmation and audit",
+        "why_p0": "Protects current-user, MFA/session posture and sensitive configuration changes.",
+        "proof_needed": "Typed platform-admin command, audit row and noClientRelease/noAdviceExecution fields."
+      },
+      {
+        "capability": "Tenant/user/role/access request governance",
+        "why_p0": "Defines who can act in the P0 process without granting downstream business gate completion.",
+        "proof_needed": "Typed tenant-governance command, scoped audit, no hidden row disclosure and no client release."
+      },
+      {
+        "capability": "Governance audit visibility and controlled audit export routing",
+        "why_p0": "Supports traceability and review of sensitive admin decisions without acting as release proof.",
+        "proof_needed": "Audit event id, safe API envelope and no overclaim copy."
+      },
+      {
+        "capability": "Negative non-bypass checks for release, evidence sufficiency, export, visibility and internal advice payload.",
+        "why_p0": "Prevents admin from becoming an implicit superuser across P0 safety gates.",
+        "proof_needed": "Denied permission, reasonCode, no mutation, no payload and audit behavior where applicable."
+      }
+    ],
+    "out_of_p0_or_later": [
+      {
+        "capability": "Full admin backoffice module",
+        "reason": "Broad settings/backoffice breadth does not directly prove the P0 business process and would distract from non-bypass proof."
+      },
+      {
+        "capability": "Admin override workflows for compliance, evidence sufficiency, export approval or client visibility",
+        "reason": "Contradicts the product rule that admin is not superuser release authority."
+      },
+      {
+        "capability": "Cosmetic admin dashboard polish without process-gate proof",
+        "reason": "Does not satisfy P0 safety acceptance and risks hiding legacy admin sprawl."
+      },
+      {
+        "capability": "Route catalog expansion or new admin screens",
+        "reason": "Route evolution requires True-UX authority and separate approval; BD-03 is a cutline/spec ticket."
+      },
+      {
+        "capability": "Using screenshot availability as admin acceptance",
+        "reason": "BD-01 demotes unproven screenshots to supporting reference unless proof eligibility is stronger."
+      }
+    ],
+    "legacy_debt_to_remove_not_mask": [
+      "Stop treating every /admin route as P0 merely because it exists in the route registry.",
+      "Demote broad platform setup/admin-table surfaces to support context unless tied to a named non-bypass scenario.",
+      "Prefer one canonical governance command/API proof per action family over parallel UI-only proof claims.",
+      "Replace vague admin success language with explicit no-release/no-sufficiency/no-export/no-client-visibility safety envelopes.",
+      "Make admin override language a forbidden pattern, not just copy guidance."
+    ]
+  },
+  "negative_bypass_proof_plan": [
+    {
+      "proof_id": "BD03-PROOF-001",
+      "test_or_future_test": "tests/governance-non-bypass.spec.ts",
+      "assertions": [
+        "admin MANAGE ROLE/POLICY may allow governance control",
+        "admin RELEASE RECOMMENDATION is denied",
+        "admin APPROVE EVIDENCE_RECORD is denied",
+        "admin EXPORT EXPORT_REQUEST is denied",
+        "security RELEASE client-visibility object is denied"
+      ],
+      "status": "EXISTING_PROOF"
+    },
+    {
+      "proof_id": "BD03-PROOF-002",
+      "test_or_future_test": "tests/governance-non-bypass.spec.ts",
+      "assertions": [
+        "admin/security recommendation projection is not visible",
+        "reasonCode is DEMO_DENY_ADMIN_ADVICE_PAYLOAD_NON_BYPASS",
+        "payload is empty and hidden fields stay hidden"
+      ],
+      "status": "EXISTING_PROOF"
+    },
+    {
+      "proof_id": "BD03-PROOF-003",
+      "test_or_future_test": "tests/platform-admin-actions-api.spec.ts",
+      "assertions": [
+        "supported J10 commands return noClientRelease true",
+        "supported J10 commands return noAdviceExecution true",
+        "unsupported action returns INVALID_REQUEST and commandExecuted false"
+      ],
+      "status": "EXISTING_PROOF"
+    },
+    {
+      "proof_id": "BD03-PROOF-004",
+      "test_or_future_test": "tests/tenant-governance-actions-api.spec.ts",
+      "assertions": [
+        "supported J06/J07 commands are typed and scoped",
+        "unsupported action returns INVALID_REQUEST and commandExecuted false",
+        "governance command output does not create client release"
+      ],
+      "status": "EXISTING_PROOF"
+    },
+    {
+      "proof_id": "BD03-PROOF-005",
+      "test_or_future_test": "tests/true-ux-governance-non-bypass.spec.ts; tests/route-smoke.spec.ts",
+      "assertions": [
+        "admin/governance UI contains does-not-grant boundaries",
+        "CTA labels do not imply admin override or downstream gate success",
+        "forbidden overclaim phrases are absent"
+      ],
+      "status": "EXISTING_PROOF"
+    },
+    {
+      "proof_id": "BD03-PROOF-006",
+      "test_or_future_test": "BD-10 audit persistence spine",
+      "assertions": [
+        "all denied admin bypass attempts that cross critical-action boundary persist DENIED/BLOCKED audit rows",
+        "audit failure blocks mutation"
+      ],
+      "status": "ASSIGNED_TO_LATER_TICKET"
+    }
+  ],
+  "dg_02_decision_options": [
+    {
+      "option": "A",
+      "token": "APPROVE_DG02_ADMIN_GOVERNANCE_NON_BYPASS_ONLY",
+      "label": "Recommended: narrow P0 admin to governance non-bypass",
+      "decision": "P0 admin is only the governance/non-bypass control layer required to protect the real business process. Broad admin module work is demoted unless it directly proves route/action/payload/object-scope safety or no-bypass behavior.",
+      "why_bold": "This removes inherited admin sprawl as a hidden P0 obligation and forces every admin surface to justify itself through process safety proof."
+    },
+    {
+      "option": "B",
+      "token": "APPROVE_DG02_BROAD_ADMIN_MODULE_IN_P0",
+      "label": "Not recommended: treat broad admin module as P0",
+      "decision": "Expand P0 to include a broader admin/backoffice module beyond non-bypass controls.",
+      "why_not_recommended": "It preserves legacy breadth, increases blast radius, and risks turning configuration presence into false business-process acceptance."
+    },
+    {
+      "option": "C",
+      "token": "REWORK_DG02_SPLIT_ADMIN_SURFACES_FIRST",
+      "label": "Hard reset: split admin route catalog before continuing",
+      "decision": "Pause downstream tickets and split admin/governance routes into P0 safety-control, support-context and later-module buckets before BD-04.",
+      "why_not_recommended": "Clean but slower; useful only if you want route-catalog cleanup before evidence lifecycle work."
+    }
+  ],
+  "recommendation": {
+    "recommended_token": "APPROVE_DG02_ADMIN_GOVERNANCE_NON_BYPASS_ONLY",
+    "rationale": "Choose the narrow cutline. The actual repo already proves the correct P0 shape: admin may configure governance and security controls, but cannot become release, evidence, export, visibility or advice-payload authority. Keeping the broader admin module in P0 would reward legacy route breadth instead of process truth.",
+    "decision_effect_if_approved": [
+      "Continue to BD-04 with admin scope locked to non-bypass governance proof.",
+      "Do not add broad admin screens or admin module work as P0 acceptance unless tied to a named non-bypass scenario.",
+      "Use reasonCode/no-mutation/no-payload/no-release assertions as mandatory admin proof language.",
+      "Treat broad admin polish as later support work or route-catalog cleanup, not P0 business-process evidence."
+    ]
+  },
+  "engine_mixed_v2_v3_artifacts": {
+    "v3_mission_card": {
+      "mission": "Decide the P0 admin cutline with evidence before downstream process implementation.",
+      "success_criteria": [
+        "Every P0 admin claim maps to process safety proof.",
+        "No broad admin feature is elevated by route existence alone.",
+        "DG-02 gives a clear tokenized decision before BD-04."
+      ]
+    },
+    "v3_evidence_intake": {
+      "strong_evidence": [
+        "permission-engine deny rules",
+        "governance non-bypass tests",
+        "platform admin typed command tests",
+        "tenant governance typed command tests",
+        "P0 acceptance matrix"
+      ],
+      "weak_evidence": [
+        "route catalog breadth",
+        "screenshots without proof eligibility",
+        "UI presence without command/audit/payload proof"
+      ]
+    },
+    "double_diamond": {
+      "discover": "Admin exists as route/UI/API/test surface, but acceptance proof clusters around non-bypass safety rather than broad admin breadth.",
+      "define": "The real decision is whether P0 admin means narrow governance controls or broad backoffice module.",
+      "develop": "Options are narrow non-bypass, broad P0 admin module, or route-catalog split before continuing.",
+      "deliver": "Recommend narrow non-bypass now; preserve route-catalog cleanup as a later hardening lane."
+    },
+    "psycho_logic_and_map_model": {
+      "rational_logic": "P0 needs proof that admin cannot bypass regulated workflow gates.",
+      "psycho_logic_drivers": "Legacy admin breadth can feel like progress because many pages exist, but it diffuses accountability and creates false acceptance comfort.",
+      "map_trap": "Route catalog equals product scope.",
+      "design_move": "Make non-bypass proof the map; demote broad admin presence to support context unless it has process-safety evidence."
+    },
+    "reframing_matrix": [
+      {
+        "frame": "Admin as superuser module",
+        "risk": "Turns configuration ownership into hidden release authority.",
+        "verdict": "Reject for P0."
+      },
+      {
+        "frame": "Admin as governance boundary",
+        "risk": "Narrower visible scope may feel less complete.",
+        "verdict": "Accept for P0."
+      },
+      {
+        "frame": "Admin as route catalog",
+        "risk": "Existing pages become accidental commitments.",
+        "verdict": "Demote."
+      },
+      {
+        "frame": "Admin as proof surface",
+        "risk": "Requires stricter tests and less cosmetic credit.",
+        "verdict": "Use as acceptance frame."
+      }
+    ],
+    "triz": {
+      "contradiction": "Admin must be powerful enough to govern access but unable to override downstream regulated gates.",
+      "inventive_principles_used": ["separation", "prior action", "local quality", "nested controls"],
+      "derived_move": "Separate configuration authority from release/evidence/export/visibility authority and require audit plus reasonCode proof at the boundary."
+    },
+    "sit_closed_world": {
+      "resources": [
+        "permissionEngine",
+        "typed workflow command APIs",
+        "audit events",
+        "noOverclaimCopy",
+        "existing governance tests"
+      ],
+      "moves": [
+        "Subtraction: remove broad admin module from P0 scope.",
+        "Multiplication: repeat no-bypass assertions across API, permission, projection and UI copy.",
+        "Division: split route shell, action permission, payload visibility and object scope.",
+        "Task unification: use audit result as both proof and safety record.",
+        "Attribute dependency: admin capability depends on object type and downstream gate category."
+      ]
+    },
+    "morphological_analysis": {
+      "kept_variants": [
+        "Narrow non-bypass P0 plus later admin cleanup",
+        "Admin route catalog split before final acceptance",
+        "Command/API canonicalization for each governance action family"
+      ],
+      "rejected_variants": [
+        "Broad admin module in P0",
+        "Screenshot-based admin acceptance",
+        "Admin override compatibility layer"
+      ]
+    },
+    "scamper": {
+      "substitute": "Substitute route-presence acceptance with command/proof acceptance.",
+      "combine": "Combine permission denial, audit row and safe envelope checks.",
+      "adapt": "Adapt no-overclaim copy rules into admin-specific forbidden patterns.",
+      "modify": "Tighten admin wording from 'settings' to 'configuration only'.",
+      "put_to_another_use": "Use P0 acceptance matrix as scope guard.",
+      "eliminate": "Eliminate implicit admin superuser assumptions.",
+      "reverse": "Start from forbidden bypass attempts, then allow only governance actions that survive."
+    },
+    "harvard_batna": {
+      "people_problem_move": "Separate desire for a complete admin module from the P0 safety problem.",
+      "interests": ["credible P0 process proof", "low legacy debt", "clear downstream execution", "no false release authority"],
+      "objective_criteria": ["reasonCode proof", "no mutation", "no client release", "audit trace", "True-UX route discipline"],
+      "batna": "If DG-02 is not approved, pause BD-04 and split admin route catalog first."
+    },
+    "mesos": [
+      {
+        "offer": "A",
+        "name": "Narrow Non-bypass Now",
+        "equal_value_logic": "Fastest path to real P0 proof with least debt.",
+        "decision_token": "APPROVE_DG02_ADMIN_GOVERNANCE_NON_BYPASS_ONLY"
+      },
+      {
+        "offer": "B",
+        "name": "Route Catalog Cleanup First",
+        "equal_value_logic": "Cleaner structure before process work, slower delivery.",
+        "decision_token": "REWORK_DG02_SPLIT_ADMIN_SURFACES_FIRST"
+      },
+      {
+        "offer": "C",
+        "name": "Broad Admin In P0",
+        "equal_value_logic": "More visible breadth, lower proof discipline.",
+        "decision_token": "APPROVE_DG02_BROAD_ADMIN_MODULE_IN_P0"
+      }
+    ],
+    "measurement_plan": [
+      {
+        "metric": "Every admin P0 claim has a non-bypass proof anchor.",
+        "success_signal": "No admin claim relies on route existence or screenshot alone."
+      },
+      {
+        "metric": "Denied bypass cases assert reasonCode plus no mutation/no payload/no release.",
+        "success_signal": "Targeted governance tests pass."
+      },
+      {
+        "metric": "Broad admin work does not enter BD-04/BD-05 acceptance unless tied to process safety.",
+        "success_signal": "Downstream tickets reference DG-02 cutline."
+      }
+    ],
+    "ethics_and_fairness": {
+      "deception": "PASS: no fake admin completion claims.",
+      "coercion": "PASS: DG-02 keeps real options visible.",
+      "dark_patterns": "PASS: admin cannot silently change downstream client-visible outcomes.",
+      "stakeholder_harm_scan": "Narrow non-bypass reduces risk of accidental advice/release/export authority."
+    },
+    "v3_adversarial_qa": [
+      {
+        "attack": "A broad admin module might be needed later.",
+        "answer": "Yes, but later need is not P0 safety acceptance; keep it separate."
+      },
+      {
+        "attack": "Existing admin routes make broad scope unavoidable.",
+        "answer": "Route existence is not implementation authority under True-UX discipline."
+      },
+      {
+        "attack": "Narrow scope may understate admin UI value.",
+        "answer": "P0 value is proof of real process safety, not admin breadth."
+      }
+    ],
+    "learning_log": [
+      "The strongest proof branch is narrow governance non-bypass.",
+      "The weak branch is broad admin-in-P0 because it converts legacy route breadth into acceptance burden.",
+      "A route-catalog cleanup branch remains useful but is not required before BD-04 if DG-02 approves the narrow cutline."
+    ]
+  },
+  "validation": {
+    "commands_run": [
+      {
+        "command": "pnpm playwright test tests/governance-non-bypass.spec.ts tests/true-ux-governance-non-bypass.spec.ts tests/platform-admin-actions-api.spec.ts tests/tenant-governance-actions-api.spec.ts --workers=1",
+        "status": "PASS",
+        "result": "10 passed"
+      },
+      {
+        "command": "pnpm guard:source",
+        "status": "PASS",
+        "result": "0 violations"
+      },
+      {
+        "command": "node -e JSON.parse(BD_03_ADMIN_GOVERNANCE_NON_BYPASS_SPEC.json)",
+        "status": "PASS",
+        "result": "8 non-bypass scenarios, 3 DG-02 options"
+      }
+    ],
+    "status": "PASS"
+  },
+  "next_gate": {
+    "gate": "DG-02",
+    "stop_reason": "Human cutline decision required before BD-04 evidence lifecycle work can use the admin scope.",
+    "requested_decision_token": "APPROVE_DG02_ADMIN_GOVERNANCE_NON_BYPASS_ONLY"
+  }
+}
