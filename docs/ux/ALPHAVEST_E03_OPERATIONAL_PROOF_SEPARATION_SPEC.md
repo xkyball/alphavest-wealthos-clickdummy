@@ -9,11 +9,11 @@ Date: 2026-06-27
 | Ticket | `SPEC-E03-1` |
 | Parent epic | `E03 Operational UI vs Proof / Debug / Reviewer Separation` |
 | Source analysis | `docs/v3/proof/e03_operational_proof_separation_analysis.md` |
-| Spec status | `DECISION_READY` |
-| Implementation status | `BLOCKED_PENDING_HUMAN_APPROVAL` |
-| Recommended approval | `APPROVE_E03_CANONICAL_REVIEW_MODE_CONTRACT` |
+| Spec status | `IMPLEMENTED_CURRENT_REPO_TRUTH` |
+| Implementation status | `E03_IMPLEMENTED_AND_VALIDATED` |
+| Existing implementation path | `CANONICAL_REVIEW_MODE_CONTRACT` |
 
-This specification defines the target proof/reviewer separation system for E03. It does not authorize implementation until the human approval gate is cleared.
+This specification defines the implemented proof/reviewer separation system for E03. The canonical review-mode path is current repo truth through `lib/ux-proof-reviewer-mode.ts`, `components/ux-proof-reviewer-secondary-surface.tsx`, operational-default hooks, client-mode suppression metadata and focused E03 tests.
 
 ## Target State
 
@@ -31,9 +31,9 @@ The contract must answer these questions for every relevant content class:
 
 ## Canonical Source Decision
 
-Recommended decision: add a narrow code-backed canonical contract in `lib/ux-proof-reviewer-mode.ts`, then make proof/reviewer components, app-shell/topbar/page-header metadata, capture review outputs and client-suppression tests project from it.
+Implemented decision: use a narrow code-backed canonical contract in `lib/ux-proof-reviewer-mode.ts`, then make proof/reviewer components, app-shell/topbar/page-header metadata, capture review outputs and client-suppression tests project from it.
 
-Allowed fallback if the user rejects a new file: extend `lib/ux-operating-model.ts` and `lib/ux-page-template-system.ts` with proof/reviewer visibility fields. This is less clean because E03 needs to classify content, not routes alone.
+Rejected fallback for current repo truth: extending only `lib/ux-operating-model.ts` and `lib/ux-page-template-system.ts` with proof/reviewer visibility fields. This is less clean because E03 needs to classify content, not routes alone.
 
 Rejected approach: restore `ProductGuidancePanel` as visible default UI. That would bring proof/reviewer scaffolding back into operational workflows and preserve old debt.
 
@@ -109,7 +109,7 @@ Required classification:
 
 ## Implementation Boundaries
 
-Allowed after approval:
+Implemented scope:
 
 - Add `lib/ux-proof-reviewer-mode.ts` or use the approved fallback.
 - Add a reusable proof/reviewer secondary-surface component or metadata adapter.
@@ -171,21 +171,15 @@ Screenshots are required only if implementation changes visible UI. Contract, me
 
 | Ticket | Status | Required Scope |
 | --- | --- | --- |
-| `IMPL-E03-1` | Blocked pending approval | Add the canonical proof/reviewer visibility contract and reusable secondary-surface pattern. |
-| `IMPL-E03-2` | Blocked pending approval and `IMPL-E03-1` | Move proof/debug metadata out of operational default views by projecting through the contract. |
-| `IMPL-E03-3` | Blocked pending approval | Apply client-mode suppression hooks for internal proof/reviewer/debug content. |
-| `QA-E03-1` | Blocked pending implementation | Validate operational, reviewer and client modes against this specification. |
+| `E03-I1` / `IMPL-E03-1` | Complete | Canonical proof/reviewer visibility contract and reusable secondary-surface pattern exist. |
+| `E03-I2` / `IMPL-E03-2` | Complete | Proof/debug metadata is removed from default operational views by projecting through the contract. |
+| `E03-I3` / `IMPL-E03-3` | Complete | Client-mode suppression hooks for internal proof/reviewer/debug content exist on client hub surfaces. |
+| `E03-Q1` / `QA-E03-1` | Complete | Operational, reviewer and client modes are validated against this specification. |
 
-## Post-Spec Approval Gate
+## Implementation Path / Cleanup Note
 
-Implementation must not start until the user approves one of these choices:
-
-| Approval Choice | Recommendation | Consequence |
-| --- | --- | --- |
-| `APPROVE_E03_CANONICAL_REVIEW_MODE_CONTRACT` | Recommended | Add a narrow typed proof/reviewer visibility contract and move proof/debug metadata into secondary/capture/client-suppressed targets. Best path to remove old scaffolding debt. |
-| `APPROVE_E03_EXTEND_E01_E02_CONTRACTS_ONLY` | Acceptable fallback | Avoids a new file, but mixes content visibility decisions into route/template contracts. Less clean. |
-| `REJECT_E03_IMPLEMENTATION` | Not recommended | Leaves E03 as analysis/spec only and preserves scattered proof/debug/reviewer visibility rules. |
+The existing implemented path is the canonical review-mode contract. Do not restore `ProductGuidancePanel` as default operational proof scaffolding, and do not move E03 visibility decisions back into scattered route, template, topbar or test expectations.
 
 ## Ticket Result
 
-`SPEC-E03-1` is complete and decision-ready. `IMPL-E03-1`, `IMPL-E03-2`, `IMPL-E03-3` and `QA-E03-1` remain blocked until the post-spec approval gate is cleared.
+`E03-S1` / `SPEC-E03-1` is complete as current repo truth. `E03-I1`, `E03-I2`, `E03-I3` and `E03-Q1` are executable as validation/closure against the implemented canonical review-mode path.
