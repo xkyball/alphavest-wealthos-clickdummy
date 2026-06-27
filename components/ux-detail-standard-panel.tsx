@@ -60,7 +60,13 @@ export function UxDetailStandardPanel({
       data-ux-page-template-required-zones={template.requiredZones.join(" ")}
     >
       {isFocusedDetail ? (
-        <div className="grid gap-2 rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/55 p-3 sm:grid-cols-2 xl:col-span-3 xl:grid-cols-[1.1fr_0.8fr_1fr_1.2fr]" data-testid="ux-d4-focused-status-strip" data-ux-content-tier="must-see">
+        <div
+          className="grid gap-2 rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/55 p-3 sm:grid-cols-2 xl:col-span-3 xl:grid-cols-[1.1fr_0.8fr_1fr_1.2fr]"
+          data-testid="ux-d4-focused-status-strip"
+          data-ux-content-tier="must-see"
+          data-ux-long-page-anchor="summary"
+          data-ux-template-zone="summary"
+        >
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Object</p>
             <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{objectTitle}</p>
@@ -80,7 +86,13 @@ export function UxDetailStandardPanel({
         </div>
       ) : null}
 
-      <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-4" data-testid="ux-page-detail-object-header" data-ux-content-tier="must-see">
+      <div
+        className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-4"
+        data-testid="ux-page-detail-object-header"
+        data-ux-content-tier="must-see"
+        data-ux-long-page-anchor="primary"
+        data-ux-template-zone="primary_content"
+      >
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">{objectType}</p>
         <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectTitle}</h2>
         <p className="mt-2 text-sm font-semibold text-alphavest-gold-soft">{status}</p>
@@ -93,7 +105,13 @@ export function UxDetailStandardPanel({
           ))}
         </div>
       </div>
-      <div className="grid gap-3 md:grid-cols-2" data-testid="ux-page-detail-evidence-timeline" data-ux-content-tier="secondary">
+      <div
+        className="grid gap-3 md:grid-cols-2"
+        data-testid="ux-page-detail-evidence-timeline"
+        data-ux-content-tier="secondary"
+        data-ux-long-page-anchor="proof-audit"
+        data-ux-template-zone="proof_audit_zone"
+      >
         <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Evidence basis</p>
           <div className="mt-3 space-y-2">
@@ -111,7 +129,14 @@ export function UxDetailStandardPanel({
           </div>
         </div>
       </div>
-      <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4" data-testid="ux-page-detail-gated-action-rail" data-ux-content-tier="must-see">
+      <div
+        className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4"
+        data-testid="ux-page-detail-gated-action-rail"
+        data-ux-content-tier="must-see"
+        data-ux-long-page-region="sticky_action"
+        data-ux-sticky-action-zone="true"
+        data-ux-template-zone="action_zone"
+      >
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold-soft">Actions</p>
         <p className="mt-3 text-lg font-semibold text-alphavest-ivory">{actionLabel}</p>
         <p className="mt-2 text-sm leading-6 text-alphavest-muted">{actionState}</p>

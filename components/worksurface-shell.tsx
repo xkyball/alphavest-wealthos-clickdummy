@@ -77,7 +77,11 @@ export function WorksurfaceShell({
       data-wp02-route-id={routeId}
       data-wp02-worksurface={worksurfaceId}
     >
-      <div className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/58 p-4">
+      <div
+        className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/58 p-4"
+        data-ux-long-page-anchor="summary"
+        data-ux-template-zone="summary"
+      >
         <div className="flex flex-col gap-4 2xl:flex-row 2xl:items-start 2xl:justify-between">
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">{eyebrow}</p>
@@ -99,23 +103,31 @@ export function WorksurfaceShell({
         </div>
       </div>
       <div className={cn("grid gap-4", rail ? "2xl:grid-cols-[minmax(0,1fr)_24rem]" : "")}>
-        <div className="min-w-0 space-y-4">
+        <div className="min-w-0 space-y-4" data-ux-long-page-anchor="primary" data-ux-template-zone="primary_content">
           {primary}
           {secondary}
           {children}
         </div>
         {rail ? (
-          <aside className="min-w-0 space-y-4 2xl:sticky 2xl:top-24 2xl:self-start" data-testid="wp02-worksurface-rail">
+          <aside
+            className="min-w-0 space-y-4 2xl:sticky 2xl:top-24 2xl:self-start"
+            data-testid="wp02-worksurface-rail"
+            data-ux-long-page-region="sticky_rail"
+            data-ux-sticky-action-zone={template.actionZoneBehavior === "adjacent_action_rail" || template.actionZoneBehavior === "sticky_action_zone" ? "true" : undefined}
+            data-ux-template-zone="action_zone"
+          >
             {rail}
           </aside>
         ) : null}
       </div>
-      <StatePanel
-        detail={safetyNote}
-        state="restricted"
-        testId="wp02-worksurface-safety-boundary"
-        title="Worksurface safety boundary"
-      />
+      <div data-ux-long-page-anchor="state" data-ux-template-zone="state_zone">
+        <StatePanel
+          detail={safetyNote}
+          state="restricted"
+          testId="wp02-worksurface-safety-boundary"
+          title="Worksurface safety boundary"
+        />
+      </div>
     </section>
   );
 }

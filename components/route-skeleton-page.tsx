@@ -195,7 +195,7 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
           title={route.title}
         />
 
-        <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+        <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]" data-ux-long-page-anchor="primary" data-ux-template-zone="primary_content">
           <article className="alpha-card p-5">
             <div className="flex items-start gap-3 border-b border-alphavest-border/60 pb-4">
               <div className="grid size-10 shrink-0 place-items-center rounded-full border border-alphavest-gold/40 bg-alphavest-gold/10 text-alphavest-gold">
@@ -256,7 +256,7 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
           <RouteDemoContextCard roleFamily={route.roleFamily} />
         </section>
 
-        <section className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
+        <section className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]" data-ux-long-page-anchor="state" data-ux-template-zone="state_zone">
           <article className="alpha-card p-5">
             <div className="flex items-center gap-3 border-b border-alphavest-border/60 pb-4">
               <div className="grid size-10 place-items-center rounded-full border border-alphavest-gold/40 bg-alphavest-gold/10 text-alphavest-gold">

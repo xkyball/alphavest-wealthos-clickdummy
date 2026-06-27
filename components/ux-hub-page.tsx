@@ -56,7 +56,12 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
       >
         <div className={cn("grid gap-4", !isMobileClientHub && "xl:grid-cols-[minmax(0,1fr)_22rem]")}>
           <div className="space-y-4">
-            <div className="rounded-md border border-alphavest-border bg-alphavest-panel/72 p-5" data-ux-content-tier="must-see">
+            <div
+              className="rounded-md border border-alphavest-border bg-alphavest-panel/72 p-5"
+              data-ux-content-tier="must-see"
+              data-ux-long-page-anchor="summary"
+              data-ux-template-zone="summary"
+            >
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">{hub.eyebrow}</p>
               <div className={cn("mt-4 flex flex-col gap-4", !isMobileClientHub && "lg:flex-row lg:items-end lg:justify-between")}>
                 <div className="min-w-0">
@@ -84,7 +89,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
               </div>
             </div>
 
-            <div className={cn("grid gap-3", !isMobileClientHub && "md:grid-cols-3")} data-ux-content-tier="secondary">
+            <div className={cn("grid gap-3", !isMobileClientHub && "md:grid-cols-3")} data-ux-content-tier="secondary" data-ux-long-page-anchor="primary" data-ux-template-zone="primary_content">
               {hub.priorityCards.map((card) => (
                 <Card
                   className={cn("border p-4", toneClasses[card.tone])}
@@ -116,7 +121,13 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
           </div>
 
           <aside className="space-y-4">
-            <Card className="border-alphavest-gold/45 bg-alphavest-gold/10 p-4" data-testid="ux-d1-next-step-panel">
+            <Card
+              className="border-alphavest-gold/45 bg-alphavest-gold/10 p-4"
+              data-testid="ux-d1-next-step-panel"
+              data-ux-long-page-region="sticky_action"
+              data-ux-sticky-action-zone="true"
+              data-ux-template-zone="action_zone"
+            >
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">One safe next step</p>
               <Link
                 className="mt-4 block rounded-md border border-alphavest-gold/55 bg-alphavest-gold/10 p-4 transition hover:border-alphavest-gold"
@@ -166,7 +177,12 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
     >
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <div className="space-y-5">
-          <div className="rounded-md border border-alphavest-border bg-alphavest-panel/72 p-5" data-ux-content-tier="must-see">
+          <div
+            className="rounded-md border border-alphavest-border bg-alphavest-panel/72 p-5"
+            data-ux-content-tier="must-see"
+            data-ux-long-page-anchor="summary"
+            data-ux-template-zone="summary"
+          >
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">{hub.eyebrow}</p>
             <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div className="min-w-0">
@@ -217,7 +233,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
             </div>
           ) : null}
 
-          <div className="grid gap-4 md:grid-cols-3" data-ux-content-tier="secondary">
+          <div className="grid gap-4 md:grid-cols-3" data-ux-content-tier="secondary" data-ux-long-page-anchor="primary" data-ux-template-zone="primary_content">
             {hub.priorityCards.map((card) => (
               <Card className={cn("border", toneClasses[card.tone])} data-testid="ux-hub-priority-card" data-ux-hub-priority-card="true" key={card.label}>
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] opacity-80">{card.label}</p>
