@@ -109,4 +109,42 @@ test.describe("E12 contract fulfillment gate", () => {
     expect(readFileSync(markdownPath, "utf8")).toContain("E12 Contract Fulfillment Gate Report");
     expect(contractFulfillmentGateMarkdown(report)).toContain("No violations.");
   });
+
+  test("fails unregistered local action-class and filter exception debt", () => {
+    const report = evaluateContractFulfillmentGate(uxContractLedgerEntries, "2026-06-27T00:00:00.000Z", {
+      sourceFiles: [
+        {
+          path: "components/unregistered-actions.tsx",
+          text: "const primaryButtonClass = 'rounded-md';",
+        },
+        {
+          path: "components/unregistered-filter.tsx",
+          text: '<button data-ux-e10-filter-exception-id="DSF-999" />',
+        },
+      ],
+    });
+
+    expect(report.status).toBe("fail");
+    expect(violationIds(report.violations)).toEqual(expect.arrayContaining([
+      "E12-GATE-NO-NEW-ACTION-DEBT",
+      "E12-GATE-NO-NEW-FAKE-FILTERS",
+    ]));
+  });
+
+  test("allows registered E10 action and filter debt during the warn-existing transition", () => {
+    const report = evaluateContractFulfillmentGate(uxContractLedgerEntries, "2026-06-27T00:00:00.000Z", {
+      sourceFiles: [
+        {
+          path: "components/admin-tenant-setup-screen.tsx",
+          text: [
+            "const primaryButtonClass = uxActionClassForPriority('primary');",
+            '<button data-ux-e10-filter-exception-id="DSF-001" />',
+          ].join("\n"),
+        },
+      ],
+    });
+
+    expect(report.status).toBe("pass");
+    expect(report.violations).toEqual([]);
+  });
 });

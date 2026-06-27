@@ -1,8 +1,10 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 import {
   duplicateContractLedgerIds,
+  e10DataSurfaceFilterLedgerEntries,
+  e10RegisteredActionFiles,
   fulfilledEntriesWithManualDecisionOnlyEvidence,
   fulfilledEntriesWithMarkdownOnlyEvidence,
   ledgerEntriesByContractFamily,
@@ -34,6 +36,16 @@ export type ContractFulfillmentGateReport = {
   status: "pass" | "warn" | "fail";
   totalEntries: number;
   violations: ContractFulfillmentGateViolation[];
+};
+
+export type ContractFulfillmentGateSourceFile = {
+  path: string;
+  text: string;
+};
+
+export type ContractFulfillmentGateOptions = {
+  sourceFiles?: readonly ContractFulfillmentGateSourceFile[];
+  sourceRoot?: string;
 };
 
 const requiredLedgerFields = [
@@ -68,9 +80,68 @@ function countsByStatus(entries: readonly UxContractLedgerEntry[]) {
   ) as Record<FulfillmentStatus, number>;
 }
 
+function collectSourceFiles(root: string, relativeDir = "components"): ContractFulfillmentGateSourceFile[] {
+  const absoluteDir = path.join(root, relativeDir);
+
+  if (!existsSync(absoluteDir)) return [];
+
+  return readdirSync(absoluteDir).flatMap((entry) => {
+    const relativePath = path.join(relativeDir, entry);
+    const absolutePath = path.join(root, relativePath);
+    const stat = statSync(absolutePath);
+
+    if (stat.isDirectory()) return collectSourceFiles(root, relativePath);
+    if (!/\.(tsx|ts)$/.test(entry)) return [];
+
+    return [{
+      path: relativePath.split(path.sep).join("/"),
+      text: readFileSync(absolutePath, "utf8"),
+    }];
+  });
+}
+
+function sourceFilesForOptions(options: ContractFulfillmentGateOptions) {
+  return options.sourceFiles ?? collectSourceFiles(options.sourceRoot ?? process.cwd());
+}
+
+function addActionAndFilterDebtViolations(
+  violations: ContractFulfillmentGateViolation[],
+  sourceFiles: readonly ContractFulfillmentGateSourceFile[],
+) {
+  const registeredActionFiles = new Set(e10RegisteredActionFiles);
+  const registeredFilterExceptionIds = new Set(
+    e10DataSurfaceFilterLedgerEntries.map((entry) => entry.sourceRegisterId).filter((id): id is string => Boolean(id)),
+  );
+  const localActionAliasPattern = /const\s+(primaryButtonClass|secondaryButtonClass|staticButtonClass|destructiveButtonClass)\s*=/;
+  const filterExceptionPattern = /data-ux-e10-filter-exception-id="([^"]+)"/g;
+
+  for (const sourceFile of sourceFiles) {
+    if (localActionAliasPattern.test(sourceFile.text) && !registeredActionFiles.has(sourceFile.path)) {
+      violations.push({
+        message: `Unregistered local action-class vocabulary found in ${sourceFile.path}.`,
+        ruleId: "E12-GATE-NO-NEW-ACTION-DEBT",
+        severity: "failure",
+      });
+    }
+
+    for (const match of sourceFile.text.matchAll(filterExceptionPattern)) {
+      const id = match[1];
+      if (!registeredFilterExceptionIds.has(id)) {
+        violations.push({
+          entryId: id,
+          message: `Unregistered disabled/static filter debt found in ${sourceFile.path}: ${id}.`,
+          ruleId: "E12-GATE-NO-NEW-FAKE-FILTERS",
+          severity: "failure",
+        });
+      }
+    }
+  }
+}
+
 export function evaluateContractFulfillmentGate(
   entries: readonly UxContractLedgerEntry[] = uxContractLedgerEntries,
   generatedAt = new Date().toISOString(),
+  options: ContractFulfillmentGateOptions = {},
 ): ContractFulfillmentGateReport {
   const violations: ContractFulfillmentGateViolation[] = [];
 
@@ -140,6 +211,8 @@ export function evaluateContractFulfillmentGate(
       severity: "failure",
     });
   }
+
+  addActionAndFilterDebtViolations(violations, sourceFilesForOptions(options));
 
   const hasFailures = violations.some((violation) => violation.severity === "failure");
   const hasWarnings = violations.some((violation) => violation.severity === "warning");
