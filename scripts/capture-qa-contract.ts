@@ -36,6 +36,7 @@ type NormalizedCapture = {
   lifecycleKind?: string;
   manifestPath: string;
   pageId?: string;
+  proofEligibilityStatus?: string;
   route?: string;
   screenshotPath?: string;
   sourceKind: "routes-and-modals" | "strict-visual";
@@ -167,6 +168,9 @@ function normalizeRoutesAndModalsManifest(manifestPath: string) {
       };
       pageId?: string;
       path?: string;
+      proofEligibility?: {
+        status?: string;
+      };
       route?: string;
       state?: string;
       status?: string;
@@ -187,6 +191,7 @@ function normalizeRoutesAndModalsManifest(manifestPath: string) {
       lifecycleKind: item.captureVariant?.lifecycleKind,
       manifestPath,
       pageId: item.pageId,
+      proofEligibilityStatus: item.proofEligibility?.status,
       route: item.route,
       screenshotPath: item.path,
       sourceKind: "routes-and-modals",
@@ -324,6 +329,10 @@ function validateMetadata(captures: NormalizedCapture[]) {
       if (!fileName.startsWith(expectedPrefix) || !fileName.endsWith(".png")) {
         pushFinding(warnings, capture, "naming.routes-and-modals", `Expected filename prefix ${expectedPrefix}.png, got ${fileName}.`);
       }
+    }
+
+    if (capture.sourceKind === "routes-and-modals" && !capture.proofEligibilityStatus) {
+      pushFinding(warnings, capture, "proof-eligibility.required", "Missing screenshot proof eligibility status.");
     }
 
     if (capture.sourceKind === "strict-visual" && capture.screenshotPath && capture.lifecycleKind && capture.viewport) {

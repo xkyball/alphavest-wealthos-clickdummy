@@ -1,4 +1,5 @@
 import { chromium, type BrowserContext, type Locator, type Page, type Request, type Response } from "@playwright/test";
+import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
@@ -22,6 +23,30 @@ type RuntimeReflectionStrategy = "mixed" | "react-devtools-hook" | "react-fiber-
 
 type RuntimeConfidence = "high" | "medium" | "low" | "unavailable";
 
+type CaptureProofEligibilityStatus = "visual_acceptance_candidate" | "supporting_reference" | "reference_only" | "rejected";
+
+type CaptureProofEligibility = {
+  missingProvenance: string[];
+  reasons: string[];
+  requiredProvenanceFields: string[];
+  status: CaptureProofEligibilityStatus;
+};
+
+type CaptureRunProvenance = {
+  baseUrl: string;
+  branch: string | null;
+  captureMode: "screens-only" | "full-runtime";
+  captureScope: "audit" | "release-candidate";
+  commit: string | null;
+  generatedAt: string;
+  outputArtifactPrefix: string;
+  releaseCandidate: boolean;
+  routeCount: number;
+  sidecarsEnabled: boolean;
+  sourceState: "clean" | "dirty" | "unknown";
+  viewport: { height: number; width: number };
+};
+
 type CaptureItem = {
   captureVariant: UxCaptureVariant;
   componentRuntimeMarkdownPath?: string;
@@ -40,6 +65,7 @@ type CaptureItem = {
   modelContext: CaptureScreenModelContext;
   pageId: string;
   path: string;
+  proofEligibility?: CaptureProofEligibility;
   reactSourceTracePath?: string;
   reactSourceTraceStatus?: "captured" | "failed-react-source-trace";
   route: string;
@@ -81,6 +107,24 @@ const captureVariantContract = {
   requiredVariantKinds: ["base", "modal", "drawer", "confirmation"],
 };
 
+const captureProofPolicy = {
+  acceptanceBoundary:
+    "Screenshots are visual QA evidence only. They must not be promoted to COMPLETE_VERTICAL_SLICE proof without current-run UI, handler/service, DB/state, guard/audit and test evidence.",
+  failureModes: [
+    "missing-run-provenance",
+    "missing-route-or-url",
+    "missing-viewport",
+    "missing-source-state",
+    "missing-generated-at",
+    "failed-or-missing-screenshot",
+    "screens-only-without-runtime-sidecars",
+    "overlay-without-interaction-proof",
+    "stale-or-merged-artifact-without-current-run-proof",
+  ],
+  requiredItemFields: ["pageId", "route", "url", "state", "path", "status", "captureVariant", "modelContext"],
+  requiredRunProvenanceFields: ["generatedAt", "baseUrl", "outputArtifactPrefix", "captureMode", "captureScope", "viewport", "branch", "commit", "sourceState"],
+};
+
 const cliArgs = new Set(process.argv.slice(2));
 const baseUrl = process.env.AVS_BASE_URL ?? process.env.BASE_URL ?? "http://localhost:3095";
 const releaseCandidate = cliArgs.has("--release-candidate") || process.env.AVS_CAPTURE_RELEASE_CANDIDATE === "1";
@@ -98,6 +142,7 @@ const pageIdFilter = process.env.AVS_CAPTURE_PAGE_IDS
 const sourceTraceEnabled = process.env.AVS_CAPTURE_SOURCE_TRACE !== "0";
 const sourceRoots = ["app", "components", "lib", "hooks", "contexts", "styles"].map((folder) => path.join(process.cwd(), folder)).filter(existsSync);
 const captureQaAfterRun = process.env.AVS_CAPTURE_QA_AFTER_RUN !== "0";
+const captureViewport = { height: 1000, width: 1440 };
 
 type SourceFileIndexEntry = {
   absPath: string;
@@ -2274,7 +2319,113 @@ function markdownCell(value: string) {
   return value.replace(/\|/g, "\\|").replace(/\n/g, "<br>");
 }
 
+function gitValue(args: string[]) {
+  try {
+    return execFileSync("git", args, { cwd: process.cwd(), encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+function buildRunProvenance(generatedAt: string): CaptureRunProvenance {
+  const dirty = gitValue(["status", "--short"]);
+
+  return {
+    baseUrl,
+    branch: gitValue(["branch", "--show-current"]),
+    captureMode: screensOnly ? "screens-only" : "full-runtime",
+    captureScope: releaseCandidate ? "release-candidate" : "audit",
+    commit: gitValue(["rev-parse", "--short", "HEAD"]),
+    generatedAt,
+    outputArtifactPrefix,
+    releaseCandidate,
+    routeCount: screenRoutes.length,
+    sidecarsEnabled: !screensOnly,
+    sourceState: dirty === null ? "unknown" : dirty.length > 0 ? "dirty" : "clean",
+    viewport: captureViewport,
+  };
+}
+
+function missingRunProvenanceFields(provenance: CaptureRunProvenance) {
+  return captureProofPolicy.requiredRunProvenanceFields.filter((field) => {
+    const value = provenance[field as keyof CaptureRunProvenance];
+    return value === null || value === undefined || value === "";
+  });
+}
+
+function buildProofEligibility(item: CaptureItem, provenance: CaptureRunProvenance): CaptureProofEligibility {
+  const reasons: string[] = [];
+  const missingProvenance = missingRunProvenanceFields(provenance);
+
+  if (missingProvenance.length) reasons.push(`Missing run provenance fields: ${missingProvenance.join(", ")}.`);
+  if (item.status !== "captured") reasons.push(`Capture status is ${item.status}, not captured.`);
+  if (!item.path) reasons.push("Screenshot path is missing.");
+  if (!item.url) reasons.push("Capture URL is missing.");
+  if (!item.route) reasons.push("Route is missing.");
+  if (!item.captureVariant) reasons.push("Capture variant is missing.");
+  if (provenance.sourceState !== "clean") reasons.push(`Source state is ${provenance.sourceState}; screenshot cannot be treated as clean-baseline proof.`);
+  if (screensOnly) reasons.push("Screens-only mode has no DOM/CSS/runtime sidecars, so it is supporting visual evidence only.");
+  if (!screensOnly && (!item.domPath || !item.cssPath || !item.componentRuntimePath || !item.domRectTracePath || !item.reactSourceTracePath)) {
+    reasons.push("Full-runtime capture is missing one or more sidecars required for visual acceptance candidacy.");
+  }
+  if (item.captureVariant.isOverlay && item.interactionProofTraceStatus !== "captured") {
+    reasons.push("Overlay capture lacks captured interaction proof trace.");
+  }
+
+  if (item.status !== "captured" || !item.path || !item.url || !item.route || missingProvenance.length > 0) {
+    return {
+      missingProvenance,
+      reasons,
+      requiredProvenanceFields: captureProofPolicy.requiredRunProvenanceFields,
+      status: "rejected",
+    };
+  }
+
+  if (screensOnly || provenance.sourceState !== "clean") {
+    return {
+      missingProvenance,
+      reasons,
+      requiredProvenanceFields: captureProofPolicy.requiredRunProvenanceFields,
+      status: "supporting_reference",
+    };
+  }
+
+  if (!item.domPath || !item.cssPath || !item.componentRuntimePath || !item.domRectTracePath || !item.reactSourceTracePath) {
+    return {
+      missingProvenance,
+      reasons,
+      requiredProvenanceFields: captureProofPolicy.requiredRunProvenanceFields,
+      status: "reference_only",
+    };
+  }
+
+  if (item.captureVariant.isOverlay && item.interactionProofTraceStatus !== "captured") {
+    return {
+      missingProvenance,
+      reasons,
+      requiredProvenanceFields: captureProofPolicy.requiredRunProvenanceFields,
+      status: "reference_only",
+    };
+  }
+
+  return {
+    missingProvenance,
+    reasons: [
+      "Current-run route, URL, viewport, timestamp, source state and runtime sidecars are present.",
+      "This remains visual acceptance evidence, not complete process or vertical-slice proof.",
+    ],
+    requiredProvenanceFields: captureProofPolicy.requiredRunProvenanceFields,
+    status: "visual_acceptance_candidate",
+  };
+}
+
 function writeIndex(items: CaptureItem[]) {
+  const generatedAt = new Date().toISOString();
+  const runProvenance = buildRunProvenance(generatedAt);
+  items.forEach((item) => {
+    item.proofEligibility = buildProofEligibility(item, runProvenance);
+  });
+
   const captureVariantCounts = items.reduce<Record<string, number>>((acc, item) => {
     acc[item.captureVariant.lifecycleKind] = (acc[item.captureVariant.lifecycleKind] ?? 0) + 1;
     return acc;
@@ -2288,12 +2439,14 @@ function writeIndex(items: CaptureItem[]) {
         baseUrl,
         captureMode: screensOnly ? "screens-only" : "full-runtime",
         captureScope: releaseCandidate ? "release-candidate" : "audit",
+        captureProofPolicy,
         captureVariantContract,
         captureVariantCounts,
-        generatedAt: new Date().toISOString(),
+        generatedAt,
         items,
         outputArtifactPrefix,
         releaseCandidate,
+        runProvenance,
         sidecarsEnabled: !screensOnly,
       },
       null,
@@ -2310,13 +2463,15 @@ function writeIndex(items: CaptureItem[]) {
     `Artifact prefix: ${outputArtifactPrefix}`,
     `Capture mode: ${screensOnly ? "screens-only" : "full-runtime"}`,
     `Sidecars: ${screensOnly ? "disabled" : "enabled"}`,
+    `Source state: ${runProvenance.sourceState}`,
+    `Proof policy: ${captureProofPolicy.acceptanceBoundary}`,
     `Audit baseline: ${captureScreenModelAuditBaseline.registeredRoutes} routes, ${captureScreenModelAuditBaseline.schemaModels} models, ${captureScreenModelAuditBaseline.schemaEnums} enums`,
     "",
-    "| Page | Route | State | Capture Variant | File Kind | Overlay | Status | UX Mode | Audience | Proof Posture | Productive | Capability | No-overclaim Rule | Scope Warnings | Models | Screenshot | Rendered DOM | Rendered CSS | Runtime Components | Runtime Summary | Runtime Confidence | DOM Rect Trace | React Source Trace | Interaction Proof Trace |",
-    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    "| Page | Route | State | Capture Variant | File Kind | Overlay | Status | Proof Eligibility | Proof Reasons | UX Mode | Audience | Proof Posture | Productive | Capability | No-overclaim Rule | Scope Warnings | Models | Screenshot | Rendered DOM | Rendered CSS | Runtime Components | Runtime Summary | Runtime Confidence | DOM Rect Trace | React Source Trace | Interaction Proof Trace |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ...items.map(
       (item) =>
-        `| ${item.pageId} | ${item.route} | ${item.state} | ${item.captureVariant.lifecycleKind} | ${item.captureVariant.fileKind} | ${item.captureVariant.isOverlay ? "yes" : "no"} | ${item.status} | ${item.modelContext.uxOperatingModel.mode} | ${item.modelContext.uxOperatingModel.audience} | ${item.modelContext.uxOperatingModel.proofPosture} | ${item.modelContext.uxOperatingModel.productiveUxEligible ? "yes" : "no"} | ${item.modelContext.capability.status} | ${markdownCell(item.modelContext.uxOperatingModel.noOverclaimRule)} | ${markdownCell(item.modelContext.warnings.join("<br>"))} | ${item.modelContext.models.join(", ")} | ${item.path} | ${item.domPath ?? ""} | ${item.cssPath ?? ""} | ${item.componentRuntimePath ?? ""} | ${item.componentRuntimeMarkdownPath ?? ""} | ${item.componentRuntimeConfidence ?? ""} | ${item.domRectTracePath ?? ""} | ${item.reactSourceTracePath ?? ""} | ${item.interactionProofTracePath ?? ""} |`,
+        `| ${item.pageId} | ${item.route} | ${item.state} | ${item.captureVariant.lifecycleKind} | ${item.captureVariant.fileKind} | ${item.captureVariant.isOverlay ? "yes" : "no"} | ${item.status} | ${item.proofEligibility?.status ?? ""} | ${markdownCell(item.proofEligibility?.reasons.join("<br>") ?? "")} | ${item.modelContext.uxOperatingModel.mode} | ${item.modelContext.uxOperatingModel.audience} | ${item.modelContext.uxOperatingModel.proofPosture} | ${item.modelContext.uxOperatingModel.productiveUxEligible ? "yes" : "no"} | ${item.modelContext.capability.status} | ${markdownCell(item.modelContext.uxOperatingModel.noOverclaimRule)} | ${markdownCell(item.modelContext.warnings.join("<br>"))} | ${item.modelContext.models.join(", ")} | ${item.path} | ${item.domPath ?? ""} | ${item.cssPath ?? ""} | ${item.componentRuntimePath ?? ""} | ${item.componentRuntimeMarkdownPath ?? ""} | ${item.componentRuntimeConfidence ?? ""} | ${item.domRectTracePath ?? ""} | ${item.reactSourceTracePath ?? ""} | ${item.interactionProofTracePath ?? ""} |`,
     ),
   ];
   writeFileSync(path.join(outputDir, "index.md"), `${lines.join("\n")}\n`);
@@ -2341,8 +2496,8 @@ async function main() {
   mkdirSync(outputDir, { recursive: true });
 
   const browser = await chromium.launch();
-  const unauthContext = await browser.newContext({ viewport: { height: 1000, width: 1440 } });
-  const authContext = await browser.newContext({ viewport: { height: 1000, width: 1440 } });
+  const unauthContext = await browser.newContext({ viewport: captureViewport });
+  const authContext = await browser.newContext({ viewport: captureViewport });
   if (!screensOnly) {
     await installReactReflectionHook(unauthContext);
     await installReactReflectionHook(authContext);

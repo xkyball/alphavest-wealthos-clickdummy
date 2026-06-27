@@ -58,6 +58,31 @@ test.describe("routes and modals capture contract", () => {
     expect(source).toContain("item.modelContext.models.join");
   });
 
+  test("writes capture provenance and proof eligibility before screenshots can be used as acceptance evidence", async () => {
+    const captureSource = await readFile("scripts/capture-routes-and-modals.ts", "utf8");
+    const qaSource = await readFile("scripts/capture-qa-contract.ts", "utf8");
+
+    expect(captureSource).toContain("type CaptureProofEligibilityStatus");
+    expect(captureSource).toContain("type CaptureRunProvenance");
+    expect(captureSource).toContain("const captureProofPolicy");
+    expect(captureSource).toContain("requiredRunProvenanceFields");
+    expect(captureSource).toContain("failureModes");
+    expect(captureSource).toContain("buildRunProvenance");
+    expect(captureSource).toContain("buildProofEligibility");
+    expect(captureSource).toContain("runProvenance");
+    expect(captureSource).toContain("captureProofPolicy");
+    expect(captureSource).toContain("proofEligibility?: CaptureProofEligibility");
+    expect(captureSource).toContain("visual_acceptance_candidate");
+    expect(captureSource).toContain("supporting_reference");
+    expect(captureSource).toContain("Screens-only mode has no DOM/CSS/runtime sidecars");
+    expect(captureSource).toContain("This remains visual acceptance evidence, not complete process or vertical-slice proof.");
+    expect(captureSource).toContain("| Proof Eligibility | Proof Reasons |");
+
+    expect(qaSource).toContain("proofEligibilityStatus");
+    expect(qaSource).toContain("proof-eligibility.required");
+    expect(qaSource).toContain("Missing screenshot proof eligibility status.");
+  });
+
   test("uses screenshot filenames that expose route and interaction kind", async () => {
     const source = await readFile("scripts/capture-routes-and-modals.ts", "utf8");
 

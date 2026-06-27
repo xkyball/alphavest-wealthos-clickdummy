@@ -40,6 +40,9 @@ test.describe("capture QA contract", () => {
               },
               pageId: "001",
               path: "routes-and-modals/fixture-run/001-route-login-base-base.png",
+              proofEligibility: {
+                status: "supporting_reference",
+              },
               route: "/login",
               state: "base",
               status: "captured",
