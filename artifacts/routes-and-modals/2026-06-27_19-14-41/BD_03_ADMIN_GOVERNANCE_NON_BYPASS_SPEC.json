@@ -6,8 +6,8 @@
     "ticket_id": "TICKET-BD-03",
     "source_burndown_id": "BD-03",
     "title": "Admin governance and non-bypass process",
-    "status": "COMPLETED_AWAITING_HUMAN_DECISION",
-    "human_gate": "DG-02",
+    "status": "COMPLETED_DECISION_ACCEPTED",
+    "human_gate": null,
     "product_code_changed": false,
     "ui_changed": false,
     "screenshot_required_for_chat": false
@@ -360,6 +360,17 @@
       "Treat broad admin polish as later support work or route-catalog cleanup, not P0 business-process evidence."
     ]
   },
+  "accepted_human_decision": {
+    "gate": "DG-02",
+    "accepted_token": "APPROVE_DG02_ADMIN_GOVERNANCE_NON_BYPASS_ONLY",
+    "accepted_at": "2026-06-27",
+    "decision_effect": [
+      "P0 admin scope is locked to narrow governance and non-bypass control proof.",
+      "Broad admin module work is demoted unless it directly proves route/action/payload/object-scope safety or no-bypass behavior.",
+      "Downstream BD-04 evidence lifecycle work must not rely on admin override, admin sufficiency, admin release, admin export approval or admin client-visibility shortcuts.",
+      "ReasonCode, no-mutation, no-payload, no-release and audit assertions remain mandatory proof language for admin-sensitive paths."
+    ]
+  },
   "engine_mixed_v2_v3_artifacts": {
     "v3_mission_card": {
       "mission": "Decide the P0 admin cutline with evidence before downstream process implementation.",
@@ -547,7 +558,9 @@
   },
   "next_gate": {
     "gate": "DG-02",
-    "stop_reason": "Human cutline decision required before BD-04 evidence lifecycle work can use the admin scope.",
-    "requested_decision_token": "APPROVE_DG02_ADMIN_GOVERNANCE_NON_BYPASS_ONLY"
+    "stop_reason": "Human cutline decision received and accepted.",
+    "requested_decision_token": "APPROVE_DG02_ADMIN_GOVERNANCE_NON_BYPASS_ONLY",
+    "accepted_decision_token": "APPROVE_DG02_ADMIN_GOVERNANCE_NON_BYPASS_ONLY",
+    "status": "RESOLVED"
   }
 }
