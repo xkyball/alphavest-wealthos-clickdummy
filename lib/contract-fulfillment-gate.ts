@@ -138,6 +138,43 @@ function addActionAndFilterDebtViolations(
   }
 }
 
+function addBackendTruthViolations(
+  violations: ContractFulfillmentGateViolation[],
+  entries: readonly UxContractLedgerEntry[],
+) {
+  for (const entry of entries) {
+    if (entry.targetClass !== "backend_query_backed") continue;
+
+    const hasApiOrReadmodelOwner = entry.ownerSurface.some((surface) =>
+      surface.kind === "api" || (surface.kind === "file" && /readmodel|service|route\.ts$/.test(surface.ref))
+    );
+    const hasUiOwner = entry.ownerSurface.some((surface) =>
+      surface.kind === "file" && surface.ref.startsWith("components/")
+    );
+    const hasApiProof = entry.proofType.includes("api_test") && entry.evidence.some((anchor) =>
+      anchor.kind === "api" || (anchor.kind === "test" && anchor.ref.includes("e11-backend-data-surface-truth"))
+    );
+
+    if (!hasApiOrReadmodelOwner || !hasApiProof) {
+      violations.push({
+        entryId: entry.id,
+        message: `Backend query surface ${entry.id} lacks required API metadata proof.`,
+        ruleId: "E12-GATE-BACKEND-META",
+        severity: "failure",
+      });
+    }
+
+    if (!hasUiOwner) {
+      violations.push({
+        entryId: entry.id,
+        message: `Backend query surface ${entry.id} lacks UI source-truth consumption proof.`,
+        ruleId: "E12-GATE-UI-SOURCE-TRUTH",
+        severity: "failure",
+      });
+    }
+  }
+}
+
 export function evaluateContractFulfillmentGate(
   entries: readonly UxContractLedgerEntry[] = uxContractLedgerEntries,
   generatedAt = new Date().toISOString(),
@@ -213,6 +250,7 @@ export function evaluateContractFulfillmentGate(
   }
 
   addActionAndFilterDebtViolations(violations, sourceFilesForOptions(options));
+  addBackendTruthViolations(violations, entries);
 
   const hasFailures = violations.some((violation) => violation.severity === "failure");
   const hasWarnings = violations.some((violation) => violation.severity === "warning");

@@ -147,4 +147,27 @@ test.describe("E12 contract fulfillment gate", () => {
     expect(report.status).toBe("pass");
     expect(report.violations).toEqual([]);
   });
+
+  test("fails backend-query-backed ledger entries without API and UI proof anchors", () => {
+    const base = uxContractLedgerEntries[0];
+    const missingApiAndUiProof = {
+      ...base,
+      id: "NEGATIVE-BACKEND-META",
+      contractFamily: "backend_query_truth",
+      evidence: [{ kind: "file", ref: "components/example.tsx", result: "pass" }],
+      ownerSurface: [{ kind: "test", ref: "tests/example.spec.ts" }],
+      proofType: ["runtime_test"],
+      status: "partial",
+      targetClass: "backend_query_backed",
+    } as UxContractLedgerEntry;
+    const report = evaluateContractFulfillmentGate([missingApiAndUiProof], "2026-06-27T00:00:00.000Z", {
+      sourceFiles: [],
+    });
+
+    expect(report.status).toBe("fail");
+    expect(violationIds(report.violations)).toEqual(expect.arrayContaining([
+      "E12-GATE-BACKEND-META",
+      "E12-GATE-UI-SOURCE-TRUTH",
+    ]));
+  });
 });
