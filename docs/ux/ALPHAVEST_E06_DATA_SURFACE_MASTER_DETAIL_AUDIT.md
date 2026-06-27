@@ -2,6 +2,12 @@
 
 Date: 2026-06-27
 
+## Reconciliation Status
+
+This file is the pre-implementation audit snapshot for the current uploaded E06 data-surface/master-detail epic. The implementation gaps below were closed for E06 by `docs/ux/ALPHAVEST_E06_DATA_SURFACE_MASTER_DETAIL_SPEC.md`, commit `c41f518`, focused E06 tests and route-smoke/density/browser validation.
+
+Backend filtering, pagination, sorting and URL state remain explicitly out of scope; disabled/static filters must continue to say they are not wired.
+
 ## Source
 
 Upload epic: `E06 - Data Surface and Master-Detail Pattern Implementation`

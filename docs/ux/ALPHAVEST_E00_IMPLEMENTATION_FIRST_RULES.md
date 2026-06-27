@@ -9,9 +9,10 @@ Date: 2026-06-27
 | Ticket | `E00-S1` |
 | Parent epic | `E00 Implementation Mode Correction and Source Lock` |
 | Source analysis | `docs/v3/proof/e00_implementation_mode_source_lock_analysis.md` |
-| Spec status | `DECISION_READY` |
+| Spec status | `DECISION_APPLIED_CURRENT_REPO_TRUTH` |
 | Implementation status | `NOT_APPLICABLE_GOVERNANCE_ONLY` |
-| Decision gate | `E00-D1 Proof Mode vs Operational Mode visibility policy` |
+| Decision gate | `E00-D1 Proof Mode vs Operational Mode visibility policy - COMPLETE` |
+| Decision proof | `docs/v3/proof/e00_proof_mode_visibility_decision.md` |
 
 This specification defines the implementation-first rules for the corrected BoC/CTES architecture. It does not authorize code changes by itself. It prevents downstream epics from closing as document-only work.
 
@@ -146,8 +147,8 @@ E01-E09 must use this rule set as follows:
 | Implementation tasks include target code areas and CTES | PASS for the corrected E01-E09 upload structure |
 | QA tasks validate implemented behavior, source contracts, runtime state or screenshot evidence | PASS by rule; ticket-specific proof remains required during each epic |
 | Governance-only status of E00 is explicit | PASS |
-| Human visibility decision is identified before E03/E07 continuation | PASS, pending `E00-D1` user approval |
+| Human visibility decision is identified before E03/E07 continuation | PASS, `APPROVE_E00_OPTION_A_PROOF_REVIEWER_MODE_DEFAULT` captured |
 
 ## Ticket Result
 
-`E00-S1` is complete and decision-ready. `E00-D1` must be answered before continuing to `E00-Q1` or downstream proof/client-visibility execution.
+`E00-S1`, `E00-D1` and `E00-Q1` are complete. Option A is the current repo truth: proof/debug/reviewer metadata is hidden from default operational UI and exposed only through explicit Proof/Reviewer Mode or capture/report artefacts, with visible operational safety blockers preserved where they affect the user's next safe action.

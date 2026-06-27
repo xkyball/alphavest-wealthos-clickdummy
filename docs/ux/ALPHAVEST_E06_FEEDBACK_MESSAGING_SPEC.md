@@ -1,4 +1,4 @@
-# AlphaVest E06 Feedback, Validation And No-Overclaim Messaging Specification
+# AlphaVest Historical E06 Feedback, Validation And No-Overclaim Messaging Specification
 
 Date: 2026-06-27
 
@@ -9,11 +9,15 @@ Date: 2026-06-27
 | Ticket | `SPEC-E06-1` |
 | Parent epic | `E06 Feedback, Validation and No-Overclaim Messaging System` |
 | Source analysis | `docs/v3/proof/e06_feedback_messaging_analysis.md` |
-| Spec status | `DECISION_READY` |
-| Implementation status | `BLOCKED_PENDING_HUMAN_APPROVAL` |
-| Recommended approval | `APPROVE_E06_CANONICAL_FEEDBACK_MESSAGE_CONTRACT` |
+| Spec status | `HISTORICAL_IMPLEMENTED_FEEDBACK_CHAIN` |
+| Implementation status | `IMPLEMENTED_AND_VALIDATED_AS_FEEDBACK_SUBSYSTEM` |
+| Applied approval path | `APPROVE_E06_CANONICAL_FEEDBACK_MESSAGE_CONTRACT` |
+| Current E06 replacement | `docs/ux/ALPHAVEST_E06_DATA_SURFACE_MASTER_DETAIL_SPEC.md` |
+| QA proof | `docs/v3/proof/e06_qa_validation_report.md` |
 
-This specification defines the target rules and acceptance criteria for E06. It does not authorize implementation until the human approval gate is cleared.
+This specification defines a historical feedback-message chain that was implemented and validated. It is no longer the operative current E06 epic number because the uploaded architecture now defines E06 as Data Surface and Master-Detail Pattern Implementation.
+
+Keep this file as feedback-message subsystem documentation. Do not use it as the current E06 task source.
 
 ## Target State
 
@@ -240,21 +244,11 @@ Screenshots are required only for visible UI layout or styling changes. Metadata
 
 | Ticket | Status | Required Scope |
 | --- | --- | --- |
-| `IMPL-E06-1` | Blocked pending approval | Add the canonical feedback-message contract and make shared no-overclaim feedback components project message metadata. |
-| `IMPL-E06-2` | Blocked pending approval and `IMPL-E06-1` | Normalize validation summaries and field-level feedback patterns for representative modal/form flows. |
-| `IMPL-E06-3` | Blocked pending approval and `IMPL-E06-1` | Replace ambiguous success wording with action-specific contract-backed messages in shared defaults and representative high-risk surfaces. |
-| `QA-E06-1` | Blocked pending implementation | Validate E06 contract adoption, no-overclaim copy boundaries, validation metadata and representative runtime behavior. |
+| `IMPL-E06-1` | Historical feedback chain complete | Add the canonical feedback-message contract and make shared no-overclaim feedback components project message metadata. |
+| `IMPL-E06-2` | Historical feedback chain complete | Normalize validation summaries and field-level feedback patterns for representative modal/form flows. |
+| `IMPL-E06-3` | Historical feedback chain complete | Replace ambiguous success wording with action-specific contract-backed messages in shared defaults and representative high-risk surfaces. |
+| `QA-E06-1` | Historical feedback chain complete | Validate E06 contract adoption, no-overclaim copy boundaries, validation metadata and representative runtime behavior. |
 
-## Post-Spec Approval Gate
+## Historical Ticket Result
 
-Implementation must not start until the user approves one of these choices:
-
-| Approval Choice | Recommendation | Consequence |
-| --- | --- | --- |
-| `APPROVE_E06_CANONICAL_FEEDBACK_MESSAGE_CONTRACT` | Recommended | Add a typed feedback-message contract and make shared feedback/status/validation/success messaging project from it. Best path to retire scattered route-local message semantics. |
-| `APPROVE_E06_NO_OVERCLAIM_COPY_EXTENSION_ONLY` | Acceptable fallback | Extend `lib/no-overclaim-copy.ts` with more copy entries and tests, but message placement, lifecycle, audience and validation metadata remain less explicit. |
-| `REJECT_E06_IMPLEMENTATION` | Not recommended | Leaves E06 as analysis/spec only and preserves duplicated feedback/validation vocabulary. |
-
-## Ticket Result
-
-`SPEC-E06-1` is complete and decision-ready. `IMPL-E06-1`, `IMPL-E06-2`, `IMPL-E06-3` and `QA-E06-1` remain blocked until the post-spec approval gate is cleared.
+`SPEC-E06-1`, `IMPL-E06-1`, `IMPL-E06-2`, `IMPL-E06-3` and `QA-E06-1` are complete for the historical feedback-message chain. The current uploaded E06 truth is `docs/ux/ALPHAVEST_E06_DATA_SURFACE_MASTER_DETAIL_SPEC.md`.

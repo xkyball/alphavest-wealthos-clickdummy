@@ -241,14 +241,12 @@ Screenshots are required for visible UI changes to action rails, button styling 
 
 | Ticket | Status | Required Scope |
 | --- | --- | --- |
-| `IMPL-E05-1` | Blocked pending approval | Add canonical action hierarchy contract and make `PageHeader`, `UxCtaCluster` and `GuardedActionButton` project action metadata/classes from it. |
-| `IMPL-E05-2` | Blocked pending approval and `IMPL-E05-1` | Add or adapt a shared action rail pattern and migrate representative long/high-risk workflow rails without route-by-route redesign. |
-| `IMPL-E05-3` | Blocked pending approval and `IMPL-E05-1` | Separate approval, release, block, evidence request, export approval/generation, download/share/client-acceptance meanings in representative compliance/export action groups. |
-| `QA-E05-1` | Blocked pending implementation | Validate E05 contract adoption, representative runtime behavior and no-overclaim separation against this specification. |
+| `IMPL-E05-1` | Superseded by executable E05 implementation spec; complete for validated E05 scope | Add canonical action hierarchy contract and make shared action surfaces project action metadata/classes from it. |
+| `IMPL-E05-2` | Superseded by executable E05 implementation spec; complete for validated E05 scope | Add or adapt a shared action rail pattern and migrate representative long/high-risk workflow rails without route-by-route redesign. |
+| `IMPL-E05-3` | Superseded by executable E05 implementation spec; complete for validated E05 scope | Separate approval, release, block, evidence request, export approval/generation, download/share/client-acceptance meanings in representative compliance/export action groups. |
+| `QA-E05-1` | Superseded by executable E05 implementation spec; complete for validated E05 scope | Validate E05 contract adoption, representative runtime behavior and no-overclaim separation against this specification. |
 
-## Post-Spec Approval Gate
-
-Implementation must not start until the user approves one of these choices:
+## Historical Approval Gate
 
 | Approval Choice | Recommendation | Consequence |
 | --- | --- | --- |
@@ -258,4 +256,4 @@ Implementation must not start until the user approves one of these choices:
 
 ## Ticket Result
 
-`SPEC-E05-1` is complete and decision-ready. `IMPL-E05-1`, `IMPL-E05-2`, `IMPL-E05-3` and `QA-E05-1` remain blocked until the post-spec approval gate is cleared.
+This historical spec is superseded by `docs/ux/ALPHAVEST_E05_ACTION_FEEDBACK_IMPLEMENTATION_SPEC.md`. The validated E05 scope is complete; remaining local button-class usage is future migration debt, not an open blocker for this superseded spec.

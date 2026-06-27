@@ -2,6 +2,12 @@
 
 Date: 2026-06-27
 
+## Reconciliation Status
+
+This file is the pre-implementation audit snapshot for E05. The implementation gaps below were the worklist for `docs/ux/ALPHAVEST_E05_ACTION_FEEDBACK_IMPLEMENTATION_SPEC.md` and are closed for the validated E05 representative scope by `docs/v3/proof/e05_qa_validation_report.md`.
+
+Broad route-family local button-class cleanup remains future migration debt unless a later ticket migrates the specific route family or records an explicit exception.
+
 ## Source
 
 Upload epic: `E05 - Action Hierarchy and No-Overclaim Feedback Implementation`

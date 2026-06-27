@@ -9,11 +9,12 @@ Date: 2026-06-26
 | Ticket | `SPEC-E01-1` |
 | Parent epic | `E01 UX Operating Model and Scope Discipline Lock` |
 | Source analysis | `docs/v3/proof/e01_ux_operating_model_analysis.md` |
-| Spec status | `DECISION_READY` |
-| Implementation status | `BLOCKED_PENDING_HUMAN_APPROVAL` |
-| Recommended approval | `APPROVE_E01_CANONICAL_TYPED_CONTRACT` |
+| Spec status | `IMPLEMENTED_CURRENT_REPO_TRUTH` |
+| Implementation status | `E01_OPERATING_MODEL_IMPLEMENTED_AND_VALIDATED` |
+| Applied approval path | `APPROVE_E01_CANONICAL_TYPED_CONTRACT` |
+| QA proof | `docs/v3/proof/e01_ux_operating_model_qa_report.md` |
 
-This specification defines the target operating model for E01. It does not authorize implementation until the human approval gate is cleared.
+This specification defines the implemented operating model for E01. Earlier blocked/decision-ready language is superseded by the current canonical contract, QA report and upload execution closure.
 
 ## Target State
 
@@ -168,16 +169,10 @@ Minimum validation after implementation:
 
 Screenshots are not required for E01 unless implementation changes visible UI. Metadata/documentation/test-only work should report that no screenshot was warranted.
 
-## Post-Spec Approval Gate
+## Applied Path
 
-Implementation must not start until the user approves one of these choices:
-
-| Approval Choice | Recommendation | Consequence |
-| --- | --- | --- |
-| `APPROVE_E01_CANONICAL_TYPED_CONTRACT` | Recommended | Add a narrow canonical typed contract and project docs/capture/page contracts from it. Best path to remove old drift. |
-| `APPROVE_E01_EXTEND_UX_PAGE_CONTRACT_ONLY` | Acceptable fallback | Avoids a new file, but keeps more responsibility inside `ux-page-contract`. Less clean. |
-| `REJECT_E01_IMPLEMENTATION` | Not recommended | Leaves E01 as analysis/spec only and keeps the current overlapping vocabularies. |
+The approved and implemented path is the canonical typed contract in `lib/ux-operating-model.ts`, with projections through page contracts and capture metadata. Do not re-open the fallback that extends only `ux-page-contract`, and do not add local operating-mode labels inside individual route files, screenshot reports or capture scripts.
 
 ## Ticket Result
 
-`SPEC-E01-1` is complete and decision-ready. `IMPL-E01-1`, `IMPL-E01-2` and `QA-E01-1` remain blocked until the post-spec approval gate is cleared.
+`SPEC-E01-1`, `IMPL-E01-1`, `IMPL-E01-2` and `QA-E01-1` are complete by current repo implementation and validation. No E01 operating-model decision gate remains open.

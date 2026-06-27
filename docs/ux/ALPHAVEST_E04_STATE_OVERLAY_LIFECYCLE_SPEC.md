@@ -1,4 +1,4 @@
-# AlphaVest E04 State, Modal, Drawer And Overlay Lifecycle Normalization Specification
+# AlphaVest Deprecated E04 State, Modal, Drawer And Overlay Lifecycle Normalization Specification
 
 Date: 2026-06-27
 
@@ -9,11 +9,12 @@ Date: 2026-06-27
 | Ticket | `SPEC-E04-1` |
 | Parent epic | `E04 State, Modal, Drawer and Overlay Lifecycle Normalization` |
 | Source analysis | `docs/v3/proof/e04_state_overlay_lifecycle_analysis.md` |
-| Spec status | `DECISION_READY` |
-| Implementation status | `BLOCKED_PENDING_HUMAN_APPROVAL` |
-| Recommended approval | `APPROVE_E04_CANONICAL_LIFECYCLE_STATE_CONTRACT` |
+| Spec status | `SUPERSEDED_BY_E04_UPLOAD_LIFECYCLE_SPEC` |
+| Implementation status | `IMPLEMENTED_CURRENT_REPO_TRUTH_ELSEWHERE` |
+| Replacement spec | `docs/ux/ALPHAVEST_E04_STATE_MODAL_DRAWER_LIFECYCLE_SPEC.md` |
+| QA proof | `docs/v3/proof/e04_upload_epic_execution_closure_2026-06-27.md` |
 
-This specification defines the target lifecycle/state system for E04. It does not authorize implementation until the human approval gate is cleared.
+This historical specification defined the target lifecycle/state system for E04. The current operative E04 spec is `docs/ux/ALPHAVEST_E04_STATE_MODAL_DRAWER_LIFECYCLE_SPEC.md`, and the implementation is complete by current repo proof.
 
 ## Target State
 
@@ -190,21 +191,11 @@ Screenshots are required only if implementation changes visible UI. Contract pro
 
 | Ticket | Status | Required Scope |
 | --- | --- | --- |
-| `IMPL-E04-1` | Blocked pending approval | Add canonical lifecycle contract and project modal/drawer primitive metadata from it. |
-| `IMPL-E04-2` | Blocked pending approval | Add canonical state-family contract and project `StatePanel` metadata from it. |
-| `IMPL-E04-3` | Blocked pending approval and `IMPL-E04-1` | Normalize base/modal/drawer/confirmation capture variant labels against the canonical lifecycle contract. |
-| `QA-E04-1` | Blocked pending implementation | Validate lifecycle, state and capture variant adoption against this specification. |
+| `IMPL-E04-1` | Superseded by replacement E04 chain; complete in current repo truth | Add canonical lifecycle contract and project modal/drawer primitive metadata from it. |
+| `IMPL-E04-2` | Superseded by replacement E04 chain; complete in current repo truth | Add canonical state-family contract and project `StatePanel` metadata from it. |
+| `IMPL-E04-3` | Superseded by replacement E04 chain; complete in current repo truth | Normalize base/modal/drawer/confirmation capture variant labels against the canonical lifecycle contract. |
+| `QA-E04-1` | Superseded by replacement E04 chain; complete in current repo truth | Validate lifecycle, state and capture variant adoption against this specification. |
 
-## Post-Spec Approval Gate
+## Current Operative Result
 
-Implementation must not start until the user approves one of these choices:
-
-| Approval Choice | Recommendation | Consequence |
-| --- | --- | --- |
-| `APPROVE_E04_CANONICAL_LIFECYCLE_STATE_CONTRACT` | Recommended | Add a narrow typed lifecycle/state contract and make primitives, state panels, capture variants and tests project from it. Best path to remove duplicated lifecycle/state vocabulary. |
-| `APPROVE_E04_PRIMITIVE_ATTR_PATCH_ONLY` | Acceptable fallback | Adds more primitive attributes but leaves state/capture taxonomy scattered. Less clean. |
-| `REJECT_E04_IMPLEMENTATION` | Not recommended | Leaves E04 as analysis/spec only and preserves scattered lifecycle/state rules. |
-
-## Ticket Result
-
-`SPEC-E04-1` is complete and decision-ready. `IMPL-E04-1`, `IMPL-E04-2`, `IMPL-E04-3` and `QA-E04-1` remain blocked until the post-spec approval gate is cleared.
+Use `docs/ux/ALPHAVEST_E04_STATE_MODAL_DRAWER_LIFECYCLE_SPEC.md` plus `lib/ux-lifecycle-state-contract.ts` as the operative E04 truth. `E04-A1`, `E04-S1`, `E04-I1`, `E04-I2`, `E04-I3` and `E04-Q1` are complete by current repo implementation, validation and screenshot/capture evidence.
