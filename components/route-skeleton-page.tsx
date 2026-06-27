@@ -13,6 +13,7 @@ import {
   type ScreenRoute
 } from "@/lib/route-registry";
 import { uxFlowStepsForPageId, uxRoutePolicyForRoute } from "@/lib/ux-route-policy";
+import { uxPageTemplateForRoute } from "@/lib/ux-page-template-system";
 import { canBecomeClientVisible } from "@/lib/workflow-gate";
 
 type RouteSkeletonPageProps = {
@@ -143,6 +144,7 @@ function getSiblingRoutes(route: ScreenRoute) {
 export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
   const routeScope = routeScopeForPageId(route.pageId);
   const uxPolicy = uxRoutePolicyForRoute(route);
+  const template = uxPageTemplateForRoute(route);
   const scopeCopy = scopeShellCopy[routeScope];
   const gate = canBecomeClientVisible({
     recommendationStatus: route.clientVisibilitySensitive ? "ADVISOR_APPROVED" : "DRAFT",
@@ -170,6 +172,11 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
           routeScope === "P1_AFTER_MVP" || routeScope === "HOLD_PENDING_DECISION" ? "non-interactive" : undefined
         }
         data-ux-productive-controls={scopeCopy.protectedScope ? "false" : "true"}
+        data-ux-page-template-action-zone={template.actionZoneBehavior}
+        data-ux-page-template-family={template.family}
+        data-ux-page-template-long-page={template.longPageBehavior}
+        data-ux-page-template-proof-audit={template.proofAuditPlacement}
+        data-ux-page-template-required-zones={template.requiredZones.join(" ")}
         data-ux-reference-product-controls={routeScope === "REFERENCE_ONLY" ? "removed" : undefined}
         data-ux-route-scope={routeScope}
       >

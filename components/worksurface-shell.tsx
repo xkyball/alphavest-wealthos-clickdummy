@@ -1,5 +1,6 @@
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, StatePanel, type BadgeTone } from "@/components/ui";
 import { cn } from "@/lib/cn";
+import { uxPageTemplateForPageId } from "@/lib/ux-page-template-system";
 
 type WorksurfaceStatusItem = {
   label: string;
@@ -62,10 +63,17 @@ export function WorksurfaceShell({
   title,
   worksurfaceId,
 }: WorksurfaceShellProps) {
+  const template = uxPageTemplateForPageId(routeId);
+
   return (
     <section
       className={cn("mx-auto max-w-[112rem] space-y-4", className)}
       data-testid="wp02-worksurface-shell"
+      data-ux-page-template-action-zone={template.actionZoneBehavior}
+      data-ux-page-template-family={template.family}
+      data-ux-page-template-long-page={template.longPageBehavior}
+      data-ux-page-template-proof-audit={template.proofAuditPlacement}
+      data-ux-page-template-required-zones={template.requiredZones.join(" ")}
       data-wp02-route-id={routeId}
       data-wp02-worksurface={worksurfaceId}
     >

@@ -204,6 +204,16 @@ export function uxPageTemplateForRoute(route: ScreenRoute): UxPageTemplateRecord
   };
 }
 
+export function uxPageTemplateForPageId(pageId: string): UxPageTemplateRecord {
+  const route = screenRoutes.find((candidate) => candidate.pageId === pageId);
+
+  if (!route) {
+    throw new Error(`UX page template route ${pageId} is missing from the route registry.`);
+  }
+
+  return uxPageTemplateForRoute(route);
+}
+
 export const uxPageTemplateRecords = screenRoutes.map(uxPageTemplateForRoute);
 
 export const eligibleUxPageTemplateRecords = uxPageTemplateRecords.filter((record) => record.productiveUxEligible);

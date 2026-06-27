@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/cn";
 import { uxDensityForPageId } from "@/lib/ux-density";
+import { uxPageTemplateForPageId } from "@/lib/ux-page-template-system";
 
 type UxDetailFact = {
   label: string;
@@ -36,6 +37,7 @@ export function UxDetailStandardPanel({
   timelineItems,
 }: UxDetailStandardPanelProps) {
   const density = uxDensityForPageId(routeId);
+  const template = uxPageTemplateForPageId(routeId);
   const isFocusedDetail = density.tier === "D4";
 
   return (
@@ -51,6 +53,11 @@ export function UxDetailStandardPanel({
       data-testid="ux-page-detail-standard"
       data-ux-density-pattern={density.pattern}
       data-ux-density-tier={density.tier}
+      data-ux-page-template-action-zone={template.actionZoneBehavior}
+      data-ux-page-template-family={template.family}
+      data-ux-page-template-long-page={template.longPageBehavior}
+      data-ux-page-template-proof-audit={template.proofAuditPlacement}
+      data-ux-page-template-required-zones={template.requiredZones.join(" ")}
     >
       {isFocusedDetail ? (
         <div className="grid gap-2 rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/55 p-3 sm:grid-cols-2 xl:col-span-3 xl:grid-cols-[1.1fr_0.8fr_1fr_1.2fr]" data-testid="ux-d4-focused-status-strip" data-ux-content-tier="must-see">

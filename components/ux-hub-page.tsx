@@ -7,6 +7,7 @@ import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
 import { cn } from "@/lib/cn";
 import { uxHubDefinitionForPageId, type UxHubTone } from "@/lib/ux-hub";
 import { uxDensityForPageId } from "@/lib/ux-density";
+import { uxPageTemplateForPageId } from "@/lib/ux-page-template-system";
 
 type UxHubPageProps = {
   pageId: string;
@@ -34,6 +35,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
   }
 
   const density = uxDensityForPageId(pageId);
+  const template = uxPageTemplateForPageId(pageId);
 
   if (density.tier === "D1") {
     const isMobileClientHub = pageId === "020";
@@ -42,6 +44,11 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
       <section
         className="mx-auto w-full max-w-[88rem] space-y-4"
         data-testid="ux-hub-page"
+        data-ux-page-template-action-zone={template.actionZoneBehavior}
+        data-ux-page-template-family={template.family}
+        data-ux-page-template-long-page={template.longPageBehavior}
+        data-ux-page-template-proof-audit={template.proofAuditPlacement}
+        data-ux-page-template-required-zones={template.requiredZones.join(" ")}
         data-ux-hub-task="phase-3"
         data-ux-d1-calm-executive="true"
         data-ux-density-pattern={density.pattern}
@@ -148,6 +155,11 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
     <section
       className="mx-auto w-full max-w-[104rem] space-y-5"
       data-testid="ux-hub-page"
+      data-ux-page-template-action-zone={template.actionZoneBehavior}
+      data-ux-page-template-family={template.family}
+      data-ux-page-template-long-page={template.longPageBehavior}
+      data-ux-page-template-proof-audit={template.proofAuditPlacement}
+      data-ux-page-template-required-zones={template.requiredZones.join(" ")}
       data-ux-hub-task="phase-3"
       data-ux-density-pattern={density.pattern}
       data-ux-density-tier={density.tier}
