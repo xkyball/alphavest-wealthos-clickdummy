@@ -66,12 +66,14 @@ type CaptureQaOptions = {
   failOnWarnings: boolean;
   inputRoot: string;
   outputDir: string;
+  requireCaptures?: boolean;
 };
 
 const root = process.cwd();
 const defaultInputRoot = process.env.CAPTURE_QA_INPUT ?? process.argv[2] ?? path.join(root, "artifacts");
 const defaultOutputDir = process.env.CAPTURE_QA_OUTPUT ?? path.join(root, "artifacts", "capture-qa");
 const failOnWarnings = process.env.CAPTURE_QA_FAIL_ON_WARNINGS === "1";
+const requireCaptures = process.env.CAPTURE_QA_REQUIRE_CAPTURES === "1";
 
 const longScreenWarningHeight = Number(process.env.CAPTURE_QA_LONG_SCREEN_WARNING_HEIGHT ?? 2200);
 const longScreenSevereHeight = Number(process.env.CAPTURE_QA_LONG_SCREEN_SEVERE_HEIGHT ?? 3200);
@@ -484,6 +486,14 @@ export function runCaptureQa(options: CaptureQaOptions): CaptureQaResult {
   const metadataResult = validateMetadata(captures);
   const duplicateClusters = detectDuplicateClusters(captures);
   const longScreenRisks = detectLongScreenRisks(captures);
+  const requiredCaptureFailures: CaptureQaFinding[] = options.requireCaptures && captures.length === 0
+    ? [{
+      detail: "Release capture QA requires at least one E09-compliant capture manifest in the input root.",
+      manifestPath: relativePath(inputRoot),
+      rule: "release-candidate.required-captures",
+      severity: "failure",
+    }]
+    : [];
   const warningFindings = [
     ...metadataResult.warnings,
     ...duplicateClusters.map((cluster): CaptureQaFinding => ({
@@ -498,7 +508,11 @@ export function runCaptureQa(options: CaptureQaOptions): CaptureQaResult {
       severity: "warning",
     })),
   ];
-  const status = metadataResult.failures.length > 0
+  const failureFindings = [
+    ...metadataResult.failures,
+    ...requiredCaptureFailures,
+  ];
+  const status = failureFindings.length > 0
     ? "fail"
     : options.failOnWarnings && warningFindings.length > 0
       ? "fail"
@@ -509,7 +523,7 @@ export function runCaptureQa(options: CaptureQaOptions): CaptureQaResult {
   const result: CaptureQaResult = {
     checkedCaptures: captures.length,
     duplicateClusters,
-    failures: metadataResult.failures,
+    failures: failureFindings,
     generatedAt: new Date().toISOString(),
     inputRoot: relativePath(inputRoot),
     longScreenRisks,
@@ -528,6 +542,7 @@ async function main() {
     failOnWarnings,
     inputRoot: defaultInputRoot,
     outputDir: defaultOutputDir,
+    requireCaptures,
   });
 
   console.log(JSON.stringify({

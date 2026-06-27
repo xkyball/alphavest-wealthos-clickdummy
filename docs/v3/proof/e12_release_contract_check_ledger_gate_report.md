@@ -2,7 +2,7 @@
 
 Ticket: E12-RELEASE-CONTRACT-CHECK-LEDGER-GATE
 Approval: `APPROVE_E12_RELEASE_CONTRACT_CHECK_LEDGER_GATE`
-Status: `implemented_release_blocking_existing_capture_debt`
+Status: `implemented_release_blocked_until_fresh_capture`
 Date: 2026-06-27
 
 ## Scope
@@ -16,7 +16,7 @@ The release contract check is now part of the E12 ledger as `E12-RELEASE-GATE-00
 | Package script | `pnpm release:contract-check` |
 | Ledger entry | `E12-RELEASE-GATE-001` |
 | Contract gate rule | `E12-GATE-RELEASE-CONTRACT-CHECK` |
-| Long-screen / overflow release behavior | Release-blocking through `pnpm visual:capture-qa:release` with `CAPTURE_QA_FAIL_ON_WARNINGS=1` |
+| Long-screen / overflow release behavior | Release-blocking through `pnpm visual:capture-qa:release` with `CAPTURE_QA_FAIL_ON_WARNINGS=1` against fresh release-candidate captures |
 
 ## Required Gate Fragments
 
@@ -43,14 +43,15 @@ This keeps `phase:check` as the normal code/build gate and makes release certifi
 ## Release Blocker Found
 
 | Capture QA Metric | Result |
-| --- | ---: |
-| Captures checked | 815 |
-| Duplicate clusters | 0 |
-| Metadata / QA warnings | 3020 |
-| Long-screen risks | 558 |
+| --- | --- |
+| Input | `artifacts/release-candidate/current` |
+| Captures checked | 0 |
+| Failures | 1 |
+| Warnings | 0 |
+| Long-screen risks | 0 |
 | Status | FAIL |
 
-The failure is intentional release behavior: `visual:capture-qa:release` treats warnings as blockers through `CAPTURE_QA_FAIL_ON_WARNINGS=1`.
+The failure is intentional release behavior: `visual:capture-qa:release` now requires at least one fresh E09-compliant release-candidate capture through `CAPTURE_QA_REQUIRE_CAPTURES=1`.
 
 ## Screenshot
 

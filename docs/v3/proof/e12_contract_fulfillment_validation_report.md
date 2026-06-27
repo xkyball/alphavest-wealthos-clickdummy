@@ -67,7 +67,8 @@ Date: 2026-06-27
 
 ## Remaining Follow-Up
 
-- Burn down or quarantine existing capture-QA warnings before claiming a release candidate is clean under `pnpm release:contract-check`.
+- Produce a fresh E09-compliant release-candidate capture under `artifacts/release-candidate/current` before claiming a release candidate is clean under `pnpm release:contract-check`.
+- Convert fresh release-candidate long-screen, scroll-burden and horizontal-overflow findings into `ALPHAVEST_E12_LONG_SCREEN_BURNDOWN_REGISTER.md` tickets.
 - Move E10/E11 markdown registers toward generated/read-only from the ledger after the phase-check integration is approved.
 - Continue later burn-down of existing warn-existing E10 exceptions.
 

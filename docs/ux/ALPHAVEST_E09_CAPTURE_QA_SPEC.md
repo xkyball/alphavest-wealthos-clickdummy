@@ -85,9 +85,12 @@ New release-candidate capture folders must be treated differently:
 
 - Primary visual-review proof must come from an E09-compliant capture run.
 - Release-candidate capture QA must run with `CAPTURE_QA_FAIL_ON_WARNINGS=1`.
+- Release-candidate capture QA must run with `CAPTURE_QA_REQUIRE_CAPTURES=1`.
+- Release-candidate capture QA must use `CAPTURE_QA_INPUT=artifacts/release-candidate/current`.
 - Use `pnpm visual:capture-qa:release` for the hard gate.
 - If the hard gate fails, either fix the capture/source truth or explicitly document a product-owner exception. Do not downgrade the gate by default.
 - Old bundles may remain useful for comparison, but they cannot override a newer E09-compliant capture report.
+- Long-screen, scroll-burden and horizontal-overflow findings from the current release-candidate report must be converted into burndown tickets through `docs/ux/ALPHAVEST_E12_LONG_SCREEN_BURNDOWN_REGISTER.md`.
 
 ## UX Sign-Off Rules
 
@@ -110,6 +113,8 @@ The QA script writes:
 
 - `artifacts/capture-qa/capture-qa-report.json`
 - `artifacts/capture-qa/capture-qa-report.md`
+- `artifacts/capture-qa/release-current/capture-qa-report.json` for the hard release gate
+- `artifacts/capture-qa/release-current/capture-qa-report.md` for the hard release gate
 - `docs/v3/proof/e09_capture_qa_signoff_checklist.md` when explicitly requested through the sign-off script
 
 Each report must include checked counts, warning counts, failure counts, duplicate-state clusters, long-screen risks and metadata/naming findings.

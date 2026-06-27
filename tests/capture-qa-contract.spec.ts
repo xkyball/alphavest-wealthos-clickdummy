@@ -135,4 +135,22 @@ test.describe("capture QA contract", () => {
       expect.arrayContaining(["long-screen.severe-height", "long-screen.scroll-burden"]),
     );
   });
+
+  test("fails release QA when fresh release-candidate captures are required but absent", () => {
+    const tempRoot = makeTempArtifactRoot();
+    const artifactRoot = path.join(tempRoot, "artifacts", "release-candidate", "current");
+
+    const result = runCaptureQa({
+      failOnWarnings: true,
+      inputRoot: artifactRoot,
+      outputDir: path.join(tempRoot, "qa"),
+      requireCaptures: true,
+    });
+
+    expect(result.status).toBe("fail");
+    expect(result.checkedCaptures).toBe(0);
+    expect(result.failures).toContainEqual(expect.objectContaining({
+      rule: "release-candidate.required-captures",
+    }));
+  });
 });

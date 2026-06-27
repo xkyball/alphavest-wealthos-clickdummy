@@ -32,7 +32,7 @@
     "test:av27:server": "playwright test tests/av27-client-context-closure.spec.ts tests/recommendation-review-workflow-api.spec.ts --workers=1",
     "visual:contract": "tsx scripts/visual-qa-contract.ts",
     "visual:capture-qa": "tsx scripts/capture-qa-contract.ts",
-    "visual:capture-qa:release": "CAPTURE_QA_FAIL_ON_WARNINGS=1 tsx scripts/capture-qa-contract.ts",
+    "visual:capture-qa:release": "CAPTURE_QA_FAIL_ON_WARNINGS=1 CAPTURE_QA_REQUIRE_CAPTURES=1 CAPTURE_QA_INPUT=artifacts/release-candidate/current CAPTURE_QA_OUTPUT=artifacts/capture-qa/release-current tsx scripts/capture-qa-contract.ts",
     "visual:qa-signoff": "tsx scripts/ux-qa-signoff-report.ts",
     "visual:strict": "tsx scripts/strict-visual-capture.ts",
     "screencast:journey": "tsx scripts/screencast/run-journey.ts",

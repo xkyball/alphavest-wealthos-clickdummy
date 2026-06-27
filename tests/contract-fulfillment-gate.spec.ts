@@ -219,7 +219,7 @@ test.describe("E12 contract fulfillment gate", () => {
     const report = evaluateContractFulfillmentGate(uxContractLedgerEntries, "2026-06-27T00:00:00.000Z", {
       packageJsonText: JSON.stringify({
         scripts: {
-          "visual:capture-qa:release": "CAPTURE_QA_FAIL_ON_WARNINGS=1 tsx scripts/capture-qa-contract.ts",
+          "visual:capture-qa:release": "CAPTURE_QA_FAIL_ON_WARNINGS=1 CAPTURE_QA_REQUIRE_CAPTURES=1 CAPTURE_QA_INPUT=artifacts/release-candidate/current CAPTURE_QA_OUTPUT=artifacts/capture-qa/release-current tsx scripts/capture-qa-contract.ts",
           "release:contract-check": "pnpm guard:source && pnpm test:contract-fulfillment",
         },
       }),
