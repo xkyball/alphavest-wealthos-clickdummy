@@ -26,8 +26,10 @@ test.describe("E05 action meaning separation", () => {
 
     await expect(page.getByTestId("wp06-release-blocked-control")).toHaveAttribute("data-ux-action-meaning", "release");
     await expect(page.getByTestId("wp06-release-blocked-control")).toHaveAttribute("data-ux-action-availability", "blocked_static");
+    await expect(page.getByTestId("e05-compliance-release-action-zone")).toHaveAttribute("data-ux-action-zone-placement", "sticky_rail");
     await expect(page.getByTestId("j02-request-evidence")).toHaveAttribute("data-ux-action-meaning", "request_evidence");
     await expect(page.getByTestId("j02-request-evidence")).toHaveAttribute("data-ux-action-placement", "sticky_rail");
+    await expect(page.getByTestId("j02-request-evidence")).toHaveAttribute("data-ux-action-priority", "primary");
     await expect(page.getByTestId("j02-block-release")).toHaveAttribute("data-ux-action-meaning", "block");
     await expect(page.getByTestId("j02-block-release")).toHaveAttribute("data-ux-action-priority", "destructive");
 
@@ -41,6 +43,7 @@ test.describe("E05 action meaning separation", () => {
   test("separates export approval, download and share actions", async ({ page }) => {
     await page.goto("/export/demo/approval?state=base");
 
+    await expect(page.getByTestId("e05-export-approval-open-zone")).toHaveAttribute("data-ux-action-zone-placement", "inline_cluster");
     await expect(page.getByTestId("j08-open-export-approval")).toHaveAttribute("data-ux-action-meaning", "export_approval");
     await page.getByTestId("j08-open-export-approval").click();
     await expect(page.getByRole("dialog", { name: "Approve Export Package" })).toBeVisible();

@@ -28,6 +28,8 @@ import {
 import type { LucideIcon } from "lucide-react";
 import {
   AuditTimeline,
+  ActionButton,
+  ActionZone,
   Badge,
   Card,
   CardContent,
@@ -55,7 +57,6 @@ import { UxCtaCluster } from "@/components/ux-cta-cluster";
 import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
 import { WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
-import { uxActionAttributesFor } from "@/lib/ux-action-hierarchy-contract";
 import { uxFeedbackSuccessMessageForSubject } from "@/lib/ux-feedback-message-contract";
 import {
   blueprintRows,
@@ -1735,24 +1736,20 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
             state="restricted"
             title="Preview separated from delivery"
           />
-          <button
-            className={primaryButtonClass}
-            data-testid="j08-open-export-approval"
-            data-ux-lifecycle-result="opens-export-approval-modal"
-            data-ux-lifecycle-trigger="export-approval-modal"
-            onClick={openExportApprovalModal}
-            type="button"
-            {...uxActionAttributesFor({
-              availability: "enabled",
-              meaning: "export_approval",
-              placement: "inline_cluster",
-              priority: "primary",
-              requiresAudit: true,
-              requiresConfirmation: true,
-            })}
-          >
-            Review export approval
-          </button>
+          <ActionZone placement="inline_cluster" testId="e05-export-approval-open-zone">
+            <ActionButton
+              lifecycleResult="opens-export-approval-modal"
+              lifecycleTrigger="export-approval-modal"
+              meaning="export_approval"
+              onClick={openExportApprovalModal}
+              priority="primary"
+              requiresAudit
+              requiresConfirmation
+              testId="j08-open-export-approval"
+            >
+              Review export approval
+            </ActionButton>
+          </ActionZone>
         </div>
       </div>
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1fr)]">
@@ -1859,27 +1856,23 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
         footer={
           <>
             <button className={secondaryButtonClass} disabled={status === "submitting"} onClick={closeExportApprovalModal} type="button">Cancel</button>
-            <button
-              className={primaryButtonClass}
-              data-testid="j08-confirm-approval"
-              data-ux-lifecycle-result={acknowledged ? "submits-export-approval-only" : "blocked-validation-required"}
+            <ActionButton
+              availability={approvalActionAvailability}
               disabled={approvalSubmitDisabled}
+              disabledReason={approvalDisabledReason}
+              lifecycleResult={acknowledged ? "submits-export-approval-only" : "blocked-validation-required"}
+              meaning="export_approval"
               onClick={() => {
                 void submitExportApproval();
               }}
-              type="button"
-              {...uxActionAttributesFor({
-                availability: approvalActionAvailability,
-                disabledReason: approvalDisabledReason,
-                meaning: "export_approval",
-                placement: "modal_footer",
-                priority: "primary",
-                requiresAudit: true,
-                requiresConfirmation: true,
-              })}
+              placement="modal_footer"
+              priority="primary"
+              requiresAudit
+              requiresConfirmation
+              testId="j08-confirm-approval"
             >
               {status === "submitting" ? "Confirming..." : "Confirm Export Approval"}
-            </button>
+            </ActionButton>
           </>
         }
         onClose={status === "submitting" ? undefined : closeExportApprovalModal}
@@ -2140,25 +2133,19 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
                   <p className="font-semibold text-alphavest-ivory">{currentExport?.fileName ?? "Watermarked export package"}</p>
                   <p className="text-sm text-alphavest-muted">Download pending, delivery action controlled</p>
                 </div>
-                <button
-                  className={primaryButtonClass}
-                  data-testid="j08-open-download-confirmation"
-                  data-ux-lifecycle-result="opens-export-download-confirmation"
-                  data-ux-lifecycle-trigger="export-download-confirmation-modal"
+                <ActionButton
+                  lifecycleResult="opens-export-download-confirmation"
+                  lifecycleTrigger="export-download-confirmation-modal"
+                  meaning="download"
                   onClick={openDownloadConfirmation}
-                  type="button"
-                  {...uxActionAttributesFor({
-                    availability: "enabled",
-                    meaning: "download",
-                    placement: "inline_cluster",
-                    priority: "primary",
-                    requiresAudit: true,
-                    requiresConfirmation: true,
-                  })}
+                  priority="primary"
+                  requiresAudit
+                  requiresConfirmation
+                  testId="j08-open-download-confirmation"
                 >
                   <Download aria-hidden="true" className="size-4" />
                   Download package
-                </button>
+                </ActionButton>
               </div>
             </CardContent>
           </Card>
@@ -2175,24 +2162,20 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
                   { label: "Watermark", value: <Badge tone="green">Prepared</Badge> }
                 ]}
               />
-              <button
-                aria-describedby="j08-share-export-reason"
-                className={secondaryButtonClass + " mt-4 w-full"}
-                data-testid="j08-share-export"
+              <ActionButton
+                availability="disabled"
+                className="mt-4 w-full"
                 disabled
-                type="button"
-                {...uxActionAttributesFor({
-                  availability: "disabled",
-                  disabledReason: "Secure share is blocked until the download event is recorded and audited.",
-                  meaning: "share",
-                  placement: "inline_cluster",
-                  priority: "secondary",
-                  requiresAudit: true,
-                  requiresConfirmation: true,
-                })}
+                disabledReason="Secure share is blocked until the download event is recorded and audited."
+                meaning="share"
+                priority="secondary"
+                requiresAudit
+                requiresConfirmation
+                testId="j08-share-export"
+                visibleDisabledReason
               >
                 Share after download
-              </button>
+              </ActionButton>
               <StatePanel
                 className="mt-4"
                 detail="Record the package download before creating an external share."
@@ -2205,9 +2188,6 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
                 state="blocked"
                 title="Share blocked"
               />
-              <p className="mt-2 text-xs leading-5 text-alphavest-muted" data-testid="ux-cta-disabled-reason" id="j08-share-export-reason">
-                Secure share is blocked until the download event is recorded and audited.
-              </p>
             </CardContent>
           </Card>
           <Card>
@@ -2231,27 +2211,23 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
         footer={
           <>
             <button className={secondaryButtonClass} disabled={status === "submitting"} onClick={closeDownloadConfirmation} type="button">Cancel</button>
-            <button
-              className={primaryButtonClass}
-              data-testid="j08-download-export"
-              data-ux-lifecycle-result={acknowledged ? "submits-controlled-download-only" : "blocked-validation-required"}
+            <ActionButton
+              availability={downloadActionAvailability}
               disabled={downloadSubmitDisabled}
+              disabledReason={downloadDisabledReason}
+              lifecycleResult={acknowledged ? "submits-controlled-download-only" : "blocked-validation-required"}
+              meaning="download"
               onClick={() => {
                 void submitExportDownload();
               }}
-              type="button"
-              {...uxActionAttributesFor({
-                availability: downloadActionAvailability,
-                disabledReason: downloadDisabledReason,
-                meaning: "download",
-                placement: "modal_footer",
-                priority: "primary",
-                requiresAudit: true,
-                requiresConfirmation: true,
-              })}
+              placement="modal_footer"
+              priority="primary"
+              requiresAudit
+              requiresConfirmation
+              testId="j08-download-export"
             >
               {status === "submitting" ? "Recording..." : "Confirm controlled download"}
-            </button>
+            </ActionButton>
           </>
         }
         onClose={status === "submitting" ? undefined : closeDownloadConfirmation}

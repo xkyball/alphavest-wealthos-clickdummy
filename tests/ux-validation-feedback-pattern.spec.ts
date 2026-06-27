@@ -34,7 +34,7 @@ test.describe("E06 validation feedback pattern", () => {
     expect(validationSource).toContain("data-ux-field-feedback");
     expect(uiIndexSource).toContain("validation-feedback");
 
-    expect(uploadSource).toContain("<ValidationFeedback");
+    expect(uploadSource).toContain("<NoOverclaimFeedback");
     expect(releaseSource).toContain("<FieldFeedback");
     expect(exportSource).toContain('placement: "modal_status"');
     expect(exportSource).toContain('subject: "export_approval"');

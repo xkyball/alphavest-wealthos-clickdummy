@@ -49,8 +49,10 @@ import {
   CardTitle,
   DataTable,
   MetricCard,
+  ActionButton,
+  ActionZone,
+  NoOverclaimFeedback,
   StatePanel,
-  ValidationFeedback,
   WizardStepper,
   type BadgeTone,
   type DataTableColumn
@@ -2463,7 +2465,7 @@ function DocumentUploadForm() {
               </div>
             </div>
           ) : null}
-          <ValidationFeedback
+          <NoOverclaimFeedback
             id="document-upload-validation"
             intent={hasSelectedFile ? "pending" : "validation"}
             message={uploadValidationMessage}
@@ -2518,28 +2520,38 @@ function DocumentUploadForm() {
             state={hasSelectedFile ? "validation" : "empty"}
             title={hasSelectedFile ? "Extraction queue pending" : "Upload blocked"}
           />
-          <button
-            aria-describedby="document-upload-validation"
-            className={cn(primaryButtonClass, "w-full disabled:cursor-not-allowed disabled:opacity-60")}
-            data-testid="real-upload-document"
-            data-ux-lifecycle-result={canUpload ? "submits-upload-for-review" : "blocked-validation-required"}
-            disabled={!canUpload}
-            onClick={() => { void submitUpload(); }}
-            type="button"
-          >
-            <Upload aria-hidden="true" className="size-4" />
-            Upload for review
-          </button>
-          <button
-            className={secondaryButtonClass + " w-full"}
-            data-testid="j04-upload-document"
-            data-ux-lifecycle-result="opens-review-queue-without-release"
-            disabled={uploadState === "uploading"}
-            onClick={() => { void runDataMaintenanceCommand("j04.uploadDocument", "/documents/review-queue"); }}
-            type="button"
-          >
-            Open extraction review
-          </button>
+          <ActionZone layout="stack" placement="inline_cluster" testId="e05-document-upload-action-zone">
+            <ActionButton
+              availability={canUpload ? "enabled" : "disabled"}
+              className="w-full"
+              describedBy="document-upload-validation"
+              disabled={!canUpload}
+              disabledReason={!canUpload ? uploadValidationMessage : undefined}
+              lifecycleResult={canUpload ? "submits-upload-for-review" : "blocked-validation-required"}
+              meaning="submit_review"
+              onClick={() => { void submitUpload(); }}
+              priority="primary"
+              requiresAudit
+              testId="real-upload-document"
+              visibleDisabledReason
+            >
+              <Upload aria-hidden="true" className="size-4" />
+              Upload for review
+            </ActionButton>
+            <ActionButton
+              availability={uploadState === "uploading" ? "disabled" : "enabled"}
+              className="w-full"
+              disabled={uploadState === "uploading"}
+              disabledReason={uploadState === "uploading" ? "Upload is in progress. Extraction review navigation stays blocked until this upload attempt finishes." : undefined}
+              lifecycleResult="opens-review-queue-without-release"
+              meaning="navigate"
+              onClick={() => { void runDataMaintenanceCommand("j04.uploadDocument", "/documents/review-queue"); }}
+              priority="secondary"
+              testId="j04-upload-document"
+            >
+              Open extraction review
+            </ActionButton>
+          </ActionZone>
         </CardContent>
       </Card>
       <Card>

@@ -122,6 +122,7 @@ test.describe("E06 canonical feedback message contract", () => {
     expect(statePanelSource).toContain("uxFeedbackAttributesFor");
     expect(statePanelSource).toContain("feedback?: UxFeedbackProjectionInput");
     expect(statePanelSource).toContain("{...feedbackAttributes}");
+    expect(readFileSync("components/ui/validation-feedback.tsx", "utf8")).toContain("NoOverclaimFeedback");
 
     expect(uploadSource).toContain('subject: "upload"');
     expect(complianceSource).toContain('subject: "compliance_release"');

@@ -91,6 +91,7 @@ test.describe("E05 canonical action hierarchy contract", () => {
       "components/page-header.tsx",
       "components/ux-cta-cluster.tsx",
       "components/ui/guarded-action-button.tsx",
+      "components/ui/action-zone.tsx",
     ];
 
     for (const sourcePath of sources) {
@@ -101,5 +102,16 @@ test.describe("E05 canonical action hierarchy contract", () => {
       expect(source, sourcePath).not.toContain("const primaryClass =");
       expect(source, sourcePath).not.toContain("const secondaryClass =");
     }
+  });
+
+  test("ActionZone is the shared E05 route-family action primitive", () => {
+    const source = readFileSync("components/ui/action-zone.tsx", "utf8");
+
+    expect(source).toContain("export function ActionZone");
+    expect(source).toContain("export function StickyActionZone");
+    expect(source).toContain("export function ActionButton");
+    expect(source).toContain("uxActionAttributesFor");
+    expect(source).toContain("DisabledControlReason");
+    expect(source).toContain("data-ux-action-zone");
   });
 });

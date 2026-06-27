@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation";
 import { GlobalSearchBox } from "@/components/global-search-box";
 import {
   AuditTimeline,
+  ActionButton,
   Badge,
   Card,
   CardContent,
@@ -33,6 +34,7 @@ import {
   DataTable,
   Modal,
   StatePanel,
+  StickyActionZone,
   FieldFeedback,
   type BadgeTone,
   type DataTableColumn
@@ -1630,57 +1632,50 @@ function ComplianceReviewPage({ title }: { title: string }) {
                   state="blocked"
                   title="Release gates not satisfied"
                 />
-                <span
-                  className={secondaryButtonClass + " w-full cursor-not-allowed opacity-60"}
-                  data-testid="wp06-release-blocked-control"
-                  role="status"
-                  {...uxActionAttributesFor({
-                    availability: "blocked_static",
-                    disabledReason: "Release remains blocked until evidence, policy, reviewer and approver gates pass.",
-                    meaning: "release",
-                    placement: "sticky_rail",
-                    priority: "blocked",
-                    requiresPermission: false,
-                  })}
-                >
-                  <LockKeyhole aria-hidden="true" className="size-4" />Release blocked until preconditions pass
-                </span>
-                <button
-                  className={primaryButtonClass + " w-full"}
-                  data-testid="j02-request-evidence"
-                  onClick={() => {
-                    setConfirmationAction("request_evidence");
-                  }}
-                  type="button"
-                  {...uxActionAttributesFor({
-                    availability: "enabled",
-                    meaning: "request_evidence",
-                    placement: "sticky_rail",
-                    priority: "primary",
-                    requiresAudit: true,
-                    requiresConfirmation: true,
-                  })}
-                >
-                  <MessageSquare aria-hidden="true" className="size-4" />Request Evidence
-                </button>
-                <button
-                  className="inline-flex h-[var(--button-height)] w-full items-center justify-center gap-2 rounded-md border border-alphavest-red/55 bg-alphavest-red/10 px-4 text-sm font-semibold text-alphavest-red"
-                  data-testid="j02-block-release"
-                  onClick={() => {
-                    setConfirmationAction("compliance_block");
-                  }}
-                  type="button"
-                  {...uxActionAttributesFor({
-                    availability: "enabled",
-                    meaning: "block",
-                    placement: "sticky_rail",
-                    priority: "destructive",
-                    requiresAudit: true,
-                    requiresConfirmation: true,
-                  })}
-                >
-                  Keep Blocked
-                </button>
+                <StickyActionZone testId="e05-compliance-release-action-zone">
+                  <ActionButton
+                    availability="blocked_static"
+                    className="w-full"
+                    disabledReason="Release remains blocked until evidence, policy, reviewer and approver gates pass."
+                    meaning="release"
+                    placement="sticky_rail"
+                    priority="blocked"
+                    requiresPermission={false}
+                    testId="wp06-release-blocked-control"
+                    title="Release blocked"
+                    visibleDisabledReason
+                  >
+                    <LockKeyhole aria-hidden="true" className="size-4" />Release blocked until preconditions pass
+                  </ActionButton>
+                  <ActionButton
+                    className="w-full"
+                    meaning="request_evidence"
+                    onClick={() => {
+                      setConfirmationAction("request_evidence");
+                    }}
+                    placement="sticky_rail"
+                    priority="primary"
+                    requiresAudit
+                    requiresConfirmation
+                    testId="j02-request-evidence"
+                  >
+                    <MessageSquare aria-hidden="true" className="size-4" />Request Evidence
+                  </ActionButton>
+                  <ActionButton
+                    className="w-full"
+                    meaning="block"
+                    onClick={() => {
+                      setConfirmationAction("compliance_block");
+                    }}
+                    placement="sticky_rail"
+                    priority="destructive"
+                    requiresAudit
+                    requiresConfirmation
+                    testId="j02-block-release"
+                  >
+                    Keep Blocked
+                  </ActionButton>
+                </StickyActionZone>
               </CardContent>
             </Card>
             <Card>

@@ -9,11 +9,11 @@ Date: 2026-06-27
 | Ticket | `SPEC-E05-1` |
 | Parent epic | `E05 Action Hierarchy and Workflow Control Normalization` |
 | Source analysis | `docs/v3/proof/e05_action_hierarchy_analysis.md` |
-| Spec status | `DECISION_READY` |
-| Implementation status | `BLOCKED_PENDING_HUMAN_APPROVAL` |
-| Recommended approval | `APPROVE_E05_CANONICAL_ACTION_HIERARCHY_CONTRACT` |
+| Spec status | `SUPERSEDED_BY_EXECUTABLE_E05_SPEC` |
+| Implementation status | `AUTHORIZED_BY_USER_FOR_E05_RUN` |
+| Executable spec | `docs/ux/ALPHAVEST_E05_ACTION_FEEDBACK_IMPLEMENTATION_SPEC.md` |
 
-This specification defines the target action hierarchy system for E05. It does not authorize implementation until the human approval gate is cleared.
+This earlier specification defined the target action hierarchy system for E05. It is now superseded for execution by the E05 action and feedback implementation spec created from the uploaded E05 epic.
 
 ## Target State
 

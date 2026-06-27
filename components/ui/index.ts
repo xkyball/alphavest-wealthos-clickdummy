@@ -1,4 +1,5 @@
 export * from "@/components/ui/a11y-status";
+export * from "@/components/ui/action-zone";
 export * from "@/components/ui/audit-timeline";
 export * from "@/components/ui/badge";
 export * from "@/components/ui/card";
