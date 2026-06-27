@@ -1,0 +1,145 @@
+{
+  "artifact": {
+    "name": "BD_07_APPROVAL_VS_RELEASE_STATE_CONTRACT.json",
+    "kind": "execution_sequence_evidence",
+    "created_at": "2026-06-27",
+    "ticket_id": "TICKET-BD-07",
+    "source_burndown_id": "BD-07",
+    "sequence_step": "Approval/release semantic split",
+    "title": "Approval vs Release State Contract",
+    "status": "COMPLETED_BACKLOG_AND_PROOF_LOCK",
+    "product_code_changed": false,
+    "ui_changed": false,
+    "screenshot_required_for_chat": false
+  },
+  "ticket_contract": {
+    "priority": "P0",
+    "ticket_kind": "semantic_safety_rule",
+    "work_type": "Business Rule / Release Semantics / Guard Proof",
+    "unique_shape": "Semantic hardening ticket; small UI possible, but the real work is rule separation and negative proof.",
+    "validation": "No state name implies client release before compliance release."
+  },
+  "canonical_state_split": [
+    {
+      "state": "DRAFT_INTERNAL_ONLY",
+      "meaning": "Internal draft exists; not reviewed, not released, not client visible.",
+      "client_visibility": false,
+      "allowed_next_controls": ["analyst rebuild", "unsupported claim handling", "advisor review preparation"],
+      "forbidden_implications": ["advisor approval", "compliance release", "client acceptance", "export download"]
+    },
+    {
+      "state": "ANALYST_REBUILT_WITH_EVIDENCE",
+      "meaning": "Analyst rebuilt draft with accepted scoped evidence; still internal.",
+      "client_visibility": false,
+      "allowed_next_controls": ["advisor review"],
+      "forbidden_implications": ["release", "client-visible advice", "export"]
+    },
+    {
+      "state": "ADVISOR_APPROVED_FOR_COMPLIANCE",
+      "meaning": "Advisor approved the package as a candidate for compliance; it is not a release state.",
+      "client_visibility": false,
+      "allowed_next_controls": ["compliance review", "compliance evidence request", "compliance block", "compliance release precondition evaluation"],
+      "forbidden_implications": ["clientVisible true", "RELEASED_TO_CLIENT", "client acceptance", "export readiness"]
+    },
+    {
+      "state": "COMPLIANCE_PENDING",
+      "meaning": "Compliance must decide; advisor approval is necessary but insufficient.",
+      "client_visibility": false,
+      "allowed_next_controls": ["request evidence", "block release", "evaluate release preconditions"],
+      "forbidden_implications": ["release complete", "client visibility unlocked", "download ready"]
+    },
+    {
+      "state": "COMPLIANCE_NEEDS_EVIDENCE",
+      "meaning": "Compliance requires additional evidence; release stays blocked.",
+      "client_visibility": false,
+      "allowed_next_controls": ["evidence request", "upload/review/link evidence"],
+      "forbidden_implications": ["sufficiency", "release", "export"]
+    },
+    {
+      "state": "COMPLIANCE_BLOCKED",
+      "meaning": "Compliance actively blocks release.",
+      "client_visibility": false,
+      "allowed_next_controls": ["resolve blocker", "request evidence", "audit review"],
+      "forbidden_implications": ["release", "client acceptance", "export"]
+    },
+    {
+      "state": "COMPLIANCE_RELEASED_CLIENT_SAFE",
+      "meaning": "Compliance release succeeded after advisor, evidence, payload, rationale, permission, redaction and audit gates.",
+      "client_visibility": true,
+      "allowed_next_controls": ["client-safe projection", "separate client decision flow", "separate export if export gates pass"],
+      "forbidden_implications": ["raw internal draft visibility", "client acceptance by release alone", "export without export approval"]
+    },
+    {
+      "state": "CLIENT_ACCEPTANCE_SEPARATE",
+      "meaning": "Client decision/acceptance is downstream and separate from compliance release.",
+      "client_visibility": true,
+      "allowed_next_controls": ["client decision capture", "audit history"],
+      "forbidden_implications": ["retroactive compliance release", "internal payload exposure"]
+    }
+  ],
+  "label_contract": {
+    "required_language": [
+      {
+        "context": "advisor surface",
+        "preferred_labels": ["Advisor candidate", "Advisor-approved for compliance", "Compliance pending"],
+        "forbidden_labels_without_qualifier": ["Released", "Client-ready", "Approved for client"]
+      },
+      {
+        "context": "compliance surface",
+        "preferred_labels": ["Compliance release", "Release preconditions", "Release action required", "Client-safe preview candidate"],
+        "forbidden_labels_without_qualifier": ["Approved", "Done", "Ready"] 
+      },
+      {
+        "context": "client projection",
+        "preferred_labels": ["Released client-safe summary", "Client-visible after compliance release"],
+        "forbidden_labels_without_qualifier": ["Advisor approved", "Draft approved"]
+      }
+    ],
+    "current_ui_assessment": {
+      "pass": true,
+      "evidence": [
+        "Advisor surfaces use phrases such as 'advisor candidate only', 'compliance pending' and 'no client visibility'.",
+        "Compliance release surfaces state that advisor approval alone is not enough and that explicit compliance release controls client visibility."
+      ],
+      "cleanup_note": "Historical generic 'Approved' badges in compliance review confirmation should be renamed in a later UI copy hardening slice to 'Review complete' or 'Release review ready'. They are currently surrounded by explicit release-boundary copy and are not a BD-07 blocker."
+    }
+  },
+  "source_evidence": [
+    {
+      "path": "lib/advisory-workflow-contract.ts",
+      "role": "Defines canonical states including ADVISOR_APPROVED_FOR_COMPLIANCE, COMPLIANCE_PENDING and COMPLIANCE_RELEASED_CLIENT_SAFE."
+    },
+    {
+      "path": "lib/workflow-gate.ts",
+      "role": "Separates advisor approval from compliance release and client visibility."
+    },
+    {
+      "path": "lib/release-spine-command-surface.ts",
+      "role": "Builds canonical release preconditions across advisor, evidence, audit, rationale, payload, permission, redaction and export."
+    },
+    {
+      "path": "lib/typed-workflow-command-bus.ts",
+      "role": "Advisor approval sets COMPLIANCE_PENDING and clientVisible false; only compliance_release may set RELEASED_TO_CLIENT after preconditions."
+    },
+    {
+      "path": "components/internal-workflow-screen.tsx",
+      "role": "Visible UI copy repeatedly states that advisor approval is not release and compliance release controls client visibility."
+    }
+  ],
+  "validation": {
+    "commands_run": [
+      {
+        "command": "pnpm playwright test tests/workflow-gate.spec.ts tests/release-spine-command-surface.spec.ts tests/client-visibility-projection.spec.ts tests/true-ux-p0-safety.spec.ts tests/scf-p04-p06-flow-ui.spec.ts tests/journey-api.spec.ts --workers=1",
+        "status": "PASS",
+        "result": "41 passed"
+      }
+    ],
+    "positive_acceptance_result": "Advisor approval, compliance pending, compliance release and client acceptance are separate semantic states.",
+    "negative_acceptance_result": "No inspected state name or tested transition implies client release before compliance release."
+  },
+  "bold_cleanup_recommendations": [
+    "Rename all remaining generic 'Approved' compliance badges to 'Review complete' or 'Release review ready' so no surface ever lets 'approved' masquerade as 'released'.",
+    "Make ADVISOR_APPROVED_FOR_COMPLIANCE the only allowed advisor approval semantic in UI and API response copy.",
+    "Move release labels behind a shared release-state formatter so page copy cannot drift per component."
+  ]
+}
