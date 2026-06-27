@@ -56,6 +56,7 @@ import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
 import { WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
 import { uxActionAttributesFor } from "@/lib/ux-action-hierarchy-contract";
+import { uxFeedbackSuccessMessageForSubject } from "@/lib/ux-feedback-message-contract";
 import {
   blueprintRows,
   blueprintStages,
@@ -1672,11 +1673,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
         tenantSlug: session.tenant.slug,
       });
       setStatus("success");
-      setMessage(
-        body.auditEventId
-          ? `Audit recorded: ${body.auditEventId}. Export approval was recorded through /api/export-workflow; generation, download, share, client acceptance and advice release remain separate controls.`
-          : "Export approval was recorded through /api/export-workflow; generation, download, share, client acceptance and advice release remain separate controls.",
-      );
+      setMessage(uxFeedbackSuccessMessageForSubject("export_approval", { auditEventId: body.auditEventId }));
     } catch (error) {
       setStatus("error");
       setMessage(
@@ -1947,7 +1944,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
           ) : null}
           {status === "success" ? (
             <StatePanel
-              detail={message ?? "Export approval was recorded through /api/export-workflow; generation, download, share, client acceptance and advice release remain separate controls."}
+              detail={message ?? uxFeedbackSuccessMessageForSubject("export_approval")}
               feedback={{
                 actionMeaning: "export_approval",
                 intent: "success",
@@ -2039,11 +2036,7 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
         tenantSlug: session.tenant.slug,
       });
       setStatus("success");
-      setMessage(
-        body.auditEventId
-          ? `Audit recorded: ${body.auditEventId}. Controlled export download was recorded through /api/export-workflow; secure share, client acceptance and advice release remain separate controls.`
-          : "Controlled export download was recorded through /api/export-workflow; secure share, client acceptance and advice release remain separate controls.",
-      );
+      setMessage(uxFeedbackSuccessMessageForSubject("download", { auditEventId: body.auditEventId }));
     } catch (error) {
       setStatus("error");
       setMessage(
@@ -2323,7 +2316,7 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
           ) : null}
           {status === "success" ? (
             <StatePanel
-              detail={message ?? "Controlled export download was recorded through /api/export-workflow; secure share, client acceptance and advice release remain separate controls."}
+              detail={message ?? uxFeedbackSuccessMessageForSubject("download")}
               feedback={{
                 actionMeaning: "download",
                 intent: "success",

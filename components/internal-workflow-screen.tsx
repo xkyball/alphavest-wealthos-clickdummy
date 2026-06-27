@@ -49,6 +49,7 @@ import { UxComplexityPriorityPanel } from "@/components/ux-complexity-priority-p
 import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
 import { uxActionAttributesFor } from "@/lib/ux-action-hierarchy-contract";
+import { uxFeedbackSuccessMessageForSubject } from "@/lib/ux-feedback-message-contract";
 import { wp05ComplianceReleaseConfirmationPhrase } from "@/lib/advisory-workflow-contract";
 import {
   advisorApprovalDemoTargets,
@@ -206,7 +207,14 @@ function SensitiveWorkflowConfirmationModal({
       });
 
       setStatus("success");
-      setMessage(body.result?.auditEventId ? `Audit recorded: ${body.result.auditEventId}` : "Action persisted.");
+      setMessage(
+        activeConfig.action === "request_evidence"
+          ? uxFeedbackSuccessMessageForSubject("evidence_review", { auditEventId: body.result?.auditEventId })
+          : uxFeedbackSuccessMessageForSubject("generic_action", {
+              auditEventId: body.result?.auditEventId,
+              prefix: "Compliance block was recorded for this release review only.",
+            }),
+      );
     } catch (error) {
       setStatus("error");
       setMessage(error instanceof Error ? error.message : "Sensitive workflow action failed.");
@@ -312,7 +320,7 @@ function SensitiveWorkflowConfirmationModal({
           />
         ) : null}
         {status === "success" ? (
-          <StatePanel detail={message ?? "Action persisted."} state="success" testId="j02-sensitive-action-success-state" title="Action persisted" />
+          <StatePanel detail={message ?? uxFeedbackSuccessMessageForSubject("generic_action")} state="success" testId="j02-sensitive-action-success-state" title="Action recorded" />
         ) : null}
         {status === "error" ? (
           <StatePanel detail={message ?? "No mutation was completed."} state="blocked" testId="j02-sensitive-action-error-state" title="Action failed" />
@@ -1918,11 +1926,7 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
       });
 
       setStatus("success");
-      setMessage(
-        body.result?.auditEventId
-          ? `Audit recorded: ${body.result.auditEventId}. Compliance release persisted for this reviewed package only; export, download, share and client acceptance remain separate controls.`
-          : "Compliance release persisted for this reviewed package only; export, download, share and client acceptance remain separate controls.",
-      );
+      setMessage(uxFeedbackSuccessMessageForSubject("compliance_release", { auditEventId: body.result?.auditEventId }));
     } catch (error) {
       setStatus("error");
       setMessage(
@@ -2089,7 +2093,7 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
             ) : null}
             {status === "success" ? (
               <StatePanel
-                detail={message ?? "Compliance release persisted for this reviewed package only; export, download, share and client acceptance remain separate controls."}
+                detail={message ?? uxFeedbackSuccessMessageForSubject("compliance_release")}
                 feedback={{
                   actionMeaning: "release",
                   intent: "success",

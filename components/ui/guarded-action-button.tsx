@@ -10,6 +10,7 @@ import {
   type UxActionPlacement,
   type UxActionPriority,
 } from "@/lib/ux-action-hierarchy-contract";
+import { uxFeedbackSuccessMessageForSubject } from "@/lib/ux-feedback-message-contract";
 import type { UiActionGuard, UiActionGuardStatus } from "@/lib/ui-clickflow-guards";
 
 type GuardedActionLifecycleState = Extract<UiActionGuardStatus, "enabled" | "error" | "loading" | "success"> | "idle";
@@ -46,7 +47,7 @@ export function GuardedActionButton({
   requiresAudit = false,
   requiresConfirmation = false,
   requiresPermission = true,
-  successLabel = "Action recorded. Downstream gates remain separate unless explicitly stated.",
+  successLabel = uxFeedbackSuccessMessageForSubject("generic_action"),
   testId,
 }: GuardedActionButtonProps) {
   const disabledReasonId = useId();

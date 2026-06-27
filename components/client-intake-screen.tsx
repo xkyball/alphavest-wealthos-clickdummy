@@ -78,6 +78,7 @@ import {
 import { createDemoSession, demoPlatformTenantId, demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import type { ScreenRoute } from "@/lib/route-registry";
 import { runDataMaintenanceCommand } from "@/lib/data-maintenance-command-client";
+import { uxFeedbackSuccessMessageForSubject } from "@/lib/ux-feedback-message-contract";
 import { visibilityEngine, type DecisionVisibilityPayload } from "@/lib/visibility-engine";
 
 type ClientIntakeScreenProps = {
@@ -2384,7 +2385,7 @@ function DocumentUploadForm() {
       await refresh();
       rememberUploadedDocument(body.result.document);
       setUploadState("success");
-      setMessage(`${body.result.document.fileName} upload completed. Upload complete - evidence review pending. Lifecycle: ${labelFromEnum(body.result.document.evidenceLifecycleStatus ?? "extraction_pending")}. Evidence sufficiency, release, export and client visibility remain locked.`);
+      setMessage(`${body.result.document.fileName} upload completed. Lifecycle: ${labelFromEnum(body.result.document.evidenceLifecycleStatus ?? "extraction_pending")}. ${uxFeedbackSuccessMessageForSubject("upload")}`);
     } catch (error) {
       setUploadState("error");
       setMessage(error instanceof Error ? error.message : "Upload failed.");
