@@ -1,0 +1,256 @@
+{
+  "artifact": {
+    "name": "BD_02_C_NEGATIVE_ACCESS_PROOF_PLAN.json",
+    "kind": "subtask_execution_evidence",
+    "created_at": "2026-06-27",
+    "ticket_id": "TICKET-BD-02",
+    "subtask_id": "BD-02-C",
+    "title": "Negative access proof plan",
+    "status": "COMPLETED_PROOF_PLAN",
+    "product_code_changed": false,
+    "ui_changed": false,
+    "screenshot_required_for_chat": false
+  },
+  "depends_on": [
+    "/Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/routes-and-modals/2026-06-27_19-14-41/BD_02_A_SESSION_CONTEXT_CONTRACT.json",
+    "/Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/routes-and-modals/2026-06-27_19-14-41/BD_02_B_ROLE_OBJECT_SCOPE_MATRIX.json"
+  ],
+  "proof_strategy": {
+    "principle": "Prove denial at the exact layer that must deny: auth, actor mapping, tenant scope, route shell, action authority, payload projection or object scope.",
+    "anti_overclaim": "A route-rendering pass, a visible disabled CTA or a positive allow test is not negative access proof.",
+    "canonical_denial_shape": [
+      "blocked actor/input",
+      "target object/tenant/action",
+      "expected layer",
+      "expected reasonCode",
+      "audit or safety flags",
+      "no mutation/no payload/no release assertion"
+    ]
+  },
+  "negative_proof_cases": [
+    {
+      "id": "NAP-001",
+      "layer": "auth",
+      "scenario": "Missing current-user JWT cannot resolve /api/current-user.",
+      "expected_denial": "401 PERMISSION_DENIED",
+      "required_assertions": [
+        "mutated=false",
+        "noAdviceExecution=true",
+        "noClientRelease=true",
+        "safety.failClosed=true",
+        "safety.hiddenRowsDisclosed=false",
+        "safety.internalPayloadReturned=false"
+      ],
+      "existing_proof": "tests/auth-spine.spec.ts: fails closed for missing or invalid current-user JWT",
+      "status": "EXISTING_PROOF"
+    },
+    {
+      "id": "NAP-002",
+      "layer": "auth",
+      "scenario": "Invalid MFA code cannot issue DB-user JWT.",
+      "expected_denial": "DUMMY_AUTH_MFA_INVALID_CODE",
+      "required_assertions": [
+        "mutated=false",
+        "noAdviceExecution=true",
+        "noClientRelease=true",
+        "safety.failClosed=true",
+        "safety.silentStateAdvance=false"
+      ],
+      "existing_proof": "tests/auth-spine.spec.ts: issues a safe JWT only after MFA 123456 and resolves current-user context",
+      "status": "EXISTING_PROOF"
+    },
+    {
+      "id": "NAP-003",
+      "layer": "actor_mapping",
+      "scenario": "Unknown role or tenant cannot be accepted in strict demo/providerless paths.",
+      "expected_denial": "valid_role_key_required and/or valid_tenant_slug_required",
+      "required_assertions": [
+        "tryCreateDemoSession returns ok=false",
+        "requireDemoSession throws",
+        "createDemoSession fallback is explicitly not accepted as strict proof"
+      ],
+      "existing_proof": "tests/providerless-scope.spec.ts",
+      "status": "EXISTING_PROOF"
+    },
+    {
+      "id": "NAP-004",
+      "layer": "tenant_scope",
+      "scenario": "Mapped client actor cannot access a different tenant context.",
+      "expected_denial": "DEMO_DENY_ACTOR_TENANT_CONTEXT_MISMATCH",
+      "required_assertions": [
+        "allowed=false",
+        "requiresAudit=true"
+      ],
+      "existing_proof": "tests/providerless-scope.spec.ts and tests/auth-spine.spec.ts current-user bridge cross-tenant check",
+      "status": "EXISTING_PROOF"
+    },
+    {
+      "id": "NAP-005",
+      "layer": "tenant_scope",
+      "scenario": "Payload access with tenant-owned subject but no tenant context fails closed.",
+      "expected_denial": "DEMO_DENY_TENANT_CONTEXT_REQUIRED",
+      "required_assertions": [
+        "route-level permissiveness does not imply payload access",
+        "requiresAudit=true"
+      ],
+      "existing_proof": "tests/providerless-scope.spec.ts",
+      "status": "EXISTING_PROOF"
+    },
+    {
+      "id": "NAP-006",
+      "layer": "route_action_payload_split",
+      "scenario": "Route shell can render while action authority is denied.",
+      "expected_denial": "DEMO_DENY_ADVISOR_APPROVAL_REQUIRED",
+      "required_assertions": [
+        "routeShellAccessible=true",
+        "actionDecision.allowed=false",
+        "payloadDecision separately evaluated"
+      ],
+      "existing_proof": "tests/providerless-scope.spec.ts: allows route shell access while denying action authority",
+      "status": "EXISTING_PROOF"
+    },
+    {
+      "id": "NAP-007",
+      "layer": "object_scope",
+      "scenario": "Object-scoped payload targets wrong object id.",
+      "expected_denial": "DEMO_DENY_OBJECT_SCOPE_MISMATCH",
+      "required_assertions": [
+        "allowed=false",
+        "requiresAudit=true"
+      ],
+      "existing_proof": "tests/providerless-scope.spec.ts",
+      "status": "EXISTING_PROOF"
+    },
+    {
+      "id": "NAP-008",
+      "layer": "object_scope",
+      "scenario": "Object-scoped payload has no current object scope.",
+      "expected_denial": "DEMO_DENY_OBJECT_SCOPE_REQUIRED",
+      "required_assertions": [
+        "allowed=false",
+        "requiresAudit=true"
+      ],
+      "existing_proof": "tests/providerless-scope.spec.ts and tests/permission-engine.spec.ts",
+      "status": "EXISTING_PROOF"
+    },
+    {
+      "id": "NAP-009",
+      "layer": "admin_non_bypass",
+      "scenario": "Admin/Security cannot force compliance release, evidence sufficiency, client visibility or export.",
+      "expected_denial": "DEMO_DENY_ADMIN_*_NON_BYPASS or DEMO_DENY_COMPLIANCE_RELEASE_REQUIRED",
+      "required_assertions": [
+        "allowed=false",
+        "requiresSecondConfirmation=true for sensitive bypass attempts",
+        "admin governance success remains separate from process release"
+      ],
+      "existing_proof": "tests/governance-non-bypass.spec.ts; tests/permission-engine.spec.ts",
+      "status": "EXISTING_PROOF"
+    },
+    {
+      "id": "NAP-010",
+      "layer": "advisor_vs_compliance",
+      "scenario": "Advisor approval cannot become compliance release.",
+      "expected_denial": "DEMO_DENY_COMPLIANCE_RELEASE_REQUIRED for non-compliance release",
+      "required_assertions": [
+        "advisor approval allow does not imply release allow",
+        "compliance_officer release requires matching object scope"
+      ],
+      "existing_proof": "tests/permission-engine.spec.ts",
+      "status": "EXISTING_PROOF"
+    },
+    {
+      "id": "NAP-011",
+      "layer": "client_projection",
+      "scenario": "Client principal cannot see unreleased decision/recommendation internal payload.",
+      "expected_denial": "fail-closed hidden projection",
+      "required_assertions": [
+        "internal fields absent",
+        "payload empty or client-safe only",
+        "hiddenFields includes internal rationale/compliance notes/audit internals"
+      ],
+      "existing_proof": "tests/client-visibility-projection.spec.ts; tests/permission-engine.spec.ts",
+      "status": "EXISTING_PROOF"
+    },
+    {
+      "id": "NAP-012",
+      "layer": "export_redaction",
+      "scenario": "External/limited roles cannot create, download or share restricted export packages.",
+      "expected_denial": "DEMO_DENY_EXPORT_ROLE_FORBIDDEN",
+      "required_assertions": [
+        "allowed=false",
+        "requiresAudit=true for restricted export attempt"
+      ],
+      "existing_proof": "tests/permission-engine.spec.ts",
+      "status": "EXISTING_PROOF_NEEDS_BD_11_EXTENSION"
+    }
+  ],
+  "coverage_gaps_for_later_tickets": [
+    {
+      "id": "GAP-BD02C-001",
+      "ticket_owner": "BD-04 / BD-12",
+      "gap": "Evidence lifecycle sufficiency needs end-to-end negative proof against upload/review/release flow, not only PermissionEngine unit proof."
+    },
+    {
+      "id": "GAP-BD02C-002",
+      "ticket_owner": "BD-06 / BD-09",
+      "gap": "No-client-leak projection must be proven through internal draft states and client projection route/API, not only abstract visibility projection."
+    },
+    {
+      "id": "GAP-BD02C-003",
+      "ticket_owner": "BD-10",
+      "gap": "Denied attempts should create or preserve audit/event proof at the persistence spine where mutation services are involved."
+    },
+    {
+      "id": "GAP-BD02C-004",
+      "ticket_owner": "BD-11",
+      "gap": "Export package redaction needs package-level negative proof that restricted fields never enter generated client-safe output."
+    }
+  ],
+  "bold_cleanup_recommendations": [
+    {
+      "id": "BCR-01",
+      "recommendation": "Create a shared negative-access test table from this plan and require every new P0 process service to add at least one denial case before any positive implementation claim.",
+      "legacy_removed": "Stops positive-only demos from being treated as safety proof."
+    },
+    {
+      "id": "BCR-02",
+      "recommendation": "Ban createDemoSession fallback usage in new negative tests; require requireDemoSession or DB/JWT CurrentUserContext.",
+      "legacy_removed": "Removes silent fallback masking from security proof."
+    },
+    {
+      "id": "BCR-03",
+      "recommendation": "Make reasonCode part of acceptance, not just allowed=false.",
+      "legacy_removed": "Prevents accidental denial for the wrong reason from passing."
+    },
+    {
+      "id": "BCR-04",
+      "recommendation": "Track no-payload/no-mutation/no-release assertions separately from HTTP status.",
+      "legacy_removed": "Stops 401/403-only tests from missing payload leakage."
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "criterion": "Negative access proof cases cover auth, actor, tenant, route/action split, object scope, admin non-bypass and client projection.",
+      "status": "PASS"
+    },
+    {
+      "criterion": "Existing proof files are identified and later gaps are not hidden.",
+      "status": "PASS"
+    },
+    {
+      "criterion": "The plan requires reasonCode and no-payload/no-mutation/no-release assertions.",
+      "status": "PASS"
+    }
+  ],
+  "overclaim_guard": "This is the negative access proof plan for BD-02. It does not close BD-04, BD-06, BD-09, BD-10, BD-11 or BD-12 end-to-end proof obligations.",
+  "parent_ticket_status": {
+    "ticket_id": "TICKET-BD-02",
+    "status": "COMPLETED_SPEC_LOCK",
+    "completed_subtasks": [
+      "BD-02-A",
+      "BD-02-B",
+      "BD-02-C"
+    ],
+    "next_ticket": "TICKET-BD-03"
+  }
+}

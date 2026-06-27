@@ -1,0 +1,443 @@
+{
+  "artifact": {
+    "name": "BD_00_AUTHORITY_TRACEABILITY_REGISTER.json",
+    "kind": "ticket_execution_evidence",
+    "created_at": "2026-06-27",
+    "ticket_id": "TICKET-BD-00",
+    "source_burndown_id": "BD-00",
+    "title": "Lock P0 traceability and burndown authority boundary",
+    "status": "COMPLETED_DECISION_ACCEPTED",
+    "next_gate": null,
+    "product_code_changed": false,
+    "ui_changed": false,
+    "screenshot_required": false
+  },
+  "active_ticket": {
+    "id": "TICKET-BD-00",
+    "work_type": "Analysis / Source Authority / Human Decision",
+    "readiness": "BLOCKED_BY_TRACEABILITY",
+    "ctes_total": 15,
+    "ctes_class": "Split / Analysis-only",
+    "execution_decision": "Do not implement; produce authority register and wait for decision.",
+    "execution_sequence_completed": [
+      {
+        "step": "Authority source register",
+        "output": "Authority Boundary Register",
+        "validation_result": "PASS_WITH_DECISION_GATE"
+      },
+      {
+        "step": "Traceability contradiction review",
+        "output": "Traceability Finding Register",
+        "validation_result": "PASS_WITH_FINDING"
+      }
+    ]
+  },
+  "preflight": {
+    "branch": "full-workflow",
+    "latest_commit": "e454055 feat: add release candidate route capture mode",
+    "guard_source": {
+      "command": "pnpm guard:source",
+      "status": "PASS",
+      "violations": 0
+    },
+    "route_registry": "present: lib/route-registry.ts",
+    "package_manager": "pnpm@9.15.9",
+    "relevant_scripts_present": [
+      "guard:source",
+      "test:source-reality",
+      "test:route-smoke",
+      "phase:check",
+      "visual:capture-routes:screens-only"
+    ],
+    "pre_existing_dirty_worktree": [
+      "M lib/p0-acceptance-proof.ts",
+      "M lib/source-reality-gate.ts",
+      "M tests/p0-acceptance.spec.ts",
+      "M tests/source-reality-gate.spec.ts",
+      "?? docs/00-current/ALPHAVEST_DETAILED_BUSINESS_PROCESS_SPECIFICATION_P0_ONLY.json"
+    ],
+    "dirty_worktree_decision": "Treat as pre-existing parallel/user work. Do not modify, revert, stage or rely on these files for BD-00 acceptance."
+  },
+  "authority_boundary_register": {
+    "accepted_execution_authority": [
+      {
+        "rank": 1,
+        "path": "/Users/chris/projects/alphavest-wealthos-clickdummy/ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md",
+        "role": "Repo-local operative authority for implementation, phase order, preflight, forbidden changes, safety gates and proof language.",
+        "status": "ACCEPTED_CANONICAL"
+      },
+      {
+        "rank": 2,
+        "path": "/Users/chris/projects/alphavest-wealthos-clickdummy/current full-workflow checkout",
+        "role": "Moving baseline for current repo reality; must beat older docs and screenshots.",
+        "status": "ACCEPTED_CANONICAL"
+      },
+      {
+        "rank": 3,
+        "path": "/Users/chris/projects/alphavest-wealthos-clickdummy/ALPHAVEST_TRUE_UX_CODEX_TASK_PACK.md",
+        "role": "Primary True-UX task source only through the handoff authority.",
+        "status": "ACCEPTED_SUPPORTING"
+      },
+      {
+        "rank": 4,
+        "path": "/Users/chris/projects/alphavest-wealthos-clickdummy/ALPHAVEST_TRUE_UX_FLOW_REFACTORING_PLAN.md",
+        "role": "Flow architecture and process-first target-surface support.",
+        "status": "ACCEPTED_SUPPORTING"
+      },
+      {
+        "rank": 5,
+        "path": "/Users/chris/projects/alphavest-wealthos-clickdummy/ALPHAVEST_TRUE_UX_ROUTE_EVOLUTION_POLICY_MATRIX.md",
+        "role": "Route evolution and split policy support; cannot authorize route creation by itself.",
+        "status": "ACCEPTED_SUPPORTING"
+      },
+      {
+        "rank": 6,
+        "path": "/Users/chris/projects/alphavest-wealthos-clickdummy/ALPHAVEST_TRUE_UX_DECISION_GOVERNANCE_AND_ROUTE_EVOLUTION_POLICY.md",
+        "role": "Decision authority and route evolution governance support.",
+        "status": "ACCEPTED_SUPPORTING"
+      },
+      {
+        "rank": 7,
+        "path": "/Users/chris/projects/alphavest-wealthos-clickdummy/ALPHAVEST_TRUE_UX_FLOW_REFACTORING_STRATEGY_AND_CODEX_DERIVATION_PLAN.md",
+        "role": "True-UX doctrine and derivation support; not direct implementation authority.",
+        "status": "ACCEPTED_SUPPORTING"
+      },
+      {
+        "rank": 8,
+        "path": "/Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/routes-and-modals/2026-06-27_19-14-41/BOC_CTES_P0_PROCESS_FIRST_TICKET_STRUCTURE.json",
+        "role": "Current requested execution plan and ticket order, subordinate to True-UX authority.",
+        "status": "ACCEPTED_FOR_THIS_RUN"
+      },
+      {
+        "rank": 9,
+        "path": "/Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/routes-and-modals/2026-06-27_19-14-41/P0_PROCESS_FIRST_UX_BURNDOWN.json",
+        "role": "Input burndown and dependency map, subordinate to the derived ticket structure and True-UX authority.",
+        "status": "ACCEPTED_WITH_TRACEABILITY_FINDING"
+      },
+      {
+        "rank": 10,
+        "path": "/Users/chris/projects/tools/BOC_CTES_LOKALER_CODE_CAPABILITY_AUDIT_TICKETSTRUKTUR.md",
+        "role": "Method prompt used to derive ticket architecture and CTES discipline, not project code truth.",
+        "status": "ACCEPTED_METHOD_SOURCE"
+      }
+    ],
+    "excluded_or_demoted_sources": [
+      {
+        "source": "main branch, uploaded source snapshots, old bundles and stale generated audits",
+        "reason": "Explicitly not target truth under True-UX handoff and current moving-baseline discipline.",
+        "status": "DEMOTED_REFERENCE_ONLY"
+      },
+      {
+        "source": "screenshots without route, viewport, timestamp, capture mode and source-state provenance",
+        "reason": "BD-01 states screenshot acceptance proof is not trustworthy until capture proof integrity is repaired.",
+        "status": "DEMOTED_REFERENCE_ONLY"
+      },
+      {
+        "source": "P0 burndown declared summary counts",
+        "reason": "Declared priority counts conflict with actual item records.",
+        "status": "ACCEPTED_AS_FINDING_NOT_CANONICAL_COUNT"
+      },
+      {
+        "source": "pre-existing dirty worktree changes",
+        "reason": "They were present before this execution slice and must not be silently treated as BD-00 output.",
+        "status": "OUT_OF_SCOPE_FOR_BD_00"
+      }
+    ]
+  },
+  "traceability_finding_register": {
+    "finding_id": "BD00-TF-001",
+    "severity": "P0_TRACEABILITY_GATE",
+    "title": "Input burndown summary priority counts do not match actual item records",
+    "declared_summary": {
+      "total_items": 18,
+      "p0_items": 12,
+      "p1_items": 5,
+      "p2_items": 1
+    },
+    "actual_item_counts": {
+      "total_items": 18,
+      "P0": 13,
+      "P1": 4,
+      "P2": 1
+    },
+    "actual_status_counts": {
+      "BLOCKED_BY_TRACEABILITY": 1,
+      "READY_FOR_BACKLOG_DERIVATION": 8,
+      "READY_FOR_SPEC_LOCK": 6,
+      "READY_FOR_PROOF_ONLY": 2,
+      "BLOCKED_BY_OPEN_DECISIONS": 1
+    },
+    "impact": [
+      "Priority-based burn charts would be wrong if they use the summary instead of item rows.",
+      "P0 readiness can be over- or under-reported.",
+      "Downstream execution should use item-level truth until the source summary is corrected."
+    ],
+    "resolution_required": true,
+    "recommended_resolution": "Create or approve a corrected canonical burndown baseline before using counts for planning, commit scopes or executive reporting."
+  },
+  "extracted_execution_order": [
+    {
+      "order": 1,
+      "id": "TICKET-BD-00",
+      "title": "Lock P0 traceability and burndown authority boundary",
+      "work_type": "Analysis / Source Authority / Human Decision",
+      "readiness": "BLOCKED_BY_TRACEABILITY",
+      "ctes_total": 15,
+      "subtasks": [],
+      "human_gate": "DG-01",
+      "detailed_description": "Gatekeeper ticket; no implementation steps until the authority boundary is accepted."
+    },
+    {
+      "order": 2,
+      "id": "TICKET-BD-01",
+      "title": "Repair capture proof integrity before using screenshots as acceptance evidence",
+      "work_type": "Proof Infrastructure / QA",
+      "readiness": "READY_FOR_BACKLOG_DERIVATION",
+      "ctes_total": 14,
+      "subtasks": [],
+      "human_gate": null,
+      "detailed_description": "Technical proof repair ticket; can proceed before broad process UX if framed as proof integrity, not feature work."
+    },
+    {
+      "order": 3,
+      "id": "TICKET-BD-02",
+      "title": "Current-user, tenant, role and object-scope foundation",
+      "work_type": "Specification / Security Model / Vertical Slice Foundation",
+      "readiness": "READY_FOR_SPEC_LOCK",
+      "ctes_total": 17,
+      "subtasks": [
+        "BD-02-A Demo current-user and tenant contract",
+        "BD-02-B Role-to-object-scope matrix",
+        "BD-02-C Negative access proof plan"
+      ],
+      "human_gate": null,
+      "detailed_description": "Foundational security-context specification; it is not UI-first and must define object scope before downstream work."
+    },
+    {
+      "order": 4,
+      "id": "TICKET-BD-03",
+      "title": "Admin governance and non-bypass process",
+      "work_type": "Specification / Admin Process / Non-bypass Guard",
+      "readiness": "READY_FOR_SPEC_LOCK",
+      "ctes_total": 16,
+      "subtasks": [],
+      "human_gate": "DG-02",
+      "detailed_description": "Governance cutline ticket; must decide whether admin is narrow non-bypass control or broader admin module."
+    },
+    {
+      "order": 5,
+      "id": "TICKET-BD-04",
+      "title": "Evidence request, upload, review and sufficiency lifecycle",
+      "work_type": "Process Workflow / Data Lifecycle / UI Interaction",
+      "readiness": "READY_FOR_SPEC_LOCK",
+      "ctes_total": 18,
+      "subtasks": [
+        "BD-04-A Evidence lifecycle state model",
+        "BD-04-B Upload and review data contract",
+        "BD-04-C Sufficiency decision guard"
+      ],
+      "human_gate": null,
+      "detailed_description": "Full lifecycle slice; requires state machine and data I/O before UI details."
+    },
+    {
+      "order": 6,
+      "id": "TICKET-BD-05",
+      "title": "Internal workbench and action board as real process workspace",
+      "work_type": "UX Refactor / Work Queue / Role Tasking",
+      "readiness": "READY_FOR_BACKLOG_DERIVATION",
+      "ctes_total": 14,
+      "subtasks": [],
+      "human_gate": null,
+      "detailed_description": "Operational workspace ticket; driven by task queues and decision readiness, not page decoration."
+    },
+    {
+      "order": 7,
+      "id": "TICKET-BD-06",
+      "title": "Internal draft, analyst rebuild and no-client-leak gate",
+      "work_type": "Internal Draft Workflow / Client Projection Safety",
+      "readiness": "READY_FOR_SPEC_LOCK",
+      "ctes_total": 18,
+      "subtasks": [
+        "BD-06-A Internal draft/rebuild state contract",
+        "BD-06-B No-client-leak projection guard"
+      ],
+      "human_gate": null,
+      "detailed_description": "Fail-closed internal-only ticket; its core acceptance is absence of client leakage, not visible feature richness."
+    },
+    {
+      "order": 8,
+      "id": "TICKET-BD-07",
+      "title": "Advisor approval is not compliance release",
+      "work_type": "Business Rule / Release Semantics / Guard Proof",
+      "readiness": "READY_FOR_BACKLOG_DERIVATION",
+      "ctes_total": 15,
+      "subtasks": [],
+      "human_gate": null,
+      "detailed_description": "Semantic hardening ticket; small UI possible, but the real work is rule separation and negative proof."
+    },
+    {
+      "order": 9,
+      "id": "TICKET-BD-08",
+      "title": "Compliance decision room, block and release process workspace",
+      "work_type": "Compliance Workflow / Decision Room / Block-Release State Machine",
+      "readiness": "READY_FOR_BACKLOG_DERIVATION",
+      "ctes_total": 18,
+      "subtasks": [
+        "BD-08-A Compliance decision state machine",
+        "BD-08-B Decision room interaction surface",
+        "BD-08-C Release projection side effects"
+      ],
+      "human_gate": null,
+      "detailed_description": "Decision-room ticket; combines role workspace with auditable block/release outcomes."
+    },
+    {
+      "order": 10,
+      "id": "TICKET-BD-09",
+      "title": "Client visibility fail-closed projection",
+      "work_type": "Projection Layer / Fail-closed Safety / Negative Testing",
+      "readiness": "READY_FOR_SPEC_LOCK",
+      "ctes_total": 17,
+      "subtasks": [],
+      "human_gate": null,
+      "detailed_description": "Safety projection ticket; success is default denial plus explicit release allow-list."
+    },
+    {
+      "order": 11,
+      "id": "TICKET-BD-10",
+      "title": "Decision record and audit persistence spine",
+      "work_type": "Persistence / Audit / Evidence Integrity",
+      "readiness": "READY_FOR_SPEC_LOCK",
+      "ctes_total": 18,
+      "subtasks": [
+        "BD-10-A Decision event taxonomy",
+        "BD-10-B Persistence/write contract",
+        "BD-10-C Readback and tamper-risk proof"
+      ],
+      "human_gate": null,
+      "detailed_description": "Persistence spine ticket; deeper backend proof than UI work, with append-only/audit semantics."
+    },
+    {
+      "order": 12,
+      "id": "TICKET-BD-11",
+      "title": "Export, redaction and client-safe package workflow",
+      "work_type": "Export Workflow / Redaction / Client-safe Packaging",
+      "readiness": "READY_FOR_BACKLOG_DERIVATION",
+      "ctes_total": 19,
+      "subtasks": [
+        "BD-11-A Export interaction model decision",
+        "BD-11-B Redaction rule contract",
+        "BD-11-C Client-safe package proof"
+      ],
+      "human_gate": "DG-03",
+      "detailed_description": "Human-gated workflow ticket; export is blocked until projection and audit spine are real."
+    },
+    {
+      "order": 13,
+      "id": "TICKET-BD-12",
+      "title": "P0 positive and negative proof suite consolidation",
+      "work_type": "QA / Test Architecture / Proof Portfolio",
+      "readiness": "READY_FOR_PROOF_ONLY",
+      "ctes_total": 17,
+      "subtasks": [],
+      "human_gate": null,
+      "detailed_description": "Proof-only rollup; should not add product features and must wait for core P0 slices."
+    },
+    {
+      "order": 14,
+      "id": "TICKET-BD-13",
+      "title": "Formal page-type system for process-owned surfaces",
+      "work_type": "UX Architecture / Page-type Taxonomy / Shared Components",
+      "readiness": "READY_FOR_BACKLOG_DERIVATION",
+      "ctes_total": 13,
+      "subtasks": [],
+      "human_gate": null,
+      "detailed_description": "Design-system enabler; not a single process feature, but reduces inconsistency across future surfaces."
+    },
+    {
+      "order": 15,
+      "id": "TICKET-BD-14",
+      "title": "Sticky gate/action rail component pattern",
+      "work_type": "Shared UI Pattern / Gate Actions / Accessibility",
+      "readiness": "READY_FOR_BACKLOG_DERIVATION",
+      "ctes_total": 12,
+      "subtasks": [],
+      "human_gate": null,
+      "detailed_description": "Reusable interaction pattern; depends on process semantics, not raw visual preference."
+    },
+    {
+      "order": 16,
+      "id": "TICKET-BD-15",
+      "title": "Responsive table and list density pattern",
+      "work_type": "Responsive UI / Dense Lists / Evidence Workflows",
+      "readiness": "READY_FOR_BACKLOG_DERIVATION",
+      "ctes_total": 12,
+      "subtasks": [],
+      "human_gate": null,
+      "detailed_description": "Display-density pattern; acceptance is scanability and mobile behavior, not business state mutation."
+    },
+    {
+      "order": 17,
+      "id": "TICKET-BD-16",
+      "title": "Process-first navigation hardening after burndown mapping",
+      "work_type": "Navigation QA / Route Mapping / Proof-only",
+      "readiness": "READY_FOR_PROOF_ONLY",
+      "ctes_total": 12,
+      "subtasks": [],
+      "human_gate": null,
+      "detailed_description": "Navigation proof ticket; should validate active-parent behavior and process language without opening broad IA redesign."
+    },
+    {
+      "order": 18,
+      "id": "TICKET-BD-17",
+      "title": "Final process-first handoff package",
+      "work_type": "Documentation / QA Assembly / Human Acceptance",
+      "readiness": "BLOCKED_BY_OPEN_DECISIONS",
+      "ctes_total": 13,
+      "subtasks": [],
+      "human_gate": "DG-04",
+      "detailed_description": "Final assembly ticket; blocked until traceability and proof suite decisions are complete."
+    }
+  ],
+  "dg_01_decision_options": [
+    {
+      "option": "A",
+      "token": "APPROVE_DG01_STRICT_TRACEABILITY_REBASE",
+      "label": "Recommended: strict traceability rebase",
+      "decision": "Approve the authority boundary, demote stale screenshots/old bundles/reference-only materials, treat item rows as canonical over summary counts, and authorize a corrected canonical burndown baseline before or alongside BD-01.",
+      "why_bold": "This removes legacy ambiguity instead of carrying it as a permanent compatibility caveat."
+    },
+    {
+      "option": "B",
+      "token": "APPROVE_DG01_PROCEED_WITH_LIMITATION",
+      "label": "Conservative: proceed with limitation",
+      "decision": "Approve execution order and continue to BD-01 while preserving the count mismatch as a known limitation.",
+      "why_not_recommended": "Fast, but it keeps a known reporting inconsistency alive."
+    },
+    {
+      "option": "C",
+      "token": "REWORK_DG01_REGENERATE_BURNDOWN_FIRST",
+      "label": "Hard reset: regenerate burndown first",
+      "decision": "Stop ticket execution and regenerate P0_PROCESS_FIRST_UX_BURNDOWN.json from source inputs before BD-01.",
+      "why_not_recommended": "Cleanest on paper, but likely slower than correcting the traceability baseline now."
+    }
+  ],
+  "recommendation": {
+    "recommended_token": "APPROVE_DG01_STRICT_TRACEABILITY_REBASE",
+    "rationale": "Use the current ticket structure as the execution spine, but aggressively clean the baseline: item-level truth beats stale summary counts, unproven screenshots are reference-only until BD-01, and older bundles/docs must not compete with True-UX authority. This is the best path to remove legacy ambiguity instead of masking it."
+  },
+  "accepted_human_decision": {
+    "gate": "DG-01",
+    "accepted_token": "APPROVE_DG01_STRICT_TRACEABILITY_REBASE",
+    "accepted_at": "2026-06-27",
+    "decision_effect": [
+      "Authority boundary is accepted for this run.",
+      "Item-level ticket truth is canonical over stale burndown summary counts.",
+      "Stale screenshots, old bundles and unproven captures remain reference-only unless BD-01 proof eligibility marks them stronger.",
+      "Execution may continue in the specified ticket order using strict traceability rebase discipline."
+    ]
+  },
+  "commit_decision": {
+    "commit_now": true,
+    "reason": "DG-01 was approved with APPROVE_DG01_STRICT_TRACEABILITY_REBASE, so this register should be force-added as canonical run proof instead of remaining an ignored local artifact."
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "artifact": {
+    "name": "BD_02_FOUNDATION_SPEC_LOCK_REPORT.json",
+    "kind": "ticket_execution_evidence",
+    "created_at": "2026-06-27",
+    "ticket_id": "TICKET-BD-02",
+    "source_burndown_id": "BD-02",
+    "title": "Current-user, tenant, role and object-scope foundation",
+    "status": "COMPLETED_SPEC_LOCK",
+    "product_code_changed": false,
+    "ui_changed": false,
+    "screenshot_required_for_chat": false
+  },
+  "completed_subtasks": [
+    {
+      "id": "BD-02-A",
+      "title": "Demo current-user and tenant contract",
+      "artifact": "/Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/routes-and-modals/2026-06-27_19-14-41/BD_02_A_SESSION_CONTEXT_CONTRACT.json",
+      "status": "COMPLETED_SPEC_LOCK"
+    },
+    {
+      "id": "BD-02-B",
+      "title": "Role-to-object-scope matrix",
+      "artifact": "/Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/routes-and-modals/2026-06-27_19-14-41/BD_02_B_ROLE_OBJECT_SCOPE_MATRIX.json",
+      "status": "COMPLETED_SPEC_LOCK"
+    },
+    {
+      "id": "BD-02-C",
+      "title": "Negative access proof plan",
+      "artifact": "/Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/routes-and-modals/2026-06-27_19-14-41/BD_02_C_NEGATIVE_ACCESS_PROOF_PLAN.json",
+      "status": "COMPLETED_PROOF_PLAN"
+    }
+  ],
+  "locked_decisions": [
+    {
+      "id": "BD02-D01",
+      "decision": "DB-user JWT CurrentUserContext is the canonical source for P0 process/API identity.",
+      "effect": "Demo-session helpers are allowed as local fixtures and legacy adapters, but not as final P0 permission truth."
+    },
+    {
+      "id": "BD02-D02",
+      "decision": "Route shell, action authority, payload visibility and object scope are separate proof layers.",
+      "effect": "Future tickets cannot claim completion from route rendering or visible UI alone."
+    },
+    {
+      "id": "BD02-D03",
+      "decision": "Admin and Security are governance/non-bypass roles, not superuser release roles.",
+      "effect": "They may manage access controls but cannot force advisor approval, compliance release, evidence sufficiency, client visibility or export."
+    }
+  ],
+  "bold_cleanup_recommendations_to_carry_forward": [
+    "Move new P0 process APIs to CurrentUserContext and use a narrow adapter only for legacy DemoSession services.",
+    "Deprecate createDemoSession in safety-critical tests; use requireDemoSession or DB/JWT current-user context.",
+    "Make reasonCode, no-payload, no-mutation and no-release assertions mandatory for negative access tests.",
+    "Treat query-param roleKey/tenantSlug APIs as demo/readmodel or migration-needed until they are behind current-user context."
+  ],
+  "validation": [
+    {
+      "command": "pnpm playwright test tests/auth-spine.spec.ts tests/providerless-scope.spec.ts --workers=1",
+      "status": "PASS",
+      "result": "14 passed"
+    },
+    {
+      "command": "pnpm playwright test tests/permission-engine.spec.ts --workers=1",
+      "status": "PASS",
+      "result": "8 passed"
+    },
+    {
+      "command": "pnpm playwright test tests/governance-non-bypass.spec.ts tests/client-visibility-projection.spec.ts --workers=1",
+      "status": "PASS",
+      "result": "7 passed"
+    },
+    {
+      "command": "pnpm guard:source",
+      "status": "PASS",
+      "violations": 0
+    }
+  ],
+  "remaining_limits": [
+    "BD-02 is a foundation/spec-lock ticket; it does not migrate legacy query-param APIs.",
+    "BD-02 does not implement the evidence lifecycle, internal draft leak gate, client projection route proof, audit persistence spine or export package redaction.",
+    "Coverage gaps are explicitly assigned forward to BD-04, BD-06, BD-09, BD-10, BD-11 and BD-12."
+  ],
+  "next_ticket": {
+    "id": "TICKET-BD-03",
+    "title": "Admin governance and non-bypass process",
+    "status": "READY_FOR_SPEC_LOCK",
+    "human_gate": "DG-02"
+  }
+}
