@@ -80,6 +80,8 @@ export type UxContractLedgerEntry = {
   expiresOrFollowUp: string | null;
   sourceRegisterId?: string;
   registerDecision?: "migrate_first_slice" | "temporary_exception" | "migrate_later" | "migrate_with_data_surface" | "keep_canonical" | "retire_now" | "rename_or_retire" | "migrate_now" | "keep_historical";
+  currentClass?: string;
+  targetClass?: string;
   notes?: string;
 };
 
@@ -744,6 +746,197 @@ export const uxContractLedgerEntries: readonly UxContractLedgerEntry[] = [
     expiresOrFollowUp: "E12-I2.2 maps E11-DS-001 through E11-DS-008 into ledger entries.",
   },
   {
+    id: "E11-DS-001",
+    title: "Client Intake family members backend query truth",
+    sourceRegisterId: "E11-DS-001",
+    currentClass: "backend_snapshot_only",
+    targetClass: "backend_query_backed",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E11_BACKEND_DATA_SURFACE_COVERAGE_REGISTER.md")],
+    contractFamily: "backend_query_truth",
+    ownerSurface: [
+      owner("file", "components/client-intake-screen.tsx"),
+      owner("api", "app/api/family-members/route.ts"),
+      owner("file", "lib/dbtf-table-service.ts"),
+      owner("test", "tests/e11-backend-data-surface-truth.spec.ts"),
+    ],
+    obligation: "Family member rows that claim backend-backed filtering/sorting/pagination require API metadata and UI source-truth consumption.",
+    proofType: ["api_test", "runtime_test", "source_gate"],
+    status: "partial",
+    evidence: [
+      evidence("api", "app/api/family-members/route.ts"),
+      evidence("test", "tests/e11-backend-data-surface-truth.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E11-I2",
+  },
+  {
+    id: "E11-DS-002",
+    title: "Client Intake entities backend query truth",
+    sourceRegisterId: "E11-DS-002",
+    currentClass: "backend_snapshot_only",
+    targetClass: "backend_query_backed",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E11_BACKEND_DATA_SURFACE_COVERAGE_REGISTER.md")],
+    contractFamily: "backend_query_truth",
+    ownerSurface: [
+      owner("file", "components/client-intake-screen.tsx"),
+      owner("api", "app/api/entities/route.ts"),
+      owner("file", "lib/dbtf-table-service.ts"),
+      owner("test", "tests/e11-backend-data-surface-truth.spec.ts"),
+    ],
+    obligation: "Entity rows that claim backend-backed filtering/sorting/pagination require API metadata and UI source-truth consumption.",
+    proofType: ["api_test", "runtime_test", "source_gate"],
+    status: "partial",
+    evidence: [
+      evidence("api", "app/api/entities/route.ts"),
+      evidence("test", "tests/e11-backend-data-surface-truth.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E11-I2",
+  },
+  {
+    id: "E11-DS-003",
+    title: "Client Intake documents backend query truth",
+    sourceRegisterId: "E11-DS-003",
+    currentClass: "backend_partial_no_pagination",
+    targetClass: "backend_query_backed",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E11_BACKEND_DATA_SURFACE_COVERAGE_REGISTER.md")],
+    contractFamily: "backend_query_truth",
+    ownerSurface: [
+      owner("file", "components/client-intake-screen.tsx"),
+      owner("api", "app/api/documents/route.ts"),
+      owner("file", "lib/document-upload-service.ts"),
+      owner("test", "tests/e11-backend-data-surface-truth.spec.ts"),
+    ],
+    obligation: "Document rows that claim backend-backed filtering/sorting/pagination require complete result metadata and UI source-truth consumption.",
+    proofType: ["api_test", "runtime_test", "source_gate"],
+    status: "partial",
+    evidence: [
+      evidence("api", "app/api/documents/route.ts"),
+      evidence("test", "tests/e11-backend-data-surface-truth.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E11-I2",
+  },
+  {
+    id: "E11-DS-004",
+    title: "Admin tenant directory backend query truth",
+    sourceRegisterId: "E11-DS-004",
+    currentClass: "backend_snapshot_only",
+    targetClass: "backend_query_backed",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E11_BACKEND_DATA_SURFACE_COVERAGE_REGISTER.md")],
+    contractFamily: "backend_query_truth",
+    ownerSurface: [
+      owner("file", "components/admin-tenant-setup-screen.tsx"),
+      owner("api", "app/api/admin-tenants/route.ts"),
+      owner("file", "lib/admin-tenant-readmodel-service.ts"),
+      owner("test", "tests/e11-backend-data-surface-truth.spec.ts"),
+    ],
+    obligation: "Admin tenant directory claims require backend query metadata and no demo fallback.",
+    proofType: ["api_test", "runtime_test", "source_gate"],
+    status: "partial",
+    evidence: [
+      evidence("api", "app/api/admin-tenants/route.ts"),
+      evidence("test", "tests/e11-backend-data-surface-truth.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E11-I3",
+  },
+  {
+    id: "E11-DS-005",
+    title: "Admin tenant users backend query truth",
+    sourceRegisterId: "E11-DS-005",
+    currentClass: "backend_snapshot_only",
+    targetClass: "backend_query_backed",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E11_BACKEND_DATA_SURFACE_COVERAGE_REGISTER.md")],
+    contractFamily: "backend_query_truth",
+    ownerSurface: [
+      owner("file", "components/admin-tenant-setup-screen.tsx"),
+      owner("api", "app/api/admin-tenants/route.ts"),
+      owner("file", "lib/admin-tenant-readmodel-service.ts"),
+      owner("test", "tests/e11-backend-data-surface-truth.spec.ts"),
+    ],
+    obligation: "Admin tenant user rows require backend query metadata and no demo fallback when DB-backed claims are visible.",
+    proofType: ["api_test", "runtime_test", "source_gate"],
+    status: "partial",
+    evidence: [
+      evidence("api", "app/api/admin-tenants/route.ts"),
+      evidence("test", "tests/e11-backend-data-surface-truth.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E11-I3",
+  },
+  {
+    id: "E11-DS-006",
+    title: "Review monitoring due reviews backend query truth",
+    sourceRegisterId: "E11-DS-006",
+    currentClass: "static_demo_surface",
+    targetClass: "backend_query_backed",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E11_BACKEND_DATA_SURFACE_COVERAGE_REGISTER.md")],
+    contractFamily: "backend_query_truth",
+    ownerSurface: [
+      owner("file", "components/review-monitoring-screen.tsx"),
+      owner("api", "app/api/review-monitoring/route.ts"),
+      owner("file", "lib/review-monitoring-service.ts"),
+      owner("test", "tests/e11-backend-data-surface-truth.spec.ts"),
+    ],
+    obligation: "Due review rows must consume backend review-monitoring data before DB-backed/filter/pagination claims are fulfilled.",
+    proofType: ["api_test", "runtime_test", "source_gate"],
+    status: "partial",
+    evidence: [
+      evidence("api", "app/api/review-monitoring/route.ts"),
+      evidence("test", "tests/e11-backend-data-surface-truth.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E11-I4",
+  },
+  {
+    id: "E11-DS-007",
+    title: "Review monitoring rebalance triggers backend query truth",
+    sourceRegisterId: "E11-DS-007",
+    currentClass: "static_demo_surface",
+    targetClass: "backend_query_backed",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E11_BACKEND_DATA_SURFACE_COVERAGE_REGISTER.md")],
+    contractFamily: "backend_query_truth",
+    ownerSurface: [
+      owner("file", "components/review-monitoring-screen.tsx"),
+      owner("api", "app/api/review-monitoring/route.ts"),
+      owner("file", "lib/review-monitoring-service.ts"),
+      owner("test", "tests/e11-backend-data-surface-truth.spec.ts"),
+    ],
+    obligation: "Rebalance trigger rows must consume backend review-monitoring data before DB-backed/filter/pagination claims are fulfilled.",
+    proofType: ["api_test", "runtime_test", "source_gate"],
+    status: "partial",
+    evidence: [
+      evidence("api", "app/api/review-monitoring/route.ts"),
+      evidence("test", "tests/e11-backend-data-surface-truth.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E11-I4",
+  },
+  {
+    id: "E11-DS-008",
+    title: "Shared DataTable backend query capability",
+    sourceRegisterId: "E11-DS-008",
+    currentClass: "client_only_component",
+    targetClass: "backend_query_capable_component",
+    source: [markdownRegister("docs/ux/ALPHAVEST_E11_BACKEND_DATA_SURFACE_COVERAGE_REGISTER.md")],
+    contractFamily: "backend_query_truth",
+    ownerSurface: [
+      owner("file", "components/ui/data-table.tsx"),
+      owner("test", "tests/e11-backend-data-surface-truth.spec.ts"),
+      owner("test", "tests/ux-data-surface-contract.spec.ts"),
+    ],
+    obligation: "Shared DataTable must support server-mode sort/pagination/source-truth metadata before backend query surfaces can claim fulfillment.",
+    proofType: ["runtime_test", "source_gate", "typed_contract"],
+    status: "partial",
+    evidence: [
+      evidence("file", "components/ui/data-table.tsx"),
+      evidence("test", "tests/e11-backend-data-surface-truth.spec.ts"),
+    ],
+    gateBehavior: "warn_existing",
+    expiresOrFollowUp: "E11-I5",
+  },
+  {
     id: "E12-CONTRACT-FULFILLMENT-LEDGER-GATE",
     title: "Contract fulfillment ledger and global gate",
     source: [
@@ -806,6 +999,10 @@ export const e10FirstSliceActionFiles = e10ActionZoneLedgerEntries
   .flatMap((entry) =>
     entry.ownerSurface.filter((surface) => surface.kind === "file" && surface.ref.startsWith("components/")).map((surface) => surface.ref)
   );
+
+export const e11BackendDataSurfaceLedgerEntries = uxContractLedgerEntries.filter((entry) =>
+  entry.id.startsWith("E11-DS-")
+);
 
 export function duplicateContractLedgerIds(entries: readonly UxContractLedgerEntry[] = uxContractLedgerEntries) {
   const seen = new Set<string>();

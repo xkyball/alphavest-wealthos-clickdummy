@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { parseDataSurfaceQuery } from "@/lib/data-surface-query-contract";
+import { e11BackendDataSurfaceLedgerEntries } from "@/lib/ux-contract-ledger";
 
 const root = process.cwd();
 
@@ -19,6 +20,29 @@ test.describe("E11 backend data surface truth", () => {
     expect(register).toContain("backend_snapshot_only");
     expect(spec).toContain("Canonical Request Contract");
     expect(spec).toContain("sourceTruth");
+  });
+
+  test("maps E11 coverage rows into the E12 contract ledger", () => {
+    expect(e11BackendDataSurfaceLedgerEntries.map((entry) => entry.id)).toEqual([
+      "E11-DS-001",
+      "E11-DS-002",
+      "E11-DS-003",
+      "E11-DS-004",
+      "E11-DS-005",
+      "E11-DS-006",
+      "E11-DS-007",
+      "E11-DS-008",
+    ]);
+
+    for (const entry of e11BackendDataSurfaceLedgerEntries) {
+      expect(entry.contractFamily, entry.id).toBe("backend_query_truth");
+      expect(entry.currentClass, entry.id).toBeTruthy();
+      expect(entry.targetClass, entry.id).toMatch(/^backend_query_/);
+      expect(entry.ownerSurface.length, entry.id).toBeGreaterThan(0);
+      expect(entry.expiresOrFollowUp, entry.id).toBeTruthy();
+      expect(entry.status, entry.id).toBe("partial");
+      expect(entry.gateBehavior, entry.id).toBe("warn_existing");
+    }
   });
 
   test("normalizes query parameters with page caps and sort allow-lists", () => {
