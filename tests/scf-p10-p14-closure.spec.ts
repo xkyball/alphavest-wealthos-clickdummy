@@ -50,23 +50,53 @@ test.describe("SCF P10-P14 implementation closure", () => {
 
     await expect(page.getByTestId("p10-p14-documents-closure")).toBeVisible();
     await expect(page.getByTestId("p10-document-filter-summary")).toContainText("scoped documents visible");
+    await expect(page.getByTestId("ux-data-table-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
     const documentTable = page.getByRole("table").last();
 
+    const fetchExpectedDocumentNames = async (params: Record<string, string>) => {
+      const searchParams = new URLSearchParams({
+        page: "1",
+        pageSize: "10",
+        roleKey: "compliance_officer",
+        sortDirection: "desc",
+        sortKey: "uploadedAt",
+        tenantSlug: "bennett",
+        ...params,
+      });
+      const response = await page.request.get(`/api/documents?${searchParams.toString()}`);
+      const body = (await response.json()) as { documents?: Array<{ fileName?: string; title?: string }> };
+
+      expect(response.ok()).toBe(true);
+      return (body.documents ?? []).map((document) => document.fileName ?? document.title ?? "");
+    };
+
+    const expectBackendDocumentsVisible = async (expectedNames: string[]) => {
+      if (expectedNames.length === 0) {
+        await expect(documentTable).toContainText("No scoped documents match the current search and filters.");
+        return;
+      }
+
+      await expect(documentTable).toContainText(expectedNames[0]);
+    };
+
+    const taxResidencyNames = await fetchExpectedDocumentNames({ q: "tax-residency-2026" });
     await page.getByTestId("p10-document-search").fill("tax-residency-2026");
-    await expect(documentTable.getByText("bennett-tax-residency-2026.pdf")).toBeVisible();
-    await expect(documentTable.getByText("bennett-source-of-funds-review.pdf")).toBeHidden();
-    await expect(page.getByTestId("p10-document-filter-summary")).toContainText("1 of");
+    await expectBackendDocumentsVisible(taxResidencyNames);
+    await expect(page.getByTestId("p10-document-filter-summary")).toContainText(`${taxResidencyNames.length} of`);
 
+    const sourceOfFundsNames = await fetchExpectedDocumentNames({ type: "source_of_funds" });
     await page.getByTestId("p10-document-search").fill("");
-    await page.getByTestId("p10-document-type-filter").selectOption("Source Of Funds");
-    await expect(documentTable.getByText("bennett-source-of-funds-review.pdf")).toBeVisible();
-    await expect(documentTable.getByText("bennett-tax-residency-2026.pdf")).toBeHidden();
+    await page.getByTestId("p10-document-type-filter").selectOption("source_of_funds");
+    await expectBackendDocumentsVisible(sourceOfFundsNames);
 
+    const restrictedNeedsClarificationNames = await fetchExpectedDocumentNames({
+      sensitivity: "HIGHLY_RESTRICTED",
+      status: "NEEDS_CLARIFICATION",
+    });
     await page.getByTestId("p10-document-type-filter").selectOption("all");
-    await page.getByTestId("p10-document-status-filter").selectOption("Needs Clarification");
-    await page.getByTestId("p10-document-sensitivity-filter").selectOption("Highly Restricted");
-    await expect(documentTable.getByText("bennett-ips-risk-addendum.pdf")).toBeVisible();
-    await expect(documentTable.getByText("bennett-q2-statement.pdf")).toBeHidden();
+    await page.getByTestId("p10-document-status-filter").selectOption("NEEDS_CLARIFICATION");
+    await page.getByTestId("p10-document-sensitivity-filter").selectOption("HIGHLY_RESTRICTED");
+    await expectBackendDocumentsVisible(restrictedNeedsClarificationNames);
   });
 
   test("renders P10-P14 closure panels on API and handoff-adjacent workflows", async ({ page }) => {

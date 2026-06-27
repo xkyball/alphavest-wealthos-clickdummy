@@ -13,7 +13,6 @@ import {
   Send,
   ShieldAlert,
   ShieldCheck,
-  SlidersHorizontal,
   Upload,
   UserPlus,
   XCircle
@@ -58,14 +57,13 @@ import {
   securityControls,
   teamAssignments,
   tenantPolicyCards,
-  tenantRows,
   tenantSetupChecklist,
-  tenantUsers,
   tenantWizardSteps,
   type AdminTenantSetupPageId
 } from "@/lib/admin-tenant-setup-demo-data";
 import { cn } from "@/lib/cn";
 import { demoPlatformTenantId, demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import type { BackendDataSurfaceMeta, DataSurfaceSortDirection } from "@/lib/data-surface-query-contract";
 import { uxActionClassForPriority } from "@/lib/ux-action-hierarchy-contract";
 import type { AdminTenantSnapshot } from "@/lib/admin-tenant-readmodel-service";
 import { permissionEngine } from "@/lib/permission-engine";
@@ -81,10 +79,42 @@ type AdminTenantSetupScreenProps = {
 };
 
 type ConfirmationKind = "platform" | "security" | null;
+type DataSurfaceMeta = BackendDataSurfaceMeta<string>;
 
 const primaryButtonClass = uxActionClassForPriority("primary");
 const secondaryButtonClass = uxActionClassForPriority("secondary");
 const staticButtonClass = uxActionClassForPriority("blocked", { unavailable: true });
+const defaultPageSize = 10;
+
+function dataSurfaceParams(input: {
+  filters?: Record<string, string>;
+  page?: number;
+  pageSize?: number;
+  q?: string;
+  sortDirection?: DataSurfaceSortDirection;
+  sortKey?: string;
+  surface: "tenants" | "users";
+}) {
+  const params = new URLSearchParams({
+    page: String(input.page ?? 1),
+    pageSize: String(input.pageSize ?? defaultPageSize),
+    sortDirection: input.sortDirection ?? "asc",
+    sortKey: input.sortKey ?? "name",
+    surface: input.surface,
+  });
+
+  if (input.q?.trim()) {
+    params.set("q", input.q.trim());
+  }
+
+  for (const [key, value] of Object.entries(input.filters ?? {})) {
+    if (value && value !== "all") {
+      params.set(key, value);
+    }
+  }
+
+  return params;
+}
 
 const adminTenantWorksurfaceMeta: Record<AdminTenantSetupPageId, { safetyNote: string; status: string; tone?: BadgeTone; worksurfaceId: string }> = {
   "007": {
@@ -225,6 +255,120 @@ function useAdminTenantSnapshot() {
   }, []);
 
   return { loadState, snapshot };
+}
+
+function useAdminTenantRows(queryState: {
+  page: number;
+  q: string;
+  sortDirection: DataSurfaceSortDirection;
+  sortKey: string;
+  status: string;
+}) {
+  const [rows, setRows] = useState<AdminTenantSnapshot["tenantRows"]>([]);
+  const [meta, setMeta] = useState<DataSurfaceMeta | null>(null);
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoadState("loading");
+
+      try {
+        const params = dataSurfaceParams({
+          filters: { status: queryState.status },
+          page: queryState.page,
+          q: queryState.q,
+          sortDirection: queryState.sortDirection,
+          sortKey: queryState.sortKey,
+          surface: "tenants",
+        });
+        const response = await fetch(`/api/admin-tenants?${params.toString()}`, { cache: "no-store" });
+        const body = (await response.json()) as { meta?: DataSurfaceMeta; tenantRows?: AdminTenantSnapshot["tenantRows"] };
+
+        if (!response.ok) {
+          throw new Error("Admin tenant rows failed.");
+        }
+
+        if (!cancelled) {
+          setRows(body.tenantRows ?? []);
+          setMeta(body.meta ?? null);
+          setLoadState("ready");
+        }
+      } catch {
+        if (!cancelled) {
+          setRows([]);
+          setMeta(null);
+          setLoadState("error");
+        }
+      }
+    }
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [queryState.page, queryState.q, queryState.sortDirection, queryState.sortKey, queryState.status]);
+
+  return { loadState, meta, rows };
+}
+
+function useAdminTenantUserRows(queryState: {
+  page: number;
+  q: string;
+  sortDirection: DataSurfaceSortDirection;
+  sortKey: string;
+  status: string;
+}) {
+  const [rows, setRows] = useState<AdminTenantSnapshot["userRows"]>([]);
+  const [meta, setMeta] = useState<DataSurfaceMeta | null>(null);
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoadState("loading");
+
+      try {
+        const params = dataSurfaceParams({
+          filters: { status: queryState.status },
+          page: queryState.page,
+          q: queryState.q,
+          sortDirection: queryState.sortDirection,
+          sortKey: queryState.sortKey,
+          surface: "users",
+        });
+        const response = await fetch(`/api/admin-tenants?${params.toString()}`, { cache: "no-store" });
+        const body = (await response.json()) as { meta?: DataSurfaceMeta; userRows?: AdminTenantSnapshot["userRows"] };
+
+        if (!response.ok) {
+          throw new Error("Admin tenant user rows failed.");
+        }
+
+        if (!cancelled) {
+          setRows(body.userRows ?? []);
+          setMeta(body.meta ?? null);
+          setLoadState("ready");
+        }
+      } catch {
+        if (!cancelled) {
+          setRows([]);
+          setMeta(null);
+          setLoadState("error");
+        }
+      }
+    }
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [queryState.page, queryState.q, queryState.sortDirection, queryState.sortKey, queryState.status]);
+
+  return { loadState, meta, rows };
 }
 
 function ActionBar({ children }: { children: React.ReactNode }) {
@@ -845,31 +989,52 @@ function ExportTemplatesPage() {
 }
 
 function TenantsPage() {
-  const { loadState, snapshot } = useAdminTenantSnapshot();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const rows = snapshot?.tenantRows.length ? snapshot.tenantRows : tenantRows;
-  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
-  const statusOptions = Array.from(new Set(rows.map((row) => row.status))).sort();
-  const filteredRows = rows.filter((row) => {
-    const matchesSearch =
-      normalizedSearchTerm.length === 0 ||
-      [row.name, row.jurisdiction, row.tier, row.owner, row.onboarding, row.status].some((value) =>
-        String(value).toLowerCase().includes(normalizedSearchTerm),
-      );
-    const matchesStatus = statusFilter === "all" || row.status === statusFilter;
-
-    return matchesSearch && matchesStatus;
+  const [sortKey, setSortKey] = useState<keyof AdminTenantSnapshot["tenantRows"][number]>("name");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [page, setPage] = useState(1);
+  const { loadState, meta, rows } = useAdminTenantRows({
+    page,
+    q: searchTerm,
+    sortDirection,
+    sortKey: String(sortKey),
+    status: statusFilter,
   });
+  const statusOptions = Array.from(new Set(rows.map((row) => row.status))).sort();
   type TenantRow = (typeof rows)[number];
   const columns: Array<DataTableColumn<TenantRow>> = [
-    { key: "name", header: "Tenant", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}</span> },
-    { key: "jurisdiction", header: "Jurisdiction", render: (row) => row.jurisdiction },
-    { key: "tier", header: "Tier", render: (row) => <Badge tone="gold">{row.tier}</Badge> },
-    { key: "owner", header: "Owner", render: (row) => row.owner },
-    { key: "onboarding", header: "Onboarding", render: (row) => <StatusBadge status={row.onboarding} /> },
-    { key: "status", header: "Status", render: (row) => <StatusBadge status={row.status} /> }
+    {
+      key: "name",
+      header: "Tenant",
+      className: "min-w-48",
+      render: (row) => (
+        <span className="grid gap-1">
+          <span className="font-semibold text-alphavest-ivory">{row.name}</span>
+          <span className="text-xs text-alphavest-muted">Owner: {row.owner}</span>
+        </span>
+      ),
+      sortable: true,
+    },
+    { key: "jurisdiction", header: "Jurisdiction", className: "min-w-28", render: (row) => row.jurisdiction, sortable: true },
+    { key: "tier", header: "Tier", className: "min-w-28", render: (row) => <Badge tone="gold">{row.tier}</Badge>, sortable: true },
+    { key: "onboarding", header: "Onboarding", className: "min-w-32", render: (row) => <StatusBadge status={row.onboarding} />, sortable: true },
+    { key: "status", header: "Status", className: "min-w-28", render: (row) => <StatusBadge status={row.status} />, sortable: true }
   ];
+
+  function toggleSort(key: string) {
+    const nextKey = key as keyof TenantRow;
+
+    if (sortKey === nextKey) {
+      setSortDirection((current) => (current === "asc" ? "desc" : "asc"));
+      setPage(1);
+      return;
+    }
+
+    setSortKey(nextKey);
+    setSortDirection("asc");
+    setPage(1);
+  }
 
   return (
     <div className="space-y-5">
@@ -882,17 +1047,23 @@ function TenantsPage() {
         <CardContent className="grid gap-3 md:grid-cols-[1fr_0.75fr_auto]">
           <label className="block">
             <span className="sr-only">Search tenants</span>
-            <input
-              className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition placeholder:text-alphavest-subtle focus:border-alphavest-gold"
-              onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Search DB tenants..."
+	            <input
+	              className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition placeholder:text-alphavest-subtle focus:border-alphavest-gold"
+	              onChange={(event) => {
+	                setSearchTerm(event.target.value);
+	                setPage(1);
+	              }}
+	              placeholder="Search DB tenants..."
               type="search"
               value={searchTerm}
             />
           </label>
           <select
-            className="h-11 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
-            onChange={(event) => setStatusFilter(event.target.value)}
+	            className="h-11 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+	            onChange={(event) => {
+	              setStatusFilter(event.target.value);
+	              setPage(1);
+	            }}
             value={statusFilter}
           >
             <option value="all">All statuses</option>
@@ -924,11 +1095,16 @@ function TenantsPage() {
         </CardHeader>
         <CardContent>
           <DataTable
-            columns={columns}
-            emptyMessage={loadState === "error" ? "Tenant rows could not be loaded from the DB." : "No DB tenants match this filter."}
-            getRowId={(row) => String("id" in row ? row.id : row.name)}
-            rows={filteredRows}
-          />
+	            columns={columns}
+	            emptyMessage={loadState === "error" ? "Tenant rows could not be loaded from the DB." : "No DB tenants match this filter."}
+		            getRowId={(row) => row.id}
+	            onSortChange={toggleSort}
+	            pagination={meta ? { ...meta, onPageChange: setPage } : null}
+	            rows={rows}
+	            serverSort
+	            sortDirection={sortDirection}
+	            sortKey={String(sortKey)}
+	          />
         </CardContent>
       </Card>
       <SessionScopePanel />
@@ -1198,16 +1374,41 @@ function TenantPoliciesPage() {
 }
 
 function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
-  const { loadState, snapshot } = useAdminTenantSnapshot();
-  const rows = snapshot?.userRows.length ? snapshot.userRows : tenantUsers;
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortKey, setSortKey] = useState<keyof AdminTenantSnapshot["userRows"][number]>("name");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [page, setPage] = useState(1);
+  const { loadState, meta, rows } = useAdminTenantUserRows({
+    page,
+    q: searchTerm,
+    sortDirection,
+    sortKey: String(sortKey),
+    status: statusFilter,
+  });
+  const statusOptions = Array.from(new Set(rows.map((row) => row.status))).sort();
   type TenantUser = (typeof rows)[number];
   const columns: Array<DataTableColumn<TenantUser>> = [
-    { key: "name", header: "User", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}</span> },
-    { key: "invite", header: "Invite", render: (row) => row.invite },
-    { key: "role", header: "Roles", render: (row) => row.role },
-    { key: "scope", header: "Scope", render: (row) => row.scope },
-    { key: "status", header: "Status", render: (row) => <StatusBadge status={row.status} /> }
+    { key: "name", header: "User", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}</span>, sortable: true },
+    { key: "invite", header: "Invite", render: (row) => row.invite, sortable: true },
+    { key: "role", header: "Roles", render: (row) => row.role, sortable: true },
+    { key: "scope", header: "Scope", render: (row) => row.scope, sortable: true },
+    { key: "status", header: "Status", render: (row) => <StatusBadge status={row.status} />, sortable: true }
   ];
+
+  function toggleSort(key: string) {
+    const nextKey = key as keyof TenantUser;
+
+    if (sortKey === nextKey) {
+      setSortDirection((current) => (current === "asc" ? "desc" : "asc"));
+      setPage(1);
+      return;
+    }
+
+    setSortKey(nextKey);
+    setSortDirection("asc");
+    setPage(1);
+  }
 
   return (
     <div className="space-y-5">
@@ -1227,41 +1428,62 @@ function TenantUsersPage({ onInvite }: { onInvite: () => void }) {
         </button>
       </ActionBar>
       <section className="grid gap-4 md:grid-cols-5">
-        <MetricCard detail="Tenant members" label="Total users" value={String(rows.length)} />
+	        <MetricCard detail="Tenant members matching backend query" label="Total users" value={String(meta?.totalRows ?? rows.length)} />
         <MetricCard detail="Can access workspace" label="Active" status="ACTIVE" value={String(rows.filter((row) => row.status === "Active").length)} />
         <MetricCard detail="Invitation sent" label="Invited" status="SCHEDULED" value={String(rows.filter((row) => row.invite === "Invited").length)} />
         <MetricCard detail="Awaiting confirmation" label="Pending" status="PENDING" value={String(rows.filter((row) => row.status !== "Active").length)} />
         <MetricCard detail="Access removed" label="Revoked" status="FAILED" value={String(rows.filter((row) => row.status === "Revoked").length)} />
       </section>
       <Card>
-        <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <CardTitle>User Access</CardTitle>
-            <CardDescription>Manage users, assign roles and control access across the organization.</CardDescription>
-          </div>
-          <button
-            aria-label="Tenant user filters are not wired in this release"
-            className={secondaryButtonClass}
-            data-ux-data-surface-filter-state="disabled_static"
-            data-ux-disabled-message="explicit"
-            data-ux-disabled-reason="User access filters are not wired in this release."
-            data-ux-e10-filter-exception-id="DSF-002"
-            data-ux-interactive="false"
-            disabled
-            title="User access filters are not wired in this release."
-            type="button"
-          >
-            <SlidersHorizontal aria-hidden="true" className="size-4" />
-            Filters
-          </button>
-        </CardHeader>
+	        <CardHeader className="flex flex-col gap-3">
+	          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+	          <div>
+	            <CardTitle>User Access</CardTitle>
+	            <CardDescription>Manage users, assign roles and control access across the organization.</CardDescription>
+	          </div>
+	          <StatusChip label={loadState === "error" ? "DB user query unavailable" : "Backend query backed"} status={loadState === "error" ? "FAILED" : "ACTIVE"} />
+	          </div>
+	          <div className="grid gap-3 md:grid-cols-[1fr_16rem]">
+	            <label className="block">
+	              <span className="sr-only">Search tenant users</span>
+	              <input
+	                className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition placeholder:text-alphavest-subtle focus:border-alphavest-gold"
+	                onChange={(event) => {
+	                  setSearchTerm(event.target.value);
+	                  setPage(1);
+	                }}
+	                placeholder="Search DB tenant users..."
+	                type="search"
+	                value={searchTerm}
+	              />
+	            </label>
+	            <select
+	              className="h-11 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+	              onChange={(event) => {
+	                setStatusFilter(event.target.value);
+	                setPage(1);
+	              }}
+	              value={statusFilter}
+	            >
+	              <option value="all">All statuses</option>
+	              {statusOptions.map((status) => (
+	                <option key={status} value={status}>{status}</option>
+	              ))}
+	            </select>
+	          </div>
+	        </CardHeader>
         <CardContent>
           <DataTable
-            columns={columns}
-            emptyMessage={loadState === "error" ? "Tenant users could not be loaded from the DB." : "No tenant user assignments found."}
-            getRowId={(row) => String("id" in row ? row.id : row.name)}
-            rows={rows}
-          />
+	            columns={columns}
+	            emptyMessage={loadState === "error" ? "Tenant users could not be loaded from the DB." : "No tenant user assignments found."}
+		            getRowId={(row) => row.id}
+	            onSortChange={toggleSort}
+	            pagination={meta ? { ...meta, onPageChange: setPage } : null}
+	            rows={rows}
+	            serverSort
+	            sortDirection={sortDirection}
+	            sortKey={String(sortKey)}
+	          />
         </CardContent>
       </Card>
       <SessionScopePanel />
@@ -1646,7 +1868,7 @@ export function AdminTenantSetupScreen({ route, visualState }: AdminTenantSetupS
       return <ExportTemplatesPage />;
     }
     if (route.pageId === "013") {
-      return <UxHubPage pageId="013" />;
+      return <TenantsPage />;
     }
     if (route.pageId === "014") {
       return <CreateTenantPage />;

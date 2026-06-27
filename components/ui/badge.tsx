@@ -95,7 +95,7 @@ export function Badge({
     <span
       aria-label={ariaLabel}
       className={cn(
-        "inline-flex h-[var(--status-chip-height)] w-fit items-center rounded-full border px-3 text-xs font-semibold",
+        "inline-flex h-[var(--status-chip-height)] w-fit items-center gap-1.5 whitespace-nowrap rounded-full border px-3 text-xs font-semibold",
         uxPrimitiveDensityClassFor(density),
         uxPrimitiveStatusClassFor(resolvedStatusFamily),
         toneClass[tone],

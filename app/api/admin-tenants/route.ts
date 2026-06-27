@@ -1,7 +1,14 @@
 import { NextResponse } from "next/server";
 
 import { DemoAuthProviderError, inviteDemoAuthUser } from "@/lib/demo/demo-auth-provider-service";
-import { getAdminTenantSnapshot } from "@/lib/admin-tenant-readmodel-service";
+import {
+  getAdminTenantSnapshot,
+  listAdminTenantRowsPage,
+  listAdminTenantUserRowsPage,
+  type AdminTenantSortKey,
+  type AdminTenantUserSortKey,
+} from "@/lib/admin-tenant-readmodel-service";
+import { parseDataSurfaceQuery } from "@/lib/data-surface-query-contract";
 import {
   assignP44TeamMember,
   createP44ClientTenant,
@@ -14,8 +21,62 @@ import {
 } from "@/lib/p44-phase2-admin-foundation";
 import { prismaClient } from "@/lib/prisma";
 
-export async function GET() {
+const adminTenantSortKeys = ["activePolicies", "activeUsers", "jurisdiction", "name", "onboarding", "owner", "readiness", "status", "tier"] as const satisfies readonly AdminTenantSortKey[];
+const adminTenantUserSortKeys = ["invite", "name", "role", "scope", "status"] as const satisfies readonly AdminTenantUserSortKey[];
+
+export async function GET(request: Request) {
   try {
+    const url = new URL(request.url);
+    const surface = url.searchParams.get("surface");
+
+    if (surface === "tenants") {
+      const page = await listAdminTenantRowsPage(prismaClient(), parseDataSurfaceQuery(url.searchParams, {
+        allowedSortKeys: adminTenantSortKeys,
+        defaultPageSize: 10,
+        defaultSortKey: "name",
+        maxPageSize: 25,
+      }), {
+        status: url.searchParams.get("status") ?? undefined,
+      });
+
+      return NextResponse.json({
+        meta: page.meta,
+        ok: true,
+        safety: {
+          hiddenRowsDisclosed: false,
+          noClientRelease: true,
+          returnedRows: page.meta.returnedRows,
+          scoped: true,
+          totalRows: page.meta.totalRows,
+        },
+        tenantRows: page.tenantRows,
+      });
+    }
+
+    if (surface === "users") {
+      const page = await listAdminTenantUserRowsPage(prismaClient(), parseDataSurfaceQuery(url.searchParams, {
+        allowedSortKeys: adminTenantUserSortKeys,
+        defaultPageSize: 10,
+        defaultSortKey: "name",
+        maxPageSize: 25,
+      }), {
+        status: url.searchParams.get("status") ?? undefined,
+      });
+
+      return NextResponse.json({
+        meta: page.meta,
+        ok: true,
+        safety: {
+          hiddenRowsDisclosed: false,
+          noClientRelease: true,
+          returnedRows: page.meta.returnedRows,
+          scoped: true,
+          totalRows: page.meta.totalRows,
+        },
+        userRows: page.userRows,
+      });
+    }
+
     const snapshot = await getAdminTenantSnapshot(prismaClient());
 
     return NextResponse.json({

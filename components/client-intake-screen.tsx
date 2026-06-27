@@ -81,6 +81,7 @@ import {
 import { createDemoSession, demoPlatformTenantId, demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import type { ScreenRoute } from "@/lib/route-registry";
 import { runDataMaintenanceCommand } from "@/lib/data-maintenance-command-client";
+import type { BackendDataSurfaceMeta, DataSurfaceSortDirection } from "@/lib/data-surface-query-contract";
 import { uxActionClassForPriority } from "@/lib/ux-action-hierarchy-contract";
 import { uxFeedbackSuccessMessageForSubject } from "@/lib/ux-feedback-message-contract";
 import { visibilityEngine, type DecisionVisibilityPayload } from "@/lib/visibility-engine";
@@ -91,6 +92,13 @@ type ClientIntakeScreenProps = {
 
 const primaryButtonClass = uxActionClassForPriority("primary");
 const secondaryButtonClass = uxActionClassForPriority("secondary");
+const defaultPageSize = 10;
+
+type DataSurfaceMeta = BackendDataSurfaceMeta<string>;
+type DocumentFilterOption = {
+  label: string;
+  value: string;
+};
 
 const mobileQuickActions: Array<{ icon: LucideIcon; label: string }> = [
   { icon: Upload, label: "Upload" },
@@ -253,6 +261,32 @@ function labelFromEnum(value: string) {
     .join(" ");
 }
 
+const documentTypeFilterOptions: DocumentFilterOption[] = [
+  "trust_deed",
+  "portfolio_statement",
+  "tax_residency_certificate",
+  "source_of_funds",
+  "ips_risk_addendum",
+  "financial_statement",
+  "kyc_document",
+].map((value) => ({ label: labelFromEnum(value), value }));
+
+const documentStatusFilterOptions: DocumentFilterOption[] = [
+  "LINKED_TO_EVIDENCE",
+  "NEEDS_CLARIFICATION",
+  "AI_EXTRACTED",
+  "UPLOADING",
+  "EMPTY",
+  "ANALYST_REVIEW_PENDING",
+  "VERIFIED",
+].map((value) => ({ label: labelFromEnum(value), value }));
+
+const documentSensitivityFilterOptions: DocumentFilterOption[] = [
+  "CONFIDENTIAL",
+  "RESTRICTED",
+  "HIGHLY_RESTRICTED",
+].map((value) => ({ label: labelFromEnum(value), value }));
+
 function isPersistedUploadDocument(value: unknown): value is PersistedUploadDocument {
   if (!value || typeof value !== "object") {
     return false;
@@ -280,11 +314,28 @@ function toDocumentRows(documents: PersistedUploadDocument[], entityLabel: strin
   }));
 }
 
-function usePersistedUploadDocuments() {
+function usePersistedUploadDocuments(queryState: {
+  page: number;
+  q: string;
+  sensitivity: string;
+  sortDirection: DataSurfaceSortDirection;
+  sortKey: string;
+  status: string;
+  type: string;
+} = {
+  page: 1,
+  q: "",
+  sensitivity: "all",
+  sortDirection: "desc",
+  sortKey: "uploadedAt",
+  status: "all",
+  type: "all",
+}) {
   const { session } = useDemoSession();
   const tenantSlug = session.tenant.slug;
   const roleKey = session.role.key;
   const [documents, setDocuments] = useState<PersistedUploadDocument[]>([]);
+  const [meta, setMeta] = useState<DataSurfaceMeta | null>(null);
   const [loadState, setLoadState] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const refreshSequenceRef = useRef(0);
 
@@ -295,11 +346,22 @@ function usePersistedUploadDocuments() {
     setDocuments([]);
 
     try {
-      const response = await fetch(
-        `/api/documents?tenantSlug=${encodeURIComponent(tenantSlug)}&roleKey=${encodeURIComponent(roleKey)}&source=all`,
-        { cache: "no-store" },
-      );
-      const body = (await response.json()) as { documents?: PersistedUploadDocument[] };
+      const params = dataSurfaceParams({
+        filters: {
+          sensitivity: queryState.sensitivity,
+          source: "all",
+          status: queryState.status,
+          type: queryState.type,
+        },
+        page: queryState.page,
+        q: queryState.q,
+        roleKey,
+        sortDirection: queryState.sortDirection,
+        sortKey: queryState.sortKey,
+        tenantSlug,
+      });
+      const response = await fetch(`/api/documents?${params.toString()}`, { cache: "no-store" });
+      const body = (await response.json()) as { documents?: PersistedUploadDocument[]; meta?: DataSurfaceMeta };
 
       if (!response.ok) {
         throw new Error("Document reload failed.");
@@ -310,15 +372,17 @@ function usePersistedUploadDocuments() {
       }
 
       setDocuments((body.documents ?? []).filter(isPersistedUploadDocument));
+      setMeta(body.meta ?? null);
       setLoadState("ready");
     } catch {
       if (refreshSequence !== refreshSequenceRef.current) {
         return;
       }
 
+      setMeta(null);
       setLoadState("error");
     }
-  }, [roleKey, tenantSlug]);
+  }, [queryState.page, queryState.q, queryState.sensitivity, queryState.sortDirection, queryState.sortKey, queryState.status, queryState.type, roleKey, tenantSlug]);
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -331,17 +395,46 @@ function usePersistedUploadDocuments() {
     setLoadState("ready");
   }, []);
 
-  return { documents, loadState, refresh, rememberUploadedDocument };
+  return { documents, loadState, meta, refresh, rememberUploadedDocument };
 }
 
-function sortByKey<T>(rows: T[], key: keyof T, direction: "asc" | "desc") {
-  return [...rows].sort((left, right) => {
-    const leftValue = String(left[key] ?? "");
-    const rightValue = String(right[key] ?? "");
-    const result = leftValue.localeCompare(rightValue, "en", { numeric: true, sensitivity: "base" });
-
-    return direction === "desc" ? -result : result;
+function dataSurfaceParams(input: {
+  filters?: Record<string, string>;
+  page?: number;
+  pageSize?: number;
+  q?: string;
+  roleKey: string;
+  sortDirection?: DataSurfaceSortDirection;
+  sortKey?: string;
+  tenantSlug: string;
+}) {
+  const params = new URLSearchParams({
+    page: String(input.page ?? 1),
+    pageSize: String(input.pageSize ?? defaultPageSize),
+    roleKey: input.roleKey,
+    sortDirection: input.sortDirection ?? "asc",
+    sortKey: input.sortKey ?? "name",
+    tenantSlug: input.tenantSlug,
   });
+
+  if (input.q?.trim()) {
+    params.set("q", input.q.trim());
+  }
+
+  for (const [key, value] of Object.entries(input.filters ?? {})) {
+    if (value && value !== "all") {
+      params.set(key, value);
+    }
+  }
+
+  return params;
+}
+
+function documentApiSortKey(sortKey: keyof DocumentTableRow) {
+  if (sortKey === "updated") return "uploadedAt";
+  if (sortKey === "name") return "title";
+  if (sortKey === "type") return "documentType";
+  return String(sortKey);
 }
 
 function useDbtfDashboardMetrics() {
@@ -436,34 +529,52 @@ function useDbtfClientProfile() {
   return { loadState, profile, refresh, save };
 }
 
-function useDbtfFamilyMembers() {
+function useDbtfFamilyMembers(queryState: {
+  page: number;
+  q: string;
+  sortDirection: DataSurfaceSortDirection;
+  sortKey: string;
+} = {
+  page: 1,
+  q: "",
+  sortDirection: "asc",
+  sortKey: "name",
+}) {
   const { session } = useDemoSession();
   const tenantSlug = session.tenant.slug;
   const roleKey = session.role.key;
   const [rows, setRows] = useState<FamilyMemberTableRow[]>([]);
+  const [meta, setMeta] = useState<DataSurfaceMeta | null>(null);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
 
   const refresh = useCallback(async () => {
     setLoadState("loading");
 
     try {
-      const response = await fetch(
-        `/api/family-members?tenantSlug=${encodeURIComponent(tenantSlug)}&roleKey=${encodeURIComponent(roleKey)}`,
-        { cache: "no-store" },
-      );
-      const body = (await response.json()) as { familyMembers?: FamilyMemberTableRow[] };
+      const params = dataSurfaceParams({
+        page: queryState.page,
+        q: queryState.q,
+        roleKey,
+        sortDirection: queryState.sortDirection,
+        sortKey: queryState.sortKey,
+        tenantSlug,
+      });
+      const response = await fetch(`/api/family-members?${params.toString()}`, { cache: "no-store" });
+      const body = (await response.json()) as { familyMembers?: FamilyMemberTableRow[]; meta?: DataSurfaceMeta };
 
       if (!response.ok) {
         throw new Error("Family member reload failed.");
       }
 
       setRows(body.familyMembers ?? []);
+      setMeta(body.meta ?? null);
       setLoadState("ready");
     } catch {
       setRows([]);
+      setMeta(null);
       setLoadState("error");
     }
-  }, [roleKey, tenantSlug]);
+  }, [queryState.page, queryState.q, queryState.sortDirection, queryState.sortKey, roleKey, tenantSlug]);
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -489,14 +600,23 @@ function useDbtfFamilyMembers() {
     [refresh, roleKey, tenantSlug],
   );
 
-  return { loadState, refresh, rows, save };
+  return { loadState, meta, refresh, rows, save };
 }
 
-function useDbtfEntities() {
+function useDbtfEntities(queryState: {
+  jurisdiction: string;
+  page: number;
+  q: string;
+  risk: string;
+  sortDirection: DataSurfaceSortDirection;
+  sortKey: string;
+  type: string;
+}) {
   const { session } = useDemoSession();
   const tenantSlug = session.tenant.slug;
   const roleKey = session.role.key;
   const [rows, setRows] = useState<EntityTableRow[]>([]);
+  const [meta, setMeta] = useState<DataSurfaceMeta | null>(null);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
 
   useEffect(() => {
@@ -506,11 +626,21 @@ function useDbtfEntities() {
       setLoadState("loading");
 
       try {
-        const response = await fetch(
-          `/api/entities?tenantSlug=${encodeURIComponent(tenantSlug)}&roleKey=${encodeURIComponent(roleKey)}`,
-          { cache: "no-store" },
-        );
-        const body = (await response.json()) as { entities?: EntityTableRow[] };
+        const params = dataSurfaceParams({
+          filters: {
+            jurisdiction: queryState.jurisdiction,
+            risk: queryState.risk,
+            type: queryState.type,
+          },
+          page: queryState.page,
+          q: queryState.q,
+          roleKey,
+          sortDirection: queryState.sortDirection,
+          sortKey: queryState.sortKey,
+          tenantSlug,
+        });
+        const response = await fetch(`/api/entities?${params.toString()}`, { cache: "no-store" });
+        const body = (await response.json()) as { entities?: EntityTableRow[]; meta?: DataSurfaceMeta };
 
         if (!response.ok) {
           throw new Error("Entity reload failed.");
@@ -518,11 +648,13 @@ function useDbtfEntities() {
 
         if (!cancelled) {
           setRows(body.entities ?? []);
+          setMeta(body.meta ?? null);
           setLoadState("ready");
         }
       } catch {
         if (!cancelled) {
           setRows([]);
+          setMeta(null);
           setLoadState("error");
         }
       }
@@ -533,9 +665,9 @@ function useDbtfEntities() {
     return () => {
       cancelled = true;
     };
-  }, [roleKey, tenantSlug]);
+  }, [queryState.jurisdiction, queryState.page, queryState.q, queryState.risk, queryState.sortDirection, queryState.sortKey, queryState.type, roleKey, tenantSlug]);
 
-  return { loadState, rows };
+  return { loadState, meta, rows };
 }
 
 function toneFor(value: string): BadgeTone {
@@ -1288,10 +1420,16 @@ function FamilyMembersPage({ title }: { title: string }) {
 }
 
 function FamilyMembersPageContent({ title }: { title: string }) {
-  const { loadState, rows, save } = useDbtfFamilyMembers();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortKey, setSortKey] = useState<keyof FamilyMemberTableRow>("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [page, setPage] = useState(1);
+  const { loadState, meta, rows, save } = useDbtfFamilyMembers({
+    page,
+    q: searchTerm,
+    sortDirection,
+    sortKey: String(sortKey),
+  });
   const [familyForm, setFamilyForm] = useState<FamilyMemberFormState>({
     displayName: "",
     relationshipType: "",
@@ -1300,19 +1438,7 @@ function FamilyMembersPageContent({ title }: { title: string }) {
   const [formMessage, setFormMessage] = useState("Select a DB-backed member to edit allowed fields.");
   const [formIssues, setFormIssues] = useState<string[]>([]);
   const [savingFamilyMember, setSavingFamilyMember] = useState(false);
-  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
-  const filteredRows = sortByKey(
-    rows.filter((row) =>
-      normalizedSearchTerm.length === 0
-        ? true
-        : [row.name, row.relationship, row.role, row.governance, row.status, row.sensitivity].some((value) =>
-            value.toLowerCase().includes(normalizedSearchTerm),
-          ),
-    ),
-    sortKey,
-    sortDirection,
-  );
-  const selected = filteredRows[0];
+  const selected = rows[0];
 
   useEffect(() => {
     if (selected) {
@@ -1333,11 +1459,13 @@ function FamilyMembersPageContent({ title }: { title: string }) {
 
     if (sortKey === nextKey) {
       setSortDirection((current) => (current === "asc" ? "desc" : "asc"));
+      setPage(1);
       return;
     }
 
     setSortKey(nextKey);
     setSortDirection("asc");
+    setPage(1);
   }
 
   async function saveSelectedMember() {
@@ -1365,7 +1493,7 @@ function FamilyMembersPageContent({ title }: { title: string }) {
       <div className="space-y-5">
         <SectionTitle
           action={<div className="flex flex-wrap gap-3"><button className={secondaryButtonClass} data-testid="j09-family-map" onClick={() => { void runDataMaintenanceCommand("j09.openFamilyMap", "/relationships"); }} type="button"><Network aria-hidden="true" className="size-4" />Family Map</button><button className={primaryButtonClass} data-testid="j09-add-member" onClick={() => { void runDataMaintenanceCommand("j09.addMember"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add Member</button></div>}
-          count={String(rows.length)}
+          count={String(meta?.totalRows ?? rows.length)}
           subtitle="Maintain family member profiles, relationships and governance roles."
           title={title}
         />
@@ -1376,9 +1504,12 @@ function FamilyMembersPageContent({ title }: { title: string }) {
               <div className="relative">
                 <Search aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
                 <input
-                  className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm outline-none focus:border-alphavest-gold"
-                  onChange={(event) => setSearchTerm(event.target.value)}
-                  placeholder="Search DB-backed members"
+	                  className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm outline-none focus:border-alphavest-gold"
+	                  onChange={(event) => {
+	                    setSearchTerm(event.target.value);
+	                    setPage(1);
+	                  }}
+	                  placeholder="Search DB-backed members"
                   value={searchTerm}
                 />
               </div>
@@ -1390,13 +1521,15 @@ function FamilyMembersPageContent({ title }: { title: string }) {
             <CardContent>
               <DataTable
                 columns={familyMemberColumns}
-                emptyMessage={loadState === "error" ? "Family members could not be loaded from the DB." : "No DB-backed family members match this search."}
-                getRowId={(row) => row.id}
-                onSortChange={toggleSort}
-                rows={filteredRows}
-                sortDirection={sortDirection}
-                sortKey={String(sortKey)}
-              />
+	                emptyMessage={loadState === "error" ? "Family members could not be loaded from the DB." : "No DB-backed family members match this search."}
+	                getRowId={(row) => row.id}
+	                onSortChange={toggleSort}
+	                pagination={meta ? { ...meta, onPageChange: setPage } : null}
+	                rows={rows}
+	                serverSort
+	                sortDirection={sortDirection}
+	                sortKey={String(sortKey)}
+	              />
             </CardContent>
           </Card>
           <Card>
@@ -1570,44 +1703,38 @@ function EntitiesPage({ title }: { title: string }) {
 }
 
 function EntitiesPageContent({ title }: { title: string }) {
-  const { loadState, rows } = useDbtfEntities();
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [jurisdictionFilter, setJurisdictionFilter] = useState("all");
   const [riskFilter, setRiskFilter] = useState("all");
   const [sortKey, setSortKey] = useState<keyof EntityTableRow>("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+  const [page, setPage] = useState(1);
+  const { loadState, meta, rows } = useDbtfEntities({
+    jurisdiction: jurisdictionFilter,
+    page,
+    q: searchTerm,
+    risk: riskFilter,
+    sortDirection,
+    sortKey: String(sortKey),
+    type: typeFilter,
+  });
   const typeOptions = Array.from(new Set(rows.map((row) => row.type))).sort();
   const jurisdictionOptions = Array.from(new Set(rows.map((row) => row.jurisdiction))).sort();
   const riskOptions = Array.from(new Set(rows.map((row) => row.risk))).sort();
-  const filteredRows = sortByKey(
-    rows.filter((row) => {
-      const matchesSearch =
-        normalizedSearchTerm.length === 0 ||
-        [row.name, row.type, row.jurisdiction, row.ownership, row.missingDocs, row.risk, row.status].some((value) =>
-          value.toLowerCase().includes(normalizedSearchTerm),
-        );
-      const matchesType = typeFilter === "all" || row.type === typeFilter;
-      const matchesJurisdiction = jurisdictionFilter === "all" || row.jurisdiction === jurisdictionFilter;
-      const matchesRisk = riskFilter === "all" || row.risk === riskFilter;
-
-      return matchesSearch && matchesType && matchesJurisdiction && matchesRisk;
-    }),
-    sortKey,
-    sortDirection,
-  );
 
   function toggleSort(key: string) {
     const nextKey = key as keyof EntityTableRow;
 
     if (sortKey === nextKey) {
       setSortDirection((current) => (current === "asc" ? "desc" : "asc"));
+      setPage(1);
       return;
     }
 
     setSortKey(nextKey);
     setSortDirection("asc");
+    setPage(1);
   }
 
   return (
@@ -1616,7 +1743,7 @@ function EntitiesPageContent({ title }: { title: string }) {
       <div className="space-y-5">
         <SectionTitle
           action={<button className={primaryButtonClass} data-testid="j05-create-entity" onClick={() => { void runDataMaintenanceCommand("j05.createEntity", "/entities/new"); }} type="button"><Plus aria-hidden="true" className="size-4" />Create Entity</button>}
-          count={String(rows.length)}
+          count={String(meta?.totalRows ?? rows.length)}
           subtitle="View and manage entities across organizational and investment structures."
           title={title}
         />
@@ -1626,15 +1753,18 @@ function EntitiesPageContent({ title }: { title: string }) {
               <div className="relative md:col-span-2">
                 <Search aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
                 <input
-                  className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm outline-none focus:border-alphavest-gold"
-                  onChange={(event) => setSearchTerm(event.target.value)}
-                  placeholder="Search DB-backed entities..."
+	                  className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm outline-none focus:border-alphavest-gold"
+	                  onChange={(event) => {
+	                    setSearchTerm(event.target.value);
+	                    setPage(1);
+	                  }}
+	                  placeholder="Search DB-backed entities..."
                   value={searchTerm}
                 />
               </div>
-              <DbtfSelect label="All Types" onChange={setTypeFilter} options={typeOptions} value={typeFilter} />
-              <DbtfSelect label="All Jurisdictions" onChange={setJurisdictionFilter} options={jurisdictionOptions} value={jurisdictionFilter} />
-              <DbtfSelect label="All Risk" onChange={setRiskFilter} options={riskOptions} value={riskFilter} />
+	              <DbtfSelect label="All Types" onChange={(value) => { setTypeFilter(value); setPage(1); }} options={typeOptions} value={typeFilter} />
+	              <DbtfSelect label="All Jurisdictions" onChange={(value) => { setJurisdictionFilter(value); setPage(1); }} options={jurisdictionOptions} value={jurisdictionFilter} />
+	              <DbtfSelect label="All Risk" onChange={(value) => { setRiskFilter(value); setPage(1); }} options={riskOptions} value={riskFilter} />
             </div>
             <div className="flex h-11 items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted">
               <ShieldCheck aria-hidden="true" className="size-4" />
@@ -1643,8 +1773,8 @@ function EntitiesPageContent({ title }: { title: string }) {
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="grid gap-3 md:grid-cols-5">
-              <MetricCard detail="Tenant DB rows" label="Entities" value={String(rows.length)} />
-              <MetricCard detail="DB-derived current filter" label="Visible" value={String(filteredRows.length)} />
+	              <MetricCard detail="Tenant DB rows matching backend query" label="Entities" value={String(meta?.totalRows ?? rows.length)} />
+	              <MetricCard detail="Backend page rows returned" label="Visible" value={String(meta?.returnedRows ?? rows.length)} />
               <MetricCard detail="Seeded high-risk rows" label="High Risk" status="FAILED" value={String(rows.filter((row) => row.risk.toLowerCase().includes("high")).length)} />
               <MetricCard detail="Rows needing evidence" label="Evidence" status="PENDING" value={String(rows.filter((row) => row.missingDocs !== "All good").length)} />
               <MetricCard detail="No static entity arrays" label="Source" status="ACTIVE" value="DB" />
@@ -1652,10 +1782,12 @@ function EntitiesPageContent({ title }: { title: string }) {
             <DataTable
               columns={entityColumns}
               emptyMessage={loadState === "error" ? "Entities could not be loaded from the DB." : "No DB-backed entities match this search and filter set."}
-              getRowId={(row) => row.id}
-              onSortChange={toggleSort}
-              rows={filteredRows}
-              sortDirection={sortDirection}
+	              getRowId={(row) => row.id}
+	              onSortChange={toggleSort}
+	              pagination={meta ? { ...meta, onPageChange: setPage } : null}
+	              rows={rows}
+	              serverSort
+	              sortDirection={sortDirection}
               sortKey={String(sortKey)}
             />
           </CardContent>
@@ -1709,7 +1841,7 @@ function DocumentFilterSelect({
 }: {
   label: string;
   onChange: (value: string) => void;
-  options: string[];
+  options: DocumentFilterOption[];
   testId: string;
   value: string;
 }) {
@@ -1726,8 +1858,8 @@ function DocumentFilterSelect({
       >
         <option value="all">All {label}</option>
         {options.map((option) => (
-          <option key={option} value={option}>
-            {option}
+          <option key={option.value} value={option.value}>
+            {option.label}
           </option>
         ))}
       </select>
@@ -2008,50 +2140,44 @@ function EntityDetailPage({ title }: { title: string }) {
 
 function DocumentsPageContent({ title }: { title: string }) {
   const { session } = useDemoSession();
-  const { documents, loadState } = usePersistedUploadDocuments();
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sensitivityFilter, setSensitivityFilter] = useState("all");
   const [sortKey, setSortKey] = useState<keyof DocumentTableRow>("updated");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [page, setPage] = useState(1);
+  const { documents, loadState, meta } = usePersistedUploadDocuments({
+    page,
+    q: searchTerm,
+    sensitivity: sensitivityFilter,
+    sortDirection,
+    sortKey: documentApiSortKey(sortKey),
+    status: statusFilter,
+    type: typeFilter,
+  });
   const persistedRows = toDocumentRows(documents, session.tenant.displayName);
   const rows: DocumentTableRow[] = persistedRows;
-  const typeOptions = Array.from(new Set(rows.map((row) => row.type))).sort();
-  const statusOptions = Array.from(new Set(rows.map((row) => row.status))).sort();
-  const sensitivityOptions = Array.from(new Set(rows.map((row) => row.sensitivity))).sort();
-  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
-  const filteredRows = sortByKey(
-    rows.filter((row) => {
-      const matchesSearch =
-        normalizedSearchTerm.length === 0 ||
-        [row.entity, row.name, row.sensitivity, row.status, row.type, row.updated].some((value) =>
-          value.toLowerCase().includes(normalizedSearchTerm),
-        );
-      const matchesType = typeFilter === "all" || row.type === typeFilter;
-      const matchesStatus = statusFilter === "all" || row.status === statusFilter;
-      const matchesSensitivity = sensitivityFilter === "all" || row.sensitivity === sensitivityFilter;
-
-      return matchesSearch && matchesType && matchesStatus && matchesSensitivity;
-    }),
-    sortKey,
-    sortDirection,
-  );
+  const typeOptions = documentTypeFilterOptions;
+  const statusOptions = documentStatusFilterOptions;
+  const sensitivityOptions = documentSensitivityFilterOptions;
   const scopedRowSummary =
-    filteredRows.length === rows.length
-      ? `${rows.length} scoped documents visible`
-      : `${filteredRows.length} of ${rows.length} scoped documents visible`;
+    meta
+      ? `${meta.returnedRows} of ${meta.totalRows} backend-scoped documents visible`
+      : `${rows.length} scoped documents visible`;
 
   function toggleSort(key: string) {
     const nextKey = key as keyof DocumentTableRow;
 
     if (sortKey === nextKey) {
       setSortDirection((current) => (current === "asc" ? "desc" : "asc"));
+      setPage(1);
       return;
     }
 
     setSortKey(nextKey);
     setSortDirection("asc");
+    setPage(1);
   }
 
   return (
@@ -2069,9 +2195,10 @@ function DocumentsPageContent({ title }: { title: string }) {
                 <input
                   className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm outline-none focus:border-alphavest-gold"
                   data-testid="p10-document-search"
-                  onChange={(event) => {
-                    setSearchTerm(event.target.value);
-                  }}
+	                  onChange={(event) => {
+	                    setSearchTerm(event.target.value);
+	                    setPage(1);
+	                  }}
                   placeholder="Search documents by name or keyword..."
                   value={searchTerm}
                 />
@@ -2082,9 +2209,9 @@ function DocumentsPageContent({ title }: { title: string }) {
               </div>
             </div>
             <div className="grid gap-3 md:grid-cols-5">
-              <DocumentFilterSelect label="Types" onChange={setTypeFilter} options={typeOptions} testId="p10-document-type-filter" value={typeFilter} />
-              <DocumentFilterSelect label="Statuses" onChange={setStatusFilter} options={statusOptions} testId="p10-document-status-filter" value={statusFilter} />
-              <DocumentFilterSelect label="Sensitivities" onChange={setSensitivityFilter} options={sensitivityOptions} testId="p10-document-sensitivity-filter" value={sensitivityFilter} />
+	              <DocumentFilterSelect label="Types" onChange={(value) => { setTypeFilter(value); setPage(1); }} options={typeOptions} testId="p10-document-type-filter" value={typeFilter} />
+	              <DocumentFilterSelect label="Statuses" onChange={(value) => { setStatusFilter(value); setPage(1); }} options={statusOptions} testId="p10-document-status-filter" value={statusFilter} />
+	              <DocumentFilterSelect label="Sensitivities" onChange={(value) => { setSensitivityFilter(value); setPage(1); }} options={sensitivityOptions} testId="p10-document-sensitivity-filter" value={sensitivityFilter} />
               <button
                 aria-disabled="true"
                 className="flex h-11 cursor-not-allowed items-center justify-between gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-left text-sm text-alphavest-muted opacity-65"
@@ -2128,10 +2255,12 @@ function DocumentsPageContent({ title }: { title: string }) {
                   ? "Documents could not be loaded from the DB."
                   : "No scoped documents match the current search and filters."
               }
-              getRowId={(row) => row.id}
-              onSortChange={toggleSort}
-              rows={filteredRows}
-              sortDirection={sortDirection}
+	              getRowId={(row) => row.id}
+	              onSortChange={toggleSort}
+	              pagination={meta ? { ...meta, onPageChange: setPage } : null}
+	              rows={rows}
+	              serverSort
+	              sortDirection={sortDirection}
               sortKey={String(sortKey)}
             />
           </CardContent>

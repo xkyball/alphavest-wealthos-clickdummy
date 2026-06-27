@@ -1,0 +1,86 @@
+import { expect, test } from "@playwright/test";
+import fs from "node:fs";
+import path from "node:path";
+
+import { parseDataSurfaceQuery } from "@/lib/data-surface-query-contract";
+
+const root = process.cwd();
+
+function read(relativePath: string) {
+  return fs.readFileSync(path.join(root, relativePath), "utf8");
+}
+
+test.describe("E11 backend data surface truth", () => {
+  test("documents the E11 register and canonical query spec", () => {
+    const register = read("docs/ux/ALPHAVEST_E11_BACKEND_DATA_SURFACE_COVERAGE_REGISTER.md");
+    const spec = read("docs/ux/ALPHAVEST_E11_BACKEND_DATA_SURFACE_QUERY_SPEC.md");
+
+    expect(register).toContain("E11-DS-001");
+    expect(register).toContain("backend_snapshot_only");
+    expect(spec).toContain("Canonical Request Contract");
+    expect(spec).toContain("sourceTruth");
+  });
+
+  test("normalizes query parameters with page caps and sort allow-lists", () => {
+    const query = parseDataSurfaceQuery(new URLSearchParams("q=AlphaVest&page=2&pageSize=999&sortKey=status&sortDirection=desc"), {
+      allowedSortKeys: ["name", "status"] as const,
+      defaultPageSize: 10,
+      defaultSortKey: "name",
+      maxPageSize: 25,
+    });
+
+    expect(query).toEqual({
+      page: 2,
+      pageSize: 25,
+      q: "AlphaVest",
+      sortDirection: "desc",
+      sortKey: "status",
+    });
+  });
+
+  test("DBTF APIs return backend query metadata", async ({ request }) => {
+    const family = await request.get("/api/family-members?tenantSlug=morgan&roleKey=compliance_officer&pageSize=1&sortKey=name");
+    const entities = await request.get("/api/entities?tenantSlug=morgan&roleKey=compliance_officer&pageSize=1&sortKey=name");
+    const documents = await request.get("/api/documents?tenantSlug=morgan&roleKey=analyst&source=all&pageSize=1&sortKey=uploadedAt&sortDirection=desc");
+
+    for (const response of [family, entities, documents]) {
+      expect(response.ok()).toBe(true);
+      const body = await response.json();
+
+      expect(body.meta.sourceTruth).toBe("backend_query_backed");
+      expect(body.meta.pageSize).toBe(1);
+      expect(body.meta.returnedRows).toBeLessThanOrEqual(1);
+      expect(body.safety.hiddenRowsDisclosed).toBe(false);
+    }
+  });
+
+  test("admin tenant surfaces expose paginated backend rows", async ({ request }) => {
+    const tenants = await request.get("/api/admin-tenants?surface=tenants&pageSize=1&sortKey=name");
+    const users = await request.get("/api/admin-tenants?surface=users&pageSize=1&sortKey=name");
+
+    for (const response of [tenants, users]) {
+      expect(response.ok()).toBe(true);
+      const body = await response.json();
+
+      expect(body.meta.sourceTruth).toBe("backend_query_backed");
+      expect(body.meta.pageSize).toBe(1);
+      expect(body.meta.returnedRows).toBeLessThanOrEqual(1);
+      expect(body.safety.hiddenRowsDisclosed).toBe(false);
+    }
+  });
+
+  test("source gates block local-snapshot and demo-row regression", () => {
+    const clientIntake = read("components/client-intake-screen.tsx");
+    const adminTenant = read("components/admin-tenant-setup-screen.tsx");
+    const reviewMonitoring = read("components/review-monitoring-screen.tsx");
+    const dataTable = read("components/ui/data-table.tsx");
+
+    expect(clientIntake).not.toContain("const filteredRows = sortByKey");
+    expect(adminTenant).not.toContain("snapshot?.tenantRows.length ? snapshot.tenantRows : tenantRows");
+    expect(adminTenant).not.toContain("snapshot?.userRows.length ? snapshot.userRows : tenantUsers");
+    expect(reviewMonitoring).not.toContain("reviewCalendarRows");
+    expect(reviewMonitoring).not.toContain("rebalanceTriggerRows");
+    expect(dataTable).toContain("data-testid=\"ux-data-table-pagination\"");
+    expect(dataTable).toContain("serverSort");
+  });
+});

@@ -17,6 +17,12 @@ import { evaluateControlPermission } from "@/lib/control-layer/permission-decisi
 import { resolveTenantObjectScope } from "@/lib/control-layer/scope-resolver";
 import { localDocumentStorageAdapter } from "@/lib/document-storage-adapter";
 import { auditService, AuditPersistenceRequiredError } from "@/lib/audit-service";
+import {
+  paginateDataSurfaceRows,
+  sortDataSurfaceRows,
+  type BackendDataSurfaceMeta,
+  type DataSurfaceQuery,
+} from "@/lib/data-surface-query-contract";
 import { evidenceService, type EvidenceLifecycleStatus } from "@/lib/evidence-service";
 import { stableId } from "@/lib/stable-id";
 import { visibilityEngine } from "@/lib/visibility-engine";
@@ -74,6 +80,13 @@ type UploadedDocumentListOptions = {
   source?: "all" | "uploads";
   status?: string;
   type?: string;
+};
+
+export type UploadedDocumentSortKey = "documentType" | "evidenceLifecycleStatus" | "fileName" | "sensitivity" | "status" | "title" | "uploadedAt";
+
+export type UploadedDocumentsPage = {
+  documents: ProjectedUploadedDocumentListItem[];
+  meta: BackendDataSurfaceMeta<UploadedDocumentSortKey>;
 };
 
 export type UploadDocumentInput = {
@@ -517,7 +530,7 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
   });
 }
 
-export async function listUploadedDocuments(
+async function buildUploadedDocumentRows(
   prisma: PrismaClient,
   tenantSlug: DemoTenantSlug = "morgan",
   roleKey: DemoRoleKey = "analyst",
@@ -538,7 +551,6 @@ export async function listUploadedDocuments(
       },
     },
     orderBy: { createdAt: "desc" },
-    take: 12,
     where: {
       clientTenantId: session.tenant.id,
       ...(options.source === "all" ? {} : { source: "multipart_upload" }),
@@ -569,7 +581,7 @@ export async function listUploadedDocuments(
     evidenceRecords.map((record) => [record.relatedObjectId, record]),
   );
 
-  const projectedDocuments = documents.map((document) => {
+  return documents.map((document) => {
     const mappedDocument = mapDocument({
       ...document,
       evidenceRecords: evidenceRecordByDocumentId.has(document.id)
@@ -581,7 +593,15 @@ export async function listUploadedDocuments(
 
     return projectDocumentForRole(mappedDocument, roleKey, tenantSlug);
   });
+}
 
+export async function listUploadedDocuments(
+  prisma: PrismaClient,
+  tenantSlug: DemoTenantSlug = "morgan",
+  roleKey: DemoRoleKey = "analyst",
+  options: UploadedDocumentListOptions = {},
+) {
+  const projectedDocuments = await buildUploadedDocumentRows(prisma, tenantSlug, roleKey, options);
   if (options.sort === "name") {
     return [...projectedDocuments].sort((left, right) =>
       String(left.fileName ?? left.title ?? "").localeCompare(String(right.fileName ?? right.title ?? ""), "en", {
@@ -598,6 +618,23 @@ export async function listUploadedDocuments(
   }
 
   return projectedDocuments;
+}
+
+export async function listUploadedDocumentsPage(
+  prisma: PrismaClient,
+  tenantSlug: DemoTenantSlug,
+  roleKey: DemoRoleKey,
+  query: DataSurfaceQuery<UploadedDocumentSortKey>,
+  options: Omit<UploadedDocumentListOptions, "q" | "sort"> = {},
+): Promise<UploadedDocumentsPage> {
+  const rows = await buildUploadedDocumentRows(prisma, tenantSlug, roleKey, {
+    ...options,
+    q: query.q,
+  });
+  const sortedRows = sortDataSurfaceRows(rows, query, (row, sortKey) => row[sortKey]);
+  const page = paginateDataSurfaceRows(sortedRows, query);
+
+  return { documents: page.rows, meta: page.meta };
 }
 
 export const documentUploadLimits = {

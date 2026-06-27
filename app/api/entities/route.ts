@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 
 import { DbtfPermissionError, DbtfValidationError, saveDbtfEntityWizard } from "@/lib/dbtf-form-service";
-import { listDbtfEntities } from "@/lib/dbtf-table-service";
+import { listDbtfEntitiesPage, type DbtfEntitySortKey } from "@/lib/dbtf-table-service";
+import { parseDataSurfaceQuery } from "@/lib/data-surface-query-contract";
 import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import { prismaClient } from "@/lib/prisma";
+
+const entitySortKeys = ["jurisdiction", "missingDocs", "name", "ownership", "risk", "status", "type", "visibilityStatus"] as const satisfies readonly DbtfEntitySortKey[];
 
 function tenantSlugFromUrl(request: Request): DemoTenantSlug | undefined {
   const value = new URL(request.url).searchParams.get("tenantSlug");
@@ -54,23 +57,28 @@ export async function GET(request: Request) {
   }
 
   try {
-    const entities = await listDbtfEntities(prismaClient(), tenantSlug, roleKey, {
+    const page = await listDbtfEntitiesPage(prismaClient(), tenantSlug, roleKey, parseDataSurfaceQuery(url.searchParams, {
+      allowedSortKeys: entitySortKeys,
+      defaultPageSize: 10,
+      defaultSortKey: "name",
+      maxPageSize: 25,
+    }), {
       jurisdiction: url.searchParams.get("jurisdiction") ?? undefined,
-      q: url.searchParams.get("q") ?? undefined,
       risk: url.searchParams.get("risk") ?? undefined,
-      sort: url.searchParams.get("sort") ?? undefined,
       type: url.searchParams.get("type") ?? undefined,
     });
 
     return NextResponse.json({
-      entities,
+      entities: page.entities,
+      meta: page.meta,
       ok: true,
       safety: {
         hiddenRowsDisclosed: false,
-        returnedRows: entities.length,
+        returnedRows: page.meta.returnedRows,
         roleKey,
         scoped: true,
         tenantSlug,
+        totalRows: page.meta.totalRows,
       },
     });
   } catch {

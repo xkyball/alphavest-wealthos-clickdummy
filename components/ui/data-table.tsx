@@ -1,10 +1,11 @@
 "use client";
 
-import { MoreHorizontal } from "lucide-react";
+import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 import { useMemo, useState } from "react";
 import { DisabledControlReason, disabledControlReasonId } from "@/components/ui/disabled-control-reason";
 import { StatePanel, type ComponentState } from "@/components/ui/state-panel";
 import { cn } from "@/lib/cn";
+import type { BackendDataSurfaceMeta } from "@/lib/data-surface-query-contract";
 import {
   uxPrimitiveInteractionAttributesFor,
   uxPrimitiveInteractionClassFor,
@@ -34,6 +35,13 @@ export type DataTableColumn<T> = {
   sortable?: boolean;
 };
 
+type DataTablePagination = Pick<
+  BackendDataSurfaceMeta<string>,
+  "hasNextPage" | "hasPreviousPage" | "page" | "pageSize" | "returnedRows" | "sourceTruth" | "totalPages" | "totalRows"
+> & {
+  onPageChange?: (page: number) => void;
+};
+
 type DataTableProps<T> = {
   actionPolicy?: UxDataSurfaceActionPolicy;
   columns: Array<DataTableColumn<T>>;
@@ -46,11 +54,13 @@ type DataTableProps<T> = {
   masterDetailMode?: UxMasterDetailMode;
   mobileCardTitle?: (row: T) => React.ReactNode;
   onRowAction?: (row: T) => void;
+  pagination?: DataTablePagination | null;
   responsiveMode?: "cards" | "table";
   rowActionLabel?: (row: T) => string;
   rowActionPriority?: "primary" | "secondary";
   rowActionUnavailableLabel?: string;
   rows: T[];
+  serverSort?: boolean;
   onSortChange?: (key: string) => void;
   sortDirection?: "asc" | "desc";
   sortKey?: string;
@@ -91,12 +101,14 @@ export function DataTable<T>({
   masterDetailMode,
   mobileCardTitle,
   onRowAction,
+  pagination,
   onSortChange,
   responsiveMode = "cards",
   rowActionLabel,
   rowActionPriority = "secondary",
   rowActionUnavailableLabel = "No scoped row action for this table state.",
   rows,
+  serverSort = false,
   sortDirection,
   sortKey,
   state = "ready",
@@ -107,9 +119,10 @@ export function DataTable<T>({
     key: sortKey,
   });
 
-  const activeSortKey = internalSort.key ?? sortKey;
-  const activeSortDirection = internalSort.direction ?? sortDirection ?? "asc";
+  const activeSortKey = sortKey ?? internalSort.key;
+  const activeSortDirection = sortDirection ?? internalSort.direction ?? "asc";
   const sortedRows = useMemo(() => {
+    if (serverSort) return rows;
     if (!activeSortKey) return rows;
 
     return [...rows].sort((left, right) => {
@@ -119,13 +132,18 @@ export function DataTable<T>({
 
       return activeSortDirection === "desc" ? -order : order;
     });
-  }, [activeSortDirection, activeSortKey, rows]);
+  }, [activeSortDirection, activeSortKey, rows, serverSort]);
 
   if (state !== "ready") {
     return <StatePanel detail={emptyMessage ?? stateCopy[state].detail} state={state} title={stateCopy[state].title} />;
   }
 
   function handleSort(key: string) {
+    if (serverSort) {
+      onSortChange?.(key);
+      return;
+    }
+
     setInternalSort((current) => ({
       direction: current.key === key && current.direction === "asc" ? "desc" : "asc",
       key,
@@ -314,8 +332,56 @@ export function DataTable<T>({
     </div>
   );
 
+  const paginationFooter = pagination
+    ? (() => {
+      const previousDisabled = !pagination.hasPreviousPage;
+      const nextDisabled = !pagination.hasNextPage;
+
+      return (
+      <div
+        className="mt-3 flex flex-col gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/30 px-3 py-2 text-sm text-alphavest-muted sm:flex-row sm:items-center sm:justify-between"
+        data-testid="ux-data-table-pagination"
+        data-ux-data-surface-source-truth={pagination.sourceTruth}
+      >
+        <p>
+          Showing {pagination.returnedRows} of {pagination.totalRows} backend rows · Page {pagination.page} of {pagination.totalPages}
+        </p>
+        <div className="flex gap-2">
+          <button
+            aria-label="Previous backend page"
+            className="inline-flex h-9 items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-3 text-sm font-semibold text-alphavest-ivory transition disabled:cursor-not-allowed disabled:opacity-45 enabled:hover:border-alphavest-gold/60"
+            data-testid="ux-data-table-page-previous"
+            disabled={previousDisabled}
+            onClick={() => pagination.onPageChange?.(Math.max(1, pagination.page - 1))}
+            type="button"
+          >
+            <ChevronLeft aria-hidden="true" className="size-4" />
+            Previous
+          </button>
+          <button
+            aria-label="Next backend page"
+            className="inline-flex h-9 items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-3 text-sm font-semibold text-alphavest-ivory transition disabled:cursor-not-allowed disabled:opacity-45 enabled:hover:border-alphavest-gold/60"
+            data-testid="ux-data-table-page-next"
+            disabled={nextDisabled}
+            onClick={() => pagination.onPageChange?.(Math.min(pagination.totalPages, pagination.page + 1))}
+            type="button"
+          >
+            Next
+            <ChevronRight aria-hidden="true" className="size-4" />
+          </button>
+        </div>
+      </div>
+      );
+    })()
+    : null;
+
   if (responsiveMode === "table") {
-    return table;
+    return (
+      <div>
+        {table}
+        {paginationFooter}
+      </div>
+    );
   }
 
   return (
@@ -365,6 +431,7 @@ export function DataTable<T>({
         )}
       </div>
       <div className="hidden md:block">{table}</div>
+      {paginationFooter}
     </div>
   );
 }

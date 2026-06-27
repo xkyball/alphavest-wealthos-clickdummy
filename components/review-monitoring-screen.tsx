@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   AlertTriangle,
   ArrowRight,
@@ -36,12 +36,10 @@ import { cn } from "@/lib/cn";
 import {
   dueStateLabel,
   isReviewMonitoringPageId,
-  rebalanceTriggerRows,
-  reviewCalendarRows,
   triggerStateLabel,
   type ReviewMonitoringPageId,
 } from "@/lib/review-monitoring-demo-data";
-import type { ReviewCalendarRow, ReviewDueState, RebalanceTriggerState } from "@/lib/review-monitoring-service";
+import type { RebalanceTriggerRow, ReviewCalendarRow, ReviewDueState, ReviewMonitoringSnapshot, RebalanceTriggerState } from "@/lib/review-monitoring-service";
 import type { ScreenRoute } from "@/lib/route-registry";
 
 type ReviewMonitoringScreenProps = {
@@ -77,6 +75,46 @@ function formatDate(value: string | null) {
     month: "short",
     year: "numeric",
   }).format(new Date(value));
+}
+
+function useReviewMonitoringSnapshot() {
+  const [snapshot, setSnapshot] = useState<ReviewMonitoringSnapshot | null>(null);
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoadState("loading");
+
+      try {
+        const response = await fetch("/api/review-monitoring", { cache: "no-store" });
+        const body = (await response.json()) as (ReviewMonitoringSnapshot & { ok?: boolean }) | { error?: string };
+
+        if (!response.ok || !("reviews" in body) || !("rebalance" in body)) {
+          throw new Error("Review monitoring snapshot failed.");
+        }
+
+        if (!cancelled) {
+          setSnapshot(body);
+          setLoadState("ready");
+        }
+      } catch {
+        if (!cancelled) {
+          setSnapshot(null);
+          setLoadState("error");
+        }
+      }
+    }
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return { loadState, snapshot };
 }
 
 function ReadinessStrip() {
@@ -289,9 +327,11 @@ function ActionStatus({ value }: { value: string | null }) {
 
 function ReviewCalendarPage({ title }: { title: string }) {
   const [actionStatus, setActionStatus] = useState<string | null>(null);
-  const overdueCount = reviewCalendarRows.filter((row) => row.dueState === "overdue").length;
-  const dueSoonCount = reviewCalendarRows.filter((row) => row.dueState === "due_soon").length;
-  const escalatedCount = reviewCalendarRows.filter((row) => row.escalated).length;
+  const { loadState, snapshot } = useReviewMonitoringSnapshot();
+  const reviewRows = snapshot?.reviews.rows ?? [];
+  const overdueCount = snapshot?.reviews.overdue ?? 0;
+  const dueSoonCount = snapshot?.reviews.dueSoon ?? 0;
+  const escalatedCount = reviewRows.filter((row) => row.escalated).length;
 
   const columns: Array<DataTableColumn<ReviewCalendarRow>> = [
     {
@@ -340,7 +380,7 @@ function ReviewCalendarPage({ title }: { title: string }) {
           <MetricCard detail="Reviews with a due date inside the next 14 days." label="Due soon" status="SCHEDULED" value={String(dueSoonCount)} />
           <MetricCard detail="Overdue is derived from dated service fields, not from UI labels." label="Overdue" status={overdueCount > 0 ? "FAILED" : "COMPLETED"} value={String(overdueCount)} />
           <MetricCard detail="Rows with queue escalation or overdue queue state." label="Escalated" status="PENDING" value={String(escalatedCount)} />
-          <MetricCard detail="Snapshot path: GET /api/review-monitoring." label="API path" status="PROCESSING" value="1 path" />
+          <MetricCard detail="Snapshot path: GET /api/review-monitoring." label="API path" status={loadState === "error" ? "FAILED" : "PROCESSING"} value="1 path" />
         </div>
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
           <section className="space-y-5">
@@ -368,7 +408,13 @@ function ReviewCalendarPage({ title }: { title: string }) {
                 </button>
               </CardHeader>
               <CardContent>
-                <DataTable columns={columns} emptyMessage="No review schedule rows match the current filter." getRowId={(row) => row.id} rows={reviewCalendarRows} />
+                <DataTable
+                  columns={columns}
+                  emptyMessage={loadState === "error" ? "Review monitoring snapshot could not be loaded from the API." : "No review schedule rows match the current filter."}
+                  getRowId={(row) => row.id}
+                  rows={reviewRows}
+                  state={loadState === "loading" ? "loading" : loadState === "error" ? "error" : "ready"}
+                />
               </CardContent>
             </Card>
           </section>
@@ -434,10 +480,25 @@ function ReviewCalendarPage({ title }: { title: string }) {
 
 function RebalanceMonitoringPage({ title }: { title: string }) {
   const [actionStatus, setActionStatus] = useState<string | null>(null);
-  const selected = rebalanceTriggerRows[0];
-  const blockedCount = rebalanceTriggerRows.filter((row) => row.state === "blocked").length;
-  const overdueCount = rebalanceTriggerRows.filter((row) => row.dueState === "overdue").length;
-  const clientVisibleCount = rebalanceTriggerRows.filter((row) => row.clientVisible).length;
+  const { loadState, snapshot } = useReviewMonitoringSnapshot();
+  const rebalanceRows = snapshot?.rebalance.rows ?? [];
+  const selected: RebalanceTriggerRow = rebalanceRows[0] ?? {
+    actionStatus: "not_loaded",
+    client: "No API trigger loaded",
+    clientVisible: false,
+    confidence: "Not scored",
+    dueState: "scheduled",
+    id: "no-api-trigger",
+    priority: "n/a",
+    queueEscalated: false,
+    slaDueAt: null,
+    state: "new",
+    title: loadState === "error" ? "Review monitoring API unavailable" : "No rebalance trigger loaded",
+    triggerType: "none",
+  };
+  const blockedCount = snapshot?.rebalance.blocked ?? 0;
+  const overdueCount = snapshot?.rebalance.overdue ?? 0;
+  const clientVisibleCount = snapshot?.rebalance.clientVisible ?? 0;
 
   return (
     <AppShell>
@@ -451,7 +512,7 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
         <Phase5DetailSplitPanel decisionSupport="Monitoring detail separates rebalance trigger review from execution or client advice." objectLabel="Rebalance trigger split" objectState="Internal trigger blocked" pageJob="Monitoring detail reviews one trigger without becoming rebalance execution." safetyBoundary="Monitoring detail cannot execute trades, approve advice or release content." splitTaskId="UX-PAGE-SPLIT-008" taskId="UX-PAGE-SPLIT-008" />
         <Phase6DecisionRoomPanel audit="Monitoring audit must record trigger, due state, reviewer routing and cancel or confirm outcome." blocker="Rebalance review remains blocked because monitoring state cannot execute trades or publish client advice." cancelLabel="Cancel monitoring decision" confirmLabel="Confirm rebalance review route" decisionLabel="Rebalance review decision room" evidence="Trigger path, due state, client-safe visibility flag and audit action path are visible before decision." preconditions="Human review route, evidence freshness, suitability context and compliance boundary must all pass." safetyNote="No release, export or advice effect can occur until gate preconditions pass and audit is recorded." taskId="UX-DECISION-ROOM-005" />
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <MetricCard detail="Rebalance trigger rows in demo monitoring scope." label="Triggers" status="PROCESSING" value={String(rebalanceTriggerRows.length)} />
+          <MetricCard detail="Rebalance trigger rows from GET /api/review-monitoring." label="Triggers" status={loadState === "error" ? "FAILED" : "PROCESSING"} value={String(snapshot?.rebalance.total ?? rebalanceRows.length)} />
           <MetricCard detail="Blocked actions require human review before any recommendation path." label="Blocked" status="FAILED" value={String(blockedCount)} />
           <MetricCard detail="SLA state derived from queue/action due dates." label="Overdue" status="FAILED" value={String(overdueCount)} />
           <MetricCard detail="Client-safe visible triggers must stay at zero for this route." label="Client-safe visible" status={clientVisibleCount === 0 ? "COMPLETED" : "FAILED"} value={String(clientVisibleCount)} />
@@ -461,10 +522,10 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Trigger queue</CardTitle>
-                <Badge tone="gold">{rebalanceTriggerRows.length}</Badge>
+                <Badge tone="gold">{rebalanceRows.length}</Badge>
               </CardHeader>
               <CardContent className="space-y-3">
-                {rebalanceTriggerRows.map((row, index) => (
+                {rebalanceRows.map((row, index) => (
                   <article
                     className={cn(
                       "rounded-md border p-4",
@@ -481,6 +542,13 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
                     <p className="mt-2 text-xs text-alphavest-subtle">SLA {formatDate(row.slaDueAt)} · {row.confidence}</p>
                   </article>
                 ))}
+                {rebalanceRows.length === 0 ? (
+                  <StatePanel
+                    detail={loadState === "error" ? "The review monitoring API failed closed." : "No API-backed rebalance triggers are available."}
+                    state={loadState === "error" ? "error" : "empty"}
+                    title={loadState === "error" ? "API unavailable" : "No triggers"}
+                  />
+                ) : null}
               </CardContent>
             </Card>
             <StatePanel detail="No rebalance triggers match this filter." state="empty" title="No triggers found" />

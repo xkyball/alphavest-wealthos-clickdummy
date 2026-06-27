@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 
 import { DbtfNotFoundError, DbtfPermissionError, DbtfValidationError, updateDbtfFamilyMember } from "@/lib/dbtf-form-service";
-import { listDbtfFamilyMembers } from "@/lib/dbtf-table-service";
+import { listDbtfFamilyMembersPage, type DbtfFamilyMemberSortKey } from "@/lib/dbtf-table-service";
+import { parseDataSurfaceQuery } from "@/lib/data-surface-query-contract";
 import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import { prismaClient } from "@/lib/prisma";
+
+const familyMemberSortKeys = ["governance", "name", "relationship", "role", "status", "taxResidency", "visibilityStatus", "year"] as const satisfies readonly DbtfFamilyMemberSortKey[];
 
 function tenantSlugFromUrl(request: Request): DemoTenantSlug | undefined {
   const value = new URL(request.url).searchParams.get("tenantSlug");
@@ -54,20 +57,24 @@ export async function GET(request: Request) {
   }
 
   try {
-    const familyMembers = await listDbtfFamilyMembers(prismaClient(), tenantSlug, roleKey, {
-      q: url.searchParams.get("q") ?? undefined,
-      sort: url.searchParams.get("sort") ?? undefined,
-    });
+    const page = await listDbtfFamilyMembersPage(prismaClient(), tenantSlug, roleKey, parseDataSurfaceQuery(url.searchParams, {
+      allowedSortKeys: familyMemberSortKeys,
+      defaultPageSize: 10,
+      defaultSortKey: "name",
+      maxPageSize: 25,
+    }));
 
     return NextResponse.json({
-      familyMembers,
+      familyMembers: page.familyMembers,
+      meta: page.meta,
       ok: true,
       safety: {
         hiddenRowsDisclosed: false,
-        returnedRows: familyMembers.length,
+        returnedRows: page.meta.returnedRows,
         roleKey,
         scoped: true,
         tenantSlug,
+        totalRows: page.meta.totalRows,
       },
     });
   } catch {

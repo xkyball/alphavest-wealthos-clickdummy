@@ -36,11 +36,13 @@ test.describe("UXP2-002 filter affordance pruning", () => {
   test("keeps real tenant filters active and disables generic filter drawer affordances", async ({ page }) => {
     await page.goto("/admin/tenants");
 
-    await expect(page.getByRole("heading", { name: "Tenant Directory Hub" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Tenant Directory" })).toBeVisible();
+    await expect(page.getByTestId("ux-data-table-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
     await expect(page.getByRole("button", { name: /^Filters$/ })).toHaveCount(0);
 
     await page.goto("/tenants/demo/users");
-    await expect(page.getByRole("button", { name: "Tenant user filters are not wired in this release" })).toBeDisabled();
+    await expect(page.getByPlaceholder("Search DB tenant users...")).toBeVisible();
+    await expect(page.getByTestId("ux-data-table-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
   });
 
   test("disables unwired evidence filters while preserving document filter lifecycle", async ({ page }) => {
@@ -53,8 +55,9 @@ test.describe("UXP2-002 filter affordance pruning", () => {
     await page.goto("/documents");
     await page.getByLabel("Tenant context").last().selectOption("bennett");
     await page.getByLabel("Role context").last().selectOption("compliance_officer");
-    await page.getByTestId("p10-document-type-filter").selectOption("Source Of Funds");
-    await expect(page.getByRole("table").last()).toContainText("bennett-source-of-funds-review.pdf");
+    await page.getByTestId("p10-document-type-filter").selectOption("source_of_funds");
+    await expect(page.getByTestId("ux-data-table-pagination")).toHaveAttribute("data-ux-data-surface-source-truth", "backend_query_backed");
+    await expect(page.getByTestId("p10-document-filter-summary")).toContainText("backend-scoped documents visible");
     await expect(page.getByRole("button", { name: "Scoped Entities" })).toBeDisabled();
     await expect(page.getByRole("button", { name: "Accessible to Me" })).toBeDisabled();
   });

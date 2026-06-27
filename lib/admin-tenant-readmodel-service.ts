@@ -1,8 +1,26 @@
 import type { PrismaClient } from "@prisma/client";
 
+import {
+  paginateDataSurfaceRows,
+  sortDataSurfaceRows,
+  type BackendDataSurfaceMeta,
+  type DataSurfaceQuery,
+} from "@/lib/data-surface-query-contract";
 import { demoPlatformTenantId } from "@/lib/demo-session";
 
 export type AdminTenantSnapshot = Awaited<ReturnType<typeof getAdminTenantSnapshot>>;
+export type AdminTenantRow = AdminTenantSnapshot["tenantRows"][number];
+export type AdminTenantUserRow = AdminTenantSnapshot["userRows"][number];
+export type AdminTenantSortKey = "activePolicies" | "activeUsers" | "jurisdiction" | "name" | "onboarding" | "owner" | "readiness" | "status" | "tier";
+export type AdminTenantUserSortKey = "invite" | "name" | "role" | "scope" | "status";
+export type AdminTenantRowsPage = {
+  meta: BackendDataSurfaceMeta<AdminTenantSortKey>;
+  tenantRows: AdminTenantRow[];
+};
+export type AdminTenantUserRowsPage = {
+  meta: BackendDataSurfaceMeta<AdminTenantUserSortKey>;
+  userRows: AdminTenantUserRow[];
+};
 
 function statusLabel(value: unknown) {
   return String(value)
@@ -178,4 +196,50 @@ export async function getAdminTenantSnapshot(prisma: PrismaClient) {
     tenantRows,
     userRows,
   };
+}
+
+export async function listAdminTenantRowsPage(
+  prisma: PrismaClient,
+  query: DataSurfaceQuery<AdminTenantSortKey>,
+  filters: { status?: string } = {},
+): Promise<AdminTenantRowsPage> {
+  const snapshot = await getAdminTenantSnapshot(prisma);
+  const normalizedQuery = query.q.toLowerCase();
+  const rows = snapshot.tenantRows.filter((row) => {
+    const matchesQuery =
+      normalizedQuery.length === 0 ||
+      [row.name, row.jurisdiction, row.tier, row.owner, row.onboarding, row.status].some((value) =>
+        String(value).toLowerCase().includes(normalizedQuery),
+      );
+    const matchesStatus = !filters.status || filters.status === "all" || row.status === filters.status;
+
+    return matchesQuery && matchesStatus;
+  });
+  const sortedRows = sortDataSurfaceRows(rows, query, (row, sortKey) => row[sortKey]);
+  const page = paginateDataSurfaceRows(sortedRows, query);
+
+  return { meta: page.meta, tenantRows: page.rows };
+}
+
+export async function listAdminTenantUserRowsPage(
+  prisma: PrismaClient,
+  query: DataSurfaceQuery<AdminTenantUserSortKey>,
+  filters: { status?: string } = {},
+): Promise<AdminTenantUserRowsPage> {
+  const snapshot = await getAdminTenantSnapshot(prisma);
+  const normalizedQuery = query.q.toLowerCase();
+  const rows = snapshot.userRows.filter((row) => {
+    const matchesQuery =
+      normalizedQuery.length === 0 ||
+      [row.name, row.invite, row.role, row.scope, row.status].some((value) =>
+        String(value).toLowerCase().includes(normalizedQuery),
+      );
+    const matchesStatus = !filters.status || filters.status === "all" || row.status === filters.status;
+
+    return matchesQuery && matchesStatus;
+  });
+  const sortedRows = sortDataSurfaceRows(rows, query, (row, sortKey) => row[sortKey]);
+  const page = paginateDataSurfaceRows(sortedRows, query);
+
+  return { meta: page.meta, userRows: page.rows };
 }

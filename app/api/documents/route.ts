@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 
 import { failClosedJson } from "@/lib/control-layer/error-envelope";
-import { listUploadedDocuments } from "@/lib/document-upload-service";
+import { parseDataSurfaceQuery } from "@/lib/data-surface-query-contract";
+import { listUploadedDocumentsPage, type UploadedDocumentSortKey } from "@/lib/document-upload-service";
 import { prismaClient } from "@/lib/prisma";
 import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+
+const documentSortKeys = ["documentType", "evidenceLifecycleStatus", "fileName", "sensitivity", "status", "title", "uploadedAt"] as const satisfies readonly UploadedDocumentSortKey[];
 
 function tenantSlugFromUrl(request: Request): DemoTenantSlug | undefined {
   const value = new URL(request.url).searchParams.get("tenantSlug");
@@ -44,17 +47,22 @@ export async function GET(request: Request) {
   }
 
   try {
-    const documents = await listUploadedDocuments(prismaClient(), tenantSlug, roleKey, {
-      q: url.searchParams.get("q") ?? undefined,
+    const page = await listUploadedDocumentsPage(prismaClient(), tenantSlug, roleKey, parseDataSurfaceQuery(url.searchParams, {
+      allowedSortKeys: documentSortKeys,
+      defaultPageSize: 10,
+      defaultSortDirection: "desc",
+      defaultSortKey: "uploadedAt",
+      maxPageSize: 25,
+    }), {
       sensitivity: url.searchParams.get("sensitivity") ?? undefined,
-      sort: url.searchParams.get("sort") ?? undefined,
       source: url.searchParams.get("source") === "all" ? "all" : "uploads",
       status: url.searchParams.get("status") ?? undefined,
       type: url.searchParams.get("type") ?? undefined,
     });
 
     return NextResponse.json({
-      documents,
+      documents: page.documents,
+      meta: page.meta,
       mutated: false,
       noAdviceExecution: true,
       noClientRelease: true,
@@ -62,11 +70,12 @@ export async function GET(request: Request) {
       safety: {
         hiddenRowsDisclosed: false,
         releaseUnlocked: false,
-        returnedRows: documents.length,
+        returnedRows: page.meta.returnedRows,
         roleKey,
         scope: "tenant-role-document-list",
         scoped: true,
         tenantSlug,
+        totalRows: page.meta.totalRows,
       },
     });
   } catch {

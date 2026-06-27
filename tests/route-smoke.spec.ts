@@ -129,10 +129,11 @@ test.describe("UX-NAV route policy navigation", () => {
   });
 
   test("preserves route policy page types from the matrix for hub and workbench navigation", () => {
-    for (const pageId of ["007", "013", "015", "019", "020", "024", "031", "033", "034", "043", "046", "048", "054"]) {
+    for (const pageId of ["007", "015", "019", "020", "024", "031", "033", "034", "043", "046", "048", "054"]) {
       expect(uxNavigationPolicyForPageId(pageId).pageType, `${pageId} should be a hub`).toBe("Hub");
     }
 
+    expect(uxNavigationPolicyForPageId("013").pageType).toBe("Workbench");
     expect(uxNavigationPolicyForPageId("038").pageType).toBe("Workbench");
     for (const pageId of routeWorksetPageIds.P1_AFTER_MVP) {
       expect(uxNavigationPolicyForPageId(pageId).pageType, `${pageId} should stay deferred`).toBe("P1");
