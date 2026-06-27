@@ -1,4 +1,16 @@
-import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, StatePanel, type BadgeTone } from "@/components/ui";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  PageTemplateFrame,
+  PageTemplateSectionNav,
+  PageTemplateSummaryRail,
+  StatePanel,
+  type BadgeTone,
+  type PageTemplateSection,
+} from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { uxActionAttributesFor } from "@/lib/ux-action-hierarchy-contract";
 import { uxPageTemplateForPageId } from "@/lib/ux-page-template-system";
@@ -66,6 +78,18 @@ export function WorksurfaceShell({
 }: WorksurfaceShellProps) {
   const template = uxPageTemplateForPageId(routeId);
   const railPlacement = template.actionZoneBehavior === "sticky_action_zone" ? "sticky_rail" : "adjacent_rail";
+  const sectionIds = {
+    action: `${worksurfaceId}-action`,
+    primary: `${worksurfaceId}-primary`,
+    state: `${worksurfaceId}-state`,
+    summary: `${worksurfaceId}-summary`,
+  };
+  const sections: PageTemplateSection[] = [
+    { id: sectionIds.summary, label: "Summary", description: "Template summary zone" },
+    { id: sectionIds.primary, label: "Work", description: "Primary work zone" },
+    ...(rail ? [{ id: sectionIds.action, label: "Actions", description: "Gated action zone" }] : []),
+    { id: sectionIds.state, label: "State", description: "Safety state zone" },
+  ];
   const railActionAttributes = uxActionAttributesFor({
     availability: "blocked_static",
     disabledReason: safetyNote,
@@ -76,18 +100,15 @@ export function WorksurfaceShell({
   });
 
   return (
-    <section
+    <PageTemplateFrame
       className={cn("mx-auto max-w-[112rem] space-y-4", className)}
       data-testid="wp02-worksurface-shell"
-      data-ux-page-template-action-zone={template.actionZoneBehavior}
-      data-ux-page-template-family={template.family}
-      data-ux-page-template-long-page={template.longPageBehavior}
-      data-ux-page-template-proof-audit={template.proofAuditPlacement}
-      data-ux-page-template-required-zones={template.requiredZones.join(" ")}
+      template={template}
       data-wp02-route-id={routeId}
       data-wp02-worksurface={worksurfaceId}
     >
       <div
+        id={sectionIds.summary}
         className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/58 p-4"
         data-ux-long-page-anchor="summary"
         data-ux-template-zone="summary"
@@ -98,28 +119,19 @@ export function WorksurfaceShell({
             <h2 className="mt-2 font-display text-3xl leading-tight text-alphavest-ivory">{title}</h2>
             <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted">{description}</p>
           </div>
-          <div className="flex shrink-0 flex-col gap-3 lg:items-end">
-            {statusItems.length ? (
-              <div className="flex flex-wrap gap-2 lg:justify-end">
-                {statusItems.map((item) => (
-                  <Badge key={`${item.label}-${item.value}`} tone={item.tone ?? "muted"}>
-                    {item.label}: {item.value}
-                  </Badge>
-                ))}
-              </div>
-            ) : null}
-            {actions ? <div className="flex flex-wrap gap-2 lg:justify-end">{actions}</div> : null}
-          </div>
+          <PageTemplateSummaryRail actions={actions} items={statusItems} />
         </div>
       </div>
+      <PageTemplateSectionNav sections={sections} />
       <div className={cn("grid gap-4", rail ? "2xl:grid-cols-[minmax(0,1fr)_24rem]" : "")}>
-        <div className="min-w-0 space-y-4" data-ux-long-page-anchor="primary" data-ux-template-zone="primary_content">
+        <div id={sectionIds.primary} className="min-w-0 space-y-4" data-ux-long-page-anchor="primary" data-ux-template-zone="primary_content">
           {primary}
           {secondary}
           {children}
         </div>
         {rail ? (
           <aside
+            id={sectionIds.action}
             className="min-w-0 space-y-4 2xl:sticky 2xl:top-24 2xl:self-start"
             data-testid="wp02-worksurface-rail"
             {...railActionAttributes}
@@ -131,7 +143,7 @@ export function WorksurfaceShell({
           </aside>
         ) : null}
       </div>
-      <div data-ux-long-page-anchor="state" data-ux-template-zone="state_zone">
+      <div id={sectionIds.state} data-ux-long-page-anchor="state" data-ux-template-zone="state_zone">
         <StatePanel
           detail={safetyNote}
           state="restricted"
@@ -139,6 +151,6 @@ export function WorksurfaceShell({
           title="Worksurface safety boundary"
         />
       </div>
-    </section>
+    </PageTemplateFrame>
   );
 }

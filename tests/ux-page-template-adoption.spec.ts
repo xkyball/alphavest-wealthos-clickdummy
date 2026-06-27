@@ -12,6 +12,7 @@ function source(path: string) {
 
 test.describe("E02 page-template adoption", () => {
   test("shared page-family renderers expose canonical template metadata", () => {
+    const pageTemplateFrame = source("components/ui/page-template.tsx");
     const renderers = [
       "components/worksurface-shell.tsx",
       "components/ux-hub-page.tsx",
@@ -21,13 +22,15 @@ test.describe("E02 page-template adoption", () => {
 
     for (const renderer of renderers) {
       const contents = source(renderer);
+      const exposesMetadataLocally = contents.includes(templateAttribute);
+      const delegatesToPageTemplateFrame = contents.includes("PageTemplateFrame") && pageTemplateFrame.includes(templateAttribute);
 
       expect(contents, `${renderer} imports template contract`).toContain("uxPageTemplateFor");
-      expect(contents, `${renderer} family attribute`).toContain(templateAttribute);
-      expect(contents, `${renderer} long-page attribute`).toContain("data-ux-page-template-long-page");
-      expect(contents, `${renderer} action-zone attribute`).toContain("data-ux-page-template-action-zone");
-      expect(contents, `${renderer} required-zones attribute`).toContain("data-ux-page-template-required-zones");
-      expect(contents, `${renderer} proof/audit attribute`).toContain("data-ux-page-template-proof-audit");
+      expect(exposesMetadataLocally || delegatesToPageTemplateFrame, `${renderer} family attribute`).toBe(true);
+      expect(contents.includes("data-ux-page-template-long-page") || delegatesToPageTemplateFrame, `${renderer} long-page attribute`).toBe(true);
+      expect(contents.includes("data-ux-page-template-action-zone") || delegatesToPageTemplateFrame, `${renderer} action-zone attribute`).toBe(true);
+      expect(contents.includes("data-ux-page-template-required-zones") || delegatesToPageTemplateFrame, `${renderer} required-zones attribute`).toBe(true);
+      expect(contents.includes("data-ux-page-template-proof-audit") || delegatesToPageTemplateFrame, `${renderer} proof/audit attribute`).toBe(true);
     }
   });
 

@@ -7,13 +7,13 @@ Date: 2026-06-27
 | Field | Value |
 | --- | --- |
 | Ticket | `SPEC-E02-1` |
-| Parent epic | `E02 Page Architecture and Template System` |
+| Parent epic | `E02 Page Template and Long-Page Architecture Implementation` |
 | Source analysis | `docs/v3/proof/e02_page_architecture_analysis.md` |
 | Spec status | `IMPLEMENTED_CURRENT_REPO_TRUTH` |
 | Implementation status | `E02_IMPLEMENTED_AND_VALIDATED` |
 | Approved path | `APPROVE_E02_CANONICAL_TEMPLATE_CONTRACT` |
 
-This specification defines the implemented page-template system for E02. The canonical-template path is current repo truth through `lib/ux-page-template-system.ts`, the shared renderer metadata, and focused E02 tests.
+This specification defines the implemented page-template system for E02. The canonical-template path is current repo truth through `lib/ux-page-template-system.ts`, `components/ui/page-template.tsx`, shared renderer metadata, and focused E02 tests.
 
 ## Target State
 
@@ -212,9 +212,9 @@ Screenshots are not required for this specification task because no UI changed.
 
 | Ticket | Status | Required Scope |
 | --- | --- | --- |
-| `E02-I1` / `IMPL-E02-1` | Complete | Canonical typed template contract exists in `lib/ux-page-template-system.ts`. |
-| `E02-I2` / `IMPL-E02-3` | Complete | Long-page anchors, template zones and sticky action-zone conventions exist on shared renderers. |
-| `E02-I3` / `IMPL-E02-2` | Complete | Template mapping is projected into shared page-family renderers while preserving route scope. |
+| `E02-I1` / `IMPL-E02-1` | Complete | Canonical typed template contract exists in `lib/ux-page-template-system.ts`; reusable `PageTemplateFrame`, `PageTemplateSectionNav` and `PageTemplateSummaryRail` primitives exist in `components/ui/page-template.tsx`. |
+| `E02-I2` / `IMPL-E02-3` | Complete | Long-page anchors, template zones, section navigation, summary rail and sticky action-zone conventions exist on shared renderers. |
+| `E02-I3` / `IMPL-E02-2` | Complete | Template mapping is projected into shared page-family renderers while preserving route scope, with `WorksurfaceShell` using the shared page-template primitives. |
 | `E02-Q1` / `QA-E02-1` | Complete | Template adoption, representative runtime behavior and no-overclaim/safety boundaries are validated. |
 
 ## Approval / Cleanup Note

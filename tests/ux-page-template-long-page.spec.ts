@@ -18,10 +18,21 @@ test.describe("E02 long-page and sticky action-zone patterns", () => {
   });
 
   test("shared renderers expose long-page anchors and template zones", () => {
+    const pageTemplate = source("components/ui/page-template.tsx");
     const worksurface = source("components/worksurface-shell.tsx");
     const hub = source("components/ux-hub-page.tsx");
     const detail = source("components/ux-detail-standard-panel.tsx");
     const skeleton = source("components/route-skeleton-page.tsx");
+
+    expect(pageTemplate).toContain("PageTemplateFrame");
+    expect(pageTemplate).toContain("PageTemplateSectionNav");
+    expect(pageTemplate).toContain("PageTemplateSummaryRail");
+    expect(pageTemplate).toContain("data-ux-long-page-section-nav");
+    expect(pageTemplate).toContain("data-ux-page-template-summary-rail");
+    expect(source("components/ui/index.ts")).toContain('export * from "@/components/ui/page-template"');
+    expect(worksurface).toContain("PageTemplateFrame");
+    expect(worksurface).toContain("PageTemplateSectionNav");
+    expect(worksurface).toContain("PageTemplateSummaryRail");
 
     for (const contents of [worksurface, hub, detail, skeleton]) {
       expect(contents).toContain("data-ux-long-page-anchor");
