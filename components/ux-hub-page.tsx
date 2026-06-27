@@ -8,6 +8,7 @@ import { cn } from "@/lib/cn";
 import { uxHubDefinitionForPageId, type UxHubTone } from "@/lib/ux-hub";
 import { uxDensityForPageId } from "@/lib/ux-density";
 import { uxPageTemplateForPageId } from "@/lib/ux-page-template-system";
+import { uxProofReviewerClientSuppressionForPageId } from "@/lib/ux-proof-reviewer-mode";
 
 type UxHubPageProps = {
   pageId: string;
@@ -36,6 +37,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
 
   const density = uxDensityForPageId(pageId);
   const template = uxPageTemplateForPageId(pageId);
+  const clientSuppression = uxProofReviewerClientSuppressionForPageId(pageId);
 
   if (density.tier === "D1") {
     const isMobileClientHub = pageId === "020";
@@ -49,6 +51,10 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
         data-ux-page-template-long-page={template.longPageBehavior}
         data-ux-page-template-proof-audit={template.proofAuditPlacement}
         data-ux-page-template-required-zones={template.requiredZones.join(" ")}
+        data-ux-client-mode={clientSuppression.applies ? clientSuppression.mode : "not_client_mode"}
+        data-ux-client-mode-allowed={clientSuppression.allowedContent.join(" ")}
+        data-ux-client-mode-missing-suppression={clientSuppression.missingRequiredSuppressions.join(" ")}
+        data-ux-client-mode-suppressed={clientSuppression.suppressedContent.join(" ")}
         data-ux-hub-task="phase-3"
         data-ux-d1-calm-executive="true"
         data-ux-density-pattern={density.pattern}
@@ -171,6 +177,10 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
       data-ux-page-template-long-page={template.longPageBehavior}
       data-ux-page-template-proof-audit={template.proofAuditPlacement}
       data-ux-page-template-required-zones={template.requiredZones.join(" ")}
+      data-ux-client-mode={clientSuppression.applies ? clientSuppression.mode : "not_client_mode"}
+      data-ux-client-mode-allowed={clientSuppression.allowedContent.join(" ")}
+      data-ux-client-mode-missing-suppression={clientSuppression.missingRequiredSuppressions.join(" ")}
+      data-ux-client-mode-suppressed={clientSuppression.suppressedContent.join(" ")}
       data-ux-hub-task="phase-3"
       data-ux-density-pattern={density.pattern}
       data-ux-density-tier={density.tier}

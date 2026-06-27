@@ -83,5 +83,12 @@ test.describe("AlphaVest product guidance shell", () => {
     await expect(page.getByTestId("product-guidance")).toHaveCount(0);
     await expect(page.getByTestId("ux-proof-reviewer-secondary-surface")).toHaveCount(0);
     await expect(page.getByText(/route id|ux proof tag|capture warning|debug metadata|internal rationale/i)).toHaveCount(0);
+
+    const hub = page.getByTestId("ux-hub-page").first();
+    await expect(hub).toHaveAttribute("data-ux-client-mode", "client_mode");
+    await expect(hub).toHaveAttribute("data-ux-client-mode-missing-suppression", "");
+    await expect(hub).toHaveAttribute("data-ux-client-mode-suppressed", /route_id/);
+    await expect(hub).toHaveAttribute("data-ux-client-mode-suppressed", /ux_proof_tag/);
+    await expect(hub).toHaveAttribute("data-ux-client-mode-suppressed", /debug_metadata/);
   });
 });

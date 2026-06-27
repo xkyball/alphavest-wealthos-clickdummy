@@ -62,6 +62,16 @@ export type UxProofReviewerRouteRecord = {
   workspace: UxWorkspaceKey;
 };
 
+export type UxProofReviewerClientSuppression = {
+  allowedContent: UxProofReviewerContentClass[];
+  applies: boolean;
+  audience: UxOperatingAudience;
+  missingRequiredSuppressions: UxProofReviewerContentClass[];
+  mode: "client_mode";
+  pageId: string;
+  suppressedContent: UxProofReviewerContentClass[];
+};
+
 const allContentClasses = [
   "task_context",
   "safety_blocker",
@@ -178,6 +188,30 @@ const clientModeRequiredSuppressions = [
   "internal_rationale",
   "compliance_note",
 ] as const satisfies readonly UxProofReviewerContentClass[];
+
+export const uxProofReviewerClientModeRequiredSuppressions = clientModeRequiredSuppressions;
+
+const clientModeRequiredSuppressionSet = new Set<UxProofReviewerContentClass>(clientModeRequiredSuppressions);
+
+export function uxProofReviewerClientSuppressionForRecord(record: UxProofReviewerRouteRecord): UxProofReviewerClientSuppression {
+  const allowedContent = record.defaultVisibleContent.filter((contentClass) => uxProofReviewerVisibilityForContentClass(contentClass).clientModeAllowed);
+  const suppressedContent = record.suppressedInClientMode.filter((contentClass) => clientModeRequiredSuppressionSet.has(contentClass));
+  const missingRequiredSuppressions = clientModeRequiredSuppressions.filter((contentClass) => !suppressedContent.includes(contentClass));
+
+  return {
+    allowedContent,
+    applies: record.audience === "client_safe",
+    audience: record.audience,
+    missingRequiredSuppressions,
+    mode: "client_mode",
+    pageId: record.pageId,
+    suppressedContent,
+  };
+}
+
+export function uxProofReviewerClientSuppressionForPageId(pageId: string): UxProofReviewerClientSuppression {
+  return uxProofReviewerClientSuppressionForRecord(uxProofReviewerRecordForPageId(pageId));
+}
 
 export const uxProofReviewerIntegrity = {
   clientRecordsMissingRequiredSuppressions: uxProofReviewerRouteRecords

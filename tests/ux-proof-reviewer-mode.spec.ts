@@ -7,6 +7,8 @@ import { uxOperatingModelForRoute } from "../lib/ux-operating-model";
 import { uxPageTemplateForRoute } from "../lib/ux-page-template-system";
 import {
   uxProofReviewerContentClasses,
+  uxProofReviewerClientModeRequiredSuppressions,
+  uxProofReviewerClientSuppressionForPageId,
   uxProofReviewerIntegrity,
   uxProofReviewerRecordForRoute,
   uxProofReviewerRouteRecords,
@@ -86,6 +88,47 @@ test.describe("E03 canonical proof/reviewer mode", () => {
         "compliance_note",
       ]));
     }
+  });
+
+  test("projects client-mode suppression hooks for client-safe pages", () => {
+    const clientHomeSuppression = uxProofReviewerClientSuppressionForPageId("019");
+    const workbenchSuppression = uxProofReviewerClientSuppressionForPageId("034");
+
+    expect(uxProofReviewerClientModeRequiredSuppressions).toEqual([
+      "route_context",
+      "route_id",
+      "ux_proof_tag",
+      "capture_warning",
+      "debug_metadata",
+      "audit_history_summary",
+      "internal_rationale",
+      "compliance_note",
+    ]);
+    expect(clientHomeSuppression).toMatchObject({
+      applies: true,
+      audience: "client_safe",
+      missingRequiredSuppressions: [],
+      mode: "client_mode",
+      pageId: "019",
+    });
+    expect(clientHomeSuppression.allowedContent).toEqual(expect.arrayContaining([
+      "task_context",
+      "safety_blocker",
+      "recovery_guidance",
+      "client_safe_signal",
+    ]));
+    expect(clientHomeSuppression.suppressedContent).toEqual(expect.arrayContaining([
+      "route_context",
+      "route_id",
+      "ux_proof_tag",
+      "capture_warning",
+      "debug_metadata",
+      "audit_history_summary",
+      "internal_rationale",
+      "compliance_note",
+    ]));
+    expect(workbenchSuppression.applies).toBe(false);
+    expect(workbenchSuppression.mode).toBe("client_mode");
   });
 
   test("renders reviewer metadata in a secondary surface without product controls", () => {
