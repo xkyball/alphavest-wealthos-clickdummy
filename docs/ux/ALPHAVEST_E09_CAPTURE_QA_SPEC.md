@@ -77,6 +77,18 @@ Long-screen risk is reported from available dimensions:
 
 The default long-screen threshold is intentionally strict enough to catch review pain, but report-only by default to avoid breaking legacy captures.
 
+## Approved Evidence Policy
+
+Legacy capture bundles are historical evidence only. They must not be cleaned up, rewritten or metadata-patched merely to hide E09 warnings.
+
+New release-candidate capture folders must be treated differently:
+
+- Primary visual-review proof must come from an E09-compliant capture run.
+- Release-candidate capture QA must run with `CAPTURE_QA_FAIL_ON_WARNINGS=1`.
+- Use `pnpm visual:capture-qa:release` for the hard gate.
+- If the hard gate fails, either fix the capture/source truth or explicitly document a product-owner exception. Do not downgrade the gate by default.
+- Old bundles may remain useful for comparison, but they cannot override a newer E09-compliant capture report.
+
 ## UX Sign-Off Rules
 
 The generated sign-off checklist must cover E01-E08:

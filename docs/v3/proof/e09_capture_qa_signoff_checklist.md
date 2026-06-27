@@ -1,6 +1,6 @@
 # E09 Capture QA Sign-Off Checklist
 
-Generated: 2026-06-27T15:25:37.124Z
+Generated: 2026-06-27T15:29:16.522Z
 Status: ready-for-human-signoff
 
 This checklist is a repeatable human sign-off companion for capture QA. It does not replace product/design approval and it does not authorize new scope.
@@ -19,5 +19,7 @@ This checklist is a repeatable human sign-off companion for capture QA. It does 
 ## Capture QA Gate
 
 - Run `pnpm visual:capture-qa` or `tsx scripts/capture-qa-contract.ts` against the relevant artifact root before release-style visual review.
+- Run `pnpm visual:capture-qa:release` for new release-candidate capture folders; it sets `CAPTURE_QA_FAIL_ON_WARNINGS=1` and treats warnings as blockers.
+- Treat legacy capture bundles as historical evidence only. Do not metadata-patch them merely to hide E09 warnings.
 - Treat duplicate-state clusters and long-screen risks as review blockers until a human explicitly accepts them or opens cleanup tickets.
 - Keep proof/reviewer metadata in reports and reviewer surfaces, not default operational UI.

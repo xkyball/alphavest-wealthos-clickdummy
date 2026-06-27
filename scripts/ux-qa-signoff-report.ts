@@ -131,6 +131,8 @@ function reportMarkdown(report: SignoffReport) {
     "## Capture QA Gate",
     "",
     "- Run `pnpm visual:capture-qa` or `tsx scripts/capture-qa-contract.ts` against the relevant artifact root before release-style visual review.",
+    "- Run `pnpm visual:capture-qa:release` for new release-candidate capture folders; it sets `CAPTURE_QA_FAIL_ON_WARNINGS=1` and treats warnings as blockers.",
+    "- Treat legacy capture bundles as historical evidence only. Do not metadata-patch them merely to hide E09 warnings.",
     "- Treat duplicate-state clusters and long-screen risks as review blockers until a human explicitly accepts them or opens cleanup tickets.",
     "- Keep proof/reviewer metadata in reports and reviewer surfaces, not default operational UI.",
   ].join("\n");
