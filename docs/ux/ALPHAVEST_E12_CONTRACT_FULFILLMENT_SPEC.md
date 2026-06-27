@@ -532,3 +532,36 @@ Meaning:
 ## No-UI Confirmation
 
 E12-S2 is a specification artifact only. No visible UI changed, no screenshot was warranted, and no screen/image/state-screen asset was generated.
+
+---
+
+# E12-D1 Ledger Format And Markdown Policy Approval
+
+Ticket: E12-D1 - Ledger Format and Markdown Policy Approval
+Status: `APPROVED`
+Approved token: `APPROVE_E12_HYBRID_LEDGER_WARN_EXISTING_FAIL_NEW_GENERATE_MARKDOWN_AFTER_Q1`
+Decision date: 2026-06-27
+
+## Approved Policy
+
+| Decision Area | Approved Policy |
+| --- | --- |
+| Canonical ledger source | `lib/ux-contract-ledger.ts` is the canonical machine-readable E12 meta-contract. |
+| Generated outputs | JSON/report outputs are generated or script-produced review artifacts, not hand-maintained truth. |
+| Markdown policy during I1/I2 | E10/E11 markdown registers remain validate-only review surfaces while the ledger and register mappings stabilize. |
+| Markdown policy after Q1 | Move E10/E11 markdown registers toward generated/read-only from the ledger after Q1 proves the first gate report is clean or explicitly excepted. |
+| Existing registered debt | Existing registered exceptions warn for one burn-down pass and must carry `expiresOrFollowUp`. |
+| New unregistered debt | New unregistered debt fails immediately. |
+| `phase:check` integration | Add `test:contract-fulfillment` first; hard-wire it into `phase:check` after Q1 unless later evidence is clean or explicitly excepted. |
+
+## Implementation Consequences
+
+- E12-I1 may create `lib/ux-contract-ledger.ts`.
+- E12-I1 may add typed schema, initial entries, helper validation functions and focused ledger tests.
+- E12-I2 may map E10/E11 register rows into ledger entries and update source gates to consume ledger exports where practical.
+- E12-I3 may build the global gate with warning behavior for existing registered debt and hard failure for new unregistered debt.
+- E12-I4 may add `test:contract-fulfillment` as a package script but must not hard-wire `phase:check` before the approved Q1 condition.
+
+## No-UI Confirmation
+
+E12-D1 is a decision record only. No visible UI changed, no screenshot was warranted, and no screen/image/state-screen asset was generated.
