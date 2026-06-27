@@ -565,3 +565,23 @@ Decision date: 2026-06-27
 ## No-UI Confirmation
 
 E12-D1 is a decision record only. No visible UI changed, no screenshot was warranted, and no screen/image/state-screen asset was generated.
+
+---
+
+# E12-I4 Release Script Integration
+
+Ticket: E12-I4 - Integrate Contract Gate into phase:check / CI Release Flow
+Status: `IMPLEMENTED_SCRIPT_ONLY_PHASE_CHECK_DEFERRED_TO_Q1`
+
+## Implemented Release Boundary
+
+| Area | Result |
+| --- | --- |
+| Package script | `test:contract-fulfillment` runs `tsx scripts/contract-fulfillment-gate.ts`. |
+| Gate report | Running the script updates `docs/v3/proof/e12_contract_fulfillment_report.md` and ignored JSON under `reports/contract-fulfillment/latest.json`. |
+| `phase:check` | Unchanged by design. D1 approved hard-wiring only after Q1 unless explicitly approved earlier by clean/excepted evidence. |
+| Release definition | Minimum release bundle now includes `pnpm guard:source`, `pnpm test:route-smoke`, `pnpm test:contract-fulfillment`, and conditional `pnpm visual:capture-qa:release` when new release captures are produced. |
+
+## No-UI Confirmation
+
+E12-I4 is package-script/release-definition work only. No visible UI changed, no screenshot was warranted, and no screen/image/state-screen asset was generated.

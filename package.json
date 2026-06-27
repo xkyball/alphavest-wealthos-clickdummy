@@ -25,6 +25,7 @@
     "smoke:phase13": "tsx scripts/smoke-phase-13.ts",
     "guard:source": "tsx scripts/source-target-guard.ts",
     "gate:capability-report": "tsx scripts/capability-report-drift-gate.ts",
+    "test:contract-fulfillment": "tsx scripts/contract-fulfillment-gate.ts",
     "test:av27:claims": "tsx scripts/av27-claim-gate.ts",
     "test:av27:no-server": "PLAYWRIGHT_SKIP_WEB_SERVER=1 playwright test tests/av27-phase7-certification.spec.ts tests/av27-safety-foundation.spec.ts tests/av27-phase6-payload-sweep.spec.ts tests/workflow-gate.spec.ts tests/client-visibility-projection.spec.ts tests/file-export-realism.spec.ts --workers=1",
     "test:av27:server": "playwright test tests/av27-client-context-closure.spec.ts tests/recommendation-review-workflow-api.spec.ts --workers=1",
