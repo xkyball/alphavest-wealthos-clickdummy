@@ -9,9 +9,11 @@ import {
 } from "@/lib/capture-screen-model-context";
 import { demoAuthSessionCookieName } from "@/lib/demo/demo-auth-session";
 import { routeToSmokePath, screenRoutes, type ScreenRoute } from "@/lib/route-registry";
+import { uxCaptureVariantForFileKind, type UxCaptureVariant } from "@/lib/ux-lifecycle-state-contract";
 import { visualStateForRoute } from "@/lib/visual-contract";
 
 type CaptureMode = "drawer" | "modal";
+type CaptureFileKind = CaptureMode | "screen";
 
 type CaptureStatus = "captured" | "failed-open" | "failed-screenshot" | "missing-trigger";
 
@@ -20,6 +22,7 @@ type RuntimeReflectionStrategy = "mixed" | "react-devtools-hook" | "react-fiber-
 type RuntimeConfidence = "high" | "medium" | "low" | "unavailable";
 
 type CaptureItem = {
+  captureVariant: UxCaptureVariant;
   componentRuntimeMarkdownPath?: string;
   componentRuntimePath?: string;
   componentRuntimeError?: string;
@@ -52,6 +55,7 @@ type OverlayStep = {
 };
 
 type RuntimeOverlayMeta = {
+  captureVariant: UxCaptureVariant;
   mode: CaptureMode | "none";
   selector: string | null;
   status: CaptureStatus;
@@ -251,8 +255,9 @@ function stateSlug(state: string) {
   return routeSlug(state.replace(/-(modal|drawer)$/i, ""));
 }
 
-function fileNameFor(route: ScreenRoute, kind: CaptureMode | "screen", state: string) {
-  return `${route.pageId}-route-${routeSlug(routeToSmokePath(route.route))}-${kind}-${stateSlug(state)}.png`;
+function fileNameFor(route: ScreenRoute, kind: CaptureFileKind, state: string) {
+  const captureVariant = uxCaptureVariantForFileKind(kind, state);
+  return `${route.pageId}-route-${routeSlug(routeToSmokePath(route.route))}-${captureVariant.lifecycleKind}-${stateSlug(state)}.png`;
 }
 
 function captureUrlForRoute(route: ScreenRoute) {
@@ -2169,8 +2174,10 @@ async function captureRoute(page: Page, route: ScreenRoute) {
   const modelContext = captureModelContextForRoute(route);
   const visualState = visualStateForRoute(route);
   const url = captureUrlForRoute(route);
+  const baseCaptureVariant = uxCaptureVariantForFileKind("screen", "base");
   const baseFile = fileNameFor(route, "screen", "base");
   const baseItem: CaptureItem = {
+    captureVariant: baseCaptureVariant,
     interactionProofTraceStatus: "not-tested",
     modelContext,
     pageId: route.pageId,
@@ -2187,6 +2194,7 @@ async function captureRoute(page: Page, route: ScreenRoute) {
     baseItem.status = "failed-open";
   } else {
     await captureScreenshot(page, baseItem, baseFile, {
+      captureVariant: baseItem.captureVariant,
       mode: "none",
       selector: null,
       status: "captured",
@@ -2196,8 +2204,10 @@ async function captureRoute(page: Page, route: ScreenRoute) {
   items.push(baseItem);
 
   for (const overlay of overlayPlans[route.route] ?? []) {
+    const captureVariant = uxCaptureVariantForFileKind(overlay.mode, overlay.label);
     const overlayFile = fileNameFor(route, overlay.mode, overlay.label);
     const overlayItem: CaptureItem = {
+      captureVariant,
       interactionProofTraceStatus: screensOnly ? "not-tested" : undefined,
       modelContext,
       pageId: route.pageId,
@@ -2222,6 +2232,7 @@ async function captureRoute(page: Page, route: ScreenRoute) {
     } else {
       await page.waitForTimeout(300);
       await captureScreenshot(page, overlayItem, overlayFile, {
+        captureVariant: overlayItem.captureVariant,
         mode: overlay.mode,
         selector: overlaySelectorFor(overlay.mode),
         status: "captured",
@@ -2275,11 +2286,11 @@ function writeIndex(items: CaptureItem[]) {
     `Sidecars: ${screensOnly ? "disabled" : "enabled"}`,
     `Audit baseline: ${captureScreenModelAuditBaseline.registeredRoutes} routes, ${captureScreenModelAuditBaseline.schemaModels} models, ${captureScreenModelAuditBaseline.schemaEnums} enums`,
     "",
-    "| Page | Route | State | Status | UX Mode | Audience | Proof Posture | Productive | Capability | No-overclaim Rule | Scope Warnings | Models | Screenshot | Rendered DOM | Rendered CSS | Runtime Components | Runtime Summary | Runtime Confidence | DOM Rect Trace | React Source Trace | Interaction Proof Trace |",
-    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    "| Page | Route | State | Capture Variant | Status | UX Mode | Audience | Proof Posture | Productive | Capability | No-overclaim Rule | Scope Warnings | Models | Screenshot | Rendered DOM | Rendered CSS | Runtime Components | Runtime Summary | Runtime Confidence | DOM Rect Trace | React Source Trace | Interaction Proof Trace |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ...items.map(
       (item) =>
-        `| ${item.pageId} | ${item.route} | ${item.state} | ${item.status} | ${item.modelContext.uxOperatingModel.mode} | ${item.modelContext.uxOperatingModel.audience} | ${item.modelContext.uxOperatingModel.proofPosture} | ${item.modelContext.uxOperatingModel.productiveUxEligible ? "yes" : "no"} | ${item.modelContext.capability.status} | ${markdownCell(item.modelContext.uxOperatingModel.noOverclaimRule)} | ${markdownCell(item.modelContext.warnings.join("<br>"))} | ${item.modelContext.models.join(", ")} | ${item.path} | ${item.domPath ?? ""} | ${item.cssPath ?? ""} | ${item.componentRuntimePath ?? ""} | ${item.componentRuntimeMarkdownPath ?? ""} | ${item.componentRuntimeConfidence ?? ""} | ${item.domRectTracePath ?? ""} | ${item.reactSourceTracePath ?? ""} | ${item.interactionProofTracePath ?? ""} |`,
+        `| ${item.pageId} | ${item.route} | ${item.state} | ${item.captureVariant.lifecycleKind} | ${item.status} | ${item.modelContext.uxOperatingModel.mode} | ${item.modelContext.uxOperatingModel.audience} | ${item.modelContext.uxOperatingModel.proofPosture} | ${item.modelContext.uxOperatingModel.productiveUxEligible ? "yes" : "no"} | ${item.modelContext.capability.status} | ${markdownCell(item.modelContext.uxOperatingModel.noOverclaimRule)} | ${markdownCell(item.modelContext.warnings.join("<br>"))} | ${item.modelContext.models.join(", ")} | ${item.path} | ${item.domPath ?? ""} | ${item.cssPath ?? ""} | ${item.componentRuntimePath ?? ""} | ${item.componentRuntimeMarkdownPath ?? ""} | ${item.componentRuntimeConfidence ?? ""} | ${item.domRectTracePath ?? ""} | ${item.reactSourceTracePath ?? ""} | ${item.interactionProofTracePath ?? ""} |`,
     ),
   ];
   writeFileSync(path.join(outputDir, "index.md"), `${lines.join("\n")}\n`);

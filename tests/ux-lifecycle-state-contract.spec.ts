@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 
 import {
   uxComponentStates,
+  uxCaptureVariantForFileKind,
   uxLifecycleAttributesForKind,
   uxLifecycleCloseForOwner,
   uxLifecycleContractForKind,
@@ -138,5 +139,28 @@ test.describe("E04 canonical lifecycle and overlay contract", () => {
     expect(statePanelSource).toContain("uxStateAttributesForComponentState");
     expect(statePanelSource).toContain("type UxComponentState");
     expect(statePanelSource).toContain("{...stateAttributes}");
+  });
+
+  test("classifies capture variants for base, modal, drawer and confirmation screenshots", () => {
+    expect(uxCaptureVariantForFileKind("screen", "base")).toMatchObject({
+      fileKind: "screen",
+      isOverlay: false,
+      lifecycleKind: "base",
+    });
+    expect(uxCaptureVariantForFileKind("modal", "export-approval-modal")).toMatchObject({
+      fileKind: "modal",
+      isOverlay: true,
+      lifecycleKind: "modal",
+    });
+    expect(uxCaptureVariantForFileKind("drawer", "role-drawer")).toMatchObject({
+      fileKind: "drawer",
+      isOverlay: true,
+      lifecycleKind: "drawer",
+    });
+    expect(uxCaptureVariantForFileKind("modal", "role-confirm-modal")).toMatchObject({
+      fileKind: "modal",
+      isOverlay: true,
+      lifecycleKind: "confirmation",
+    });
   });
 });

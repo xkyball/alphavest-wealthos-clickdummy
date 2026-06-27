@@ -43,6 +43,17 @@ export type UxLifecycleContract = {
 
 export type UxLifecycleRuntimeAttributes = Record<`data-${string}`, string>;
 
+export type UxCaptureFileKind = "screen" | "modal" | "drawer";
+
+export type UxCaptureVariantKind = "base" | "modal" | "drawer" | "confirmation";
+
+export type UxCaptureVariant = {
+  fileKind: UxCaptureFileKind;
+  isOverlay: boolean;
+  lifecycleKind: UxCaptureVariantKind;
+  stateLabel: string;
+};
+
 export type UxStateFamily =
   | "loading"
   | "empty"
@@ -369,5 +380,22 @@ export function uxStateAttributesForComponentState(
     "data-ux-state-lifecycle-kind": lifecycleKind,
     "data-ux-state-no-overclaim": contract.noOverclaimRule,
     "data-ux-state-severity": contract.severity,
+  };
+}
+
+export function uxCaptureVariantForFileKind(fileKind: UxCaptureFileKind, stateLabel: string): UxCaptureVariant {
+  const normalizedState = stateLabel.toLowerCase();
+  const lifecycleKind: UxCaptureVariantKind =
+    fileKind === "screen"
+      ? "base"
+      : normalizedState.includes("confirm") || normalizedState.includes("confirmation")
+        ? "confirmation"
+        : fileKind;
+
+  return {
+    fileKind,
+    isOverlay: fileKind !== "screen",
+    lifecycleKind,
+    stateLabel,
   };
 }

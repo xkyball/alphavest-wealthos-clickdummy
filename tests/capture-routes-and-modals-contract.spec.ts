@@ -51,9 +51,20 @@ test.describe("routes and modals capture contract", () => {
     expect(source).toContain('const pathname = visualState === "base" ? smokePath : `${smokePath}?state=${visualState}`;');
     expect(source).toContain("const url = captureUrlForRoute(route);");
     expect(source).toContain('const keepParentOverlayContext = overlay.label === "role-confirm-modal" || visualState !== "base";');
-    expect(source).toContain('${route.pageId}-route-${routeSlug(routeToSmokePath(route.route))}-${kind}-${stateSlug(state)}.png');
+    expect(source).toContain("uxCaptureVariantForFileKind");
+    expect(source).toContain('${route.pageId}-route-${routeSlug(routeToSmokePath(route.route))}-${captureVariant.lifecycleKind}-${stateSlug(state)}.png');
     expect(source).toContain('const baseFile = fileNameFor(route, "screen", "base");');
     expect(source).toContain("const overlayFile = fileNameFor(route, overlay.mode, overlay.label);");
     expect(source).toContain('state.replace(/-(modal|drawer)$/i, "")');
+  });
+
+  test("projects canonical capture variants into runtime metadata and index output", async () => {
+    const source = await readFile("scripts/capture-routes-and-modals.ts", "utf8");
+
+    expect(source).toContain("captureVariant: UxCaptureVariant");
+    expect(source).toContain("captureVariant: baseItem.captureVariant");
+    expect(source).toContain("captureVariant: overlayItem.captureVariant");
+    expect(source).toContain("captureVariant.lifecycleKind");
+    expect(source).toContain("| State | Capture Variant | Status |");
   });
 });
