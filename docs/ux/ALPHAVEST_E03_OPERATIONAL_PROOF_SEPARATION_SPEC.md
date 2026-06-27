@@ -7,13 +7,13 @@ Date: 2026-06-27
 | Field | Value |
 | --- | --- |
 | Ticket | `SPEC-E03-1` |
-| Parent epic | `E03 Operational UI vs Proof / Debug / Reviewer Separation` |
+| Parent epic | `E03 Operational UI vs Proof / Reviewer Mode Separation` |
 | Source analysis | `docs/v3/proof/e03_operational_proof_separation_analysis.md` |
 | Spec status | `IMPLEMENTED_CURRENT_REPO_TRUTH` |
 | Implementation status | `E03_IMPLEMENTED_AND_VALIDATED` |
 | Existing implementation path | `CANONICAL_REVIEW_MODE_CONTRACT` |
 
-This specification defines the implemented proof/reviewer separation system for E03. The canonical review-mode path is current repo truth through `lib/ux-proof-reviewer-mode.ts`, `components/ux-proof-reviewer-secondary-surface.tsx`, operational-default hooks, client-mode suppression metadata and focused E03 tests.
+This specification defines the implemented proof/reviewer separation system for E03. The canonical review-mode path is current repo truth through `lib/ux-proof-reviewer-mode.ts`, a reusable `ProofReviewerPanel` secondary surface, operational-default hooks, client-mode suppression metadata and focused E03 tests.
 
 ## Target State
 
@@ -88,6 +88,7 @@ Required classification:
 ## Reviewer Secondary-Surface Rules
 
 - Reviewer/proof metadata must have a canonical secondary surface, panel, drawer or mode container.
+- The reusable panel must have explicit proof/reviewer mode input, a title, metadata slots and close/collapse affordances.
 - The secondary surface may include route IDs, UX proof tags, E01 operating mode, E02 template family, proof posture, capture capability, warnings, model families, source trace links and audit/report pointers.
 - The secondary surface must not expose product mutation controls.
 - The secondary surface must not be required to complete normal operational workflows.
@@ -112,7 +113,7 @@ Required classification:
 Implemented scope:
 
 - Add `lib/ux-proof-reviewer-mode.ts` or use the approved fallback.
-- Add a reusable proof/reviewer secondary-surface component or metadata adapter.
+- Add a reusable `ProofReviewerPanel` / proof-reviewer secondary-surface component with explicit mode, metadata slots and close/collapse behaviour.
 - Add data attributes or hooks that classify content visibility mode.
 - Move proof/debug metadata out of default operational surfaces where the spec classifies it as reviewer secondary or capture-only.
 - Add client-mode suppression hooks for proof/reviewer/internal metadata.
@@ -171,8 +172,8 @@ Screenshots are required only if implementation changes visible UI. Contract, me
 
 | Ticket | Status | Required Scope |
 | --- | --- | --- |
-| `E03-I1` / `IMPL-E03-1` | Complete | Canonical proof/reviewer visibility contract and reusable secondary-surface pattern exist. |
-| `E03-I2` / `IMPL-E03-2` | Complete | Proof/debug metadata is removed from default operational views by projecting through the contract. |
+| `E03-I1` / `IMPL-E03-1` | Complete | Canonical proof/reviewer visibility contract and reusable `ProofReviewerPanel` secondary-surface pattern exist. |
+| `E03-I2` / `IMPL-E03-2` | Complete | Proof/debug metadata is removed from default operational views by projecting through the contract and operational surfaces no longer import legacy ProductGuidance naming. |
 | `E03-I3` / `IMPL-E03-3` | Complete | Client-mode suppression hooks for internal proof/reviewer/debug content exist on client hub surfaces. |
 | `E03-Q1` / `QA-E03-1` | Complete | Operational, reviewer and client modes are validated against this specification. |
 

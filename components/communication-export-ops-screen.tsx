@@ -43,7 +43,7 @@ import {
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { GlobalSearchBox } from "@/components/global-search-box";
 import { ProcessSidebar } from "@/components/process-navigation";
-import { ProductGuidanceContent } from "@/components/product-guidance-panel";
+import { OperationalDefaultSurface } from "@/components/operational-default-surface";
 import { RouteContextChip } from "@/components/route-context-chip";
 import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
@@ -836,7 +836,7 @@ function Phase13Shell({ children, route }: { children: React.ReactNode; route: S
           <div className="min-w-0 flex-1">
             <Phase13TopBar />
             <main className="px-4 py-6 md:px-6 lg:px-8">
-              <ProductGuidanceContent>{children}</ProductGuidanceContent>
+              <OperationalDefaultSurface>{children}</OperationalDefaultSurface>
             </main>
           </div>
         </div>

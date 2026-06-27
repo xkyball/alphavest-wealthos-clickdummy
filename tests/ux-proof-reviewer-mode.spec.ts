@@ -133,17 +133,50 @@ test.describe("E03 canonical proof/reviewer mode", () => {
 
   test("renders reviewer metadata in a secondary surface without product controls", () => {
     const source = readFileSync(join(process.cwd(), "components/ux-proof-reviewer-secondary-surface.tsx"), "utf8");
+    const panelSource = readFileSync(join(process.cwd(), "components/ui/proof-reviewer-panel.tsx"), "utf8");
     const reviewHubRecord = uxProofReviewerRouteRecords.find((record) => record.pageId === "039");
 
     expect(reviewHubRecord?.pageId).toBe("039");
     expect(reviewHubRecord?.reviewerSecondaryContent).toContain("route_id");
     expect(source).toContain('data-testid="ux-proof-reviewer-secondary-surface"');
-    expect(source).toContain('data-ux-proof-mode="reviewer_secondary"');
-    expect(source).toContain('data-ux-proof-default-visible="false"');
-    expect(source).toContain("data-ux-proof-route-id");
+    expect(source).toContain("ProofReviewerPanel");
+    expect(source).toContain('mode="reviewer_secondary"');
+    expect(source).toContain("enabled = false");
+    expect(panelSource).toContain('data-testid="proof-reviewer-panel"');
+    expect(panelSource).toContain("data-ux-proof-panel-toggle=\"collapse\"");
+    expect(panelSource).toContain("data-ux-proof-panel-toggle=\"close\"");
+    expect(panelSource).toContain('data-ux-proof-forbidden-in-client-mode="true"');
+    expect(panelSource).toContain('data-ux-proof-mode={mode}');
+    expect(panelSource).toContain('data-ux-proof-default-visible="false"');
+    expect(panelSource).toContain("data-ux-proof-route-id");
     expect(source).toContain("Reviewer traceability");
     expect(source).toContain("traceability only");
-    expect(source).not.toContain("<button");
     expect(source).not.toContain("href=");
+    expect(panelSource).not.toContain("href=");
+  });
+
+  test("projects client-mode proof suppression at the shared page-template frame boundary", () => {
+    const pageTemplateSource = readFileSync(join(process.cwd(), "components/ui/page-template.tsx"), "utf8");
+
+    expect(pageTemplateSource).toContain("uxProofReviewerClientSuppressionForPageId");
+    expect(pageTemplateSource).toContain('data-ux-client-mode={clientSuppression.applies ? "client_mode" : undefined}');
+    expect(pageTemplateSource).toContain("data-ux-client-mode-suppressed");
+    expect(pageTemplateSource).toContain("data-ux-client-mode-missing-suppression");
+  });
+
+  test("operational shell exposes reviewer mode only through an explicit non-client proof slot", () => {
+    const operationalSurfaceSource = readFileSync(
+      join(process.cwd(), "components/operational-default-surface.tsx"),
+      "utf8",
+    );
+    const slotSource = readFileSync(join(process.cwd(), "components/proof-reviewer-mode-slot.tsx"), "utf8");
+
+    expect(operationalSurfaceSource).toContain("ProofReviewerModeSlot");
+    expect(operationalSurfaceSource).toContain("<Suspense fallback={null}>");
+    expect(slotSource).toContain('searchParams.get("proofMode") !== "reviewer"');
+    expect(slotSource).toContain('record.audience === "client_safe"');
+    expect(slotSource).toContain('data-testid="proof-reviewer-mode-client-suppressed"');
+    expect(slotSource).toContain("<UxProofReviewerSecondarySurface");
+    expect(slotSource).toContain("enabled");
   });
 });

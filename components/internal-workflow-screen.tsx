@@ -40,7 +40,7 @@ import {
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { DemoActorHandoffBar } from "@/components/demo-actor-handoff-bar";
 import { ProcessSidebar } from "@/components/process-navigation";
-import { ProductGuidanceContent } from "@/components/product-guidance-panel";
+import { OperationalDefaultSurface } from "@/components/operational-default-surface";
 import { RouteContextChip } from "@/components/route-context-chip";
 import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
@@ -455,7 +455,7 @@ function InternalShell({ children }: { activePageId: string; children: React.Rea
           <InternalTopBar />
           <DemoActorHandoffBar />
           <main className="px-4 py-6 md:px-6">
-            <ProductGuidanceContent>{children}</ProductGuidanceContent>
+            <OperationalDefaultSurface>{children}</OperationalDefaultSurface>
           </main>
         </div>
       </div>

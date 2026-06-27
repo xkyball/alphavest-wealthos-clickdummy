@@ -31,7 +31,7 @@ import {
 } from "@/components/ui";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { ProcessSidebar } from "@/components/process-navigation";
-import { ProductGuidanceContent } from "@/components/product-guidance-panel";
+import { OperationalDefaultSurface } from "@/components/operational-default-surface";
 import { UxHubPage } from "@/components/ux-hub-page";
 import {
   amlChecks,
@@ -172,7 +172,7 @@ function KycShell({ children }: { activePageId: string; children: React.ReactNod
         <div className="min-w-0">
           <KycTopBar />
           <main className="min-w-0 px-4 py-5 md:px-6 lg:px-8 lg:py-7">
-            <ProductGuidanceContent containerClassName="av-page-wide">{children}</ProductGuidanceContent>
+            <OperationalDefaultSurface containerClassName="av-page-wide">{children}</OperationalDefaultSurface>
           </main>
         </div>
       </div>

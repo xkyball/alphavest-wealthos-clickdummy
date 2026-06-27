@@ -65,6 +65,28 @@ test.describe("AlphaVest product guidance shell", () => {
     await expect(page.getByTestId("page-header-route-context")).toHaveCount(0);
   });
 
+  test("operational family surfaces no longer import legacy product guidance wrappers", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { join } = await import("node:path");
+    const operationalFiles = [
+      "components/app-shell.tsx",
+      "components/client-intake-screen.tsx",
+      "components/communication-export-ops-screen.tsx",
+      "components/decisions-governance-screen.tsx",
+      "components/internal-workflow-screen.tsx",
+      "components/kyc-aml-workflow-screen.tsx",
+      "components/wealth-actions-screen.tsx",
+    ];
+
+    for (const file of operationalFiles) {
+      const source = readFileSync(join(process.cwd(), file), "utf8");
+
+      expect(source, file).toContain("OperationalDefaultSurface");
+      expect(source, file).not.toContain("ProductGuidanceContent");
+      expect(source, file).not.toContain("@/components/product-guidance-panel");
+    }
+  });
+
   test("topbar keeps only operational route context in the default workflow", async ({ page }) => {
     await page.setViewportSize({ width: 1600, height: 1000 });
     await page.goto("/advisory/review-queue");
@@ -90,5 +112,27 @@ test.describe("AlphaVest product guidance shell", () => {
     await expect(hub).toHaveAttribute("data-ux-client-mode-suppressed", /route_id/);
     await expect(hub).toHaveAttribute("data-ux-client-mode-suppressed", /ux_proof_tag/);
     await expect(hub).toHaveAttribute("data-ux-client-mode-suppressed", /debug_metadata/);
+  });
+
+  test("explicit reviewer mode opens secondary proof surface on internal routes only", async ({ page }) => {
+    await page.goto("/advisory?proofMode=reviewer", { waitUntil: "networkidle" });
+
+    const proofPanels = page.getByTestId("proof-reviewer-panel");
+    await expect(proofPanels).toHaveCount(1);
+    const proofPanel = proofPanels.first();
+    await expect(proofPanel).toBeVisible();
+    await expect(proofPanel).toHaveAttribute("data-ux-proof-mode", "reviewer_secondary");
+    await expect(proofPanel).toHaveAttribute("data-ux-proof-forbidden-in-client-mode", "true");
+    await expect(proofPanel).toHaveAttribute("data-ux-proof-panel-collapsed", "false");
+    await expect(proofPanel).toContainText("Reviewer metadata is traceability only");
+
+    await page.goto("/client/home?proofMode=reviewer", { waitUntil: "networkidle" });
+    await expect(page.getByTestId("proof-reviewer-panel")).toHaveCount(0);
+    const suppressionMarkers = page.getByTestId("proof-reviewer-mode-client-suppressed");
+    await expect(suppressionMarkers).toHaveCount(1);
+    await expect(suppressionMarkers.first()).toHaveAttribute(
+      "data-ux-proof-reviewer-requested",
+      "suppressed",
+    );
   });
 });

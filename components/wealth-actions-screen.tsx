@@ -25,7 +25,7 @@ import { ProcessSidebar } from "@/components/process-navigation";
 import { AuditTimeline, Badge, Card, CardContent, CardHeader, CardTitle, MasterDetailSurface, StatePanel, type BadgeTone } from "@/components/ui";
 import { DisabledControlReason, disabledControlReasonId } from "@/components/ui/disabled-control-reason";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
-import { ProductGuidanceContent } from "@/components/product-guidance-panel";
+import { OperationalDefaultSurface } from "@/components/operational-default-surface";
 import { UxComplexityPriorityPanel } from "@/components/ux-complexity-priority-panel";
 import { RouteContextChip } from "@/components/route-context-chip";
 import { UxCtaCluster } from "@/components/ux-cta-cluster";
@@ -216,7 +216,7 @@ function WealthShell({ children }: { activePageId: string; children: React.React
         <div className="min-w-0">
           <WealthTopBar />
           <main className="px-4 py-6 md:px-6">
-            <ProductGuidanceContent>{children}</ProductGuidanceContent>
+            <OperationalDefaultSurface>{children}</OperationalDefaultSurface>
           </main>
         </div>
       </div>

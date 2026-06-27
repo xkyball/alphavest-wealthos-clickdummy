@@ -13,6 +13,7 @@ export * from "@/components/ui/master-detail-surface";
 export * from "@/components/ui/metric-card";
 export * from "@/components/ui/modal";
 export * from "@/components/ui/page-template";
+export * from "@/components/ui/proof-reviewer-panel";
 export * from "@/components/ui/state-panel";
 export * from "@/components/ui/status-chip";
 export * from "@/components/ui/validation-feedback";
