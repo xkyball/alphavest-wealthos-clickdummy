@@ -9,12 +9,20 @@ import { StatusChip, type StatusChipStatus } from "@/components/ui/status-chip";
 import { WizardStepper, type WizardStep } from "@/components/ui/wizard-stepper";
 import { cn } from "@/lib/cn";
 import { matchRouteBySegments } from "@/lib/route-registry";
+import {
+  uxActionAttributesFor,
+  uxActionClassForPriority,
+  uxDefaultUnwiredActionReason,
+  type UxActionMeaning,
+  type UxActionPriority,
+} from "@/lib/ux-action-hierarchy-contract";
 import { uxFlowStepsForPageId, uxRoutePolicyForRoute } from "@/lib/ux-route-policy";
 
 export type PageHeaderAction = {
   disabledReason?: string;
   href?: string;
   label: string;
+  meaning?: UxActionMeaning;
   onClick?: () => void;
 };
 
@@ -32,8 +40,6 @@ type PageHeaderProps = {
   description: string;
 };
 
-const defaultUnwiredActionReason = "This action is held until an authorized lifecycle is wired.";
-
 function routeForPathname(pathname: string) {
   const cleanPath = pathname.split("?")[0]?.split("#")[0] ?? "/";
   const normalized = cleanPath.length > 1 ? cleanPath.replace(/\/+$/, "") : cleanPath;
@@ -45,15 +51,19 @@ function routeForPathname(pathname: string) {
 
 function HeaderAction({ action, primary = false, recovery = false }: { action: PageHeaderAction; primary?: boolean; recovery?: boolean }) {
   const hasLifecycle = Boolean(action.href || action.onClick);
-  const disabledReason = action.disabledReason ?? (!hasLifecycle ? defaultUnwiredActionReason : undefined);
+  const disabledReason = action.disabledReason ?? (!hasLifecycle ? uxDefaultUnwiredActionReason : undefined);
   const disabledReasonId = disabledReason ? disabledControlReasonId(`page-header-${action.label}`) : undefined;
+  const priority: Extract<UxActionPriority, "primary" | "recovery" | "secondary"> = primary ? "primary" : recovery ? "recovery" : "secondary";
   const className = cn(
-    "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold transition",
-    primary
-      ? "bg-alphavest-gold text-alphavest-navy hover:bg-alphavest-gold-soft"
-      : "border border-alphavest-border bg-alphavest-charcoal/70 text-alphavest-ivory hover:border-alphavest-gold/60 hover:text-alphavest-gold-soft",
-    disabledReason && "cursor-not-allowed opacity-60 hover:border-alphavest-border hover:text-alphavest-ivory"
+    uxActionClassForPriority(priority, { unavailable: Boolean(disabledReason) }),
   );
+  const actionAttrs = uxActionAttributesFor({
+    availability: disabledReason ? "blocked_static" : "enabled",
+    disabledReason,
+    meaning: action.meaning,
+    placement: "page_header",
+    priority,
+  });
 
   if (disabledReason) {
     return (
@@ -61,14 +71,10 @@ function HeaderAction({ action, primary = false, recovery = false }: { action: P
         aria-describedby={disabledReasonId}
         aria-label={`${action.label}: ${disabledReason}`}
         className={className}
-        data-ux-cta-kind={primary ? "primary" : recovery ? "recovery" : "secondary"}
-        data-ux-disabled-message="accessible"
-        data-ux-disabled-reason={disabledReason}
-        data-ux-interactive="false"
-        data-ux-primary-cta={primary ? "true" : undefined}
-        data-ux-secondary-cta={!primary ? "true" : undefined}
         role="status"
         title={disabledReason}
+        {...actionAttrs}
+        data-ux-secondary-cta={!primary ? "true" : undefined}
       >
         <LockKeyhole aria-hidden="true" className="size-4" />
         {action.label}
@@ -82,12 +88,10 @@ function HeaderAction({ action, primary = false, recovery = false }: { action: P
     return (
       <button
         className={className}
-        data-ux-cta-kind={primary ? "primary" : recovery ? "recovery" : "secondary"}
-        data-ux-interactive="true"
-        data-ux-primary-cta={primary ? "true" : undefined}
-        data-ux-secondary-cta={!primary ? "true" : undefined}
         onClick={action.onClick}
         type="button"
+        {...actionAttrs}
+        data-ux-secondary-cta={!primary ? "true" : undefined}
       >
         {action.label}
         {primary ? <ArrowRight aria-hidden="true" className="size-4" /> : null}
@@ -99,11 +103,9 @@ function HeaderAction({ action, primary = false, recovery = false }: { action: P
   return (
     <Link
       className={className}
-      data-ux-cta-kind={primary ? "primary" : recovery ? "recovery" : "secondary"}
-      data-ux-interactive="true"
-      data-ux-primary-cta={primary ? "true" : undefined}
-      data-ux-secondary-cta={!primary ? "true" : undefined}
       href={action.href}
+      {...actionAttrs}
+      data-ux-secondary-cta={!primary ? "true" : undefined}
     >
       {action.label}
       {primary ? <ArrowRight aria-hidden="true" className="size-4" /> : null}

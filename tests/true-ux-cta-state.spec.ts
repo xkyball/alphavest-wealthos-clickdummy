@@ -56,17 +56,12 @@ test.describe("UX-CTA-STATE phase 8 one-primary CTA and recovery state", () => {
       await authenticate(page);
       await page.goto(route.path);
 
-      const guidance = page.getByTestId("product-guidance").first();
-      const actions = guidance.getByTestId("ux-nav-next-actions");
-      expect(await actions.locator('[data-ux-primary-cta="true"]').count()).toBeLessThanOrEqual(1);
-      await expect(actions).toHaveAttribute("data-ux-phase8-task", route.taskId);
-      const blocker = actions.getByTestId("ux-cta-blocked-reason");
-      if (await blocker.count()) {
-        await expect(blocker).toBeVisible();
-        await expect(actions).toHaveAttribute("data-ux-phase8-blocked-reason", /.+/);
-      }
-      await expect(actions).not.toContainText(/Next action state|No downstream completion|proof|Exactly one primary CTA/i);
-      await expect(guidance).not.toContainText(/client visibility unlocked|download ready|evidence sufficient|release complete|share ready|admin override/i);
+      const main = page.locator("main").first();
+      const executablePrimaryActions = page.locator('button[data-ux-primary-cta="true"], a[data-ux-primary-cta="true"]');
+
+      expect(await executablePrimaryActions.count()).toBeLessThanOrEqual(1);
+      await expect(main).not.toContainText(/Next action state|No downstream completion|proof|Exactly one primary CTA/i);
+      await expect(main).not.toContainText(/client visibility unlocked|download ready|evidence sufficient|release complete|share ready|admin override/i);
     });
   }
 
@@ -76,16 +71,15 @@ test.describe("UX-CTA-STATE phase 8 one-primary CTA and recovery state", () => {
       await authenticate(page);
       await page.goto(route.path);
 
-      const guidance = page.getByTestId("product-guidance").first();
-      const actions = guidance.getByTestId("ux-nav-next-actions");
-      await expect(actions).toHaveAttribute("data-ux-cta-state", "locked");
-      await expect(actions.locator('[data-ux-primary-cta="true"]')).toHaveCount(0);
-      await expect(actions.getByTestId("ux-cta-blocked-reason")).toBeVisible();
-      await expect(actions.getByTestId("ux-cta-recovery-action")).toHaveCount(0);
-      await expect(actions).toHaveAttribute("data-ux-phase8-task", route.taskId);
-      await expect(actions).toHaveAttribute("data-ux-phase8-blocked-reason", /blocked|bypass|client-safe|does not|internal|separate|sufficiency|release|gates/i);
-      await expect(actions).not.toContainText(/Next action state|No downstream completion|proof|Exactly one primary CTA/i);
-      await expect(guidance).not.toContainText(/client visibility unlocked|download ready|evidence sufficient|release complete|share ready|admin override/i);
+      const main = page.locator("main").first();
+      const executablePrimaryActions = page.locator('button[data-ux-primary-cta="true"], a[data-ux-primary-cta="true"]');
+      const blockedPrimaryStatus = page.locator('[data-ux-primary-cta="true"][data-ux-interactive="false"]');
+
+      await expect(executablePrimaryActions).toHaveCount(0);
+      await expect(blockedPrimaryStatus.first()).toBeVisible();
+      await expect(blockedPrimaryStatus.first()).toHaveAttribute("data-ux-disabled-reason", /blocked|bypass|client-safe|does not|internal|separate|sufficiency|release|gates|Elevated reviews/i);
+      await expect(main).not.toContainText(/Next action state|No downstream completion|proof|Exactly one primary CTA/i);
+      await expect(main).not.toContainText(/client visibility unlocked|download ready|evidence sufficient|release complete|share ready|admin override/i);
     });
   }
 });

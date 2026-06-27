@@ -77,8 +77,10 @@ test.describe("UXP2-010 accessibility-safe disabled-control messaging", () => {
 
     for (const sourcePath of sources) {
       const source = readFileSync(sourcePath, "utf8");
-      expect(source, sourcePath).toContain("data-ux-disabled-reason");
-      expect(source, sourcePath).toContain("data-ux-disabled-message");
+      const usesActionContractProjection = source.includes("uxActionAttributesFor");
+
+      expect(source.includes("data-ux-disabled-reason") || usesActionContractProjection, sourcePath).toBe(true);
+      expect(source.includes("data-ux-disabled-message") || usesActionContractProjection, sourcePath).toBe(true);
     }
   });
 });
