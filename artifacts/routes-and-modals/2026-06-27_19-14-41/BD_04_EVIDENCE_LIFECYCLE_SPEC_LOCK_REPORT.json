@@ -1,0 +1,149 @@
+{
+  "artifact": {
+    "name": "BD_04_EVIDENCE_LIFECYCLE_SPEC_LOCK_REPORT.json",
+    "kind": "ticket_execution_evidence",
+    "created_at": "2026-06-27",
+    "ticket_id": "TICKET-BD-04",
+    "source_burndown_id": "BD-04",
+    "title": "Evidence request, upload, review and sufficiency lifecycle",
+    "status": "COMPLETED_SPEC_AND_PROOF_LOCK",
+    "product_code_changed": false,
+    "ui_changed": false,
+    "screenshot_required_for_chat": false
+  },
+  "ticket_contract": {
+    "priority": "P0",
+    "ticket_kind": "workflow_vertical_slice",
+    "work_type": "Process Workflow / Data Lifecycle / UI Interaction",
+    "unique_shape": "Full lifecycle slice; requires state machine and data I/O before UI details.",
+    "ctes_total": 18,
+    "ctes_class": "Must split before implementation",
+    "execution_decision": "Create lifecycle spec, data contract and sufficiency decision proof as separate subtasks.",
+    "dependencies": ["BD-02", "BD-03"],
+    "overclaim_guard": "Upload UI is not evidence lifecycle without review state, sufficiency decision and process output."
+  },
+  "dependency_decisions_applied": [
+    {
+      "dependency": "BD-02",
+      "effect": "Current-user, tenant, role, payload and object-scope layers are separate. Evidence actions require explicit role/object scope and cannot be inferred from route access."
+    },
+    {
+      "dependency": "BD-03",
+      "accepted_token": "APPROVE_DG02_ADMIN_GOVERNANCE_NON_BYPASS_ONLY",
+      "effect": "Admin/security cannot force evidence sufficiency, compliance release, export approval or client visibility."
+    }
+  ],
+  "completed_subtasks": [
+    {
+      "id": "BD-04-A",
+      "name": "Evidence lifecycle state model",
+      "status": "COMPLETED_SPEC_LOCK",
+      "artifact_path": "artifacts/routes-and-modals/2026-06-27_19-14-41/BD_04_A_EVIDENCE_LIFECYCLE_STATE_MODEL.json",
+      "summary": "Locked request/upload/review/link/reject/sufficiency/release state model across process-request and document-review axes."
+    },
+    {
+      "id": "BD-04-B",
+      "name": "Upload and review data contract",
+      "status": "COMPLETED_SPEC_LOCK",
+      "artifact_path": "artifacts/routes-and-modals/2026-06-27_19-14-41/BD_04_B_EVIDENCE_IO_PERSISTENCE_CONTRACT.json",
+      "summary": "Locked upload/review API inputs, persisted rows, safe response shapes, projection redaction and audit event mappings."
+    },
+    {
+      "id": "BD-04-C",
+      "name": "Sufficiency decision guard",
+      "status": "COMPLETED_PROOF_LOCK",
+      "artifact_path": "artifacts/routes-and-modals/2026-06-27_19-14-41/BD_04_C_SUFFICIENCY_DECISION_GUARD.json",
+      "summary": "Locked canonical DECIDE_EVIDENCE_SUFFICIENCY guard, positive case, eight negative cases, release integration and client/internal projection split."
+    }
+  ],
+  "canonical_decisions": [
+    {
+      "decision": "Upload is intake only.",
+      "consequence": "Document upload may create Document, DocumentVersion, DocumentExtraction, EvidenceRecord, EvidenceItem and AuditEvent, but it cannot create evidence sufficiency, release, export, client visibility or client acceptance."
+    },
+    {
+      "decision": "Review/link is not sufficiency.",
+      "consequence": "Analyst/advisor/compliance review may move evidence to linked or insufficient states, but final sufficiency needs compliance-only accepted predicates."
+    },
+    {
+      "decision": "Journey-level EvidenceSufficiencyDecision is canonical for P0 business-process sufficiency.",
+      "consequence": "Document review sufficiency remains scoped evidence support unless it is consumed by or mapped to the canonical journey sufficiency decision."
+    },
+    {
+      "decision": "Sufficiency is necessary but not sufficient for compliance release.",
+      "consequence": "Release still requires advisor approval, payload readiness, compliance permission, audit persistence, rationale/redaction where applicable and exact release controls."
+    },
+    {
+      "decision": "Client decision view is intentionally redacted.",
+      "consequence": "Client roles can see decision and decidedAt only; evidenceRecordId, reason, audit metadata, storageKey and checksum remain internal unless released through a client-safe projection."
+    }
+  ],
+  "acceptance_evidence": {
+    "state_machine": "BD_04_A_EVIDENCE_LIFECYCLE_STATE_MODEL.json",
+    "data_editability_matrix": [
+      "BD_04_A_EVIDENCE_LIFECYCLE_STATE_MODEL.json",
+      "BD_04_B_EVIDENCE_IO_PERSISTENCE_CONTRACT.json"
+    ],
+    "sufficiency_proof_cases": "BD_04_C_SUFFICIENCY_DECISION_GUARD.json",
+    "audit_event_mapping": "BD_04_B_EVIDENCE_IO_PERSISTENCE_CONTRACT.json"
+  },
+  "validation": {
+    "commands_run": [
+      {
+        "command": "pnpm playwright test tests/workflow-gate.spec.ts tests/evidence-review-api.spec.ts tests/document-upload-api.spec.ts tests/pp002-evidence-sufficiency-canonical.spec.ts --workers=1",
+        "status": "PASS",
+        "result": "35 passed"
+      },
+      {
+        "command": "pnpm playwright test tests/document-upload-api.spec.ts tests/evidence-review-api.spec.ts --workers=1",
+        "status": "PASS",
+        "result": "16 passed"
+      },
+      {
+        "command": "pnpm playwright test tests/pp002-evidence-sufficiency-canonical.spec.ts tests/journey-api.spec.ts tests/workflow-gate.spec.ts tests/release-spine-command-surface.spec.ts --workers=1",
+        "status": "PASS",
+        "result": "31 passed"
+      },
+      {
+        "command": "pnpm guard:source",
+        "status": "PASS",
+        "result": "0 violations"
+      },
+      {
+        "command": "node JSON.parse on BD-04 artifacts",
+        "status": "PASS",
+        "result": "All BD-04 JSON artifacts valid"
+      }
+    ],
+    "positive_acceptance_result": "Evidence lifecycle, persistence and sufficiency guards are already implemented and proven in existing code/tests; BD-04 locks the process-first contract.",
+    "negative_acceptance_result": "Upload-only, unreviewed, unlinked, restricted, wrong-scope, audit-unavailable, analyst, admin, cross-tenant and release-without-evidence paths fail closed in tests."
+  },
+  "product_code_delta": {
+    "changed": false,
+    "reason": "Existing implementation already satisfies BD-04 state/data/guard requirements. This ticket produced contract/proof artifacts and did not need product code changes."
+  },
+  "ui_delta": {
+    "changed": false,
+    "screenshot_required": false,
+    "reason": "No UI was changed; screenshot evidence would be misleading for this spec/proof lock."
+  },
+  "bold_cleanup_recommendations": [
+    "Make DECIDE_EVIDENCE_SUFFICIENCY the only P0 journey-level sufficiency source of truth.",
+    "Do not let document upload, document review, admin governance, or screenshot proof stand in for evidence sufficiency.",
+    "Rename any future UI state that says 'approved evidence' unless it includes the scoped gate and canonical decision source.",
+    "Demote any legacy evidence UI that cannot show request, upload, review, insufficiency, sufficiency and release separation.",
+    "Eventually migrate roleKey/tenantSlug demo APIs behind CurrentUserContext adapters so P0 security proof does not depend on query/body role switches."
+  ],
+  "remaining_limits": [
+    "BD-04 did not add new UI; it only locked the state/data/guard contract against existing implementation.",
+    "BD-04 does not implement BD-05 internal workbench UI refactor.",
+    "BD-04 does not solve later no-client-leak draft gates, audit persistence spine hardening or export redaction beyond the tested sufficiency/release integration."
+  ],
+  "next_ticket": {
+    "id": "TICKET-BD-05",
+    "source_burndown_id": "BD-05",
+    "title": "Internal workbench and action board as real process workspace",
+    "status": "READY_TO_START_AFTER_BD_04_COMMIT",
+    "expected_work_type": "UX Refactor / Work Queue / Role Tasking"
+  }
+}

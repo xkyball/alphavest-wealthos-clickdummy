@@ -1,0 +1,322 @@
+{
+  "artifact": {
+    "name": "BD_04_A_EVIDENCE_LIFECYCLE_STATE_MODEL.json",
+    "kind": "subtask_execution_evidence",
+    "created_at": "2026-06-27",
+    "ticket_id": "TICKET-BD-04",
+    "subtask_id": "BD-04-A",
+    "source_burndown_id": "BD-04",
+    "title": "Evidence lifecycle state model",
+    "status": "COMPLETED_SPEC_LOCK",
+    "product_code_changed": false,
+    "ui_changed": false,
+    "screenshot_required_for_chat": false
+  },
+  "subtask_contract": {
+    "name": "Evidence lifecycle state model",
+    "ctes_total": 11,
+    "required_output": "Request-upload-review-sufficiency state machine",
+    "parent_overclaim_guard": "Upload UI is not evidence lifecycle without review state, sufficiency decision and process output."
+  },
+  "dg_02_dependency_lock": {
+    "accepted_token": "APPROVE_DG02_ADMIN_GOVERNANCE_NON_BYPASS_ONLY",
+    "effect_on_bd_04": [
+      "Evidence sufficiency cannot be completed by admin override.",
+      "Admin, security and broad governance routes are not release, export, evidence sufficiency or client visibility authorities.",
+      "BD-04 proof must name role, object scope, reasonCode, no-mutation/no-release/no-client-visibility and audit behavior where applicable."
+    ]
+  },
+  "source_evidence": [
+    {
+      "path": "lib/evidence-service.ts",
+      "role": "Canonical in-memory state decision service for upload, review, sufficiency and release/export impacts."
+    },
+    {
+      "path": "lib/evidence-review-service.ts",
+      "role": "DB-backed document review and evidence sufficiency workflow with audit-first mutation behavior."
+    },
+    {
+      "path": "lib/p44-phase3-evidence-lifecycle.ts",
+      "role": "Process-level evidence request, link, rejection, rerequest and client-safe projection lifecycle."
+    },
+    {
+      "path": "prisma/schema.prisma",
+      "role": "Database enum/model truth for DocumentStatus, EvidenceStatus, EvidenceRecord, EvidenceItem, EvidenceSufficiencyDecision and AuditEvent."
+    },
+    {
+      "path": "tests/workflow-gate.spec.ts",
+      "role": "Evidence lifecycle unit proof that upload-created evidence is review-pending and cannot support release."
+    },
+    {
+      "path": "tests/evidence-review-api.spec.ts",
+      "role": "Runtime API proof for upload, review, clarification, audit fail-closed and compliance sufficiency acceptance."
+    },
+    {
+      "path": "tests/pp002-evidence-sufficiency-canonical.spec.ts",
+      "role": "Journey-level canonical proof for link, compliance decision, sufficiency attestations and fail-closed audit."
+    }
+  ],
+  "canonical_state_machine": {
+    "state_axis_1_process_request_lifecycle": [
+      {
+        "state": "request_open",
+        "backing_status": "EvidenceStatus.PLACEHOLDER",
+        "meaning": "A reviewer/advisor/compliance actor requested evidence; there is no uploaded support yet.",
+        "entry_actions": ["createP44EvidenceRequest", "rerequestP44EvidenceAfterRejection"],
+        "allowed_next": ["upload_pending", "linked_not_sufficient", "rejected"],
+        "forbidden_claims": ["evidence sufficient", "release ready", "export approved", "client visible"],
+        "proof_anchor": "lib/p44-phase3-evidence-lifecycle.ts"
+      },
+      {
+        "state": "upload_pending",
+        "backing_status": "EvidenceStatus.CREATED",
+        "meaning": "Source material exists and can enter review; upload is not sufficiency.",
+        "entry_actions": ["document upload creates evidence record"],
+        "allowed_next": ["linked_not_sufficient", "rejected"],
+        "forbidden_claims": ["compliance release supported", "export unlocked", "client-safe evidence"],
+        "proof_anchor": "lib/evidence-service.ts; tests/document-upload-api.spec.ts"
+      },
+      {
+        "state": "linked_not_sufficient",
+        "backing_status": "EvidenceStatus.LINKED",
+        "meaning": "Evidence is linked to the scoped object or document, but final sufficiency is not accepted.",
+        "entry_actions": ["linkP44EvidenceToObject", "reviewDocumentEvidence action=mark_reviewed"],
+        "allowed_next": ["sufficient_for_scoped_gate", "rejected"],
+        "forbidden_claims": ["release can proceed without compliance sufficiency", "upload/review equals acceptance"],
+        "proof_anchor": "lib/evidence-review-service.ts; tests/evidence-review-api.spec.ts"
+      },
+      {
+        "state": "sufficient_for_scoped_gate",
+        "backing_status": "EvidenceStatus.VALIDATED",
+        "meaning": "Compliance accepted reviewed, relevant, current, scoped and client-safe/redacted evidence for a specific gate.",
+        "entry_actions": ["reviewDocumentEvidence action=accept_sufficiency", "DECIDE_EVIDENCE_SUFFICIENCY with sufficient attestations"],
+        "allowed_next": ["released", "rejected", "closed_history"],
+        "forbidden_claims": ["client acceptance", "download/share complete", "admin override complete"],
+        "proof_anchor": "tests/evidence-review-api.spec.ts; tests/pp002-evidence-sufficiency-canonical.spec.ts"
+      },
+      {
+        "state": "released",
+        "backing_status": "EvidenceStatus.RELEASED",
+        "meaning": "Downstream compliance/projection state may expose a client-safe summary; this is not created by upload/review alone.",
+        "entry_actions": ["downstream compliance release/projection only"],
+        "allowed_next": ["closed_history"],
+        "forbidden_claims": ["client accepted", "raw evidence exposed", "download/share complete"],
+        "proof_anchor": "lib/p44-phase3-evidence-lifecycle.ts; lib/visibility-engine.ts"
+      },
+      {
+        "state": "rejected",
+        "backing_status": "EvidenceStatus.RESTRICTED",
+        "meaning": "Evidence was blocked/rejected and cannot support release/export/client visibility.",
+        "entry_actions": ["rejectP44Evidence", "reviewDocumentEvidence action=request_clarification"],
+        "allowed_next": ["request_open", "closed_history"],
+        "forbidden_claims": ["gate support", "release ready", "client-safe"],
+        "proof_anchor": "lib/p44-phase3-evidence-lifecycle.ts; tests/evidence-review-api.spec.ts"
+      },
+      {
+        "state": "closed_history",
+        "backing_status": "EvidenceStatus.ARCHIVED or EvidenceStatus.SUPERSEDED",
+        "meaning": "Evidence is historical and cannot newly support active gates unless a new scoped decision exists.",
+        "entry_actions": ["archive/supersede policy"],
+        "allowed_next": [],
+        "forbidden_claims": ["active sufficiency", "active release support"],
+        "proof_anchor": "prisma/schema.prisma"
+      }
+    ],
+    "state_axis_2_document_review_lifecycle": [
+      {
+        "state": "uploaded",
+        "document_status": "DocumentStatus.UPLOADED",
+        "evidence_lifecycle_status": "uploaded or extraction_pending",
+        "meaning": "File exists as source-document intake only."
+      },
+      {
+        "state": "extraction_pending",
+        "document_status": "DocumentStatus.UPLOADED",
+        "evidence_lifecycle_status": "extraction_pending",
+        "meaning": "Extraction/review queue work is pending; no sufficiency."
+      },
+      {
+        "state": "review_pending",
+        "document_status": "DocumentStatus.UPLOADED",
+        "evidence_lifecycle_status": "review_pending",
+        "meaning": "Evidence record exists but reviewer has not accepted/rejected it."
+      },
+      {
+        "state": "linked",
+        "document_status": "DocumentStatus.VERIFIED or DocumentStatus.LINKED_TO_EVIDENCE",
+        "evidence_lifecycle_status": "linked",
+        "meaning": "Document review/linking happened; compliance sufficiency may still be missing."
+      },
+      {
+        "state": "insufficient",
+        "document_status": "DocumentStatus.NEEDS_CLARIFICATION or EvidenceStatus.RESTRICTED",
+        "evidence_lifecycle_status": "insufficient or rejected",
+        "meaning": "Clarification/replacement is required."
+      },
+      {
+        "state": "sufficient",
+        "document_status": "DocumentStatus.LINKED_TO_EVIDENCE",
+        "evidence_lifecycle_status": "sufficient",
+        "meaning": "Evidence can support a scoped gate, but still does not create client release by itself."
+      }
+    ]
+  },
+  "transition_rules": [
+    {
+      "transition": "request_open -> upload_pending",
+      "required_actor": "client or internal uploader with valid tenant/role context",
+      "required_data": ["file", "document type", "tenant context", "audit event"],
+      "audit_event": "document.upload.created or p44 evidence request/upload event",
+      "blocked_if": ["unsupported file type", "invalid role", "invalid tenant", "audit unavailable"],
+      "safety": ["noClientRelease", "releaseUnlocked=false", "uploadOnly=true"]
+    },
+    {
+      "transition": "upload_pending -> linked_not_sufficient",
+      "required_actor": "analyst, senior_wealth_advisor or compliance_officer reviewer",
+      "required_data": ["document id", "evidence record", "object scope", "audit event"],
+      "audit_event": "document.evidence_review.linked or p44.evidence.linked",
+      "blocked_if": ["missing evidence record", "wrong object scope", "audit unavailable"],
+      "safety": ["evidenceSufficiency=false", "gateSupport=false", "noClientRelease"]
+    },
+    {
+      "transition": "upload_pending/linked_not_sufficient -> rejected",
+      "required_actor": "reviewer or compliance role depending on action",
+      "required_data": ["reason", "audit event"],
+      "audit_event": "document.evidence_review.clarification_requested or p44.evidence.rejected",
+      "blocked_if": ["reason missing", "role denied", "audit unavailable"],
+      "safety": ["gateSupport=false", "releaseUnlocked=false", "exportUnlocked=false"]
+    },
+    {
+      "transition": "linked_not_sufficient -> sufficient_for_scoped_gate",
+      "required_actor": "compliance_officer",
+      "required_data": ["reviewed", "relevance accepted", "scope accepted", "currentness accepted", "client-safe/redacted visibility", "audit event"],
+      "audit_event": "document.evidence_sufficiency.accepted or journey evidence sufficiency decision audit",
+      "blocked_if": ["admin/security override", "analyst acceptance", "missing attestation", "restricted/internal-only evidence", "wrong scope", "audit unavailable"],
+      "safety": ["noClientRelease", "clientVisible=false", "releaseUnlocked=false"]
+    },
+    {
+      "transition": "sufficient_for_scoped_gate -> released",
+      "required_actor": "downstream compliance release workflow only",
+      "required_data": ["advisor approval", "sufficient evidence", "payload ready", "permission", "audit persistence", "exact release confirmation where applicable"],
+      "audit_event": "downstream compliance release audit",
+      "blocked_if": ["advisor missing", "evidence insufficient", "audit unavailable", "payload not client-safe"],
+      "safety": ["evidence sufficiency alone is not client acceptance"]
+    }
+  ],
+  "data_editability_matrix": [
+    {
+      "field_group": "source upload metadata",
+      "editable_until_state": "upload_pending",
+      "owner_roles": ["client-side uploader", "analyst"],
+      "locked_after": "linked_not_sufficient",
+      "reason": "Review/audit must preserve what was originally uploaded."
+    },
+    {
+      "field_group": "review notes and extraction confidence",
+      "editable_until_state": "linked_not_sufficient",
+      "owner_roles": ["analyst", "senior_wealth_advisor", "compliance_officer"],
+      "locked_after": "sufficient_for_scoped_gate",
+      "reason": "Sufficiency requires final reviewed context."
+    },
+    {
+      "field_group": "sufficiency attestations",
+      "editable_until_state": "sufficient_for_scoped_gate",
+      "owner_roles": ["compliance_officer"],
+      "locked_after": "sufficient_for_scoped_gate",
+      "reason": "Decision must be audit-backed and scoped to the gate."
+    },
+    {
+      "field_group": "client-safe projection fields",
+      "editable_until_state": "released",
+      "owner_roles": ["compliance_officer via downstream release"],
+      "locked_after": "released",
+      "reason": "Client visibility is downstream release/projection authority, not evidence review authority."
+    }
+  ],
+  "overclaim_guards": [
+    "Upload success is not evidence sufficiency.",
+    "Review/link success is not compliance release.",
+    "Evidence sufficiency is scoped gate support only, not client acceptance.",
+    "Admin/security cannot force evidence sufficiency under DG-02.",
+    "Client-safe evidence projection must not expose raw upload, storage keys, checksums, internal rationale, compliance notes or unreleased evidence details.",
+    "Screenshot/capture presence is supporting reference only unless BD-01 proof eligibility says otherwise."
+  ],
+  "acceptance_cases_for_bd_04_a": [
+    {
+      "case_id": "BD04-A-001",
+      "name": "request_without_upload",
+      "expected_state": "request_open / NEEDS_EVIDENCE",
+      "must_block": ["review queue entry", "release", "export", "client visibility"]
+    },
+    {
+      "case_id": "BD04-A-002",
+      "name": "upload_only",
+      "expected_state": "upload_pending / UPLOAD_RECEIVED",
+      "must_allow": ["review queue entry"],
+      "must_block": ["evidence sufficiency", "release", "export", "client visibility"]
+    },
+    {
+      "case_id": "BD04-A-003",
+      "name": "reviewed_linked_only",
+      "expected_state": "linked_not_sufficient",
+      "must_allow": ["further compliance review"],
+      "must_block": ["release", "export", "client visibility"]
+    },
+    {
+      "case_id": "BD04-A-004",
+      "name": "clarification_or_rejection",
+      "expected_state": "rejected / insufficient",
+      "must_allow": ["rerequest"],
+      "must_block": ["gate support", "release", "export", "client visibility"]
+    },
+    {
+      "case_id": "BD04-A-005",
+      "name": "compliance_sufficient_scoped",
+      "expected_state": "sufficient_for_scoped_gate",
+      "must_allow": ["downstream gate support"],
+      "must_block": ["automatic client release", "download/share/client acceptance"]
+    },
+    {
+      "case_id": "BD04-A-006",
+      "name": "admin_sufficiency_override_attempt",
+      "expected_state": "unchanged",
+      "must_block": ["mutation", "sufficiency", "release"],
+      "required_reason_code": "DEMO_DENY_ADMIN_EVIDENCE_NON_BYPASS"
+    }
+  ],
+  "implementation_decision": {
+    "type": "SPEC_LOCK_NO_PRODUCT_CODE_CHANGE",
+    "rationale": "Existing code already has the canonical state decision functions, DB-backed review/sufficiency workflow, P44 process lifecycle and proof tests. BD-04-A locks the state machine before BD-04-B data contract and BD-04-C guard work.",
+    "bold_cleanup_recommendations": [
+      "Make this state model the only BD-04 vocabulary; stop mixing generic document status copy with evidence sufficiency claims.",
+      "Treat EvidenceStatus.RELEASED as downstream projection/release result, not as an upload/review lifecycle target.",
+      "Delete or demote any future UI copy that says upload, linked, reviewed or admin-approved evidence is sufficient without compliance attestations.",
+      "Use the same state names in screenshots/capture QA so visual proof cannot overclaim lifecycle completion."
+    ]
+  },
+  "validation": {
+    "commands_run": [
+      {
+        "command": "node -e JSON.parse(BD_04_A_EVIDENCE_LIFECYCLE_STATE_MODEL.json)",
+        "status": "PASS",
+        "result": "7 process states, 6 document states, 6 acceptance cases"
+      },
+      {
+        "command": "pnpm playwright test tests/workflow-gate.spec.ts tests/evidence-review-api.spec.ts tests/document-upload-api.spec.ts tests/pp002-evidence-sufficiency-canonical.spec.ts --workers=1",
+        "status": "PASS",
+        "result": "35 passed"
+      },
+      {
+        "command": "pnpm guard:source",
+        "status": "PASS",
+        "result": "0 violations"
+      }
+    ],
+    "status": "PASS"
+  },
+  "next_subtask": {
+    "id": "BD-04-B",
+    "name": "Upload and review data contract",
+    "status": "READY_AFTER_BD_04_A_VALIDATION"
+  }
+}

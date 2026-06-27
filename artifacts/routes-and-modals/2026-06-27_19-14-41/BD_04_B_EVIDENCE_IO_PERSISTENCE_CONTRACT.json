@@ -1,0 +1,419 @@
+{
+  "artifact": {
+    "name": "BD_04_B_EVIDENCE_IO_PERSISTENCE_CONTRACT.json",
+    "kind": "subtask_execution_evidence",
+    "created_at": "2026-06-27",
+    "ticket_id": "TICKET-BD-04",
+    "subtask_id": "BD-04-B",
+    "source_burndown_id": "BD-04",
+    "title": "Upload and review data contract",
+    "status": "COMPLETED_SPEC_LOCK",
+    "product_code_changed": false,
+    "ui_changed": false,
+    "screenshot_required_for_chat": false
+  },
+  "subtask_contract": {
+    "name": "Upload and review data contract",
+    "ctes_total": 12,
+    "required_output": "Evidence I/O and persistence contract",
+    "parent_overclaim_guard": "Upload UI is not evidence lifecycle without review state, sufficiency decision and process output."
+  },
+  "source_evidence": [
+    {
+      "path": "lib/document-upload-service.ts",
+      "role": "Upload validation, permission/scope check, storage, DB transaction and projection contract."
+    },
+    {
+      "path": "app/api/documents/upload/route.ts",
+      "role": "Multipart API envelope and safe public response shape."
+    },
+    {
+      "path": "lib/evidence-review-service.ts",
+      "role": "Review/link/clarification/sufficiency DB mutation and safety contract."
+    },
+    {
+      "path": "app/api/documents/review/route.ts",
+      "role": "Review API validation, safe error envelopes and result projection."
+    },
+    {
+      "path": "prisma/schema.prisma",
+      "role": "Persistence model for Document, DocumentVersion, DocumentExtraction, DocumentReview, DocumentLink, EvidenceRecord, EvidenceItem, EvidenceSufficiencyDecision and AuditEvent."
+    },
+    {
+      "path": "tests/document-upload-api.spec.ts",
+      "role": "Upload persistence, projection, denial and no-release proof."
+    },
+    {
+      "path": "tests/evidence-review-api.spec.ts",
+      "role": "Review/sufficiency persistence, audit fail-closed and no-release proof."
+    }
+  ],
+  "upload_input_contract": {
+    "endpoint": "POST /api/documents/upload",
+    "content_type": "multipart/form-data",
+    "required_fields": ["file", "documentType", "roleKey", "tenantSlug"],
+    "optional_fields": ["linkedObjectLabel", "notes", "periodLabel", "sensitivity", "subType", "simulateAuditPersistenceFailure"],
+    "validation_rules": [
+      "file is required and must have positive size",
+      "file size must not exceed 50MB",
+      "filename must be safe and must not traverse paths",
+      "mime type and extension must be supported",
+      "roleKey and tenantSlug must map to demo context",
+      "documentType must be non-empty"
+    ],
+    "allowed_upload_roles": ["principal", "family_cfo", "external_advisor"],
+    "scope_requirements": [
+      "mapped current actor context",
+      "client tenant scope",
+      "object scope for the upload attempt",
+      "permission action UPLOAD on DOCUMENT"
+    ],
+    "fail_closed_outputs": [
+      {
+        "condition": "invalid multipart/body/metadata/file",
+        "http_status": 400,
+        "reasonCode": "INVALID_REQUEST",
+        "mutation": false
+      },
+      {
+        "condition": "role or permission denied",
+        "http_status": 403,
+        "reasonCode": "PERMISSION_DENIED",
+        "mutation": false,
+        "audit": "DENIED audit where possible"
+      },
+      {
+        "condition": "audit persistence unavailable",
+        "http_status": 409,
+        "reasonCode": "AUDIT_PERSISTENCE_UNAVAILABLE",
+        "mutation": false
+      }
+    ]
+  },
+  "upload_persistence_contract": {
+    "transactional_rows_created_on_success": [
+      {
+        "model": "Document",
+        "required_fields": ["clientTenantId", "documentType", "fileName", "fileSizeBytes", "mimeType", "sensitivity", "source", "status", "storageKey", "title", "uploadedByUserId", "checksum"],
+        "locked_values": {
+          "clientVisible": false,
+          "source": "multipart_upload",
+          "status": "UPLOADED"
+        },
+        "client_projection": "Raw storageKey/checksum/fileName are hidden from blocked client roles; uploader may see source-document projection only."
+      },
+      {
+        "model": "DocumentVersion",
+        "required_fields": ["documentId", "versionNumber", "checksum", "storageKey", "createdByUserId"],
+        "locked_values": {
+          "versionNumber": 1
+        },
+        "integrity_rule": "Version must be linked to the created document; orphan versions are denied by DB relation."
+      },
+      {
+        "model": "DocumentExtraction",
+        "required_fields": ["documentId", "extractionStatus", "modelVersion", "extractedFieldsJson", "lowConfidenceFieldsJson"],
+        "locked_values": {
+          "extractionStatus": "pending",
+          "isClientVisible": false,
+          "modelVersion": "scf-p04-demo-extraction-queue"
+        }
+      },
+      {
+        "model": "EvidenceRecord",
+        "required_fields": ["clientTenantId", "createdByUserId", "relatedObjectId", "relatedObjectType", "retentionPolicy", "status", "summary", "title", "visibilityStatus"],
+        "locked_values": {
+          "relatedObjectType": "DOCUMENT",
+          "status": "CREATED",
+          "visibilityStatus": "INTERNAL_ONLY"
+        },
+        "overclaim_guard": "CREATED means review-pending evidence, never sufficient evidence."
+      },
+      {
+        "model": "EvidenceItem",
+        "required_fields": ["evidenceRecordId", "itemType", "sourceObjectId", "sourceObjectType", "title", "visibilityStatus"],
+        "expected_items": ["document", "audit_event"],
+        "locked_values": {
+          "visibilityStatus": "INTERNAL_ONLY"
+        }
+      },
+      {
+        "model": "AuditEvent",
+        "required_fields": ["actorRoleKey", "actorUserId", "clientTenantId", "eventType", "evidenceRecordId", "metadataJson", "nextState", "previousState", "result", "targetId", "targetType"],
+        "locked_values": {
+          "eventType": "document.upload.created",
+          "previousState": "EMPTY",
+          "nextState": "UPLOADED",
+          "result": "SUCCESS",
+          "targetType": "DOCUMENT"
+        },
+        "must_include_metadata": ["auditContract", "criticalActionFamily", "checksum", "fileName", "storageKey", "versionId", "permission", "scopeResolution"]
+      }
+    ],
+    "api_success_response_shape": {
+      "ok": true,
+      "safe_result_fields": ["auditEventId", "document.id", "document.title", "document.fileName", "document.fileSizeBytes", "document.documentType", "document.status", "document.evidenceLifecycleStatus", "document.latestVersionNumber", "document.versionCount", "evidenceRecordId", "extractionId", "uploadedAt", "versionId"],
+      "forbidden_result_fields": ["storageKey", "checksum", "latestVersionChecksum", "auditEvidenceItemId", "documentEvidenceItemId"],
+      "safety": {
+        "clientVisible": false,
+        "evidenceLifecycleStatus": "extraction_pending",
+        "evidenceStatus": "REVIEW_PENDING",
+        "releaseUnlocked": false,
+        "sufficiency": false,
+        "uploadOnly": true
+      }
+    }
+  },
+  "review_input_contract": {
+    "endpoint": "POST /api/documents/review",
+    "content_type": "application/json",
+    "actions": [
+      {
+        "action": "mark_reviewed",
+        "allowed_roles": ["analyst", "senior_wealth_advisor", "compliance_officer"],
+        "required_fields": ["documentId", "roleKey", "tenantSlug"],
+        "meaning": "Review/link document evidence; does not accept sufficiency."
+      },
+      {
+        "action": "request_clarification",
+        "allowed_roles": ["analyst", "senior_wealth_advisor", "compliance_officer"],
+        "required_fields": ["documentId", "roleKey", "tenantSlug", "notes"],
+        "meaning": "Mark evidence insufficient/needs clarification without release/export unlock."
+      },
+      {
+        "action": "accept_sufficiency",
+        "allowed_roles": ["compliance_officer"],
+        "required_fields": ["documentId", "roleKey", "tenantSlug", "relevanceAccepted", "currentAccepted", "scopeAccepted", "clientSafeAccepted"],
+        "meaning": "Compliance-only scoped sufficiency decision; still does not release client visibility."
+      }
+    ],
+    "fail_closed_outputs": [
+      {
+        "condition": "invalid role, tenant or action",
+        "http_status": 400,
+        "reasonCode": "INVALID_REQUEST",
+        "mutation": false
+      },
+      {
+        "condition": "document missing for tenant",
+        "http_status": 404,
+        "reasonCode": "SCOPE_DENIED",
+        "mutation": false
+      },
+      {
+        "condition": "review/sufficiency permission denied",
+        "http_status": 403,
+        "reasonCode": "PERMISSION_DENIED",
+        "mutation": false,
+        "audit": "DENIED audit row"
+      },
+      {
+        "condition": "sufficiency preconditions fail",
+        "http_status": 409,
+        "reasonCode": "SCOPE_DENIED",
+        "mutation": false,
+        "audit": "BLOCKED audit row"
+      },
+      {
+        "condition": "audit persistence unavailable",
+        "http_status": 409,
+        "reasonCode": "AUDIT_PERSISTENCE_UNAVAILABLE",
+        "mutation": false
+      }
+    ]
+  },
+  "review_persistence_contract": {
+    "rows_created_or_updated_by_action": [
+      {
+        "action": "mark_reviewed",
+        "writes": [
+          "DocumentReview(status=APPROVED, reviewType=Extraction review)",
+          "Document(status=VERIFIED)",
+          "DocumentExtraction(extractionStatus=reviewed, isClientVisible=false)",
+          "DocumentLink(relationship=review_link, targetType=EVIDENCE_RECORD)",
+          "EvidenceRecord(status=LINKED, visibilityStatus=INTERNAL_ONLY)",
+          "EvidenceItem(itemType=document_review)",
+          "AuditEvent(eventType=document.evidence_review.linked, result=SUCCESS)"
+        ],
+        "safety": ["evidenceSufficiency=false", "gateSupport=false", "noClientRelease=true", "releaseUnlocked=false", "exportUnlocked=false"]
+      },
+      {
+        "action": "request_clarification",
+        "writes": [
+          "DocumentReview(status=REQUEST_MORE_DATA)",
+          "Document(status=NEEDS_CLARIFICATION)",
+          "DocumentExtraction(extractionStatus=needs_clarification, isClientVisible=false)",
+          "DocumentLink(relationship=review_link)",
+          "EvidenceRecord(status=LINKED or non-sufficient state, visibilityStatus=INTERNAL_ONLY)",
+          "EvidenceItem(itemType=document_review)",
+          "AuditEvent(eventType=document.evidence_review.clarification_requested, result=SUCCESS)"
+        ],
+        "safety": ["evidenceSufficiency=false", "gateSupport=false", "noClientRelease=true", "releaseUnlocked=false", "exportUnlocked=false"]
+      },
+      {
+        "action": "accept_sufficiency",
+        "writes": [
+          "DocumentReview(status=APPROVED, reviewType=Evidence sufficiency acceptance, clientVisibleSummary=client-safe summary)",
+          "Document(status=LINKED_TO_EVIDENCE)",
+          "DocumentExtraction(extractionStatus=reviewed, isClientVisible=false)",
+          "DocumentLink(relationship=sufficiency_support, targetType=EVIDENCE_RECORD)",
+          "EvidenceRecord(status=VALIDATED, visibilityStatus=REDACTED)",
+          "EvidenceItem(itemType=evidence_sufficiency_review)",
+          "AuditEvent(eventType=document.evidence_sufficiency.accepted, result=SUCCESS)"
+        ],
+        "safety": ["evidenceSufficiency=true", "gateSupport=true", "noClientRelease=true", "clientVisible=false", "releaseUnlocked=false", "exportUnlocked=false"]
+      }
+    ],
+    "api_success_response_shape": {
+      "ok": true,
+      "result_fields": ["auditEventId", "documentId", "documentLinkId", "documentStatus", "evidenceItemId", "evidenceLifecycleStatus", "evidenceRecordId", "evidenceStatus", "evidenceVisibilityStatus", "extractionId", "reviewId", "reviewStatus", "safety", "sufficiencyDecision"],
+      "safety_must_include": ["clientVisible", "evidenceLifecycleStatus", "evidenceSufficiency", "exportUnlocked", "gateSupport", "noClientRelease", "releaseUnlocked", "uploadOnly"]
+    }
+  },
+  "data_editability_matrix": [
+    {
+      "data": "Document bytes, checksum, storage key, original filename and version 1",
+      "owner": "upload service",
+      "editable_after_upload": false,
+      "reason": "Evidence integrity depends on immutable uploaded source and version proof."
+    },
+    {
+      "data": "Extracted fields and low-confidence review fields",
+      "owner": "review workflow",
+      "editable_after_upload": true,
+      "locked_after": "accept_sufficiency",
+      "reason": "Review may correct extraction context before compliance accepts sufficiency."
+    },
+    {
+      "data": "EvidenceRecord status and visibility",
+      "owner": "review/sufficiency workflow",
+      "editable_after_upload": true,
+      "locked_after": "release/projection downstream",
+      "reason": "CREATED -> LINKED/VALIDATED/RESTRICTED must be audit-backed."
+    },
+    {
+      "data": "Evidence sufficiency attestations",
+      "owner": "compliance_officer",
+      "editable_after_upload": false,
+      "created_only_by": "accept_sufficiency or canonical journey DECIDE_EVIDENCE_SUFFICIENCY",
+      "reason": "Sufficiency is a decision record, not an upload metadata edit."
+    },
+    {
+      "data": "Client-visible document/evidence projection",
+      "owner": "visibility/release workflow",
+      "editable_after_upload": false,
+      "reason": "Upload and review APIs must not mutate client visibility."
+    }
+  ],
+  "projection_and_redaction_contract": {
+    "internal_roles_may_receive": [
+      "document id/title/status/type",
+      "review lifecycle status",
+      "evidence ids/status when role and scope allow",
+      "safe audit references"
+    ],
+    "client_source_document_projection_may_receive": [
+      "own uploaded source-document metadata",
+      "fileName for uploader context",
+      "document type and version number"
+    ],
+    "blocked_or_unreleased_client_projection_must_not_receive": [
+      "storageKey",
+      "checksum",
+      "latestVersionChecksum",
+      "raw evidence status",
+      "evidence visibility status",
+      "sensitivity",
+      "internal notes",
+      "compliance notes",
+      "extraction low-confidence fields"
+    ],
+    "released_client_safe_projection_may_receive": [
+      "title",
+      "documentType",
+      "latestVersionNumber",
+      "versionCount",
+      "client-safe summary when released/redacted"
+    ]
+  },
+  "audit_event_mapping": [
+    {
+      "event": "document.upload.created",
+      "result": "SUCCESS",
+      "targetType": "DOCUMENT",
+      "state_change": "EMPTY -> UPLOADED",
+      "criticality": "required before document/evidence/extraction rows are created"
+    },
+    {
+      "event": "document.upload.denied",
+      "result": "DENIED",
+      "targetType": "DOCUMENT",
+      "state_change": "EMPTY -> EMPTY",
+      "criticality": "records denied upload attempt without row mutation"
+    },
+    {
+      "event": "document.evidence_review.linked",
+      "result": "SUCCESS",
+      "targetType": "DOCUMENT",
+      "state_change": "CREATED -> LINKED",
+      "criticality": "review/link only; not sufficiency"
+    },
+    {
+      "event": "document.evidence_review.clarification_requested",
+      "result": "SUCCESS",
+      "targetType": "DOCUMENT",
+      "state_change": "UPLOADED -> NEEDS_CLARIFICATION",
+      "criticality": "blocks sufficiency and release/export"
+    },
+    {
+      "event": "document.evidence_sufficiency.accepted",
+      "result": "SUCCESS",
+      "targetType": "EVIDENCE_RECORD",
+      "state_change": "CREATED/LINKED -> VALIDATED",
+      "criticality": "compliance-only sufficiency decision, no client release"
+    },
+    {
+      "event": "document.evidence_sufficiency.blocked",
+      "result": "BLOCKED",
+      "targetType": "EVIDENCE_RECORD",
+      "state_change": "unchanged",
+      "criticality": "records failed sufficiency preconditions without mutation"
+    }
+  ],
+  "bold_cleanup_recommendations": [
+    "Stop exposing upload implementation fields in any default API response; keep checksum/storageKey inside audit/storage proof only.",
+    "Treat DocumentStatus and EvidenceStatus as separate axes; never compress them into one generic 'approved' UI state.",
+    "Require every review action to return an explicit safety object with noClientRelease, releaseUnlocked and exportUnlocked.",
+    "Keep EvidenceSufficiencyDecision as the only canonical sufficiency decision record for journey-level gates; document review sufficiency must map to that model or remain scoped document evidence only.",
+    "Remove any future compatibility API that accepts roleKey/tenantSlug without mapping to CurrentUserContext before P0 hardening."
+  ],
+  "implementation_decision": {
+    "type": "SPEC_LOCK_NO_PRODUCT_CODE_CHANGE",
+    "rationale": "The upload and review persistence contracts already exist in typed services, API routes, Prisma models and tests. BD-04-B locks the contract and prevents downstream UI from overclaiming what the APIs actually persist."
+  },
+  "validation": {
+    "commands_run": [
+      {
+        "command": "node -e JSON.parse(BD_04_B_EVIDENCE_IO_PERSISTENCE_CONTRACT.json)",
+        "status": "PASS",
+        "result": "6 upload row contracts, 3 review action contracts, 6 audit mappings"
+      },
+      {
+        "command": "pnpm playwright test tests/document-upload-api.spec.ts tests/evidence-review-api.spec.ts --workers=1",
+        "status": "PASS",
+        "result": "16 passed"
+      },
+      {
+        "command": "pnpm guard:source",
+        "status": "PASS",
+        "result": "0 violations"
+      }
+    ],
+    "status": "PASS"
+  },
+  "next_subtask": {
+    "id": "BD-04-C",
+    "name": "Sufficiency decision guard",
+    "status": "READY_AFTER_BD_04_B_VALIDATION"
+  }
+}
