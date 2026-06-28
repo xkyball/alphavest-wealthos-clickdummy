@@ -1083,7 +1083,7 @@ function PortalPage({ title }: { title: string }) {
         routeId="019"
         safetyNote="Client context cannot expose internal payloads, mark evidence sufficient or bypass compliance release."
         statusItems={[
-          { label: "Route", tone: "blue", value: "019" },
+          { label: "Context", tone: "blue", value: "Client home" },
           { label: "Visibility", tone: "gold", value: "released projection only" },
         ]}
         title={title}
@@ -2647,7 +2647,7 @@ function DocumentsPage({ title }: { title: string }) {
         routeId="027"
         safetyNote="The document hub lists scoped intake state only; it cannot mark review complete, prove sufficiency or release content."
         statusItems={[
-          { label: "Route", tone: "blue", value: "027" },
+          { label: "Surface", tone: "blue", value: "Document hub" },
           { label: "Lifecycle", tone: "gold", value: "intake overview" },
         ]}
         title={title}
@@ -2944,7 +2944,7 @@ function DocumentUploadPage({ title }: { title: string }) {
         routeId="028"
         safetyNote="Upload can create a pending review item only. It cannot complete evidence review, export approval or client visibility."
         statusItems={[
-          { label: "Route", tone: "blue", value: "028" },
+          { label: "Surface", tone: "blue", value: "Upload intake" },
           { label: "Lifecycle", tone: "gold", value: "upload intake" },
         ]}
         title={title}
@@ -3184,7 +3184,7 @@ function ExtractionReviewPage({ title }: { title: string }) {
         routeId="029"
         safetyNote="Extraction review resolves draft data quality only; final evidence, release, export and client visibility stay gated."
         statusItems={[
-          { label: "Route", tone: "blue", value: "029" },
+          { label: "Surface", tone: "blue", value: "Extraction review" },
           { label: "Lifecycle", tone: "gold", value: "human review" },
         ]}
         title={title}
@@ -3233,7 +3233,7 @@ function VerificationPendingPage({ title }: { title: string }) {
         routeId="030"
         safetyNote="Verification pending means human review is in progress; it is not final validation, evidence sufficiency or client release."
         statusItems={[
-          { label: "Route", tone: "blue", value: "030" },
+          { label: "Surface", tone: "blue", value: "Verification" },
           { label: "Lifecycle", tone: "red", value: "review pending" },
         ]}
         title={title}

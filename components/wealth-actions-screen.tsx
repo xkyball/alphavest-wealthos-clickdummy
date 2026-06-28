@@ -254,7 +254,7 @@ function WealthMapPage({ title }: { title: string; visualState?: VisualState }) 
         routeId="031"
         safetyNote="The wealth map can reveal structure and route work, but cannot mark action readiness or expose restricted object details."
         statusItems={[
-          { label: "Route", tone: "blue", value: "031" },
+          { label: "Context", tone: "blue", value: "Wealth map" },
           { label: "Surface", tone: "gold", value: "wealth context" },
         ]}
         title={title}
@@ -636,7 +636,7 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
         routeId="032"
         safetyNote="Action context can prioritize work only. Evidence, audit, workflow and approval gates still control readiness and visibility."
         statusItems={[
-          { label: "Route", tone: "blue", value: "032" },
+          { label: "Queue", tone: "blue", value: "Action review" },
           { label: "Surface", tone: selectedAction.evidenceState.includes("Missing") ? "red" : "gold", value: selectedAction.evidenceState },
         ]}
         title={title}

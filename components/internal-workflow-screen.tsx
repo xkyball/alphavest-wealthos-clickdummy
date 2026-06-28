@@ -29,6 +29,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  DataTable,
   FilterBar,
   MasterDetailSurface,
   Modal,
@@ -36,7 +37,8 @@ import {
   StatePanel,
   StickyActionZone,
   FieldFeedback,
-  type BadgeTone
+  type BadgeTone,
+  type DataTableColumn
 } from "@/components/ui";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { DemoActorHandoffBar } from "@/components/demo-actor-handoff-bar";
@@ -45,7 +47,6 @@ import { OperationalDefaultSurface } from "@/components/operational-default-surf
 import { RouteContextChip } from "@/components/route-context-chip";
 import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
 import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
-import { UxComplexityPriorityPanel } from "@/components/ux-complexity-priority-panel";
 import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
 import {
@@ -390,6 +391,10 @@ function toneFor(value: string): BadgeTone {
   }
 
   return "muted";
+}
+
+function handleStaticSortChange() {
+  return undefined;
 }
 
 function ScreenTitle({ children }: { children: React.ReactNode }) {
@@ -1463,6 +1468,13 @@ function AdvisorQueuePage({ title }: { title: string }) {
     [row.client, row.structure, row.type, row.topic, row.priority, row.status].some((value) => value.toLowerCase().includes(normalizedSearchTerm))
   ));
   const selectedAdvisorRow = visibleRows.find((row) => row.client === selectedAdvisorClient) ?? visibleRows[0];
+  const advisorQueueColumns: Array<DataTableColumn<(typeof advisorQueue)[number]>> = [
+    { key: "client", header: "Client", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.client}</span>, sortable: true },
+    { key: "type", header: "Type", render: (row) => row.type, sortable: true },
+    { key: "topic", header: "Topic", render: (row) => row.topic, sortable: true },
+    { key: "priority", header: "Priority", render: (row) => <Badge tone={toneFor(row.priority)}>{row.priority}</Badge>, sortable: true },
+    { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge>, sortable: true },
+  ];
 
   return (
     <InternalShell activePageId="036">
@@ -1539,6 +1551,25 @@ function AdvisorQueuePage({ title }: { title: string }) {
                     placeholder="Search queue..."
                     queryValue={searchTerm}
                     searchTestId="ux-interaction-advisor-search"
+                  />
+                  <DataTable
+                    actionPolicy="open_detail"
+                    columns={advisorQueueColumns}
+                    compact
+                    density="compact"
+                    emptyMessage="No advisor packages match this search."
+                    family="queue"
+                    filterState={searchTerm.length > 0 ? "active_query" : "inactive"}
+                    getRowId={(row) => row.client}
+                    masterDetailMode="inline_detail_rail"
+                    mobileCardTitle={(row) => row.client}
+                    onRowAction={(row) => router.push("/advisor/reviews/demo")}
+                    onSortChange={handleStaticSortChange}
+                    responsiveMode="table"
+                    rowActionLabel={(row) => `Open advisor detail for ${row.client}`}
+                    rows={visibleRows}
+                    sortDirection="asc"
+                    sortKey="client"
                   />
                   <div className="space-y-2">
                     {visibleRows.map((row) => {
@@ -1734,7 +1765,7 @@ function AdvisorDecisionRoomPanel() {
                   ))}
                 </div>
                 <p className="mt-4 rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3 text-sm text-alphavest-gold-soft">
-                  Internal draft only. Unsupported claims require evidence-backed rebuild; advisor approval does not release, export or create client acceptance.
+                  Internal draft only, not client advice. Unsupported claims require evidence-backed rebuild; advisor candidate and compliance review keep client visibility blocked until audited release gates pass.
                 </p>
               </CardContent>
             </Card>
@@ -1810,7 +1841,6 @@ function AdvisorDetailPage({ title }: { title: string }) {
           <div className="space-y-4">
             <Phase4WorkbenchPanel activeTask="ADV-219 selected" blocker="Blocked by compliance, evidence and audit gates." compact context="Advisor can assess suitability wording, but cannot publish client-visible advice." primaryAction="Record advisor review" queueLabel="Advisor approval queue" safetyNote="Advisor approval does not set clientVisible and does not bypass compliance release." taskId="UX-WORKBENCH-003" />
             <AdvisorNotReleaseGate />
-            <Phase5DetailSplitPanel compact decisionSupport="Suitability, rationale and evidence review" objectLabel="Advisor package detail" objectState="Internal advisor review; compliance release missing" pageJob="One package review" safetyBoundary="No clientVisible, release, export or compliance bypass" splitTaskId="UX-PAGE-SPLIT-004" taskId="UX-PAGE-SPLIT-004" />
             <AdvisorDecisionRoomPanel />
           </div>
         }
@@ -1883,6 +1913,13 @@ function ComplianceQueuePage({ title }: { title: string }) {
     [row.id, row.item, row.sub, row.classification, row.risk, row.advisor, row.evidence, row.publish].some((value) => value.toLowerCase().includes(normalizedSearchTerm))
   ));
   const selectedReview = visibleRows.find((row) => row.id === selectedReviewId) ?? visibleRows[0];
+  const complianceQueueColumns: Array<DataTableColumn<(typeof complianceQueue)[number]>> = [
+    { key: "id", header: "Review", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.id}</span>, sortable: true },
+    { key: "item", header: "Item", render: (row) => row.item, sortable: true },
+    { key: "classification", header: "Classification", render: (row) => row.classification, sortable: true },
+    { key: "risk", header: "Risk", render: (row) => <Badge tone={toneFor(row.risk)}>{row.risk}</Badge>, sortable: true },
+    { key: "publish", header: "Publish", render: (row) => <Badge tone={toneFor(row.publish)}>{row.publish}</Badge>, sortable: true },
+  ];
 
   return (
     <InternalShell activePageId="038">
@@ -1954,6 +1991,25 @@ function ComplianceQueuePage({ title }: { title: string }) {
                     queryValue={searchTerm}
                     resetLabel="Clear"
                     searchTestId="ux-interaction-compliance-search"
+                  />
+                  <DataTable
+                    actionPolicy="open_detail"
+                    columns={complianceQueueColumns}
+                    compact
+                    density="compact"
+                    emptyMessage="No compliance reviews match this search."
+                    family="queue"
+                    filterState={searchTerm.length > 0 ? "active_query" : "inactive"}
+                    getRowId={(row) => row.id}
+                    masterDetailMode="inline_detail_rail"
+                    mobileCardTitle={(row) => row.id}
+                    onRowAction={(row) => router.push(`/compliance/reviews/${row.id}/decision-room`)}
+                    onSortChange={handleStaticSortChange}
+                    responsiveMode="table"
+                    rowActionLabel={(row) => `Open gated decision room for ${row.id}`}
+                    rows={visibleRows}
+                    sortDirection="asc"
+                    sortKey="id"
                   />
                   <div className="space-y-2">
                     {visibleRows.map((row) => {
@@ -2175,6 +2231,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
             <Phase5DetailSplitPanel compact decisionSupport="Evidence, policy and audit state before release action" objectLabel="Compliance object review" objectState="Release gates not satisfied" pageJob="One release decision room" safetyBoundary="No release, export or client acceptance without gated controls" splitTaskId="UX-PAGE-SPLIT-003" taskId="UX-PAGE-SPLIT-003" />
             <ComplianceReleaseGate />
             <Phase6DecisionRoomPanel audit="Audit event must record actor, target, gate state and confirm or cancel outcome before any release mutation." blocker={releaseBlocker} cancelLabel="Cancel without mutation" compact confirmLabel="Confirm compliance release" decisionLabel="Compliance release decision room" evidence="Evidence checklist, policy exception state and audit references are visible before decision." preconditions="Evidence review complete, policy pass, human reviewer and compliance approver must all pass." safetyNote="No release, export or advice effect can occur until gate preconditions pass and an audit record exists." taskId="UX-DECISION-ROOM-001" />
+            <CompliancePreconditionChecklist />
             <ComplianceDecisionRoomPanel />
           </div>
         }

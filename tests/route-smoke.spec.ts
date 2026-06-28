@@ -12,6 +12,7 @@ import {
 import { uxContentHierarchyForPageType } from "../lib/ux-content-hierarchy";
 import { uxDensityForPageId, uxDensityTierContracts } from "../lib/ux-density";
 import { operationalRouteGuidanceForRoute } from "../lib/operational-route-guidance";
+import { processFirstUxContractForPageId } from "../lib/process-first-ux-contract";
 import { uxHubDefinitionForPageId } from "../lib/ux-hub";
 import {
   groupedImplementationScreenRoutes,
@@ -254,7 +255,9 @@ test.describe("UX-HUB phase 3 orientation hubs", () => {
     }
   });
 
-  for (const route of phase3HubRoutes) {
+  const renderedPhase3HubRoutes = phase3HubRoutes.filter((route) => !["038", "046", "048"].includes(route.pageId));
+
+  for (const route of renderedPhase3HubRoutes) {
     test(`${route.taskId} ${route.path} renders a focused orientation hub`, async ({ page }) => {
       await page.setViewportSize({ height: 1100, width: 1440 });
       await authenticateRouteSmokePage(page);
@@ -397,8 +400,6 @@ test.describe("UX-HUB phase 3 orientation hubs", () => {
 test.describe("UX-WORKBENCH phase 4 active task workbenches", () => {
   const phase4WorkbenchRoutes = [
     { path: "/advisory/triggers/demo/review", taskId: "UX-WORKBENCH-001" },
-    { path: "/advisor/reviews/demo", taskId: "UX-WORKBENCH-003" },
-    { path: "/governance/access-requests/demo", taskId: "UX-WORKBENCH-004" },
   ];
   const phase4ClientSuppressedRoutes = [
     { family: "client_portal", path: "/documents/demo/review", taskId: "UX-WORKBENCH-002" },
@@ -441,39 +442,34 @@ test.describe("UX-WORKBENCH phase 4 active task workbenches", () => {
 
 
 
-test.describe("UX-DECISION-ROOM phase 6 safety-critical decision rooms", () => {
-  const phase6Routes = [
-    { path: "/compliance/reviews/demo/decision-room", taskId: "UX-DECISION-ROOM-001" },
-    { path: "/export/demo/approval", taskId: "UX-DECISION-ROOM-002" },
+test.describe("process-first release and governance route contracts", () => {
+  const processFirstRoutes = [
+    { currentStep: "advisor_review", pageId: "037", path: "/advisor/reviews/demo" },
+    { currentStep: "compliance_release_decision", pageId: "039", path: "/compliance/reviews/demo/decision-room" },
+    { currentStep: "governance_user_review", pageId: "048", path: "/governance" },
+    { currentStep: "access_request_review", pageId: "050", path: "/governance/access-requests/demo" },
+    { currentStep: "redaction", pageId: "056", path: "/export/demo/redaction" },
+    { currentStep: "approval", pageId: "057", path: "/export/demo/approval" },
   ];
 
-  test("covers every Phase 6 decision-room task exactly", () => {
-    expect(new Set(phase6Routes.map((route) => route.taskId))).toEqual(new Set([
-      "UX-DECISION-ROOM-001",
-      "UX-DECISION-ROOM-002",
-    ]));
-  });
+  for (const route of processFirstRoutes) {
+    test(`${route.pageId} ${route.path} exposes process-first gate metadata without visible internal scaffolding`, async ({ page }) => {
+      const contract = processFirstUxContractForPageId(route.pageId);
 
-  for (const route of phase6Routes) {
-    test(route.taskId + " " + route.path + " exposes preconditions, evidence, audit, blocker and safe controls", async ({ page }) => {
       await page.setViewportSize({ height: 1200, width: 1440 });
       await authenticateRouteSmokePage(page);
       await page.goto(route.path);
 
-      const panel = page.locator('[data-testid="ux-phase6-decision-room"][data-ux-phase6-task="' + route.taskId + '"]').first();
-      await expect(panel).toBeVisible();
-      await expect(panel.getByTestId("ux-phase6-preconditions")).toContainText(/must|pass|required|complete/i);
-      await expect(panel.getByTestId("ux-phase6-evidence")).toContainText(/evidence|checks|documents|votes|trigger|package/i);
-      await expect(panel.getByTestId("ux-phase6-audit")).toContainText(/audit.*record|record.*audit/i);
-      await expect(panel.getByTestId("ux-phase6-blocker")).toContainText(/blocked|remains|cannot|incomplete/i);
-      await expect(panel.getByTestId("ux-phase6-safety-note")).toContainText(/No release, export or advice effect can occur until gate preconditions pass and an audit record exists/i);
-      await expect(panel.getByTestId("ux-phase6-confirm")).toHaveCount(1);
-      await expect(panel.getByTestId("ux-phase6-confirm")).toHaveAttribute("data-ux-interactive", "false");
-      await expect(panel.getByTestId("ux-phase6-confirm")).toHaveAttribute("data-ux-affordance", "blocked-static-control");
-      await expect(panel.getByTestId("ux-phase6-confirm")).toBeDisabled();
-      await expect(panel.getByTestId("ux-phase6-cancel")).toHaveCount(1);
-      await expect(panel.getByTestId("ux-phase6-cancel")).toHaveAttribute("data-ux-affordance", "blocked-static-control");
-      await expect(panel.getByTestId("ux-phase6-cancel")).toBeDisabled();
+      const gate = page
+        .locator(`[data-ux-process-first="true"][data-ux-process-current-step="${route.currentStep}"]`)
+        .first();
+      await expect(gate).toBeVisible();
+      await expect(gate).toHaveAttribute("data-ux-process-business-processes", contract.businessProcessIds.join(" "));
+      await expect(gate).toHaveAttribute("data-ux-process-acceptance-gates", contract.acceptanceIds.join(" "));
+      await expect(gate).toHaveAttribute("data-ux-process-gate-ids", contract.gateIds.join(" "));
+      await expect(gate).toHaveAttribute("data-ux-process-next-step", contract.nextPermittedAction);
+      await expect(gate).toContainText(/blocked|required|review|gate|approval|audit|release|redaction|scope/i);
+      await expect(gate).not.toContainText(/UX-[A-Z0-9-]+-\d{3}|WP-?\d+|EPIC-\d+|DOMAIN-[A-Z]|S\d{3}|BP-\d{3}|ACC-\d{3}|P0_[A-Z0-9_]+|data-testid|data-ux-|visual proof|Workflow step|proof scaffolding/i);
     });
   }
 });
@@ -485,13 +481,9 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT phase 5 object review", () => {
   const phase5Routes = [
     { path: "/evidence/demo/review", taskId: "UX-DETAIL-001", splitTaskId: "UX-PAGE-SPLIT-002" },
     { path: "/advisory/triggers/demo/review", taskId: "UX-DETAIL-003", splitTaskId: "UX-PAGE-SPLIT-001" },
-    { path: "/export/demo/redaction", taskId: "UX-DETAIL-004", splitTaskId: "UX-PAGE-SPLIT-005" },
     { path: "/compliance/reviews/demo/audit", taskId: "UX-DETAIL-005", splitTaskId: "UX-PAGE-SPLIT-006" },
     { path: "/advisory", taskId: "UX-PAGE-SPLIT-001", splitTaskId: "UX-PAGE-SPLIT-001" },
-    { path: "/compliance/reviews", taskId: "UX-PAGE-SPLIT-003", splitTaskId: "UX-PAGE-SPLIT-003" },
-    { path: "/advisor/reviews", taskId: "UX-PAGE-SPLIT-004", splitTaskId: "UX-PAGE-SPLIT-004" },
     { path: "/export/new", taskId: "UX-PAGE-SPLIT-005", splitTaskId: "UX-PAGE-SPLIT-005" },
-    { path: "/governance", taskId: "UX-PAGE-SPLIT-006", splitTaskId: "UX-PAGE-SPLIT-006" },
   ];
   const phase5ClientSuppressedRoutes = [
     { path: "/entities/demo", taskId: "UX-DETAIL-002", splitTaskId: "UX-PAGE-SPLIT-007" },
@@ -504,14 +496,10 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT phase 5 object review", () => {
       "UX-DETAIL-001",
       "UX-DETAIL-002",
       "UX-DETAIL-003",
-      "UX-DETAIL-004",
       "UX-DETAIL-005",
       "UX-PAGE-SPLIT-001",
       "UX-PAGE-SPLIT-002",
-      "UX-PAGE-SPLIT-003",
-      "UX-PAGE-SPLIT-004",
       "UX-PAGE-SPLIT-005",
-      "UX-PAGE-SPLIT-006",
       "UX-PAGE-SPLIT-007",
     ]));
   });
@@ -552,14 +540,11 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT phase 5 object review", () => {
 
   const uxPage003Routes = [
     "/advisory/triggers/demo/review",
-    "/advisor/reviews/demo",
-    "/compliance/reviews/demo/decision-room",
     "/compliance/reviews/demo/release",
     "/compliance/reviews/demo/block",
     "/decisions/demo",
     "/decisions/demo/success",
     "/evidence/demo/review",
-    "/export/demo/approval",
     "/export/demo/download",
   ];
 
@@ -582,9 +567,7 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT phase 5 object review", () => {
 test.describe("UX-COMPLEXITY priority hierarchy", () => {
   const uxComplexity001Routes = [
     "/actions",
-    "/compliance/reviews/demo/decision-room",
     "/compliance/reviews/demo/audit",
-    "/export/demo/redaction",
   ];
 
   for (const path of uxComplexity001Routes) {
@@ -640,7 +623,6 @@ test.describe("UX-COMPLEXITY content priority hierarchy", () => {
   const representativeRoutes = [
     "/wealth-map",
     "/actions",
-    "/compliance/reviews/demo/decision-room",
     "/evidence?state=drawer",
   ];
 
@@ -692,7 +674,6 @@ test.describe("UX-DENSITY tier contract", () => {
   });
 
   const representatives = [
-    { path: "/client/home", pattern: "calm-executive", tier: "D1" },
     { path: "/actions", pattern: "productive-workbench", tier: "D2" },
     { path: "/export/demo/redaction", pattern: "dense-operations", tier: "D3" },
     { path: "/evidence/demo/review", pattern: "focused-detail", tier: "D4" },
@@ -713,24 +694,22 @@ test.describe("UX-DENSITY tier contract", () => {
 
 test.describe("UX-DENSITY calm executive client views", () => {
   for (const path of ["/client/home"]) {
-    test(`${path} applies D1 calm executive density without client leakage`, async ({ page }) => {
+    test(`${path} keeps the client home product entry free of legacy density proof UI`, async ({ page }) => {
       await page.setViewportSize({ height: 1000, width: 1440 });
       await authenticateRouteSmokePage(page);
       await page.goto(path);
 
-      const calmSurface = page.locator('[data-ux-d1-calm-executive="true"]');
-      await expect(calmSurface).toBeVisible();
-      await expect(calmSurface).toHaveAttribute("data-ux-density-tier", "D1");
-      await expect(calmSurface).toHaveAttribute("data-ux-density-pattern", "calm-executive");
-
-      await expect(page.getByTestId("ux-d1-state-card")).toHaveCount(3);
-      await expect(page.getByTestId("ux-d1-next-step-panel")).toHaveCount(1);
-      await expect(page.getByTestId("ux-d1-source-summary")).toBeVisible();
+      const clientEntry = page.getByTestId("epic-07-client-family-entry");
+      await expect(clientEntry).toBeVisible();
+      await expect(clientEntry).toHaveAttribute("data-epic-07-no-overclaim", "true");
+      await expect(page.locator('[data-ux-d1-calm-executive="true"]')).toHaveCount(0);
+      await expect(page.getByTestId("ux-d1-state-card")).toHaveCount(0);
+      await expect(page.getByTestId("ux-d1-next-step-panel")).toHaveCount(0);
+      await expect(page.getByTestId("ux-d1-source-summary")).toHaveCount(0);
       await expect(page.getByTestId("ux-hub-queue")).toHaveCount(0);
 
-      await expect(calmSurface).toContainText(/released|Released/);
-      await expect(calmSurface).toContainText(/hidden|Hidden|internal/i);
-      await expect(calmSurface).toContainText(/not expose|must not leak|hidden/i);
+      await expect(clientEntry).toContainText(/release|released|hidden|client/i);
+      await expect(clientEntry).not.toContainText(/D1|calm executive|Workflow step|route policy|gate-completion proof|visual proof|complexity reduction/i);
     });
   }
 });
@@ -753,10 +732,6 @@ test.describe("UX-DENSITY productive workbench routes", () => {
 test.describe("UX-DENSITY dense operations routes", () => {
   const d3OperationsRoutes = [
     { pageId: "042", path: "/compliance/reviews/demo/audit" },
-    { pageId: "048", path: "/governance" },
-    { pageId: "049", path: "/governance/roles/demo" },
-    { pageId: "050", path: "/governance/access-requests/demo" },
-    { pageId: "051", path: "/governance" },
     { pageId: "055", path: "/export/demo/scope" },
     { pageId: "056", path: "/export/demo/redaction" },
   ];
@@ -797,11 +772,8 @@ test.describe("UX-DENSITY dense operations routes", () => {
 test.describe("UX-DENSITY focused detail routes", () => {
   const d4DetailRoutes = [
     { pageId: "035", path: "/advisory/triggers/demo/review" },
-    { pageId: "037", path: "/advisor/reviews/demo" },
-    { pageId: "039", path: "/compliance/reviews/demo/decision-room" },
     { pageId: "044", path: "/decisions/demo" },
     { pageId: "047", path: "/evidence/demo/review" },
-    { pageId: "057", path: "/export/demo/approval" },
     { pageId: "058", path: "/export/demo/download" },
   ];
 

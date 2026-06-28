@@ -54,6 +54,21 @@ Important: the images are not pixel-perfect contracts. They show design directio
 ## Clean UI rule
 Do not implement spec panels, route labels, filenames, annotation rails, dev notes, callout legends or explanatory documentation as app UI. Only implement actual application UI.
 
+## Operational UI non-negotiable
+Default product surfaces must never expose internal implementation logic as visible
+UI. This includes route IDs, task IDs, UX phase IDs, work-package IDs, business
+process IDs, acceptance IDs, `data-testid`/`data-ux-*` names, proof/reviewer
+scaffolding, capture warnings, source-trace wording, contract names, debug
+metadata or other internal state-machine labels.
+
+The UI may show only product-native task state, object state, blockers, recovery
+actions and safety obligations that a user needs to complete the current job.
+Process/runtime truth must be service-, database- and test-backed, but its
+internal proof markers stay in code metadata, APIs, reports or explicit
+reviewer/proof tooling, not in the operational surface. If a test or contract
+requires visible internal scaffolding, treat that contract as stale and refactor
+the contract instead of adding compatibility UI.
+
 ## Refactor-first anti-shortcut rule
 When a requested UI/UX improvement can be implemented through a real component,
 layout, route, state, navigation, density, accessibility, or shared-design-system

@@ -3,7 +3,9 @@ import { expect, test } from "@playwright/test";
 import {
   buildPhase0SourceRealitySnapshot,
   evaluateTrueUxTechnicalGuard,
+  findOperationalSurfaceNonNegotiableViolationsForText,
   findTechnicalGuardViolationsForText,
+  listOperationalSurfaceFiles,
   phase0LockedApiRoutes,
   phase0LockedPrismaShape,
   phase0LockedRouteWorksetCounts,
@@ -112,8 +114,48 @@ test.describe("True UX source reality gate", () => {
       "FINAL_CODEX_IMPLEMENTATION_HANDOFF.md",
       "README.md",
     ]);
+    expect(result.checkedSurfaceFiles).toEqual(listOperationalSurfaceFiles());
+    expect(result.checkedSurfaceFiles.length).toBeGreaterThan(0);
     expect(result.checkedScripts).toEqual(["guard:source", "test:source-reality"]);
     expect(result.violations).toEqual([]);
+  });
+
+  test("breaks when operational UI renders internal proof or process scaffolding as visible copy", () => {
+    const violations = findOperationalSurfaceNonNegotiableViolationsForText(
+      "components/example-screen.tsx",
+      [
+        '<CardTitle>UX-DECISION-ROOM-001 release proof</CardTitle>',
+        '<PageHeading subtitle="data-testid selector proves Workflow step BP-063" title="Compliance" />',
+        '{ label: "Route", tone: "blue", value: "048" },',
+      ].join("\n"),
+    );
+
+    expect(violations).toEqual([
+      expect.objectContaining({
+        line: 1,
+        ruleId: "NO_VISIBLE_INTERNAL_UI_SCAFFOLDING",
+      }),
+      expect.objectContaining({
+        line: 2,
+        ruleId: "NO_VISIBLE_INTERNAL_UI_SCAFFOLDING",
+      }),
+      expect.objectContaining({
+        line: 3,
+        ruleId: "NO_VISIBLE_INTERNAL_UI_SCAFFOLDING",
+      }),
+    ]);
+  });
+
+  test("allows product-native operational state and recovery copy", () => {
+    expect(
+      findOperationalSurfaceNonNegotiableViolationsForText(
+        "components/example-screen.tsx",
+        [
+          '<CardTitle>Compliance release blocked</CardTitle>',
+          '<StatePanel detail="Evidence review is incomplete. Request missing evidence before release can continue." title="Release blocked" />',
+        ].join("\n"),
+      ),
+    ).toEqual([]);
   });
 
   test("distinguishes forbidden target drift from approved stop-rule wording", () => {

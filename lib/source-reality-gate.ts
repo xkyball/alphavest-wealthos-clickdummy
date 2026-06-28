@@ -102,7 +102,8 @@ export type TechnicalGuardRuleId =
   | "NO_MAIN_TARGET_TRUTH"
   | "NO_UNAUTHORIZED_SCREEN_ASSET_GENERATION"
   | "NO_BLIND_SCHEMA_OR_PATCH_REPLACEMENT"
-  | "NO_SCOPE_ELEVATION_WITHOUT_POLICY";
+  | "NO_SCOPE_ELEVATION_WITHOUT_POLICY"
+  | "NO_VISIBLE_INTERNAL_UI_SCAFFOLDING";
 
 export type TechnicalGuardViolation = {
   filePath: string;
@@ -118,6 +119,50 @@ type TechnicalGuardRule = {
   forbidden: RegExp[];
   allowedContext: RegExp;
 };
+
+export const operationalSurfaceGuardRoots = ["app", "components"] as const;
+
+const visibleUiStringPropNames = [
+  "actionLabel",
+  "actionState",
+  "blocker",
+  "context",
+  "description",
+  "detail",
+  "eyebrow",
+  "label",
+  "placeholder",
+  "primaryAction",
+  "queueLabel",
+  "safetyNote",
+  "subtitle",
+  "title",
+] as const;
+
+const visibleInternalUiTokenPattern =
+  /(?:\bUX-[A-Z0-9-]+-\d{3}\b|\bWP-?\d+\b|\bEPIC-\d+\b|\bDOMAIN-[A-Z]\b|\bS\d{3}\b|\bBP-\d{3}\b|\bACC-\d{3}\b|\bP0_[A-Z0-9_]+\b|data-testid|data-ux-|gate-completion proof|visual proof|Workflow step|proof scaffolding|reviewer mode|capture warning|route ID|task ID|source trace|debug metadata)/i;
+
+const visibleUiPropPattern = new RegExp(
+  `\\b(?:${visibleUiStringPropNames.join("|")})\\s*=\\s*"[^"]*${visibleInternalUiTokenPattern.source}[^"]*"`,
+  "i",
+);
+
+const visibleJsxTextPattern = new RegExp(`>[^<]*${visibleInternalUiTokenPattern.source}[^<]*<`, "i");
+const visibleInternalStatusItemPattern = /\{\s*label:\s*["']Route["']\s*,[^}]*\bvalue:\s*["'](?:\d{2,3}|[A-Z0-9-]*\d{2,3}[A-Z0-9-]*)["']/i;
+
+const operationalSurfaceGuardExcludedFilePatterns = [
+  /(?:^|\/)proof-reviewer-[^/]+\.tsx$/,
+  /(?:^|\/)ux-proof-reviewer-[^/]+\.tsx$/,
+  /(?:^|\/)component-library-preview\.tsx$/,
+] as const;
+
+function isOperationalSurfaceFile(filePath: string) {
+  return (
+    filePath.endsWith(".tsx") &&
+    operationalSurfaceGuardRoots.some((root) => filePath.startsWith(`${root}/`)) &&
+    !operationalSurfaceGuardExcludedFilePatterns.some((pattern) => pattern.test(filePath))
+  );
+}
 
 export const trueUxTechnicalGuardRules: TechnicalGuardRule[] = [
   {
@@ -209,6 +254,13 @@ export function listSpecFiles(cwd = process.cwd()) {
   return listFilesBySuffix("tests", ".spec.ts", cwd);
 }
 
+export function listOperationalSurfaceFiles(cwd = process.cwd()) {
+  return operationalSurfaceGuardRoots
+    .flatMap((root) => listFilesBySuffix(root, ".tsx", cwd))
+    .filter(isOperationalSurfaceFile)
+    .sort();
+}
+
 export function readPrismaShape(cwd = process.cwd()) {
   const schema = readFileSync(path.join(cwd, "prisma/schema.prisma"), "utf8");
 
@@ -283,9 +335,35 @@ export function findTechnicalGuardViolationsForText(filePath: string, text: stri
   return violations;
 }
 
+export function findOperationalSurfaceNonNegotiableViolationsForText(filePath: string, text: string) {
+  const violations: TechnicalGuardViolation[] = [];
+  const lines = text.split(/\r?\n/);
+
+  lines.forEach((lineText, index) => {
+    const visibleInternalScaffold =
+      visibleJsxTextPattern.test(lineText) || visibleUiPropPattern.test(lineText) || visibleInternalStatusItemPattern.test(lineText);
+
+    if (!visibleInternalScaffold) {
+      return;
+    }
+
+    violations.push({
+      filePath,
+      line: index + 1,
+      ruleId: "NO_VISIBLE_INTERNAL_UI_SCAFFOLDING",
+      message:
+        "Operational UI must not render internal route/task/process/proof/debug scaffolding as visible product copy. Refactor the stale contract or move proof to reviewer/report metadata.",
+      excerpt: lineText.trim(),
+    });
+  });
+
+  return violations;
+}
+
 export function evaluateTrueUxTechnicalGuard(cwd = process.cwd()) {
   const violations: TechnicalGuardViolation[] = [];
   const targetTexts = readTrueUxTechnicalGuardTargetTexts(cwd);
+  const checkedSurfaceFiles = listOperationalSurfaceFiles(cwd);
 
   for (const target of targetTexts) {
     if (!target.exists) {
@@ -346,8 +424,14 @@ export function evaluateTrueUxTechnicalGuard(cwd = process.cwd()) {
     }
   }
 
+  for (const surfaceFile of checkedSurfaceFiles) {
+    const text = readFileSync(path.join(cwd, surfaceFile), "utf8");
+    violations.push(...findOperationalSurfaceNonNegotiableViolationsForText(surfaceFile, text));
+  }
+
   return {
     checkedFiles: targetTexts.map((target) => target.path),
+    checkedSurfaceFiles,
     checkedScripts: Object.keys(trueUxTechnicalGuardRequiredScripts),
     violations,
   };

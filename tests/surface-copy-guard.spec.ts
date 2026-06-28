@@ -42,11 +42,15 @@ test.describe("surface copy guard", () => {
   test("keeps the clean UI rule anchored in source docs and route smoke", () => {
     const agents = readRepoFile("AGENTS.md");
     const handbook = readRepoFile("docs/v3/ALPHAVEST_SURFACE_COPY_HANDBOOK_RULE.md");
-    const routeSmoke = readRepoFile("tests/route-smoke.spec.ts");
+    const nonNegotiable = readRepoFile("docs/ux/ALPHAVEST_OPERATIONAL_UI_NON_NEGOTIABLE.md");
+    const sourceRealityGate = readRepoFile("lib/source-reality-gate.ts");
 
     expect(agents).toContain("Do not implement spec panels, route labels, filenames, annotation rails, dev notes, callout legends or explanatory documentation as app UI.");
+    expect(agents).toContain("Default product surfaces must never expose internal implementation logic as visible");
     expect(handbook).toContain("route IDs, route labels, filenames or task IDs");
-    expect(routeSmoke).toContain("not.toContainText(/UX-WORKBENCH-\\d{3}/)");
-    expect(routeSmoke).toContain("not.toContainText(/UX-(DETAIL|PAGE-SPLIT)-\\d{3}/)");
+    expect(nonNegotiable).toContain("Operational AlphaVest screens show product work, not implementation proof.");
+    expect(nonNegotiable).toMatch(/contract\s+is\s+stale\s+and\s+must\s+be\s+refactored/);
+    expect(sourceRealityGate).toContain("NO_VISIBLE_INTERNAL_UI_SCAFFOLDING");
+    expect(sourceRealityGate).toContain("findOperationalSurfaceNonNegotiableViolationsForText");
   });
 });

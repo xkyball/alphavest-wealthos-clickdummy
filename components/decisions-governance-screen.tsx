@@ -81,6 +81,7 @@ import {
 import { createDemoSession, demoPlatformTenantId, demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import type { ScreenRoute } from "@/lib/route-registry";
 import type { VisualState } from "@/lib/visual-contract";
+import { processFirstUxContractForPageId } from "@/lib/process-first-ux-contract";
 import { visibilityEngine, type DecisionVisibilityPayload } from "@/lib/visibility-engine";
 import { uxActionClassForPriority } from "@/lib/ux-action-hierarchy-contract";
 import { uxStatusCommandAttributesFor } from "@/lib/ux-status-command-hierarchy";
@@ -987,7 +988,7 @@ function DecisionsListPage({ title }: { title: string }) {
         routeId="043"
         safetyNote="The decision list is discovery and triage only; it cannot release advice, complete evidence sufficiency or export client material."
         statusItems={[
-          { label: "Route", tone: "blue", value: "043" },
+          { label: "Register", tone: "blue", value: "Decision records" },
           { label: "Authority", tone: "gold", value: "record only" },
         ]}
         title={title}
@@ -1163,7 +1164,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
         routeId="044"
         safetyNote="Decision submission records only the released decision workflow action; compliance release, evidence sufficiency and export remain separate controls."
         statusItems={[
-          { label: "Route", tone: "blue", value: "044" },
+          { label: "Action", tone: "blue", value: "Submission" },
           { label: "Decision", tone: "green", value: "ready" },
           { label: "Audit", tone: "gold", value: "required" },
         ]}
@@ -1455,7 +1456,7 @@ function DecisionSuccessPage({ title }: { title: string }) {
         routeId="045"
         safetyNote="Recorded decision confirmation does not expand client acceptance, compliance release, evidence sufficiency or export authority."
         statusItems={[
-          { label: "Route", tone: "blue", value: "045" },
+          { label: "Result", tone: "blue", value: "Recorded" },
           { label: "Audit", tone: "green", value: "persisted" },
           { label: "Evidence", tone: "gold", value: "queued" },
         ]}
@@ -1707,7 +1708,7 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
         routeId="046"
         safetyNote="Evidence vault context cannot authorize download, share, export or client visibility without release controls."
         statusItems={[
-          { label: "Route", tone: "blue", value: "046" },
+          { label: "Vault", tone: "blue", value: "Evidence" },
           { label: "Visibility", tone: "gold", value: "controlled" },
         ]}
         title={title}
@@ -1961,7 +1962,7 @@ function EvidenceRecordDetailPage({ title }: { title: string }) {
         routeId="047"
         safetyNote="Evidence detail can show provenance and access context only; sufficiency, export and client release remain separate controls."
         statusItems={[
-          { label: "Route", tone: "blue", value: "047" },
+          { label: "Record", tone: "blue", value: "Evidence detail" },
           { label: "Record", tone: "green", value: "verified context" },
         ]}
         title={title}
@@ -1972,6 +1973,7 @@ function EvidenceRecordDetailPage({ title }: { title: string }) {
 }
 
 function GovernanceProcessEntry({ onInvite }: { onInvite: () => void }) {
+  const processContract = processFirstUxContractForPageId("048");
   const checkpoints = [
     {
       label: "Validation",
@@ -2000,7 +2002,15 @@ function GovernanceProcessEntry({ onInvite }: { onInvite: () => void }) {
       data-testid="epic-06-governance-entry"
       data-ux-next-action="review-scoped-access-request"
       data-ux-page-job="governance_process_triage"
+      data-ux-process-acceptance-gates={processContract.acceptanceIds.join(" ")}
+      data-ux-process-blocked-reason="governance_change_requires_scoped_review"
+      data-ux-process-business-processes={processContract.businessProcessIds.join(" ")}
       data-ux-process-contract="identity_tenant_rbac_admin_non_bypass"
+      data-ux-process-current-step="governance_user_review"
+      data-ux-process-first="true"
+      data-ux-process-gate-ids={processContract.gateIds.join(" ")}
+      data-ux-process-gate-state="Approval required"
+      data-ux-process-next-step={processContract.nextPermittedAction}
       data-ux-target-screen="S048"
     >
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
@@ -2081,6 +2091,10 @@ function CoreGovernanceStepSurface({
   stages,
   subtitle,
   title,
+  processContract,
+  processCurrentStep,
+  processGateState,
+  processBlockedReason,
 }: {
   actionLabel: string;
   actionTestId: string;
@@ -2091,6 +2105,10 @@ function CoreGovernanceStepSurface({
   stages: Array<{ detail: string; label: string; state: string }>;
   subtitle: string;
   title: string;
+  processBlockedReason?: string;
+  processContract?: ReturnType<typeof processFirstUxContractForPageId>;
+  processCurrentStep?: string;
+  processGateState?: string;
 }) {
   return (
     <section
@@ -2098,6 +2116,14 @@ function CoreGovernanceStepSurface({
       data-epic-06-core-surface="queue-detail-step"
       data-testid={`epic-06-${actionTestId}-surface`}
       data-ux-page-job={pageJob}
+      data-ux-process-acceptance-gates={processContract?.acceptanceIds.join(" ")}
+      data-ux-process-blocked-reason={processBlockedReason}
+      data-ux-process-business-processes={processContract?.businessProcessIds.join(" ")}
+      data-ux-process-current-step={processCurrentStep}
+      data-ux-process-first={processContract ? "true" : undefined}
+      data-ux-process-gate-ids={processContract?.gateIds.join(" ")}
+      data-ux-process-gate-state={processGateState}
+      data-ux-process-next-step={processContract?.nextPermittedAction}
     >
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
         <div className="min-w-0">
@@ -2221,7 +2247,7 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
         routeId="048"
         safetyNote="Admin visibility does not expand scoped role, object, payload, evidence, export or release authority."
         statusItems={[
-          { label: "Route", tone: "blue", value: "048" },
+          { label: "Surface", tone: "blue", value: "User governance" },
           { label: "Scope", tone: "gold", value: "users" },
         ]}
         title={title}
@@ -2519,7 +2545,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
         routeId="049"
         safetyNote="Role edits cannot bypass scoped permissions, second confirmation or audit persistence."
         statusItems={[
-          { label: "Route", tone: "blue", value: "049" },
+          { label: "Surface", tone: "blue", value: "Role governance" },
           { label: "Scope", tone: "gold", value: "roles" },
         ]}
         title={title}
@@ -2685,6 +2711,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
   const [acknowledged, setAcknowledged] = useState(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
+  const processContract = processFirstUxContractForPageId("050");
   const lifecycleStatus = status === "submitting" ? "loading" : status;
   const validationState = acknowledged ? "valid-scoped-access-review" : "blocked-acknowledgement-required";
 
@@ -2745,6 +2772,10 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
             }}
             lifecycleTrigger="access-request-drawer"
             pageJob="access_request_review"
+            processBlockedReason="access_request_not_granted_until_audited_approval"
+            processContract={processContract}
+            processCurrentStep="access_request_review"
+            processGateState="Scoped review"
             stages={[
               {
                 detail: "The queue points to one selected request instead of exposing a broad admin table.",
@@ -2769,7 +2800,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
         routeId="050"
         safetyNote="Approval remains constrained by policy checks, segregation-of-duties checks and audit logging; admin users cannot bypass these gates."
         statusItems={[
-          { label: "Route", tone: "blue", value: "050" },
+          { label: "Surface", tone: "blue", value: "Access governance" },
           { label: "Scope", tone: "red", value: "access" },
         ]}
         title={title}

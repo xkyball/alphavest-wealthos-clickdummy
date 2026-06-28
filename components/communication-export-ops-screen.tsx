@@ -54,7 +54,6 @@ import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { UxDenseOperationsPanel } from "@/components/ux-dense-operations-panel";
 import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
-import { UxComplexityPriorityPanel } from "@/components/ux-complexity-priority-panel";
 import { UxCtaCluster } from "@/components/ux-cta-cluster";
 import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
 import { WorksurfaceShell } from "@/components/worksurface-shell";
@@ -1004,7 +1003,7 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
       routeId="051"
       safetyNote="Audit visibility is read-only here; it does not prove persistence, approve access changes or authorize controlled export."
       statusItems={[
-        { label: "Route", tone: "blue", value: "051" },
+        { label: "Audit", tone: "blue", value: "Read-only" },
         { label: "Mode", tone: "gold", value: "audit review" },
       ]}
       title={title}
@@ -1342,7 +1341,7 @@ function ExportNewPage({ title }: { title: string }) {
       routeId="054"
       safetyNote="Export start cannot generate, approve, download, share or make advice client-visible."
       statusItems={[
-        { label: "Route", tone: "blue", value: "054" },
+        { label: "Flow", tone: "blue", value: "Start" },
         { label: "Stage", tone: "gold", value: "scope first" },
       ]}
       title={title}
@@ -1385,7 +1384,7 @@ function ExportScopePage({ title }: { title: string }) {
       routeId="055"
       safetyNote="Scope selection is not preview, approval, download or share; restricted objects stay excluded until permission and redaction controls pass."
       statusItems={[
-        { label: "Route", tone: "blue", value: "055" },
+        { label: "Stage", tone: "blue", value: "Scope" },
         { label: "Included", tone: "green", value: String(summary.included) },
         { label: "Blocked", tone: "red", value: String(summary.blocked) },
       ]}
@@ -1489,67 +1488,95 @@ function ExportRedactionControlPanel({
   redactionRows: Array<{ id: string; label: string; state: string; visibility: string }>;
 }) {
   return (
-    <section className="space-y-4" data-testid="bd11-export-redaction-control-panel" data-ux-layout-compression="bounded_export_redaction">
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
-        <Card>
-          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle>Payload Redaction Operations</CardTitle>
-            <Badge tone="gold">{redactionRows.length} controls</Badge>
-          </CardHeader>
-          <CardContent>
-            <div className="max-h-80 overflow-y-auto pr-1">
-              <DataTable
-                columns={redactionColumns}
-                compact
-                getRowId={(row) => row.id}
-                onSortChange={handleStaticSortChange}
-                responsiveMode="table"
-                rows={redactionRows}
-                sortDirection="asc"
-                sortKey="label"
+    <UxDenseOperationsPanel
+      controls={["Scope", "Payload", "Preview", "Approval"]}
+      pageId="056"
+      resultLabel="Approval blocked until preview"
+      safetyNote="Preview inspection must pass before approval can be recorded. Approval and generation must be recorded before download."
+      title="Payload Redaction Operations"
+    >
+      <section className="space-y-4" data-testid="bd11-export-redaction-control-panel" data-ux-layout-compression="bounded_export_redaction">
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
+          <Card>
+            <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <CardTitle>Payload redaction table</CardTitle>
+              <Badge tone="gold">{redactionRows.length} controls</Badge>
+            </CardHeader>
+            <CardContent>
+              <div className="max-h-80 overflow-y-auto pr-1">
+                <DataTable
+                  actionPolicy="disabled_unavailable"
+                  columns={redactionColumns}
+                  compact
+                  density="compact"
+                  family="table"
+                  getRowId={(row) => row.id}
+                  onSortChange={handleStaticSortChange}
+                  responsiveMode="table"
+                  rows={redactionRows}
+                  sortDirection="asc"
+                  sortKey="label"
+                />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader><CardTitle>Redaction Summary</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              {redactionSummary.map((item) => (
+                <div className="flex items-center justify-between gap-3 text-sm" key={item.id}>
+                  <span className="text-alphavest-muted">{item.label}</span>
+                  <Badge tone={toneFor(item.severity)}>{item.count}</Badge>
+                </div>
+              ))}
+              <StatePanel detail="Redaction review can resolve forbidden payload exposure only. Preview, approval, download and share remain separate gates." state="restricted" title="Not approval" />
+              <UxCtaCluster
+                blockedReason="Preview inspection must pass before approval can be recorded."
+                primary={{
+                  disabled: true,
+                  disabledReason: "Preview inspection must pass before approval can be recorded.",
+                  label: "Resolve redaction blockers",
+                  meaning: "export_approval",
+                }}
+                secondary={[
+                  {
+                    disabled: true,
+                    disabledReason: "Approval and generation must be recorded before download.",
+                    label: "Prepare download",
+                    meaning: "download",
+                  },
+                ]}
               />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle>Redaction Summary</CardTitle></CardHeader>
-          <CardContent className="space-y-3">
-            {redactionSummary.map((item) => (
-              <div className="flex items-center justify-between gap-3 text-sm" key={item.id}>
-                <span className="text-alphavest-muted">{item.label}</span>
-                <Badge tone={toneFor(item.severity)}>{item.count}</Badge>
+            </CardContent>
+          </Card>
+        </div>
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
+          <Card>
+            <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <CardTitle>Redacted Client Preview</CardTitle>
+              <Badge tone="gold">Preview only</Badge>
+            </CardHeader>
+            <CardContent>
+              <div className="max-h-96 overflow-y-auto pr-1">
+                <RedactedDocumentPreview />
               </div>
-            ))}
-            <StatePanel detail="Redaction review can resolve forbidden payload exposure only. Preview, approval, download and share remain separate gates." state="restricted" title="Not approval" />
-          </CardContent>
-        </Card>
-      </div>
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
-        <Card>
-          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle>Redacted Client Preview</CardTitle>
-            <Badge tone="gold">Preview only</Badge>
-          </CardHeader>
-          <CardContent>
-            <div className="max-h-96 overflow-y-auto pr-1">
-              <RedactedDocumentPreview />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle>Forbidden Payload Checks</CardTitle></CardHeader>
-          <CardContent className="space-y-3">
-            {exportForbiddenPayloadChecks.map((item) => (
-              <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-green/30 bg-alphavest-green/10 p-3 text-sm" key={item.label}>
-                <span className="text-alphavest-muted">{item.label}</span>
-                <Badge tone="green">{item.state}</Badge>
-              </div>
-            ))}
-            <StatePanel detail="Internal advisor memo, compliance notes and unreleased evidence cannot enter the client package." state="blocked" title="Forbidden payload blocked" />
-          </CardContent>
-        </Card>
-      </div>
-    </section>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader><CardTitle>Forbidden Payload Checks</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              {exportForbiddenPayloadChecks.map((item) => (
+                <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-green/30 bg-alphavest-green/10 p-3 text-sm" key={item.label}>
+                  <span className="text-alphavest-muted">{item.label}</span>
+                  <Badge tone="green">{item.state}</Badge>
+                </div>
+              ))}
+              <StatePanel detail="Internal advisor memo, compliance notes and unreleased evidence cannot enter the client package." state="blocked" title="Forbidden payload blocked" />
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+    </UxDenseOperationsPanel>
   );
 }
 
@@ -1601,7 +1628,7 @@ function ExportRedactionPage({ title }: { title: string }) {
             testId="bd11-export-redaction-gate"
             title="Export redaction gate"
           />
-          <Phase5DetailSplitPanel compact decisionSupport="Field state, payload visibility and preview blockers" objectLabel="Export redaction object review" objectState="Forbidden payload checks active" pageJob="Redaction only" safetyBoundary="Cannot approve, generate, download or share" splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-DETAIL-004" />
+          <Phase5DetailSplitPanel compact decisionSupport="Shows field state, payload visibility and preview blockers" objectLabel="Export redaction object review" objectState="Forbidden payload checks active" pageJob="Redaction only" safetyBoundary="Cannot approve, generate, download or share" splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-DETAIL-004" />
           <ExportStageBoundary activeStage="redaction" />
           <ExportPayloadBoundary />
           <ExportRedactionControlPanel redactionColumns={redactionColumns} redactionRows={redactionRows} />
@@ -1610,7 +1637,7 @@ function ExportRedactionPage({ title }: { title: string }) {
       routeId="056"
       safetyNote="Redaction summary is not export approval; forbidden internal payload, preview, approval, download and share remain separate gates."
       statusItems={[
-        { label: "Route", tone: "blue", value: "056" },
+        { label: "Stage", tone: "blue", value: "Redaction" },
         { label: "Redactions", tone: "gold", value: "12" },
         { label: "Payload", tone: "red", value: "blocked" },
       ]}
@@ -1839,7 +1866,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
       routeId="057"
       safetyNote="Preview is inspection only; approval can record only the approval step and cannot download, share, release advice or imply client acceptance."
       statusItems={[
-        { label: "Route", tone: "blue", value: "057" },
+        { label: "Decision", tone: "blue", value: "Controlled" },
         { label: "Stage", tone: "gold", value: "approval" },
       ]}
       title={title}
@@ -2073,7 +2100,7 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
       routeId="058"
       safetyNote="Download confirmation records only the controlled download event; secure share, recipient access, client acceptance and advice release remain separate controls."
       statusItems={[
-        { label: "Route", tone: "blue", value: "058" },
+        { label: "Delivery", tone: "blue", value: "Controlled" },
         { label: "Stage", tone: "green", value: "download" },
         { label: "Share", tone: "red", value: "blocked" },
       ]}
