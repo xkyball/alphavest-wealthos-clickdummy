@@ -2913,7 +2913,7 @@ function DocumentUploadForm() {
             <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4" data-testid="document-upload-latest-card">
               <p className="text-sm font-semibold text-alphavest-ivory">{latestDocument.fileName ?? latestDocument.title}</p>
               <p className="mt-1 text-xs text-alphavest-muted">{latestDocument.fileSizeBytes ? formatBytes(latestDocument.fileSizeBytes) : "Size hidden"} · {labelFromEnum(latestDocument.status)}</p>
-              <p className="mt-2 text-xs text-alphavest-muted">Version: v{latestDocument.latestVersionNumber ?? 1} of {latestDocument.versionCount ?? 1} · verification details held by AlphaVest</p>
+              <p className="mt-2 text-xs text-alphavest-muted">Version: v{latestDocument.latestVersionNumber ?? 1} of {latestDocument.versionCount ?? 1} · checksum proof stored internally</p>
               <p className="mt-2 text-xs text-alphavest-muted">Lifecycle: {labelFromEnum(latestDocument.evidenceLifecycleStatus ?? "review_pending")}</p>
               <p className="mt-2 text-xs text-alphavest-muted">Extraction: {latestDocument.extractionStatus ?? "pending"}</p>
             </div>
@@ -3019,11 +3019,12 @@ function ExtractionReviewActionPanel() {
       <CardContent className="mt-2 space-y-2">
         {latestDocument ? (
           <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2" data-testid="document-review-latest-card">
-            <p className="text-sm font-semibold text-alphavest-ivory">{latestDocument.fileName}</p>
+            <p className="text-sm font-semibold text-alphavest-ivory">Selected upload</p>
             <p className="mt-0.5 text-xs text-alphavest-muted">
               Document: {labelFromEnum(latestDocument.status)} · Evidence: {latestDocument.evidenceStatus ? labelFromEnum(latestDocument.evidenceStatus) : "Created"}
             </p>
-            <p className="mt-0.5 text-xs text-alphavest-muted">Lifecycle: {labelFromEnum(latestDocument.evidenceLifecycleStatus ?? "review_pending")} · Visibility locked</p>
+            <p className="mt-0.5 text-xs text-alphavest-muted">Version: v{latestDocument.latestVersionNumber ?? 1} of {latestDocument.versionCount ?? 1} · checksum proof stored internally</p>
+            <p className="mt-0.5 text-xs text-alphavest-muted">Lifecycle: {labelFromEnum(latestDocument.evidenceLifecycleStatus ?? "review_pending")} · Visibility: Redacted</p>
           </div>
         ) : (
           <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2 text-xs text-alphavest-muted">
@@ -3119,7 +3120,7 @@ function ExtractionReviewWorkbench() {
   const detail = (
     <div data-testid="s029-extraction-selected-detail">
       <Card density="compact" data-ux-queue-proof-drawer="true">
-        <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-lg">{selectedDocument?.fileName ?? "No selected upload"}</CardTitle><Badge>Review gate</Badge></CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-lg">{selectedDocument ? "Selected upload" : "No selected upload"}</CardTitle><Badge>Review gate</Badge></CardHeader>
         <CardContent className="mt-2 grid gap-2 md:grid-cols-3">
           {[
             ["Extraction", selectedDocument ? labelFromEnum(selectedDocument.extractionStatus ?? "pending") : "Empty", "Draft fields only"],
