@@ -1,0 +1,690 @@
+{
+  "artifact_kind": "process_first_navigation_contract",
+  "ticket_id": "EPIC-01-SPEC-01",
+  "ticket_title": "Final process-first app area and navigation contract",
+  "status": "approved_contract_for_next_implementation_slice",
+  "generated_at": "2026-06-28",
+  "basis": {
+    "masterplan": "reports/process-first-refactoring-masterplan-2026-06-28/ALPHAVEST_PROCESS_FIRST_REFACTORING_MASTERPLAN_BOC_CTES.json",
+    "navigation_gap_matrix": "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-01-ANALYSIS-01_NAVIGATION_GAP_MATRIX.json",
+    "process_universe": "docs/00-current/ALPHAVEST_DETAILED_BUSINESS_PROCESS_SPECIFICATION_P0_ONLY.json",
+    "operative_handoff": "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md",
+    "inspected_code": [
+      "lib/navigation.ts",
+      "lib/ux-route-policy.ts",
+      "lib/route-registry.ts",
+      "lib/demo-session.ts",
+      "components/process-navigation.tsx",
+      "components/sidebar.tsx",
+      "app/journeys/page.tsx",
+      "app/journeys/[id]/page.tsx"
+    ]
+  },
+  "process_universe_baseline": {
+    "retained_p0_process_count": 84,
+    "retained_p0_step_count": 438,
+    "domain_coverage_state": "All P0 domains are partially implemented; navigation may not claim process completion."
+  },
+  "contract_principle": "The application is navigated by governed business process ownership first, not by historical screen bundles, broad workspaces or demo-route convenience.",
+  "hard_rules": [
+    "Every P0 process step must map to one owning area, one current route or planned route decision, one state owner, one actor boundary and one proof obligation before implementation completeness can be claimed.",
+    "Primary navigation must expose the final productive process areas, not the current eight broad workspace labels.",
+    "The Process Command Center is the default process front door and may not remain a secondary-only sidebar shortcut.",
+    "Client Visibility is a released-only area or mode and must not be inferred from Client Workspace, Decisions or Communication.",
+    "Advisor Review is separate from Signal and Analyst Workbench; advisor approval never releases to client.",
+    "Compliance Release is the only release gate for advice-like or client-visible controlled content.",
+    "Export preview is not export approval, generation, download or share.",
+    "Operations and Data Quality can support recovery and SLA work, but cannot approve, release, export, change evidence sufficiency or broaden visibility.",
+    "Deferred, elevated and reference routes stay outside productive completion proof until an explicit unlock decision supplies route records, safety tests and role boundaries.",
+    "Registered-only/reference routes must not appear in primary productive navigation."
+  ],
+  "role_sets": {
+    "client_roles": [
+      "principal",
+      "family_cfo",
+      "trustee",
+      "next_gen",
+      "external_advisor"
+    ],
+    "internal_roles": [
+      "analyst",
+      "senior_wealth_advisor",
+      "compliance_officer",
+      "client_success",
+      "admin",
+      "security_officer"
+    ],
+    "governance_admin_roles": [
+      "admin",
+      "security_officer"
+    ],
+    "support_roles": [
+      "client_success",
+      "analyst",
+      "admin"
+    ]
+  },
+  "process_entry_hierarchy": {
+    "level_0_default_front_door": {
+      "area_id": "AREA-00",
+      "route": "/journeys",
+      "purpose": "Current work, process health, blocked gates, next legitimate action and process-instance recovery."
+    },
+    "level_1_primary_process_areas": [
+      "AREA-01",
+      "AREA-02",
+      "AREA-03",
+      "AREA-04",
+      "AREA-05",
+      "AREA-06",
+      "AREA-07",
+      "AREA-08",
+      "AREA-09",
+      "AREA-10"
+    ],
+    "level_2_protected_lane": [
+      "AREA-11"
+    ],
+    "level_3_route_or_process_instance_detail": "Queue, workbench, decision-room, detail, audit, evidence, export and recovery routes inherit the owning area and must not redefine safety authority locally."
+  },
+  "navigation_target": {
+    "primary_order": [
+      "AREA-00",
+      "AREA-01",
+      "AREA-02",
+      "AREA-03",
+      "AREA-04",
+      "AREA-05",
+      "AREA-06",
+      "AREA-07",
+      "AREA-08",
+      "AREA-09",
+      "AREA-10"
+    ],
+    "protected_order": [
+      "AREA-11"
+    ],
+    "implementation_target_files": [
+      "lib/navigation.ts",
+      "lib/ux-route-policy.ts",
+      "components/process-navigation.tsx",
+      "components/sidebar.tsx",
+      "tests/route-smoke.spec.ts",
+      "tests/true-ux-flow-navigation.spec.ts",
+      "tests/permission-engine.spec.ts"
+    ],
+    "required_nav_model_change": "Replace the current one-item-per-workspace primary model with process-first area definitions that can still map to the existing route registry."
+  },
+  "area_contracts": [
+    {
+      "area_id": "AREA-00",
+      "name": "Process Command Center",
+      "primary_nav_label": "Command Center",
+      "navigation_tier": "default_front_door",
+      "process_domains": [
+        {
+          "domain_id": "GLOBAL",
+          "domain_name": "Cross-domain process orchestration"
+        },
+        {
+          "domain_id": "DOMAIN-K",
+          "domain_name": "Review Rhythm, Monitoring and Operations Processes",
+          "p0_process_count": 2
+        }
+      ],
+      "route_ownership": {
+        "current_routes": [
+          {
+            "route": "/journeys",
+            "page_id": null,
+            "title": "Journey Dashboard",
+            "scope": "IMPLEMENTED_APP_ROUTE_NOT_SCREEN_ROUTE"
+          },
+          {
+            "route": "/journeys/:id",
+            "page_id": null,
+            "title": "Journey Detail",
+            "scope": "IMPLEMENTED_APP_ROUTE_NOT_SCREEN_ROUTE"
+          }
+        ],
+        "planned_route_decisions": [],
+        "active_route_group_page_ids": []
+      },
+      "roles": {
+        "primary_actors": ["all authenticated demo roles within their tenant/object scope"],
+        "client_roles_allowed": ["principal", "family_cfo", "trustee", "next_gen", "external_advisor"],
+        "internal_roles_allowed": ["analyst", "senior_wealth_advisor", "compliance_officer", "client_success", "admin", "security_officer"]
+      },
+      "process_ownership_rule": "Command Center owns orientation and routing to process instances; it does not own final approval, release, export or evidence sufficiency.",
+      "no_overclaim_rules": [
+        "Do not represent a journey card as process completion.",
+        "Do not show blocked, held or reference journeys as live product promises.",
+        "Do not allow command actions to bypass area-specific gates."
+      ],
+      "proof_obligations": [
+        "journey list is tenant/object scoped",
+        "hold journeys remain unavailable for creation",
+        "client projection hides internal-only payloads"
+      ]
+    },
+    {
+      "area_id": "AREA-01",
+      "name": "Setup, Identity and Governance Foundation",
+      "primary_nav_label": "Foundation",
+      "navigation_tier": "primary_productive",
+      "process_domains": [
+        {
+          "domain_id": "DOMAIN-B",
+          "domain_name": "Identity, Access and Governance Processes",
+          "p0_process_count": 11
+        },
+        {
+          "domain_id": "DOMAIN-L",
+          "domain_name": "Platform, Tenant and Template Administration Processes",
+          "p0_process_count": 7
+        }
+      ],
+      "route_ownership": {
+        "current_routes": [
+          {"page_id": "001", "route": "/login", "title": "Authentication Login", "scope": "MVP_SUPPORT"},
+          {"page_id": "002", "route": "/mfa", "title": "Multi-Factor Authentication", "scope": "MVP_SUPPORT"},
+          {"page_id": "003", "route": "/onboarding/invite", "title": "Invitation Acceptance", "scope": "MVP_SUPPORT"},
+          {"page_id": "004", "route": "/onboarding/identity", "title": "Identity Setup", "scope": "MVP_SUPPORT"},
+          {"page_id": "005", "route": "/onboarding/consent", "title": "Consent and Privacy", "scope": "MVP_SUPPORT"},
+          {"page_id": "006", "route": "/onboarding/role-confirmation", "title": "Role Confirmation", "scope": "MVP_SUPPORT"},
+          {"page_id": "007", "route": "/admin/platform", "title": "Platform Settings", "scope": "MVP_SUPPORT"},
+          {"page_id": "008", "route": "/admin/policies/advice-boundary", "title": "Advice Boundary Policy", "scope": "MVP"},
+          {"page_id": "009", "route": "/admin/roles", "title": "Global Role Templates", "scope": "MVP_SUPPORT"},
+          {"page_id": "010", "route": "/admin/security", "title": "Security Configuration", "scope": "MVP_SUPPORT"},
+          {"page_id": "011", "route": "/admin/evidence-templates", "title": "Evidence Templates", "scope": "MVP_SUPPORT"},
+          {"page_id": "012", "route": "/admin/export-templates", "title": "Export Templates and Redaction", "scope": "MVP_SUPPORT"},
+          {"page_id": "013", "route": "/admin/tenants", "title": "Tenant List", "scope": "MVP_SUPPORT"},
+          {"page_id": "014", "route": "/tenants/new", "title": "Create Client Tenant", "scope": "MVP_SUPPORT"},
+          {"page_id": "015", "route": "/tenants/:id/setup", "title": "Tenant Setup Dashboard", "scope": "MVP_SUPPORT"},
+          {"page_id": "016", "route": "/tenants/:id/team", "title": "Assign AlphaVest Team", "scope": "MVP_SUPPORT"},
+          {"page_id": "017", "route": "/tenants/:id/policies", "title": "Tenant Policies", "scope": "MVP_SUPPORT"},
+          {"page_id": "018", "route": "/tenants/:id/users", "title": "Tenant Users", "scope": "MVP_SUPPORT"},
+          {"page_id": "048", "route": "/governance", "title": "Governance Users", "scope": "MVP"},
+          {"page_id": "049", "route": "/governance/roles/:id", "title": "Role Management", "scope": "MVP"},
+          {"page_id": "050", "route": "/governance/access-requests/:id", "title": "Access Requests", "scope": "MVP"},
+          {"page_id": "051", "route": "/governance", "title": "Access Audit History", "scope": "MVP"}
+        ],
+        "planned_route_decisions": [
+          "Merge setup and governance navigation under one foundation area while retaining route-level audit and RBAC separation."
+        ],
+        "active_route_group_page_ids": ["001", "002", "003", "004", "005", "006", "007", "008", "009", "010", "011", "012", "013", "014", "015", "016", "017", "018", "048", "049", "050", "051"]
+      },
+      "roles": {
+        "primary_actors": ["Platform Admin", "Tenant Admin", "Security / Governance Admin", "System"],
+        "client_roles_allowed": [],
+        "internal_roles_allowed": ["admin", "security_officer", "client_success", "compliance_officer"]
+      },
+      "process_ownership_rule": "Foundation owns identity, tenant, role, policy, template and audit setup; it does not approve advice, release content, export packages or override evidence gates.",
+      "no_overclaim_rules": [
+        "Admin role never bypasses compliance release, evidence sufficiency or export approval.",
+        "Role changes never broaden payload visibility without permission and object-scope proof.",
+        "Advice boundary policy is a control, not a release action."
+      ],
+      "proof_obligations": [
+        "permission-engine admin non-bypass negative test",
+        "role visibility test",
+        "route smoke for merged active route grouping"
+      ]
+    },
+    {
+      "area_id": "AREA-02",
+      "name": "Client and Family Context",
+      "primary_nav_label": "Client Context",
+      "navigation_tier": "primary_productive",
+      "process_domains": [
+        {
+          "domain_id": "DOMAIN-A",
+          "domain_name": "Client and Family Office Context Processes",
+          "p0_process_count": 8
+        }
+      ],
+      "route_ownership": {
+        "current_routes": [
+          {"page_id": "019", "route": "/client/home", "title": "Client Web Dashboard", "scope": "MVP"},
+          {"page_id": "021", "route": "/client/profile", "title": "Client Profile", "scope": "MVP_SUPPORT"},
+          {"page_id": "022", "route": "/client/family-members", "title": "Family Members", "scope": "MVP_SUPPORT"},
+          {"page_id": "023", "route": "/relationships", "title": "Relationship Map", "scope": "MVP_SUPPORT"},
+          {"page_id": "024", "route": "/entities", "title": "Entity List", "scope": "MVP_SUPPORT"},
+          {"page_id": "025", "route": "/entities/new", "title": "Create Entity", "scope": "MVP_SUPPORT"},
+          {"page_id": "026", "route": "/entities/:id", "title": "Entity Detail", "scope": "MVP_SUPPORT"},
+          {"page_id": "031", "route": "/wealth-map", "title": "Live Wealth Map", "scope": "MVP_SUPPORT"},
+          {"page_id": "032", "route": "/actions", "title": "Action Board", "scope": "MVP_SUPPORT"}
+        ],
+        "planned_route_decisions": [
+          "Remove client released-view semantics from Client Context labels; client-safe released output belongs to AREA-08."
+        ],
+        "active_route_group_page_ids": ["019", "021", "022", "023", "024", "025", "026", "031", "032"]
+      },
+      "roles": {
+        "primary_actors": ["Principal / Client", "Family CFO", "Analyst / Consultant", "Wealth Advisor"],
+        "client_roles_allowed": ["principal", "family_cfo", "trustee", "next_gen", "external_advisor"],
+        "internal_roles_allowed": ["analyst", "senior_wealth_advisor", "client_success"]
+      },
+      "process_ownership_rule": "Client Context owns household, entity, relationship and wealth-map context; it does not certify release safety or export payloads.",
+      "no_overclaim_rules": [
+        "Context completeness is not evidence sufficiency.",
+        "Action Board content may not imply advice is released.",
+        "Internal context and client-safe visibility must be separately labeled."
+      ],
+      "proof_obligations": [
+        "client/internal mode label proof",
+        "no-leakage test for sensitive action context",
+        "route smoke for all active context routes"
+      ]
+    },
+    {
+      "area_id": "AREA-03",
+      "name": "Evidence Lifecycle",
+      "primary_nav_label": "Evidence Lifecycle",
+      "navigation_tier": "primary_productive",
+      "process_domains": [
+        {
+          "domain_id": "DOMAIN-C",
+          "domain_name": "Evidence and Document Processes",
+          "p0_process_count": 11
+        }
+      ],
+      "route_ownership": {
+        "current_routes": [
+          {"page_id": "027", "route": "/documents", "title": "Documents List", "scope": "MVP"},
+          {"page_id": "028", "route": "/documents/upload", "title": "Document Upload", "scope": "MVP"},
+          {"page_id": "029", "route": "/documents/review-queue", "title": "Extraction Review", "scope": "MVP"},
+          {"page_id": "030", "route": "/documents/:id/review", "title": "Verification Pending", "scope": "MVP"},
+          {"page_id": "046", "route": "/evidence", "title": "Evidence Vault", "scope": "MVP"},
+          {"page_id": "047", "route": "/evidence/:id/review", "title": "Evidence Record Detail", "scope": "MVP"}
+        ],
+        "planned_route_decisions": [
+          "Keep intake/review/sufficiency in AREA-03; released proof record display is shared with AREA-07 by explicit state owner."
+        ],
+        "active_route_group_page_ids": ["027", "028", "029", "030", "046", "047"]
+      },
+      "roles": {
+        "primary_actors": ["Client", "Family CFO", "Analyst / Consultant", "Compliance Officer"],
+        "client_roles_allowed": ["principal", "family_cfo", "external_advisor"],
+        "internal_roles_allowed": ["analyst", "compliance_officer", "client_success"]
+      },
+      "process_ownership_rule": "Evidence Lifecycle owns request, upload, extraction, verification, sufficiency, rejection, linkage and vaulting states.",
+      "no_overclaim_rules": [
+        "Upload success is not evidence sufficiency.",
+        "Extraction is not verification.",
+        "Evidence record review is not client release or export readiness."
+      ],
+      "proof_obligations": [
+        "document upload does not unlock release/export/client visibility",
+        "evidence sufficiency negative test",
+        "route smoke across document and evidence routes"
+      ]
+    },
+    {
+      "area_id": "AREA-04",
+      "name": "Signal and Analyst Workbench",
+      "primary_nav_label": "Analyst Workbench",
+      "navigation_tier": "primary_productive",
+      "process_domains": [
+        {
+          "domain_id": "DOMAIN-D",
+          "domain_name": "Signal, Trigger and Workbench Processes",
+          "p0_process_count": 5
+        },
+        {
+          "domain_id": "DOMAIN-E",
+          "domain_name": "AI / Rules Draft Governance Processes",
+          "p0_process_count": 7
+        }
+      ],
+      "route_ownership": {
+        "current_routes": [
+          {"page_id": "033", "route": "/advisory", "title": "Signal Review", "scope": "MVP"},
+          {"page_id": "034", "route": "/advisory/review-queue", "title": "Consultant Workbench", "scope": "MVP"},
+          {"page_id": "035", "route": "/advisory/triggers/:id/review", "title": "Trigger Detail", "scope": "MVP"}
+        ],
+        "planned_route_decisions": [
+          "Remove advisor review pages 036 and 037 from this active group and assign them to AREA-05."
+        ],
+        "active_route_group_page_ids": ["033", "034", "035"]
+      },
+      "roles": {
+        "primary_actors": ["Analyst / Consultant", "Wealth Advisor", "System / AI Draft Producer"],
+        "client_roles_allowed": [],
+        "internal_roles_allowed": ["analyst", "senior_wealth_advisor"]
+      },
+      "process_ownership_rule": "Analyst Workbench owns signals, trigger triage, internal draft rebuild and evidence gap work before advisor review.",
+      "no_overclaim_rules": [
+        "AI/rules draft is internal only.",
+        "Analyst recommendation is not advisor approval.",
+        "Workbench completion is not compliance release."
+      ],
+      "proof_obligations": [
+        "client projection excludes AI/rules drafts",
+        "workflow-gate proof from analyst review to advisor queue",
+        "route smoke for advisory active group"
+      ]
+    },
+    {
+      "area_id": "AREA-05",
+      "name": "Advisor Review",
+      "primary_nav_label": "Advisor Review",
+      "navigation_tier": "primary_productive",
+      "process_domains": [
+        {
+          "domain_id": "DOMAIN-F",
+          "domain_name": "Advisor Review and Approval Processes",
+          "p0_process_count": 6
+        }
+      ],
+      "route_ownership": {
+        "current_routes": [
+          {"page_id": "036", "route": "/advisor/reviews", "title": "Advisor Approval Queue", "scope": "MVP"},
+          {"page_id": "037", "route": "/advisor/reviews/:id", "title": "Advisor Approval Detail", "scope": "MVP"}
+        ],
+        "planned_route_decisions": [
+          "Promote Advisor Review from advisory_workbench active pages to its own primary process area or explicit subarea."
+        ],
+        "active_route_group_page_ids": ["036", "037"]
+      },
+      "roles": {
+        "primary_actors": ["Wealth Advisor", "Analyst / Consultant"],
+        "client_roles_allowed": [],
+        "internal_roles_allowed": ["senior_wealth_advisor", "analyst"]
+      },
+      "process_ownership_rule": "Advisor Review owns option comparison, request-evidence, approve-to-compliance and reject-to-analyst states.",
+      "no_overclaim_rules": [
+        "Advisor approval is not compliance release.",
+        "Advisor detail may not become client visible by approval alone.",
+        "Request evidence routes back to Evidence Lifecycle without inventing sufficiency."
+      ],
+      "proof_obligations": [
+        "advisor-approved item remains hidden from client until compliance release",
+        "workflow-gate test for approve-to-compliance only",
+        "route smoke for advisor queue and detail"
+      ]
+    },
+    {
+      "area_id": "AREA-06",
+      "name": "Compliance Release",
+      "primary_nav_label": "Compliance Release",
+      "navigation_tier": "primary_productive",
+      "process_domains": [
+        {
+          "domain_id": "DOMAIN-G",
+          "domain_name": "Compliance Review, Block and Release Processes",
+          "p0_process_count": 8
+        }
+      ],
+      "route_ownership": {
+        "current_routes": [
+          {"page_id": "038", "route": "/compliance/reviews", "title": "Compliance Queue", "scope": "MVP"},
+          {"page_id": "039", "route": "/compliance/reviews/:id/decision-room", "title": "Compliance Review Detail", "scope": "MVP"},
+          {"page_id": "040", "route": "/compliance/reviews/:id/release", "title": "Release to Client", "scope": "MVP"},
+          {"page_id": "041", "route": "/compliance/reviews/:id/block", "title": "Block or Request Evidence", "scope": "MVP"},
+          {"page_id": "042", "route": "/compliance/reviews/:id/audit", "title": "Audit and Exception Log", "scope": "MVP"}
+        ],
+        "planned_route_decisions": [],
+        "active_route_group_page_ids": ["038", "039", "040", "041", "042"]
+      },
+      "roles": {
+        "primary_actors": ["Compliance Officer", "Wealth Advisor", "Analyst / Consultant"],
+        "client_roles_allowed": [],
+        "internal_roles_allowed": ["compliance_officer", "senior_wealth_advisor", "analyst"]
+      },
+      "process_ownership_rule": "Compliance Release owns release, block, request-evidence, precondition validation and exception log states.",
+      "no_overclaim_rules": [
+        "Release is not client acceptance.",
+        "Compliance block is not rejection of the client relationship.",
+        "Audit display is not an override or release action."
+      ],
+      "proof_obligations": [
+        "release fails if audit cannot be written",
+        "release fails without evidence/preconditions",
+        "route smoke and workflow-gate proof for release/block/audit"
+      ]
+    },
+    {
+      "area_id": "AREA-07",
+      "name": "Decision Record and Evidence Vault",
+      "primary_nav_label": "Decision Record",
+      "navigation_tier": "primary_productive",
+      "process_domains": [
+        {
+          "domain_id": "DOMAIN-I",
+          "domain_name": "Decision Record and Evidence Vault Processes",
+          "p0_process_count": 7
+        }
+      ],
+      "route_ownership": {
+        "current_routes": [
+          {"page_id": "043", "route": "/decisions", "title": "Decision List", "scope": "MVP"},
+          {"page_id": "044", "route": "/decisions/:id", "title": "Digital Decision Room", "scope": "MVP"},
+          {"page_id": "045", "route": "/decisions/:id/success", "title": "Decision Submitted", "scope": "MVP"},
+          {"page_id": "046", "route": "/evidence", "title": "Evidence Vault", "scope": "MVP"},
+          {"page_id": "047", "route": "/evidence/:id/review", "title": "Evidence Record Detail", "scope": "MVP"}
+        ],
+        "planned_route_decisions": [
+          "Treat evidence vault routes as shared physical routes with AREA-03, but assign proof-record ownership here after release or formal record creation."
+        ],
+        "active_route_group_page_ids": ["043", "044", "045", "046", "047"]
+      },
+      "roles": {
+        "primary_actors": ["Wealth Advisor", "Compliance Officer", "Client", "Governance Admin"],
+        "client_roles_allowed": ["principal", "family_cfo", "trustee"],
+        "internal_roles_allowed": ["senior_wealth_advisor", "compliance_officer", "admin", "security_officer"]
+      },
+      "process_ownership_rule": "Decision Record owns created decision records, rationale, status transition, evidence links, audit timeline and exception history.",
+      "no_overclaim_rules": [
+        "Decision room is not always client-visible.",
+        "Submitted state is not proof that all evidence is visible to every role.",
+        "Evidence vault display must respect release, redaction and object scope."
+      ],
+      "proof_obligations": [
+        "decision record role visibility test",
+        "evidence vault no-leakage test",
+        "audit timeline proof"
+      ]
+    },
+    {
+      "area_id": "AREA-08",
+      "name": "Client Visibility",
+      "primary_nav_label": "Client Visibility",
+      "navigation_tier": "primary_productive_with_fail_closed_client_mode",
+      "process_domains": [
+        {
+          "domain_id": "DOMAIN-H",
+          "domain_name": "Client Visibility and Communication Processes",
+          "p0_process_count": 3
+        }
+      ],
+      "route_ownership": {
+        "current_routes": [
+          {"page_id": "020", "route": "/mobile", "title": "Mobile Home", "scope": "MVP"},
+          {"route": "/journeys/:id/client-projection", "page_id": null, "title": "Journey Client Projection API", "scope": "IMPLEMENTED_API_PROJECTION"},
+          {"page_id": "052", "route": "/communication/:id/context", "title": "Communication Centre", "scope": "P1_AFTER_MVP"},
+          {"page_id": "053", "route": "/communication/call-trigger", "title": "Call Trigger Matrix", "scope": "P1_AFTER_MVP"}
+        ],
+        "planned_route_decisions": [
+          "Create explicit client-safe route ownership for released decisions, evidence requests and mobile/client portal projection.",
+          "Keep communication as context/recovery unless promoted by explicit P1 decision."
+        ],
+        "active_route_group_page_ids": ["020"],
+        "protected_or_support_page_ids": ["052", "053"]
+      },
+      "roles": {
+        "primary_actors": ["Principal / Client", "Family CFO", "Wealth Advisor"],
+        "client_roles_allowed": ["principal", "family_cfo", "trustee", "next_gen", "external_advisor"],
+        "internal_roles_allowed": ["senior_wealth_advisor", "compliance_officer", "client_success"]
+      },
+      "process_ownership_rule": "Client Visibility owns released-only client portal/mobile projection, evidence requests and client-safe summaries.",
+      "no_overclaim_rules": [
+        "Unreleased internal content must render hidden, redacted or empty.",
+        "Client visibility is not client acceptance.",
+        "Communication context cannot release advice or evidence."
+      ],
+      "proof_obligations": [
+        "true-ux-client-projection negative test",
+        "internal drafts, analyst notes and compliance notes absent from client projection",
+        "role-specific client view screenshot after implementation"
+      ]
+    },
+    {
+      "area_id": "AREA-09",
+      "name": "Export and Delivery",
+      "primary_nav_label": "Export & Delivery",
+      "navigation_tier": "primary_productive",
+      "process_domains": [
+        {
+          "domain_id": "DOMAIN-J",
+          "domain_name": "Export, Redaction and Delivery Processes",
+          "p0_process_count": 9
+        }
+      ],
+      "route_ownership": {
+        "current_routes": [
+          {"page_id": "054", "route": "/export/new", "title": "Create Export", "scope": "MVP"},
+          {"page_id": "055", "route": "/export/:id/scope", "title": "Export Scope Selection", "scope": "MVP"},
+          {"page_id": "056", "route": "/export/:id/redaction", "title": "Export Redaction", "scope": "MVP"},
+          {"page_id": "057", "route": "/export/:id/approval", "title": "Export Preview", "scope": "MVP"},
+          {"page_id": "058", "route": "/export/:id/download", "title": "Export Download and Share", "scope": "MVP"}
+        ],
+        "planned_route_decisions": [
+          "Rename or treat page 057 as approval, not merely preview, if it remains the gate before download/share."
+        ],
+        "active_route_group_page_ids": ["054", "055", "056", "057", "058"]
+      },
+      "roles": {
+        "primary_actors": ["Wealth Advisor", "Compliance Officer", "Client", "Privacy / Governance Role"],
+        "client_roles_allowed": ["principal", "family_cfo"],
+        "internal_roles_allowed": ["senior_wealth_advisor", "compliance_officer", "admin", "security_officer"]
+      },
+      "process_ownership_rule": "Export owns request, scope, redaction, preview, approval, generation, download, share and export audit.",
+      "no_overclaim_rules": [
+        "Preview cannot generate, download or share.",
+        "Approval must precede package delivery.",
+        "Export payload must exclude forbidden internal material."
+      ],
+      "proof_obligations": [
+        "file-export-realism negative test",
+        "redaction proof",
+        "download/share disabled until approval proof"
+      ]
+    },
+    {
+      "area_id": "AREA-10",
+      "name": "Operations and Data Quality",
+      "primary_nav_label": "Operations",
+      "navigation_tier": "primary_internal_support",
+      "process_domains": [
+        {
+          "domain_id": "DOMAIN-K",
+          "domain_name": "Review Rhythm, Monitoring and Operations Processes",
+          "p0_process_count": 2
+        }
+      ],
+      "route_ownership": {
+        "current_routes": [
+          {"page_id": "059", "route": "/ops", "title": "Ops Queues", "scope": "P1_AFTER_MVP"},
+          {"page_id": "060", "route": "/ops/sla/:id", "title": "SLA and Escalation", "scope": "P1_AFTER_MVP"}
+        ],
+        "planned_route_decisions": [
+          "Promote Operations as an internal support area only if route policy keeps it non-release, non-export and non-advice.",
+          "Define data quality block/recovery steps before claiming P0 process implementation."
+        ],
+        "active_route_group_page_ids": ["059", "060"]
+      },
+      "roles": {
+        "primary_actors": ["Operations / Client Success", "Analyst / Consultant", "System"],
+        "client_roles_allowed": [],
+        "internal_roles_allowed": ["client_success", "analyst", "admin"]
+      },
+      "process_ownership_rule": "Operations owns data quality blocks, recovery rhythm, SLA and support escalation.",
+      "no_overclaim_rules": [
+        "Operations cannot approve advice.",
+        "Operations cannot release to client.",
+        "Operations cannot approve export or mark evidence sufficient."
+      ],
+      "proof_obligations": [
+        "permission negative test for release/export/evidence actions",
+        "support-route smoke after navigation implementation",
+        "clear support-only labels"
+      ]
+    },
+    {
+      "area_id": "AREA-11",
+      "name": "Deferred, Elevated and Reference Work",
+      "primary_nav_label": "Protected Work",
+      "navigation_tier": "protected_non_productive_lane",
+      "process_domains": [
+        {
+          "domain_id": "HOLD_REFERENCE",
+          "domain_name": "KYC, suitability, IPS, committee, monitoring and reference surfaces not accepted as MVP completion proof"
+        }
+      ],
+      "route_ownership": {
+        "current_routes": [
+          {"page_id": "061", "route": "/service-blueprint", "title": "Service Blueprint", "scope": "REFERENCE_ONLY"},
+          {"page_id": "062", "route": "/roadmap", "title": "MVP vs Future Scope", "scope": "REFERENCE_ONLY"},
+          {"page_id": "063", "route": "/states", "title": "State and Badge Reference", "scope": "REFERENCE_ONLY"},
+          {"page_id": "064", "route": "/kyc/reviews", "title": "KYC / AML Review", "scope": "HOLD_PENDING_DECISION"},
+          {"page_id": "065", "route": "/kyc/reviews", "title": "Source-of-Wealth Review", "scope": "HOLD_PENDING_DECISION"},
+          {"page_id": "066", "route": "/kyc/reviews", "title": "Suitability Profile", "scope": "HOLD_PENDING_DECISION"},
+          {"page_id": "067", "route": "/ips/:tenantId/decision-room", "title": "IPS / Mandate", "scope": "HOLD_PENDING_DECISION"},
+          {"page_id": "068", "route": "/reviews", "title": "Review Calendar", "scope": "P1_AFTER_MVP"},
+          {"page_id": "069", "route": "/reviews/:id", "title": "Rebalance Monitoring", "scope": "HOLD_PENDING_DECISION"},
+          {"page_id": "070", "route": "/committee/reviews", "title": "Committee Review Queue", "scope": "HOLD_PENDING_DECISION"},
+          {"page_id": "071", "route": "/committee/reviews/:id/decision-room", "title": "Committee Review Detail", "scope": "HOLD_PENDING_DECISION"}
+        ],
+        "planned_route_decisions": [
+          "Keep reference routes outside primary productive navigation.",
+          "Unlock elevated routes only with explicit route evolution record, safety tests and role-bound process ownership.",
+          "Resolve duplicate /kyc/reviews ownership before implementation claims distinct KYC/source-of-wealth/suitability route completion."
+        ],
+        "active_route_group_page_ids": [],
+        "protected_page_ids": ["061", "062", "063", "064", "065", "066", "067", "068", "069", "070", "071"]
+      },
+      "roles": {
+        "primary_actors": ["internal roles only after explicit unlock"],
+        "client_roles_allowed": [],
+        "internal_roles_allowed": ["analyst", "senior_wealth_advisor", "compliance_officer", "admin", "security_officer"]
+      },
+      "process_ownership_rule": "Protected Work owns non-MVP, elevated, held and reference visibility; it cannot be counted as implemented P0 completion proof.",
+      "no_overclaim_rules": [
+        "Held KYC, suitability, committee and monitoring routes are not live client promises.",
+        "Reference pages are not product workflows.",
+        "Committee vote or elevated review cannot release to client or bypass compliance."
+      ],
+      "proof_obligations": [
+        "hold routes blocked or clearly protected",
+        "reference routes absent from primary productive navigation",
+        "negative tests before any elevated unlock"
+      ]
+    }
+  ],
+  "implementation_acceptance_criteria": [
+    "Primary navigation exposes AREA-00 through AREA-10 in the contract order.",
+    "AREA-11 is visible only as a protected lane or omitted from productive nav; it cannot be part of MVP completion proof.",
+    "Every current primary navigation group is mapped to a final area or split into final areas.",
+    "Advisor Review is no longer hidden inside the Analyst Workbench active group.",
+    "Client Visibility is explicit and fail-closed.",
+    "Setup and Governance are treated as one foundation/control-plane area.",
+    "Operations exists as internal support with no decision, release, export or evidence-sufficiency powers.",
+    "Route active states include all page IDs owned by each area and do not promote registered-only/reference routes.",
+    "Role visibility follows client/internal boundaries and preserves object, tenant and payload safety.",
+    "No-overclaim labels and tests prevent upload-to-release, advisor-approval-to-release, preview-to-download and admin-bypass shortcuts."
+  ],
+  "next_ticket_readiness": {
+    "enables": [
+      "EPIC-01-IMPL-01",
+      "EPIC-02-SPEC-01"
+    ],
+    "recommended_next_ticket": "EPIC-01-IMPL-01",
+    "implementation_slice": [
+      "Refactor lib/navigation.ts into process-first area definitions.",
+      "Update components/process-navigation.tsx and components/sidebar.tsx to render area order and protected lane behavior.",
+      "Add or update route/navigation tests for active grouping, role visibility and protected/reference exclusion."
+    ],
+    "decision_required_before_implementation": false
+  }
+}
