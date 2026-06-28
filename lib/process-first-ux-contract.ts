@@ -2,6 +2,9 @@ import { screenRoutes } from "@/lib/route-registry";
 
 export type ProcessFirstUxPageFamily =
   | "action_board"
+  | "analyst_signal_hub"
+  | "analyst_trigger_review"
+  | "analyst_workbench"
   | "advisor_review"
   | "compliance_decision_room"
   | "evidence_vault"
@@ -32,6 +35,42 @@ const routeForPageId = (pageId: string) => {
 };
 
 export const processFirstUxRouteContracts = [
+  {
+    acceptanceIds: ["ACC-003", "ACC-007"],
+    businessProcessIds: ["BP-034", "BP-038", "BP-039", "BP-040", "BP-041"],
+    domainIds: ["DOMAIN-D", "DOMAIN-I"],
+    forbiddenOverclaims: ["advice_created", "advisor_approved", "compliance_released", "client_visibility", "export_ready"],
+    gateIds: ["P0_NO_UNAPPROVED_ADVICE_GATE", "P0_AUDIT_PERSISTENCE_GATE"],
+    nextPermittedAction: "Open the analyst workbench or request evidence; never approve, release, export or expose advice from the signal hub.",
+    pageFamily: "analyst_signal_hub",
+    pageId: "033",
+    primaryProcessJob: "Signal and draft area entry with one internal next action and no downstream gate overclaim.",
+    route: routeForPageId("033"),
+  },
+  {
+    acceptanceIds: ["ACC-003", "ACC-007"],
+    businessProcessIds: ["BP-034", "BP-038", "BP-039", "BP-040", "BP-041", "BP-042", "BP-043", "BP-044"],
+    domainIds: ["DOMAIN-D", "DOMAIN-E", "DOMAIN-I"],
+    forbiddenOverclaims: ["workbench_triage_as_approval", "evidence_gap_as_sufficiency", "client_visibility", "export_ready"],
+    gateIds: ["P0_AI_DRAFT_INTERNAL_ONLY_GATE", "P0_NO_UNAPPROVED_ADVICE_GATE", "P0_AUDIT_PERSISTENCE_GATE"],
+    nextPermittedAction: "Select one work item, resolve blockers or route only a safe internal candidate to advisor review.",
+    pageFamily: "analyst_workbench",
+    pageId: "034",
+    primaryProcessJob: "Analyst queue/detail workbench for signal triage and internal draft blockers.",
+    route: routeForPageId("034"),
+  },
+  {
+    acceptanceIds: ["ACC-003", "ACC-007"],
+    businessProcessIds: ["BP-040", "BP-042", "BP-043", "BP-044", "BP-045", "BP-046", "BP-047", "BP-048"],
+    domainIds: ["DOMAIN-D", "DOMAIN-E", "DOMAIN-I"],
+    forbiddenOverclaims: ["unsupported_claim_as_ready", "redaction_as_release", "route_to_advisor_as_approval", "client_visibility"],
+    gateIds: ["P0_AI_DRAFT_INTERNAL_ONLY_GATE", "P0_EVIDENCE_SUFFICIENCY_GATE", "P0_NO_UNAPPROVED_ADVICE_GATE", "P0_AUDIT_PERSISTENCE_GATE"],
+    nextPermittedAction: "Resolve evidence or unsupported-claim blockers before creating an advisor-pending handoff.",
+    pageFamily: "analyst_trigger_review",
+    pageId: "035",
+    primaryProcessJob: "Selected trigger/internal draft review with blocker, recovery and traceability before advisor handoff.",
+    route: routeForPageId("035"),
+  },
   {
     acceptanceIds: ["ACC-002"],
     businessProcessIds: ["BP-020", "BP-021", "BP-022"],

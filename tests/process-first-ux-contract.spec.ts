@@ -11,6 +11,9 @@ const routeByPageId = new Map(screenRoutes.map((route) => [route.pageId, route.r
 test.describe("process-first UX route contract", () => {
   test("covers the first critical long-screen and process-gate pages", () => {
     expect(processFirstUxCriticalPageIds).toEqual([
+      "033",
+      "034",
+      "035",
       "032",
       "037",
       "039",
@@ -64,6 +67,25 @@ test.describe("process-first UX route contract", () => {
     expect(compliance.acceptanceIds).toEqual(["ACC-005", "ACC-006", "ACC-007"]);
     expect(compliance.gateIds).toEqual(expect.arrayContaining(["P0_COMPLIANCE_RELEASE_GATE", "P0_CLIENT_VISIBILITY_GATE", "P0_AUDIT_PERSISTENCE_GATE"]));
     expect(compliance.forbiddenOverclaims).toEqual(expect.arrayContaining(["advisor_approval_as_release", "client_visibility_without_compliance_release"]));
+  });
+
+  test("maps analyst signal and draft screens to internal-only process gates", () => {
+    const signalHub = processFirstUxContractForPageId("033");
+    const workbench = processFirstUxContractForPageId("034");
+    const triggerReview = processFirstUxContractForPageId("035");
+
+    expect(signalHub.pageFamily).toBe("analyst_signal_hub");
+    expect(signalHub.businessProcessIds).toEqual(expect.arrayContaining(["BP-034", "BP-038", "BP-040"]));
+    expect(signalHub.forbiddenOverclaims).toEqual(expect.arrayContaining(["advisor_approved", "compliance_released", "client_visibility"]));
+
+    expect(workbench.pageFamily).toBe("analyst_workbench");
+    expect(workbench.domainIds).toEqual(expect.arrayContaining(["DOMAIN-D", "DOMAIN-E"]));
+    expect(workbench.businessProcessIds).toEqual(expect.arrayContaining(["BP-042", "BP-043", "BP-044"]));
+    expect(workbench.gateIds).toEqual(expect.arrayContaining(["P0_AI_DRAFT_INTERNAL_ONLY_GATE", "P0_NO_UNAPPROVED_ADVICE_GATE"]));
+
+    expect(triggerReview.pageFamily).toBe("analyst_trigger_review");
+    expect(triggerReview.businessProcessIds).toEqual(expect.arrayContaining(["BP-045", "BP-046", "BP-047", "BP-048"]));
+    expect(triggerReview.forbiddenOverclaims).toEqual(expect.arrayContaining(["redaction_as_release", "route_to_advisor_as_approval"]));
   });
 
   test("does not allow empty process, gate or overclaim fields", () => {

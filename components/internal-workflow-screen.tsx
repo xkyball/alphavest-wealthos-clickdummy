@@ -19,6 +19,7 @@ import {
   UsersRound,
   X
 } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GlobalSearchBox } from "@/components/global-search-box";
 import {
@@ -44,11 +45,11 @@ import { ProcessSidebar } from "@/components/process-navigation";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
 import { RouteContextChip } from "@/components/route-context-chip";
 import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
-import { UxHubPage } from "@/components/ux-hub-page";
 import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
 import { UxComplexityPriorityPanel } from "@/components/ux-complexity-priority-panel";
 import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
+import { analystDraftGovernanceContractId, analystDraftRouteOwnershipForPageId } from "@/lib/analyst-draft-governance-contract";
 import { processFirstUxContractForPageId } from "@/lib/process-first-ux-contract";
 import { uxActionAttributesFor, uxActionClassForPriority } from "@/lib/ux-action-hierarchy-contract";
 import { uxFeedbackSuccessMessageForSubject } from "@/lib/ux-feedback-message-contract";
@@ -755,24 +756,24 @@ function ComplianceReleaseGate() {
 function Phase5DetailSplitPanel({ compact = false, decisionSupport, objectLabel, objectState, pageJob, safetyBoundary, splitTaskId, taskId }: Phase5DetailSplitPanelProps) {
   if (compact) {
     return (
-      <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-layout-compression="compact_boundary_strip" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-3" data-testid="ux-phase5-detail-split" data-ux-layout-compression="compact_boundary_strip" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Detail state</p>
-            <h2 className="mt-1 font-display text-xl text-alphavest-ivory">{objectLabel}</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Detail state</p>
+            <h2 className="mt-0.5 font-display text-lg text-alphavest-ivory">{objectLabel}</h2>
           </div>
           <Badge tone="gold">{taskId}</Badge>
         </div>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <div className="mt-2 grid gap-2 lg:grid-cols-4">
           {[
-            ["Object state", objectState],
-            ["Decision support", decisionSupport],
-            ["Boundary", safetyBoundary],
-            ["Focus", pageJob],
-          ].map(([label, value]) => (
-            <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" key={label}>
-              <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">{label}</p>
-              <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{value}</p>
+            ["Object state", objectState, "ux-phase5-object-state"],
+            ["Decision support", decisionSupport, "ux-phase5-decision-support"],
+            ["Boundary", `Drawer-only context cannot approve, release, delete, export or mutate payload visibility. ${safetyBoundary}`, "ux-phase5-drawer-boundary"],
+            ["Focus", pageJob, "ux-phase5-page-job"],
+          ].map(([label, value, testId]) => (
+            <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-2" data-testid={testId} key={label}>
+              <p className="text-[11px] uppercase tracking-[0.08em] text-alphavest-muted">{label}</p>
+              <p className="mt-1 text-xs font-semibold leading-5 text-alphavest-ivory">{value}</p>
             </div>
           ))}
         </div>
@@ -882,55 +883,157 @@ function Phase4WorkbenchPanel({
 }
 
 function SignalsPage({ title }: { title: string }) {
+  const processContract = processFirstUxContractForPageId("033");
+
   return (
     <InternalShell activePageId="033">
       <WorksurfaceShell
-        description="Signal intake is now presented as one internal-only process surface: queue signal, explain the active review job and keep advisor/compliance release gates visibly separate."
-        eyebrow="WP02 internal workbench"
-        primary={
-          <div className="space-y-4">
-            <Phase5DetailSplitPanel decisionSupport="Advisory hub orients signal work without becoming trigger detail." objectLabel="Advisory hub split" objectState="Signal intake overview" pageJob="Hub routes to queue/detail while preserving one job per page." safetyBoundary="Hub context cannot approve advice or release content." splitTaskId="UX-PAGE-SPLIT-001" taskId="UX-PAGE-SPLIT-001" />
-            <UxHubPage pageId="033" />
-          </div>
-        }
-        rail={
-          <WorksurfacePanel description="Signal intake can route work, but cannot approve advice, release content or expose drafts to clients." title="Gate boundary">
-            <div className="space-y-3 text-sm">
-              {["Internal analyst only", "Advisor review required", "Compliance release required"].map((item) => (
-                <div className="flex items-center justify-between gap-3 border-b border-alphavest-border/45 pb-2 last:border-0" key={item}>
-                  <span className="text-alphavest-muted">{item}</span>
-                  <Badge tone="gold">Held</Badge>
-                </div>
-              ))}
-            </div>
-          </WorksurfacePanel>
-        }
+        density="compact"
+        description="Internal signal entry backed by the signal workbench and draft-governance contracts. It orients work only; mutation happens in governed downstream services."
+        eyebrow="EPIC-09 internal entry"
+        primary={<AnalystSignalAreaEntry />}
         routeId="033"
-        safetyNote="WP02 layout only: signal intake does not create client-visible advice, does not approve a recommendation and does not bypass advisor or compliance review."
-        secondary={
-          <div className="grid gap-3 lg:grid-cols-3">
-            {signalQueue.slice(0, 3).map((row) => (
-              <Card key={row.id}>
-                <CardContent className="space-y-2">
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="font-semibold text-alphavest-ivory">{row.title}</p>
-                    <Badge tone={toneFor(row.severity)}>{row.severity}</Badge>
-                  </div>
-                  <p className="text-sm text-alphavest-muted">{row.client}</p>
-                  <p className="text-xs text-alphavest-subtle">{row.source} - {row.age}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        }
+        safetyNote="S033 is an internal area entry. It can navigate to analyst work; it cannot approve advice, release content, export content or expose drafts to clients."
         statusItems={[
           { label: "Queue", tone: "gold", value: `${signalQueue.length} signals` },
           { label: "Visibility", tone: "red", value: "Internal only" },
+          { label: "Processes", tone: "gold", value: `${processContract.businessProcessIds.length} mapped` },
         ]}
         title={title}
         worksurfaceId="internal-workbench-signals"
       />
     </InternalShell>
+  );
+}
+
+function AnalystSignalAreaEntry() {
+  const processContract = processFirstUxContractForPageId("033");
+  const routeShellPageJobContract = uxRouteShellPageJobContractForTemplate(uxPageTemplateForPageId("033"));
+  const routeOwnership = analystDraftRouteOwnershipForPageId("033");
+  const primarySignal = signalQueue[0] ?? {
+    id: selectedSignal.id,
+    severity: selectedSignal.severity,
+    source: selectedSignal.source,
+  };
+
+  return (
+    <section
+      className="grid gap-3 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]"
+      data-testid="ux-hub-page"
+      data-epic09-contract={analystDraftGovernanceContractId}
+      data-epic09-service-backing="lib/p44-phase4-signal-workbench.ts lib/internal-draft-governance-spine.ts"
+      data-epic09-route-owner={routeOwnership?.pageFamily}
+      data-epic09-ui-truth="readmodel_contract_backed"
+      data-s033-analyst-area-entry="true"
+      data-ux-hub-task="phase-3"
+    >
+      <Card className="min-w-0">
+        <CardHeader className="flex flex-row items-start justify-between gap-3">
+          <div className="min-w-0">
+            <CardTitle>Signal entry</CardTitle>
+            <p className="mt-1 text-sm leading-5 text-alphavest-muted" data-testid="ux-hub-summary">{routeOwnership?.primaryJob}</p>
+          </div>
+          <Badge tone="gold">Read-only entry</Badge>
+        </CardHeader>
+        <CardContent className="grid gap-3">
+          <div className="grid gap-3 sm:grid-cols-2">
+            {[
+              ["Backed signal queue", `${signalQueue.length} internal rows`],
+              ["Current signal", primarySignal.id],
+              ["Severity", primarySignal.severity],
+            ].map(([label, value]) => (
+              <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-3" data-ux-hub-priority-card="true" key={label}>
+                <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">{label}</p>
+                <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{value}</p>
+              </div>
+            ))}
+            <InfoRow label="Source" value={primarySignal.source} />
+          </div>
+          <StatePanel
+            detail={`${selectedSignal.missingElements.length} evidence/data gaps keep advisor and compliance gates blocked. This entry only opens the governed workbench.`}
+            state="restricted"
+            testId="s033-backed-state"
+            title="Internal work only"
+            {...uxStatusCommandAttributesFor({
+              componentState: "restricted",
+              reason: "Signal entry is not a mutation route; downstream service commands own triage, evidence request and advisor handoff.",
+              recoveryAction: "complete_review",
+            })}
+          />
+          <p className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 px-3 py-2 text-xs leading-5 text-alphavest-gold-soft" data-testid="ux-hub-safety-note">
+            Internal entry only: no approval, release, export or client visibility mutation here.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              className={primaryButtonClass}
+              data-testid="ux-hub-primary-next-work"
+              data-s033-open-analyst-workbench="true"
+              href="/advisory/review-queue"
+              {...uxActionAttributesFor({
+                availability: "enabled",
+                meaning: "navigate",
+                placement: "inline_cluster",
+                priority: "primary",
+                requiresPermission: false,
+              })}
+            >
+              Open analyst workbench
+            </Link>
+            {[
+              ["/advisory/review-queue", "Review queue"],
+              ["/advisory/triggers/demo/review", "Trigger review"],
+              ["/documents", "Evidence lifecycle"],
+            ].map(([href, label]) => (
+              <Link className={secondaryButtonClass} data-testid="ux-hub-next-link" href={href} key={href}>
+                {label}
+              </Link>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+      <div className="grid gap-3">
+        <Phase5DetailSplitPanel compact decisionSupport="Routes to analyst queue/detail." objectLabel="Advisory hub split" objectState="Signal overview state" pageJob="One entry job without downstream gates." safetyBoundary="Hub context cannot approve advice or release content." splitTaskId="UX-PAGE-SPLIT-001" taskId="UX-PAGE-SPLIT-001" />
+        <section
+          className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3"
+          data-testid="s033-process-gate-rail"
+          data-ux-process-acceptance-gates={processContract.acceptanceIds.join(" ")}
+          data-ux-process-blocked-reason="entry_surface_no_mutation_authority"
+          data-ux-process-business-processes={processContract.businessProcessIds.join(" ")}
+          data-ux-process-current-step="signal_area_entry"
+          data-ux-process-first="true"
+          data-ux-process-gate-ids={processContract.gateIds.join(" ")}
+          data-ux-process-gate-state="Internal only"
+          data-ux-process-next-step={processContract.nextPermittedAction}
+          data-ux-route-shell-page-job-command-zone={routeShellPageJobContract.commandZone}
+          data-ux-route-shell-page-job-consumer="true"
+          data-ux-route-shell-page-job-contract={routeShellPageJobContract.contractId}
+          data-ux-route-shell-page-job-id={routeShellPageJobContract.pageId}
+          data-ux-route-shell-page-job-no-overclaim={routeShellPageJobContract.noOverclaimRule}
+          data-ux-route-shell-page-job-proof-audit={routeShellPageJobContract.proofAuditPlacement}
+          data-ux-route-shell-page-job-value={routeShellPageJobContract.pageJob}
+        >
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="text-base font-semibold text-alphavest-ivory">AREA-04 entry gate</h2>
+              <p className="mt-1 text-xs leading-5 text-alphavest-muted">
+                Readmodel-backed entry. Navigation only; no workflow mutation.
+              </p>
+            </div>
+            <Badge tone="gold">Internal only</Badge>
+          </div>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-2">
+              <p className="text-xs font-semibold text-alphavest-ivory">Signal backing</p>
+              <p className="mt-1 text-xs leading-5 text-alphavest-muted">Internal workflow read model; client visibility stays blocked.</p>
+            </div>
+            <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-2">
+              <p className="text-xs font-semibold text-alphavest-ivory">Mutation authority</p>
+              <p className="mt-1 text-xs leading-5 text-alphavest-muted">None here. Open workbench for governed commands.</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
   );
 }
 
