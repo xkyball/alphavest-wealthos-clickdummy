@@ -132,6 +132,42 @@ test.describe("E06 data surface contract", () => {
     expect(uxDataSurfaceActionContractFor("command_handoff").noOverclaimRule).toContain("explicit action contract");
   });
 
+  test("locks EPIC-04 no-overclaim rules to the machine-readable governance contract", () => {
+    const contract = JSON.parse(readSource(
+      "docs",
+      "00-current",
+      "ALPHAVEST_MASTER_DETAIL_DATA_SURFACE_LONG_SCREEN_GOVERNANCE_CONTRACT.json",
+    )) as {
+      forbiddenUsage: Record<"dataSurface" | "longScreenGovernance" | "masterDetailSurface", string[]>;
+      runtimeAttributeRequirements: Record<"rowAction" | "surface", string[]>;
+    };
+    const forbiddenClaims = [
+      ...contract.forbiddenUsage.masterDetailSurface,
+      ...contract.forbiddenUsage.dataSurface,
+      ...contract.forbiddenUsage.longScreenGovernance,
+    ].join(" ");
+
+    expect(forbiddenClaims).toContain("approval");
+    expect(forbiddenClaims).toContain("release");
+    expect(forbiddenClaims).toContain("evidence sufficiency");
+    expect(forbiddenClaims).toContain("permission mutation");
+    expect(forbiddenClaims).toContain("screenshots alone");
+    for (const attribute of contract.runtimeAttributeRequirements.surface) {
+      expect(uxDataSurfaceAttributesFor({
+        actionPolicy: "route_handoff",
+        density: "compact_operations",
+        family: "queue",
+        governancePattern: "queue_workbench",
+        longScreenGovernance: "resolved_by_shared_surface",
+        masterDetailMode: "inline_detail_rail",
+        targetScreenId: "S038",
+      })).toHaveProperty(attribute);
+    }
+    for (const attribute of contract.runtimeAttributeRequirements.rowAction) {
+      expect(uxDataSurfaceActionAttributesFor("route_handoff")).toHaveProperty(attribute);
+    }
+  });
+
   test("DataTable projects E06 density field priority and row action metadata", () => {
     const dataTable = readSource("components", "ui", "data-table.tsx");
 

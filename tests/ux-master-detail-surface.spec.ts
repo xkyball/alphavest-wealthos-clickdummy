@@ -51,6 +51,36 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain('targetScreenId="S038"');
   });
 
+  test("locks EPIC-04 required master-detail slots for the S038 representative migration", () => {
+    const contract = JSON.parse(readSource(
+      "docs",
+      "00-current",
+      "ALPHAVEST_MASTER_DETAIL_DATA_SURFACE_LONG_SCREEN_GOVERNANCE_CONTRACT.json",
+    )) as {
+      runtimeAttributeRequirements: Record<"masterDetail" | "queueWorkbench", string[]>;
+    };
+    const adapter = readSource("components", "ui", "master-detail-surface.tsx");
+    const dataSurfaceContract = readSource("lib", "ux-data-surface-contract.ts");
+    const runtimeSources = `${adapter}\n${dataSurfaceContract}`;
+    const consumer = readSource("components", "internal-workflow-screen.tsx");
+
+    for (const attribute of contract.runtimeAttributeRequirements.masterDetail) {
+      expect(runtimeSources).toContain(attribute);
+    }
+    for (const attribute of contract.runtimeAttributeRequirements.queueWorkbench) {
+      expect(runtimeSources).toContain(attribute);
+    }
+    expect(adapter).toContain('data-testid="ux-master-detail-master"');
+    expect(adapter).toContain('data-testid="ux-master-detail-detail"');
+    expect(adapter).toContain('data-testid="ux-master-detail-selected-summary"');
+    expect(consumer).toContain('actionPolicy="route_handoff"');
+    expect(consumer).toContain('proofPlacement="proof_drawer"');
+    expect(consumer).toContain('selectedSummary={<span>Compliance queue keeps list context');
+    expect(consumer).not.toContain("Compliance queue rows can release");
+    expect(consumer).not.toContain("Compliance queue rows can export");
+    expect(consumer).not.toContain("Compliance queue rows can expose client-visible content");
+  });
+
   test("marks S034 and S036 as process-owned queue workbenches without legacy hub or table fallbacks", () => {
     const source = readSource("components", "internal-workflow-screen.tsx");
 
