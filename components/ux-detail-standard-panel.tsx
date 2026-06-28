@@ -3,6 +3,7 @@
 import { cn } from "@/lib/cn";
 import { uxDensityForPageId } from "@/lib/ux-density";
 import { uxPageTemplateForPageId } from "@/lib/ux-page-template-system";
+import { uxRouteShellPageJobDataAttributesForTemplate } from "@/lib/ux-route-shell-page-job-contract";
 
 type UxDetailFact = {
   label: string;
@@ -38,6 +39,7 @@ export function UxDetailStandardPanel({
 }: UxDetailStandardPanelProps) {
   const density = uxDensityForPageId(routeId);
   const template = uxPageTemplateForPageId(routeId);
+  const routeShellPageJobAttributes = uxRouteShellPageJobDataAttributesForTemplate(template);
   const isFocusedDetail = density.tier === "D4";
 
   return (
@@ -50,6 +52,7 @@ export function UxDetailStandardPanel({
         className
       )}
       data-ux-d4-focused-detail={isFocusedDetail ? "true" : undefined}
+      {...routeShellPageJobAttributes}
       data-testid="ux-page-detail-standard"
       data-ux-density-pattern={density.pattern}
       data-ux-density-tier={density.tier}

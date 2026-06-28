@@ -1,4 +1,5 @@
 import { cn } from "@/lib/cn";
+import { uxRouteShellPageJobDataAttributesForTemplate } from "@/lib/ux-route-shell-page-job-contract";
 import {
   uxShellSlotPolicyForTemplate,
   type UxPageTemplateRecord,
@@ -43,9 +44,12 @@ type PageTemplateSummaryRailProps = React.HTMLAttributes<HTMLElement> & {
 export function PageTemplateFrame({ children, className, template, ...props }: PageTemplateFrameProps) {
   const clientSuppression = uxProofReviewerClientSuppressionForPageId(template.pageId);
   const shellSlotPolicy = uxShellSlotPolicyForTemplate(template);
+  const routeShellPageJobAttributes = uxRouteShellPageJobDataAttributesForTemplate(template);
 
   return (
     <section
+      {...props}
+      {...routeShellPageJobAttributes}
       data-ux-client-mode={clientSuppression.applies ? "client_mode" : undefined}
       data-ux-client-mode-missing-suppression={clientSuppression.missingRequiredSuppressions.join(" ")}
       data-ux-client-mode-suppressed={clientSuppression.suppressedContent.join(" ")}
@@ -61,7 +65,6 @@ export function PageTemplateFrame({ children, className, template, ...props }: P
       data-ux-shell-command-zone={shellSlotPolicy.commandZone}
       data-ux-shell-freeform-children={shellSlotPolicy.freeformChildrenPolicy}
       data-ux-shell-long-screen-exception-required={shellSlotPolicy.requiresLongScreenExceptionMetadata ? "true" : "false"}
-      {...props}
       className={cn("mx-auto max-w-[112rem] space-y-4", className)}
     >
       {children}

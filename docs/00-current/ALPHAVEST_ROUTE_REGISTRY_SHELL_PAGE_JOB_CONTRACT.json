@@ -126,10 +126,10 @@
     },
     "representative_route_expectations": [
       {
-        "page_id": "019",
+        "page_id": "020",
         "expected_family": "client_summary",
         "expected_job": "client_summary",
-        "no_overclaim_focus": "Client context and released visibility stay separated."
+        "no_overclaim_focus": "Released client visibility stays fail-closed and separate from internal client context."
       },
       {
         "page_id": "033",

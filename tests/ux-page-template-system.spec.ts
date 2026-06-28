@@ -110,7 +110,8 @@ test.describe("E02 canonical page template system", () => {
   test("maps representative routes to the intended page-template families", () => {
     const expectedFamilies: Record<string, UxPageTemplateFamily> = {
       "004": "workflow_stepper",
-      "019": "client_summary",
+      "019": "dashboard_list",
+      "020": "client_summary",
       "027": "workbench_master_detail",
       "033": "dashboard_list",
       "039": "detail_decision_room",

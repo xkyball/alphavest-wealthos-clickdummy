@@ -19,7 +19,7 @@ test.describe("E02 page-template runtime adoption", () => {
   const routes = [
     {
       family: "client_summary",
-      path: "/client/home",
+      path: "/mobile",
       requiredZone: "state_zone",
     },
     {
@@ -44,6 +44,10 @@ test.describe("E02 page-template runtime adoption", () => {
       await expect(templateRoot).toBeVisible();
       await expect(templateRoot).toHaveAttribute("data-ux-page-template-required-zones", new RegExp(route.requiredZone));
       await expect(templateRoot).toHaveAttribute("data-ux-page-template-action-zone", /^(inline_next_step|adjacent_action_rail|blocked_state_only|sticky_action_zone)$/);
+      await expect(templateRoot).toHaveAttribute("data-ux-contract-id", "EPIC-03_ROUTE_SHELL_PAGE_JOB_CONTRACT");
+      await expect(templateRoot).toHaveAttribute("data-ux-route-contract", "registered_route_policy");
+      await expect(templateRoot).toHaveAttribute("data-ux-page-job-contract", /^(audit_reference|client_summary|decision_room|queue|queue_detail|stepper)$/);
+      await expect(templateRoot).toHaveAttribute("data-ux-contract-allowed-zones", /^(?!$).+/);
       await expect(page.locator("[data-ux-template-zone]").first()).toBeVisible();
       await expect(page.locator("[data-ux-long-page-anchor]").first()).toBeVisible();
     });

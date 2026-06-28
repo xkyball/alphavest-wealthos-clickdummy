@@ -9,6 +9,7 @@ import { uxHubDefinitionForPageId, type UxHubTone } from "@/lib/ux-hub";
 import { uxDensityForPageId } from "@/lib/ux-density";
 import { uxPageTemplateForPageId } from "@/lib/ux-page-template-system";
 import { uxProofReviewerClientSuppressionForPageId } from "@/lib/ux-proof-reviewer-mode";
+import { uxRouteShellPageJobDataAttributesForTemplate } from "@/lib/ux-route-shell-page-job-contract";
 
 type UxHubPageProps = {
   pageId: string;
@@ -38,6 +39,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
   const density = uxDensityForPageId(pageId);
   const template = uxPageTemplateForPageId(pageId);
   const clientSuppression = uxProofReviewerClientSuppressionForPageId(pageId);
+  const routeShellPageJobAttributes = uxRouteShellPageJobDataAttributesForTemplate(template);
 
   if (density.tier === "D1") {
     const isMobileClientHub = pageId === "020";
@@ -45,6 +47,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
     return (
       <section
         className="mx-auto w-full max-w-[88rem] space-y-4"
+        {...routeShellPageJobAttributes}
         data-testid="ux-hub-page"
         data-ux-page-template-action-zone={template.actionZoneBehavior}
         data-ux-page-template-family={template.family}
@@ -171,6 +174,7 @@ export function UxHubPage({ pageId }: UxHubPageProps) {
   return (
     <section
       className="mx-auto w-full max-w-[104rem] space-y-5"
+      {...routeShellPageJobAttributes}
       data-testid="ux-hub-page"
       data-ux-page-template-action-zone={template.actionZoneBehavior}
       data-ux-page-template-family={template.family}

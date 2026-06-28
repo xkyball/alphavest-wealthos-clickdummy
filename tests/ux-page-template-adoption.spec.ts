@@ -35,7 +35,7 @@ test.describe("E02 page-template adoption", () => {
   });
 
   test("page-id lookup supports representative adopted families", () => {
-    expect(uxPageTemplateForPageId("019")).toMatchObject({
+    expect(uxPageTemplateForPageId("020")).toMatchObject({
       family: "client_summary",
       proofAuditPlacement: "client_safe_summary_only",
     });

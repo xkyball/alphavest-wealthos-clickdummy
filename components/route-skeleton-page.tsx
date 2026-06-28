@@ -14,6 +14,7 @@ import {
 } from "@/lib/route-registry";
 import { uxFlowStepsForPageId, uxRoutePolicyForRoute } from "@/lib/ux-route-policy";
 import { uxPageTemplateForRoute } from "@/lib/ux-page-template-system";
+import { uxRouteShellPageJobDataAttributesForTemplate } from "@/lib/ux-route-shell-page-job-contract";
 import { canBecomeClientVisible } from "@/lib/workflow-gate";
 
 type RouteSkeletonPageProps = {
@@ -145,6 +146,7 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
   const routeScope = routeScopeForPageId(route.pageId);
   const uxPolicy = uxRoutePolicyForRoute(route);
   const template = uxPageTemplateForRoute(route);
+  const routeShellPageJobAttributes = uxRouteShellPageJobDataAttributesForTemplate(template);
   const scopeCopy = scopeShellCopy[routeScope];
   const gate = canBecomeClientVisible({
     recommendationStatus: route.clientVisibilitySensitive ? "ADVISOR_APPROVED" : "DRAFT",
@@ -168,6 +170,7 @@ export function RouteSkeletonPage({ route }: RouteSkeletonPageProps) {
     <AppShell>
       <div
         className="space-y-6"
+        {...routeShellPageJobAttributes}
         data-ux-deferred-hold-product-controls={
           routeScope === "P1_AFTER_MVP" || routeScope === "HOLD_PENDING_DECISION" ? "non-interactive" : undefined
         }
