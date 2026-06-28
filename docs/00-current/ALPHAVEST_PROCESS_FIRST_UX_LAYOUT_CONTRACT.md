@@ -136,6 +136,40 @@ Additional shell rules:
 - Proof/audit material must render in the family-approved slot and must be compact/collapsible when it would push the command zone below the primary work. A full audit timeline below every primary block is forbidden.
 - Any long-screen exception must be machine-readable and include owner, reason, expiry condition and follow-up ticket. An exception is a debt ledger entry, not acceptance.
 
+### QueueWorkbench Adoption Contract
+
+Productive queue screens must migrate from stacked list/detail/audit pages into a shared `QueueWorkbench` / `MasterDetailSurface` pattern when the page job is queue triage, review intake, evidence review, compliance release intake, advisor work intake, vault review, governance user review or access-request review.
+
+Required QueueWorkbench zones:
+
+- `master_list`: dense, scannable queue rows with one selected object.
+- `selected_detail`: selected object facts, blockers, process state and safe next step.
+- `action_rail`: one command zone, visibly gated and subordinate to missing BP/ACC/gate reasons.
+- `proof_drawer`: audit, evidence lineage, timeline and policy proof as a secondary drawer/tab, not a full vertical appendix.
+- `selection_state`: stable selected object id and state exposed through data attributes.
+
+Required data attributes and state behavior:
+
+- The shared surface must expose `data-ux-queue-workbench="true"`.
+- The selected row must expose `data-ux-queue-selected="true"` and preserve selection through local filter/sort/status changes where the selected object remains in the result set.
+- The surface must expose `data-ux-queue-selected-object`, `data-ux-queue-selected-state`, `data-ux-queue-proof-placement` and `data-ux-queue-action-rail`.
+- Empty states must keep the action rail disabled or absent and must not imply completion.
+
+Dense row field priorities:
+
+1. Object identity and current process state.
+2. Blocking reason or missing gate.
+3. Owner / role / due or SLA signal.
+4. Evidence, release, redaction, audit or permission risk signal.
+5. Secondary metadata only if it helps triage the selected work item.
+
+Audit/proof drawer handoff:
+
+- Audit/proof payloads move to `proof_drawer` or a compact secondary tab.
+- Queue rows may show proof counts or blocker badges, but not full audit timelines.
+- Detail panes may summarize the current proof state, but the drawer owns history/provenance expansion.
+- A queue workbench may not use audit visibility as approval, release, export, evidence sufficiency or permission-change proof by itself.
+
 ## 7. P0 Route Mapping
 
 The following route families are locked as initial process-first refactor targets.

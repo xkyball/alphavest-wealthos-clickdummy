@@ -18,6 +18,10 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain("masterDetailMode");
     expect(source).toContain("data-ux-master-detail-selected-object");
     expect(source).toContain("data-ux-master-detail-selected-state");
+    expect(source).toContain("data-ux-queue-workbench");
+    expect(source).toContain("data-ux-queue-selected-object");
+    expect(source).toContain("data-ux-queue-proof-placement");
+    expect(source).toContain("data-ux-queue-action-rail");
     expect(source).toContain("data-testid=\"ux-master-detail-master\"");
     expect(source).toContain("data-testid=\"ux-master-detail-detail\"");
     expect(source).toContain("data-testid=\"ux-master-detail-selected-summary\"");
@@ -29,11 +33,31 @@ test.describe("E06 master-detail surface adoption", () => {
 
     expect(source).toContain('family="queue"');
     expect(source).toContain('actionPolicy="route_handoff"');
-    expect(source).toContain('masterDetailMode="route_detail"');
+    expect(source).toContain('masterDetailMode="inline_detail_rail"');
+    expect(source).toContain("queueWorkbench");
+    expect(source).toContain('proofPlacement="proof_drawer"');
+    expect(source).toContain("data-ux-queue-selected");
     expect(source).toContain('filterState={searchTerm.length > 0 ? "active_query" : "inactive"}');
     expect(source).toContain("<MasterDetailSurface");
     expect(source).toContain("Advisor queue keeps list context");
     expect(source).toContain("Compliance queue keeps list context");
+    expect(source).toContain("s038-compliance-master-list");
+    expect(source).toContain("s038-compliance-selected-detail");
+  });
+
+  test("marks S029 extraction review as a queue workbench with proof drawer handoff", () => {
+    const source = readSource("components", "client-intake-screen.tsx");
+
+    expect(source).toContain("function ExtractionReviewWorkbench");
+    expect(source).toContain("<MasterDetailSurface");
+    expect(source).toContain('actionPolicy="command_handoff"');
+    expect(source).toContain('density="compact_operations"');
+    expect(source).toContain('proofPlacement="proof_drawer"');
+    expect(source).toContain("queueWorkbench");
+    expect(source).toContain("data-ux-queue-selected");
+    expect(source).toContain("s029-extraction-master-list");
+    expect(source).toContain("s029-extraction-selected-detail");
+    expect(source).toContain('data-ux-queue-proof-drawer="true"');
   });
 
   test("marks the wealth action board as the representative board-to-detail surface", () => {

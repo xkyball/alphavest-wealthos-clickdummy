@@ -49,6 +49,7 @@ import {
   ClientSafeUiBoundary,
   DataTable,
   MetricCard,
+  MasterDetailSurface,
   ActionButton,
   ActionZone,
   NoOverclaimFeedback,
@@ -2741,6 +2742,141 @@ function ExtractionReviewActionPanel() {
   );
 }
 
+function ExtractionReviewWorkbench() {
+  const { documents, loadState } = usePersistedUploadDocuments();
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string | undefined>();
+  const selectedDocument = documents.find((document) => document.id === selectedDocumentId) ?? documents[0];
+
+  useEffect(() => {
+    if (!documents.length) {
+      setSelectedDocumentId(undefined);
+      return;
+    }
+
+    if (!selectedDocumentId || !documents.some((document) => document.id === selectedDocumentId)) {
+      setSelectedDocumentId(documents[0].id);
+    }
+  }, [documents, selectedDocumentId]);
+
+  const master = (
+    <div className="space-y-3" data-testid="s029-extraction-master-list">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-semibold text-alphavest-ivory">Extraction queue</p>
+        <Badge tone="blue">{documents.length || 0} items</Badge>
+      </div>
+      {documents.length ? (
+        documents.slice(0, 5).map((document, index) => {
+          const selected = selectedDocument?.id === document.id;
+
+          return (
+            <button
+              className={cn(
+                "w-full rounded-md border p-3 text-left transition",
+                selected ? "border-alphavest-gold bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35 hover:border-alphavest-gold/60",
+              )}
+              data-ux-field-priority="identity primary_status evidence_gate risk_due"
+              data-ux-queue-row={document.id}
+              data-ux-queue-selected={selected ? "true" : "false"}
+              key={document.id}
+              onClick={() => setSelectedDocumentId(document.id)}
+              type="button"
+            >
+              <span className="flex items-start justify-between gap-3">
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-semibold text-alphavest-ivory">{document.fileName ?? document.title}</span>
+                  <span className="mt-1 block text-xs text-alphavest-muted">
+                    Lifecycle: {labelFromEnum(document.evidenceLifecycleStatus ?? "review_pending")} · Extraction: {document.extractionStatus ?? "pending"}
+                  </span>
+                </span>
+                <Badge tone={index === 0 ? "gold" : "muted"}>{index === 0 ? "current" : "queued"}</Badge>
+              </span>
+              <span className="mt-2 block text-xs text-alphavest-muted">
+                Blocker: human review and scoped sufficiency gate required before release/export/client visibility.
+              </span>
+            </button>
+          );
+        })
+      ) : (
+        <StatePanel
+          detail={loadState === "loading" ? "Fetching uploaded documents." : "Upload a document before extraction review can continue."}
+          state={loadState === "error" ? "error" : "empty"}
+          title={loadState === "error" ? "Extraction queue unavailable" : "No extraction queue items"}
+        />
+      )}
+    </div>
+  );
+
+  const detail = (
+    <div className="space-y-5" data-testid="s029-extraction-selected-detail">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between"><CardTitle>{selectedDocument?.fileName ?? "2024_Q4_Brokerage_Statement.pdf"}</CardTitle><Badge>Page 1 of 4</Badge></CardHeader>
+        <CardContent>
+          <div className="rounded-md bg-alphavest-ivory p-6 text-alphavest-navy">
+            <p className="font-display text-2xl">Summit Securities</p>
+            <p className="mt-4 text-sm">Account Statement · AlphaVest Family Office LLC</p>
+            <div className="mt-5 space-y-2 text-sm">
+              {["Beginning Market Value $8,742,183.41", "Net Contributions $250,000.00", "Net Withdrawals $(125,000.00)", "Ending Market Value $9,899,640.19"].map((line) => (
+                <div className="flex justify-between border-b border-slate-300 pb-2" key={line}><span>{line.split(" $")[0]}</span><span>${line.split(" $")[1]}</span></div>
+              ))}
+            </div>
+          </div>
+          <div className="mt-4 grid grid-cols-4 gap-3">
+            {[1, 2, 3, 4].map((page) => <div className={cn("grid h-16 place-items-center rounded border bg-alphavest-ivory text-alphavest-navy", page === 1 ? "border-alphavest-gold" : "border-alphavest-border")} key={page}>{page}</div>)}
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader><CardTitle>Extracted Fields <Badge className="ml-2">12 fields</Badge></CardTitle></CardHeader>
+        <CardContent className="space-y-5">
+          {extractionFields.map((section) => (
+            <div key={section.section}>
+              <p className="mb-2 font-semibold text-alphavest-ivory">{section.section}</p>
+              <div className="space-y-2">
+                {section.fields.map(([label, value, confidence]) => (
+                  <div className={cn("grid gap-2 rounded-md border p-3 md:grid-cols-[9rem_1fr_auto]", confidence === "Low" ? "border-alphavest-red/60" : "border-alphavest-border") } key={`${section.section}-${label}`}>
+                    <span className="text-sm text-alphavest-muted">{label}</span>
+                    <span className="text-sm font-semibold text-alphavest-ivory">{value}</span>
+                    <Badge tone={toneFor(confidence)}>{confidence}</Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+          <StatePanel detail="Low confidence or errors must be resolved before finalizing." state="error" title="1 field needs attention" />
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  return (
+    <MasterDetailSurface
+      actionPolicy="command_handoff"
+      actionRail="present"
+      className="space-y-4"
+      density="compact_operations"
+      detail={detail}
+      family="queue"
+      filterState={documents.length ? "inactive" : "disabled_static"}
+      master={master}
+      masterDetailMode="inline_detail_rail"
+      proofPlacement="proof_drawer"
+      queueWorkbench
+      selectedObjectId={selectedDocument?.id ?? "s029-empty-queue"}
+      selectedObjectState={selectedDocument?.evidenceLifecycleStatus ?? "empty"}
+      selectedSummary={
+        <div className="grid gap-2 md:grid-cols-[1fr_auto]">
+          <div>
+            <p className="font-semibold text-alphavest-ivory">Selected extraction review</p>
+            <p className="text-xs text-alphavest-muted">Selection is preserved while filters or queue state change; audit/proof remains a drawer handoff.</p>
+          </div>
+          <Badge tone="gold">{selectedDocument ? labelFromEnum(selectedDocument.evidenceLifecycleStatus ?? "review_pending") : "empty"}</Badge>
+        </div>
+      }
+      stickyRail
+    />
+  );
+}
+
 function ExtractionReviewPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="029">
@@ -2749,57 +2885,27 @@ function ExtractionReviewPage({ title }: { title: string }) {
         description="Human review of extracted draft fields before any scoped evidence sufficiency check."
         eyebrow="WP02 Evidence"
         primary={
-          <>
-            <div className="space-y-5">
-              <SectionTitle action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Save held</span><button className={primaryButtonClass} data-testid="j04-confirm-finalize" onClick={() => { void runDataMaintenanceCommand("j04.confirmFinalize", "/documents/:id/review"); }} type="button"><Check aria-hidden="true" className="size-4" />Confirm review</button></div>} subtitle="Review extracted information before any final evidence status is shown." title={title} />
-              <SafeClientBanner>Human review is required before this information can be treated as final evidence.</SafeClientBanner>
-              <ScfP04P06FlowPanel mode="evidence" />
-              <div className="grid gap-5 xl:grid-cols-[0.9fr_0.84fr_20rem]">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between"><CardTitle>2024_Q4_Brokerage_Statement.pdf</CardTitle><Badge>Page 1 of 4</Badge></CardHeader>
-            <CardContent>
-              <div className="rounded-md bg-alphavest-ivory p-6 text-alphavest-navy">
-                <p className="font-display text-2xl">Summit Securities</p>
-                <p className="mt-4 text-sm">Account Statement · AlphaVest Family Office LLC</p>
-                <div className="mt-5 space-y-2 text-sm">
-                  {["Beginning Market Value $8,742,183.41", "Net Contributions $250,000.00", "Net Withdrawals $(125,000.00)", "Ending Market Value $9,899,640.19"].map((line) => (
-                    <div className="flex justify-between border-b border-slate-300 pb-2" key={line}><span>{line.split(" $")[0]}</span><span>${line.split(" $")[1]}</span></div>
-                  ))}
-                </div>
-              </div>
-              <div className="mt-4 grid grid-cols-4 gap-3">
-                {[1, 2, 3, 4].map((page) => <div className={cn("grid h-16 place-items-center rounded border bg-alphavest-ivory text-alphavest-navy", page === 1 ? "border-alphavest-gold" : "border-alphavest-border")} key={page}>{page}</div>)}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader><CardTitle>Extracted Fields <Badge className="ml-2">12 fields</Badge></CardTitle></CardHeader>
-            <CardContent className="space-y-5">
-              {extractionFields.map((section) => (
-                <div key={section.section}>
-                  <p className="mb-2 font-semibold text-alphavest-ivory">{section.section}</p>
-                  <div className="space-y-2">
-                    {section.fields.map(([label, value, confidence]) => (
-                      <div className={cn("grid gap-2 rounded-md border p-3 md:grid-cols-[9rem_1fr_auto]", confidence === "Low" ? "border-alphavest-red/60" : "border-alphavest-border") } key={`${section.section}-${label}`}>
-                        <span className="text-sm text-alphavest-muted">{label}</span>
-                        <span className="text-sm font-semibold text-alphavest-ivory">{value}</span>
-                        <Badge tone={toneFor(confidence)}>{confidence}</Badge>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-              <StatePanel detail="Low confidence or errors must be resolved before finalizing." state="error" title="1 field needs attention" />
-            </CardContent>
-          </Card>
-          <aside className="space-y-5">
-            <Card><CardHeader><CardTitle>Extraction Status</CardTitle></CardHeader><CardContent className="flex items-center gap-5"><ProgressRing label="Confidence" size="small" value={83} /><div className="space-y-2 text-sm text-alphavest-muted"><p>High (9)</p><p>Medium (2)</p><p>Low (1)</p><p>Error (1)</p></div></CardContent></Card>
-            <Card><CardHeader><CardTitle>Issues</CardTitle></CardHeader><CardContent className="space-y-3"><StatePanel detail="AI extracted value is inconsistent." state="error" title="Net Investment Change" /><StatePanel detail="Table structure could not be parsed. Please review manually." state="error" title="Page 2 - Table Detected" /></CardContent></Card>
-            <ExtractionReviewActionPanel />
-          </aside>
-              </div>
-            </div>
-          </>
+          <div className="space-y-5">
+            <SectionTitle action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Save held</span><button className={primaryButtonClass} data-testid="j04-confirm-finalize" onClick={() => { void runDataMaintenanceCommand("j04.confirmFinalize", "/documents/:id/review"); }} type="button"><Check aria-hidden="true" className="size-4" />Confirm review</button></div>} subtitle="Review extracted information before any final evidence status is shown." title={title} />
+            <SafeClientBanner>Human review is required before this information can be treated as final evidence.</SafeClientBanner>
+            <ScfP04P06FlowPanel mode="evidence" />
+            <ExtractionReviewWorkbench />
+          </div>
+        }
+        secondary={
+          <div className="grid gap-4 xl:grid-cols-[0.8fr_1fr]">
+            <Card data-ux-queue-proof-drawer="true">
+              <CardHeader><CardTitle>Extraction proof drawer</CardTitle></CardHeader>
+              <CardContent className="flex items-center gap-5"><ProgressRing label="Confidence" size="small" value={83} /><div className="space-y-2 text-sm text-alphavest-muted"><p>High (9)</p><p>Medium (2)</p><p>Low (1)</p><p>Error (1)</p></div></CardContent>
+            </Card>
+            <Card data-ux-queue-proof-drawer="true">
+              <CardHeader><CardTitle>Issues and gated actions</CardTitle></CardHeader>
+              <CardContent className="space-y-3">
+                <div className="space-y-3"><StatePanel detail="AI extracted value is inconsistent." state="error" title="Net Investment Change" /><StatePanel detail="Table structure could not be parsed. Please review manually." state="error" title="Page 2 - Table Detected" /></div>
+                <ExtractionReviewActionPanel />
+              </CardContent>
+            </Card>
+          </div>
         }
         rail={<EvidenceLifecycleRail />}
         routeId="029"

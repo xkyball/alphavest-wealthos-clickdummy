@@ -1664,25 +1664,16 @@ function AdvisorDetailPage({ title }: { title: string }) {
   );
 }
 
-const complianceColumns: Array<DataTableColumn<(typeof complianceQueue)[number]>> = [
-  { key: "id", header: "ID", render: (row) => <span className="font-semibold text-alphavest-gold">{row.id}</span>, sortable: true },
-  { key: "item", header: "Item", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.item}<span className="block text-xs text-alphavest-muted">{row.sub}</span></span>, sortable: true },
-  { key: "classification", header: "Classification", render: (row) => <Badge tone={toneFor(row.classification)}>{row.classification}</Badge>, sortable: true },
-  { key: "risk", header: "Risk Status", render: (row) => <Badge tone={toneFor(row.risk)}>{row.risk}</Badge>, sortable: true },
-  { key: "advisor", header: "Responsible Advisor", render: (row) => row.advisor, sortable: true },
-  { key: "evidence", header: "Evidence Status", render: (row) => <Badge tone={toneFor(row.evidence)}>{row.evidence}</Badge>, sortable: true },
-  { key: "publish", header: "Publish Status", render: (row) => <Badge tone={toneFor(row.publish)}>{row.publish}</Badge>, sortable: true },
-  { key: "due", header: "Due Date", render: (row) => <span className={row.age !== "0d" ? "text-alphavest-red" : ""}>{row.due}</span>, sortable: true }
-];
-
 function ComplianceQueuePage({ title }: { title: string }) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedReviewId, setSelectedReviewId] = useState(complianceQueue[0]?.id);
   const normalizedSearchTerm = searchTerm.trim().toLowerCase();
   const visibleRows = complianceQueue.filter((row) => (
     normalizedSearchTerm.length === 0 ||
     [row.id, row.item, row.sub, row.classification, row.risk, row.advisor, row.evidence, row.publish].some((value) => value.toLowerCase().includes(normalizedSearchTerm))
   ));
+  const selectedReview = visibleRows.find((row) => row.id === selectedReviewId) ?? visibleRows[0];
 
   return (
     <InternalShell activePageId="038">
@@ -1692,7 +1683,111 @@ function ComplianceQueuePage({ title }: { title: string }) {
         primary={
           <div className="space-y-4">
             <Phase5DetailSplitPanel decisionSupport="Compliance queue separates work intake from decision-room review." objectLabel="Compliance queue split" objectState="Compliance items pending selection" pageJob="Compliance queue prioritizes review work without hiding decision consequences." safetyBoundary="Queue context cannot release, block or request evidence by itself." splitTaskId="UX-PAGE-SPLIT-003" taskId="UX-PAGE-SPLIT-003" />
-            <UxHubPage pageId="038" />
+            <PageHeading
+              action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Queue export is blocked; release-room audit owns any export-ready proof." data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />Export held</span><span className={primaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Refresh is static in the demo queue; decision-room state owns mutation." data-ux-interactive="false"><RefreshCw aria-hidden="true" className="size-4" />Refresh held</span></div>}
+              subtitle="Select one compliance review, inspect release blockers, then hand off to the decision room."
+              title={title}
+            />
+            <ScfP04P06FlowPanel mode="compliance" />
+            <MasterDetailSurface
+              actionPolicy="route_handoff"
+              actionRail="present"
+              density="compact_operations"
+              detail={
+                selectedReview ? (
+                  <Card data-testid="s038-compliance-selected-detail">
+                    <CardHeader>
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <CardTitle>{selectedReview.item}</CardTitle>
+                          <p className="mt-1 text-sm text-alphavest-muted">{selectedReview.sub}</p>
+                        </div>
+                        <Badge tone={toneFor(selectedReview.risk)}>{selectedReview.risk}</Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <InfoRow label="Classification" value={selectedReview.classification} />
+                        <InfoRow label="Responsible advisor" value={selectedReview.advisor} />
+                        <InfoRow label="Evidence" value={selectedReview.evidence} />
+                        <InfoRow label="Publish state" value={selectedReview.publish} />
+                      </div>
+                      <StatePanel detail="Queue selection can open the release decision room only. It cannot release, block, export or create client visibility." state="restricted" title="Decision-room handoff only" />
+                      <button className={primaryButtonClass + " w-full"} data-testid="s038-open-selected-review" onClick={() => router.push(`/compliance/reviews/${selectedReview.id}/decision-room`)} type="button">
+                        Open gated decision room
+                      </button>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <StatePanel detail="No visible compliance row is selected. Clear search before opening a decision room." state="empty" title="No selected review" />
+                )
+              }
+              family="queue"
+              filterState={searchTerm.length > 0 ? "active_query" : "inactive"}
+              master={
+                <div className="space-y-4" data-testid="s038-compliance-master-list">
+                  <FilterBar
+                    activeFilterCount={4}
+                    activeStateLabel={searchTerm.length > 0 ? `Compliance queue query active: ${searchTerm}. Static filters remain visible only.` : "Compliance queue filters are visible as disabled demo controls only."}
+                    filters={[
+                      { label: "Classification", value: "classification" },
+                      { label: "Risk Status", value: "risk" },
+                      { label: "Evidence Status", value: "evidence" },
+                      { label: "Publish Status", value: "publish" },
+                      { disabledAriaLabel: "Additional compliance filters are static in this demo queue", label: "More Filters", value: "more" },
+                    ]}
+                    filterState={searchTerm.length > 0 ? "active_query" : "disabled_static"}
+                    onQueryChange={setSearchTerm}
+                    onReset={() => setSearchTerm("")}
+                    placeholder="Search by client, advisor, ID, or keyword..."
+                    queryValue={searchTerm}
+                    resetLabel="Clear"
+                    searchTestId="ux-interaction-compliance-search"
+                  />
+                  <div className="space-y-2">
+                    {visibleRows.map((row) => {
+                      const selected = selectedReview?.id === row.id;
+
+                      return (
+                        <button
+                          className={cn(
+                            "w-full rounded-md border p-3 text-left transition",
+                            selected ? "border-alphavest-gold bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35 hover:border-alphavest-gold/60",
+                          )}
+                          data-ux-field-priority="identity primary_status risk_due evidence_gate"
+                          data-ux-queue-row={row.id}
+                          data-ux-queue-selected={selected ? "true" : "false"}
+                          key={row.id}
+                          onClick={() => setSelectedReviewId(row.id)}
+                          type="button"
+                        >
+                          <span className="flex items-start justify-between gap-3">
+                            <span className="min-w-0">
+                              <span className="block text-sm font-semibold text-alphavest-ivory">{row.item}</span>
+                              <span className="mt-1 block text-xs text-alphavest-muted">{row.id} · {row.sub}</span>
+                            </span>
+                            <Badge tone={toneFor(row.publish)}>{row.publish}</Badge>
+                          </span>
+                          <span className="mt-2 grid gap-2 text-xs text-alphavest-muted sm:grid-cols-3">
+                            <span>Risk: {row.risk}</span>
+                            <span>Evidence: {row.evidence}</span>
+                            <span>Due: {row.due}</span>
+                          </span>
+                        </button>
+                      );
+                    })}
+                    {!visibleRows.length ? <StatePanel detail="No compliance queue rows match this search." state="empty" title="No matching reviews" /> : null}
+                  </div>
+                </div>
+              }
+              masterDetailMode="inline_detail_rail"
+              proofPlacement="proof_drawer"
+              queueWorkbench
+              selectedObjectId={selectedReview?.id ?? "no-compliance-row"}
+              selectedObjectState={selectedReview?.publish ?? "empty"}
+              selectedSummary={<span>Compliance queue keeps list context while selection exposes one decision-room handoff only; queue rows cannot release, block, export or expose client-visible content.</span>}
+              stickyRail
+            />
           </div>
         }
         rail={
@@ -1707,18 +1802,28 @@ function ComplianceQueuePage({ title }: { title: string }) {
         routeId="038"
         safetyNote="WP02 layout only: compliance queue rows cannot release, block, export or expose client-visible content."
         secondary={
-          <div className="grid gap-3 md:grid-cols-5">
-            {complianceMetrics.map((metric) => (
-              <Card key={metric.label}>
-                <div className="flex items-center gap-4">
-                  <IconTile tone={metric.label === "Overdue" ? "red" : "muted"}>{metric.label === "Overdue" ? <Calendar aria-hidden="true" className="size-5" /> : <ClipboardCheck aria-hidden="true" className="size-5" />}</IconTile>
-                  <div>
-                    <p className={cn("text-3xl font-semibold", metric.label === "Overdue" ? "text-alphavest-red" : "text-alphavest-ivory")}>{metric.value}</p>
-                    <p className="text-sm text-alphavest-muted">{metric.label}</p>
+          <div className="grid gap-4">
+            <div className="grid gap-3 md:grid-cols-5">
+              {complianceMetrics.map((metric) => (
+                <Card key={metric.label}>
+                  <div className="flex items-center gap-4">
+                    <IconTile tone={metric.label === "Overdue" ? "red" : "muted"}>{metric.label === "Overdue" ? <Calendar aria-hidden="true" className="size-5" /> : <ClipboardCheck aria-hidden="true" className="size-5" />}</IconTile>
+                    <div>
+                      <p className={cn("text-3xl font-semibold", metric.label === "Overdue" ? "text-alphavest-red" : "text-alphavest-ivory")}>{metric.value}</p>
+                      <p className="text-sm text-alphavest-muted">{metric.label}</p>
+                    </div>
                   </div>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              ))}
+            </div>
+            <Card data-ux-queue-proof-drawer="true">
+              <CardHeader><CardTitle>Compliance proof drawer</CardTitle></CardHeader>
+              <CardContent className="grid gap-3 md:grid-cols-3">
+                <InfoRow label="Advisor prerequisite" value="Required before release-room action" />
+                <InfoRow label="Evidence gate" value="Reviewed and scoped before client visibility" />
+                <InfoRow label="Audit handoff" value="Decision room records actor, target and gate state" />
+              </CardContent>
+            </Card>
           </div>
         }
         statusItems={[
@@ -1727,61 +1832,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
         ]}
         title={title}
         worksurfaceId="compliance-release-queue"
-      >
-      <div className="mx-auto max-w-[104rem] space-y-5">
-        <PageHeading
-          action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />Export held</span><span className={primaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false"><RefreshCw aria-hidden="true" className="size-4" />Refresh held</span></div>}
-          subtitle="Review and action pending compliance items."
-          title={title}
-        />
-        <ScfP04P06FlowPanel mode="compliance" />
-        <MasterDetailSurface
-          actionPolicy="route_handoff"
-          density="default"
-          family="queue"
-          filterState={searchTerm.length > 0 ? "active_query" : "disabled_static"}
-          master={
-            <div className="space-y-4">
-              <FilterBar
-                activeFilterCount={4}
-                activeStateLabel={searchTerm.length > 0 ? `Compliance queue query active: ${searchTerm}. Static filters remain visible only.` : "Compliance queue filters are visible as disabled demo controls only."}
-                  filters={[
-                  { label: "Classification", value: "classification" },
-                  { label: "Risk Status", value: "risk" },
-                  { label: "Evidence Status", value: "evidence" },
-                  { label: "Publish Status", value: "publish" },
-                  { disabledAriaLabel: "Additional compliance filters are static in this demo queue", label: "More Filters", value: "more" },
-                ]}
-                filterState={searchTerm.length > 0 ? "active_query" : "disabled_static"}
-                onQueryChange={setSearchTerm}
-                onReset={() => setSearchTerm("")}
-                placeholder="Search by client, advisor, ID, or keyword..."
-                queryValue={searchTerm}
-                resetLabel="Clear"
-                searchTestId="ux-interaction-compliance-search"
-              />
-              <DataTable
-                actionPolicy="route_handoff"
-                columns={complianceColumns}
-                density="default"
-                emptyMessage="No compliance queue rows match this search."
-                family="queue"
-                filterState={searchTerm.length > 0 ? "active_query" : "inactive"}
-                getRowId={(row) => row.id}
-                masterDetailMode="route_detail"
-                onRowAction={(row) => router.push(`/compliance/reviews/${row.id}/decision-room`)}
-                rowActionLabel={(row) => `Open compliance review ${row.id}`}
-                rows={visibleRows}
-              />
-            </div>
-          }
-          masterDetailMode="route_detail"
-          selectedObjectId={visibleRows[0]?.id ?? "no-compliance-row"}
-          selectedObjectState={visibleRows.length > 0 ? visibleRows[0].publish : "empty"}
-          selectedSummary={<span>Compliance queue keeps list context while row actions hand off to decision-room detail only; queue rows cannot release, block, export or expose client-visible content.</span>}
-        />
-      </div>
-      </WorksurfaceShell>
+      />
     </InternalShell>
   );
 }
