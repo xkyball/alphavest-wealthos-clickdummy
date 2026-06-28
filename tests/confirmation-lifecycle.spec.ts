@@ -55,7 +55,7 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
     expect(workflowRequests).toEqual([]);
   });
 
-  test("valid release confirmation calls the API and shows success feedback", async ({ page }) => {
+  test("valid release confirmation fails closed when release preconditions are still missing", async ({ page }) => {
     await page.goto("/compliance/reviews/demo/release?state=release");
 
     const releaseDialog = page.getByRole("dialog", { name: "Release client-safe journey" });
@@ -75,15 +75,20 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
     const response = await responsePromise;
     const body = await response.json();
 
-    expect(response.ok(), JSON.stringify(body)).toBe(true);
-    expect(body.result.auditEventId).toBeTruthy();
-    await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-status", "success");
-    await expect(releaseDialog.getByText("Released successfully")).toBeVisible();
-    await expect(releaseDialog.getByText("Audit recorded:")).toBeVisible();
-    await expect(page.getByTestId("j02-release-success-state")).toContainText(
-      "export, download, share and client acceptance remain separate controls.",
-    );
-    await expect(releaseDialog.getByText(/client accepted|export approved|download ready|share ready/i)).toHaveCount(0);
+    expect(response.ok(), JSON.stringify(body)).toBe(false);
+    expect(body).toMatchObject({
+      mutated: false,
+      noAdviceExecution: true,
+      noClientRelease: true,
+      ok: false,
+      reasonCode: "SAFE_ERROR",
+    });
+    expect(body.error).toContain("payload_ready");
+    expect(body.error).toContain("decision_rationale");
+    await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-status", "error");
+    await expect(releaseDialog.getByText("Release failed")).toBeVisible();
+    await expect(page.getByTestId("j02-release-error-state")).toContainText("No release mutation or client visibility change was completed.");
+    await expect(releaseDialog.getByText(/Released successfully|Audit recorded:|client accepted|export approved|download ready|share ready/i)).toHaveCount(0);
   });
 
   test("request evidence confirmation requires controlled reason and phrase before submit", async ({ page }) => {
