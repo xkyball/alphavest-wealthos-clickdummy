@@ -57,6 +57,9 @@ test.describe("P0 process-first UX burndown implementation", () => {
     expect(internal).toContain('currentStep="compliance_release_decision"');
     expect(internal).toContain('blockedReason="evidence_policy_audit_preconditions_not_satisfied"');
     expect(internal).toContain("Release remains unavailable until advisor approval, evidence sufficiency, client-safe payload, permission and audit persistence all pass.");
+    expect(internal).toContain("function ComplianceDecisionRoomPanel");
+    expect(internal).toContain('data-testid="bd08-compliance-decision-room-panel"');
+    expect(internal).toContain("Release stays blocked until evidence sufficiency, policy, human review, permission and audit persistence all pass.");
 
     expect(exportOps).toContain('testId="bd11-export-redaction-gate"');
     expect(exportOps).toContain('processFirstUxContractForPageId("056")');

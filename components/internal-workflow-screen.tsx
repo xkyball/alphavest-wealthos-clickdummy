@@ -537,6 +537,7 @@ type Phase6DecisionRoomPanelProps = {
   audit: string;
   blocker: string;
   cancelLabel: string;
+  compact?: boolean;
   confirmLabel: string;
   decisionLabel: string;
   evidence: string;
@@ -545,7 +546,35 @@ type Phase6DecisionRoomPanelProps = {
   taskId: string;
 };
 
-function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, decisionLabel, evidence, preconditions, safetyNote, taskId }: Phase6DecisionRoomPanelProps) {
+function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, compact = false, confirmLabel, decisionLabel, evidence, preconditions, safetyNote, taskId }: Phase6DecisionRoomPanelProps) {
+  if (compact) {
+    return (
+      <section className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-4" data-testid="ux-phase6-decision-room" data-ux-decision-room-task={taskId} data-ux-layout-compression="compact_decision_gate">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <Badge tone="red">{taskId}</Badge>
+            <h2 className="mt-2 font-display text-xl text-alphavest-ivory">{decisionLabel}</h2>
+          </div>
+          <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason={blocker} data-ux-interactive="false">{confirmLabel} blocked</span>
+        </div>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          {[
+            ["Preconditions", preconditions],
+            ["Evidence", evidence],
+            ["Audit", audit],
+            ["Safety", safetyNote],
+          ].map(([label, value]) => (
+            <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" key={label}>
+              <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">{label}</p>
+              <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{value}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-sm text-alphavest-muted">{cancelLabel} remains available without release mutation.</p>
+      </section>
+    );
+  }
+
   return (
     <section className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-4" data-testid="ux-phase6-decision-room" data-ux-phase6-task={taskId}>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -1757,6 +1786,107 @@ function ComplianceQueuePage({ title }: { title: string }) {
   );
 }
 
+function ComplianceDecisionRoomPanel() {
+  return (
+    <section
+      className="space-y-4"
+      data-testid="bd08-compliance-decision-room-panel"
+      data-ux-decision-room="compliance_release_gate"
+      data-ux-layout-compression="bounded_decision_room"
+    >
+      <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+        <Card>
+          <CardHeader>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <CardTitle>Release Preconditions</CardTitle>
+                <p className="mt-2 text-sm leading-6 text-alphavest-muted">
+                  Release stays blocked until evidence sufficiency, policy, human review, permission and audit persistence all pass.
+                </p>
+              </div>
+              <Badge tone="red">Blocked</Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="max-h-80 space-y-3 overflow-y-auto pr-1">
+            {compliancePreconditions.map((item) => (
+              <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3" data-wp06-precondition={item.label.toLowerCase().replaceAll(" ", "-")} key={item.label}>
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-sm font-semibold text-alphavest-ivory">{item.label}</p>
+                  <Badge tone={item.tone}>{item.status}</Badge>
+                </div>
+                <p className="mt-2 text-xs leading-5 text-alphavest-muted">{item.detail}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Evidence And Policy State</CardTitle></CardHeader>
+          <CardContent className="grid gap-4">
+            <div className="space-y-3">
+              <div className="flex items-center gap-4">
+                <ProgressRing label="Complete" value={67} />
+                <p className="text-sm text-alphavest-muted">6 of 9 evidence requirements complete. Upload does not equal sufficiency.</p>
+              </div>
+              <div className="max-h-64 space-y-2 overflow-y-auto pr-1">
+                {evidenceChecklist.map((item) => (
+                  <div className="flex items-center justify-between gap-3 text-sm" key={item.label}>
+                    <span className="text-alphavest-muted">{item.label}</span>
+                    <Badge tone={toneFor(item.status)}>{item.status}</Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="max-h-64 space-y-3 overflow-y-auto pr-1">
+              {policyChecks.map((item) => (
+                <div className="flex items-center justify-between gap-3 border-b border-alphavest-border/45 pb-2 text-sm last:border-0" key={item.policy}>
+                  <span className="text-alphavest-muted">{item.policy}</span>
+                  <Badge tone={toneFor(item.result)}>{item.result}</Badge>
+                </div>
+              ))}
+              <StatePanel detail="Risk disclosure is missing or not prominently displayed." state="blocked" title="MC-03 Risk Disclosure" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+        <Card>
+          <CardHeader><CardTitle>Review Context</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            {[
+              ["Review ID", complianceReview.id],
+              ["Client", complianceReview.client],
+              ["Classification", complianceReview.classification],
+              ["Due", complianceReview.due],
+              ["Regulation", complianceReview.regulation],
+              ["Policy", complianceReview.policy],
+            ].map(([label, value]) => (
+              <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-3" key={label}>
+                <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">{label}</p>
+                <p className="mt-1 text-sm font-semibold leading-5 text-alphavest-ivory">{value}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Audit And Internal Notes</CardTitle></CardHeader>
+          <CardContent className="grid gap-4">
+            <div className="space-y-3">
+              {auditReferences.map((item) => (
+                <div className="flex items-center justify-between gap-3 border-b border-alphavest-border/45 pb-2 text-sm last:border-0" key={item.name}>
+                  <span className="text-alphavest-muted">{item.name}</span>
+                  <Badge tone={toneFor(item.status)}>{item.status}</Badge>
+                </div>
+              ))}
+            </div>
+            <StatePanel detail={`${complianceReview.releaseGates}. Release, export and client acceptance remain separate audited gates.`} state="blocked" title="Release gates summary" />
+          </CardContent>
+        </Card>
+      </div>
+      <InternalGuard />
+    </section>
+  );
+}
+
 function ComplianceReviewPage({ title }: { title: string }) {
   const [confirmationAction, setConfirmationAction] = useState<SensitiveWorkflowAction | null>(null);
 
@@ -1767,9 +1897,10 @@ function ComplianceReviewPage({ title }: { title: string }) {
         eyebrow="WP02 compliance release"
         primary={
           <div className="space-y-4">
-            <Phase5DetailSplitPanel decisionSupport="Compliance detail carries evidence, policy and audit state before later decision-room actions." objectLabel="Compliance object review" objectState="Release gates not satisfied" pageJob="Compliance detail reviews one object without becoming a hidden drawer decision." safetyBoundary="Detail context cannot release without explicit gated decision controls." splitTaskId="UX-PAGE-SPLIT-003" taskId="UX-PAGE-SPLIT-003" />
+            <Phase5DetailSplitPanel compact decisionSupport="Evidence, policy and audit state before release action" objectLabel="Compliance object review" objectState="Release gates not satisfied" pageJob="One release decision room" safetyBoundary="No release, export or client acceptance without gated controls" splitTaskId="UX-PAGE-SPLIT-003" taskId="UX-PAGE-SPLIT-003" />
             <ComplianceReleaseGate />
-            <Phase6DecisionRoomPanel audit="Audit event must record actor, target, gate state and confirm or cancel outcome before any release mutation." blocker="Release remains blocked because evidence, policy, reviewer and approver gates are not all satisfied." cancelLabel="Cancel without mutation" confirmLabel="Confirm compliance release" decisionLabel="Compliance release decision room" evidence="Evidence checklist, policy exception state and audit references are visible before decision." preconditions="Evidence review complete, policy pass, human reviewer and compliance approver must all pass." safetyNote="No release, export or advice effect can occur until gate preconditions pass and an audit record exists." taskId="UX-DECISION-ROOM-001" />
+            <Phase6DecisionRoomPanel audit="Audit event must record actor, target, gate state and confirm or cancel outcome before any release mutation." blocker="Release remains blocked because evidence, policy, reviewer and approver gates are not all satisfied." cancelLabel="Cancel without mutation" compact confirmLabel="Confirm compliance release" decisionLabel="Compliance release decision room" evidence="Evidence checklist, policy exception state and audit references are visible before decision." preconditions="Evidence review complete, policy pass, human reviewer and compliance approver must all pass." safetyNote="No release, export or advice effect can occur until gate preconditions pass and an audit record exists." taskId="UX-DECISION-ROOM-001" />
+            <ComplianceDecisionRoomPanel />
           </div>
         }
         rail={
@@ -1856,113 +1987,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
         ]}
         title={title}
         worksurfaceId="compliance-release-decision-room"
-      >
-      <div className="mx-auto max-w-[112rem]">
-        <section className="min-w-0 space-y-5">
-          <PageHeading
-            badge={<Badge tone="gold">In Review</Badge>}
-            subtitle={`${complianceReview.id} - ${complianceReview.client}`}
-            title={title}
-          />
-          <ScfP04P06FlowPanel mode="compliance" />
-          <UxDetailStandardPanel
-            actionLabel="Release, block or request evidence"
-            actionState="Release is disabled until evidence, policy, reviewer and approver prerequisites pass."
-            evidenceItems={["Evidence review state", "Policy checks", "Audit references"]}
-            facts={[
-              { label: "Review ID", value: complianceReview.id },
-              { label: "Classification", value: complianceReview.classification },
-              { label: "Due", value: complianceReview.due },
-              { label: "Policy", value: complianceReview.policy },
-            ]}
-            objectTitle={complianceReview.title}
-            objectType="Compliance review detail"
-            routeId="039"
-            safetyNote="Advisor approval is not compliance release; compliance release is not client acceptance."
-            status="Release gates not satisfied"
-            timelineItems={["Auto-classification completed", "Reviewer assigned", "Policy exception open"]}
-          />
-          <CompliancePreconditionChecklist />
-          <UxComplexityPriorityPanel
-            actionLabel="Request evidence or block release"
-            actionState="Release stays blocked while evidence review and policy checks are unresolved."
-            priorityItems={[
-              { detail: complianceReview.client, label: complianceReview.title, value: complianceReview.classification },
-              { detail: complianceReview.evidenceComplete, label: "Evidence review state", value: "Incomplete" },
-              { detail: complianceReview.policy, label: "Policy exception", value: "Open" },
-            ]}
-            safetyNote="Compliance card hierarchy does not complete release; the release action remains separately gated."
-            summaryItems={[
-              { detail: "Current review state", label: "Gate", value: "Blocked" },
-              { detail: complianceReview.due, label: "Due", value: "P0" },
-              { detail: "Advisor approval is not release", label: "Boundary", value: "Held" },
-            ]}
-            title="Compliance review hierarchy"
-          />
-          <div className="grid gap-5 xl:grid-cols-2 2xl:grid-cols-[0.85fr_0.9fr_0.9fr]">
-            <Card>
-              <CardHeader><CardTitle>Output Classification</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <IconTile tone="red"><ShieldAlert aria-hidden="true" className="size-5" /></IconTile>
-                <p className="font-display text-2xl text-alphavest-ivory">{complianceReview.classification}</p>
-                <Badge tone="red">Exception</Badge>
-                <InfoRow label="Regulation" value={complianceReview.regulation} />
-                <InfoRow label="Policy" value={complianceReview.policy} />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader><CardTitle>Evidence Completeness</CardTitle></CardHeader>
-              <CardContent className="space-y-2">
-                <div className="flex items-center gap-4"><ProgressRing label="Complete" value={67} /><p className="text-sm text-alphavest-muted">6 of 9 evidence requirements complete.</p></div>
-                {evidenceChecklist.map((item) => (
-                  <div className="flex items-center justify-between text-sm" key={item.label}>
-                    <span className="text-alphavest-muted">{item.label}</span>
-                    <Badge tone={toneFor(item.status)}>{item.status}</Badge>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-            <Card className="xl:col-span-2 2xl:col-span-1">
-              <CardHeader><CardTitle>Policy Checks</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                {policyChecks.map((item) => (
-                  <div className="flex items-center justify-between gap-3 border-b border-alphavest-border/45 pb-2 text-sm last:border-0" key={item.policy}>
-                    <span className="text-alphavest-muted">{item.policy}</span>
-                    <Badge tone={toneFor(item.result)}>{item.result}</Badge>
-                  </div>
-                ))}
-                <StatePanel detail="Risk disclosure is missing or not prominently displayed." state="blocked" title="MC-03 Risk Disclosure" />
-              </CardContent>
-            </Card>
-          </div>
-          <div className="grid gap-5 xl:grid-cols-2">
-            <Card>
-              <CardHeader><CardTitle>Notes</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                {["Performance numbers reference Q1 factsheet. Need supporting calculation sheet and clearer risk disclosure placement.", "Producer indicated risk disclosure will be updated in next version."].map((note, index) => (
-                  <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3" key={note}>
-                    <div className="mb-2 flex items-center gap-2"><span className="grid size-8 place-items-center rounded-full border border-alphavest-border text-xs">{index === 0 ? "SC" : "JM"}</span><Badge tone="gold">Internal note</Badge></div>
-                    <p className="text-sm leading-6 text-alphavest-muted">{note}</p>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader><CardTitle>Audit References</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                {auditReferences.map((item) => (
-                  <div className="flex items-center justify-between gap-3 border-b border-alphavest-border/45 pb-2 text-sm last:border-0" key={item.name}>
-                    <span className="text-alphavest-muted">{item.name}</span>
-                    <Badge tone={toneFor(item.status)}>{item.status}</Badge>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </div>
-          <StatePanel detail={`${complianceReview.releaseGates}. Release is disabled until evidence, policy, reviewer and approver gates pass.`} state="blocked" title="Release Gates Summary" />
-        </section>
-      </div>
-      </WorksurfaceShell>
+      />
       <SensitiveWorkflowConfirmationModal
         action={confirmationAction}
         onClose={() => setConfirmationAction(null)}
