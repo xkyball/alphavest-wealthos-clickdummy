@@ -533,17 +533,18 @@ function fallbackPrimaryActionForRoute(route: ScreenRoute, tier: RouteScopeLabel
 }
 
 function ctaBlockedReasonForWorkspace(workspace: UxWorkspaceKey) {
-  if (workspace === "client_workspace") return "Only released client-safe content may be visible here.";
-  if (workspace === "advisory_workbench") return "Draft work stays internal until advisor review and compliance release pass.";
-  if (workspace === "communication") return "Communication context cannot send advice or bypass release.";
-  if (workspace === "compliance") return "Client visibility stays blocked until compliance release passes.";
-  if (workspace === "decisions") return "Decision records require released, evidence-backed context before client use.";
-  if (workspace === "evidence") return "Upload and review do not complete evidence readiness.";
-  if (workspace === "elevated_workflows") return "Elevated review work stays internal until safety, evidence and release gates pass.";
-  if (workspace === "export") return "Preview, approval, download and share stay separate.";
-  if (workspace === "governance") return "Admin access cannot bypass evidence, release, audit or export gates.";
-  if (workspace === "ops") return "Ops escalation cannot approve, release or export client-visible work.";
-  if (workspace === "setup") return "Setup changes do not bypass downstream gates.";
+  if (workspace === "area_00_command_center") return "Command Center cards can route work but cannot complete downstream gates.";
+  if (workspace === "area_01_foundation") return "Foundation changes do not bypass evidence, release, audit or export gates.";
+  if (workspace === "area_02_client_context") return "Client context does not make content released or evidence sufficient.";
+  if (workspace === "area_03_evidence_lifecycle") return "Upload and review do not complete evidence readiness.";
+  if (workspace === "area_04_analyst_workbench") return "Draft work stays internal until advisor review and compliance release pass.";
+  if (workspace === "area_05_advisor_review") return "Advisor approval can route to compliance but cannot release client-visible content.";
+  if (workspace === "area_06_compliance_release") return "Client visibility stays blocked until compliance release passes.";
+  if (workspace === "area_07_decision_record") return "Decision records require released, evidence-backed context before client use.";
+  if (workspace === "area_08_client_visibility") return "Only released, redacted and client-safe content may be visible here.";
+  if (workspace === "area_09_export_delivery") return "Preview, approval, download and share stay separate.";
+  if (workspace === "area_10_operations") return "Ops escalation cannot approve, release or export client-visible work.";
+  if (workspace === "area_11_protected_work") return "Protected work remains deferred, reference-only or held until explicitly unlocked.";
 
   return "No productive action is available in the current release.";
 }

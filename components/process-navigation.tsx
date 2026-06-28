@@ -59,9 +59,9 @@ export function ProcessJourneyLink({ onNavigate }: { onNavigate?: () => void }) 
     >
       <Route aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
       <span className="min-w-0 flex-1">
-        <span className="block truncate font-semibold">Client work</span>
+        <span className="block truncate font-semibold">Command Center</span>
         <span className="block line-clamp-2 text-[0.66rem] leading-4 text-alphavest-subtle">
-          Worklist, stages and safe next actions.
+          Process health, blocked gates and safe next actions.
         </span>
       </span>
     </Link>
@@ -145,7 +145,7 @@ export function ProcessNavigation({ className, onNavigate, variant = "grouped" }
               ) : (
                 <GroupIcon aria-hidden="true" className="size-3.5" />
               )}
-              <p className="truncate">{group.label}</p>
+              <p className="min-w-0 text-left leading-4">{group.label}</p>
               {group.journeyStage ? (
                 <span
                   className="ml-auto inline-flex h-5 shrink-0 items-center gap-1 rounded-full border border-alphavest-gold/35 bg-alphavest-gold/10 px-2 text-[0.58rem] font-semibold normal-case tracking-normal text-alphavest-gold-soft"
@@ -153,7 +153,7 @@ export function ProcessNavigation({ className, onNavigate, variant = "grouped" }
                   data-ux-core-journey-stage={group.journeyStage}
                 >
                   <span>{group.journeyStage}</span>
-                  <span>{group.journeyStageLabel}</span>
+                  {group.journeyStageLabel ? <span className="sr-only">{group.journeyStageLabel}</span> : null}
                 </span>
               ) : null}
             </div>
@@ -172,7 +172,7 @@ export function ProcessNavigation({ className, onNavigate, variant = "grouped" }
               >
                 <p className="mb-1 flex items-center gap-1.5 font-semibold text-alphavest-gold-soft">
                   <LockKeyhole aria-hidden="true" className="size-3" />
-                  Role-gated workspace
+                  {group.lockedLabel ?? "Role-gated workspace"}
                 </p>
                 <p>{group.lockedReason}</p>
               </div>

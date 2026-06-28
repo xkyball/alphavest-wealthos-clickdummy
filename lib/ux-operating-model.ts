@@ -108,18 +108,19 @@ function noOverclaimRuleForModel(workspace: UxWorkspaceKey, routeScope: RouteSco
   if (routeScope === "P1_AFTER_MVP") return "Deferred routes are registered context only and must not imply MVP readiness.";
   if (routeScope === "REFERENCE_ONLY") return "Reference routes are visual/context proof only and must not imply product workflow capability.";
   if (routeScope === "HOLD_PENDING_DECISION") return "Hold routes remain blocked until an explicit scope unlock decision exists.";
-  if (clientVisibilitySensitive && workspace !== "client_workspace") {
+  if (clientVisibilitySensitive && workspace !== "area_08_client_visibility") {
     return "Client-sensitive internal route; no internal draft, note, evidence, release or payload may be treated as client-safe output.";
   }
-  if (workspace === "client_workspace") return "Client-facing content must be released, redacted and client-safe before it is presented as client output.";
-  if (workspace === "advisory_workbench") return "Internal drafts and unsupported rationale remain internal; advisor review is not client release.";
-  if (workspace === "communication") return "Communication context cannot become advice, release or delivery authority.";
-  if (workspace === "evidence") return "Upload or evidence visibility is not evidence sufficiency.";
-  if (workspace === "elevated_workflows") return "Elevated review visibility does not create client-facing advice or automatic release.";
-  if (workspace === "compliance") return "Compliance release controls client visibility, but release is not client acceptance.";
-  if (workspace === "governance") return "Admin access cannot bypass RBAC, payload, audit, evidence, release or export gates.";
-  if (workspace === "ops") return "Operations support cannot bypass advice, compliance, evidence, export or client visibility gates.";
-  if (workspace === "export") return "Export preview, approval, download/share and client acceptance remain separate.";
+  if (workspace === "area_01_foundation") return "Foundation and governance access cannot bypass RBAC, payload, audit, evidence, release or export gates.";
+  if (workspace === "area_02_client_context") return "Client context is not evidence sufficiency, client visibility or released advice.";
+  if (workspace === "area_03_evidence_lifecycle") return "Upload or evidence visibility is not evidence sufficiency.";
+  if (workspace === "area_04_analyst_workbench") return "Internal drafts and unsupported rationale remain internal; analyst review is not advisor approval.";
+  if (workspace === "area_05_advisor_review") return "Advisor review is not compliance release or client visibility.";
+  if (workspace === "area_06_compliance_release") return "Compliance release controls client visibility, but release is not client acceptance.";
+  if (workspace === "area_08_client_visibility") return "Client-facing content must be released, redacted and client-safe before it is presented as client output.";
+  if (workspace === "area_09_export_delivery") return "Export preview, approval, download/share and client acceptance remain separate.";
+  if (workspace === "area_10_operations") return "Operations support cannot bypass advice, compliance, evidence, export or client visibility gates.";
+  if (workspace === "area_11_protected_work") return "Protected review visibility does not create client-facing advice, MVP readiness or automatic release.";
   return "Visible navigation or status is not proof of payload visibility, action authority or audit completion.";
 }
 
@@ -127,7 +128,7 @@ function operatingModeForRoute(route: ScreenRoute, routeScope: RouteScopeLabel, 
   const protectedMode = routeScopeModes[routeScope];
   if (protectedMode) return protectedMode;
   if (previewVisualModes.has(route.visualMode)) return "INTERNAL_PREVIEW";
-  if (workspace === "client_workspace") return "OPERATIONAL_CLIENT_SAFE";
+  if (workspace === "area_08_client_visibility") return "OPERATIONAL_CLIENT_SAFE";
   return "OPERATIONAL_INTERNAL";
 }
 

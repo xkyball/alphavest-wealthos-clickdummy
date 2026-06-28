@@ -132,10 +132,10 @@ function phase10A11yTasksForRoute(pathname: string, currentPolicy: ReturnType<ty
   if (
     cleanPath.includes("review-queue") ||
     currentPolicy?.pageType === "Workbench" ||
-    currentPolicy?.workspace === "advisory_workbench" ||
-    currentPolicy?.workspace === "elevated_workflows" ||
-    currentPolicy?.workspace === "governance" ||
-    currentPolicy?.workspace === "ops"
+    currentPolicy?.workspace === "area_04_analyst_workbench" ||
+    currentPolicy?.workspace === "area_05_advisor_review" ||
+    currentPolicy?.workspace === "area_10_operations" ||
+    currentPolicy?.workspace === "area_11_protected_work"
   ) {
     taskIds.add("UX-A11Y-002");
   }
@@ -144,8 +144,9 @@ function phase10A11yTasksForRoute(pathname: string, currentPolicy: ReturnType<ty
     cleanPath.startsWith("/client") ||
     cleanPath.startsWith("/documents") ||
     cleanPath.startsWith("/evidence") ||
-    currentPolicy?.workspace === "client_workspace" ||
-    currentPolicy?.workspace === "evidence"
+    currentPolicy?.workspace === "area_02_client_context" ||
+    currentPolicy?.workspace === "area_03_evidence_lifecycle" ||
+    currentPolicy?.workspace === "area_08_client_visibility"
   ) {
     taskIds.add("UX-A11Y-003");
   }

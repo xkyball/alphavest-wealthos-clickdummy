@@ -98,19 +98,23 @@ test.describe("UX-NAV route policy navigation", () => {
     }
   });
 
-  test("uses journey-first workspace labels instead of a raw route-list model", () => {
+  test("uses the approved final app area labels instead of a raw route-list model", () => {
     const admin = createDemoSession({ roleKey: "admin", tenantSlug: "bennett" });
     const labels = navigationGroupsForRole(admin.role).map((group) => group.label);
 
     expect(labels).toEqual([
-      "Setup",
-      "Client Workspace",
-      "Evidence",
-      "Advisory Workbench",
-      "Compliance",
-      "Decisions",
-      "Governance",
-      "Export",
+      "Command Center",
+      "Foundation",
+      "Client Context",
+      "Evidence Lifecycle",
+      "Analyst Workbench",
+      "Advisor Review",
+      "Compliance Release",
+      "Decision Record",
+      "Client Visibility",
+      "Export & Delivery",
+      "Operations",
+      "Protected Work",
     ]);
   });
 
@@ -120,11 +124,15 @@ test.describe("UX-NAV route policy navigation", () => {
     const linkedLabels = groups.filter((group) => group.items.length > 0).map((group) => group.label);
     const lockedLabels = groups.filter((group) => group.lockedReason).map((group) => group.label);
 
-    expect(linkedLabels).toEqual(["Client Workspace", "Evidence", "Decisions"]);
-    expect(lockedLabels).toEqual(["Setup", "Advisory Workbench", "Compliance", "Governance", "Export"]);
+    expect(linkedLabels).toEqual(["Command Center", "Client Context", "Evidence Lifecycle", "Decision Record", "Client Visibility"]);
+    expect(lockedLabels).toEqual(["Foundation", "Analyst Workbench", "Advisor Review", "Compliance Release", "Export & Delivery", "Operations", "Protected Work"]);
     for (const group of groups.filter((candidate) => candidate.lockedReason)) {
       expect(group.items).toHaveLength(0);
-      expect(group.lockedReason).toContain("client-safe navigation view");
+      if (group.label === "Operations" || group.label === "Protected Work") {
+        expect(group.lockedReason).toMatch(/deep-link|completion proof/);
+      } else {
+        expect(group.lockedReason).toContain("client-safe navigation view");
+      }
     }
   });
 
@@ -171,10 +179,11 @@ test.describe("UX-NAV route policy navigation", () => {
     await authenticateRouteSmokePage(page);
     await page.goto("/advisory/review-queue");
 
-    await expect(page.getByRole("heading", { name: "Consultant Workbench", level: 2 })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Advisory Review Hub", level: 2 })).toBeVisible();
-    await expect(page.getByRole("complementary").getByRole("heading", { name: "Next Work Queue" })).toBeVisible();
-    await expect(page.getByRole("link", { name: /Open next trigger/ }).first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Consultant Workbench", level: 2 }).first()).toBeVisible();
+    await expect(page.locator('[data-ux-queue-row]').first()).toBeVisible();
+    await expect(page.locator('[data-ux-queue-selected="true"]').first()).toBeVisible();
+    await expect(page.getByText("Open governed workflow").first()).toBeVisible();
+    await expect(page.getByText("Client visibility held").first()).toBeVisible();
     await expect(page.getByTestId("ux-nav-route-context").first()).toContainText("Workbench");
     await expect(page.getByText("034 · Workbench")).toHaveCount(0);
   });

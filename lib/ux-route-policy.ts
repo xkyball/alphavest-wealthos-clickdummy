@@ -6,18 +6,18 @@ import {
 } from "@/lib/route-registry";
 
 export type UxWorkspaceKey =
-  | "setup"
-  | "client_workspace"
-  | "evidence"
-  | "advisory_workbench"
-  | "compliance"
-  | "decisions"
-  | "governance"
-  | "export"
-  | "elevated_workflows"
-  | "communication"
-  | "ops"
-  | "registered_only";
+  | "area_00_command_center"
+  | "area_01_foundation"
+  | "area_02_client_context"
+  | "area_03_evidence_lifecycle"
+  | "area_04_analyst_workbench"
+  | "area_05_advisor_review"
+  | "area_06_compliance_release"
+  | "area_07_decision_record"
+  | "area_08_client_visibility"
+  | "area_09_export_delivery"
+  | "area_10_operations"
+  | "area_11_protected_work";
 
 export type UxDensityTier = "D1" | "D2" | "D3" | "D4";
 export type UxPageType = "Hub" | "Workbench" | "Detail" | "Drawer" | "Modal" | "Reference" | "P1" | "Hold";
@@ -40,54 +40,54 @@ export type UxFlowStep = {
 };
 
 export const uxWorkspaceLabels: Record<UxWorkspaceKey, string> = {
-  advisory_workbench: "Advisory Workbench",
-  client_workspace: "Client Workspace",
-  communication: "Communication",
-  compliance: "Compliance",
-  decisions: "Decisions",
-  evidence: "Evidence",
-  elevated_workflows: "Elevated Reviews",
-  export: "Export",
-  governance: "Governance",
-  ops: "Operations",
-  registered_only: "Registered Only",
-  setup: "Setup",
+  area_00_command_center: "Command Center",
+  area_01_foundation: "Foundation",
+  area_02_client_context: "Client Context",
+  area_03_evidence_lifecycle: "Evidence Lifecycle",
+  area_04_analyst_workbench: "Analyst Workbench",
+  area_05_advisor_review: "Advisor Review",
+  area_06_compliance_release: "Compliance Release",
+  area_07_decision_record: "Decision Record",
+  area_08_client_visibility: "Client Visibility",
+  area_09_export_delivery: "Export & Delivery",
+  area_10_operations: "Operations",
+  area_11_protected_work: "Protected Work",
 };
 
 export const uxWorkspaceDescriptions: Record<UxWorkspaceKey, string> = {
-  advisory_workbench: "Signals, internal drafts and analyst review without client-visible advice.",
-  client_workspace: "Client-safe context, portal and family workspace surfaces.",
-  communication: "Communication and call-trigger context without advice or release authority.",
-  compliance: "Compliance review, release, block, evidence request and audit gates.",
-  decisions: "Released decision records, decision room and client-safe evidence context.",
-  evidence: "Document intake, extraction review, verification and evidence vault.",
-  elevated_workflows: "KYC, suitability, committee and review monitoring as internal safety workstreams.",
-  export: "Scope, redaction, preview, approval and delivery as separate steps.",
-  governance: "Users, roles, access requests and audit history without admin bypass.",
-  ops: "Operations and SLA context for support, recovery and escalation.",
-  registered_only: "Deferred, reference and held routes kept out of productive MVP navigation.",
-  setup: "Access, onboarding, tenant setup and platform configuration.",
+  area_00_command_center: "Current work, process health, blocked gates and next legitimate actions.",
+  area_01_foundation: "Setup, identity, tenant administration, governance and RBAC controls.",
+  area_02_client_context: "Client and family context without claiming evidence sufficiency or release.",
+  area_03_evidence_lifecycle: "Document intake, extraction, review and sufficiency preparation.",
+  area_04_analyst_workbench: "Signals, trigger triage and internal draft work before advisor review.",
+  area_05_advisor_review: "Human advisor review and approval candidate handling without client release.",
+  area_06_compliance_release: "Compliance release, block, evidence request and audit exception gates.",
+  area_07_decision_record: "Decision record and evidence vault surfaces after governed review.",
+  area_08_client_visibility: "Released-only client visibility and fail-closed client-safe projection.",
+  area_09_export_delivery: "Export scope, redaction, preview, approval, generation and delivery gates.",
+  area_10_operations: "Operations and data-quality support without approval, release or export powers.",
+  area_11_protected_work: "Deferred, elevated, held and reference surfaces outside completion proof.",
 };
 
 export const v096CoreWorkspaceKeys = [
-  "evidence",
-  "advisory_workbench",
-  "compliance",
-  "decisions",
-  "governance",
-  "export",
+  "area_03_evidence_lifecycle",
+  "area_04_analyst_workbench",
+  "area_05_advisor_review",
+  "area_06_compliance_release",
+  "area_07_decision_record",
+  "area_08_client_visibility",
+  "area_09_export_delivery",
 ] as const satisfies readonly UxWorkspaceKey[];
 
 export const v096SupportWorkspaceKeys = [
-  "setup",
-  "client_workspace",
-  "communication",
-  "ops",
+  "area_00_command_center",
+  "area_01_foundation",
+  "area_02_client_context",
+  "area_10_operations",
 ] as const satisfies readonly UxWorkspaceKey[];
 
 export const v096DeferredWorkspaceKeys = [
-  "elevated_workflows",
-  "registered_only",
+  "area_11_protected_work",
 ] as const satisfies readonly UxWorkspaceKey[];
 
 export function isV096CoreWorkspace(workspace: UxWorkspaceKey) {
@@ -95,18 +95,18 @@ export function isV096CoreWorkspace(workspace: UxWorkspaceKey) {
 }
 
 const workspacePageIds: Record<UxWorkspaceKey, readonly string[]> = {
-  advisory_workbench: ["033", "034", "035", "036", "037"],
-  client_workspace: ["019", "020", "021", "022", "023", "024", "025", "026", "031", "032"],
-  communication: ["052", "053"],
-  compliance: ["038", "039", "040", "041", "042"],
-  decisions: ["043", "044", "045"],
-  evidence: ["027", "028", "029", "030", "046", "047"],
-  elevated_workflows: ["064", "065", "066", "067", "068", "069", "070", "071"],
-  export: ["054", "055", "056", "057", "058"],
-  governance: ["008", "048", "049", "050", "051"],
-  ops: ["059", "060"],
-  registered_only: ["061", "062", "063"],
-  setup: ["001", "002", "003", "004", "005", "006", "007", "009", "010", "011", "012", "013", "014", "015", "016", "017", "018"],
+  area_00_command_center: [],
+  area_01_foundation: ["001", "002", "003", "004", "005", "006", "007", "008", "009", "010", "011", "012", "013", "014", "015", "016", "017", "018", "048", "049", "050", "051"],
+  area_02_client_context: ["019", "021", "022", "023", "024", "025", "026", "031", "032"],
+  area_03_evidence_lifecycle: ["027", "028", "029", "030", "046", "047"],
+  area_04_analyst_workbench: ["033", "034", "035"],
+  area_05_advisor_review: ["036", "037"],
+  area_06_compliance_release: ["038", "039", "040", "041", "042"],
+  area_07_decision_record: ["043", "044", "045"],
+  area_08_client_visibility: ["020"],
+  area_09_export_delivery: ["054", "055", "056", "057", "058"],
+  area_10_operations: ["059", "060"],
+  area_11_protected_work: ["052", "053", "061", "062", "063", "064", "065", "066", "067", "068", "069", "070", "071"],
 };
 
 const workspaceByPageId = new Map<string, UxWorkspaceKey>(
@@ -122,7 +122,7 @@ const d1PageIds = new Set(["019", "020", "061", "062", "063"]);
 const d2PageIds = new Set(["054"]);
 const d3PageIds = new Set(["042"]);
 const d4PageIds = detailPageIds;
-const d3Workspaces = new Set<UxWorkspaceKey>(["elevated_workflows", "governance", "export"]);
+const d3Workspaces = new Set<UxWorkspaceKey>(["area_01_foundation", "area_09_export_delivery", "area_11_protected_work"]);
 
 function workspaceForPageId(pageId: string) {
   const workspace = workspaceByPageId.get(pageId);
@@ -170,27 +170,30 @@ function routePolicyLabelsForScope(scope: RouteScopeLabel, route: Pick<ScreenRou
 }
 
 function primaryCtaRuleForWorkspace(workspace: UxWorkspaceKey) {
-  if (workspace === "evidence") return "One evidence next step; upload never claims sufficiency.";
-  if (workspace === "compliance") return "One compliance next step; release, block and evidence request stay gated.";
-  if (workspace === "communication") return "One communication context step; no advice, release or delivery shortcut.";
-  if (workspace === "elevated_workflows") return "One internal review next step; no client-facing advice or automatic release.";
-  if (workspace === "export") return "One export lifecycle next step; preview, approval and delivery stay separate.";
-  if (workspace === "governance") return "One governance next step; admin actions never bypass release, evidence, audit or export gates.";
-  if (workspace === "ops") return "One recovery next step; ops cannot approve, release or export advice.";
-  if (workspace === "registered_only") return "No productive MVP CTA; render deferred, reference or hold state only.";
+  if (workspace === "area_00_command_center") return "One process recovery or routing step; cards never claim process completion.";
+  if (workspace === "area_01_foundation") return "One foundation next step; admin actions never bypass release, evidence, audit or export gates.";
+  if (workspace === "area_03_evidence_lifecycle") return "One evidence next step; upload never claims sufficiency.";
+  if (workspace === "area_04_analyst_workbench") return "One analyst next step; internal drafts stay internal.";
+  if (workspace === "area_05_advisor_review") return "One advisor review next step; advisor approval is not release.";
+  if (workspace === "area_06_compliance_release") return "One compliance next step; release, block and evidence request stay gated.";
+  if (workspace === "area_08_client_visibility") return "One released-only client visibility step; fail closed when release or redaction is missing.";
+  if (workspace === "area_09_export_delivery") return "One export lifecycle next step; preview, approval and delivery stay separate.";
+  if (workspace === "area_10_operations") return "One recovery next step; ops cannot approve, release or export advice.";
+  if (workspace === "area_11_protected_work") return "No productive MVP CTA; render deferred, reference or hold state only.";
   return "One primary next step with blocked reason and recovery where needed.";
 }
 
 function safetyReminderForWorkspace(workspace: UxWorkspaceKey) {
-  if (workspace === "client_workspace") return "Client-facing content must be released, redacted and client-safe.";
-  if (workspace === "advisory_workbench") return "Internal drafts stay internal; no unapproved advice reaches the client.";
-  if (workspace === "communication") return "Communication is context only; client-facing copy remains release-controlled.";
-  if (workspace === "evidence") return "Upload is intake only; sufficiency requires reviewed, linked and current evidence.";
-  if (workspace === "elevated_workflows") return "Elevated reviews remain internal and safety-gated.";
-  if (workspace === "compliance") return "Compliance release controls client visibility.";
-  if (workspace === "export") return "Export preview is not approval, download or client acceptance.";
-  if (workspace === "governance") return "Visible access does not expand action or payload authority.";
-  if (workspace === "ops") return "Operations can escalate recovery work but cannot bypass advice or release gates.";
+  if (workspace === "area_01_foundation") return "Visible access does not expand action or payload authority.";
+  if (workspace === "area_02_client_context") return "Client context is not evidence sufficiency or client-visible release.";
+  if (workspace === "area_03_evidence_lifecycle") return "Upload is intake only; sufficiency requires reviewed, linked and current evidence.";
+  if (workspace === "area_04_analyst_workbench") return "Internal drafts stay internal; no unapproved advice reaches the client.";
+  if (workspace === "area_05_advisor_review") return "Advisor approval routes work to compliance; it is not client release.";
+  if (workspace === "area_06_compliance_release") return "Compliance release controls client visibility.";
+  if (workspace === "area_08_client_visibility") return "Client visibility fails closed until release, redaction and payload safety pass.";
+  if (workspace === "area_09_export_delivery") return "Export preview is not approval, download or client acceptance.";
+  if (workspace === "area_10_operations") return "Operations can escalate recovery work but cannot bypass advice or release gates.";
+  if (workspace === "area_11_protected_work") return "Protected routes remain deferred, reference-only or held until explicitly unlocked.";
   return "Payload visibility and audit gates remain separate from visible navigation.";
 }
 
@@ -213,14 +216,20 @@ export function uxRoutePolicyForRoute(route: Pick<ScreenRoute, "pageId" | "clien
 }
 
 export function isUxNavigationWorkspaceVisibleForRole(workspace: UxWorkspaceKey, role: DemoRole) {
-  if (workspace === "registered_only") return false;
+  if (workspace === "area_11_protected_work") return false;
   if (role.internal) return true;
 
-  return workspace === "client_workspace" || workspace === "communication" || workspace === "decisions" || workspace === "evidence";
+  return (
+    workspace === "area_00_command_center" ||
+    workspace === "area_02_client_context" ||
+    workspace === "area_03_evidence_lifecycle" ||
+    workspace === "area_07_decision_record" ||
+    workspace === "area_08_client_visibility"
+  );
 }
 
 export function uxNavigationLockedReason(workspace: UxWorkspaceKey, role: DemoRole) {
-  if (workspace === "registered_only") return "Deferred, reference and held routes stay outside productive MVP navigation.";
+  if (workspace === "area_11_protected_work") return "Deferred, reference and held routes stay outside productive MVP navigation.";
   if (isUxNavigationWorkspaceVisibleForRole(workspace, role)) return undefined;
 
   return `${role.label} uses a client-safe navigation view. ${uxWorkspaceLabels[workspace]} remains governed by role, object and payload permissions.`;

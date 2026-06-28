@@ -219,7 +219,7 @@ function templateFamilyForRoute(route: ScreenRoute): UxPageTemplateFamily {
   const policy = uxRoutePolicyForRoute(route);
 
   if (protectedScopes.has(operatingModel.routeScope)) return "reference_hold";
-  if (policy.workspace === "client_workspace" && operatingModel.audience === "client_safe") return "client_summary";
+  if (policy.workspace === "area_08_client_visibility" && operatingModel.audience === "client_safe") return "client_summary";
   if (wizardVisualModes.has(route.visualMode) || policy.pageType === "Modal") return "workflow_stepper";
   if (policy.pageType === "Detail") return "detail_decision_room";
   if (policy.pageType === "Hub") return "dashboard_list";

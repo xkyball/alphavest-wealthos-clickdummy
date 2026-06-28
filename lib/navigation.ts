@@ -1,13 +1,16 @@
 import {
-  Archive,
   BriefcaseBusiness,
   ClipboardCheck,
+  Eye,
   FolderOpen,
   Home,
-  Landmark,
+  LockKeyhole,
+  Route,
   Settings,
   ShieldCheck,
   Upload,
+  UserCheck,
+  Wrench,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { DemoRole } from "@/lib/demo-session";
@@ -42,7 +45,7 @@ export type NavigationItem = {
   routePattern: string;
   activeRoutePatterns: string[];
   icon: LucideIcon;
-  scope: RouteScopeLabel;
+  scope: RouteScopeLabel | "IMPLEMENTED_APP_ROUTE";
   tier: NavigationItemTier;
 };
 
@@ -54,131 +57,184 @@ export type NavigationGroup = {
   journeyStage?: number;
   journeyStageLabel?: string;
   lockedReason?: string;
+  lockedLabel?: string;
   tier: NavigationGroupTier;
   items: NavigationItem[];
 };
 
 type NavigationItemDefinition = {
-  pageId: string;
+  pageId?: string;
   activePageIds?: readonly string[];
   label: string;
   description: string;
+  href?: string;
+  routePattern?: string;
+  activeRoutePatterns?: readonly string[];
   icon: LucideIcon;
+  scope?: RouteScopeLabel | "IMPLEMENTED_APP_ROUTE";
   tier?: NavigationItemTier;
 };
 
 type NavigationGroupDefinition = {
   key: UxWorkspaceKey;
   icon: LucideIcon;
+  lockedLabel?: string;
+  lockedReason?: string;
   tier?: NavigationGroupTier;
   items: readonly NavigationItemDefinition[];
 };
 
 const navigationDefinitions: readonly NavigationGroupDefinition[] = [
   {
-    key: "setup",
+    key: "area_00_command_center",
+    icon: Route,
+    items: [
+      {
+        pageId: "AREA-00",
+        href: "/journeys",
+        routePattern: "/journeys",
+        activeRoutePatterns: ["/journeys", "/journeys/:id"],
+        label: "Command Center",
+        description: "Current work, blocked gates, process health and next legitimate actions.",
+        icon: Route,
+        scope: "IMPLEMENTED_APP_ROUTE",
+        tier: "primary"
+      }
+    ]
+  },
+  {
+    key: "area_01_foundation",
     icon: Settings,
     items: [
       {
         pageId: "015",
-        activePageIds: ["001", "002", "003", "004", "005", "006", "007", "009", "010", "011", "012", "013", "014", "015", "016", "017", "018"],
-        label: "Access & tenant setup",
-        description: "One governed entry for onboarding, platform controls, tenants, roles and templates.",
+        activePageIds: ["001", "002", "003", "004", "005", "006", "007", "008", "009", "010", "011", "012", "013", "014", "015", "016", "017", "018", "048", "049", "050", "051"],
+        label: "Foundation",
+        description: "Setup, identity, tenant controls, governance and RBAC without admin bypass.",
         icon: Settings,
         tier: "primary"
       }
     ]
   },
   {
-    key: "client_workspace",
+    key: "area_02_client_context",
     icon: Home,
     items: [
       {
         pageId: "019",
-        activePageIds: ["019", "020", "021", "022", "023", "024", "025", "026", "031", "032"],
-        label: "Client context",
-        description: "Client-safe household, profile, entity, wealth map and action context.",
+        activePageIds: ["019", "021", "022", "023", "024", "025", "026", "031", "032"],
+        label: "Client Context",
+        description: "Client and family context without evidence sufficiency or release claims.",
         icon: Home
       }
     ]
   },
   {
-    key: "evidence",
+    key: "area_03_evidence_lifecycle",
     icon: FolderOpen,
     items: [
       {
         pageId: "028",
         activePageIds: ["027", "028", "029", "030", "046", "047"],
-        label: "Evidence workspace",
-        description: "Source intake, extraction, verification and evidence record review.",
+        label: "Evidence Lifecycle",
+        description: "Intake, extraction, review and sufficiency preparation; upload is not proof.",
         icon: FolderOpen
       }
     ]
   },
   {
-    key: "advisory_workbench",
+    key: "area_04_analyst_workbench",
     icon: BriefcaseBusiness,
     items: [
       {
         pageId: "034",
-        activePageIds: ["033", "034", "035", "036", "037"],
-        label: "Internal workbench",
-        description: "Signals, internal drafts, trigger review and human sign-off before release.",
+        activePageIds: ["033", "034", "035"],
+        label: "Analyst Workbench",
+        description: "Signals, trigger triage and internal drafts before advisor review.",
         icon: BriefcaseBusiness
       }
     ]
   },
   {
-    key: "compliance",
+    key: "area_05_advisor_review",
+    icon: UserCheck,
+    items: [
+      {
+        pageId: "036",
+        activePageIds: ["036", "037"],
+        label: "Advisor Review",
+        description: "Advisor approval candidate review; advisor approval is not release.",
+        icon: UserCheck
+      }
+    ]
+  },
+  {
+    key: "area_06_compliance_release",
     icon: ShieldCheck,
     items: [
       {
         pageId: "038",
         activePageIds: ["038", "039", "040", "041", "042"],
-        label: "Compliance release",
-        description: "Queue, review, release, block, evidence request and audit exception gates.",
+        label: "Compliance Release",
+        description: "Release, block, evidence request and audit exception gates.",
         icon: ShieldCheck
       }
     ]
   },
   {
-    key: "decisions",
-    icon: Archive,
+    key: "area_07_decision_record",
+    icon: ClipboardCheck,
     items: [
       {
         pageId: "044",
-        activePageIds: ["043", "044", "045"],
-        label: "Decision & evidence record",
-        description: "Decision list, decision room and submitted evidence package state.",
+        activePageIds: ["043", "044", "045", "046", "047"],
+        label: "Decision Record",
+        description: "Decision rooms, released records and evidence-vault context.",
         icon: ClipboardCheck
       }
     ]
   },
   {
-    key: "governance",
-    icon: Landmark,
+    key: "area_08_client_visibility",
+    icon: Eye,
     items: [
       {
-        pageId: "048",
-        activePageIds: ["008", "048", "049", "050", "051"],
-        label: "Governance / RBAC / audit",
-        description: "Advice boundary, users, roles, access requests and audit history without bypass.",
-        icon: Landmark
+        pageId: "020",
+        activePageIds: ["020"],
+        label: "Client Visibility",
+        description: "Released-only client-safe projection; hidden when release or redaction is missing.",
+        icon: Eye
       }
     ]
   },
   {
-    key: "export",
+    key: "area_09_export_delivery",
     icon: Upload,
     items: [
       {
         pageId: "054",
         activePageIds: ["054", "055", "056", "057", "058"],
-        label: "Export & redaction",
-        description: "Create, scope, redact, preview, approve and deliver as separated controls.",
+        label: "Export & Delivery",
+        description: "Scope, redaction, preview, approval, generation and delivery as separate gates.",
         icon: Upload
       }
     ]
+  },
+  {
+    key: "area_10_operations",
+    icon: Wrench,
+    lockedLabel: "Support lane",
+    lockedReason: "Operations and data-quality routes stay internal support/deep-link work until a route-evolution record authorizes productive navigation.",
+    tier: "support",
+    items: []
+  },
+  {
+    key: "area_11_protected_work",
+    icon: LockKeyhole,
+    lockedLabel: "Protected lane",
+    lockedReason: "Deferred, elevated, held and reference routes stay outside productive completion proof.",
+    tier: "support",
+    items: []
   }
 ];
 
@@ -195,6 +251,25 @@ function routeForPageId(pageId: string) {
 }
 
 function navigationItemForDefinition(definition: NavigationItemDefinition): NavigationItem {
+  if (definition.href && definition.routePattern) {
+    return {
+      pageId: definition.pageId ?? definition.href,
+      activePageIds: definition.activePageIds ? [...definition.activePageIds] : [],
+      label: definition.label,
+      description: definition.description,
+      href: definition.href,
+      routePattern: definition.routePattern,
+      activeRoutePatterns: [...new Set([definition.routePattern, ...(definition.activeRoutePatterns ?? [])])],
+      icon: definition.icon,
+      scope: definition.scope ?? "IMPLEMENTED_APP_ROUTE",
+      tier: definition.tier ?? "primary"
+    };
+  }
+
+  if (!definition.pageId) {
+    throw new Error(`Navigation item ${definition.label} is missing a pageId or custom href.`);
+  }
+
   const route = routeForPageId(definition.pageId);
   if (!isRouteImplementationShellAccessible(route)) {
     throw new Error(`Navigation page ${definition.pageId} is registered-only and cannot appear in implementation navigation.`);
@@ -220,7 +295,7 @@ function navigationItemForDefinition(definition: NavigationItemDefinition): Navi
 export const navigationGroups: NavigationGroup[] = navigationDefinitions
   .map((group) => {
     const items = group.items
-      .filter((item) => isRouteImplementationShellAccessible(routeForPageId(item.pageId)))
+      .filter((item) => item.href || (item.pageId && isRouteImplementationShellAccessible(routeForPageId(item.pageId))))
       .map(navigationItemForDefinition);
 
     return {
@@ -230,26 +305,31 @@ export const navigationGroups: NavigationGroup[] = navigationDefinitions
       icon: group.icon,
       journeyStage: isV096CoreWorkspace(group.key) ? v096CoreWorkspaceKeys.indexOf(group.key as (typeof v096CoreWorkspaceKeys)[number]) + 1 : undefined,
       journeyStageLabel: isV096CoreWorkspace(group.key) ? "Core journey" : undefined,
+      lockedLabel: group.lockedLabel,
+      lockedReason: group.lockedReason,
       tier: group.tier ?? "core",
       items
     };
   })
-  .filter((group) => group.items.length > 0);
+  .filter((group) => group.items.length > 0 || group.lockedReason);
 
 export function navigationGroupsForRole(role: DemoRole) {
   return navigationGroups
     .map((group) => {
-      const visible = isUxNavigationWorkspaceVisibleForRole(group.key, role);
+      const areaLockedReason = group.lockedReason;
+      const visible = !areaLockedReason && isUxNavigationWorkspaceVisibleForRole(group.key, role);
       return {
         ...group,
-        lockedReason: visible ? undefined : uxNavigationLockedReason(group.key, role),
+        lockedReason: areaLockedReason ?? (visible ? undefined : uxNavigationLockedReason(group.key, role)),
         items: visible ? group.items : [],
       };
     })
     .filter((group) => group.items.length > 0 || group.lockedReason);
 }
 
-export const productiveNavigationPageIds = navigationGroups.flatMap((group) => group.items.map((item) => item.pageId));
+export const productiveNavigationPageIds = navigationGroups.flatMap((group) =>
+  group.items.map((item) => item.pageId).filter((pageId) => /^\d+$/.test(pageId))
+);
 
 export function uxNavigationPolicyForPageId(pageId: string) {
   return uxRoutePolicyForPageId(pageId);
