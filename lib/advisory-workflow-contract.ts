@@ -51,14 +51,13 @@ export type Wp05ReleaseProofDirectness = {
 export const wp05TypedAdvisorWorkflowDirectness = {
   advisor_approve: {
     canonicalProofRoute: wp05CanonicalProcessCommandApiRoute,
-    classification: "DOMAIN_BACKED_TYPED_COMPATIBILITY",
-    typedWorkflowBoundaryMode: wp05TypedWorkflowBoundaryMode,
+    classification: "CANONICAL_TYPED_PROCESS_COMMAND",
     productProofBacked: true,
-    pp004CanonicalProofEligible: false,
+    pp004CanonicalProofEligible: true,
     proofBackedByStatePayloadAssertions: true,
     releaseBoundary: "advisor_approval_not_release",
     summary:
-      "Typed advisor approval is domain-backed compatibility proof only; PP004 canonical proof must use the process command API and assert state plus client projection payload.",
+      "Advisor approval is backed by a linked ProcessInstance step transition; it remains necessary but is not a compliance release.",
   },
   compliance_block: {
     canonicalProofRoute: wp05CanonicalProcessCommandApiRoute,
@@ -73,14 +72,13 @@ export const wp05TypedAdvisorWorkflowDirectness = {
   },
   compliance_release: {
     canonicalProofRoute: wp05CanonicalProcessCommandApiRoute,
-    classification: "DOMAIN_BACKED_TYPED_COMPATIBILITY",
-    typedWorkflowBoundaryMode: wp05TypedWorkflowBoundaryMode,
+    classification: "CANONICAL_TYPED_PROCESS_COMMAND",
     productProofBacked: true,
-    pp004CanonicalProofEligible: false,
+    pp004CanonicalProofEligible: true,
     proofBackedByStatePayloadAssertions: true,
     releaseBoundary: "compliance_release",
     summary:
-      "Typed compliance release is domain-backed compatibility proof only; PP004 canonical proof must use the process command API and assert state plus client projection payload.",
+      "Compliance release is backed by a linked ProcessInstance compliance-release step transition plus client-safe projection checks.",
   },
   request_evidence: {
     canonicalProofRoute: wp05CanonicalProcessCommandApiRoute,

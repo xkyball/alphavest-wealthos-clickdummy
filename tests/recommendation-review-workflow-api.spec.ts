@@ -10,6 +10,7 @@ import {
   EvidenceStatus,
   InternalDraftStatus,
   ObjectType,
+  ProcessStepStatus,
   PrismaClient,
   RecommendationStatus,
   ReviewStatus,
@@ -172,6 +173,21 @@ test.describe("recommendation review workflow API", () => {
         RecommendationStatus.COMPLIANCE_PENDING,
       );
       expect(advisorBody.result.reloadedState.recommendation.clientVisible).toBe(false);
+      const advisorProcessStep = await prisma.processStepInstance.findFirstOrThrow({
+        where: {
+          stepId: "BP-054-S03",
+          processInstance: {
+            objectLinks: {
+              some: {
+                objectId: demoTargets.summit.recommendationId,
+                objectType: ObjectType.RECOMMENDATION,
+              },
+            },
+          },
+        },
+      });
+
+      expect(advisorProcessStep.status).toBe(ProcessStepStatus.COMPLETED);
 
       const releaseResponse = await request.post("/api/recommendation-review-workflow", {
         data: {
@@ -194,8 +210,8 @@ test.describe("recommendation review workflow API", () => {
       expect(releaseBody.result.canonicalState).toBe("COMPLIANCE_RELEASED_CLIENT_SAFE");
       expect(releaseBody.proofDirectness).toMatchObject({
         canonicalProofRoute: wp05CanonicalProcessCommandApiRoute,
-        classification: "DOMAIN_BACKED_TYPED_COMPATIBILITY",
-        pp004CanonicalProofEligible: false,
+        classification: "CANONICAL_TYPED_PROCESS_COMMAND",
+        pp004CanonicalProofEligible: true,
         proofBackedByStatePayloadAssertions: true,
       });
       expect(releaseBody.result.decisionLinkage).toMatchObject({
@@ -219,7 +235,13 @@ test.describe("recommendation review workflow API", () => {
         evidenceScoped: true,
         internalDraftId: expect.any(String),
         payloadReady: true,
+        processRuntimeReady: true,
         selectedEvidenceRecordId: demoTargets.summit.evidenceId,
+      });
+      expect(releaseBody.result.releasePreconditions.processRuntime).toMatchObject({
+        advisorApprovalStepSatisfied: true,
+        complianceReleaseStepActive: true,
+        complianceReleaseStepId: "BP-063-S03",
       });
       expect(releaseBody.result.releasePreconditions.canonicalMissing).toEqual([]);
 
@@ -492,9 +514,11 @@ test.describe("recommendation review workflow API", () => {
       expect(blockedBody.noClientRelease).toBe(true);
       expect(blockedBody.gateMissing).toContain("advisor_approval");
       expect(blockedBody.gateMissing).toContain("accepted_evidence");
+      expect(blockedBody.gateMissing).toContain("process_advisor_approval_step");
       expect(blockedBody.releasePreconditions.advisorApproval).toBe(false);
       expect(blockedBody.releasePreconditions.evidenceAccepted).toBe(false);
       expect(blockedBody.releasePreconditions.payloadReady).toBe(false);
+      expect(blockedBody.releasePreconditions.processRuntimeReady).toBe(false);
 
       const blockedRecommendation = await prisma.recommendation.findUniqueOrThrow({
         where: { id: demoTargets.northbridge.recommendationId },
@@ -725,7 +749,13 @@ test.describe("recommendation review workflow API", () => {
         evidenceScoped: true,
         internalDraftId: expect.any(String),
         payloadReady: true,
+        processRuntimeReady: true,
         selectedEvidenceRecordId: demoTargets.summit.evidenceId,
+      });
+      expect(releaseBody.result.releasePreconditions.processRuntime).toMatchObject({
+        advisorApprovalStepSatisfied: true,
+        complianceReleaseStepActive: true,
+        complianceReleaseStepId: "BP-063-S03",
       });
       expect(releaseBody.result.releasePreconditions.canonicalMissing).toEqual([]);
       expect(releaseBody.result.releasePreconditions.missing).toEqual([]);
@@ -754,7 +784,12 @@ test.describe("recommendation review workflow API", () => {
           decisionRows?: number;
           mode?: string;
         };
-        typedWorkflowBoundaryMode?: string;
+        processRuntimeBoundaryMode?: string;
+        processRuntimeMutation?: {
+          processId?: string;
+          processInstanceId?: string;
+          fromStepId?: string;
+        };
       } | null;
 
       expect(audit.result).toBe(AuditResult.SUCCESS);
@@ -767,8 +802,27 @@ test.describe("recommendation review workflow API", () => {
           decisionRows: 1,
           mode: "released_to_client",
         },
-        typedWorkflowBoundaryMode: "TYPED_WORKFLOW_BOUNDARY",
+        processRuntimeBoundaryMode: "PROCESS_INSTANCE_STEP_STATE",
+        processRuntimeMutation: {
+          fromStepId: "BP-063-S03",
+          processId: "BP-063",
+        },
       });
+      const complianceReleaseProcessStep = await prisma.processStepInstance.findFirstOrThrow({
+        where: {
+          stepId: "BP-063-S03",
+          processInstance: {
+            objectLinks: {
+              some: {
+                objectId: demoTargets.summit.recommendationId,
+                objectType: ObjectType.RECOMMENDATION,
+              },
+            },
+          },
+        },
+      });
+
+      expect(complianceReleaseProcessStep.status).toBe(ProcessStepStatus.COMPLETED);
       expect(decision.status).toBe(DecisionStatus.RELEASED_TO_CLIENT);
       expect(decision.releasedToClientAt).toBeTruthy();
       expect(decision.evidenceRecordId).toBe(demoTargets.summit.evidenceId);

@@ -6,6 +6,8 @@ import {
   EvidenceStatus,
   InternalDraftStatus,
   ObjectType,
+  ProcessInstanceStatus,
+  ProcessStepStatus,
   type ObjectType as PrismaObjectType,
   type Prisma,
   type PrismaClient,
@@ -39,6 +41,8 @@ import {
   type Pp003UnsupportedClaimStatus,
 } from "@/lib/pp003-advice-boundary-contract";
 import { runReleaseSpineCommand } from "@/lib/release-spine-command-surface";
+import { transitionProcess, type ProcessRuntime } from "@/lib/process-runtime/process-state-machine";
+import { requireProcessDefinition } from "@/lib/process-runtime/process-registry";
 import { stableId } from "@/lib/stable-id";
 import { visibilityEngine, type RecommendationPayloadProjection } from "@/lib/visibility-engine";
 import { workflowGate } from "@/lib/workflow-gate";
@@ -121,6 +125,16 @@ type ComplianceReleasePreconditions = {
   evidenceScoped: boolean;
   internalDraftId: string | null;
   payloadReady: boolean;
+  processRuntime: {
+    advisorApprovalProcessInstanceId: string | null;
+    advisorApprovalStepId: string | null;
+    advisorApprovalStepSatisfied: boolean;
+    complianceReleaseProcessInstanceId: string | null;
+    complianceReleaseStepActive: boolean;
+    complianceReleaseStepId: string | null;
+    missing: string[];
+  };
+  processRuntimeReady: boolean;
   releaseSpineCanRelease: boolean;
   missing: string[];
   selectedEvidenceRecordId: string | null;
@@ -687,6 +701,257 @@ async function getReleaseReadyInternalDraftPayload(tx: Prisma.TransactionClient,
   };
 }
 
+const advisorApprovalProcessId = "BP-054";
+const advisorApprovalProcessStepId = "BP-054-S03";
+const complianceReleaseProcessId = "BP-063";
+const complianceReleaseProcessStepId = "BP-063-S03";
+
+type AdvisorWorkflowProcessInstance = Prisma.ProcessInstanceGetPayload<{
+  include: {
+    processDefinition: true;
+    steps: { orderBy: { sequence: "asc" } };
+  };
+}>;
+
+type ProcessRuntimeGate = {
+  advisorApprovalProcessInstanceId: string | null;
+  advisorApprovalStepId: string | null;
+  advisorApprovalStepSatisfied: boolean;
+  complianceReleaseProcessInstanceId: string | null;
+  complianceReleaseStepActive: boolean;
+  complianceReleaseStepId: string | null;
+  missing: string[];
+};
+
+function processRuntimeFromInstance(instance: AdvisorWorkflowProcessInstance): ProcessRuntime {
+  return {
+    blockerCode: instance.blockerCode ?? undefined,
+    blockerReason: instance.blockerReason ?? undefined,
+    currentStepId: instance.currentStepId ?? undefined,
+    definition: requireProcessDefinition(instance.processDefinition.processId),
+    processId: instance.processDefinition.processId,
+    status: instance.status as ProcessRuntime["status"],
+    steps: instance.steps.map((step) => ({
+      actor: step.actor,
+      blockerCode: step.blockerCode ?? undefined,
+      blockerReason: step.blockerReason ?? undefined,
+      sequence: step.sequence,
+      status: step.status as ProcessRuntime["steps"][number]["status"],
+      stepId: step.stepId,
+      stepLabel: step.stepLabel,
+    })),
+  };
+}
+
+async function loadRecommendationProcessInstance(
+  tx: Prisma.TransactionClient,
+  input: {
+    clientTenantId: string;
+    processId: string;
+    recommendationId: string;
+  },
+) {
+  const link = await tx.processObjectLink.findFirst({
+    include: {
+      processInstance: {
+        include: {
+          processDefinition: true,
+          steps: { orderBy: { sequence: "asc" } },
+        },
+      },
+    },
+    where: {
+      objectId: input.recommendationId,
+      objectType: ObjectType.RECOMMENDATION,
+      processInstance: {
+        clientTenantId: input.clientTenantId,
+        processDefinition: { processId: input.processId },
+      },
+    },
+  });
+
+  return link?.processInstance ?? null;
+}
+
+async function evaluateProcessRuntimeGate(
+  tx: Prisma.TransactionClient,
+  input: { clientTenantId: string; recommendationId: string },
+): Promise<ProcessRuntimeGate> {
+  const [advisorProcess, complianceProcess] = await Promise.all([
+    loadRecommendationProcessInstance(tx, {
+      clientTenantId: input.clientTenantId,
+      processId: advisorApprovalProcessId,
+      recommendationId: input.recommendationId,
+    }),
+    loadRecommendationProcessInstance(tx, {
+      clientTenantId: input.clientTenantId,
+      processId: complianceReleaseProcessId,
+      recommendationId: input.recommendationId,
+    }),
+  ]);
+  const advisorStep = advisorProcess?.steps.find((step) => step.stepId === advisorApprovalProcessStepId) ?? null;
+  const complianceStep = complianceProcess?.steps.find((step) => step.stepId === complianceReleaseProcessStepId) ?? null;
+  const advisorApprovalStepSatisfied = advisorStep?.status === ProcessStepStatus.COMPLETED;
+  const complianceReleaseStepActive = complianceStep?.status === ProcessStepStatus.ACTIVE;
+  const missing: string[] = [];
+
+  if (!advisorProcess || !complianceProcess) missing.push("process_instance");
+  if (!advisorApprovalStepSatisfied) missing.push("process_advisor_approval_step");
+  if (!complianceReleaseStepActive) missing.push("process_compliance_release_step");
+
+  return {
+    advisorApprovalProcessInstanceId: advisorProcess?.id ?? null,
+    advisorApprovalStepId: advisorStep?.stepId ?? null,
+    advisorApprovalStepSatisfied,
+    complianceReleaseProcessInstanceId: complianceProcess?.id ?? null,
+    complianceReleaseStepActive,
+    complianceReleaseStepId: complianceStep?.stepId ?? null,
+    missing: [...new Set(missing)],
+  };
+}
+
+async function completeAdvisorWorkflowProcessStep(
+  tx: Prisma.TransactionClient,
+  input: {
+    actorRoleKey: DemoRoleKey;
+    actorUserId: string | null;
+    auditPersistenceAvailable?: boolean;
+    clientTenantId: string;
+    processId: string;
+    reason: string;
+    recommendationId: string;
+    stepId: string;
+  },
+) {
+  if (input.auditPersistenceAvailable === false) {
+    throw new AdvisorApprovalWorkflowError("Audit persistence unavailable; process mutation blocked.", 409, {
+      gateMissing: ["audit_persistence"],
+    });
+  }
+
+  const instance = await loadRecommendationProcessInstance(tx, input);
+  const currentStep = instance?.steps.find((step) => step.stepId === input.stepId) ?? null;
+
+  if (!instance || !currentStep) {
+    throw new AdvisorApprovalWorkflowError("Recommendation is not linked to the required process runtime step.", 409, {
+      gateMissing: ["process_instance", "process_step"],
+    });
+  }
+
+  if (currentStep.status === ProcessStepStatus.COMPLETED) {
+    return {
+      fromStepId: currentStep.stepId,
+      processId: instance.processDefinition.processId,
+      processInstanceId: instance.id,
+      result: AuditResult.SUCCESS,
+      toStepId: instance.currentStepId,
+    };
+  }
+
+  const previousRuntime = processRuntimeFromInstance(instance);
+  const transitionedRuntime = transitionProcess({
+    actor: {
+      permissions: ["process.manage"],
+      roleKey: input.actorRoleKey,
+    },
+    command: "COMPLETE_STEP",
+    fromStepId: input.stepId,
+    process: previousRuntime,
+    reason: input.reason,
+  }).process;
+  const nextStep = transitionedRuntime.currentStepId
+    ? transitionedRuntime.steps.find((step) => step.stepId === transitionedRuntime.currentStepId)
+    : undefined;
+  const audit = await tx.auditEvent.create({
+    data: {
+      actorRoleKey: input.actorRoleKey,
+      actorUserId: input.actorUserId,
+      clientTenantId: input.clientTenantId,
+      eventType:
+        input.processId === complianceReleaseProcessId
+          ? "process.compliance_release.step.completed"
+          : "process.advisor_approval.step.completed",
+      metadataJson: {
+        command: "COMPLETE_STEP",
+        fromStepId: input.stepId,
+        processId: instance.processDefinition.processId,
+        processRuntimeBackbone: true,
+        recommendationId: input.recommendationId,
+        toStepId: transitionedRuntime.currentStepId ?? null,
+      },
+      nextState: transitionedRuntime.status,
+      platformTenantId: demoPlatformTenantId,
+      previousState: instance.status,
+      reason: input.reason,
+      result: AuditResult.SUCCESS,
+      targetId: instance.id,
+      targetType: ObjectType.PROCESS,
+    },
+  });
+
+  await tx.processInstance.update({
+    data: {
+      blockerCode: transitionedRuntime.blockerCode ?? null,
+      blockerReason: transitionedRuntime.blockerReason ?? null,
+      completedAt: transitionedRuntime.status === ProcessInstanceStatus.COMPLETED ? new Date() : null,
+      currentSequence: nextStep?.sequence ?? null,
+      currentStepId: transitionedRuntime.currentStepId ?? null,
+      status: transitionedRuntime.status as ProcessInstanceStatus,
+    },
+    where: { id: instance.id },
+  });
+
+  for (const step of transitionedRuntime.steps) {
+    const previousStep = instance.steps.find((candidate) => candidate.stepId === step.stepId);
+    if (!previousStep || previousStep.status === step.status) continue;
+
+    await tx.processStepInstance.update({
+      data: {
+        blockerCode: step.blockerCode ?? null,
+        blockerReason: step.blockerReason ?? null,
+        completedAt: step.status === ProcessStepStatus.COMPLETED ? new Date() : null,
+        startedAt: step.status === ProcessStepStatus.ACTIVE && previousStep.status !== ProcessStepStatus.ACTIVE ? new Date() : undefined,
+        status: step.status as ProcessStepStatus,
+      },
+      where: {
+        processInstanceId_stepId: {
+          processInstanceId: instance.id,
+          stepId: step.stepId,
+        },
+      },
+    });
+  }
+
+  await tx.processCommandRun.create({
+    data: {
+      actorRoleKey: input.actorRoleKey,
+      actorUserId: input.actorUserId,
+      auditEventId: audit.id,
+      commandKey: "COMPLETE_STEP",
+      fromStepId: input.stepId,
+      metadataJson: {
+        processRuntimeBackbone: true,
+        recommendationId: input.recommendationId,
+      },
+      nextState: transitionedRuntime.status,
+      previousState: instance.status,
+      processInstanceId: instance.id,
+      reason: input.reason,
+      result: AuditResult.SUCCESS,
+      toStepId: transitionedRuntime.currentStepId ?? null,
+    },
+  });
+
+  return {
+    auditEventId: audit.id,
+    fromStepId: input.stepId,
+    processId: instance.processDefinition.processId,
+    processInstanceId: instance.id,
+    result: AuditResult.SUCCESS,
+    toStepId: transitionedRuntime.currentStepId ?? null,
+  };
+}
+
 function evaluateComplianceReleasePreconditions(input: {
   advisorApprovalStatus: ReviewStatus;
   evidenceRecords: Array<{
@@ -702,6 +967,7 @@ function evaluateComplianceReleasePreconditions(input: {
   internalDraftId: string | null;
   permissionAllowed: boolean;
   payloadReady: boolean;
+  processRuntime: ProcessRuntimeGate;
   rationaleCaptured: boolean;
   targetId: string;
   auditReady?: boolean;
@@ -726,6 +992,12 @@ function evaluateComplianceReleasePreconditions(input: {
         sufficient: Boolean(selectedEvidence),
       },
       payload: { ready: input.payloadReady },
+      processRuntime: {
+        advisorApprovalStepSatisfied: input.processRuntime.advisorApprovalStepSatisfied,
+        complianceReleaseStepActive: input.processRuntime.complianceReleaseStepActive,
+        processId: complianceReleaseProcessId,
+        processInstanceId: input.processRuntime.complianceReleaseProcessInstanceId,
+      },
       rationale: { captured: input.rationaleCaptured },
       redaction: { ready: true },
     },
@@ -741,6 +1013,9 @@ function evaluateComplianceReleasePreconditions(input: {
     evidenceScoped: Boolean(selectedEvidence),
     internalDraftId: input.internalDraftId,
     payloadReady: input.payloadReady,
+    processRuntime: input.processRuntime,
+    processRuntimeReady:
+      input.processRuntime.advisorApprovalStepSatisfied && input.processRuntime.complianceReleaseStepActive,
     releaseSpineCanRelease: releaseSpine.preconditions.canRelease,
     missing: [],
     selectedEvidenceRecordId: selectedEvidence?.id ?? null,
@@ -772,6 +1047,10 @@ function evaluateComplianceReleasePreconditions(input: {
 
   if (!preconditions.auditReady) {
     preconditions.missing.push("audit_persistence");
+  }
+
+  if (!preconditions.processRuntimeReady) {
+    preconditions.missing.push(...preconditions.processRuntime.missing);
   }
 
   return preconditions;
@@ -1055,6 +1334,7 @@ export async function runAdvisorApprovalWorkflowMutation(
     let decisionLinkageMode: "metadata_only" | "released_to_client" = "metadata_only";
     let releasePreconditions: ComplianceReleasePreconditions | null = null;
     let releasePayload: Awaited<ReturnType<typeof getReleaseReadyInternalDraftPayload>> | null = null;
+    let processRuntimeMutation: Awaited<ReturnType<typeof completeAdvisorWorkflowProcessStep>> | null = null;
 
     if (input.action === "reject_unsupported_claim") {
       await tx.recommendation.update({
@@ -1182,6 +1462,16 @@ export async function runAdvisorApprovalWorkflowMutation(
     }
 
     if (input.action === "advisor_approve") {
+      processRuntimeMutation = await completeAdvisorWorkflowProcessStep(tx, {
+        actorRoleKey: session.role.key,
+        actorUserId: session.actor.id,
+        auditPersistenceAvailable: input.auditPersistenceAvailable,
+        clientTenantId: recommendation.clientTenantId,
+        processId: advisorApprovalProcessId,
+        reason,
+        recommendationId: input.targetId,
+        stepId: advisorApprovalProcessStepId,
+      });
       await markAdvisorApprovalInternalDraftReady(tx, {
         actorRoleKey: session.role.key,
         actorUserId: session.actor.id,
@@ -1268,6 +1558,10 @@ export async function runAdvisorApprovalWorkflowMutation(
 
     if (input.action === "compliance_release") {
       releasePayload = await getReleaseReadyInternalDraftPayload(tx, input.targetId);
+      const processRuntime = await evaluateProcessRuntimeGate(tx, {
+        clientTenantId: recommendation.clientTenantId,
+        recommendationId: input.targetId,
+      });
       releasePreconditions = evaluateComplianceReleasePreconditions({
         advisorApprovalStatus: advisorApproval.status,
         auditReady: input.auditPersistenceAvailable !== false,
@@ -1275,6 +1569,7 @@ export async function runAdvisorApprovalWorkflowMutation(
         internalDraftId: releasePayload.internalDraftId,
         permissionAllowed: permission.allowed,
         payloadReady: releasePayload.ready,
+        processRuntime,
         rationaleCaptured: releasePayload.rationaleCaptured,
         targetId: input.targetId,
       });
@@ -1309,6 +1604,16 @@ export async function runAdvisorApprovalWorkflowMutation(
 
       gateMissing = gate.missing;
       gatePassed = gate.passed;
+      processRuntimeMutation = await completeAdvisorWorkflowProcessStep(tx, {
+        actorRoleKey: session.role.key,
+        actorUserId: session.actor.id,
+        auditPersistenceAvailable: input.auditPersistenceAvailable,
+        clientTenantId: recommendation.clientTenantId,
+        processId: complianceReleaseProcessId,
+        reason,
+        recommendationId: input.targetId,
+        stepId: complianceReleaseProcessStepId,
+      });
       await tx.complianceReview.update({
         data: {
           blockedAt: null,
@@ -1372,7 +1677,9 @@ export async function runAdvisorApprovalWorkflowMutation(
           action: input.action,
           canonicalCommand: typedCanonicalCommand(input.action),
           canonicalState: typedCanonicalState(input.action),
-          typedWorkflowBoundaryMode: wp05TypedWorkflowBoundaryMode,
+          ...(input.action === "advisor_approve" || input.action === "compliance_release"
+            ? { processRuntimeBoundaryMode: "PROCESS_INSTANCE_STEP_STATE" }
+            : { typedWorkflowBoundaryMode: wp05TypedWorkflowBoundaryMode }),
           ...auditService.criticalAuditMetadata({
             action: permissionAction,
             actorRoleKey: session.role.key,
@@ -1396,6 +1703,7 @@ export async function runAdvisorApprovalWorkflowMutation(
           },
           evidenceIds: input.evidenceIds ?? [],
           phase: "SCF-P04-P06",
+          processRuntimeMutation,
           releasePreconditions,
           noRealAuth: true,
           permission,

@@ -28,6 +28,12 @@ function readyInput(overrides: Partial<ReleaseSpineInput> = {}): ReleaseSpineInp
     compliance: { permissionAllowed: true },
     evidence: sufficientEvidence,
     payload: { ready: true },
+    processRuntime: {
+      advisorApprovalStepSatisfied: true,
+      complianceReleaseStepActive: true,
+      processId: "BP-063",
+      processInstanceId: "process-instance-release-spine",
+    },
     rationale: { captured: true },
     redaction: { ready: true },
     ...overrides,
@@ -129,6 +135,29 @@ test.describe("ReleaseSpine typed command surface", () => {
     expect(spine.canExportAfterRelease).toBe(false);
     expect(spine.missing).not.toContain("advisor_approval");
     expect(spine.missing).toEqual(expect.arrayContaining(["evidence_sufficiency", "decision_rationale"]));
+  });
+
+  test("fails closed when recommendation release is not backed by process instance step state", () => {
+    const spine = buildCanonicalReleasePreconditions(
+      readyInput({
+        processRuntime: {
+          advisorApprovalStepSatisfied: false,
+          complianceReleaseStepActive: false,
+          processId: null,
+          processInstanceId: null,
+        },
+      }),
+    );
+
+    expect(spine.canRelease).toBe(false);
+    expect(spine.processRuntimeReady).toBe(false);
+    expect(spine.missing).toEqual(
+      expect.arrayContaining([
+        "process_instance",
+        "process_advisor_approval_step",
+        "process_compliance_release_step",
+      ]),
+    );
   });
 
   test("feeds data-quality and export forbidden-payload blockers into the same release spine", () => {

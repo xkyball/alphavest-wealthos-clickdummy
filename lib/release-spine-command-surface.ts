@@ -27,6 +27,12 @@ export type ReleaseSpineInput = {
   payload: {
     ready: boolean;
   };
+  processRuntime: {
+    advisorApprovalStepSatisfied: boolean;
+    complianceReleaseStepActive: boolean;
+    processId: string | null;
+    processInstanceId: string | null;
+  };
   rationale: {
     captured: boolean;
   };
@@ -47,6 +53,9 @@ export type ReleaseSpineMissing =
   | "export_target_selected"
   | "payload_ready"
   | "permission_check"
+  | "process_advisor_approval_step"
+  | "process_compliance_release_step"
+  | "process_instance"
   | "redaction_ready"
   | string;
 
@@ -65,6 +74,11 @@ export type CanonicalReleasePreconditions = {
   missing: ReleaseSpineMissing[];
   payloadReady: boolean;
   permissionAllowed: boolean;
+  processAdvisorApprovalStepSatisfied: boolean;
+  processComplianceReleaseStepActive: boolean;
+  processId: string | null;
+  processInstanceId: string | null;
+  processRuntimeReady: boolean;
   rationaleCaptured: boolean;
   redactionReady: boolean;
 };
@@ -95,6 +109,9 @@ export function buildCanonicalReleasePreconditions(input: ReleaseSpineInput): Ca
   if (!input.rationale.captured) missing.push("decision_rationale");
   if (!input.payload.ready) missing.push("payload_ready");
   if (!input.compliance.permissionAllowed) missing.push("permission_check");
+  if (!input.processRuntime.processInstanceId) missing.push("process_instance");
+  if (!input.processRuntime.advisorApprovalStepSatisfied) missing.push("process_advisor_approval_step");
+  if (!input.processRuntime.complianceReleaseStepActive) missing.push("process_compliance_release_step");
   if (!dataQualityReady && input.dataQualityGate) {
     missing.push(input.dataQualityGate.gateName.toLowerCase());
     missing.push(...input.dataQualityGate.missing);
@@ -105,6 +122,10 @@ export function buildCanonicalReleasePreconditions(input: ReleaseSpineInput): Ca
   if (!exportPayloadClean) missing.push("export_payload_clean");
 
   const canonicalMissing = uniqueMissing(missing);
+  const processRuntimeReady =
+    Boolean(input.processRuntime.processInstanceId) &&
+    input.processRuntime.advisorApprovalStepSatisfied &&
+    input.processRuntime.complianceReleaseStepActive;
   const canRelease =
     input.advisor.approved &&
     input.evidence.sufficient &&
@@ -113,7 +134,8 @@ export function buildCanonicalReleasePreconditions(input: ReleaseSpineInput): Ca
     input.rationale.captured &&
     input.payload.ready &&
     input.compliance.permissionAllowed &&
-    dataQualityReady;
+    dataQualityReady &&
+    processRuntimeReady;
   const canExportAfterRelease =
     canRelease &&
     exportApprovalComplete &&
@@ -136,6 +158,11 @@ export function buildCanonicalReleasePreconditions(input: ReleaseSpineInput): Ca
     missing: canonicalMissing,
     payloadReady: input.payload.ready,
     permissionAllowed: input.compliance.permissionAllowed,
+    processAdvisorApprovalStepSatisfied: input.processRuntime.advisorApprovalStepSatisfied,
+    processComplianceReleaseStepActive: input.processRuntime.complianceReleaseStepActive,
+    processId: input.processRuntime.processId,
+    processInstanceId: input.processRuntime.processInstanceId,
+    processRuntimeReady,
     rationaleCaptured: input.rationale.captured,
     redactionReady: input.redaction.ready,
   };

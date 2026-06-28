@@ -493,6 +493,53 @@ function processInstanceId(slug: string, processId: string) {
   return stableId(`process-instance:${slug}:${processId}`);
 }
 
+function processSeedCurrentStep(
+  tenant: (typeof demoTenants)[number],
+  definition: (typeof processRuntimeDefinitions)[number],
+) {
+  if (definition.processId === "BP-054") {
+    return definition.steps.find((step) => step.stepId === "BP-054-S03") ?? definition.steps[0];
+  }
+
+  if (definition.processId === "BP-063") {
+    const released = tenant.recommendationStatus === RecommendationStatus.RELEASED_TO_CLIENT;
+    return definition.steps.find((step) => step.stepId === (released ? "BP-063-S04" : "BP-063-S03")) ?? definition.steps[0];
+  }
+
+  return definition.steps[0];
+}
+
+function processSeedStepStatus(
+  tenant: (typeof demoTenants)[number],
+  definition: (typeof processRuntimeDefinitions)[number],
+  step: (typeof processRuntimeDefinitions)[number]["steps"][number],
+  index: number,
+) {
+  const currentStep = processSeedCurrentStep(tenant, definition);
+
+  if (definition.status !== "ACTIVE") return PrismaProcessStepStatus.LOCKED;
+  if (definition.processId === "BP-054") {
+    const advisorSatisfied =
+      tenant.recommendationStatus === RecommendationStatus.ADVISOR_APPROVED ||
+      tenant.recommendationStatus === RecommendationStatus.COMPLIANCE_PENDING ||
+      tenant.recommendationStatus === RecommendationStatus.RELEASED_TO_CLIENT;
+
+    if (step.sequence < currentStep.sequence || (advisorSatisfied && step.stepId === "BP-054-S03")) {
+      return PrismaProcessStepStatus.COMPLETED;
+    }
+    if (step.stepId === currentStep.stepId) return PrismaProcessStepStatus.ACTIVE;
+    return PrismaProcessStepStatus.LOCKED;
+  }
+
+  if (definition.processId === "BP-063") {
+    if (step.sequence < currentStep.sequence) return PrismaProcessStepStatus.COMPLETED;
+    if (step.stepId === currentStep.stepId) return PrismaProcessStepStatus.ACTIVE;
+    return PrismaProcessStepStatus.LOCKED;
+  }
+
+  return index === 0 ? PrismaProcessStepStatus.ACTIVE : PrismaProcessStepStatus.LOCKED;
+}
+
 async function clearDemoData() {
   await prisma.$transaction([
     prisma.evidenceSufficiencyDecision.deleteMany(),
@@ -1947,8 +1994,6 @@ async function seedEvidenceCommunicationAndOps() {
 }
 
 async function seedProcesses() {
-  const seededTenantSlug = "bennett";
-
   await prisma.processDefinition.createMany({
     data: processRuntimeDefinitions.map((definition) => ({
       id: processDefinitionId(definition.processId),
@@ -1993,87 +2038,95 @@ async function seedProcesses() {
   });
 
   await prisma.processInstance.createMany({
-    data: processRuntimeDefinitions.map((definition) => {
-      const firstStep = definition.steps[0];
+    data: demoTenants.flatMap((tenant) =>
+      processRuntimeDefinitions.map((definition) => {
+        const currentStep = processSeedCurrentStep(tenant, definition);
 
-      return {
-        id: processInstanceId(seededTenantSlug, definition.processId),
-        processDefinitionId: processDefinitionId(definition.processId),
-        clientTenantId: tenantId(seededTenantSlug),
-        ownerUserId: userId("success"),
-        status:
-          definition.status === "ACTIVE"
-            ? PrismaProcessInstanceStatus.ACTIVE
-            : PrismaProcessInstanceStatus.BLOCKED,
-        currentStepId: firstStep?.stepId ?? null,
-        currentSequence: firstStep?.sequence ?? null,
-        blockerCode: definition.status === "ACTIVE" ? null : "PROCESS_DEFERRED_BY_MATRIX",
-        blockerReason:
-          definition.status === "ACTIVE"
-            ? null
-            : "The P0 process is specified in the matrix but not ready for execution credit.",
-        metadataJson: {
-          demoSeed: true,
-          processRuntimeBackbone: true,
-          noClientVisibilityClaim: true,
-        },
-        startedAt: definition.status === "ACTIVE" ? date(-2) : null,
-        createdAt: seedDate,
-        updatedAt: seedDate,
-      };
-    }),
+        return {
+          id: processInstanceId(tenant.slug, definition.processId),
+          processDefinitionId: processDefinitionId(definition.processId),
+          clientTenantId: tenantId(tenant.slug),
+          ownerUserId: userId("success"),
+          status:
+            definition.status === "ACTIVE"
+              ? PrismaProcessInstanceStatus.ACTIVE
+              : PrismaProcessInstanceStatus.BLOCKED,
+          currentStepId: definition.status === "ACTIVE" ? (currentStep?.stepId ?? null) : null,
+          currentSequence: definition.status === "ACTIVE" ? (currentStep?.sequence ?? null) : null,
+          blockerCode: definition.status === "ACTIVE" ? null : "PROCESS_DEFERRED_BY_MATRIX",
+          blockerReason:
+            definition.status === "ACTIVE"
+              ? null
+              : "The P0 process is specified in the matrix but not ready for execution credit.",
+          metadataJson: {
+            demoSeed: true,
+            noClientVisibilityClaim: true,
+            processRuntimeBackbone: true,
+            tenantScopedProcessRuntime: true,
+          },
+          startedAt: definition.status === "ACTIVE" ? date(-2) : null,
+          createdAt: seedDate,
+          updatedAt: seedDate,
+        };
+      }),
+    ),
   });
 
   await prisma.processStepInstance.createMany({
-    data: processRuntimeDefinitions.flatMap((definition) =>
-      definition.steps.map((step, index) => ({
-        id: stableId(`process-step-instance:${seededTenantSlug}:${definition.processId}:${step.stepId}`),
-        processInstanceId: processInstanceId(seededTenantSlug, definition.processId),
-        stepId: step.stepId,
-        stepLabel: step.stepLabel,
-        actor: step.actor,
-        status:
-          definition.status === "ACTIVE" && index === 0
-            ? PrismaProcessStepStatus.ACTIVE
-            : PrismaProcessStepStatus.LOCKED,
-        sequence: step.sequence,
-        startedAt: definition.status === "ACTIVE" && index === 0 ? date(-2) : null,
-        metadataJson: {
-          acceptanceState: step.acceptanceState,
-          action: step.action,
-          decisionPoint: step.decisionPoint,
-          processRuntimeBackbone: true,
-        },
-        createdAt: seedDate,
-        updatedAt: seedDate,
-      }))
+    data: demoTenants.flatMap((tenant) =>
+      processRuntimeDefinitions.flatMap((definition) =>
+        definition.steps.map((step, index) => {
+          const status = processSeedStepStatus(tenant, definition, step, index);
+
+          return {
+            id: stableId(`process-step-instance:${tenant.slug}:${definition.processId}:${step.stepId}`),
+            processInstanceId: processInstanceId(tenant.slug, definition.processId),
+            stepId: step.stepId,
+            stepLabel: step.stepLabel,
+            actor: step.actor,
+            status,
+            sequence: step.sequence,
+            startedAt: status === PrismaProcessStepStatus.ACTIVE ? date(-2) : null,
+            completedAt: status === PrismaProcessStepStatus.COMPLETED ? date(-2) : null,
+            metadataJson: {
+              acceptanceState: step.acceptanceState,
+              action: step.action,
+              decisionPoint: step.decisionPoint,
+              processRuntimeBackbone: true,
+            },
+            createdAt: seedDate,
+            updatedAt: seedDate,
+          };
+        }),
+      ),
     ),
   });
 
   await prisma.processObjectLink.createMany({
-    data: processRuntimeDefinitions.flatMap((definition) => {
+    data: demoTenants.flatMap((tenant) =>
+      processRuntimeDefinitions.flatMap((definition) => {
       const baseLinks = [
         {
           objectType: ObjectType.TENANT,
-          objectId: tenantId(seededTenantSlug),
+          objectId: tenantId(tenant.slug),
           linkRole: PrismaProcessObjectLinkRole.PRIMARY_CONTEXT,
-          title: "Bennett Family Office",
+          title: tenant.displayName,
         },
         {
           objectType: ObjectType.RECOMMENDATION,
-          objectId: recommendationId(seededTenantSlug),
+          objectId: recommendationId(tenant.slug),
           linkRole: PrismaProcessObjectLinkRole.RECOMMENDATION,
           title: "Liquidity governance recommendation",
         },
         {
           objectType: ObjectType.DECISION,
-          objectId: decisionId(seededTenantSlug),
+          objectId: decisionId(tenant.slug),
           linkRole: PrismaProcessObjectLinkRole.DECISION,
           title: "Liquidity decision",
         },
         {
           objectType: ObjectType.EVIDENCE_RECORD,
-          objectId: evidenceRecordId(seededTenantSlug),
+          objectId: evidenceRecordId(tenant.slug),
           linkRole: PrismaProcessObjectLinkRole.SUPPORTING_EVIDENCE,
           title: "Liquidity decision evidence",
         },
@@ -2081,9 +2134,9 @@ async function seedProcesses() {
 
       return baseLinks.map((link) => ({
         id: stableId(
-          `process-object-link:${seededTenantSlug}:${definition.processId}:${link.objectType}:${link.linkRole}`
+          `process-object-link:${tenant.slug}:${definition.processId}:${link.objectType}:${link.linkRole}`
         ),
-        processInstanceId: processInstanceId(seededTenantSlug, definition.processId),
+        processInstanceId: processInstanceId(tenant.slug, definition.processId),
         ...link,
         metadataJson: {
           demoSeed: true,
@@ -2093,18 +2146,20 @@ async function seedProcesses() {
         createdAt: seedDate,
       }));
     }),
+    ),
   });
 
   await prisma.evidenceSufficiencyDecision.createMany({
-    data: processRuntimeDefinitions
-      .filter((definition) => definition.domainId === "DOMAIN-C")
-      .slice(0, 6)
-      .map((definition) => ({
-        id: stableId(`evidence-sufficiency:${seededTenantSlug}:${definition.processId}:matrix-proof`),
-        clientTenantId: tenantId(seededTenantSlug),
-        processInstanceId: processInstanceId(seededTenantSlug, definition.processId),
+    data: demoTenants.flatMap((tenant) =>
+      processRuntimeDefinitions
+        .filter((definition) => definition.domainId === "DOMAIN-C")
+        .slice(0, 6)
+        .map((definition) => ({
+        id: stableId(`evidence-sufficiency:${tenant.slug}:${definition.processId}:matrix-proof`),
+        clientTenantId: tenantId(tenant.slug),
+        processInstanceId: processInstanceId(tenant.slug, definition.processId),
         requirementKey: `${definition.processId.toLowerCase()}.evidence-record`,
-        evidenceRecordId: evidenceRecordId(seededTenantSlug),
+        evidenceRecordId: evidenceRecordId(tenant.slug),
         decision: EvidenceSufficiencyDecisionStatus.SUFFICIENT,
         decidedByUserId: userId("compliance"),
         decidedByRoleKey: "compliance_officer",
@@ -2120,16 +2175,18 @@ async function seedProcesses() {
         },
         createdAt: date(-1),
       })),
+    ),
   });
 
   await prisma.processCommandRun.createMany({
-    data: processRuntimeDefinitions.map((definition) => ({
-      id: stableId(`process-command-run:${seededTenantSlug}:${definition.processId}:start`),
-      processInstanceId: processInstanceId(seededTenantSlug, definition.processId),
+    data: demoTenants.flatMap((tenant) =>
+      processRuntimeDefinitions.map((definition) => ({
+      id: stableId(`process-command-run:${tenant.slug}:${definition.processId}:start`),
+      processInstanceId: processInstanceId(tenant.slug, definition.processId),
       commandKey: "START",
       actorUserId: userId("success"),
       actorRoleKey: "client_success",
-      toStepId: definition.steps[0]?.stepId ?? null,
+      toStepId: processSeedCurrentStep(tenant, definition)?.stepId ?? null,
       previousState: "CREATED",
       nextState: definition.status === "ACTIVE" ? "ACTIVE" : "BLOCKED",
       result: definition.status === "ACTIVE" ? AuditResult.SUCCESS : AuditResult.BLOCKED,
@@ -2143,6 +2200,7 @@ async function seedProcesses() {
       },
       createdAt: date(-2),
     })),
+    ),
   });
 }
 

@@ -11,6 +11,8 @@ import {
 } from "@prisma/client";
 import { expect, test, type APIRequestContext } from "@playwright/test";
 
+const demoTenantCount = 4;
+
 async function jwtFor(request: APIRequestContext, email: string) {
   const startResponse = await request.post("/api/auth/provider-login", {
     data: {
@@ -61,10 +63,10 @@ test.describe("Process Runtime Backbone DB and API", () => {
 
     await expect(prisma.processDefinition.count()).resolves.toBe(84);
     await expect(prisma.processStepDefinition.count()).resolves.toBe(438);
-    await expect(prisma.processInstance.count()).resolves.toBe(84);
-    await expect(prisma.processStepInstance.count()).resolves.toBe(438);
-    await expect(prisma.processCommandRun.count()).resolves.toBe(84);
-    await expect(prisma.evidenceSufficiencyDecision.count()).resolves.toBe(6);
+    await expect(prisma.processInstance.count()).resolves.toBe(84 * demoTenantCount);
+    await expect(prisma.processStepInstance.count()).resolves.toBe(438 * demoTenantCount);
+    await expect(prisma.processCommandRun.count()).resolves.toBe(84 * demoTenantCount);
+    await expect(prisma.evidenceSufficiencyDecision.count()).resolves.toBe(6 * demoTenantCount);
 
     const process = await prisma.processInstance.findFirstOrThrow({
       include: {
