@@ -2045,9 +2045,16 @@ function GovernanceProcessEntry({ onInvite }: { onInvite: () => void }) {
         className="mt-3 grid gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 md:grid-cols-[1.15fr_repeat(3,minmax(0,1fr))]"
         data-testid="p07-p09-governance-trust"
       >
-        <div className="min-w-0">
+        <div
+          className="min-w-0"
+          data-epic-06-audit-boundary="separate-before-mutation"
+          data-epic-06-client-visible="false"
+          data-epic-06-overclaim="blocked"
+          data-testid="epic-06-proof-boundary"
+          data-ux-no-overclaim="true"
+        >
           <p className="text-sm font-semibold text-alphavest-ivory">Governance action gate</p>
-          <p className="mt-1 text-xs leading-5 text-alphavest-muted">Governance work is scoped to access management; downstream advice, evidence, export and audit gates stay separate.</p>
+          <p className="mt-1 text-xs leading-5 text-alphavest-muted">Client-visible output stays false; audit proof is required before mutation and unsupported commands stay denied.</p>
         </div>
         {[
           ["Advice payload", "Advice payload blocked"],
@@ -2120,6 +2127,25 @@ function CoreGovernanceStepSurface({
       <div className="mt-3 rounded-md border border-red-400/35 bg-red-500/8 p-3">
         <p className="text-sm font-semibold text-alphavest-ivory">{gate.label}</p>
         <p className="mt-1 text-xs leading-5 text-alphavest-muted">{gate.detail}</p>
+      </div>
+      <div
+        className="mt-2 grid gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 md:grid-cols-3"
+        data-epic-06-audit-boundary="separate-before-mutation"
+        data-epic-06-client-visible="false"
+        data-epic-06-overclaim="blocked"
+        data-testid="epic-06-proof-boundary"
+        data-ux-no-overclaim="true"
+      >
+        {[
+          ["Client-safe", "No client release"],
+          ["Audit", "Before mutation"],
+          ["Denied", "No silent success"],
+        ].map(([label, value]) => (
+          <div className="min-w-0" key={label}>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">{label}</p>
+            <p className="mt-1 text-xs leading-5 text-alphavest-muted">{value}</p>
+          </div>
+        ))}
       </div>
     </section>
   );

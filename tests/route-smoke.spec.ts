@@ -882,6 +882,10 @@ test.describe("UX-CTA governance admin non-bypass chain", () => {
     const nextAction = page.getByTestId("epic-06-governance-primary-next-action");
     await expect(nextAction).toHaveAttribute("href", "/governance/access-requests/demo?state=base");
     await expect(nextAction).toHaveAttribute("data-ux-no-overclaim", "true");
+    const proofBoundary = page.getByTestId("epic-06-proof-boundary");
+    await expect(proofBoundary).toHaveAttribute("data-epic-06-client-visible", "false");
+    await expect(proofBoundary).toHaveAttribute("data-epic-06-audit-boundary", "separate-before-mutation");
+    await expect(proofBoundary).toHaveAttribute("data-epic-06-overclaim", "blocked");
 
     const pageExtent = await page.evaluate(() => ({
       clientHeight: document.documentElement.clientHeight,
@@ -914,6 +918,10 @@ test.describe("UX-CTA governance admin non-bypass chain", () => {
       await expect(entry).toHaveAttribute("data-epic-06-core-surface", "queue-detail-step");
       await expect(entry).toContainText(surface.expectedText);
       await expect(page.getByTestId(surface.action)).toBeVisible();
+      const proofBoundary = page.getByTestId("epic-06-proof-boundary");
+      await expect(proofBoundary).toHaveAttribute("data-epic-06-client-visible", "false");
+      await expect(proofBoundary).toHaveAttribute("data-epic-06-audit-boundary", "separate-before-mutation");
+      await expect(proofBoundary).toHaveAttribute("data-ux-no-overclaim", "true");
 
       const pageExtent = await page.evaluate(() => ({
         clientHeight: document.documentElement.clientHeight,
