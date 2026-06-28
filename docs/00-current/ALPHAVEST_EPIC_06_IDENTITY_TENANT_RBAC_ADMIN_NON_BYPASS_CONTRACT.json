@@ -1,0 +1,563 @@
+{
+  "artifact_kind": "epic_06_identity_tenant_rbac_admin_non_bypass_contract",
+  "ticket_id": "EPIC-06-SPEC-01",
+  "title": "Process-first target contract for Identity, Tenant, RBAC and Admin Non-Bypass",
+  "generated_at": "2026-06-28",
+  "source_epic": "EPIC-06",
+  "source_masterplan": "reports/process-first-refactoring-masterplan-2026-06-28/ALPHAVEST_PROCESS_FIRST_REFACTORING_MASTERPLAN_BOC_CTES.json",
+  "source_gap_report": "reports/process-first-refactoring-masterplan-2026-06-28/ALPHAVEST_BOC_CTES_EPIC_06_DOMAIN_GAP_REPORT.md",
+  "authority": {
+    "operative_source": "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md",
+    "route_evolution_policy": "No new route or screen split is authorized by this contract.",
+    "out_of_scope": [
+      "blind schema replacement",
+      "production IdP overbuild",
+      "new product scope outside True-UX route evolution authority",
+      "screen or image generation",
+      "client-visible unapproved advice"
+    ]
+  },
+  "target_screen_contract": {
+    "primary_target_screens": [
+      "S007",
+      "S009",
+      "S011",
+      "S012",
+      "S013",
+      "S017",
+      "S018",
+      "S048",
+      "S049",
+      "S050",
+      "S051"
+    ],
+    "supporting_routes_not_new_scope": [
+      {
+        "screen_id": "S010",
+        "reason": "BP-104 security configuration naturally maps to existing route metadata, but EPIC-06 target screen list does not authorize a new implementation target there."
+      },
+      {
+        "screen_id": "S016",
+        "reason": "BP-109 team assignment naturally maps to the existing tenant team route, but EPIC-06 target screen list does not authorize a new implementation target there."
+      }
+    ],
+    "decision": "EPIC-06 implementation must preserve the masterplan target screen list. S010 and S016 may be referenced as supporting proof only; product changes there require a later route-evolution record."
+  },
+  "canonical_primitives": {
+    "actor_tenant_object_guard": [
+      "lib/permission-engine.ts::permissionEngine.evaluateRouteBoundary",
+      "lib/permission-engine.ts::permissionEngine.can"
+    ],
+    "tenant_governance_command_spine": [
+      "lib/tenant-governance-action-contract.ts::tenantGovernanceCanonicalApiRoute",
+      "lib/tenant-governance-workflow-actions.ts::runTenantGovernanceWorkflowAction",
+      "app/api/tenant-governance/actions/route.ts::POST"
+    ],
+    "ui_surface_spine": [
+      "components/admin-tenant-setup-screen.tsx::AdminTenantSetupScreen",
+      "components/decisions-governance-screen.tsx::DecisionsGovernanceScreen",
+      "components/worksurface-shell.tsx::WorksurfaceShell"
+    ],
+    "proof_spine": [
+      "tests/permission-engine.spec.ts",
+      "tests/governance-non-bypass.spec.ts",
+      "tests/tenant-governance-actions-api.spec.ts",
+      "tests/governance-user-drawer-lifecycle.spec.ts",
+      "tests/role-drawer-confirmation-lifecycle.spec.ts",
+      "tests/access-request-drawer-lifecycle.spec.ts",
+      "tests/wp02-worksurface-shell.spec.ts"
+    ]
+  },
+  "state_machine": {
+    "states": [
+      "route_shell_visible",
+      "actor_resolved",
+      "tenant_scope_resolved",
+      "object_scope_resolved",
+      "payload_visibility_evaluated",
+      "action_guard_evaluated",
+      "confirmation_required",
+      "confirmation_validated",
+      "audit_required",
+      "audit_persisted",
+      "allowed_scoped_mutation_executed",
+      "denied_before_mutation",
+      "denied_attempt_audited",
+      "client_safe_output_returned"
+    ],
+    "allowed_transitions": [
+      "route_shell_visible -> actor_resolved",
+      "actor_resolved -> tenant_scope_resolved",
+      "tenant_scope_resolved -> object_scope_resolved",
+      "object_scope_resolved -> payload_visibility_evaluated",
+      "payload_visibility_evaluated -> action_guard_evaluated",
+      "action_guard_evaluated -> confirmation_required",
+      "confirmation_required -> confirmation_validated",
+      "confirmation_validated -> audit_required",
+      "audit_required -> audit_persisted",
+      "audit_persisted -> allowed_scoped_mutation_executed",
+      "action_guard_evaluated -> denied_before_mutation",
+      "denied_before_mutation -> denied_attempt_audited",
+      "allowed_scoped_mutation_executed -> client_safe_output_returned"
+    ],
+    "forbidden_transitions": [
+      "route_shell_visible -> allowed_scoped_mutation_executed",
+      "confirmation_required -> allowed_scoped_mutation_executed",
+      "action_guard_evaluated -> client_safe_output_returned_without_projection",
+      "admin_or_security_role -> evidence_sufficiency",
+      "admin_or_security_role -> client_visibility_release",
+      "admin_or_security_role -> export_approval_or_download",
+      "governance_management -> advice_release",
+      "governance_management -> audit_suppression"
+    ]
+  },
+  "role_guard_contract": {
+    "route_shell_access": "Route visibility never grants action, payload or mutation authority.",
+    "admin_and_security": [
+      "may manage scoped governance surfaces where explicitly allowed",
+      "must not approve evidence sufficiency",
+      "must not force client visibility",
+      "must not approve, generate, download or share restricted export packages",
+      "must not view internal advice payload by governance authority alone",
+      "must not suppress audit"
+    ],
+    "compliance_officer": [
+      "may perform compliance-owned release or evidence sufficiency actions only with tenant and object scope",
+      "must still pass audit and payload visibility checks"
+    ],
+    "client_success": [
+      "may support tenant setup and invitations where explicitly allowed",
+      "must not manage sensitive role or policy changes without governance role authority"
+    ],
+    "external_or_limited_roles": [
+      "must not view internal-only documents, evidence, audit or recommendation payloads",
+      "must not export restricted packages"
+    ]
+  },
+  "payload_visibility_contract": {
+    "client_visible_default": false,
+    "forbidden_client_fields": [
+      "clientSummaryDraft",
+      "summaryInternal",
+      "internalRationale",
+      "complianceNotes",
+      "assumptionsJson",
+      "audit internals",
+      "storage internals",
+      "unreleased evidence internals"
+    ],
+    "required_api_flags": [
+      "clientVisible: false",
+      "noClientRelease: true",
+      "hiddenRowsDisclosed: false",
+      "noAdviceExecution: true"
+    ],
+    "acceptance": "Any EPIC-06 API or command response that reaches UI must be explicitly client-safe or explicitly internal-only with no client release."
+  },
+  "audit_evidence_contract": {
+    "sensitive_actions_require_audit": [
+      "CREATE",
+      "EDIT",
+      "DELETE",
+      "UPLOAD",
+      "REVIEW",
+      "APPROVE",
+      "RELEASE",
+      "BLOCK",
+      "EXPORT",
+      "INVITE",
+      "ASSIGN",
+      "REVOKE",
+      "MANAGE"
+    ],
+    "second_confirmation_actions": [
+      "ASSIGN",
+      "REVOKE",
+      "RELEASE",
+      "MANAGE"
+    ],
+    "failure_mode": "Audit persistence failure blocks sensitive mutation before state change.",
+    "proof_rule": "Every process marked implemented must name at least one positive proof and one negative proof in the EPIC-06 matrix update."
+  },
+  "process_contracts": [
+    {
+      "process_id": "BP-011",
+      "status_target": "prove_shared_primitive",
+      "target_surfaces": [
+        "S048",
+        "S049",
+        "S050"
+      ],
+      "service_boundary": "permissionEngine.evaluateRouteBoundary",
+      "positive_acceptance": "Authenticated demo actor resolves into actor, role, tenant and route boundary context.",
+      "negative_acceptance": "Missing tenant context, actor-role mismatch or actor-tenant mismatch fails closed before payload or mutation authority.",
+      "test_boundary": [
+        "tests/providerless-scope.spec.ts",
+        "tests/permission-engine.spec.ts"
+      ]
+    },
+    {
+      "process_id": "BP-012",
+      "status_target": "prove_commanded_workflow",
+      "target_surfaces": [
+        "S018",
+        "S048"
+      ],
+      "service_boundary": "tenant governance J06/J07 invitation actions",
+      "positive_acceptance": "Scoped invitation action routes through tenant governance command spine and records audit.",
+      "negative_acceptance": "Opening or cancelling invite drawer does not execute workflow mutation or imply role activation.",
+      "test_boundary": [
+        "tests/governance-user-drawer-lifecycle.spec.ts",
+        "tests/tenant-governance-actions-api.spec.ts"
+      ]
+    },
+    {
+      "process_id": "BP-013",
+      "status_target": "prove_identity_activation_boundary",
+      "target_surfaces": [
+        "S018",
+        "S048"
+      ],
+      "service_boundary": "demo session and profile/current-user API boundary",
+      "positive_acceptance": "Identity/profile context is resolved before route/action/payload evaluation.",
+      "negative_acceptance": "Profile or role context mismatch cannot activate downstream access.",
+      "test_boundary": [
+        "tests/permission-engine.spec.ts",
+        "tests/providerless-scope.spec.ts"
+      ]
+    },
+    {
+      "process_id": "BP-014",
+      "status_target": "implement_or_prove_membership_touchpoint",
+      "target_surfaces": [
+        "S018",
+        "S048"
+      ],
+      "service_boundary": "tenant governance membership/invitation command spine",
+      "positive_acceptance": "Tenant membership assignment has explicit tenant scope and audit proof.",
+      "negative_acceptance": "Cross-tenant or unsupported membership action is denied before mutation.",
+      "test_boundary": [
+        "tests/tenant-governance-actions-api.spec.ts",
+        "tests/permission-engine.spec.ts"
+      ]
+    },
+    {
+      "process_id": "BP-015",
+      "status_target": "prove_role_assignment",
+      "target_surfaces": [
+        "S049"
+      ],
+      "service_boundary": "j07.saveRoleChanges plus permissionEngine role guards",
+      "positive_acceptance": "Role assignment requires acknowledgement, exact second confirmation, tenant scope and audit.",
+      "negative_acceptance": "Drawer open/cancel or wrong confirmation phrase does not mutate role state or imply access expansion.",
+      "test_boundary": [
+        "tests/role-drawer-confirmation-lifecycle.spec.ts",
+        "tests/governance-non-bypass.spec.ts"
+      ]
+    },
+    {
+      "process_id": "BP-016",
+      "status_target": "prove_permission_evaluation",
+      "target_surfaces": [
+        "S007",
+        "S009",
+        "S011",
+        "S012",
+        "S017",
+        "S018",
+        "S048",
+        "S049",
+        "S050"
+      ],
+      "service_boundary": "permissionEngine.can",
+      "positive_acceptance": "Allowed scoped role/action/object decisions return `DEMO_ROLE_AWARE_ALLOW` with required audit/review flags.",
+      "negative_acceptance": "Forbidden role, action, tenant or object combinations return explicit deny reason codes.",
+      "test_boundary": [
+        "tests/permission-engine.spec.ts",
+        "tests/governance-non-bypass.spec.ts"
+      ]
+    },
+    {
+      "process_id": "BP-017",
+      "status_target": "prove_object_scope_evaluation",
+      "target_surfaces": [
+        "S049",
+        "S050"
+      ],
+      "service_boundary": "permissionEngine objectScope checks",
+      "positive_acceptance": "Object-scoped action is allowed only when object type, tenant and object id match current scope.",
+      "negative_acceptance": "Missing object target, missing object scope, type mismatch, tenant mismatch or id mismatch fails closed.",
+      "test_boundary": [
+        "tests/permission-engine.spec.ts",
+        "tests/providerless-scope.spec.ts"
+      ]
+    },
+    {
+      "process_id": "BP-018",
+      "status_target": "prove_access_request_workflow",
+      "target_surfaces": [
+        "S050"
+      ],
+      "service_boundary": "j07.approveAccess",
+      "positive_acceptance": "Access request approval requires scoped acknowledgement and routes through audit-backed command spine.",
+      "negative_acceptance": "Drawer open/cancel/escalate/deny does not submit scoped approval mutation.",
+      "test_boundary": [
+        "tests/access-request-drawer-lifecycle.spec.ts",
+        "tests/tenant-governance-actions-api.spec.ts"
+      ]
+    },
+    {
+      "process_id": "BP-019",
+      "status_target": "prove_second_confirmation",
+      "target_surfaces": [
+        "S049",
+        "S050"
+      ],
+      "service_boundary": "permissionEngine requiresSecondConfirmation plus UI exact phrase lifecycle",
+      "positive_acceptance": "Sensitive ASSIGN/REVOKE/RELEASE/MANAGE actions require second confirmation.",
+      "negative_acceptance": "Wrong phrase or unacknowledged drawer cannot submit mutation.",
+      "test_boundary": [
+        "tests/role-drawer-confirmation-lifecycle.spec.ts",
+        "tests/permission-engine.spec.ts"
+      ]
+    },
+    {
+      "process_id": "BP-020",
+      "status_target": "prove_admin_non_bypass",
+      "target_surfaces": [
+        "S048",
+        "S049",
+        "S050",
+        "S051"
+      ],
+      "service_boundary": "permissionEngine adminNonBypassRoles",
+      "positive_acceptance": "Admin/security may manage scoped governance where allowed.",
+      "negative_acceptance": "Admin/security cannot bypass advisor approval, evidence sufficiency, client visibility, export/redaction, internal advice payload or audit persistence.",
+      "test_boundary": [
+        "tests/governance-non-bypass.spec.ts",
+        "tests/permission-engine.spec.ts"
+      ]
+    },
+    {
+      "process_id": "BP-022",
+      "status_target": "prove_denied_access_audit",
+      "target_surfaces": [
+        "S051"
+      ],
+      "service_boundary": "typed workflow and tenant governance audit persistence",
+      "positive_acceptance": "Denied sensitive attempt records or exposes audit-required proof before any state claim.",
+      "negative_acceptance": "Audit persistence unavailable returns fail-closed error and commandExecuted false.",
+      "test_boundary": [
+        "tests/governance-non-bypass.spec.ts",
+        "tests/tenant-governance-actions-api.spec.ts",
+        "tests/audit-fail-closed.spec.ts"
+      ]
+    },
+    {
+      "process_id": "BP-103",
+      "status_target": "prove_platform_settings_admin",
+      "target_surfaces": [
+        "S007"
+      ],
+      "service_boundary": "platform settings work surface plus permissionEngine MANAGE PLATFORM",
+      "positive_acceptance": "Platform settings admin surface names one page job and guarded next action.",
+      "negative_acceptance": "Platform settings visibility does not grant payload release, export, evidence sufficiency or audit bypass.",
+      "test_boundary": [
+        "tests/wp02-worksurface-shell.spec.ts",
+        "tests/permission-engine.spec.ts"
+      ]
+    },
+    {
+      "process_id": "BP-104",
+      "status_target": "prove_security_configuration_without_route_expansion",
+      "target_surfaces": [
+        "S007",
+        "S009"
+      ],
+      "supporting_surfaces": [
+        "S010"
+      ],
+      "service_boundary": "permissionEngine MANAGE POLICY/ROLE plus route registry metadata",
+      "positive_acceptance": "Security configuration proof is limited to existing route metadata and shared guard behavior unless a later route-evolution record promotes S010 into target scope.",
+      "negative_acceptance": "Security/admin role cannot use configuration authority to bypass protected downstream gates.",
+      "test_boundary": [
+        "tests/wp02-worksurface-shell.spec.ts",
+        "tests/governance-non-bypass.spec.ts"
+      ]
+    },
+    {
+      "process_id": "BP-105",
+      "status_target": "prove_tenant_policy_admin",
+      "target_surfaces": [
+        "S017"
+      ],
+      "service_boundary": "tenant policy work surface plus permissionEngine MANAGE PERMISSION/POLICY",
+      "positive_acceptance": "Tenant policy change remains tenant-scoped and audit-bound.",
+      "negative_acceptance": "Policy surface cannot bypass compliance release, export/redaction, evidence sufficiency or audit.",
+      "test_boundary": [
+        "tests/wp02-worksurface-shell.spec.ts",
+        "tests/governance-non-bypass.spec.ts"
+      ]
+    },
+    {
+      "process_id": "BP-106",
+      "status_target": "prove_evidence_template_admin",
+      "target_surfaces": [
+        "S011"
+      ],
+      "service_boundary": "evidence template work surface plus permissionEngine MANAGE EVIDENCE_RECORD",
+      "positive_acceptance": "Evidence template administration can configure templates without marking evidence sufficient.",
+      "negative_acceptance": "Admin/security cannot force evidence sufficiency from template/admin authority.",
+      "test_boundary": [
+        "tests/wp02-worksurface-shell.spec.ts",
+        "tests/governance-non-bypass.spec.ts"
+      ]
+    },
+    {
+      "process_id": "BP-107",
+      "status_target": "prove_export_redaction_template_admin",
+      "target_surfaces": [
+        "S012"
+      ],
+      "service_boundary": "export template work surface plus permissionEngine EXPORT_REQUEST guards",
+      "positive_acceptance": "Export/redaction templates can be configured without generating or sharing restricted exports.",
+      "negative_acceptance": "Admin/security cannot bypass export approval, redaction or client-visibility gates.",
+      "test_boundary": [
+        "tests/wp02-worksurface-shell.spec.ts",
+        "tests/governance-non-bypass.spec.ts",
+        "tests/export-safety.spec.ts"
+      ]
+    },
+    {
+      "process_id": "BP-108",
+      "status_target": "implement_or_prove_policy_versioning_touchpoint",
+      "target_surfaces": [
+        "S007",
+        "S009",
+        "S017"
+      ],
+      "service_boundary": "policy versioning proof must be explicit; current matrix says specified_only",
+      "positive_acceptance": "Policy/version change has visible configure, validate, confirm, audit and apply-to-flows proof.",
+      "negative_acceptance": "Draft/configuration state cannot be overclaimed as applied policy or downstream release authority.",
+      "test_boundary": [
+        "tests/wp02-worksurface-shell.spec.ts",
+        "tests/governance-non-bypass.spec.ts"
+      ]
+    },
+    {
+      "process_id": "BP-109",
+      "status_target": "prove_team_assignment_without_route_expansion",
+      "target_surfaces": [
+        "S013",
+        "S018"
+      ],
+      "supporting_surfaces": [
+        "S016"
+      ],
+      "service_boundary": "j06.assignTeam plus tenant setup work surfaces",
+      "positive_acceptance": "Team assignment is tenant-scoped and audit-bound through the existing command spine.",
+      "negative_acceptance": "Team assignment does not grant advisor, compliance, export, evidence or client visibility authority.",
+      "test_boundary": [
+        "tests/tenant-governance-actions-api.spec.ts",
+        "tests/wp02-worksurface-shell.spec.ts",
+        "tests/permission-engine.spec.ts"
+      ]
+    }
+  ],
+  "implementation_slices": {
+    "EPIC-06-IMPL-01A": {
+      "contract": "Primary area hub/workbench entry must make S048 the governance process hub with one page job, one next action, no downstream overclaim and screenshot proof.",
+      "ui_boundaries": [
+        "components/decisions-governance-screen.tsx",
+        "components/worksurface-shell.tsx"
+      ],
+      "tests": [
+        "tests/route-smoke.spec.ts",
+        "tests/wp02-worksurface-shell.spec.ts"
+      ]
+    },
+    "EPIC-06-IMPL-01B": {
+      "contract": "Core queue/detail/step surfaces must cover S049/S050 role and access-request flows with explicit lifecycle states.",
+      "ui_boundaries": [
+        "components/decisions-governance-screen.tsx"
+      ],
+      "tests": [
+        "tests/role-drawer-confirmation-lifecycle.spec.ts",
+        "tests/access-request-drawer-lifecycle.spec.ts",
+        "tests/governance-user-drawer-lifecycle.spec.ts"
+      ]
+    },
+    "EPIC-06-IMPL-01C": {
+      "contract": "Proof/audit/client-safe boundary must keep concise user-facing proof while preserving fail-closed blockers.",
+      "service_boundaries": [
+        "lib/permission-engine.ts",
+        "lib/tenant-governance-workflow-actions.ts",
+        "app/api/tenant-governance/actions/route.ts"
+      ],
+      "tests": [
+        "tests/permission-engine.spec.ts",
+        "tests/governance-non-bypass.spec.ts",
+        "tests/tenant-governance-actions-api.spec.ts"
+      ]
+    },
+    "EPIC-06-IMPL-01D": {
+      "contract": "Coverage matrix update must mark only implemented/proven steps and retain partial/missing states where proof is absent.",
+      "artifact_boundaries": [
+        "docs/00-current/ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX.json",
+        "reports/process-first-refactoring-masterplan-2026-06-28/ALPHAVEST_BOC_CTES_EPIC_06_DOMAIN_GAP_REPORT.md"
+      ],
+      "tests": [
+        "jq validation of updated matrix",
+        "pnpm guard:source"
+      ]
+    }
+  },
+  "acceptance_criteria": {
+    "positive_paths": [
+      "Authorized scoped user can open target route shell without receiving mutation authority by route visibility alone.",
+      "Authorized scoped governance command executes through /api/tenant-governance/actions, writes audit proof and returns clientVisible false.",
+      "Role and access request flows require acknowledgement and second confirmation where sensitive.",
+      "Compliance-owned gates remain compliance-owned after governance/admin interaction.",
+      "Worksurface shell shows one page job, active step and safety boundary for every changed target surface."
+    ],
+    "negative_paths": [
+      "Unsupported governance action returns INVALID_REQUEST with commandExecuted false.",
+      "Missing database/audit persistence fails closed for governance commands.",
+      "Cross-tenant, missing tenant, actor-role mismatch, actor-tenant mismatch, missing object target and object scope mismatch deny before mutation.",
+      "Admin/security cannot force evidence sufficiency, client visibility, export, internal advice payload or audit suppression.",
+      "Open/cancel/escape/escalate/deny UI interactions do not submit mutation unless the specific command is confirmed."
+    ],
+    "ui_boundaries_named": [
+      "components/admin-tenant-setup-screen.tsx",
+      "components/decisions-governance-screen.tsx",
+      "components/worksurface-shell.tsx"
+    ],
+    "service_boundaries_named": [
+      "lib/permission-engine.ts",
+      "lib/tenant-governance-action-contract.ts",
+      "lib/tenant-governance-workflow-actions.ts",
+      "app/api/tenant-governance/actions/route.ts"
+    ],
+    "test_boundaries_named": [
+      "tests/permission-engine.spec.ts",
+      "tests/governance-non-bypass.spec.ts",
+      "tests/tenant-governance-actions-api.spec.ts",
+      "tests/governance-user-drawer-lifecycle.spec.ts",
+      "tests/role-drawer-confirmation-lifecycle.spec.ts",
+      "tests/access-request-drawer-lifecycle.spec.ts",
+      "tests/wp02-worksurface-shell.spec.ts",
+      "tests/route-smoke.spec.ts"
+    ]
+  },
+  "definition_of_done_result": {
+    "acceptance_criteria_cover_positive_and_negative_paths": true,
+    "ui_service_and_test_boundaries_named": true,
+    "implementation_decision_complete": true,
+    "human_decision_required_before_EPIC_06_IMPL_01": false,
+    "notes": [
+      "Contract deliberately avoids route expansion.",
+      "S010 and S016 are supporting proof routes only.",
+      "If product implementation on S010/S016 is desired, create a later route-evolution decision record before editing those surfaces."
+    ]
+  }
+}
