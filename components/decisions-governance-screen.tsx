@@ -3,6 +3,7 @@
 import { useState } from "react";
 import {
   AlertTriangle,
+  ArrowRight,
   Bell,
   Calendar,
   Check,
@@ -75,8 +76,6 @@ import {
   evidenceRows,
   evidenceTimeline,
   exceptionSummary,
-  governanceMetrics,
-  governanceUsers,
   missingEvidenceChecklist,
   requestedEvidenceItems,
   rolePermissions,
@@ -1975,14 +1974,98 @@ function EvidenceRecordDetailPage({ title }: { title: string }) {
   );
 }
 
-const userColumns: Array<DataTableColumn<(typeof governanceUsers)[number]>> = [
-  { key: "name", header: "User", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}<span className="block text-xs text-alphavest-muted">{row.email}</span></span>, sortable: true },
-  { key: "role", header: "Role(s)", render: (row) => row.role, sortable: true },
-  { key: "access", header: "Entity Access", render: (row) => row.access },
-  { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge>, sortable: true },
-  { key: "lastActive", header: "Last Active", render: (row) => row.lastActive, sortable: true },
-  { key: "mfa", header: "MFA", render: (row) => <Badge tone={toneFor(row.mfa)}>{row.mfa}</Badge> }
-];
+function GovernanceProcessEntry({ onInvite }: { onInvite: () => void }) {
+  const checkpoints = [
+    {
+      label: "Validation",
+      title: "Resolve scope first",
+      detail: "Actor, role, tenant and object scope must bind before mutation authority exists.",
+      tone: "border-alphavest-gold/45 bg-alphavest-gold/8 text-alphavest-gold",
+    },
+    {
+      label: "Restricted",
+      title: "No admin bypass",
+      detail: "Admin and security can coordinate governance, not release, sufficiency or export.",
+      tone: "border-alphavest-border bg-alphavest-navy/35 text-alphavest-muted",
+    },
+    {
+      label: "Blocked",
+      title: "Review is not approval",
+      detail: "Request review still needs acknowledgement, audit and command proof.",
+      tone: "border-red-400/35 bg-red-500/8 text-red-200",
+    },
+  ] as const;
+
+  return (
+    <section
+      className="rounded-md border border-alphavest-border/80 bg-alphavest-panel/60 p-4"
+      data-epic-06-entry="primary-area-hub"
+      data-testid="epic-06-governance-entry"
+      data-ux-next-action="review-scoped-access-request"
+      data-ux-page-job="governance_process_triage"
+      data-ux-process-contract="identity_tenant_rbac_admin_non_bypass"
+      data-ux-target-screen="S048"
+    >
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
+        <div className="min-w-0">
+          <h3 className="font-display text-2xl text-alphavest-ivory">Governance process triage</h3>
+          <p className="mt-1 max-w-3xl text-sm leading-5 text-alphavest-muted">
+            One entry job: resolve actor, tenant, role and scope before any access change can move into review.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2 xl:justify-end">
+          <button
+            className={secondaryButtonClass}
+            data-testid="j07-invite-user"
+            data-ux-lifecycle-result="opens-governance-user-drawer"
+            data-ux-lifecycle-trigger="governance-user-drawer"
+            onClick={onInvite}
+            type="button"
+          >
+            <Plus aria-hidden="true" className="size-4" />Invite scoped user
+          </button>
+          <a
+            className={primaryButtonClass}
+            data-testid="epic-06-governance-primary-next-action"
+            data-ux-action-meaning="navigate"
+            data-ux-no-overclaim="true"
+            href="/governance/access-requests/demo?state=base"
+          >
+            Review scoped access <ArrowRight aria-hidden="true" className="size-4" />
+          </a>
+        </div>
+      </div>
+      <div className="mt-3 grid gap-3 md:grid-cols-3">
+        {checkpoints.map((checkpoint) => (
+          <div className={cn("min-h-24 rounded-md border p-3", checkpoint.tone)} key={checkpoint.title}>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em]">{checkpoint.label}</p>
+            <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{checkpoint.title}</p>
+            <p className="mt-1 text-xs leading-5 text-alphavest-muted">{checkpoint.detail}</p>
+          </div>
+        ))}
+      </div>
+      <div
+        className="mt-3 grid gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 md:grid-cols-[1.15fr_repeat(3,minmax(0,1fr))]"
+        data-testid="p07-p09-governance-trust"
+      >
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-alphavest-ivory">Governance action gate</p>
+          <p className="mt-1 text-xs leading-5 text-alphavest-muted">Governance work is scoped to access management; downstream advice, evidence, export and audit gates stay separate.</p>
+        </div>
+        {[
+          ["Advice payload", "Advice payload blocked"],
+          ["Tenant scope", "Rows outside selected tenant hidden"],
+          ["Controlled export", "Export approval still required"],
+        ].map(([title, detail]) => (
+          <div className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/40 p-2" key={title}>
+            <p className="text-xs font-semibold text-alphavest-ivory">{title}</p>
+            <p className="mt-1 text-xs leading-4 text-alphavest-muted">{detail}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 function GovernanceUsersPage({ title, visualState }: { title: string; visualState?: VisualState }) {
   const [drawerOpen, setDrawerOpen] = useState(visualState === "drawer" || visualState === "invite");
@@ -2035,16 +2118,21 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
   return (
     <Phase12Shell activePageId="048">
       <WorksurfaceShell
+        actions={
+          <a
+            className={primaryButtonClass}
+            data-testid="epic-06-governance-summary-next-action"
+            data-ux-no-overclaim="true"
+            href="/governance/access-requests/demo?state=base"
+          >
+            Review scoped access <ArrowRight aria-hidden="true" className="size-4" />
+          </a>
+        }
         className={drawerOpen ? "pr-0 xl:pr-[23rem]" : ""}
         description="Scoped user governance console with role, MFA and entity-access context kept separate from release, evidence and export authority."
         eyebrow="WP02 Governance Safety"
         primary={
-          <div className="space-y-4">
-            <Phase5DetailSplitPanel decisionSupport="Governance hub stays separate from access-request and audit detail work." objectLabel="Governance hub split" objectState="Permission operations overview" pageJob="Governance hub routes to user, role, access request and audit surfaces." safetyBoundary="Governance hub cannot mutate scoped permissions without explicit review." splitTaskId="UX-PAGE-SPLIT-006" taskId="UX-PAGE-SPLIT-006" />
-            <UxHubPage pageId="048" />
-            <ScfP07P09TrustPanel mode="governance" />
-            <GovernanceCapabilityBoundary />
-          </div>
+          <GovernanceProcessEntry onInvite={openGovernanceUserDrawer} />
         }
         routeId="048"
         safetyNote="Admin visibility does not expand scoped role, object, payload, evidence, export or release authority."
@@ -2054,57 +2142,7 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
         ]}
         title={title}
         worksurfaceId="governance-safety-users"
-      >
-      <div className="mx-auto max-w-[104rem] space-y-5">
-        <PageHeading
-          action={
-            <button
-              className={primaryButtonClass}
-              data-testid="j07-invite-user"
-              data-ux-lifecycle-result="opens-governance-user-drawer"
-              data-ux-lifecycle-trigger="governance-user-drawer"
-              onClick={() => {
-                openGovernanceUserDrawer();
-              }}
-              type="button"
-            >
-              <Plus aria-hidden="true" className="size-4" />Invite scoped user
-            </button>
-          }
-          subtitle="Manage platform access, roles and user permissions."
-          title={title}
-        />
-        <div className="grid gap-3 md:grid-cols-5">
-          {governanceMetrics.map((metric) => (
-            <Card key={metric.label}>
-              <p className="text-sm text-alphavest-muted">{metric.label}</p>
-              <p className="mt-2 text-3xl font-semibold text-alphavest-ivory">{metric.value}</p>
-              <p className="text-xs text-alphavest-subtle">{metric.detail}</p>
-            </Card>
-          ))}
-        </div>
-        <UxDenseOperationsPanel
-          actions={<span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />User-list export held</span>}
-          controls={["Search user", "Role", "Status", "MFA", "Entity access", "Last active"]}
-          description="User access stays in a compact operations table so role, MFA and entity scope can be compared without admin bypass."
-          pageId="048"
-          resultLabel={`${governanceUsers.length} governed users`}
-          safetyNote="Admin visibility does not expand role, object, payload, evidence, export or release authority."
-          title="User access operations"
-        >
-          <DataTable
-            columns={userColumns}
-            compact
-            getRowId={(row) => row.email}
-            onSortChange={handleStaticSortChange}
-            responsiveMode="table"
-            rows={governanceUsers}
-            sortDirection="asc"
-            sortKey="name"
-          />
-        </UxDenseOperationsPanel>
-      </div>
-      </WorksurfaceShell>
+      />
       <Drawer
         description="Invite a user and assign scoped roles."
         footer={

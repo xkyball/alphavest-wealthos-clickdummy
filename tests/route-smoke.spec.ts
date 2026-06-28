@@ -866,6 +866,30 @@ test.describe("UX-CTA governance admin non-bypass chain", () => {
     }
   });
 
+  test("keeps S048 as the EPIC-06 governance entry with one safe next action", async ({ page }) => {
+    await page.setViewportSize({ height: 1000, width: 1440 });
+    await authenticateRouteSmokePage(page);
+    await page.goto("/governance?state=base");
+
+    const entry = page.getByTestId("epic-06-governance-entry");
+    await expect(entry).toBeVisible();
+    await expect(entry).toHaveAttribute("data-epic-06-entry", "primary-area-hub");
+    await expect(entry).toHaveAttribute("data-ux-page-job", "governance_process_triage");
+    await expect(entry).toHaveAttribute("data-ux-next-action", "review-scoped-access-request");
+    await expect(entry).toContainText("One entry job");
+    await expect(entry).toContainText("Review is not approval");
+
+    const nextAction = page.getByTestId("epic-06-governance-primary-next-action");
+    await expect(nextAction).toHaveAttribute("href", "/governance/access-requests/demo?state=base");
+    await expect(nextAction).toHaveAttribute("data-ux-no-overclaim", "true");
+
+    const pageExtent = await page.evaluate(() => ({
+      clientHeight: document.documentElement.clientHeight,
+      scrollHeight: document.documentElement.scrollHeight,
+    }));
+    expect(pageExtent.scrollHeight).toBeLessThanOrEqual(pageExtent.clientHeight);
+  });
+
   const governanceScreens = [
     { path: "/admin/roles?state=permission", required: "Confirm scoped permission change" },
     { path: "/governance?state=invite", required: "Send scoped invitation" },
