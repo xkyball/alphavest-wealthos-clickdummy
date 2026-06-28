@@ -1,0 +1,116 @@
+{
+  "artifact_kind": "process_first_navigation_qa_report",
+  "ticket_id": "EPIC-01-QA-01",
+  "ticket_title": "Navigation and operating-model proof",
+  "generated_at": "2026-06-28",
+  "machine_readable": true,
+  "sources": {
+    "navigation_contract": "docs/00-current/ALPHAVEST_PROCESS_FIRST_NAVIGATION_CONTRACT.json",
+    "p0_coverage_qa_report": "docs/00-current/ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX_QA_REPORT.json",
+    "navigation_source": "lib/navigation.ts",
+    "route_policy_source": "lib/ux-route-policy.ts",
+    "route_registry": "lib/route-registry.ts"
+  },
+  "gate_outcome": {
+    "status": "PASS",
+    "navigation_matches_final_area_order": true,
+    "productive_navigation_excludes_protected_routes": true,
+    "role_visibility_client_safe": true,
+    "route_navigation_completion_claim_allowed": false
+  },
+  "summary": {
+    "final_area_count": 12,
+    "admin_internal_area_labels": [
+      "Command Center",
+      "Foundation",
+      "Client Context",
+      "Evidence Lifecycle",
+      "Analyst Workbench",
+      "Advisor Review",
+      "Compliance Release",
+      "Decision Record",
+      "Client Visibility",
+      "Export & Delivery",
+      "Operations",
+      "Protected Work"
+    ],
+    "principal_linked_area_labels": [
+      "Command Center",
+      "Client Context",
+      "Evidence Lifecycle",
+      "Decision Record",
+      "Client Visibility"
+    ],
+    "principal_locked_area_labels": [
+      "Foundation",
+      "Analyst Workbench",
+      "Advisor Review",
+      "Compliance Release",
+      "Export & Delivery",
+      "Operations",
+      "Protected Work"
+    ],
+    "productive_navigation_page_ids": [
+      "015",
+      "019",
+      "028",
+      "034",
+      "036",
+      "038",
+      "044",
+      "020",
+      "054"
+    ],
+    "protected_page_ids_excluded": [
+      "052",
+      "053",
+      "059",
+      "060",
+      "068",
+      "061",
+      "062",
+      "063",
+      "064",
+      "065",
+      "066",
+      "067",
+      "069",
+      "070",
+      "071"
+    ],
+    "route_policy_route_count": 71
+  },
+  "checks": [
+    {
+      "check_id": "NAV-QA-001",
+      "pass": true,
+      "description": "Internal navigation exposes AREA-00 through AREA-11 in approved order."
+    },
+    {
+      "check_id": "NAV-QA-002",
+      "pass": true,
+      "description": "Productive navigation excludes P1, reference-only and hold routes."
+    },
+    {
+      "check_id": "NAV-QA-003",
+      "pass": true,
+      "description": "All productive route-registry nav page IDs are MVP or MVP_SUPPORT."
+    },
+    {
+      "check_id": "NAV-QA-004",
+      "pass": true,
+      "description": "Principal role receives only command center and client-safe productive area links."
+    },
+    {
+      "check_id": "NAV-QA-005",
+      "pass": true,
+      "description": "Every registered route has final-area route policy metadata."
+    },
+    {
+      "check_id": "NAV-QA-006",
+      "pass": true,
+      "description": "P0 process coverage gate remains closure-blocked; navigation is not a completion claim."
+    }
+  ],
+  "errors": []
+}
