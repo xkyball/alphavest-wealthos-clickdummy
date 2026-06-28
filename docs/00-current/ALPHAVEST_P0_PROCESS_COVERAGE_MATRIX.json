@@ -15,12 +15,12 @@
     "retained_p0_step_count": 438,
     "matrix_step_count": 438,
     "acceptance_state_counts": {
-      "partially_implemented": 296,
-      "specified_only": 142
+      "partially_implemented": 300,
+      "specified_only": 138
     },
     "completion_credit_counts": {
-      "none": 142,
-      "partial": 296
+      "none": 138,
+      "partial": 300
     },
     "decision_step_count": 214,
     "safety_step_count": 214,
@@ -44,22 +44,23 @@
         "Wealth Advisor"
       ],
       "coverage_status": "PARTIALLY_IMPLEMENTED",
-      "current_app_coverage": "PARTIAL",
-      "main_gap": "Full family graph and edit lifecycle under-specified",
-      "overclaim_warning": "Presence in routes/APIs/models/tests is not process readiness or P0 safety proof.",
+      "current_app_coverage": "STRONG_PARTIAL",
+      "main_gap": "Full intake, relationship graph and step-level audit failure proof remain incomplete after EPIC-07 first slice.",
+      "overclaim_warning": "EPIC-07 adds compact client/family/entity surfaces and no-overclaim proof, but this is still not full process readiness or P0 closure.",
       "status_counts": {
         "partial_current_app_representation": 12,
-        "partial_domain_representation": 12,
-        "specified_not_proven": 8
+        "partial_domain_representation": 8,
+        "specified_not_proven": 4,
+        "strong_partial_domain_representation": 8
       },
       "acceptance_state_counts": {
-        "partially_implemented": 24,
-        "specified_only": 8
+        "partially_implemented": 28,
+        "specified_only": 4
       },
       "missing_layer_counts": {
         "audit_or_evidence_failure_proof": 24,
-        "implementation_touchpoint_proof": 8,
-        "negative_test": 32,
+        "implementation_touchpoint_proof": 4,
+        "negative_test": 20,
         "step_level_gate_proof": 24
       }
     },
@@ -83,19 +84,20 @@
       "main_gap": "Current-user/session contract not fully locked",
       "overclaim_warning": "Presence in routes/APIs/models/tests is not process readiness or P0 safety proof.",
       "status_counts": {
-        "partial_current_app_representation": 24,
-        "partial_domain_representation": 8,
-        "specified_not_proven": 12
+        "partial_current_app_representation": 8,
+        "partial_domain_representation": 4,
+        "specified_not_proven": 12,
+        "strong_partial_domain_representation": 20
       },
       "acceptance_state_counts": {
         "partially_implemented": 32,
         "specified_only": 12
       },
       "missing_layer_counts": {
-        "audit_or_evidence_failure_proof": 22,
+        "audit_or_evidence_failure_proof": 12,
         "implementation_touchpoint_proof": 12,
-        "negative_test": 44,
-        "step_level_gate_proof": 22
+        "negative_test": 24,
+        "step_level_gate_proof": 12
       }
     },
     {
@@ -460,9 +462,10 @@
         "DOMAIN-L"
       ],
       "status_counts": {
-        "partial_current_app_representation": 39,
-        "partial_domain_representation": 23,
-        "specified_not_proven": 17
+        "partial_current_app_representation": 23,
+        "partial_domain_representation": 19,
+        "specified_not_proven": 17,
+        "strong_partial_domain_representation": 20
       },
       "decision_step_count": 36,
       "safety_step_count": 36,
@@ -471,10 +474,10 @@
         "specified_only": 17
       },
       "missing_layer_counts": {
-        "audit_or_evidence_failure_proof": 36,
+        "audit_or_evidence_failure_proof": 26,
         "implementation_touchpoint_proof": 17,
-        "negative_test": 79,
-        "step_level_gate_proof": 36
+        "negative_test": 59,
+        "step_level_gate_proof": 26
       }
     },
     {
@@ -487,19 +490,20 @@
       ],
       "status_counts": {
         "partial_current_app_representation": 12,
-        "partial_domain_representation": 12,
-        "specified_not_proven": 8
+        "partial_domain_representation": 8,
+        "specified_not_proven": 4,
+        "strong_partial_domain_representation": 8
       },
       "decision_step_count": 24,
       "safety_step_count": 24,
       "acceptance_state_counts": {
-        "partially_implemented": 24,
-        "specified_only": 8
+        "partially_implemented": 28,
+        "specified_only": 4
       },
       "missing_layer_counts": {
         "audit_or_evidence_failure_proof": 24,
-        "implementation_touchpoint_proof": 8,
-        "negative_test": 32,
+        "implementation_touchpoint_proof": 4,
+        "negative_test": 20,
         "step_level_gate_proof": 24
       }
     },
@@ -1893,37 +1897,34 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_domain_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_07_PROCESS_SURFACE_PROOF_ADDED",
+        "EPIC_07_NO_OVERCLAIM_NEGATIVE_PROOF_ADDED",
         "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
-          "019-026",
-          "031"
+          "/client/family-members",
+          "/client/home"
         ],
         "apis": [
-          "/api/demo-workflow",
-          "/api/documents where relevant"
+          "/api/family-members"
         ],
         "models_or_services": [
-          "ClientTenant",
           "FamilyMember",
-          "Relationship",
-          "Entity",
-          "Asset",
-          "UserProfile"
+          "deriveClientContextVisibility",
+          "visibilityEngine"
         ],
         "tests": [
-          "route-smoke.spec.ts"
+          "tests/route-smoke.spec.ts",
+          "tests/dbtf-tables-api.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Family member context management erzeugt den fachlichen Output 'FamilyMember-Kontext' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -1932,8 +1933,13 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/route-smoke.spec.ts::EPIC-07 core context routes expose queue detail and step gates",
+          "tests/route-smoke.spec.ts::EPIC-07 core context routes fit the 1440x1000 viewport without page scroll"
+        ],
+        "negative": [
+          "tests/route-smoke.spec.ts::EPIC-07 proof audit disclosures preserve negative no-overclaim boundaries"
+        ]
       },
       "blockers": [
         {
@@ -1956,7 +1962,7 @@
           ]
         }
       ],
-      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
+      "next_implementation_target": "close_remaining_step_level_and_audit_failure_proof_without_completion_claim"
     },
     {
       "step_id": "BP-004-S02",
@@ -1978,38 +1984,36 @@
         "P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_domain_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_07_PROCESS_SURFACE_PROOF_ADDED",
+        "EPIC_07_NO_OVERCLAIM_NEGATIVE_PROOF_ADDED",
         "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
-          "019-026",
-          "031"
+          "/client/family-members",
+          "/client/home"
         ],
         "apis": [
-          "/api/demo-workflow",
-          "/api/documents where relevant"
+          "/api/family-members"
         ],
         "models_or_services": [
-          "ClientTenant",
           "FamilyMember",
-          "Relationship",
-          "Entity",
-          "Asset",
-          "UserProfile"
+          "deriveClientContextVisibility",
+          "visibilityEngine"
         ],
         "tests": [
-          "route-smoke.spec.ts"
+          "tests/route-smoke.spec.ts",
+          "tests/dbtf-tables-api.spec.ts"
         ]
       },
       "missing_layers": [
         "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
+        "audit_or_evidence_failure_proof"
       ],
       "required_positive_proof": [
         "Family member context management erzeugt den fachlichen Output 'FamilyMember-Kontext' nur unter den definierten Preconditions und Scope-Regeln."
@@ -2026,8 +2030,13 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/route-smoke.spec.ts::EPIC-07 core context routes expose queue detail and step gates",
+          "tests/route-smoke.spec.ts::EPIC-07 core context routes fit the 1440x1000 viewport without page scroll"
+        ],
+        "negative": [
+          "tests/route-smoke.spec.ts::EPIC-07 proof audit disclosures preserve negative no-overclaim boundaries"
+        ]
       },
       "blockers": [
         {
@@ -2050,7 +2059,7 @@
           ]
         }
       ],
-      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
+      "next_implementation_target": "close_remaining_step_level_and_audit_failure_proof_without_completion_claim"
     },
     {
       "step_id": "BP-004-S03",
@@ -2072,38 +2081,36 @@
         "P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_domain_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_07_PROCESS_SURFACE_PROOF_ADDED",
+        "EPIC_07_NO_OVERCLAIM_NEGATIVE_PROOF_ADDED",
         "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
-          "019-026",
-          "031"
+          "/client/family-members",
+          "/client/home"
         ],
         "apis": [
-          "/api/demo-workflow",
-          "/api/documents where relevant"
+          "/api/family-members"
         ],
         "models_or_services": [
-          "ClientTenant",
           "FamilyMember",
-          "Relationship",
-          "Entity",
-          "Asset",
-          "UserProfile"
+          "deriveClientContextVisibility",
+          "visibilityEngine"
         ],
         "tests": [
-          "route-smoke.spec.ts"
+          "tests/route-smoke.spec.ts",
+          "tests/dbtf-tables-api.spec.ts"
         ]
       },
       "missing_layers": [
         "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
+        "audit_or_evidence_failure_proof"
       ],
       "required_positive_proof": [
         "Family member context management erzeugt den fachlichen Output 'FamilyMember-Kontext' nur unter den definierten Preconditions und Scope-Regeln."
@@ -2120,8 +2127,13 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/route-smoke.spec.ts::EPIC-07 core context routes expose queue detail and step gates",
+          "tests/route-smoke.spec.ts::EPIC-07 core context routes fit the 1440x1000 viewport without page scroll"
+        ],
+        "negative": [
+          "tests/route-smoke.spec.ts::EPIC-07 proof audit disclosures preserve negative no-overclaim boundaries"
+        ]
       },
       "blockers": [
         {
@@ -2144,7 +2156,7 @@
           ]
         }
       ],
-      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
+      "next_implementation_target": "close_remaining_step_level_and_audit_failure_proof_without_completion_claim"
     },
     {
       "step_id": "BP-004-S04",
@@ -2166,38 +2178,36 @@
         "P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_domain_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_07_PROCESS_SURFACE_PROOF_ADDED",
+        "EPIC_07_NO_OVERCLAIM_NEGATIVE_PROOF_ADDED",
         "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
-          "019-026",
-          "031"
+          "/client/family-members",
+          "/client/home"
         ],
         "apis": [
-          "/api/demo-workflow",
-          "/api/documents where relevant"
+          "/api/family-members"
         ],
         "models_or_services": [
-          "ClientTenant",
           "FamilyMember",
-          "Relationship",
-          "Entity",
-          "Asset",
-          "UserProfile"
+          "deriveClientContextVisibility",
+          "visibilityEngine"
         ],
         "tests": [
-          "route-smoke.spec.ts"
+          "tests/route-smoke.spec.ts",
+          "tests/dbtf-tables-api.spec.ts"
         ]
       },
       "missing_layers": [
         "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
+        "audit_or_evidence_failure_proof"
       ],
       "required_positive_proof": [
         "Family member context management erzeugt den fachlichen Output 'FamilyMember-Kontext' nur unter den definierten Preconditions und Scope-Regeln."
@@ -2214,8 +2224,13 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/route-smoke.spec.ts::EPIC-07 core context routes expose queue detail and step gates",
+          "tests/route-smoke.spec.ts::EPIC-07 core context routes fit the 1440x1000 viewport without page scroll"
+        ],
+        "negative": [
+          "tests/route-smoke.spec.ts::EPIC-07 proof audit disclosures preserve negative no-overclaim boundaries"
+        ]
       },
       "blockers": [
         {
@@ -2238,7 +2253,7 @@
           ]
         }
       ],
-      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
+      "next_implementation_target": "close_remaining_step_level_and_audit_failure_proof_without_completion_claim"
     },
     {
       "step_id": "BP-005-S01",
@@ -2617,37 +2632,35 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_07_PROCESS_SURFACE_PROOF_ADDED",
+        "EPIC_07_NO_OVERCLAIM_NEGATIVE_PROOF_ADDED",
         "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
-          "019-026",
-          "031"
+          "/entities",
+          "/entities/new",
+          "/client/home"
         ],
         "apis": [
-          "/api/demo-workflow",
-          "/api/documents where relevant"
+          "/api/entities"
         ],
         "models_or_services": [
-          "ClientTenant",
-          "FamilyMember",
-          "Relationship",
           "Entity",
-          "Asset",
-          "UserProfile"
+          "CreateEntityPageContent",
+          "EntitiesPageContent"
         ],
         "tests": [
-          "route-smoke.spec.ts"
+          "tests/route-smoke.spec.ts",
+          "tests/dbtf-tables-api.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Entity registration erzeugt den fachlichen Output 'Entity angelegt' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -2656,8 +2669,13 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/route-smoke.spec.ts::EPIC-07 core context routes expose queue detail and step gates",
+          "tests/route-smoke.spec.ts::EPIC-07 core context routes fit the 1440x1000 viewport without page scroll"
+        ],
+        "negative": [
+          "tests/route-smoke.spec.ts::EPIC-07 proof audit disclosures preserve negative no-overclaim boundaries"
+        ]
       },
       "blockers": [
         {
@@ -2680,7 +2698,7 @@
           ]
         }
       ],
-      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
+      "next_implementation_target": "close_remaining_step_level_and_audit_failure_proof_without_completion_claim"
     },
     {
       "step_id": "BP-006-S02",
@@ -2702,38 +2720,37 @@
         "P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_current_app_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_07_PROCESS_SURFACE_PROOF_ADDED",
+        "EPIC_07_NO_OVERCLAIM_NEGATIVE_PROOF_ADDED",
         "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
-          "019-026",
-          "031"
+          "/entities",
+          "/entities/new",
+          "/client/home"
         ],
         "apis": [
-          "/api/demo-workflow",
-          "/api/documents where relevant"
+          "/api/entities"
         ],
         "models_or_services": [
-          "ClientTenant",
-          "FamilyMember",
-          "Relationship",
           "Entity",
-          "Asset",
-          "UserProfile"
+          "CreateEntityPageContent",
+          "EntitiesPageContent"
         ],
         "tests": [
-          "route-smoke.spec.ts"
+          "tests/route-smoke.spec.ts",
+          "tests/dbtf-tables-api.spec.ts"
         ]
       },
       "missing_layers": [
         "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
+        "audit_or_evidence_failure_proof"
       ],
       "required_positive_proof": [
         "Entity registration erzeugt den fachlichen Output 'Entity angelegt' nur unter den definierten Preconditions und Scope-Regeln."
@@ -2750,8 +2767,13 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/route-smoke.spec.ts::EPIC-07 core context routes expose queue detail and step gates",
+          "tests/route-smoke.spec.ts::EPIC-07 core context routes fit the 1440x1000 viewport without page scroll"
+        ],
+        "negative": [
+          "tests/route-smoke.spec.ts::EPIC-07 proof audit disclosures preserve negative no-overclaim boundaries"
+        ]
       },
       "blockers": [
         {
@@ -2774,7 +2796,7 @@
           ]
         }
       ],
-      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
+      "next_implementation_target": "close_remaining_step_level_and_audit_failure_proof_without_completion_claim"
     },
     {
       "step_id": "BP-006-S03",
@@ -2796,38 +2818,37 @@
         "P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_current_app_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_07_PROCESS_SURFACE_PROOF_ADDED",
+        "EPIC_07_NO_OVERCLAIM_NEGATIVE_PROOF_ADDED",
         "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
-          "019-026",
-          "031"
+          "/entities",
+          "/entities/new",
+          "/client/home"
         ],
         "apis": [
-          "/api/demo-workflow",
-          "/api/documents where relevant"
+          "/api/entities"
         ],
         "models_or_services": [
-          "ClientTenant",
-          "FamilyMember",
-          "Relationship",
           "Entity",
-          "Asset",
-          "UserProfile"
+          "CreateEntityPageContent",
+          "EntitiesPageContent"
         ],
         "tests": [
-          "route-smoke.spec.ts"
+          "tests/route-smoke.spec.ts",
+          "tests/dbtf-tables-api.spec.ts"
         ]
       },
       "missing_layers": [
         "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
+        "audit_or_evidence_failure_proof"
       ],
       "required_positive_proof": [
         "Entity registration erzeugt den fachlichen Output 'Entity angelegt' nur unter den definierten Preconditions und Scope-Regeln."
@@ -2844,8 +2865,13 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/route-smoke.spec.ts::EPIC-07 core context routes expose queue detail and step gates",
+          "tests/route-smoke.spec.ts::EPIC-07 core context routes fit the 1440x1000 viewport without page scroll"
+        ],
+        "negative": [
+          "tests/route-smoke.spec.ts::EPIC-07 proof audit disclosures preserve negative no-overclaim boundaries"
+        ]
       },
       "blockers": [
         {
@@ -2868,7 +2894,7 @@
           ]
         }
       ],
-      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
+      "next_implementation_target": "close_remaining_step_level_and_audit_failure_proof_without_completion_claim"
     },
     {
       "step_id": "BP-006-S04",
@@ -2890,38 +2916,37 @@
         "P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_current_app_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_07_PROCESS_SURFACE_PROOF_ADDED",
+        "EPIC_07_NO_OVERCLAIM_NEGATIVE_PROOF_ADDED",
         "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
-          "019-026",
-          "031"
+          "/entities",
+          "/entities/new",
+          "/client/home"
         ],
         "apis": [
-          "/api/demo-workflow",
-          "/api/documents where relevant"
+          "/api/entities"
         ],
         "models_or_services": [
-          "ClientTenant",
-          "FamilyMember",
-          "Relationship",
           "Entity",
-          "Asset",
-          "UserProfile"
+          "CreateEntityPageContent",
+          "EntitiesPageContent"
         ],
         "tests": [
-          "route-smoke.spec.ts"
+          "tests/route-smoke.spec.ts",
+          "tests/dbtf-tables-api.spec.ts"
         ]
       },
       "missing_layers": [
         "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
+        "audit_or_evidence_failure_proof"
       ],
       "required_positive_proof": [
         "Entity registration erzeugt den fachlichen Output 'Entity angelegt' nur unter den definierten Preconditions und Scope-Regeln."
@@ -2938,8 +2963,13 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/route-smoke.spec.ts::EPIC-07 core context routes expose queue detail and step gates",
+          "tests/route-smoke.spec.ts::EPIC-07 core context routes fit the 1440x1000 viewport without page scroll"
+        ],
+        "negative": [
+          "tests/route-smoke.spec.ts::EPIC-07 proof audit disclosures preserve negative no-overclaim boundaries"
+        ]
       },
       "blockers": [
         {
@@ -2962,7 +2992,7 @@
           ]
         }
       ],
-      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
+      "next_implementation_target": "close_remaining_step_level_and_audit_failure_proof_without_completion_claim"
     },
     {
       "step_id": "BP-008-S01",
@@ -3341,37 +3371,35 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "inventory_current_status": "partial_current_app_representation",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_07_PROCESS_SURFACE_PROOF_ADDED",
+        "EPIC_07_NO_OVERCLAIM_NEGATIVE_PROOF_ADDED",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
-          "019-026",
-          "031"
+          "/client/home",
+          "/client/family-members",
+          "/entities",
+          "/entities/new"
         ],
-        "apis": [
-          "/api/demo-workflow",
-          "/api/documents where relevant"
-        ],
+        "apis": [],
         "models_or_services": [
-          "ClientTenant",
-          "FamilyMember",
-          "Relationship",
-          "Entity",
-          "Asset",
-          "UserProfile"
+          "lib/client-context-visibility.ts",
+          "lib/visibility-engine.ts",
+          "Epic07ProofAuditDisclosure"
         ],
         "tests": [
-          "route-smoke.spec.ts"
+          "tests/route-smoke.spec.ts",
+          "tests/client-visibility-proof.spec.ts",
+          "tests/pp001-payload-negative.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test",
-        "implementation_touchpoint_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Sensitivity classification erzeugt den fachlichen Output 'Sensitivity gesetzt' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -3380,8 +3408,15 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/route-smoke.spec.ts::EPIC-07 core context routes expose queue detail and step gates",
+          "tests/route-smoke.spec.ts::EPIC-07 core context routes fit the 1440x1000 viewport without page scroll"
+        ],
+        "negative": [
+          "tests/route-smoke.spec.ts::EPIC-07 proof audit disclosures preserve negative no-overclaim boundaries",
+          "tests/client-visibility-proof.spec.ts::Minimum path Prompt 05 client visibility proof",
+          "tests/pp001-payload-negative.spec.ts::PP-001 payload negative proof"
+        ]
       },
       "blockers": [
         {
@@ -3404,7 +3439,7 @@
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_remaining_step_level_and_audit_failure_proof_without_completion_claim"
     },
     {
       "step_id": "BP-010-S02",
@@ -3426,38 +3461,37 @@
         "P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "inventory_current_status": "partial_current_app_representation",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_07_PROCESS_SURFACE_PROOF_ADDED",
+        "EPIC_07_NO_OVERCLAIM_NEGATIVE_PROOF_ADDED",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
-          "019-026",
-          "031"
+          "/client/home",
+          "/client/family-members",
+          "/entities",
+          "/entities/new"
         ],
-        "apis": [
-          "/api/demo-workflow",
-          "/api/documents where relevant"
-        ],
+        "apis": [],
         "models_or_services": [
-          "ClientTenant",
-          "FamilyMember",
-          "Relationship",
-          "Entity",
-          "Asset",
-          "UserProfile"
+          "lib/client-context-visibility.ts",
+          "lib/visibility-engine.ts",
+          "Epic07ProofAuditDisclosure"
         ],
         "tests": [
-          "route-smoke.spec.ts"
+          "tests/route-smoke.spec.ts",
+          "tests/client-visibility-proof.spec.ts",
+          "tests/pp001-payload-negative.spec.ts"
         ]
       },
       "missing_layers": [
         "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test",
-        "implementation_touchpoint_proof"
+        "audit_or_evidence_failure_proof"
       ],
       "required_positive_proof": [
         "Sensitivity classification erzeugt den fachlichen Output 'Sensitivity gesetzt' nur unter den definierten Preconditions und Scope-Regeln."
@@ -3474,8 +3508,15 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/route-smoke.spec.ts::EPIC-07 core context routes expose queue detail and step gates",
+          "tests/route-smoke.spec.ts::EPIC-07 core context routes fit the 1440x1000 viewport without page scroll"
+        ],
+        "negative": [
+          "tests/route-smoke.spec.ts::EPIC-07 proof audit disclosures preserve negative no-overclaim boundaries",
+          "tests/client-visibility-proof.spec.ts::Minimum path Prompt 05 client visibility proof",
+          "tests/pp001-payload-negative.spec.ts::PP-001 payload negative proof"
+        ]
       },
       "blockers": [
         {
@@ -3498,7 +3539,7 @@
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_remaining_step_level_and_audit_failure_proof_without_completion_claim"
     },
     {
       "step_id": "BP-010-S03",
@@ -3520,38 +3561,37 @@
         "P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "inventory_current_status": "partial_current_app_representation",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_07_PROCESS_SURFACE_PROOF_ADDED",
+        "EPIC_07_NO_OVERCLAIM_NEGATIVE_PROOF_ADDED",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
-          "019-026",
-          "031"
+          "/client/home",
+          "/client/family-members",
+          "/entities",
+          "/entities/new"
         ],
-        "apis": [
-          "/api/demo-workflow",
-          "/api/documents where relevant"
-        ],
+        "apis": [],
         "models_or_services": [
-          "ClientTenant",
-          "FamilyMember",
-          "Relationship",
-          "Entity",
-          "Asset",
-          "UserProfile"
+          "lib/client-context-visibility.ts",
+          "lib/visibility-engine.ts",
+          "Epic07ProofAuditDisclosure"
         ],
         "tests": [
-          "route-smoke.spec.ts"
+          "tests/route-smoke.spec.ts",
+          "tests/client-visibility-proof.spec.ts",
+          "tests/pp001-payload-negative.spec.ts"
         ]
       },
       "missing_layers": [
         "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test",
-        "implementation_touchpoint_proof"
+        "audit_or_evidence_failure_proof"
       ],
       "required_positive_proof": [
         "Sensitivity classification erzeugt den fachlichen Output 'Sensitivity gesetzt' nur unter den definierten Preconditions und Scope-Regeln."
@@ -3568,8 +3608,15 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/route-smoke.spec.ts::EPIC-07 core context routes expose queue detail and step gates",
+          "tests/route-smoke.spec.ts::EPIC-07 core context routes fit the 1440x1000 viewport without page scroll"
+        ],
+        "negative": [
+          "tests/route-smoke.spec.ts::EPIC-07 proof audit disclosures preserve negative no-overclaim boundaries",
+          "tests/client-visibility-proof.spec.ts::Minimum path Prompt 05 client visibility proof",
+          "tests/pp001-payload-negative.spec.ts::PP-001 payload negative proof"
+        ]
       },
       "blockers": [
         {
@@ -3592,7 +3639,7 @@
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_remaining_step_level_and_audit_failure_proof_without_completion_claim"
     },
     {
       "step_id": "BP-010-S04",
@@ -3614,38 +3661,37 @@
         "P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "inventory_current_status": "partial_current_app_representation",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_07_PROCESS_SURFACE_PROOF_ADDED",
+        "EPIC_07_NO_OVERCLAIM_NEGATIVE_PROOF_ADDED",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
-          "019-026",
-          "031"
+          "/client/home",
+          "/client/family-members",
+          "/entities",
+          "/entities/new"
         ],
-        "apis": [
-          "/api/demo-workflow",
-          "/api/documents where relevant"
-        ],
+        "apis": [],
         "models_or_services": [
-          "ClientTenant",
-          "FamilyMember",
-          "Relationship",
-          "Entity",
-          "Asset",
-          "UserProfile"
+          "lib/client-context-visibility.ts",
+          "lib/visibility-engine.ts",
+          "Epic07ProofAuditDisclosure"
         ],
         "tests": [
-          "route-smoke.spec.ts"
+          "tests/route-smoke.spec.ts",
+          "tests/client-visibility-proof.spec.ts",
+          "tests/pp001-payload-negative.spec.ts"
         ]
       },
       "missing_layers": [
         "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test",
-        "implementation_touchpoint_proof"
+        "audit_or_evidence_failure_proof"
       ],
       "required_positive_proof": [
         "Sensitivity classification erzeugt den fachlichen Output 'Sensitivity gesetzt' nur unter den definierten Preconditions und Scope-Regeln."
@@ -3662,8 +3708,15 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/route-smoke.spec.ts::EPIC-07 core context routes expose queue detail and step gates",
+          "tests/route-smoke.spec.ts::EPIC-07 core context routes fit the 1440x1000 viewport without page scroll"
+        ],
+        "negative": [
+          "tests/route-smoke.spec.ts::EPIC-07 proof audit disclosures preserve negative no-overclaim boundaries",
+          "tests/client-visibility-proof.spec.ts::Minimum path Prompt 05 client visibility proof",
+          "tests/pp001-payload-negative.spec.ts::PP-001 payload negative proof"
+        ]
       },
       "blockers": [
         {
@@ -3686,7 +3739,7 @@
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_remaining_step_level_and_audit_failure_proof_without_completion_claim"
     },
     {
       "step_id": "BP-011-S01",
