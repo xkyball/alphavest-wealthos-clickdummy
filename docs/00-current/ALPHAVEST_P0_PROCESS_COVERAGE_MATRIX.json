@@ -15,12 +15,12 @@
     "retained_p0_step_count": 438,
     "matrix_step_count": 438,
     "acceptance_state_counts": {
-      "partially_implemented": 300,
-      "specified_only": 138
+      "partially_implemented": 328,
+      "specified_only": 110
     },
     "completion_credit_counts": {
-      "none": 138,
-      "partial": 300
+      "none": 110,
+      "partial": 328
     },
     "decision_step_count": 214,
     "safety_step_count": 214,
@@ -117,22 +117,22 @@
       ],
       "coverage_status": "PARTIALLY_IMPLEMENTED",
       "current_app_coverage": "STRONG_PARTIAL",
-      "main_gap": "Evidence sufficiency lifecycle incomplete",
-      "overclaim_warning": "Presence in routes/APIs/models/tests is not process readiness or P0 safety proof.",
+      "main_gap": "EPIC-08 now has compact route-level core/proof coverage for S027-S030; S046/S047 and full backend sufficiency closure remain incomplete.",
+      "overclaim_warning": "EPIC-08 route-level proof exists for upload, extraction queue and verification detail, but DOMAIN-C is still not full evidence lifecycle closure.",
       "status_counts": {
         "partial_current_app_representation": 28,
         "specified_not_proven": 35,
         "strong_partial_domain_representation": 14
       },
       "acceptance_state_counts": {
-        "partially_implemented": 42,
-        "specified_only": 35
+        "partially_implemented": 70,
+        "specified_only": 7
       },
       "missing_layer_counts": {
-        "audit_or_evidence_failure_proof": 33,
-        "implementation_touchpoint_proof": 35,
-        "negative_test": 77,
-        "step_level_gate_proof": 33
+        "audit_or_evidence_failure_proof": 12,
+        "implementation_touchpoint_proof": 7,
+        "negative_test": 14,
+        "step_level_gate_proof": 12
       }
     },
     {
@@ -523,15 +523,16 @@
       "decision_step_count": 33,
       "safety_step_count": 33,
       "acceptance_state_counts": {
-        "partially_implemented": 42,
-        "specified_only": 35
+        "partially_implemented": 70,
+        "specified_only": 7
       },
       "missing_layer_counts": {
-        "audit_or_evidence_failure_proof": 33,
-        "implementation_touchpoint_proof": 35,
-        "negative_test": 77,
-        "step_level_gate_proof": 33
-      }
+        "audit_or_evidence_failure_proof": 12,
+        "implementation_touchpoint_proof": 7,
+        "negative_test": 14,
+        "step_level_gate_proof": 12
+      },
+      "main_gap": "EPIC-08 compact S027-S030 implementation proof exists; remaining evidence vault/detail and full backend sufficiency closure stay open."
     },
     {
       "area_id": "AREA-04",
@@ -728,19 +729,19 @@
   "gap_index": [
     {
       "gap_id": "audit_or_evidence_failure_proof",
-      "step_count": 214
+      "step_count": 180
     },
     {
       "gap_id": "implementation_touchpoint_proof",
-      "step_count": 142
+      "step_count": 110
     },
     {
       "gap_id": "negative_test",
-      "step_count": 438
+      "step_count": 339
     },
     {
       "gap_id": "step_level_gate_proof",
-      "step_count": 214
+      "step_count": 183
     }
   ],
   "next_ticket_derivation": [
@@ -7903,10 +7904,14 @@
       "gate_type": null,
       "safety_checks": [],
       "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_08_PROCESS_SURFACE_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_PARTIAL",
+        "EPIC_08_AREA_ENTRY_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -7933,13 +7938,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test",
-        "implementation_touchpoint_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Evidence request erzeugt den fachlichen Output 'Evidence request created' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -7948,8 +7952,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -7968,11 +7983,11 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
     },
     {
       "step_id": "BP-023-S02",
@@ -7990,10 +8005,14 @@
       "gate_type": null,
       "safety_checks": [],
       "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_08_PROCESS_SURFACE_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_PARTIAL",
+        "EPIC_08_AREA_ENTRY_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -8020,13 +8039,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test",
-        "implementation_touchpoint_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Evidence request erzeugt den fachlichen Output 'Evidence request created' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -8035,8 +8053,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -8055,11 +8084,11 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
     },
     {
       "step_id": "BP-023-S03",
@@ -8083,10 +8112,14 @@
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
       "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_08_PROCESS_SURFACE_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_PARTIAL",
+        "EPIC_08_AREA_ENTRY_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -8113,14 +8146,14 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
       "missing_layers": [
         "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test",
-        "implementation_touchpoint_proof"
+        "audit_or_evidence_failure_proof"
       ],
       "required_positive_proof": [
         "Evidence request erzeugt den fachlichen Output 'Evidence request created' nur unter den definierten Preconditions und Scope-Regeln."
@@ -8137,8 +8170,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -8157,11 +8201,11 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
     },
     {
       "step_id": "BP-023-S04",
@@ -8185,10 +8229,14 @@
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
       "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_08_PROCESS_SURFACE_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_PARTIAL",
+        "EPIC_08_AREA_ENTRY_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -8215,14 +8263,14 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
       "missing_layers": [
         "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test",
-        "implementation_touchpoint_proof"
+        "audit_or_evidence_failure_proof"
       ],
       "required_positive_proof": [
         "Evidence request erzeugt den fachlichen Output 'Evidence request created' nur unter den definierten Preconditions und Scope-Regeln."
@@ -8239,8 +8287,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -8259,11 +8318,11 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
     },
     {
       "step_id": "BP-023-S05",
@@ -8281,10 +8340,14 @@
       "gate_type": null,
       "safety_checks": [],
       "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_08_PROCESS_SURFACE_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_PARTIAL",
+        "EPIC_08_AREA_ENTRY_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -8311,13 +8374,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test",
-        "implementation_touchpoint_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Evidence request erzeugt den fachlichen Output 'Evidence request created' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -8326,8 +8388,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -8346,11 +8419,11 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
     },
     {
       "step_id": "BP-023-S06",
@@ -8374,10 +8447,14 @@
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
       "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_08_PROCESS_SURFACE_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_PARTIAL",
+        "EPIC_08_AREA_ENTRY_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -8404,14 +8481,14 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
       "missing_layers": [
         "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test",
-        "implementation_touchpoint_proof"
+        "audit_or_evidence_failure_proof"
       ],
       "required_positive_proof": [
         "Evidence request erzeugt den fachlichen Output 'Evidence request created' nur unter den definierten Preconditions und Scope-Regeln."
@@ -8428,8 +8505,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -8448,11 +8536,11 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
     },
     {
       "step_id": "BP-023-S07",
@@ -8470,10 +8558,14 @@
       "gate_type": null,
       "safety_checks": [],
       "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_08_PROCESS_SURFACE_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_PARTIAL",
+        "EPIC_08_AREA_ENTRY_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -8500,13 +8592,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test",
-        "implementation_touchpoint_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Evidence request erzeugt den fachlichen Output 'Evidence request created' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -8515,8 +8606,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -8535,11 +8637,11 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
     },
     {
       "step_id": "BP-024-S01",
@@ -8562,7 +8664,9 @@
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "STRONG_PARTIAL_STILL_REQUIRES_STEP_LEVEL_PROOF"
+        "STRONG_PARTIAL_STILL_REQUIRES_STEP_LEVEL_PROOF",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -8589,12 +8693,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Client document upload erzeugt den fachlichen Output 'Candidate document/evidence' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -8603,8 +8707,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -8616,7 +8731,7 @@
         {
           "blocker_type": "proof_gaps",
           "values": [
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -8643,7 +8758,9 @@
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "STRONG_PARTIAL_STILL_REQUIRES_STEP_LEVEL_PROOF"
+        "STRONG_PARTIAL_STILL_REQUIRES_STEP_LEVEL_PROOF",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -8670,12 +8787,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Client document upload erzeugt den fachlichen Output 'Candidate document/evidence' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -8684,8 +8801,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -8697,7 +8825,7 @@
         {
           "blocker_type": "proof_gaps",
           "values": [
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -8730,7 +8858,9 @@
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "STRONG_PARTIAL_STILL_REQUIRES_STEP_LEVEL_PROOF"
+        "STRONG_PARTIAL_STILL_REQUIRES_STEP_LEVEL_PROOF",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -8757,14 +8887,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Client document upload erzeugt den fachlichen Output 'Candidate document/evidence' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -8780,8 +8908,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -8793,7 +8932,7 @@
         {
           "blocker_type": "proof_gaps",
           "values": [
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -8826,7 +8965,9 @@
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "STRONG_PARTIAL_STILL_REQUIRES_STEP_LEVEL_PROOF"
+        "STRONG_PARTIAL_STILL_REQUIRES_STEP_LEVEL_PROOF",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -8853,14 +8994,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Client document upload erzeugt den fachlichen Output 'Candidate document/evidence' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -8876,8 +9015,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -8889,7 +9039,7 @@
         {
           "blocker_type": "proof_gaps",
           "values": [
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -8916,7 +9066,9 @@
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "STRONG_PARTIAL_STILL_REQUIRES_STEP_LEVEL_PROOF"
+        "STRONG_PARTIAL_STILL_REQUIRES_STEP_LEVEL_PROOF",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -8943,12 +9095,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Client document upload erzeugt den fachlichen Output 'Candidate document/evidence' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -8957,8 +9109,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -8970,7 +9133,7 @@
         {
           "blocker_type": "proof_gaps",
           "values": [
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -9003,7 +9166,9 @@
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "STRONG_PARTIAL_STILL_REQUIRES_STEP_LEVEL_PROOF"
+        "STRONG_PARTIAL_STILL_REQUIRES_STEP_LEVEL_PROOF",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -9030,14 +9195,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Client document upload erzeugt den fachlichen Output 'Candidate document/evidence' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -9053,8 +9216,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -9066,7 +9240,7 @@
         {
           "blocker_type": "proof_gaps",
           "values": [
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -9093,7 +9267,9 @@
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "STRONG_PARTIAL_STILL_REQUIRES_STEP_LEVEL_PROOF"
+        "STRONG_PARTIAL_STILL_REQUIRES_STEP_LEVEL_PROOF",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -9120,12 +9296,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Client document upload erzeugt den fachlichen Output 'Candidate document/evidence' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -9134,8 +9310,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -9147,7 +9334,7 @@
         {
           "blocker_type": "proof_gaps",
           "values": [
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -9173,7 +9360,9 @@
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -9200,12 +9389,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Document metadata validation erzeugt den fachlichen Output 'Validated or rejected file' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -9214,8 +9403,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -9234,7 +9434,7 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -9260,7 +9460,9 @@
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -9287,12 +9489,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Document metadata validation erzeugt den fachlichen Output 'Validated or rejected file' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -9301,8 +9503,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -9321,7 +9534,7 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -9353,7 +9566,9 @@
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -9380,14 +9595,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Document metadata validation erzeugt den fachlichen Output 'Validated or rejected file' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -9403,8 +9616,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -9423,7 +9647,7 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -9455,7 +9679,9 @@
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -9482,14 +9708,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Document metadata validation erzeugt den fachlichen Output 'Validated or rejected file' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -9505,8 +9729,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -9525,7 +9760,7 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -9551,7 +9786,9 @@
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -9578,12 +9815,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Document metadata validation erzeugt den fachlichen Output 'Validated or rejected file' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -9592,8 +9829,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -9612,7 +9860,7 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -9644,7 +9892,9 @@
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -9671,14 +9921,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Document metadata validation erzeugt den fachlichen Output 'Validated or rejected file' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -9694,8 +9942,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -9714,7 +9973,7 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -9740,7 +9999,9 @@
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -9767,12 +10028,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Document metadata validation erzeugt den fachlichen Output 'Validated or rejected file' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -9781,8 +10042,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -9801,7 +10073,7 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -9827,7 +10099,9 @@
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -9854,12 +10128,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Document versioning and provenance erzeugt den fachlichen Output 'Versioned document' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -9868,8 +10142,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -9888,7 +10173,7 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -9914,7 +10199,9 @@
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -9941,12 +10228,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Document versioning and provenance erzeugt den fachlichen Output 'Versioned document' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -9955,8 +10242,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -9975,7 +10273,7 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -10007,7 +10305,9 @@
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -10034,14 +10334,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Document versioning and provenance erzeugt den fachlichen Output 'Versioned document' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -10057,8 +10355,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -10077,7 +10386,7 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -10109,7 +10418,9 @@
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -10136,14 +10447,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Document versioning and provenance erzeugt den fachlichen Output 'Versioned document' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -10159,8 +10468,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -10179,7 +10499,7 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -10205,7 +10525,9 @@
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -10232,12 +10554,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Document versioning and provenance erzeugt den fachlichen Output 'Versioned document' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -10246,8 +10568,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -10266,7 +10599,7 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -10298,7 +10631,9 @@
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -10325,14 +10660,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Document versioning and provenance erzeugt den fachlichen Output 'Versioned document' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -10348,8 +10681,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -10368,7 +10712,7 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -10394,7 +10738,9 @@
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -10421,12 +10767,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Document versioning and provenance erzeugt den fachlichen Output 'Versioned document' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -10435,8 +10781,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -10455,7 +10812,7 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -10481,7 +10838,9 @@
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -10508,12 +10867,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Extraction review erzeugt den fachlichen Output 'Reviewed extraction' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -10522,8 +10881,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -10542,7 +10912,7 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -10568,7 +10938,9 @@
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -10595,12 +10967,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Extraction review erzeugt den fachlichen Output 'Reviewed extraction' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -10609,8 +10981,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -10629,7 +11012,7 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -10661,7 +11044,9 @@
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -10688,14 +11073,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Extraction review erzeugt den fachlichen Output 'Reviewed extraction' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -10711,8 +11094,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -10731,7 +11125,7 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -10763,7 +11157,9 @@
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -10790,14 +11186,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Extraction review erzeugt den fachlichen Output 'Reviewed extraction' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -10813,8 +11207,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -10833,7 +11238,7 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -10859,7 +11264,9 @@
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -10886,12 +11293,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Extraction review erzeugt den fachlichen Output 'Reviewed extraction' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -10900,8 +11307,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -10920,7 +11338,7 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -10952,7 +11370,9 @@
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -10979,14 +11399,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Extraction review erzeugt den fachlichen Output 'Reviewed extraction' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -11002,8 +11420,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -11022,7 +11451,7 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -11048,7 +11477,9 @@
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -11075,12 +11506,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Extraction review erzeugt den fachlichen Output 'Reviewed extraction' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -11089,8 +11520,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -11109,7 +11551,7 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -11136,7 +11578,9 @@
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "STRONG_PARTIAL_STILL_REQUIRES_STEP_LEVEL_PROOF"
+        "STRONG_PARTIAL_STILL_REQUIRES_STEP_LEVEL_PROOF",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -11163,12 +11607,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Verification pending escalation erzeugt den fachlichen Output 'Pending/escalated state' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -11177,8 +11621,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -11197,7 +11652,7 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -11224,7 +11679,9 @@
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "STRONG_PARTIAL_STILL_REQUIRES_STEP_LEVEL_PROOF"
+        "STRONG_PARTIAL_STILL_REQUIRES_STEP_LEVEL_PROOF",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -11251,12 +11708,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Verification pending escalation erzeugt den fachlichen Output 'Pending/escalated state' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -11265,8 +11722,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -11285,7 +11753,7 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -11318,7 +11786,9 @@
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "STRONG_PARTIAL_STILL_REQUIRES_STEP_LEVEL_PROOF"
+        "STRONG_PARTIAL_STILL_REQUIRES_STEP_LEVEL_PROOF",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -11345,14 +11815,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Verification pending escalation erzeugt den fachlichen Output 'Pending/escalated state' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -11368,8 +11836,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -11388,7 +11867,7 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -11421,7 +11900,9 @@
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "STRONG_PARTIAL_STILL_REQUIRES_STEP_LEVEL_PROOF"
+        "STRONG_PARTIAL_STILL_REQUIRES_STEP_LEVEL_PROOF",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -11448,14 +11929,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Verification pending escalation erzeugt den fachlichen Output 'Pending/escalated state' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -11471,8 +11950,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -11491,7 +11981,7 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -11518,7 +12008,9 @@
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "STRONG_PARTIAL_STILL_REQUIRES_STEP_LEVEL_PROOF"
+        "STRONG_PARTIAL_STILL_REQUIRES_STEP_LEVEL_PROOF",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -11545,12 +12037,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Verification pending escalation erzeugt den fachlichen Output 'Pending/escalated state' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -11559,8 +12051,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -11579,7 +12082,7 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -11612,7 +12115,9 @@
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "STRONG_PARTIAL_STILL_REQUIRES_STEP_LEVEL_PROOF"
+        "STRONG_PARTIAL_STILL_REQUIRES_STEP_LEVEL_PROOF",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -11639,14 +12144,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Verification pending escalation erzeugt den fachlichen Output 'Pending/escalated state' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -11662,8 +12165,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -11682,7 +12196,7 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -11709,7 +12223,9 @@
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
         "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE",
-        "STRONG_PARTIAL_STILL_REQUIRES_STEP_LEVEL_PROOF"
+        "STRONG_PARTIAL_STILL_REQUIRES_STEP_LEVEL_PROOF",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -11736,12 +12252,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Verification pending escalation erzeugt den fachlichen Output 'Pending/escalated state' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -11750,8 +12266,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -11770,7 +12297,7 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
@@ -11792,10 +12319,14 @@
       "gate_type": null,
       "safety_checks": [],
       "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_08_PROCESS_SURFACE_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_PARTIAL",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -11822,13 +12353,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test",
-        "implementation_touchpoint_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Evidence linking to object erzeugt den fachlichen Output 'Linked evidence' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -11837,8 +12367,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -11857,11 +12398,11 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
     },
     {
       "step_id": "BP-029-S02",
@@ -11879,10 +12420,14 @@
       "gate_type": null,
       "safety_checks": [],
       "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_08_PROCESS_SURFACE_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_PARTIAL",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -11909,13 +12454,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test",
-        "implementation_touchpoint_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Evidence linking to object erzeugt den fachlichen Output 'Linked evidence' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -11924,8 +12468,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -11944,11 +12499,11 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
     },
     {
       "step_id": "BP-029-S03",
@@ -11972,10 +12527,14 @@
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
       "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_08_PROCESS_SURFACE_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_PARTIAL",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -12002,15 +12561,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test",
-        "implementation_touchpoint_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Evidence linking to object erzeugt den fachlichen Output 'Linked evidence' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -12026,8 +12582,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -12046,11 +12613,11 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
     },
     {
       "step_id": "BP-029-S04",
@@ -12074,10 +12641,14 @@
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
       "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_08_PROCESS_SURFACE_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_PARTIAL",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -12104,15 +12675,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test",
-        "implementation_touchpoint_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Evidence linking to object erzeugt den fachlichen Output 'Linked evidence' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -12128,8 +12696,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -12148,11 +12727,11 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
     },
     {
       "step_id": "BP-029-S05",
@@ -12170,10 +12749,14 @@
       "gate_type": null,
       "safety_checks": [],
       "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_08_PROCESS_SURFACE_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_PARTIAL",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -12200,13 +12783,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test",
-        "implementation_touchpoint_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Evidence linking to object erzeugt den fachlichen Output 'Linked evidence' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -12215,8 +12797,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -12235,11 +12828,11 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
     },
     {
       "step_id": "BP-029-S06",
@@ -12263,10 +12856,14 @@
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
       "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_08_PROCESS_SURFACE_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_PARTIAL",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -12293,15 +12890,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test",
-        "implementation_touchpoint_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Evidence linking to object erzeugt den fachlichen Output 'Linked evidence' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -12317,8 +12911,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -12337,11 +12942,11 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
     },
     {
       "step_id": "BP-029-S07",
@@ -12359,10 +12964,14 @@
       "gate_type": null,
       "safety_checks": [],
       "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_08_PROCESS_SURFACE_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_PARTIAL",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -12389,13 +12998,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test",
-        "implementation_touchpoint_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Evidence linking to object erzeugt den fachlichen Output 'Linked evidence' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -12404,8 +13012,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -12424,11 +13043,11 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
     },
     {
       "step_id": "BP-030-S01",
@@ -12446,10 +13065,14 @@
       "gate_type": null,
       "safety_checks": [],
       "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_08_PROCESS_SURFACE_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_PARTIAL",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -12476,13 +13099,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test",
-        "implementation_touchpoint_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Evidence sufficiency decision erzeugt den fachlichen Output 'Sufficient/insufficient decision' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -12491,8 +13113,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -12511,11 +13144,11 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
     },
     {
       "step_id": "BP-030-S02",
@@ -12533,10 +13166,14 @@
       "gate_type": null,
       "safety_checks": [],
       "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_08_PROCESS_SURFACE_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_PARTIAL",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -12563,13 +13200,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test",
-        "implementation_touchpoint_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Evidence sufficiency decision erzeugt den fachlichen Output 'Sufficient/insufficient decision' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -12578,8 +13214,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -12598,11 +13245,11 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
     },
     {
       "step_id": "BP-030-S03",
@@ -12626,10 +13273,14 @@
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
       "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_08_PROCESS_SURFACE_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_PARTIAL",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -12656,15 +13307,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test",
-        "implementation_touchpoint_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Evidence sufficiency decision erzeugt den fachlichen Output 'Sufficient/insufficient decision' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -12680,8 +13328,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -12700,11 +13359,11 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
     },
     {
       "step_id": "BP-030-S04",
@@ -12728,10 +13387,14 @@
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
       "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_08_PROCESS_SURFACE_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_PARTIAL",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -12758,15 +13421,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test",
-        "implementation_touchpoint_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Evidence sufficiency decision erzeugt den fachlichen Output 'Sufficient/insufficient decision' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -12782,8 +13442,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -12802,11 +13473,11 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
     },
     {
       "step_id": "BP-030-S05",
@@ -12824,10 +13495,14 @@
       "gate_type": null,
       "safety_checks": [],
       "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_08_PROCESS_SURFACE_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_PARTIAL",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -12854,13 +13529,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test",
-        "implementation_touchpoint_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Evidence sufficiency decision erzeugt den fachlichen Output 'Sufficient/insufficient decision' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -12869,8 +13543,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -12889,11 +13574,11 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
     },
     {
       "step_id": "BP-030-S06",
@@ -12917,10 +13602,14 @@
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
       "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_08_PROCESS_SURFACE_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_PARTIAL",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -12947,15 +13636,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test",
-        "implementation_touchpoint_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Evidence sufficiency decision erzeugt den fachlichen Output 'Sufficient/insufficient decision' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -12971,8 +13657,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -12991,11 +13688,11 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
     },
     {
       "step_id": "BP-030-S07",
@@ -13013,10 +13710,14 @@
       "gate_type": null,
       "safety_checks": [],
       "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_08_PROCESS_SURFACE_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_PARTIAL",
+        "EPIC_08_CORE_SURFACE_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -13043,13 +13744,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test",
-        "implementation_touchpoint_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Evidence sufficiency decision erzeugt den fachlichen Output 'Sufficient/insufficient decision' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -13058,8 +13758,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -13078,11 +13789,11 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
     },
     {
       "step_id": "BP-031-S01",
@@ -14408,10 +15119,14 @@
       "gate_type": null,
       "safety_checks": [],
       "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_08_PROCESS_SURFACE_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_PARTIAL",
+        "EPIC_08_AREA_ENTRY_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -14438,13 +15153,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test",
-        "implementation_touchpoint_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Evidence rejection and re-request erzeugt den fachlichen Output 'New request / blocked state' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -14453,8 +15167,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -14473,11 +15198,11 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
     },
     {
       "step_id": "BP-033-S02",
@@ -14495,10 +15220,14 @@
       "gate_type": null,
       "safety_checks": [],
       "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_08_PROCESS_SURFACE_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_PARTIAL",
+        "EPIC_08_AREA_ENTRY_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -14525,13 +15254,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test",
-        "implementation_touchpoint_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Evidence rejection and re-request erzeugt den fachlichen Output 'New request / blocked state' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -14540,8 +15268,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -14560,11 +15299,11 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
     },
     {
       "step_id": "BP-033-S03",
@@ -14588,10 +15327,14 @@
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
       "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_08_PROCESS_SURFACE_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_PARTIAL",
+        "EPIC_08_AREA_ENTRY_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -14618,14 +15361,14 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
       "missing_layers": [
         "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test",
-        "implementation_touchpoint_proof"
+        "audit_or_evidence_failure_proof"
       ],
       "required_positive_proof": [
         "Evidence rejection and re-request erzeugt den fachlichen Output 'New request / blocked state' nur unter den definierten Preconditions und Scope-Regeln."
@@ -14642,8 +15385,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -14662,11 +15416,11 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
     },
     {
       "step_id": "BP-033-S04",
@@ -14690,10 +15444,14 @@
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
       "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_08_PROCESS_SURFACE_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_PARTIAL",
+        "EPIC_08_AREA_ENTRY_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -14720,14 +15478,14 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
       "missing_layers": [
         "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test",
-        "implementation_touchpoint_proof"
+        "audit_or_evidence_failure_proof"
       ],
       "required_positive_proof": [
         "Evidence rejection and re-request erzeugt den fachlichen Output 'New request / blocked state' nur unter den definierten Preconditions und Scope-Regeln."
@@ -14744,8 +15502,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -14764,11 +15533,11 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
     },
     {
       "step_id": "BP-033-S05",
@@ -14786,10 +15555,14 @@
       "gate_type": null,
       "safety_checks": [],
       "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_08_PROCESS_SURFACE_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_PARTIAL",
+        "EPIC_08_AREA_ENTRY_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -14816,13 +15589,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test",
-        "implementation_touchpoint_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Evidence rejection and re-request erzeugt den fachlichen Output 'New request / blocked state' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -14831,8 +15603,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -14851,11 +15634,11 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
     },
     {
       "step_id": "BP-033-S06",
@@ -14879,10 +15662,14 @@
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
       "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_08_PROCESS_SURFACE_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_PARTIAL",
+        "EPIC_08_AREA_ENTRY_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -14909,14 +15696,14 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
       "missing_layers": [
         "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test",
-        "implementation_touchpoint_proof"
+        "audit_or_evidence_failure_proof"
       ],
       "required_positive_proof": [
         "Evidence rejection and re-request erzeugt den fachlichen Output 'New request / blocked state' nur unter den definierten Preconditions und Scope-Regeln."
@@ -14933,8 +15720,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -14953,11 +15751,11 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
     },
     {
       "step_id": "BP-033-S07",
@@ -14975,10 +15773,14 @@
       "gate_type": null,
       "safety_checks": [],
       "inventory_current_status": "specified_not_proven",
-      "acceptance_state": "specified_only",
-      "completion_credit": "none",
+      "acceptance_state": "partially_implemented",
+      "completion_credit": "partial",
       "state_reason_codes": [
-        "PROCESS_UNIVERSE_SPECIFIED_WITHOUT_SUFFICIENT_CURRENT_PROOF"
+        "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_08_PROCESS_SURFACE_PROOF_PRESENT",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_PARTIAL",
+        "EPIC_08_AREA_ENTRY_PROOF_PRESENT",
+        "EPIC_08_NO_OVERCLAIM_NEGATIVE_PROOF_PRESENT"
       ],
       "current_touchpoints": {
         "routes": [
@@ -15005,13 +15807,12 @@
         ],
         "tests": [
           "document-upload-api.spec.ts",
-          "document-upload-flow.spec.ts"
+          "document-upload-flow.spec.ts",
+          "evidence-lifecycle-contract.spec.ts",
+          "route-smoke.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test",
-        "implementation_touchpoint_proof"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Evidence rejection and re-request erzeugt den fachlichen Output 'New request / blocked state' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -15020,8 +15821,19 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "lib/evidence-lifecycle-contract.ts::evidenceLifecycleStepContracts",
+          "tests/evidence-lifecycle-contract.spec.ts::EPIC-08 evidence lifecycle contract",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ],
+        "negative": [
+          "tests/evidence-lifecycle-contract.spec.ts::keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport",
+          "tests/document-upload-lifecycle-hardening.spec.ts",
+          "tests/route-smoke.spec.ts::registered route smoke 027-030",
+          "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01C_EXECUTION_PROOF.json"
+        ]
       },
       "blockers": [
         {
@@ -15040,11 +15852,11 @@
           "blocker_type": "proof_gaps",
           "values": [
             "process_known_gap_open",
-            "implementation_handoff_or_proof_gate_open"
+            "full_backend_lifecycle_closure_still_open"
           ]
         }
       ],
-      "next_implementation_target": "define_or_build_step_behavior"
+      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
     },
     {
       "step_id": "BP-034-S01",
