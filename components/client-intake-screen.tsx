@@ -78,6 +78,7 @@ import { runDataMaintenanceCommand } from "@/lib/data-maintenance-command-client
 import type { BackendDataSurfaceMeta, DataSurfaceSortDirection } from "@/lib/data-surface-query-contract";
 import {
   evidenceLifecycleProcessContracts,
+  evidenceLifecycleProofBoundaryForScreen,
   evidenceLifecycleRouteAttributesForScreen,
   evidenceLifecycleRouteContractForScreen,
   evidenceLifecycleStateContracts,
@@ -2578,6 +2579,7 @@ function EvidenceLifecycleCoreSurface({
 }) {
   const routeContract = evidenceLifecycleRouteContractForScreen(screenId);
   const routeAttributes = evidenceLifecycleRouteAttributesForScreen(screenId);
+  const proofBoundary = evidenceLifecycleProofBoundaryForScreen(screenId);
   const ownedProcessIds: readonly string[] = routeContract.ownedProcesses;
   const processCards = evidenceLifecycleProcessContracts
     .filter((process) => ownedProcessIds.includes(process.processId))
@@ -2616,6 +2618,20 @@ function EvidenceLifecycleCoreSurface({
           })}
         </div>
       </div>
+      <details
+        className="mt-2 rounded-md border border-alphavest-border/70 bg-alphavest-midnight/45 px-2 py-1.5 text-xs text-alphavest-muted"
+        data-testid={`epic08-proof-boundary-${screenId.toLowerCase()}`}
+        data-ux-epic08-audit-failure-mode={proofBoundary.auditFailureMode}
+        data-ux-epic08-audit-required-steps={proofBoundary.auditRequiredStepIds.join(" ")}
+        data-ux-epic08-client-safe-payload={proofBoundary.clientSafePayload}
+        data-ux-epic08-proof-boundary="collapsed_drawer"
+        data-ux-no-overclaim="true"
+      >
+        <summary className="cursor-pointer font-semibold text-alphavest-ivory">Proof boundary</summary>
+        <p className="mt-1 leading-5">
+          Audit gates fail closed; client-facing payload stays redacted summary only. Blocked claims: {proofBoundary.forbiddenOverclaims.join(", ")}.
+        </p>
+      </details>
     </section>
   );
 }

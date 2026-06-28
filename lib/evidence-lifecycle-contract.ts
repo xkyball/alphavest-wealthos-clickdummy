@@ -68,6 +68,14 @@ export type EvidenceLifecycleRouteContract = {
   forbiddenOverclaims: readonly string[];
 };
 
+export type EvidenceLifecycleProofBoundary = {
+  auditFailureMode: "fail_closed_without_client_visibility";
+  auditRequiredStepIds: readonly EvidenceLifecycleStepId[];
+  clientSafePayload: "redacted_summary_only";
+  forbiddenOverclaims: readonly string[];
+  screenId: EvidenceLifecycleRouteScreenId;
+};
+
 export const evidenceLifecycleStates = [
   "NEEDS_EVIDENCE",
   "UPLOAD_READY",
@@ -300,5 +308,21 @@ export function evidenceLifecycleRouteAttributesForScreen(screenId: EvidenceLife
     "data-ux-epic08-route": contract.route,
     "data-ux-epic08-screen": contract.screenId,
     "data-ux-no-overclaim": "true",
+  };
+}
+
+export function evidenceLifecycleProofBoundaryForScreen(screenId: EvidenceLifecycleRouteScreenId): EvidenceLifecycleProofBoundary {
+  const contract = evidenceLifecycleRouteContractForScreen(screenId);
+  const ownedProcessIds: readonly string[] = contract.ownedProcesses;
+  const auditRequiredStepIds = evidenceLifecycleStepContracts
+    .filter((step) => ownedProcessIds.includes(step.processId) && step.requiresAudit)
+    .map((step) => step.stepId);
+
+  return {
+    auditFailureMode: "fail_closed_without_client_visibility",
+    auditRequiredStepIds,
+    clientSafePayload: "redacted_summary_only",
+    forbiddenOverclaims: contract.forbiddenOverclaims,
+    screenId,
   };
 }

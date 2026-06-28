@@ -5,6 +5,7 @@ import { expect, type Page, test } from "@playwright/test";
 import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
 import {
   evidenceLifecycleContractId,
+  evidenceLifecycleProofBoundaryForScreen,
   evidenceLifecycleProcessContracts,
   evidenceLifecycleProcessIds,
   evidenceLifecycleRouteAttributesForScreen,
@@ -75,6 +76,17 @@ test.describe("EPIC-08 evidence lifecycle contract", () => {
     expect(evidenceLifecycleRouteContracts.every((contract) => contract.route.startsWith("/"))).toBe(true);
   });
 
+  test("defines fail-closed proof boundaries for the core evidence process cluster", () => {
+    for (const screen of ["S028", "S029", "S030"] as const) {
+      const boundary = evidenceLifecycleProofBoundaryForScreen(screen);
+
+      expect(boundary.auditFailureMode).toBe("fail_closed_without_client_visibility");
+      expect(boundary.clientSafePayload).toBe("redacted_summary_only");
+      expect(boundary.auditRequiredStepIds.length).toBeGreaterThan(0);
+      expect(boundary.forbiddenOverclaims.join(" ")).not.toMatch(/release_complete|client_visibility_unlocked|export_approved/i);
+    }
+  });
+
   test("projects S027 runtime attributes for the area entry without product-copy scaffolding", () => {
     expect(evidenceLifecycleRouteAttributesForScreen("S027")).toMatchObject({
       "data-ux-epic08-contract": evidenceLifecycleContractId,
@@ -133,6 +145,9 @@ test.describe("EPIC-08 evidence lifecycle contract", () => {
       await expect(surface).toHaveAttribute("data-ux-epic08-contract", evidenceLifecycleContractId);
       await expect(surface).toHaveAttribute("data-ux-epic08-screen", route.screen);
       await expect(surface).toHaveAttribute("data-ux-no-overclaim", "true");
+      await expect(page.getByTestId(`epic08-proof-boundary-${route.screen.toLowerCase()}`)).toHaveAttribute("data-ux-epic08-audit-failure-mode", "fail_closed_without_client_visibility");
+      await expect(page.getByTestId(`epic08-proof-boundary-${route.screen.toLowerCase()}`)).toHaveAttribute("data-ux-epic08-client-safe-payload", "redacted_summary_only");
+      await expect(page.locator("main")).not.toContainText(/release complete|client visibility unlocked|evidence sufficient|export approved|client accepted/i);
 
       const dimensions = await page.evaluate(() => ({
         clientHeight: document.documentElement.clientHeight,
