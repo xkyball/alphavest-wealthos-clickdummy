@@ -92,6 +92,34 @@ test.describe("EPIC-03 route registry, shell and page-job contract", () => {
     });
   });
 
+  test("prevents required slots from falling back to unclassified stacking", () => {
+    for (const route of screenRoutes) {
+      const template = uxPageTemplateForRoute(route);
+      const contract = uxRouteShellPageJobContractForTemplate(template);
+      const attrs = uxRouteShellPageJobDataAttributesForTemplate(template);
+
+      for (const zone of template.requiredZones) {
+        expect(contract.allowedZones, `${route.pageId} required zone ${zone}`).toContain(zone);
+        expect(attrs["data-ux-contract-allowed-zones"], `${route.pageId} attr zone ${zone}`).toContain(zone);
+      }
+
+      if (template.productiveUxEligible) {
+        expect(contract.freeformChildrenPolicy, `${route.pageId} productive freeform policy`).toBe("classified_slot_only");
+        expect(contract.allowedZones, `${route.pageId} productive state zone`).toContain("state_zone");
+      } else {
+        expect(contract.freeformChildrenPolicy, `${route.pageId} protected freeform policy`).toBe("reference_context_only");
+      }
+    }
+  });
+
+  test("pins no-overclaim rules for representative safety boundaries", () => {
+    expect(uxRouteShellPageJobContractForTemplate(uxPageTemplateForPageId("020")).noOverclaimRule).toContain("released, redacted and client-safe");
+    expect(uxRouteShellPageJobContractForTemplate(uxPageTemplateForPageId("033")).noOverclaimRule).toContain("Internal drafts");
+    expect(uxRouteShellPageJobContractForTemplate(uxPageTemplateForPageId("039")).noOverclaimRule).toContain("client-safe output");
+    expect(uxRouteShellPageJobContractForTemplate(uxPageTemplateForPageId("054")).noOverclaimRule).toContain("Export preview");
+    expect(uxRouteShellPageJobContractForTemplate(uxPageTemplateForPageId("061")).noOverclaimRule).toContain("must not imply product workflow");
+  });
+
   test("PageTemplateFrame exposes the contract as runtime attributes", () => {
     const pageTemplateFrame = source("components/ui/page-template.tsx");
 
