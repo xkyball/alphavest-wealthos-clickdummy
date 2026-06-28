@@ -9,9 +9,10 @@ Target branch: `full-workflow`
 
 This contract governs process-first UX layout refactors derived from:
 
+- `reports/process-first-ux-layout-implementation-plan-2026-06-28/ALPHAVEST_BOC_CTES_PROCESS_FIRST_IMPLEMENTATION_PLAN_V1.json`
 - `reports/process-first-ux-layout-implementation-plan-2026-06-28/ALPHAVEST_PROCESS_FIRST_UX_LAYOUT_IMPLEMENTATION_PLAN.json`
 - `reports/process-first-ux-layout-implementation-plan-2026-06-28/PROCESS_FIRST_SCREEN_TRACEABILITY_MATRIX.json`
-- `artifacts/routes-and-modals/2026-06-28_05-32-44/audit-work/WEBAPP_LONG_SCREENSHOT_UX_LAYOUT_AUDIT_ENGINE_V2_V3.json`
+- `reports/webapp-long-screenshot-ux-layout-audit-2026-06-28/WEBAPP_LONG_SCREENSHOT_UX_LAYOUT_AUDIT_ENGINE_V2_V3.json`
 - `docs/00-current/ALPHAVEST_DETAILED_BUSINESS_PROCESS_SPECIFICATION_P0_ONLY.json`
 
 Implementation authority remains `ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md`.
@@ -32,7 +33,27 @@ A page is acceptable only when a reviewer can identify near the top:
 
 Long pages are not fixed by hiding sections. They are fixed by making the process architecture real.
 
-## 3. Forbidden Substitutes
+## 3. Page Job And Height Contract
+
+Every process-first route must declare exactly one primary page job. Secondary context can exist only when it supports that job without competing with the command zone.
+
+Allowed page-job families:
+
+- `queue`: triage a list and expose one selected work item.
+- `detail`: inspect one object and decide the next permitted process step.
+- `decision`: approve, block, release or submit a decision with visible preconditions.
+- `stepper`: complete one step of a controlled multi-step workflow.
+- `audit_reference`: read proof, history or policy without mutating state.
+- `confirmation`: confirm one irreversible or sensitive action after prerequisites are met.
+
+Height rules:
+
+- Any route over `3000px` must include local anchors, a sticky summary/step rail, or an approved exception in the implementation proof.
+- Any MVP workflow route over `3400px` must be split into a real process pattern: master-detail, stepper, tabs, drawer extraction, or a route split with an approved True-UX record.
+- Any route over `3400px` that remains unsplit must carry an explicit exception ledger entry with owner, reason, expiry condition and follow-up ticket.
+- A screenshot height reduction is never acceptance by itself. The route must also preserve BP/ACC/gate semantics and forbidden-overclaim tests.
+
+## 4. Forbidden Substitutes
 
 The following are not acceptable implementations for process-first UX tickets:
 
@@ -49,7 +70,7 @@ The following are not acceptable implementations for process-first UX tickets:
 
 If a smaller substitute is unavoidable, the implementation must report the actual blocker, the real refactor path inspected, the temporary scope, and the follow-up task needed to remove the substitute.
 
-## 4. Shared Implementation Contract
+## 5. Shared Implementation Contract
 
 Use shared primitives before adding page-local UI:
 
@@ -72,7 +93,27 @@ Use shared primitives before adding page-local UI:
 - `currentStep`
 - `blockedReason`
 
-## 5. P0 Route Mapping
+## 6. Proof And Audit Placement Rules
+
+Proof and audit content must be placed by page family, not appended wherever space is available.
+
+| Page family | Primary zone | Proof/audit placement | Forbidden placement |
+| --- | --- | --- | --- |
+| `queue` | selected work item, current blocker, next action | compact row metadata, selected-detail rail, drawer for audit/history | full audit timeline below every row |
+| `detail` | current object state and one next permitted step | secondary tab/drawer or right rail with BP/ACC IDs | proof blocks that push the command zone below the fold |
+| `decision` | preconditions, blocked/release state, primary decision command | sticky process rail and audit drawer; negative blockers stay visible | mixed release, client visibility and export actions in one command area |
+| `stepper` | current step, allowed transition, blocked downstream steps | step checklist and per-step evidence drawer | generation/download/share controls before their gate |
+| `audit_reference` | read-only proof, timeline and provenance | main content can be audit-first; mutation commands are absent or disabled | approval or release controls presented as audit actions |
+| `confirmation` | action summary, irreversible impact, second confirmation | minimal evidence summary plus audit intent | hidden payload, broad export/share copy, or post-hoc approval |
+
+Command-zone rules:
+
+- A page has one primary command zone.
+- Secondary commands must be visually subordinate and must not imply downstream gates are satisfied.
+- Disabled commands must name the missing BP/ACC/gate condition.
+- Client-visible or export-adjacent commands must fail closed when redaction, release or visibility gates are missing.
+
+## 7. P0 Route Mapping
 
 The following route families are locked as initial process-first refactor targets.
 
@@ -88,8 +129,14 @@ The following route families are locked as initial process-first refactor target
 | `IMPL-E` | `S051` / `051` | `/governance` | `DOMAIN-I`, `DOMAIN-L` | `BP-073` | `ACC-007` | `P0_AUDIT_PERSISTENCE_GATE` | Access audit history as proof, not as a state-changing approval surface. |
 | `IMPL-C` | `S056` / `056` | `/export/:id/redaction` | `DOMAIN-J`, `DOMAIN-H`, `DOMAIN-I` | `BP-082`, `BP-087` | `ACC-008` | `P0_EXPORT_REDACTION_GATE` | Redaction removes forbidden internal payloads before preview, approval, generation or delivery can continue. |
 | `IMPL-C` | `S057` / `057` | `/export/:id/approval` | `DOMAIN-J`, `DOMAIN-H`, `DOMAIN-I` | `BP-082`, `BP-087` | `ACC-008` | `P0_EXPORT_REDACTION_GATE` | Approval records only scoped approval; generation, download, share and client acceptance remain later gates. |
+| `EPIC-00/P0` | `S029` / `029` | `/documents/review-queue` | `DOMAIN-C`, `DOMAIN-I` | `BP-024`, `BP-028`, `BP-030`, `BP-032`, `BP-081`, `BP-082` | `ACC-002`, `ACC-007` | `P0_UPLOAD_NOT_SUFFICIENCY_GATE`, `P0_EVIDENCE_SUFFICIENCY_GATE`, `P0_AUDIT_PERSISTENCE_GATE` | Extraction/review queue without treating upload or extraction as sufficiency. |
+| `EPIC-00/P0` | `S035` / `035` | `/advisory/triggers/:id/review` | `DOMAIN-D`, `DOMAIN-E`, `DOMAIN-F`, `DOMAIN-I` | `BP-038`, `BP-039`, `BP-041`, `BP-042`, `BP-043`, `BP-051`, `BP-082` | `ACC-003`, `ACC-004`, `ACC-007` | `P0_AI_DRAFT_INTERNAL_ONLY_GATE`, `P0_ADVISOR_NOT_RELEASE_GATE`, `P0_AUDIT_PERSISTENCE_GATE` | Trigger review and advisor-stage routing without internal-draft or release overclaim. |
+| `EPIC-00/P0` | `S038` / `038` | `/compliance/reviews` | `DOMAIN-G`, `DOMAIN-I` | `BP-061`, `BP-062`, `BP-081`, `BP-082`, `BP-083` | `ACC-005`, `ACC-007` | `P0_COMPLIANCE_RELEASE_GATE`, `P0_AUDIT_PERSISTENCE_GATE` | Compliance queue triage with one selected recommendation and explicit release/block preconditions. |
+| `EPIC-00/P0` | `S044` / `044` | `/decisions/:id` | `DOMAIN-H`, `DOMAIN-I` | `BP-081`, `BP-082`, `BP-083` | `ACC-006`, `ACC-007` | `P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE`, `P0_AUDIT_PERSISTENCE_GATE` | Client decision room after release, with client-safe projection and audit proof. |
+| `EPIC-00/P0` | `S055` / `055` | `/export/:id/scope` | `DOMAIN-J`, `DOMAIN-H`, `DOMAIN-I` | `BP-084`, `BP-085`, `BP-082` | `ACC-008`, `ACC-007` | `P0_EXPORT_SCOPE_GATE`, `P0_EXPORT_REDACTION_GATE`, `P0_AUDIT_PERSISTENCE_GATE` | Export scope selection only; no preview, approval, generation, download or share. |
+| `EPIC-00/P0` | `S058` / `058` | `/export/:id/download` | `DOMAIN-J`, `DOMAIN-H`, `DOMAIN-I` | `BP-087`, `BP-082` | `ACC-008`, `ACC-007` | `P0_EXPORT_DOWNLOAD_GATE`, `P0_AUDIT_PERSISTENCE_GATE` | Download/share confirmation only after scoped, redacted and approved package is safe. |
 
-## 6. Acceptance Rules By Risk Family
+## 8. Acceptance Rules By Risk Family
 
 ### Action Board
 
@@ -107,6 +154,8 @@ Release controls must appear only with preconditions and blocked reasons. Missin
 
 Upload success cannot imply evidence sufficiency, release readiness, export readiness or client visibility. Evidence sufficiency requires review, scope, currentness, acceptance and client-safe visibility.
 
+Document review queues must use queue/detail separation. Extraction, verification, sufficiency and audit history cannot all compete in a single linear scroll column.
+
 ### Governance And Admin
 
 Admin, platform and governance surfaces must state non-bypass boundaries. No admin action can imply advice release, compliance release, evidence sufficiency, export readiness, audit suppression or client visibility.
@@ -115,7 +164,7 @@ Admin, platform and governance surfaces must state non-bypass boundaries. No adm
 
 Export is a separated process: create/scope, redact, preview, approve, generate/download, share/client response. Redaction cannot approve, generate, download or share. Approval cannot download/share or create advice release/client acceptance.
 
-## 7. Validation Rules
+## 9. Validation Rules
 
 Every implementation ticket must run the narrow tests named by its work item plus the relevant safety regression tests. At minimum:
 
@@ -126,7 +175,7 @@ Every implementation ticket must run the narrow tests named by its work item plu
 
 Screenshot height is risk evidence only. It is not implementation readiness, not acceptance proof, and not safety proof.
 
-## 8. Decision Rules
+## 10. Decision Rules
 
 Stop for a user decision when:
 
