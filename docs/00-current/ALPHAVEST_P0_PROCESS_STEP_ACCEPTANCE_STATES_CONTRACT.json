@@ -1,0 +1,410 @@
+{
+  "artifact_kind": "p0_process_step_acceptance_states_contract",
+  "ticket_id": "EPIC-02-SPEC-01",
+  "ticket_title": "Define process-step acceptance states",
+  "status": "approved_contract_for_matrix_generation",
+  "generated_at": "2026-06-28",
+  "machine_readable": true,
+  "basis": {
+    "masterplan": "reports/process-first-refactoring-masterplan-2026-06-28/ALPHAVEST_PROCESS_FIRST_REFACTORING_MASTERPLAN_BOC_CTES.json",
+    "process_step_inventory": "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-02-ANALYSIS-01_P0_PROCESS_STEP_INVENTORY.json",
+    "process_universe": "docs/00-current/ALPHAVEST_DETAILED_BUSINESS_PROCESS_SPECIFICATION_P0_ONLY.json",
+    "navigation_contract": "docs/00-current/ALPHAVEST_PROCESS_FIRST_NAVIGATION_CONTRACT.json",
+    "operative_handoff": "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md"
+  },
+  "purpose": "Define objective and testable status semantics so route presence, visual proof or partial touchpoints are never counted as process-step implementation.",
+  "scope": {
+    "applies_to": "All retained P0 process steps in the Process Universe inventory.",
+    "retained_p0_process_count": 84,
+    "retained_p0_step_count": 438,
+    "out_of_scope": [
+      "product implementation",
+      "route creation",
+      "schema changes",
+      "test mutation",
+      "manual screenshots as acceptance proof"
+    ]
+  },
+  "classification_principles": [
+    {
+      "id": "PRINCIPLE-01",
+      "rule": "A process step is implemented only when its behavior, state transition, permissions, payload visibility, audit/evidence obligation and positive plus negative proof are all satisfied where applicable."
+    },
+    {
+      "id": "PRINCIPLE-02",
+      "rule": "A route, component, screenshot, static text, status chip or visible button is not process implementation by itself."
+    },
+    {
+      "id": "PRINCIPLE-03",
+      "rule": "Safety-sensitive steps cannot be promoted beyond partial until the relevant negative tests prove no bypass, no leakage and no overclaim."
+    },
+    {
+      "id": "PRINCIPLE-04",
+      "rule": "If a step is blocked by an unresolved product, safety, route, schema or handoff decision, the blocker state outranks partial implementation evidence."
+    },
+    {
+      "id": "PRINCIPLE-05",
+      "rule": "Not-authorized work must remain out of implementation matrices and completion claims until a later explicit authority changes the operative contract."
+    }
+  ],
+  "proof_layers": [
+    {
+      "layer_id": "LAYER-01",
+      "name": "route_or_entrypoint",
+      "objective_evidence": ["registered route", "journey entrypoint", "planned route decision with route-evolution record"]
+    },
+    {
+      "layer_id": "LAYER-02",
+      "name": "ui_state_and_action",
+      "objective_evidence": ["stateful UI surface", "disabled/blocked state", "recovery path", "no-overclaim feedback"]
+    },
+    {
+      "layer_id": "LAYER-03",
+      "name": "domain_service_or_api",
+      "objective_evidence": ["API handler", "service function", "command handler", "workflow state transition"]
+    },
+    {
+      "layer_id": "LAYER-04",
+      "name": "persistence_or_model",
+      "objective_evidence": ["schema model", "seeded/demo data model", "read/write persistence contract", "explicit non-persistence rationale"]
+    },
+    {
+      "layer_id": "LAYER-05",
+      "name": "permission_and_gate",
+      "objective_evidence": ["RBAC check", "workflow gate", "visibility gate", "tenant/object scope check"]
+    },
+    {
+      "layer_id": "LAYER-06",
+      "name": "audit_or_evidence",
+      "objective_evidence": ["audit event", "evidence link", "proof record", "failure behavior when audit/evidence write is unavailable"]
+    },
+    {
+      "layer_id": "LAYER-07",
+      "name": "positive_test",
+      "objective_evidence": ["unit test", "Playwright test", "API test", "route smoke where route presence is the only requirement"]
+    },
+    {
+      "layer_id": "LAYER-08",
+      "name": "negative_test",
+      "objective_evidence": ["deny test", "no-leakage test", "no-bypass test", "no-overclaim test", "blocked/precondition test"]
+    }
+  ],
+  "acceptance_states": [
+    {
+      "state_id": "implemented",
+      "label": "Implemented",
+      "rank": 80,
+      "completion_credit": "full",
+      "objective_definition": "The step is implemented end-to-end for its approved scope and has current positive and negative proof for every applicable safety, visibility, audit, evidence and workflow obligation.",
+      "required_all": [
+        "step exists in retained P0 inventory",
+        "owning area is assigned",
+        "approved route or process entrypoint exists",
+        "UI state or API/service behavior performs the step or explicitly delegates it",
+        "required permissions and gates are enforced",
+        "required audit/evidence events are written or fail closed",
+        "positive acceptance proof exists",
+        "negative acceptance proof exists for relevant failure, RBAC, visibility and overclaim risks",
+        "no unresolved decision/schema/authorization blocker applies"
+      ],
+      "disqualifiers": [
+        "only screenshot or static UI evidence",
+        "no negative proof for safety-sensitive step",
+        "advisor approval treated as release",
+        "upload treated as sufficiency",
+        "preview treated as export approval/download/share",
+        "admin bypass possible or untested",
+        "client projection lacks no-leakage proof"
+      ],
+      "minimum_machine_fields": [
+        "step_id",
+        "process_id",
+        "domain_id",
+        "intended_area_id",
+        "implemented_route_or_entrypoint",
+        "proof_refs.positive",
+        "proof_refs.negative",
+        "gate_refs"
+      ]
+    },
+    {
+      "state_id": "partially_implemented",
+      "label": "Partially implemented",
+      "rank": 50,
+      "completion_credit": "partial",
+      "objective_definition": "The step has real current-app touchpoints in more than one layer, but at least one required behavior, state, gate, audit/evidence or positive/negative proof layer is missing.",
+      "required_all": [
+        "step exists in retained P0 inventory",
+        "owning area is assigned",
+        "at least two objective touchpoint layers exist",
+        "missing layers are explicitly listed"
+      ],
+      "required_any": [
+        "route plus component",
+        "component plus service/API",
+        "service/API plus model",
+        "workflow gate plus test",
+        "route/API/model/test touchpoints listed in Process Universe"
+      ],
+      "disqualifiers": [
+        "no current-app touchpoint",
+        "explicit not-authorized or hold/reference block",
+        "schema blocker makes behavior impossible",
+        "only static visual presence"
+      ],
+      "required_gap_fields": [
+        "missing_behavior",
+        "missing_positive_proof",
+        "missing_negative_proof",
+        "missing_gate_or_audit_if_applicable"
+      ]
+    },
+    {
+      "state_id": "visual_only",
+      "label": "Visual-only",
+      "rank": 30,
+      "completion_credit": "none",
+      "objective_definition": "The step is represented by a visible screen, component, button, chip, table, modal, drawer or screenshot, but lacks verified behavior or state transition proof.",
+      "required_all": [
+        "visible UI representation exists",
+        "no reliable service/API/workflow/test proof confirms the step behavior"
+      ],
+      "disqualifiers": [
+        "positive and negative behavior proof exists",
+        "step is not represented visually",
+        "step is explicitly not authorized"
+      ],
+      "must_not_claim": [
+        "implemented",
+        "process complete",
+        "gate passed",
+        "client safe",
+        "released",
+        "export approved"
+      ]
+    },
+    {
+      "state_id": "specified_only",
+      "label": "Specified-only",
+      "rank": 20,
+      "completion_credit": "none",
+      "objective_definition": "The step is defined in the Process Universe and has intended area/status metadata, but current app evidence does not prove a working implementation.",
+      "required_all": [
+        "step exists in retained P0 inventory",
+        "step has process/domain/area metadata",
+        "no sufficient current-app implementation proof exists"
+      ],
+      "disqualifiers": [
+        "current route/API/model/test touchpoints satisfy partial criteria",
+        "explicit blocker state applies",
+        "step is outside retained P0 inventory"
+      ]
+    },
+    {
+      "state_id": "missing",
+      "label": "Missing",
+      "rank": 10,
+      "completion_credit": "none",
+      "objective_definition": "The retained P0 step should exist in the product implementation path, but no current route, process entry, component, API/service, model or test touchpoint can be identified.",
+      "required_all": [
+        "step exists in retained P0 inventory",
+        "owning area can be assigned",
+        "no current-app touchpoint can be identified"
+      ],
+      "disqualifiers": [
+        "specified-only is more accurate because source metadata exists but implementation is not expected yet",
+        "blocked-by-decision applies",
+        "blocked-by-schema applies",
+        "not-authorized applies"
+      ]
+    },
+    {
+      "state_id": "blocked_by_decision",
+      "label": "Blocked by decision",
+      "rank": 5,
+      "completion_credit": "none",
+      "objective_definition": "The step cannot be implemented or accepted until a human/product/safety/route-unlock decision is made.",
+      "required_any": [
+        "open_decisions contains an unresolved product/safety/route decision",
+        "route scope is HOLD_PENDING_DECISION",
+        "route evolution record is required but not approved",
+        "screen split decision is required but not approved",
+        "final approval token or decision artifact is missing"
+      ],
+      "resolution_required": [
+        "decision_id",
+        "decision_owner",
+        "allowed_scope_after_decision",
+        "required negative proof after unlock"
+      ]
+    },
+    {
+      "state_id": "blocked_by_schema",
+      "label": "Blocked by schema",
+      "rank": 4,
+      "completion_credit": "none",
+      "objective_definition": "The step requires a persistence/model/API contract that is absent or explicitly not authorized for blind creation in the current handoff.",
+      "required_all": [
+        "step requires persistence, durable state, model relation or API contract",
+        "current schema/API does not support the required behavior",
+        "operative handoff does not authorize blind schema/API creation"
+      ],
+      "resolution_required": [
+        "schema_or_api_gap_id",
+        "minimal persistence contract",
+        "migration/API approval",
+        "positive and negative data-safety proof"
+      ]
+    },
+    {
+      "state_id": "not_authorized",
+      "label": "Not authorized",
+      "rank": 1,
+      "completion_credit": "none",
+      "objective_definition": "The step or route behavior is outside the current operative authority or explicitly forbidden by the handoff, route scope, safety boundary or protected-lane rule.",
+      "required_any": [
+        "route scope is REFERENCE_ONLY",
+        "route or process is outside current authorized handoff scope",
+        "implementation would generate screen/image/state-screen assets",
+        "implementation would weaken safety policy",
+        "implementation would create unapproved advice/client visibility/export/download/admin bypass",
+        "implementation requires main branch or uploaded snapshot as target truth"
+      ],
+      "resolution_required": [
+        "new explicit authority artifact",
+        "route/safety decision",
+        "proof plan",
+        "scope update"
+      ]
+    }
+  ],
+  "state_precedence": [
+    "not_authorized",
+    "blocked_by_decision",
+    "blocked_by_schema",
+    "missing",
+    "specified_only",
+    "visual_only",
+    "partially_implemented",
+    "implemented"
+  ],
+  "classification_algorithm": {
+    "description": "Apply blocker states before credit states. Implemented can only be assigned after all disqualifiers are false.",
+    "steps": [
+      {
+        "order": 1,
+        "if": "not_authorized.required_any is true",
+        "then": "not_authorized"
+      },
+      {
+        "order": 2,
+        "if": "blocked_by_decision.required_any is true",
+        "then": "blocked_by_decision"
+      },
+      {
+        "order": 3,
+        "if": "blocked_by_schema.required_all is true",
+        "then": "blocked_by_schema"
+      },
+      {
+        "order": 4,
+        "if": "no current route/component/API/service/model/test touchpoint exists",
+        "then": "missing"
+      },
+      {
+        "order": 5,
+        "if": "only visible UI/screenshot/component evidence exists",
+        "then": "visual_only"
+      },
+      {
+        "order": 6,
+        "if": "Process Universe metadata exists but implementation proof is absent",
+        "then": "specified_only"
+      },
+      {
+        "order": 7,
+        "if": "two or more touchpoint layers exist but required behavior/proof layers are missing",
+        "then": "partially_implemented"
+      },
+      {
+        "order": 8,
+        "if": "implemented.required_all true and all implemented.disqualifiers false",
+        "then": "implemented"
+      }
+    ]
+  },
+  "inventory_status_mapping": {
+    "specified_not_proven": {
+      "default_acceptance_state": "specified_only",
+      "upgrade_allowed_to": ["partially_implemented"],
+      "upgrade_requires": ["two or more current-app touchpoint layers"]
+    },
+    "partial_domain_representation": {
+      "default_acceptance_state": "partially_implemented",
+      "downgrade_allowed_to": ["specified_only", "visual_only", "blocked_by_decision", "blocked_by_schema", "not_authorized"],
+      "upgrade_allowed_to": ["implemented"]
+    },
+    "partial_current_app_representation": {
+      "default_acceptance_state": "partially_implemented",
+      "downgrade_allowed_to": ["visual_only", "blocked_by_decision", "blocked_by_schema", "not_authorized"],
+      "upgrade_allowed_to": ["implemented"]
+    },
+    "strong_partial_domain_representation": {
+      "default_acceptance_state": "partially_implemented",
+      "upgrade_allowed_to": ["implemented"],
+      "upgrade_requires": ["step-level positive proof", "step-level negative proof", "gate/audit proof where applicable"]
+    },
+    "unknown_or_unmapped": {
+      "default_acceptance_state": "missing",
+      "upgrade_allowed_to": ["specified_only", "partially_implemented"]
+    }
+  },
+  "safety_gate_acceptance_requirements": {
+    "P0_RBAC_ACTION_GATE": ["permission check", "wrong role denial", "wrong tenant/object denial"],
+    "P0_PAYLOAD_VISIBILITY_GATE": ["payload scope check", "forbidden field absence proof"],
+    "P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE": ["released-only projection", "internal draft/note absence proof"],
+    "P0_UPLOAD_NOT_SUFFICIENCY_GATE": ["upload success proof", "release/export/client visibility remains blocked"],
+    "P0_AI_DRAFT_INTERNAL_ONLY_GATE": ["internal draft generated/handled internally", "client/export projection absence proof"],
+    "P0_ADVISOR_NOT_RELEASE_GATE": ["advisor approval moves only to compliance-pending", "client visibility remains false"],
+    "P0_COMPLIANCE_RELEASE_GATE": ["preconditions pass before release", "missing evidence/advisor/audit/admin bypass blocks release"],
+    "P0_AUDIT_PERSISTENCE_GATE": ["audit row/event write proof", "audit failure blocks or holds safety action"],
+    "P0_EXPORT_REDACTION_GATE": ["redaction/scope proof", "forbidden payload absence", "no download/share before approval"],
+    "P0_HOLD_ROUTE_BLOCK_GATE": ["hold route unavailable or clearly protected", "no silent MVP unlock"]
+  },
+  "matrix_generation_contract": {
+    "next_ticket": "EPIC-02-IMPL-01",
+    "required_output_fields_per_step": [
+      "step_id",
+      "process_id",
+      "domain_id",
+      "intended_area_id",
+      "step_label",
+      "inventory_current_status",
+      "acceptance_state",
+      "state_reason_codes",
+      "current_touchpoints",
+      "missing_layers",
+      "required_positive_proof",
+      "required_negative_proof",
+      "blockers",
+      "next_implementation_target"
+    ],
+    "must_fail_matrix_generation_if": [
+      "any retained step lacks an acceptance_state",
+      "any implemented state lacks positive proof reference",
+      "any safety-sensitive implemented state lacks negative proof reference",
+      "any not_authorized state has a next_implementation_target other than decision_or_scope_update",
+      "any visual_only state receives completion_credit"
+    ]
+  },
+  "definition_of_done_check": {
+    "all_requested_states_defined": true,
+    "states_are_objective_and_testable": true,
+    "route_presence_not_implementation_rule_defined": true,
+    "visual_only_no_completion_credit_defined": true,
+    "safety_negative_proof_required": true,
+    "machine_readable_json": true,
+    "product_code_changed": false,
+    "screenshots_required": false
+  }
+}
