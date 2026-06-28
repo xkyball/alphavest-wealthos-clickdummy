@@ -43,6 +43,10 @@ test.describe("P0 process-first UX burndown implementation", () => {
     expect(internal).toContain('currentStep="advisor_review"');
     expect(internal).toContain('blockedReason="advisor_approval_not_release"');
     expect(internal).toContain("Advisor approval is not release");
+    expect(internal).toContain("function AdvisorDecisionRoomPanel");
+    expect(internal).toContain('data-testid="bd07-advisor-decision-room-panel"');
+    expect(internal).toContain('data-ux-layout-compression="bounded_decision_room"');
+    expect(internal).toContain("Saving the advisor candidate only hands the package to compliance review.");
     expect(internal).toContain('testId="bd08-compliance-release-gate"');
     expect(internal).toContain('processFirstUxContractForPageId("039")');
     expect(internal).toContain('currentStep="compliance_release_decision"');

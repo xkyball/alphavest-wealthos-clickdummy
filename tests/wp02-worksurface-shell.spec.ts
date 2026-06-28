@@ -83,6 +83,8 @@ test.describe("WP02 worksurface shell", () => {
 
     expect(shell).toContain("export function WorksurfaceShell");
     expect(shell).toContain('data-testid="wp02-worksurface-shell"');
+    expect(shell).toContain('xl:grid-cols-[minmax(0,1fr)_24rem]');
+    expect(shell).toContain("xl:sticky xl:top-24 xl:self-start");
     expect(auth).toContain('from "@/components/worksurface-shell"');
     expect(adminTenant).toContain('from "@/components/worksurface-shell"');
     expect(client).toContain('from "@/components/worksurface-shell"');

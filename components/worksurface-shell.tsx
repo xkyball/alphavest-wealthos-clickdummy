@@ -128,7 +128,7 @@ export function WorksurfaceShell({
         </div>
       </div>
       <PageTemplateSectionNav sections={sections} />
-      <div className={cn("grid gap-4", rail ? "2xl:grid-cols-[minmax(0,1fr)_24rem]" : "")}>
+      <div className={cn("grid gap-4", rail ? "xl:grid-cols-[minmax(0,1fr)_24rem]" : "")}>
         <div id={sectionIds.primary} className="min-w-0 space-y-4" data-ux-long-page-anchor="primary" data-ux-template-zone="primary_content">
           {primary}
           {secondary}
@@ -137,7 +137,7 @@ export function WorksurfaceShell({
         {rail ? (
           <aside
             id={sectionIds.action}
-            className="min-w-0 space-y-4 2xl:sticky 2xl:top-24 2xl:self-start"
+            className="min-w-0 space-y-4 xl:sticky xl:top-24 xl:self-start"
             data-testid="wp02-worksurface-rail"
             {...railActionAttributes}
             data-ux-long-page-region="sticky_rail"

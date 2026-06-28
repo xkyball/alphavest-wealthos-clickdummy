@@ -523,6 +523,7 @@ function InternalGuard() {
 
 
 type Phase5DetailSplitPanelProps = {
+  compact?: boolean;
   decisionSupport: string;
   objectLabel: string;
   objectState: string;
@@ -686,7 +687,34 @@ function ComplianceReleaseGate() {
   );
 }
 
-function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pageJob, safetyBoundary, splitTaskId, taskId }: Phase5DetailSplitPanelProps) {
+function Phase5DetailSplitPanel({ compact = false, decisionSupport, objectLabel, objectState, pageJob, safetyBoundary, splitTaskId, taskId }: Phase5DetailSplitPanelProps) {
+  if (compact) {
+    return (
+      <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-layout-compression="compact_boundary_strip" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Detail state</p>
+            <h2 className="mt-1 font-display text-xl text-alphavest-ivory">{objectLabel}</h2>
+          </div>
+          <Badge tone="gold">{taskId}</Badge>
+        </div>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          {[
+            ["Object state", objectState],
+            ["Decision support", decisionSupport],
+            ["Boundary", safetyBoundary],
+            ["Focus", pageJob],
+          ].map(([label, value]) => (
+            <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" key={label}>
+              <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">{label}</p>
+              <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{value}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -696,7 +724,7 @@ function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pag
         </div>
         <Badge tone="gold">{taskId}</Badge>
       </div>
-      <div className="mt-4 grid gap-3 lg:grid-cols-4">
+      <div className="mt-4 grid gap-3 xl:grid-cols-2 2xl:grid-cols-4">
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-object-state">
           <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Object state</p>
           <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{objectState}</p>
@@ -726,15 +754,37 @@ function Phase4WorkbenchPanel({
   queueLabel,
   safetyNote,
   taskId,
+  compact = false,
 }: {
   activeTask: string;
   blocker: string;
+  compact?: boolean;
   context: string;
   primaryAction: string;
   queueLabel: string;
   safetyNote: string;
   taskId: string;
 }) {
+  if (compact) {
+    return (
+      <section className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4" data-testid="ux-workbench-phase4" data-ux-layout-compression="compact_workbench_boundary" data-ux-workbench-task={taskId}>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <Badge tone="gold">{taskId}</Badge>
+            <h3 className="mt-2 font-display text-xl text-alphavest-ivory">Active task workbench</h3>
+          </div>
+          <button className={primaryButtonClass} data-testid="ux-workbench-primary-cta" disabled type="button">{primaryAction}</button>
+        </div>
+        <div className="mt-3 grid gap-3 sm:grid-cols-3" data-testid="ux-workbench-triad">
+          <InfoRow label="Queue" value={queueLabel} />
+          <InfoRow label="Active context" value={activeTask} />
+          <InfoRow label="Blocked by" value={blocker} />
+        </div>
+        <p className="mt-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 text-sm leading-6 text-alphavest-muted" data-testid="ux-workbench-safety-note">{safetyNote}</p>
+      </section>
+    );
+  }
+
   return (
     <section className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4" data-testid="ux-workbench-phase4" data-ux-workbench-task={taskId}>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -1383,6 +1433,115 @@ function AdvisorSummaryPanel() {
   );
 }
 
+function AdvisorDecisionRoomPanel() {
+  return (
+    <section
+      className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_22rem]"
+      data-testid="bd07-advisor-decision-room-panel"
+      data-ux-decision-room="advisor_not_release"
+      data-ux-layout-compression="bounded_decision_room"
+    >
+      <Card className="min-w-0">
+        <CardHeader>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <CardTitle>Advisor Package Review</CardTitle>
+              <p className="mt-2 text-sm leading-6 text-alphavest-muted">
+                Review suitability, rationale, evidence and alternatives for one package. Saving the advisor candidate only hands the package to compliance review.
+              </p>
+            </div>
+            <Badge tone="gold">{selectedApproval.status}</Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="grid gap-4 2xl:grid-cols-[0.95fr_1.25fr]">
+          <div className="space-y-4">
+            <div className="grid gap-3 sm:grid-cols-2">
+              {[
+                ["Client", selectedApproval.client],
+                ["Package", selectedApproval.packageType],
+                ["Analyst", selectedApproval.analyst],
+                ["Created", selectedApproval.created],
+              ].map(([label, value]) => (
+                <InfoRow key={label} label={label} value={value} />
+              ))}
+            </div>
+            <StatePanel
+              detail={selectedApproval.objective}
+              state="empty"
+              title="Client objective"
+            />
+            <Card>
+              <CardHeader><CardTitle>Related Structure</CardTitle></CardHeader>
+              <CardContent className="space-y-3">
+                <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 text-center">
+                  <p className="font-semibold text-alphavest-ivory">Walker Family Holdings</p>
+                  <p className="text-sm text-alphavest-muted">Revocable Living Trust</p>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-center text-xs text-alphavest-muted">
+                  {["James Walker", "Emily Walker", "Walker Family LLC", "Walker Dynasty Trust"].map((item) => (
+                    <div className="rounded border border-alphavest-border p-2" key={item}>{item}</div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="space-y-4">
+            <Card>
+              <CardHeader><CardTitle>Internal Draft Recommendation</CardTitle></CardHeader>
+              <CardContent>
+                <p className="text-sm leading-6 text-alphavest-muted">{selectedApproval.recommendation}</p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-4">
+                  {["6.4% Return", "10.2% Volatility", "82% Scenario Fit", "89/100 Tax Score"].map((item) => (
+                    <Badge key={item} tone="green">{item}</Badge>
+                  ))}
+                </div>
+                <p className="mt-4 rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3 text-sm text-alphavest-gold-soft">
+                  Internal draft only. Unsupported claims require evidence-backed rebuild; advisor approval does not release, export or create client acceptance.
+                </p>
+              </CardContent>
+            </Card>
+            <div className="grid gap-4 2xl:grid-cols-2">
+              <Card>
+                <CardHeader><CardTitle>Risk View</CardTitle></CardHeader>
+                <CardContent>
+                  <p className="text-center text-xl font-semibold text-alphavest-gold">Moderate (5/10)</p>
+                  <ProgressBar value={50} />
+                  <p className="mt-3 text-sm text-alphavest-muted">Equity allocation, interest rate sensitivity and sequence risk remain advisor review context only.</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader><CardTitle>Alternatives</CardTitle></CardHeader>
+                <CardContent className="space-y-2">
+                  {selectedApproval.alternatives.map((item, index) => (
+                    <div className="flex justify-between gap-3 text-sm" key={item}>
+                      <span className="text-alphavest-muted">{item}</span>
+                      <Badge tone="gold">Score {84 - index * 5}</Badge>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1 xl:self-start">
+        <Card>
+          <CardHeader><CardTitle>Reviewed Evidence</CardTitle></CardHeader>
+          <CardContent className="max-h-72 space-y-2 overflow-y-auto pr-1">
+            {selectedApproval.documents.map((doc, index) => (
+              <div className="flex items-center justify-between gap-3 text-sm" key={doc}>
+                <span className="text-alphavest-muted">{doc}</span>
+                <Badge tone={index < 3 ? "green" : "gold"}>{index < 3 ? "Reviewed" : "In Review"}</Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+        <InternalGuard />
+      </div>
+    </section>
+  );
+}
+
 function AdvisorDetailPage({ title }: { title: string }) {
   const router = useRouter();
   const [decisionStatus, setDecisionStatus] = useState<string | null>(null);
@@ -1411,9 +1570,10 @@ function AdvisorDetailPage({ title }: { title: string }) {
         eyebrow="WP02 advisor review"
         primary={
           <div className="space-y-4">
-            <Phase4WorkbenchPanel activeTask="Advisor review ADV-219 selected" blocker="Advisor approval is blocked from release until compliance, evidence and audit gates pass." context="Advisor can assess suitability wording, but cannot publish client-visible advice." primaryAction="Record advisor review" queueLabel="Advisor approval queue" safetyNote="UX-WORKBENCH-003: advisor approval does not set clientVisible and does not bypass compliance release." taskId="UX-WORKBENCH-003" />
+            <Phase4WorkbenchPanel activeTask="ADV-219 selected" blocker="Compliance, evidence and audit gates" compact context="Advisor can assess suitability wording, but cannot publish client-visible advice." primaryAction="Record advisor review" queueLabel="Advisor approval queue" safetyNote="UX-WORKBENCH-003: advisor approval does not set clientVisible and does not bypass compliance release." taskId="UX-WORKBENCH-003" />
             <AdvisorNotReleaseGate />
-            <Phase5DetailSplitPanel decisionSupport="Advisor detail shows suitability, rationale and release preconditions without acting as compliance." objectLabel="Advisor package detail" objectState="Advisor review internal; compliance release missing" pageJob="Advisor detail supports one package review without becoming release room." safetyBoundary="Advisor detail cannot set clientVisible or bypass compliance." splitTaskId="UX-PAGE-SPLIT-004" taskId="UX-PAGE-SPLIT-004" />
+            <Phase5DetailSplitPanel compact decisionSupport="Suitability, rationale and evidence review" objectLabel="Advisor package detail" objectState="Internal advisor review; compliance release missing" pageJob="One package review" safetyBoundary="No clientVisible, release, export or compliance bypass" splitTaskId="UX-PAGE-SPLIT-004" taskId="UX-PAGE-SPLIT-004" />
+            <AdvisorDecisionRoomPanel />
           </div>
         }
         rail={
@@ -1470,87 +1630,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
         ]}
         title={title}
         worksurfaceId="advisor-review-detail"
-      >
-      <div className="mx-auto max-w-[112rem]">
-        <section className="min-w-0 space-y-5">
-          <PageHeading
-            badge={<Badge tone="gold">{selectedApproval.status}</Badge>}
-            subtitle="Internal only. Advisor approval creates an advisor candidate for compliance; client visibility, export and client acceptance remain blocked."
-            title={title}
-          />
-          <ScfP04P06FlowPanel mode="advisory" />
-          <UxDetailStandardPanel
-            actionLabel="Approve for compliance review"
-            actionState="Advisor approval records an advisor candidate only; compliance release remains required before client visibility."
-            evidenceItems={["Reviewed documents", "Client objective", "Recommendation rationale"]}
-            facts={[
-              { label: "Client", value: selectedApproval.client },
-              { label: "Package", value: selectedApproval.packageType },
-              { label: "Analyst", value: selectedApproval.analyst },
-              { label: "Created", value: selectedApproval.created },
-            ]}
-            objectTitle={selectedApproval.recommendationId}
-            objectType="Advisor approval detail"
-            routeId="037"
-            safetyNote="No unapproved advice reaches the client; AI draft and unsupported-claim content remain internal until evidence-backed rebuild and all release gates pass."
-            status={selectedApproval.status}
-            timelineItems={["Analyst submitted", "Advisor candidate", "Compliance not released"]}
-          />
-          <Card>
-            <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
-              {[
-                ["Client", selectedApproval.client],
-                ["Recommendation ID", selectedApproval.recommendationId],
-                ["Package Type", selectedApproval.packageType],
-                ["Analyst", selectedApproval.analyst],
-                ["Created", selectedApproval.created],
-                ["Status", selectedApproval.status]
-              ].map(([label, value]) => (
-                <div className="border-l border-alphavest-border pl-3" key={label}>
-                  <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">{label}</p>
-                  <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{value}</p>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-          <div className="grid gap-5 2xl:grid-cols-[1fr_1.15fr_0.9fr]">
-            <Card>
-              <CardHeader><CardTitle>Client Objective</CardTitle></CardHeader>
-              <CardContent><p className="text-sm leading-6 text-alphavest-muted">{selectedApproval.objective}</p><div className="mt-3 flex flex-wrap gap-2"><Badge tone="gold">Retirement Security</Badge><Badge tone="gold">Tax Efficiency</Badge><Badge tone="gold">Legacy Planning</Badge></div></CardContent>
-            </Card>
-            <Card>
-              <CardHeader><CardTitle>Related Structure</CardTitle></CardHeader>
-              <CardContent>
-                <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4 text-center">
-                  <p className="font-semibold text-alphavest-ivory">Walker Family Holdings</p>
-                  <p className="text-sm text-alphavest-muted">Revocable Living Trust</p>
-                </div>
-                <div className="mt-3 grid grid-cols-4 gap-2 text-center text-xs text-alphavest-muted">
-                  {["James Walker", "Emily Walker", "Walker Family LLC", "Walker Dynasty Trust"].map((item) => <div className="rounded border border-alphavest-border p-2" key={item}>{item}</div>)}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader><CardTitle>Reviewed Documents <Badge className="ml-2" tone="gold">6</Badge></CardTitle></CardHeader>
-              <CardContent className="space-y-2">
-                {selectedApproval.documents.map((doc, index) => (
-                  <div className="flex items-center justify-between gap-3 text-sm" key={doc}>
-                    <span className="text-alphavest-muted">{doc}</span>
-                    <Badge tone={index < 3 ? "green" : "gold"}>{index < 3 ? "Reviewed" : "In Review"}</Badge>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </div>
-          <div className="grid gap-5 2xl:grid-cols-4">
-            <Card className="xl:col-span-2"><CardHeader><CardTitle>Internal Draft Recommendation</CardTitle></CardHeader><CardContent><p className="text-sm leading-6 text-alphavest-muted">{selectedApproval.recommendation}</p><div className="mt-4 grid gap-3 sm:grid-cols-4">{["6.4% Return", "10.2% Volatility", "82% Scenario Fit", "89/100 Tax Score"].map((item) => <Badge key={item} tone="green">{item}</Badge>)}</div><p className="mt-4 rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3 text-sm text-alphavest-gold-soft">Internal draft only, not client advice. Unsupported claims require evidence-backed rebuild; advisor candidate and compliance review keep client visibility blocked until audited release gates pass.</p></CardContent></Card>
-            <Card><CardHeader><CardTitle>Risk View</CardTitle></CardHeader><CardContent><p className="text-center text-xl font-semibold text-alphavest-gold">Moderate (5/10)</p><ProgressBar value={50} /><p className="mt-3 text-sm text-alphavest-muted">Key considerations: equity allocation, interest rate sensitivity and sequence risk.</p></CardContent></Card>
-            <Card><CardHeader><CardTitle>Alternatives</CardTitle></CardHeader><CardContent className="space-y-2">{selectedApproval.alternatives.map((item, index) => <div className="flex justify-between text-sm" key={item}><span className="text-alphavest-muted">{item}</span><Badge tone="gold">Score {84 - index * 5}</Badge></div>)}</CardContent></Card>
-          </div>
-          <InternalGuard />
-        </section>
-      </div>
-      </WorksurfaceShell>
+      />
     </InternalShell>
   );
 }
