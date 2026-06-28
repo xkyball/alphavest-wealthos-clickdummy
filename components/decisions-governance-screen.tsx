@@ -30,6 +30,7 @@ import {
   CardTitle,
   DataTable,
   Drawer,
+  FilterBar,
   MasterDetailSurface,
   Modal,
   StatePanel,
@@ -1678,8 +1679,23 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
                       <span className={cn("px-3 pb-3 text-sm font-semibold", index === 0 ? "border-b-2 border-alphavest-gold text-alphavest-gold" : "text-alphavest-muted")} key={tab}>{tab}</span>
                     ))}
                   </div>
-                  <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 text-sm text-alphavest-muted">
-                    Evidence filters remain visible as disabled controls only; selection and detail context stay preserved in the queue workbench.
+                  <div
+                    data-ux-data-surface-filter-state="disabled_static"
+                    data-ux-disabled-reason="Evidence filters are registered as DSF-004 until the evidence workbench is fully backend-query backed."
+                    data-ux-e10-filter-exception-id="DSF-004"
+                  >
+                    <FilterBar
+                      density="compact_operations"
+                      family="queue"
+                      filters={[
+                        { label: "Category", value: "category" },
+                        { label: "Source", value: "source" },
+                        { label: "Review date", value: "review-date" },
+                      ]}
+                      filterState="disabled_static"
+                      masterDetailMode={drawerOpen ? "drawer_detail" : "inline_detail_rail"}
+                      placeholder="Search evidence"
+                    />
                   </div>
                   <div className="space-y-2">
                     {evidenceRows.map((row) => {

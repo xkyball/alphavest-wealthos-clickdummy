@@ -34,7 +34,7 @@ test.describe("E12 contract fulfillment gate", () => {
       "E12-GATE-BACKEND-META",
       "E12-GATE-UI-SOURCE-TRUTH",
       "E12-GATE-RETIRED-PROOF-UI",
-      "E12-GATE-CAPTURE-RELEASE-WARNINGS",
+      "E12-GATE-OPERATIONAL-SCREENSHOT-AUDIT",
       "E12-GATE-RELEASE-CONTRACT-CHECK",
     ]);
   });
@@ -191,11 +191,12 @@ test.describe("E12 contract fulfillment gate", () => {
     ]));
   });
 
-  test("fails retired ProductGuidance imports and soft release capture QA scripts", () => {
+  test("fails retired ProductGuidance imports and retired screenshot QA scripts", () => {
     const report = evaluateContractFulfillmentGate(uxContractLedgerEntries, "2026-06-27T00:00:00.000Z", {
       packageJsonText: JSON.stringify({
         scripts: {
           "visual:capture-qa:release": "tsx scripts/capture-qa-contract.ts",
+          "visual:audit-operational": "playwright test tests/operational-visual-audit.spec.ts --workers=1",
           "visual:capture-routes:release-candidate": "tsx scripts/capture-routes-and-modals.ts",
           "release:contract-check": "pnpm guard:source && pnpm test:contract-fulfillment && pnpm test:route-smoke",
         },
@@ -211,7 +212,7 @@ test.describe("E12 contract fulfillment gate", () => {
     expect(report.status).toBe("fail");
     expect(violationIds(report.violations)).toEqual(expect.arrayContaining([
       "E12-GATE-RETIRED-PROOF-UI",
-      "E12-GATE-CAPTURE-RELEASE-WARNINGS",
+      "E12-GATE-OPERATIONAL-SCREENSHOT-AUDIT",
       "E12-GATE-RELEASE-CONTRACT-CHECK",
     ]));
   });
@@ -220,7 +221,7 @@ test.describe("E12 contract fulfillment gate", () => {
     const report = evaluateContractFulfillmentGate(uxContractLedgerEntries, "2026-06-27T00:00:00.000Z", {
       packageJsonText: JSON.stringify({
         scripts: {
-          "visual:capture-qa:release": "CAPTURE_QA_FAIL_ON_WARNINGS=1 CAPTURE_QA_REQUIRE_CAPTURES=1 CAPTURE_QA_INPUT=artifacts/release-candidate/current CAPTURE_QA_OUTPUT=artifacts/capture-qa/release-current tsx scripts/capture-qa-contract.ts",
+          "visual:audit-operational": "playwright test tests/operational-visual-audit.spec.ts --workers=1",
           "visual:capture-routes:release-candidate": "tsx scripts/capture-routes-and-modals.ts --release-candidate --screens-only",
           "release:contract-check": "pnpm guard:source && pnpm test:contract-fulfillment",
         },

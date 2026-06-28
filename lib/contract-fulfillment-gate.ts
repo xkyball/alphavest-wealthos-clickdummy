@@ -50,7 +50,7 @@ export const contractFulfillmentGateRuleIds = [
   "E12-GATE-BACKEND-META",
   "E12-GATE-UI-SOURCE-TRUTH",
   "E12-GATE-RETIRED-PROOF-UI",
-  "E12-GATE-CAPTURE-RELEASE-WARNINGS",
+  "E12-GATE-OPERATIONAL-SCREENSHOT-AUDIT",
   "E12-GATE-RELEASE-CONTRACT-CHECK",
 ] as const;
 
@@ -231,36 +231,32 @@ function addRetiredProofUiViolations(
   }
 }
 
-function addCaptureReleaseViolations(
+function addOperationalScreenshotAuditViolations(
   violations: ContractFulfillmentGateViolation[],
   packageJsonText: string,
 ) {
   const parsed = JSON.parse(packageJsonText) as { scripts?: Record<string, string> };
-  const releaseScript = parsed.scripts?.["visual:capture-qa:release"] ?? "";
-  const releaseCaptureGeneratorScript = parsed.scripts?.["visual:capture-routes:release-candidate"] ?? "";
-  const requiredReleaseFragments = [
-    "CAPTURE_QA_FAIL_ON_WARNINGS=1",
-    "CAPTURE_QA_REQUIRE_CAPTURES=1",
-    "CAPTURE_QA_INPUT=artifacts/release-candidate/current",
-    "CAPTURE_QA_OUTPUT=artifacts/capture-qa/release-current",
+  const operationalAuditScript = parsed.scripts?.["visual:audit-operational"] ?? "";
+  const releaseContractCheck = parsed.scripts?.["release:contract-check"] ?? "";
+  const forbiddenFragments = [
+    "visual:capture-qa",
+    "visual:capture-qa:release",
+    "visual:strict",
     "scripts/capture-qa-contract.ts",
-  ];
-  const requiredGeneratorFragments = [
-    "scripts/capture-routes-and-modals.ts",
-    "--release-candidate",
-    "--screens-only",
+    "scripts/strict-visual-capture.ts",
+    "CAPTURE_QA_",
+    "STRICT_VISUAL_",
   ];
   const missingFragments = [
-    ...requiredReleaseFragments.filter((fragment) => !releaseScript.includes(fragment)),
-    ...requiredGeneratorFragments
-      .filter((fragment) => !releaseCaptureGeneratorScript.includes(fragment))
-      .map((fragment) => `visual:capture-routes:release-candidate:${fragment}`),
+    ...["playwright test tests/operational-visual-audit.spec.ts", "--workers=1"].filter((fragment) => !operationalAuditScript.includes(fragment)),
+    ...["pnpm visual:audit-operational"].filter((fragment) => !releaseContractCheck.includes(fragment)),
   ];
+  const forbiddenHits = forbiddenFragments.filter((fragment) => packageJsonText.includes(fragment));
 
-  if (missingFragments.length > 0) {
+  if (missingFragments.length > 0 || forbiddenHits.length > 0) {
     violations.push({
-      message: `Release capture proof is missing required hard-gate fragments: ${missingFragments.join(", ")}.`,
-      ruleId: "E12-GATE-CAPTURE-RELEASE-WARNINGS",
+      message: `Operational screenshot audit gate is invalid. Missing: ${missingFragments.join(", ") || "none"}. Forbidden legacy fragments: ${forbiddenHits.join(", ") || "none"}.`,
+      ruleId: "E12-GATE-OPERATIONAL-SCREENSHOT-AUDIT",
       severity: "failure",
     });
   }
@@ -279,7 +275,7 @@ function addReleaseContractCheckViolations(
     "tests/e11-backend-data-surface-truth.spec.ts",
     "tests/e09-capture-release-policy.spec.ts",
     "pnpm test:route-smoke",
-    "pnpm visual:capture-qa:release",
+    "pnpm visual:audit-operational",
   ];
   const missingFragments = requiredFragments.filter((fragment) => !releaseContractCheck.includes(fragment));
 
@@ -373,7 +369,7 @@ export function evaluateContractFulfillmentGate(
   addBackendTruthViolations(violations, entries);
   addRetiredProofUiViolations(violations, sourceFiles);
   const packageJsonText = packageJsonTextForOptions(options);
-  addCaptureReleaseViolations(violations, packageJsonText);
+  addOperationalScreenshotAuditViolations(violations, packageJsonText);
   addReleaseContractCheckViolations(violations, packageJsonText);
 
   const hasFailures = violations.some((violation) => violation.severity === "failure");

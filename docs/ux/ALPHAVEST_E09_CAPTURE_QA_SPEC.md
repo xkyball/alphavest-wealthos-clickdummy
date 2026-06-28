@@ -1,121 +1,34 @@
 # AlphaVest E09 Capture QA Specification
 
-Epic: E09 - Screenshot Capture QA and Regression Automation
-Ticket: E09-S1 - Specify capture QA rules
+Status: retired on 2026-06-28.
 
 ## Decision
 
-Capture QA is a code-backed contract, not a manual screenshot review convention. Existing capture output must be checkable offline, and capture scripts may generate a QA report immediately after a run.
+The legacy offline capture-QA path is no longer an operative screenshot
+acceptance gate.
 
-## Supported Inputs
+Retired scripts:
 
-The E09 QA contract accepts:
+- `scripts/capture-qa-contract.ts`
+- `scripts/strict-visual-capture.ts`
 
-- Routes/modal capture run folders with `index.json` from `scripts/capture-routes-and-modals.ts`.
-- Strict visual capture run folders with `strict-review-dom-metrics.json` from `scripts/strict-visual-capture.ts`.
-- A root folder containing one or more of those run folders.
+Retired package scripts:
 
-The default input is `artifacts/` so the script can inspect existing captures without generating new screens.
+- `visual:capture-qa`
+- `visual:capture-qa:release`
+- `visual:strict`
 
-## Metadata Rules
+## Replacement
 
-Each capture item must expose:
+Operational UI screenshots are governed by
+`docs/ux/ALPHAVEST_OPERATIONAL_UI_NON_NEGOTIABLE.md` and validated by:
 
-- route id or page id.
-- route path.
-- state label.
-- screenshot path.
-- capture variant lifecycle kind.
-- capture file kind.
-- overlay flag.
-- status.
-- model/proof metadata when emitted by the source manifest.
-- dimensions when available from metrics or image headers.
+```bash
+pnpm visual:audit-operational
+```
 
-Routes/modal captures must use filenames in this shape:
+Every screenshot used as UI proof must be paired with the 1400x900 operational
+visual audit. An unaudited screenshot is not proof.
 
-`<pageId>-route-<routeSlug>-<lifecycleKind>-<stateSlug>.png`
-
-Strict visual captures must use filenames in this shape:
-
-`<assetSlug>-<lifecycleKind>-<viewport>.png`
-
-The QA script must report missing metadata and ambiguous naming as warnings by default. Hard failure is opt-in with `CAPTURE_QA_FAIL_ON_WARNINGS=1`.
-
-## Duplicate-State Rules
-
-The QA script groups screenshots by:
-
-- source kind.
-- route id or page id.
-- route path.
-- state label.
-- capture lifecycle kind.
-- capture file kind.
-- overlay flag.
-- viewport when present.
-
-Multiple screenshots for the same group are duplicate-state warnings unless they are from different run folders. Collisions within one run are stronger warnings because they can confuse reviewer evidence.
-
-## Base/Overlay Rules
-
-Overlay captures must not be ambiguous:
-
-- `modal`, `drawer` and `confirmation` lifecycle kinds require `isOverlay=true`.
-- `base` lifecycle kind requires `isOverlay=false`.
-- A `screen` file kind must not claim overlay state.
-- Overlay states must not be named `base`.
-
-## Long-Screen Rules
-
-Long-screen risk is reported from available dimensions:
-
-- `height > 2200px` is a long-screen warning.
-- `height > 3200px` is a severe long-screen warning.
-- `scrollHeight / viewportHeight >= 2.25` is a scroll-burden warning when both values are available.
-- Horizontal overflow remains a warning when `scrollWidth > clientWidth`.
-
-The default long-screen threshold is intentionally strict enough to catch review pain, but report-only by default to avoid breaking legacy captures.
-
-## Approved Evidence Policy
-
-Legacy capture bundles are historical evidence only. They must not be cleaned up, rewritten or metadata-patched merely to hide E09 warnings.
-
-New release-candidate capture folders must be treated differently:
-
-- Primary visual-review proof must come from an E09-compliant capture run.
-- Generate the current release-candidate capture with `pnpm visual:capture-routes:release-candidate`.
-- Release-candidate capture QA must run with `CAPTURE_QA_FAIL_ON_WARNINGS=1`.
-- Release-candidate capture QA must run with `CAPTURE_QA_REQUIRE_CAPTURES=1`.
-- Release-candidate capture QA must use `CAPTURE_QA_INPUT=artifacts/release-candidate/current`.
-- Use `pnpm visual:capture-qa:release` for the hard gate.
-- If the hard gate fails, either fix the capture/source truth or explicitly document a product-owner exception. Do not downgrade the gate by default.
-- Old bundles may remain useful for comparison, but they cannot override a newer E09-compliant capture report.
-- Long-screen, scroll-burden and horizontal-overflow findings from the current release-candidate report must be converted into burndown tickets through `docs/ux/ALPHAVEST_E12_LONG_SCREEN_BURNDOWN_REGISTER.md`.
-
-## UX Sign-Off Rules
-
-The generated sign-off checklist must cover E01-E08:
-
-- E01 design-system/operating-mode foundation.
-- E02 page template and layout discipline.
-- E03 proof/reviewer separation.
-- E04 base/modal/drawer/confirmation lifecycle boundaries.
-- E05 action hierarchy and feedback.
-- E06 data-surface, filtering and master-detail discipline.
-- E07 client-safe/internal separation.
-- E08 density, focus and semantic status accessibility.
-
-The checklist is not a design approval replacement. It is a repeatable acceptance artifact for capture review and regression discipline.
-
-## Output Contract
-
-The QA script writes:
-
-- `artifacts/capture-qa/capture-qa-report.json`
-- `artifacts/capture-qa/capture-qa-report.md`
-- `artifacts/capture-qa/release-current/capture-qa-report.json` for the hard release gate
-- `artifacts/capture-qa/release-current/capture-qa-report.md` for the hard release gate
-- `docs/v3/proof/e09_capture_qa_signoff_checklist.md` when explicitly requested through the sign-off script
-
-Each report must include checked counts, warning counts, failure counts, duplicate-state clusters, long-screen risks and metadata/naming findings.
+`scripts/capture-routes-and-modals.ts` remains a capture generator and manifest
+producer only. It does not own screenshot acceptance.

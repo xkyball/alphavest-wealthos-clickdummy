@@ -16,7 +16,7 @@ type SignoffReport = {
 };
 
 const root = process.cwd();
-const outputPath = process.env.UX_QA_SIGNOFF_OUTPUT ?? path.join(root, "docs", "v3", "proof", "e09_capture_qa_signoff_checklist.md");
+const outputPath = process.env.UX_QA_SIGNOFF_OUTPUT ?? path.join(root, "docs", "v3", "proof", "e09_operational_screenshot_audit_signoff_checklist.md");
 
 const signoffItems: SignoffItem[] = [
   {
@@ -114,12 +114,12 @@ function markdownCell(value: string) {
 
 function reportMarkdown(report: SignoffReport) {
   return [
-    "# E09 Capture QA Sign-Off Checklist",
+    "# E09 Operational Screenshot Audit Sign-Off Checklist",
     "",
     `Generated: ${report.generatedAt}`,
     `Status: ${report.status}`,
     "",
-    "This checklist is a repeatable human sign-off companion for capture QA. It does not replace product/design approval and it does not authorize new scope.",
+    "This checklist is a repeatable human sign-off companion for operational screenshot audit. It does not replace product/design approval and it does not authorize new scope.",
     "",
     "| Epic | Sign-off question | Acceptance signal | Evidence |",
     "| --- | --- | --- | --- |",
@@ -128,10 +128,10 @@ function reportMarkdown(report: SignoffReport) {
       return `| ${item.epic} | ${markdownCell(item.question)} | ${markdownCell(item.acceptanceSignal)} | ${markdownCell(evidence)} |`;
     }),
     "",
-    "## Capture QA Gate",
+    "## Operational Screenshot Audit Gate",
     "",
-    "- Run `pnpm visual:capture-qa` or `tsx scripts/capture-qa-contract.ts` against the relevant artifact root before release-style visual review.",
-    "- Run `pnpm visual:capture-qa:release` for new release-candidate capture folders; it sets `CAPTURE_QA_FAIL_ON_WARNINGS=1` and treats warnings as blockers.",
+    "- Run `pnpm visual:audit-operational` before any screenshot is used as release-style visual proof.",
+    "- Treat `scripts/capture-qa-contract.ts` and `scripts/strict-visual-capture.ts` as retired; do not reintroduce them as screenshot acceptance gates.",
     "- Treat legacy capture bundles as historical evidence only. Do not metadata-patch them merely to hide E09 warnings.",
     "- Treat duplicate-state clusters and long-screen risks as review blockers until a human explicitly accepts them or opens cleanup tickets.",
     "- Keep proof/reviewer metadata in reports and reviewer surfaces, not default operational UI.",

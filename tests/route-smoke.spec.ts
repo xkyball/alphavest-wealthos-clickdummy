@@ -180,7 +180,8 @@ test.describe("UX-NAV route policy navigation", () => {
     await authenticateRouteSmokePage(page);
     await page.goto("/advisory/review-queue");
 
-    await expect(page.getByRole("heading", { name: "Consultant Workbench", level: 2 }).first()).toBeVisible();
+    await expect(page.getByTestId("wp02-worksurface-shell").first()).toHaveAttribute("data-wp02-route-id", "034");
+    await expect(page.getByText("One selected work item, one blocker, one governed next action.").first()).toBeVisible();
     await expect(page.locator('[data-ux-queue-row]').first()).toBeVisible();
     await expect(page.locator('[data-ux-queue-selected="true"]').first()).toBeVisible();
     await expect(page.getByText("Open governed workflow").first()).toBeVisible();
@@ -763,7 +764,11 @@ test.describe("UX-DENSITY dense operations routes", () => {
       await expect(operations).toBeVisible();
       await expect(operations).toHaveAttribute("data-ux-density-tier", "D3");
       await expect(operations).toHaveAttribute("data-ux-density-pattern", "dense-operations");
-      await expect(operations.getByTestId("ux-d3-filter-sort-controls")).toBeVisible();
+      if (route.pageId === "056") {
+        await expect(operations.getByTestId("ux-d3-filter-sort-controls")).toHaveCount(0);
+      } else {
+        await expect(operations.getByTestId("ux-d3-filter-sort-controls")).toBeVisible();
+      }
       await expect(operations.getByTestId("ux-data-table").first()).toBeVisible();
       await expect(operations.getByTestId("ux-data-table-sort").first()).toBeVisible();
       await expect(operations.getByTestId("ux-data-table-row-action").first()).toBeVisible();
@@ -1088,7 +1093,7 @@ test.describe("UX-CTA export lifecycle separation", () => {
   const exportScreens = [
     { path: "/export/new", required: "Start export scope before redaction, preview, approval or delivery." },
     { path: "/export/demo/scope", required: "Scope selection is not preview, approval, download or share" },
-    { path: "/export/demo/redaction", required: "Approval blocked until preview" },
+    { path: "/export/demo/redaction", required: "Preview inspection must pass before approval can be recorded." },
     { path: "/export/demo/approval?state=approval", required: "Generation, download and share remain separate controlled steps." },
     { path: "/export/demo/download", required: "Share after download" },
   ];

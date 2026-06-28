@@ -2,25 +2,23 @@ import { readFile } from "node:fs/promises";
 
 import { expect, test } from "@playwright/test";
 
-test.describe("E09 capture release evidence policy", () => {
-  test("codifies legacy evidence quarantine and hard release capture QA", async () => {
+test.describe("E09 operational screenshot audit release policy", () => {
+  test("retires legacy capture QA and hardwires operational screenshot audit", async () => {
     const packageJson = JSON.parse(await readFile("package.json", "utf8")) as {
       scripts: Record<string, string>;
     };
-    const spec = await readFile("docs/ux/ALPHAVEST_E09_CAPTURE_QA_SPEC.md", "utf8");
+    const spec = await readFile("docs/ux/ALPHAVEST_OPERATIONAL_UI_NON_NEGOTIABLE.md", "utf8");
     const signoffSource = await readFile("scripts/ux-qa-signoff-report.ts", "utf8");
 
-    expect(packageJson.scripts["visual:capture-qa:release"]).toContain("CAPTURE_QA_FAIL_ON_WARNINGS=1");
-    expect(packageJson.scripts["visual:capture-qa:release"]).toContain("CAPTURE_QA_REQUIRE_CAPTURES=1");
-    expect(packageJson.scripts["visual:capture-qa:release"]).toContain("CAPTURE_QA_INPUT=artifacts/release-candidate/current");
-    expect(packageJson.scripts["visual:capture-qa:release"]).toContain("CAPTURE_QA_OUTPUT=artifacts/capture-qa/release-current");
-    expect(packageJson.scripts["visual:capture-qa:release"]).toContain("scripts/capture-qa-contract.ts");
-    expect(spec).toContain("Legacy capture bundles are historical evidence only");
-    expect(spec).toContain("must run with `CAPTURE_QA_FAIL_ON_WARNINGS=1`");
-    expect(spec).toContain("must run with `CAPTURE_QA_REQUIRE_CAPTURES=1`");
-    expect(spec).toContain("CAPTURE_QA_INPUT=artifacts/release-candidate/current");
-    expect(spec).toContain("ALPHAVEST_E12_LONG_SCREEN_BURNDOWN_REGISTER.md");
-    expect(spec).toContain("Do not downgrade the gate by default");
-    expect(signoffSource).toContain("Treat legacy capture bundles as historical evidence only");
+    expect(packageJson.scripts["visual:audit-operational"]).toBe("playwright test tests/operational-visual-audit.spec.ts --workers=1");
+    expect(packageJson.scripts["release:contract-check"]).toContain("pnpm visual:audit-operational");
+    expect(packageJson.scripts["visual:capture-qa"]).toBeUndefined();
+    expect(packageJson.scripts["visual:capture-qa:release"]).toBeUndefined();
+    expect(packageJson.scripts["visual:strict"]).toBeUndefined();
+    expect(spec).toContain("Every screenshot used as UI proof must be paired with this visual audit.");
+    expect(spec).toContain("screenshot is not proof");
+    expect(signoffSource).toContain("Run `pnpm visual:audit-operational`");
+    expect(signoffSource).toContain("scripts/capture-qa-contract.ts");
+    expect(signoffSource).toContain("scripts/strict-visual-capture.ts");
   });
 });

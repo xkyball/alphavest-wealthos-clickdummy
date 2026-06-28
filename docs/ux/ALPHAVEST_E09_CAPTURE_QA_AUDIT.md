@@ -1,6 +1,13 @@
 # AlphaVest E09 Capture QA Audit
 
 Epic: E09 - Screenshot Capture QA and Regression Automation
+
+Status: retired on 2026-06-28. The active replacement is the operational
+1400x900 screenshot audit in `tests/operational-visual-audit.spec.ts`.
+
+Do not reintroduce `scripts/capture-qa-contract.ts`,
+`scripts/strict-visual-capture.ts`, `visual:capture-qa`,
+`visual:capture-qa:release` or `visual:strict` as acceptance gates.
 Ticket: E09-A1 - Analyse current capture scripts and output structure
 Baseline commit: fd0e3c3 feat: implement e08 visual density accessibility
 Branch: full-workflow

@@ -137,7 +137,7 @@ E01-E09 must use this rule set as follows:
 | `E06` | Data-surface patterns must migrate or exception-mark local table/filter/list copies |
 | `E07` | Client/internal separation must be fail-closed and tested, not CSS-only hiding |
 | `E08` | Accessibility and density changes must reach shared primitives and runtime behavior |
-| `E09` | Capture QA must validate naming, metadata and duplicate/long-screen checks, not just produce screenshots |
+| `E09` | Operational screenshot audit must validate 1400x900 viewport fit, overflow, clipping, forbidden scaffolding, badge clusters and screen substance before screenshots can be proof |
 
 ## Acceptance Criteria
 

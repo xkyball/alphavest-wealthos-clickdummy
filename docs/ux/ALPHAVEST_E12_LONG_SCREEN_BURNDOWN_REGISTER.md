@@ -2,7 +2,7 @@
 
 Epic: E12 - Contract Fulfillment Ledger Gate
 Ticket: E12-CAPTURE-QA-QUARANTINE-AND-LONG-SCREEN-BURNDOWN
-Approval: `APPROVE_E12_CAPTURE_QA_QUARANTINE_AND_LONG_SCREEN_BURNDOWN`
+Approval: `APPROVE_E12_OPERATIONAL_SCREENSHOT_AUDIT_AND_LONG_SCREEN_BURNDOWN`
 
 ## Decision
 
@@ -18,7 +18,7 @@ The hard release report is written to:
 
 ## Burndown Activation
 
-Long-screen burndown tickets are created only from the current release-candidate capture QA report. Historical captures may inform diagnosis, but they do not create release-scope obligations by themselves.
+Long-screen burndown tickets are created from the operational 1400x900 screenshot audit. Historical captures may inform diagnosis, but they do not create release-scope obligations by themselves.
 
 ## Ticket Families
 

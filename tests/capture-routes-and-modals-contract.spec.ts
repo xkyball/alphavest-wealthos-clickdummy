@@ -14,7 +14,7 @@ test.describe("routes and modals capture contract", () => {
     expect(source).toMatch(/screensOnly\s+\?\s+alreadyOpen \|\| \(await overlay\.open\(page\)\)/);
   });
 
-  test("supports E12 release-candidate output for hard capture QA", async () => {
+  test("supports E12 release-candidate output without owning screenshot audit", async () => {
     const source = await readFile("scripts/capture-routes-and-modals.ts", "utf8");
     const packageJson = JSON.parse(await readFile("package.json", "utf8")) as { scripts: Record<string, string> };
 
@@ -24,8 +24,8 @@ test.describe("routes and modals capture contract", () => {
     expect(source).toContain("path.join(process.cwd(), \"artifacts\", outputArtifactPrefix)");
     expect(source).toContain("captureScope: releaseCandidate ? \"release-candidate\" : \"audit\"");
     expect(source).toContain("releaseCandidate");
-    expect(source).toContain("requireCaptures: releaseCandidate");
-    expect(source).toContain("failOnWarnings: releaseCandidate || process.env.CAPTURE_QA_FAIL_ON_WARNINGS === \"1\"");
+    expect(source).not.toContain("runCaptureQa");
+    expect(source).not.toContain("CAPTURE_QA");
     expect(packageJson.scripts["visual:capture-routes:release-candidate"]).toBe("tsx scripts/capture-routes-and-modals.ts --release-candidate --screens-only");
   });
 
@@ -60,7 +60,6 @@ test.describe("routes and modals capture contract", () => {
 
   test("writes capture provenance and proof eligibility before screenshots can be used as acceptance evidence", async () => {
     const captureSource = await readFile("scripts/capture-routes-and-modals.ts", "utf8");
-    const qaSource = await readFile("scripts/capture-qa-contract.ts", "utf8");
 
     expect(captureSource).toContain("type CaptureProofEligibilityStatus");
     expect(captureSource).toContain("type CaptureRunProvenance");
@@ -77,10 +76,6 @@ test.describe("routes and modals capture contract", () => {
     expect(captureSource).toContain("Screens-only mode has no DOM/CSS/runtime sidecars");
     expect(captureSource).toContain("This remains visual acceptance evidence, not complete process or vertical-slice proof.");
     expect(captureSource).toContain("| Proof Eligibility | Proof Reasons |");
-
-    expect(qaSource).toContain("proofEligibilityStatus");
-    expect(qaSource).toContain("proof-eligibility.required");
-    expect(qaSource).toContain("Missing screenshot proof eligibility status.");
   });
 
   test("uses screenshot filenames that expose route and interaction kind", async () => {
@@ -113,13 +108,13 @@ test.describe("routes and modals capture contract", () => {
     expect(source).toContain('item.captureVariant.isOverlay ? "yes" : "no"');
   });
 
-  test("strict visual capture labels normal screenshots as base variants", async () => {
-    const source = await readFile("scripts/strict-visual-capture.ts", "utf8");
+  test("legacy strict visual and capture QA scripts stay retired", async () => {
+    const packageJson = JSON.parse(await readFile("package.json", "utf8")) as { scripts: Record<string, string> };
 
-    expect(source).toContain("uxCaptureVariantForFileKind");
-    expect(source).toContain('uxCaptureVariantForFileKind("screen", "base")');
-    expect(source).toContain("${assetName}-${captureVariant.lifecycleKind}-${viewport}.png");
-    expect(source).toContain("captureVariant: UxCaptureVariant");
-    expect(source).toContain("| Capture Variant | File Kind | Overlay |");
+    await expect(readFile("scripts/strict-visual-capture.ts", "utf8")).rejects.toThrow();
+    await expect(readFile("scripts/capture-qa-contract.ts", "utf8")).rejects.toThrow();
+    expect(packageJson.scripts["visual:strict"]).toBeUndefined();
+    expect(packageJson.scripts["visual:capture-qa"]).toBeUndefined();
+    expect(packageJson.scripts["visual:capture-qa:release"]).toBeUndefined();
   });
 });

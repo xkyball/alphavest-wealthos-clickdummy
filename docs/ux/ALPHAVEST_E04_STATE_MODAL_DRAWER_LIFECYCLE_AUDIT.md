@@ -17,7 +17,7 @@ Date: 2026-06-27
 | `components/ui/state-panel.tsx` | Canonical state taxonomy through `UxComponentState`, semantic icons, non-color styling, state attributes from `uxStateAttributesForComponentState`. | State copy is route-owned; no wrapper exists for grouped state boundaries or capture reviewer summaries. |
 | `lib/ux-lifecycle-state-contract.ts` | Canonical lifecycle and state contracts exist, including base/modal/drawer/confirmation/capture-review and `uxCaptureVariantForFileKind`. | Capture identity is split between lifecycle attributes and capture script naming; no single marker helper for UI and capture metadata. |
 | `scripts/capture-routes-and-modals.ts` | Generates base and overlay screenshots, names files with page, route, lifecycle kind and state slug, and writes capture variant metadata into index output. | Capture variant metadata is not formalized as reusable runtime attributes; strict visual capture still captures normal screens only. |
-| `scripts/strict-visual-capture.ts` | Captures base route screenshots with model context and viewport checks. | Does not expose base/modal/drawer/state variant identity in metrics because it does not capture overlays. |
+| `tests/operational-visual-audit.spec.ts` | Audits operational screenshots at 1400x900 with viewport, overflow, clipping, forbidden scaffolding and substance checks. | Replaces the retired `scripts/strict-visual-capture.ts` path for screenshot acceptance. |
 
 ## Test Reality
 

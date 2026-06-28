@@ -9,7 +9,7 @@ export type ContractFamily =
   | "data_surface"
   | "client_visibility"
   | "visual_accessibility"
-  | "capture_qa"
+  | "operational_visual_audit"
   | "register_debt"
   | "backend_query_truth"
   | "contract_fulfillment";
@@ -19,7 +19,7 @@ export type ProofType =
   | "runtime_test"
   | "api_test"
   | "screenshot"
-  | "capture_qa"
+  | "screenshot_audit"
   | "typed_contract"
   | "generated_report"
   | "manual_decision";
@@ -115,7 +115,7 @@ export const uxContractMetaContract: UxContractMetaContract = {
     "data_surface",
     "client_visibility",
     "visual_accessibility",
-    "capture_qa",
+    "operational_visual_audit",
     "register_debt",
     "backend_query_truth",
     "contract_fulfillment",
@@ -142,7 +142,7 @@ export const uxContractMetaContract: UxContractMetaContract = {
     "pnpm guard:source",
     "pnpm test:route-smoke",
     "pnpm test:contract-fulfillment",
-    "pnpm visual:capture-qa:release",
+    "pnpm visual:audit-operational",
     "pnpm visual:capture-routes:release-candidate",
     "pnpm release:contract-check",
   ],
@@ -304,7 +304,7 @@ export const uxContractLedgerEntries: readonly UxContractLedgerEntry[] = [
       owner("test", "tests/ux-lifecycle-state-contract.spec.ts"),
     ],
     obligation: "Modal, drawer, base state and capture variants use canonical lifecycle/state metadata.",
-    proofType: ["typed_contract", "runtime_test", "capture_qa"],
+    proofType: ["typed_contract", "runtime_test", "screenshot_audit"],
     status: "fulfilled",
     evidence: [
       evidence("file", "lib/ux-lifecycle-state-contract.ts"),
@@ -408,56 +408,48 @@ export const uxContractLedgerEntries: readonly UxContractLedgerEntry[] = [
     expiresOrFollowUp: "E12-Q1 confirms current visual/accessibility proof coverage.",
   },
   {
-    id: "E09-CAPTURE-QA-RELEASE-PROOF",
-    title: "Capture QA release proof",
-    source: [markdownSpec("docs/ux/ALPHAVEST_E09_CAPTURE_QA_SPEC.md")],
-    contractFamily: "capture_qa",
+    id: "E09-OPERATIONAL-SCREENSHOT-AUDIT-PROOF",
+    title: "Operational screenshot audit release proof",
+    source: [markdownSpec("docs/ux/ALPHAVEST_OPERATIONAL_UI_NON_NEGOTIABLE.md")],
+    contractFamily: "operational_visual_audit",
     ownerSurface: [
-      owner("script", "scripts/capture-qa-contract.ts"),
-      owner("script", "scripts/visual-qa-contract.ts"),
-      owner("package_script", "visual:capture-qa:release"),
-      owner("package_script", "visual:capture-routes:release-candidate"),
-      owner("test", "tests/capture-qa-contract.spec.ts"),
-      owner("test", "tests/capture-routes-and-modals-contract.spec.ts"),
+      owner("package_script", "visual:audit-operational"),
+      owner("package_script", "release:contract-check"),
+      owner("test", "tests/operational-visual-audit.spec.ts"),
       owner("test", "tests/e09-capture-release-policy.spec.ts"),
     ],
-    obligation: "Current release capture proof must pass E09 QA with warnings treated as failures.",
-    proofType: ["capture_qa", "source_gate", "generated_report"],
-    status: "blocked",
-    evidence: [
-      evidence("script", "scripts/capture-qa-contract.ts"),
-      evidence("test", "tests/e09-capture-release-policy.spec.ts"),
-      evidence("command", "pnpm visual:capture-qa:release", "planned"),
-    ],
-    gateBehavior: "fail_always",
-    expiresOrFollowUp: "Produce a fresh E09-compliant release-candidate capture in artifacts/release-candidate/current and rerun pnpm release:contract-check.",
-    notes: "Release capture QA is scoped to artifacts/release-candidate/current and requires at least one fresh capture; legacy artifacts remain auditable through pnpm visual:capture-qa only.",
-  },
-  {
-    id: "E12-CAPTURE-QA-QUARANTINE-001",
-    title: "Legacy capture quarantine and long-screen burndown activation",
-    source: [
-      uploadSource,
-      { kind: "manual_decision", ref: "APPROVE_E12_CAPTURE_QA_QUARANTINE_AND_LONG_SCREEN_BURNDOWN" },
-      markdownRegister("docs/ux/ALPHAVEST_E12_LONG_SCREEN_BURNDOWN_REGISTER.md"),
-    ],
-    contractFamily: "capture_qa",
-    ownerSurface: [
-      owner("script", "scripts/capture-qa-contract.ts"),
-      owner("package_script", "visual:capture-qa"),
-      owner("package_script", "visual:capture-qa:release"),
-      owner("package_script", "visual:capture-routes:release-candidate"),
-      owner("file", "docs/ux/ALPHAVEST_E12_LONG_SCREEN_BURNDOWN_REGISTER.md"),
-      owner("test", "tests/capture-routes-and-modals-contract.spec.ts"),
-      owner("test", "tests/capture-qa-contract.spec.ts"),
-      owner("test", "tests/e09-capture-release-policy.spec.ts"),
-    ],
-    obligation: "Legacy capture bundles stay historical; release QA must use fresh release-candidate captures and convert fresh long-screen / overflow findings into route-level burndown tickets.",
-    proofType: ["capture_qa", "source_gate", "generated_report", "manual_decision"],
+    obligation: "Every UI screenshot proof used for release must be paired with the 1400x900 operational screenshot audit.",
+    proofType: ["screenshot_audit", "source_gate", "runtime_test"],
     status: "fulfilled",
     evidence: [
-      evidence("decision", "APPROVE_E12_CAPTURE_QA_QUARANTINE_AND_LONG_SCREEN_BURNDOWN"),
-      evidence("test", "tests/capture-qa-contract.spec.ts"),
+      evidence("test", "tests/operational-visual-audit.spec.ts"),
+      evidence("test", "tests/e09-capture-release-policy.spec.ts"),
+      evidence("command", "pnpm visual:audit-operational", "pass"),
+    ],
+    gateBehavior: "fail_always",
+    expiresOrFollowUp: null,
+    notes: "Legacy capture QA scripts were removed. Operational screenshots now require the route-level 1400x900 audit instead of offline capture bundle metadata.",
+  },
+  {
+    id: "E12-LEGACY-CAPTURE-QA-RETIRED-001",
+    title: "Legacy capture QA quarantine retired",
+    source: [
+      uploadSource,
+      { kind: "manual_decision", ref: "APPROVE_E12_OPERATIONAL_SCREENSHOT_AUDIT_AND_LONG_SCREEN_BURNDOWN" },
+      markdownRegister("docs/ux/ALPHAVEST_E12_LONG_SCREEN_BURNDOWN_REGISTER.md"),
+    ],
+    contractFamily: "operational_visual_audit",
+    ownerSurface: [
+      owner("file", "docs/ux/ALPHAVEST_E12_LONG_SCREEN_BURNDOWN_REGISTER.md"),
+      owner("test", "tests/capture-routes-and-modals-contract.spec.ts"),
+      owner("test", "tests/e09-capture-release-policy.spec.ts"),
+    ],
+    obligation: "Legacy capture QA scripts must stay retired; screenshot acceptance moves to operational visual audit.",
+    proofType: ["screenshot_audit", "source_gate", "manual_decision"],
+    status: "retired",
+    evidence: [
+      evidence("decision", "APPROVE_E12_OPERATIONAL_SCREENSHOT_AUDIT_AND_LONG_SCREEN_BURNDOWN"),
+      evidence("test", "tests/e09-capture-release-policy.spec.ts"),
       evidence("file", "docs/ux/ALPHAVEST_E12_LONG_SCREEN_BURNDOWN_REGISTER.md"),
     ],
     gateBehavior: "fail_always",
@@ -476,14 +468,14 @@ export const uxContractLedgerEntries: readonly UxContractLedgerEntry[] = [
       owner("package_script", "guard:source"),
       owner("package_script", "test:contract-fulfillment"),
       owner("package_script", "test:route-smoke"),
-      owner("package_script", "visual:capture-qa:release"),
+      owner("package_script", "visual:audit-operational"),
       owner("test", "tests/e10-register-reconciliation.spec.ts"),
       owner("test", "tests/e11-backend-data-surface-truth.spec.ts"),
       owner("test", "tests/e09-capture-release-policy.spec.ts"),
       owner("test", "tests/ux-data-surface-contract.spec.ts"),
     ],
-    obligation: "Release contract claims must use one hard command that bundles source guard, ledger fulfillment, E10/E11 truth, route smoke and capture QA release with warnings failing.",
-    proofType: ["source_gate", "runtime_test", "api_test", "capture_qa", "typed_contract"],
+    obligation: "Release contract claims must use one hard command that bundles source guard, ledger fulfillment, E10/E11 truth, route smoke and operational screenshot audit.",
+    proofType: ["source_gate", "runtime_test", "api_test", "screenshot_audit", "typed_contract"],
     status: "fulfilled",
     evidence: [
       evidence("command", "pnpm release:contract-check", "planned"),
@@ -492,7 +484,7 @@ export const uxContractLedgerEntries: readonly UxContractLedgerEntry[] = [
     ],
     gateBehavior: "fail_always",
     expiresOrFollowUp: null,
-    notes: "The command is intentionally separate from phase:check because release capture QA depends on capture artefacts; the ledger gate fails if this command loses any required constituent gate.",
+    notes: "The command is intentionally separate from phase:check; the ledger gate fails if this command loses any required constituent gate.",
   },
   {
     id: "E10-ACTION-ZONE-REGISTER",
@@ -1232,7 +1224,7 @@ export const requiredSeedContractIds = [
   "E06-DATA-SURFACE-MASTER-DETAIL",
   "E07-CLIENT-INTERNAL-SEPARATION",
   "E08-VISUAL-DENSITY-A11Y",
-  "E09-CAPTURE-QA-RELEASE-PROOF",
+  "E09-OPERATIONAL-SCREENSHOT-AUDIT-PROOF",
   "E10-ACTION-ZONE-REGISTER",
   "E10-DATA-SURFACE-FILTER-REGISTER",
   "E10-RETIRED-PROOF-UI-REGISTER",
@@ -1327,13 +1319,13 @@ function emptyContractFamilyGroups(): Record<ContractFamily, UxContractLedgerEnt
   return {
     action_feedback: [],
     backend_query_truth: [],
-    capture_qa: [],
     client_visibility: [],
     contract_fulfillment: [],
     data_surface: [],
     design_system: [],
     lifecycle_state: [],
     operating_model: [],
+    operational_visual_audit: [],
     page_template: [],
     proof_reviewer: [],
     register_debt: [],
