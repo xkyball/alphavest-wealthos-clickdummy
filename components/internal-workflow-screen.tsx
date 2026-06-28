@@ -29,7 +29,6 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  DataTable,
   FilterBar,
   MasterDetailSurface,
   Modal,
@@ -37,8 +36,7 @@ import {
   StatePanel,
   StickyActionZone,
   FieldFeedback,
-  type BadgeTone,
-  type DataTableColumn
+  type BadgeTone
 } from "@/components/ui";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { DemoActorHandoffBar } from "@/components/demo-actor-handoff-bar";
@@ -54,6 +52,7 @@ import { cn } from "@/lib/cn";
 import { processFirstUxContractForPageId } from "@/lib/process-first-ux-contract";
 import { uxActionAttributesFor, uxActionClassForPriority } from "@/lib/ux-action-hierarchy-contract";
 import { uxFeedbackSuccessMessageForSubject } from "@/lib/ux-feedback-message-contract";
+import { uxStatusCommandAttributesFor } from "@/lib/ux-status-command-hierarchy";
 import { wp05ComplianceReleaseConfirmationPhrase } from "@/lib/advisory-workflow-contract";
 import {
   advisorApprovalDemoTargets,
@@ -899,29 +898,186 @@ function SignalsPage({ title }: { title: string }) {
 }
 
 function WorkbenchPage({ title }: { title: string }) {
+  const [selectedClient, setSelectedClient] = useState(clientQueue[0]?.client);
+  const selectedClientRow = clientQueue.find((row) => row.client === selectedClient) ?? clientQueue[0];
+  const selectedTrigger = triggerQueue.find((row) => row.client === selectedClientRow?.client);
+  const selectedDraft = draftRecommendations.find((row) => row.client === selectedClientRow?.client);
+
   return (
     <InternalShell activePageId="034">
       <WorksurfaceShell
         description="The analyst workbench combines operational status, active client queues, trigger work and draft readiness in one process-owned surface."
         eyebrow="WP02 internal workbench"
-        primary={<UxHubPage pageId="034" />}
+        primary={
+          <div className="space-y-4">
+            <PageHeading
+              action={<span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Workbench queue can open work context only; publish and release remain separate governed routes." data-ux-interactive="false"><LockKeyhole aria-hidden="true" className="size-4" />Release blocked</span>}
+              badge={<Badge tone="gold">34</Badge>}
+              subtitle="Select one client work item, keep trigger context visible and hand off to the appropriate governed workflow without publishing or releasing anything."
+              title={title}
+            />
+            <MasterDetailSurface
+              actionPolicy="route_handoff"
+              actionRail="present"
+              density="compact_operations"
+              detail={
+                selectedClientRow ? (
+                  <Card data-testid="s034-client-selected-detail">
+                    <CardHeader>
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <CardTitle>{selectedClientRow.client}</CardTitle>
+                          <p className="mt-1 text-sm text-alphavest-muted">{selectedClientRow.value} - {selectedClientRow.segment}</p>
+                        </div>
+                        <Badge tone={toneFor(selectedClientRow.priority)}>{selectedClientRow.priority}</Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid gap-3">
+                        <InfoRow label="Next work" value={selectedClientRow.next} />
+                        <InfoRow label="Queue age" value={selectedClientRow.age} />
+                        <InfoRow label="Trigger" value={selectedTrigger?.title ?? "No active trigger"} />
+                        <InfoRow label="Draft" value={selectedDraft?.title ?? "No draft attached"} />
+                      </div>
+                      <StatePanel
+                        detail="Workbench selection only establishes the current operational context. Advice, export, release and client visibility remain blocked until their governed routes complete."
+                        state={selectedClientRow.priority === "High" ? "validation" : "restricted"}
+                        title="Operational handoff only"
+                        {...uxStatusCommandAttributesFor({
+                          componentState: selectedClientRow.priority === "High" ? "validation" : "restricted",
+                          reason: selectedClientRow.priority === "High" ? "High-priority client queue item needs review before downstream workflow action." : "Workbench queue rows cannot publish, release or export client-visible advice.",
+                          recoveryAction: selectedClientRow.next === "Missing Info" ? "provide_evidence" : "open_decision_room",
+                        })}
+                      />
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        <span className={primaryButtonClass} data-ux-affordance="route-handoff" data-ux-command-intent="open-governed-workflow" data-ux-disabled-message="explicit" data-ux-interactive="false">
+                          Open governed workflow
+                        </span>
+                        <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Client-visible output requires advisor approval and compliance release outside this workbench." data-ux-interactive="false">
+                          Client visibility held
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <StatePanel detail="No client work item is selected." state="empty" title="No selected work item" />
+                )
+              }
+              family="queue"
+              filterState="inactive"
+              master={
+                <div className="space-y-2" data-testid="s034-client-master-list">
+                  {clientQueue.map((row) => {
+                    const selected = selectedClientRow?.client === row.client;
+
+                    return (
+                      <button
+                        className={cn(
+                          "w-full rounded-md border p-3 text-left transition",
+                          selected ? "border-alphavest-gold bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35 hover:border-alphavest-gold/60",
+                        )}
+                        data-ux-field-priority="identity value segment primary_status next_work age"
+                        data-ux-queue-row={row.client}
+                        data-ux-queue-selected={selected ? "true" : "false"}
+                        key={row.client}
+                        onClick={() => setSelectedClient(row.client)}
+                        type="button"
+                      >
+                        <span className="flex items-start justify-between gap-3">
+                          <span className="min-w-0">
+                            <span className="block text-sm font-semibold text-alphavest-ivory">{row.client}</span>
+                            <span className="mt-1 block text-xs text-alphavest-muted">{row.value} - {row.segment}</span>
+                          </span>
+                          <Badge tone={toneFor(row.priority)}>{row.priority}</Badge>
+                        </span>
+                        <span className="mt-2 grid gap-2 text-xs text-alphavest-muted sm:grid-cols-2">
+                          <span>{row.next}</span>
+                          <span className="sm:text-right">{row.age}</span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              }
+              masterDetailMode="inline_detail_rail"
+              proofPlacement="proof_drawer"
+              queueWorkbench
+              selectedObjectId={selectedClientRow?.client ?? "no-client-row"}
+              selectedObjectState={selectedClientRow?.priority ?? "empty"}
+              selectedSummary={<span>Internal workbench now keeps queue selection, operational detail and proof handoff in one governed surface; no queue row publishes, releases, exports or changes client visibility.</span>}
+              stickyRail
+            />
+          </div>
+        }
         rail={<ReadinessCard />}
         routeId="034"
         safetyNote="WP02 layout only: the workbench organizes analyst work but does not publish, release, export or alter client visibility."
         secondary={
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-            {workbenchMetrics.map((metric) => (
-              <Card key={metric.label}>
-                <CardContent>
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="text-sm text-alphavest-muted">{metric.label}</p>
-                    <Badge tone={toneFor(metric.status)}>{metric.status}</Badge>
-                  </div>
-                  <p className="mt-3 text-2xl font-semibold text-alphavest-ivory">{metric.value}</p>
-                  <p className="mt-1 text-xs text-alphavest-subtle">{metric.detail}</p>
+          <div className="grid gap-4">
+            <div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-5">
+              {workbenchMetrics.map((metric) => (
+                <Card key={metric.label}>
+                  <CardContent>
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="text-sm text-alphavest-muted">{metric.label}</p>
+                      <Badge tone={toneFor(metric.status)}>{metric.status}</Badge>
+                    </div>
+                    <p className="mt-3 text-2xl font-semibold text-alphavest-ivory">{metric.value}</p>
+                    <p className="mt-1 text-xs text-alphavest-subtle">{metric.detail}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            <div className="grid gap-4 2xl:grid-cols-3" data-ux-queue-proof-drawer="true">
+              <Card>
+                <CardHeader><CardTitle>Trigger proof queue <Badge className="ml-2" tone="gold">{triggerQueue.length}</Badge></CardTitle></CardHeader>
+                <CardContent className="space-y-3">
+                  {triggerQueue.map((row) => (
+                    <div className="flex items-center justify-between gap-3 border-b border-alphavest-border/45 pb-3 last:border-0" key={row.title}>
+                      <div>
+                        <p className="font-semibold text-alphavest-ivory">{row.title}</p>
+                        <p className="text-sm text-alphavest-muted">{row.client}</p>
+                        <p className="text-xs text-alphavest-subtle">{row.detail}</p>
+                      </div>
+                      <Badge tone={toneFor(row.severity)}>{row.age}</Badge>
+                    </div>
+                  ))}
                 </CardContent>
               </Card>
-            ))}
+              <Card>
+                <CardHeader><CardTitle>Draft readiness <Badge className="ml-2" tone="gold">{draftRecommendations.length}</Badge></CardTitle></CardHeader>
+                <CardContent className="space-y-3">
+                  {draftRecommendations.map((row) => (
+                    <div className="flex items-center justify-between gap-3 border-b border-alphavest-border/45 pb-3 last:border-0" key={row.title}>
+                      <div>
+                        <p className="font-semibold text-alphavest-ivory">{row.client}</p>
+                        <p className="text-sm text-alphavest-muted">{row.title}</p>
+                        <p className="text-xs text-alphavest-subtle">{row.updated}</p>
+                      </div>
+                      <Badge tone={toneFor(row.status)}>{row.status}</Badge>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader><CardTitle>Workbench controls</CardTitle></CardHeader>
+                <CardContent className="space-y-3 text-sm">
+                  <InfoRow label="Action rail" value="Route handoff only" />
+                  <InfoRow label="Proof placement" value="Secondary proof drawer" />
+                  <InfoRow label="Client visibility" value="Blocked outside workbench" />
+                  <StatePanel
+                    detail="The workbench can prioritize and route work. It cannot approve advice, release evidence, export reports or expose output to clients."
+                    state="restricted"
+                    title="No release authority"
+                    {...uxStatusCommandAttributesFor({
+                      componentState: "restricted",
+                      reason: "Internal workbench is not a release or approval route.",
+                      recoveryAction: "complete_review",
+                    })}
+                  />
+                </CardContent>
+              </Card>
+            </div>
           </div>
         }
         statusItems={[
@@ -930,76 +1086,8 @@ function WorkbenchPage({ title }: { title: string }) {
         ]}
         title={title}
         worksurfaceId="internal-workbench-queue"
-      >
-        <div className="grid gap-4 xl:grid-cols-3">
-          <QueueCard rows={clientQueue} title="Client Work Queue" />
-          <TriggerQueueCard />
-          <DraftsCard />
-        </div>
-      </WorksurfaceShell>
+      />
     </InternalShell>
-  );
-}
-
-function QueueCard({ rows, title }: { rows: typeof clientQueue; title: string }) {
-  return (
-    <Card>
-      <CardHeader><CardTitle>{title} <Badge className="ml-2" tone="gold">{rows.length}</Badge></CardTitle></CardHeader>
-      <CardContent className="space-y-3">
-        {rows.map((row, index) => (
-          <div className={cn("grid gap-3 rounded-md border p-3 text-sm md:grid-cols-[1fr_auto]", index === 0 ? "border-alphavest-gold bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35")} key={row.client}>
-            <div>
-              <p className="font-semibold text-alphavest-ivory">{row.client}</p>
-              <p className="text-xs text-alphavest-muted">{row.value} - {row.segment}</p>
-            </div>
-            <div className="text-right">
-              <Badge tone={toneFor(row.priority)}>{row.priority}</Badge>
-              <p className="mt-2 text-xs text-alphavest-muted">{row.next} - {row.age}</p>
-            </div>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
-  );
-}
-
-function TriggerQueueCard() {
-  return (
-    <Card>
-      <CardHeader><CardTitle>Trigger Queue <Badge className="ml-2" tone="gold">{triggerQueue.length}</Badge></CardTitle></CardHeader>
-      <CardContent className="space-y-3">
-        {triggerQueue.map((row) => (
-          <div className="flex items-center justify-between gap-3 border-b border-alphavest-border/45 pb-3 last:border-0" key={row.title}>
-            <div>
-              <p className="font-semibold text-alphavest-ivory">{row.title}</p>
-              <p className="text-sm text-alphavest-muted">{row.client}</p>
-              <p className="text-xs text-alphavest-subtle">{row.detail}</p>
-            </div>
-            <Badge tone={toneFor(row.severity)}>{row.age}</Badge>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
-  );
-}
-
-function DraftsCard() {
-  return (
-    <Card>
-      <CardHeader><CardTitle>Draft Recommendations <Badge className="ml-2" tone="gold">{draftRecommendations.length}</Badge></CardTitle></CardHeader>
-      <CardContent className="space-y-3">
-        {draftRecommendations.map((row) => (
-          <div className="flex items-center justify-between gap-3 border-b border-alphavest-border/45 pb-3 last:border-0" key={row.title}>
-            <div>
-              <p className="font-semibold text-alphavest-ivory">{row.client}</p>
-              <p className="text-sm text-alphavest-muted">{row.title}</p>
-              <p className="text-xs text-alphavest-subtle">{row.updated}</p>
-            </div>
-            <Badge tone={toneFor(row.status)}>{row.status}</Badge>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
   );
 }
 
@@ -1311,30 +1399,139 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-const advisorColumns: Array<DataTableColumn<(typeof advisorQueue)[number]>> = [
-  { key: "client", header: "Client / Structure", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.client}<span className="block text-xs text-alphavest-muted">{row.structure}</span></span>, sortable: true },
-  { key: "type", header: "Type", render: (row) => <span>{row.type}<span className="block text-xs">{row.topic}</span></span>, sortable: true },
-  { key: "priority", header: "Priority", render: (row) => <Badge tone={toneFor(row.priority)}>{row.priority}</Badge>, sortable: true },
-  { key: "submitted", header: "Submitted", render: (row) => row.submitted, sortable: true },
-  { key: "due", header: "Due", render: (row) => <span className={row.status === "Overdue" ? "text-alphavest-red" : ""}>{row.due}</span>, sortable: true },
-  { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge>, sortable: true }
-];
-
 function AdvisorQueuePage({ title }: { title: string }) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedAdvisorClient, setSelectedAdvisorClient] = useState(advisorQueue[0]?.client);
   const normalizedSearchTerm = searchTerm.trim().toLowerCase();
   const visibleRows = advisorQueue.filter((row) => (
     normalizedSearchTerm.length === 0 ||
     [row.client, row.structure, row.type, row.topic, row.priority, row.status].some((value) => value.toLowerCase().includes(normalizedSearchTerm))
   ));
+  const selectedAdvisorRow = visibleRows.find((row) => row.client === selectedAdvisorClient) ?? visibleRows[0];
 
   return (
     <InternalShell activePageId="036">
       <WorksurfaceShell
         description="Advisor review is now a clear human-gate worksurface: queue triage, selected package context and explicit non-release boundary stay visible together."
         eyebrow="WP02 advisor review"
-        primary={<Phase5DetailSplitPanel decisionSupport="Advisor queue remains separate from advisor package detail." objectLabel="Advisor queue split" objectState="Advisor work awaiting selection" pageJob="Advisor queue selects packages; detail records review context separately." safetyBoundary="Queue rows cannot approve or release recommendations." splitTaskId="UX-PAGE-SPLIT-004" taskId="UX-PAGE-SPLIT-004" />}
+        primary={
+          <div className="space-y-4">
+            <Phase5DetailSplitPanel decisionSupport="Advisor queue remains separate from advisor package detail." objectLabel="Advisor queue split" objectState="Advisor work awaiting selection" pageJob="Advisor queue selects packages; detail records review context separately." safetyBoundary="Queue rows cannot approve or release recommendations." splitTaskId="UX-PAGE-SPLIT-004" taskId="UX-PAGE-SPLIT-004" />
+            <PageHeading
+              action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Queue export is blocked; advisor package detail owns any package action." data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />Export held</span><span className={primaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Bulk actions remain blocked until EPIC-10 command hierarchy is implemented as typed commands." data-ux-interactive="false">Bulk actions held</span></div>}
+              badge={<Badge tone="gold">36</Badge>}
+              subtitle="Select one advisor package and hand off to package detail without approving or releasing it from the queue."
+              title={title}
+            />
+            <MasterDetailSurface
+              actionPolicy="route_handoff"
+              actionRail="present"
+              density="compact_operations"
+              detail={
+                selectedAdvisorRow ? (
+                  <Card data-testid="s036-advisor-selected-detail">
+                    <CardHeader>
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <CardTitle>{selectedAdvisorRow.client}</CardTitle>
+                          <p className="mt-1 text-sm text-alphavest-muted">{selectedAdvisorRow.structure}</p>
+                        </div>
+                        <Badge tone={toneFor(selectedAdvisorRow.priority)}>{selectedAdvisorRow.priority}</Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid gap-3">
+                        <InfoRow label="Package type" value={selectedAdvisorRow.type} />
+                        <InfoRow label="Topic" value={selectedAdvisorRow.topic} />
+                        <InfoRow label="Submitted" value={selectedAdvisorRow.submitted} />
+                        <InfoRow label="Due" value={selectedAdvisorRow.due} />
+                      </div>
+                      <StatePanel
+                        detail="Advisor queue selection can open package detail only. Approval, compliance release, export and client visibility remain separate gates."
+                        state={selectedAdvisorRow.status === "Overdue" ? "validation" : "restricted"}
+                        title="Package-detail handoff only"
+                        {...uxStatusCommandAttributesFor({
+                          componentState: selectedAdvisorRow.status === "Overdue" ? "validation" : "restricted",
+                          reason: selectedAdvisorRow.status === "Overdue" ? "Advisor package is overdue and needs review." : "Queue rows cannot approve or release recommendations.",
+                          recoveryAction: "open_decision_room",
+                        })}
+                      />
+                      <button className={primaryButtonClass + " w-full"} data-testid="s036-open-selected-review" onClick={() => router.push("/advisor/reviews/demo")} type="button">
+                        Open advisor package detail
+                      </button>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <StatePanel detail="No advisor package is selected. Clear search before opening package detail." state="empty" title="No selected advisor package" />
+                )
+              }
+              family="queue"
+              filterState={searchTerm.length > 0 ? "active_query" : "inactive"}
+              master={
+                <div className="space-y-4" data-testid="s036-advisor-master-list">
+                  <FilterBar
+                    activeFilterCount={4}
+                    activeStateLabel={searchTerm.length > 0 ? `Advisor queue query active: ${searchTerm}. Static filters remain visible only.` : "Advisor queue filters are visible as disabled demo controls only."}
+                    filters={[
+                      { label: "Type", value: "type" },
+                      { label: "Priority", value: "priority" },
+                      { label: "Risk Level", value: "risk" },
+                      { label: "Assigned To", value: "assigned" },
+                    ]}
+                    filterState={searchTerm.length > 0 ? "active_query" : "disabled_static"}
+                    onQueryChange={setSearchTerm}
+                    onReset={() => setSearchTerm("")}
+                    placeholder="Search queue..."
+                    queryValue={searchTerm}
+                    searchTestId="ux-interaction-advisor-search"
+                  />
+                  <div className="space-y-2">
+                    {visibleRows.map((row) => {
+                      const selected = selectedAdvisorRow?.client === row.client;
+
+                      return (
+                        <button
+                          className={cn(
+                            "w-full rounded-md border p-3 text-left transition",
+                            selected ? "border-alphavest-gold bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35 hover:border-alphavest-gold/60",
+                          )}
+                          data-ux-field-priority="identity primary_status risk_due evidence_gate"
+                          data-ux-queue-row={row.client}
+                          data-ux-queue-selected={selected ? "true" : "false"}
+                          key={row.client}
+                          onClick={() => setSelectedAdvisorClient(row.client)}
+                          type="button"
+                        >
+                          <span className="flex items-start justify-between gap-3">
+                            <span className="min-w-0">
+                              <span className="block text-sm font-semibold text-alphavest-ivory">{row.client}</span>
+                              <span className="mt-1 block text-xs text-alphavest-muted">{row.structure} · {row.topic}</span>
+                            </span>
+                            <Badge tone={toneFor(row.status)}>{row.status}</Badge>
+                          </span>
+                          <span className="mt-2 grid gap-1 text-xs text-alphavest-muted">
+                            <span>Priority: {row.priority}</span>
+                            <span>Type: {row.type}</span>
+                            <span>Due: {row.due}</span>
+                          </span>
+                        </button>
+                      );
+                    })}
+                    {!visibleRows.length ? <StatePanel detail="No advisor queue rows match this search." state="empty" title="No matching advisor packages" /> : null}
+                  </div>
+                </div>
+              }
+              masterDetailMode="inline_detail_rail"
+              proofPlacement="proof_drawer"
+              queueWorkbench
+              selectedObjectId={selectedAdvisorRow?.client ?? "no-advisor-row"}
+              selectedObjectState={selectedAdvisorRow?.status ?? "empty"}
+              selectedSummary={<span>Advisor queue keeps list context while selection exposes one package-detail handoff only; no advisor row approves, releases, exports or creates client visibility.</span>}
+              stickyRail
+            />
+          </div>
+        }
         rail={<AdvisorSummaryPanel />}
         routeId="036"
         safetyNote="WP02 layout only: advisor queue selection does not approve, release, export or create client visibility."
@@ -1344,16 +1541,9 @@ function AdvisorQueuePage({ title }: { title: string }) {
         ]}
         title={title}
         worksurfaceId="advisor-review-queue"
-      >
-      <div className="mx-auto max-w-[112rem]">
-        <section className="min-w-0 space-y-5">
-          <PageHeading
-            action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />Export held</span><span className={primaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Bulk actions held</span></div>}
-            badge={<Badge tone="gold">36</Badge>}
-            subtitle="Review and approve client recommendations and updates."
-            title={title}
-          />
-          <div className="grid gap-3 md:grid-cols-5">
+        secondary={
+          <div className="grid gap-4">
+            <div className="grid gap-3 md:grid-cols-5">
             {[
               ["All Pending", "36"],
               ["Overdue", "7"],
@@ -1363,53 +1553,18 @@ function AdvisorQueuePage({ title }: { title: string }) {
             ].map(([label, value]) => (
               <Card key={label}><p className="text-sm text-alphavest-muted">{label}</p><p className={cn("mt-2 text-3xl font-semibold", label === "Overdue" ? "text-alphavest-red" : "text-alphavest-gold")}>{value}</p></Card>
             ))}
+            </div>
+            <Card data-ux-queue-proof-drawer="true">
+              <CardHeader><CardTitle>Advisor proof drawer</CardTitle></CardHeader>
+              <CardContent className="grid gap-3 md:grid-cols-3">
+                <InfoRow label="Advisor review" value="Package-detail handoff only" />
+                <InfoRow label="Compliance release" value="Still required" />
+                <InfoRow label="Client visibility" value="Blocked until compliance gate" />
+              </CardContent>
+            </Card>
           </div>
-          <MasterDetailSurface
-            actionPolicy="route_handoff"
-            density="default"
-            family="queue"
-            filterState={searchTerm.length > 0 ? "active_query" : "disabled_static"}
-            master={
-              <div className="space-y-4">
-                <FilterBar
-                  activeFilterCount={4}
-                  activeStateLabel={searchTerm.length > 0 ? `Advisor queue query active: ${searchTerm}. Static filters remain visible only.` : "Advisor queue filters are visible as disabled demo controls only."}
-                  filters={[
-                    { label: "Type", value: "type" },
-                    { label: "Priority", value: "priority" },
-                    { label: "Risk Level", value: "risk" },
-                    { label: "Assigned To", value: "assigned" },
-                  ]}
-                  filterState={searchTerm.length > 0 ? "active_query" : "disabled_static"}
-                  onQueryChange={setSearchTerm}
-                  onReset={() => setSearchTerm("")}
-                  placeholder="Search queue..."
-                  queryValue={searchTerm}
-                  searchTestId="ux-interaction-advisor-search"
-                />
-                <DataTable
-                  actionPolicy="route_handoff"
-                  columns={advisorColumns}
-                  density="default"
-                  emptyMessage="No advisor queue rows match this search."
-                  family="queue"
-                  filterState={searchTerm.length > 0 ? "active_query" : "inactive"}
-                  getRowId={(row) => row.client}
-                  masterDetailMode="route_detail"
-                  onRowAction={() => router.push("/advisor/reviews/demo")}
-                  rowActionLabel={(row) => `Open advisor review for ${row.client}`}
-                  rows={visibleRows}
-                />
-              </div>
-            }
-            masterDetailMode="route_detail"
-            selectedObjectId={visibleRows[0]?.client ?? "no-advisor-row"}
-            selectedObjectState={visibleRows.length > 0 ? visibleRows[0].status : "empty"}
-            selectedSummary={<span>Advisor queue keeps list context while row actions hand off to route detail only; no advisor row approves, releases, exports or creates client visibility.</span>}
-          />
-        </section>
-      </div>
-      </WorksurfaceShell>
+        }
+      />
     </InternalShell>
   );
 }

@@ -45,6 +45,23 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain("s038-compliance-selected-detail");
   });
 
+  test("marks S034 and S036 as process-owned queue workbenches without legacy hub or table fallbacks", () => {
+    const source = readSource("components", "internal-workflow-screen.tsx");
+
+    expect(source).toContain("function WorkbenchPage");
+    expect(source).toContain("s034-client-master-list");
+    expect(source).toContain("s034-client-selected-detail");
+    expect(source).toContain("Internal workbench now keeps queue selection");
+    expect(source).toContain("data-ux-queue-proof-drawer");
+    expect(source).toContain("uxStatusCommandAttributesFor");
+    expect(source).toContain("function AdvisorQueuePage");
+    expect(source).toContain("s036-advisor-master-list");
+    expect(source).toContain("s036-advisor-selected-detail");
+    expect(source).not.toContain('primary={<UxHubPage pageId="034" />}');
+    expect(source).not.toContain("<QueueCard rows={clientQueue}");
+    expect(source).not.toContain("<DataTable");
+  });
+
   test("marks S029 extraction review as a queue workbench with proof drawer handoff", () => {
     const source = readSource("components", "client-intake-screen.tsx");
 
