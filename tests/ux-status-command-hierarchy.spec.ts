@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { expect, test } from "@playwright/test";
 
 import {
@@ -11,6 +13,12 @@ import {
   uxStatusPrimitiveContractId,
   uxStatusPrimitiveFamilies,
 } from "../lib/ux-status-command-hierarchy";
+
+const repoRoot = process.cwd();
+
+function readSource(...segments: string[]) {
+  return readFileSync(join(repoRoot, ...segments), "utf8");
+}
 
 test.describe("EPIC-10 typed status and command hierarchy", () => {
   test("defines the approved status hierarchy levels", () => {
@@ -96,5 +104,19 @@ test.describe("EPIC-10 typed status and command hierarchy", () => {
       "data-ux-status-primitive-contract": "epic_05_status_action_blocker_confirmation",
       "data-ux-status-primitive-family": "confirmation",
     });
+  });
+
+  test("marks S039 compliance decision room as the EPIC-05 representative primitive consumer", () => {
+    const source = readSource("components", "internal-workflow-screen.tsx");
+
+    expect(source).toContain('data-testid="s039-epic05-primitive-consumer"');
+    expect(source).toContain('data-ux-epic05-target-screen="S039"');
+    expect(source).toContain("uxStatusCommandAttributesFor");
+    expect(source).toContain('primitiveFamily: "blocker"');
+    expect(source).toContain('recoveryAction: "review_policy"');
+    expect(source).toContain("uxConfirmationAttributesFor");
+    expect(source).toContain('scope: "compliance_release"');
+    expect(source).toContain('data-testid="uxp3-compliance-sensitive-action-lifecycle"');
+    expect(source).toContain("Confirmation is valid. Submit can persist the audited compliance action while release remains separately gated.");
   });
 });

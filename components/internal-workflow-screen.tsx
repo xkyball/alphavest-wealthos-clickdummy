@@ -54,7 +54,7 @@ import { uxActionAttributesFor, uxActionClassForPriority } from "@/lib/ux-action
 import { uxFeedbackSuccessMessageForSubject } from "@/lib/ux-feedback-message-contract";
 import { uxPageTemplateForPageId } from "@/lib/ux-page-template-system";
 import { uxRouteShellPageJobContractForTemplate } from "@/lib/ux-route-shell-page-job-contract";
-import { uxStatusCommandAttributesFor } from "@/lib/ux-status-command-hierarchy";
+import { uxConfirmationAttributesFor, uxStatusCommandAttributesFor } from "@/lib/ux-status-command-hierarchy";
 import { wp05ComplianceReleaseConfirmationPhrase } from "@/lib/advisory-workflow-contract";
 import {
   advisorApprovalDemoTargets,
@@ -180,6 +180,25 @@ function SensitiveWorkflowConfirmationModal({
       : reason.trim().length < 12
         ? "Compliance action is blocked until the reason explains the decision with at least 12 characters."
         : `Compliance action is blocked until the confirmation text exactly matches ${config.phrase}.`;
+  const confirmationActionMeaning = activeConfig.action === "request_evidence" ? "request_evidence" : "block";
+  const confirmationState =
+    status === "success"
+      ? "confirmed"
+      : status === "submitting"
+        ? "submitting"
+        : !valid
+          ? "validation_failed"
+          : "ready";
+  const confirmationActionAvailability =
+    status === "submitting"
+      ? "loading"
+      : status === "success"
+        ? "success"
+        : status === "error"
+          ? "error"
+          : disabled
+            ? "disabled"
+            : "enabled";
 
   function resetAndClose() {
     setAcknowledged(false);
@@ -242,6 +261,15 @@ function SensitiveWorkflowConfirmationModal({
             className={primaryButtonClass}
             data-testid={config.action === "request_evidence" ? "j02-confirm-request-evidence" : `typed-${config.action}-submit`}
             data-ux-lifecycle-result={valid ? `submits-audited-${config.action.replace("_", "-")}` : "blocked-validation-required"}
+            {...uxActionAttributesFor({
+              availability: confirmationActionAvailability,
+              disabledReason: disabled ? validationMessage : undefined,
+              meaning: confirmationActionMeaning,
+              placement: "modal_footer",
+              priority: confirmationActionMeaning === "block" ? "destructive" : "recovery",
+              requiresAudit: true,
+              requiresConfirmation: true,
+            })}
             disabled={disabled}
             onClick={() => {
               void submit();
@@ -263,6 +291,11 @@ function SensitiveWorkflowConfirmationModal({
         data-ux-lifecycle-validation={validationState}
         data-ux-no-overclaim="true"
         data-ux-sensitive-action={config.action}
+        {...uxConfirmationAttributesFor({
+          actionMeaning: confirmationActionMeaning,
+          scope: "compliance_release",
+          state: confirmationState,
+        })}
       >
         <StatePanel
           detail="Cancel closes this dialog without calling the workflow API. Invalid input keeps submit disabled."
@@ -2102,6 +2135,7 @@ function ComplianceDecisionRoomPanel() {
 
 function ComplianceReviewPage({ title }: { title: string }) {
   const [confirmationAction, setConfirmationAction] = useState<SensitiveWorkflowAction | null>(null);
+  const releaseBlocker = "Release remains blocked because evidence, policy, reviewer and approver gates are not all satisfied.";
 
   return (
     <InternalShell activePageId="039">
@@ -2109,10 +2143,21 @@ function ComplianceReviewPage({ title }: { title: string }) {
         description="The compliance decision room keeps evidence, policy, preconditions, request/block controls and audit context in one release-gated worksurface."
         eyebrow="WP02 compliance release"
         primary={
-          <div className="space-y-4">
+          <div
+            className="space-y-4"
+            data-testid="s039-epic05-primitive-consumer"
+            data-ux-epic05-target-screen="S039"
+            {...uxStatusCommandAttributesFor({
+              actionMeaning: "release",
+              componentState: "blocked",
+              primitiveFamily: "blocker",
+              reason: releaseBlocker,
+              recoveryAction: "review_policy",
+            })}
+          >
             <Phase5DetailSplitPanel compact decisionSupport="Evidence, policy and audit state before release action" objectLabel="Compliance object review" objectState="Release gates not satisfied" pageJob="One release decision room" safetyBoundary="No release, export or client acceptance without gated controls" splitTaskId="UX-PAGE-SPLIT-003" taskId="UX-PAGE-SPLIT-003" />
             <ComplianceReleaseGate />
-            <Phase6DecisionRoomPanel audit="Audit event must record actor, target, gate state and confirm or cancel outcome before any release mutation." blocker="Release remains blocked because evidence, policy, reviewer and approver gates are not all satisfied." cancelLabel="Cancel without mutation" compact confirmLabel="Confirm compliance release" decisionLabel="Compliance release decision room" evidence="Evidence checklist, policy exception state and audit references are visible before decision." preconditions="Evidence review complete, policy pass, human reviewer and compliance approver must all pass." safetyNote="No release, export or advice effect can occur until gate preconditions pass and an audit record exists." taskId="UX-DECISION-ROOM-001" />
+            <Phase6DecisionRoomPanel audit="Audit event must record actor, target, gate state and confirm or cancel outcome before any release mutation." blocker={releaseBlocker} cancelLabel="Cancel without mutation" compact confirmLabel="Confirm compliance release" decisionLabel="Compliance release decision room" evidence="Evidence checklist, policy exception state and audit references are visible before decision." preconditions="Evidence review complete, policy pass, human reviewer and compliance approver must all pass." safetyNote="No release, export or advice effect can occur until gate preconditions pass and an audit record exists." taskId="UX-DECISION-ROOM-001" />
             <ComplianceDecisionRoomPanel />
           </div>
         }
@@ -2136,7 +2181,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
                   <ActionButton
                     availability="blocked_static"
                     className="w-full"
-                    disabledReason="Release remains blocked until evidence, policy, reviewer and approver gates pass."
+                    disabledReason={releaseBlocker}
                     meaning="release"
                     placement="sticky_rail"
                     priority="blocked"
