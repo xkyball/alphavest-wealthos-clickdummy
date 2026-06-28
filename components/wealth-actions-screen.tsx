@@ -9,26 +9,21 @@ import {
   CheckCircle2,
   ChevronDown,
   ClipboardCheck,
-  FileText,
   Home,
   Landmark,
   LockKeyhole,
   Network,
   ShieldCheck,
   SlidersHorizontal,
-  Upload,
   UserRound,
   X
 } from "lucide-react";
 import { GlobalSearchBox } from "@/components/global-search-box";
 import { ProcessSidebar } from "@/components/process-navigation";
-import { AuditTimeline, Badge, Card, CardContent, CardHeader, CardTitle, MasterDetailSurface, ProcessGateRail, StatePanel, type BadgeTone } from "@/components/ui";
-import { DisabledControlReason, disabledControlReasonId } from "@/components/ui/disabled-control-reason";
+import { Badge, Card, CardContent, CardHeader, CardTitle, MasterDetailSurface, StatePanel, type BadgeTone } from "@/components/ui";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
-import { UxComplexityPriorityPanel } from "@/components/ux-complexity-priority-panel";
 import { RouteContextChip } from "@/components/route-context-chip";
-import { UxCtaCluster } from "@/components/ux-cta-cluster";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
 import { UxSupportDensityStrip } from "@/components/ux-support-density-strip";
@@ -41,7 +36,6 @@ import { runDataMaintenanceCommand } from "@/lib/data-maintenance-command-client
 import type { VisualState } from "@/lib/visual-contract";
 import {
   actionColumns,
-  actionMetrics,
   selectedAction,
   selectedActionEvidence,
   selectedActionTimeline,
@@ -64,6 +58,8 @@ type WealthActionsScreenProps = {
 
 const secondaryButtonClass =
   "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-4 text-sm font-semibold text-alphavest-ivory transition hover:border-alphavest-gold/60 hover:text-alphavest-gold-soft";
+const primaryButtonClass =
+  "inline-flex h-[var(--button-height)] items-center justify-center gap-2 rounded-md border border-alphavest-gold bg-alphavest-gold px-4 text-sm font-semibold text-alphavest-navy transition hover:bg-alphavest-gold-soft";
 
 function toneFor(value: string): BadgeTone {
   const normalized = value.toLowerCase();
@@ -85,6 +81,26 @@ function toneFor(value: string): BadgeTone {
   }
 
   return "muted";
+}
+
+function InlineStatus({ tone, value }: { tone: BadgeTone; value: string }) {
+  const Icon = tone === "red" ? AlertTriangle : tone === "green" ? CheckCircle2 : ShieldCheck;
+  const toneClass: Record<BadgeTone, string> = {
+    blue: "text-alphavest-blue",
+    gold: "text-alphavest-gold",
+    green: "text-alphavest-green",
+    muted: "text-alphavest-muted",
+    purple: "text-violet-200",
+    red: "text-alphavest-red",
+    teal: "text-teal-200",
+  };
+
+  return (
+    <span className={cn("inline-flex min-w-0 items-center gap-1.5 font-semibold", toneClass[tone])}>
+      <Icon aria-hidden="true" className="size-4 shrink-0" />
+      <span className="truncate">{value}</span>
+    </span>
+  );
 }
 
 function ScreenTitle({ children }: { children: React.ReactNode }) {
@@ -456,6 +472,9 @@ function WealthMapDrawer({ onClose }: { onClose: () => void }) {
 function ActionsPage({ title, visualState }: { title: string; visualState?: VisualState }) {
   const [drawerOpen, setDrawerOpen] = useState(visualState === "drawer");
   const processContract = processFirstUxContractForPageId("032");
+  const compactActionRows = actionColumns.flatMap((column) => (
+    column.cards.map((card) => ({ ...card, columnTitle: column.title }))
+  )).slice(0, 3);
 
   return (
     <WealthShell activePageId="032">
@@ -472,163 +491,73 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
           masterDetailMode={drawerOpen ? "drawer_detail" : "inline_detail_rail"}
           selectedObjectId={selectedAction.id}
           selectedObjectState={selectedAction.evidenceState}
-          selectedSummary={
-            <span>
-              Selected work stays in view with its blocker and next permitted action. Board context does not create evidence sufficiency, advisor approval, compliance release or client visibility.
-            </span>
-          }
           stickyRail={drawerOpen}
         >
-        <section className="min-w-0 space-y-5">
-          <PageHeading
-            action={
-              <UxCtaCluster
-                blockedReason="New action is secondary; selected blocked work must be opened first because evidence is missing."
-                primary={{ label: "Open selected action", onClick: () => setDrawerOpen(true) }}
-                recoveryAction={{ label: "Request missing evidence", onClick: () => setDrawerOpen(true) }}
-                secondary={[
-                  {
-                    disabled: true,
-                    disabledReason: "Action board filters are not wired in this release.",
-                    label: "Filters",
-                  },
-                  {
-                    disabled: true,
-                    disabledReason: "Open and resolve the selected blocked action before creating new work.",
-                    label: "New action",
-                  },
-                ]}
-              />
-            }
-            subtitle="Track and advance actions through the workflow."
-            title={title}
-          />
-          <UxSupportDensityStrip pageId="032" />
-          <ProcessGateRail
-            actionLabel="Request missing evidence"
-            actionState="The selected action can be routed, but it cannot be marked ready while client approval evidence is missing."
-            acceptanceIds={processContract.acceptanceIds}
-            blockedReason="selected_action_missing_evidence"
-            businessProcessIds={processContract.businessProcessIds}
-            currentStep="action_triage"
-            gateState="Evidence blocked"
-            gateIds={processContract.gateIds}
-            items={[
-              { detail: selectedAction.object, label: "Selected item", tone: "gold", value: selectedAction.priority },
-              { detail: selectedAction.evidenceState, label: "Evidence sufficiency", tone: "red", value: "Not sufficient" },
-              { detail: "Advisor and compliance gates have not started for this action.", label: "Release path", tone: "red", value: "Client blocked" },
-              { detail: selectedAction.due, label: "Owner and due date", tone: "gold", value: selectedAction.owner },
-            ]}
-            nextStep={processContract.nextPermittedAction}
-            testId="bd05-action-board-process-gate"
-            title="Current action process gate"
-          />
-          <UxComplexityPriorityPanel
-            actionLabel="Open selected action"
-            actionState="Selected action review stays blocked until missing client approval evidence is resolved."
-            priorityItems={[
-              { detail: selectedAction.object, label: selectedAction.title, value: selectedAction.priority },
-              { detail: "Client approval evidence missing", label: "Evidence blocker", value: selectedAction.evidenceState },
-              { detail: selectedAction.due, label: "Next due item", value: selectedAction.stage },
-            ]}
-            safetyNote="Readiness still requires evidence, audit and workflow gates."
-            summaryItems={[
-              { detail: "Work that needs attention first", label: "Blocked", value: "1" },
-              { detail: "Visible on the board", label: "Active actions", value: "22" },
-              { detail: "Must stay evidence-backed and release-controlled", label: "Client-safe visible", value: "0" },
-            ]}
-            title="Action status"
-          />
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
-            {actionMetrics.map((metric) => (
-              <div className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/70 p-4" key={metric.label}>
-                <p className="text-sm text-alphavest-muted">{metric.label}</p>
-                <p className={cn("mt-2 text-3xl font-semibold", metric.label === "Overdue" || metric.label === "Blocked" ? "text-alphavest-red" : metric.label === "Due Today" ? "text-alphavest-gold" : "text-alphavest-ivory")}>{metric.value}</p>
-                <p className={cn("mt-2 text-xs", metric.trend === "down" ? "text-alphavest-red" : metric.trend === "up" ? "text-alphavest-green" : "text-alphavest-muted")}>{metric.delta}</p>
+        <section
+          className="min-w-0 space-y-3"
+          data-testid="bd05-action-board-process-board"
+          data-ux-process-acceptance-gates={processContract.acceptanceIds.join(" ")}
+          data-ux-process-blocked-reason="selected_action_missing_evidence"
+          data-ux-process-business-processes={processContract.businessProcessIds.join(" ")}
+          data-ux-process-current-step="action_triage"
+          data-ux-process-first="true"
+          data-ux-process-gate-ids={processContract.gateIds.join(" ")}
+          data-ux-process-gate-state="Evidence review required"
+          data-ux-process-next-step={processContract.nextPermittedAction}
+        >
+          <Card>
+            <CardHeader>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <CardTitle>Action Board</CardTitle>
+                <InlineStatus tone="gold" value="Evidence review required" />
               </div>
-            ))}
-          </div>
-          <div className="flex flex-col gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-panel/55 p-3 md:flex-row md:items-center md:justify-between">
-            <div className="flex flex-wrap gap-2">
-              {["Priority", "Owner", "Due date", "Evidence state", "Workflow stage"].map((filter) => {
-                const disabledReason = "Action board filters are not wired in this release.";
-                const disabledReasonId = disabledControlReasonId(`action-${filter}-filter`);
-
-                return (
-                  <span
-                    aria-describedby={disabledReasonId}
-                    aria-label={`${filter} filter is static in this action board`}
-                    className="flex h-10 items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted opacity-65"
-                    data-ux-affordance="blocked-static-control"
-                    data-ux-data-surface-filter-state="disabled_static"
-                    data-ux-disabled-message="accessible"
-                    data-ux-disabled-reason={disabledReason}
-                    data-ux-e10-filter-exception-id="DSF-007"
-                    data-ux-interactive="false"
-                    key={filter}
-                    role="status"
-                    title={disabledReason}
+            </CardHeader>
+            <CardContent className="grid gap-3">
+              <div className="grid gap-2 md:grid-cols-4">
+                {[
+                  ["Selected", selectedAction.title],
+                  ["Owner", selectedAction.owner],
+                  ["Due", selectedAction.due],
+                  ["Evidence", selectedAction.evidenceState],
+                ].map(([label, value]) => (
+                  <div className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2" key={label}>
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-alphavest-subtle">{label}</p>
+                    <p className="mt-1 truncate text-sm font-semibold text-alphavest-ivory">{value}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-2 text-sm leading-5 text-alphavest-gold-soft">
+                Request the missing approval evidence before marking this work ready.
+              </div>
+              <div className="grid gap-2 md:grid-cols-3">
+                {compactActionRows.map((card) => (
+                  <button
+                    className={cn(
+                      "min-h-24 rounded-md border bg-alphavest-charcoal/55 p-3 text-left",
+                      card.id === selectedAction.id ? "border-alphavest-gold/75" : card.warning ? "border-alphavest-red/45" : "border-alphavest-border/70",
+                    )}
+                    key={card.id}
+                    onClick={() => setDrawerOpen(true)}
+                    type="button"
                   >
-                    {filter}
-                    <ChevronDown aria-hidden="true" className="size-4" />
-                    <DisabledControlReason id={disabledReasonId} reason={disabledReason} />
-                  </span>
-                );
-              })}
-            </div>
-            {(() => {
-              const disabledReason = "Board grouping is fixed to workflow stage in this release.";
-              const disabledReasonId = disabledControlReasonId("action-board-grouping");
-
-              return (
-                <span
-                  aria-describedby={disabledReasonId}
-                  aria-label="Board grouping is fixed to workflow stage"
-                  className={secondaryButtonClass}
-                  data-ux-affordance="blocked-static-control"
-                  data-ux-disabled-message="accessible"
-                  data-ux-disabled-reason={disabledReason}
-                  data-ux-interactive="false"
-                  role="status"
-                  title={disabledReason}
-                >
-                  Group: Workflow Stage
-                  <DisabledControlReason id={disabledReasonId} reason={disabledReason} />
-                </span>
-              );
-            })()}
-          </div>
-          <div
-            className="overflow-x-auto rounded-md border border-alphavest-border/70 bg-alphavest-midnight/45 p-3"
-            data-testid="bd05-action-board-process-board"
-            data-ux-board-scroll="horizontal_process_columns"
-          >
-          <div className="grid min-w-[112rem] grid-cols-8 gap-3">
-            {actionColumns.map((column) => (
-              <section className="flex max-h-[34rem] min-h-[26rem] flex-col rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-3" key={column.id}>
-                <div className="mb-3 flex items-center justify-between gap-2">
-                  <h2 className="text-sm font-semibold text-alphavest-ivory">{column.title}</h2>
-                  <Badge tone="muted">{column.count}</Badge>
-                </div>
-                <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
-                  {column.cards.map((card) => (
-                    <ActionBoardCard card={card} key={card.id} selected={card.id === selectedAction.id} />
-                  ))}
-                  <p className="flex h-9 w-full items-center justify-center gap-2 rounded-md border border-dashed border-alphavest-border text-xs font-semibold text-alphavest-gold opacity-60" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
-                    Column actions locked
-                  </p>
-                </div>
-              </section>
-            ))}
-          </div>
-          </div>
-          <div className="flex flex-wrap gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-panel/55 p-3 text-xs text-alphavest-muted">
-            <span className="font-semibold text-alphavest-ivory">Legend</span>
-            <span className="flex items-center gap-2"><span className="size-2 rounded-full bg-alphavest-red" />High</span>
-            <span className="flex items-center gap-2"><span className="size-2 rounded-full bg-alphavest-gold" />Medium</span>
-            <span className="flex items-center gap-2"><span className="size-2 rounded-full bg-alphavest-green" />Low</span>
-            <span className="flex items-center gap-2"><CheckCircle2 aria-hidden="true" className="size-4 text-alphavest-green" />Complete</span>
-            <span className="flex items-center gap-2"><AlertTriangle aria-hidden="true" className="size-4 text-alphavest-red" />Missing evidence</span>
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-sm font-semibold leading-5 text-alphavest-ivory">{card.title}</p>
+                      <InlineStatus tone={toneFor(card.priority)} value={card.priority} />
+                    </div>
+                    <p className="mt-2 text-xs text-alphavest-muted">{card.columnTitle}</p>
+                    <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-alphavest-muted">
+                      <span>{card.assignee}</span>
+                      <span className={card.due.includes("Overdue") ? "text-alphavest-red" : undefined}>{card.due}</span>
+                      <InlineStatus tone={toneFor(card.evidence)} value={card.evidence} />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+          <div className="flex flex-wrap gap-2">
+            <button className={primaryButtonClass} onClick={() => setDrawerOpen(true)} type="button">Open selected action</button>
+            <button className={secondaryButtonClass} onClick={() => setDrawerOpen(true)} type="button">Request missing evidence</button>
           </div>
         </section>
       </MasterDetailSurface>}
@@ -676,100 +605,80 @@ function ActionBoardCard({ card, selected }: { card: ActionCard; selected?: bool
 
 function ActionDrawer({ onClose }: { onClose: () => void }) {
   return (
-    <aside aria-label="Action Details" className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-panel/88 p-4 shadow-2xl xl:sticky xl:top-24 xl:max-h-[calc(100vh-7rem)] xl:overflow-y-auto">
+    <aside aria-label="Action Details" className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-panel/88 p-3 shadow-2xl">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-gold">Action Details</p>
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <Badge tone="red">{selectedAction.priority}</Badge>
-            <h2 className="font-display text-2xl text-alphavest-ivory">{selectedAction.title}</h2>
-            <Badge tone="blue">{selectedAction.stage}</Badge>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">Action Details</p>
+          <h2 className="mt-2 font-display text-xl text-alphavest-ivory">{selectedAction.title}</h2>
+          <div className="mt-2 flex flex-wrap gap-3 text-sm">
+            <InlineStatus tone="red" value={selectedAction.priority} />
+            <InlineStatus tone="gold" value={selectedAction.stage} />
           </div>
-          <p className="mt-2 text-sm text-alphavest-muted">{selectedAction.object} · Action ID: {selectedAction.id}</p>
         </div>
         <button className="grid size-9 shrink-0 place-items-center rounded-full border border-alphavest-border text-alphavest-muted" onClick={onClose} type="button">
           <X aria-hidden="true" className="size-4" />
           <span className="sr-only">Close action drawer</span>
         </button>
       </div>
-      <div className="mt-5 space-y-5">
-        <section className="border-t border-alphavest-border/60 pt-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-gold">Summary</p>
-          <p className="mt-2 text-sm leading-6 text-alphavest-muted">{selectedAction.summary}</p>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      <div className="mt-3 space-y-3">
+        <section className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3">
+          <p className="text-sm font-semibold text-alphavest-ivory">Summary</p>
+          <p className="mt-1 text-sm leading-5 text-alphavest-muted">{selectedAction.summary}</p>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
             {[
               ["Owner", selectedAction.owner],
               ["Due date", selectedAction.due],
-              ["Workflow stage", selectedAction.stage],
-              ["Related object", selectedAction.relatedObject]
+              ["Related object", selectedAction.relatedObject],
+              ["Evidence", selectedAction.evidenceState]
             ].map(([label, value]) => (
-              <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3" key={label}>
+              <div className="rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-2" key={label}>
                 <p className="text-xs text-alphavest-muted">{label}</p>
-                <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{value}</p>
+                <p className="mt-1 truncate text-sm font-semibold text-alphavest-ivory">{value}</p>
               </div>
             ))}
           </div>
-          <div className="mt-4">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-alphavest-muted">Evidence State</span>
-              <span className="font-semibold text-alphavest-gold">{selectedAction.evidenceState}</span>
-            </div>
-            <div className="mt-2 h-2 rounded-full bg-alphavest-border">
-              <div className="h-2 w-4/5 rounded-full bg-alphavest-gold" />
-            </div>
-          </div>
         </section>
-        <section>
+        <section className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-3">
           <div className="mb-3 flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-gold">Related Evidence</p>
+            <p className="text-sm font-semibold text-alphavest-ivory">Related Evidence</p>
             <span className="text-xs font-semibold text-alphavest-muted" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Scoped list</span>
           </div>
-          <div className="overflow-hidden rounded-md border border-alphavest-border/70">
-            {selectedActionEvidence.map((item) => (
-              <div className={cn("flex items-start gap-3 border-b border-alphavest-border/55 p-3 last:border-0", item.status === "Missing" && "border-alphavest-red/50 bg-alphavest-red/10")} key={item.title}>
-                <IconTile tone={item.status === "Missing" ? "red" : "blue"}>{item.status === "Missing" ? <Upload aria-hidden="true" className="size-4" /> : <FileText aria-hidden="true" className="size-4" />}</IconTile>
+          <div className="grid gap-2">
+            {selectedActionEvidence.slice(0, 1).map((item) => (
+              <div className={cn("flex items-start gap-3 rounded-md border border-alphavest-border/55 p-2", item.status === "Missing" && "border-alphavest-red/50 bg-alphavest-red/10")} key={item.title}>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-alphavest-ivory">{item.title}</p>
                   <p className="text-xs text-alphavest-muted">{item.type} · {item.updated}</p>
                 </div>
-                <Badge tone={toneFor(item.status)}>{item.status}</Badge>
+                <InlineStatus tone={toneFor(item.status)} value={item.status} />
               </div>
             ))}
           </div>
         </section>
-        <section>
+        <section className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-3">
           <div className="mb-3 flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-gold">Timeline</p>
+            <p className="text-sm font-semibold text-alphavest-ivory">Timeline</p>
             <span className="text-xs font-semibold text-alphavest-muted" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Scoped timeline</span>
           </div>
-          <AuditTimeline items={selectedActionTimeline.map((item) => ({ ...item }))} />
+          <ol
+            aria-label="Audit timeline"
+            className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2 text-sm text-alphavest-muted"
+            data-testid="ux-phase5-audit-timeline"
+            data-ux-affordance="static-audit-timeline"
+            data-ux-audit-source="display-only"
+            data-ux-audit-source-state="display-only"
+            data-ux-interactive="false"
+            data-ux-phase5-detail-support="audit-object-state"
+            data-ux-phase5-task="UX-DETAIL-005"
+          >
+            <li data-ux-affordance="static-timeline-item" data-ux-interactive="false">
+              {selectedActionTimeline[0]?.title ?? "Latest action context"} · {selectedActionTimeline[0]?.timestamp ?? "Current"}
+            </li>
+          </ol>
         </section>
-        <Card>
-          <CardHeader><CardTitle className="text-xl">Notes</CardTitle></CardHeader>
-          <CardContent>
-            <div className="flex gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3">
-              <span className="grid size-9 shrink-0 place-items-center rounded-full border border-alphavest-gold/45 text-xs text-alphavest-gold">AB</span>
-              <p className="text-sm leading-6 text-alphavest-muted">{selectedAction.note}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <StatePanel detail="Client approval evidence is missing. This action cannot be marked ready for advisor or client release yet." state="blocked" title="Blocked by missing evidence" />
-        <section>
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-gold">Available actions</p>
-          <UxCtaCluster
-            blockedReason="Mark Ready stays blocked until client approval evidence is present; drawer actions do not change readiness."
-            primary={{ label: "Request Info", onClick: () => { void runDataMaintenanceCommand("j05.requestInfo"); }, testId: "j05-request-info" }}
-            recoveryAction={{ href: "/documents/upload", label: "Request client approval evidence" }}
-            secondary={[
-              { label: "Update Due Date" },
-              {
-                disabled: true,
-                disabledReason: "Client approval evidence must be present before readiness can be marked.",
-                label: "Mark Ready",
-                testId: "j05-mark-ready",
-              },
-            ]}
-          />
+        <section className="grid gap-2">
+          <button className={primaryButtonClass} data-testid="j05-request-info" onClick={() => { void runDataMaintenanceCommand("j05.requestInfo"); }} type="button">Request Info</button>
+          <a className="text-center text-sm font-semibold text-alphavest-gold hover:text-alphavest-gold-soft" href="/documents/upload">Request client approval evidence</a>
         </section>
       </div>
     </aside>

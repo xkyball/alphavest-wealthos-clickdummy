@@ -893,13 +893,13 @@ test.describe("UX-CTA AI draft internal-only chain", () => {
     await authenticateRouteSmokePage(page);
     await page.goto("/advisor/reviews/demo");
 
-    await expect(page.getByRole("heading", { name: "Internal Draft Recommendation" })).toBeVisible();
-    await expect(page.getByText("Internal draft only, not client advice. Unsupported claims require evidence-backed rebuild; advisor candidate and compliance review keep client visibility blocked until audited release gates pass.")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Recommendation Summary" })).toBeVisible();
+    await expect(page.getByTestId("bd07-advisor-decision-room-panel").getByText("Ask the analyst to rebuild unsupported claims before submitting the package for compliance review.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Approve for compliance review" })).toBeVisible();
     await expect(page.getByTestId("ux-cta-ai-rebuild")).toBeVisible();
     await expect(page.getByTestId("ux-cta-ai-rebuild")).toHaveAttribute("data-ux-interactive", "false");
-    await expect(page.getByTestId("ux-cta-ai-rebuild")).toContainText("Draft rebuild remains analyst-owned");
-    await expect(page.getByText("Evidence request remains compliance-owned")).toBeVisible();
+    await expect(page.getByTestId("ux-cta-ai-rebuild")).toContainText("Request analyst rebuild");
+    await expect(page.getByText("Request evidence follow-up")).toBeVisible();
     await expect(page.getByRole("button", { name: "Escalate advisor review call" })).toBeVisible();
     await expect(page.getByText(/release to client|client visibility unlocked|client-ready draft|approved for client/i)).toHaveCount(0);
     await expect(page.getByText("82% Success")).toHaveCount(0);
@@ -915,12 +915,12 @@ test.describe("V0.96 WP-06 compliance decision-room refactor-first chain", () =>
     const checklist = page.getByTestId("wp06-compliance-precondition-checklist");
     await expect(checklist).toBeVisible();
     await expect(checklist).toHaveAttribute("data-wp06-release-ready", "false");
-    await expect(checklist).toContainText("Advisor approval");
-    await expect(checklist).toContainText("Evidence sufficiency");
-    await expect(checklist).toContainText("Audit persistence");
-    await expect(checklist).toContainText("Client-safe projection");
+    await expect(checklist).toContainText("Advisor review");
+    await expect(checklist).toContainText("Evidence");
+    await expect(checklist).toContainText("Audit record");
+    await expect(checklist).toContainText("Client package");
 
-    await expect(page.getByTestId("wp06-release-blocked-control")).toContainText("Release blocked until preconditions pass");
+    await expect(page.getByTestId("wp06-release-blocked-control")).toContainText("Release unavailable");
     await expect(page.getByTestId("wp06-release-blocked-control")).toHaveAttribute("data-ux-interactive", "false");
     await expect(page.locator('[data-ux-primary-cta="true"]').filter({ hasText: "Request Evidence" })).toHaveCount(1);
     await expect(page.getByRole("button", { name: "Keep Blocked" })).toBeVisible();

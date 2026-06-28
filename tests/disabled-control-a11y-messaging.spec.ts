@@ -39,16 +39,10 @@ test.describe("UXP2-010 accessibility-safe disabled-control messaging", () => {
     await expect(page.getByTestId("ux-disabled-control-reason").filter({ hasText: "Search is disabled on registered-only routes." }).first()).toBeVisible();
   });
 
-  test("keeps static filter controls non-focusable while naming the unavailable reason", async ({ page }) => {
+  test("removes action-board filter controls instead of exposing static unavailable controls", async ({ page }) => {
     await page.goto("/actions");
 
-    const priorityFilter = page.getByLabel("Priority filter is static in this action board");
-
-    await expect(priorityFilter).toHaveAttribute("role", "status");
-    await expect(priorityFilter).toHaveAttribute("data-ux-interactive", "false");
-    await expect(priorityFilter).toHaveAttribute("data-ux-disabled-message", "accessible");
-    await expect(priorityFilter).toHaveAttribute("data-ux-disabled-reason", "Action board filters are not wired in this release.");
-    await expect(priorityFilter).toHaveAttribute("aria-describedby", /action-priority-filter-disabled-reason/);
+    await expect(page.getByLabel("Priority filter is static in this action board")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Priority filter is static in this action board" })).toHaveCount(0);
   });
 

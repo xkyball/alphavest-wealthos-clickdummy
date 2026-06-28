@@ -21,16 +21,15 @@ test.describe("UXP2-002 filter affordance pruning", () => {
     await authenticate(page);
   });
 
-  test("renders static actions-board filters without dummy buttons", async ({ page }) => {
+  test("removes fake actions-board filters from the compact board", async ({ page }) => {
     await page.goto("/actions");
 
     await expect(page.getByRole("button", { name: "Open selected action" })).toBeEnabled();
     await expect(page.getByRole("button", { name: "Filters" }).first()).toHaveCount(0);
-    await expect(page.getByTestId("ux-cta-disabled-reason").filter({ hasText: "Action board filters are not wired in this release." })).toBeVisible();
     await expect(page.getByRole("button", { name: "Priority filter is static in this action board" })).toHaveCount(0);
-    await expect(page.getByLabel("Priority filter is static in this action board")).toBeVisible();
+    await expect(page.getByLabel("Priority filter is static in this action board")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Board grouping is fixed to workflow stage" })).toHaveCount(0);
-    await expect(page.getByLabel("Board grouping is fixed to workflow stage")).toBeVisible();
+    await expect(page.getByLabel("Board grouping is fixed to workflow stage")).toHaveCount(0);
   });
 
   test("keeps real tenant filters active and disables generic filter drawer affordances", async ({ page }) => {

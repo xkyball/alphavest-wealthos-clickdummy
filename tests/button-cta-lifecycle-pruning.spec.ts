@@ -56,7 +56,7 @@ test.describe("UXP2-007 button and CTA lifecycle pruning", () => {
 
     await expect(page.getByRole("button", { name: "Open selected action" })).toBeEnabled();
     await expect(page.getByRole("button", { name: /New wealth action|Add action/ })).toHaveCount(0);
-    await expect(page.getByText("Column actions locked").first()).toBeVisible();
+    await expect(page.getByText("Column actions locked")).toHaveCount(0);
   });
 
   test("removes unwired auth and global notification buttons", async ({ page }) => {
@@ -75,6 +75,6 @@ test.describe("UXP2-007 button and CTA lifecycle pruning", () => {
 
     await expect(page.getByRole("button", { name: "Approve for compliance review" })).toBeEnabled();
     await expect(page.locator('button[data-testid="ux-cta-ai-rebuild"]')).toHaveCount(0);
-    await expect(page.getByTestId("ux-cta-ai-rebuild")).toHaveText("Draft rebuild remains analyst-owned");
+    await expect(page.getByTestId("ux-cta-ai-rebuild")).toHaveText("Request analyst rebuild");
   });
 });

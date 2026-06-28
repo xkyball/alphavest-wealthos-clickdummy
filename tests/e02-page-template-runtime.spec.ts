@@ -52,7 +52,7 @@ test.describe("E02 page-template runtime adoption", () => {
       await expect(page.locator("[data-ux-long-page-anchor]").first()).toBeVisible();
 
       if (route.path === "/compliance/reviews/demo/decision-room") {
-        const complianceGate = page.getByTestId("bd08-compliance-release-gate");
+        const complianceGate = page.getByTestId("bd08-compliance-decision-room-panel");
 
         await expect(complianceGate).toHaveAttribute("data-ux-route-shell-page-job-consumer", "true");
         await expect(complianceGate).toHaveAttribute("data-ux-route-shell-page-job-contract", "EPIC-03_ROUTE_SHELL_PAGE_JOB_CONTRACT");

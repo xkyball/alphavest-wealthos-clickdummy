@@ -12,6 +12,7 @@ import {
   type PageTemplateSection,
 } from "@/components/ui";
 import { cn } from "@/lib/cn";
+import { processFirstUxRouteContractByPageId } from "@/lib/process-first-ux-contract";
 import { uxActionAttributesFor } from "@/lib/ux-action-hierarchy-contract";
 import { uxClientSafeFamilyForPageId } from "@/lib/ux-client-safe-ui-boundary";
 import {
@@ -115,7 +116,8 @@ export function WorksurfaceShell({
   worksurfaceId,
 }: WorksurfaceShellProps) {
   const template = uxPageTemplateForPageId(routeId);
-  const isCompact = density === "compact";
+  const isProcessFirstCritical = processFirstUxRouteContractByPageId.has(routeId);
+  const isCompact = density === "compact" || isProcessFirstCritical;
   const resolvedActiveStep = activeStep ?? template.activeStep;
   const resolvedChildrenPolicy = childrenPolicy ?? defaultChildrenPolicyForTemplate(template);
   const resolvedChildrenZone = zoneForChildrenPolicy(resolvedChildrenPolicy);

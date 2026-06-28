@@ -738,33 +738,6 @@ function CompliancePreconditionChecklist() {
   );
 }
 
-function AdvisorNotReleaseGate() {
-  const processContract = processFirstUxContractForPageId("037");
-
-  return (
-    <ProcessGateRail
-      actionLabel="Approve for compliance review"
-      actionState="Advisor approval can create a compliance-pending candidate only; it cannot release content, export content or create client acceptance."
-      acceptanceIds={processContract.acceptanceIds}
-      blockedReason="advisor_approval_not_release"
-      businessProcessIds={processContract.businessProcessIds}
-      currentStep="advisor_review"
-      gateState="Compliance pending"
-      gateIds={processContract.gateIds}
-      items={[
-        { detail: "Advisor can approve the candidate wording for compliance review.", label: "Advisor authority", tone: "gold", value: "Review only" },
-        { detail: "Client-visible release remains blocked until compliance gates pass.", label: "Client visibility", tone: "red", value: "Blocked" },
-        { detail: "Unsupported claims must stay internal until evidence-backed rebuild.", label: "Internal draft", tone: "red", value: "Contained" },
-        { detail: "Release timestamp is not set by advisor approval.", label: "Release record", tone: "red", value: "Not set" },
-      ]}
-      nextStep={processContract.nextPermittedAction}
-      testId="bd07-advisor-not-release-gate"
-      title="Advisor approval is not release"
-      tone="restricted"
-    />
-  );
-}
-
 function ComplianceReleaseGate() {
   const processContract = processFirstUxContractForPageId("039");
   const routeShellPageJobContract = uxRouteShellPageJobContractForTemplate(uxPageTemplateForPageId("039"));
@@ -876,7 +849,7 @@ function Phase4WorkbenchPanel({
       <section className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-2.5" data-testid="ux-workbench-phase4" data-ux-layout-compression="compact_workbench_boundary" data-ux-workbench-task={taskId}>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="min-w-0">
-            <Badge tone="gold">Active work</Badge>
+            <InlineStatus tone="gold" value="Active work" />
             <h3 className="mt-1 font-display text-base text-alphavest-ivory">Active workbench</h3>
           </div>
           <button className={primaryButtonClass} data-testid="ux-workbench-primary-cta" disabled type="button">{primaryAction}</button>
@@ -903,7 +876,7 @@ function Phase4WorkbenchPanel({
     <section className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4" data-testid="ux-workbench-phase4" data-ux-workbench-task={taskId}>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <Badge tone="gold">Active work</Badge>
+          <InlineStatus tone="gold" value="Active work" />
           <h3 className="mt-3 font-display text-2xl text-alphavest-ivory">Active workbench</h3>
           <p className="mt-2 text-sm leading-6 text-alphavest-muted">One selected item, one guarded action rail and one explicit blocker. Queue visibility does not change release, export or client visibility state.</p>
         </div>
@@ -1118,7 +1091,7 @@ function AnalystDraftStepSurface({
           <div className="min-w-0">
             <CardTitle className="text-base">Routing readiness</CardTitle>
           </div>
-          <Badge tone="gold">Internal only</Badge>
+          <InlineStatus tone="gold" value="Internal only" />
         </CardHeader>
         <CardContent className="grid gap-1.5">
           <p className="line-clamp-1 text-xs font-semibold leading-5 text-alphavest-red">
@@ -1151,13 +1124,11 @@ function AnalystDraftStepSurface({
           <CardTitle className="text-base">{pageId === "034" ? "Queue step governance" : "Trigger draft governance"}</CardTitle>
           <p className="mt-1 line-clamp-2 text-xs leading-5 text-alphavest-muted">{routeOwnership?.primaryJob}</p>
         </div>
-        <Badge tone="gold">Internal only</Badge>
+        <InlineStatus tone="gold" value="Internal only" />
       </CardHeader>
       <CardContent className="grid gap-2">
-        <div className="flex flex-wrap gap-1.5">
-          {criteria.map((criterion) => (
-            <Badge key={criterion.processId} tone="red">Gate checked</Badge>
-          ))}
+        <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 px-2 py-1.5 text-xs leading-5 text-alphavest-muted">
+          <InlineStatus tone="red" value={`${criteria.length} gates remain controlled`} />
         </div>
         <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-2.5 text-sm">
           <div className="flex flex-wrap gap-2 text-xs text-alphavest-muted">
@@ -1231,7 +1202,7 @@ function WorkbenchPage({ title }: { title: string }) {
                             <CardTitle className="text-lg">{selectedClientRow.client}</CardTitle>
                             <p className="mt-0.5 text-xs text-alphavest-muted">{selectedClientRow.value} - {selectedClientRow.segment}</p>
                           </div>
-                          <Badge tone={toneFor(selectedClientRow.priority)}>{selectedClientRow.priority}</Badge>
+                          <InlineStatus tone={toneFor(selectedClientRow.priority)} value={selectedClientRow.priority} />
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-2">
@@ -1290,7 +1261,7 @@ function WorkbenchPage({ title }: { title: string }) {
                               <span className="block truncate text-sm font-semibold text-alphavest-ivory">{row.client}</span>
                               <span className="mt-0.5 block truncate text-xs text-alphavest-muted">{row.value} - {row.segment}</span>
                             </span>
-                            <Badge tone={toneFor(row.priority)}>{row.priority}</Badge>
+                            <InlineStatus tone={toneFor(row.priority)} value={row.priority} />
                           </span>
                           <span className="mt-1.5 grid gap-2 text-xs text-alphavest-muted sm:grid-cols-2">
                             <span>{row.next}</span>
@@ -1458,7 +1429,7 @@ function TriggerDetailPage({ title }: { title: string }) {
               <div className="grid gap-1.5 rounded-md border border-alphavest-border/70 bg-alphavest-panel/72 p-2.5 text-xs" data-epic09-audit-strip="true">
                 <p className="line-clamp-1 leading-5 text-alphavest-muted">{triggerDetail.notes}</p>
                 <div className="grid gap-1">
-                  <Badge tone="gold">Audit logging required</Badge>
+                  <InlineStatus tone="gold" value="Audit logging required" />
                   <span className="font-semibold text-alphavest-ivory">Audit logging required before accepted save</span>
                   <span className="text-alphavest-muted">Hidden from client / ai draft internal only</span>
                   {routingStatus ? <p className="text-xs text-alphavest-gold-soft">{routingStatus}</p> : null}
@@ -1668,110 +1639,69 @@ function AdvisorSummaryPanel() {
 }
 
 function AdvisorDecisionRoomPanel() {
+  const processContract = processFirstUxContractForPageId("037");
+
   return (
     <section
-      className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_22rem]"
+      className="grid gap-3"
       data-testid="bd07-advisor-decision-room-panel"
       data-ux-decision-room="advisor_not_release"
       data-ux-layout-compression="bounded_decision_room"
+      data-ux-process-acceptance-gates={processContract.acceptanceIds.join(" ")}
+      data-ux-process-blocked-reason="advisor_approval_not_release"
+      data-ux-process-business-processes={processContract.businessProcessIds.join(" ")}
+      data-ux-process-current-step="advisor_review"
+      data-ux-process-first="true"
+      data-ux-process-gate-ids={processContract.gateIds.join(" ")}
+      data-ux-process-gate-state="Compliance pending"
+      data-ux-process-next-step={processContract.nextPermittedAction}
     >
       <Card className="min-w-0">
         <CardHeader>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="min-w-0">
-              <CardTitle>Advisor Package Review</CardTitle>
-              <p className="mt-2 text-sm leading-6 text-alphavest-muted">
-                Review suitability, rationale, evidence and alternatives for one package. Saving the advisor candidate only hands the package to compliance review.
-              </p>
-            </div>
-            <Badge tone="gold">{selectedApproval.status}</Badge>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <CardTitle>Review Recommendation Package</CardTitle>
+            <InlineStatus tone="gold" value="Ready for review" />
           </div>
         </CardHeader>
-        <CardContent className="grid gap-4 2xl:grid-cols-[0.95fr_1.25fr]">
-          <div className="space-y-4">
-            <div className="grid gap-3 sm:grid-cols-2">
-              {[
-                ["Client", selectedApproval.client],
-                ["Package", selectedApproval.packageType],
-                ["Analyst", selectedApproval.analyst],
-                ["Created", selectedApproval.created],
-              ].map(([label, value]) => (
-                <InfoRow key={label} label={label} value={value} />
-              ))}
-            </div>
-            <StatePanel
-              detail={selectedApproval.objective}
-              state="empty"
-              title="Client objective"
-            />
-            <Card>
-              <CardHeader><CardTitle>Related Structure</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 text-center">
-                  <p className="font-semibold text-alphavest-ivory">Walker Family Holdings</p>
-                  <p className="text-sm text-alphavest-muted">Revocable Living Trust</p>
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-center text-xs text-alphavest-muted">
-                  {["James Walker", "Emily Walker", "Walker Family LLC", "Walker Dynasty Trust"].map((item) => (
-                    <div className="rounded border border-alphavest-border p-2" key={item}>{item}</div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+        <CardContent className="grid gap-3">
+          <div className="grid gap-2 md:grid-cols-4">
+            {[
+              ["Client", selectedApproval.client],
+              ["Package", selectedApproval.packageType],
+              ["Analyst", selectedApproval.analyst],
+              ["Created", selectedApproval.created],
+            ].map(([label, value]) => (
+              <div className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2" key={label}>
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-alphavest-subtle">{label}</p>
+                <p className="mt-1 truncate text-sm font-semibold text-alphavest-ivory">{value}</p>
+              </div>
+            ))}
           </div>
-          <div className="space-y-4">
-            <Card>
-              <CardHeader><CardTitle>Internal Draft Recommendation</CardTitle></CardHeader>
-              <CardContent>
-                <p className="text-sm leading-6 text-alphavest-muted">{selectedApproval.recommendation}</p>
-                <div className="mt-4 grid gap-3 sm:grid-cols-4">
-                  {["6.4% Return", "10.2% Volatility", "82% Scenario Fit", "89/100 Tax Score"].map((item) => (
-                    <Badge key={item} tone="green">{item}</Badge>
-                  ))}
-                </div>
-                <p className="mt-4 rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3 text-sm text-alphavest-gold-soft">
-                  Internal draft only, not client advice. Unsupported claims require evidence-backed rebuild; advisor candidate and compliance review keep client visibility blocked until audited release gates pass.
-                </p>
-              </CardContent>
-            </Card>
-            <div className="grid gap-4 2xl:grid-cols-2">
-              <Card>
-                <CardHeader><CardTitle>Risk View</CardTitle></CardHeader>
-                <CardContent>
-                  <p className="text-center text-xl font-semibold text-alphavest-gold">Moderate (5/10)</p>
-                  <ProgressBar value={50} />
-                  <p className="mt-3 text-sm text-alphavest-muted">Equity allocation, interest rate sensitivity and sequence risk remain advisor review context only.</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader><CardTitle>Alternatives</CardTitle></CardHeader>
-                <CardContent className="space-y-2">
-                  {selectedApproval.alternatives.map((item, index) => (
-                    <div className="flex justify-between gap-3 text-sm" key={item}>
-                      <span className="text-alphavest-muted">{item}</span>
-                      <Badge tone="gold">Score {84 - index * 5}</Badge>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
+          <div className="space-y-3">
+            <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3">
+              <h2 className="text-base font-semibold text-alphavest-ivory">Recommendation Summary</h2>
+              <p className="mt-1 text-sm leading-5 text-alphavest-muted">{selectedApproval.recommendation}</p>
+              <div className="mt-3 grid gap-2 sm:grid-cols-4">
+                {["6.4% return", "10.2% volatility", "82% scenario fit", "89/100 tax score"].map((item) => (
+                  <InlineStatus key={item} tone="green" value={item} />
+                ))}
+              </div>
+              <p className="mt-2 rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-2 text-sm leading-5 text-alphavest-gold-soft">
+                Ask the analyst to rebuild unsupported claims before submitting the package for compliance review.
+              </p>
+            </div>
+          </div>
+          <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2.5">
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="text-sm font-semibold text-alphavest-ivory">Reviewed Evidence</p>
+              {selectedApproval.documents.slice(0, 3).map((doc) => (
+                <InlineStatus key={doc} tone="green" value={doc} />
+              ))}
+              <InlineStatus tone="gold" value={`${Math.max(0, selectedApproval.documents.length - 3)} more in review`} />
             </div>
           </div>
         </CardContent>
       </Card>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1 xl:self-start">
-        <Card>
-          <CardHeader><CardTitle>Reviewed Evidence</CardTitle></CardHeader>
-          <CardContent className="max-h-72 space-y-2 overflow-y-auto pr-1">
-            {selectedApproval.documents.map((doc, index) => (
-              <div className="flex items-center justify-between gap-3 text-sm" key={doc}>
-                <span className="text-alphavest-muted">{doc}</span>
-                <Badge tone={index < 3 ? "green" : "gold"}>{index < 3 ? "Reviewed" : "In Review"}</Badge>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-        <InternalGuard />
-      </div>
     </section>
   );
 }
@@ -1781,14 +1711,14 @@ function AdvisorDetailPage({ title }: { title: string }) {
   const [decisionStatus, setDecisionStatus] = useState<string | null>(null);
 
   async function approveRecommendation() {
-    setDecisionStatus("Saving advisor candidate. No release, export or client visibility will be created.");
+    setDecisionStatus("Submitting the checked package for compliance review...");
     await runAdvisorApprovalWorkflowAction({
       action: "advisor_approve",
       actorRole: "senior_wealth_advisor",
       reason: "Advisor approved the package; compliance release remains required.",
       targetId: advisorApprovalDemoTargets.northbridge.recommendationId,
     });
-    setDecisionStatus("Advisor candidate saved. Compliance pending; no client visibility, export, release or client acceptance was created.");
+    setDecisionStatus("Package submitted for compliance review. Client delivery and export were not created.");
   }
 
   async function escalateToCall() {
@@ -1803,20 +1733,23 @@ function AdvisorDetailPage({ title }: { title: string }) {
         description="The advisor detail page now keeps recommendation evidence, rationale, advisor action and compliance handoff boundary inside one review desk."
         eyebrow="Advisor review"
         primary={
-          <div className="space-y-4">
-            <Phase4WorkbenchPanel activeTask="ADV-219 selected" blocker="Blocked by compliance, evidence and audit gates." compact context="Advisor can assess suitability wording, but cannot publish client-visible advice." primaryAction="Record advisor review" queueLabel="Advisor approval queue" safetyNote="Advisor approval does not set clientVisible and does not bypass compliance release." taskId="UX-WORKBENCH-003" />
-            <AdvisorNotReleaseGate />
+          <div className="space-y-3">
             <AdvisorDecisionRoomPanel />
           </div>
         }
         rail={
-          <aside className="space-y-5">
+          <aside className="space-y-3">
             <Card>
-              <CardHeader><CardTitle>Advisor Decision</CardTitle></CardHeader>
+              <CardHeader><CardTitle>Decision</CardTitle></CardHeader>
               <CardContent className="space-y-3">
-                <StatePanel detail="Please review all details before taking action. This can create an advisor candidate only; it does not release content, export content or create client acceptance." state="restricted" title="Advisor candidate only" />
-                <p className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 text-sm leading-6 text-alphavest-muted">
-                  Unsupported claims stay internal and require evidence-backed analyst rebuild before advisor-ready wording can move toward compliance.
+                <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-navy/35 p-3">
+                  <InlineStatus tone="gold" value="Review required" />
+                  <p className="mt-2 text-sm leading-5 text-alphavest-muted">
+                    Check the recommendation summary, evidence list and notes, then choose the next step for this package.
+                  </p>
+                </div>
+                <p className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 text-sm leading-5 text-alphavest-muted">
+                  Ask the analyst to rebuild unsupported claims before submitting the package for compliance review.
                 </p>
                 <button
                   className={primaryButtonClass + " w-full"}
@@ -1830,8 +1763,14 @@ function AdvisorDetailPage({ title }: { title: string }) {
                 >
                   <Check aria-hidden="true" className="size-4" />Approve for compliance review
                 </button>
-                <p className={secondaryButtonClass + " w-full"} data-testid="ux-cta-ai-rebuild" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Draft rebuild remains analyst-owned</p>
-                <p className={secondaryButtonClass + " w-full"} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Evidence request remains compliance-owned</p>
+                <div className="grid gap-2">
+                  <p className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2 text-sm font-semibold text-alphavest-ivory" data-testid="ux-cta-ai-rebuild" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
+                    Request analyst rebuild
+                  </p>
+                  <p className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2 text-sm font-semibold text-alphavest-ivory" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
+                    Request evidence follow-up
+                  </p>
+                </div>
                 <button
                   className="inline-flex h-[var(--button-height)] w-full items-center justify-center gap-2 rounded-md border border-alphavest-red/55 bg-alphavest-red/10 px-4 text-sm font-semibold text-alphavest-red"
                   data-testid="j01-escalate-advisor"
@@ -1851,15 +1790,13 @@ function AdvisorDetailPage({ title }: { title: string }) {
                 ) : null}
               </CardContent>
             </Card>
-            <StatePanel detail="Advisor candidate is a review state only. Compliance release, client visibility, export and client acceptance remain blocked until their own audited gates pass." state="blocked" title="Not released" />
-            <ScfP04P06FlowPanel mode="compliance" />
           </aside>
         }
         routeId="037"
-        safetyNote="Advisor approval can create a compliance-pending state, but cannot release content, mark client acceptance or bypass compliance."
+        safetyNote="Review the recommendation package and submit only the checked package for compliance review."
         statusItems={[
-          { label: "Status", tone: "gold", value: selectedApproval.status },
-          { label: "Visibility", tone: "red", value: "Client blocked" },
+          { label: "Package", tone: "gold", value: "Ready for review" },
+          { label: "Evidence", tone: "green", value: "Linked" },
         ]}
         title={title}
         worksurfaceId="advisor-review-detail"
@@ -1995,109 +1932,120 @@ function ComplianceQueuePage({ title }: { title: string }) {
 }
 
 function ComplianceDecisionRoomPanel() {
+  const processContract = processFirstUxContractForPageId("039");
+  const routeShellPageJobContract = uxRouteShellPageJobContractForTemplate(uxPageTemplateForPageId("039"));
+  const compactPreconditions = [
+    { label: "Advisor review", tone: "green" as BadgeTone, value: "Ready" },
+    { label: "Evidence", tone: "red" as BadgeTone, value: "Needs work" },
+    { label: "Permission", tone: "gold" as BadgeTone, value: "Scoped" },
+    { label: "Audit record", tone: "gold" as BadgeTone, value: "Required" },
+    { label: "Client package", tone: "red" as BadgeTone, value: "Unavailable" },
+  ];
+  const compactEvidence = [
+    { label: "Disclosure", status: "Accepted" },
+    { label: "Performance", status: "Accepted" },
+    { label: "Risk", status: "Missing" },
+    { label: "Fair balance", status: "Accepted" },
+  ];
+  const compactPolicy = [
+    { label: "Marketing", result: "Review" },
+    { label: "Performance", result: "Pass" },
+    { label: "Risk disclosure", result: "Needs work" },
+    { label: "Portal reference", result: "Pass" },
+  ];
+  const compactAudit = ["Factsheet", "Q1 worksheet", "Approval email"];
+
   return (
     <section
-      className="space-y-4"
+      className="space-y-3"
       data-testid="bd08-compliance-decision-room-panel"
       data-ux-decision-room="compliance_release_gate"
       data-ux-layout-compression="bounded_decision_room"
+      data-ux-process-acceptance-gates={processContract.acceptanceIds.join(" ")}
+      data-ux-process-blocked-reason="evidence_policy_audit_preconditions_not_satisfied"
+      data-ux-process-business-processes={processContract.businessProcessIds.join(" ")}
+      data-ux-process-current-step="compliance_release_decision"
+      data-ux-process-first="true"
+      data-ux-process-gate-ids={processContract.gateIds.join(" ")}
+      data-ux-process-gate-state="Review required"
+      data-ux-process-next-step={processContract.nextPermittedAction}
+      data-ux-route-shell-page-job-command-zone={routeShellPageJobContract.commandZone}
+      data-ux-route-shell-page-job-consumer="true"
+      data-ux-route-shell-page-job-contract={routeShellPageJobContract.contractId}
+      data-ux-route-shell-page-job-id={routeShellPageJobContract.pageId}
+      data-ux-route-shell-page-job-no-overclaim={routeShellPageJobContract.noOverclaimRule}
+      data-ux-route-shell-page-job-proof-audit={routeShellPageJobContract.proofAuditPlacement}
+      data-ux-route-shell-page-job-value={routeShellPageJobContract.pageJob}
     >
-      <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-        <Card>
-          <CardHeader>
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <CardTitle>Release Preconditions</CardTitle>
-                <p className="mt-2 text-sm leading-6 text-alphavest-muted">
-                  Release stays blocked until evidence sufficiency, policy, human review, permission and audit persistence all pass.
-                </p>
-              </div>
-              <Badge tone="red">Blocked</Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="max-h-80 space-y-3 overflow-y-auto pr-1">
-            {compliancePreconditions.map((item) => (
-              <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3" data-wp06-precondition={item.label.toLowerCase().replaceAll(" ", "-")} key={item.label}>
-                <div className="flex items-start justify-between gap-3">
-                  <p className="text-sm font-semibold text-alphavest-ivory">{item.label}</p>
-                  <Badge tone={item.tone}>{item.status}</Badge>
-                </div>
-                <p className="mt-2 text-xs leading-5 text-alphavest-muted">{item.detail}</p>
+      <Card>
+        <CardHeader>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <CardTitle>Compliance Review</CardTitle>
+            <InlineStatus tone="gold" value="Needs evidence review" />
+          </div>
+        </CardHeader>
+        <CardContent className="grid gap-3">
+          <div className="grid gap-2 md:grid-cols-4">
+            {[
+              ["Review", "CR-2025-05-21"],
+              ["Client", "Northbridge"],
+              ["Due", "May 27, 2025"],
+              ["Policy", "MC-01"],
+            ].map(([label, value]) => (
+              <div className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2" key={label}>
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-alphavest-subtle">{label}</p>
+                <p className="mt-1 truncate text-sm font-semibold text-alphavest-ivory">{value}</p>
               </div>
             ))}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle>Evidence And Policy State</CardTitle></CardHeader>
-          <CardContent className="grid gap-4">
-            <div className="space-y-3">
-              <div className="flex items-center gap-4">
-                <ProgressRing label="Complete" value={67} />
-                <p className="text-sm text-alphavest-muted">6 of 9 evidence requirements complete. Upload does not equal sufficiency.</p>
-              </div>
-              <div className="max-h-64 space-y-2 overflow-y-auto pr-1">
-                {evidenceChecklist.map((item) => (
-                  <div className="flex items-center justify-between gap-3 text-sm" key={item.label}>
-                    <span className="text-alphavest-muted">{item.label}</span>
-                    <Badge tone={toneFor(item.status)}>{item.status}</Badge>
-                  </div>
+          </div>
+          <div
+            className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3"
+            data-testid="wp06-compliance-precondition-checklist"
+            data-wp06-release-ready="false"
+          >
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="text-sm font-semibold text-alphavest-ivory">Review Requirements</p>
+              {compactPreconditions.map((item) => (
+                <InlineStatus key={item.label} tone={item.tone} value={`${item.label}: ${item.value}`} />
+              ))}
+            </div>
+          </div>
+          <div className="grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-3">
+              <p className="text-sm font-semibold text-alphavest-ivory">Evidence And Policy</p>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                {compactEvidence.map((item) => (
+                  <InlineStatus key={item.label} tone={toneFor(item.status)} value={`${item.label}: ${item.status}`} />
                 ))}
               </div>
+              <p className="mt-2 text-sm leading-5 text-alphavest-muted">6 of 9 evidence requirements are ready; risk disclosure still needs attention.</p>
             </div>
-            <div className="max-h-64 space-y-3 overflow-y-auto pr-1">
-              {policyChecks.map((item) => (
-                <div className="flex items-center justify-between gap-3 border-b border-alphavest-border/45 pb-2 text-sm last:border-0" key={item.policy}>
-                  <span className="text-alphavest-muted">{item.policy}</span>
-                  <Badge tone={toneFor(item.result)}>{item.result}</Badge>
-                </div>
-              ))}
-              <StatePanel detail="Risk disclosure is missing or not prominently displayed." state="blocked" title="MC-03 Risk Disclosure" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-        <Card>
-          <CardHeader><CardTitle>Review Context</CardTitle></CardHeader>
-          <CardContent className="space-y-3">
-            {[
-              ["Review ID", complianceReview.id],
-              ["Client", complianceReview.client],
-              ["Classification", complianceReview.classification],
-              ["Due", complianceReview.due],
-              ["Regulation", complianceReview.regulation],
-              ["Policy", complianceReview.policy],
-            ].map(([label, value]) => (
-              <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-3" key={label}>
-                <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">{label}</p>
-                <p className="mt-1 text-sm font-semibold leading-5 text-alphavest-ivory">{value}</p>
+            <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-3">
+              <p className="text-sm font-semibold text-alphavest-ivory">Policy And Audit</p>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                {compactPolicy.map((item) => (
+                  <InlineStatus key={item.label} tone={toneFor(item.result)} value={`${item.label}: ${item.result}`} />
+                ))}
               </div>
-            ))}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle>Audit And Internal Notes</CardTitle></CardHeader>
-          <CardContent className="grid gap-4">
-            <div className="space-y-3">
-              {auditReferences.map((item) => (
-                <div className="flex items-center justify-between gap-3 border-b border-alphavest-border/45 pb-2 text-sm last:border-0" key={item.name}>
-                  <span className="text-alphavest-muted">{item.name}</span>
-                  <Badge tone={toneFor(item.status)}>{item.status}</Badge>
-                </div>
+              <p className="mt-2 text-sm leading-5 text-alphavest-muted">Request missing evidence or keep the review closed until the checklist is ready.</p>
+            </div>
+          </div>
+          <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/45 p-2.5">
+            <div className="flex flex-wrap items-center gap-3">
+              {compactAudit.map((item, index) => (
+                <InlineStatus key={item} tone={index === 2 ? "red" : index === 1 ? "gold" : "green"} value={item} />
               ))}
             </div>
-            <StatePanel detail={`${complianceReview.releaseGates}. Release, export and client acceptance remain separate audited gates.`} state="blocked" title="Release gates summary" />
-          </CardContent>
-        </Card>
-      </div>
-      <InternalGuard />
+          </div>
+        </CardContent>
+      </Card>
     </section>
   );
 }
 
 function ComplianceReviewPage({ title }: { title: string }) {
   const [confirmationAction, setConfirmationAction] = useState<SensitiveWorkflowAction | null>(null);
-  const releaseBlocker = "Release remains blocked because evidence, policy, reviewer and approver gates are not all satisfied.";
+  const releaseBlocker = "Review requires evidence, policy, reviewer and approver checks before release.";
 
   return (
     <InternalShell activePageId="039">
@@ -2117,29 +2065,20 @@ function ComplianceReviewPage({ title }: { title: string }) {
               recoveryAction: "review_policy",
             })}
           >
-            <Phase5DetailSplitPanel compact decisionSupport="Evidence, policy and audit state before release action" objectLabel="Compliance object review" objectState="Release gates not satisfied" pageJob="One release decision room" safetyBoundary="No release, export or client acceptance without gated controls" splitTaskId="UX-PAGE-SPLIT-003" taskId="UX-PAGE-SPLIT-003" />
-            <ComplianceReleaseGate />
-            <Phase6DecisionRoomPanel audit="Audit event must record actor, target, gate state and confirm or cancel outcome before any release mutation." blocker={releaseBlocker} cancelLabel="Cancel without mutation" compact confirmLabel="Confirm compliance release" decisionLabel="Compliance release decision room" evidence="Evidence checklist, policy exception state and audit references are visible before decision." preconditions="Evidence review complete, policy pass, human reviewer and compliance approver must all pass." safetyNote="No release, export or advice effect can occur until gate preconditions pass and an audit record exists." taskId="UX-DECISION-ROOM-001" />
-            <CompliancePreconditionChecklist />
             <ComplianceDecisionRoomPanel />
           </div>
         }
         rail={
-          <aside className="space-y-5">
+          <aside className="space-y-3">
             <Card>
               <CardHeader><CardTitle>Decision</CardTitle></CardHeader>
               <CardContent className="space-y-3">
-                <StatePanel
-                  detail="This item cannot be released until all required evidence is complete and policy checks pass."
-                  feedback={{
-                    actionMeaning: "release",
-                    intent: "blocked",
-                    placement: "action_rail",
-                    subject: "compliance_release",
-                  }}
-                  state="blocked"
-                  title="Release gates not satisfied"
-                />
+                <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-navy/35 p-3">
+                  <InlineStatus tone="gold" value="Review required" />
+                  <p className="mt-2 text-sm leading-5 text-alphavest-muted">
+                    Check evidence, policy and audit readiness, then request evidence or keep the item closed.
+                  </p>
+                </div>
                 <StickyActionZone testId="e05-compliance-release-action-zone">
                   <ActionButton
                     availability="blocked_static"
@@ -2150,10 +2089,10 @@ function ComplianceReviewPage({ title }: { title: string }) {
                     priority="blocked"
                     requiresPermission={false}
                     testId="wp06-release-blocked-control"
-                    title="Release blocked"
+                    title="Release unavailable"
                     visibleDisabledReason
                   >
-                    <LockKeyhole aria-hidden="true" className="size-4" />Release blocked until preconditions pass
+                    <LockKeyhole aria-hidden="true" className="size-4" />Release unavailable
                   </ActionButton>
                   <ActionButton
                     className="w-full"
@@ -2186,25 +2125,13 @@ function ComplianceReviewPage({ title }: { title: string }) {
                 </StickyActionZone>
               </CardContent>
             </Card>
-            <Card>
-              <CardHeader><CardTitle>Review History</CardTitle></CardHeader>
-              <CardContent>
-                <AuditTimeline
-                  items={[
-                    { actor: "System", id: "classification", result: "SUCCESS", timestamp: "May 21, 2025 09:15 AM", title: "Auto-classification completed" },
-                    { actor: "Sarah Chen", id: "assigned", result: "PENDING", timestamp: "May 21, 2025 09:16 AM", title: "Assigned to reviewer" },
-                    { actor: "Policy engine", id: "policy", result: "BLOCKED", timestamp: "May 21, 2025 09:18 AM", title: "Policy check exception" }
-                  ]}
-                />
-              </CardContent>
-            </Card>
           </aside>
         }
         routeId="039"
-        safetyNote="Compliance can request evidence or keep release blocked here; release, export and client acceptance remain separate gated actions."
+        safetyNote="Compliance reviews evidence and policy before requesting evidence or keeping the review closed."
         statusItems={[
-          { label: "Gate", tone: "red", value: "Blocked" },
-          { label: "Evidence", tone: "red", value: "Incomplete" },
+          { label: "Review", tone: "gold", value: "Needs evidence" },
+          { label: "Policy", tone: "gold", value: "Check required" },
         ]}
         title={title}
         worksurfaceId="compliance-release-decision-room"

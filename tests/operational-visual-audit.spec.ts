@@ -3,6 +3,7 @@ import path from "node:path";
 import { expect, type Page, test } from "@playwright/test";
 
 import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+import { processFirstUxRouteContracts } from "../lib/process-first-ux-contract";
 
 const screenshotDirectory = path.join(
   process.cwd(),
@@ -11,16 +12,17 @@ const screenshotDirectory = path.join(
 
 type OperationalVisualRoute = {
   name: string;
+  pageFamily: string;
+  pageId: string;
   path: string;
-  primaryText: RegExp;
 };
 
-const operationalVisualRoutes: OperationalVisualRoute[] = [
-  { name: "advisor-reviews", path: "/advisor/reviews", primaryText: /Open advisor package detail/i },
-  { name: "compliance-reviews", path: "/compliance/reviews", primaryText: /Open gated decision room/i },
-  { name: "export-redaction", path: "/export/demo/redaction", primaryText: /Resolve redaction blockers/i },
-  { name: "governance-access-request", path: "/governance/access-requests/demo?state=base", primaryText: /Review request|Access is not granted yet/i },
-];
+const operationalVisualRoutes: OperationalVisualRoute[] = processFirstUxRouteContracts.map((contract) => ({
+  name: `${contract.pageId}-${contract.pageFamily}`,
+  pageFamily: contract.pageFamily,
+  pageId: contract.pageId,
+  path: contract.route,
+}));
 
 async function authenticateOperationalAuditPage(page: Page) {
   await page.context().addCookies([
@@ -44,7 +46,7 @@ test.describe("operational visual audit non-negotiable", () => {
       await page.goto(route.path);
 
       await expect(page.getByTestId("wp02-worksurface-shell")).toBeVisible();
-      await expect(page.getByText(route.primaryText).first()).toBeVisible();
+      await expect(page.getByTestId("wp02-worksurface-shell").first()).toHaveAttribute("data-wp02-route-id", route.pageId);
 
       const audit = await page.evaluate(() => {
         const viewportWidth = document.documentElement.clientWidth;
@@ -87,18 +89,20 @@ test.describe("operational visual audit non-negotiable", () => {
 
         return {
           badgeClusterCount,
-          forbiddenOperationalText: /Payload Redaction Operations|Approval blocked until preview|Scope\s+Scope|Dense operations safety gate|Workflow Badges|proof drawer|command spine|Access request gate|Export redaction gate|Selected\s+Queue|Scoped\s+Detail|Gated\s+Step/i.test(visibleText),
+          forbiddenOperationalText: /Payload Redaction Operations|Approval blocked until preview|Scope\s+Scope|Dense operations safety gate|Workflow Badges|proof drawer|command spine|Access request gate|Export redaction gate|Selected\s+Queue|Scoped\s+Detail|Gated\s+Step|Advisor approval is not release|Compliance pending|Client blocked|Draft contained|Release not set|Advisor candidate only|Not released/i.test(visibleText),
           horizontalOverflow: document.documentElement.scrollWidth > viewportWidth + 1,
           narrowTableCells,
           narrowTextBlocks,
           overflowingElements,
           pageScroll: document.documentElement.scrollHeight > viewportHeight + 1,
+          scrollHeight: document.documentElement.scrollHeight,
           staticBadgeCount: badgeNodes.length,
           summaryBannerCount: document.querySelectorAll('[data-testid="wp02-worksurface-summary-banner"]').length,
           meaningfulContentBlocks,
           totalOperationalSignals: visibleOperationalBlocks + meaningfulContentBlocks,
           visibleOperationalBlocks,
           visibleSurfaceHeight,
+          viewportHeight,
         };
       });
 
@@ -107,7 +111,7 @@ test.describe("operational visual audit non-negotiable", () => {
         path: path.join(screenshotDirectory, `${route.name}.png`),
       });
 
-      expect(audit.pageScroll, `${route.name} must not need page scroll at 1400x900`).toBe(false);
+      expect(audit.pageScroll, `${route.name} must not need page scroll at 1400x900 (${audit.scrollHeight}px page / ${audit.viewportHeight}px viewport)`).toBe(false);
       expect(audit.horizontalOverflow, `${route.name} must not create horizontal overflow`).toBe(false);
       expect(audit.overflowingElements, `${route.name} must not render off-canvas content`).toBe(0);
       expect(audit.narrowTableCells, `${route.name} must not clip table text into vertical fragments`).toBe(0);

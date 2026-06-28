@@ -1057,7 +1057,7 @@ export const screenRoutes = [
   },
   {
     pageId: "051",
-    route: "/governance",
+    route: "/governance/audit",
     title: "Access Audit History",
     purpose: "Access audit history",
     visualMode: "PAGE_WITH_SIDE_DRAWER",
