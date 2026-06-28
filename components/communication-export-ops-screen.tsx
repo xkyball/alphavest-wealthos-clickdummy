@@ -991,80 +991,63 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
     return matchesSearch && matchesResult;
   });
   const selected = filteredRows[0] ?? rows[0];
-  const columns: Array<DataTableColumn<AuditEventTableRow>> = [
-    { key: "timestamp", header: "Timestamp", render: (row) => row.timestamp, sortable: true },
-    {
-      key: "actor",
-      header: "Actor",
-      render: (row) => (
-        <div>
-          <p className="font-semibold text-alphavest-ivory">{row.actor}</p>
-          <p className="text-xs text-alphavest-subtle">{row.role}</p>
-        </div>
-      ),
-      sortable: true
-    },
-    { key: "object", header: "Object", render: (row) => row.object, sortable: true },
-    { key: "action", header: "Action", render: (row) => row.action, sortable: true },
-    { key: "source", header: "Source", render: (row) => row.source },
-    { key: "result", header: "Result", render: (row) => <Badge tone={toneFor(row.result)}>{row.result}</Badge>, sortable: true }
-  ];
+  const visibleRows = filteredRows.slice(0, 4);
 
   return (
     <WorksurfaceShell
-      description="Tenant-scoped audit event review with selected-event lineage and controlled audit export still held behind explicit gates."
+      description="Tenant audit review with selected-event lineage and export request handling."
       eyebrow="Governance safety"
       primary={
-        <div className="space-y-4">
-          <PageLead description="Access-event review with filters, export controls and event lineage." icon={LockKeyhole} title={title} />
-          <StatePanel detail="Audit review is read-only here; persistence, retention and controlled export remain separate gates." state="restricted" title="Audit persistence gate" />
-          <StatePanel
-            detail={
-              loadState === "ready"
-                ? "Rows in this view come from tenant-scoped AuditEvent records. Static screen context is display-only."
-                : loadState === "loading"
-                  ? "Loading audit history..."
-                  : "Audit unavailable — required action remains blocked/pending."
-            }
-            state={loadState === "ready" ? "success" : loadState === "loading" ? "loading" : "audit-unavailable"}
-            testId="wp08-source-backed-audit-state"
-            title={loadState === "ready" ? "Audit recorded" : loadState === "loading" ? "Loading audit history" : "Audit unavailable"}
-          />
+        <div className="space-y-3">
+          <PageLead description="Review access events, search history and open one event for lineage context." icon={LockKeyhole} title={title} />
+          <section
+            className="grid gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-panel/60 p-3 md:grid-cols-4"
+            data-testid="wp08-source-backed-audit-state"
+            data-ux-audit-load-state={loadState}
+          >
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Events</p>
+              <p className="mt-1 text-lg font-semibold text-alphavest-ivory">{rows.length}</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">View</p>
+              <p className="mt-1 text-sm text-alphavest-muted">{loadState === "loading" ? "Loading history" : loadState === "ready" ? "History ready" : "Retry required"}</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Export</p>
+              <p className="mt-1 text-sm text-alphavest-muted">Request from selected history</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Selected</p>
+              <p className="mt-1 text-sm text-alphavest-muted">{selected?.action ?? "Choose an event"}</p>
+            </div>
+          </section>
         </div>
       }
       routeId="051"
-      safetyNote="Audit visibility is read-only here; it does not prove persistence, approve access changes or authorize controlled export."
-      statusItems={[
-        { label: "Audit", tone: "blue", value: "Read-only" },
-        { label: "Mode", tone: "gold", value: "audit review" },
-      ]}
+      safetyNote="Audit review is read-only; access changes and exports stay on their dedicated action surfaces."
       title={title}
       worksurfaceId="governance-safety-audit-history"
     >
-      <UxDenseOperationsPanel
-        actions={
-          <>
-            <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
-              <RefreshCw aria-hidden="true" className="size-4" />
-              Refresh held
-            </span>
-            <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">
-              <Download aria-hidden="true" className="size-4" />
-              Audit export held
-            </span>
-          </>
-        }
-        className="mt-5"
-        controls={["Search DB audit events", "Result", "Actor", "Object", "Action", "Source"]}
-        description="Access-event rows remain filterable and sortable while selected-event lineage stays in the drawer."
-        pageId="051"
-        resultLabel={`Showing ${filteredRows.length} of ${rows.length} tenant-scoped DB audit-event rows`}
-        safetyNote="Audit visibility does not prove audit persistence; controlled export and access-change gates remain separate."
-        title="Access-event operations"
-      >
-        <div className="grid gap-4 rounded-md border border-alphavest-border/70 bg-alphavest-panel/55 p-3 md:grid-cols-4">
+      <Card className="mt-3">
+        <CardHeader className="flex flex-col gap-3 p-4 pb-2 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <CardTitle className="text-xl">Access History</CardTitle>
+            <p className="mt-1 text-sm leading-5 text-alphavest-muted">Search by actor, object or action, then open an event for details.</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button className={secondaryButtonClass} type="button">
+              <RefreshCw aria-hidden="true" className="size-4" />Refresh
+            </button>
+            <button className={secondaryButtonClass} disabled title="Use the selected event drawer for export requests." type="button">
+              <Download aria-hidden="true" className="size-4" />Request export
+            </button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3 p-4 pt-2">
+          <div className="grid gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-panel/55 p-3 md:grid-cols-[1fr_16rem]">
           <label className="grid gap-1 text-xs font-semibold text-alphavest-muted md:col-span-2">
-            <span>Search DB audit events</span>
+            <span>Search history</span>
             <input
               className="h-11 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm font-normal text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
               onChange={(event) => setSearchTerm(event.target.value)}
@@ -1087,25 +1070,41 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
               ))}
             </select>
           </label>
-          <FieldPill label="Scope" value="Tenant DB audit rows" />
         </div>
-          <DataTable
-            columns={columns}
-            compact
-            emptyMessage={loadState === "error" ? "Audit events could not be loaded from the DB." : "No DB audit events match this filter."}
-            getRowId={(row) => row.id}
-            onSortChange={handleStaticSortChange}
-            responsiveMode="table"
-            rows={filteredRows}
-            sortDirection="desc"
-            sortKey="timestamp"
-          />
-          <div className="mt-4 grid gap-3 md:grid-cols-3">
-            <StatePanel detail="No matching access changes for the saved filter." state="empty" title="Empty filter state" />
-            <StatePanel detail="Audit event rows are loading; retention review remains separate." state="loading" title="Loading state" />
-            <StatePanel detail="Audit unavailable — required action remains blocked/pending while the retention service is unreachable." state="audit-unavailable" title="Audit unavailable" />
+          <div className="overflow-hidden rounded-md border border-alphavest-border/70">
+            <div className="grid grid-cols-[10rem_minmax(0,1fr)_10rem_8rem] gap-3 border-b border-alphavest-border/70 bg-alphavest-navy/45 px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">
+              <span>Time</span>
+              <span>Event</span>
+              <span>Actor</span>
+              <span>Result</span>
+            </div>
+            <div className="divide-y divide-alphavest-border/60">
+              {loadState === "loading" ? (
+                <p className="px-3 py-4 text-sm text-alphavest-muted">Loading access history.</p>
+              ) : visibleRows.length > 0 ? (
+                visibleRows.map((row) => (
+                  <button
+                    className="grid w-full grid-cols-[10rem_minmax(0,1fr)_10rem_8rem] gap-3 px-3 py-3 text-left text-sm transition hover:bg-alphavest-gold/8"
+                    key={row.id}
+                    onClick={() => setDrawerOpen(true)}
+                    type="button"
+                  >
+                    <span className="text-alphavest-muted">{row.timestamp}</span>
+                    <span className="min-w-0">
+                      <span className="block truncate font-semibold text-alphavest-ivory">{row.action}</span>
+                      <span className="block truncate text-xs text-alphavest-muted">{row.object}</span>
+                    </span>
+                    <span className="truncate text-alphavest-muted">{row.actor}</span>
+                    <InlineStatus tone={toneFor(row.result)} value={row.result} />
+                  </button>
+                ))
+              ) : (
+                <p className="px-3 py-4 text-sm text-alphavest-muted">{loadState === "error" ? "Access history could not be loaded." : "No access history matches this filter."}</p>
+              )}
+            </div>
           </div>
-      </UxDenseOperationsPanel>
+        </CardContent>
+      </Card>
       <Drawer description="Selected event lineage and before/after access state." onClose={() => setDrawerOpen(false)} open={drawerOpen && Boolean(selected)} title="Event Details">
         <div className="space-y-5">
           <div className="flex items-center justify-between gap-3">
