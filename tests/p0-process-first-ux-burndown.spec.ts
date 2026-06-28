@@ -31,6 +31,11 @@ test.describe("P0 process-first UX burndown implementation", () => {
     const exportOps = readSource("components", "communication-export-ops-screen.tsx");
 
     expect(actions).toContain('testId="bd05-action-board-process-gate"');
+    expect(actions).toContain('processFirstUxContractForPageId("032")');
+    expect(actions).toContain('currentStep="action_triage"');
+    expect(actions).toContain('blockedReason="selected_action_missing_evidence"');
+    expect(actions).toContain('data-testid="bd05-action-board-process-board"');
+    expect(actions).toContain('data-ux-board-scroll="horizontal_process_columns"');
     expect(actions).toContain("Board context does not create evidence sufficiency, advisor approval, compliance release or client visibility.");
 
     expect(internal).toContain('testId="bd07-advisor-not-release-gate"');

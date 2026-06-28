@@ -42,6 +42,7 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain("<MasterDetailSurface");
     expect(source).toContain('family="board"');
     expect(source).toContain('filterState="disabled_static"');
+    expect(source).toContain("detail={drawerOpen ? <ActionDrawer");
     expect(source).toContain('masterDetailMode={drawerOpen ? "drawer_detail" : "inline_detail_rail"}');
     expect(source).toContain("selectedObjectId={selectedAction.id}");
     expect(source).toContain("selectedObjectState={selectedAction.evidenceState}");

@@ -35,6 +35,7 @@ import { UxSupportDensityStrip } from "@/components/ux-support-density-strip";
 import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
 import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { processFirstUxContractForPageId } from "@/lib/process-first-ux-contract";
 import type { ScreenRoute } from "@/lib/route-registry";
 import { runDataMaintenanceCommand } from "@/lib/data-maintenance-command-client";
 import type { VisualState } from "@/lib/visual-contract";
@@ -454,6 +455,7 @@ function WealthMapDrawer({ onClose }: { onClose: () => void }) {
 
 function ActionsPage({ title, visualState }: { title: string; visualState?: VisualState }) {
   const [drawerOpen, setDrawerOpen] = useState(visualState === "drawer");
+  const processContract = processFirstUxContractForPageId("032");
 
   return (
     <WealthShell activePageId="032">
@@ -463,8 +465,8 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
         eyebrow="WP02 Client Context"
         primary={<MasterDetailSurface
           actionPolicy="open_detail"
-          className={cn("grid gap-5", drawerOpen ? "2xl:grid-cols-[minmax(0,1fr)_30rem]" : "")}
           density="standard_review"
+          detail={drawerOpen ? <ActionDrawer onClose={() => setDrawerOpen(false)} /> : undefined}
           family="board"
           filterState="disabled_static"
           masterDetailMode={drawerOpen ? "drawer_detail" : "inline_detail_rail"}
@@ -505,14 +507,19 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
           <ProcessGateRail
             actionLabel="Request missing evidence"
             actionState="The selected action can be routed, but it cannot be marked ready while client approval evidence is missing."
+            acceptanceIds={processContract.acceptanceIds}
+            blockedReason="selected_action_missing_evidence"
+            businessProcessIds={processContract.businessProcessIds}
+            currentStep="action_triage"
             gateState="Evidence blocked"
+            gateIds={processContract.gateIds}
             items={[
               { detail: selectedAction.object, label: "Selected item", tone: "gold", value: selectedAction.priority },
               { detail: selectedAction.evidenceState, label: "Evidence sufficiency", tone: "red", value: "Not sufficient" },
               { detail: "Advisor and compliance gates have not started for this action.", label: "Release path", tone: "red", value: "Client blocked" },
               { detail: selectedAction.due, label: "Owner and due date", tone: "gold", value: selectedAction.owner },
             ]}
-            nextStep="Request client approval evidence before readiness, advisor review, compliance release, export or client visibility can progress."
+            nextStep={processContract.nextPermittedAction}
             testId="bd05-action-board-process-gate"
             title="Current action process gate"
           />
@@ -591,14 +598,19 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
               );
             })()}
           </div>
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div
+            className="overflow-x-auto rounded-md border border-alphavest-border/70 bg-alphavest-midnight/45 p-3"
+            data-testid="bd05-action-board-process-board"
+            data-ux-board-scroll="horizontal_process_columns"
+          >
+          <div className="grid min-w-[112rem] grid-cols-8 gap-3">
             {actionColumns.map((column) => (
-              <section className="rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-4" key={column.id}>
+              <section className="flex max-h-[34rem] min-h-[26rem] flex-col rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-3" key={column.id}>
                 <div className="mb-3 flex items-center justify-between gap-2">
                   <h2 className="text-sm font-semibold text-alphavest-ivory">{column.title}</h2>
                   <Badge tone="muted">{column.count}</Badge>
                 </div>
-                <div className="space-y-3">
+                <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
                   {column.cards.map((card) => (
                     <ActionBoardCard card={card} key={card.id} selected={card.id === selectedAction.id} />
                   ))}
@@ -609,6 +621,7 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
               </section>
             ))}
           </div>
+          </div>
           <div className="flex flex-wrap gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-panel/55 p-3 text-xs text-alphavest-muted">
             <span className="font-semibold text-alphavest-ivory">Legend</span>
             <span className="flex items-center gap-2"><span className="size-2 rounded-full bg-alphavest-red" />High</span>
@@ -618,7 +631,6 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
             <span className="flex items-center gap-2"><AlertTriangle aria-hidden="true" className="size-4 text-alphavest-red" />Missing evidence</span>
           </div>
         </section>
-        {drawerOpen ? <ActionDrawer onClose={() => setDrawerOpen(false)} /> : null}
       </MasterDetailSurface>}
         rail={drawerOpen ? undefined : <WealthContextRail />}
         routeId="032"
@@ -664,7 +676,7 @@ function ActionBoardCard({ card, selected }: { card: ActionCard; selected?: bool
 
 function ActionDrawer({ onClose }: { onClose: () => void }) {
   return (
-    <aside aria-label="Action Details" className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-panel/88 p-4 shadow-2xl 2xl:sticky 2xl:top-24 2xl:max-h-[calc(100vh-7rem)] 2xl:overflow-y-auto">
+    <aside aria-label="Action Details" className="min-w-0 rounded-md border border-alphavest-border bg-alphavest-panel/88 p-4 shadow-2xl xl:sticky xl:top-24 xl:max-h-[calc(100vh-7rem)] xl:overflow-y-auto">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-alphavest-gold">Action Details</p>
