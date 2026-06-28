@@ -44,6 +44,8 @@ test.describe("V0.96 WP-11 shared interaction primitives", () => {
     const stateBoundary = readSource("components", "ui", "state-boundary.tsx");
     const lifecycleContract = readSource("lib", "ux-lifecycle-state-contract.ts");
     const a11yStatus = readSource("components", "ui", "a11y-status.tsx");
+    const statusChip = readSource("components", "ui", "status-chip.tsx");
+    const statusCommand = readSource("lib", "ux-status-command-hierarchy.ts");
 
     expect(dataTable).toContain('state?: ComponentState | "ready"');
     expect(dataTable).toContain('state !== "ready"');
@@ -74,6 +76,12 @@ test.describe("V0.96 WP-11 shared interaction primitives", () => {
     expect(a11yStatus).toContain('data-ux-a11y-keyboard="tab-escape-cancel-return"');
     expect(a11yStatus).toContain('data-ux-a11y-status="polite-live-region"');
     expect(a11yStatus).toContain('role="status"');
+
+    expect(statusChip).toContain("uxStatusCommandAttributesFor");
+    expect(statusChip).toContain("statusComponentState");
+    expect(statusCommand).toContain("uxStatusPrimitiveContractId");
+    expect(statusCommand).toContain("uxConfirmationAttributesFor");
+    expect(statusCommand).toContain('"data-ux-confirmation-no-overclaim": "true"');
   });
 
   test("guarded action button exposes denied disabled loading success and error lifecycle states", () => {

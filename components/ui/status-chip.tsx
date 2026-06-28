@@ -13,6 +13,8 @@ import { cn } from "@/lib/cn";
 import type { BadgeTone } from "@/components/ui/badge";
 import { Badge } from "@/components/ui/badge";
 import type { UxPrimitiveStatusFamily } from "@/lib/ux-design-system-foundation";
+import type { UxComponentState } from "@/lib/ux-lifecycle-state-contract";
+import { uxStatusCommandAttributesFor } from "@/lib/ux-status-command-hierarchy";
 
 export type StatusChipStatus =
   | "ACTIVE"
@@ -50,10 +52,31 @@ const statusMeta: Record<StatusChipStatus, { family: UxPrimitiveStatusFamily; ic
   UNKNOWN: { family: "neutral", icon: AlertTriangle, label: "Unknown", tone: "muted" }
 };
 
+const statusComponentState: Record<StatusChipStatus, UxComponentState> = {
+  ACTIVE: "success",
+  ARCHIVED: "reference-only",
+  CANCELLED: "blocked",
+  COMPLETED: "success",
+  DRAFT: "reference-only",
+  FAILED: "error",
+  INACTIVE: "restricted",
+  ON_HOLD: "hold-blocked",
+  PENDING: "validation",
+  PROCESSING: "loading",
+  SCHEDULED: "p1-deferred",
+  UNKNOWN: "validation",
+};
+
 export function StatusChip({ className, label, sourceDescription = "Status chip is a visual summary, not a completion gate.", status }: StatusChipProps) {
   const meta = statusMeta[status];
   const Icon = meta.icon;
   const visibleLabel = label ?? meta.label;
+  const statusAttributes = uxStatusCommandAttributesFor({
+    componentState: statusComponentState[status],
+    primitiveFamily: "status",
+    reason: sourceDescription,
+    recoveryAction: status === "FAILED" || status === "ON_HOLD" || status === "PENDING" || status === "UNKNOWN" ? "retry" : undefined,
+  });
 
   return (
     <Badge
@@ -61,6 +84,7 @@ export function StatusChip({ className, label, sourceDescription = "Status chip 
       className={cn("gap-1.5", className)}
       data-ux-completion-gate="false"
       data-ux-state-source={sourceDescription}
+      {...statusAttributes}
       statusCue="none"
       statusFamily={meta.family}
       tone={meta.tone}

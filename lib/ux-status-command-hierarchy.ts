@@ -7,6 +7,14 @@ export type UxStatusHierarchyLevel =
   | "completed"
   | "informational";
 
+export type UxStatusPrimitiveContract = typeof uxStatusPrimitiveContractId;
+
+export type UxStatusPrimitiveFamily =
+  | "action"
+  | "blocker"
+  | "confirmation"
+  | "status";
+
 export type UxRecoveryAction =
   | "accept_sufficiency"
   | "clear_filter"
@@ -27,6 +35,23 @@ export type UxCommandHierarchyLevel =
   | "secondary_command"
   | "status_only";
 
+export type UxConfirmationState =
+  | "blocked"
+  | "cancelled"
+  | "confirmed"
+  | "ready"
+  | "submitting"
+  | "validation_failed";
+
+export type UxConfirmationScope =
+  | "advisor_review"
+  | "client_decision"
+  | "compliance_release"
+  | "data_quality_recovery"
+  | "export_approval"
+  | "export_download"
+  | "permission_mutation";
+
 export type UxStatusCommandContract = {
   commandLevel: UxCommandHierarchyLevel;
   defaultActionMeaning: UxActionMeaning;
@@ -39,11 +64,47 @@ export type UxStatusCommandContract = {
 export type UxStatusCommandProjectionInput = {
   actionMeaning?: UxActionMeaning;
   componentState: UxComponentState;
+  primitiveFamily?: UxStatusPrimitiveFamily;
   reason?: string;
   recoveryAction?: UxRecoveryAction;
 };
 
 export type UxStatusCommandRuntimeAttributes = Record<`data-${string}`, string | undefined>;
+
+export type UxConfirmationProjectionInput = {
+  actionMeaning?: UxActionMeaning;
+  requiresAudit?: boolean;
+  scope: UxConfirmationScope;
+  state: UxConfirmationState;
+};
+
+export const uxStatusPrimitiveContractId = "epic_05_status_action_blocker_confirmation" as const;
+
+export const uxStatusPrimitiveFamilies = [
+  "status",
+  "action",
+  "blocker",
+  "confirmation",
+] as const satisfies readonly UxStatusPrimitiveFamily[];
+
+export const uxConfirmationStates = [
+  "blocked",
+  "cancelled",
+  "confirmed",
+  "ready",
+  "submitting",
+  "validation_failed",
+] as const satisfies readonly UxConfirmationState[];
+
+export const uxConfirmationScopes = [
+  "advisor_review",
+  "client_decision",
+  "compliance_release",
+  "data_quality_recovery",
+  "export_approval",
+  "export_download",
+  "permission_mutation",
+] as const satisfies readonly UxConfirmationScope[];
 
 export const uxStatusCommandContracts = {
   attention: {
@@ -120,10 +181,13 @@ export function uxStatusCommandAttributesFor(input: UxStatusCommandProjectionInp
   const contract = uxStatusCommandContractForLevel(level);
   const missingReason = contract.requiresReason && !input.reason;
   const missingRecovery = contract.requiresRecoveryAction && !input.recoveryAction;
+  const primitiveFamily = input.primitiveFamily ?? (level === "blocking" || level === "attention" ? "blocker" : "status");
 
   return {
     "data-ux-command-default-action": input.actionMeaning ?? contract.defaultActionMeaning,
     "data-ux-command-level": contract.commandLevel,
+    "data-ux-status-primitive-contract": uxStatusPrimitiveContractId,
+    "data-ux-status-primitive-family": primitiveFamily,
     "data-ux-status-blocker-reason": input.reason,
     "data-ux-status-hierarchy-level": contract.level,
     "data-ux-status-missing-recovery": missingRecovery ? "true" : "false",
@@ -132,5 +196,18 @@ export function uxStatusCommandAttributesFor(input: UxStatusCommandProjectionInp
     "data-ux-status-recovery-action": input.recoveryAction,
     "data-ux-status-requires-reason": contract.requiresReason ? "true" : "false",
     "data-ux-status-requires-recovery": contract.requiresRecoveryAction ? "true" : "false",
+  };
+}
+
+export function uxConfirmationAttributesFor(input: UxConfirmationProjectionInput): UxStatusCommandRuntimeAttributes {
+  return {
+    "data-ux-action-meaning": input.actionMeaning,
+    "data-ux-confirmation-no-overclaim": "true",
+    "data-ux-confirmation-requires-audit": input.requiresAudit === false ? "false" : "true",
+    "data-ux-confirmation-scope": input.scope,
+    "data-ux-confirmation-state": input.state,
+    "data-ux-no-overclaim": "true",
+    "data-ux-status-primitive-contract": uxStatusPrimitiveContractId,
+    "data-ux-status-primitive-family": "confirmation",
   };
 }
