@@ -119,4 +119,53 @@ test.describe("EPIC-10 typed status and command hierarchy", () => {
     expect(source).toContain('data-testid="uxp3-compliance-sensitive-action-lifecycle"');
     expect(source).toContain("Confirmation is valid. Submit can persist the audited compliance action while release remains separately gated.");
   });
+
+  test("locks EPIC-05 no-overclaim rules and required runtime attributes to the machine-readable contract", () => {
+    const contract = JSON.parse(readSource(
+      "docs",
+      "00-current",
+      "ALPHAVEST_STATUS_ACTION_BLOCKER_CONFIRMATION_PRIMITIVES_CONTRACT.json",
+    )) as {
+      forbiddenUsage: Record<"action" | "blocker" | "confirmation" | "status", string[]>;
+      primitiveFamilies: string[];
+      runtimeAttributeRequirements: Record<"action" | "blocker" | "confirmation" | "status", string[]>;
+    };
+    const forbiddenClaims = [
+      ...contract.forbiddenUsage.status,
+      ...contract.forbiddenUsage.action,
+      ...contract.forbiddenUsage.blocker,
+      ...contract.forbiddenUsage.confirmation,
+    ].join(" ");
+    const blockingAttributes = uxStatusCommandAttributesFor({
+      actionMeaning: "release",
+      componentState: "blocked",
+      primitiveFamily: "blocker",
+      reason: "Release evidence is incomplete.",
+      recoveryAction: "provide_evidence",
+    });
+    const confirmationAttributes = uxConfirmationAttributesFor({
+      actionMeaning: "release",
+      scope: "compliance_release",
+      state: "validation_failed",
+    });
+
+    expect(contract.primitiveFamilies).toEqual(["status", "action", "blocker", "confirmation"]);
+    expect(forbiddenClaims).toContain("release");
+    expect(forbiddenClaims).toContain("export");
+    expect(forbiddenClaims).toContain("evidence sufficiency");
+    expect(forbiddenClaims).toContain("permission mutation");
+    expect(forbiddenClaims).toContain("screenshots alone");
+    for (const attribute of contract.runtimeAttributeRequirements.status) {
+      expect(blockingAttributes).toHaveProperty(attribute);
+    }
+    for (const attribute of contract.runtimeAttributeRequirements.blocker) {
+      expect(blockingAttributes).toHaveProperty(attribute);
+    }
+    for (const attribute of contract.runtimeAttributeRequirements.confirmation) {
+      expect(confirmationAttributes).toHaveProperty(attribute);
+    }
+    expect(blockingAttributes["data-ux-status-missing-reason"]).toBe("false");
+    expect(blockingAttributes["data-ux-status-missing-recovery"]).toBe("false");
+    expect(confirmationAttributes["data-ux-confirmation-no-overclaim"]).toBe("true");
+  });
 });
