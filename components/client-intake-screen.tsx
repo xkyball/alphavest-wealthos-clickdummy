@@ -1654,7 +1654,7 @@ function FamilyMembersPageContent({ title }: { title: string }) {
     <>
       <ScreenTitle>{title}</ScreenTitle>
       <div
-        className="space-y-5"
+        className="space-y-4"
         data-epic-07-gate="tenant-scoped-db-audit"
         data-epic-07-no-overclaim="true"
         data-epic-07-process="BP-004"
@@ -1799,20 +1799,27 @@ function RelationshipsPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="023">
       <ScreenTitle>{title}</ScreenTitle>
-      <div className="space-y-5">
+      <div
+        className="space-y-5"
+        data-epic-07-gate="relationship-db-audit"
+        data-epic-07-no-overclaim="true"
+        data-epic-07-process="BP-005"
+        data-epic-07-surface="relationship-depth"
+        data-testid="epic-07-relationship-depth-surface"
+      >
         <SectionTitle
-          action={<div className="flex flex-wrap gap-3"><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Auto layout held</span><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Fit view held</span><button className={primaryButtonClass} data-testid="j09-add-relationship" onClick={() => { void runDataMaintenanceCommand("j09.addRelationship"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add</button></div>}
+          action={<div className="flex flex-wrap gap-3"><Epic07ProofAuditDisclosure auditSource="Relationship AuditEvent" processId="BP-005" proofSource="typed J09 command" /><button className={secondaryButtonClass} data-testid="j09-family-map" onClick={() => { void runDataMaintenanceCommand("j09.openFamilyMap"); }} type="button"><Network aria-hidden="true" className="size-4" />Open Map</button><button className={primaryButtonClass} data-testid="j09-add-relationship" onClick={() => { void runDataMaintenanceCommand("j09.addRelationship"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add Edge</button></div>}
           subtitle="Validate relationship edges, evidence and conflicts across people, entities and advisors."
           title={title}
         />
-        <div className="grid gap-5 2xl:grid-cols-[1fr_26rem]">
-          <Card>
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
+          <Card data-testid="epic-07-relationship-graph" density="compact">
             <CardContent className="p-0">
-              <div className="hidden h-[30rem] overflow-hidden rounded-t-md border-b border-alphavest-border bg-[radial-gradient(circle_at_center,rgba(90,167,216,0.08),transparent_30rem)] md:relative md:block">
+              <div className="hidden h-[18rem] overflow-hidden rounded-t-md border-b border-alphavest-border bg-[radial-gradient(circle_at_center,rgba(90,167,216,0.08),transparent_24rem)] md:relative md:block">
                 {relationshipNodes.map((node) => (
                   <div
                     className={cn(
-                      "absolute w-44 rounded-md border p-3 shadow-lg",
+                      "absolute w-40 rounded-md border p-2.5 shadow-lg",
                       node.state === "selected" && "border-alphavest-gold bg-alphavest-gold/12",
                       node.state === "purple" && "border-violet-400/55 bg-violet-400/12",
                       node.state === "green" && "border-alphavest-green/50 bg-alphavest-green/10",
@@ -1850,45 +1857,30 @@ function RelationshipsPage({ title }: { title: string }) {
                   </article>
                 ))}
               </div>
-              <div className="p-4">
-                <DataTable columns={relationshipColumns} getRowId={(row) => `${row.from}-${row.to}`} rows={relationshipRows} />
+              <div className="p-3">
+                <DataTable columns={relationshipDepthColumns} compact getRowId={(row) => `${row.from}-${row.to}`} rows={relationshipRows} />
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card data-testid="epic-07-relationship-step-proof" density="compact">
             <CardHeader>
-              <div className="flex items-center gap-4">
-                <span className="grid size-16 place-items-center rounded-full border border-alphavest-border bg-alphavest-gold/15 text-xl font-semibold text-alphavest-gold">DC</span>
-                <div>
-                  <CardTitle>David Chen</CardTitle>
-                  <CardDescription>Principal · Active</CardDescription>
-                </div>
-              </div>
+              <CardTitle>Relationship step proof</CardTitle>
+              <CardDescription>Typed relationship commands must persist audit before any edge changes.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="grid gap-3">
-                {[
-                  ["Entity Type", "Individual"],
-                  ["Date of Birth", "May 14, 1972"],
-                  ["Ownership", "-"],
-                  ["Role", "Principal"],
-                  ["Status", "Active"]
-                ].map(([label, value]) => <FieldBox key={label} label={label} value={value} />)}
-              </div>
-              <Card className="border-alphavest-border/60">
-                <CardContent className="p-4">
-                  <div className="mb-3 flex items-center justify-between">
-                    <p className="font-semibold text-alphavest-ivory">Evidence Summary</p>
-                    <p className="text-sm text-alphavest-muted">4 of 6</p>
+            <CardContent className="space-y-3">
+              {relationshipDepthSteps.map((step) => (
+                <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5" data-testid="epic-07-relationship-depth-step" key={step.label}>
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-semibold text-alphavest-ivory">{step.label}</p>
+                    <Badge tone={step.tone}>{step.status}</Badge>
                   </div>
-                  {["Government ID - Verified", "Marriage Certificate - Verified", "Trust Agreement - Conflict", "POA Document - Missing"].map((item) => (
-                    <div className="flex justify-between border-b border-alphavest-border/45 py-2 text-sm last:border-0" key={item}>
-                      <span className="text-alphavest-muted">{item.split(" - ")[0]}</span>
-                      <Badge tone={toneFor(item)}>{item.split(" - ")[1]}</Badge>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
+                  <p className="mt-2 text-sm leading-5 text-alphavest-muted">{step.detail}</p>
+                </div>
+              ))}
+              <div className="rounded-md border border-alphavest-red/45 bg-alphavest-red/10 p-2.5 text-sm text-alphavest-muted" data-testid="epic-07-relationship-audit-fail-closed">
+                <span className="font-semibold text-alphavest-ivory">Audit failure rule</span>
+                <span className="ml-2">If audit persistence is unavailable, the relationship edge is not created and client release remains unchanged.</span>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -1897,13 +1889,32 @@ function RelationshipsPage({ title }: { title: string }) {
   );
 }
 
-const relationshipColumns: Array<DataTableColumn<(typeof relationshipRows)[number]>> = [
-  { key: "from", header: "From", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.from}</span> },
-  { key: "relationship", header: "Relationship", render: (row) => row.relationship },
-  { key: "to", header: "To", render: (row) => row.to },
-  { key: "type", header: "Type", render: (row) => row.type },
-  { key: "evidence", header: "Evidence", render: (row) => row.evidence },
-  { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge> }
+const relationshipDepthColumns: Array<DataTableColumn<(typeof relationshipRows)[number]>> = [
+  { key: "from", header: "From", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.from}</span>, className: "min-w-[10rem]" },
+  { key: "relationship", header: "Edge", render: (row) => row.relationship, className: "w-36" },
+  { key: "to", header: "To", render: (row) => row.to, className: "min-w-[11rem]" },
+  { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge>, className: "w-32 whitespace-nowrap" }
+];
+
+const relationshipDepthSteps: Array<{ detail: string; label: string; status: string; tone: BadgeTone }> = [
+  {
+    detail: "Family map open is a typed J09 command and creates an audit trace without changing release state.",
+    label: "1. Map open audited",
+    status: "audit first",
+    tone: "blue",
+  },
+  {
+    detail: "Add Edge writes a Relationship row and an EvidenceItem only after the critical audit gate is writable.",
+    label: "2. Edge mutation gated",
+    status: "DB backed",
+    tone: "green",
+  },
+  {
+    detail: "Missing audit persistence fails closed before mutation; no hidden relationship payload is exposed.",
+    label: "3. Audit failure blocked",
+    status: "fail closed",
+    tone: "red",
+  },
 ];
 
 function EntitiesPage({ title }: { title: string }) {

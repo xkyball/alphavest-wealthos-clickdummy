@@ -43,7 +43,10 @@ export async function POST(request: Request) {
     );
   }
 
-  const body = (await request.json().catch(() => undefined)) as { actionId?: unknown } | undefined;
+  const body = (await request.json().catch(() => undefined)) as {
+    actionId?: unknown;
+    simulateAuditPersistenceFailure?: unknown;
+  } | undefined;
   if (!body || !isDataMaintenanceWorkflowAction(body.actionId)) {
     return failClosedJson(
       {
@@ -61,9 +64,32 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
+  if (
+    body.simulateAuditPersistenceFailure !== undefined &&
+    typeof body.simulateAuditPersistenceFailure !== "boolean"
+  ) {
+    return failClosedJson(
+      {
+        actionId: body.actionId,
+        canonicalApiRoute: dataMaintenanceCanonicalApiRoute,
+        error: "simulateAuditPersistenceFailure must be boolean when provided.",
+        reasonCode: "INVALID_REQUEST",
+        safety: {
+          commandExecuted: false,
+          hiddenRowsDisclosed: false,
+          noAdviceExecution: true,
+          noClientRelease: true,
+          scoped: true,
+        },
+      },
+      { status: 400 },
+    );
+  }
 
   try {
-    const result = await runDataMaintenanceWorkflowAction(prisma, body.actionId);
+    const result = await runDataMaintenanceWorkflowAction(prisma, body.actionId, {
+      simulateAuditPersistenceFailure: body.simulateAuditPersistenceFailure === true,
+    });
 
     return NextResponse.json({
       actionId: body.actionId,

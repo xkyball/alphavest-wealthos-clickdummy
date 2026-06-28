@@ -4,6 +4,7 @@ import { expect, test } from "@playwright/test";
 
 import { demoTenants } from "../lib/demo-session";
 import { prismaClient } from "../lib/prisma";
+import { stableId } from "../lib/stable-id";
 
 const prisma = prismaClient();
 
@@ -195,6 +196,61 @@ test.describe("AV27 Phase 2 client context closure", () => {
     expect(listBody.entities[0].name).toBe(entityName);
     expect(listBody.entities[0].visibilityStatus).toBeTruthy();
     expect(listBody.entities[0].sensitivity).toBeTruthy();
+  });
+
+  test("P2-T03B relationship edge command persists audit and fails closed before mutation when audit is unavailable", async ({ request }) => {
+    const relationshipId = stableId("relationship:bennett:principal-olivia-nextgen");
+
+    await prisma.evidenceItem.deleteMany({ where: { sourceObjectId: relationshipId } });
+    await prisma.auditEvent.deleteMany({
+      where: {
+        eventType: "data_maintenance.relationship.created",
+        targetId: relationshipId,
+      },
+    });
+    await prisma.relationship.deleteMany({ where: { id: relationshipId } });
+
+    const blockedResponse = await request.post("/api/data-maintenance/actions", {
+      data: {
+        actionId: "j09.addRelationship",
+        simulateAuditPersistenceFailure: true,
+      },
+    });
+    const blockedBody = await blockedResponse.json();
+
+    expect(blockedResponse.status(), JSON.stringify(blockedBody)).toBe(409);
+    expect(blockedBody.reasonCode).toBe("AUDIT_PERSISTENCE_UNAVAILABLE");
+    expect(blockedBody.safety.commandExecuted).toBe(false);
+    expect(blockedBody.safety.noClientRelease).toBe(true);
+    expect(await prisma.relationship.count({ where: { id: relationshipId } })).toBe(0);
+    expect(await prisma.evidenceItem.count({ where: { sourceObjectId: relationshipId } })).toBe(0);
+    expect(await prisma.auditEvent.count({ where: { targetId: relationshipId } })).toBe(0);
+
+    const createResponse = await request.post("/api/data-maintenance/actions", {
+      data: {
+        actionId: "j09.addRelationship",
+      },
+    });
+    const createBody = await createResponse.json();
+
+    expect(createResponse.ok(), JSON.stringify(createBody)).toBe(true);
+    expect(createBody.ok).toBe(true);
+    expect(createBody.noClientRelease).toBe(true);
+    expect(createBody.result.relationshipId).toBe(relationshipId);
+
+    const relationship = await prisma.relationship.findUniqueOrThrow({ where: { id: relationshipId } });
+    expect(relationship.relationshipType).toBe("parent_child_governance");
+
+    const audit = await prisma.auditEvent.findFirstOrThrow({
+      where: {
+        eventType: "data_maintenance.relationship.created",
+        targetId: relationshipId,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    expect(audit.result).toBe("SUCCESS");
+
+    expect(await prisma.evidenceItem.count({ where: { sourceObjectId: relationshipId } })).toBeGreaterThan(0);
   });
 
   test("P2-T04 derives sensitivity visibility and hides internal context without inference", async ({ request }) => {

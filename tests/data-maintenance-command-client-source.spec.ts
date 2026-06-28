@@ -9,6 +9,7 @@ test.describe("data maintenance command client wiring", () => {
     expect(clientIntakeSource).toContain('void runDataMaintenanceCommand("j04.openUploadDocument", "/documents/upload");');
     expect(clientIntakeSource).toContain('void runDataMaintenanceCommand("j04.uploadDocument", "/documents/review-queue");');
     expect(clientIntakeSource).toContain('void runDataMaintenanceCommand("j05.createEntity", "/entities/new");');
+    expect(clientIntakeSource).toContain('void runDataMaintenanceCommand("j09.openFamilyMap");');
     expect(clientIntakeSource).toContain('void runDataMaintenanceCommand("j09.addRelationship");');
     expect(wealthActionsSource).toContain('void runDataMaintenanceCommand("j05.viewDetails", "/actions?state=drawer");');
     expect(wealthActionsSource).toContain('void runDataMaintenanceCommand("j05.requestInfo");');

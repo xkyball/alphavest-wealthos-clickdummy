@@ -45,22 +45,22 @@
       ],
       "coverage_status": "PARTIALLY_IMPLEMENTED",
       "current_app_coverage": "STRONG_PARTIAL",
-      "main_gap": "Full intake, relationship graph and step-level audit failure proof remain incomplete after EPIC-07 first slice.",
-      "overclaim_warning": "EPIC-07 adds compact client/family/entity surfaces and no-overclaim proof, but this is still not full process readiness or P0 closure.",
+      "main_gap": "Full intake and remaining relationship step coverage remain incomplete after EPIC-07 relationship audit slice.",
+      "overclaim_warning": "Relationship depth and audit-failure proof are now present for the J09 edge command, but DOMAIN-A is still not full process closure.",
       "status_counts": {
         "partial_current_app_representation": 12,
-        "partial_domain_representation": 8,
+        "partial_domain_representation": 4,
         "specified_not_proven": 4,
-        "strong_partial_domain_representation": 8
+        "strong_partial_domain_representation": 12
       },
       "acceptance_state_counts": {
         "partially_implemented": 28,
         "specified_only": 4
       },
       "missing_layer_counts": {
-        "audit_or_evidence_failure_proof": 24,
+        "audit_or_evidence_failure_proof": 21,
         "implementation_touchpoint_proof": 4,
-        "negative_test": 20,
+        "negative_test": 16,
         "step_level_gate_proof": 24
       }
     },
@@ -490,9 +490,9 @@
       ],
       "status_counts": {
         "partial_current_app_representation": 12,
-        "partial_domain_representation": 8,
+        "partial_domain_representation": 4,
         "specified_not_proven": 4,
-        "strong_partial_domain_representation": 8
+        "strong_partial_domain_representation": 12
       },
       "decision_step_count": 24,
       "safety_step_count": 24,
@@ -501,9 +501,9 @@
         "specified_only": 4
       },
       "missing_layer_counts": {
-        "audit_or_evidence_failure_proof": 24,
+        "audit_or_evidence_failure_proof": 21,
         "implementation_touchpoint_proof": 4,
-        "negative_test": 20,
+        "negative_test": 16,
         "step_level_gate_proof": 24
       }
     },
@@ -2270,37 +2270,36 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_domain_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_07_RELATIONSHIP_DEPTH_PROOF_ADDED",
+        "EPIC_07_RELATIONSHIP_AUDIT_FAILURE_PROOF_ADDED",
         "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
-          "019-026",
-          "031"
+          "/relationships",
+          "/client/family-members"
         ],
         "apis": [
-          "/api/demo-workflow",
-          "/api/documents where relevant"
+          "/api/data-maintenance/actions"
         ],
         "models_or_services": [
-          "ClientTenant",
-          "FamilyMember",
           "Relationship",
-          "Entity",
-          "Asset",
-          "UserProfile"
+          "EvidenceItem",
+          "AuditEvent",
+          "runJ09Relationship",
+          "runTypedWorkflowMutation"
         ],
         "tests": [
-          "route-smoke.spec.ts"
+          "tests/route-smoke.spec.ts",
+          "tests/av27-client-context-closure.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Relationship mapping erzeugt den fachlichen Output 'Relationship Map' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -2309,8 +2308,13 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/route-smoke.spec.ts::EPIC-07 relationship graph exposes step depth and audit failure boundary without page scroll",
+          "tests/av27-client-context-closure.spec.ts::P2-T03B relationship edge command persists audit and fails closed before mutation when audit is unavailable"
+        ],
+        "negative": [
+          "tests/av27-client-context-closure.spec.ts::P2-T03B relationship edge command persists audit and fails closed before mutation when audit is unavailable"
+        ]
       },
       "blockers": [
         {
@@ -2333,7 +2337,7 @@
           ]
         }
       ],
-      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
+      "next_implementation_target": "close_remaining_relationship_step_coverage_without_completion_claim"
     },
     {
       "step_id": "BP-005-S02",
@@ -2355,38 +2359,37 @@
         "P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_domain_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_07_RELATIONSHIP_DEPTH_PROOF_ADDED",
+        "EPIC_07_RELATIONSHIP_AUDIT_FAILURE_PROOF_ADDED",
         "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
-          "019-026",
-          "031"
+          "/relationships",
+          "/client/family-members"
         ],
         "apis": [
-          "/api/demo-workflow",
-          "/api/documents where relevant"
+          "/api/data-maintenance/actions"
         ],
         "models_or_services": [
-          "ClientTenant",
-          "FamilyMember",
           "Relationship",
-          "Entity",
-          "Asset",
-          "UserProfile"
+          "EvidenceItem",
+          "AuditEvent",
+          "runJ09Relationship",
+          "runTypedWorkflowMutation"
         ],
         "tests": [
-          "route-smoke.spec.ts"
+          "tests/route-smoke.spec.ts",
+          "tests/av27-client-context-closure.spec.ts"
         ]
       },
       "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
+        "step_level_gate_proof"
       ],
       "required_positive_proof": [
         "Relationship mapping erzeugt den fachlichen Output 'Relationship Map' nur unter den definierten Preconditions und Scope-Regeln."
@@ -2403,8 +2406,13 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/route-smoke.spec.ts::EPIC-07 relationship graph exposes step depth and audit failure boundary without page scroll",
+          "tests/av27-client-context-closure.spec.ts::P2-T03B relationship edge command persists audit and fails closed before mutation when audit is unavailable"
+        ],
+        "negative": [
+          "tests/av27-client-context-closure.spec.ts::P2-T03B relationship edge command persists audit and fails closed before mutation when audit is unavailable"
+        ]
       },
       "blockers": [
         {
@@ -2427,7 +2435,7 @@
           ]
         }
       ],
-      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
+      "next_implementation_target": "close_remaining_relationship_step_coverage_without_completion_claim"
     },
     {
       "step_id": "BP-005-S03",
@@ -2449,38 +2457,37 @@
         "P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_domain_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_07_RELATIONSHIP_DEPTH_PROOF_ADDED",
+        "EPIC_07_RELATIONSHIP_AUDIT_FAILURE_PROOF_ADDED",
         "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
-          "019-026",
-          "031"
+          "/relationships",
+          "/client/family-members"
         ],
         "apis": [
-          "/api/demo-workflow",
-          "/api/documents where relevant"
+          "/api/data-maintenance/actions"
         ],
         "models_or_services": [
-          "ClientTenant",
-          "FamilyMember",
           "Relationship",
-          "Entity",
-          "Asset",
-          "UserProfile"
+          "EvidenceItem",
+          "AuditEvent",
+          "runJ09Relationship",
+          "runTypedWorkflowMutation"
         ],
         "tests": [
-          "route-smoke.spec.ts"
+          "tests/route-smoke.spec.ts",
+          "tests/av27-client-context-closure.spec.ts"
         ]
       },
       "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
+        "step_level_gate_proof"
       ],
       "required_positive_proof": [
         "Relationship mapping erzeugt den fachlichen Output 'Relationship Map' nur unter den definierten Preconditions und Scope-Regeln."
@@ -2497,8 +2504,13 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/route-smoke.spec.ts::EPIC-07 relationship graph exposes step depth and audit failure boundary without page scroll",
+          "tests/av27-client-context-closure.spec.ts::P2-T03B relationship edge command persists audit and fails closed before mutation when audit is unavailable"
+        ],
+        "negative": [
+          "tests/av27-client-context-closure.spec.ts::P2-T03B relationship edge command persists audit and fails closed before mutation when audit is unavailable"
+        ]
       },
       "blockers": [
         {
@@ -2521,7 +2533,7 @@
           ]
         }
       ],
-      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
+      "next_implementation_target": "close_remaining_relationship_step_coverage_without_completion_claim"
     },
     {
       "step_id": "BP-005-S04",
@@ -2543,38 +2555,37 @@
         "P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_domain_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
+        "EPIC_07_RELATIONSHIP_DEPTH_PROOF_ADDED",
+        "EPIC_07_RELATIONSHIP_AUDIT_FAILURE_PROOF_ADDED",
         "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
       ],
       "current_touchpoints": {
         "routes": [
-          "019-026",
-          "031"
+          "/relationships",
+          "/client/family-members"
         ],
         "apis": [
-          "/api/demo-workflow",
-          "/api/documents where relevant"
+          "/api/data-maintenance/actions"
         ],
         "models_or_services": [
-          "ClientTenant",
-          "FamilyMember",
           "Relationship",
-          "Entity",
-          "Asset",
-          "UserProfile"
+          "EvidenceItem",
+          "AuditEvent",
+          "runJ09Relationship",
+          "runTypedWorkflowMutation"
         ],
         "tests": [
-          "route-smoke.spec.ts"
+          "tests/route-smoke.spec.ts",
+          "tests/av27-client-context-closure.spec.ts"
         ]
       },
       "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
+        "step_level_gate_proof"
       ],
       "required_positive_proof": [
         "Relationship mapping erzeugt den fachlichen Output 'Relationship Map' nur unter den definierten Preconditions und Scope-Regeln."
@@ -2591,8 +2602,13 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/route-smoke.spec.ts::EPIC-07 relationship graph exposes step depth and audit failure boundary without page scroll",
+          "tests/av27-client-context-closure.spec.ts::P2-T03B relationship edge command persists audit and fails closed before mutation when audit is unavailable"
+        ],
+        "negative": [
+          "tests/av27-client-context-closure.spec.ts::P2-T03B relationship edge command persists audit and fails closed before mutation when audit is unavailable"
+        ]
       },
       "blockers": [
         {
@@ -2615,7 +2631,7 @@
           ]
         }
       ],
-      "next_implementation_target": "close_missing_layers_and_positive_negative_proof"
+      "next_implementation_target": "close_remaining_relationship_step_coverage_without_completion_claim"
     },
     {
       "step_id": "BP-006-S01",

@@ -29,6 +29,10 @@ export {
   type DataMaintenanceWorkflowAction,
 } from "@/lib/data-maintenance-action-contract";
 
+export type DataMaintenanceWorkflowOptions = {
+  simulateAuditPersistenceFailure?: boolean;
+};
+
 const morganTenantId = tenantId("morgan");
 const morganEvidenceRecordId = evidenceRecordId("morgan");
 const morganTaxDocumentId = documentId("morgan", "missing-tax");
@@ -841,7 +845,11 @@ async function runJ09FamilyMember(prisma: PrismaClient, actionId: DataMaintenanc
   );
 }
 
-async function runJ09Relationship(prisma: PrismaClient, actionId: DataMaintenanceWorkflowAction) {
+async function runJ09Relationship(
+  prisma: PrismaClient,
+  actionId: DataMaintenanceWorkflowAction,
+  options: DataMaintenanceWorkflowOptions = {},
+) {
   const now = new Date();
   const isOpen = actionId === "j09.openFamilyMap";
 
@@ -850,6 +858,7 @@ async function runJ09Relationship(prisma: PrismaClient, actionId: DataMaintenanc
     {
       actionId,
       actorRoleKey: "principal",
+      auditPersistenceAvailable: options.simulateAuditPersistenceFailure ? false : undefined,
       auditResult: AuditResult.SUCCESS,
       clientTenantId: bennettTenantId,
       eventType: isOpen ? "data_maintenance.relationship.family_map_opened" : "data_maintenance.relationship.created",
@@ -931,7 +940,11 @@ async function runJ09Relationship(prisma: PrismaClient, actionId: DataMaintenanc
   );
 }
 
-export function runDataMaintenanceWorkflowAction(prisma: PrismaClient, actionId: DataMaintenanceWorkflowAction) {
+export function runDataMaintenanceWorkflowAction(
+  prisma: PrismaClient,
+  actionId: DataMaintenanceWorkflowAction,
+  options: DataMaintenanceWorkflowOptions = {},
+) {
   switch (actionId) {
     case "j04.portalUpload":
     case "j04.openUploadDocument":
@@ -960,6 +973,6 @@ export function runDataMaintenanceWorkflowAction(prisma: PrismaClient, actionId:
       return runJ09FamilyMember(prisma, actionId);
     case "j09.openFamilyMap":
     case "j09.addRelationship":
-      return runJ09Relationship(prisma, actionId);
+      return runJ09Relationship(prisma, actionId, options);
   }
 }

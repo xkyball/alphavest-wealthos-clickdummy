@@ -368,6 +368,30 @@ test.describe("UX-HUB phase 3 orientation hubs", () => {
       await expect(page.locator("main")).not.toContainText(/release complete|client visibility unlocked|evidence sufficient|export ready|approved advice/i);
     }
   });
+
+  test("EPIC-07 relationship graph exposes step depth and audit failure boundary without page scroll", async ({ page }) => {
+    await page.setViewportSize({ height: 1000, width: 1440 });
+    await authenticateRouteSmokePage(page);
+    await page.goto("/relationships");
+    await page.waitForLoadState("networkidle");
+
+    const surface = page.getByTestId("epic-07-relationship-depth-surface");
+    await expect(surface).toBeVisible();
+    await expect(surface).toHaveAttribute("data-epic-07-process", "BP-005");
+    await expect(surface).toHaveAttribute("data-epic-07-surface", "relationship-depth");
+    await expect(surface).toHaveAttribute("data-epic-07-no-overclaim", "true");
+    await expect(page.getByTestId("epic-07-relationship-depth-step")).toHaveCount(3);
+    await expect(page.getByTestId("epic-07-relationship-audit-fail-closed")).toContainText("not created");
+    await expect(page.getByTestId("j09-family-map")).toBeVisible();
+    await expect(page.getByTestId("j09-add-relationship")).toBeVisible();
+
+    const dimensions = await page.evaluate(() => ({
+      clientHeight: document.documentElement.clientHeight,
+      scrollHeight: document.documentElement.scrollHeight,
+    }));
+
+    expect(dimensions.scrollHeight).toBeLessThanOrEqual(dimensions.clientHeight);
+  });
 });
 
 test.describe("UX-WORKBENCH phase 4 active task workbenches", () => {
