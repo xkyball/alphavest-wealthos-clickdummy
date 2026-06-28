@@ -1,0 +1,188 @@
+{
+  "contractId": "ALPHAVEST_STATUS_ACTION_BLOCKER_CONFIRMATION_PRIMITIVES_CONTRACT",
+  "version": "2026-06-28.epic-05-spec-01",
+  "sourceEpic": "EPIC-05",
+  "sourceTask": "EPIC-05-SPEC-01",
+  "title": "Status, Action, Blocker and Confirmation Primitives",
+  "authority": {
+    "operativeSourceOfTruth": "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md",
+    "supportingContracts": [
+      "docs/00-current/ALPHAVEST_PROCESS_FIRST_UX_LAYOUT_CONTRACT.md",
+      "docs/00-current/ALPHAVEST_P0_PROCESS_STEP_ACCEPTANCE_STATES_CONTRACT.json",
+      "docs/00-current/ALPHAVEST_MASTER_DETAIL_DATA_SURFACE_LONG_SCREEN_GOVERNANCE_CONTRACT.json"
+    ],
+    "implementationSeams": [
+      "components/ui/status-chip.tsx",
+      "components/ui/action-zone.tsx",
+      "components/ui/guarded-action-button.tsx",
+      "lib/ux-status-command-hierarchy.ts",
+      "lib/ux-action-hierarchy-contract.ts",
+      "components/internal-workflow-screen.tsx",
+      "tests/ux-status-command-hierarchy.spec.ts",
+      "tests/true-ux-shared-primitives.spec.ts"
+    ]
+  },
+  "intent": {
+    "problem": "P0 decision and action screens currently risk encoding local status, blocker, confirmation and recovery meanings in copy or route-specific UI fragments.",
+    "goal": "Make status, command, blocker and confirmation semantics canonical, typed and runtime-verifiable before later domain epics reuse them.",
+    "principle": "A visible status, enabled action or valid confirmation is never proof of downstream release, export, evidence sufficiency, permission mutation, client visibility or client acceptance unless that exact gate has its own typed proof."
+  },
+  "targetScreens": [
+    {
+      "screenId": "S032",
+      "expectedPrimitiveUse": "action_board_status_and_recovery",
+      "reason": "Action triage must show blocker and next permitted action without implying evidence sufficiency or release."
+    },
+    {
+      "screenId": "S035",
+      "expectedPrimitiveUse": "advisor_workbench_status_and_recovery",
+      "reason": "Advisor preparation can request recovery work but cannot publish client-visible advice."
+    },
+    {
+      "screenId": "S037",
+      "expectedPrimitiveUse": "advisor_review_action_boundary",
+      "reason": "Advisor approval is scoped to advisor review and remains separate from compliance release."
+    },
+    {
+      "screenId": "S039",
+      "expectedPrimitiveUse": "compliance_decision_confirmation",
+      "reason": "Compliance decision room needs explicit blocker, confirmation and audit semantics before release mutation."
+    },
+    {
+      "screenId": "S044",
+      "expectedPrimitiveUse": "client_decision_confirmation",
+      "reason": "Client decision confirmation must not imply compliance release, export or acceptance beyond the named action."
+    },
+    {
+      "screenId": "S056",
+      "expectedPrimitiveUse": "export_preview_blocker_and_action",
+      "reason": "Export preview must preserve redaction, scope and approval blockers."
+    },
+    {
+      "screenId": "S057",
+      "expectedPrimitiveUse": "export_approval_confirmation",
+      "reason": "Export approval requires confirmation without becoming download/share authority."
+    },
+    {
+      "screenId": "S058",
+      "expectedPrimitiveUse": "download_confirmation_boundary",
+      "reason": "Download/share confirmation requires scoped, redacted and approved package proof."
+    }
+  ],
+  "primitiveFamilies": [
+    "status",
+    "action",
+    "blocker",
+    "confirmation"
+  ],
+  "allowedUsage": {
+    "status": [
+      "Summarize current local process state.",
+      "Expose whether the state is blocking, attention, informational or completed.",
+      "Map route-local states into lib/ux-status-command-hierarchy.ts before rendering P0 queue, decision or export UI."
+    ],
+    "action": [
+      "Expose one primary command and subordinate recovery/secondary commands with typed action hierarchy metadata.",
+      "Render blocked or disabled commands with explicit reason and recovery information.",
+      "Use guarded action buttons or action-zone primitives before adding local button semantics."
+    ],
+    "blocker": [
+      "Name the blocker reason and next permitted recovery action.",
+      "Keep blockers visible near the affected action or decision surface.",
+      "Treat missing audit, permission, evidence, payload, redaction, scope or confirmation as fail-closed blockers."
+    ],
+    "confirmation": [
+      "Require exact confirmation, acknowledgement and audit intent for sensitive or irreversible actions.",
+      "Scope a valid confirmation to the named action only.",
+      "Expose confirmation state, required phrase and no-overclaim boundary through runtime attributes."
+    ]
+  },
+  "forbiddenUsage": {
+    "status": [
+      "Using completed copy as proof of downstream release, export, evidence sufficiency, permission mutation, client visibility or client acceptance.",
+      "Inventing local route-specific status hierarchies for P0 surfaces.",
+      "Hiding unresolved blockers behind neutral or success-looking status chips."
+    ],
+    "action": [
+      "Rendering enabled-looking controls without typed permission, audit, validation and gate semantics.",
+      "Using navigation or drawer open actions as workflow completion.",
+      "Using disabled text-only substitutes when the shared guarded action primitive can express the blocker."
+    ],
+    "blocker": [
+      "Showing a blocker without reason and recovery action.",
+      "Moving blockers into audit history only, away from the action that depends on them.",
+      "Treating advisory or compliance attention as proof that the blocker is cleared."
+    ],
+    "confirmation": [
+      "Treating a typed phrase as client acceptance, export/download authority or permission mutation beyond the named action.",
+      "Confirming a sensitive action without explicit audit intent and cancel path.",
+      "Using screenshots alone as proof that confirmation gates are enforced."
+    ]
+  },
+  "runtimeAttributeRequirements": {
+    "status": [
+      "data-ux-status-primitive-contract",
+      "data-ux-status-primitive-family",
+      "data-ux-status-hierarchy-level",
+      "data-ux-status-no-overclaim"
+    ],
+    "action": [
+      "data-ux-action-meaning",
+      "data-ux-command-level",
+      "data-ux-no-overclaim"
+    ],
+    "blocker": [
+      "data-ux-status-blocker-reason",
+      "data-ux-status-recovery-action",
+      "data-ux-status-requires-reason",
+      "data-ux-status-requires-recovery"
+    ],
+    "confirmation": [
+      "data-ux-confirmation-scope",
+      "data-ux-confirmation-state",
+      "data-ux-confirmation-requires-audit",
+      "data-ux-confirmation-no-overclaim"
+    ]
+  },
+  "acceptanceCriteria": [
+    {
+      "id": "EPIC05-AC-01",
+      "statement": "The typed status-command contract exposes status/action/blocker/confirmation primitive families and runtime attributes.",
+      "verification": "tests/ux-status-command-hierarchy.spec.ts"
+    },
+    {
+      "id": "EPIC05-AC-02",
+      "statement": "Blocking and attention states require reason and recovery action.",
+      "verification": "tests/ux-status-command-hierarchy.spec.ts"
+    },
+    {
+      "id": "EPIC05-AC-03",
+      "statement": "At least one representative target screen consumes the EPIC-05 primitive contract.",
+      "verification": "tests/ux-status-command-hierarchy.spec.ts"
+    },
+    {
+      "id": "EPIC05-AC-04",
+      "statement": "Confirmation states remain scoped to the named action and do not imply release, export, client visibility, permission mutation or client acceptance beyond that action.",
+      "verification": "tests/ux-status-command-hierarchy.spec.ts"
+    },
+    {
+      "id": "EPIC05-AC-05",
+      "statement": "Shared primitive tests reject local no-overclaim bypasses and missing blocker metadata.",
+      "verification": "tests/true-ux-shared-primitives.spec.ts"
+    }
+  ],
+  "decisionBoundaries": [
+    {
+      "boundary": "new_mutation_semantics",
+      "rule": "This contract does not authorize new workflow mutation behavior, schema changes or production API semantics."
+    },
+    {
+      "boundary": "sensitive_confirmation",
+      "rule": "If a target action requires new legal/compliance wording or new irreversible business authority, stop for product/compliance decision."
+    },
+    {
+      "boundary": "client_visible_claim",
+      "rule": "No status, blocker or confirmation primitive may expose unapproved advice or internal payloads to the client."
+    }
+  ]
+}

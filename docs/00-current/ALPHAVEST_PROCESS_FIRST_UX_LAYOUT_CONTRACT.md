@@ -91,6 +91,12 @@ machine-readable in
 That contract is the acceptance layer for allowed/forbidden usage, target-screen
 expectations, runtime attribute requirements and no-overclaim rules.
 
+EPIC-05-specific status, action, blocker and confirmation governance is
+machine-readable in
+`docs/00-current/ALPHAVEST_STATUS_ACTION_BLOCKER_CONFIRMATION_PRIMITIVES_CONTRACT.json`.
+That contract is the acceptance layer for shared status hierarchy, command
+semantics, blocker metadata, confirmation scope and no-overclaim rules.
+
 `ProcessGateRail` is the canonical visible process gate primitive for this workstream. Critical call sites must pass machine-readable process metadata:
 
 - `businessProcessIds`
