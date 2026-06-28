@@ -925,6 +925,61 @@ function SafeClientBanner({ children = "No unapproved advice reaches the client.
   );
 }
 
+function Epic07ProofAuditDisclosure({
+  auditSource,
+  processId,
+  proofSource,
+}: {
+  auditSource: string;
+  processId: string;
+  proofSource: string;
+}) {
+  return (
+    <details
+      className="group relative"
+      data-epic-07-client-release="not_mutated"
+      data-epic-07-evidence-sufficiency="not_claimed"
+      data-epic-07-no-overclaim="true"
+      data-epic-07-process={processId}
+      data-epic-07-proof-placement="disclosure_drawer"
+      data-testid="epic-07-proof-audit-disclosure"
+    >
+      <summary className={cn(secondaryButtonClass, "cursor-pointer list-none [&::-webkit-details-marker]:hidden")}>
+        <ShieldCheck aria-hidden="true" className="size-4" />
+        Proof / audit
+        <ChevronDown aria-hidden="true" className="size-4 transition group-open:rotate-180" />
+      </summary>
+      <div
+        className="absolute right-0 z-30 mt-2 w-80 rounded-md border border-alphavest-border bg-alphavest-panel p-4 text-left shadow-2xl"
+        data-testid="epic-07-proof-audit-drawer"
+      >
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Proof and audit boundary</p>
+        <div className="mt-3 grid gap-2 text-sm">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-alphavest-muted">Proof source</span>
+            <Badge tone="blue">{proofSource}</Badge>
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-alphavest-muted">Audit source</span>
+            <Badge tone="green">{auditSource}</Badge>
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-alphavest-muted">Client release</span>
+            <Badge tone="gold">Not changed</Badge>
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-alphavest-muted">Evidence sufficiency</span>
+            <Badge tone="red">Not claimed</Badge>
+          </div>
+        </div>
+        <p className="mt-3 border-t border-alphavest-border pt-3 text-xs leading-5 text-alphavest-muted">
+          This drawer proves route gating and mutation safety only. Internal rationale, compliance notes and audit metadata stay outside the client projection.
+        </p>
+      </div>
+    </details>
+  );
+}
+
 function ClientSafeProjectionCard({ density = "desktop" }: { density?: "desktop" | "mobile" }) {
   const releasedProjection = visibilityEngine.projectDecisionPayload(
     wp07ClientProjectionSession.actor,
@@ -1607,7 +1662,7 @@ function FamilyMembersPageContent({ title }: { title: string }) {
         data-testid="epic-07-family-core-surface"
       >
         <SectionTitle
-          action={<div className="flex flex-wrap gap-3"><button className={secondaryButtonClass} data-testid="j09-family-map" onClick={() => { void runDataMaintenanceCommand("j09.openFamilyMap", "/relationships"); }} type="button"><Network aria-hidden="true" className="size-4" />Family Map</button><button className={primaryButtonClass} data-testid="j09-add-member" onClick={() => { void runDataMaintenanceCommand("j09.addMember"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add Member</button></div>}
+          action={<div className="flex flex-wrap gap-3"><Epic07ProofAuditDisclosure auditSource="DB audit" processId="BP-004" proofSource="visibility rules" /><button className={secondaryButtonClass} data-testid="j09-family-map" onClick={() => { void runDataMaintenanceCommand("j09.openFamilyMap", "/relationships"); }} type="button"><Network aria-hidden="true" className="size-4" />Family Map</button><button className={primaryButtonClass} data-testid="j09-add-member" onClick={() => { void runDataMaintenanceCommand("j09.addMember"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add Member</button></div>}
           count={String(meta?.totalRows ?? rows.length)}
           subtitle="Maintain family member profiles, relationships and governance roles."
           title={title}
@@ -1906,7 +1961,7 @@ function EntitiesPageContent({ title }: { title: string }) {
         data-testid="epic-07-entity-core-surface"
       >
         <SectionTitle
-          action={<button className={primaryButtonClass} data-testid="j05-create-entity" onClick={() => { void runDataMaintenanceCommand("j05.createEntity", "/entities/new"); }} type="button"><Plus aria-hidden="true" className="size-4" />Create Entity</button>}
+          action={<div className="flex flex-wrap gap-3"><Epic07ProofAuditDisclosure auditSource="DB readmodel" processId="BP-006" proofSource="tenant query" /><button className={primaryButtonClass} data-testid="j05-create-entity" onClick={() => { void runDataMaintenanceCommand("j05.createEntity", "/entities/new"); }} type="button"><Plus aria-hidden="true" className="size-4" />Create Entity</button></div>}
           count={String(meta?.totalRows ?? rows.length)}
           subtitle="View and manage entities across organizational and investment structures."
           title={title}
@@ -2129,7 +2184,11 @@ function CreateEntityPageContent({ title }: { title: string }) {
         data-epic-07-surface="step"
         data-testid="epic-07-entity-step-surface"
       >
-        <SectionTitle subtitle="Build a new entity record with ownership, jurisdiction and supporting evidence." title={title} />
+        <SectionTitle
+          action={<Epic07ProofAuditDisclosure auditSource="POST /api/entities" processId="BP-006" proofSource="wizard validation" />}
+          subtitle="Build a new entity record with ownership, jurisdiction and supporting evidence."
+          title={title}
+        />
         <WizardStepper steps={steps} />
         <div className="grid gap-5 xl:grid-cols-[1fr_20rem]">
           <Card>

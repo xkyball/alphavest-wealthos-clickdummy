@@ -348,6 +348,26 @@ test.describe("UX-HUB phase 3 orientation hubs", () => {
       expect(dimensions.scrollHeight, path).toBeLessThanOrEqual(dimensions.clientHeight);
     }
   });
+
+  test("EPIC-07 proof audit disclosures preserve negative no-overclaim boundaries", async ({ page }) => {
+    await page.setViewportSize({ height: 1000, width: 1440 });
+    await authenticateRouteSmokePage(page);
+
+    for (const path of ["/client/family-members", "/entities", "/entities/new"]) {
+      await page.goto(path);
+      await page.waitForLoadState("networkidle");
+
+      const disclosure = page.getByTestId("epic-07-proof-audit-disclosure");
+      await expect(disclosure).toBeVisible();
+      await expect(disclosure).toHaveAttribute("data-epic-07-no-overclaim", "true");
+      await expect(disclosure).toHaveAttribute("data-epic-07-client-release", "not_mutated");
+      await expect(disclosure).toHaveAttribute("data-epic-07-evidence-sufficiency", "not_claimed");
+      await disclosure.locator("summary").click();
+      await expect(page.getByTestId("epic-07-proof-audit-drawer")).toContainText("Not changed");
+      await expect(page.getByTestId("epic-07-proof-audit-drawer")).toContainText("Not claimed");
+      await expect(page.locator("main")).not.toContainText(/release complete|client visibility unlocked|evidence sufficient|export ready|approved advice/i);
+    }
+  });
 });
 
 test.describe("UX-WORKBENCH phase 4 active task workbenches", () => {
