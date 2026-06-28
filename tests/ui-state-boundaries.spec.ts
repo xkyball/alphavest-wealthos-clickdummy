@@ -54,9 +54,9 @@ test.describe("Phase 03 UI state boundaries", () => {
   test("export setup and preview states keep permission, redaction and approval separate", async ({ page }) => {
     await page.goto("/export/new");
 
-    await expect(page.getByText("Scope first").first()).toBeVisible();
-    await expect(page.getByText("Start export scope before redaction, preview, approval or delivery.")).toBeVisible();
-    await expect(page.getByText("Select export scope").first()).toBeVisible();
+    await expect(page.getByText("Name the request, choose contents and continue to review.")).toBeVisible();
+    await expect(page.getByText("Bennett Q2 report")).toBeVisible();
+    await expect(page.getByText("Select contents").first()).toBeVisible();
 
     await page.goto("/export/demo/approval?state=approval");
     await expect(page.getByRole("dialog", { name: "Approve Export Package" })).toBeVisible();

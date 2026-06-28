@@ -14,7 +14,7 @@ function readExportScreen() {
 }
 
 test.describe("V0.96 WP-10 export scope, redaction and approval UX", () => {
-  test("renders a visible lifecycle boundary across export stages", () => {
+  test("keeps export stage boundaries off the create-export start surface", () => {
     const source = readExportScreen();
 
     expect(source).toContain("function ExportStageBoundary");
@@ -25,9 +25,11 @@ test.describe("V0.96 WP-10 export scope, redaction and approval UX", () => {
     expect(source).toContain("Approval recorded; download/share remain separate.");
     expect(source).toContain("Package downloaded; client acceptance not recorded.");
     expect(source).toContain('<ExportStageBoundary activeStage="scope"');
-    expect(source).toContain('<ExportStageBoundary activeStage="redaction"');
     expect(source).toContain('<ExportStageBoundary activeStage="approval"');
     expect(source).toContain('<ExportStageBoundary activeStage="package"');
+    expect(source).toContain("function ExportNewPage");
+    expect(source).toContain("Bennett Q2 report");
+    expect(source).toContain("Select contents");
   });
 
   test("renders forbidden payload boundaries without widening export permission", () => {

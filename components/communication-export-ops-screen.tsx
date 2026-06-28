@@ -1359,22 +1359,61 @@ function CallTriggerMatrixPage({ title }: { title: string }) {
 function ExportNewPage({ title }: { title: string }) {
   return (
     <WorksurfaceShell
-      description="Export request start screen that captures scope intent before redaction, preview, approval or controlled delivery can occur."
+      description="Create an export request and choose the content set before review."
       eyebrow="Export and redaction"
       primary={
         <div className="space-y-4">
-          <PageLead badge="Scope first" description="Start export scope before redaction, preview, approval or delivery." icon={Download} title={title} />
-          <Phase5DetailSplitPanel decisionSupport="Export start captures purpose and scope without preview, approval or download behavior." objectLabel="Export flow split" objectState="Export request not yet scoped" pageJob="Export start is separate from scope, redaction, preview, approval and delivery." safetyBoundary="Start page cannot generate, approve or download export packages." splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-PAGE-SPLIT-005" />
-          <ExportStageBoundary activeStage="scope" />
-          <UxHubPage pageId="054" />
+          <PageLead description="Name the request, choose contents and continue to review." icon={Download} title={title} />
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
+            <Card>
+              <CardContent className="grid gap-4 p-4 md:grid-cols-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Request</p>
+                  <p className="mt-2 font-display text-xl text-alphavest-ivory">Bennett Q2 report</p>
+                  <p className="mt-1 text-sm leading-5 text-alphavest-muted">Quarterly family-office package.</p>
+                  <p className="mt-3 text-sm text-alphavest-muted">Owner: Compliance Officer</p>
+                </div>
+                <div className="grid gap-3">
+                  {[
+                    ["Content", "Portfolio, fees, notes"],
+                    ["Recipients", "2 reviewers"],
+                    ["Format", "PDF package"],
+                  ].map(([label, value]) => (
+                    <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/30 p-3" key={label}>
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">{label}</p>
+                      <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{value}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Protection</p>
+                  <p className="mt-2 text-sm leading-5 text-alphavest-muted">Sensitive fields are reviewed before package preparation.</p>
+                  <p className="mt-3 flex items-center gap-2 text-sm font-semibold text-alphavest-green">
+                    <CheckCircle2 aria-hidden="true" className="size-4" />Review path ready
+                  </p>
+                  <p className="mt-3 text-sm text-alphavest-muted">Target date: May 24, 2025</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="p-4 pb-2">
+                <CardTitle className="text-xl">Next Action</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 p-4 pt-0">
+                <p className="text-sm leading-5 text-alphavest-muted">Continue with a content set before any package is prepared.</p>
+                <a className={primaryButtonClass + " w-full"} href="/export/demo/scope">
+                  Select contents <ArrowRight aria-hidden="true" className="size-4" />
+                </a>
+                <button className={secondaryButtonClass + " w-full"} disabled title="Preparation starts after content review." type="button">
+                  <LockKeyhole aria-hidden="true" className="size-4" />Prepare package
+                </button>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       }
       routeId="054"
-      safetyNote="Export start cannot generate, approve, download, share or make advice client-visible."
-      statusItems={[
-        { label: "Flow", tone: "blue", value: "Start" },
-        { label: "Stage", tone: "gold", value: "scope first" },
-      ]}
+      safetyNote="Export start creates request context only; package preparation stays behind content review."
       title={title}
       worksurfaceId="export-redaction-start"
     />

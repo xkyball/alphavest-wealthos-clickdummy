@@ -256,7 +256,7 @@ test.describe("UX-HUB phase 3 orientation hubs", () => {
     }
   });
 
-  const renderedPhase3HubRoutes = phase3HubRoutes.filter((route) => !["038", "046", "048"].includes(route.pageId));
+  const renderedPhase3HubRoutes = phase3HubRoutes.filter((route) => !["038", "046", "048", "054"].includes(route.pageId));
 
   for (const route of renderedPhase3HubRoutes) {
     test(`${route.taskId} ${route.path} renders a focused orientation hub`, async ({ page }) => {
@@ -488,7 +488,6 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT phase 5 object review", () => {
     { path: "/advisory/triggers/demo/review", taskId: "UX-DETAIL-003", splitTaskId: "UX-PAGE-SPLIT-001" },
     { path: "/compliance/reviews/demo/audit", taskId: "UX-DETAIL-005", splitTaskId: "UX-PAGE-SPLIT-006" },
     { path: "/advisory", taskId: "UX-PAGE-SPLIT-001", splitTaskId: "UX-PAGE-SPLIT-001" },
-    { path: "/export/new", taskId: "UX-PAGE-SPLIT-005", splitTaskId: "UX-PAGE-SPLIT-005" },
   ];
   const phase5ClientSuppressedRoutes = [
     { path: "/entities/demo", taskId: "UX-DETAIL-002", splitTaskId: "UX-PAGE-SPLIT-007" },
@@ -741,7 +740,7 @@ test.describe("UX-DENSITY dense operations routes", () => {
     { pageId: "056", path: "/export/demo/redaction" },
   ];
 
-  test("keeps export-new as D2 hub/wizard rather than D3 operations table", async ({ page }) => {
+  test("keeps export-new as D2 request start rather than D3 operations table", async ({ page }) => {
     expect(uxDensityForPageId("054").tier).toBe("D2");
 
     await page.setViewportSize({ height: 1000, width: 1440 });
@@ -749,7 +748,9 @@ test.describe("UX-DENSITY dense operations routes", () => {
     await page.goto("/export/new");
 
     await expect(page.getByTestId("ux-d3-dense-operations")).toHaveCount(0);
-    await expect(page.getByTestId("ux-hub-page")).toBeVisible();
+    await expect(page.getByTestId("wp02-worksurface-shell").getByRole("heading", { name: "Create Export" })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Select contents/i })).toBeVisible();
+    await expect(page.getByTestId("ux-hub-page")).toHaveCount(0);
   });
 
   for (const route of d3OperationsRoutes) {
@@ -1094,7 +1095,7 @@ test.describe("UX-CTA export lifecycle separation", () => {
   });
 
   const exportScreens = [
-    { path: "/export/new", required: "Start export scope before redaction, preview, approval or delivery." },
+    { path: "/export/new", required: "Name the request, choose contents and continue to review." },
     { path: "/export/demo/scope", required: "Scope selection is not preview, approval, download or share" },
     { path: "/export/demo/redaction", required: "Preview inspection must pass before approval can be recorded." },
     { path: "/export/demo/approval?state=approval", required: "Generation, download and share remain separate controlled steps." },
