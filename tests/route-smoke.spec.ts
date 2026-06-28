@@ -260,6 +260,16 @@ test.describe("UX-HUB phase 3 orientation hubs", () => {
       await authenticateRouteSmokePage(page);
       await page.goto(route.path);
 
+      if (route.pageId === "019") {
+        const entry = page.getByTestId("epic-07-client-family-entry");
+        await expect(entry).toBeVisible();
+        await expect(entry).toHaveAttribute("data-epic-07-contract", "client_family_context_foundation");
+        await expect(entry).toHaveAttribute("data-epic-07-no-overclaim", "true");
+        await expect(page.getByTestId("epic-07-primary-next-action")).toHaveCount(1);
+        await expect(page.getByTestId("epic-07-proof-boundary")).toContainText("No client release");
+        return;
+      }
+
       const hub = page.getByTestId("ux-hub-page").first();
       await expect(hub).toBeVisible();
       await expect(hub).toHaveAttribute("data-ux-hub-task", "phase-3");
@@ -270,6 +280,24 @@ test.describe("UX-HUB phase 3 orientation hubs", () => {
       await expect(hub.getByTestId("ux-hub-safety-note")).toBeVisible();
     });
   }
+
+  test("EPIC-07 S019 area entry fits the 1440x1000 viewport without page scroll", async ({ page }) => {
+    await page.setViewportSize({ height: 1000, width: 1440 });
+    await authenticateRouteSmokePage(page);
+    await page.goto("/client/home?state=base");
+
+    const entry = page.getByTestId("epic-07-client-family-entry");
+    await expect(entry).toBeVisible();
+    await expect(page.getByTestId("epic-07-primary-next-action")).toHaveCount(1);
+    await expect(page.getByTestId("epic-07-proof-boundary")).toBeVisible();
+
+    const dimensions = await page.evaluate(() => ({
+      clientHeight: document.documentElement.clientHeight,
+      scrollHeight: document.documentElement.scrollHeight,
+    }));
+
+    expect(dimensions.scrollHeight).toBeLessThanOrEqual(dimensions.clientHeight);
+  });
 });
 
 test.describe("UX-WORKBENCH phase 4 active task workbenches", () => {

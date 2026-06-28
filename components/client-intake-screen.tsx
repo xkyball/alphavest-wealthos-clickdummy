@@ -1020,13 +1020,7 @@ function PortalPage({ title }: { title: string }) {
       <WorksurfaceShell
         description="Process-first home context for the client-facing projection, with internal review and release gates kept separate."
         eyebrow="WP02 Client Context"
-        primary={
-          <>
-            <ClientSafeProjectionCard />
-            <UxHubPage pageId="019" />
-          </>
-        }
-        rail={<ClientContextRail />}
+        primary={<Epic07ClientFamilyEntry />}
         routeId="019"
         safetyNote="Client context cannot expose internal payloads, mark evidence sufficient or bypass compliance release."
         statusItems={[
@@ -1037,6 +1031,119 @@ function PortalPage({ title }: { title: string }) {
         worksurfaceId="client-context-home"
       />
     </ClientShell>
+  );
+}
+
+function Epic07ClientFamilyEntry() {
+  const processCards = [
+    {
+      detail: "Profile, family rows and relationship context are ready for scoped review.",
+      href: "/client/profile",
+      icon: ClipboardCheck,
+      label: "Profile context",
+      status: "Draft review",
+      tone: "blue" as BadgeTone,
+    },
+    {
+      detail: "Family member updates require role, tenant, object and audit proof.",
+      href: "/client/family-members",
+      icon: Network,
+      label: "Family members",
+      status: "DB-backed",
+      tone: "green" as BadgeTone,
+    },
+    {
+      detail: "Entity and wealth context can route work, but cannot mark readiness.",
+      href: "/entities",
+      icon: Building2,
+      label: "Entity structure",
+      status: "Context only",
+      tone: "gold" as BadgeTone,
+    },
+  ];
+
+  return (
+    <section
+      className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]"
+      data-epic-07-client-visible="projection-only"
+      data-epic-07-contract="client_family_context_foundation"
+      data-epic-07-no-overclaim="true"
+      data-epic-07-primary-entry="S019"
+      data-testid="epic-07-client-family-entry"
+    >
+      <div className="rounded-md border border-alphavest-border bg-alphavest-panel/72 p-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">Client and family context</p>
+            <h2 className="mt-2 font-display text-2xl leading-tight text-alphavest-ivory">One context spine before any decision work</h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-alphavest-muted">
+              The client area resolves tenant, family, entity and sensitivity context first. It can collect and review context, but it cannot approve advice, evidence sufficiency, export or client release.
+            </p>
+          </div>
+          <Link
+            className={primaryButtonClass}
+            data-epic-07-primary-cta="true"
+            data-testid="epic-07-primary-next-action"
+            href="/client/family-members"
+          >
+            Review family context
+            <ChevronRight aria-hidden="true" className="size-4" />
+          </Link>
+        </div>
+
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          {processCards.map((card) => {
+            const Icon = card.icon;
+
+            return (
+              <Link
+                className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 transition hover:border-alphavest-gold/60"
+                data-epic-07-process-card="true"
+                href={card.href}
+                key={card.label}
+              >
+                <div className="flex items-start gap-3">
+                  <IconTile tone={card.tone}>
+                    <Icon aria-hidden="true" className="size-4" />
+                  </IconTile>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-alphavest-ivory">{card.label}</p>
+                    <p className="mt-1 text-sm leading-5 text-alphavest-muted">{card.detail}</p>
+                    <Badge className="mt-3" tone={card.tone}>{card.status}</Badge>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+
+      <aside className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4" data-testid="epic-07-proof-boundary">
+        <div className="flex gap-3">
+          <ShieldCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-alphavest-gold" />
+          <div>
+            <p className="font-semibold text-alphavest-gold-soft">Client-safe boundary</p>
+            <p className="mt-2 text-sm leading-6 text-alphavest-muted">
+              Payload visibility is derived from role, tenant and sensitivity. Hidden rows stay hidden; context review does not mutate release, export or evidence gates.
+            </p>
+          </div>
+        </div>
+        <div className="mt-4 grid gap-2 text-sm">
+          <div className="flex items-center justify-between gap-3 border-t border-alphavest-gold/25 pt-3">
+            <span className="text-alphavest-muted">Mutation result</span>
+            <Badge tone="gold">No client release</Badge>
+          </div>
+          <div className="flex items-center justify-between gap-3 border-t border-alphavest-gold/25 pt-3">
+            <span className="text-alphavest-muted">Visibility source</span>
+            <Badge tone="blue">Derived</Badge>
+          </div>
+          <div className="flex items-center justify-between gap-3 border-t border-alphavest-gold/25 pt-3">
+            <span className="text-alphavest-muted">Gate status</span>
+            <Badge tone="red">Still separate</Badge>
+          </div>
+        </div>
+      </aside>
+    </section>
   );
 }
 
