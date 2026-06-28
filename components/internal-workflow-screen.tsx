@@ -3,7 +3,6 @@
 import { useState } from "react";
 import {
   Bell,
-  BriefcaseBusiness,
   Calendar,
   Check,
   CheckCircle2,
@@ -49,7 +48,12 @@ import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
 import { UxComplexityPriorityPanel } from "@/components/ux-complexity-priority-panel";
 import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
-import { analystDraftGovernanceContractId, analystDraftRouteOwnershipForPageId } from "@/lib/analyst-draft-governance-contract";
+import {
+  analystDraftAcceptanceCriteria,
+  analystDraftGovernanceContractId,
+  analystDraftPayloadVisibility,
+  analystDraftRouteOwnershipForPageId,
+} from "@/lib/analyst-draft-governance-contract";
 import { processFirstUxContractForPageId } from "@/lib/process-first-ux-contract";
 import { uxActionAttributesFor, uxActionClassForPriority } from "@/lib/ux-action-hierarchy-contract";
 import { uxFeedbackSuccessMessageForSubject } from "@/lib/ux-feedback-message-contract";
@@ -85,8 +89,7 @@ import {
   signalRoutingOptions,
   triggerDetail,
   triggerQueue,
-  workbenchHousehold,
-  workbenchMetrics
+  workbenchHousehold
 } from "@/lib/internal-workflow-demo-data";
 import { runAdvisorReviewCommand } from "@/lib/advisor-review-command-client";
 import type { ScreenRoute } from "@/lib/route-registry";
@@ -756,15 +759,15 @@ function ComplianceReleaseGate() {
 function Phase5DetailSplitPanel({ compact = false, decisionSupport, objectLabel, objectState, pageJob, safetyBoundary, splitTaskId, taskId }: Phase5DetailSplitPanelProps) {
   if (compact) {
     return (
-      <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-3" data-testid="ux-phase5-detail-split" data-ux-layout-compression="compact_boundary_strip" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
+      <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-2.5" data-testid="ux-phase5-detail-split" data-ux-layout-compression="compact_boundary_strip" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Detail state</p>
-            <h2 className="mt-0.5 font-display text-lg text-alphavest-ivory">{objectLabel}</h2>
+            <h2 className="mt-0.5 font-display text-base text-alphavest-ivory">{objectLabel}</h2>
           </div>
           <Badge tone="gold">{taskId}</Badge>
         </div>
-        <div className="mt-2 grid gap-2 lg:grid-cols-4">
+        <div className="mt-2 grid gap-1.5 lg:grid-cols-4">
           {[
             ["Object state", objectState, "ux-phase5-object-state"],
             ["Decision support", decisionSupport, "ux-phase5-decision-support"],
@@ -773,7 +776,7 @@ function Phase5DetailSplitPanel({ compact = false, decisionSupport, objectLabel,
           ].map(([label, value, testId]) => (
             <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-2" data-testid={testId} key={label}>
               <p className="text-[11px] uppercase tracking-[0.08em] text-alphavest-muted">{label}</p>
-              <p className="mt-1 text-xs font-semibold leading-5 text-alphavest-ivory">{value}</p>
+              <p className="mt-1 line-clamp-3 text-xs font-semibold leading-5 text-alphavest-ivory">{value}</p>
             </div>
           ))}
         </div>
@@ -833,20 +836,28 @@ function Phase4WorkbenchPanel({
 }) {
   if (compact) {
     return (
-      <section className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4" data-testid="ux-workbench-phase4" data-ux-layout-compression="compact_workbench_boundary" data-ux-workbench-task={taskId}>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
+      <section className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-2.5" data-testid="ux-workbench-phase4" data-ux-layout-compression="compact_workbench_boundary" data-ux-workbench-task={taskId}>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="min-w-0">
             <Badge tone="gold">{taskId}</Badge>
-            <h3 className="mt-2 font-display text-xl text-alphavest-ivory">Active task workbench</h3>
+            <h3 className="mt-1 font-display text-base text-alphavest-ivory">Active task workbench</h3>
           </div>
           <button className={primaryButtonClass} data-testid="ux-workbench-primary-cta" disabled type="button">{primaryAction}</button>
         </div>
-        <div className="mt-3 grid gap-3 sm:grid-cols-3" data-testid="ux-workbench-triad">
-          <InfoRow label="Queue" value={queueLabel} />
-          <InfoRow label="Active context" value={activeTask} />
-          <InfoRow label="Blocked by" value={blocker} />
+        <div className="mt-2 grid gap-1.5 sm:grid-cols-3" data-testid="ux-workbench-triad">
+          <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-2" data-testid="ux-workbench-queue">
+            <InfoRow label="Queue" value={queueLabel} />
+          </div>
+          <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-2" data-testid="ux-workbench-active-context">
+            <InfoRow label="Active context" value={activeTask} />
+            <p className="mt-1 line-clamp-2 text-xs leading-5 text-alphavest-muted">{context}</p>
+          </div>
+          <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-2" data-testid="ux-workbench-action-rail">
+            <InfoRow label="Action rail" value={primaryAction} />
+            <p className="mt-1 line-clamp-2 text-xs leading-5 text-alphavest-muted" data-testid="ux-workbench-blocker">{blocker}</p>
+          </div>
         </div>
-        <p className="mt-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 text-sm leading-6 text-alphavest-muted" data-testid="ux-workbench-safety-note">{safetyNote}</p>
+        <p className="mt-1.5 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 px-2 py-1 text-xs leading-5 text-alphavest-muted" data-testid="ux-workbench-safety-note">{safetyNote}</p>
       </section>
     );
   }
@@ -1037,6 +1048,106 @@ function AnalystSignalAreaEntry() {
   );
 }
 
+const analystDraftServiceBacking = "lib/p44-phase4-signal-workbench.ts lib/internal-draft-governance-spine.ts lib/analyst-draft-governance-contract.ts";
+
+function AnalystDraftStepSurface({
+  pageId,
+  selectedLabel,
+}: {
+  pageId: "034" | "035";
+  selectedLabel: string;
+}) {
+  const routeOwnership = analystDraftRouteOwnershipForPageId(pageId);
+  const processIds = routeOwnership?.processIds ?? [];
+  const criteria = analystDraftAcceptanceCriteria.filter((criterion) => processIds.some((processId) => processId === criterion.processId));
+
+  if (pageId === "035") {
+    return (
+      <Card
+        data-epic09-contract={analystDraftGovernanceContractId}
+        data-epic09-page-id={pageId}
+        data-epic09-processes={processIds.join(" ")}
+        data-epic09-service-backing={analystDraftServiceBacking}
+        data-epic09-step-surface="true"
+        data-testid="epic09-s035-draft-step-surface"
+      >
+        <CardHeader className="flex flex-row items-start justify-between gap-2 pb-1.5">
+          <div className="min-w-0">
+            <CardTitle className="text-base">Draft gates</CardTitle>
+          </div>
+          <Badge tone="gold">Contract-backed</Badge>
+        </CardHeader>
+        <CardContent className="grid gap-1.5">
+          <p className="line-clamp-1 text-xs font-semibold leading-5 text-alphavest-red">
+            {criteria.map((criterion) => criterion.processId).join(" / ")}
+          </p>
+          <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 px-2 py-1 text-xs leading-5 text-alphavest-muted">
+            <strong className="text-alphavest-ivory">Selected:</strong> {selectedLabel}; <strong className="text-alphavest-ivory">internal fields:</strong> {analystDraftPayloadVisibility.internalOnlyFields.length} blocked; <strong className="text-alphavest-ivory">no-overclaim:</strong> no advice/release/export/client visibility.
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card
+      data-epic09-contract={analystDraftGovernanceContractId}
+      data-epic09-page-id={pageId}
+      data-epic09-processes={processIds.join(" ")}
+      data-epic09-service-backing={analystDraftServiceBacking}
+      data-epic09-step-surface="true"
+      data-testid={`epic09-s${pageId}-draft-step-surface`}
+    >
+      <CardHeader className="flex flex-col gap-2 pb-2 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0">
+          <CardTitle className="text-base">{pageId === "034" ? "Queue step governance" : "Trigger draft governance"}</CardTitle>
+          <p className="mt-1 line-clamp-2 text-xs leading-5 text-alphavest-muted">{routeOwnership?.primaryJob}</p>
+        </div>
+        <Badge tone="gold">Contract-backed</Badge>
+      </CardHeader>
+      <CardContent className="grid gap-2">
+        <div className="flex flex-wrap gap-1.5">
+          {criteria.map((criterion) => (
+            <Badge key={criterion.processId} tone="red">{criterion.processId}</Badge>
+          ))}
+        </div>
+        <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-2.5 text-sm">
+          <div className="flex flex-wrap gap-2 text-xs text-alphavest-muted">
+            <span><strong className="text-alphavest-ivory">Selected:</strong> {selectedLabel}</span>
+            <span><strong className="text-alphavest-ivory">Internal fields:</strong> {analystDraftPayloadVisibility.internalOnlyFields.length} blocked</span>
+            <span><strong className="text-alphavest-ivory">Truth:</strong> readmodel + contract</span>
+            <span><strong className="text-alphavest-ivory">No-overclaim:</strong> no advice/release/export/client visibility</span>
+          </div>
+          <p className="mt-2 rounded-md border border-alphavest-border/60 bg-alphavest-navy/35 px-2 py-1.5 text-xs leading-5 text-alphavest-muted">
+            Internal-only step surface. Advisor approval, compliance release, export and client visibility stay outside this route.
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function S035CompactDetailStandardPanel() {
+  return (
+    <section
+      className="grid gap-1.5 rounded-md border border-alphavest-border/70 bg-alphavest-panel/72 p-2.5"
+      data-testid="ux-page-detail-standard"
+      data-ux-d4-focused-detail="true"
+      data-ux-density-pattern="focused-detail"
+      data-ux-density-tier="D4"
+    >
+      <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-alphavest-subtle" data-testid="ux-d4-focused-status-strip">Object / Status / Next action / Gate</p>
+      <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-2" data-testid="ux-page-detail-object-header">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-alphavest-subtle">Trigger detail</p>
+        <p className="mt-1 line-clamp-1 text-sm font-semibold text-alphavest-ivory">{triggerDetail.title}</p>
+        <div className="mt-1 text-xs text-alphavest-muted" data-testid="ux-page-detail-key-facts">{triggerDetail.severity} / {triggerDetail.source} / {triggerDetail.analyst}</div>
+      </div>
+      <p className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-2 text-xs leading-5 text-alphavest-muted" data-testid="ux-page-detail-evidence-timeline">Evidence / timeline: beneficial ownership signal; escalation pending.</p>
+      <p className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-2 text-xs font-semibold text-alphavest-ivory" data-testid="ux-page-detail-gated-action-rail">Actions: route to advisor review only; no client-visible advice.</p>
+    </section>
+  );
+}
+
 function WorkbenchPage({ title }: { title: string }) {
   const [selectedClient, setSelectedClient] = useState(clientQueue[0]?.client);
   const selectedClientRow = clientQueue.find((row) => row.client === selectedClient) ?? clientQueue[0];
@@ -1046,180 +1157,116 @@ function WorkbenchPage({ title }: { title: string }) {
   return (
     <InternalShell activePageId="034">
       <WorksurfaceShell
+        density="compact"
         description="The analyst workbench combines operational status, active client queues, trigger work and draft readiness in one process-owned surface."
         eyebrow="WP02 internal workbench"
         primary={
-          <div className="space-y-4">
-            <PageHeading
-              action={<span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Workbench queue can open work context only; publish and release remain separate governed routes." data-ux-interactive="false"><LockKeyhole aria-hidden="true" className="size-4" />Release blocked</span>}
-              badge={<Badge tone="gold">34</Badge>}
-              subtitle="Select one client work item, keep trigger context visible and hand off to the appropriate governed workflow without publishing or releasing anything."
-              title={title}
-            />
-            <MasterDetailSurface
-              actionPolicy="route_handoff"
-              actionRail="present"
-              density="compact_operations"
-              detail={
-                selectedClientRow ? (
-                  <Card data-testid="s034-client-selected-detail">
-                    <CardHeader>
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                          <CardTitle>{selectedClientRow.client}</CardTitle>
-                          <p className="mt-1 text-sm text-alphavest-muted">{selectedClientRow.value} - {selectedClientRow.segment}</p>
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-start justify-between gap-2 rounded-md border border-alphavest-border/70 bg-alphavest-panel/58 p-2.5">
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-alphavest-gold">Queue/detail/step surface</p>
+                <p className="mt-1 text-sm font-semibold text-alphavest-ivory">One selected work item, one blocker, one governed next action.</p>
+              </div>
+              <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Workbench queue can open work context only; publish and release remain separate governed routes." data-ux-interactive="false"><LockKeyhole aria-hidden="true" className="size-4" />Release blocked</span>
+            </div>
+            <div className="grid gap-2 xl:grid-cols-[minmax(0,1fr)_minmax(22rem,0.72fr)]" data-ux-queue-proof-drawer="true">
+              <MasterDetailSurface
+                actionPolicy="route_handoff"
+                actionRail="present"
+                density="compact_operations"
+                detail={
+                  selectedClientRow ? (
+                    <Card data-testid="s034-client-selected-detail">
+                      <CardHeader className="pb-2">
+                        <div className="flex flex-wrap items-start justify-between gap-2">
+                          <div>
+                            <CardTitle className="text-lg">{selectedClientRow.client}</CardTitle>
+                            <p className="mt-0.5 text-xs text-alphavest-muted">{selectedClientRow.value} - {selectedClientRow.segment}</p>
+                          </div>
+                          <Badge tone={toneFor(selectedClientRow.priority)}>{selectedClientRow.priority}</Badge>
                         </div>
-                        <Badge tone={toneFor(selectedClientRow.priority)}>{selectedClientRow.priority}</Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid gap-3">
-                        <InfoRow label="Next work" value={selectedClientRow.next} />
-                        <InfoRow label="Queue age" value={selectedClientRow.age} />
-                        <InfoRow label="Trigger" value={selectedTrigger?.title ?? "No active trigger"} />
-                        <InfoRow label="Draft" value={selectedDraft?.title ?? "No draft attached"} />
-                      </div>
-                      <StatePanel
-                        detail="Workbench selection only establishes the current operational context. Advice, export, release and client visibility remain blocked until their governed routes complete."
-                        state={selectedClientRow.priority === "High" ? "validation" : "restricted"}
-                        title="Operational handoff only"
-                        {...uxStatusCommandAttributesFor({
-                          componentState: selectedClientRow.priority === "High" ? "validation" : "restricted",
-                          reason: selectedClientRow.priority === "High" ? "High-priority client queue item needs review before downstream workflow action." : "Workbench queue rows cannot publish, release or export client-visible advice.",
-                          recoveryAction: selectedClientRow.next === "Missing Info" ? "provide_evidence" : "open_decision_room",
-                        })}
-                      />
-                      <div className="grid gap-2 sm:grid-cols-2">
-                        <span className={primaryButtonClass} data-ux-affordance="route-handoff" data-ux-command-intent="open-governed-workflow" data-ux-disabled-message="explicit" data-ux-interactive="false">
-                          Open governed workflow
-                        </span>
-                        <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Client-visible output requires advisor approval and compliance release outside this workbench." data-ux-interactive="false">
-                          Client visibility held
-                        </span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <StatePanel detail="No client work item is selected." state="empty" title="No selected work item" />
-                )
-              }
-              family="queue"
-              filterState="inactive"
-              master={
-                <div className="space-y-2" data-testid="s034-client-master-list">
-                  {clientQueue.map((row) => {
-                    const selected = selectedClientRow?.client === row.client;
-
-                    return (
-                      <button
-                        className={cn(
-                          "w-full rounded-md border p-3 text-left transition",
-                          selected ? "border-alphavest-gold bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35 hover:border-alphavest-gold/60",
-                        )}
-                        data-ux-field-priority="identity value segment primary_status next_work age"
-                        data-ux-queue-row={row.client}
-                        data-ux-queue-selected={selected ? "true" : "false"}
-                        key={row.client}
-                        onClick={() => setSelectedClient(row.client)}
-                        type="button"
-                      >
-                        <span className="flex items-start justify-between gap-3">
-                          <span className="min-w-0">
-                            <span className="block text-sm font-semibold text-alphavest-ivory">{row.client}</span>
-                            <span className="mt-1 block text-xs text-alphavest-muted">{row.value} - {row.segment}</span>
+                      </CardHeader>
+                      <CardContent className="space-y-2">
+                        <div className="grid gap-2 text-sm">
+                          <InfoRow label="Next work" value={selectedClientRow.next} />
+                          <InfoRow label="Queue age" value={selectedClientRow.age} />
+                          <InfoRow label="Trigger" value={selectedTrigger?.title ?? "No active trigger"} />
+                          <InfoRow label="Draft" value={selectedDraft?.title ?? "No draft attached"} />
+                        </div>
+                        <div
+                          className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 px-3 py-2 text-xs leading-5 text-alphavest-muted"
+                          {...uxStatusCommandAttributesFor({
+                            componentState: selectedClientRow.priority === "High" ? "validation" : "restricted",
+                            reason: selectedClientRow.priority === "High" ? "High-priority client queue item needs review before downstream workflow action." : "Workbench queue rows cannot publish, release or export client-visible advice.",
+                            recoveryAction: selectedClientRow.next === "Missing Info" ? "provide_evidence" : "open_decision_room",
+                          })}
+                        >
+                          <span className="font-semibold text-alphavest-ivory">Operational handoff only:</span> no advice, export, release or client visibility from this queue.
+                        </div>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          <span className={primaryButtonClass} data-ux-affordance="route-handoff" data-ux-command-intent="open-governed-workflow" data-ux-disabled-message="explicit" data-ux-interactive="false">
+                            Open governed workflow
                           </span>
-                          <Badge tone={toneFor(row.priority)}>{row.priority}</Badge>
-                        </span>
-                        <span className="mt-2 grid gap-2 text-xs text-alphavest-muted sm:grid-cols-2">
-                          <span>{row.next}</span>
-                          <span className="sm:text-right">{row.age}</span>
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              }
-              masterDetailMode="inline_detail_rail"
-              proofPlacement="proof_drawer"
-              queueWorkbench
-              selectedObjectId={selectedClientRow?.client ?? "no-client-row"}
-              selectedObjectState={selectedClientRow?.priority ?? "empty"}
-              selectedSummary={<span>Internal workbench now keeps queue selection, operational detail and proof handoff in one governed surface; no queue row publishes, releases, exports or changes client visibility.</span>}
-              stickyRail
-            />
+                          <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Client-visible output requires advisor approval and compliance release outside this workbench." data-ux-interactive="false">
+                            Client visibility held
+                          </span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <StatePanel detail="No client work item is selected." state="empty" title="No selected work item" />
+                  )
+                }
+                family="queue"
+                filterState="inactive"
+                master={
+                  <div className="space-y-1.5" data-testid="s034-client-master-list">
+                    {clientQueue.slice(0, 3).map((row) => {
+                      const selected = selectedClientRow?.client === row.client;
+
+                      return (
+                        <button
+                          className={cn(
+                            "w-full rounded-md border p-2.5 text-left transition",
+                            selected ? "border-alphavest-gold bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35 hover:border-alphavest-gold/60",
+                          )}
+                          data-ux-field-priority="identity value segment primary_status next_work age"
+                          data-ux-queue-row={row.client}
+                          data-ux-queue-selected={selected ? "true" : "false"}
+                          key={row.client}
+                          onClick={() => setSelectedClient(row.client)}
+                          type="button"
+                        >
+                          <span className="flex items-start justify-between gap-2">
+                            <span className="min-w-0">
+                              <span className="block truncate text-sm font-semibold text-alphavest-ivory">{row.client}</span>
+                              <span className="mt-0.5 block truncate text-xs text-alphavest-muted">{row.value} - {row.segment}</span>
+                            </span>
+                            <Badge tone={toneFor(row.priority)}>{row.priority}</Badge>
+                          </span>
+                          <span className="mt-1.5 grid gap-2 text-xs text-alphavest-muted sm:grid-cols-2">
+                            <span>{row.next}</span>
+                            <span className="sm:text-right">{row.age}</span>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                }
+                masterDetailMode="inline_detail_rail"
+                proofPlacement="proof_drawer"
+                queueWorkbench
+                selectedObjectId={selectedClientRow?.client ?? "no-client-row"}
+                selectedObjectState={selectedClientRow?.priority ?? "empty"}
+                selectedSummary={<span>Internal workbench now keeps queue selection, operational detail and proof handoff in one governed surface; no queue row publishes, releases, exports or changes client visibility.</span>}
+                stickyRail
+              />
+              <AnalystDraftStepSurface pageId="034" selectedLabel={selectedClientRow?.client ?? "No selected work item"} />
+            </div>
           </div>
         }
-        rail={<ReadinessCard />}
         routeId="034"
         safetyNote="WP02 layout only: the workbench organizes analyst work but does not publish, release, export or alter client visibility."
-        secondary={
-          <div className="grid gap-4">
-            <div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-5">
-              {workbenchMetrics.map((metric) => (
-                <Card key={metric.label}>
-                  <CardContent>
-                    <div className="flex items-start justify-between gap-3">
-                      <p className="text-sm text-alphavest-muted">{metric.label}</p>
-                      <Badge tone={toneFor(metric.status)}>{metric.status}</Badge>
-                    </div>
-                    <p className="mt-3 text-2xl font-semibold text-alphavest-ivory">{metric.value}</p>
-                    <p className="mt-1 text-xs text-alphavest-subtle">{metric.detail}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            <div className="grid gap-4 2xl:grid-cols-3" data-ux-queue-proof-drawer="true">
-              <Card>
-                <CardHeader><CardTitle>Trigger proof queue <Badge className="ml-2" tone="gold">{triggerQueue.length}</Badge></CardTitle></CardHeader>
-                <CardContent className="space-y-3">
-                  {triggerQueue.map((row) => (
-                    <div className="flex items-center justify-between gap-3 border-b border-alphavest-border/45 pb-3 last:border-0" key={row.title}>
-                      <div>
-                        <p className="font-semibold text-alphavest-ivory">{row.title}</p>
-                        <p className="text-sm text-alphavest-muted">{row.client}</p>
-                        <p className="text-xs text-alphavest-subtle">{row.detail}</p>
-                      </div>
-                      <Badge tone={toneFor(row.severity)}>{row.age}</Badge>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader><CardTitle>Draft readiness <Badge className="ml-2" tone="gold">{draftRecommendations.length}</Badge></CardTitle></CardHeader>
-                <CardContent className="space-y-3">
-                  {draftRecommendations.map((row) => (
-                    <div className="flex items-center justify-between gap-3 border-b border-alphavest-border/45 pb-3 last:border-0" key={row.title}>
-                      <div>
-                        <p className="font-semibold text-alphavest-ivory">{row.client}</p>
-                        <p className="text-sm text-alphavest-muted">{row.title}</p>
-                        <p className="text-xs text-alphavest-subtle">{row.updated}</p>
-                      </div>
-                      <Badge tone={toneFor(row.status)}>{row.status}</Badge>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader><CardTitle>Workbench controls</CardTitle></CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                  <InfoRow label="Action rail" value="Route handoff only" />
-                  <InfoRow label="Proof placement" value="Secondary proof drawer" />
-                  <InfoRow label="Client visibility" value="Blocked outside workbench" />
-                  <StatePanel
-                    detail="The workbench can prioritize and route work. It cannot approve advice, release evidence, export reports or expose output to clients."
-                    state="restricted"
-                    title="No release authority"
-                    {...uxStatusCommandAttributesFor({
-                      componentState: "restricted",
-                      reason: "Internal workbench is not a release or approval route.",
-                      recoveryAction: "complete_review",
-                    })}
-                  />
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        }
         statusItems={[
           { label: "Drafts", tone: "gold", value: `${draftRecommendations.length} active` },
           { label: "Attention", tone: "red", value: "18 items" },
@@ -1347,22 +1394,30 @@ function TriggerDetailPage({ title }: { title: string }) {
   return (
     <InternalShell activePageId="035">
       <WorksurfaceShell
+        density="compact"
         description="The trigger detail page is now the focused analyst object review surface: signal context, missing evidence, draft guardrail and handoff action are kept together."
         eyebrow="WP02 internal workbench"
         primary={
-          <div className="space-y-4">
-            <Phase4WorkbenchPanel activeTask="Trigger TRG-443 selected for analyst review" blocker="Missing beneficial-owner and purpose-of-wire evidence keeps advisor handoff blocked." context="AI draft remains internal; analyst must resolve unsupported claims before routing." primaryAction="Request missing evidence" queueLabel="Advisory trigger queue" safetyNote="UX-WORKBENCH-001: no client release, export or visibility mutation can happen from the analyst trigger workbench." taskId="UX-WORKBENCH-001" />
-            <Phase5DetailSplitPanel decisionSupport="Trigger detail separates object evidence from queue triage before advisor routing." objectLabel="Trigger object review" objectState="Blocked by missing evidence" pageJob="Trigger detail explains one selected trigger and safe next action." safetyBoundary="Trigger detail cannot create client-visible advice." splitTaskId="UX-PAGE-SPLIT-001" taskId="UX-DETAIL-003" />
-          </div>
-        }
-        rail={
-          <WorksurfacePanel description="Analyst routing is allowed only after evidence gaps and unsupported claims are visible." title="Handoff guard">
-            <div className="space-y-3 text-sm">
-              <InfoRow label="Trigger" value={triggerDetail.triggerId} />
-              <InfoRow label="Evidence gaps" value={`${dataGaps.length} open`} />
-              <InfoRow label="Advisor release" value="Not permitted" />
+          <div className="grid gap-2 xl:grid-cols-2" data-epic09-review-surface="trigger-draft">
+            <Phase4WorkbenchPanel compact activeTask="Trigger TRG-443 selected for analyst review" blocker="Missing beneficial-owner and purpose-of-wire evidence keeps advisor handoff blocked." context="AI draft remains internal; analyst must resolve unsupported claims before routing." primaryAction="Request missing evidence" queueLabel="Advisory trigger queue" safetyNote="UX-WORKBENCH-001: no client release, export or visibility mutation can happen from the analyst trigger workbench." taskId="UX-WORKBENCH-001" />
+            <Phase5DetailSplitPanel compact decisionSupport="Trigger detail separates object evidence from queue triage before advisor routing." objectLabel="Trigger object review" objectState="Blocked by missing evidence" pageJob="Trigger detail explains one selected trigger and safe next action." safetyBoundary="Trigger detail cannot create client-visible advice." splitTaskId="UX-PAGE-SPLIT-001" taskId="UX-DETAIL-003" />
+            <div className="grid items-start gap-2 lg:grid-cols-2">
+              <ScfP04P06FlowPanel compact mode="advisory" />
+              <S035CompactDetailStandardPanel />
             </div>
-          </WorksurfacePanel>
+            <div className="grid items-start gap-2 lg:grid-cols-2">
+              <AnalystDraftStepSurface pageId="035" selectedLabel={triggerDetail.triggerId} />
+              <div className="grid gap-1.5 rounded-md border border-alphavest-border/70 bg-alphavest-panel/72 p-2.5 text-xs" data-epic09-audit-strip="true">
+                <p className="line-clamp-1 leading-5 text-alphavest-muted">{triggerDetail.notes}</p>
+                <div className="grid gap-1">
+                  <Badge tone="gold">Audit logging required</Badge>
+                  <span className="font-semibold text-alphavest-ivory">Audit logging required before accepted save</span>
+                  <span className="text-alphavest-muted">Hidden from client / ai draft internal only</span>
+                  {routingStatus ? <p className="text-xs text-alphavest-gold-soft">{routingStatus}</p> : null}
+                </div>
+              </div>
+            </div>
+          </div>
         }
         routeId="035"
         safetyNote="WP02 layout only: analyst trigger review may request evidence or route work, but it cannot create client-visible advice, advisor approval or compliance release."
@@ -1372,160 +1427,7 @@ function TriggerDetailPage({ title }: { title: string }) {
         ]}
         title={title}
         worksurfaceId="internal-workbench-trigger-review"
-      >
-      <div className="mx-auto grid max-w-[112rem] gap-5 2xl:grid-cols-[1fr_24rem]">
-        <section className="min-w-0 space-y-5">
-          <ScfP04P06FlowPanel mode="advisory" />
-          <UxDetailStandardPanel
-            actionLabel="Route to advisor review"
-            actionState="Routing is allowed only after analyst review; it does not create client-visible advice."
-            evidenceItems={["Beneficial ownership signal", "Related documents", "Open data gaps"]}
-            facts={[
-              { label: "Severity", value: triggerDetail.severity },
-              { label: "Source", value: triggerDetail.source },
-              { label: "Analyst", value: triggerDetail.analyst },
-              { label: "Related object", value: triggerDetail.relatedTo },
-            ]}
-            objectTitle={triggerDetail.title}
-            objectType="Trigger detail"
-            routeId="035"
-            safetyNote="Advisor and compliance gates must pass before this work can advance."
-            status={triggerDetail.status}
-            timelineItems={["Signal detected", "Analyst review open", "Escalation pending"]}
-          />
-          <Card>
-            <CardContent className="space-y-5">
-              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                <div>
-                  <Badge tone="red">{triggerDetail.status}</Badge>
-                  <h2 className="mt-3 font-display text-3xl text-alphavest-ivory md:text-4xl">{triggerDetail.title}</h2>
-                </div>
-                <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Trigger list scoped</span>
-              </div>
-              <div className="grid gap-4 md:grid-cols-6">
-                {[
-                  ["Severity", triggerDetail.severity],
-                  ["Status", triggerDetail.status],
-                  ["Trigger Date", triggerDetail.date],
-                  ["Source", triggerDetail.source],
-                  ["Related To", triggerDetail.relatedTo],
-                  ["Analyst", triggerDetail.analyst]
-                ].map(([label, value]) => (
-                  <div className="border-l border-alphavest-border pl-3" key={label}>
-                    <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">{label}</p>
-                    <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{value}</p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-          <div className="flex flex-wrap gap-2 border-b border-alphavest-border/70">
-            {["Signal Details", "Related Documents (5)", "Evidence (8)", "Activity & History"].map((tab, index) => (
-              <span className={cn("px-3 pb-3 text-sm font-semibold", index === 0 ? "border-b-2 border-alphavest-gold text-alphavest-gold" : "text-alphavest-muted")} key={tab}>{tab}</span>
-            ))}
-          </div>
-          <div className="grid gap-5 xl:grid-cols-3">
-            <Card>
-              <CardHeader><CardTitle>Signal Details</CardTitle></CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                {[
-                  ["Signal Type", "Beneficial Ownership Change"],
-                  ["Detection Method", "Rule: BO-CHANGE-01"],
-                  ["Confidence Score", triggerDetail.confidence],
-                  ["Source Reference", "WC1-2025-15678901"],
-                  ["Jurisdiction", triggerDetail.jurisdiction],
-                  ["Entity Type", "Private Limited Company"],
-                  ["Last Signal", "Apr 12, 2025"],
-                  ["Triggered Rules", "BO-CHANGE-01, BO-RISK-02"]
-                ].map(([label, value]) => <InfoRow key={label} label={label} value={value} />)}
-                <div className="flex flex-wrap gap-2 pt-2">
-                  {triggerDetail.tags.map((tag) => <Badge key={tag} tone={toneFor(tag)}>{tag}</Badge>)}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader><CardTitle>Related Entity</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <IconTile tone="muted"><BriefcaseBusiness aria-hidden="true" className="size-5" /></IconTile>
-                  <div>
-                    <p className="font-semibold text-alphavest-ivory">{triggerDetail.relatedTo}</p>
-                    <p className="text-sm text-alphavest-muted">ENT-00078512 - Active</p>
-                  </div>
-                </div>
-                <StatePanel detail="You do not have permission to view full entity details. Request access or contact compliance." state="restricted" title="No Access" />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader><CardTitle>Assignment & Routing</CardTitle></CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                {[
-                  ["Current Analyst", triggerDetail.analyst],
-                  ["Team", "Research - Ownership"],
-                  ["Queue", "Escalated Ownership Reviews"],
-                  ["SLA Due", "May 12, 2025 17:00 UTC"],
-                  ["Priority", triggerDetail.severity],
-                  ["Next Review", "May 12, 2025"]
-                ].map(([label, value]) => <InfoRow key={label} label={label} value={value} />)}
-                <button
-                  className={secondaryButtonClass + " w-full"}
-                  data-testid="j01-route-to-advisor"
-                  onClick={() => {
-                    void routeToAdvisor().catch((error: unknown) => {
-                      setRoutingStatus(error instanceof Error ? error.message : "Demo routing action failed.");
-                    });
-                  }}
-                  type="button"
-                >
-                  <UsersRound aria-hidden="true" className="size-4" />Reassign / Route
-                </button>
-                {routingStatus ? <p className="text-xs text-alphavest-gold-soft">{routingStatus}</p> : null}
-              </CardContent>
-            </Card>
-          </div>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between"><CardTitle>Analyst Notes</CardTitle><Badge tone="gold">Audit logging required</Badge></CardHeader>
-            <CardContent>
-              <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35">
-                <div className="flex flex-wrap gap-3 border-b border-alphavest-border p-3 text-sm text-alphavest-muted">
-                  {["Paragraph", "B", "I", "U", "List", "Link", "Undo"].map((tool) => <span key={tool}>{tool}</span>)}
-                </div>
-                <p className="p-4 text-sm leading-6 text-alphavest-muted">{triggerDetail.notes}</p>
-              </div>
-              <div className="mt-3 flex items-center justify-between text-xs text-alphavest-subtle">
-                <span>Chars: 352 - Words: 62</span>
-                <span>Auto-saved 10:22:31</span>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-        <aside className="space-y-5">
-          <Card>
-            <CardHeader><CardTitle>Data Gaps & Escalation <Badge className="ml-2" tone="red">3 gaps</Badge></CardTitle></CardHeader>
-            <CardContent className="space-y-3">
-              {dataGaps.map((gap) => (
-                <div className="flex items-start justify-between gap-3 border-b border-alphavest-border/45 pb-3 last:border-0" key={gap.title}>
-                  <div>
-                    <p className="font-semibold text-alphavest-ivory">{gap.title}</p>
-                    <p className="text-sm text-alphavest-muted">{gap.detail}</p>
-                  </div>
-                  <Badge tone={toneFor(gap.priority)}>{gap.priority}</Badge>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-          <StatePanel detail="Escalated to Compliance Review Team because of high-risk ownership structure and incomplete UBO disclosure." state="blocked" title="Escalation Status" />
-          <Card>
-            <CardHeader><CardTitle>Audit & Completeness</CardTitle></CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <InfoRow label="Notes Last Updated" value="May 9, 2025 10:22 UTC" />
-              <InfoRow label="Updated By" value={triggerDetail.analyst} />
-              <InfoRow label="Audit status" value="Audit logging required before accepted save" />
-            </CardContent>
-          </Card>
-        </aside>
-      </div>
-      </WorksurfaceShell>
+      />
     </InternalShell>
   );
 }

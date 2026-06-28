@@ -14,6 +14,7 @@ export type UxDetailStandardPanelProps = {
   actionLabel: string;
   actionState: string;
   className?: string;
+  compact?: boolean;
   evidenceItems: string[];
   facts: UxDetailFact[];
   objectTitle: string;
@@ -28,6 +29,7 @@ export function UxDetailStandardPanel({
   actionLabel,
   actionState,
   className,
+  compact = false,
   evidenceItems,
   facts,
   objectTitle,
@@ -41,6 +43,54 @@ export function UxDetailStandardPanel({
   const template = uxPageTemplateForPageId(routeId);
   const routeShellPageJobAttributes = uxRouteShellPageJobDataAttributesForTemplate(template);
   const isFocusedDetail = density.tier === "D4";
+
+  if (compact) {
+    return (
+      <section
+        className={cn("grid gap-2 rounded-md border border-alphavest-border/70 bg-alphavest-panel/72 p-3 xl:grid-cols-[1fr_1fr_0.85fr]", className)}
+        data-ux-d4-focused-detail={isFocusedDetail ? "true" : undefined}
+        {...routeShellPageJobAttributes}
+        data-testid="ux-page-detail-standard"
+        data-ux-density-pattern={density.pattern}
+        data-ux-density-tier={density.tier}
+        data-ux-page-template-action-zone={template.actionZoneBehavior}
+        data-ux-page-template-family={template.family}
+        data-ux-page-template-long-page={template.longPageBehavior}
+        data-ux-page-template-proof-audit={template.proofAuditPlacement}
+        data-ux-page-template-required-zones={template.requiredZones.join(" ")}
+      >
+        <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-2.5" data-testid="ux-page-detail-object-header">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">{objectType}</p>
+          <h2 className="mt-1 line-clamp-1 font-display text-lg text-alphavest-ivory">{objectTitle}</h2>
+          <p className="mt-1 text-xs font-semibold text-alphavest-gold-soft">{status}</p>
+          <div className="mt-2 grid gap-1.5 text-xs" data-testid="ux-page-detail-key-facts">
+            {facts.slice(0, 3).map((fact) => (
+              <div className="flex justify-between gap-3 border-b border-alphavest-border/45 pb-1 last:border-0" key={fact.label}>
+                <span className="text-alphavest-muted">{fact.label}</span>
+                <span className="text-right font-semibold text-alphavest-ivory">{fact.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="grid gap-2 rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-2.5 md:grid-cols-2" data-testid="ux-page-detail-evidence-timeline">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Evidence</p>
+            <p className="mt-1 text-xs leading-5 text-alphavest-muted">{evidenceItems.slice(0, 2).join(" / ")}</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">Timeline</p>
+            <p className="mt-1 text-xs leading-5 text-alphavest-muted">{timelineItems.slice(0, 2).join(" / ")}</p>
+          </div>
+        </div>
+        <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-2.5" data-testid="ux-page-detail-gated-action-rail">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold-soft">Actions</p>
+          <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{actionLabel}</p>
+          <p className="mt-1 text-xs leading-5 text-alphavest-muted">{actionState}</p>
+          <p className="mt-1 text-xs leading-5 text-alphavest-gold-soft">{safetyNote}</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section
