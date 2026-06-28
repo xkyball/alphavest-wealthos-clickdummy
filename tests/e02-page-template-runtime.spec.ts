@@ -50,6 +50,15 @@ test.describe("E02 page-template runtime adoption", () => {
       await expect(templateRoot).toHaveAttribute("data-ux-contract-allowed-zones", /^(?!$).+/);
       await expect(page.locator("[data-ux-template-zone]").first()).toBeVisible();
       await expect(page.locator("[data-ux-long-page-anchor]").first()).toBeVisible();
+
+      if (route.path === "/compliance/reviews/demo/decision-room") {
+        const complianceGate = page.getByTestId("bd08-compliance-release-gate");
+
+        await expect(complianceGate).toHaveAttribute("data-ux-route-shell-page-job-consumer", "true");
+        await expect(complianceGate).toHaveAttribute("data-ux-route-shell-page-job-contract", "EPIC-03_ROUTE_SHELL_PAGE_JOB_CONTRACT");
+        await expect(complianceGate).toHaveAttribute("data-ux-route-shell-page-job-id", "039");
+        await expect(complianceGate).toHaveAttribute("data-ux-route-shell-page-job-value", "decision_room");
+      }
     });
   }
 });

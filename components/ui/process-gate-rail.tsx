@@ -1,6 +1,7 @@
 import { LockKeyhole, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
+import type { UxRouteShellPageJobContractRecord } from "@/lib/ux-route-shell-page-job-contract";
 
 export type ProcessGateRailItem = {
   detail: string;
@@ -21,6 +22,7 @@ type ProcessGateRailProps = {
   gateIds?: readonly string[];
   items: ProcessGateRailItem[];
   nextStep: string;
+  routeShellPageJobContract?: UxRouteShellPageJobContractRecord;
   testId?: string;
   title: string;
   tone?: "blocked" | "ready" | "restricted";
@@ -52,6 +54,7 @@ export function ProcessGateRail({
   gateIds,
   items,
   nextStep,
+  routeShellPageJobContract,
   testId = "process-gate-rail",
   title,
   tone = "blocked",
@@ -70,6 +73,13 @@ export function ProcessGateRail({
       data-ux-process-gate-state={gateState}
       data-ux-process-gate-ids={processAttributeValue(gateIds)}
       data-ux-process-next-step={nextStep}
+      data-ux-route-shell-page-job-command-zone={routeShellPageJobContract?.commandZone}
+      data-ux-route-shell-page-job-consumer={routeShellPageJobContract ? "true" : undefined}
+      data-ux-route-shell-page-job-contract={routeShellPageJobContract?.contractId}
+      data-ux-route-shell-page-job-id={routeShellPageJobContract?.pageId}
+      data-ux-route-shell-page-job-no-overclaim={routeShellPageJobContract?.noOverclaimRule}
+      data-ux-route-shell-page-job-proof-audit={routeShellPageJobContract?.proofAuditPlacement}
+      data-ux-route-shell-page-job-value={routeShellPageJobContract?.pageJob}
     >
       <div className="flex items-start gap-3">
         <span className={cn("grid size-10 shrink-0 place-items-center rounded-md border", iconClasses[tone])}>

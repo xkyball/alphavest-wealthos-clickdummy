@@ -52,6 +52,8 @@ import { cn } from "@/lib/cn";
 import { processFirstUxContractForPageId } from "@/lib/process-first-ux-contract";
 import { uxActionAttributesFor, uxActionClassForPriority } from "@/lib/ux-action-hierarchy-contract";
 import { uxFeedbackSuccessMessageForSubject } from "@/lib/ux-feedback-message-contract";
+import { uxPageTemplateForPageId } from "@/lib/ux-page-template-system";
+import { uxRouteShellPageJobContractForTemplate } from "@/lib/ux-route-shell-page-job-contract";
 import { uxStatusCommandAttributesFor } from "@/lib/ux-status-command-hierarchy";
 import { wp05ComplianceReleaseConfirmationPhrase } from "@/lib/advisory-workflow-contract";
 import {
@@ -691,6 +693,7 @@ function AdvisorNotReleaseGate() {
 
 function ComplianceReleaseGate() {
   const processContract = processFirstUxContractForPageId("039");
+  const routeShellPageJobContract = uxRouteShellPageJobContractForTemplate(uxPageTemplateForPageId("039"));
 
   return (
     <ProcessGateRail
@@ -709,6 +712,7 @@ function ComplianceReleaseGate() {
         { detail: "Audit event must persist before a critical mutation.", label: "Audit persistence", tone: "gold", value: "Required" },
       ]}
       nextStep={processContract.nextPermittedAction}
+      routeShellPageJobContract={routeShellPageJobContract}
       testId="bd08-compliance-release-gate"
       title="Compliance release gate"
     />
