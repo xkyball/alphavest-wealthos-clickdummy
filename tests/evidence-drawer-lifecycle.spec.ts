@@ -38,15 +38,11 @@ test.describe("UXP3-010 evidence drawer lifecycle", () => {
     await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-validation", "blocked-client-visibility-gates");
     await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-submit", "blocked-no-authorized-download-action");
     await expect(lifecycle).toHaveAttribute("data-ux-no-overclaim", "true");
-    await expect(page.getByTestId("j03-evidence-loading-state")).toContainText("Download, share and client visibility controls remain blocked");
+    await expect(page.getByTestId("j03-evidence-loading-state")).toContainText("Retrieving source context for review.");
 
     await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-status", "success");
-    await expect(page.getByTestId("j03-evidence-success-state")).toContainText(
-      "does not complete evidence review, release content, export/download/share approval or client acceptance.",
-    );
-    await expect(page.getByTestId("j03-evidence-blocked-state")).toContainText(
-      "Download and share remain blocked until evidence sufficiency, compliance release, export approval and client visibility gates pass.",
-    );
+    await expect(page.getByTestId("j03-evidence-success-state")).toContainText("Source context is loaded for the selected record.");
+    await expect(page.getByTestId("j03-evidence-blocked-state")).toContainText("Publication and external sharing continue from the release workspace.");
     await expect(page.getByTestId("j03-evidence-download-blocked")).toBeDisabled();
   });
 

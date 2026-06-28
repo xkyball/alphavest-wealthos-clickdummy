@@ -80,6 +80,13 @@ test.describe("operational visual audit non-negotiable", () => {
           const rect = node.getBoundingClientRect();
           return rect.width > 0 && rect.height > 0 && rect.bottom > 0 && rect.top < viewportHeight;
         }).length;
+        const auditSurfaces = Array.from(document.querySelectorAll('[data-testid="wp02-worksurface-shell"], [data-testid="ux-a11y-drawer"], [role="dialog"], [role="complementary"]'));
+        const internalScrollContainers = auditSurfaces.flatMap((surface) => [surface, ...Array.from(surface.querySelectorAll("*"))]).filter((node) => {
+          const rect = node.getBoundingClientRect();
+          const style = window.getComputedStyle(node);
+          const scrolls = /(auto|scroll)/.test(`${style.overflowY} ${style.overflow}`);
+          return scrolls && rect.width > 0 && rect.height > 0 && rect.bottom > 0 && rect.top < viewportHeight && node.scrollHeight > node.clientHeight + 1;
+        }).length;
         const meaningfulContentBlocks = Array.from(workSurface?.querySelectorAll("p, span, h1, h2, h3, h4") ?? []).filter((node) => {
           const rect = node.getBoundingClientRect();
           const text = node.textContent?.replace(/\s+/g, " ").trim() ?? "";
@@ -89,8 +96,9 @@ test.describe("operational visual audit non-negotiable", () => {
 
         return {
           badgeClusterCount,
-          forbiddenOperationalText: /Payload Redaction Operations|Approval blocked until preview|Scope\s+Scope|Dense operations safety gate|Workflow Badges|proof drawer|command spine|Access request gate|Export redaction gate|Selected\s+Queue|Scoped\s+Detail|Gated\s+Step|Advisor approval is not release|Compliance pending|Client blocked|Draft contained|Release not set|Advisor candidate only|Not released/i.test(visibleText),
+          forbiddenOperationalText: /Payload Redaction Operations|Payload:|Stage:|Redactions:|Approval blocked until preview|Approval blocked until|blocked until .*gates? pass|release gates? pass|visibility gates? pass|Scope\s+Scope|Dense operations safety gate|Workflow Badges|workflow proof|proof drawer|command spine|drawer handoff|Access request gate|Export redaction gate|Selected\s+Queue|Scoped\s+Detail|Gated\s+Step|Advisor approval is not release|Compliance pending|Client blocked|Draft contained|Release not set|Advisor candidate only|Not released/i.test(visibleText),
           horizontalOverflow: document.documentElement.scrollWidth > viewportWidth + 1,
+          internalScrollContainers,
           narrowTableCells,
           narrowTextBlocks,
           overflowingElements,
@@ -118,6 +126,7 @@ test.describe("operational visual audit non-negotiable", () => {
       expect(audit.narrowTextBlocks, `${route.name} must not clip labels or values into narrow word fragments`).toBe(0);
       expect(audit.summaryBannerCount, `${route.name} must not render an operational summary banner`).toBe(0);
       expect(audit.forbiddenOperationalText, `${route.name} must not expose proof or operations scaffolding`).toBe(false);
+      expect(audit.internalScrollContainers, `${route.name} must not hide overflowing content behind internal scroll containers`).toBe(0);
       expect(audit.badgeClusterCount, `${route.name} must not render badge clusters in the worksurface`).toBe(0);
       expect(audit.staticBadgeCount, `${route.name} must not use badges as primary state guidance`).toBeLessThanOrEqual(3);
       expect(audit.totalOperationalSignals, `${route.name} must not be an empty shell`).toBeGreaterThanOrEqual(14);

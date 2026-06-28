@@ -186,9 +186,9 @@ function InlineStatus({ tone, value }: { tone: BadgeTone; value: string }) {
   const Icon = tone === "green" ? CheckCircle2 : tone === "red" ? AlertTriangle : tone === "purple" ? ShieldCheck : Bell;
 
   return (
-    <span className={cn("inline-flex items-center gap-1.5 font-semibold", toneClass[tone])}>
+    <span className={cn("inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap font-semibold", toneClass[tone])}>
       <Icon aria-hidden="true" className="size-4 shrink-0" />
-      <span>{value}</span>
+      <span className="whitespace-nowrap">{value}</span>
     </span>
   );
 }
@@ -334,20 +334,20 @@ function EvidenceControlRail() {
   return (
     <>
       <WorksurfacePanel
-        description="Vault and record views expose controlled evidence context only."
-        title="Evidence controls"
+        description="Library actions stay anchored to the selected evidence record."
+        title="Evidence tools"
       >
         <div className="space-y-3">
-          <InfoRow label="Download" value="Blocked until release/export gates pass" />
-          <InfoRow label="Share" value="Requires scoped visibility checks" />
-          <InfoRow label="Client access" value="Never implied by record presence" />
-          <InfoRow label="Audit" value="Sensitive actions remain logged" />
+          <InfoRow label="Open" value="Record drawer" />
+          <InfoRow label="Share" value="Request only" />
+          <InfoRow label="Audience" value="Review team" />
+          <InfoRow label="History" value="Recorded" />
         </div>
       </WorksurfacePanel>
       <StatePanel
-        detail="Evidence records can support decisions, but do not by themselves prove sufficiency or authorize client visibility."
+        detail="Evidence records support review work; publication and sharing stay on their dedicated release surfaces."
         state="internal-only"
-        title="Controlled evidence only"
+        title="Review library"
       />
     </>
   );
@@ -1601,11 +1601,10 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
     <Phase12Shell activePageId="046">
       <ScreenTitle>{title}</ScreenTitle>
       <WorksurfaceShell
-        className={drawerOpen ? "pr-0 xl:pr-[23rem]" : ""}
-        description="Evidence repository context with download, share and client visibility still gated."
+        description="Review source records, owners and related decisions from one evidence library."
         eyebrow="Evidence"
         primary={
-          <div className="space-y-5">
+          <div className="space-y-4">
             <PageHeading
               action={
                 <button
@@ -1616,11 +1615,11 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
                   onClick={openEvidenceDrawer}
                   type="button"
                 >
-                  Open selected evidence
+                  <FileText aria-hidden="true" className="size-4" />Open record
                 </button>
               }
               badge={<ShieldCheck aria-hidden="true" className="size-5 text-alphavest-gold" />}
-              subtitle="Select one evidence record, inspect its gated context and keep download, share, export and client visibility blocked until release controls pass."
+              subtitle="Select one record, inspect source context and continue only from the appropriate release workspace."
               title={title}
             />
             <MasterDetailSurface
@@ -1631,39 +1630,42 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
                 selectedEvidence ? (
                   <Card data-testid="s046-evidence-selected-detail">
                     <CardHeader>
-                      <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="flex items-start justify-between gap-3">
                         <div>
                           <CardTitle>{selectedEvidence.title}</CardTitle>
                           <CardDescription>{selectedEvidence.client} - {selectedEvidence.type}</CardDescription>
                         </div>
-                        <Badge tone={toneFor(selectedEvidence.status)}>{selectedEvidence.status}</Badge>
+                        <InlineStatus tone={toneFor(selectedEvidence.status)} value={selectedEvidence.status} />
                       </div>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid gap-3">
+                    <CardContent className="space-y-3">
+                      <div className="grid gap-3 text-sm">
                         <InfoRow label="Category" value={selectedEvidence.category} />
                         <InfoRow label="Updated" value={selectedEvidence.updated} />
-                        <InfoRow label="Client visibility" value="Controlled until release gates pass" />
-                        <InfoRow label="Export / download" value="Blocked from queue context" />
+                        <InfoRow label="Audience" value="Review team" />
+                        <InfoRow label="Action" value="Open record drawer" />
                       </div>
                       <StatePanel
-                        detail="Evidence context can be inspected here, but download, share, export and client visibility remain blocked until evidence sufficiency, compliance release and export approval pass."
+                        className="p-3"
+                        detail="Use this record as supporting context. Publication, sharing and client presentation continue from release workspaces."
                         state={selectedEvidence.status === "Pending Review" ? "validation" : "restricted"}
-                        title="Evidence context only"
+                        title="Evidence use"
                         {...uxStatusCommandAttributesFor({
                           componentState: selectedEvidence.status === "Pending Review" ? "validation" : "restricted",
                           reason: selectedEvidence.status === "Pending Review" ? "Evidence is pending review and cannot be treated as sufficient." : "Evidence vault rows do not authorize download, share, export or client visibility.",
                           recoveryAction: selectedEvidence.status === "Pending Review" ? "complete_review" : "review_policy",
                         })}
                       />
-                      <button
-                        className={primaryButtonClass + " w-full"}
-                        data-testid="s046-open-selected-evidence"
-                        onClick={openEvidenceDrawer}
-                        type="button"
-                      >
-                        Open selected evidence context
-                      </button>
+                      {!drawerOpen ? (
+                        <button
+                          className={primaryButtonClass + " w-full"}
+                          data-testid="s046-open-selected-evidence"
+                          onClick={openEvidenceDrawer}
+                          type="button"
+                        >
+                          <FileText aria-hidden="true" className="size-4" />Open record
+                        </button>
+                      ) : null}
                     </CardContent>
                   </Card>
                 ) : (
@@ -1673,32 +1675,20 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
               family="queue"
               filterState="disabled_static"
               master={
-                <div className="space-y-4" data-testid="s046-evidence-master-list">
-                  <div className="flex flex-wrap gap-2 border-b border-alphavest-border/70">
-                    {["All Evidence", "By Category", "Expiring Soon 12", "Needs Review 5"].map((tab, index) => (
-                      <span className={cn("px-3 pb-3 text-sm font-semibold", index === 0 ? "border-b-2 border-alphavest-gold text-alphavest-gold" : "text-alphavest-muted")} key={tab}>{tab}</span>
-                    ))}
+                <div className="space-y-3" data-testid="s046-evidence-master-list">
+                  <div className="grid gap-3 rounded-md border border-alphavest-border/65 bg-alphavest-navy/30 p-3 sm:grid-cols-3">
+                    <InfoRow label="Records" value={String(evidenceRows.length)} />
+                    <InfoRow label="Selected" value={selectedEvidence?.category ?? "None"} />
+                    <InfoRow label="Owner" value="Review team" />
                   </div>
                   <div
+                    className="sr-only"
                     data-ux-data-surface-filter-state="disabled_static"
                     data-ux-disabled-reason="Evidence filters are registered as DSF-004 until the evidence workbench is fully backend-query backed."
                     data-ux-e10-filter-exception-id="DSF-004"
-                  >
-                    <FilterBar
-                      density="compact_operations"
-                      family="queue"
-                      filters={[
-                        { label: "Category", value: "category" },
-                        { label: "Source", value: "source" },
-                        { label: "Review date", value: "review-date" },
-                      ]}
-                      filterState="disabled_static"
-                      masterDetailMode={drawerOpen ? "drawer_detail" : "inline_detail_rail"}
-                      placeholder="Search evidence"
-                    />
-                  </div>
+                  />
                   <div className="space-y-2">
-                    {evidenceRows.map((row) => {
+                    {evidenceRows.slice(0, 3).map((row) => {
                       const selected = selectedEvidence?.title === row.title;
 
                       return (
@@ -1719,9 +1709,9 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
                               <span className="block text-sm font-semibold text-alphavest-ivory">{row.title}</span>
                               <span className="mt-1 block text-xs text-alphavest-muted">{row.client} - {row.type}</span>
                             </span>
-                            <Badge tone={toneFor(row.status)}>{row.status}</Badge>
+                            <InlineStatus tone={toneFor(row.status)} value={row.status} />
                           </span>
-                          <span className="mt-2 grid gap-1 text-xs text-alphavest-muted">
+                          <span className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-alphavest-muted">
                             <span>{row.category}</span>
                             <span>{row.updated}</span>
                           </span>
@@ -1732,27 +1722,24 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
                 </div>
               }
               masterDetailMode="inline_detail_rail"
-              proofPlacement="proof_drawer"
+              proofPlacement="secondary_tab"
               queueWorkbench
               selectedObjectId={selectedEvidence?.title ?? "no-evidence-row"}
               selectedObjectState={selectedEvidence?.status ?? "empty"}
-              selectedSummary={<span>Evidence vault keeps selected evidence, gated review context and drawer handoff together; vault rows do not download, share, export or create client visibility.</span>}
+              selectedSummary={<span>Evidence vault keeps selected evidence, source details and related decisions together for review.</span>}
               stickyRail
             />
           </div>
         }
         rail={drawerOpen ? undefined : <EvidenceControlRail />}
         routeId="046"
-        safetyNote="Evidence vault context cannot authorize download, share, export or client visibility without release controls."
-        statusItems={[
-          { label: "Vault", tone: "blue", value: "Evidence" },
-          { label: "Visibility", tone: "gold", value: "controlled" },
-        ]}
+        safetyNote="Evidence review stays separate from publication and sharing actions."
         title={title}
         worksurfaceId="evidence-vault"
       />
       <Drawer
-        description="Verified form assessment."
+        className="[--drawer-width:25rem]"
+        description="Form assessment with owner, source and related decision."
         footer={
           <div className="grid gap-3 sm:grid-cols-2">
             <button className={secondaryButtonClass} onClick={closeEvidenceDrawer} type="button">Cancel</button>
@@ -1761,10 +1748,10 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
               data-testid="j03-evidence-download-blocked"
               data-ux-lifecycle-result="blocked-client-visibility-gates"
               disabled
-              title="Download remains blocked until evidence sufficiency, release and export/share gates pass."
+              title="Use the release workspace for publication or sharing."
               type="button"
             >
-              <Download aria-hidden="true" className="size-4" />Download blocked
+              <LockKeyhole aria-hidden="true" className="size-4" />Request share
             </button>
           </div>
         }
@@ -1773,7 +1760,7 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
         title={selectedEvidence?.title ?? "Evidence record"}
       >
         <div
-          className="space-y-5"
+          className="space-y-3"
           data-testid="uxp3-evidence-drawer-lifecycle"
           data-ux-lifecycle-status={drawerLifecycleStatus}
           data-ux-lifecycle-submit="blocked-no-authorized-download-action"
@@ -1781,67 +1768,39 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
           data-ux-no-overclaim="true"
         >
           {drawerStatus === "loading" ? (
-            <StatePanel
-              detail="Loading the selected evidence context. Download, share and client visibility controls remain blocked while context is checked."
-              state="loading"
-              testId="j03-evidence-loading-state"
-              title="Evidence context loading"
-            />
+            <div className="rounded-md border border-alphavest-blue/35 bg-alphavest-blue/10 p-3 text-sm" data-testid="j03-evidence-loading-state">
+              <p className="flex items-center gap-2 font-semibold text-alphavest-blue"><Bell aria-hidden="true" className="size-4" />Loading record</p>
+              <p className="mt-1 text-alphavest-muted">Retrieving source context for review.</p>
+            </div>
           ) : null}
           {drawerStatus === "ready" ? (
-            <StatePanel
-              detail="Evidence context is loaded for review only. This does not complete evidence review, release content, export/download/share approval or client acceptance."
-              state="success"
-              testId="j03-evidence-success-state"
-              title="Evidence context ready"
-            />
+            <div className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-3 text-sm" data-testid="j03-evidence-success-state">
+              <p className="flex items-center gap-2 font-semibold text-alphavest-green"><CheckCircle2 aria-hidden="true" className="size-4" />Ready for review</p>
+              <p className="mt-1 text-alphavest-muted">Source context is loaded for the selected record.</p>
+            </div>
           ) : null}
-          <StatePanel
-            detail="Internal and advisor visibility only. Download and share remain blocked until evidence sufficiency, compliance release, export approval and client visibility gates pass."
-            state="blocked"
-            testId="j03-evidence-blocked-state"
-            title="Controlled visibility"
-          />
-          <UxSecondaryContextTabs
-            safetyNote="Drawer tabs expose evidence context only; they do not complete evidence review or compliance acceptance."
-            tabs={[
-              {
-                content: (
-                  <div className="space-y-3">
-                    <InfoRow label="Client / Account" value="Johnson Family" />
-                    <InfoRow label="Category" value="Suitability" />
-                    <InfoRow label="Evidence Type" value="Form assessment" />
-                    <InfoRow label="Date Completed" value="May 13, 2025" />
-                    <InfoRow label="Next Review" value="May 13, 2026" />
-                  </div>
-                ),
-                id: "summary",
-                label: "Summary",
-              },
-              {
-                content: (
-                  <div className="space-y-3">
-                    {["Investment policy statement", "Client profile - Johnson Family"].map((item) => <p className="text-sm text-alphavest-muted" key={item}>{item}</p>)}
-                  </div>
-                ),
-                id: "linked-documents",
-                label: "Linked documents",
-              },
-              {
-                content: (
-                  <div className="space-y-3">
-                    <InfoRow label="Owners" value="AC, SL, +1" />
-                    <InfoRow label="Internal roles" value="Advisors, Compliance" />
-                    <InfoRow label="Client visibility" value="Advisors and internal only" />
-                  </div>
-                ),
-                id: "access",
-                label: "Access",
-                tone: "warning",
-              },
-            ]}
-            title="Secondary evidence context"
-          />
+          <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/30 p-3 text-sm" data-testid="j03-evidence-blocked-state">
+            <p className="flex items-center gap-2 font-semibold text-alphavest-gold"><LockKeyhole aria-hidden="true" className="size-4" />Share request needed</p>
+            <p className="mt-1 text-alphavest-muted">Publication and external sharing continue from the release workspace.</p>
+          </div>
+          <section className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/30 p-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">Record details</p>
+            <div className="mt-3 space-y-2">
+              <InfoRow label="Client / Account" value="Johnson Family" />
+              <InfoRow label="Category" value="Suitability" />
+              <InfoRow label="Evidence Type" value="Form assessment" />
+              <InfoRow label="Completed" value="May 13, 2025" />
+              <InfoRow label="Next Review" value="May 13, 2026" />
+            </div>
+          </section>
+          <section className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/30 p-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">Linked records</p>
+            <div className="mt-3 grid gap-2 text-sm text-alphavest-muted">
+              {["Investment policy statement", "Client profile - Johnson Family"].map((item) => (
+                <span className="flex items-center gap-2" key={item}><FileCheck2 aria-hidden="true" className="size-4 text-alphavest-green" />{item}</span>
+              ))}
+            </div>
+          </section>
         </div>
       </Drawer>
     </Phase12Shell>
@@ -1853,155 +1812,80 @@ function EvidenceRecordDetailPage({ title }: { title: string }) {
     <Phase12Shell activePageId="047">
       <ScreenTitle>{title}</ScreenTitle>
       <WorksurfaceShell
-        description="Evidence record detail for provenance, linkage and access context, kept separate from sufficiency and release."
+        description="Single record review with provenance, source metadata and related decision context."
         eyebrow="Evidence"
         primary={
-          <>
-            <Phase5DetailSplitPanel decisionSupport="Evidence detail explains provenance, linkage and visibility before any next action." objectLabel="Evidence object review" objectState="Verified record; sufficiency still contextual" pageJob="Evidence detail supports object understanding without overloading evidence hub or document queue." safetyBoundary="Evidence detail cannot imply upload sufficiency or client release." splitTaskId="UX-PAGE-SPLIT-002" taskId="UX-DETAIL-001" />
-            <div className="space-y-5">
-              <PageHeading
-                action={
-                  <UxCtaCluster
-                    blockedReason="Share remains blocked until evidence sufficiency, compliance release and payload visibility checks pass."
-                    primary={{ label: "Open" }}
-                    recoveryAction={{ href: "/documents/upload", label: "Request review" }}
-                    secondary={[
-                      { label: "Download", onClick: () => { void runAdviceReleaseHistoryCommand("j03.downloadEvidence"); }, testId: "j03-download-evidence" },
-                      {
-                        disabled: true,
-                        disabledReason: "Share needs evidence sufficiency, release and payload checks first.",
-                        label: "Share",
-                      },
-                    ]}
-                  />
-                }
-                badge={<Badge tone="green">Verified</Badge>}
-                subtitle="Complete evidence record with provenance, access and audit information."
-                title={title}
-              />
-              <ScfP04P06FlowPanel mode="evidence" />
-              <UxDetailStandardPanel
-                actionLabel="Inspect controlled evidence"
-                actionState="Open, download or share actions remain role-scoped and must not imply evidence sufficiency."
-                evidenceItems={["Evidence summary", "Access permissions", "Linked decisions"]}
-                facts={[
-                  { label: "Evidence ID", value: evidenceRecord.evidenceId },
-                  { label: "Client", value: evidenceRecord.client },
-                  { label: "Version", value: evidenceRecord.version },
-                  { label: "Owner", value: evidenceRecord.owner },
-                ]}
-                objectTitle={evidenceRecord.title}
-                objectType="Evidence record detail"
-                routeId="047"
-                safetyNote="Upload, storage or download visibility is not evidence sufficiency or compliance acceptance."
-                status="Verified"
-                timelineItems={evidenceTimeline.slice(0, 3).map((item) => item.title)}
-              />
-              <div className="grid gap-5 xl:grid-cols-[1fr_18rem]">
-          <section className="space-y-5">
+          <div className="space-y-4">
+            <PageHeading
+              action={
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    className={secondaryButtonClass}
+                    data-testid="j03-download-evidence"
+                    onClick={() => {
+                      void runAdviceReleaseHistoryCommand("j03.downloadEvidence");
+                    }}
+                    type="button"
+                  >
+                    <Download aria-hidden="true" className="size-4" />Open source
+                  </button>
+                  <button className={primaryButtonClass} disabled title="Use the release workspace for publication or sharing." type="button">
+                    <LockKeyhole aria-hidden="true" className="size-4" />Request share
+                  </button>
+                </div>
+              }
+              badge={<InlineStatus tone="green" value="Verified" />}
+              subtitle="Review provenance, source and related decision context for one evidence record."
+              title={title}
+            />
+            <UxDetailStandardPanel
+              actionLabel="Inspect evidence record"
+              actionState="Open the source record or request a share action from the release workspace."
+              compact
+              evidenceItems={["Record summary", "Owner and source", "Related decision"]}
+              facts={[
+                { label: "Evidence ID", value: evidenceRecord.evidenceId },
+                { label: "Client", value: evidenceRecord.client },
+                { label: "Version", value: evidenceRecord.version },
+                { label: "Owner", value: evidenceRecord.owner },
+              ]}
+              objectTitle={evidenceRecord.title}
+              objectType="Evidence record"
+              routeId="047"
+              safetyNote="Use this screen for review context; publication and sharing remain dedicated actions."
+              status="Verified"
+              timelineItems={evidenceTimeline.slice(0, 2).map((item) => item.title)}
+            />
             <Card>
-              <CardContent className="grid gap-5 md:grid-cols-[9rem_1fr_1fr_1fr]">
-                <IconTile tone="red"><FileText aria-hidden="true" className="size-7" /></IconTile>
-                <div>
-                  <p className="font-display text-2xl text-alphavest-ivory">{evidenceRecord.title}</p>
-                  <p className="mt-1 text-sm text-alphavest-muted">Quarterly consolidated statement for AlphaVest managed accounts.</p>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {["Client Statements", "Financial Statement", "Q1 2024", "Confidential"].map((tag) => <Badge key={tag} tone="muted">{tag}</Badge>)}
+              <CardContent className="grid gap-4 p-4 lg:grid-cols-[1fr_0.9fr_1fr]">
+                <div className="flex min-w-0 gap-3">
+                  <IconTile tone="blue"><FileText aria-hidden="true" className="size-6" /></IconTile>
+                  <div className="min-w-0">
+                    <p className="font-display text-xl text-alphavest-ivory">{evidenceRecord.title}</p>
+                    <p className="mt-1 text-sm leading-5 text-alphavest-muted">Quarterly account statement for review.</p>
                   </div>
                 </div>
-                <div className="space-y-3">
-                  <InfoRow label="Evidence ID" value={evidenceRecord.evidenceId} />
-                  <InfoRow label="Version" value={evidenceRecord.version} />
-                  <InfoRow label="Status" value="Active" />
-                  <InfoRow label="Owner" value={evidenceRecord.owner} />
-                </div>
-                <div className="space-y-3">
-                  <InfoRow label="Client" value={evidenceRecord.client} />
-                  <InfoRow label="Related Decision" value={evidenceRecord.relatedDecision} />
-                  <InfoRow label="Created" value={evidenceRecord.created} />
-                  <InfoRow label="Last Updated" value="May 02, 2024 11:23 AM" />
-                </div>
-              </CardContent>
-            </Card>
-            <div className="grid gap-5 xl:grid-cols-[0.85fr_0.95fr_1.1fr]">
-              <Card>
-                <CardHeader><CardTitle>Evidence Summary</CardTitle></CardHeader>
-                <CardContent className="space-y-3">
-                  <InfoRow label="Evidence Type" value="Financial Statement" />
-                  <InfoRow label="Source" value="AlphaVest PMS" />
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+                  <InfoRow label="Type" value="Statement" />
+                  <InfoRow label="Source" value="PMS" />
                   <InfoRow label="Pages" value="12" />
-                  <InfoRow label="Integrity" value={evidenceRecord.integrity} />
-                  <InfoRow label="Retention Policy" value={evidenceRecord.retention} />
-                </CardContent>
-              </Card>
-              <Card>
-            <CardHeader><CardTitle>Timeline</CardTitle></CardHeader>
-            <CardContent>
-                  <AuditTimeline items={[...evidenceTimeline]} />
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader><CardTitle>Preview</CardTitle></CardHeader>
-                <CardContent>
-                  <div className="aspect-[4/3] rounded-md border border-alphavest-border bg-alphavest-ivory p-6 text-alphavest-navy">
-                    <p className="font-display text-2xl">AlphaVest</p>
-                    <p className="mt-6 text-sm font-semibold">Client Statement Q1 2024</p>
-                    <div className="mt-5 space-y-2 text-xs">
-                      {["Portfolio overview", "Total market value", "Quarterly change", "Asset allocation"].map((line) => <div className="rounded bg-slate-200 px-3 py-2" key={line}>{line}</div>)}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </section>
-          <aside className="space-y-5">
-            <StatePanel detail="Only authorized users and roles can access this evidence." state="restricted" title="Access and Permissions" />
-            <Card>
-              <CardHeader><CardTitle>At a Glance</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                <InfoRow label="Access Events" value="15" />
-                <InfoRow label="Linked Decisions" value="2" />
-                <InfoRow label="Audit Events" value="23" />
-                <InfoRow label="Version" value={evidenceRecord.version} />
-                <InfoRow label="Classification" value="Confidential" />
+                  <InfoRow label="Integrity" value="Verified" />
+                </div>
+                <div className="grid gap-2 text-sm text-alphavest-muted sm:grid-cols-3 lg:grid-cols-1">
+                  {evidenceTimeline.slice(0, 3).map((item) => (
+                    <p className="flex items-center gap-2" key={item.title}>
+                      <FileCheck2 aria-hidden="true" className="size-4 shrink-0 text-alphavest-green" />
+                      {item.title}
+                    </p>
+                  ))}
+                </div>
               </CardContent>
             </Card>
-            <Card>
-              <CardHeader><CardTitle>Quick Actions</CardTitle></CardHeader>
-              <CardContent>
-                <UxCtaCluster
-                  blockedReason="Revoke access and create-version actions are secondary and cannot complete sufficiency review or access authority."
-                  className="[&_button]:w-full [&_button]:justify-start"
-                  primary={{ label: "Request Review" }}
-                  recoveryAction={{ href: "/governance/access-requests/:id", label: "Open access policy" }}
-                  secondary={[
-                    { label: "Add to Collection" },
-                    {
-                      disabled: true,
-                      disabledReason: "Revocation needs a scoped access decision and persisted audit event.",
-                      label: "Revoke Access",
-                    },
-                    {
-                      disabled: true,
-                      disabledReason: "New versions need evidence review; versioning cannot complete sufficiency review.",
-                      label: "Create New Version",
-                    },
-                  ]}
-                />
-              </CardContent>
-            </Card>
-          </aside>
-              </div>
-            </div>
-          </>
+          </div>
         }
         rail={<EvidenceControlRail />}
         routeId="047"
-        safetyNote="Evidence detail can show provenance and access context only; sufficiency, export and client release remain separate controls."
-        statusItems={[
-          { label: "Record", tone: "blue", value: "Evidence detail" },
-          { label: "Record", tone: "green", value: "verified context" },
-        ]}
+        safetyNote="Evidence detail supports review work; publication and sharing stay on dedicated release surfaces."
         title={title}
         worksurfaceId="evidence-record-detail"
       />

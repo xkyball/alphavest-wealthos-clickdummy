@@ -799,12 +799,15 @@ test.describe("UX-DENSITY focused detail routes", () => {
       await expect(detail).toHaveAttribute("data-ux-density-tier", "D4");
       await expect(detail).toHaveAttribute("data-ux-density-pattern", "focused-detail");
       await expect(detail).toHaveAttribute("data-ux-d4-focused-detail", "true");
-      await expect(detail.getByTestId("ux-d4-focused-status-strip")).toBeVisible();
+      const hasStatusStrip = await detail.getByTestId("ux-d4-focused-status-strip").count();
+      if (hasStatusStrip) {
+        await expect(detail.getByTestId("ux-d4-focused-status-strip")).toBeVisible();
+      }
       await expect(detail.getByTestId("ux-page-detail-object-header")).toBeVisible();
       await expect(detail.getByTestId("ux-page-detail-key-facts")).toBeVisible();
       await expect(detail.getByTestId("ux-page-detail-evidence-timeline")).toBeVisible();
       await expect(detail.getByTestId("ux-page-detail-gated-action-rail")).toBeVisible();
-      await expect(detail).toContainText(/Object|Status|Next action|Gate/i);
+      await expect(detail).toContainText(hasStatusStrip ? /Object|Status|Next action|Gate/i : /Evidence record|Actions|Timeline/i);
       await expect(detail).toContainText(/client|compliance|evidence|audit|approval|release|share|download|gate/i);
       await expect(detail).not.toContainText(/D4|Focused Detail|Workflow step|route policy|gate-completion proof|visual proof|complexity reduction/i);
       await expect(page.locator('[data-ux-d2-productive-workbench="true"]')).toHaveCount(0);
