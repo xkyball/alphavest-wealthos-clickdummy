@@ -3,7 +3,7 @@ import type { PrismaClient } from "@prisma/client";
 
 import { failClosedJson } from "@/lib/control-layer/error-envelope";
 import {
-  wp05CanonicalJourneyCommandApiRoute,
+  wp05CanonicalProcessCommandApiRoute,
   wp05TypedAdvisorWorkflowDirectnessFor,
 } from "@/lib/advisory-workflow-contract";
 import { parseRecommendationReviewWorkflowRequestBody } from "@/lib/recommendation-review-workflow-validation";
@@ -42,7 +42,7 @@ export async function handleRecommendationReviewWorkflowRequest(request: Request
   if (!("workflowType" in parsedValue) || parsedValue.workflowType !== "advisor-approval") {
     return failClosedJson(
       {
-        canonicalApiRoute: wp05CanonicalJourneyCommandApiRoute,
+        canonicalApiRoute: wp05CanonicalProcessCommandApiRoute,
         error: "Recommendation review workflow requires a typed advisor approval request.",
         reasonCode: "INVALID_REQUEST",
       },

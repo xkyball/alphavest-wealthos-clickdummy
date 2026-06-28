@@ -34,7 +34,7 @@ test.describe("E05 action meaning separation", () => {
     await expect(page.getByTestId("j02-block-release")).toHaveAttribute("data-ux-action-priority", "destructive");
 
     await page.goto("/compliance/reviews/demo/release?state=release");
-    await expect(page.getByRole("dialog", { name: "Release client-safe journey" })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Release client-safe process" })).toBeVisible();
     await expect(page.getByTestId("j02-release-client")).toHaveAttribute("data-ux-action-meaning", "release");
     await expect(page.getByTestId("j02-release-client")).toHaveAttribute("data-ux-action-placement", "modal_footer");
     await expect(page.getByTestId("j02-release-client")).toHaveAttribute("data-ux-action-separation", /not export/i);

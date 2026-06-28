@@ -64,13 +64,7 @@ test.describe("Process Runtime Backbone DB and API", () => {
     await expect(prisma.processInstance.count()).resolves.toBe(84);
     await expect(prisma.processStepInstance.count()).resolves.toBe(438);
     await expect(prisma.processCommandRun.count()).resolves.toBe(84);
-    await expect(prisma.journeyDefinition.count()).resolves.toBe(0);
-    await expect(prisma.journeyInstance.count()).resolves.toBe(0);
-    await expect(
-      prisma.evidenceSufficiencyDecision.count({
-        where: { processInstanceId: { not: null } },
-      }),
-    ).resolves.toBe(6);
+    await expect(prisma.evidenceSufficiencyDecision.count()).resolves.toBe(6);
 
     const process = await prisma.processInstance.findFirstOrThrow({
       include: {
@@ -134,26 +128,60 @@ test.describe("Process Runtime Backbone DB and API", () => {
       ]),
     );
 
-    const blockedResponse = await request.post(`/api/processes/${createdBody.detail.id}/commands`, {
+    const completedStepResponse = await request.post(`/api/processes/${createdBody.detail.id}/commands`, {
       data: {
-        command: "BLOCK",
-        reason: "Runtime proof blocks before downstream UI work.",
+        command: "COMPLETE_STEP",
       },
       headers: bearer(successJwt),
     });
-    const blockedBody = await blockedResponse.json();
+    const completedStepBody = await completedStepResponse.json();
 
-    expect(blockedResponse.ok(), JSON.stringify(blockedBody)).toBe(true);
-    expect(blockedBody.detail.status).toBe(ProcessInstanceStatus.BLOCKED);
-    expect(blockedBody.auditEventId).toMatch(/^[0-9a-f-]{36}$/);
-    expect(blockedBody.detail.commandHistory).toEqual(
+    expect(completedStepResponse.ok(), JSON.stringify(completedStepBody)).toBe(true);
+    expect(completedStepBody.detail.status).toBe(ProcessInstanceStatus.ACTIVE);
+    expect(completedStepBody.auditEventId).toMatch(/^[0-9a-f-]{36}$/);
+    expect(completedStepBody.detail.commandHistory).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          commandKey: "BLOCK",
-          nextState: ProcessInstanceStatus.BLOCKED,
-          result: "BLOCKED",
+          commandKey: "COMPLETE_STEP",
+          nextState: ProcessInstanceStatus.ACTIVE,
+          result: "SUCCESS",
         }),
       ]),
     );
+
+    const cancelledResponse = await request.post(`/api/processes/${createdBody.detail.id}/commands`, {
+      data: {
+        command: "CANCEL",
+        reason: "Runtime proof cancels through the process command backbone.",
+      },
+      headers: bearer(successJwt),
+    });
+    const cancelledBody = await cancelledResponse.json();
+
+    expect(cancelledResponse.ok(), JSON.stringify(cancelledBody)).toBe(true);
+    expect(cancelledBody.detail.status).toBe(ProcessInstanceStatus.CANCELLED);
+    expect(cancelledBody.auditEventId).toMatch(/^[0-9a-f-]{36}$/);
+    expect(cancelledBody.detail.commandHistory).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          commandKey: "CANCEL",
+          nextState: ProcessInstanceStatus.CANCELLED,
+          result: "SUCCESS",
+        }),
+      ]),
+    );
+
+    const unsupportedResponse = await request.post(`/api/processes/${createdBody.detail.id}/commands`, {
+      data: {
+        command: "FAKE_LEGACY_COMMAND",
+      },
+      headers: bearer(successJwt),
+    });
+    const unsupportedBody = await unsupportedResponse.json();
+
+    expect(unsupportedResponse.status(), JSON.stringify(unsupportedBody)).toBe(400);
+    expect(unsupportedBody.ok).toBe(false);
+    expect(unsupportedBody.safety.commandExecuted).toBe(false);
+    expect(unsupportedBody.safety.processMutated).toBe(false);
   });
 });

@@ -32,10 +32,10 @@ test.describe("Phase 09 schema alignment", () => {
     const models = [...schema.matchAll(/^model\s+(\w+)\s+\{/gm)].map((match) => match[1]);
     const enums = [...schema.matchAll(/^enum\s+(\w+)\s+\{/gm)].map((match) => match[1]);
 
-    expect(models).toHaveLength(59);
-    expect(enums).toHaveLength(35);
-    expect(sourceRealityGate).toContain("modelCount: 59");
-    expect(sourceRealityGate).toContain("enumCount: 35");
+    expect(models).toHaveLength(53);
+    expect(enums).toHaveLength(31);
+    expect(sourceRealityGate).toContain("modelCount: 53");
+    expect(sourceRealityGate).toContain("enumCount: 31");
     expect(wp09Execution).toContain("Current `full-workflow` schema is the only implementation schema authority.");
     expect(wp09Execution).toContain("No Prisma migration is allowed in WP09 first wave.");
     expect(schema).toMatch(/^model\s+InternalDraft\s+\{/m);
@@ -144,12 +144,25 @@ test.describe("Phase 09 schema alignment", () => {
       "nextState",
       "result",
     ]);
-    expectModelFields("EvidenceSufficiencyDecision", ["processInstanceId", "journeyInstanceId", "requirementKey"]);
+    expectModelFields("EvidenceSufficiencyDecision", ["processInstanceId", "requirementKey"]);
 
     expect(schemaBlock("enum", "ObjectType")).toContain("PROCESS");
     expect(schemaBlock("enum", "ObjectType")).toContain("PROCESS_STEP");
+    expect(schemaBlock("enum", "ObjectType")).not.toContain("JOURNEY");
+    expect(schemaBlock("enum", "ObjectType")).not.toContain("JOURNEY_STEP");
     expect(schemaBlock("enum", "ProcessDefinitionStatus")).toContain("ACTIVE");
     expect(schemaBlock("enum", "ProcessInstanceStatus")).toContain("BLOCKED");
+    expect(schema).not.toMatch(/^model\s+JourneyDefinition\s+\{/m);
+    expect(schema).not.toMatch(/^model\s+JourneyInstance\s+\{/m);
+    expect(schema).not.toMatch(/^model\s+JourneyStepInstance\s+\{/m);
+    expect(schema).not.toMatch(/^model\s+JourneyObjectLink\s+\{/m);
+    expect(schema).not.toMatch(/^model\s+JourneyEvidenceRequirement\s+\{/m);
+    expect(schema).not.toMatch(/^model\s+JourneyCommandRun\s+\{/m);
+    expect(schema).not.toMatch(/^enum\s+JourneyDefinitionStatus\s+\{/m);
+    expect(schema).not.toMatch(/^enum\s+JourneyInstanceStatus\s+\{/m);
+    expect(schema).not.toMatch(/^enum\s+JourneyStepStatus\s+\{/m);
+    expect(schema).not.toMatch(/^enum\s+JourneyObjectLinkRole\s+\{/m);
+    expect(schema).not.toContain("journeyInstanceId");
   });
 
   test("keeps document, evidence, audit and export safety fields available on baseline models", () => {
@@ -264,6 +277,7 @@ test.describe("Phase 09 schema alignment", () => {
       "20260624213000_wave_0_2_core_journey_gates",
       "20260625143000_internal_draft_governance_spine",
       "20260628190000_process_runtime_backbone",
+      "20260628203000_purge_legacy_journey_runtime",
       "migration_lock.toml",
     ]);
     expect(packageJson).toContain('"db:validate": "prisma validate"');

@@ -10,44 +10,44 @@ export const wave02SourceLock = {
 
 export const wave02HoldRoutePageIds = ["064", "065", "066", "067", "069", "070", "071"] as const;
 
-export const wave02BlockedJourneys = [
+export const wave02BlockedProcesses = [
   {
-    journeyId: "BP-070",
+    processId: "BP-070",
     label: "Committee review hold surface",
     reason: "Committee UI routes remain registered-only until a process-backed committee command slice exists.",
     routePageIds: ["070", "071"],
   },
   {
-    journeyId: "BP-071",
+    processId: "BP-071",
     label: "Regulated KYC / SoW / Suitability / IPS hold surface",
     reason: "Regulated suitability routes remain registered-only until backed by process commands, history and audit proof.",
     routePageIds: ["064", "065", "066", "067"],
   },
 ] as const;
 
-export const wave02ExecutableJourneyIds = ["BP-001", "BP-017", "BP-020", "BP-024", "BP-046", "BP-088", "BP-099"] as const;
+export const wave02ExecutableProcessIds = ["BP-001", "BP-017", "BP-020", "BP-024", "BP-046", "BP-088", "BP-099"] as const;
 
-export type Wave02JourneyId =
-  | (typeof wave02BlockedJourneys)[number]["journeyId"]
-  | (typeof wave02ExecutableJourneyIds)[number];
+export type Wave02ProcessId =
+  | (typeof wave02BlockedProcesses)[number]["processId"]
+  | (typeof wave02ExecutableProcessIds)[number];
 
-export function wave02BlockedJourneyFor(journeyId: string) {
-  return wave02BlockedJourneys.find((journey) => journey.journeyId === journeyId);
+export function wave02BlockedProcessFor(processId: string) {
+  return wave02BlockedProcesses.find((process) => process.processId === processId);
 }
 
-export function isWave02JourneyExecutable(journeyId: string) {
-  return wave02ExecutableJourneyIds.some((candidate) => candidate === journeyId) && !wave02BlockedJourneyFor(journeyId);
+export function isWave02ProcessExecutable(processId: string) {
+  return wave02ExecutableProcessIds.some((candidate) => candidate === processId) && !wave02BlockedProcessFor(processId);
 }
 
-export function assertWave02JourneyExecutable(journeyId: string) {
-  const blocked = wave02BlockedJourneyFor(journeyId);
+export function assertWave02ProcessExecutable(processId: string) {
+  const blocked = wave02BlockedProcessFor(processId);
 
   if (blocked) {
-    throw new Error(`${journeyId} is blocked by Wave 0-2 source lock: ${blocked.reason}`);
+    throw new Error(`${processId} is blocked by Wave 0-2 source lock: ${blocked.reason}`);
   }
 
-  if (!isWave02JourneyExecutable(journeyId)) {
-    throw new Error(`${journeyId} is not authorized for Wave 0-2 execution.`);
+  if (!isWave02ProcessExecutable(processId)) {
+    throw new Error(`${processId} is not authorized for Wave 0-2 execution.`);
   }
 }
 

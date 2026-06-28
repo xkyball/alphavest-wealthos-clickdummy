@@ -54,8 +54,8 @@ export type NavigationGroup = {
   label: string;
   description: string;
   icon: LucideIcon;
-  journeyStage?: number;
-  journeyStageLabel?: string;
+  processStage?: number;
+  processStageLabel?: string;
   lockedReason?: string;
   lockedLabel?: string;
   tier: NavigationGroupTier;
@@ -85,6 +85,23 @@ type NavigationGroupDefinition = {
 };
 
 const navigationDefinitions: readonly NavigationGroupDefinition[] = [
+  {
+    key: "area_00_command_center",
+    icon: Route,
+    items: [
+      {
+        activeRoutePatterns: ["/tenants/demo/setup"],
+        description: "DB-backed process instances, state and audit history.",
+        href: "/tenants/demo/setup",
+        icon: Route,
+        label: "Process Runtime",
+        pageId: "command-center",
+        routePattern: "/tenants/demo/setup",
+        scope: "IMPLEMENTED_APP_ROUTE",
+        tier: "primary",
+      },
+    ],
+  },
   {
     key: "area_01_foundation",
     icon: Settings,
@@ -286,8 +303,8 @@ export const navigationGroups: NavigationGroup[] = navigationDefinitions
       label: uxWorkspaceLabels[group.key],
       description: uxWorkspaceDescriptions[group.key],
       icon: group.icon,
-      journeyStage: isV096CoreWorkspace(group.key) ? v096CoreWorkspaceKeys.indexOf(group.key as (typeof v096CoreWorkspaceKeys)[number]) + 1 : undefined,
-      journeyStageLabel: isV096CoreWorkspace(group.key) ? "Core journey" : undefined,
+      processStage: isV096CoreWorkspace(group.key) ? v096CoreWorkspaceKeys.indexOf(group.key as (typeof v096CoreWorkspaceKeys)[number]) + 1 : undefined,
+      processStageLabel: isV096CoreWorkspace(group.key) ? "Core process" : undefined,
       lockedLabel: group.lockedLabel,
       lockedReason: group.lockedReason,
       tier: group.tier ?? "core",

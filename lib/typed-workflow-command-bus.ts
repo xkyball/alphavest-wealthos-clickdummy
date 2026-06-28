@@ -618,7 +618,7 @@ async function markAdvisorApprovalInternalDraftReady(
   const canonicalEvidenceReady = acceptedScopedEvidenceRecords(evidenceRecords, input.recommendationId).length > 0;
   const lifecycleGate = evaluatePp003DraftLifecycleGate({
     canonicalEvidenceAudited: canonicalEvidenceReady,
-    canonicalEvidencePath: canonicalEvidenceReady ? "PP002_CANONICAL_JOURNEY" : "NONE",
+    canonicalEvidencePath: canonicalEvidenceReady ? "PP002_CANONICAL_PROCESS" : "NONE",
     canonicalEvidenceSufficient: canonicalEvidenceReady,
     classified: Boolean(draft.classifications[0]),
     clientVisible: false,

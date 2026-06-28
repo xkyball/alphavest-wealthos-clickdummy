@@ -119,7 +119,7 @@ test.describe("Phase 05 feedback no-overclaim boundaries", () => {
   test("release modal does not show release success before submit", async ({ page }) => {
     await page.goto("/compliance/reviews/demo/release?state=release");
 
-    const releaseDialog = page.getByRole("dialog", { name: "Release client-safe journey" });
+    const releaseDialog = page.getByRole("dialog", { name: "Release client-safe process" });
 
     await expect(releaseDialog).toBeVisible();
     await expect(releaseDialog.getByText("Release action pending")).toBeVisible();

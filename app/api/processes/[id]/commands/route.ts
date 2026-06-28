@@ -3,8 +3,9 @@ import { NextResponse } from "next/server";
 import { resolveCurrentUserFromRequest } from "@/lib/auth/current-user";
 import { failClosedJson } from "@/lib/control-layer/error-envelope";
 import {
-  blockProcessForCurrentUser,
+  executeProcessCommandForCurrentUser,
   normalizeProcessRuntimeError,
+  parseProcessCommand,
   ProcessRuntimeError,
 } from "@/lib/process-runtime/process-runtime-service";
 import { prismaClient } from "@/lib/prisma";
@@ -53,18 +54,19 @@ export async function POST(request: Request, context: RouteContext) {
   try {
     const body = await parseJson(request);
     const command = typeof body.command === "string" ? body.command : undefined;
+    const fromStepId = typeof body.fromStepId === "string" ? body.fromStepId : undefined;
     const reason = typeof body.reason === "string" ? body.reason.trim() : "";
 
-    if (command !== "BLOCK") {
-      throw new ProcessRuntimeError("Process command handler is not implemented.", 400, "INVALID_REQUEST", [
-        "process_command_handler_missing",
-      ]);
+    if (!command) {
+      throw new ProcessRuntimeError("Process command is required.", 400, "INVALID_REQUEST", ["process_command_required"]);
     }
 
     const prisma = prismaClient();
     const currentUser = await resolveCurrentUserFromRequest(prisma, request);
-    const result = await blockProcessForCurrentUser(prisma, currentUser, {
+    const result = await executeProcessCommandForCurrentUser(prisma, currentUser, {
       auditPersistenceAvailable: body.auditPersistenceAvailable !== false,
+      command: parseProcessCommand(command),
+      fromStepId,
       processInstanceId: await processInstanceId(context),
       reason,
     });

@@ -151,7 +151,7 @@ test.describe("UX-NAV route policy navigation", () => {
     }
   });
 
-  test("journey rails keep later gates blocked until prerequisites pass", () => {
+  test("process rails keep later gates blocked until prerequisites pass", () => {
     const advisorySteps = uxFlowStepsForPageId("038");
     expect(advisorySteps.map((step) => step.status)).toEqual([
       "complete",

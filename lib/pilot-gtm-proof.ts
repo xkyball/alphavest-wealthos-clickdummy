@@ -84,8 +84,6 @@ export const pilotDemoProcessSpine = [
   role: string;
 }>;
 
-export const pilotDemoJourneySpine = pilotDemoProcessSpine;
-
 export const pilotSuccessMetrics = [
   {
     key: "buyer_confidence",

@@ -19,7 +19,7 @@ import { expect, test, type APIRequestContext } from "@playwright/test";
 
 import { stableId } from "../lib/stable-id";
 import {
-  wp05CanonicalJourneyCommandApiRoute,
+  wp05CanonicalProcessCommandApiRoute,
   wp05ComplianceReleaseConfirmationPhrase,
 } from "../lib/advisory-workflow-contract";
 
@@ -193,7 +193,7 @@ test.describe("recommendation review workflow API", () => {
       expect(releaseBody.result.canonicalCommand).toBe("COMPLIANCE_RELEASE");
       expect(releaseBody.result.canonicalState).toBe("COMPLIANCE_RELEASED_CLIENT_SAFE");
       expect(releaseBody.proofDirectness).toMatchObject({
-        canonicalProofRoute: wp05CanonicalJourneyCommandApiRoute,
+        canonicalProofRoute: wp05CanonicalProcessCommandApiRoute,
         classification: "DOMAIN_BACKED_TYPED_COMPATIBILITY",
         pp004CanonicalProofEligible: false,
         proofBackedByStatePayloadAssertions: true,

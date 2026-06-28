@@ -2,7 +2,8 @@ import { AuditResult, ObjectType, ProcessInstanceStatus, ProcessStepStatus, type
 
 import type { CurrentUserContext } from "@/lib/auth/current-user";
 import type { FailClosedReasonCode } from "@/lib/control-layer/error-envelope";
-import { requireProcessDefinition } from "@/lib/process-runtime/process-registry";
+import { requireProcessDefinition, type ProcessCommandKey } from "@/lib/process-runtime/process-registry";
+import { transitionProcess, type ProcessRuntime } from "@/lib/process-runtime/process-state-machine";
 
 type ProcessInstanceWithGraph = Prisma.ProcessInstanceGetPayload<{
   include: {
@@ -131,6 +132,51 @@ function projectProcess(instance: ProcessInstanceWithGraph) {
   };
 }
 
+function runtimeFromInstance(instance: ProcessInstanceWithGraph): ProcessRuntime {
+  const definition = requireProcessDefinition(instance.processDefinition.processId);
+
+  return {
+    blockerCode: instance.blockerCode ?? undefined,
+    blockerReason: instance.blockerReason ?? undefined,
+    currentStepId: instance.currentStepId ?? undefined,
+    definition,
+    processId: definition.processId,
+    status: instance.status,
+    steps: instance.steps.map((step) => ({
+      actor: step.actor,
+      blockerCode: step.blockerCode ?? undefined,
+      blockerReason: step.blockerReason ?? undefined,
+      sequence: step.sequence,
+      status: step.status,
+      stepId: step.stepId,
+      stepLabel: step.stepLabel,
+    })),
+  };
+}
+
+function auditEventTypeForCommand(command: ProcessCommandKey) {
+  const eventTypes: Record<ProcessCommandKey, string> = {
+    BLOCK: "process.blocked",
+    CANCEL: "process.cancelled",
+    COMPLETE_STEP: "process.step.completed",
+    START: "process.started",
+  };
+
+  return eventTypes[command];
+}
+
+function auditResultForCommand(command: ProcessCommandKey) {
+  return command === "BLOCK" ? AuditResult.BLOCKED : AuditResult.SUCCESS;
+}
+
+function assertKnownProcessCommand(command: string): asserts command is ProcessCommandKey {
+  if (command !== "START" && command !== "COMPLETE_STEP" && command !== "BLOCK" && command !== "CANCEL") {
+    throw new ProcessRuntimeError("Process command is not supported.", 400, "INVALID_REQUEST", [
+      "process_command_unsupported",
+    ]);
+  }
+}
+
 async function loadScopedProcessInstance(prisma: PrismaClient, currentUser: CurrentUserContext, processInstanceId: string) {
   const instance = await prisma.processInstance.findUnique({
     include: {
@@ -211,7 +257,6 @@ export async function createProcessForCurrentUser(
         metadataJson: {
           createdFromApi: true,
           processRuntimeBackbone: true,
-          replacesJourneyRuntime: true,
         },
         ownerUserId: currentUser.actor.id,
         processDefinitionId: dbDefinition.id,
@@ -270,23 +315,49 @@ export async function getProcessDetailForCurrentUser(
   return projectProcess(instance);
 }
 
-export async function blockProcessForCurrentUser(
+export async function executeProcessCommandForCurrentUser(
   prisma: PrismaClient,
   currentUser: CurrentUserContext,
-  input: { auditPersistenceAvailable?: boolean; processInstanceId: string; reason: string },
+  input: {
+    auditPersistenceAvailable?: boolean;
+    command: ProcessCommandKey;
+    fromStepId?: string;
+    processInstanceId: string;
+    reason?: string;
+  },
 ) {
   const roleKey = requireRole(currentUser);
   const permissionKeys = await permissionKeysForCurrentRole(prisma, currentUser);
   requireProcessManagePermission(permissionKeys);
 
-  if (!input.reason) {
-    throw new ProcessRuntimeError("Blocking a process requires a reason.", 400, "INVALID_REQUEST", ["reason_required"]);
+  if ((input.command === "BLOCK" || input.command === "CANCEL") && !input.reason) {
+    throw new ProcessRuntimeError("Process command requires a reason.", 400, "INVALID_REQUEST", ["reason_required"]);
   }
 
   const platformTenant = await prisma.platformTenant.findFirst({ select: { id: true }, orderBy: { createdAt: "asc" } });
   if (!platformTenant) throw new ProcessRuntimeError("Platform tenant is missing.", 500, "SAFE_ERROR", ["platform_missing"]);
 
   const instance = await loadScopedProcessInstance(prisma, currentUser, input.processInstanceId);
+  const previousProcess = runtimeFromInstance(instance);
+  const transitionedProcess = (() => {
+    try {
+      return transitionProcess({
+        actor: {
+          permissions: permissionKeys,
+          roleKey,
+        },
+        command: input.command,
+        fromStepId: input.fromStepId,
+        process: previousProcess,
+        reason: input.reason,
+      }).process;
+    } catch (error) {
+      throw new ProcessRuntimeError(error instanceof Error ? error.message : "Process transition failed.", 400, "INVALID_REQUEST", [
+        "process_transition_denied",
+      ]);
+    }
+  })();
+
   const result = await prisma.$transaction(async (tx) => {
     if (input.auditPersistenceAvailable === false) {
       throw new ProcessRuntimeError("Audit persistence unavailable; process mutation blocked.", 503, "SAFE_ERROR", [
@@ -294,18 +365,28 @@ export async function blockProcessForCurrentUser(
       ]);
     }
 
+    const currentStep = transitionedProcess.currentStepId
+      ? transitionedProcess.steps.find((step) => step.stepId === transitionedProcess.currentStepId)
+      : undefined;
+    const auditResult = auditResultForCommand(input.command);
     const audit = await tx.auditEvent.create({
       data: {
         actorRoleKey: roleKey,
         actorUserId: currentUser.actor.id,
         clientTenantId: instance.clientTenantId,
-        eventType: "process.blocked",
-        metadataJson: { processId: instance.processDefinition.processId, processRuntimeBackbone: true },
-        nextState: ProcessInstanceStatus.BLOCKED,
+        eventType: auditEventTypeForCommand(input.command),
+        metadataJson: {
+          command: input.command,
+          fromStepId: input.fromStepId ?? instance.currentStepId,
+          processId: instance.processDefinition.processId,
+          processRuntimeBackbone: true,
+          toStepId: transitionedProcess.currentStepId ?? null,
+        },
+        nextState: transitionedProcess.status,
         platformTenantId: platformTenant.id,
         previousState: instance.status,
-        reason: input.reason,
-        result: AuditResult.BLOCKED,
+        reason: input.reason ?? null,
+        result: auditResult,
         targetId: instance.id,
         targetType: ObjectType.PROCESS,
       },
@@ -313,24 +394,53 @@ export async function blockProcessForCurrentUser(
 
     await tx.processInstance.update({
       data: {
-        blockerCode: "PROCESS_BLOCKED",
-        blockerReason: input.reason,
-        status: ProcessInstanceStatus.BLOCKED,
+        blockerCode: transitionedProcess.blockerCode ?? null,
+        blockerReason: transitionedProcess.blockerReason ?? null,
+        completedAt: transitionedProcess.status === ProcessInstanceStatus.COMPLETED ? new Date() : null,
+        currentSequence: currentStep?.sequence ?? null,
+        currentStepId: transitionedProcess.currentStepId ?? null,
+        startedAt: input.command === "START" ? new Date() : undefined,
+        status: transitionedProcess.status,
       },
       where: { id: instance.id },
     });
 
-    if (instance.currentStepId) {
+    for (const step of transitionedProcess.steps) {
+      const previousStep = instance.steps.find((candidate) => candidate.stepId === step.stepId);
+      if (!previousStep || previousStep.status === step.status) {
+        if (
+          previousStep &&
+          (previousStep.blockerCode !== (step.blockerCode ?? null) || previousStep.blockerReason !== (step.blockerReason ?? null))
+        ) {
+          await tx.processStepInstance.update({
+            data: {
+              blockerCode: step.blockerCode ?? null,
+              blockerReason: step.blockerReason ?? null,
+            },
+            where: {
+              processInstanceId_stepId: {
+                processInstanceId: instance.id,
+                stepId: step.stepId,
+              },
+            },
+          });
+        }
+        continue;
+      }
+
       await tx.processStepInstance.update({
         data: {
-          blockerCode: "PROCESS_BLOCKED",
-          blockerReason: input.reason,
-          status: ProcessStepStatus.BLOCKED,
+          blockerCode: step.blockerCode ?? null,
+          blockerReason: step.blockerReason ?? null,
+          completedAt: step.status === ProcessStepStatus.COMPLETED ? new Date() : null,
+          startedAt:
+            step.status === ProcessStepStatus.ACTIVE && previousStep.status !== ProcessStepStatus.ACTIVE ? new Date() : undefined,
+          status: step.status,
         },
         where: {
           processInstanceId_stepId: {
             processInstanceId: instance.id,
-            stepId: instance.currentStepId,
+            stepId: step.stepId,
           },
         },
       });
@@ -341,14 +451,15 @@ export async function blockProcessForCurrentUser(
         actorRoleKey: roleKey,
         actorUserId: currentUser.actor.id,
         auditEventId: audit.id,
-        commandKey: "BLOCK",
-        fromStepId: instance.currentStepId,
+        commandKey: input.command,
+        fromStepId: input.fromStepId ?? instance.currentStepId,
         metadataJson: { processRuntimeBackbone: true },
-        nextState: ProcessInstanceStatus.BLOCKED,
+        nextState: transitionedProcess.status,
         previousState: instance.status,
         processInstanceId: instance.id,
-        reason: input.reason,
-        result: AuditResult.BLOCKED,
+        reason: input.reason ?? null,
+        result: auditResult,
+        toStepId: transitionedProcess.currentStepId ?? null,
       },
     });
 
@@ -360,6 +471,24 @@ export async function blockProcessForCurrentUser(
     detail: await getProcessDetailForCurrentUser(prisma, currentUser, instance.id),
     mutated: true,
   };
+}
+
+export async function blockProcessForCurrentUser(
+  prisma: PrismaClient,
+  currentUser: CurrentUserContext,
+  input: { auditPersistenceAvailable?: boolean; processInstanceId: string; reason: string },
+) {
+  return executeProcessCommandForCurrentUser(prisma, currentUser, {
+    auditPersistenceAvailable: input.auditPersistenceAvailable,
+    command: "BLOCK",
+    processInstanceId: input.processInstanceId,
+    reason: input.reason,
+  });
+}
+
+export function parseProcessCommand(command: string) {
+  assertKnownProcessCommand(command);
+  return command;
 }
 
 export function normalizeProcessRuntimeError(error: unknown): {

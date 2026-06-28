@@ -1,14 +1,13 @@
 "use client";
 
 import { CircleCheck, X } from "lucide-react";
-import { AlphaVestMark, ProcessJourneyLink, ProcessNavigation } from "@/components/process-navigation";
+import { AlphaVestMark, ProcessNavigation } from "@/components/process-navigation";
 import { cn } from "@/lib/cn";
 
 function NavigationContent({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <>
       <AlphaVestMark />
-      <ProcessJourneyLink onNavigate={onNavigate} />
       <ProcessNavigation onNavigate={onNavigate} />
 
       <div className="hidden rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/72 p-4 lg:block">

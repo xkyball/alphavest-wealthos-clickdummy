@@ -145,7 +145,7 @@ const groupTemplates: Record<NavigationGroupKey, ContextTemplate> = {
     capability: {
       apiEvidence: ["app/api/data-maintenance/actions/route.ts"],
       guardEvidence: ["Typed J05 action allow-list; no-advice/no-client-release safety envelope."],
-      proofPosture: "Wealth/action entity-maintenance controls use typed data-maintenance commands; this is still partial until focused browser/DB suites prove each journey.",
+      proofPosture: "Wealth/action entity-maintenance controls use typed data-maintenance commands; this is still partial until focused browser/DB suites prove each process.",
       serviceEvidence: ["lib/data-maintenance-command-client.ts", "lib/data-maintenance-workflow-actions.ts"],
       status: "API_BACKED_PARTIAL",
     },

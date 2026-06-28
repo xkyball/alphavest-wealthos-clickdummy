@@ -36,7 +36,7 @@ export type Pp003DraftLifecycleStatus =
   | "REJECTED"
   | "REVISION_REQUESTED";
 export type Pp003UnsupportedClaimStatus = "NEEDS_EVIDENCE" | "RESOLVED" | "WAIVED";
-export type Pp003CanonicalEvidencePath = "PP002_CANONICAL_JOURNEY" | "LEGACY_OR_P44" | "NONE";
+export type Pp003CanonicalEvidencePath = "PP002_CANONICAL_PROCESS" | "LEGACY_OR_P44" | "NONE";
 export type Pp003DraftPromotionTarget =
   | "advisor_candidate"
   | "client_safe_summary_candidate"
@@ -349,8 +349,8 @@ export function evaluatePp003DraftLifecycleGate(input: Pp003DraftLifecycleGateIn
     missing.push("unsupported_claim_waiver_not_pp003_canonical_proof");
   }
 
-  if (input.canonicalEvidencePath !== "PP002_CANONICAL_JOURNEY") {
-    missing.push("pp002_canonical_journey_evidence_required");
+  if (input.canonicalEvidencePath !== "PP002_CANONICAL_PROCESS") {
+    missing.push("pp002_canonical_process_evidence_required");
   }
 
   if (!input.canonicalEvidenceSufficient) {

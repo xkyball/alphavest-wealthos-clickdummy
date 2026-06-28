@@ -502,12 +502,6 @@ async function clearDemoData() {
     prisma.processInstance.deleteMany(),
     prisma.processStepDefinition.deleteMany(),
     prisma.processDefinition.deleteMany(),
-    prisma.journeyCommandRun.deleteMany(),
-    prisma.journeyObjectLink.deleteMany(),
-    prisma.journeyStepInstance.deleteMany(),
-    prisma.journeyInstance.deleteMany(),
-    prisma.journeyEvidenceRequirement.deleteMany(),
-    prisma.journeyDefinition.deleteMany(),
     prisma.message.deleteMany(),
     prisma.messageThread.deleteMany(),
     prisma.callEvent.deleteMany(),
@@ -1967,7 +1961,6 @@ async function seedProcesses() {
       status: definition.status as PrismaProcessDefinitionStatus,
       sourceArtifact: definition.sourceArtifact,
       metadataJson: {
-        replacementFor: "journey_and_mega_journey_runtime",
         source: "ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX",
         stepCount: definition.steps.length,
       },
@@ -2022,7 +2015,6 @@ async function seedProcesses() {
         metadataJson: {
           demoSeed: true,
           processRuntimeBackbone: true,
-          replacesJourneyRuntime: true,
           noClientVisibilityClaim: true,
         },
         startedAt: definition.status === "ACTIVE" ? date(-2) : null,

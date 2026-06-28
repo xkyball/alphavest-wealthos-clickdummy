@@ -2,8 +2,6 @@ export type P0ProofStatus = "mapped" | "explicit_blocker";
 
 export type P0AcceptanceProofEntry = {
   foundationIds: string[];
-  journeyId: string;
-  journeyName: string;
   negativeProof: string[];
   nonClaims: string[];
   positiveProof: string[];
@@ -11,14 +9,6 @@ export type P0AcceptanceProofEntry = {
   processName: string;
   status: P0ProofStatus;
 };
-
-function processProofEntry(input: Omit<P0AcceptanceProofEntry, "journeyId" | "journeyName">): P0AcceptanceProofEntry {
-  return {
-    ...input,
-    journeyId: input.processId,
-    journeyName: input.processName,
-  };
-}
 
 export const p0BusinessProcessUniverseReference = {
   artifactName: "ALPHAVEST_DETAILED_BUSINESS_PROCESS_SPECIFICATION_P0_ONLY.json",
@@ -84,7 +74,7 @@ export const p0RouteUiStateObligations = [
 ] as const;
 
 export const p0AcceptanceProofMap: P0AcceptanceProofEntry[] = [
-  processProofEntry({
+  {
     foundationIds: ["FND-001", "FND-002", "FND-003", "FND-008", "FND-009", "FND-010", "FND-011"],
     negativeProof: [
       "tests/process-runtime-db-api.spec.ts::missing JWT fails closed",
@@ -105,13 +95,13 @@ export const p0AcceptanceProofMap: P0AcceptanceProofEntry[] = [
     processId: "BP-001",
     processName: "Client relationship intake",
     status: "mapped",
-  }),
-  processProofEntry({
+  },
+  {
     foundationIds: ["FND-005", "FND-009", "FND-011"],
     negativeProof: [
       "tests/document-upload-api.spec.ts::rejects invalid document tenant queries",
       "tests/evidence-review-api.spec.ts::denies analyst evidence sufficiency acceptance",
-      "tests/process-runtime-db-api.spec.ts::journey seed tables stay empty",
+      "tests/process-runtime-db-api.spec.ts::legacy runtime tables are absent",
     ],
     nonClaims: [
       "Upload success is not evidence sufficiency.",
@@ -125,8 +115,8 @@ export const p0AcceptanceProofMap: P0AcceptanceProofEntry[] = [
     processId: "BP-024",
     processName: "Client document upload",
     status: "mapped",
-  }),
-  processProofEntry({
+  },
+  {
     foundationIds: ["FND-006", "FND-007", "FND-008", "FND-010"],
     negativeProof: [
       "tests/recommendation-review-workflow-api.spec.ts::analyst rejects unsupported claim",
@@ -141,8 +131,8 @@ export const p0AcceptanceProofMap: P0AcceptanceProofEntry[] = [
     processId: "BP-046",
     processName: "Rebuild with evidence",
     status: "mapped",
-  }),
-  processProofEntry({
+  },
+  {
     foundationIds: ["FND-004", "FND-011"],
     negativeProof: [
       "tests/governance-non-bypass.spec.ts",
@@ -155,8 +145,8 @@ export const p0AcceptanceProofMap: P0AcceptanceProofEntry[] = [
     processId: "BP-020",
     processName: "Admin non-bypass enforcement",
     status: "mapped",
-  }),
-  processProofEntry({
+  },
+  {
     foundationIds: ["FND-012", "FND-010", "FND-011"],
     negativeProof: ["tests/file-export-realism.spec.ts", "tests/phase8-export-workflow-api.spec.ts"],
     nonClaims: [
@@ -168,8 +158,8 @@ export const p0AcceptanceProofMap: P0AcceptanceProofEntry[] = [
     processId: "BP-088",
     processName: "Export approval",
     status: "mapped",
-  }),
-  processProofEntry({
+  },
+  {
     foundationIds: ["FND-001", "FND-002", "FND-003", "FND-010"],
     negativeProof: ["tests/providerless-scope.spec.ts", "tests/p0-api-contract.spec.ts"],
     nonClaims: [
@@ -180,8 +170,8 @@ export const p0AcceptanceProofMap: P0AcceptanceProofEntry[] = [
     processId: "BP-017",
     processName: "Object-scope evaluation",
     status: "mapped",
-  }),
-  processProofEntry({
+  },
+  {
     foundationIds: ["FND-013"],
     negativeProof: ["tests/data-quality-service.spec.ts", "tests/process-runtime-db-api.spec.ts::BLOCK command audit proof"],
     nonClaims: ["Data quality remains a support-hardening gate, not advice execution."],
@@ -189,7 +179,7 @@ export const p0AcceptanceProofMap: P0AcceptanceProofEntry[] = [
     processId: "BP-099",
     processName: "Data quality block",
     status: "mapped",
-  }),
+  },
 ];
 
 export function p0AcceptanceProofGaps(entries = p0AcceptanceProofMap) {
@@ -204,8 +194,4 @@ export function p0AcceptanceProofGaps(entries = p0AcceptanceProofMap) {
 
 export function p0MappedProcessIds(entries = p0AcceptanceProofMap) {
   return entries.filter((entry) => entry.status === "mapped").map((entry) => entry.processId).sort();
-}
-
-export function p0MappedJourneyIds(entries = p0AcceptanceProofMap) {
-  return p0MappedProcessIds(entries);
 }

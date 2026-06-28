@@ -9,7 +9,7 @@ import {
 } from "../lib/recommendation-review-workflow-validation";
 import {
   wp05ComplianceReleaseConfirmationPhrase,
-  wp05CanonicalJourneyCommandApiRoute,
+  wp05CanonicalProcessCommandApiRoute,
   wp05TypedWorkflowBoundaryMode,
   wp05TypedAdvisorWorkflowDirectness,
   wp05TypedAdvisorWorkflowDirectnessFor,
@@ -96,7 +96,7 @@ test.describe("advisor approval workflow state machine", () => {
       "request_evidence",
     ]);
     expect(wp05TypedAdvisorWorkflowDirectnessFor("compliance_release")).toMatchObject({
-      canonicalProofRoute: wp05CanonicalJourneyCommandApiRoute,
+      canonicalProofRoute: wp05CanonicalProcessCommandApiRoute,
       classification: "DOMAIN_BACKED_TYPED_COMPATIBILITY",
       typedWorkflowBoundaryMode: wp05TypedWorkflowBoundaryMode,
       productProofBacked: true,

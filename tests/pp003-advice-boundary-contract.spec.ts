@@ -153,14 +153,14 @@ test.describe("PP-003 advice boundary field contract", () => {
       "draft_classification_required",
       "evidence_backed_rebuild_required",
       "unsupported_claims_require_evidence",
-      "pp002_canonical_journey_evidence_required",
+      "pp002_canonical_process_evidence_required",
       "canonical_evidence_sufficiency_required",
       "canonical_evidence_audit_required",
     ]);
 
     const allowed = evaluatePp003DraftLifecycleGate({
       canonicalEvidenceAudited: true,
-      canonicalEvidencePath: "PP002_CANONICAL_JOURNEY",
+      canonicalEvidencePath: "PP002_CANONICAL_PROCESS",
       canonicalEvidenceSufficient: true,
       classified: true,
       clientVisible: false,
@@ -190,7 +190,7 @@ test.describe("PP-003 advice boundary field contract", () => {
       "pp003_draft_must_not_be_client_visible",
       "pp003_does_not_authorize_client_visible_release",
       "unsupported_claim_waiver_not_pp003_canonical_proof",
-      "pp002_canonical_journey_evidence_required",
+      "pp002_canonical_process_evidence_required",
     ]);
   });
 });

@@ -6,8 +6,8 @@ import { expect, test } from "@playwright/test";
 import { p0ApiRouteUniverse } from "../lib/p0-acceptance-proof";
 import { routeWorksetIntegrity } from "../lib/route-registry";
 import {
-  assertWave02JourneyExecutable,
-  wave02BlockedJourneys,
+  assertWave02ProcessExecutable,
+  wave02BlockedProcesses,
   wave02HoldRouteAssertions,
   wave02SourceLock,
 } from "../lib/source-lock/wave0-2-source-lock";
@@ -94,10 +94,10 @@ test.describe("Phase 01 foundation guardrails", () => {
       "NO_IMAGE_GENERATION",
     ]);
 
-    expect(wave02BlockedJourneys.map((process) => process.journeyId)).toEqual(["BP-070", "BP-071"]);
-    expect(() => assertWave02JourneyExecutable("BP-070")).toThrow(/blocked by Wave 0-2 source lock/);
-    expect(() => assertWave02JourneyExecutable("BP-071")).toThrow(/blocked by Wave 0-2 source lock/);
-    expect(() => assertWave02JourneyExecutable("BP-001")).not.toThrow();
+    expect(wave02BlockedProcesses.map((process) => process.processId)).toEqual(["BP-070", "BP-071"]);
+    expect(() => assertWave02ProcessExecutable("BP-070")).toThrow(/blocked by Wave 0-2 source lock/);
+    expect(() => assertWave02ProcessExecutable("BP-071")).toThrow(/blocked by Wave 0-2 source lock/);
+    expect(() => assertWave02ProcessExecutable("BP-001")).not.toThrow();
 
     expect(wave02HoldRouteAssertions()).toEqual(
       expect.arrayContaining([

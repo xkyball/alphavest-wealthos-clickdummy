@@ -33,7 +33,7 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
 
     await page.goto("/compliance/reviews/demo/release?state=release");
 
-    const releaseDialog = page.getByRole("dialog", { name: "Release client-safe journey" });
+    const releaseDialog = page.getByRole("dialog", { name: "Release client-safe process" });
     const lifecycle = page.getByTestId("uxp3-compliance-release-lifecycle");
     await expect(releaseDialog).toBeVisible();
     await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-status", "idle");
@@ -58,7 +58,7 @@ test.describe("Prompt 04 sensitive confirmation lifecycle", () => {
   test("valid release confirmation fails closed when release preconditions are still missing", async ({ page }) => {
     await page.goto("/compliance/reviews/demo/release?state=release");
 
-    const releaseDialog = page.getByRole("dialog", { name: "Release client-safe journey" });
+    const releaseDialog = page.getByRole("dialog", { name: "Release client-safe process" });
     const lifecycle = page.getByTestId("uxp3-compliance-release-lifecycle");
     await expect(releaseDialog).toBeVisible();
     await releaseDialog.locator("input[type='checkbox']").check();

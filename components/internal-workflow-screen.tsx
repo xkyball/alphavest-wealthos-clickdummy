@@ -2430,13 +2430,13 @@ function ReleaseModal({ onClose, open }: { onClose: () => void; open: boolean })
               requiresConfirmation: true,
             })}
           >
-            <LockKeyhole aria-hidden="true" className="size-4" />{status === "submitting" ? "Submitting..." : "Release client-safe journey"}
+            <LockKeyhole aria-hidden="true" className="size-4" />{status === "submitting" ? "Submitting..." : "Release client-safe process"}
           </button>
         </>
       }
       onClose={status === "submitting" ? undefined : resetAndClose}
       open={open}
-      title="Release client-safe journey"
+      title="Release client-safe process"
     >
       <div
         className="grid gap-4 xl:grid-cols-2"
