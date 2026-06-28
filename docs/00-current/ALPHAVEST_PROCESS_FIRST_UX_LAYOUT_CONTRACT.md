@@ -170,6 +170,26 @@ Audit/proof drawer handoff:
 - Detail panes may summarize the current proof state, but the drawer owns history/provenance expansion.
 - A queue workbench may not use audit visibility as approval, release, export, evidence sufficiency or permission-change proof by itself.
 
+### Typed Status And Command Hierarchy
+
+P0 queue, workbench, decision and export surfaces must use one shared status/command language instead of local route-specific interpretations.
+
+Canonical status levels:
+
+| Level | Meaning | Command implication | Required fields |
+| --- | --- | --- | --- |
+| `blocking` | Downstream work is stopped. | No primary completion command may imply success. | blocker reason, recovery action |
+| `attention` | Work needs review or remediation before a later gate. | Recovery command may be shown, but completion remains separate. | attention reason, recovery action |
+| `informational` | Context only. | Status-only; no mutation authority. | none unless local copy names a blocker |
+| `completed` | A named local action completed. | Status-only unless the next command has its own gate. | no downstream completion claim |
+
+Command hierarchy rules:
+
+- Blockers must expose both `reason` and `recoveryAction`.
+- A completed status is scoped to the local action only and must not imply release, export, evidence sufficiency, client visibility, permission mutation or client acceptance.
+- Route-local status labels must map into `lib/ux-status-command-hierarchy.ts` before they can drive queue or action UI.
+- Secondary queue migrations must use this hierarchy before expanding advisor, vault, governance or access-request workbench cleanup.
+
 ## 7. P0 Route Mapping
 
 The following route families are locked as initial process-first refactor targets.
