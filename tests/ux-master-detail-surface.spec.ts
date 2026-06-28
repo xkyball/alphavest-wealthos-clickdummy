@@ -62,6 +62,21 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).not.toContain("<DataTable");
   });
 
+  test("marks S046 evidence vault as a queue workbench with selected evidence context", () => {
+    const source = readSource("components", "decisions-governance-screen.tsx");
+
+    expect(source).toContain("function EvidenceVaultPage");
+    expect(source).toContain("<MasterDetailSurface");
+    expect(source).toContain('actionPolicy="command_handoff"');
+    expect(source).toContain('filterState="disabled_static"');
+    expect(source).toContain("queueWorkbench");
+    expect(source).toContain("s046-evidence-master-list");
+    expect(source).toContain("s046-evidence-selected-detail");
+    expect(source).toContain("Evidence vault keeps selected evidence");
+    expect(source).toContain("uxStatusCommandAttributesFor");
+    expect(source).not.toContain("const evidenceColumns");
+  });
+
   test("marks S029 extraction review as a queue workbench with proof drawer handoff", () => {
     const source = readSource("components", "client-intake-screen.tsx");
 

@@ -11,7 +11,6 @@ import {
   Download,
   FileCheck2,
   FileText,
-  Filter,
   LockKeyhole,
   MessageSquare,
   Plus,
@@ -31,6 +30,7 @@ import {
   CardTitle,
   DataTable,
   Drawer,
+  MasterDetailSurface,
   Modal,
   StatePanel,
   type BadgeTone,
@@ -87,6 +87,7 @@ import type { ScreenRoute } from "@/lib/route-registry";
 import type { VisualState } from "@/lib/visual-contract";
 import { visibilityEngine, type DecisionVisibilityPayload } from "@/lib/visibility-engine";
 import { uxActionClassForPriority } from "@/lib/ux-action-hierarchy-contract";
+import { uxStatusCommandAttributesFor } from "@/lib/ux-status-command-hierarchy";
 
 type DecisionsGovernanceScreenProps = {
   route: ScreenRoute;
@@ -1556,17 +1557,11 @@ function DecisionSuccessPage({ title }: { title: string }) {
   );
 }
 
-const evidenceColumns: Array<DataTableColumn<(typeof evidenceRows)[number]>> = [
-  { key: "title", header: "Evidence", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.title}<span className="block text-xs text-alphavest-muted">{row.type}</span></span> },
-  { key: "client", header: "Client / Account", render: (row) => row.client },
-  { key: "category", header: "Category", render: (row) => <Badge tone="gold">{row.category}</Badge> },
-  { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge> },
-  { key: "updated", header: "Updated", render: (row) => row.updated }
-];
-
 function EvidenceVaultPage({ title, visualState }: { title: string; visualState?: VisualState }) {
+  const [selectedEvidenceTitle, setSelectedEvidenceTitle] = useState(evidenceRows[0]?.title);
   const [drawerOpen, setDrawerOpen] = useState(visualState === "drawer");
   const [drawerStatus, setDrawerStatus] = useState<"closed" | "loading" | "ready">(visualState === "drawer" ? "ready" : "closed");
+  const selectedEvidence = evidenceRows.find((row) => row.title === selectedEvidenceTitle) ?? evidenceRows[0];
   const drawerLifecycleStatus = drawerStatus === "ready" ? "success" : drawerStatus;
   const drawerValidation = drawerOpen ? "blocked-client-visibility-gates" : "closed";
 
@@ -1592,7 +1587,6 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
         eyebrow="WP02 Evidence"
         primary={
           <div className="space-y-5">
-            <UxHubPage pageId="046" />
             <PageHeading
               action={
                 <button
@@ -1603,69 +1597,114 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
                   onClick={openEvidenceDrawer}
                   type="button"
                 >
-                  Open Selected Evidence
+                  Open selected evidence
                 </button>
               }
               badge={<ShieldCheck aria-hidden="true" className="size-5 text-alphavest-gold" />}
-              subtitle="Secure, role-based repository for client evidence and attestations."
+              subtitle="Select one evidence record, inspect its gated context and keep download, share, export and client visibility blocked until release controls pass."
               title={title}
             />
-            <ScfP04P06FlowPanel mode="evidence" />
-            <div className="flex flex-wrap gap-2 border-b border-alphavest-border/70">
-              {["All Evidence", "By Category", "Expiring Soon 12", "Needs Review 5"].map((tab, index) => (
-                <span className={cn("px-3 pb-3 text-sm font-semibold", index === 0 ? "border-b-2 border-alphavest-gold text-alphavest-gold" : "text-alphavest-muted")} key={tab}>{tab}</span>
-              ))}
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-[minmax(14rem,1fr)_repeat(4,minmax(9rem,10rem))_auto]">
-              <label className="relative min-w-0 sm:col-span-2 lg:col-span-1">
-                <Search aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-                <input
-                  className="h-11 w-full cursor-not-allowed rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm opacity-65 outline-none focus:border-alphavest-gold"
-                  data-ux-data-surface-filter-state="disabled_static"
-                  data-ux-disabled-message="explicit"
-                  data-ux-disabled-reason="Evidence list filters are not wired in this release."
-                  data-ux-e10-filter-exception-id="DSF-004"
-                  data-ux-interactive="false"
-                  disabled
-                  placeholder="Evidence search unavailable"
-                  title="Evidence list filters are not wired in this release."
-                />
-              </label>
-              {["Category", "Evidence Type", "Status", "Date Range"].map((filter) => (
-                <button
-                  aria-label={`${filter} filter is static in this evidence list`}
-                  className="flex h-11 min-w-0 cursor-not-allowed items-center justify-between gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted opacity-65"
-                  data-ux-data-surface-filter-state="disabled_static"
-                  data-ux-disabled-message="explicit"
-                  data-ux-disabled-reason="Evidence list filters are not wired in this release."
-                  data-ux-e10-filter-exception-id="DSF-004"
-                  data-ux-interactive="false"
-                  disabled
-                  key={filter}
-                  title="Evidence list filters are not wired in this release."
-                  type="button"
-                >
-                  <span className="truncate">{filter}</span>
-                  <ChevronDown aria-hidden="true" className="size-4 shrink-0" />
-                </button>
-              ))}
-              <button
-                aria-label="Additional evidence filters are not wired in this release"
-                className={secondaryButtonClass}
-                data-ux-data-surface-filter-state="disabled_static"
-                data-ux-disabled-message="explicit"
-                data-ux-disabled-reason="Evidence list filters are not wired in this release."
-                data-ux-e10-filter-exception-id="DSF-004"
-                data-ux-interactive="false"
-                disabled
-                title="Evidence list filters are not wired in this release."
-                type="button"
-              >
-                <Filter aria-hidden="true" className="size-4" />
-                Filters
-              </button>
-            </div>
-            <DataTable columns={evidenceColumns} getRowId={(row) => row.title} rows={evidenceRows} />
+            <MasterDetailSurface
+              actionPolicy="command_handoff"
+              actionRail="present"
+              density="compact_operations"
+              detail={
+                selectedEvidence ? (
+                  <Card data-testid="s046-evidence-selected-detail">
+                    <CardHeader>
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <CardTitle>{selectedEvidence.title}</CardTitle>
+                          <CardDescription>{selectedEvidence.client} - {selectedEvidence.type}</CardDescription>
+                        </div>
+                        <Badge tone={toneFor(selectedEvidence.status)}>{selectedEvidence.status}</Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid gap-3">
+                        <InfoRow label="Category" value={selectedEvidence.category} />
+                        <InfoRow label="Updated" value={selectedEvidence.updated} />
+                        <InfoRow label="Client visibility" value="Controlled until release gates pass" />
+                        <InfoRow label="Export / download" value="Blocked from queue context" />
+                      </div>
+                      <StatePanel
+                        detail="Evidence context can be inspected here, but download, share, export and client visibility remain blocked until evidence sufficiency, compliance release and export approval pass."
+                        state={selectedEvidence.status === "Pending Review" ? "validation" : "restricted"}
+                        title="Evidence context only"
+                        {...uxStatusCommandAttributesFor({
+                          componentState: selectedEvidence.status === "Pending Review" ? "validation" : "restricted",
+                          reason: selectedEvidence.status === "Pending Review" ? "Evidence is pending review and cannot be treated as sufficient." : "Evidence vault rows do not authorize download, share, export or client visibility.",
+                          recoveryAction: selectedEvidence.status === "Pending Review" ? "complete_review" : "review_policy",
+                        })}
+                      />
+                      <button
+                        className={primaryButtonClass + " w-full"}
+                        data-testid="s046-open-selected-evidence"
+                        onClick={openEvidenceDrawer}
+                        type="button"
+                      >
+                        Open selected evidence context
+                      </button>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <StatePanel detail="No evidence record is selected." state="empty" title="No selected evidence" />
+                )
+              }
+              family="queue"
+              filterState="disabled_static"
+              master={
+                <div className="space-y-4" data-testid="s046-evidence-master-list">
+                  <div className="flex flex-wrap gap-2 border-b border-alphavest-border/70">
+                    {["All Evidence", "By Category", "Expiring Soon 12", "Needs Review 5"].map((tab, index) => (
+                      <span className={cn("px-3 pb-3 text-sm font-semibold", index === 0 ? "border-b-2 border-alphavest-gold text-alphavest-gold" : "text-alphavest-muted")} key={tab}>{tab}</span>
+                    ))}
+                  </div>
+                  <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 text-sm text-alphavest-muted">
+                    Evidence filters remain visible as disabled controls only; selection and detail context stay preserved in the queue workbench.
+                  </div>
+                  <div className="space-y-2">
+                    {evidenceRows.map((row) => {
+                      const selected = selectedEvidence?.title === row.title;
+
+                      return (
+                        <button
+                          className={cn(
+                            "w-full rounded-md border p-3 text-left transition",
+                            selected ? "border-alphavest-gold bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35 hover:border-alphavest-gold/60",
+                          )}
+                          data-ux-field-priority="evidence_title client category status updated visibility_gate"
+                          data-ux-queue-row={row.title}
+                          data-ux-queue-selected={selected ? "true" : "false"}
+                          key={row.title}
+                          onClick={() => setSelectedEvidenceTitle(row.title)}
+                          type="button"
+                        >
+                          <span className="flex items-start justify-between gap-3">
+                            <span className="min-w-0">
+                              <span className="block text-sm font-semibold text-alphavest-ivory">{row.title}</span>
+                              <span className="mt-1 block text-xs text-alphavest-muted">{row.client} - {row.type}</span>
+                            </span>
+                            <Badge tone={toneFor(row.status)}>{row.status}</Badge>
+                          </span>
+                          <span className="mt-2 grid gap-1 text-xs text-alphavest-muted">
+                            <span>{row.category}</span>
+                            <span>{row.updated}</span>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              }
+              masterDetailMode="inline_detail_rail"
+              proofPlacement="proof_drawer"
+              queueWorkbench
+              selectedObjectId={selectedEvidence?.title ?? "no-evidence-row"}
+              selectedObjectState={selectedEvidence?.status ?? "empty"}
+              selectedSummary={<span>Evidence vault keeps selected evidence, gated review context and drawer handoff together; vault rows do not download, share, export or create client visibility.</span>}
+              stickyRail
+            />
           </div>
         }
         rail={drawerOpen ? undefined : <EvidenceControlRail />}
@@ -1697,7 +1736,7 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
         }
         onClose={closeEvidenceDrawer}
         open={drawerOpen}
-        title="Risk Tolerance Questionnaire"
+        title={selectedEvidence?.title ?? "Evidence record"}
       >
         <div
           className="space-y-5"
