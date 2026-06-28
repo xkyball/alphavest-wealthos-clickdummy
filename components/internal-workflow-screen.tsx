@@ -1883,6 +1883,8 @@ function ComplianceQueuePage({ title }: { title: string }) {
               }
               family="queue"
               filterState={searchTerm.length > 0 ? "active_query" : "inactive"}
+              governancePattern="queue_workbench"
+              longScreenGovernance="resolved_by_shared_surface"
               master={
                 <div className="space-y-4" data-testid="s038-compliance-master-list">
                   <FilterBar
@@ -1946,6 +1948,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
               selectedObjectState={selectedReview?.publish ?? "empty"}
               selectedSummary={<span>Compliance queue keeps list context while selection exposes one decision-room handoff only; queue rows cannot release, block, export or expose client-visible content.</span>}
               stickyRail
+              targetScreenId="S038"
             />
           </div>
         }

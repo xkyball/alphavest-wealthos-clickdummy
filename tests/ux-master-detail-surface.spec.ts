@@ -46,6 +46,9 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain("Compliance queue keeps list context");
     expect(source).toContain("s038-compliance-master-list");
     expect(source).toContain("s038-compliance-selected-detail");
+    expect(source).toContain('governancePattern="queue_workbench"');
+    expect(source).toContain('longScreenGovernance="resolved_by_shared_surface"');
+    expect(source).toContain('targetScreenId="S038"');
   });
 
   test("marks S034 and S036 as process-owned queue workbenches without legacy hub or table fallbacks", () => {
