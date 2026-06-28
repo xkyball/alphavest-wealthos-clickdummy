@@ -60,10 +60,11 @@ test.describe("P0 process-first UX burndown implementation", () => {
     expect(internal).toContain("Check evidence, policy and audit readiness, then request evidence or keep the item closed.");
 
     expect(exportOps).toContain('data-testid="bd11-export-redaction-gate"');
-    expect(exportOps).toContain('processFirstUxContractForPageId("056")');
-    expect(exportOps).toContain('data-ux-process-current-step="redaction"');
-    expect(exportOps).toContain('data-ux-process-blocked-reason="forbidden_payload_not_resolved"');
-    expect(exportOps).toContain("Forbidden payload blocked. Redaction is required before preview, approval, download or share.");
+    expect(exportOps).toContain("Protection Checklist");
+    expect(exportOps).toContain("Review protected content areas before preview inspection.");
+    expect(exportOps).not.toContain('data-ux-process-current-step="redaction"');
+    expect(exportOps).not.toContain('data-ux-process-blocked-reason="forbidden_payload_not_resolved"');
+    expect(exportOps).not.toContain("Forbidden payload blocked. Redaction is required before preview, approval, download or share.");
     expect(exportOps).toContain('testId="bd11-export-approval-gate"');
     expect(exportOps).toContain('processFirstUxContractForPageId("057")');
     expect(exportOps).toContain('currentStep="approval"');

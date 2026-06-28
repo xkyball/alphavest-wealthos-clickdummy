@@ -39,7 +39,7 @@ const v096PageTypeByPageId: Record<string, V096PageType> = {
   "039": "DECISION_ROOM",
   "042": "DETAIL_REVIEW",
   "055": "WORKBENCH_QUEUE",
-  "056": "WORKBENCH_QUEUE",
+  "056": "DETAIL_REVIEW",
   "057": "DECISION_ROOM",
   "061": "REFERENCE",
   "063": "REFERENCE",

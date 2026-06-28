@@ -736,7 +736,6 @@ test.describe("UX-DENSITY productive workbench routes", () => {
 test.describe("UX-DENSITY dense operations routes", () => {
   const d3OperationsRoutes = [
     { pageId: "042", path: "/compliance/reviews/demo/audit" },
-    { pageId: "056", path: "/export/demo/redaction" },
   ];
 
   test("keeps export-new as D2 request start rather than D3 operations table", async ({ page }) => {
@@ -764,11 +763,7 @@ test.describe("UX-DENSITY dense operations routes", () => {
       await expect(operations).toBeVisible();
       await expect(operations).toHaveAttribute("data-ux-density-tier", "D3");
       await expect(operations).toHaveAttribute("data-ux-density-pattern", "dense-operations");
-      if (route.pageId === "056") {
-        await expect(operations.getByTestId("ux-d3-filter-sort-controls")).toHaveCount(0);
-      } else {
-        await expect(operations.getByTestId("ux-d3-filter-sort-controls")).toBeVisible();
-      }
+      await expect(operations.getByTestId("ux-d3-filter-sort-controls")).toBeVisible();
       await expect(operations.getByTestId("ux-data-table").first()).toBeVisible();
       await expect(operations.getByTestId("ux-data-table-sort").first()).toBeVisible();
       await expect(operations.getByTestId("ux-data-table-row-action").first()).toBeVisible();
@@ -1073,7 +1068,7 @@ test.describe("UX-CTA export lifecycle separation", () => {
   test("maps export routes to separate lifecycle CTA states", () => {
     const expectedPrimaryLabels: Record<string, RegExp> = {
       "054": /Select export content/,
-      "055": /Review redaction/,
+      "055": /Review protection/,
       "056": /Inspect preview/,
       "057": /Open delivery controls after approval/,
       "058": /Review approval context/,
@@ -1086,7 +1081,7 @@ test.describe("UX-CTA export lifecycle separation", () => {
 
       expect(guidance.ctaState.state, `${pageId} CTA state`).toBe("guarded");
       expect(guidance.ctaState.primaryAction?.label, `${pageId} primary label`).toMatch(labelPattern);
-      expect(guidance.gateHint, `${pageId} gate hint`).toMatch(/scope|redaction|preview|approval|download|share|separate/i);
+      expect(guidance.gateHint, `${pageId} gate hint`).toMatch(/content|protection|preview|approval|download|share|separate/i);
       expect(guidance.ctaState.primaryAction?.label, `${pageId} no collapsed delivery label`).not.toMatch(
         /download ready|share ready|approved and downloaded|preview approved/i,
       );
@@ -1096,7 +1091,7 @@ test.describe("UX-CTA export lifecycle separation", () => {
   const exportScreens = [
     { path: "/export/new", required: "Name the request, choose contents and continue to review.", routeLanguage: /choose contents|content/i },
     { path: "/export/demo/scope", required: "Choose permitted content, review recipients and continue to protection review.", routeLanguage: /content|protection review/i },
-    { path: "/export/demo/redaction", required: "Preview inspection must pass before approval can be recorded.", routeLanguage: /redaction|preview|approval/i },
+    { path: "/export/demo/redaction", required: "Confirm which content areas need cover before inspection.", routeLanguage: /protection|preview|inspection/i },
     { path: "/export/demo/approval?state=approval", required: "Generation, download and share remain separate controlled steps.", routeLanguage: /generation|download|share/i },
     { path: "/export/demo/download", required: "Share after download", routeLanguage: /download|share/i },
   ];
@@ -1228,16 +1223,15 @@ test.describe("UX-INTERACTION table search sort row-action semantics", () => {
     await expect(page).toHaveURL(/\/compliance\/reviews\/[^/]+\/decision-room/);
   });
 
-  test("export dense tables do not expose fake controls or enabled row actions", async ({ page }) => {
+  test("export protection review is compact and avoids dense operations scaffolding", async ({ page }) => {
     await page.setViewportSize({ height: 1000, width: 1440 });
     await authenticateRouteSmokePage(page);
     await page.goto("/export/demo/redaction");
 
-    const operations = page.getByTestId("ux-d3-dense-operations").first();
-    await expect(operations.getByTestId("ux-d3-filter-sort-controls")).toHaveCount(0);
-    await expect(operations.getByText(/Payload Redaction Operations|Approval blocked until preview/i)).toHaveCount(0);
-    await expect(operations.getByTestId("ux-data-table-sort").first()).toBeVisible();
-    await expect(operations.getByRole("button", { name: "No scoped row action for this table state." }).first()).toBeDisabled();
+    await expect(page.getByTestId("ux-d3-dense-operations")).toHaveCount(0);
+    await expect(page.getByText("Protection Checklist").first()).toBeVisible();
+    await expect(page.getByText("Inspect preview").first()).toBeVisible();
+    await expect(page.getByText(/Payload Redaction Operations|Approval blocked until preview|Blocked before preview/i)).toHaveCount(0);
   });
 });
 

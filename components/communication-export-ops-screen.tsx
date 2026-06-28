@@ -1552,139 +1552,110 @@ function RedactedDocumentPreview() {
   );
 }
 
-function ExportRedactionControlPanel({
-  redactionColumns,
-  redactionRows,
+function ExportProtectionReviewPanel({
+  apiState,
+  loadState,
 }: {
-  redactionColumns: Array<DataTableColumn<(typeof redactionRows)[number]>>;
-  redactionRows: Array<{ id: string; label: string; state: string; visibility: string }>;
+  apiState: ExportWorkflowApiState | null;
+  loadState: "loading" | "ready" | "error";
 }) {
+  const reviewItems = redactionSummary.map((item) => ({
+    count: item.count,
+    id: item.id,
+    label: item.label,
+    tone: item.severity === "High" ? "gold" : item.severity === "Medium" ? "blue" : "green",
+  }));
+  const restrictedCount = exportForbiddenPayloadChecks.length;
+
   return (
-    <UxDenseOperationsPanel
-      chrome="none"
-      pageId="056"
-      resultLabel="Approval blocked until preview"
-      safetyNote="Preview inspection must pass before approval can be recorded. Approval and generation must be recorded before download."
-      title="Payload Redaction Operations"
+    <section
+      className="grid gap-4 xl:grid-cols-[1fr_23rem]"
+      data-testid="bd11-export-redaction-control-panel"
+      data-ux-export-api-state={apiState?.status ?? "pending"}
+      data-ux-export-load-state={loadState}
     >
-      <section className="space-y-2" data-testid="bd11-export-redaction-control-panel" data-ux-layout-compression="bounded_export_redaction">
-        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
-          <Card>
-            <CardHeader className="py-3">
-              <CardTitle>Payload redaction table</CardTitle>
-            </CardHeader>
-            <CardContent className="pb-3">
-              <div className="max-h-72 overflow-y-auto pr-1">
-                <DataTable
-                  actionPolicy="disabled_unavailable"
-                  columns={redactionColumns}
-                  compact
-                  density="compact"
-                  family="table"
-                  getRowId={(row) => row.id}
-                  onSortChange={handleStaticSortChange}
-                  responsiveMode="table"
-                  rows={redactionRows}
-                  sortDirection="asc"
-                  sortKey="label"
-                />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="py-3"><CardTitle>Redaction Summary</CardTitle></CardHeader>
-            <CardContent className="space-y-2 pb-3">
-              {redactionSummary.map((item) => (
-                <div className="flex items-center justify-between gap-3 text-sm" key={item.id}>
-                  <span className="text-alphavest-muted">{item.label}</span>
-                  <span className="font-semibold text-alphavest-ivory">{item.count}</span>
+      <Card>
+        <CardHeader className="p-4 pb-2">
+          <CardTitle className="text-xl">Protection Checklist</CardTitle>
+          <p className="mt-1 text-sm text-alphavest-muted">Confirm which content areas need cover before inspection.</p>
+        </CardHeader>
+        <CardContent className="grid gap-2 p-4 pt-0 sm:grid-cols-2">
+          {reviewItems.map((item) => (
+            <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3" key={item.id}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-semibold text-alphavest-ivory">{item.label}</p>
+                  <p className="mt-1 text-sm text-alphavest-muted">{item.count} fields covered</p>
                 </div>
-              ))}
-              <StatePanel detail="Preview review must pass before approval, download or share is available." state="restricted" title="Approval unavailable" />
-              <UxCtaCluster
-                blockedReason="Preview inspection must pass before approval can be recorded."
-                primary={{
-                  disabled: true,
-                  disabledReason: "Preview inspection must pass before approval can be recorded.",
-                  label: "Resolve redaction blockers",
-                  meaning: "export_approval",
-                }}
-                secondary={[
-                  {
-                    disabled: true,
-                    disabledReason: "Approval and generation must be recorded before download.",
-                    label: "Prepare download",
-                    meaning: "download",
-                  },
-                ]}
-              />
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-    </UxDenseOperationsPanel>
+                <InlineStatus tone={item.tone} value="Covered" />
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="p-4 pb-2">
+          <CardTitle className="text-xl">Review Outcome</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 p-4 pt-0">
+          <div className="rounded-md border border-alphavest-gold/45 bg-alphavest-gold/10 p-3">
+            <div className="flex items-start gap-3">
+              <ShieldCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-alphavest-gold" />
+              <div>
+                <p className="font-semibold text-alphavest-ivory">{restrictedCount} sensitive areas covered</p>
+                <p className="mt-1 text-sm leading-5 text-alphavest-muted">Inspection can continue after the reviewer confirms the protected view.</p>
+              </div>
+            </div>
+          </div>
+          <a className={primaryButtonClass + " w-full"} href="/export/demo/preview">
+            Inspect preview <ArrowRight aria-hidden="true" className="size-4" />
+          </a>
+          <button className={secondaryButtonClass + " w-full"} disabled title="Download is available after approval." type="button">
+            <LockKeyhole aria-hidden="true" className="size-4" />
+            Prepare download
+          </button>
+        </CardContent>
+      </Card>
+    </section>
   );
 }
 
 function ExportRedactionPage({ title }: { title: string }) {
-  const processContract = processFirstUxContractForPageId("056");
-  const redactionRows = [
-    ...redactionSummary.map((item) => ({
-      id: item.id,
-      label: item.label,
-      state: String(item.count),
-      visibility: item.severity,
-    })),
-    ...exportForbiddenPayloadChecks.map((item) => ({
-      id: item.label,
-      label: item.label,
-      state: item.state,
-      visibility: "Forbidden payload",
-    })),
-  ];
-  const redactionColumns: Array<DataTableColumn<(typeof redactionRows)[number]>> = [
-    { key: "label", header: "Payload field", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.label}</span>, sortable: true },
-    { key: "state", header: "State", render: (row) => <InlineStatus tone={toneFor(row.state)} value={row.state} />, sortable: true },
-    { key: "visibility", header: "Visibility", render: (row) => row.visibility, sortable: true },
-  ];
+  const { apiState, loadState } = useExportWorkflowSnapshot();
 
   return (
     <WorksurfaceShell
       density="compact"
-      description="Payload redaction review for forbidden internal fields before preview inspection or approval can continue."
+      description="Review protected content areas before preview inspection."
       eyebrow="Export and redaction"
       primary={
-        <div className="space-y-2">
+        <div className="space-y-3">
           <section
-            className="rounded-md border border-alphavest-red/40 bg-alphavest-red/10 p-3"
+            className="grid gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-panel/60 p-3 md:grid-cols-4"
             data-testid="bd11-export-redaction-gate"
-            data-ux-process-acceptance-gates={processContract.acceptanceIds.join(" ")}
-            data-ux-process-blocked-reason="forbidden_payload_not_resolved"
-            data-ux-process-business-processes={processContract.businessProcessIds.join(" ")}
-            data-ux-process-current-step="redaction"
-            data-ux-process-first="true"
-            data-ux-process-gate-ids={processContract.gateIds.join(" ")}
-            data-ux-process-gate-state="Redaction required"
-            data-ux-process-next-step={processContract.nextPermittedAction}
           >
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="min-w-0">
-                <h2 className="text-base font-semibold text-alphavest-ivory">Redaction required</h2>
-                <p className="mt-1 text-sm text-alphavest-muted">Forbidden payload blocked. Redaction is required before preview, approval, download or share.</p>
-              </div>
-              <p className="text-sm font-semibold text-alphavest-red">Blocked before preview</p>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Covered</p>
+              <p className="mt-1 text-lg font-semibold text-alphavest-ivory">12</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Areas</p>
+              <p className="mt-1 text-lg font-semibold text-alphavest-ivory">4</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Reviewer</p>
+              <p className="mt-1 text-sm text-alphavest-muted">Compliance</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Inspection</p>
+              <p className="mt-1 text-sm text-alphavest-muted">{loadState === "error" ? "Retry required" : "Ready"}</p>
             </div>
           </section>
-          <ExportRedactionControlPanel redactionColumns={redactionColumns} redactionRows={redactionRows} />
+          <ExportProtectionReviewPanel apiState={apiState} loadState={loadState} />
         </div>
       }
       routeId="056"
-      safetyNote="Redaction summary is not export approval; forbidden internal payload, preview, approval, download and share remain separate gates."
-      statusItems={[
-        { label: "Stage", tone: "blue", value: "Redaction" },
-        { label: "Redactions", tone: "gold", value: "12" },
-        { label: "Payload", tone: "red", value: "blocked" },
-      ]}
+      safetyNote="Protected review prepares preview inspection only; approval and delivery remain later actions."
       title={title}
       worksurfaceId="export-redaction-redaction"
     />

@@ -1138,8 +1138,8 @@ export const screenRoutes = [
   {
     pageId: "056",
     route: "/export/:id/redaction",
-    title: "Export Redaction",
-    purpose: "Export redaction",
+    title: "Export Protection Review",
+    purpose: "Export protection review",
     visualMode: "PREVIEW_PAGE_OR_PANEL",
     visualAsset: "public/reference/page_ui_v3/clean_pages/PAGE-056-export-id-redaction.png",
     navigationGroup: "export",

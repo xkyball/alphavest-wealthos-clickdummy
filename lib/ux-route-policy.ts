@@ -115,7 +115,7 @@ const workspaceByPageId = new Map<string, UxWorkspaceKey>(
   )
 );
 
-const detailPageIds = new Set(["035", "037", "039", "040", "041", "042", "044", "045", "047", "057", "058", "065", "066", "067", "069", "071"]);
+const detailPageIds = new Set(["035", "037", "039", "040", "041", "042", "044", "045", "047", "056", "057", "058", "065", "066", "067", "069", "071"]);
 const hubPageIds = new Set(["007", "015", "019", "020", "024", "031", "033", "034", "043", "046", "048", "052", "054", "059", "064", "068", "070"]);
 const modalPageIds = new Set(["002", "005", "009", "010", "040", "041", "045", "049", "057", "058"]);
 const d1PageIds = new Set(["019", "020", "061", "062", "063"]);
@@ -262,7 +262,7 @@ const flowLabels: Record<string, string> = {
   "053": "Trigger",
   "054": "Export",
   "055": "Content",
-  "056": "Redact",
+  "056": "Protect",
   "057": "Preview",
   "058": "Deliver",
   "059": "Ops",

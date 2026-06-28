@@ -134,8 +134,8 @@ test.describe("V0.96 WP-02 page-type and density contract", () => {
       v096RouteLabel: "/export/:id/scope",
     });
     expect(v096UxDensityContractForPageId("056")).toMatchObject({
-      densityTier: "D3",
-      v096PageType: "WORKBENCH_QUEUE",
+      densityTier: "D4",
+      v096PageType: "DETAIL_REVIEW",
       v096RouteLabel: "/export/:id/redaction",
     });
     expect(v096UxDensityContractForPageId("057")).toMatchObject({
