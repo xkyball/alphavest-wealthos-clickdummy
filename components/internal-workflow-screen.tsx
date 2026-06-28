@@ -52,6 +52,7 @@ import {
   analystDraftAcceptanceCriteria,
   analystDraftGovernanceContractId,
   analystDraftPayloadVisibility,
+  analystDraftProofBoundaryForPageId,
   analystDraftRouteOwnershipForPageId,
 } from "@/lib/analyst-draft-governance-contract";
 import { processFirstUxContractForPageId } from "@/lib/process-first-ux-contract";
@@ -1058,6 +1059,7 @@ function AnalystDraftStepSurface({
   selectedLabel: string;
 }) {
   const routeOwnership = analystDraftRouteOwnershipForPageId(pageId);
+  const proofBoundary = analystDraftProofBoundaryForPageId(pageId);
   const processIds = routeOwnership?.processIds ?? [];
   const criteria = analystDraftAcceptanceCriteria.filter((criterion) => processIds.some((processId) => processId === criterion.processId));
 
@@ -1067,6 +1069,11 @@ function AnalystDraftStepSurface({
         data-epic09-contract={analystDraftGovernanceContractId}
         data-epic09-page-id={pageId}
         data-epic09-processes={processIds.join(" ")}
+        data-epic09-proof-audit-posture={proofBoundary?.auditPosture}
+        data-epic09-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
+        data-epic09-proof-client-safe-payload={proofBoundary?.clientSafePayload}
+        data-epic09-proof-placement={proofBoundary?.proofPlacement}
+        data-epic09-proof-summary={proofBoundary?.summary}
         data-epic09-service-backing={analystDraftServiceBacking}
         data-epic09-step-surface="true"
         data-testid="epic09-s035-draft-step-surface"
@@ -1094,6 +1101,11 @@ function AnalystDraftStepSurface({
       data-epic09-contract={analystDraftGovernanceContractId}
       data-epic09-page-id={pageId}
       data-epic09-processes={processIds.join(" ")}
+      data-epic09-proof-audit-posture={proofBoundary?.auditPosture}
+      data-epic09-proof-blocked-overclaims={proofBoundary?.blockedOverclaims.join(" ")}
+      data-epic09-proof-client-safe-payload={proofBoundary?.clientSafePayload}
+      data-epic09-proof-placement={proofBoundary?.proofPlacement}
+      data-epic09-proof-summary={proofBoundary?.summary}
       data-epic09-service-backing={analystDraftServiceBacking}
       data-epic09-step-surface="true"
       data-testid={`epic09-s${pageId}-draft-step-surface`}

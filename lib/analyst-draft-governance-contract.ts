@@ -62,6 +62,15 @@ export type AnalystDraftAcceptanceCriterion = {
   processId: AnalystDraftProcessId;
 };
 
+export type AnalystDraftProofBoundary = {
+  auditPosture: "required_not_claimed_persisted" | "summary_only_not_audit_record";
+  blockedOverclaims: readonly (typeof analystDraftForbiddenOverclaims)[number][];
+  clientSafePayload: "none_internal_only" | "released_summary_only";
+  pageId: "033" | "034" | "035";
+  proofPlacement: "entry_summary" | "queue_summary_strip" | "trigger_audit_strip";
+  summary: string;
+};
+
 export const analystDraftRouteOwnership = [
   {
     pageFamily: "analyst_signal_hub",
@@ -239,6 +248,37 @@ export const analystDraftAcceptanceCriteria = [
   },
 ] as const satisfies readonly AnalystDraftAcceptanceCriterion[];
 
+export const analystDraftProofBoundaries = [
+  {
+    auditPosture: "summary_only_not_audit_record",
+    blockedOverclaims: ["advice_created", "advisor_approved", "compliance_released", "client_visibility", "export_ready"],
+    clientSafePayload: "none_internal_only",
+    pageId: "033",
+    proofPlacement: "entry_summary",
+    summary: "Entry summary can orient signal work only; it is not proof of advice, release, export or client visibility.",
+  },
+  {
+    auditPosture: "summary_only_not_audit_record",
+    blockedOverclaims: ["advice_created", "advisor_approved", "compliance_released", "client_visibility", "export_ready", "evidence_gap_as_sufficiency"],
+    clientSafePayload: "none_internal_only",
+    pageId: "034",
+    proofPlacement: "queue_summary_strip",
+    summary: "Queue proof is a compact internal handoff summary; it cannot imply evidence sufficiency or downstream approval.",
+  },
+  {
+    auditPosture: "required_not_claimed_persisted",
+    blockedOverclaims: ["advisor_approved", "compliance_released", "client_visibility", "export_ready", "redaction_as_release", "route_to_advisor_as_approval"],
+    clientSafePayload: "none_internal_only",
+    pageId: "035",
+    proofPlacement: "trigger_audit_strip",
+    summary: "Trigger proof shows required audit and internal-only blockers; it does not claim persisted audit, advisor approval, release, export or client-safe payload.",
+  },
+] as const satisfies readonly AnalystDraftProofBoundary[];
+
 export function analystDraftRouteOwnershipForPageId(pageId: "033" | "034" | "035") {
   return analystDraftRouteOwnership.find((owner) => owner.pageId === pageId);
+}
+
+export function analystDraftProofBoundaryForPageId(pageId: "033" | "034" | "035") {
+  return analystDraftProofBoundaries.find((boundary) => boundary.pageId === pageId);
 }

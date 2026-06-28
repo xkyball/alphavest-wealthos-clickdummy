@@ -6,6 +6,7 @@ import {
   analystDraftForbiddenOverclaims,
   analystDraftGovernanceContractId,
   analystDraftPayloadVisibility,
+  analystDraftProofBoundaries,
   analystDraftRoleGuards,
   analystDraftRouteOwnership,
 } from "../lib/analyst-draft-governance-contract";
@@ -88,5 +89,25 @@ test.describe("EPIC-09 analyst draft governance contract", () => {
       expect(criterion.positive.trim(), criterion.processId).not.toBe("");
       expect(criterion.negative.trim(), criterion.processId).not.toBe("");
     }
+  });
+
+  test("defines concise proof boundaries without client-safe payload or downstream overclaim", () => {
+    expect(analystDraftProofBoundaries.map((boundary) => boundary.pageId)).toEqual(["033", "034", "035"]);
+
+    for (const boundary of analystDraftProofBoundaries) {
+      expect(boundary.clientSafePayload, boundary.pageId).toBe("none_internal_only");
+      expect(boundary.summary, boundary.pageId).toMatch(/not|cannot|does not/i);
+      expect(boundary.blockedOverclaims, boundary.pageId).toEqual(expect.arrayContaining([
+        "client_visibility",
+        "export_ready",
+      ]));
+    }
+
+    const triggerBoundary = analystDraftProofBoundaries.find((boundary) => boundary.pageId === "035");
+    expect(triggerBoundary?.auditPosture).toBe("required_not_claimed_persisted");
+    expect(triggerBoundary?.blockedOverclaims).toEqual(expect.arrayContaining([
+      "route_to_advisor_as_approval",
+      "redaction_as_release",
+    ]));
   });
 });
