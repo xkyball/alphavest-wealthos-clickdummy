@@ -31,14 +31,14 @@ test.describe("UXP3-011 governance user drawer lifecycle", () => {
     });
 
     await page.goto("/governance?state=base");
-    await expect(page.getByRole("complementary", { name: "Invite New User" })).toHaveCount(0);
+    await expect(page.getByRole("complementary", { name: "Invite User" })).toHaveCount(0);
 
     const trigger = page.getByTestId("j07-invite-user");
     await expect(trigger).toHaveAttribute("data-ux-lifecycle-trigger", "governance-user-drawer");
     await expect(trigger).toHaveAttribute("data-ux-lifecycle-result", "opens-governance-user-drawer");
     await trigger.click();
 
-    const drawer = page.getByRole("complementary", { name: "Invite New User" });
+    const drawer = page.getByRole("complementary", { name: "Invite User" });
     const lifecycle = page.getByTestId("uxp3-governance-user-drawer-lifecycle");
     await expect(drawer).toBeVisible();
     await expect(drawer).toHaveAttribute("data-ux-interaction-lifecycle", "drawer");
@@ -54,22 +54,22 @@ test.describe("UXP3-011 governance user drawer lifecycle", () => {
     expect(workflowRequests).toEqual([]);
   });
 
-  test("requires acknowledgement and submits only the scoped governance invite", async ({ page }) => {
+  test("requires acknowledgement and submits only the governance invite", async ({ page }) => {
     await page.goto("/governance?state=base");
     await page.getByTestId("j07-invite-user").click();
 
-    const drawer = page.getByRole("complementary", { name: "Invite New User" });
+    const drawer = page.getByRole("complementary", { name: "Invite User" });
     const lifecycle = page.getByTestId("uxp3-governance-user-drawer-lifecycle");
     await expect(drawer).toBeVisible();
     await expect(page.getByTestId("j07-governance-user-validation-state")).toContainText(
-      "Invitation remains blocked until the scoped-access acknowledgement is checked.",
+      "Tick the box to enable invitation.",
     );
 
     await drawer.locator("input[type='checkbox']").check();
     await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-validation", "valid-scoped-invite");
     await expect(page.getByTestId("j07-send-invitation")).toHaveAttribute(
       "data-ux-lifecycle-result",
-      "submits-scoped-governance-invite",
+      "submits-governance-invite",
     );
 
     await page.route("**/api/tenant-governance/actions", async (route) => {
@@ -89,7 +89,7 @@ test.describe("UXP3-011 governance user drawer lifecycle", () => {
     expect(response.ok(), JSON.stringify(body)).toBe(true);
     await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-status", "success");
     await expect(page.getByTestId("j07-governance-user-success-state")).toContainText(
-      "role activation, consent acceptance, evidence sufficiency, release and export/share remain separate controls.",
+      "role activation, consent, evidence review, release and export sharing stay separate.",
     );
     await expect(page).toHaveURL(/\/governance\?state=base$/);
     await expect(drawer.getByText(/role active|access expanded|release complete|evidence sufficient|download ready|client accepted/i)).toHaveCount(0);
@@ -106,7 +106,7 @@ test.describe("UXP3-011 governance user drawer lifecycle", () => {
     await page.goto("/governance?state=base");
     await page.getByTestId("j07-invite-user").click();
 
-    const drawer = page.getByRole("complementary", { name: "Invite New User" });
+    const drawer = page.getByRole("complementary", { name: "Invite User" });
     await expect(drawer).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(drawer).toBeHidden();

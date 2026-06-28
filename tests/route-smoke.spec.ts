@@ -975,8 +975,8 @@ test.describe("UX-CTA governance admin non-bypass chain", () => {
     await expect(entry).toHaveAttribute("data-epic-06-entry", "primary-area-hub");
     await expect(entry).toHaveAttribute("data-ux-page-job", "governance_process_triage");
     await expect(entry).toHaveAttribute("data-ux-next-action", "review-scoped-access-request");
-    await expect(entry).toContainText("One entry job");
-    await expect(entry).toContainText("Review is not approval");
+    await expect(entry).toContainText("User Access Review");
+    await expect(entry).toContainText("Access only");
 
     const nextAction = page.getByTestId("epic-06-governance-primary-next-action");
     await expect(nextAction).toHaveAttribute("href", "/governance/access-requests/demo?state=base");
@@ -1037,10 +1037,10 @@ test.describe("UX-CTA governance admin non-bypass chain", () => {
 
   const governanceScreens = [
     { path: "/admin/roles?state=permission", required: "Confirm scoped permission change" },
-    { path: "/governance?state=invite", required: "Send scoped invitation" },
+    { path: "/governance?state=invite", required: "Send invitation" },
     { path: "/governance/roles/demo?state=confirm", required: "Confirm scoped role change" },
     { path: "/governance/access-requests/demo?state=approval", required: "Approve access request" },
-    { path: "/governance?state=drawer", required: "Send scoped invitation" },
+    { path: "/governance?state=drawer", required: "Send invitation" },
   ];
 
   for (const { path, required } of governanceScreens) {
@@ -1050,7 +1050,7 @@ test.describe("UX-CTA governance admin non-bypass chain", () => {
       await page.goto(path);
 
       await expect(page.getByText(required).first()).toBeVisible();
-      await expect(page.locator("body")).toContainText(/cannot|does not|separate|scoped|controlled|audit/i);
+      await expect(page.locator("body")).toContainText(/cannot|does not|separate|audit/i);
       await expect(page.locator("body")).not.toContainText(
         /admin override|release to client|release ready|client visibility unlocked|download ready|audit suppressed/i,
       );

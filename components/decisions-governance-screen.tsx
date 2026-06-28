@@ -1897,21 +1897,21 @@ function GovernanceProcessEntry({ onInvite }: { onInvite: () => void }) {
   const processContract = processFirstUxContractForPageId("048");
   const checkpoints = [
     {
-      label: "Validation",
-      title: "Resolve scope first",
-      detail: "Actor, role, tenant and object scope must bind before mutation authority exists.",
+      label: "Review",
+      title: "Identity and role",
+      detail: "Confirm person, tenant, role and portfolio before sending.",
       tone: "border-alphavest-gold/45 bg-alphavest-gold/8 text-alphavest-gold",
     },
     {
-      label: "Restricted",
-      title: "No admin bypass",
-      detail: "Admin and security can coordinate governance, not release, sufficiency or export.",
+      label: "Limits",
+      title: "Access only",
+      detail: "Administration cannot publish advice, accept evidence or export packages.",
       tone: "border-alphavest-border bg-alphavest-navy/35 text-alphavest-muted",
     },
     {
-      label: "Blocked",
-      title: "Review is not approval",
-      detail: "Request review still needs acknowledgement, audit and command proof.",
+      label: "Record",
+      title: "Saved change",
+      detail: "Invitation changes keep actor, time and result before access activates.",
       tone: "border-red-400/35 bg-red-500/8 text-red-200",
     },
   ] as const;
@@ -1936,9 +1936,9 @@ function GovernanceProcessEntry({ onInvite }: { onInvite: () => void }) {
     >
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
         <div className="min-w-0">
-          <h3 className="font-display text-2xl text-alphavest-ivory">Governance process triage</h3>
+          <h3 className="font-display text-2xl text-alphavest-ivory">User Access Review</h3>
           <p className="mt-1 max-w-3xl text-sm leading-5 text-alphavest-muted">
-            One entry job: resolve actor, tenant, role and scope before any access change can move into review.
+            Review people, roles and access requests without changing client documents, advice, evidence or exports.
           </p>
         </div>
         <div className="flex flex-wrap gap-2 xl:justify-end">
@@ -1950,7 +1950,7 @@ function GovernanceProcessEntry({ onInvite }: { onInvite: () => void }) {
             onClick={onInvite}
             type="button"
           >
-            <Plus aria-hidden="true" className="size-4" />Invite scoped user
+            <Plus aria-hidden="true" className="size-4" />Invite user
           </button>
           <a
             className={primaryButtonClass}
@@ -1959,7 +1959,7 @@ function GovernanceProcessEntry({ onInvite }: { onInvite: () => void }) {
             data-ux-no-overclaim="true"
             href="/governance/access-requests/demo?state=base"
           >
-            Review scoped access <ArrowRight aria-hidden="true" className="size-4" />
+            Review access requests <ArrowRight aria-hidden="true" className="size-4" />
           </a>
         </div>
       </div>
@@ -1984,13 +1984,13 @@ function GovernanceProcessEntry({ onInvite }: { onInvite: () => void }) {
           data-testid="epic-06-proof-boundary"
           data-ux-no-overclaim="true"
         >
-          <p className="text-sm font-semibold text-alphavest-ivory">Governance action gate</p>
-          <p className="mt-1 text-xs leading-5 text-alphavest-muted">Client-visible output stays false; audit proof is required before mutation and unsupported commands stay denied.</p>
+          <p className="text-sm font-semibold text-alphavest-ivory">Access change record</p>
+          <p className="mt-1 text-xs leading-5 text-alphavest-muted">Client-visible output stays off; audit records are saved before access activates.</p>
         </div>
         {[
-          ["Advice payload", "Advice payload blocked"],
+          ["Advice access", "No advice publishing"],
           ["Tenant scope", "Rows outside selected tenant hidden"],
-          ["Controlled export", "Export approval still required"],
+          ["Export", "Export stays separate"],
         ].map(([title, detail]) => (
           <div className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/40 p-2" key={title}>
             <p className="text-xs font-semibold text-alphavest-ivory">{title}</p>
@@ -2221,22 +2221,22 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
     }
 
     setStatus("submitting");
-    setMessage("Submitting the scoped governance invitation. Close and cancel are blocked until the workflow returns.");
+    setMessage("Sending invitation. Close and cancel are unavailable for a moment.");
 
     try {
       const body = await runTenantGovernanceCommand("j07.sendInvitation");
       setStatus("success");
       setMessage(
         body.result?.auditEventId
-          ? `Audit recorded: ${body.result.auditEventId}. The invitation was routed through the existing scoped governance workflow; role activation, consent acceptance, evidence sufficiency, release and export/share remain separate controls.`
-          : "The invitation was routed through the existing scoped governance workflow; role activation, consent acceptance, evidence sufficiency, release and export/share remain separate controls.",
+          ? `Audit recorded: ${body.result.auditEventId}. Invitation sent; role activation, consent, evidence review, release and export sharing stay separate.`
+          : "Invitation sent; role activation, consent, evidence review, release and export sharing stay separate.",
       );
     } catch (error) {
       setStatus("error");
       setMessage(
         error instanceof Error
-          ? `${error.message} No scoped role activation, access expansion, release or client visibility change was completed.`
-          : "Invitation workflow failed without scoped role activation, access expansion, release or client visibility change.",
+          ? `${error.message} No role activation, access expansion, release or client visibility change was completed.`
+          : "Invitation failed. No role activation, access expansion, release or client visibility change was completed.",
       );
     }
   }
@@ -2251,46 +2251,42 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
             data-ux-no-overclaim="true"
             href="/governance/access-requests/demo?state=base"
           >
-            Review scoped access <ArrowRight aria-hidden="true" className="size-4" />
+            Review access requests <ArrowRight aria-hidden="true" className="size-4" />
           </a>
         }
         className={drawerOpen ? "pr-0 xl:pr-[23rem]" : ""}
-        description="Scoped user governance console with role, MFA and entity-access context kept separate from release, evidence and export authority."
+        description="Manage user access with role, MFA and entity context kept separate from client-facing work."
         eyebrow="Governance safety"
         primary={
           <GovernanceProcessEntry onInvite={openGovernanceUserDrawer} />
         }
         routeId="048"
-        safetyNote="Admin visibility does not expand scoped role, object, payload, evidence, export or release authority."
-        statusItems={[
-          { label: "Surface", tone: "blue", value: "User governance" },
-          { label: "Scope", tone: "gold", value: "users" },
-        ]}
+        safetyNote="Admin visibility does not expand role, object, evidence, export or release authority."
         title={title}
         worksurfaceId="governance-safety-users"
       />
       <Drawer
-        description="Invite a user and assign scoped roles."
+        description="Invite a user and choose roles."
         footer={
           <div className="grid gap-3 sm:grid-cols-2">
             <button className={secondaryButtonClass} disabled={status === "submitting"} onClick={closeGovernanceUserDrawer} type="button">Cancel</button>
             <button
               className={primaryButtonClass}
               data-testid="j07-send-invitation"
-              data-ux-lifecycle-result={acknowledged ? "submits-scoped-governance-invite" : "blocked-validation-required"}
+              data-ux-lifecycle-result={acknowledged ? "submits-governance-invite" : "validation-required"}
               disabled={!acknowledged || status === "submitting" || status === "success"}
               onClick={() => {
                 void submitGovernanceUserInvite();
               }}
               type="button"
             >
-              <Send aria-hidden="true" className="size-4" />{status === "submitting" ? "Sending..." : "Send scoped invitation"}
+              <Send aria-hidden="true" className="size-4" />{status === "submitting" ? "Sending..." : "Send invitation"}
             </button>
           </div>
         }
         onClose={status === "submitting" ? undefined : closeGovernanceUserDrawer}
         open={drawerOpen}
-        title="Invite New User"
+        title="Invite User"
       >
         <div
           className="space-y-5"
@@ -2299,7 +2295,15 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
           data-ux-lifecycle-validation={validationState}
           data-ux-no-overclaim="true"
         >
-          <StatePanel detail="Role assignment changes access only after scoped governance workflow submission. It cannot release advice, complete evidence review, approve exports or suppress audit." state="restricted" title="Sensitive access" />
+          <section className="rounded-md border border-alphavest-gold/45 bg-alphavest-gold/10 p-3">
+            <div className="flex items-start gap-3">
+              <LockKeyhole aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-alphavest-gold" />
+              <div>
+                <p className="font-semibold text-alphavest-ivory">Sensitive access</p>
+                <p className="mt-1 text-sm leading-6 text-alphavest-muted">Role assignment changes access after review. It cannot publish advice, complete evidence review, approve exports or hide audit records.</p>
+              </div>
+            </div>
+          </section>
           <label className="flex items-start gap-3 text-sm text-alphavest-muted">
             <input
               checked={acknowledged}
@@ -2308,109 +2312,85 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
               onChange={(event) => setAcknowledged(event.target.checked)}
               type="checkbox"
             />
-            <span>I understand this creates only a scoped invitation request; role activation, consent acceptance, audit review, release and export controls remain separate.</span>
+            <span>I understand this sends an invitation only. Role activation, consent, review, release and export sharing stay separate.</span>
           </label>
           {status === "idle" ? (
-            <StatePanel
-              detail={acknowledged ? "Scoped invitation can be submitted through the existing governance workflow." : "Invitation remains blocked until the scoped-access acknowledgement is checked."}
-              state={acknowledged ? "validation" : "blocked"}
-              testId="j07-governance-user-validation-state"
-              title={acknowledged ? "Governance invite valid" : "Governance invite blocked"}
-            />
+            <div
+              className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 text-sm text-alphavest-muted"
+              data-testid="j07-governance-user-validation-state"
+            >
+              <div className="flex items-center gap-2">
+                {acknowledged ? (
+                  <CheckCircle2 aria-hidden="true" className="size-4 shrink-0 text-alphavest-green" />
+                ) : (
+                  <AlertTriangle aria-hidden="true" className="size-4 shrink-0 text-alphavest-gold" />
+                )}
+                <span>{acknowledged ? "Ready to send invitation." : "Tick the box to enable invitation."}</span>
+              </div>
+            </div>
           ) : null}
           {status === "submitting" ? (
             <StatePanel
-              detail={message ?? "Submitting the scoped governance invitation."}
+              detail={message ?? "Sending invitation."}
               state="loading"
               testId="j07-governance-user-loading-state"
-              title="Governance invite submitting"
+              title="Sending invitation"
             />
           ) : null}
           {status === "success" ? (
             <StatePanel
-              detail={message ?? "The invitation was routed through the existing scoped governance workflow; role activation, consent acceptance, evidence sufficiency, release and export/share remain separate controls."}
+              detail={message ?? "Invitation sent; role activation, consent, evidence review, release and export sharing stay separate."}
               state="success"
               testId="j07-governance-user-success-state"
-              title="Governance invite routed"
+              title="Invitation sent"
             />
           ) : null}
           {status === "error" ? (
             <StatePanel
-              detail={message ?? "Invitation workflow failed without scoped role activation, access expansion, release or client visibility change."}
+              detail={message ?? "Invitation failed. No role activation, access expansion, release or client visibility change was completed."}
               state="error"
               testId="j07-governance-user-error-state"
-              title="Governance invite failed"
+              title="Invitation failed"
             />
           ) : null}
-          <UxSecondaryContextTabs
-            safetyNote="Role details are secondary drawer context; invitation and access authority remain constrained by RBAC and audit logging."
-            tabs={[
-              {
-                content: (
-                  <div className="space-y-4">
-                    <Field label="Full Name" value="Alex Morgan" />
-                    <Field label="Email Address" value="alex.morgan@example.test" />
-                  </div>
-                ),
-                id: "identity",
-                label: "Identity",
-              },
-              {
-                content: (
-                  <div className="space-y-3">
-                    {["Investment Manager", "Analyst"].map((role, index) => (
-                      <div className={cn("rounded-md border p-4", index === 0 ? "border-alphavest-gold bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35")} key={role}>
-                        <div className="flex items-center justify-between gap-3">
-                          <p className="font-semibold text-alphavest-ivory">{role}</p>
-                          <Badge tone={index === 0 ? "gold" : "muted"}>{index === 0 ? "Sensitive" : "Optional"}</Badge>
-                        </div>
-                        <p className="mt-1 text-sm text-alphavest-muted">{index === 0 ? "Can manage investments, view performance and execute transactions." : "Can view data, run reports and perform analysis."}</p>
-                      </div>
-                    ))}
-                  </div>
-                ),
-                id: "roles",
-                label: "Roles",
-                tone: "warning",
-              },
-            ]}
-            title="Secondary user-invite context"
-          />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Identity</p>
+              <p className="mt-2 font-semibold text-alphavest-ivory">Alex Morgan</p>
+              <p className="mt-1 text-sm text-alphavest-muted">alex.morgan@example.test</p>
+            </div>
+            <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Roles</p>
+              <p className="mt-2 font-semibold text-alphavest-ivory">Investment Manager</p>
+              <p className="mt-1 text-sm text-alphavest-muted">Analyst access can be added later.</p>
+            </div>
+          </div>
         </div>
       </Drawer>
     </Phase12Shell>
   );
 }
 
-function Field({ label, value }: { label: string; value: string }) {
-  return (
-    <label className="block">
-      <span className="text-sm font-semibold text-alphavest-muted">{label}</span>
-      <input className="mt-2 h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold" readOnly value={value} />
-    </label>
-  );
-}
-
 const governanceCapabilities = [
-  "Invite or route scoped users",
+  "Invite users",
   "Review role and access requests",
-  "Confirm sensitive role changes",
-  "View source-backed governance audit history",
+  "Confirm role changes",
+  "View governance audit history",
 ] as const;
 
 const governanceDoesNotGrant = [
-  "Release advice to clients",
-  "Mark evidence review complete",
-  "Approve export or download packages",
-  "Suppress audit or client-visibility gates",
+  "Publish advice",
+  "Complete evidence review",
+  "Prepare export downloads",
+  "Hide audit records",
 ] as const;
 
 function GovernanceCapabilityBoundary({ compact = false }: { compact?: boolean }) {
   return (
     <Card data-testid="wp09-governance-capability-boundary">
       <CardHeader>
-        <CardTitle>Governance capability boundary</CardTitle>
-        <CardDescription>Admin power is configuration-scoped; route access is not advisory payload or release authority.</CardDescription>
+        <CardTitle>Governance access boundary</CardTitle>
+        <CardDescription>Admin configuration does not publish advice, complete evidence review or prepare export downloads.</CardDescription>
       </CardHeader>
       <CardContent className={cn("grid gap-3", compact ? "md:grid-cols-1" : "md:grid-cols-2")}>
         <div className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-3">

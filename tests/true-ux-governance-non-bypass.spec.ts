@@ -9,14 +9,14 @@ test.describe("V0.96 WP-09 governance admin non-bypass UX", () => {
     const governanceSource = readFileSync("components/decisions-governance-screen.tsx", "utf8");
     const adminSource = readFileSync("components/admin-tenant-setup-screen.tsx", "utf8");
 
-    expect(governanceSource).toContain("Governance capability boundary");
-    expect(governanceSource).toContain("Admin power is configuration-scoped; route access is not advisory payload or release authority.");
+    expect(governanceSource).toContain("Governance access boundary");
+    expect(governanceSource).toContain("Admin configuration does not publish advice, complete evidence review or prepare export downloads.");
     expect(governanceSource).toContain("Allowed governance actions");
     expect(governanceSource).toContain("Does not grant");
-    expect(governanceSource).toContain("Release advice to clients");
-    expect(governanceSource).toContain("Mark evidence review complete");
-    expect(governanceSource).toContain("Approve export or download packages");
-    expect(governanceSource).toContain("Suppress audit or client-visibility gates");
+    expect(governanceSource).toContain("Publish advice");
+    expect(governanceSource).toContain("Complete evidence review");
+    expect(governanceSource).toContain("Prepare export downloads");
+    expect(governanceSource).toContain("Hide audit records");
     expect(governanceSource).toContain("wp09-governance-capability-boundary");
 
     expect(adminSource).toContain("Admin configuration does not grant");
