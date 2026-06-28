@@ -16,7 +16,6 @@ import {
   Download,
   File,
   FileText,
-  Folder,
   MessageSquare,
   Network,
   PanelLeftClose,
@@ -36,7 +35,6 @@ import { ProcessSidebar } from "@/components/process-navigation";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
 import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
 import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
-import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
 import {
@@ -83,6 +81,12 @@ import { createDemoSession, demoPlatformTenantId, demoRoles, demoTenants, type D
 import type { ScreenRoute } from "@/lib/route-registry";
 import { runDataMaintenanceCommand } from "@/lib/data-maintenance-command-client";
 import type { BackendDataSurfaceMeta, DataSurfaceSortDirection } from "@/lib/data-surface-query-contract";
+import {
+  evidenceLifecycleProcessContracts,
+  evidenceLifecycleRouteAttributesForScreen,
+  evidenceLifecycleRouteContractForScreen,
+  evidenceLifecycleStateContracts,
+} from "@/lib/evidence-lifecycle-contract";
 import { uxActionClassForPriority } from "@/lib/ux-action-hierarchy-contract";
 import { uxFeedbackSuccessMessageForSubject } from "@/lib/ux-feedback-message-contract";
 import { visibilityEngine, type DecisionVisibilityPayload } from "@/lib/visibility-engine";
@@ -317,6 +321,7 @@ function toDocumentRows(documents: PersistedUploadDocument[], entityLabel: strin
 
 function usePersistedUploadDocuments(queryState: {
   page: number;
+  pageSize?: number;
   q: string;
   sensitivity: string;
   sortDirection: DataSurfaceSortDirection;
@@ -325,6 +330,7 @@ function usePersistedUploadDocuments(queryState: {
   type: string;
 } = {
   page: 1,
+  pageSize: defaultPageSize,
   q: "",
   sensitivity: "all",
   sortDirection: "desc",
@@ -355,6 +361,7 @@ function usePersistedUploadDocuments(queryState: {
           type: queryState.type,
         },
         page: queryState.page,
+        pageSize: queryState.pageSize,
         q: queryState.q,
         roleKey,
         sortDirection: queryState.sortDirection,
@@ -383,7 +390,7 @@ function usePersistedUploadDocuments(queryState: {
       setMeta(null);
       setLoadState("error");
     }
-  }, [queryState.page, queryState.q, queryState.sensitivity, queryState.sortDirection, queryState.sortKey, queryState.status, queryState.type, roleKey, tenantSlug]);
+  }, [queryState.page, queryState.pageSize, queryState.q, queryState.sensitivity, queryState.sortDirection, queryState.sortKey, queryState.status, queryState.type, roleKey, tenantSlug]);
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -2071,10 +2078,10 @@ function DocumentFilterSelect({
   value: string;
 }) {
   return (
-    <label className="grid gap-1 text-xs font-semibold text-alphavest-muted">
-      <span>{label}</span>
+    <label className="min-w-0">
+      <span className="sr-only">{label}</span>
       <select
-        className="h-11 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm font-normal text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
+        className="h-9 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm font-normal text-alphavest-ivory outline-none transition focus:border-alphavest-gold"
         data-testid={testId}
         onChange={(event) => {
           onChange(event.target.value);
@@ -2385,6 +2392,7 @@ function DocumentsPageContent({ title }: { title: string }) {
   const [page, setPage] = useState(1);
   const { documents, loadState, meta } = usePersistedUploadDocuments({
     page,
+    pageSize: 2,
     q: searchTerm,
     sensitivity: sensitivityFilter,
     sortDirection,
@@ -2419,17 +2427,15 @@ function DocumentsPageContent({ title }: { title: string }) {
   return (
     <>
       <ScreenTitle>{title}</ScreenTitle>
-      <div className="space-y-5">
-        <SectionTitle action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false"><Plus aria-hidden="true" className="size-4" />Folder creation held</span><button className={primaryButtonClass} data-testid="j04-open-upload-document" onClick={() => { void runDataMaintenanceCommand("j04.openUploadDocument", "/documents/upload"); }} type="button"><Upload aria-hidden="true" className="size-4" />Upload Document</button></div>} icon={Folder} subtitle="Securely manage and access client documents and evidence." title={title} />
-        <ScfP04P06FlowPanel mode="evidence" />
-        <ScfP10P14ClosurePanel mode="documents" />
-        <Card>
-          <CardHeader className="space-y-4">
-            <div className="grid gap-3 lg:grid-cols-[1fr_auto]">
+      <div className="space-y-2">
+        <EvidenceLifecycleAreaEntry />
+        <Card density="compact">
+          <CardHeader className="space-y-2 pb-2">
+            <div className="grid gap-2 lg:grid-cols-[1fr_auto]">
               <div className="relative">
                 <Search aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
                 <input
-                  className="h-11 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm outline-none focus:border-alphavest-gold"
+                  className="h-9 w-full rounded-md border border-alphavest-border bg-alphavest-navy/35 pl-10 pr-3 text-sm outline-none focus:border-alphavest-gold"
                   data-testid="p10-document-search"
 	                  onChange={(event) => {
 	                    setSearchTerm(event.target.value);
@@ -2439,18 +2445,18 @@ function DocumentsPageContent({ title }: { title: string }) {
                   value={searchTerm}
                 />
               </div>
-              <div className="flex h-11 items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted">
+              <div className="flex h-9 items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-muted">
                 <ShieldCheck aria-hidden="true" className="size-4" />
                 DB-backed saved view
               </div>
             </div>
-            <div className="grid gap-3 md:grid-cols-5">
+            <div className="grid gap-2 md:grid-cols-5">
 	              <DocumentFilterSelect label="Types" onChange={(value) => { setTypeFilter(value); setPage(1); }} options={typeOptions} testId="p10-document-type-filter" value={typeFilter} />
 	              <DocumentFilterSelect label="Statuses" onChange={(value) => { setStatusFilter(value); setPage(1); }} options={statusOptions} testId="p10-document-status-filter" value={statusFilter} />
 	              <DocumentFilterSelect label="Sensitivities" onChange={(value) => { setSensitivityFilter(value); setPage(1); }} options={sensitivityOptions} testId="p10-document-sensitivity-filter" value={sensitivityFilter} />
               <button
                 aria-disabled="true"
-                className="flex h-11 cursor-not-allowed items-center justify-between gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-left text-sm text-alphavest-muted opacity-65"
+                className="flex h-9 cursor-not-allowed items-center justify-between gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-left text-sm text-alphavest-muted opacity-65"
                 data-ux-data-surface-filter-state="disabled_static"
                 data-ux-disabled-message="explicit"
                 data-ux-disabled-reason="Entity scope is fixed to the current tenant and role."
@@ -2465,7 +2471,7 @@ function DocumentsPageContent({ title }: { title: string }) {
               </button>
               <button
                 aria-disabled="true"
-                className="flex h-11 cursor-not-allowed items-center justify-between gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-left text-sm text-alphavest-muted opacity-65"
+                className="flex h-9 cursor-not-allowed items-center justify-between gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-left text-sm text-alphavest-muted opacity-65"
                 data-ux-data-surface-filter-state="disabled_static"
                 data-ux-disabled-message="explicit"
                 data-ux-disabled-reason="Access filtering is fixed to the current actor."
@@ -2480,11 +2486,12 @@ function DocumentsPageContent({ title }: { title: string }) {
               </button>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 py-2 text-sm text-alphavest-muted" data-testid="p10-document-filter-summary">
+          <CardContent className="mt-2 space-y-2">
+            <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 py-1.5 text-xs text-alphavest-muted" data-testid="p10-document-filter-summary">
               {scopedRowSummary}. Hidden or cross-tenant rows are not disclosed.
             </div>
             <DataTable
+              compact
               columns={documentColumns}
               emptyMessage={
                 loadState === "error"
@@ -2501,14 +2508,68 @@ function DocumentsPageContent({ title }: { title: string }) {
             />
           </CardContent>
         </Card>
-        <div className="grid gap-4 lg:grid-cols-4">
-          <StatePanel detail="No documents match your current filters." state="empty" title="No Documents Found" />
-          <StatePanel detail="Please wait while we fetch your documents." state="loading" title="Loading Documents" />
-          <StatePanel detail="You do not have permission to view documents with the selected filters." state="restricted" title="Restricted Access" />
-          <StatePanel detail="Drag and drop files or choose a supported format." state="empty" title="Upload Documents" />
-        </div>
       </div>
     </>
+  );
+}
+
+function EvidenceLifecycleAreaEntry() {
+  const routeContract = evidenceLifecycleRouteContractForScreen("S027");
+  const routeAttributes = evidenceLifecycleRouteAttributesForScreen("S027");
+  const ownedProcessIds: readonly string[] = routeContract.ownedProcesses;
+  const ownedProcesses = evidenceLifecycleProcessContracts.filter((process) =>
+    ownedProcessIds.includes(process.processId),
+  );
+  const visibleProcesses = ownedProcesses.slice(0, 4);
+
+  return (
+    <section
+      {...routeAttributes}
+      aria-label="Evidence lifecycle area entry"
+      className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5"
+      data-testid="epic08-evidence-lifecycle-area-entry"
+    >
+      <div className="grid gap-2 lg:grid-cols-[1fr_auto]">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge tone="gold">EPIC-08</Badge>
+            <Badge tone="blue">DOMAIN-C</Badge>
+            <Badge tone="muted">S027</Badge>
+            <Badge data-testid="p10-p14-documents-closure" tone="green">Closure-safe</Badge>
+          </div>
+          <h3 className="mt-1.5 text-sm font-semibold text-alphavest-ivory">Evidence lifecycle workload</h3>
+          <p className="mt-0.5 max-w-3xl text-xs leading-5 text-alphavest-muted">{routeContract.primaryJob}</p>
+        </div>
+        <button
+          className={primaryButtonClass + " h-9 self-start"}
+          data-testid="j04-open-upload-document"
+          data-ux-epic08-next-action="upload_scoped_evidence"
+          onClick={() => { void runDataMaintenanceCommand("j04.openUploadDocument", "/documents/upload"); }}
+          type="button"
+        >
+          <Upload aria-hidden="true" className="size-4" />
+          Upload scoped evidence
+        </button>
+      </div>
+      <div className="mt-2 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+        {visibleProcesses.map((process) => {
+          const state = evidenceLifecycleStateContracts[process.primaryState];
+
+          return (
+            <div className="rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-2" data-ux-epic08-process={process.processId} key={process.processId}>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-semibold text-alphavest-muted">{process.processId}</span>
+                <Badge tone={process.primaryState === "INSUFFICIENT_REREQUESTED" ? "red" : process.primaryState === "UPLOAD_RECEIVED" ? "green" : "gold"}>
+                  {state.label}
+                </Badge>
+              </div>
+              <p className="mt-1.5 text-sm font-semibold leading-5 text-alphavest-ivory">{process.name}</p>
+              <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">{state.nextAction}</p>
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
@@ -2516,21 +2577,12 @@ function DocumentsPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="027">
       <WorksurfaceShell
+        density="compact"
         description="Document intake overview with upload, projection and review boundaries made explicit."
         eyebrow="WP02 Evidence"
         primary={<DocumentsPageContent title={title} />}
-        rail={<EvidenceLifecycleRail />}
         routeId="027"
         safetyNote="The document hub lists scoped intake state only; it cannot mark review complete, prove sufficiency or release content."
-        secondary={
-          <>
-            <StatePanel
-              detail="Requests and document statuses are shown only when they are safe for this client view. Items still under review remain unavailable."
-              state="hidden"
-              title="Client-safe document availability"
-            />
-          </>
-        }
         statusItems={[
           { label: "Route", tone: "blue", value: "027" },
           { label: "Lifecycle", tone: "gold", value: "intake overview" },

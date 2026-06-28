@@ -35,6 +35,7 @@ type WorksurfaceShellProps = {
   children?: React.ReactNode;
   childrenPolicy?: WorksurfaceChildrenPolicy;
   className?: string;
+  density?: "standard" | "compact";
   description: string;
   eyebrow: string;
   longScreenException?: UxLongScreenException;
@@ -99,6 +100,7 @@ export function WorksurfaceShell({
   children,
   childrenPolicy,
   className,
+  density = "standard",
   description,
   eyebrow,
   longScreenException,
@@ -113,6 +115,7 @@ export function WorksurfaceShell({
   worksurfaceId,
 }: WorksurfaceShellProps) {
   const template = uxPageTemplateForPageId(routeId);
+  const isCompact = density === "compact";
   const resolvedActiveStep = activeStep ?? template.activeStep;
   const resolvedChildrenPolicy = childrenPolicy ?? defaultChildrenPolicyForTemplate(template);
   const resolvedChildrenZone = zoneForChildrenPolicy(resolvedChildrenPolicy);
@@ -149,7 +152,7 @@ export function WorksurfaceShell({
 
   return (
     <PageTemplateFrame
-      className={cn("mx-auto max-w-[112rem] space-y-4", className)}
+      className={cn("mx-auto max-w-[112rem]", isCompact ? "space-y-2" : "space-y-4", className)}
       data-testid="wp02-worksurface-shell"
       template={template}
       data-ux-active-step={resolvedActiveStep}
@@ -168,22 +171,24 @@ export function WorksurfaceShell({
     >
       <div
         id={sectionIds.summary}
-        className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/58 p-4"
+        className={cn("rounded-md border border-alphavest-border/70 bg-alphavest-panel/58", isCompact ? "p-2.5" : "p-4")}
+        data-testid={isCompact ? "wp02-worksurface-safety-boundary" : undefined}
         data-ux-long-page-anchor="summary"
+        data-ux-safety-note={isCompact ? safetyNote : undefined}
         data-ux-template-zone="summary"
       >
-        <div className="flex flex-col gap-4 2xl:flex-row 2xl:items-start 2xl:justify-between">
+        <div className={cn("flex flex-col", isCompact ? "gap-2 lg:flex-row lg:items-start lg:justify-between" : "gap-4 2xl:flex-row 2xl:items-start 2xl:justify-between")}>
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">{eyebrow}</p>
-            <h2 className="mt-2 font-display text-3xl leading-tight text-alphavest-ivory">{title}</h2>
-            <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted">{description}</p>
+            <p className={cn("text-xs font-semibold uppercase text-alphavest-gold", isCompact ? "tracking-[0.1em]" : "tracking-[0.16em]")}>{eyebrow}</p>
+            <h2 className={cn("font-display leading-tight text-alphavest-ivory", isCompact ? "mt-0.5 text-xl" : "mt-2 text-3xl")}>{title}</h2>
+            <p className={cn("max-w-4xl text-alphavest-muted", isCompact ? "mt-0.5 truncate text-xs leading-4" : "mt-2 text-sm leading-6")}>{description}</p>
           </div>
           <PageTemplateSummaryRail actions={actions} items={clientSafeStatusItems} />
         </div>
       </div>
-      <PageTemplateSectionNav sections={sections} />
-      <div className={cn("grid gap-4", rail ? "xl:grid-cols-[minmax(0,1fr)_24rem]" : "")}>
-        <div className="min-w-0 space-y-4">
+      {isCompact ? null : <PageTemplateSectionNav sections={sections} />}
+      <div className={cn("grid", isCompact ? "gap-2" : "gap-4", rail ? "xl:grid-cols-[minmax(0,1fr)_24rem]" : "")}>
+        <div className={cn("min-w-0", isCompact ? "space-y-2" : "space-y-4")}>
           <section id={sectionIds.primary} data-ux-long-page-anchor="primary" data-ux-template-zone="primary_content">
             {primary}
           </section>
@@ -207,7 +212,7 @@ export function WorksurfaceShell({
         {rail ? (
           <aside
             id={sectionIds.action}
-            className="min-w-0 space-y-4 xl:sticky xl:top-24 xl:self-start"
+            className={cn("min-w-0 xl:sticky xl:top-24 xl:self-start", isCompact ? "space-y-2" : "space-y-4")}
             data-testid="wp02-worksurface-rail"
             {...railActionAttributes}
             data-ux-long-page-region="sticky_rail"
@@ -218,14 +223,16 @@ export function WorksurfaceShell({
           </aside>
         ) : null}
       </div>
-      <div id={sectionIds.state} data-ux-long-page-anchor="state" data-ux-template-zone="state_zone">
-        <StatePanel
-          detail={safetyNote}
-          state="restricted"
-          testId="wp02-worksurface-safety-boundary"
-          title={isClientSafeSurface ? "Client-safe availability" : "Worksurface safety boundary"}
-        />
-      </div>
+      {isCompact ? null : (
+        <div id={sectionIds.state} data-ux-long-page-anchor="state" data-ux-template-zone="state_zone">
+          <StatePanel
+            detail={safetyNote}
+            state="restricted"
+            testId="wp02-worksurface-safety-boundary"
+            title={isClientSafeSurface ? "Client-safe availability" : "Worksurface safety boundary"}
+          />
+        </div>
+      )}
     </PageTemplateFrame>
   );
 }

@@ -1,0 +1,150 @@
+{
+  "artifact_kind": "epic_implementation_execution_proof",
+  "artifact_version": 1,
+  "generated_at": "2026-06-28",
+  "ticket_id": "EPIC-08-IMPL-01A",
+  "parent_ticket_id": "EPIC-08-IMPL-01",
+  "epic_id": "EPIC-08",
+  "title": "Implement primary area hub/workbench entry",
+  "source_definition": {
+    "step": "Build area entry",
+    "action": "Create or refactor the area entry/hub/workbench around one page job and one next action.",
+    "output": "Area entry screen.",
+    "validation": "Route smoke and screenshot proof."
+  },
+  "dependency_recheck": {
+    "EPIC-08-SPEC-01": {
+      "status": "satisfied",
+      "evidence": "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-SPEC-01_IMPLEMENTATION_CONTRACT.json"
+    },
+    "EPIC-03-IMPL-01": {
+      "status": "satisfied_by_current_code",
+      "evidence": [
+        "lib/ux-route-shell-page-job-contract.ts",
+        "tests/ux-route-shell-page-job-contract.spec.ts",
+        "tests/e02-page-template-runtime.spec.ts",
+        "commits: 78e0f49, a18fa66, 185878f, b40bc38"
+      ]
+    },
+    "EPIC-04-IMPL-01": {
+      "status": "satisfied",
+      "evidence": [
+        "reports/process-first-refactoring-masterplan-2026-06-28/ALPHAVEST_BOC_CTES_EPIC_04_QA_REPORT.md",
+        "commits: 894e920, 1726e81, ac01b4d, 2c0188d"
+      ]
+    },
+    "EPIC-05-IMPL-01": {
+      "status": "satisfied",
+      "evidence": [
+        "reports/process-first-refactoring-masterplan-2026-06-28/ALPHAVEST_BOC_CTES_EPIC_05_QA_REPORT.md",
+        "commits: 116e576, db115f9, a403757, c356e2b"
+      ]
+    }
+  },
+  "implemented_changes": {
+    "added_files": [
+      "lib/evidence-lifecycle-contract.ts",
+      "tests/evidence-lifecycle-contract.spec.ts",
+      "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01A_EXECUTION_PROOF.json"
+    ],
+    "modified_files": [
+      "components/client-intake-screen.tsx",
+      "components/worksurface-shell.tsx"
+    ],
+    "ui_change": true,
+    "route_changed": "/documents",
+    "new_routes_created": [],
+    "schema_or_api_changed": false,
+    "image_or_state_screen_generated": false
+  },
+  "contract_result": {
+    "contract_id": "epic_08_evidence_document_sufficiency_lifecycle",
+    "target_screen": "S027",
+    "owned_processes": ["BP-023", "BP-024", "BP-025", "BP-026", "BP-027", "BP-028", "BP-033"],
+    "primary_job": "Evidence lifecycle area entry with current workload, blockers and next safe action.",
+    "next_action": "upload_scoped_evidence",
+    "forbidden_overclaims": ["upload_as_sufficiency", "review_as_release", "client_visibility_without_release"]
+  },
+  "ui_density_result": {
+    "replaced_on_s027": [
+      "wide SCF-P04-P06 evidence panel",
+      "wide SCF-P10-P14 document closure panel"
+    ],
+    "replacement": "compact EPIC-08 lifecycle area entry and compact S027 workbench shell",
+    "primary_next_action_count": 1,
+    "document_workbench_page_size": 2,
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "dom_proof": {
+      "entry_top": 301,
+      "entry_bottom": 513,
+      "table_top": 521,
+      "table_bottom": 855,
+      "scrollHeight": 900,
+      "clientHeight": 900,
+      "scrollable": false,
+      "viewportHeight": 900,
+      "aboveFold": true
+    }
+  },
+  "validation": {
+    "commands": [
+      {
+        "command": "PLAYWRIGHT_PORT=3060 pnpm playwright test tests/evidence-lifecycle-contract.spec.ts --workers=1",
+        "result": "passed",
+        "tests": 6
+      },
+      {
+        "command": "PLAYWRIGHT_PORT=3061 pnpm playwright test tests/scf-p10-p14-closure.spec.ts --workers=1",
+        "result": "passed",
+        "tests": 4
+      },
+      {
+        "command": "pnpm typecheck",
+        "result": "passed"
+      },
+      {
+        "command": "PLAYWRIGHT_PORT=3062 pnpm playwright test tests/route-smoke.spec.ts --grep \"027|documents\" --workers=1",
+        "result": "passed",
+        "tests": 5
+      },
+      {
+        "command": "pnpm guard:source",
+        "result": "passed"
+      }
+    ],
+    "known_non_product_warning": "NO_COLOR ignored due FORCE_COLOR appeared during Playwright runs.",
+    "failed_or_retried_commands": [
+      {
+        "command": "parallel Playwright runs while another Next dev server was active",
+        "result": "failed_non_product",
+        "reason": "Next allows only one dev server for this project; rerun serially on dedicated ports passed for S027-relevant suites."
+      },
+      {
+        "command": "unauthenticated screenshot capture",
+        "result": "discarded",
+        "reason": "Captured login/loading state; authenticated dummy session screenshot replaced it."
+      },
+      {
+        "command": "PLAYWRIGHT_PORT=3064 pnpm playwright test tests/filter-affordance-pruning.spec.ts --workers=1",
+        "result": "failed_external_to_s027_slice",
+        "reason": "The suite failed on /evidence before reaching the /documents lifecycle checks because placeholder 'Evidence search unavailable' was not found. S027-specific evidence lifecycle, route smoke, P10/P14 document filtering and typecheck passed."
+      }
+    ]
+  },
+  "screenshot": {
+    "path": "artifacts/screenshots/epic-08/epic08-impl01a-s027-area-entry-authenticated.png",
+    "committed": false,
+    "reason_not_committed": "Screenshot proof is provided in chat/path; binary artifact folder is gitignored."
+  },
+  "safety": {
+    "upload_not_sufficiency_preserved": true,
+    "review_not_release_preserved": true,
+    "client_visibility_fail_closed_preserved": true,
+    "admin_or_auth_policy_changed": false,
+    "no_safety_regression_introduced": true
+  },
+  "completion_status": "complete"
+}
