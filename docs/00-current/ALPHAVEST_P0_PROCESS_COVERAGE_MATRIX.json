@@ -5159,12 +5159,13 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_06_STRONG_PARTIAL_PROOF",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_REFERENCED"
       ],
       "current_touchpoints": {
         "routes": [
@@ -5191,9 +5192,7 @@
           "permission-engine.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Role assignment erzeugt den fachlichen Output 'UserRole created/updated' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -5202,8 +5201,16 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/role-drawer-confirmation-lifecycle.spec.ts::submits through existing workflow without downstream overclaim",
+          "tests/tenant-governance-actions-api.spec.ts::executes J06/J07 tenant, user, role and governance commands through the typed surface",
+          "tests/route-smoke.spec.ts::/governance/roles/demo?state=base keeps the EPIC-06 core surface viewport-fit"
+        ],
+        "negative": [
+          "tests/role-drawer-confirmation-lifecycle.spec.ts::opens role drawer without workflow mutation and discards safely",
+          "tests/role-drawer-confirmation-lifecycle.spec.ts::requires drawer acknowledgement and exact second confirmation phrase",
+          "tests/governance-non-bypass.spec.ts::allows sensitive governance management while denying safety gate bypasses"
+        ]
       },
       "blockers": [
         {
@@ -5243,12 +5250,13 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_06_STRONG_PARTIAL_PROOF",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_REFERENCED"
       ],
       "current_touchpoints": {
         "routes": [
@@ -5275,9 +5283,7 @@
           "permission-engine.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Role assignment erzeugt den fachlichen Output 'UserRole created/updated' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -5286,8 +5292,16 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/role-drawer-confirmation-lifecycle.spec.ts::submits through existing workflow without downstream overclaim",
+          "tests/tenant-governance-actions-api.spec.ts::executes J06/J07 tenant, user, role and governance commands through the typed surface",
+          "tests/route-smoke.spec.ts::/governance/roles/demo?state=base keeps the EPIC-06 core surface viewport-fit"
+        ],
+        "negative": [
+          "tests/role-drawer-confirmation-lifecycle.spec.ts::opens role drawer without workflow mutation and discards safely",
+          "tests/role-drawer-confirmation-lifecycle.spec.ts::requires drawer acknowledgement and exact second confirmation phrase",
+          "tests/governance-non-bypass.spec.ts::allows sensitive governance management while denying safety gate bypasses"
+        ]
       },
       "blockers": [
         {
@@ -5332,12 +5346,13 @@
         "P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_current_app_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_06_STRONG_PARTIAL_PROOF",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_REFERENCED"
       ],
       "current_touchpoints": {
         "routes": [
@@ -5364,11 +5379,7 @@
           "permission-engine.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Role assignment erzeugt den fachlichen Output 'UserRole created/updated' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -5384,8 +5395,16 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/role-drawer-confirmation-lifecycle.spec.ts::submits through existing workflow without downstream overclaim",
+          "tests/tenant-governance-actions-api.spec.ts::executes J06/J07 tenant, user, role and governance commands through the typed surface",
+          "tests/route-smoke.spec.ts::/governance/roles/demo?state=base keeps the EPIC-06 core surface viewport-fit"
+        ],
+        "negative": [
+          "tests/role-drawer-confirmation-lifecycle.spec.ts::opens role drawer without workflow mutation and discards safely",
+          "tests/role-drawer-confirmation-lifecycle.spec.ts::requires drawer acknowledgement and exact second confirmation phrase",
+          "tests/governance-non-bypass.spec.ts::allows sensitive governance management while denying safety gate bypasses"
+        ]
       },
       "blockers": [
         {
@@ -5430,12 +5449,13 @@
         "P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_current_app_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_06_STRONG_PARTIAL_PROOF",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_REFERENCED"
       ],
       "current_touchpoints": {
         "routes": [
@@ -5462,11 +5482,7 @@
           "permission-engine.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Role assignment erzeugt den fachlichen Output 'UserRole created/updated' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -5482,8 +5498,16 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/role-drawer-confirmation-lifecycle.spec.ts::submits through existing workflow without downstream overclaim",
+          "tests/tenant-governance-actions-api.spec.ts::executes J06/J07 tenant, user, role and governance commands through the typed surface",
+          "tests/route-smoke.spec.ts::/governance/roles/demo?state=base keeps the EPIC-06 core surface viewport-fit"
+        ],
+        "negative": [
+          "tests/role-drawer-confirmation-lifecycle.spec.ts::opens role drawer without workflow mutation and discards safely",
+          "tests/role-drawer-confirmation-lifecycle.spec.ts::requires drawer acknowledgement and exact second confirmation phrase",
+          "tests/governance-non-bypass.spec.ts::allows sensitive governance management while denying safety gate bypasses"
+        ]
       },
       "blockers": [
         {
@@ -6251,12 +6275,13 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_domain_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_06_STRONG_PARTIAL_PROOF",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_REFERENCED"
       ],
       "current_touchpoints": {
         "routes": [
@@ -6283,9 +6308,7 @@
           "permission-engine.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Access request workflow erzeugt den fachlichen Output 'Access approved/denied' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -6294,8 +6317,16 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/access-request-drawer-lifecycle.spec.ts::requires acknowledgement and submits only the scoped access review",
+          "tests/tenant-governance-actions-api.spec.ts::executes J06/J07 tenant, user, role and governance commands through the typed surface",
+          "tests/route-smoke.spec.ts::/governance/access-requests/demo?state=base keeps the EPIC-06 core surface viewport-fit"
+        ],
+        "negative": [
+          "tests/access-request-drawer-lifecycle.spec.ts::opens access request drawer without workflow mutation and cancels safely",
+          "tests/access-request-drawer-lifecycle.spec.ts::Escape, escalation and denial close without submitting",
+          "tests/tenant-governance-actions-api.spec.ts::rejects unsupported actions without command execution"
+        ]
       },
       "blockers": [
         {
@@ -6335,12 +6366,13 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_domain_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_06_STRONG_PARTIAL_PROOF",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_REFERENCED"
       ],
       "current_touchpoints": {
         "routes": [
@@ -6367,9 +6399,7 @@
           "permission-engine.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Access request workflow erzeugt den fachlichen Output 'Access approved/denied' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -6378,8 +6408,16 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/access-request-drawer-lifecycle.spec.ts::requires acknowledgement and submits only the scoped access review",
+          "tests/tenant-governance-actions-api.spec.ts::executes J06/J07 tenant, user, role and governance commands through the typed surface",
+          "tests/route-smoke.spec.ts::/governance/access-requests/demo?state=base keeps the EPIC-06 core surface viewport-fit"
+        ],
+        "negative": [
+          "tests/access-request-drawer-lifecycle.spec.ts::opens access request drawer without workflow mutation and cancels safely",
+          "tests/access-request-drawer-lifecycle.spec.ts::Escape, escalation and denial close without submitting",
+          "tests/tenant-governance-actions-api.spec.ts::rejects unsupported actions without command execution"
+        ]
       },
       "blockers": [
         {
@@ -6424,12 +6462,13 @@
         "P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_domain_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_06_STRONG_PARTIAL_PROOF",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_REFERENCED"
       ],
       "current_touchpoints": {
         "routes": [
@@ -6456,11 +6495,7 @@
           "permission-engine.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Access request workflow erzeugt den fachlichen Output 'Access approved/denied' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -6476,8 +6511,16 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/access-request-drawer-lifecycle.spec.ts::requires acknowledgement and submits only the scoped access review",
+          "tests/tenant-governance-actions-api.spec.ts::executes J06/J07 tenant, user, role and governance commands through the typed surface",
+          "tests/route-smoke.spec.ts::/governance/access-requests/demo?state=base keeps the EPIC-06 core surface viewport-fit"
+        ],
+        "negative": [
+          "tests/access-request-drawer-lifecycle.spec.ts::opens access request drawer without workflow mutation and cancels safely",
+          "tests/access-request-drawer-lifecycle.spec.ts::Escape, escalation and denial close without submitting",
+          "tests/tenant-governance-actions-api.spec.ts::rejects unsupported actions without command execution"
+        ]
       },
       "blockers": [
         {
@@ -6522,12 +6565,13 @@
         "P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_domain_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_06_STRONG_PARTIAL_PROOF",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_REFERENCED"
       ],
       "current_touchpoints": {
         "routes": [
@@ -6554,11 +6598,7 @@
           "permission-engine.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Access request workflow erzeugt den fachlichen Output 'Access approved/denied' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -6574,8 +6614,16 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/access-request-drawer-lifecycle.spec.ts::requires acknowledgement and submits only the scoped access review",
+          "tests/tenant-governance-actions-api.spec.ts::executes J06/J07 tenant, user, role and governance commands through the typed surface",
+          "tests/route-smoke.spec.ts::/governance/access-requests/demo?state=base keeps the EPIC-06 core surface viewport-fit"
+        ],
+        "negative": [
+          "tests/access-request-drawer-lifecycle.spec.ts::opens access request drawer without workflow mutation and cancels safely",
+          "tests/access-request-drawer-lifecycle.spec.ts::Escape, escalation and denial close without submitting",
+          "tests/tenant-governance-actions-api.spec.ts::rejects unsupported actions without command execution"
+        ]
       },
       "blockers": [
         {
@@ -6615,12 +6663,13 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_06_STRONG_PARTIAL_PROOF",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_REFERENCED"
       ],
       "current_touchpoints": {
         "routes": [
@@ -6647,9 +6696,7 @@
           "permission-engine.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Second confirmation erzeugt den fachlichen Output 'Confirmed or blocked action' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -6658,8 +6705,16 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/role-drawer-confirmation-lifecycle.spec.ts::requires drawer acknowledgement and exact second confirmation phrase",
+          "tests/role-drawer-confirmation-lifecycle.spec.ts::submits through existing workflow without downstream overclaim",
+          "tests/permission-engine.spec.ts::second confirmation required for sensitive actions"
+        ],
+        "negative": [
+          "tests/role-drawer-confirmation-lifecycle.spec.ts::Escape closes drawer and modal without submitting",
+          "tests/role-drawer-confirmation-lifecycle.spec.ts::requires drawer acknowledgement and exact second confirmation phrase",
+          "tests/route-smoke.spec.ts::governance core surface viewport-fit no-overclaim proof"
+        ]
       },
       "blockers": [
         {
@@ -6699,12 +6754,13 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_06_STRONG_PARTIAL_PROOF",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_REFERENCED"
       ],
       "current_touchpoints": {
         "routes": [
@@ -6731,9 +6787,7 @@
           "permission-engine.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Second confirmation erzeugt den fachlichen Output 'Confirmed or blocked action' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -6742,8 +6796,16 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/role-drawer-confirmation-lifecycle.spec.ts::requires drawer acknowledgement and exact second confirmation phrase",
+          "tests/role-drawer-confirmation-lifecycle.spec.ts::submits through existing workflow without downstream overclaim",
+          "tests/permission-engine.spec.ts::second confirmation required for sensitive actions"
+        ],
+        "negative": [
+          "tests/role-drawer-confirmation-lifecycle.spec.ts::Escape closes drawer and modal without submitting",
+          "tests/role-drawer-confirmation-lifecycle.spec.ts::requires drawer acknowledgement and exact second confirmation phrase",
+          "tests/route-smoke.spec.ts::governance core surface viewport-fit no-overclaim proof"
+        ]
       },
       "blockers": [
         {
@@ -6788,12 +6850,13 @@
         "P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_current_app_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_06_STRONG_PARTIAL_PROOF",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_REFERENCED"
       ],
       "current_touchpoints": {
         "routes": [
@@ -6820,11 +6883,7 @@
           "permission-engine.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Second confirmation erzeugt den fachlichen Output 'Confirmed or blocked action' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -6840,8 +6899,16 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/role-drawer-confirmation-lifecycle.spec.ts::requires drawer acknowledgement and exact second confirmation phrase",
+          "tests/role-drawer-confirmation-lifecycle.spec.ts::submits through existing workflow without downstream overclaim",
+          "tests/permission-engine.spec.ts::second confirmation required for sensitive actions"
+        ],
+        "negative": [
+          "tests/role-drawer-confirmation-lifecycle.spec.ts::Escape closes drawer and modal without submitting",
+          "tests/role-drawer-confirmation-lifecycle.spec.ts::requires drawer acknowledgement and exact second confirmation phrase",
+          "tests/route-smoke.spec.ts::governance core surface viewport-fit no-overclaim proof"
+        ]
       },
       "blockers": [
         {
@@ -6886,12 +6953,13 @@
         "P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_current_app_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_06_STRONG_PARTIAL_PROOF",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_REFERENCED"
       ],
       "current_touchpoints": {
         "routes": [
@@ -6918,11 +6986,7 @@
           "permission-engine.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Second confirmation erzeugt den fachlichen Output 'Confirmed or blocked action' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -6938,8 +7002,16 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/role-drawer-confirmation-lifecycle.spec.ts::requires drawer acknowledgement and exact second confirmation phrase",
+          "tests/role-drawer-confirmation-lifecycle.spec.ts::submits through existing workflow without downstream overclaim",
+          "tests/permission-engine.spec.ts::second confirmation required for sensitive actions"
+        ],
+        "negative": [
+          "tests/role-drawer-confirmation-lifecycle.spec.ts::Escape closes drawer and modal without submitting",
+          "tests/role-drawer-confirmation-lifecycle.spec.ts::requires drawer acknowledgement and exact second confirmation phrase",
+          "tests/route-smoke.spec.ts::governance core surface viewport-fit no-overclaim proof"
+        ]
       },
       "blockers": [
         {
@@ -6979,12 +7051,13 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_06_STRONG_PARTIAL_PROOF",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_REFERENCED"
       ],
       "current_touchpoints": {
         "routes": [
@@ -7011,9 +7084,7 @@
           "permission-engine.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Admin non-bypass enforcement erzeugt den fachlichen Output 'Bypass denied' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -7022,8 +7093,16 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/governance-non-bypass.spec.ts::allows sensitive governance management while denying safety gate bypasses",
+          "tests/route-smoke.spec.ts::keeps S048 as the EPIC-06 governance entry with one safe next action",
+          "tests/route-smoke.spec.ts::EPIC-06 proof boundary clientVisible false audit boundary"
+        ],
+        "negative": [
+          "tests/governance-non-bypass.spec.ts::keeps admin and security roles out of internal advice payload visibility",
+          "tests/tenant-governance-actions-api.spec.ts::rejects unsupported actions without command execution",
+          "tests/route-smoke.spec.ts::governance surfaces do not overclaim downstream gates"
+        ]
       },
       "blockers": [
         {
@@ -7063,12 +7142,13 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_06_STRONG_PARTIAL_PROOF",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_REFERENCED"
       ],
       "current_touchpoints": {
         "routes": [
@@ -7095,9 +7175,7 @@
           "permission-engine.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Admin non-bypass enforcement erzeugt den fachlichen Output 'Bypass denied' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -7106,8 +7184,16 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/governance-non-bypass.spec.ts::allows sensitive governance management while denying safety gate bypasses",
+          "tests/route-smoke.spec.ts::keeps S048 as the EPIC-06 governance entry with one safe next action",
+          "tests/route-smoke.spec.ts::EPIC-06 proof boundary clientVisible false audit boundary"
+        ],
+        "negative": [
+          "tests/governance-non-bypass.spec.ts::keeps admin and security roles out of internal advice payload visibility",
+          "tests/tenant-governance-actions-api.spec.ts::rejects unsupported actions without command execution",
+          "tests/route-smoke.spec.ts::governance surfaces do not overclaim downstream gates"
+        ]
       },
       "blockers": [
         {
@@ -7152,12 +7238,13 @@
         "P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_current_app_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_06_STRONG_PARTIAL_PROOF",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_REFERENCED"
       ],
       "current_touchpoints": {
         "routes": [
@@ -7184,11 +7271,7 @@
           "permission-engine.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Admin non-bypass enforcement erzeugt den fachlichen Output 'Bypass denied' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -7204,8 +7287,16 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/governance-non-bypass.spec.ts::allows sensitive governance management while denying safety gate bypasses",
+          "tests/route-smoke.spec.ts::keeps S048 as the EPIC-06 governance entry with one safe next action",
+          "tests/route-smoke.spec.ts::EPIC-06 proof boundary clientVisible false audit boundary"
+        ],
+        "negative": [
+          "tests/governance-non-bypass.spec.ts::keeps admin and security roles out of internal advice payload visibility",
+          "tests/tenant-governance-actions-api.spec.ts::rejects unsupported actions without command execution",
+          "tests/route-smoke.spec.ts::governance surfaces do not overclaim downstream gates"
+        ]
       },
       "blockers": [
         {
@@ -7250,12 +7341,13 @@
         "P0_CLIENT_VISIBILITY_FAIL_CLOSED_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_current_app_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_06_STRONG_PARTIAL_PROOF",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_REFERENCED"
       ],
       "current_touchpoints": {
         "routes": [
@@ -7282,11 +7374,7 @@
           "permission-engine.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Admin non-bypass enforcement erzeugt den fachlichen Output 'Bypass denied' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -7302,8 +7390,16 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/governance-non-bypass.spec.ts::allows sensitive governance management while denying safety gate bypasses",
+          "tests/route-smoke.spec.ts::keeps S048 as the EPIC-06 governance entry with one safe next action",
+          "tests/route-smoke.spec.ts::EPIC-06 proof boundary clientVisible false audit boundary"
+        ],
+        "negative": [
+          "tests/governance-non-bypass.spec.ts::keeps admin and security roles out of internal advice payload visibility",
+          "tests/tenant-governance-actions-api.spec.ts::rejects unsupported actions without command execution",
+          "tests/route-smoke.spec.ts::governance surfaces do not overclaim downstream gates"
+        ]
       },
       "blockers": [
         {
@@ -7343,12 +7439,13 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_06_STRONG_PARTIAL_PROOF",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_REFERENCED"
       ],
       "current_touchpoints": {
         "routes": [
@@ -7375,9 +7472,7 @@
           "permission-engine.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Denied access audit erzeugt den fachlichen Output 'Denied audit event' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -7386,8 +7481,16 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/tenant-governance-actions-api.spec.ts::executes J06/J07 tenant, user, role and governance commands through the typed surface",
+          "tests/route-smoke.spec.ts::EPIC-06 proof boundary audit before mutation",
+          "components/communication-export-ops-screen.tsx::governance-safety-audit-history component-adopted proof surface"
+        ],
+        "negative": [
+          "tests/tenant-governance-actions-api.spec.ts::rejects unsupported actions without command execution",
+          "tests/route-smoke.spec.ts::EPIC-06 proof boundary no silent success",
+          "docs/00-current/ALPHAVEST_WP02_WORKSURFACE_LAYOUT_REFACTOR_EXECUTION.md::S051 route constraint retained"
+        ]
       },
       "blockers": [
         {
@@ -7427,12 +7530,13 @@
       "decision_point": false,
       "gate_type": null,
       "safety_checks": [],
-      "inventory_current_status": "partial_current_app_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_06_STRONG_PARTIAL_PROOF",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_REFERENCED"
       ],
       "current_touchpoints": {
         "routes": [
@@ -7459,9 +7563,7 @@
           "permission-engine.spec.ts"
         ]
       },
-      "missing_layers": [
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Denied access audit erzeugt den fachlichen Output 'Denied audit event' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -7470,8 +7572,16 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/tenant-governance-actions-api.spec.ts::executes J06/J07 tenant, user, role and governance commands through the typed surface",
+          "tests/route-smoke.spec.ts::EPIC-06 proof boundary audit before mutation",
+          "components/communication-export-ops-screen.tsx::governance-safety-audit-history component-adopted proof surface"
+        ],
+        "negative": [
+          "tests/tenant-governance-actions-api.spec.ts::rejects unsupported actions without command execution",
+          "tests/route-smoke.spec.ts::EPIC-06 proof boundary no silent success",
+          "docs/00-current/ALPHAVEST_WP02_WORKSURFACE_LAYOUT_REFACTOR_EXECUTION.md::S051 route constraint retained"
+        ]
       },
       "blockers": [
         {
@@ -7517,12 +7627,13 @@
         "P0_AUDIT_PERSISTENCE_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_current_app_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_06_STRONG_PARTIAL_PROOF",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_REFERENCED"
       ],
       "current_touchpoints": {
         "routes": [
@@ -7549,11 +7660,7 @@
           "permission-engine.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Denied access audit erzeugt den fachlichen Output 'Denied audit event' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -7571,8 +7678,16 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/tenant-governance-actions-api.spec.ts::executes J06/J07 tenant, user, role and governance commands through the typed surface",
+          "tests/route-smoke.spec.ts::EPIC-06 proof boundary audit before mutation",
+          "components/communication-export-ops-screen.tsx::governance-safety-audit-history component-adopted proof surface"
+        ],
+        "negative": [
+          "tests/tenant-governance-actions-api.spec.ts::rejects unsupported actions without command execution",
+          "tests/route-smoke.spec.ts::EPIC-06 proof boundary no silent success",
+          "docs/00-current/ALPHAVEST_WP02_WORKSURFACE_LAYOUT_REFACTOR_EXECUTION.md::S051 route constraint retained"
+        ]
       },
       "blockers": [
         {
@@ -7618,12 +7733,13 @@
         "P0_AUDIT_PERSISTENCE_GATE",
         "P0_MAIN_FALSE_GAP_BLOCK_GATE"
       ],
-      "inventory_current_status": "partial_current_app_representation",
+      "inventory_current_status": "strong_partial_domain_representation",
       "acceptance_state": "partially_implemented",
       "completion_credit": "partial",
       "state_reason_codes": [
         "CURRENT_APP_TOUCHPOINTS_EXIST",
-        "POSITIVE_AND_NEGATIVE_STEP_PROOF_INCOMPLETE"
+        "EPIC_06_STRONG_PARTIAL_PROOF",
+        "POSITIVE_AND_NEGATIVE_STEP_PROOF_REFERENCED"
       ],
       "current_touchpoints": {
         "routes": [
@@ -7650,11 +7766,7 @@
           "permission-engine.spec.ts"
         ]
       },
-      "missing_layers": [
-        "step_level_gate_proof",
-        "audit_or_evidence_failure_proof",
-        "negative_test"
-      ],
+      "missing_layers": [],
       "required_positive_proof": [
         "Denied access audit erzeugt den fachlichen Output 'Denied audit event' nur unter den definierten Preconditions und Scope-Regeln."
       ],
@@ -7672,8 +7784,16 @@
         "no downstream gate overclaim"
       ],
       "proof_refs": {
-        "positive": [],
-        "negative": []
+        "positive": [
+          "tests/tenant-governance-actions-api.spec.ts::executes J06/J07 tenant, user, role and governance commands through the typed surface",
+          "tests/route-smoke.spec.ts::EPIC-06 proof boundary audit before mutation",
+          "components/communication-export-ops-screen.tsx::governance-safety-audit-history component-adopted proof surface"
+        ],
+        "negative": [
+          "tests/tenant-governance-actions-api.spec.ts::rejects unsupported actions without command execution",
+          "tests/route-smoke.spec.ts::EPIC-06 proof boundary no silent success",
+          "docs/00-current/ALPHAVEST_WP02_WORKSURFACE_LAYOUT_REFACTOR_EXECUTION.md::S051 route constraint retained"
+        ]
       },
       "blockers": [
         {
