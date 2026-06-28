@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX_SCHEMA",
+  "artifact_kind": "p0_process_coverage_matrix_schema",
+  "generated_at": "2026-06-28",
+  "machine_readable": true,
+  "required_step_fields": [
+    "step_id",
+    "process_id",
+    "domain_id",
+    "intended_area_id",
+    "step_label",
+    "inventory_current_status",
+    "acceptance_state",
+    "state_reason_codes",
+    "current_touchpoints",
+    "missing_layers",
+    "required_positive_proof",
+    "required_negative_proof",
+    "blockers",
+    "next_implementation_target"
+  ],
+  "allowed_acceptance_states": [
+    "implemented",
+    "partially_implemented",
+    "visual_only",
+    "specified_only",
+    "missing",
+    "blocked_by_decision",
+    "blocked_by_schema",
+    "not_authorized"
+  ],
+  "completion_credit_by_state": {
+    "implemented": "full",
+    "partially_implemented": "partial",
+    "visual_only": "none",
+    "specified_only": "none",
+    "missing": "none",
+    "blocked_by_decision": "none",
+    "blocked_by_schema": "none",
+    "not_authorized": "none"
+  },
+  "validation_rules": [
+    {
+      "rule_id": "MATRIX-RULE-001",
+      "severity": "error",
+      "description": "Every retained P0 step must have exactly one allowed acceptance_state."
+    },
+    {
+      "rule_id": "MATRIX-RULE-002",
+      "severity": "error",
+      "description": "implemented steps must include at least one positive proof reference."
+    },
+    {
+      "rule_id": "MATRIX-RULE-003",
+      "severity": "error",
+      "description": "safety-sensitive implemented steps must include at least one negative proof reference."
+    },
+    {
+      "rule_id": "MATRIX-RULE-004",
+      "severity": "error",
+      "description": "not_authorized steps must use next_implementation_target decision_or_scope_update."
+    },
+    {
+      "rule_id": "MATRIX-RULE-005",
+      "severity": "error",
+      "description": "visual_only steps must have no completion credit."
+    },
+    {
+      "rule_id": "MATRIX-RULE-006",
+      "severity": "error",
+      "description": "Matrix process and step counts must match the retained Process Universe counts."
+    }
+  ],
+  "matrix_shape": {
+    "type": "object",
+    "required": [
+      "artifact_kind",
+      "ticket_id",
+      "status",
+      "sources",
+      "summary",
+      "domain_summary",
+      "area_summary",
+      "gap_index",
+      "next_ticket_derivation",
+      "coverage_matrix",
+      "validation"
+    ]
+  }
+}
