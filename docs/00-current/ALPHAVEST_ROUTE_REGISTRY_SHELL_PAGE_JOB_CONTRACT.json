@@ -1,0 +1,221 @@
+{
+  "artifact_kind": "route_registry_shell_page_job_contract",
+  "ticket_id": "EPIC-03-SPEC-01",
+  "ticket_title": "Specify Route Registry, Shell and Page-Job Contract",
+  "status": "approved_contract_for_shared_contract_implementation",
+  "generated_at": "2026-06-28",
+  "target_branch": "full-workflow",
+  "basis": {
+    "masterplan": "reports/process-first-refactoring-masterplan-2026-06-28/ALPHAVEST_PROCESS_FIRST_REFACTORING_MASTERPLAN_BOC_CTES.json",
+    "navigation_contract": "docs/00-current/ALPHAVEST_PROCESS_FIRST_NAVIGATION_CONTRACT.json",
+    "acceptance_states_contract": "docs/00-current/ALPHAVEST_P0_PROCESS_STEP_ACCEPTANCE_STATES_CONTRACT.json",
+    "process_coverage_matrix": "docs/00-current/ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX.json",
+    "operative_handoff": "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md"
+  },
+  "purpose": "Make route registry, shell and page-job decisions once in shared contracts so later domain screens cannot re-solve process ownership, page job, slot placement or no-overclaim behavior locally.",
+  "source_seams": [
+    "lib/route-registry.ts",
+    "lib/ux-route-policy.ts",
+    "lib/ux-page-template-system.ts",
+    "components/worksurface-shell.tsx",
+    "components/ui/page-template.tsx"
+  ],
+  "controlled_vocabulary": {
+    "route_contract": "Every screen route must expose page id, path, route scope, role/workflow metadata and client visibility sensitivity from the route registry or a derived typed policy.",
+    "shell_contract": "Every productive process-first page must render through a shared shell or approved shared renderer that exposes process zones and no-overclaim metadata through typed props and runtime data attributes.",
+    "page_job_contract": "Every route has one primary page job that controls zones, command placement, proof/audit placement, freeform children policy and allowed renderer family.",
+    "runtime_contract": "Tests must be able to inspect page job, active step, template family, route id, worksurface id, zone placement and protected-route behavior without interpreting visual copy."
+  },
+  "allowed_usage": [
+    "Derive page-job, active-step, workspace, density, proof-posture and no-overclaim metadata from route registry plus shared UX policy.",
+    "Use shared renderers such as WorksurfaceShell, UxHubPage, UxDetailStandardPanel, RouteSkeletonPage and PageTemplateFrame.",
+    "Expose runtime data attributes for route id, page job, active step, template family, action-zone behavior, proof/audit placement and classified children.",
+    "Classify child content into approved shell zones before rendering it on productive P0 routes.",
+    "Keep reference, hold and P1 routes mechanically non-productive unless a later explicit unlock decision supplies route authority and tests.",
+    "Add focused source or Playwright tests that assert the shared contract instead of route-local visual assumptions."
+  ],
+  "forbidden_usage": [
+    "Do not let a domain screen infer its own page job outside the shared policy layer.",
+    "Do not use a status chip, visual screenshot, route presence or visible button as process completion proof.",
+    "Do not render unclassified freeform children on productive P0 routes.",
+    "Do not create a second primary command zone through summary rails, side panels, sticky blocks or page-local action groups.",
+    "Do not make protected, held, P1 or reference routes count as productive MVP completion proof.",
+    "Do not expose route ids, page ids or internal debug labels on client-safe surfaces as visible product copy.",
+    "Do not create routes, schemas, APIs, migrations, image assets, screen assets or state-screen assets as part of this shared contract implementation."
+  ],
+  "route_registry_contract": {
+    "required_source_fields": [
+      "pageId",
+      "route",
+      "title",
+      "purpose",
+      "visualMode",
+      "navigationGroup",
+      "pageflowId",
+      "userWorkflowId",
+      "roleFamily",
+      "objectType",
+      "permissionAction",
+      "clientVisibilitySensitive"
+    ],
+    "required_derived_fields": [
+      "routeScope",
+      "workspace",
+      "pageType",
+      "densityTier",
+      "productiveUxEligible",
+      "audience",
+      "proofPosture",
+      "noOverclaimRule"
+    ],
+    "acceptance_rules": [
+      "Every registered screen route must produce exactly one page-template record.",
+      "Duplicate page IDs, missing template records or productive templates on protected routes fail the contract.",
+      "Client-sensitive routes must derive client-safe visibility behavior from shared visibility policy, not local copy.",
+      "Route policy may group existing routes, but route creation or split still requires True-UX route-evolution authority."
+    ]
+  },
+  "shell_contract": {
+    "required_runtime_attributes": [
+      "data-testid=wp02-worksurface-shell",
+      "data-wp02-route-id",
+      "data-wp02-worksurface",
+      "data-ux-page-job",
+      "data-ux-active-step",
+      "data-ux-children-policy",
+      "data-ux-children-zone",
+      "data-ux-unbounded-children=false",
+      "data-ux-template-zone",
+      "data-ux-long-screen-exception"
+    ],
+    "required_zones": [
+      "summary",
+      "primary_content",
+      "secondary_content when policy requires it",
+      "action_zone when policy requires it",
+      "state_zone",
+      "proof_audit_zone when policy requires it"
+    ],
+    "command_zone_rules": [
+      "A productive page may have exactly one primary command zone.",
+      "Disabled or blocked commands must name the missing condition without implying downstream completion.",
+      "Client visibility, advisor approval, compliance release, evidence sufficiency and export delivery remain separate command meanings."
+    ],
+    "children_rules": [
+      "Productive routes require classified children only.",
+      "Reference and hold routes may render reference context but may not expose mutation slots.",
+      "Proof/audit children must map to proof_audit_zone or approved secondary context, never to uncontrolled vertical appendices."
+    ]
+  },
+  "page_job_contract": {
+    "allowed_page_jobs": [
+      "audit_reference",
+      "client_summary",
+      "decision_room",
+      "queue",
+      "queue_detail",
+      "stepper"
+    ],
+    "template_family_mapping": {
+      "client_summary": "client_summary",
+      "dashboard_list": "queue",
+      "detail_decision_room": "decision_room",
+      "reference_hold": "audit_reference",
+      "workbench_master_detail": "queue_detail",
+      "workflow_stepper": "stepper"
+    },
+    "representative_route_expectations": [
+      {
+        "page_id": "019",
+        "expected_family": "client_summary",
+        "expected_job": "client_summary",
+        "no_overclaim_focus": "Client context and released visibility stay separated."
+      },
+      {
+        "page_id": "033",
+        "expected_family": "dashboard_list",
+        "expected_job": "queue",
+        "no_overclaim_focus": "Signal review is internal orientation, not advisor approval or release."
+      },
+      {
+        "page_id": "039",
+        "expected_family": "detail_decision_room",
+        "expected_job": "decision_room",
+        "no_overclaim_focus": "Compliance decision room separates release, block, audit and client visibility."
+      },
+      {
+        "page_id": "054",
+        "expected_family": "workflow_stepper",
+        "expected_job": "stepper",
+        "no_overclaim_focus": "Export creation/scope does not approve, generate, download or share."
+      },
+      {
+        "page_id": "061",
+        "expected_family": "reference_hold",
+        "expected_job": "audit_reference",
+        "no_overclaim_focus": "Reference pages are not productive MVP workflow proof."
+      }
+    ]
+  },
+  "no_overclaim_rules": [
+    "Upload success is not evidence sufficiency.",
+    "Advisor approval is not compliance release.",
+    "Compliance release is not client acceptance.",
+    "Export preview is not approval, generation, download or share.",
+    "Admin visibility is not admin bypass authority.",
+    "Client context is not released client projection.",
+    "Reference, hold and P1 routes are not productive implementation proof."
+  ],
+  "implementation_acceptance_criteria": [
+    "Shared types expose the route, shell and page-job contract without route-local redefinition.",
+    "Runtime data attributes are present on at least one representative adopted consumer and remain hidden as product copy.",
+    "Source tests assert required attributes, page-job vocabulary, protected-route behavior and representative route expectations.",
+    "At least one representative consumer uses the contract without adding a route-local page-job map.",
+    "No route, schema, API, image, screen asset or state-screen asset is created for this contract slice."
+  ],
+  "recommended_implementation_sequence": [
+    {
+      "ticket": "EPIC-03-IMPL-01A",
+      "action": "Add or extend typed source-level contract and runtime data attributes.",
+      "minimum_proof": "Source tests assert the new contract attributes."
+    },
+    {
+      "ticket": "EPIC-03-IMPL-01B",
+      "action": "Migrate one severe or representative consumer to consume the shared contract directly.",
+      "minimum_proof": "Targeted route/source test proves the representative route uses the shared primitive."
+    },
+    {
+      "ticket": "EPIC-03-IMPL-01C",
+      "action": "Add regression tests for no-overclaim and required slots.",
+      "minimum_proof": "Tests prove old unclassified stacking and forbidden page-job drift cannot return."
+    },
+    {
+      "ticket": "EPIC-03-QA-01",
+      "action": "Run targeted source and screenshot or route proof for the shared contract.",
+      "minimum_proof": "Contract tests plus route/screenshot proof if a visible consumer changed."
+    }
+  ],
+  "next_ticket_readiness": {
+    "enables": [
+      "EPIC-03-IMPL-01"
+    ],
+    "recommended_next_ticket": "EPIC-03-IMPL-01A",
+    "decision_required_before_implementation": false,
+    "human_decision_required_if": [
+      "implementation needs a new route, route split or route deprecation",
+      "implementation needs a schema/API/migration change",
+      "implementation would promote a protected route into productive MVP navigation",
+      "implementation cannot satisfy the contract without a visible product-scope change"
+    ]
+  },
+  "definition_of_done_check": {
+    "contract_is_testable": true,
+    "allowed_usage_named": true,
+    "forbidden_usage_named": true,
+    "no_overclaim_rules_named": true,
+    "dependencies_satisfied": true,
+    "product_code_changed": false,
+    "screenshots_required": false,
+    "screenshot_reason": "Specification-only ticket with no visible UI change."
+  }
+}
