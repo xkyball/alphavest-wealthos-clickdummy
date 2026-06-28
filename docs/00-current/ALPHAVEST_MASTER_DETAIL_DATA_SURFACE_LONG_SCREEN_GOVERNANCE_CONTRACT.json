@@ -1,0 +1,181 @@
+{
+  "contractId": "ALPHAVEST_MASTER_DETAIL_DATA_SURFACE_LONG_SCREEN_GOVERNANCE_CONTRACT",
+  "version": "2026-06-28.epic-04-spec-01",
+  "sourceEpic": "EPIC-04",
+  "sourceTask": "EPIC-04-SPEC-01",
+  "title": "Master-Detail, Data Surface and Long-Screen Governance",
+  "authority": {
+    "operativeSourceOfTruth": "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md",
+    "supportingContracts": [
+      "docs/00-current/ALPHAVEST_PROCESS_FIRST_UX_LAYOUT_CONTRACT.md",
+      "docs/00-current/ALPHAVEST_ROUTE_REGISTRY_SHELL_PAGE_JOB_CONTRACT.json",
+      "docs/00-current/ALPHAVEST_PROCESS_FIRST_NAVIGATION_CONTRACT.json",
+      "docs/00-current/ALPHAVEST_P0_PROCESS_STEP_ACCEPTANCE_STATES_CONTRACT.json"
+    ],
+    "implementationSeams": [
+      "lib/ux-data-surface-contract.ts",
+      "components/ui/master-detail-surface.tsx",
+      "components/ui/data-table.tsx",
+      "components/ui/filter-bar.tsx",
+      "tests/ux-data-surface-contract.spec.ts",
+      "tests/ux-master-detail-surface.spec.ts",
+      "tests/ux-page-template-long-page.spec.ts"
+    ]
+  },
+  "intent": {
+    "problem": "P0 queue, review and governance screens must not solve master/detail selection, table density, proof placement and long-screen debt locally.",
+    "goal": "Make the shared data-surface and master-detail contract enforceable before later domain epics migrate additional screens.",
+    "principle": "A visual workbench is not process completion. Selection, detail context, proof placement, command authority and long-screen exceptions must be explicit and testable."
+  },
+  "targetScreens": [
+    {
+      "screenId": "S027",
+      "expectedPattern": "workbench_master_detail_or_stepper",
+      "reason": "Advisor-facing review surfaces need typed selected context, one command zone and no advice/release overclaim."
+    },
+    {
+      "screenId": "S029",
+      "expectedPattern": "queue_workbench",
+      "reason": "Extraction review needs selected document context, proof drawer handoff and command-handoff semantics."
+    },
+    {
+      "screenId": "S034",
+      "expectedPattern": "queue_workbench",
+      "reason": "Consultant work intake needs scannable queue rows and a selected-client detail pane."
+    },
+    {
+      "screenId": "S036",
+      "expectedPattern": "queue_workbench",
+      "reason": "Advisor approval queue needs selected package context without implying approval from navigation."
+    },
+    {
+      "screenId": "S038",
+      "expectedPattern": "queue_workbench",
+      "reason": "Compliance release intake needs route handoff, blocker proof and proof drawer placement."
+    },
+    {
+      "screenId": "S046",
+      "expectedPattern": "queue_workbench",
+      "reason": "Evidence vault review needs selected evidence context while evidence visibility remains separate from sufficiency."
+    },
+    {
+      "screenId": "S048",
+      "expectedPattern": "governance_master_detail",
+      "reason": "Governance user review needs permission/audit context without permission mutation overclaim."
+    },
+    {
+      "screenId": "S050",
+      "expectedPattern": "governance_master_detail",
+      "reason": "Access request detail needs recovery context and explicit mutation gates."
+    }
+  ],
+  "allowedUsage": {
+    "masterDetailSurface": [
+      "Queue or governance screens with one selected object and a separate selected-detail pane.",
+      "Board or table surfaces that need detail context without treating row selection as workflow completion.",
+      "Long P0 screens that can reduce vertical stacking by moving audit/proof history into a drawer or secondary tab."
+    ],
+    "dataSurface": [
+      "Tables, lists, queues, boards, audit logs, redaction tables, permission matrices and detail-support lists.",
+      "Dense rows with explicit field priorities and action policies.",
+      "Disabled or static controls when the surface exposes why action is unavailable."
+    ],
+    "longScreenGovernance": [
+      "Use master-detail, stepper, tabs, drawer extraction or approved route split before accepting a long P0 route.",
+      "Declare a machine-readable long-screen exception only as a debt ledger entry with owner, reason, expiry and follow-up task.",
+      "Keep command zones above proof appendices by moving history/provenance into approved proof slots."
+    ]
+  },
+  "forbiddenUsage": {
+    "masterDetailSurface": [
+      "Using selected row state as approval, release, export, evidence sufficiency, permission mutation or client acceptance.",
+      "Rendering a full audit timeline as a permanent vertical appendix below every queue row/detail pair.",
+      "Using multiple primary command rails inside the same productive P0 workbench."
+    ],
+    "dataSurface": [
+      "Hiding unavailable workflow authority behind enabled-looking row actions.",
+      "Treating sort/filter/search as process progress or gate completion.",
+      "Creating local one-off density, action or filter-state vocabularies for P0 screens."
+    ],
+    "longScreenGovernance": [
+      "Calling a long screen accepted because it looks visually organized.",
+      "Using screenshots alone as process proof.",
+      "Adding a long-screen exception without owner, reason, expiry condition and follow-up ticket."
+    ]
+  },
+  "runtimeAttributeRequirements": {
+    "surface": [
+      "data-ux-data-surface-family",
+      "data-ux-data-surface-density",
+      "data-ux-data-surface-density-preset",
+      "data-ux-data-surface-action-policy",
+      "data-ux-no-overclaim"
+    ],
+    "masterDetail": [
+      "data-ux-master-detail-mode",
+      "data-ux-master-detail-selected-object",
+      "data-ux-master-detail-selected-state"
+    ],
+    "queueWorkbench": [
+      "data-ux-queue-workbench",
+      "data-ux-queue-selected-object",
+      "data-ux-queue-selected-state",
+      "data-ux-queue-proof-placement",
+      "data-ux-queue-action-rail"
+    ],
+    "rowAction": [
+      "data-ux-action-meaning",
+      "data-ux-data-surface-action-renders-affordance",
+      "data-ux-data-surface-action-separation",
+      "data-ux-data-surface-no-overclaim-rule"
+    ],
+    "longScreen": [
+      "data-ux-long-screen-exception",
+      "data-ux-long-screen-exception-owner",
+      "data-ux-long-screen-exception-reason",
+      "data-ux-long-screen-exception-expires",
+      "data-ux-long-screen-exception-follow-up"
+    ]
+  },
+  "acceptanceCriteria": [
+    {
+      "id": "EPIC04-AC-01",
+      "statement": "The typed data-surface contract exposes canonical families, densities, action policies, filter states, master-detail modes and no-overclaim metadata.",
+      "verification": "tests/ux-data-surface-contract.spec.ts"
+    },
+    {
+      "id": "EPIC04-AC-02",
+      "statement": "MasterDetailSurface projects required queue workbench and selected-object runtime attributes.",
+      "verification": "tests/ux-master-detail-surface.spec.ts"
+    },
+    {
+      "id": "EPIC04-AC-03",
+      "statement": "At least one representative target screen consumes the shared EPIC-04 governance contract instead of a local stacked list/detail/audit fallback.",
+      "verification": "tests/ux-master-detail-surface.spec.ts"
+    },
+    {
+      "id": "EPIC04-AC-04",
+      "statement": "Long-screen exceptions remain explicit debt ledger entries and are not accepted by visual presence alone.",
+      "verification": "tests/ux-page-template-long-page.spec.ts"
+    },
+    {
+      "id": "EPIC04-AC-05",
+      "statement": "No row, queue, board or governance selection can imply release, export, evidence sufficiency, permission mutation, client visibility or client acceptance.",
+      "verification": "tests/ux-data-surface-contract.spec.ts"
+    }
+  ],
+  "decisionBoundaries": [
+    {
+      "boundary": "route_split",
+      "rule": "If a target screen cannot meet long-screen governance with a shared workbench, stepper, tab or drawer extraction, stop for a True-UX route-evolution decision."
+    },
+    {
+      "boundary": "schema_or_api",
+      "rule": "This contract does not authorize blind schema replacement or new production API semantics."
+    },
+    {
+      "boundary": "client_visible_advice",
+      "rule": "This contract does not authorize unapproved advice, advisor-approval-as-release or export without compliance release/redaction."
+    }
+  ]
+}

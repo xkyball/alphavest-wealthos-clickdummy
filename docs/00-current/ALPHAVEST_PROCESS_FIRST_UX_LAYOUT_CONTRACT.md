@@ -85,6 +85,12 @@ Use shared primitives before adding page-local UI:
 - `lib/ux-page-template-system.ts`
 - `lib/ux-action-hierarchy-contract.ts`
 
+EPIC-04-specific master-detail, data-surface and long-screen governance is
+machine-readable in
+`docs/00-current/ALPHAVEST_MASTER_DETAIL_DATA_SURFACE_LONG_SCREEN_GOVERNANCE_CONTRACT.json`.
+That contract is the acceptance layer for allowed/forbidden usage, target-screen
+expectations, runtime attribute requirements and no-overclaim rules.
+
 `ProcessGateRail` is the canonical visible process gate primitive for this workstream. Critical call sites must pass machine-readable process metadata:
 
 - `businessProcessIds`
