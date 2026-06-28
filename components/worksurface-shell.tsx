@@ -14,7 +14,14 @@ import {
 import { cn } from "@/lib/cn";
 import { uxActionAttributesFor } from "@/lib/ux-action-hierarchy-contract";
 import { uxClientSafeFamilyForPageId } from "@/lib/ux-client-safe-ui-boundary";
-import { uxPageTemplateForPageId } from "@/lib/ux-page-template-system";
+import {
+  uxPageTemplateForPageId,
+  type UxActiveStep,
+  type UxLongScreenException,
+  type UxPageJob,
+  type UxPageTemplateRecord,
+  type UxPageTemplateZone,
+} from "@/lib/ux-page-template-system";
 
 type WorksurfaceStatusItem = {
   label: string;
@@ -24,10 +31,14 @@ type WorksurfaceStatusItem = {
 
 type WorksurfaceShellProps = {
   actions?: React.ReactNode;
+  activeStep?: UxActiveStep;
   children?: React.ReactNode;
+  childrenPolicy?: WorksurfaceChildrenPolicy;
   className?: string;
   description: string;
   eyebrow: string;
+  longScreenException?: UxLongScreenException;
+  pageJob?: UxPageJob;
   primary: React.ReactNode;
   rail?: React.ReactNode;
   routeId: string;
@@ -37,6 +48,12 @@ type WorksurfaceShellProps = {
   title: string;
   worksurfaceId: string;
 };
+
+type WorksurfaceChildrenPolicy =
+  | "proof_audit"
+  | "reference_context"
+  | "secondary_context"
+  | "step_support";
 
 type WorksurfacePanelProps = {
   actions?: React.ReactNode;
@@ -62,12 +79,30 @@ export function WorksurfacePanel({ actions, children, className, description, te
   );
 }
 
+function defaultChildrenPolicyForTemplate(template: UxPageTemplateRecord): WorksurfaceChildrenPolicy {
+  if (!template.productiveUxEligible) return "reference_context";
+  if (template.proofAuditPlacement === "primary_detail_zone" || template.requiredZones.includes("proof_audit_zone")) return "proof_audit";
+  if (template.family === "workflow_stepper") return "step_support";
+
+  return "secondary_context";
+}
+
+function zoneForChildrenPolicy(policy: WorksurfaceChildrenPolicy): UxPageTemplateZone {
+  if (policy === "proof_audit") return "proof_audit_zone";
+
+  return "secondary_content";
+}
+
 export function WorksurfaceShell({
   actions,
+  activeStep,
   children,
+  childrenPolicy,
   className,
   description,
   eyebrow,
+  longScreenException,
+  pageJob,
   primary,
   rail,
   routeId,
@@ -78,6 +113,10 @@ export function WorksurfaceShell({
   worksurfaceId,
 }: WorksurfaceShellProps) {
   const template = uxPageTemplateForPageId(routeId);
+  const resolvedActiveStep = activeStep ?? template.activeStep;
+  const resolvedChildrenPolicy = childrenPolicy ?? defaultChildrenPolicyForTemplate(template);
+  const resolvedChildrenZone = zoneForChildrenPolicy(resolvedChildrenPolicy);
+  const resolvedPageJob = pageJob ?? template.pageJob;
   const isClientSafeSurface = Boolean(uxClientSafeFamilyForPageId(routeId));
   const clientSafeStatusItems = isClientSafeSurface
     ? statusItems.filter((item) => !["route", "route id", "page id"].includes(item.label.toLowerCase()))
@@ -85,13 +124,17 @@ export function WorksurfaceShell({
   const railPlacement = template.actionZoneBehavior === "sticky_action_zone" ? "sticky_rail" : "adjacent_rail";
   const sectionIds = {
     action: `${worksurfaceId}-action`,
+    children: `${worksurfaceId}-children`,
     primary: `${worksurfaceId}-primary`,
+    secondary: `${worksurfaceId}-secondary`,
     state: `${worksurfaceId}-state`,
     summary: `${worksurfaceId}-summary`,
   };
   const sections: PageTemplateSection[] = [
     { id: sectionIds.summary, label: "Summary", description: "Template summary zone" },
     { id: sectionIds.primary, label: "Work", description: "Primary work zone" },
+    ...(secondary ? [{ id: sectionIds.secondary, label: "Context", description: "Secondary content slot" }] : []),
+    ...(children ? [{ id: sectionIds.children, label: "Support", description: "Classified child slot" }] : []),
     ...(rail ? [{ id: sectionIds.action, label: "Actions", description: "Gated action zone" }] : []),
     { id: sectionIds.state, label: "State", description: "Safety state zone" },
   ];
@@ -109,6 +152,17 @@ export function WorksurfaceShell({
       className={cn("mx-auto max-w-[112rem] space-y-4", className)}
       data-testid="wp02-worksurface-shell"
       template={template}
+      data-ux-active-step={resolvedActiveStep}
+      data-ux-has-classified-children={children ? "true" : "false"}
+      data-ux-children-policy={children ? resolvedChildrenPolicy : "none"}
+      data-ux-children-zone={children ? resolvedChildrenZone : "none"}
+      data-ux-long-screen-exception={longScreenException ? "declared" : "none"}
+      data-ux-long-screen-exception-expires={longScreenException?.expiresWhen}
+      data-ux-long-screen-exception-follow-up={longScreenException?.followUpTaskId}
+      data-ux-long-screen-exception-owner={longScreenException?.owner}
+      data-ux-long-screen-exception-reason={longScreenException?.reason}
+      data-ux-page-job={resolvedPageJob}
+      data-ux-unbounded-children="false"
       data-wp02-route-id={routeId}
       data-wp02-worksurface={worksurfaceId}
     >
@@ -129,10 +183,26 @@ export function WorksurfaceShell({
       </div>
       <PageTemplateSectionNav sections={sections} />
       <div className={cn("grid gap-4", rail ? "xl:grid-cols-[minmax(0,1fr)_24rem]" : "")}>
-        <div id={sectionIds.primary} className="min-w-0 space-y-4" data-ux-long-page-anchor="primary" data-ux-template-zone="primary_content">
-          {primary}
-          {secondary}
-          {children}
+        <div className="min-w-0 space-y-4">
+          <section id={sectionIds.primary} data-ux-long-page-anchor="primary" data-ux-template-zone="primary_content">
+            {primary}
+          </section>
+          {secondary ? (
+            <section id={sectionIds.secondary} data-ux-long-page-anchor="secondary" data-ux-template-zone="secondary_content">
+              {secondary}
+            </section>
+          ) : null}
+          {children ? (
+            <section
+              id={sectionIds.children}
+              data-ux-children-policy={resolvedChildrenPolicy}
+              data-ux-classified-children="true"
+              data-ux-long-page-anchor={resolvedChildrenZone === "proof_audit_zone" ? "proof-audit" : "secondary"}
+              data-ux-template-zone={resolvedChildrenZone}
+            >
+              {children}
+            </section>
+          ) : null}
         </div>
         {rail ? (
           <aside

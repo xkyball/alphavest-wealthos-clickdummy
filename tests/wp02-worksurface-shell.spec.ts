@@ -85,6 +85,14 @@ test.describe("WP02 worksurface shell", () => {
     expect(shell).toContain('data-testid="wp02-worksurface-shell"');
     expect(shell).toContain('xl:grid-cols-[minmax(0,1fr)_24rem]');
     expect(shell).toContain("xl:sticky xl:top-24 xl:self-start");
+    expect(shell).toContain("type WorksurfaceChildrenPolicy");
+    expect(shell).toContain("defaultChildrenPolicyForTemplate");
+    expect(shell).toContain('data-ux-unbounded-children="false"');
+    expect(shell).toContain("data-ux-page-job");
+    expect(shell).toContain("data-ux-active-step");
+    expect(shell).toContain("data-ux-classified-children");
+    expect(shell).toContain("data-ux-long-screen-exception");
+    expect(shell).not.toContain("{primary}\n          {secondary}\n          {children}");
     expect(auth).toContain('from "@/components/worksurface-shell"');
     expect(adminTenant).toContain('from "@/components/worksurface-shell"');
     expect(client).toContain('from "@/components/worksurface-shell"');
@@ -110,6 +118,9 @@ test.describe("WP02 worksurface shell", () => {
       await expect(shell).toHaveCount(1);
       await expect(shell).toHaveAttribute("data-wp02-route-id", route.pageId);
       await expect(shell).toHaveAttribute("data-wp02-worksurface", route.worksurface);
+      await expect(shell).toHaveAttribute("data-ux-page-job", /^(audit_reference|client_summary|decision_room|queue|queue_detail|stepper)$/);
+      await expect(shell).toHaveAttribute("data-ux-active-step", /^(approval|audit|blocked|confirmation|decision|download|intake|overview|redaction|review|scope|triage)$/);
+      await expect(shell).toHaveAttribute("data-ux-unbounded-children", "false");
       await expect(page.getByTestId("wp02-worksurface-safety-boundary")).toBeVisible();
     });
   }

@@ -2,7 +2,11 @@ import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { uxPageTemplateDefinitions } from "../lib/ux-page-template-system";
+import {
+  uxPageTemplateDefinitions,
+  uxPageTemplateRecords,
+  uxShellSlotPolicyForTemplate,
+} from "../lib/ux-page-template-system";
 
 function source(path: string) {
   return readFileSync(join(process.cwd(), path), "utf8");
@@ -33,6 +37,10 @@ test.describe("E02 long-page and sticky action-zone patterns", () => {
     expect(worksurface).toContain("PageTemplateFrame");
     expect(worksurface).toContain("PageTemplateSectionNav");
     expect(worksurface).toContain("PageTemplateSummaryRail");
+    expect(pageTemplate).toContain("data-ux-shell-allowed-zones");
+    expect(pageTemplate).toContain("data-ux-shell-command-zone");
+    expect(pageTemplate).toContain("data-ux-shell-freeform-children");
+    expect(pageTemplate).toContain("data-ux-shell-long-screen-exception-required");
 
     for (const contents of [worksurface, hub, detail, skeleton]) {
       expect(contents).toContain("data-ux-long-page-anchor");
@@ -44,5 +52,25 @@ test.describe("E02 long-page and sticky action-zone patterns", () => {
     expect(hub).toContain('data-ux-long-page-region="sticky_action"');
     expect(detail).toContain('data-ux-long-page-region="sticky_action"');
     expect(detail).toContain('data-ux-template-zone="proof_audit_zone"');
+  });
+
+  test("shell slot policies classify productive P0 children and long-screen exceptions", () => {
+    const productiveTemplates = uxPageTemplateRecords.filter((record) => record.productiveUxEligible);
+
+    expect(productiveTemplates.length).toBeGreaterThan(0);
+
+    for (const template of productiveTemplates) {
+      const policy = uxShellSlotPolicyForTemplate(template);
+
+      expect(policy.pageJob, `${template.pageId} page job`).toBe(template.pageJob);
+      expect(policy.activeStep, `${template.pageId} active step`).toBe(template.activeStep);
+      expect(policy.allowedZones, `${template.pageId} allowed zones`).toContain("primary_content");
+      expect(policy.freeformChildrenPolicy, `${template.pageId} freeform children`).toBe("classified_slot_only");
+      expect(policy.requiresLongScreenExceptionMetadata, `${template.pageId} exception metadata`).toBe(template.longPageBehavior !== "none");
+
+      if (template.requiredZones.includes("action_zone")) {
+        expect(policy.commandZone, `${template.pageId} command zone`).toBe("action_zone");
+      }
+    }
   });
 });

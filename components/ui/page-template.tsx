@@ -1,5 +1,8 @@
 import { cn } from "@/lib/cn";
-import type { UxPageTemplateRecord } from "@/lib/ux-page-template-system";
+import {
+  uxShellSlotPolicyForTemplate,
+  type UxPageTemplateRecord,
+} from "@/lib/ux-page-template-system";
 import {
   uxPrimitiveInteractionAttributesFor,
   uxPrimitiveInteractionClassFor,
@@ -39,6 +42,7 @@ type PageTemplateSummaryRailProps = React.HTMLAttributes<HTMLElement> & {
 
 export function PageTemplateFrame({ children, className, template, ...props }: PageTemplateFrameProps) {
   const clientSuppression = uxProofReviewerClientSuppressionForPageId(template.pageId);
+  const shellSlotPolicy = uxShellSlotPolicyForTemplate(template);
 
   return (
     <section
@@ -46,11 +50,17 @@ export function PageTemplateFrame({ children, className, template, ...props }: P
       data-ux-client-mode-missing-suppression={clientSuppression.missingRequiredSuppressions.join(" ")}
       data-ux-client-mode-suppressed={clientSuppression.suppressedContent.join(" ")}
       data-ux-page-template-action-zone={template.actionZoneBehavior}
+      data-ux-page-template-active-step={template.activeStep}
       data-ux-page-template-family={template.family}
       data-ux-page-template-long-page={template.longPageBehavior}
+      data-ux-page-template-page-job={template.pageJob}
       data-ux-page-template-proof-audit={template.proofAuditPlacement}
       data-ux-page-template-required-zones={template.requiredZones.join(" ")}
       data-ux-page-template-renderer="PageTemplateFrame"
+      data-ux-shell-allowed-zones={shellSlotPolicy.allowedZones.join(" ")}
+      data-ux-shell-command-zone={shellSlotPolicy.commandZone}
+      data-ux-shell-freeform-children={shellSlotPolicy.freeformChildrenPolicy}
+      data-ux-shell-long-screen-exception-required={shellSlotPolicy.requiresLongScreenExceptionMetadata ? "true" : "false"}
       {...props}
       className={cn("mx-auto max-w-[112rem] space-y-4", className)}
     >

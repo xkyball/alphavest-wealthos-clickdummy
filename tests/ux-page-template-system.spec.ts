@@ -9,6 +9,7 @@ import {
   uxPageTemplateIntegrity,
   uxPageTemplateRecords,
   uxPageTemplateZones,
+  uxShellSlotPolicyForRoute,
   type UxPageTemplateFamily,
 } from "../lib/ux-page-template-system";
 
@@ -57,6 +58,8 @@ test.describe("E02 canonical page template system", () => {
       expect(template.longPageBehavior, `${route.pageId} long-page behavior`).toBeTruthy();
       expect(template.actionZoneBehavior, `${route.pageId} action-zone behavior`).toBeTruthy();
       expect(template.proofAuditPlacement, `${route.pageId} proof/audit placement`).toBeTruthy();
+      expect(template.pageJob, `${route.pageId} page job`).toMatch(/^(audit_reference|client_summary|decision_room|queue|queue_detail|stepper)$/);
+      expect(template.activeStep, `${route.pageId} active step`).toMatch(/^(approval|audit|blocked|confirmation|decision|download|intake|overview|redaction|review|scope|triage)$/);
     }
   });
 
@@ -74,6 +77,20 @@ test.describe("E02 canonical page template system", () => {
       expect(template.densityTier, `${route.pageId} density tier`).toBe(pageContract.densityTier);
       expect(template.pageType, `${route.pageId} page type`).toBe(pageContract.pageType);
       expect(template.workspace, `${route.pageId} workspace`).toBe(pageContract.workspace);
+    }
+  });
+
+  test("exposes shell slot governance for every registered route", () => {
+    for (const route of screenRoutes) {
+      const template = uxPageTemplateForRoute(route);
+      const policy = uxShellSlotPolicyForRoute(route);
+
+      expect(policy.pageId, `${route.pageId} policy page`).toBe(route.pageId);
+      expect(policy.pageJob, `${route.pageId} policy job`).toBe(template.pageJob);
+      expect(policy.activeStep, `${route.pageId} policy step`).toBe(template.activeStep);
+      expect(policy.allowedZones.length, `${route.pageId} allowed zones`).toBeGreaterThan(0);
+      expect(policy.proofAuditPlacement, `${route.pageId} proof placement`).toBe(template.proofAuditPlacement);
+      expect(policy.freeformChildrenPolicy, `${route.pageId} children policy`).toBe(template.productiveUxEligible ? "classified_slot_only" : "reference_context_only");
     }
   });
 

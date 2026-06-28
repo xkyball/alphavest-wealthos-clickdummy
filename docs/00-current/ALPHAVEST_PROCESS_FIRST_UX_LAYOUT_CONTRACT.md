@@ -113,6 +113,29 @@ Command-zone rules:
 - Disabled commands must name the missing BP/ACC/gate condition.
 - Client-visible or export-adjacent commands must fail closed when redaction, release or visibility gates are missing.
 
+### Strict Worksurface Slot Contract
+
+Shared P0 workflow screens must render through a named shell slot contract instead of uncontrolled vertical stacking. `WorksurfaceShell` and `lib/ux-page-template-system.ts` are responsible for making this contract source-testable.
+
+Allowed shell slots by page family:
+
+| Page family | Page job | Required slots | Optional slots | Freeform children |
+| --- | --- | --- | --- | --- |
+| `client_summary` | `client_summary` | `summary`, `primary_content`, `action_zone`, `state_zone` | `proof_audit_zone` as client-safe summary only | forbidden unless explicitly classified as supporting client-safe proof |
+| `dashboard_list` | `queue` | `summary`, `primary_content`, `action_zone`, `state_zone` | `secondary_content`, `proof_audit_zone` | forbidden on productive P0 routes unless classified into an allowed optional slot |
+| `workbench_master_detail` | `queue_detail` | `primary_content`, `secondary_content`, `action_zone`, `state_zone` | `summary`, `proof_audit_zone` | forbidden on productive P0 routes unless classified into an allowed optional slot |
+| `detail_decision_room` | `decision_room` | `summary`, `primary_content`, `proof_audit_zone`, `action_zone`, `state_zone` | `secondary_content` | forbidden on productive P0 routes unless classified as proof/audit support |
+| `workflow_stepper` | `stepper` | `summary`, `primary_content`, `action_zone`, `state_zone` | `secondary_content`, `proof_audit_zone` | forbidden on productive P0 routes unless classified into the current step support slot |
+| `reference_hold` | `audit_reference` | `summary`, `state_zone` | `secondary_content` | allowed only for non-productive reference or hold content; mutation slots stay forbidden |
+
+Additional shell rules:
+
+- A productive P0 worksurface must expose typed `pageJob` and `activeStep` metadata at the shell boundary.
+- `primary`, `secondary`, `rail` and `children` must not collapse into one undifferentiated scroll column. `secondary` maps to `secondary_content`; `rail` maps to the single `action_zone`; `children` must declare an explicit policy before it can render on a productive P0 route.
+- A productive P0 page may have exactly one command zone. A summary rail may contain status or subordinate navigation, but it must not become a second primary command zone.
+- Proof/audit material must render in the family-approved slot and must be compact/collapsible when it would push the command zone below the primary work. A full audit timeline below every primary block is forbidden.
+- Any long-screen exception must be machine-readable and include owner, reason, expiry condition and follow-up ticket. An exception is a debt ledger entry, not acceptance.
+
 ## 7. P0 Route Mapping
 
 The following route families are locked as initial process-first refactor targets.

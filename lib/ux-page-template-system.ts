@@ -55,6 +55,50 @@ export type UxProofAuditPlacement =
   | "client_safe_summary_only"
   | "protected_state_only";
 
+export type UxPageJob =
+  | "audit_reference"
+  | "client_summary"
+  | "decision_room"
+  | "queue"
+  | "queue_detail"
+  | "stepper";
+
+export type UxActiveStep =
+  | "approval"
+  | "audit"
+  | "blocked"
+  | "confirmation"
+  | "decision"
+  | "download"
+  | "intake"
+  | "overview"
+  | "redaction"
+  | "review"
+  | "scope"
+  | "triage";
+
+export type UxFreeformChildrenPolicy =
+  | "classified_slot_only"
+  | "reference_context_only";
+
+export type UxLongScreenException = {
+  expiresWhen: string;
+  followUpTaskId: string;
+  owner: string;
+  reason: string;
+};
+
+export type UxShellSlotPolicy = {
+  activeStep: UxActiveStep;
+  allowedZones: readonly UxPageTemplateZone[];
+  commandZone: "action_zone" | "none";
+  freeformChildrenPolicy: UxFreeformChildrenPolicy;
+  pageId: string;
+  pageJob: UxPageJob;
+  proofAuditPlacement: UxProofAuditPlacement;
+  requiresLongScreenExceptionMetadata: boolean;
+};
+
 export type UxPageTemplateRenderer =
   | "WorksurfaceShell"
   | "UxHubPage"
@@ -75,11 +119,13 @@ export type UxPageTemplateDefinition = {
 };
 
 export type UxPageTemplateRecord = UxPageTemplateDefinition & {
+  activeStep: UxActiveStep;
   audience: UxOperatingAudience;
   densityTier: UxDensityTier;
   mode: UxOperatingMode;
   noOverclaimRule: string;
   pageId: string;
+  pageJob: UxPageJob;
   pageType: UxPageType;
   path: string;
   productiveUxEligible: boolean;
@@ -181,6 +227,33 @@ function templateFamilyForRoute(route: ScreenRoute): UxPageTemplateFamily {
   return "workbench_master_detail";
 }
 
+function pageJobForTemplateFamily(family: UxPageTemplateFamily): UxPageJob {
+  if (family === "client_summary") return "client_summary";
+  if (family === "dashboard_list") return "queue";
+  if (family === "detail_decision_room") return "decision_room";
+  if (family === "reference_hold") return "audit_reference";
+  if (family === "workflow_stepper") return "stepper";
+
+  return "queue_detail";
+}
+
+function activeStepForRoute(route: ScreenRoute, pageType: UxPageType): UxActiveStep {
+  if (route.pageId === "055") return "scope";
+  if (route.pageId === "056") return "redaction";
+  if (route.pageId === "057") return "approval";
+  if (route.pageId === "058") return "download";
+  if (route.pageId === "039") return "decision";
+  if (route.pageId === "040" || route.pageId === "045") return "confirmation";
+  if (route.pageId === "041") return "blocked";
+  if (route.pageId === "042" || route.pageId === "051") return "audit";
+  if (pageType === "Modal") return "confirmation";
+  if (pageType === "Detail") return "review";
+  if (pageType === "Hub") return "overview";
+  if (pageType === "Reference" || pageType === "P1" || pageType === "Hold") return "blocked";
+
+  return "triage";
+}
+
 export function uxPageTemplateForRoute(route: ScreenRoute): UxPageTemplateRecord {
   const operatingModel = uxOperatingModelForRoute(route);
   const policy = uxRoutePolicyForRoute(route);
@@ -189,11 +262,13 @@ export function uxPageTemplateForRoute(route: ScreenRoute): UxPageTemplateRecord
 
   return {
     ...definition,
+    activeStep: activeStepForRoute(route, policy.pageType),
     audience: operatingModel.audience,
     densityTier: policy.densityTier,
     mode: operatingModel.mode,
     noOverclaimRule: operatingModel.noOverclaimRule,
     pageId: route.pageId,
+    pageJob: pageJobForTemplateFamily(family),
     pageType: policy.pageType,
     path: operatingModel.path,
     productiveUxEligible: operatingModel.productiveUxEligible,
@@ -212,6 +287,33 @@ export function uxPageTemplateForPageId(pageId: string): UxPageTemplateRecord {
   }
 
   return uxPageTemplateForRoute(route);
+}
+
+export function uxShellSlotPolicyForTemplate(template: UxPageTemplateRecord): UxShellSlotPolicy {
+  const zoneOrder = uxPageTemplateZones.filter((zone) => {
+    if (template.forbiddenZones.includes(zone)) return false;
+
+    return template.requiredZones.includes(zone) || template.optionalZones.includes(zone);
+  });
+
+  return {
+    activeStep: template.activeStep,
+    allowedZones: zoneOrder,
+    commandZone: template.requiredZones.includes("action_zone") || template.optionalZones.includes("action_zone") ? "action_zone" : "none",
+    freeformChildrenPolicy: template.productiveUxEligible ? "classified_slot_only" : "reference_context_only",
+    pageId: template.pageId,
+    pageJob: template.pageJob,
+    proofAuditPlacement: template.proofAuditPlacement,
+    requiresLongScreenExceptionMetadata: template.productiveUxEligible && template.longPageBehavior !== "none",
+  };
+}
+
+export function uxShellSlotPolicyForRoute(route: ScreenRoute): UxShellSlotPolicy {
+  return uxShellSlotPolicyForTemplate(uxPageTemplateForRoute(route));
+}
+
+export function uxShellSlotPolicyForPageId(pageId: string): UxShellSlotPolicy {
+  return uxShellSlotPolicyForTemplate(uxPageTemplateForPageId(pageId));
 }
 
 export const uxPageTemplateRecords = screenRoutes.map(uxPageTemplateForRoute);
