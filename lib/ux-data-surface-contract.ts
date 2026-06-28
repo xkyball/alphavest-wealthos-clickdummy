@@ -55,6 +55,21 @@ export type UxMasterDetailMode =
   | "drawer_detail"
   | "route_detail";
 
+export type UxSurfaceGovernanceContract = typeof uxSurfaceGovernanceContractId;
+
+export type UxSurfaceGovernancePattern =
+  | "queue_workbench"
+  | "governance_master_detail"
+  | "board_detail_surface"
+  | "table_detail_surface"
+  | "workbench_master_detail_or_stepper";
+
+export type UxLongScreenGovernancePolicy =
+  | "not_applicable"
+  | "resolved_by_shared_surface"
+  | "split_or_extract_required"
+  | "exception_required";
+
 export type UxDataSurfaceRuntimeAttributes = Record<`data-${string}`, string | undefined>;
 
 export type UxDataSurfaceActionContract = {
@@ -71,10 +86,20 @@ export type UxDataSurfaceProjectionInput = {
   densityPreset?: UxDataSurfaceDensityPreset;
   family: UxDataSurfaceFamily;
   filterState?: UxDataSurfaceFilterState;
+  governancePattern?: UxSurfaceGovernancePattern;
+  longScreenGovernance?: UxLongScreenGovernancePolicy;
   masterDetailMode?: UxMasterDetailMode;
   stickyHeader?: boolean;
   stickyRail?: boolean;
+  targetScreenId?: string;
 };
+
+export type UxSurfaceGovernanceProjectionInput = Pick<
+  UxDataSurfaceProjectionInput,
+  "governancePattern" | "longScreenGovernance" | "targetScreenId"
+>;
+
+export const uxSurfaceGovernanceContractId = "epic_04_master_detail_data_surface_long_screen" as const;
 
 export const uxDataSurfaceFamilies = [
   "table",
@@ -135,6 +160,21 @@ export const uxMasterDetailModes = [
   "drawer_detail",
   "route_detail",
 ] as const satisfies readonly UxMasterDetailMode[];
+
+export const uxSurfaceGovernancePatterns = [
+  "queue_workbench",
+  "governance_master_detail",
+  "board_detail_surface",
+  "table_detail_surface",
+  "workbench_master_detail_or_stepper",
+] as const satisfies readonly UxSurfaceGovernancePattern[];
+
+export const uxLongScreenGovernancePolicies = [
+  "not_applicable",
+  "resolved_by_shared_surface",
+  "split_or_extract_required",
+  "exception_required",
+] as const satisfies readonly UxLongScreenGovernancePolicy[];
 
 export const uxDataSurfaceActionContracts = {
   blocked_static: {
@@ -210,6 +250,19 @@ export function uxDataSurfacePresetForDensity(
   return "default";
 }
 
+export function uxSurfaceGovernanceAttributesFor(
+  input: UxSurfaceGovernanceProjectionInput,
+): UxDataSurfaceRuntimeAttributes {
+  if (!input.governancePattern && !input.longScreenGovernance && !input.targetScreenId) return {};
+
+  return {
+    "data-ux-surface-governance-contract": uxSurfaceGovernanceContractId,
+    "data-ux-surface-governance-long-screen": input.longScreenGovernance,
+    "data-ux-surface-governance-pattern": input.governancePattern,
+    "data-ux-surface-governance-target-screen": input.targetScreenId,
+  };
+}
+
 export function uxDataSurfaceAttributesFor(input: UxDataSurfaceProjectionInput): UxDataSurfaceRuntimeAttributes {
   const actionPolicy = input.actionPolicy ?? "none";
   const density = uxDataSurfaceDensityForPreset(input.density);
@@ -225,6 +278,7 @@ export function uxDataSurfaceAttributesFor(input: UxDataSurfaceProjectionInput):
     "data-ux-no-overclaim": "true",
     "data-ux-sticky-header": input.stickyHeader ? "true" : "false",
     "data-ux-sticky-rail": input.stickyRail ? "true" : "false",
+    ...uxSurfaceGovernanceAttributesFor(input),
   };
 }
 

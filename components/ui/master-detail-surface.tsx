@@ -5,7 +5,9 @@ import {
   type UxDataSurfaceDensityInput,
   type UxDataSurfaceFamily,
   type UxDataSurfaceFilterState,
+  type UxLongScreenGovernancePolicy,
   type UxMasterDetailMode,
+  type UxSurfaceGovernancePattern,
 } from "@/lib/ux-data-surface-contract";
 
 type MasterDetailSurfaceProps = {
@@ -18,6 +20,8 @@ type MasterDetailSurfaceProps = {
   empty?: React.ReactNode;
   family?: UxDataSurfaceFamily;
   filterState?: UxDataSurfaceFilterState;
+  governancePattern?: UxSurfaceGovernancePattern;
+  longScreenGovernance?: UxLongScreenGovernancePolicy;
   master?: React.ReactNode;
   masterDetailMode: UxMasterDetailMode;
   proofPlacement?: "inline_summary" | "proof_drawer" | "secondary_tab";
@@ -27,6 +31,7 @@ type MasterDetailSurfaceProps = {
   selectedSummary?: React.ReactNode;
   stickyHeader?: boolean;
   stickyRail?: boolean;
+  targetScreenId?: string;
 };
 
 export function MasterDetailSurface({
@@ -39,6 +44,8 @@ export function MasterDetailSurface({
   empty,
   family = "queue",
   filterState,
+  governancePattern,
+  longScreenGovernance,
   master,
   masterDetailMode,
   proofPlacement = "inline_summary",
@@ -48,6 +55,7 @@ export function MasterDetailSurface({
   selectedSummary,
   stickyHeader = false,
   stickyRail = false,
+  targetScreenId,
 }: MasterDetailSurfaceProps) {
   const hasStructuredSlots = Boolean(master || detail || empty || selectedSummary);
   const slotGridClass = detail
@@ -71,9 +79,12 @@ export function MasterDetailSurface({
         density,
         family,
         filterState,
+        governancePattern,
+        longScreenGovernance,
         masterDetailMode,
         stickyHeader,
         stickyRail,
+        targetScreenId,
       })}
     >
       {selectedSummary ? (

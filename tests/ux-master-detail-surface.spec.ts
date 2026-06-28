@@ -15,6 +15,9 @@ test.describe("E06 master-detail surface adoption", () => {
 
     expect(source).toContain("export function MasterDetailSurface");
     expect(source).toContain("uxDataSurfaceAttributesFor");
+    expect(source).toContain("governancePattern");
+    expect(source).toContain("longScreenGovernance");
+    expect(source).toContain("targetScreenId");
     expect(source).toContain("masterDetailMode");
     expect(source).toContain("data-ux-master-detail-selected-object");
     expect(source).toContain("data-ux-master-detail-selected-state");

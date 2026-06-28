@@ -13,7 +13,11 @@ import {
   uxDataSurfaceDensities,
   uxDataSurfaceFamilies,
   uxDataSurfaceFilterStates,
+  uxLongScreenGovernancePolicies,
   uxMasterDetailModes,
+  uxSurfaceGovernanceAttributesFor,
+  uxSurfaceGovernanceContractId,
+  uxSurfaceGovernancePatterns,
 } from "../lib/ux-data-surface-contract";
 
 const repoRoot = process.cwd();
@@ -59,6 +63,11 @@ test.describe("E06 data surface contract", () => {
     ]);
     expect(uxDataSurfaceFilterStates).toContain("disabled_static");
     expect(uxMasterDetailModes).toContain("route_detail");
+    expect(uxSurfaceGovernanceContractId).toBe("epic_04_master_detail_data_surface_long_screen");
+    expect(uxSurfaceGovernancePatterns).toContain("queue_workbench");
+    expect(uxSurfaceGovernancePatterns).toContain("governance_master_detail");
+    expect(uxLongScreenGovernancePolicies).toContain("resolved_by_shared_surface");
+    expect(uxLongScreenGovernancePolicies).toContain("exception_required");
   });
 
   test("projects proof attributes for surfaces fields and row actions", () => {
@@ -67,9 +76,12 @@ test.describe("E06 data surface contract", () => {
       density: "standard_review",
       family: "queue",
       filterState: "active_query",
+      governancePattern: "queue_workbench",
+      longScreenGovernance: "resolved_by_shared_surface",
       masterDetailMode: "route_detail",
       stickyHeader: false,
       stickyRail: false,
+      targetScreenId: "S038",
     })).toMatchObject({
       "data-ux-data-surface-action-policy": "open_detail",
       "data-ux-data-surface-density": "standard_review",
@@ -78,6 +90,21 @@ test.describe("E06 data surface contract", () => {
       "data-ux-data-surface-filter-state": "active_query",
       "data-ux-master-detail-mode": "route_detail",
       "data-ux-no-overclaim": "true",
+      "data-ux-surface-governance-contract": "epic_04_master_detail_data_surface_long_screen",
+      "data-ux-surface-governance-long-screen": "resolved_by_shared_surface",
+      "data-ux-surface-governance-pattern": "queue_workbench",
+      "data-ux-surface-governance-target-screen": "S038",
+    });
+
+    expect(uxSurfaceGovernanceAttributesFor({
+      governancePattern: "governance_master_detail",
+      longScreenGovernance: "split_or_extract_required",
+      targetScreenId: "S050",
+    })).toMatchObject({
+      "data-ux-surface-governance-contract": "epic_04_master_detail_data_surface_long_screen",
+      "data-ux-surface-governance-long-screen": "split_or_extract_required",
+      "data-ux-surface-governance-pattern": "governance_master_detail",
+      "data-ux-surface-governance-target-screen": "S050",
     });
 
     expect(uxDataFieldAttributesFor("identity")).toEqual({
