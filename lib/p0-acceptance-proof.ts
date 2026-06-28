@@ -7,8 +7,18 @@ export type P0AcceptanceProofEntry = {
   negativeProof: string[];
   nonClaims: string[];
   positiveProof: string[];
+  processId: string;
+  processName: string;
   status: P0ProofStatus;
 };
+
+function processProofEntry(input: Omit<P0AcceptanceProofEntry, "journeyId" | "journeyName">): P0AcceptanceProofEntry {
+  return {
+    ...input,
+    journeyId: input.processId,
+    journeyName: input.processName,
+  };
+}
 
 export const p0BusinessProcessUniverseReference = {
   artifactName: "ALPHAVEST_DETAILED_BUSINESS_PROCESS_SPECIFICATION_P0_ONLY.json",
@@ -38,14 +48,11 @@ export const p0ApiRouteUniverse = [
   "app/api/export-workflow/route.ts",
   "app/api/family-members/route.ts",
   "app/api/global-search/route.ts",
-  "app/api/journeys/[id]/audit/route.ts",
-  "app/api/journeys/[id]/client-projection/route.ts",
-  "app/api/journeys/[id]/commands/route.ts",
-  "app/api/journeys/[id]/evidence-sufficiency/route.ts",
-  "app/api/journeys/[id]/route.ts",
-  "app/api/journeys/route.ts",
   "app/api/ops-sla/route.ts",
   "app/api/platform-admin/actions/route.ts",
+  "app/api/processes/[id]/commands/route.ts",
+  "app/api/processes/[id]/route.ts",
+  "app/api/processes/route.ts",
   "app/api/profile/route.ts",
   "app/api/recommendation-review-workflow/route.ts",
   "app/api/review-monitoring/actions/route.ts",
@@ -70,46 +77,41 @@ export const p0RouteUiStateObligations = [
     routes: ["/export/demo/scope", "/export/demo/preview", "/export/demo/download"],
   },
   {
-    obligation: "audit-sensitive feedback does not claim persistence without proof",
-    proof: "tests/ui-state-boundaries.spec.ts",
-    routes: ["/governance/roles/:id", "/decisions/demo/success"],
+    obligation: "process command failures do not advance state without persisted audit proof",
+    proof: "tests/process-runtime-db-api.spec.ts",
+    routes: ["/api/processes", "/api/processes/:id/commands"],
   },
 ] as const;
 
 export const p0AcceptanceProofMap: P0AcceptanceProofEntry[] = [
-  {
+  processProofEntry({
     foundationIds: ["FND-001", "FND-002", "FND-003", "FND-008", "FND-009", "FND-010", "FND-011"],
-    journeyId: "MJ-001",
-    journeyName: "New Family Office onboarding to first client-safe decision",
     negativeProof: [
-      "tests/recommendation-review-workflow-api.spec.ts::release precondition blocks",
-      "tests/p0-acceptance.spec.ts::AV-SLICE-P0-03",
-      "tests/p0-acceptance.spec.ts::AV-SLICE-P0-08",
+      "tests/process-runtime-db-api.spec.ts::missing JWT fails closed",
+      "tests/process-runtime-db-api.spec.ts::BLOCK command requires process.manage",
       "tests/client-visibility-proof.spec.ts",
       "tests/governance-non-bypass.spec.ts",
     ],
     nonClaims: [
       "No production auth provider claim.",
-      "No full 63-route human visual acceptance claim.",
       "No client visibility before compliance release.",
+      "No process completion claim from route or card visibility alone.",
     ],
     positiveProof: [
-      "tests/recommendation-review-workflow-api.spec.ts::typed advisor approval workflow",
-      "tests/p0-acceptance.spec.ts::AV-SLICE-P0-01",
-      "tests/p0-acceptance.spec.ts::AV-SLICE-P0-03",
-      "tests/ui-state-boundaries.spec.ts",
+      "tests/process-runtime-db-api.spec.ts::persisted process instances and command history",
+      "tests/process-runtime-backbone.spec.ts::process state transitions",
+      "tests/schema-alignment.spec.ts::Process Runtime Backbone schema spine",
     ],
+    processId: "BP-001",
+    processName: "Client relationship intake",
     status: "mapped",
-  },
-  {
+  }),
+  processProofEntry({
     foundationIds: ["FND-005", "FND-009", "FND-011"],
-    journeyId: "MJ-002",
-    journeyName: "Evidence missing to client upload to release",
     negativeProof: [
       "tests/document-upload-api.spec.ts::rejects invalid document tenant queries",
-      "tests/document-upload-api.spec.ts::rejects upload requests with invalid role or tenant metadata",
       "tests/evidence-review-api.spec.ts::denies analyst evidence sufficiency acceptance",
-      "tests/p0-acceptance.spec.ts::AV-SLICE-P0-05",
+      "tests/process-runtime-db-api.spec.ts::journey seed tables stay empty",
     ],
     nonClaims: [
       "Upload success is not evidence sufficiency.",
@@ -118,154 +120,76 @@ export const p0AcceptanceProofMap: P0AcceptanceProofEntry[] = [
     positiveProof: [
       "tests/document-upload-api.spec.ts::stores multipart document bytes",
       "tests/evidence-review-api.spec.ts::lets compliance accept reviewed scoped evidence",
-      "tests/p0-acceptance.spec.ts::AV-SLICE-P0-05",
+      "tests/process-runtime-db-api.spec.ts::process-backed sufficiency decisions",
     ],
+    processId: "BP-024",
+    processName: "Client document upload",
     status: "mapped",
-  },
-  {
+  }),
+  processProofEntry({
     foundationIds: ["FND-006", "FND-007", "FND-008", "FND-010"],
-    journeyId: "MJ-003",
-    journeyName: "AI draft rejected and rebuilt with evidence",
     negativeProof: [
-      "tests/p0-acceptance.spec.ts::AV-SLICE-P0-02",
       "tests/recommendation-review-workflow-api.spec.ts::analyst rejects unsupported claim",
       "tests/client-visibility-proof.spec.ts",
       "tests/file-export-realism.spec.ts",
     ],
-    nonClaims: [
-      "No production AI integration.",
-      "No autonomous advice execution.",
-    ],
+    nonClaims: ["No production AI integration.", "No autonomous advice execution."],
     positiveProof: [
       "tests/recommendation-review-workflow-api.spec.ts::submit review persists analyst review state",
-      "tests/recommendation-review-workflow-api.spec.ts::Phase C J13/J14 actions keep advice visibility blocked",
-      "tests/p0-acceptance.spec.ts::AV-SLICE-P0-02",
+      "tests/process-runtime-backbone.spec.ts::P0 matrix-backed process registry",
     ],
+    processId: "BP-046",
+    processName: "Rebuild with evidence",
     status: "mapped",
-  },
-  {
-    foundationIds: ["FND-012", "FND-010", "FND-011"],
-    journeyId: "MJ-005",
-    journeyName: "Export and redaction of client-safe package",
+  }),
+  processProofEntry({
+    foundationIds: ["FND-004", "FND-011"],
     negativeProof: [
-      "tests/file-export-realism.spec.ts",
-      "tests/phase8-export-workflow-api.spec.ts",
-      "tests/p0-acceptance.spec.ts::AV-SLICE-P0-07",
+      "tests/governance-non-bypass.spec.ts",
+      "tests/process-runtime-db-api.spec.ts::process command requires current-user JWT",
     ],
+    nonClaims: [
+      "Admin route access does not imply release, evidence sufficiency, export or client-visibility authority.",
+    ],
+    positiveProof: ["tests/governance-non-bypass.spec.ts::allows governance administration"],
+    processId: "BP-020",
+    processName: "Admin non-bypass enforcement",
+    status: "mapped",
+  }),
+  processProofEntry({
+    foundationIds: ["FND-012", "FND-010", "FND-011"],
+    negativeProof: ["tests/file-export-realism.spec.ts", "tests/phase8-export-workflow-api.spec.ts"],
     nonClaims: [
       "Generated package remains metadata-only.",
       "No production binary ZIP delivery claim.",
       "No production external share-link authorization claim.",
     ],
-    positiveProof: [
-      "tests/file-export-realism.spec.ts",
-      "tests/phase8-export-workflow-api.spec.ts",
-      "tests/p0-acceptance.spec.ts::AV-SLICE-P0-07",
-    ],
+    positiveProof: ["tests/file-export-realism.spec.ts", "tests/phase8-export-workflow-api.spec.ts"],
+    processId: "BP-088",
+    processName: "Export approval",
     status: "mapped",
-  },
-  {
+  }),
+  processProofEntry({
     foundationIds: ["FND-001", "FND-002", "FND-003", "FND-010"],
-    journeyId: "MJ-006",
-    journeyName: "Tenant and object isolation",
-    negativeProof: [
-      "tests/providerless-scope.spec.ts",
-      "tests/document-upload-api.spec.ts::reloads uploaded documents only for the active tenant",
-      "tests/p0-api-contract.spec.ts",
-    ],
+    negativeProof: ["tests/providerless-scope.spec.ts", "tests/p0-api-contract.spec.ts"],
     nonClaims: [
       "Providerless demo session is not production authentication.",
       "Route shell access is not payload authorization.",
     ],
-    positiveProof: [
-      "tests/providerless-scope.spec.ts",
-      "tests/permission-engine.spec.ts",
-      "tests/document-upload-api.spec.ts::reloads uploaded documents only for the active tenant",
-    ],
+    positiveProof: ["tests/providerless-scope.spec.ts", "tests/permission-engine.spec.ts"],
+    processId: "BP-017",
+    processName: "Object-scope evaluation",
     status: "mapped",
-  },
-  {
-    foundationIds: ["FND-004", "FND-011"],
-    journeyId: "MJ-010",
-    journeyName: "Admin role change cannot bypass compliance release",
-    negativeProof: [
-      "tests/governance-non-bypass.spec.ts",
-      "tests/p0-acceptance.spec.ts::AV-SLICE-P0-04",
-    ],
-    nonClaims: [
-      "Admin route access does not imply release, evidence sufficiency, export or client-visibility authority.",
-    ],
-    positiveProof: [
-      "tests/governance-non-bypass.spec.ts::allows governance administration",
-      "tests/p0-acceptance.spec.ts::AV-SLICE-P0-04",
-    ],
+  }),
+  processProofEntry({
+    foundationIds: ["FND-013"],
+    negativeProof: ["tests/data-quality-service.spec.ts", "tests/process-runtime-db-api.spec.ts::BLOCK command audit proof"],
+    nonClaims: ["Data quality remains a support-hardening gate, not advice execution."],
+    positiveProof: ["tests/data-quality-service.spec.ts", "tests/review-monitoring-service.spec.ts"],
+    processId: "BP-099",
+    processName: "Data quality block",
     status: "mapped",
-  },
-  {
-    foundationIds: ["FND-013"],
-    journeyId: "MJ-012",
-    journeyName: "Data-quality support hardening",
-    negativeProof: [
-      "tests/phase9-support-hardening.spec.ts",
-      "tests/data-quality-service.spec.ts",
-      "tests/p0-api-contract.spec.ts",
-    ],
-    nonClaims: [
-      "Data quality remains a support-hardening gate, not the primary MVP narrative.",
-      "Review monitoring remains internal and does not execute advice.",
-    ],
-    positiveProof: [
-      "tests/phase9-support-hardening.spec.ts",
-      "tests/data-quality-service.spec.ts",
-      "tests/review-monitoring-service.spec.ts",
-    ],
-    status: "mapped",
-  },
-  {
-    foundationIds: ["FND-002", "FND-003"],
-    journeyId: "MJ-011",
-    journeyName: "External advisor object-scope access",
-    negativeProof: ["route-scope lock keeps guest access conditional/P1 until explicitly unlocked"],
-    nonClaims: ["External advisor guest access is not unlocked in MVP Phase 10."],
-    positiveProof: ["explicit blocker: conditional MVP support/P1, not accepted as done"],
-    status: "explicit_blocker",
-  },
-  {
-    foundationIds: ["FND-013"],
-    journeyId: "MJ-008",
-    journeyName: "Review monitoring and rebalance guard",
-    negativeProof: ["tests/p0-api-contract.spec.ts", "tests/review-monitoring-service.spec.ts"],
-    nonClaims: ["No automatic rebalance, advice execution or client release."],
-    positiveProof: ["internal snapshot and J16/J17 audit-only proof only"],
-    status: "explicit_blocker",
-  },
-  {
-    foundationIds: ["FND-013"],
-    journeyId: "MJ-009",
-    journeyName: "Mobile/client communication layer",
-    negativeProof: ["route-scope lock keeps communication/mobile advisory workflow P1"],
-    nonClaims: ["No first-path client communication/advice workflow is unlocked."],
-    positiveProof: ["explicit blocker: P1_DEFERRED"],
-    status: "explicit_blocker",
-  },
-  {
-    foundationIds: ["FND-013"],
-    journeyId: "MJ-004",
-    journeyName: "Committee review",
-    negativeProof: ["tests/committee-review-routes.spec.ts"],
-    nonClaims: ["Held committee routes 070-071 are not silently elevated."],
-    positiveProof: ["explicit blocker: HOLD_PENDING_DECISION"],
-    status: "explicit_blocker",
-  },
-  {
-    foundationIds: ["FND-013"],
-    journeyId: "MJ-007",
-    journeyName: "KYC, source-of-wealth, suitability and IPS",
-    negativeProof: ["route-scope lock keeps regulated suitability routes held"],
-    nonClaims: ["No regulated suitability/advice logic is unlocked in first-path MVP."],
-    positiveProof: ["explicit blocker: HOLD_PENDING_DECISION"],
-    status: "explicit_blocker",
-  },
+  }),
 ];
 
 export function p0AcceptanceProofGaps(entries = p0AcceptanceProofMap) {
@@ -278,6 +202,10 @@ export function p0AcceptanceProofGaps(entries = p0AcceptanceProofMap) {
   });
 }
 
+export function p0MappedProcessIds(entries = p0AcceptanceProofMap) {
+  return entries.filter((entry) => entry.status === "mapped").map((entry) => entry.processId).sort();
+}
+
 export function p0MappedJourneyIds(entries = p0AcceptanceProofMap) {
-  return entries.filter((entry) => entry.status === "mapped").map((entry) => entry.journeyId).sort();
+  return p0MappedProcessIds(entries);
 }

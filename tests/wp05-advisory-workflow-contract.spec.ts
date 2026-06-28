@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 import {
   advisorApprovalActionToCanonicalCommand,
   advisorApprovalActionToCanonicalState,
-  wp05CanonicalJourneyCommandIds,
+  wp05CanonicalProcessCommandIds,
   wp05CanonicalStates,
   wp05ComplianceReleaseConfirmationPhrase,
   wp05TypedWorkflowBoundaryMode,
@@ -12,11 +12,16 @@ import {
   advisorApprovalConfirmationText,
   advisorApprovalTransitionFor,
 } from "../lib/recommendation-review-workflow-validation";
-import { journeyCommandIds } from "../lib/journeys/journey-command-registry";
 
 test.describe("WP05 advisory workflow contract", () => {
-  test("keeps Journey Commands canonical and recommendation review boundary mapped", () => {
-    expect(journeyCommandIds).toEqual(expect.arrayContaining([...wp05CanonicalJourneyCommandIds]));
+  test("keeps Process Commands canonical and recommendation review boundary mapped", () => {
+    expect(wp05CanonicalProcessCommandIds).toEqual([
+      "AI_DRAFT_INTERNAL",
+      "ADVISOR_APPROVE",
+      "COMPLIANCE_BLOCK",
+      "COMPLIANCE_REQUEST_EVIDENCE",
+      "COMPLIANCE_RELEASE",
+    ]);
     expect(wp05CanonicalStates).toEqual([
       "DRAFT_INTERNAL_ONLY",
       "UNSUPPORTED_CLAIM_BLOCKED",

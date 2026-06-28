@@ -832,7 +832,7 @@ test.describe("UX-DENSITY focused detail routes", () => {
   }
 });
 
-test.describe("UX-CTA MJ-001 setup-to-release chain", () => {
+test.describe("UX-CTA BP-001 setup-to-release process chain", () => {
   const routeByPageId = new Map<string, (typeof screenRoutes)[number]>(screenRoutes.map((route) => [route.pageId, route]));
   const expectedPrimaryHrefs: Record<string, string> = {
     "013": "/tenants/new",
@@ -858,7 +858,7 @@ test.describe("UX-CTA MJ-001 setup-to-release chain", () => {
     "045": "/client/home",
   };
 
-  test("maps MJ-001 primary CTAs from setup through released client-safe endpoint", () => {
+  test("maps BP-001 primary CTAs from setup through released client-safe endpoint", () => {
     for (const [pageId, href] of Object.entries(expectedPrimaryHrefs)) {
       const route = routeByPageId.get(pageId);
       expect(route, `${pageId} registered route`).toBeDefined();

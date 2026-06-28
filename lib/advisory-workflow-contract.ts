@@ -13,7 +13,7 @@ export const wp05CanonicalStates = [
 
 export type Wp05CanonicalState = (typeof wp05CanonicalStates)[number];
 
-export const wp05CanonicalJourneyCommandIds = [
+export const wp05CanonicalProcessCommandIds = [
   "AI_DRAFT_INTERNAL",
   "ADVISOR_APPROVE",
   "COMPLIANCE_BLOCK",
@@ -21,20 +21,23 @@ export const wp05CanonicalJourneyCommandIds = [
   "COMPLIANCE_RELEASE",
 ] as const;
 
-export type Wp05CanonicalJourneyCommandId = (typeof wp05CanonicalJourneyCommandIds)[number];
+export type Wp05CanonicalProcessCommandId = (typeof wp05CanonicalProcessCommandIds)[number];
+export const wp05CanonicalJourneyCommandIds = wp05CanonicalProcessCommandIds;
+export type Wp05CanonicalJourneyCommandId = Wp05CanonicalProcessCommandId;
 
-export const wp05ComplianceReleaseConfirmationPhrase = "RELEASE CLIENT-SAFE JOURNEY";
+export const wp05ComplianceReleaseConfirmationPhrase = "RELEASE CLIENT-SAFE PROCESS";
 
 export const wp05TypedWorkflowBoundaryMode = "TYPED_WORKFLOW_BOUNDARY";
 
-export const wp05CanonicalJourneyCommandApiRoute = "/api/journeys/[id]/commands";
+export const wp05CanonicalProcessCommandApiRoute = "/api/processes/[id]/commands";
+export const wp05CanonicalJourneyCommandApiRoute = wp05CanonicalProcessCommandApiRoute;
 
 export type Wp05ReleaseProofDirectnessClassification =
   | "CANONICAL_TYPED_JOURNEY_COMMAND"
   | "DOMAIN_BACKED_TYPED_COMPATIBILITY";
 
 export type Wp05ReleaseProofDirectness = {
-  canonicalProofRoute: typeof wp05CanonicalJourneyCommandApiRoute;
+  canonicalProofRoute: typeof wp05CanonicalProcessCommandApiRoute;
   classification: Wp05ReleaseProofDirectnessClassification;
   typedWorkflowBoundaryMode?: typeof wp05TypedWorkflowBoundaryMode;
   productProofBacked: boolean;
@@ -58,7 +61,7 @@ export const wp05TypedAdvisorWorkflowDirectness = {
     proofBackedByStatePayloadAssertions: true,
     releaseBoundary: "advisor_approval_not_release",
     summary:
-      "Typed advisor approval is domain-backed compatibility proof only; PP004 canonical proof must use the journey command API and assert state plus client projection payload.",
+      "Typed advisor approval is domain-backed compatibility proof only; PP004 canonical proof must use the process command API and assert state plus client projection payload.",
   },
   compliance_block: {
     canonicalProofRoute: wp05CanonicalJourneyCommandApiRoute,
@@ -69,7 +72,7 @@ export const wp05TypedAdvisorWorkflowDirectness = {
     proofBackedByStatePayloadAssertions: true,
     releaseBoundary: "compliance_negative_release_control",
     summary:
-      "Typed compliance block is domain-backed compatibility proof only; PP004 canonical proof must use the journey command API and assert state plus client projection payload.",
+      "Typed compliance block is domain-backed compatibility proof only; PP004 canonical proof must use the process command API and assert state plus client projection payload.",
   },
   compliance_release: {
     canonicalProofRoute: wp05CanonicalJourneyCommandApiRoute,
@@ -80,7 +83,7 @@ export const wp05TypedAdvisorWorkflowDirectness = {
     proofBackedByStatePayloadAssertions: true,
     releaseBoundary: "compliance_release",
     summary:
-      "Typed compliance release is domain-backed compatibility proof only; PP004 canonical proof must use the journey command API and assert state plus client projection payload.",
+      "Typed compliance release is domain-backed compatibility proof only; PP004 canonical proof must use the process command API and assert state plus client projection payload.",
   },
   request_evidence: {
     canonicalProofRoute: wp05CanonicalJourneyCommandApiRoute,
@@ -91,7 +94,7 @@ export const wp05TypedAdvisorWorkflowDirectness = {
     proofBackedByStatePayloadAssertions: true,
     releaseBoundary: "compliance_negative_release_control",
     summary:
-      "Typed evidence request is domain-backed compatibility proof only; PP004 canonical proof must use the journey command API and assert state plus client projection payload.",
+      "Typed evidence request is domain-backed compatibility proof only; PP004 canonical proof must use the process command API and assert state plus client projection payload.",
   },
 } as const satisfies Record<
   "advisor_approve" | "compliance_block" | "compliance_release" | "request_evidence",
@@ -112,7 +115,7 @@ export const advisorApprovalActionToCanonicalCommand = {
   compliance_block: "COMPLIANCE_BLOCK",
   compliance_release: "COMPLIANCE_RELEASE",
   request_evidence: "COMPLIANCE_REQUEST_EVIDENCE",
-} as const satisfies Record<string, Wp05CanonicalJourneyCommandId>;
+} as const satisfies Record<string, Wp05CanonicalProcessCommandId>;
 
 export const advisorApprovalActionToCanonicalState = {
   submit_review: "DRAFT_INTERNAL_ONLY",

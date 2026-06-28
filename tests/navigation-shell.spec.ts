@@ -6,7 +6,6 @@ import { createDemoSession } from "../lib/demo-session";
 import { navigationGroupsForRole, productiveNavigationPageIds } from "../lib/navigation";
 
 const importantNavigationLinks = [
-  { path: "/journeys", label: "Command Center" },
   { path: "/tenants/demo/setup", label: "Foundation" },
   { path: "/client/home", label: "Client Context" },
   { path: "/documents/upload", label: "Evidence Lifecycle" },
@@ -69,8 +68,7 @@ test.describe("AlphaVest navigation shell", () => {
   test("orders the approved process-first app areas from command center through export", () => {
     const internalSession = createDemoSession({ roleKey: "compliance_officer", tenantSlug: "bennett" });
     const labels = navigationGroupsForRole(internalSession.role).map((group) => group.label);
-    const journeyLabels = [
-      "Command Center",
+    const processLabels = [
       "Foundation",
       "Client Context",
       "Evidence Lifecycle",
@@ -84,11 +82,11 @@ test.describe("AlphaVest navigation shell", () => {
       "Protected Work",
     ];
 
-    for (const label of journeyLabels) {
+    for (const label of processLabels) {
       expect(labels).toContain(label);
     }
 
-    const positions = journeyLabels.map((label) => labels.indexOf(label));
+    const positions = processLabels.map((label) => labels.indexOf(label));
     expect(positions).toEqual([...positions].sort((left, right) => left - right));
     expect(productiveNavigationPageIds).toEqual(["015", "019", "028", "034", "036", "038", "044", "020", "054"]);
     expect(productiveNavigationPageIds).not.toEqual(expect.arrayContaining(["052", "053", "059", "060", "061", "062", "063", "064", "065", "066", "067", "068", "069", "070", "071"]));
@@ -100,7 +98,7 @@ test.describe("AlphaVest navigation shell", () => {
     const visibleGroups = groups.filter((group) => group.items.length > 0).map((group) => group.label);
     const lockedGroups = groups.filter((group) => group.lockedReason).map((group) => group.label);
 
-    expect(visibleGroups).toEqual(expect.arrayContaining(["Command Center", "Client Context", "Evidence Lifecycle", "Decision Record", "Client Visibility"]));
+    expect(visibleGroups).toEqual(expect.arrayContaining(["Client Context", "Evidence Lifecycle", "Decision Record", "Client Visibility"]));
     expect(lockedGroups).toEqual(expect.arrayContaining(["Foundation", "Analyst Workbench", "Advisor Review", "Compliance Release", "Export & Delivery", "Operations", "Protected Work"]));
 
     for (const group of groups.filter((candidate) => candidate.lockedReason)) {
@@ -128,7 +126,6 @@ test.describe("AlphaVest navigation shell", () => {
 
     const primaryNavigation = page.getByRole("navigation", { name: "Primary navigation" });
 
-    await expect(primaryNavigation.getByRole("region", { name: "Command Center" })).toBeVisible();
     await expect(primaryNavigation.getByRole("region", { name: "Foundation" })).toBeVisible();
     await expect(primaryNavigation.getByRole("region", { name: "Client Context" })).toBeVisible();
     await expect(primaryNavigation.getByRole("region", { name: "Evidence Lifecycle" })).toBeVisible();
@@ -144,7 +141,7 @@ test.describe("AlphaVest navigation shell", () => {
     await expect(primaryNavigation.getByText("Platform & Tenant")).toHaveCount(0);
 
     const primaryEntries = primaryNavigation.locator("[data-navigation-item-tier='primary']");
-    await expect(primaryEntries).toHaveCount(10);
+    await expect(primaryEntries).toHaveCount(9);
     await expect(primaryNavigation.locator("[data-navigation-item-tier='secondary']")).toHaveCount(0);
     await expect(primaryNavigation.getByRole("link", { name: "Source library" })).toHaveCount(0);
     await expect(primaryNavigation.getByRole("link", { name: "Evidence intake" })).toHaveCount(0);

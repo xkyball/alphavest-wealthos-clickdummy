@@ -41,27 +41,28 @@ export function AlphaVestMark() {
 
 export function ProcessJourneyLink({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const active = pathname.startsWith("/tenants/demo/setup");
 
   return (
     <Link
-      aria-current={pathname.startsWith("/journeys") ? "page" : undefined}
+      aria-current={active ? "page" : undefined}
       className={cn(
         "flex min-h-12 items-start gap-3 rounded-md border px-3 py-2.5 text-xs transition",
-        pathname.startsWith("/journeys")
+        active
           ? cn("border-alphavest-gold/55 bg-alphavest-gold/12 text-alphavest-gold-soft", uxPrimitiveInteractionClassFor("selected"))
           : "border-alphavest-border/55 bg-alphavest-charcoal/42 text-alphavest-muted hover:border-alphavest-gold/60 hover:text-alphavest-gold-soft",
         uxPrimitiveInteractionClassFor("focus-visible"),
       )}
-      data-testid="journey-first-navigation"
-      href="/journeys"
+      data-testid="process-runtime-navigation"
+      href="/tenants/demo/setup"
       onClick={onNavigate}
-      {...uxPrimitiveInteractionAttributesFor(pathname.startsWith("/journeys") ? "selected" : "focus-visible")}
+      {...uxPrimitiveInteractionAttributesFor(active ? "selected" : "focus-visible")}
     >
       <Route aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
       <span className="min-w-0 flex-1">
-        <span className="block truncate font-semibold">Command Center</span>
+        <span className="block truncate font-semibold">Process Runtime</span>
         <span className="block line-clamp-2 text-[0.66rem] leading-4 text-alphavest-subtle">
-          Process health, blocked gates and safe next actions.
+          DB-backed process instances, state and audit history.
         </span>
       </span>
     </Link>

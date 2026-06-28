@@ -85,7 +85,7 @@ test.describe("Phase 01 foundation guardrails", () => {
     expect(taskMaster).toContain("Do not create explicit models unless final handoff resolves need");
   });
 
-  test("keeps Wave 0-2 source lock and hold journeys machine-readable", () => {
+  test("keeps Process Runtime source lock and held route surfaces machine-readable", () => {
     expect(wave02SourceLock.targetBranch).toBe("full-workflow");
     expect(wave02SourceLock.forbiddenTargetTruth).toContain("main");
     expect(wave02SourceLock.noGenerationRules).toEqual([
@@ -94,10 +94,10 @@ test.describe("Phase 01 foundation guardrails", () => {
       "NO_IMAGE_GENERATION",
     ]);
 
-    expect(wave02BlockedJourneys.map((journey) => journey.journeyId)).toEqual(["MJ-004", "MJ-007"]);
-    expect(() => assertWave02JourneyExecutable("MJ-004")).toThrow(/blocked by Wave 0-2 source lock/);
-    expect(() => assertWave02JourneyExecutable("MJ-007")).toThrow(/blocked by Wave 0-2 source lock/);
-    expect(() => assertWave02JourneyExecutable("MJ-001")).not.toThrow();
+    expect(wave02BlockedJourneys.map((process) => process.journeyId)).toEqual(["BP-070", "BP-071"]);
+    expect(() => assertWave02JourneyExecutable("BP-070")).toThrow(/blocked by Wave 0-2 source lock/);
+    expect(() => assertWave02JourneyExecutable("BP-071")).toThrow(/blocked by Wave 0-2 source lock/);
+    expect(() => assertWave02JourneyExecutable("BP-001")).not.toThrow();
 
     expect(wave02HoldRouteAssertions()).toEqual(
       expect.arrayContaining([

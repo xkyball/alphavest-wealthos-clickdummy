@@ -10,20 +10,9 @@ export type PhaseBCDemoActionId =
   | "j14.requestIpsMandateChanges"
   | "j14.linkIpsEvidence";
 
-type PhaseBCJourneyCommand =
-  | "KYC_REQUEST_EVIDENCE"
-  | "KYC_COMPLETE_REVIEW"
-  | "SOURCE_OF_WEALTH_ESCALATE"
-  | "SOURCE_OF_WEALTH_LINK_EVIDENCE"
-  | "SUITABILITY_REQUEST_EVIDENCE"
-  | "SUITABILITY_MARK_REVIEWED"
-  | "IPS_REQUEST_MANDATE_CHANGES"
-  | "IPS_LINK_EVIDENCE";
-
 type PhaseBCActionSpec = {
-  command: PhaseBCJourneyCommand;
   email: string;
-  journeyKey: "MJ-003";
+  processId: "BP-023" | "BP-024" | "BP-030" | "BP-046";
   reason: string;
 };
 
@@ -31,57 +20,49 @@ const morganTenantId = "7870ddd4-4587-58c6-a30b-ed6710109c17";
 
 const phaseBCActionSpecs: Record<PhaseBCDemoActionId, PhaseBCActionSpec> = {
   "j12.requestKycEvidence": {
-    command: "KYC_REQUEST_EVIDENCE",
     email: "mira.analyst@alphavest.demo",
-    journeyKey: "MJ-003",
-    reason: "Phase B KYC evidence request recorded through typed journey command.",
+    processId: "BP-023",
+    reason: "Phase B KYC evidence request recorded through the Process Runtime Backbone.",
   },
   "j12.completeKycReview": {
-    command: "KYC_COMPLETE_REVIEW",
     email: "naledi.compliance@alphavest.demo",
-    journeyKey: "MJ-003",
-    reason: "Phase B KYC review routed to compliance through typed journey command.",
+    processId: "BP-030",
+    reason: "Phase B KYC review routed to compliance through the Process Runtime Backbone.",
   },
   "j12.escalateSourceOfWealth": {
-    command: "SOURCE_OF_WEALTH_ESCALATE",
     email: "mira.analyst@alphavest.demo",
-    journeyKey: "MJ-003",
-    reason: "Phase B source-of-wealth evidence gap escalated through typed journey command.",
+    processId: "BP-046",
+    reason: "Phase B source-of-wealth evidence gap escalated through the Process Runtime Backbone.",
   },
   "j12.linkSourceEvidence": {
-    command: "SOURCE_OF_WEALTH_LINK_EVIDENCE",
     email: "naledi.compliance@alphavest.demo",
-    journeyKey: "MJ-003",
-    reason: "Phase B source-of-wealth evidence linked through typed journey command.",
+    processId: "BP-024",
+    reason: "Phase B source-of-wealth evidence linked through the Process Runtime Backbone.",
   },
   "j13.requestSuitabilityEvidence": {
-    command: "SUITABILITY_REQUEST_EVIDENCE",
     email: "mira.analyst@alphavest.demo",
-    journeyKey: "MJ-003",
-    reason: "Phase C suitability evidence request recorded through typed journey command.",
+    processId: "BP-023",
+    reason: "Phase C suitability evidence request recorded through the Process Runtime Backbone.",
   },
   "j13.markSuitabilityReviewed": {
-    command: "SUITABILITY_MARK_REVIEWED",
     email: "mira.analyst@alphavest.demo",
-    journeyKey: "MJ-003",
-    reason: "Phase C suitability review marked through typed journey command.",
+    processId: "BP-030",
+    reason: "Phase C suitability review marked through the Process Runtime Backbone.",
   },
   "j14.requestIpsMandateChanges": {
-    command: "IPS_REQUEST_MANDATE_CHANGES",
     email: "thabo.advisor@alphavest.demo",
-    journeyKey: "MJ-003",
-    reason: "Phase C IPS mandate changes requested through typed journey command.",
+    processId: "BP-046",
+    reason: "Phase C IPS mandate changes requested through the Process Runtime Backbone.",
   },
   "j14.linkIpsEvidence": {
-    command: "IPS_LINK_EVIDENCE",
     email: "thabo.advisor@alphavest.demo",
-    journeyKey: "MJ-003",
-    reason: "Phase C IPS evidence linked through typed journey command.",
+    processId: "BP-024",
+    reason: "Phase C IPS evidence linked through the Process Runtime Backbone.",
   },
 };
 
 const jwtByEmail = new Map<string, string>();
-const journeyIdByKey = new Map<string, string>();
+const processInstanceIdByKey = new Map<string, string>();
 
 async function jsonOrUndefined(response: Response) {
   return (await response.json().catch(() => undefined)) as unknown;
@@ -121,33 +102,34 @@ async function demoJwtFor(email: string) {
   return mfaBody.jwt;
 }
 
-async function journeyIdFor(spec: PhaseBCActionSpec, jwt: string) {
-  const cacheKey = `${morganTenantId}:${spec.journeyKey}`;
-  const cached = journeyIdByKey.get(cacheKey);
+async function processInstanceIdFor(spec: PhaseBCActionSpec, jwt: string) {
+  const cacheKey = `${morganTenantId}:${spec.processId}`;
+  const cached = processInstanceIdByKey.get(cacheKey);
   if (cached) return cached;
 
-  const list = await fetch("/api/journeys", {
+  const list = await fetch("/api/processes", {
     headers: { authorization: `Bearer ${jwt}` },
   });
   const listBody = (await jsonOrUndefined(list)) as
-    | { journeys?: Array<{ clientTenantId?: string; id?: string; journeyKey?: string }> }
+    | { processes?: Array<{ clientTenantId?: string; id?: string; processId?: string }> }
     | undefined;
   if (!list.ok) {
-    throw new Error(errorMessage(listBody, "Journey list failed."));
+    throw new Error(errorMessage(listBody, "Process list failed."));
   }
 
-  const existing = listBody?.journeys?.find(
-    (journey) => journey.clientTenantId === morganTenantId && journey.journeyKey === spec.journeyKey && typeof journey.id === "string",
+  const existing = listBody?.processes?.find(
+    (process) =>
+      process.clientTenantId === morganTenantId && process.processId === spec.processId && typeof process.id === "string",
   );
   if (existing?.id) {
-    journeyIdByKey.set(cacheKey, existing.id);
+    processInstanceIdByKey.set(cacheKey, existing.id);
     return existing.id;
   }
 
-  const created = await fetch("/api/journeys", {
+  const created = await fetch("/api/processes", {
     body: JSON.stringify({
       clientTenantId: morganTenantId,
-      journeyKey: spec.journeyKey,
+      processId: spec.processId,
     }),
     headers: {
       authorization: `Bearer ${jwt}`,
@@ -157,20 +139,20 @@ async function journeyIdFor(spec: PhaseBCActionSpec, jwt: string) {
   });
   const createdBody = (await jsonOrUndefined(created)) as { detail?: { id?: string } } | undefined;
   if (!created.ok || typeof createdBody?.detail?.id !== "string") {
-    throw new Error(errorMessage(createdBody, "Journey creation failed."));
+    throw new Error(errorMessage(createdBody, "Process creation failed."));
   }
 
-  journeyIdByKey.set(cacheKey, createdBody.detail.id);
+  processInstanceIdByKey.set(cacheKey, createdBody.detail.id);
   return createdBody.detail.id;
 }
 
-export async function runPhaseBCJourneyCommand(actionId: PhaseBCDemoActionId, nextRoute?: string) {
+export async function runPhaseBCProcessCommand(actionId: PhaseBCDemoActionId, nextRoute?: string) {
   const spec = phaseBCActionSpecs[actionId];
   const jwt = await demoJwtFor(spec.email);
-  const journeyId = await journeyIdFor(spec, jwt);
-  const response = await fetch(`/api/journeys/${journeyId}/commands`, {
+  const processInstanceId = await processInstanceIdFor(spec, jwt);
+  const response = await fetch(`/api/processes/${processInstanceId}/commands`, {
     body: JSON.stringify({
-      command: spec.command,
+      command: "BLOCK",
       reason: spec.reason,
     }),
     headers: {
@@ -182,7 +164,7 @@ export async function runPhaseBCJourneyCommand(actionId: PhaseBCDemoActionId, ne
   const body = (await jsonOrUndefined(response)) as { error?: string; result?: { message?: string } } | undefined;
 
   if (!response.ok) {
-    throw new Error(errorMessage(body, `Phase B/C journey command failed with HTTP ${response.status}.`));
+    throw new Error(errorMessage(body, `Phase B/C process command failed with HTTP ${response.status}.`));
   }
 
   if (nextRoute) {

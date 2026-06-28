@@ -14,7 +14,7 @@ import {
   p0AcceptanceProofMap,
   p0ApiRouteUniverse,
   p0BusinessProcessUniverseReference,
-  p0MappedJourneyIds,
+  p0MappedProcessIds,
   p0RouteUiStateObligations,
 } from "../lib/p0-acceptance-proof";
 import { permissionEngine } from "../lib/permission-engine";
@@ -523,14 +523,14 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
     expect(apiRouteFiles("app/api")).toEqual([...p0ApiRouteUniverse]);
   });
 
-  test("AV-MVP-P10-T001/T002 maps every MVP journey to positive and negative proof or explicit blocker", () => {
+  test("AV-MVP-P10-T001/T002 maps core MVP processes to positive and negative proof or explicit blocker", () => {
     expect(p0AcceptanceProofGaps()).toEqual([]);
-    expect(p0MappedJourneyIds()).toEqual(["MJ-001", "MJ-002", "MJ-003", "MJ-005", "MJ-006", "MJ-010", "MJ-012"]);
+    expect(p0MappedProcessIds()).toEqual(["BP-001", "BP-017", "BP-020", "BP-024", "BP-046", "BP-088", "BP-099"]);
 
     for (const entry of p0AcceptanceProofMap) {
-      expect(entry.positiveProof.length, `${entry.journeyId} positive proof`).toBeGreaterThan(0);
-      expect(entry.negativeProof.length, `${entry.journeyId} negative proof`).toBeGreaterThan(0);
-      expect(entry.nonClaims.length, `${entry.journeyId} non-claims`).toBeGreaterThan(0);
+      expect(entry.positiveProof.length, `${entry.processId} positive proof`).toBeGreaterThan(0);
+      expect(entry.negativeProof.length, `${entry.processId} negative proof`).toBeGreaterThan(0);
+      expect(entry.nonClaims.length, `${entry.processId} non-claims`).toBeGreaterThan(0);
     }
   });
 
@@ -568,7 +568,7 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
 
     for (const obligation of p0RouteUiStateObligations) {
       expect(obligation.routes.length).toBeGreaterThan(0);
-      expect(obligation.proof).toBe("tests/ui-state-boundaries.spec.ts");
+      expect(["tests/ui-state-boundaries.spec.ts", "tests/process-runtime-db-api.spec.ts"]).toContain(obligation.proof);
     }
 
     for (const entry of p0AcceptanceProofMap) {

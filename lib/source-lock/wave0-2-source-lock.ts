@@ -1,7 +1,7 @@
 import { routeImplementationAccessDecision, routeScopeForPageId } from "../route-registry";
 
 export const wave02SourceLock = {
-  acceptedSource: "ALPHAVEST_JOURNEY_FIRST_BOC_CTES_TICKET_ARCHITECT_OUTPUT_WAVE_0_2",
+  acceptedSource: "ALPHAVEST_PROCESS_RUNTIME_BACKBONE",
   targetBranch: "full-workflow",
   forbiddenTargetTruth: ["main", "uploaded source snapshots", "visual media packages", "previous bundles"],
   noGenerationRules: ["NO_SCREEN_GENERATION", "NO_STATE_SCREEN_GENERATION", "NO_IMAGE_GENERATION"],
@@ -12,20 +12,20 @@ export const wave02HoldRoutePageIds = ["064", "065", "066", "067", "069", "070",
 
 export const wave02BlockedJourneys = [
   {
-    journeyId: "MJ-004",
-    label: "Committee review",
-    reason: "Hold unlock was rejected for Wave 0-2; committee routes remain registered-only.",
+    journeyId: "BP-070",
+    label: "Committee review hold surface",
+    reason: "Committee UI routes remain registered-only until a process-backed committee command slice exists.",
     routePageIds: ["070", "071"],
   },
   {
-    journeyId: "MJ-007",
-    label: "KYC / SoW / Suitability / IPS",
-    reason: "Hold unlock was rejected for Wave 0-2; elevated KYC and suitability routes remain registered-only.",
+    journeyId: "BP-071",
+    label: "Regulated KYC / SoW / Suitability / IPS hold surface",
+    reason: "Regulated suitability routes remain registered-only until backed by process commands, history and audit proof.",
     routePageIds: ["064", "065", "066", "067"],
   },
 ] as const;
 
-export const wave02ExecutableJourneyIds = ["MJ-001", "MJ-002", "MJ-003", "MJ-005", "MJ-006", "MJ-010", "MJ-012"] as const;
+export const wave02ExecutableJourneyIds = ["BP-001", "BP-017", "BP-020", "BP-024", "BP-046", "BP-088", "BP-099"] as const;
 
 export type Wave02JourneyId =
   | (typeof wave02BlockedJourneys)[number]["journeyId"]

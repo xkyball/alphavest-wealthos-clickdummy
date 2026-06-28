@@ -46,7 +46,7 @@ import {
   sourceRiskFindings,
 } from "@/lib/kyc-aml-demo-data";
 import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
-import { runPhaseBCJourneyCommand, type PhaseBCDemoActionId } from "@/lib/phase-b-c-journey-command-client";
+import { runPhaseBCProcessCommand, type PhaseBCDemoActionId } from "@/lib/phase-b-c-process-command-client";
 import type { ScreenRoute } from "@/lib/route-registry";
 
 type KycAmlWorkflowScreenProps = {
@@ -274,7 +274,7 @@ function KycReviewPage({ title }: { title: string }) {
 
   async function run(actionId: PhaseBCDemoActionId, next: string) {
     setStatus(next);
-    await runPhaseBCJourneyCommand(actionId);
+    await runPhaseBCProcessCommand(actionId);
   }
 
   return (
@@ -396,7 +396,7 @@ function SourceOfWealthPage({ title }: { title: string }) {
 
   async function run(actionId: PhaseBCDemoActionId, next: string) {
     setStatus(next);
-    await runPhaseBCJourneyCommand(actionId);
+    await runPhaseBCProcessCommand(actionId);
   }
 
   return (

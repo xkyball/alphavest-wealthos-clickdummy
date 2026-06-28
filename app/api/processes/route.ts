@@ -3,11 +3,11 @@ import { NextResponse } from "next/server";
 import { resolveCurrentUserFromRequest } from "@/lib/auth/current-user";
 import { failClosedJson } from "@/lib/control-layer/error-envelope";
 import {
-  createJourneyForCurrentUser,
-  JourneyApiError,
-  listJourneysForCurrentUser,
-  normalizeJourneyRouteError,
-} from "@/lib/journeys/journey-api-service";
+  createProcessForCurrentUser,
+  listProcessesForCurrentUser,
+  normalizeProcessRuntimeError,
+  ProcessRuntimeError,
+} from "@/lib/process-runtime/process-runtime-service";
 import { prismaClient } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -17,22 +17,23 @@ async function parseJson(request: Request) {
   try {
     return await request.json();
   } catch {
-    throw new JourneyApiError("Workflow request body must be valid JSON.", 400, "INVALID_REQUEST", [
+    throw new ProcessRuntimeError("Process request body must be valid JSON.", 400, "INVALID_REQUEST", [
       "valid_json_required",
     ]);
   }
 }
 
 function errorResponse(error: unknown) {
-  const normalized = normalizeJourneyRouteError(error, "Workflow API is not available for this request.");
+  const normalized = normalizeProcessRuntimeError(error);
   return failClosedJson(
     {
-      error: normalized.message,
-      issues: normalized.issues,
-      reasonCode: normalized.reasonCode,
+      ...normalized.body,
+      reasonCode: normalized.body.error,
       safety: {
-        journeyMutated: false,
-        scoped: normalized.reasonCode !== "SCOPE_DENIED",
+        commandExecuted: false,
+        hiddenRowsDisclosed: false,
+        processMutated: false,
+        scoped: normalized.body.error !== "PERMISSION_DENIED",
       },
     },
     { status: normalized.status },
@@ -43,7 +44,7 @@ export async function GET(request: Request) {
   try {
     const prisma = prismaClient();
     const currentUser = await resolveCurrentUserFromRequest(prisma, request);
-    const payload = await listJourneysForCurrentUser(prisma, currentUser);
+    const payload = await listProcessesForCurrentUser(prisma, currentUser);
 
     return NextResponse.json({
       ...payload,
@@ -52,6 +53,7 @@ export async function GET(request: Request) {
         hiddenRowsDisclosed: false,
         noAdviceExecution: true,
         noClientRelease: true,
+        processRuntimeBackbone: true,
         scoped: true,
       },
     });
@@ -65,9 +67,17 @@ export async function POST(request: Request) {
     const prisma = prismaClient();
     const currentUser = await resolveCurrentUserFromRequest(prisma, request);
     const body = await parseJson(request);
-    const detail = await createJourneyForCurrentUser(prisma, currentUser, {
+    const processId = typeof body.processId === "string" ? body.processId : undefined;
+
+    if (!processId) {
+      throw new ProcessRuntimeError("Process creation requires a processId.", 400, "INVALID_REQUEST", [
+        "process_id_required",
+      ]);
+    }
+
+    const detail = await createProcessForCurrentUser(prisma, currentUser, {
       clientTenantId: typeof body.clientTenantId === "string" ? body.clientTenantId : undefined,
-      journeyKey: typeof body.journeyKey === "string" ? body.journeyKey : undefined,
+      processId,
     });
 
     return NextResponse.json({
@@ -78,6 +88,7 @@ export async function POST(request: Request) {
         hiddenRowsDisclosed: false,
         noAdviceExecution: true,
         noClientRelease: true,
+        processRuntimeBackbone: true,
         scoped: true,
       },
     });

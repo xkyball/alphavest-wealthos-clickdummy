@@ -86,23 +86,6 @@ type NavigationGroupDefinition = {
 
 const navigationDefinitions: readonly NavigationGroupDefinition[] = [
   {
-    key: "area_00_command_center",
-    icon: Route,
-    items: [
-      {
-        pageId: "AREA-00",
-        href: "/journeys",
-        routePattern: "/journeys",
-        activeRoutePatterns: ["/journeys", "/journeys/:id"],
-        label: "Command Center",
-        description: "Current work, blocked gates, process health and next legitimate actions.",
-        icon: Route,
-        scope: "IMPLEMENTED_APP_ROUTE",
-        tier: "primary"
-      }
-    ]
-  },
-  {
     key: "area_01_foundation",
     icon: Settings,
     items: [

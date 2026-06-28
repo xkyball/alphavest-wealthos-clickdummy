@@ -56,6 +56,8 @@ enum ObjectType {
   EXPORT_REQUEST
   JOURNEY
   JOURNEY_STEP
+  PROCESS
+  PROCESS_STEP
   MESSAGE
   REVIEW_SCHEDULE
   POLICY
@@ -339,6 +341,40 @@ enum JourneyObjectLinkRole {
   AUDIT_REFERENCE
 }
 
+enum ProcessDefinitionStatus {
+  ACTIVE
+  BLOCKED
+  DEFERRED
+  RETIRED
+}
+
+enum ProcessInstanceStatus {
+  CREATED
+  ACTIVE
+  BLOCKED
+  COMPLETED
+  CANCELLED
+}
+
+enum ProcessStepStatus {
+  LOCKED
+  READY
+  ACTIVE
+  BLOCKED
+  COMPLETED
+  SKIPPED
+}
+
+enum ProcessObjectLinkRole {
+  PRIMARY_CONTEXT
+  SUPPORTING_EVIDENCE
+  RECOMMENDATION
+  DECISION
+  EXPORT
+  AUDIT_REFERENCE
+  SOURCE_OBJECT
+}
+
 enum EvidenceSufficiencyDecisionStatus {
   SUFFICIENT
   INSUFFICIENT
@@ -411,6 +447,7 @@ model ClientTenant {
   queueItems                   QueueItem[]
   dataQualityIssues            DataQualityIssue[]
   journeyInstances             JourneyInstance[]
+  processInstances             ProcessInstance[]
   auditEvents                  AuditEvent[]
   internalDrafts               InternalDraft[]
 
@@ -1241,12 +1278,143 @@ model JourneyCommandRun {
   @@map("journey_command_runs")
 }
 
+model ProcessDefinition {
+  id             String                  @id @default(uuid()) @db.Uuid
+  processId      String                  @unique @db.VarChar(40)
+  processName    String                  @db.VarChar(220)
+  domainId       String                  @db.VarChar(40)
+  domainName     String                  @db.VarChar(220)
+  intendedAreaId String?                 @db.VarChar(40)
+  intendedArea   String?                 @db.VarChar(220)
+  status         ProcessDefinitionStatus
+  sourceArtifact String                  @db.VarChar(220)
+  metadataJson   Json?
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  steps          ProcessStepDefinition[]
+  instances      ProcessInstance[]
+
+  @@index([domainId, status])
+  @@index([intendedAreaId])
+  @@map("process_definitions")
+}
+
+model ProcessStepDefinition {
+  id                  String            @id @default(uuid()) @db.Uuid
+  processDefinitionId String            @db.Uuid
+  processDefinition   ProcessDefinition @relation(fields: [processDefinitionId], references: [id], onDelete: Cascade)
+  stepId              String            @unique @db.VarChar(60)
+  stepLabel           String            @db.VarChar(220)
+  sequence            Int
+  actor               String?           @db.VarChar(160)
+  action              String?           @db.Text
+  gateType            String?           @db.VarChar(120)
+  decisionPoint       Boolean           @default(false)
+  acceptanceState     String            @db.VarChar(80)
+  metadataJson        Json?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@index([processDefinitionId, sequence])
+  @@index([acceptanceState])
+  @@map("process_step_definitions")
+}
+
+model ProcessInstance {
+  id                  String                @id @default(uuid()) @db.Uuid
+  processDefinitionId String                @db.Uuid
+  processDefinition   ProcessDefinition     @relation(fields: [processDefinitionId], references: [id], onDelete: Restrict)
+  clientTenantId      String                @db.Uuid
+  clientTenant        ClientTenant          @relation(fields: [clientTenantId], references: [id], onDelete: Cascade)
+  ownerUserId         String?               @db.Uuid
+  status              ProcessInstanceStatus @default(CREATED)
+  currentStepId       String?               @db.VarChar(60)
+  currentSequence     Int?
+  blockerCode         String?               @db.VarChar(120)
+  blockerReason       String?               @db.Text
+  startedAt           DateTime?
+  completedAt         DateTime?
+  metadataJson        Json?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  steps               ProcessStepInstance[]
+  objectLinks         ProcessObjectLink[]
+  commandRuns         ProcessCommandRun[]
+  sufficiencyDecisions EvidenceSufficiencyDecision[]
+
+  @@index([clientTenantId, status])
+  @@index([processDefinitionId])
+  @@map("process_instances")
+}
+
+model ProcessStepInstance {
+  id                String                @id @default(uuid()) @db.Uuid
+  processInstanceId String                @db.Uuid
+  processInstance   ProcessInstance       @relation(fields: [processInstanceId], references: [id], onDelete: Cascade)
+  stepId            String                @db.VarChar(60)
+  stepLabel         String                @db.VarChar(220)
+  actor             String?               @db.VarChar(160)
+  status            ProcessStepStatus
+  blockerCode       String?               @db.VarChar(120)
+  blockerReason     String?               @db.Text
+  sequence          Int
+  startedAt         DateTime?
+  completedAt       DateTime?
+  metadataJson      Json?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  @@unique([processInstanceId, stepId])
+  @@index([processInstanceId, status])
+  @@map("process_step_instances")
+}
+
+model ProcessObjectLink {
+  id                String                @id @default(uuid()) @db.Uuid
+  processInstanceId String                @db.Uuid
+  processInstance   ProcessInstance       @relation(fields: [processInstanceId], references: [id], onDelete: Cascade)
+  objectType        ObjectType
+  objectId          String                @db.Uuid
+  linkRole          ProcessObjectLinkRole
+  title             String?               @db.VarChar(220)
+  metadataJson      Json?
+  createdAt         DateTime              @default(now())
+
+  @@index([processInstanceId])
+  @@index([objectType, objectId])
+  @@map("process_object_links")
+}
+
+model ProcessCommandRun {
+  id                String          @id @default(uuid()) @db.Uuid
+  processInstanceId String          @db.Uuid
+  processInstance   ProcessInstance @relation(fields: [processInstanceId], references: [id], onDelete: Cascade)
+  commandKey        String          @db.VarChar(100)
+  actorUserId       String?         @db.Uuid
+  actorRoleKey      String?         @db.VarChar(120)
+  fromStepId        String?         @db.VarChar(60)
+  toStepId          String?         @db.VarChar(60)
+  previousState     String?         @db.VarChar(120)
+  nextState         String?         @db.VarChar(120)
+  result            AuditResult
+  reason            String?         @db.Text
+  auditEventId      String?         @db.Uuid
+  metadataJson      Json?
+  createdAt         DateTime        @default(now())
+
+  @@index([processInstanceId, createdAt])
+  @@index([commandKey])
+  @@map("process_command_runs")
+}
+
 model EvidenceSufficiencyDecision {
   id                   String                            @id @default(uuid()) @db.Uuid
   clientTenantId       String                            @db.Uuid
   clientTenant         ClientTenant                      @relation(fields: [clientTenantId], references: [id], onDelete: Cascade)
-  journeyInstanceId    String                            @db.Uuid
-  journeyInstance      JourneyInstance                   @relation(fields: [journeyInstanceId], references: [id], onDelete: Cascade)
+  journeyInstanceId    String?                           @db.Uuid
+  journeyInstance      JourneyInstance?                  @relation(fields: [journeyInstanceId], references: [id], onDelete: Cascade)
+  processInstanceId    String?                           @db.Uuid
+  processInstance      ProcessInstance?                  @relation(fields: [processInstanceId], references: [id], onDelete: Cascade)
   requirementKey       String                            @db.VarChar(100)
   evidenceRecordId     String                            @db.Uuid
   evidenceRecord       EvidenceRecord                    @relation(fields: [evidenceRecordId], references: [id], onDelete: Cascade)
@@ -1264,6 +1432,7 @@ model EvidenceSufficiencyDecision {
 
   @@index([clientTenantId, createdAt])
   @@index([journeyInstanceId, requirementKey, createdAt])
+  @@index([processInstanceId, requirementKey, createdAt])
   @@index([evidenceRecordId])
   @@map("evidence_sufficiency_decisions")
 }

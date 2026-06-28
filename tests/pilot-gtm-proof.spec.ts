@@ -6,7 +6,7 @@ import { expect, test } from "@playwright/test";
 import {
   pilotBuyerPersonas,
   pilotCommercialBoundaries,
-  pilotDemoJourneySpine,
+  pilotDemoProcessSpine,
   pilotSuccessMetrics,
 } from "../lib/pilot-gtm-proof";
 
@@ -34,22 +34,22 @@ test.describe("V1.0 pilot GTM proof package", () => {
     );
   });
 
-  test("keeps the demo narrative on the approved MVP trust spine and not P1/Hold promises", () => {
-    expect(pilotDemoJourneySpine.map((journey) => journey.key)).toEqual([
-      "MJ-001",
-      "MJ-002",
-      "MJ-003",
-      "MJ-010",
-      "MJ-006",
-      "MJ-005",
+  test("keeps the demo narrative on the approved MVP process spine and not P1/Hold promises", () => {
+    expect(pilotDemoProcessSpine.map((process) => process.key)).toEqual([
+      "BP-001",
+      "BP-024",
+      "BP-046",
+      "BP-020",
+      "BP-017",
+      "BP-088",
     ]);
-    expect(pilotDemoJourneySpine.map((journey) => journey.key)).not.toEqual(
-      expect.arrayContaining(["MJ-004", "MJ-007", "MJ-008", "MJ-009", "MJ-011"]),
+    expect(pilotDemoProcessSpine.map((process) => process.key)).not.toEqual(
+      expect.arrayContaining(["BP-070", "BP-071"]),
     );
 
-    expect(pilotDemoJourneySpine.find((journey) => journey.key === "MJ-003")?.proof).toContain("internal-only");
-    expect(pilotDemoJourneySpine.find((journey) => journey.key === "MJ-010")?.proof).toContain("cannot force");
-    expect(pilotDemoJourneySpine.find((journey) => journey.key === "MJ-005")?.proof).toContain("redaction");
+    expect(pilotDemoProcessSpine.find((process) => process.key === "BP-046")?.proof).toContain("internal-only");
+    expect(pilotDemoProcessSpine.find((process) => process.key === "BP-020")?.proof).toContain("cannot force");
+    expect(pilotDemoProcessSpine.find((process) => process.key === "BP-088")?.proof).toContain("redaction");
   });
 
   test("documents GTM pack and scorecard with safety-compatible limits", () => {
@@ -60,7 +60,7 @@ test.describe("V1.0 pilot GTM proof package", () => {
     expect(gtmPack).toContain("Trust-led buyer");
     expect(gtmPack).toContain("controlled paid design-partner pilot");
     expect(gtmPack).toContain("Forbidden positioning");
-    expect(gtmPack).toContain("P1 and Hold journeys are not live promises");
+    expect(gtmPack).toContain("P1 and Hold processes are not live promises");
     expect(gtmPack).toContain("autonomous financial/legal/tax advice");
 
     expect(scorecard).toContain("Buyer confidence");

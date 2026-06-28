@@ -4,9 +4,9 @@ import {
   advisorApprovalActionToCanonicalCommand,
   advisorApprovalActionToCanonicalState,
   wp05ComplianceReleaseConfirmationPhrase,
+  type Wp05CanonicalProcessCommandId,
   type Wp05CanonicalState,
 } from "@/lib/advisory-workflow-contract";
-import type { JourneyCommandId } from "@/lib/journeys/journey-command-registry";
 
 export type ValidationIssue = {
   code: string;
@@ -42,7 +42,7 @@ export const advisorApprovalConfirmationText: Partial<Record<AdvisorApprovalWork
 
 export type AdvisorApprovalWorkflowTransition = {
   auditResult: AuditResult;
-  canonicalCommand: JourneyCommandId;
+  canonicalCommand: Wp05CanonicalProcessCommandId;
   canonicalState: Wp05CanonicalState;
   clientVisibleAfterAction: boolean;
   nextRecommendationStatus: RecommendationStatus;

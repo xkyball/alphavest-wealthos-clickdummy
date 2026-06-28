@@ -45,7 +45,7 @@ import {
   suitabilityWorkflowSteps,
   toneForSuitability,
 } from "@/lib/suitability-ips-demo-data";
-import { runPhaseBCJourneyCommand, type PhaseBCDemoActionId } from "@/lib/phase-b-c-journey-command-client";
+import { runPhaseBCProcessCommand, type PhaseBCDemoActionId } from "@/lib/phase-b-c-process-command-client";
 import type { ScreenRoute } from "@/lib/route-registry";
 
 type SuitabilityIpsScreenProps = {
@@ -240,7 +240,7 @@ function SuitabilityProfilePage({ title }: { title: string }) {
 
   async function run(actionId: PhaseBCDemoActionId, next: string) {
     setStatus(next);
-    await runPhaseBCJourneyCommand(actionId);
+    await runPhaseBCProcessCommand(actionId);
   }
 
   return (
@@ -357,7 +357,7 @@ function IpsMandatePage({ title }: { title: string }) {
 
   async function run(actionId: PhaseBCDemoActionId, next: string) {
     setStatus(next);
-    await runPhaseBCJourneyCommand(actionId);
+    await runPhaseBCProcessCommand(actionId);
   }
 
   return (

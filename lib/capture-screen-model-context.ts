@@ -155,14 +155,14 @@ const groupTemplates: Record<NavigationGroupKey, ContextTemplate> = {
   },
   advisory_workflow: {
     capability: {
-      apiEvidence: ["app/api/journeys/[id]/commands/route.ts", "app/api/recommendation-review-workflow/route.ts", "app/api/advice-release-history/actions/route.ts"],
+      apiEvidence: ["app/api/processes/[id]/commands/route.ts", "app/api/recommendation-review-workflow/route.ts", "app/api/advice-release-history/actions/route.ts"],
       guardEvidence: ["Advisor approval is not compliance release; client-visible AI draft remains forbidden; J02/J03 use typed advice-release-history commands."],
       proofPosture: "Internal service-backed workflow with typed advisor-review and advice/release-history command boundaries; product proof no longer has a generic demo command route.",
       serviceEvidence: [
         "lib/advice-release-history-command-client.ts",
         "lib/advice-release-history-workflow-actions.ts",
-        "lib/journeys/journey-api-service.ts",
-        "lib/phase-b-c-journey-command-client.ts",
+        "lib/process-runtime/process-runtime-service.ts",
+        "lib/phase-b-c-process-command-client.ts",
         "lib/typed-workflow-command-bus.ts",
         "lib/internal-draft-governance-spine.ts",
       ],
@@ -185,11 +185,11 @@ const groupTemplates: Record<NavigationGroupKey, ContextTemplate> = {
       "EvidenceRecord",
       ...sharedAuditModels,
     ],
-    warnings: ["J01/J02/J03 advice and advisor-review actions use typed commands; J12/J13/J14 are typed journey commands."],
+    warnings: ["J01/J02/J03 advice and advisor-review actions use typed commands; J12/J13/J14 use process runtime commands."],
   },
   decisions_evidence: {
     capability: {
-      apiEvidence: ["app/api/audit-events/route.ts", "app/api/documents/review/route.ts", "app/api/journeys/[id]/client-projection/route.ts", "app/api/tenant-governance/actions/route.ts", "app/api/advice-release-history/actions/route.ts"],
+      apiEvidence: ["app/api/audit-events/route.ts", "app/api/documents/review/route.ts", "app/api/processes/[id]/commands/route.ts", "app/api/tenant-governance/actions/route.ts", "app/api/advice-release-history/actions/route.ts"],
       guardEvidence: ["Permission engine, visibility engine, workflow gate and typed J02/J03 command evidence required for safety-sensitive states."],
       proofPosture: "Decision/evidence surfaces are service-backed internally; J03 decision/evidence actions use typed advice-release-history commands while client projection remains fail-closed.",
       serviceEvidence: ["lib/visibility-engine.ts", "lib/workflow-gate.ts", "lib/audit-service.ts", "lib/evidence-review-service.ts", "lib/tenant-governance-workflow-actions.ts", "lib/advice-release-history-workflow-actions.ts"],

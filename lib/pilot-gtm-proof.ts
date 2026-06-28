@@ -4,7 +4,7 @@ export type PilotBuyerPersonaKey =
   | "compliance_risk_owner"
   | "trust_led_buyer";
 
-export type PilotJourneyKey = "MJ-001" | "MJ-002" | "MJ-003" | "MJ-005" | "MJ-006" | "MJ-010";
+export type PilotProcessKey = "BP-001" | "BP-017" | "BP-020" | "BP-024" | "BP-046" | "BP-088";
 
 export type PilotSuccessMetricKey =
   | "buyer_confidence"
@@ -47,42 +47,44 @@ export const pilotBuyerPersonas = [
   qualifiesWhen: string;
 }>;
 
-export const pilotDemoJourneySpine = [
+export const pilotDemoProcessSpine = [
   {
-    key: "MJ-001",
-    role: "umbrella journey",
+    key: "BP-001",
+    role: "relationship intake process",
     proof: "mapped tenant actor reaches first client-safe decision only after evidence, advisor and compliance gates",
   },
   {
-    key: "MJ-002",
-    role: "evidence proof",
+    key: "BP-024",
+    role: "document upload process",
     proof: "upload and review stay separate from evidence sufficiency and release",
   },
   {
-    key: "MJ-003",
-    role: "AI guard proof",
+    key: "BP-046",
+    role: "rebuild-with-evidence process",
     proof: "AI/rules draft and internal rationale remain internal-only",
   },
   {
-    key: "MJ-010",
+    key: "BP-020",
     role: "admin non-bypass proof",
     proof: "admin/governance powers cannot force release, export, visibility or sufficiency",
   },
   {
-    key: "MJ-006",
+    key: "BP-017",
     role: "cross-tenant denial proof",
     proof: "wrong tenant or wrong object fails closed without payload leakage",
   },
   {
-    key: "MJ-005",
+    key: "BP-088",
     role: "export trust output",
     proof: "export package requires scope, redaction, approval and audit",
   },
 ] as const satisfies Array<{
-  key: PilotJourneyKey;
+  key: PilotProcessKey;
   proof: string;
   role: string;
 }>;
+
+export const pilotDemoJourneySpine = pilotDemoProcessSpine;
 
 export const pilotSuccessMetrics = [
   {
@@ -130,4 +132,3 @@ export const pilotCommercialBoundaries = {
     "banking_custody_trade_execution",
   ],
 };
-

@@ -18,12 +18,12 @@ import {
   ExportStatus,
   ExportType,
   InternalDraftStatus,
-  JourneyDefinitionStatus as PrismaJourneyDefinitionStatus,
-  JourneyInstanceStatus as PrismaJourneyInstanceStatus,
-  JourneyObjectLinkRole as PrismaJourneyObjectLinkRole,
-  JourneyStepStatus as PrismaJourneyStepStatus,
   ObjectType,
   PermissionAction,
+  ProcessDefinitionStatus as PrismaProcessDefinitionStatus,
+  ProcessInstanceStatus as PrismaProcessInstanceStatus,
+  ProcessObjectLinkRole as PrismaProcessObjectLinkRole,
+  ProcessStepStatus as PrismaProcessStepStatus,
   Prisma,
   PrismaClient,
   RecommendationStatus,
@@ -36,7 +36,7 @@ import {
   WorkflowStatus,
 } from "@prisma/client";
 
-import { activeJourneyDefinitions, journeyRegistry } from "../lib/journeys/journey-registry";
+import { processRuntimeDefinitions } from "../lib/process-runtime/process-registry";
 
 const connectionString = process.env.DATABASE_URL;
 const appEnv = process.env.APP_ENV ?? "local";
@@ -257,13 +257,13 @@ const permissions = [
     action: PermissionAction.VIEW,
   },
   {
-    key: "journeys.view",
-    objectType: ObjectType.JOURNEY,
+    key: "process.view",
+    objectType: ObjectType.PROCESS,
     action: PermissionAction.VIEW,
   },
   {
-    key: "journeys.manage",
-    objectType: ObjectType.JOURNEY,
+    key: "process.manage",
+    objectType: ObjectType.PROCESS,
     action: PermissionAction.MANAGE,
     requiresAudit: true,
   },
@@ -277,19 +277,19 @@ const permissions = [
 ] as const;
 
 const rolePermissionKeys: Record<string, string[]> = {
-  principal: ["decisions.view", "decisions.comment", "documents.upload", "evidence.view", "exports.create", "journeys.view"],
-  family_cfo: ["documents.upload", "documents.review", "decisions.view", "evidence.view", "exports.create", "journeys.view"],
-  trustee: ["decisions.view", "decisions.comment", "evidence.view", "journeys.view"],
-  next_gen: ["decisions.view", "evidence.view", "journeys.view"],
+  principal: ["decisions.view", "decisions.comment", "documents.upload", "evidence.view", "exports.create", "process.view"],
+  family_cfo: ["documents.upload", "documents.review", "decisions.view", "evidence.view", "exports.create", "process.view"],
+  trustee: ["decisions.view", "decisions.comment", "evidence.view", "process.view"],
+  next_gen: ["decisions.view", "evidence.view", "process.view"],
   external_advisor: ["documents.upload", "documents.review", "evidence.view"],
-  analyst: ["documents.review", "triggers.review", "evidence.view", "audit.view", "journeys.manage"],
+  analyst: ["documents.review", "triggers.review", "evidence.view", "audit.view", "process.manage"],
   senior_wealth_advisor: [
     "documents.review",
     "triggers.review",
     "recommendations.approve",
     "evidence.view",
     "exports.create",
-    "journeys.manage",
+    "process.manage",
   ],
   compliance_officer: [
     "recommendations.release",
@@ -297,11 +297,11 @@ const rolePermissionKeys: Record<string, string[]> = {
     "audit.view",
     "evidence.view",
     "access.assign",
-    "journeys.manage",
+    "process.manage",
   ],
-  client_success: ["tenants.manage", "users.invite", "documents.review", "evidence.view", "journeys.manage"],
+  client_success: ["tenants.manage", "users.invite", "documents.review", "evidence.view", "process.manage"],
   admin: permissions.map((permission) => permission.key),
-  security_officer: ["platform.manage", "roles.manage", "access.assign", "audit.view", "exports.approve", "journeys.manage"],
+  security_officer: ["platform.manage", "roles.manage", "access.assign", "audit.view", "exports.approve", "process.manage"],
 };
 
 const internalUsers = [
@@ -485,17 +485,23 @@ function evidenceRecordId(slug: string) {
   return stableId(`evidence:${slug}:decision-pack`);
 }
 
-function journeyDefinitionId(journeyKey: string) {
-  return stableId(`journey-definition:${journeyKey}`);
+function processDefinitionId(processId: string) {
+  return stableId(`process-definition:${processId}`);
 }
 
-function journeyInstanceId(slug: string, journeyKey: string) {
-  return stableId(`journey-instance:${slug}:${journeyKey}`);
+function processInstanceId(slug: string, processId: string) {
+  return stableId(`process-instance:${slug}:${processId}`);
 }
 
 async function clearDemoData() {
   await prisma.$transaction([
     prisma.evidenceSufficiencyDecision.deleteMany(),
+    prisma.processCommandRun.deleteMany(),
+    prisma.processObjectLink.deleteMany(),
+    prisma.processStepInstance.deleteMany(),
+    prisma.processInstance.deleteMany(),
+    prisma.processStepDefinition.deleteMany(),
+    prisma.processDefinition.deleteMany(),
     prisma.journeyCommandRun.deleteMany(),
     prisma.journeyObjectLink.deleteMany(),
     prisma.journeyStepInstance.deleteMany(),
@@ -1946,88 +1952,105 @@ async function seedEvidenceCommunicationAndOps() {
   });
 }
 
-async function seedJourneys() {
-  await prisma.journeyDefinition.createMany({
-    data: journeyRegistry.map((definition) => ({
-      id: journeyDefinitionId(definition.journeyKey),
-      journeyKey: definition.journeyKey,
-      title: definition.title,
-      description: definition.description,
-      wave: definition.wave,
-      status: definition.status as PrismaJourneyDefinitionStatus,
-      holdReason: definition.holdReason ?? null,
-      routePageIds: definition.routePageIds,
-      actorRoleKeys: definition.actorRoleKeys,
+async function seedProcesses() {
+  const seededTenantSlug = "bennett";
+
+  await prisma.processDefinition.createMany({
+    data: processRuntimeDefinitions.map((definition) => ({
+      id: processDefinitionId(definition.processId),
+      processId: definition.processId,
+      processName: definition.processName,
+      domainId: definition.domainId,
+      domainName: definition.domainName,
+      intendedAreaId: definition.intendedAreaId,
+      intendedArea: definition.intendedAreaName,
+      status: definition.status as PrismaProcessDefinitionStatus,
+      sourceArtifact: definition.sourceArtifact,
       metadataJson: {
-        foundationIds: definition.foundationIds,
-        source: "ALPHAVEST_JOURNEY_FIRST_BOC_CTES_TICKET_ARCHITECT_OUTPUT_WAVE_0_2",
-        executableInWave02: definition.status === "ACTIVE",
+        replacementFor: "journey_and_mega_journey_runtime",
+        source: "ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX",
+        stepCount: definition.steps.length,
       },
       createdAt: seedDate,
       updatedAt: seedDate,
     })),
   });
 
-  await prisma.journeyEvidenceRequirement.createMany({
-    data: activeJourneyDefinitions.flatMap((definition) =>
-      definition.evidenceRequirements.map((requirement) => ({
-        id: stableId(`journey-evidence-requirement:${definition.journeyKey}:${requirement.key}`),
-        journeyDefinitionId: journeyDefinitionId(definition.journeyKey),
-        requirementKey: requirement.key,
-        title: requirement.title,
-        requiredObjectType: requirement.requiredObjectType as ObjectType,
-        requiredForStepKey: requirement.requiredForStepKey,
-        minEvidenceStatus: requirement.minEvidenceStatus as EvidenceStatus,
+  await prisma.processStepDefinition.createMany({
+    data: processRuntimeDefinitions.flatMap((definition) =>
+      definition.steps.map((step) => ({
+        id: stableId(`process-step-definition:${step.stepId}`),
+        processDefinitionId: processDefinitionId(definition.processId),
+        stepId: step.stepId,
+        stepLabel: step.stepLabel,
+        sequence: step.sequence,
+        actor: step.actor,
+        action: step.action,
+        gateType: step.gateType,
+        decisionPoint: step.decisionPoint,
+        acceptanceState: step.acceptanceState,
         metadataJson: {
-          wave: definition.wave,
-          journeyKey: definition.journeyKey,
+          processId: definition.processId,
+          processRuntimeBackbone: true,
         },
         createdAt: seedDate,
+        updatedAt: seedDate,
       }))
     ),
   });
 
-  const seededTenantSlug = "bennett";
-
-  await prisma.journeyInstance.createMany({
-    data: activeJourneyDefinitions.map((definition) => {
+  await prisma.processInstance.createMany({
+    data: processRuntimeDefinitions.map((definition) => {
       const firstStep = definition.steps[0];
 
       return {
-        id: journeyInstanceId(seededTenantSlug, definition.journeyKey),
-        definitionId: journeyDefinitionId(definition.journeyKey),
+        id: processInstanceId(seededTenantSlug, definition.processId),
+        processDefinitionId: processDefinitionId(definition.processId),
         clientTenantId: tenantId(seededTenantSlug),
         ownerUserId: userId("success"),
-        status: PrismaJourneyInstanceStatus.ACTIVE,
-        currentStepKey: firstStep?.key ?? null,
-        currentStageKey: firstStep?.stageKey ?? null,
+        status:
+          definition.status === "ACTIVE"
+            ? PrismaProcessInstanceStatus.ACTIVE
+            : PrismaProcessInstanceStatus.BLOCKED,
+        currentStepId: firstStep?.stepId ?? null,
+        currentSequence: firstStep?.sequence ?? null,
+        blockerCode: definition.status === "ACTIVE" ? null : "PROCESS_DEFERRED_BY_MATRIX",
+        blockerReason:
+          definition.status === "ACTIVE"
+            ? null
+            : "The P0 process is specified in the matrix but not ready for execution credit.",
         metadataJson: {
           demoSeed: true,
+          processRuntimeBackbone: true,
+          replacesJourneyRuntime: true,
           noClientVisibilityClaim: true,
         },
-        startedAt: date(-2),
+        startedAt: definition.status === "ACTIVE" ? date(-2) : null,
         createdAt: seedDate,
         updatedAt: seedDate,
       };
     }),
   });
 
-  await prisma.journeyStepInstance.createMany({
-    data: activeJourneyDefinitions.flatMap((definition) =>
+  await prisma.processStepInstance.createMany({
+    data: processRuntimeDefinitions.flatMap((definition) =>
       definition.steps.map((step, index) => ({
-        id: stableId(`journey-step-instance:${seededTenantSlug}:${definition.journeyKey}:${step.key}`),
-        journeyInstanceId: journeyInstanceId(seededTenantSlug, definition.journeyKey),
-        stepKey: step.key,
-        stageKey: step.stageKey,
-        title: step.title,
-        actorRoleKey: step.actorRoleKey,
-        status: index === 0 ? PrismaJourneyStepStatus.ACTIVE : PrismaJourneyStepStatus.LOCKED,
-        sortOrder: step.sortOrder,
-        startedAt: index === 0 ? date(-2) : null,
+        id: stableId(`process-step-instance:${seededTenantSlug}:${definition.processId}:${step.stepId}`),
+        processInstanceId: processInstanceId(seededTenantSlug, definition.processId),
+        stepId: step.stepId,
+        stepLabel: step.stepLabel,
+        actor: step.actor,
+        status:
+          definition.status === "ACTIVE" && index === 0
+            ? PrismaProcessStepStatus.ACTIVE
+            : PrismaProcessStepStatus.LOCKED,
+        sequence: step.sequence,
+        startedAt: definition.status === "ACTIVE" && index === 0 ? date(-2) : null,
         metadataJson: {
-          clientVisible: Boolean(step.clientVisible),
-          requiresAudit: Boolean(step.requiresAudit),
-          requiresEvidence: Boolean(step.requiresEvidence),
+          acceptanceState: step.acceptanceState,
+          action: step.action,
+          decisionPoint: step.decisionPoint,
+          processRuntimeBackbone: true,
         },
         createdAt: seedDate,
         updatedAt: seedDate,
@@ -2035,55 +2058,45 @@ async function seedJourneys() {
     ),
   });
 
-  await prisma.journeyObjectLink.createMany({
-    data: activeJourneyDefinitions.flatMap((definition) => {
+  await prisma.processObjectLink.createMany({
+    data: processRuntimeDefinitions.flatMap((definition) => {
       const baseLinks = [
         {
           objectType: ObjectType.TENANT,
           objectId: tenantId(seededTenantSlug),
-          linkRole: PrismaJourneyObjectLinkRole.PRIMARY_CONTEXT,
+          linkRole: PrismaProcessObjectLinkRole.PRIMARY_CONTEXT,
           title: "Bennett Family Office",
         },
         {
           objectType: ObjectType.RECOMMENDATION,
           objectId: recommendationId(seededTenantSlug),
-          linkRole: PrismaJourneyObjectLinkRole.RECOMMENDATION,
+          linkRole: PrismaProcessObjectLinkRole.RECOMMENDATION,
           title: "Liquidity governance recommendation",
         },
         {
           objectType: ObjectType.DECISION,
           objectId: decisionId(seededTenantSlug),
-          linkRole: PrismaJourneyObjectLinkRole.DECISION,
+          linkRole: PrismaProcessObjectLinkRole.DECISION,
           title: "Liquidity decision",
         },
         {
           objectType: ObjectType.EVIDENCE_RECORD,
           objectId: evidenceRecordId(seededTenantSlug),
-          linkRole: PrismaJourneyObjectLinkRole.SUPPORTING_EVIDENCE,
+          linkRole: PrismaProcessObjectLinkRole.SUPPORTING_EVIDENCE,
           title: "Liquidity decision evidence",
         },
       ];
-      const exportLink =
-        definition.journeyKey === "MJ-005"
-          ? [
-              {
-                objectType: ObjectType.EXPORT_REQUEST,
-                objectId: stableId(`export:${seededTenantSlug}:evidence-pack`),
-                linkRole: PrismaJourneyObjectLinkRole.EXPORT,
-                title: "Evidence package export",
-              },
-            ]
-          : [];
 
-      return [...baseLinks, ...exportLink].map((link) => ({
+      return baseLinks.map((link) => ({
         id: stableId(
-          `journey-object-link:${seededTenantSlug}:${definition.journeyKey}:${link.objectType}:${link.linkRole}`
+          `process-object-link:${seededTenantSlug}:${definition.processId}:${link.objectType}:${link.linkRole}`
         ),
-        journeyInstanceId: journeyInstanceId(seededTenantSlug, definition.journeyKey),
+        processInstanceId: processInstanceId(seededTenantSlug, definition.processId),
         ...link,
         metadataJson: {
           demoSeed: true,
-          journeyKey: definition.journeyKey,
+          processId: definition.processId,
+          processRuntimeBackbone: true,
         },
         createdAt: seedDate,
       }));
@@ -2091,17 +2104,19 @@ async function seedJourneys() {
   });
 
   await prisma.evidenceSufficiencyDecision.createMany({
-    data: activeJourneyDefinitions.flatMap((definition) =>
-      definition.evidenceRequirements.map((requirement) => ({
-        id: stableId(`evidence-sufficiency:${seededTenantSlug}:${definition.journeyKey}:${requirement.key}`),
+    data: processRuntimeDefinitions
+      .filter((definition) => definition.domainId === "DOMAIN-C")
+      .slice(0, 6)
+      .map((definition) => ({
+        id: stableId(`evidence-sufficiency:${seededTenantSlug}:${definition.processId}:matrix-proof`),
         clientTenantId: tenantId(seededTenantSlug),
-        journeyInstanceId: journeyInstanceId(seededTenantSlug, definition.journeyKey),
-        requirementKey: requirement.key,
+        processInstanceId: processInstanceId(seededTenantSlug, definition.processId),
+        requirementKey: `${definition.processId.toLowerCase()}.evidence-record`,
         evidenceRecordId: evidenceRecordId(seededTenantSlug),
         decision: EvidenceSufficiencyDecisionStatus.SUFFICIENT,
         decidedByUserId: userId("compliance"),
         decidedByRoleKey: "compliance_officer",
-        reason: "Demo seed records explicit reviewed, scoped evidence sufficiency without client release.",
+        reason: "Demo seed records explicit reviewed, scoped process evidence sufficiency without client release.",
         reviewed: true,
         scopeMatches: true,
         relevanceConfirmed: true,
@@ -2109,24 +2124,29 @@ async function seedJourneys() {
         metadataJson: {
           demoSeed: true,
           uploadIsNotSufficiency: true,
-          journeyKey: definition.journeyKey,
+          processRuntimeBackbone: true,
         },
         createdAt: date(-1),
-      }))
-    ),
+      })),
   });
 
-  await prisma.journeyCommandRun.createMany({
-    data: activeJourneyDefinitions.map((definition) => ({
-      id: stableId(`journey-command-run:${seededTenantSlug}:${definition.journeyKey}:start`),
-      journeyInstanceId: journeyInstanceId(seededTenantSlug, definition.journeyKey),
+  await prisma.processCommandRun.createMany({
+    data: processRuntimeDefinitions.map((definition) => ({
+      id: stableId(`process-command-run:${seededTenantSlug}:${definition.processId}:start`),
+      processInstanceId: processInstanceId(seededTenantSlug, definition.processId),
       commandKey: "START",
       actorUserId: userId("success"),
       actorRoleKey: "client_success",
-      toStepKey: definition.steps[0]?.key ?? null,
-      result: AuditResult.SUCCESS,
-      reason: "Demo seed opened the accepted Wave 0-2 journey instance.",
+      toStepId: definition.steps[0]?.stepId ?? null,
+      previousState: "CREATED",
+      nextState: definition.status === "ACTIVE" ? "ACTIVE" : "BLOCKED",
+      result: definition.status === "ACTIVE" ? AuditResult.SUCCESS : AuditResult.BLOCKED,
+      reason:
+        definition.status === "ACTIVE"
+          ? "Demo seed opened the P0 process runtime instance."
+          : "Demo seed retained a non-executable process instance as blocked runtime evidence.",
       metadataJson: {
+        processRuntimeBackbone: true,
         auditRequiredForRuntimeTransitions: true,
       },
       createdAt: date(-2),
@@ -2249,8 +2269,8 @@ async function printSeedSummary() {
     recommendationCount,
     evidenceCount,
     auditCount,
-    journeyDefinitionCount,
-    journeyInstanceCount,
+    processDefinitionCount,
+    processInstanceCount,
     blockedRecommendationCount,
     visibleRecommendationCount,
   ] = await Promise.all([
@@ -2261,8 +2281,8 @@ async function printSeedSummary() {
     prisma.recommendation.count(),
     prisma.evidenceRecord.count(),
     prisma.auditEvent.count(),
-    prisma.journeyDefinition.count(),
-    prisma.journeyInstance.count(),
+    prisma.processDefinition.count(),
+    prisma.processInstance.count(),
     prisma.recommendation.count({ where: { status: RecommendationStatus.BLOCKED } }),
     prisma.recommendation.count({ where: { clientVisible: true } }),
   ]);
@@ -2280,8 +2300,8 @@ async function printSeedSummary() {
         blockedRecommendations: blockedRecommendationCount,
         evidenceRecords: evidenceCount,
         auditEvents: auditCount,
-        journeyDefinitions: journeyDefinitionCount,
-        journeyInstances: journeyInstanceCount,
+        processDefinitions: processDefinitionCount,
+        processInstances: processInstanceCount,
       },
       null,
       2
@@ -2297,7 +2317,7 @@ async function main() {
   await seedStructureAndDocuments();
   await seedWorkflowObjects();
   await seedEvidenceCommunicationAndOps();
-  await seedJourneys();
+  await seedProcesses();
   await seedAudit();
   await assertNoUnapprovedAdviceLeak();
   await printSeedSummary();

@@ -35,14 +35,14 @@ Exclusion criteria:
 
 Primary story: AlphaVest is not a dashboard-first demo. It is a trust spine for family-office decisions.
 
-| Order | Journey | Demo role | Proof |
+| Order | Process | Demo role | Proof |
 |---:|---|---|---|
-| 1 | MJ-001 | Umbrella journey | Mapped tenant actor reaches first client-safe decision only after evidence, advisor and compliance gates. |
-| 2 | MJ-002 | Evidence proof | Upload and review stay separate from evidence sufficiency and release. |
-| 3 | MJ-003 | AI guard proof | AI/rules draft and internal rationale remain internal-only. |
-| 4 | MJ-010 | Admin non-bypass proof | Admin/governance powers cannot force release, export, visibility or sufficiency. |
-| 5 | MJ-006 | Cross-tenant denial proof | Wrong tenant or wrong object fails closed without payload leakage. |
-| 6 | MJ-005 | Export trust output | Export package requires scope, redaction, approval and audit. |
+| 1 | BP-001 | Relationship intake process | Mapped tenant actor reaches first client-safe decision only after evidence, advisor and compliance gates. |
+| 2 | BP-024 | Document upload process | Upload and review stay separate from evidence sufficiency and release. |
+| 3 | BP-046 | Rebuild-with-evidence process | AI/rules draft and internal rationale remain internal-only. |
+| 4 | BP-020 | Admin non-bypass proof | Admin/governance powers cannot force release, export, visibility or sufficiency. |
+| 5 | BP-017 | Cross-tenant denial proof | Wrong tenant or wrong object fails closed without payload leakage. |
+| 6 | BP-088 | Export trust output | Export package requires scope, redaction, approval and audit. |
 
 Safe talk track:
 
@@ -77,8 +77,7 @@ Paid pilot terms should be framed around learning value and trust proof, not pro
 
 ## Known Limits
 
-- P1 and Hold journeys are not live promises.
+- P1 and Hold processes are not live promises.
 - KYC, suitability, IPS and committee routes remain outside V1.0 live commitment.
 - Review monitoring and mobile communication remain expansion narratives unless separately unlocked.
 - Metadata-only export proof is accepted for this pilot; binary production package delivery is not claimed.
-

@@ -17,8 +17,8 @@ export const phase0LockedApiRoutes = p0ApiRouteUniverse;
 export const phase0SourceUniverseReferences = [p0BusinessProcessUniverseReference] as const;
 
 export const phase0LockedPrismaShape = {
-  enumCount: 31,
-  modelCount: 53,
+  enumCount: 35,
+  modelCount: 59,
 } as const;
 
 export const phase0P0GateLabels = [

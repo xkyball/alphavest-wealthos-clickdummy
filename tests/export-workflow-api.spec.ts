@@ -287,7 +287,7 @@ test.describe.serial("Epic 6 export workflow API", () => {
   test("keeps conditional external advisor export scope inactive and object-scoped", async ({ request }) => {
     const response = await exportCommand(request, {
       command: "SET_SCOPE",
-      reason: "MJ-011 is not activated for broad export scope.",
+      reason: "Broad export scope is not activated without process-backed approval.",
       redactionProfile: "client-safe-redacted",
       roleKey: "external_advisor",
       scopeItems: [safeScopeItem("external-advisor-denied")],

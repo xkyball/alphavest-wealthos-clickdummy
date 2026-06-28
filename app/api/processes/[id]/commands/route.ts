@@ -2,8 +2,11 @@ import { NextResponse } from "next/server";
 
 import { resolveCurrentUserFromRequest } from "@/lib/auth/current-user";
 import { failClosedJson } from "@/lib/control-layer/error-envelope";
-import { parseJourneyCommandRequest } from "@/lib/journeys/journey-command-registry";
-import { executeJourneyCommandForCurrentUser, normalizeJourneyRouteError } from "@/lib/journeys/journey-api-service";
+import {
+  blockProcessForCurrentUser,
+  normalizeProcessRuntimeError,
+  ProcessRuntimeError,
+} from "@/lib/process-runtime/process-runtime-service";
 import { prismaClient } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +16,7 @@ type RouteContext = {
   params: Promise<{ id: string }> | { id: string };
 };
 
-async function journeyId(context: RouteContext) {
+async function processInstanceId(context: RouteContext) {
   const params = await context.params;
 
   return params.id;
@@ -23,21 +26,23 @@ async function parseJson(request: Request) {
   try {
     return await request.json();
   } catch {
-    return undefined;
+    throw new ProcessRuntimeError("Process command body must be valid JSON.", 400, "INVALID_REQUEST", [
+      "valid_json_required",
+    ]);
   }
 }
 
 function errorResponse(error: unknown) {
-  const normalized = normalizeJourneyRouteError(error, "Workflow command failed closed before state advance.");
+  const normalized = normalizeProcessRuntimeError(error);
   return failClosedJson(
     {
-      error: normalized.message,
-      issues: normalized.issues,
-      reasonCode: normalized.reasonCode,
+      ...normalized.body,
+      reasonCode: normalized.body.error,
       safety: {
         commandExecuted: false,
         hiddenRowsDisclosed: false,
-        scoped: normalized.reasonCode !== "SCOPE_DENIED",
+        processMutated: false,
+        scoped: normalized.body.error !== "PERMISSION_DENIED",
       },
     },
     { status: normalized.status },
@@ -45,28 +50,24 @@ function errorResponse(error: unknown) {
 }
 
 export async function POST(request: Request, context: RouteContext) {
-  const parsed = parseJourneyCommandRequest(await parseJson(request));
-
-  if (!parsed.ok) {
-    return failClosedJson(
-      {
-        error: "Workflow command request is invalid.",
-        issues: parsed.issues,
-        reasonCode: "INVALID_REQUEST",
-        safety: {
-          commandExecuted: false,
-          hiddenRowsDisclosed: false,
-          scoped: false,
-        },
-      },
-      { status: 400 },
-    );
-  }
-
   try {
+    const body = await parseJson(request);
+    const command = typeof body.command === "string" ? body.command : undefined;
+    const reason = typeof body.reason === "string" ? body.reason.trim() : "";
+
+    if (command !== "BLOCK") {
+      throw new ProcessRuntimeError("Process command handler is not implemented.", 400, "INVALID_REQUEST", [
+        "process_command_handler_missing",
+      ]);
+    }
+
     const prisma = prismaClient();
     const currentUser = await resolveCurrentUserFromRequest(prisma, request);
-    const result = await executeJourneyCommandForCurrentUser(prisma, currentUser, await journeyId(context), parsed.request);
+    const result = await blockProcessForCurrentUser(prisma, currentUser, {
+      auditPersistenceAvailable: body.auditPersistenceAvailable !== false,
+      processInstanceId: await processInstanceId(context),
+      reason,
+    });
 
     return NextResponse.json({
       ...result,
@@ -76,6 +77,7 @@ export async function POST(request: Request, context: RouteContext) {
         hiddenRowsDisclosed: false,
         noAdviceExecution: true,
         noClientRelease: true,
+        processRuntimeBackbone: true,
         scoped: true,
       },
     });
