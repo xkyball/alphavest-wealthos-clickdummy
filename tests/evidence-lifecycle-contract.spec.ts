@@ -115,4 +115,31 @@ test.describe("EPIC-08 evidence lifecycle contract", () => {
 
     expect(dimensions.scrollHeight).toBeLessThanOrEqual(dimensions.clientHeight);
   });
+
+  test("keeps the S028 S029 S030 core process cluster gated and within the 1440x900 viewport", async ({ page }) => {
+    await page.setViewportSize({ height: 900, width: 1440 });
+    await authenticate(page);
+
+    for (const route of [
+      { path: "/documents/upload", screen: "S028", testId: "epic08-core-surface-s028" },
+      { path: "/documents/review-queue", screen: "S029", testId: "epic08-core-surface-s029" },
+      { path: "/documents/demo/review", screen: "S030", testId: "epic08-core-surface-s030" },
+    ]) {
+      await page.goto(route.path);
+      await page.waitForLoadState("networkidle");
+
+      const surface = page.getByTestId(route.testId);
+      await expect(surface).toBeVisible();
+      await expect(surface).toHaveAttribute("data-ux-epic08-contract", evidenceLifecycleContractId);
+      await expect(surface).toHaveAttribute("data-ux-epic08-screen", route.screen);
+      await expect(surface).toHaveAttribute("data-ux-no-overclaim", "true");
+
+      const dimensions = await page.evaluate(() => ({
+        clientHeight: document.documentElement.clientHeight,
+        scrollHeight: document.documentElement.scrollHeight,
+      }));
+
+      expect(dimensions.scrollHeight, route.path).toBeLessThanOrEqual(dimensions.clientHeight);
+    }
+  });
 });

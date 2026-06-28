@@ -1,0 +1,182 @@
+{
+  "artifact_kind": "epic_implementation_execution_proof",
+  "artifact_version": 1,
+  "generated_at": "2026-06-28",
+  "ticket_id": "EPIC-08-IMPL-01B",
+  "parent_ticket_id": "EPIC-08-IMPL-01",
+  "epic_id": "EPIC-08",
+  "title": "Implement queue/detail/step surfaces for core process cluster",
+  "source_definition": {
+    "step": "Build core surfaces",
+    "action": "Refactor the highest-risk queue/detail/step screens for this domain.",
+    "output": "Updated components/routes.",
+    "validation": "Targeted Playwright/source tests pass."
+  },
+  "dependency_recheck": {
+    "EPIC-08-IMPL-01A": {
+      "status": "satisfied",
+      "evidence": "commit e6346ed feat: add epic 08 evidence lifecycle area entry"
+    }
+  },
+  "implemented_changes": {
+    "modified_files": [
+      "components/client-intake-screen.tsx",
+      "components/ui/master-detail-surface.tsx",
+      "tests/evidence-lifecycle-contract.spec.ts"
+    ],
+    "added_files": [
+      "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-08-IMPL-01B_EXECUTION_PROOF.json"
+    ],
+    "ui_change": true,
+    "routes_changed": [
+      "/documents/upload",
+      "/documents/review-queue",
+      "/documents/:id/review"
+    ],
+    "new_routes_created": [],
+    "schema_or_api_changed": false,
+    "image_or_state_screen_generated": false
+  },
+  "core_surface_result": {
+    "cluster": [
+      {
+        "screen": "S028",
+        "route": "/documents/upload",
+        "surface_kind": "step",
+        "test_id": "epic08-core-surface-s028",
+        "owned_processes": [
+          "BP-024",
+          "BP-025",
+          "BP-026"
+        ],
+        "forbidden_overclaims": [
+          "selected_file_as_evidence",
+          "upload_as_sufficiency"
+        ],
+        "viewport": {
+          "width": 1440,
+          "height": 900,
+          "scrollHeight": 900,
+          "clientHeight": 900,
+          "scrollable": false
+        }
+      },
+      {
+        "screen": "S029",
+        "route": "/documents/review-queue",
+        "surface_kind": "queue",
+        "test_id": "epic08-core-surface-s029",
+        "owned_processes": [
+          "BP-027",
+          "BP-028",
+          "BP-029",
+          "BP-030",
+          "BP-033"
+        ],
+        "forbidden_overclaims": [
+          "review_as_sufficiency",
+          "link_as_sufficiency"
+        ],
+        "viewport": {
+          "width": 1440,
+          "height": 900,
+          "scrollHeight": 900,
+          "clientHeight": 900,
+          "scrollable": false
+        }
+      },
+      {
+        "screen": "S030",
+        "route": "/documents/:id/review",
+        "surface_kind": "detail",
+        "test_id": "epic08-core-surface-s030",
+        "owned_processes": [
+          "BP-025",
+          "BP-026",
+          "BP-027",
+          "BP-028",
+          "BP-029",
+          "BP-033"
+        ],
+        "forbidden_overclaims": [
+          "pending_as_accepted",
+          "escalation_as_release"
+        ],
+        "viewport": {
+          "width": 1440,
+          "height": 900,
+          "scrollHeight": 900,
+          "clientHeight": 900,
+          "scrollable": false
+        }
+      }
+    ],
+    "legacy_debt_removed": [
+      "S028 primary no longer renders the broad SCF evidence panel before the upload job.",
+      "S029 primary no longer renders the broad SCF evidence panel, secondary proof cards or action rail.",
+      "S030 no longer renders the long duplicated verification summary, evidence cards and side rail."
+    ],
+    "shared_fix": "MasterDetailSurface slot grid now aligns items to start so queue/detail cards do not stretch into long-page debt."
+  },
+  "validation": {
+    "commands": [
+      {
+        "command": "pnpm typecheck",
+        "result": "passed"
+      },
+      {
+        "command": "pnpm guard:source",
+        "result": "passed"
+      },
+      {
+        "command": "PLAYWRIGHT_PORT=3069 pnpm playwright test tests/evidence-lifecycle-contract.spec.ts --workers=1",
+        "result": "passed",
+        "tests": 7
+      },
+      {
+        "command": "PLAYWRIGHT_PORT=3070 pnpm playwright test tests/route-smoke.spec.ts --grep \"028|029|030|documents\" --workers=1",
+        "result": "passed",
+        "tests": 5
+      },
+      {
+        "command": "PLAYWRIGHT_PORT=3068 pnpm playwright test tests/document-upload-lifecycle-hardening.spec.ts tests/ux-master-detail-surface.spec.ts --workers=1",
+        "result": "passed",
+        "tests": 10
+      }
+    ],
+    "known_non_product_warning": "NO_COLOR ignored due FORCE_COLOR appeared during Playwright runs.",
+    "failed_or_retried_commands": [
+      {
+        "command": "initial document-upload-lifecycle/master-detail run before copy fix",
+        "result": "failed_then_fixed",
+        "reason": "Duplicate disabled reason text and missing legacy success sentence were corrected in product copy; rerun passed 10 tests."
+      }
+    ]
+  },
+  "screenshots": [
+    {
+      "screen": "S028",
+      "path": "artifacts/screenshots/epic-08/epic08-impl01b-s028-upload-step.png",
+      "committed": false
+    },
+    {
+      "screen": "S029",
+      "path": "artifacts/screenshots/epic-08/epic08-impl01b-s029-review-queue.png",
+      "committed": false
+    },
+    {
+      "screen": "S030",
+      "path": "artifacts/screenshots/epic-08/epic08-impl01b-s030-verification-detail.png",
+      "committed": false
+    }
+  ],
+  "safety": {
+    "upload_not_sufficiency_preserved": true,
+    "review_not_release_preserved": true,
+    "pending_not_accepted_preserved": true,
+    "client_visibility_fail_closed_preserved": true,
+    "admin_or_auth_policy_changed": false,
+    "no_safety_regression_introduced": true
+  },
+  "completion_status": "complete"
+}

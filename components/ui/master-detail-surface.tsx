@@ -93,7 +93,7 @@ export function MasterDetailSurface({
         </div>
       ) : null}
       {hasStructuredSlots ? (
-        <div className={cn("grid gap-4", slotGridClass)} data-testid="ux-master-detail-slots">
+        <div className={cn("grid items-start gap-4", slotGridClass)} data-testid="ux-master-detail-slots">
           <div className="min-w-0" data-testid="ux-master-detail-master">
             {master ?? children}
             {empty ? <div data-testid="ux-master-detail-empty">{empty}</div> : null}

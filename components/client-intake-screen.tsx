@@ -7,14 +7,11 @@ import {
   Bell,
   Building2,
   Calendar,
-  Check,
   CheckCircle2,
   ChevronDown,
   ChevronRight,
   CircleHelp,
   ClipboardCheck,
-  Download,
-  File,
   FileText,
   MessageSquare,
   Network,
@@ -33,7 +30,6 @@ import { DemoActorHandoffBar } from "@/components/demo-actor-handoff-bar";
 import { GlobalSearchBox } from "@/components/global-search-box";
 import { ProcessSidebar } from "@/components/process-navigation";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
-import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
 import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
@@ -74,8 +70,7 @@ import {
   portalActions,
   portalDecisions,
   relationshipNodes,
-  relationshipRows,
-  verificationEvidence
+  relationshipRows
 } from "@/lib/client-intake-demo-data";
 import { createDemoSession, demoPlatformTenantId, demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import type { ScreenRoute } from "@/lib/route-registry";
@@ -86,6 +81,7 @@ import {
   evidenceLifecycleRouteAttributesForScreen,
   evidenceLifecycleRouteContractForScreen,
   evidenceLifecycleStateContracts,
+  type EvidenceLifecycleRouteScreenId,
 } from "@/lib/evidence-lifecycle-contract";
 import { uxActionClassForPriority } from "@/lib/ux-action-hierarchy-contract";
 import { uxFeedbackSuccessMessageForSubject } from "@/lib/ux-feedback-message-contract";
@@ -2573,6 +2569,57 @@ function EvidenceLifecycleAreaEntry() {
   );
 }
 
+function EvidenceLifecycleCoreSurface({
+  screenId,
+  surfaceKind,
+}: {
+  screenId: EvidenceLifecycleRouteScreenId;
+  surfaceKind: "queue" | "detail" | "step";
+}) {
+  const routeContract = evidenceLifecycleRouteContractForScreen(screenId);
+  const routeAttributes = evidenceLifecycleRouteAttributesForScreen(screenId);
+  const ownedProcessIds: readonly string[] = routeContract.ownedProcesses;
+  const processCards = evidenceLifecycleProcessContracts
+    .filter((process) => ownedProcessIds.includes(process.processId))
+    .slice(0, 3);
+
+  return (
+    <section
+      {...routeAttributes}
+      className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5"
+      data-testid={`epic08-core-surface-${screenId.toLowerCase()}`}
+      data-ux-epic08-core-surface={surfaceKind}
+    >
+      <div className="grid gap-2 xl:grid-cols-[minmax(0,1fr)_auto]">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge tone="gold">EPIC-08</Badge>
+            <Badge tone="blue">{screenId}</Badge>
+            <Badge tone="muted">{surfaceKind}</Badge>
+          </div>
+          <p className="mt-1.5 text-sm font-semibold text-alphavest-ivory">{routeContract.primaryJob}</p>
+          <p className="mt-0.5 text-xs leading-5 text-alphavest-muted">{routeContract.nextPermittedAction}</p>
+        </div>
+        <div className="grid gap-2 sm:grid-cols-3">
+          {processCards.map((process) => {
+            const state = evidenceLifecycleStateContracts[process.primaryState];
+
+            return (
+              <div className="min-w-[10rem] rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-2" key={process.processId}>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-semibold text-alphavest-muted">{process.processId}</span>
+                  <Badge tone={process.primaryState === "REVIEW_PENDING" ? "gold" : process.primaryState === "UPLOAD_RECEIVED" ? "green" : "muted"}>{state.label}</Badge>
+                </div>
+                <p className="mt-1 text-xs leading-4 text-alphavest-muted">{process.name}</p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function DocumentsPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="027">
@@ -2670,7 +2717,7 @@ function DocumentUploadForm() {
       await refresh();
       rememberUploadedDocument(body.result.document);
       setUploadState("success");
-      setMessage(`${body.result.document.fileName} upload completed. Lifecycle: ${labelFromEnum(body.result.document.evidenceLifecycleStatus ?? "extraction_pending")}. ${uxFeedbackSuccessMessageForSubject("upload")}`);
+      setMessage(`${body.result.document.fileName} upload completed. Upload complete - evidence review pending. Evidence sufficiency, release, export and client visibility remain locked. Lifecycle: ${labelFromEnum(body.result.document.evidenceLifecycleStatus ?? "extraction_pending")}. ${uxFeedbackSuccessMessageForSubject("upload")}`);
     } catch (error) {
       setUploadState("error");
       setMessage(error instanceof Error ? error.message : "Upload failed.");
@@ -2688,23 +2735,23 @@ function DocumentUploadForm() {
 
   return (
     <div
-      className="grid gap-5 xl:grid-cols-[1fr_0.8fr_22rem]"
+      className="grid gap-2 xl:grid-cols-[0.95fr_1.25fr_18rem]"
       data-testid="uxp3-document-upload-lifecycle"
       data-ux-lifecycle-status={uploadLifecycleStatus}
       data-ux-lifecycle-validation={uploadValidationState}
       data-ux-no-overclaim="true"
     >
-      <Card>
-        <CardHeader><CardTitle>Upload Source</CardTitle></CardHeader>
-        <CardContent className="space-y-5">
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <Card density="compact">
+        <CardHeader className="pb-2"><CardTitle className="text-lg">Upload Source</CardTitle></CardHeader>
+        <CardContent className="mt-2 space-y-2">
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
             {["My Device", "Email Import", "Cloud Storage", "Scanner"].map((item, index) => (
-              <button className={cn("h-12 rounded-md border text-sm", index === 0 ? "border-alphavest-gold bg-alphavest-gold/12 text-alphavest-gold" : "border-alphavest-border text-alphavest-muted")} disabled={index !== 0} key={item} type="button">{item}</button>
+              <button className={cn("h-9 rounded-md border text-xs", index === 0 ? "border-alphavest-gold bg-alphavest-gold/12 text-alphavest-gold" : "border-alphavest-border text-alphavest-muted")} disabled={index !== 0} key={item} type="button">{item}</button>
             ))}
           </div>
           <label
             className={cn(
-              "grid min-h-48 cursor-pointer place-items-center rounded-md border border-dashed bg-alphavest-navy/35 p-6 text-center transition focus-within:border-alphavest-gold",
+              "grid min-h-28 cursor-pointer place-items-center rounded-md border border-dashed bg-alphavest-navy/35 p-3 text-center transition focus-within:border-alphavest-gold",
               dragActive ? "border-alphavest-gold bg-alphavest-gold/10" : "border-alphavest-border"
             )}
             onDragLeave={() => setDragActive(false)}
@@ -2731,14 +2778,14 @@ function DocumentUploadForm() {
               accept=".pdf,.docx,.xlsx,.csv,.png,.jpg,.jpeg,.tif,.tiff,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,image/png,image/jpeg,image/tiff"
             />
             <div>
-              <Upload aria-hidden="true" className="mx-auto size-10 text-alphavest-gold" />
-              <p className="mt-3 font-semibold text-alphavest-ivory">Drag and drop files here</p>
-              <p className="mt-1 text-sm text-alphavest-muted">Accepted formats: PDF, DOCX, XLSX, CSV, PNG, JPG, TIFF</p>
-              <span className={secondaryButtonClass + " mt-4"}>Choose Files</span>
+              <Upload aria-hidden="true" className="mx-auto size-7 text-alphavest-gold" />
+              <p className="mt-2 text-sm font-semibold text-alphavest-ivory">Drop source file</p>
+              <p className="mt-0.5 text-xs text-alphavest-muted">PDF, DOCX, XLSX, CSV, PNG, JPG, TIFF</p>
+              <span className={secondaryButtonClass + " mt-2 h-9"}>Choose Files</span>
             </div>
           </label>
           {selectedFile ? (
-            <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4" data-testid="document-upload-latest-card">
+            <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2" data-testid="document-upload-latest-card">
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="font-semibold text-alphavest-ivory">{selectedFile.name}</p>
@@ -2765,51 +2812,41 @@ function DocumentUploadForm() {
           ) : null}
         </CardContent>
       </Card>
-      <Card>
-        <CardHeader><CardTitle>Document Details</CardTitle></CardHeader>
-        <CardContent className="space-y-3">
-          <label className="grid gap-2 text-sm">
+      <Card density="compact">
+        <CardHeader className="pb-2"><CardTitle className="text-lg">Document Details</CardTitle></CardHeader>
+        <CardContent className="mt-2 grid gap-2 md:grid-cols-2">
+          <label className="grid gap-1 text-xs">
             <span className="text-alphavest-muted">Document Type</span>
-            <select className="h-11 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-alphavest-ivory outline-none focus:border-alphavest-gold" value={documentType} onChange={(event) => setDocumentType(event.target.value)}>
+            <select className="h-9 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold" value={documentType} onChange={(event) => setDocumentType(event.target.value)}>
               <option value="financial_statement">Financial Statement</option>
               <option value="trust_deed">Trust Deed</option>
               <option value="tax_residency_certificate">Tax Residency Certificate</option>
               <option value="kyc_document">KYC Document</option>
             </select>
           </label>
-          <label className="grid gap-2 text-sm">
+          <label className="grid gap-1 text-xs">
             <span className="text-alphavest-muted">Sub Type</span>
-            <input className="h-11 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-alphavest-ivory outline-none focus:border-alphavest-gold" onChange={(event) => setSubType(event.target.value)} value={subType} />
+            <input className="h-9 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold" onChange={(event) => setSubType(event.target.value)} value={subType} />
           </label>
-          <label className="grid gap-2 text-sm">
+          <label className="grid gap-1 text-xs">
             <span className="text-alphavest-muted">Link to Entity / Asset</span>
-            <input className="h-11 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-alphavest-ivory outline-none focus:border-alphavest-gold" onChange={(event) => setLinkedObjectLabel(event.target.value)} value={linkedObjectLabel} />
+            <input className="h-9 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold" onChange={(event) => setLinkedObjectLabel(event.target.value)} value={linkedObjectLabel} />
           </label>
-          <label className="grid gap-2 text-sm">
+          <label className="grid gap-1 text-xs">
             <span className="text-alphavest-muted">Period</span>
-            <input className="h-11 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-alphavest-ivory outline-none focus:border-alphavest-gold" onChange={(event) => setPeriodLabel(event.target.value)} value={periodLabel} />
+            <input className="h-9 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold" onChange={(event) => setPeriodLabel(event.target.value)} value={periodLabel} />
           </label>
-          <label className="grid gap-2 text-sm">
+          <label className="grid gap-1 text-xs md:col-span-2">
             <span className="text-alphavest-muted">Notes</span>
-            <textarea className="min-h-20 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 py-2 text-alphavest-ivory outline-none focus:border-alphavest-gold" maxLength={500} onChange={(event) => setNotes(event.target.value)} placeholder="Add any notes about this document..." value={notes} />
+            <textarea className="min-h-14 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 py-2 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold" maxLength={500} onChange={(event) => setNotes(event.target.value)} placeholder="Add any notes about this document..." value={notes} />
           </label>
-          <StatePanel
-            detail={hasSelectedFile ? "Upload can create a pending internal review item only. Sufficiency, release, export and client visibility remain locked." : "Select a supported source file before an extraction review item can be queued."}
-            feedback={{
-              intent: hasSelectedFile ? "pending" : "validation",
-              placement: "page_state",
-              subject: "upload",
-            }}
-            state={hasSelectedFile ? "validation" : "empty"}
-            title={hasSelectedFile ? "Extraction queue pending" : "Upload blocked"}
-          />
-          <ActionZone layout="stack" placement="inline_cluster" testId="e05-document-upload-action-zone">
+          <ActionZone className="md:col-span-2 md:grid-cols-3" layout="stack" placement="inline_cluster" testId="e05-document-upload-action-zone">
             <ActionButton
               availability={canUpload ? "enabled" : "disabled"}
               className="w-full"
               describedBy="document-upload-validation"
               disabled={!canUpload}
-              disabledReason={!canUpload ? uploadValidationMessage : undefined}
+              disabledReason={!canUpload ? "Select a supported source file before upload can start." : undefined}
               lifecycleResult={canUpload ? "submits-upload-for-review" : "blocked-validation-required"}
               meaning="submit_review"
               onClick={() => { void submitUpload(); }}
@@ -2837,9 +2874,9 @@ function DocumentUploadForm() {
           </ActionZone>
         </CardContent>
       </Card>
-      <Card>
-        <CardHeader><CardTitle>Upload Status</CardTitle></CardHeader>
-        <CardContent className="space-y-4">
+      <Card density="compact">
+        <CardHeader className="pb-2"><CardTitle className="text-lg">Upload Status</CardTitle></CardHeader>
+        <CardContent className="mt-2 space-y-2">
           <StatePanel
             detail={message}
             state={uploadState === "error" ? "error" : uploadState === "success" ? "success" : "loading"}
@@ -2879,17 +2916,15 @@ function DocumentUploadPage({ title }: { title: string }) {
     <ClientShell activePageId="028">
       <ScreenTitle>{title}</ScreenTitle>
       <WorksurfaceShell
+        density="compact"
         description="Upload intake keeps file submission separate from extraction review, evidence sufficiency and release."
         eyebrow="WP02 Evidence"
         primary={
-          <div className="space-y-5">
-            <SectionTitle subtitle="Securely upload documents to your AlphaVest workspace." title={title} />
-            <SafeClientBanner>Document uploads are scoped to permitted client roles, entities and assets.</SafeClientBanner>
-            <ScfP04P06FlowPanel mode="evidence" />
+          <div className="space-y-2">
+            <EvidenceLifecycleCoreSurface screenId="S028" surfaceKind="step" />
             <DocumentUploadForm />
           </div>
         }
-        rail={<EvidenceLifecycleRail />}
         routeId="028"
         safetyNote="Upload can create a pending review item only. It cannot complete evidence review, export approval or client visibility."
         statusItems={[
@@ -2963,67 +2998,39 @@ function ExtractionReviewActionPanel() {
   }
 
   return (
-    <Card>
-      <CardHeader><CardTitle>Review & Sufficiency</CardTitle></CardHeader>
-      <CardContent className="space-y-4">
+    <Card density="compact">
+      <CardHeader className="pb-2"><CardTitle className="text-lg">Review & Sufficiency</CardTitle></CardHeader>
+      <CardContent className="mt-2 space-y-2">
         {latestDocument ? (
-          <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4" data-testid="document-review-latest-card">
+          <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2" data-testid="document-review-latest-card">
             <p className="text-sm font-semibold text-alphavest-ivory">{latestDocument.fileName}</p>
-            <p className="mt-1 text-xs text-alphavest-muted">
+            <p className="mt-0.5 text-xs text-alphavest-muted">
               Document: {labelFromEnum(latestDocument.status)} · Evidence: {latestDocument.evidenceStatus ? labelFromEnum(latestDocument.evidenceStatus) : "Created"}
             </p>
-            <p className="mt-2 text-xs text-alphavest-muted">Version: v{latestDocument.latestVersionNumber ?? 1} of {latestDocument.versionCount ?? 1} · verification details held by AlphaVest</p>
-            <p className="mt-2 text-xs text-alphavest-muted">Lifecycle: {labelFromEnum(latestDocument.evidenceLifecycleStatus ?? "review_pending")}</p>
-            <p className="mt-2 text-xs text-alphavest-muted">Visibility: {latestDocument.evidenceVisibilityStatus ? labelFromEnum(latestDocument.evidenceVisibilityStatus) : "Internal Only"}</p>
+            <p className="mt-0.5 text-xs text-alphavest-muted">Lifecycle: {labelFromEnum(latestDocument.evidenceLifecycleStatus ?? "review_pending")} · Visibility locked</p>
           </div>
         ) : (
-          <StatePanel
-            detail={loadState === "loading" ? "Fetching uploaded documents." : "Upload a document before review can continue."}
-            state={loadState === "error" ? "error" : "empty"}
-            title={loadState === "error" ? "Uploads unavailable" : "No upload selected"}
-          />
+          <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2 text-xs text-alphavest-muted">
+            {loadState === "loading" ? "Fetching uploaded documents." : loadState === "error" ? "Uploads unavailable." : "Upload a document before review can continue."}
+          </div>
         )}
         <label className="grid gap-2 text-sm">
           <span className="text-alphavest-muted">Reviewer Notes</span>
           <textarea
-            className="min-h-24 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 py-2 text-alphavest-ivory outline-none focus:border-alphavest-gold"
+            className="min-h-14 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 py-2 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold"
             maxLength={1000}
             onChange={(event) => setNotes(event.target.value)}
             value={notes}
           />
         </label>
-        <StatePanel
-          detail={message}
-          state={reviewState === "error" ? "error" : reviewState === "success" ? "success" : "restricted"}
-          title={reviewState === "success" ? "Review saved" : reviewState === "error" ? "Review blocked" : "Human review gate"}
-        />
-        <button
-          className={secondaryButtonClass + " w-full"}
-          data-testid="phase3-request-clarification"
-          disabled={!latestDocument || reviewState === "submitting"}
-          onClick={() => { void submitReview("request_clarification"); }}
-          type="button"
-        >
-          Request clarification
-        </button>
-        <button
-          className={secondaryButtonClass + " w-full"}
-          data-testid="phase3-mark-reviewed"
-          disabled={!latestDocument || reviewState === "submitting"}
-          onClick={() => { void submitReview("mark_reviewed"); }}
-          type="button"
-        >
-          Mark Reviewed & Link Evidence
-        </button>
-        <button
-          className={primaryButtonClass + " w-full"}
-          data-testid="phase3-accept-sufficiency"
-          disabled={!latestDocument || reviewState === "submitting"}
-          onClick={() => { void submitReview("accept_sufficiency"); }}
-          type="button"
-        >
-          Run scoped sufficiency check
-        </button>
+        <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2 text-xs text-alphavest-muted" data-ux-epic08-review-state={reviewState}>
+          {message}
+        </div>
+        <div className="grid gap-2">
+          <button className={secondaryButtonClass + " w-full"} data-testid="phase3-request-clarification" disabled={!latestDocument || reviewState === "submitting"} onClick={() => { void submitReview("request_clarification"); }} type="button">Request clarification</button>
+          <button className={secondaryButtonClass + " w-full"} data-testid="phase3-mark-reviewed" disabled={!latestDocument || reviewState === "submitting"} onClick={() => { void submitReview("mark_reviewed"); }} type="button">Mark Reviewed & Link Evidence</button>
+          <button className={primaryButtonClass + " w-full"} data-testid="phase3-accept-sufficiency" disabled={!latestDocument || reviewState === "submitting"} onClick={() => { void submitReview("accept_sufficiency"); }} type="button">Run scoped sufficiency check</button>
+        </div>
       </CardContent>
     </Card>
   );
@@ -3094,42 +3101,27 @@ function ExtractionReviewWorkbench() {
   );
 
   const detail = (
-    <div className="space-y-5" data-testid="s029-extraction-selected-detail">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between"><CardTitle>{selectedDocument?.fileName ?? "2024_Q4_Brokerage_Statement.pdf"}</CardTitle><Badge>Page 1 of 4</Badge></CardHeader>
-        <CardContent>
-          <div className="rounded-md bg-alphavest-ivory p-6 text-alphavest-navy">
-            <p className="font-display text-2xl">Summit Securities</p>
-            <p className="mt-4 text-sm">Account Statement · AlphaVest Family Office LLC</p>
-            <div className="mt-5 space-y-2 text-sm">
-              {["Beginning Market Value $8,742,183.41", "Net Contributions $250,000.00", "Net Withdrawals $(125,000.00)", "Ending Market Value $9,899,640.19"].map((line) => (
-                <div className="flex justify-between border-b border-slate-300 pb-2" key={line}><span>{line.split(" $")[0]}</span><span>${line.split(" $")[1]}</span></div>
-              ))}
-            </div>
-          </div>
-          <div className="mt-4 grid grid-cols-4 gap-3">
-            {[1, 2, 3, 4].map((page) => <div className={cn("grid h-16 place-items-center rounded border bg-alphavest-ivory text-alphavest-navy", page === 1 ? "border-alphavest-gold" : "border-alphavest-border")} key={page}>{page}</div>)}
-          </div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader><CardTitle>Extracted Fields <Badge className="ml-2">12 fields</Badge></CardTitle></CardHeader>
-        <CardContent className="space-y-5">
-          {extractionFields.map((section) => (
-            <div key={section.section}>
-              <p className="mb-2 font-semibold text-alphavest-ivory">{section.section}</p>
-              <div className="space-y-2">
-                {section.fields.map(([label, value, confidence]) => (
-                  <div className={cn("grid gap-2 rounded-md border p-3 md:grid-cols-[9rem_1fr_auto]", confidence === "Low" ? "border-alphavest-red/60" : "border-alphavest-border") } key={`${section.section}-${label}`}>
-                    <span className="text-sm text-alphavest-muted">{label}</span>
-                    <span className="text-sm font-semibold text-alphavest-ivory">{value}</span>
-                    <Badge tone={toneFor(confidence)}>{confidence}</Badge>
-                  </div>
-                ))}
-              </div>
+    <div data-testid="s029-extraction-selected-detail">
+      <Card density="compact" data-ux-queue-proof-drawer="true">
+        <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-lg">{selectedDocument?.fileName ?? "No selected upload"}</CardTitle><Badge>Review gate</Badge></CardHeader>
+        <CardContent className="mt-2 grid gap-2 md:grid-cols-3">
+          {[
+            ["Extraction", selectedDocument ? labelFromEnum(selectedDocument.extractionStatus ?? "pending") : "Empty", "Draft fields only"],
+            ["Review", selectedDocument ? "Pending" : "Blocked", "Human review required"],
+            ["Boundary", "Locked", "No release/export/client visibility"],
+          ].map(([label, value, detail]) => (
+            <div className="rounded-md border border-alphavest-border/70 bg-alphavest-midnight/55 p-2" key={label}>
+              <p className="text-xs text-alphavest-muted">{label}</p>
+              <p className="mt-0.5 text-sm font-semibold text-alphavest-ivory">{value}</p>
+              <p className="mt-0.5 text-xs leading-4 text-alphavest-muted">{detail}</p>
             </div>
           ))}
-          <StatePanel detail="Low confidence or errors must be resolved before finalizing." state="error" title="1 field needs attention" />
+          {extractionFields.slice(0, 2).flatMap((section) => section.fields.slice(0, 2).map(([label, value, confidence]) => (
+            <div className={cn("rounded-md border p-2", confidence === "Low" ? "border-alphavest-red/60" : "border-alphavest-border") } key={`${section.section}-${label}`}>
+              <div className="flex items-center justify-between gap-2"><span className="min-w-0 truncate whitespace-nowrap text-xs text-alphavest-muted">{label}</span><Badge tone={toneFor(confidence)}>{confidence}</Badge></div>
+              <p className="mt-1 truncate text-sm font-semibold text-alphavest-ivory">{value}</p>
+            </div>
+          )))}
         </CardContent>
       </Card>
     </div>
@@ -3150,15 +3142,6 @@ function ExtractionReviewWorkbench() {
       queueWorkbench
       selectedObjectId={selectedDocument?.id ?? "s029-empty-queue"}
       selectedObjectState={selectedDocument?.evidenceLifecycleStatus ?? "empty"}
-      selectedSummary={
-        <div className="grid gap-2 md:grid-cols-[1fr_auto]">
-          <div>
-            <p className="font-semibold text-alphavest-ivory">Selected extraction review</p>
-            <p className="text-xs text-alphavest-muted">Selection is preserved while filters or queue state change; audit/proof remains a drawer handoff.</p>
-          </div>
-          <Badge tone="gold">{selectedDocument ? labelFromEnum(selectedDocument.evidenceLifecycleStatus ?? "review_pending") : "empty"}</Badge>
-        </div>
-      }
       stickyRail
     />
   );
@@ -3169,32 +3152,18 @@ function ExtractionReviewPage({ title }: { title: string }) {
     <ClientShell activePageId="029">
       <ScreenTitle>{title}</ScreenTitle>
       <WorksurfaceShell
+        density="compact"
         description="Human review of extracted draft fields before any scoped evidence sufficiency check."
         eyebrow="WP02 Evidence"
         primary={
-          <div className="space-y-5">
-            <SectionTitle action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false">Save held</span><button className={primaryButtonClass} data-testid="j04-confirm-finalize" onClick={() => { void runDataMaintenanceCommand("j04.confirmFinalize", "/documents/:id/review"); }} type="button"><Check aria-hidden="true" className="size-4" />Confirm review</button></div>} subtitle="Review extracted information before any final evidence status is shown." title={title} />
-            <SafeClientBanner>Human review is required before this information can be treated as final evidence.</SafeClientBanner>
-            <ScfP04P06FlowPanel mode="evidence" />
-            <ExtractionReviewWorkbench />
+          <div className="space-y-2">
+            <EvidenceLifecycleCoreSurface screenId="S029" surfaceKind="queue" />
+            <div className="grid items-start gap-2 xl:grid-cols-[minmax(0,1fr)_22rem]">
+              <ExtractionReviewWorkbench />
+              <ExtractionReviewActionPanel />
+            </div>
           </div>
         }
-        secondary={
-          <div className="grid gap-4 xl:grid-cols-[0.8fr_1fr]">
-            <Card data-ux-queue-proof-drawer="true">
-              <CardHeader><CardTitle>Extraction proof drawer</CardTitle></CardHeader>
-              <CardContent className="flex items-center gap-5"><ProgressRing label="Confidence" size="small" value={83} /><div className="space-y-2 text-sm text-alphavest-muted"><p>High (9)</p><p>Medium (2)</p><p>Low (1)</p><p>Error (1)</p></div></CardContent>
-            </Card>
-            <Card data-ux-queue-proof-drawer="true">
-              <CardHeader><CardTitle>Issues and gated actions</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                <div className="space-y-3"><StatePanel detail="AI extracted value is inconsistent." state="error" title="Net Investment Change" /><StatePanel detail="Table structure could not be parsed. Please review manually." state="error" title="Page 2 - Table Detected" /></div>
-                <ExtractionReviewActionPanel />
-              </CardContent>
-            </Card>
-          </div>
-        }
-        rail={<EvidenceLifecycleRail />}
         routeId="029"
         safetyNote="Extraction review resolves draft data quality only; final evidence, release, export and client visibility stay gated."
         statusItems={[
@@ -3213,64 +3182,37 @@ function VerificationPendingPage({ title }: { title: string }) {
     <ClientShell activePageId="030">
       <ScreenTitle>{title}</ScreenTitle>
       <WorksurfaceShell
+        density="compact"
         description="Pending verification state for submitted evidence, review SLA and clarification work."
         eyebrow="WP02 Evidence"
         primary={
-          <>
-            <StatePanel
-              detail="A submitted document is under review. The client view shows review status and safe next steps only."
-              state="loading"
-              title="Review in progress"
-            />
-            <div className="space-y-5">
-              <SectionTitle action={<span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />Download held</span>} icon={FileText} subtitle="Your submitted information is under human review. No final validation has been completed." title={title} />
-              <StatePanel detail="A member of our operations team is reviewing your documents and information." state="loading" title="Under Human Review" />
-              <div className="grid gap-5 xl:grid-cols-[1fr_28rem]">
-                <section className="space-y-5">
-                  <Card>
-                    <CardHeader><CardTitle>Verification Summary</CardTitle></CardHeader>
-                    <CardContent className="grid gap-4 md:grid-cols-3">
-                      <MetricCard detail="No final validation yet" label="Overall Status" status="PENDING" value="Pending" />
-                      <MetricCard detail="By Tue, May 27, 2025" label="Expected Review Time" status="SCHEDULED" value="2-3 Days" />
-                      <MetricCard detail="10:14 AM ET" label="Submitted On" status="PROCESSING" value="May 21, 2025" />
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader><CardTitle>Review Breakdown</CardTitle></CardHeader>
-                    <CardContent className="grid gap-4 md:grid-cols-3">
-                      <MetricCard detail="Areas Under Review" label="Review" value="1 of 3" />
-                      <MetricCard detail="Needs Clarification" label="Clarification" status="FAILED" value="1" />
-                      <MetricCard detail="SLA Breach" label="SLA" status="PENDING" value="1" />
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader><CardTitle>Evidence Submitted</CardTitle></CardHeader>
-                    <CardContent className="grid gap-3 md:grid-cols-5">
-                      {verificationEvidence.map((item) => (
-                        <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4 text-center" key={item.title}>
-                          <File aria-hidden="true" className="mx-auto size-8 text-alphavest-muted" />
-                          <p className="mt-3 text-sm font-semibold text-alphavest-ivory">{item.title}</p>
-                          <p className="text-xs text-alphavest-muted">{item.date}</p>
-                          <Badge className="mt-3" tone={toneFor(item.state)}>{item.state}</Badge>
-                        </div>
-                      ))}
-                      <div className="grid min-h-32 place-items-center rounded-md border border-dashed border-alphavest-border text-center text-sm text-alphavest-muted">
-                        <div><Plus aria-hidden="true" className="mx-auto mb-2 size-7" />Additional Evidence Upload</div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </section>
-                <aside className="space-y-5">
-                  <Card><CardHeader><CardTitle>Human Review Status</CardTitle></CardHeader><CardContent><StatePanel detail="A verification specialist is reviewing your information and documentation." state="restricted" title="In Progress" /></CardContent></Card>
-                  <Card><CardHeader><CardTitle>SLA Status</CardTitle></CardHeader><CardContent><StatePanel detail="This item has exceeded the expected review time by 1 business day." state="error" title="SLA Breach" /></CardContent></Card>
-                  <Card><CardHeader><CardTitle>Needs Clarification</CardTitle></CardHeader><CardContent><StatePanel detail="We need additional information to continue the review." state="restricted" title="1 Item" /><button className={secondaryButtonClass + " mt-4 w-full"} data-testid="j04-view-details" onClick={() => { void runDataMaintenanceCommand("j04.viewDetails"); }} type="button">View Details</button></CardContent></Card>
-                </aside>
-              </div>
-              <SafeClientBanner>What happens next? No action is needed unless requested through your secure message center.</SafeClientBanner>
-            </div>
-          </>
+          <div className="space-y-2">
+            <EvidenceLifecycleCoreSurface screenId="S030" surfaceKind="detail" />
+            <section
+              className="grid gap-2 xl:grid-cols-[1fr_20rem]"
+              data-testid="epic08-s030-verification-step"
+              data-ux-epic08-client-release="locked"
+              data-ux-epic08-evidence-sufficiency="not_claimed"
+              data-ux-no-overclaim="true"
+            >
+              <Card density="compact">
+                <CardHeader className="pb-2"><CardTitle className="text-lg">Verification step</CardTitle></CardHeader>
+                <CardContent className="mt-2 grid gap-2 md:grid-cols-3">
+                  <MetricCard detail="Human review in progress" label="Status" status="PENDING" value="Pending" />
+                  <MetricCard detail="Clarification required before sufficiency" label="Blocker" status="FAILED" value="1 item" />
+                  <MetricCard detail="No release/export/client visibility" label="Boundary" status="PROCESSING" value="Locked" />
+                </CardContent>
+              </Card>
+              <Card density="compact">
+                <CardHeader className="pb-2"><CardTitle className="text-lg">Next safe action</CardTitle></CardHeader>
+                <CardContent className="mt-2 space-y-2">
+                  <StatePanel detail="Resolve the verification blocker or request clarification. Pending review is not acceptance." state="restricted" title="Clarification gate" />
+                  <button className={secondaryButtonClass + " w-full"} data-testid="j04-view-details" onClick={() => { void runDataMaintenanceCommand("j04.viewDetails"); }} type="button">View Details</button>
+                </CardContent>
+              </Card>
+            </section>
+          </div>
         }
-        rail={<EvidenceLifecycleRail />}
         routeId="030"
         safetyNote="Verification pending means human review is in progress; it is not final validation, evidence sufficiency or client release."
         statusItems={[
