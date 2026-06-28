@@ -1,0 +1,625 @@
+{
+  "artifact_kind": "epic_implementation_contract",
+  "artifact_version": 1,
+  "generated_at": "2026-06-28",
+  "ticket_id": "EPIC-09-SPEC-01",
+  "epic_id": "EPIC-09",
+  "epic_title": "Signal, Analyst Workbench and Internal Draft Governance",
+  "source_file": "reports/process-first-refactoring-masterplan-2026-06-28/ALPHAVEST_PROCESS_FIRST_REFACTORING_MASTERPLAN_BOC_CTES.json",
+  "depends_on": [
+    "EPIC-09-ANALYSIS-01"
+  ],
+  "baseline": {
+    "branch": "full-workflow",
+    "commit": "15e8dcd",
+    "commit_message": "docs: add epic 09 domain gap report"
+  },
+  "ticket_definition_reread": {
+    "task": "Define target surfaces, state machine, role guards, payload visibility, audit/evidence requirements and acceptance criteria for Signal, Analyst Workbench and Internal Draft Governance.",
+    "goal": "Make implementation decision-complete for this domain.",
+    "expected_output": [
+      "EPIC-09 implementation contract"
+    ],
+    "definition_of_done": [
+      "Acceptance criteria cover positive and negative paths.",
+      "UI, service and test boundaries are named."
+    ]
+  },
+  "contract_decision": {
+    "decision": "canonical_area_04_contract_required",
+    "summary": "EPIC-09 implementation must promote S033/S034/S035 into a typed process-first AREA-04 contract before UI implementation claims can be accepted.",
+    "first_implementation_rule": "No new route is required for the first EPIC-09 implementation slice; any route, API, schema, advisor/compliance boundary or client-visible payload expansion is a stop-and-report decision."
+  },
+  "canonical_lifecycle": [
+    "external_signal_intake",
+    "analyst_workbench_triage",
+    "action_item_creation",
+    "evidence_gap_identification",
+    "data_quality_issue_routing",
+    "internal_draft_generation",
+    "draft_classification",
+    "unsupported_claim_detection",
+    "draft_rejection",
+    "evidence_backed_rebuild",
+    "internal_only_redaction",
+    "source_evidence_traceability"
+  ],
+  "required_contract_artifact": {
+    "path": "lib/analyst-draft-governance-contract.ts",
+    "required_exports": [
+      "AnalystDraftProcessId",
+      "AnalystDraftStepId",
+      "AnalystDraftState",
+      "analystDraftRouteOwnership",
+      "analystDraftRoleGuards",
+      "analystDraftAuditRequirements",
+      "analystDraftPayloadVisibility",
+      "analystDraftForbiddenOverclaims",
+      "analystDraftAcceptanceCriteria"
+    ],
+    "must_integrate_with": [
+      "lib/process-first-ux-contract.ts",
+      "lib/p44-phase4-signal-workbench.ts",
+      "lib/internal-draft-governance-spine.ts"
+    ]
+  },
+  "target_surfaces": [
+    {
+      "surface_id": "S033",
+      "route": "/advisory",
+      "primary_job": "Orient the internal signal and draft area around one next analyst action without duplicating trigger detail.",
+      "page_family": "analyst_signal_hub",
+      "owned_processes": [
+        "BP-034",
+        "BP-038",
+        "BP-039",
+        "BP-040",
+        "BP-041"
+      ],
+      "viewport_rule": "Area status, blocker and next action must be visible without scrolling in the target viewport."
+    },
+    {
+      "surface_id": "S034",
+      "route": "/advisory/review-queue",
+      "primary_job": "Select one analyst work item, expose current signal/draft state, blocker and allowed handoff without client visibility.",
+      "page_family": "analyst_workbench",
+      "owned_processes": [
+        "BP-034",
+        "BP-038",
+        "BP-039",
+        "BP-040",
+        "BP-041",
+        "BP-042",
+        "BP-043",
+        "BP-044"
+      ],
+      "viewport_rule": "Queue, selected object, blocker and one primary next action must fit above-fold; secondary metrics move to compact proof/drawer context."
+    },
+    {
+      "surface_id": "S035",
+      "route": "/advisory/triggers/:id/review",
+      "primary_job": "Review one trigger/internal draft object, resolve evidence or unsupported-claim blockers and route only safe advisor candidates.",
+      "page_family": "analyst_trigger_review",
+      "owned_processes": [
+        "BP-040",
+        "BP-042",
+        "BP-043",
+        "BP-044",
+        "BP-045",
+        "BP-046",
+        "BP-047",
+        "BP-048"
+      ],
+      "viewport_rule": "Trigger identity, draft state, unsupported-claim/evidence blocker and primary recovery action must be visible without scrolling; audit/history/details are secondary."
+    }
+  ],
+  "state_machine": [
+    {
+      "state": "SIGNAL_INTAKE_NEW",
+      "meaning": "A signal exists, is internal and has not yet produced client-visible advice.",
+      "allowed_next_actions": [
+        "validate_signal",
+        "assign_to_analyst",
+        "block_signal"
+      ],
+      "forbidden_overclaims": [
+        "advice_created",
+        "advisor_approved",
+        "compliance_released",
+        "client_visibility",
+        "export_ready"
+      ]
+    },
+    {
+      "state": "WORKBENCH_TRIAGE",
+      "meaning": "Analyst workbench selected one item and is deciding internal route or recovery.",
+      "allowed_next_actions": [
+        "request_evidence",
+        "create_action_item",
+        "open_trigger_review",
+        "route_to_advisor_if_safe"
+      ],
+      "forbidden_overclaims": [
+        "approval",
+        "release",
+        "client_ready",
+        "published"
+      ]
+    },
+    {
+      "state": "EVIDENCE_GAP_IDENTIFIED",
+      "meaning": "A signal or draft cannot proceed until evidence or data-quality recovery is created.",
+      "allowed_next_actions": [
+        "create_evidence_request",
+        "create_data_quality_action",
+        "block_advisor_handoff"
+      ],
+      "forbidden_overclaims": [
+        "evidence_sufficient",
+        "advisor_candidate",
+        "client_visibility"
+      ]
+    },
+    {
+      "state": "INTERNAL_DRAFT_GENERATED",
+      "meaning": "An AI/rules draft exists only as internal preparation.",
+      "allowed_next_actions": [
+        "classify_draft",
+        "review_unsupported_claims",
+        "request_evidence"
+      ],
+      "forbidden_overclaims": [
+        "client_advice",
+        "approved_recommendation",
+        "final_recommendation",
+        "exportable_payload"
+      ]
+    },
+    {
+      "state": "DRAFT_CLASSIFICATION_PENDING",
+      "meaning": "The draft needs classification and internal safety review.",
+      "allowed_next_actions": [
+        "classify_as_internal_only",
+        "flag_unsupported_claim",
+        "reject_draft"
+      ],
+      "forbidden_overclaims": [
+        "ready_for_advisor",
+        "client_safe",
+        "released_summary"
+      ]
+    },
+    {
+      "state": "UNSUPPORTED_CLAIM_BLOCKED",
+      "meaning": "One or more draft claims lack evidence or policy support.",
+      "allowed_next_actions": [
+        "request_evidence",
+        "reject_draft",
+        "rebuild_with_evidence"
+      ],
+      "forbidden_overclaims": [
+        "route_to_advisor_without_recovery",
+        "client_visibility",
+        "compliance_release"
+      ]
+    },
+    {
+      "state": "DRAFT_REJECTED_INTERNAL",
+      "meaning": "Analyst rejected a draft internally with reason and audit trail.",
+      "allowed_next_actions": [
+        "rebuild_with_evidence",
+        "request_evidence",
+        "keep_blocked"
+      ],
+      "forbidden_overclaims": [
+        "client_rejected",
+        "advisor_rejected",
+        "compliance_blocked",
+        "export_rejected"
+      ]
+    },
+    {
+      "state": "REBUILD_NEEDS_EVIDENCE",
+      "meaning": "Rebuild is blocked until accepted scoped evidence exists.",
+      "allowed_next_actions": [
+        "open_evidence_request",
+        "link_scoped_evidence",
+        "keep_advisor_handoff_blocked"
+      ],
+      "forbidden_overclaims": [
+        "evidence_sufficient",
+        "advisor_candidate",
+        "client_safe_projection"
+      ]
+    },
+    {
+      "state": "REBUILT_WITH_EVIDENCE",
+      "meaning": "Internal draft was rebuilt from accepted scoped evidence and remains internal.",
+      "allowed_next_actions": [
+        "redact_internal_payload",
+        "create_source_trace",
+        "route_to_advisor_if_gates_pass"
+      ],
+      "forbidden_overclaims": [
+        "advisor_approved",
+        "compliance_released",
+        "client_visible",
+        "export_ready"
+      ]
+    },
+    {
+      "state": "REDACTED_INTERNAL_ONLY",
+      "meaning": "Internal-only fields and rationale are removed from any downstream client/export candidate.",
+      "allowed_next_actions": [
+        "verify_traceability",
+        "route_to_advisor"
+      ],
+      "forbidden_overclaims": [
+        "redaction_as_compliance_release",
+        "redaction_as_export_approval",
+        "client_acceptance"
+      ]
+    },
+    {
+      "state": "TRACEABLE_ADVISOR_CANDIDATE",
+      "meaning": "A safe internal candidate can be handed to advisor review with evidence/source trace; advisor and compliance gates remain separate.",
+      "allowed_next_actions": [
+        "route_to_advisor_review"
+      ],
+      "forbidden_overclaims": [
+        "advisor_approved",
+        "compliance_released",
+        "client_visible",
+        "client_accepted"
+      ]
+    }
+  ],
+  "role_guards": [
+    {
+      "action": "intake_signal",
+      "allowed_roles": [
+        "analyst",
+        "client_success",
+        "compliance_officer",
+        "senior_wealth_advisor"
+      ],
+      "hard_negative": "Signal intake creates no autonomous advice, no release, no export approval and no client visibility."
+    },
+    {
+      "action": "triage_workbench_item",
+      "allowed_roles": [
+        "analyst",
+        "compliance_officer",
+        "senior_wealth_advisor"
+      ],
+      "hard_negative": "Wrong role or wrong tenant gets deny/blocked/hidden without payload leak or mutation."
+    },
+    {
+      "action": "create_action_item",
+      "allowed_roles": [
+        "analyst",
+        "compliance_officer",
+        "senior_wealth_advisor"
+      ],
+      "hard_negative": "Action item creation cannot make a recommendation, trigger or evidence item client-visible."
+    },
+    {
+      "action": "identify_evidence_gap",
+      "allowed_roles": [
+        "analyst",
+        "compliance_officer",
+        "senior_wealth_advisor"
+      ],
+      "hard_negative": "Evidence-gap identification cannot mark sufficiency or route unsupported draft content to advisor."
+    },
+    {
+      "action": "classify_or_reject_internal_draft",
+      "allowed_roles": [
+        "analyst",
+        "senior_wealth_advisor"
+      ],
+      "hard_negative": "Draft classification or rejection cannot release, export, approve or expose internal draft payload to clients."
+    },
+    {
+      "action": "rebuild_internal_draft",
+      "allowed_roles": [
+        "analyst"
+      ],
+      "hard_negative": "Rebuild without accepted scoped evidence is blocked and audited; admin/advisor/compliance cannot force analyst rebuild by role override."
+    },
+    {
+      "action": "route_to_advisor",
+      "allowed_roles": [
+        "analyst"
+      ],
+      "hard_negative": "Route-to-advisor may set advisor-pending only; it cannot set advisor-approved, compliance-released, export-ready or clientVisible."
+    },
+    {
+      "action": "view_internal_draft_payload",
+      "allowed_roles": [
+        "analyst",
+        "senior_wealth_advisor",
+        "compliance_officer"
+      ],
+      "hard_negative": "Client roles, export projection and client-safe APIs receive only released/redacted summaries and no internal draft, notes, trace internals or raw claims."
+    }
+  ],
+  "payload_visibility": {
+    "internal_only_fields": [
+      "aiDraft",
+      "internalDraftText",
+      "internalRationale",
+      "analystNotes",
+      "advisorNotes",
+      "complianceNotes",
+      "unsupportedClaims",
+      "draftClassificationReason",
+      "draftTraceInternals",
+      "sourceRefsJson",
+      "auditMetadataJson",
+      "evidenceInternalIds",
+      "rawExtractionPayload",
+      "workflowGateDebug"
+    ],
+    "advisor_allowed_fields": [
+      "redacted_internal_draft_candidate",
+      "evidence_summary",
+      "unsupported_claim_status",
+      "safe_source_trace_summary",
+      "analyst_review_state",
+      "required_next_gate"
+    ],
+    "client_safe_allowed_fields": [
+      "released_or_compliance_approved_summary",
+      "safe_status_label",
+      "next_allowed_client_action",
+      "released_timestamp_where_applicable"
+    ],
+    "export_allowed_fields_after_later_approval": [
+      "approved_redacted_summary",
+      "approved_scope",
+      "safe_evidence_summary",
+      "release_status"
+    ]
+  },
+  "audit_requirements": [
+    "p44.signal.intake.created",
+    "p44.workbench.assign_review",
+    "p44.workbench.block_signal",
+    "p44.workbench.request_evidence",
+    "p44.workbench.route_to_advisor",
+    "p44.action_item.created_from_signal",
+    "p44.evidence_gap.blocked_no_target",
+    "p44.evidence_gap.converted_to_request",
+    "internal_draft.generated",
+    "internal_draft.classified",
+    "internal_draft.unsupported_claim.flagged",
+    "internal_draft.rejected",
+    "internal_draft.rebuild.blocked",
+    "internal_draft.rebuilt_with_evidence",
+    "internal_draft.redacted_internal_only",
+    "internal_draft.trace.created",
+    "internal_draft.route_to_advisor"
+  ],
+  "evidence_requirements": [
+    "signal_source_validated",
+    "trigger_scope_validated",
+    "evidence_gap_reason_present",
+    "accepted_scoped_evidence_required_for_rebuild",
+    "source_trace_required_before_advisor_handoff",
+    "redaction_required_before_client_or_export_projection",
+    "audit_event_persisted_for_sensitive_action"
+  ],
+  "acceptance_criteria_by_process": [
+    {
+      "process_id": "BP-034",
+      "positive": "A valid signal creates an internal trigger, queue item and audit event with no autonomous advice.",
+      "negative": "Unsupported source, confidence, severity, role or tenant scope is rejected without mutation or payload leak."
+    },
+    {
+      "process_id": "BP-038",
+      "positive": "Workbench triage moves one selected signal through assign, block, request-evidence or advisor-handoff states with audit.",
+      "negative": "Triage cannot approve advice, release content, export content or create client visibility."
+    },
+    {
+      "process_id": "BP-039",
+      "positive": "Action item creation records owner, reason, source trigger and internal-only visibility.",
+      "negative": "Action creation cannot create client-visible recommendation, evidence sufficiency or downstream release."
+    },
+    {
+      "process_id": "BP-040",
+      "positive": "Evidence gap identification either creates a scoped evidence request or blocks the signal/draft with a recoverable reason.",
+      "negative": "Evidence gap state cannot be treated as sufficiency, advisor readiness or client-safe advice."
+    },
+    {
+      "process_id": "BP-041",
+      "positive": "Data-quality issue routing creates an internal work item with owner, priority, blocker and recovery path.",
+      "negative": "Data-quality routing cannot silently skip evidence, advisor or compliance gates."
+    },
+    {
+      "process_id": "BP-042",
+      "positive": "Internal AI/rules draft generation creates an internal draft state with source context and explicit no-client boundary.",
+      "negative": "Generated draft cannot appear in client, export or client-safe API payloads."
+    },
+    {
+      "process_id": "BP-043",
+      "positive": "Draft classification marks draft type, review state, forbidden-payload boundary and next safe action.",
+      "negative": "Classification cannot mark content client-safe, advisor-approved or compliance-released."
+    },
+    {
+      "process_id": "BP-044",
+      "positive": "Unsupported claims are surfaced as blockers with request-evidence, reject or rebuild recovery path.",
+      "negative": "Unsupported claims cannot be routed to advisor or export/client projections."
+    },
+    {
+      "process_id": "BP-045",
+      "positive": "Draft rejection records reason, actor, audit event and internal-only recovery state.",
+      "negative": "Draft rejection cannot imply client rejection, advisor rejection, compliance block or export failure."
+    },
+    {
+      "process_id": "BP-046",
+      "positive": "Rebuild succeeds only when scoped evidence is accepted and source trace is preserved.",
+      "negative": "Rebuild without evidence fails closed and leaves advisor/compliance/client/export states unchanged."
+    },
+    {
+      "process_id": "BP-047",
+      "positive": "Internal-only redaction removes forbidden payloads from downstream candidates while preserving internal proof.",
+      "negative": "Redaction cannot be treated as compliance release, export approval or client acceptance."
+    },
+    {
+      "process_id": "BP-048",
+      "positive": "Source/evidence traceability ties a draft candidate to safe evidence/source references before advisor handoff.",
+      "negative": "Missing source trace blocks handoff and never exposes raw trace internals to clients."
+    }
+  ],
+  "ui_boundaries": {
+    "allowed": [
+      "add_process_first_contract_metadata_to_S033_S034_S035",
+      "add_compact_area_entry_for_S033",
+      "keep_S034_as_bounded_master_detail_workbench",
+      "keep_S035_as_selected_trigger_and_draft_review_object",
+      "move_secondary_metrics_history_audit_and_raw_proof_to_drawers_tabs_or_compact_summaries",
+      "show_one_primary_action_per_state",
+      "show_internal_only_badges_and_no_overclaim_state_copy",
+      "show_step_status_without exposing internal payloads"
+    ],
+    "forbidden": [
+      "more_explanatory_cards_as_substitute_for_route_contract",
+      "copy_only_success_states",
+      "advisor_or_compliance_claims_from_analyst_surface",
+      "client_visible_ai_draft_or_analyst_notes",
+      "long_page_expansion_as_process_state_substitute",
+      "status_chips_without_backing_state_or_test"
+    ]
+  },
+  "service_boundaries": {
+    "allowed": [
+      "introduce_lib_analyst_draft_governance_contract",
+      "add_pure_mapping_helpers_for_existing_signal_workbench_and_draft_spine_state",
+      "extend_process_first_ux_contract_for_S033_S034_S035",
+      "use_existing_p44_phase4_signal_workbench_as_signal_backing",
+      "use_existing_internal_draft_governance_spine_as_draft_backing",
+      "add_source_visibility_helpers_that_redact_internal_draft_payloads"
+    ],
+    "restricted": [
+      "no_blind_schema_replacement",
+      "no_new_api_route_without_stop_and_report_decision",
+      "no_real_ai_integration",
+      "no_product_scope_expansion",
+      "no_policy_weakening",
+      "no_client_visible_internal_payload"
+    ]
+  },
+  "test_boundaries": {
+    "required_tests": [
+      "tests/process-first-ux-contract.spec.ts",
+      "tests/p44-phase4-certification.spec.ts",
+      "tests/internal-draft-governance-spine.spec.ts",
+      "tests/workflow-gate.spec.ts",
+      "tests/recommendation-review-workflow-api.spec.ts",
+      "tests/client-visibility-projection.spec.ts",
+      "tests/export-safety.spec.ts",
+      "tests/route-smoke.spec.ts",
+      "tests/ux-master-detail-surface.spec.ts",
+      "tests/analyst-draft-governance-contract.spec.ts"
+    ],
+    "required_negative_assertions": [
+      "signal_intake_does_not_create_advice_release_export_or_client_visibility",
+      "workbench_triage_does_not_approve_or_release",
+      "action_item_creation_remains_internal_only",
+      "evidence_gap_does_not_equal_evidence_sufficiency",
+      "unsupported_claim_blocks_advisor_handoff",
+      "draft_rebuild_requires_accepted_scoped_evidence",
+      "redaction_does_not_equal_compliance_release_or_export_approval",
+      "route_to_advisor_sets_only_advisor_pending",
+      "client_projection_hides_ai_draft_internal_rationale_analyst_notes_unsupported_claims_and_trace_internals",
+      "export_projection_hides_internal_draft_payloads_until_later_approved_redacted_package"
+    ],
+    "screenshot_proof": {
+      "required_when_ui_changes": true,
+      "target_surfaces": [
+        "S033",
+        "S034",
+        "S035"
+      ],
+      "viewport_rule": "The primary job, selected object, blocker and one next action should fit without scrolling in the tested viewport; any exception must be explicitly approved and documented."
+    }
+  },
+  "implementation_slice_order": [
+    {
+      "id": "EPIC-09-IMPL-01A",
+      "scope": [
+        "contract_artifact",
+        "process_first_route_contract_for_S033_S034_S035",
+        "compact_area_entry_for_S033"
+      ],
+      "validation": [
+        "route_smoke",
+        "process_contract_test",
+        "screenshot"
+      ]
+    },
+    {
+      "id": "EPIC-09-IMPL-01B",
+      "scope": [
+        "S034_bounded_workbench",
+        "S035_trigger_draft_review",
+        "step_surfaces_for_BP034_BP038_BP039_BP040_BP041",
+        "step_surfaces_for_BP042_BP043_BP044_BP045_BP046"
+      ],
+      "validation": [
+        "targeted_playwright",
+        "p44_phase4_certification",
+        "master_detail_surface",
+        "route_smoke"
+      ]
+    },
+    {
+      "id": "EPIC-09-IMPL-01C",
+      "scope": [
+        "payload_visibility_boundaries",
+        "proof_audit_client_safe_boundaries",
+        "BP047_internal_only_redaction",
+        "BP048_source_traceability",
+        "negative_no_overclaim_tests"
+      ],
+      "validation": [
+        "client_visibility_projection",
+        "export_safety",
+        "internal_draft_governance_spine",
+        "workflow_gate"
+      ]
+    },
+    {
+      "id": "EPIC-09-IMPL-01D",
+      "scope": [
+        "process_coverage_matrix_statuses"
+      ],
+      "validation": [
+        "matrix_integrity",
+        "source_guard"
+      ]
+    }
+  ],
+  "decision_gate": {
+    "spec_complete_when_committed": true,
+    "impl_01_blockers_before_start": [
+      "EPIC-03-IMPL-01",
+      "EPIC-04-IMPL-01",
+      "EPIC-05-IMPL-01"
+    ],
+    "next_recommended_action": "Re-read EPIC-09-IMPL-01, verify dependency commits in the current baseline, then start EPIC-09-IMPL-01A only if satisfied.",
+    "stop_and_report_if": [
+      "new_route_needed",
+      "new_api_needed",
+      "schema_change_needed",
+      "advisor_or_compliance_boundary_change_needed",
+      "client_visible_payload_expansion_needed",
+      "dependency_not_verified"
+    ]
+  },
+  "screenshot_decision": {
+    "warranted": false,
+    "reason": "Specification-only ticket; no visible UI changed."
+  }
+}
