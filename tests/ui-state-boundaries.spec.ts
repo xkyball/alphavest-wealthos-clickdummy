@@ -130,10 +130,10 @@ test.describe("Phase 05 feedback no-overclaim boundaries", () => {
   test("export approval copy separates approval from generation and delivery", async ({ page }) => {
     await page.goto("/export/demo/approval?state=approval");
 
-    await expect(page.getByRole("dialog", { name: "Approve Export Package" })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Approve Package" })).toBeVisible();
     await expect(page.getByTestId("j08-confirm-approval")).toBeVisible();
-    await expect(page.getByText("Generation, download and share remain separate controlled steps.")).toBeVisible();
-    await expect(page.getByText("Approval can record only the export approval step through /api/export-workflow.")).toBeVisible();
+    await expect(page.getByText("Confirm review of this protected export package.")).toBeVisible();
+    await expect(page.getByText("Approval records review intent only. Delivery and sharing remain separate actions.")).toBeVisible();
   });
 
   test("audit-sensitive feedback states audit requirements rather than claiming persistence", async ({ page }) => {

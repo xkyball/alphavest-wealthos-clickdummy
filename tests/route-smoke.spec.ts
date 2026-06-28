@@ -449,10 +449,8 @@ test.describe("process-first release and governance route contracts", () => {
     { currentStep: "compliance_release_decision", pageId: "039", path: "/compliance/reviews/demo/decision-room" },
     { currentStep: "governance_user_review", pageId: "048", path: "/governance" },
     { currentStep: "access_request_review", pageId: "050", path: "/governance/access-requests/demo" },
-    { currentStep: "redaction", pageId: "056", path: "/export/demo/redaction" },
-    { currentStep: "approval", pageId: "057", path: "/export/demo/approval" },
   ];
-  const compactOperationalProcessRoutes = new Set(["050", "056"]);
+  const compactOperationalProcessRoutes = new Set(["050"]);
 
   for (const route of processFirstRoutes) {
     test(`${route.pageId} ${route.path} exposes process-first gate metadata without visible internal scaffolding`, async ({ page }) => {
@@ -1092,7 +1090,7 @@ test.describe("UX-CTA export lifecycle separation", () => {
     { path: "/export/new", required: "Name the request, choose contents and continue to review.", routeLanguage: /choose contents|content/i },
     { path: "/export/demo/scope", required: "Choose permitted content, review recipients and continue to protection review.", routeLanguage: /content|protection review/i },
     { path: "/export/demo/redaction", required: "Confirm which content areas need cover before inspection.", routeLanguage: /protection|preview|inspection/i },
-    { path: "/export/demo/approval?state=approval", required: "Generation, download and share remain separate controlled steps.", routeLanguage: /generation|download|share/i },
+    { path: "/export/demo/approval?state=approval", required: "Confirm review of this protected export package.", routeLanguage: /approval|delivery|sharing/i },
     { path: "/export/demo/download", required: "Share after download", routeLanguage: /download|share/i },
   ];
 

@@ -1666,26 +1666,59 @@ function ExportApprovalControlPanel({
   currentExport,
   onOpenApproval,
   snapshot,
-  timeline,
 }: {
   currentExport?: ExportWorkflowSnapshotData["current"];
   onOpenApproval: () => void;
   snapshot?: ExportWorkflowSnapshotData | null;
-  timeline: ExportWorkflowTimelineEvent[];
 }) {
+  const policyHighlights = previewPolicyChecks.slice(0, 3);
+
   return (
-    <section className="space-y-4" data-testid="bd11-export-approval-control-panel" data-ux-layout-compression="bounded_export_approval">
-      <div
-        className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4"
-        data-testid="uxp3-export-preview-step-separation"
-        data-ux-no-overclaim="true"
-      >
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <StatePanel
-            detail="Preview inspection is not approval. Approval can record only the approval and metadata-generation step; download, share, client acceptance and advice release remain separate controls."
-            state="restricted"
-            title="Preview separated from delivery"
-          />
+    <section className="grid gap-4 xl:grid-cols-[1fr_24rem]" data-testid="bd11-export-approval-control-panel">
+      <Card>
+        <CardHeader className="p-4 pb-2">
+          <CardTitle className="text-xl">Preview Package</CardTitle>
+          <p className="mt-1 text-sm text-alphavest-muted">Inspect the protected package before recording approval.</p>
+        </CardHeader>
+        <CardContent className="grid gap-3 p-4 pt-0 sm:grid-cols-2">
+          {[
+            ["Purpose", currentExport?.exportType ?? "Regulatory submission"],
+            ["Format", "Encrypted archive"],
+            ["Included", `${snapshot?.summary.included ?? 0} records`],
+            ["Protection", currentExport?.redactionProfile ?? "Client-safe cover"],
+          ].map(([label, value]) => (
+            <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3" key={label}>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">{label}</p>
+              <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{value}</p>
+            </div>
+          ))}
+          <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 sm:col-span-2">
+            <p className="font-semibold text-alphavest-ivory">Policy checks</p>
+            <div className="mt-2 grid gap-2 md:grid-cols-3">
+              {policyHighlights.map((check) => (
+                <p className="flex items-center gap-2 text-sm text-alphavest-muted" key={check.id}>
+                  <CheckCircle2 aria-hidden="true" className="size-4 shrink-0 text-alphavest-green" />
+                  {check.policy}
+                </p>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="p-4 pb-2">
+          <CardTitle className="text-xl">Approval Review</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 p-4 pt-0">
+          <div className="rounded-md border border-alphavest-gold/45 bg-alphavest-gold/10 p-3">
+            <div className="flex items-start gap-3">
+              <PackageCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-alphavest-gold" />
+              <div>
+                <p className="font-semibold text-alphavest-ivory">Ready for approval review</p>
+                <p className="mt-1 text-sm leading-5 text-alphavest-muted">Approval records reviewer intent only. Delivery remains a later action.</p>
+              </div>
+            </div>
+          </div>
           <ActionZone placement="inline_cluster" testId="e05-export-approval-open-zone">
             <ActionButton
               lifecycleResult="opens-export-approval-modal"
@@ -1697,76 +1730,14 @@ function ExportApprovalControlPanel({
               requiresConfirmation
               testId="j08-open-export-approval"
             >
-              Review export approval
+              Review approval
             </ActionButton>
           </ActionZone>
-        </div>
-      </div>
-      <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-        <Card>
-          <CardHeader><CardTitle>Export Package Summary</CardTitle></CardHeader>
-          <CardContent>
-            <KeyValueList
-              items={[
-                { label: "Purpose", value: currentExport?.exportType ?? "Regulatory submission" },
-                { label: "Format", value: "Encrypted archive" },
-                { label: "Estimated size", value: currentExport?.generatedFileDocumentId ? "Manifest metadata stored" : "Pending generation" },
-                { label: "Record count", value: `${snapshot?.summary.included ?? 0} scoped objects` },
-                { label: "Binary status", value: <Badge tone="gold">{currentExport?.binaryStatus ?? "Metadata-only"}</Badge> },
-                { label: "Classification", value: <Badge tone="red">Confidential</Badge> },
-              ]}
-            />
-            <StatePanel className="mt-4" detail="Preview is not approval. Generation, download and share remain separate." state="restricted" title="Approval still required" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle>Included Items And Audit</CardTitle></CardHeader>
-          <CardContent className="space-y-3">
-            {[
-              ["Selected objects", snapshot?.summary.included ?? 0],
-              ["Excluded objects", snapshot?.summary.blocked ?? 0],
-              ["Limited/redaction items", snapshot?.summary.limitedIncluded ?? 0],
-              ["Audit events", timeline.length],
-              ["Active request", snapshot?.summary.activeRequestCount ?? 0],
-            ].map(([item, count]) => (
-              <div className="flex items-center justify-between rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" key={item}>
-                <span className="text-sm font-semibold text-alphavest-ivory">{item}</span>
-                <span className="text-sm text-alphavest-muted">{count} records</span>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
-      <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-        <Card>
-          <CardHeader><CardTitle>Policy And Compliance Check</CardTitle></CardHeader>
-          <CardContent className="max-h-80 space-y-3 overflow-y-auto pr-1">
-            {previewPolicyChecks.map((check) => (
-              <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" key={check.id}>
-                <div className="flex items-center justify-between gap-3">
-                  <p className="font-semibold text-alphavest-ivory">{check.policy}</p>
-                  <Badge tone={toneFor(check.state)}>{check.state}</Badge>
-                </div>
-                <p className="mt-1 text-sm text-alphavest-muted">{check.detail}</p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle>Package Controls</CardTitle></CardHeader>
-          <CardContent className="max-h-80 space-y-3 overflow-y-auto pr-1">
-            {exportPackageControls.map((control) => (
-              <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" key={control.label}>
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm font-semibold text-alphavest-ivory">{control.label}</p>
-                  <Badge tone={toneFor(control.state)}>{control.state}</Badge>
-                </div>
-                <p className="mt-2 text-xs leading-5 text-alphavest-muted">{control.detail}</p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
+          <a className={secondaryButtonClass + " w-full"} href="/export/demo/download">
+            Delivery controls <ArrowRight aria-hidden="true" className="size-4" />
+          </a>
+        </CardContent>
+      </Card>
     </section>
   );
 }
@@ -1779,9 +1750,8 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
   const [message, setMessage] = useState<string | null>(null);
   const { apiState, loadState, snapshot } = useExportWorkflowSnapshot();
   const currentExport = snapshot?.current;
-  const timeline = loadState === "error" ? [] : snapshot?.timeline.length ? snapshot.timeline : exportTimeline;
   const lifecycleStatus = status === "submitting" ? "loading" : status;
-  const validationState = acknowledged ? "valid-export-approval-review" : "blocked-acknowledgement-required";
+  const validationState = acknowledged ? "valid-export-approval-review" : "approval-review-required";
   const approvalSubmitDisabled = !acknowledged || status === "submitting" || status === "success";
   const approvalActionAvailability =
     status === "submitting"
@@ -1796,10 +1766,9 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
   const approvalDisabledReason =
     approvalSubmitDisabled
       ? acknowledged
-        ? "Export approval action is unavailable while the workflow is submitting or already recorded."
-        : "Export approval remains blocked until the scoped approval acknowledgement is checked."
+        ? "Approval is unavailable while the request is being recorded."
+        : "Confirm the review checklist before approving."
       : undefined;
-  const processContract = processFirstUxContractForPageId("057");
 
   function openExportApprovalModal() {
     setModalOpen(true);
@@ -1821,13 +1790,13 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
     }
 
     setStatus("submitting");
-    setMessage("Routing export approval through the existing audit-gated workflow. Close and cancel are blocked until the workflow returns.");
+    setMessage("Recording approval. Close and cancel are unavailable until the request returns.");
 
     try {
       const body = await runExportWorkflowCommand({
         command: "APPROVE",
         exportRequestId: currentExport?.id,
-        reason: "Compliance approved the redacted export preview through the canonical export workflow API.",
+        reason: "Compliance approved the protected export preview.",
         redactionProfile: currentExport?.redactionProfile ?? "client-safe-redacted",
         roleKey: session.role.key,
         tenantSlug: session.tenant.slug,
@@ -1838,63 +1807,57 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
       setStatus("error");
       setMessage(
         error instanceof Error
-          ? `${error.message} No download, share, client acceptance or advice release change was completed.`
-          : "Export approval workflow failed without generation, download, share, client acceptance or advice release change.",
+          ? `${error.message} No delivery or share action was completed.`
+          : "Approval could not be recorded. No delivery or share action was completed.",
       );
     }
   }
 
   return (
     <WorksurfaceShell
-      description="Preview inspection and audit-gated export approval surface kept separate from generation, download, share and client acceptance."
+      description="Inspect the protected package and record approval without delivering or sharing it."
       eyebrow="Export and redaction"
       primary={
-        <div className="space-y-4">
-          <PageLead badge="Approval step" description="Inspect preview and record approval before generation or delivery." icon={PackageCheck} title={title} />
-          <ProcessGateRail
-            actionLabel="Review export approval"
-            actionState="Approval can record only the approval step; generation, download, share, advice release and client acceptance remain separate gates."
-            acceptanceIds={processContract.acceptanceIds}
-            blockedReason={acknowledged ? "approval_ready_not_delivery" : "approval_acknowledgement_required"}
-            businessProcessIds={processContract.businessProcessIds}
-            currentStep="approval"
-            gateState={acknowledged ? "Approval form valid" : "Approval acknowledgement required"}
-            gateIds={processContract.gateIds}
-            items={[
-              { detail: "Package must remain scoped to permitted objects.", label: "Scope", tone: "green", value: `${snapshot?.summary.included ?? 0} included` },
-              { detail: "Forbidden internal payload checks must remain clean.", label: "Redaction", tone: "gold", value: currentExport?.redactionProfile ?? "Pending" },
-              { detail: "Approval writes audit-gated workflow state only.", label: "Approval", tone: acknowledged ? "green" : "gold", value: acknowledged ? "Ready" : "Blocked" },
-              { detail: "Delivery is blocked until approval and generation complete.", label: "Download/share", tone: "red", value: "Separate" },
-            ]}
-            nextStep={processContract.nextPermittedAction}
-            testId="bd11-export-approval-gate"
-            title="Export approval gate"
-            tone="restricted"
-          />
-          <Phase5DetailSplitPanel compact decisionSupport="Inspection, approval, generation and delivery remain separate" objectLabel="Export preview split" objectState="Preview inspection pending approval" pageJob="Approval review only" safetyBoundary="Cannot generate, download, share, release advice or create client acceptance" splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-PAGE-SPLIT-005" />
-          <ExportStageBoundary activeStage="approval" />
-          <ExportWorkflowTruthPanel apiState={apiState} loadState={loadState} />
-          <Phase6DecisionRoomPanel compact audit="Approval audit must record scoped package, redaction state, actor and cancel or confirm outcome." blocker="Export approval remains blocked until redaction, policy and audit readiness are complete." cancelLabel="Cancel export approval" confirmLabel="Confirm export approval" decisionLabel="Export approval decision room" evidence="Package summary, forbidden payload checks, redaction review and policy checks are visible before decision." preconditions="Scoped package, forbidden payload pass, redaction review and audit readiness must all pass." safetyNote="No release, export or advice effect can occur until gate preconditions pass and an audit record exists." taskId="UX-DECISION-ROOM-002" />
-          <ExportApprovalControlPanel currentExport={currentExport} onOpenApproval={openExportApprovalModal} snapshot={snapshot} timeline={timeline} />
+        <div className="space-y-3">
+          <section
+            className="grid gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-panel/60 p-3 md:grid-cols-4"
+            data-testid="bd11-export-approval-gate"
+            data-ux-export-api-state={apiState?.status ?? "pending"}
+            data-ux-export-load-state={loadState}
+          >
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Included</p>
+              <p className="mt-1 text-lg font-semibold text-alphavest-ivory">{snapshot?.summary.included ?? 0}</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Protection</p>
+              <p className="mt-1 text-sm text-alphavest-muted">{currentExport?.redactionProfile ?? "Client-safe cover"}</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Reviewer</p>
+              <p className="mt-1 text-sm text-alphavest-muted">Compliance</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Delivery</p>
+              <p className="mt-1 text-sm text-alphavest-muted">Later action</p>
+            </div>
+          </section>
+          <ExportApprovalControlPanel currentExport={currentExport} onOpenApproval={openExportApprovalModal} snapshot={snapshot} />
         </div>
       }
       routeId="057"
-      safetyNote="Preview is inspection only; approval can record only the approval step and cannot download, share, release advice or imply client acceptance."
-      statusItems={[
-        { label: "Decision", tone: "blue", value: "Controlled" },
-        { label: "Stage", tone: "gold", value: "approval" },
-      ]}
+      safetyNote="Preview approval does not deliver, share or create client acceptance."
       title={title}
       worksurfaceId="export-redaction-approval"
     >
       <Modal
         context={
           <div className="grid gap-2 text-sm">
-            <p className="font-semibold text-alphavest-ivory">Controlled export package</p>
-            <p className="text-alphavest-muted">Approval requires policy checks, redaction review and audit trail readiness before download/share actions are allowed.</p>
+            <p className="font-semibold text-alphavest-ivory">Protected package review</p>
+            <p className="text-alphavest-muted">Confirm the preview and leave delivery for the next action.</p>
           </div>
         }
-        description="You are about to approve this export package. Generation, download and share remain separate controlled steps."
+        description="Confirm review of this protected export package."
         footer={
           <>
             <button className={secondaryButtonClass} disabled={status === "submitting"} onClick={closeExportApprovalModal} type="button">Cancel</button>
@@ -1902,7 +1865,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
               availability={approvalActionAvailability}
               disabled={approvalSubmitDisabled}
               disabledReason={approvalDisabledReason}
-              lifecycleResult={acknowledged ? "submits-export-approval-only" : "blocked-validation-required"}
+              lifecycleResult={acknowledged ? "submits-export-approval-only" : "validation-required"}
               meaning="export_approval"
               onClick={() => {
                 void submitExportApproval();
@@ -1913,13 +1876,13 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
               requiresConfirmation
               testId="j08-confirm-approval"
             >
-              {status === "submitting" ? "Confirming..." : "Confirm Export Approval"}
+              {status === "submitting" ? "Confirming..." : "Approve package"}
             </ActionButton>
           </>
         }
         onClose={status === "submitting" ? undefined : closeExportApprovalModal}
         open={modalOpen}
-        title="Approve Export Package"
+        title="Approve Package"
       >
         <div
           className="space-y-4"
@@ -1928,17 +1891,15 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
           data-ux-lifecycle-validation={validationState}
           data-ux-no-overclaim="true"
         >
-          <StatePanel
-            detail="Approval can record only the export approval step through /api/export-workflow. Generation, download, share, client acceptance and advice release remain separate controlled events."
-            feedback={{
-              actionMeaning: "export_approval",
-              intent: "validation",
-              placement: "modal_body",
-              subject: "export_approval",
-            }}
-            state="restricted"
-            title="Approval confirmation"
-          />
+          <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3">
+            <div className="flex items-start gap-3">
+              <ShieldCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-alphavest-gold" />
+              <div>
+                <p className="font-semibold text-alphavest-ivory">Review confirmation</p>
+                <p className="mt-1 text-sm leading-5 text-alphavest-muted">Approval records review intent only. Delivery and sharing remain separate actions.</p>
+              </div>
+            </div>
+          </div>
           <label className="flex items-start gap-3 text-sm leading-6 text-alphavest-muted">
             <input
               checked={acknowledged}
@@ -1947,25 +1908,23 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
               onChange={(event) => setAcknowledged(event.target.checked)}
               type="checkbox"
             />
-            <span>I confirm that I reviewed the scoped export package, redaction state, policy checks and audit readiness; this does not approve download, share, client acceptance or advice release.</span>
+            <span>I reviewed the protected package, policy checks and preview details. This approval does not deliver or share the package.</span>
           </label>
           {status === "idle" ? (
-            <StatePanel
-              detail={acknowledged ? "Export approval can be submitted through the canonical export workflow API." : "Export approval remains blocked until the scoped approval acknowledgement is checked."}
-              feedback={{
-                actionMeaning: "export_approval",
-                intent: "validation",
-                placement: "modal_status",
-                subject: "export_approval",
-              }}
-              state={acknowledged ? "validation" : "blocked"}
-              testId="j08-export-approval-validation-state"
-              title={acknowledged ? "Export approval valid" : "Export approval blocked"}
-            />
+            <div
+              className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 text-sm text-alphavest-muted"
+              data-testid="j08-export-approval-validation-state"
+              data-ux-feedback-action-meaning="export_approval"
+              data-ux-feedback-intent="validation"
+              data-ux-feedback-placement="modal_status"
+              data-ux-feedback-subject="export_approval"
+            >
+              {acknowledged ? "Ready to approve." : "Check the confirmation box to continue."}
+            </div>
           ) : null}
           {status === "submitting" ? (
             <StatePanel
-              detail={message ?? "Routing export approval through /api/export-workflow."}
+              detail={message ?? "Recording approval."}
               feedback={{
                 actionMeaning: "export_approval",
                 intent: "pending",
@@ -1974,7 +1933,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
               }}
               state="loading"
               testId="j08-export-approval-loading-state"
-              title="Export approval submitting"
+              title="Recording approval"
             />
           ) : null}
           {status === "success" ? (
@@ -1988,12 +1947,12 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
               }}
               state="success"
               testId="j08-export-approval-success-state"
-              title="Export approval recorded"
+              title="Approval recorded"
             />
           ) : null}
           {status === "error" ? (
             <StatePanel
-              detail={message ?? "Export approval workflow failed without generation, download, share, client acceptance or advice release change."}
+              detail={message ?? "Approval could not be recorded. No delivery or share action was completed."}
               feedback={{
                 actionMeaning: "export_approval",
                 intent: "fail_closed",
@@ -2002,7 +1961,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
               }}
               state="error"
               testId="j08-export-approval-error-state"
-              title="Export approval failed"
+              title="Approval failed"
             />
           ) : null}
         </div>

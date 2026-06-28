@@ -24,7 +24,10 @@ test.describe("V0.96 WP-10 export scope, redaction and approval UX", () => {
     expect(source).toContain("Preview generated; approval required.");
     expect(source).toContain("Approval recorded; download/share remain separate.");
     expect(source).toContain("Package downloaded; client acceptance not recorded.");
-    expect(source).toContain('<ExportStageBoundary activeStage="approval"');
+    expect(source).toContain("function ExportPreviewPage");
+    expect(source).toContain("Preview Package");
+    expect(source).toContain("Approval Review");
+    expect(source).not.toContain('<ExportStageBoundary activeStage="approval"');
     expect(source).toContain('<ExportStageBoundary activeStage="package"');
     expect(source).toContain("function ExportNewPage");
     expect(source).toContain("Bennett Q2 report");

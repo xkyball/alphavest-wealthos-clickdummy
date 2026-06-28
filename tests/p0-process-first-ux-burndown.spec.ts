@@ -65,11 +65,13 @@ test.describe("P0 process-first UX burndown implementation", () => {
     expect(exportOps).not.toContain('data-ux-process-current-step="redaction"');
     expect(exportOps).not.toContain('data-ux-process-blocked-reason="forbidden_payload_not_resolved"');
     expect(exportOps).not.toContain("Forbidden payload blocked. Redaction is required before preview, approval, download or share.");
-    expect(exportOps).toContain('testId="bd11-export-approval-gate"');
-    expect(exportOps).toContain('processFirstUxContractForPageId("057")');
-    expect(exportOps).toContain('currentStep="approval"');
-    expect(exportOps).toContain('activeStage="approval"');
-    expect(exportOps).toContain("Approval can record only the approval step; generation, download, share, advice release and client acceptance remain separate gates.");
+    expect(exportOps).toContain('data-testid="bd11-export-approval-gate"');
+    expect(exportOps).toContain("Preview Package");
+    expect(exportOps).toContain("Approval Review");
+    expect(exportOps).toContain("Approval records reviewer intent only. Delivery remains a later action.");
+    expect(exportOps).not.toContain('currentStep="approval"');
+    expect(exportOps).not.toContain('activeStage="approval"');
+    expect(exportOps).not.toContain("Approval can record only the approval step; generation, download, share, advice release and client acceptance remain separate gates.");
   });
 
   test("keeps evidence templates readable and separate from evidence sufficiency", () => {

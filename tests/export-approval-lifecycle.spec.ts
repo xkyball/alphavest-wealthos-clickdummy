@@ -85,21 +85,21 @@ test.describe("UXP3-014 export approval lifecycle", () => {
     });
 
     await page.goto("/export/demo/approval?state=base");
-    await expect(page.getByRole("dialog", { name: "Approve Export Package" })).toHaveCount(0);
-    await expect(page.getByTestId("uxp3-export-preview-step-separation")).toHaveAttribute("data-ux-no-overclaim", "true");
+    await expect(page.getByRole("dialog", { name: "Approve Package" })).toHaveCount(0);
+    await expect(page.getByTestId("bd11-export-approval-gate")).toHaveAttribute("data-ux-export-load-state", /loading|ready|error/);
 
     const trigger = page.getByTestId("j08-open-export-approval");
     await expect(trigger).toHaveAttribute("data-ux-lifecycle-trigger", "export-approval-modal");
     await expect(trigger).toHaveAttribute("data-ux-lifecycle-result", "opens-export-approval-modal");
     await trigger.click();
 
-    const dialog = page.getByRole("dialog", { name: "Approve Export Package" });
+    const dialog = page.getByRole("dialog", { name: "Approve Package" });
     const lifecycle = page.getByTestId("uxp3-export-approval-lifecycle");
     await expect(dialog).toBeVisible();
     await expect(dialog).toHaveAttribute("data-ux-interaction-lifecycle", "modal");
     await expect(dialog).toHaveAttribute("data-ux-lifecycle-cancel", "no-submit-no-mutation");
     await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-status", "idle");
-    await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-validation", "blocked-acknowledgement-required");
+    await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-validation", "approval-review-required");
     await expect(lifecycle).toHaveAttribute("data-ux-no-overclaim", "true");
     await expect(page.getByTestId("j08-confirm-approval")).toBeDisabled();
 
@@ -114,11 +114,11 @@ test.describe("UXP3-014 export approval lifecycle", () => {
     await page.goto("/export/demo/approval?state=base");
     await page.getByTestId("j08-open-export-approval").click();
 
-    const dialog = page.getByRole("dialog", { name: "Approve Export Package" });
+    const dialog = page.getByRole("dialog", { name: "Approve Package" });
     const lifecycle = page.getByTestId("uxp3-export-approval-lifecycle");
     await expect(dialog).toBeVisible();
     await expect(page.getByTestId("j08-export-approval-validation-state")).toContainText(
-      "Export approval remains blocked until the scoped approval acknowledgement is checked.",
+      "Check the confirmation box to continue.",
     );
 
     await dialog.locator("input[type='checkbox']").check();
@@ -145,7 +145,7 @@ test.describe("UXP3-014 export approval lifecycle", () => {
     expect(response.ok(), JSON.stringify(body)).toBe(true);
     await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-status", "success");
     await expect(page.getByTestId("j08-export-approval-success-state")).toContainText(
-      "generation, download, share, client acceptance and advice release remain separate controls.",
+      "Approval recorded",
     );
     await expect(page).toHaveURL(/\/export\/demo\/approval\?state=base$/);
     await expect(
@@ -159,7 +159,7 @@ test.describe("UXP3-014 export approval lifecycle", () => {
     await page.goto("/export/demo/approval?state=base");
     await page.getByTestId("j08-open-export-approval").click();
 
-    const dialog = page.getByRole("dialog", { name: "Approve Export Package" });
+    const dialog = page.getByRole("dialog", { name: "Approve Package" });
     const lifecycle = page.getByTestId("uxp3-export-approval-lifecycle");
     await dialog.locator("input[type='checkbox']").check();
 
@@ -178,7 +178,7 @@ test.describe("UXP3-014 export approval lifecycle", () => {
     await page.getByTestId("j08-confirm-approval").click();
     await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-status", "error");
     await expect(page.getByTestId("j08-export-approval-error-state")).toContainText(
-      "No download, share, client acceptance or advice release change was completed.",
+      "No delivery or share action was completed.",
     );
     await expect(page).toHaveURL(/\/export\/demo\/approval\?state=base$/);
   });
@@ -194,7 +194,7 @@ test.describe("UXP3-014 export approval lifecycle", () => {
     await page.goto("/export/demo/approval?state=base");
     await page.getByTestId("j08-open-export-approval").click();
 
-    const dialog = page.getByRole("dialog", { name: "Approve Export Package" });
+    const dialog = page.getByRole("dialog", { name: "Approve Package" });
     await expect(dialog).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();

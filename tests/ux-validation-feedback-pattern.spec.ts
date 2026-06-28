@@ -72,7 +72,7 @@ test.describe("E06 validation feedback pattern", () => {
 
   test("projects export approval and download modal validation through E06 feedback metadata", async ({ page }) => {
     await page.goto("/export/demo/approval?state=approval");
-    await expect(page.getByRole("dialog", { name: "Approve Export Package" })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Approve Package" })).toBeVisible();
     await expect(page.getByTestId("j08-export-approval-validation-state")).toHaveAttribute("data-ux-feedback-subject", "export_approval");
     await expect(page.getByTestId("j08-export-approval-validation-state")).toHaveAttribute("data-ux-feedback-placement", "modal_status");
 
