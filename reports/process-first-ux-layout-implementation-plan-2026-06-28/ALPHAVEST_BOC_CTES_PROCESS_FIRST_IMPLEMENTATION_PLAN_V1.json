@@ -554,7 +554,19 @@
             "total": 11,
             "decision": "ready_after_impl"
           },
-          "description": "Run source tests, route smoke and screenshots for migrated queue screens; compare height and first-viewport action visibility."
+          "description": "Run source tests, route smoke and screenshots for migrated queue screens; compare height and first-viewport action visibility.",
+          "dependencies": {
+            "depends_on": [
+              "EPIC-02-IMPL-01",
+              "EPIC-02-IMPL-02"
+            ],
+            "enables": [
+              "EPIC-12-QA-01"
+            ],
+            "blocked_by": [],
+            "parallelizable": false
+          },
+          "normalization_note": "Added under APPROVE_EPIC00_PLAN_DEPENDENCY_NORMALIZATION; CTES and task decision were not weakened."
         }
       ]
     },
@@ -665,7 +677,18 @@
             "total": 13,
             "decision": "split_tests"
           },
-          "description": "Extend document upload/evidence review tests so sufficiency cannot be implied by upload, extraction or visual proof alone."
+          "description": "Extend document upload/evidence review tests so sufficiency cannot be implied by upload, extraction or visual proof alone.",
+          "dependencies": {
+            "depends_on": [
+              "EPIC-03-IMPL-01"
+            ],
+            "enables": [
+              "EPIC-12-QA-01"
+            ],
+            "blocked_by": [],
+            "parallelizable": false
+          },
+          "normalization_note": "Added under APPROVE_EPIC00_PLAN_DEPENDENCY_NORMALIZATION; CTES and task decision were not weakened."
         }
       ]
     },
@@ -705,7 +728,19 @@
             "Map BP-034, BP-038, BP-039, BP-040, BP-041 and BP-042-BP-048 to screens.",
             "Define no-client-leak rules for draft and analyst notes.",
             "Define blocked/recovery states for missing evidence."
-          ]
+          ],
+          "dependencies": {
+            "depends_on": [
+              "EPIC-00-SPEC-01",
+              "EPIC-01-SPEC-01"
+            ],
+            "enables": [
+              "EPIC-04-IMPL-01"
+            ],
+            "blocked_by": [],
+            "parallelizable": false
+          },
+          "normalization_note": "Added under APPROVE_EPIC00_PLAN_DEPENDENCY_NORMALIZATION; CTES and task decision were not weakened."
         },
         {
           "id": "EPIC-04-IMPL-01",
@@ -756,7 +791,19 @@
             "R": 4,
             "total": 13,
             "decision": "split_tests"
-          }
+          },
+          "dependencies": {
+            "depends_on": [
+              "EPIC-04-IMPL-01"
+            ],
+            "enables": [
+              "EPIC-05-SPEC-01",
+              "EPIC-12-QA-01"
+            ],
+            "blocked_by": [],
+            "parallelizable": false
+          },
+          "normalization_note": "Added under APPROVE_EPIC00_PLAN_DEPENDENCY_NORMALIZATION; CTES and task decision were not weakened."
         }
       ]
     },
@@ -794,7 +841,22 @@
             "total": 15,
             "decision": "spec_first_split"
           },
-          "description": "Lock advisor approval as human review only and compliance as release gate requiring evidence, permission and audit preconditions."
+          "description": "Lock advisor approval as human review only and compliance as release gate requiring evidence, permission and audit preconditions.",
+          "dependencies": {
+            "depends_on": [
+              "EPIC-00-SPEC-01",
+              "EPIC-03-SPEC-01",
+              "EPIC-04-SPEC-01"
+            ],
+            "enables": [
+              "EPIC-05-IMPL-01",
+              "EPIC-07-SPEC-01",
+              "EPIC-09-SPEC-01"
+            ],
+            "blocked_by": [],
+            "parallelizable": false
+          },
+          "normalization_note": "Added under APPROVE_EPIC00_PLAN_DEPENDENCY_NORMALIZATION; CTES and task decision were not weakened."
         },
         {
           "id": "EPIC-05-IMPL-01",
@@ -863,7 +925,19 @@
             "total": 13,
             "decision": "split_tests"
           },
-          "description": "Prove advisor approval never releases to client; compliance release fails closed if evidence, visibility, permission or audit preconditions fail."
+          "description": "Prove advisor approval never releases to client; compliance release fails closed if evidence, visibility, permission or audit preconditions fail.",
+          "dependencies": {
+            "depends_on": [
+              "EPIC-05-IMPL-01"
+            ],
+            "enables": [
+              "EPIC-09-IMPL-01",
+              "EPIC-12-QA-01"
+            ],
+            "blocked_by": [],
+            "parallelizable": false
+          },
+          "normalization_note": "Added under APPROVE_EPIC00_PLAN_DEPENDENCY_NORMALIZATION; CTES and task decision were not weakened."
         }
       ]
     },
@@ -900,7 +974,21 @@
             "total": 15,
             "decision": "spec_first_split"
           },
-          "description": "Define decision creation, rationale, status transitions, vault links, audit display and failure semantics."
+          "description": "Define decision creation, rationale, status transitions, vault links, audit display and failure semantics.",
+          "dependencies": {
+            "depends_on": [
+              "EPIC-00-SPEC-01",
+              "EPIC-03-SPEC-01"
+            ],
+            "enables": [
+              "EPIC-06-IMPL-01",
+              "EPIC-09-SPEC-01",
+              "EPIC-09-IMPL-01"
+            ],
+            "blocked_by": [],
+            "parallelizable": false
+          },
+          "normalization_note": "Added under APPROVE_EPIC00_PLAN_DEPENDENCY_NORMALIZATION; CTES and task decision were not weakened."
         },
         {
           "id": "EPIC-06-IMPL-01",
@@ -957,7 +1045,19 @@
             "R": 4,
             "total": 14,
             "decision": "split_tests"
-          }
+          },
+          "dependencies": {
+            "depends_on": [
+              "EPIC-06-IMPL-01"
+            ],
+            "enables": [
+              "EPIC-09-IMPL-01",
+              "EPIC-12-QA-01"
+            ],
+            "blocked_by": [],
+            "parallelizable": false
+          },
+          "normalization_note": "Added under APPROVE_EPIC00_PLAN_DEPENDENCY_NORMALIZATION; CTES and task decision were not weakened."
         }
       ]
     },
@@ -1077,7 +1177,22 @@
               "title": "S058 package/download/share final gate",
               "ctes": 10
             }
-          ]
+          ],
+          "dependencies": {
+            "depends_on": [
+              "EPIC-07-SPEC-01",
+              "EPIC-10-IMPL-01"
+            ],
+            "enables": [
+              "EPIC-07-QA-01"
+            ],
+            "blocked_by": [
+              "EPIC-07-IMPL-01_SPLIT_REQUIRED",
+              "dirty_export_baseline_review"
+            ],
+            "parallelizable": false
+          },
+          "normalization_note": "Added under APPROVE_EPIC00_PLAN_DEPENDENCY_NORMALIZATION; CTES and task decision were not weakened."
         },
         {
           "id": "EPIC-07-QA-01",
@@ -1091,7 +1206,20 @@
             "R": 4,
             "total": 14,
             "decision": "split_tests"
-          }
+          },
+          "dependencies": {
+            "depends_on": [
+              "EPIC-07-IMPL-01"
+            ],
+            "enables": [
+              "EPIC-12-QA-01"
+            ],
+            "blocked_by": [
+              "EPIC-07-IMPL-01_SPLIT_REQUIRED"
+            ],
+            "parallelizable": false
+          },
+          "normalization_note": "Added under APPROVE_EPIC00_PLAN_DEPENDENCY_NORMALIZATION; CTES and task decision were not weakened."
         }
       ]
     },
@@ -1139,7 +1267,20 @@
             "Separate route access from action authority.",
             "Separate action authority from payload visibility.",
             "Separate admin configuration from release/evidence/advice bypass."
-          ]
+          ],
+          "dependencies": {
+            "depends_on": [
+              "EPIC-00-SPEC-01",
+              "EPIC-10-SPEC-01"
+            ],
+            "enables": [
+              "EPIC-08-IMPL-01",
+              "EPIC-09-SPEC-01"
+            ],
+            "blocked_by": [],
+            "parallelizable": false
+          },
+          "normalization_note": "Added under APPROVE_EPIC00_PLAN_DEPENDENCY_NORMALIZATION; CTES and task decision were not weakened."
         },
         {
           "id": "EPIC-08-IMPL-01",
@@ -1196,7 +1337,19 @@
             "R": 4,
             "total": 13,
             "decision": "split_tests"
-          }
+          },
+          "dependencies": {
+            "depends_on": [
+              "EPIC-08-IMPL-01"
+            ],
+            "enables": [
+              "EPIC-09-IMPL-01",
+              "EPIC-12-QA-01"
+            ],
+            "blocked_by": [],
+            "parallelizable": false
+          },
+          "normalization_note": "Added under APPROVE_EPIC00_PLAN_DEPENDENCY_NORMALIZATION; CTES and task decision were not weakened."
         }
       ]
     },
@@ -1235,7 +1388,21 @@
             "total": 17,
             "decision": "no_direct_impl_analysis_spec_required"
           },
-          "description": "Define released-only projection, redaction allowlist, hidden states, mobile-safe view and forbidden internal payloads."
+          "description": "Define released-only projection, redaction allowlist, hidden states, mobile-safe view and forbidden internal payloads.",
+          "dependencies": {
+            "depends_on": [
+              "EPIC-05-SPEC-01",
+              "EPIC-06-SPEC-01",
+              "EPIC-08-SPEC-01"
+            ],
+            "enables": [
+              "EPIC-09-IMPL-01",
+              "EPIC-07-SPEC-01"
+            ],
+            "blocked_by": [],
+            "parallelizable": false
+          },
+          "normalization_note": "Added under APPROVE_EPIC00_PLAN_DEPENDENCY_NORMALIZATION; CTES and task decision were not weakened."
         },
         {
           "id": "EPIC-09-IMPL-01",
@@ -1293,7 +1460,18 @@
             "R": 4,
             "total": 14,
             "decision": "split_tests"
-          }
+          },
+          "dependencies": {
+            "depends_on": [
+              "EPIC-09-IMPL-01"
+            ],
+            "enables": [
+              "EPIC-12-QA-01"
+            ],
+            "blocked_by": [],
+            "parallelizable": false
+          },
+          "normalization_note": "Added under APPROVE_EPIC00_PLAN_DEPENDENCY_NORMALIZATION; CTES and task decision were not weakened."
         }
       ]
     },
@@ -1338,7 +1516,21 @@
             "total": 12,
             "decision": "ready_spec"
           },
-          "description": "Define blocking, attention, informational and completed statuses; every blocker must expose reason and recovery action."
+          "description": "Define blocking, attention, informational and completed statuses; every blocker must expose reason and recovery action.",
+          "dependencies": {
+            "depends_on": [
+              "EPIC-00-SPEC-01"
+            ],
+            "enables": [
+              "EPIC-10-IMPL-01",
+              "EPIC-02-IMPL-02",
+              "EPIC-04-IMPL-01",
+              "EPIC-08-SPEC-01"
+            ],
+            "blocked_by": [],
+            "parallelizable": true
+          },
+          "normalization_note": "Added under APPROVE_EPIC00_PLAN_DEPENDENCY_NORMALIZATION; CTES and task decision were not weakened."
         },
         {
           "id": "EPIC-10-IMPL-01",
@@ -1396,7 +1588,18 @@
             "R": 3,
             "total": 11,
             "decision": "ready_after_impl"
-          }
+          },
+          "dependencies": {
+            "depends_on": [
+              "EPIC-10-IMPL-01"
+            ],
+            "enables": [
+              "EPIC-12-QA-01"
+            ],
+            "blocked_by": [],
+            "parallelizable": true
+          },
+          "normalization_note": "Added under APPROVE_EPIC00_PLAN_DEPENDENCY_NORMALIZATION; CTES and task decision were not weakened."
         }
       ]
     },
@@ -1441,7 +1644,18 @@
             "total": 10,
             "decision": "ready_spec"
           },
-          "description": "Define reason, owner, next decision, future job and no-overclaim wording for hold/deferred/reference screens."
+          "description": "Define reason, owner, next decision, future job and no-overclaim wording for hold/deferred/reference screens.",
+          "dependencies": {
+            "depends_on": [
+              "EPIC-00-SPEC-01"
+            ],
+            "enables": [
+              "EPIC-11-IMPL-01"
+            ],
+            "blocked_by": [],
+            "parallelizable": true
+          },
+          "normalization_note": "Added under APPROVE_EPIC00_PLAN_DEPENDENCY_NORMALIZATION; CTES and task decision were not weakened."
         },
         {
           "id": "EPIC-11-IMPL-01",
@@ -1472,7 +1686,18 @@
               "title": "Differentiate ops/data-quality support routes",
               "ctes": 8
             }
-          ]
+          ],
+          "dependencies": {
+            "depends_on": [
+              "EPIC-11-SPEC-01"
+            ],
+            "enables": [
+              "EPIC-11-QA-01"
+            ],
+            "blocked_by": [],
+            "parallelizable": true
+          },
+          "normalization_note": "Added under APPROVE_EPIC00_PLAN_DEPENDENCY_NORMALIZATION; CTES and task decision were not weakened."
         },
         {
           "id": "EPIC-11-QA-01",
@@ -1486,7 +1711,18 @@
             "R": 2,
             "total": 8,
             "decision": "ready_after_impl"
-          }
+          },
+          "dependencies": {
+            "depends_on": [
+              "EPIC-11-IMPL-01"
+            ],
+            "enables": [
+              "EPIC-12-QA-01"
+            ],
+            "blocked_by": [],
+            "parallelizable": true
+          },
+          "normalization_note": "Added under APPROVE_EPIC00_PLAN_DEPENDENCY_NORMALIZATION; CTES and task decision were not weakened."
         }
       ]
     },
@@ -1515,7 +1751,19 @@
             "total": 14,
             "decision": "split_required"
           },
-          "description": "Define the final proof matrix: source tests, Playwright flows, screenshots, max-height deltas, first-viewport action visibility and negative safety cases."
+          "description": "Define the final proof matrix: source tests, Playwright flows, screenshots, max-height deltas, first-viewport action visibility and negative safety cases.",
+          "dependencies": {
+            "depends_on": [
+              "EPIC-00-QA-01",
+              "EPIC-01-QA-01"
+            ],
+            "enables": [
+              "EPIC-12-QA-01"
+            ],
+            "blocked_by": [],
+            "parallelizable": false
+          },
+          "normalization_note": "Added under APPROVE_EPIC00_PLAN_DEPENDENCY_NORMALIZATION; CTES and task decision were not weakened."
         },
         {
           "id": "EPIC-12-QA-01",
@@ -1576,7 +1824,16 @@
             "total": 11,
             "decision": "ready_after_qa"
           },
-          "description": "Create final report with changed files, inspected files, screenshots, positive/negative acceptance, deviations, blockers and next recommended phase."
+          "description": "Create final report with changed files, inspected files, screenshots, positive/negative acceptance, deviations, blockers and next recommended phase.",
+          "dependencies": {
+            "depends_on": [
+              "EPIC-12-QA-01"
+            ],
+            "enables": [],
+            "blocked_by": [],
+            "parallelizable": false
+          },
+          "normalization_note": "Added under APPROVE_EPIC00_PLAN_DEPENDENCY_NORMALIZATION; CTES and task decision were not weakened."
         }
       ]
     }
@@ -1657,5 +1914,18 @@
     "id": "EPIC-00-ANALYSIS-01",
     "reason": "It resolves traceability and dirty-baseline risk before implementation.",
     "after_completion_next": "EPIC-00-SPEC-01, then DEC-001 approval of the strict Process-First UX Contract."
+  },
+  "dependency_normalization": {
+    "approved_by_token": "APPROVE_EPIC00_PLAN_DEPENDENCY_NORMALIZATION",
+    "normalized_at": "2026-06-28",
+    "status": "DEPENDENCY_OBJECTS_NORMALIZED_WITH_CTSE_AND_SPLIT_DECISIONS_PRESERVED",
+    "rules": [
+      "CTES values were not changed.",
+      "Task decisions were not weakened.",
+      "Implementation tasks depend on their specification gates.",
+      "QA tasks depend on their implementation or QA source gate.",
+      "EPIC-07-IMPL-01 remains blocked by split_required and dirty export baseline review before execution."
+    ],
+    "applied_dependency_objects": 21
   }
 }
