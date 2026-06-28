@@ -451,6 +451,7 @@ test.describe("process-first release and governance route contracts", () => {
     { currentStep: "redaction", pageId: "056", path: "/export/demo/redaction" },
     { currentStep: "approval", pageId: "057", path: "/export/demo/approval" },
   ];
+  const compactOperationalProcessRoutes = new Set(["050", "056"]);
 
   for (const route of processFirstRoutes) {
     test(`${route.pageId} ${route.path} exposes process-first gate metadata without visible internal scaffolding`, async ({ page }) => {
@@ -464,6 +465,9 @@ test.describe("process-first release and governance route contracts", () => {
         .locator(`[data-ux-process-first="true"][data-ux-process-current-step="${route.currentStep}"]`)
         .first();
       await expect(gate).toBeVisible();
+      if (compactOperationalProcessRoutes.has(route.pageId)) {
+        await expect(page.getByTestId("wp02-worksurface-summary-banner")).toHaveCount(0);
+      }
       await expect(gate).toHaveAttribute("data-ux-process-business-processes", contract.businessProcessIds.join(" "));
       await expect(gate).toHaveAttribute("data-ux-process-acceptance-gates", contract.acceptanceIds.join(" "));
       await expect(gate).toHaveAttribute("data-ux-process-gate-ids", contract.gateIds.join(" "));
@@ -998,7 +1002,7 @@ test.describe("UX-CTA governance admin non-bypass chain", () => {
     },
     {
       action: "j07-open-access-request-drawer",
-      expectedText: "Access request review is not access expansion",
+      expectedText: "Access is not granted yet",
       path: "/governance/access-requests/demo?state=base",
     },
   ] as const;
@@ -1014,10 +1018,15 @@ test.describe("UX-CTA governance admin non-bypass chain", () => {
       await expect(entry).toHaveAttribute("data-epic-06-core-surface", "queue-detail-step");
       await expect(entry).toContainText(surface.expectedText);
       await expect(page.getByTestId(surface.action)).toBeVisible();
-      const proofBoundary = page.getByTestId("epic-06-proof-boundary");
-      await expect(proofBoundary).toHaveAttribute("data-epic-06-client-visible", "false");
-      await expect(proofBoundary).toHaveAttribute("data-epic-06-audit-boundary", "separate-before-mutation");
-      await expect(proofBoundary).toHaveAttribute("data-ux-no-overclaim", "true");
+      if (surface.action === "j07-open-access-request-drawer") {
+        await expect(entry).toHaveAttribute("data-ux-process-current-step", "access_request_review");
+        await expect(entry).toHaveAttribute("data-ux-process-first", "true");
+      } else {
+        const proofBoundary = page.getByTestId("epic-06-proof-boundary");
+        await expect(proofBoundary).toHaveAttribute("data-epic-06-client-visible", "false");
+        await expect(proofBoundary).toHaveAttribute("data-epic-06-audit-boundary", "separate-before-mutation");
+        await expect(proofBoundary).toHaveAttribute("data-ux-no-overclaim", "true");
+      }
 
       const pageExtent = await page.evaluate(() => ({
         clientHeight: document.documentElement.clientHeight,
@@ -1217,8 +1226,8 @@ test.describe("UX-INTERACTION table search sort row-action semantics", () => {
     await page.goto("/export/demo/redaction");
 
     const operations = page.getByTestId("ux-d3-dense-operations").first();
-    await expect(operations.getByTestId("ux-d3-filter-sort-controls").getByRole("button")).toHaveCount(0);
-    await expect(operations.getByText("Scope").first()).toBeVisible();
+    await expect(operations.getByTestId("ux-d3-filter-sort-controls")).toHaveCount(0);
+    await expect(operations.getByText(/Payload Redaction Operations|Approval blocked until preview/i)).toHaveCount(0);
     await expect(operations.getByTestId("ux-data-table-sort").first()).toBeVisible();
     await expect(operations.getByRole("button", { name: "No scoped row action for this table state." }).first()).toBeDisabled();
   });

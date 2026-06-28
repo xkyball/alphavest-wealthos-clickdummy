@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import {
+  AlertTriangle,
   ArrowRight,
   Bell,
   Calendar,
   CheckCircle2,
   ChevronDown,
+  Circle,
   ClipboardCheck,
   Download,
   Eye,
@@ -490,6 +492,36 @@ function toneFor(value: string): BadgeTone {
   }
 
   return "muted";
+}
+
+function InlineStatus({ tone, value }: { tone: BadgeTone; value: string }) {
+  const Icon: LucideIcon = tone === "red"
+    ? AlertTriangle
+    : tone === "green"
+      ? CheckCircle2
+      : tone === "gold"
+        ? LockKeyhole
+        : tone === "blue"
+          ? Bell
+          : tone === "purple" || tone === "teal"
+            ? ShieldCheck
+            : Circle;
+  const toneClass: Record<BadgeTone, string> = {
+    blue: "text-alphavest-blue",
+    gold: "text-alphavest-gold",
+    green: "text-alphavest-green",
+    muted: "text-alphavest-muted",
+    purple: "text-violet-200",
+    red: "text-alphavest-red",
+    teal: "text-teal-200"
+  };
+
+  return (
+    <span className={cn("inline-flex min-w-0 items-center gap-1.5 font-semibold", toneClass[tone])}>
+      <Icon aria-hidden="true" className="size-4 shrink-0" />
+      <span className="truncate">{value}</span>
+    </span>
+  );
 }
 
 function useDbtfAuditEvents() {
@@ -1489,21 +1521,20 @@ function ExportRedactionControlPanel({
 }) {
   return (
     <UxDenseOperationsPanel
-      controls={["Scope", "Payload", "Preview", "Approval"]}
+      chrome="none"
       pageId="056"
       resultLabel="Approval blocked until preview"
       safetyNote="Preview inspection must pass before approval can be recorded. Approval and generation must be recorded before download."
       title="Payload Redaction Operations"
     >
-      <section className="space-y-4" data-testid="bd11-export-redaction-control-panel" data-ux-layout-compression="bounded_export_redaction">
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
+      <section className="space-y-2" data-testid="bd11-export-redaction-control-panel" data-ux-layout-compression="bounded_export_redaction">
+        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
           <Card>
-            <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <CardHeader className="py-3">
               <CardTitle>Payload redaction table</CardTitle>
-              <Badge tone="gold">{redactionRows.length} controls</Badge>
             </CardHeader>
-            <CardContent>
-              <div className="max-h-80 overflow-y-auto pr-1">
+            <CardContent className="pb-3">
+              <div className="max-h-72 overflow-y-auto pr-1">
                 <DataTable
                   actionPolicy="disabled_unavailable"
                   columns={redactionColumns}
@@ -1521,15 +1552,15 @@ function ExportRedactionControlPanel({
             </CardContent>
           </Card>
           <Card>
-            <CardHeader><CardTitle>Redaction Summary</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
+            <CardHeader className="py-3"><CardTitle>Redaction Summary</CardTitle></CardHeader>
+            <CardContent className="space-y-2 pb-3">
               {redactionSummary.map((item) => (
                 <div className="flex items-center justify-between gap-3 text-sm" key={item.id}>
                   <span className="text-alphavest-muted">{item.label}</span>
-                  <Badge tone={toneFor(item.severity)}>{item.count}</Badge>
+                  <span className="font-semibold text-alphavest-ivory">{item.count}</span>
                 </div>
               ))}
-              <StatePanel detail="Redaction review can resolve forbidden payload exposure only. Preview, approval, download and share remain separate gates." state="restricted" title="Not approval" />
+              <StatePanel detail="Preview review must pass before approval, download or share is available." state="restricted" title="Approval unavailable" />
               <UxCtaCluster
                 blockedReason="Preview inspection must pass before approval can be recorded."
                 primary={{
@@ -1547,31 +1578,6 @@ function ExportRedactionControlPanel({
                   },
                 ]}
               />
-            </CardContent>
-          </Card>
-        </div>
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
-          <Card>
-            <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <CardTitle>Redacted Client Preview</CardTitle>
-              <Badge tone="gold">Preview only</Badge>
-            </CardHeader>
-            <CardContent>
-              <div className="max-h-96 overflow-y-auto pr-1">
-                <RedactedDocumentPreview />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader><CardTitle>Forbidden Payload Checks</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
-              {exportForbiddenPayloadChecks.map((item) => (
-                <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-green/30 bg-alphavest-green/10 p-3 text-sm" key={item.label}>
-                  <span className="text-alphavest-muted">{item.label}</span>
-                  <Badge tone="green">{item.state}</Badge>
-                </div>
-              ))}
-              <StatePanel detail="Internal advisor memo, compliance notes and unreleased evidence cannot enter the client package." state="blocked" title="Forbidden payload blocked" />
             </CardContent>
           </Card>
         </div>
@@ -1598,39 +1604,37 @@ function ExportRedactionPage({ title }: { title: string }) {
   ];
   const redactionColumns: Array<DataTableColumn<(typeof redactionRows)[number]>> = [
     { key: "label", header: "Payload field", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.label}</span>, sortable: true },
-    { key: "state", header: "State", render: (row) => <Badge tone={toneFor(row.state)}>{row.state}</Badge>, sortable: true },
+    { key: "state", header: "State", render: (row) => <InlineStatus tone={toneFor(row.state)} value={row.state} />, sortable: true },
     { key: "visibility", header: "Visibility", render: (row) => row.visibility, sortable: true },
   ];
 
   return (
     <WorksurfaceShell
+      density="compact"
       description="Payload redaction review for forbidden internal fields before preview inspection or approval can continue."
       eyebrow="Export and redaction"
       primary={
-        <div className="space-y-4">
-          <PageLead badge="Redaction step" description="Resolve forbidden payloads before preview inspection." icon={Eye} title={title} />
-          <ProcessGateRail
-            actionLabel="Review mandatory redactions"
-            actionState="Redaction can resolve forbidden payload exposure only; it cannot approve, generate, download or share the package."
-            acceptanceIds={processContract.acceptanceIds}
-            blockedReason="forbidden_payload_not_resolved"
-            businessProcessIds={processContract.businessProcessIds}
-            currentStep="redaction"
-            gateState="Redaction required"
-            gateIds={processContract.gateIds}
-            items={[
-              { detail: "Internal rationale, advisor memo and compliance notes remain forbidden for client package.", label: "Forbidden payload", tone: "red", value: "Blocked" },
-              { detail: "Preview inspection can begin only after redaction checks pass.", label: "Preview", tone: "gold", value: "Pending" },
-              { detail: "Approval is a later audited workflow command.", label: "Approval", tone: "red", value: "Not recorded" },
-              { detail: "Download and share stay unavailable until approval and generation are complete.", label: "Delivery", tone: "red", value: "Blocked" },
-            ]}
-            nextStep={processContract.nextPermittedAction}
-            testId="bd11-export-redaction-gate"
-            title="Export redaction gate"
-          />
-          <Phase5DetailSplitPanel compact decisionSupport="Shows field state, payload visibility and preview blockers" objectLabel="Export redaction object review" objectState="Forbidden payload checks active" pageJob="Redaction only" safetyBoundary="Cannot approve, generate, download or share" splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-DETAIL-004" />
-          <ExportStageBoundary activeStage="redaction" />
-          <ExportPayloadBoundary />
+        <div className="space-y-2">
+          <section
+            className="rounded-md border border-alphavest-red/40 bg-alphavest-red/10 p-3"
+            data-testid="bd11-export-redaction-gate"
+            data-ux-process-acceptance-gates={processContract.acceptanceIds.join(" ")}
+            data-ux-process-blocked-reason="forbidden_payload_not_resolved"
+            data-ux-process-business-processes={processContract.businessProcessIds.join(" ")}
+            data-ux-process-current-step="redaction"
+            data-ux-process-first="true"
+            data-ux-process-gate-ids={processContract.gateIds.join(" ")}
+            data-ux-process-gate-state="Redaction required"
+            data-ux-process-next-step={processContract.nextPermittedAction}
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="min-w-0">
+                <h2 className="text-base font-semibold text-alphavest-ivory">Redaction required</h2>
+                <p className="mt-1 text-sm text-alphavest-muted">Forbidden payload blocked. Redaction is required before preview, approval, download or share.</p>
+              </div>
+              <p className="text-sm font-semibold text-alphavest-red">Blocked before preview</p>
+            </div>
+          </section>
           <ExportRedactionControlPanel redactionColumns={redactionColumns} redactionRows={redactionRows} />
         </div>
       }

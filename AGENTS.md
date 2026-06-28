@@ -61,6 +61,38 @@ process IDs, acceptance IDs, `data-testid`/`data-ux-*` names, proof/reviewer
 scaffolding, capture warnings, source-trace wording, contract names, debug
 metadata or other internal state-machine labels.
 
+Operational task screens must also not render oversized hero, route-summary or
+status-banner blocks that repeat the current route, stage or payload counters
+instead of helping the user complete the work. On constrained operating
+viewports, these banners are treated as internal/navigation scaffolding and must
+be removed or collapsed into product-native controls.
+
+Operational task screens must not use badge clusters, chip clouds or proof-strip
+controls to lead the user through state. Product state belongs in concise
+icon-plus-text affordances, tables, object fields, disabled-action reasons and
+real workflow controls. Dense operations/scope strips that exist to prove
+implementation state are internal scaffolding and are forbidden in default UI.
+
+Operational task screens must also not render gate/scope/process explainer
+panels such as "selected/scoped/gated", "command spine", "access request gate",
+or similar internal choreography. If this information is needed for audit, it
+belongs in process metadata, workflow state, service-backed read models or
+reports; the visible UI must show the selected object, decision context, blocker
+and next action.
+
+Every screenshot used as UI proof must include an explicit visual audit for the
+target viewport. For the current operational baseline that means 1400x900 with
+no page scroll for the primary task, no horizontal overflow, no clipped/vertical
+table text, no oversized summary banner, no badge cluster/proof strip, no
+gate/scope/process explainer panel and no primary action hidden below the fold.
+The screen must also not be artificially short or empty when the task needs a
+real operating surface: it must show enough service-backed object, decision,
+table, evidence or action content to justify the route. Meaningful empty space
+should be filled when the underlying workflow can truthfully provide useful
+work content; use real object context, decision context, evidence, history,
+checks or next actions, never decorative filler or internal methodology text.
+An unaudited screenshot is not acceptance evidence.
+
 The UI may show only product-native task state, object state, blockers, recovery
 actions and safety obligations that a user needs to complete the current job.
 Process/runtime truth must be service-, database- and test-backed, but its

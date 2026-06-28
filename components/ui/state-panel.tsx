@@ -1,6 +1,5 @@
 import { AlertTriangle, Ban, CheckCircle2, EyeOff, FileSearch, LoaderCircle, ShieldAlert } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/cn";
 import {
   uxFeedbackAttributesFor,
@@ -85,6 +84,16 @@ const stateSemanticOverride: Partial<Record<ComponentState, { hierarchy: UxPrimi
   validation: { hierarchy: "standard", label: "Validation", meaning: "warning" },
 };
 
+const stateInlineClass: Record<UxPrimitiveStatusFamily, string> = {
+  critical: "text-alphavest-red",
+  info: "text-alphavest-blue",
+  internal: "text-alphavest-gold-soft",
+  neutral: "text-alphavest-muted",
+  restricted: "text-violet-200",
+  success: "text-alphavest-green",
+  warning: "text-alphavest-gold-soft",
+};
+
 export function StatePanel({ className, detail, feedback, lifecycleKind, state, testId, title }: StatePanelProps) {
   const Icon = stateMeta[state].icon;
   const primitiveStatusFamily = stateFamilyToPrimitiveStatus[uxStateContractForComponentState(state).family];
@@ -117,15 +126,19 @@ export function StatePanel({ className, detail, feedback, lifecycleKind, state, 
           <span className="min-w-0">{title}</span>
         </span>
         {semanticOverride ? (
-          <Badge
-            density="compact"
-            statusFamily={primitiveStatusFamily}
-            statusHierarchy={semanticOverride.hierarchy}
-            statusMeaning={semanticOverride.meaning}
-            tone={primitiveStatusFamily === "critical" ? "red" : primitiveStatusFamily === "restricted" ? "purple" : "gold"}
+          <span
+            className={cn("inline-flex shrink-0 items-center gap-1.5 text-xs font-semibold", stateInlineClass[primitiveStatusFamily])}
+            data-ux-affordance="state-inline-status"
+            data-ux-interactive="false"
+            data-ux-status-cue-rendered="icon"
+            {...uxPrimitiveStatusAttributesFor(primitiveStatusFamily, {
+              hierarchy: semanticOverride.hierarchy,
+              meaning: semanticOverride.meaning,
+            })}
           >
+            <Icon aria-hidden="true" className={cn("size-3.5 shrink-0", state === "loading" && "animate-spin")} />
             {semanticOverride.label}
-          </Badge>
+          </span>
         ) : null}
       </div>
       <p className={cn("av-readable-secondary mt-2 text-sm", uxPrimitiveTextClassFor("body"))}>{detail}</p>

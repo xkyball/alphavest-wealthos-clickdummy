@@ -5,6 +5,7 @@ import { uxDensityForPageId } from "@/lib/ux-density";
 type UxDenseOperationsPanelProps = {
   actions?: React.ReactNode;
   children: React.ReactNode;
+  chrome?: "standard" | "none";
   className?: string;
   controls?: string[];
   description?: string;
@@ -17,6 +18,7 @@ type UxDenseOperationsPanelProps = {
 export function UxDenseOperationsPanel({
   actions,
   children,
+  chrome = "standard",
   className,
   controls = [],
   description,
@@ -26,6 +28,21 @@ export function UxDenseOperationsPanel({
   title,
 }: UxDenseOperationsPanelProps) {
   const density = uxDensityForPageId(pageId);
+
+  if (chrome === "none") {
+    return (
+      <section
+        className={cn("space-y-2", className)}
+        data-testid="ux-d3-dense-operations"
+        data-ux-d3-dense-operations="true"
+        data-ux-density-pattern={density.pattern}
+        data-ux-density-tier={density.tier}
+      >
+        {description ? <p className="sr-only">{description}</p> : null}
+        {children}
+      </section>
+    );
+  }
 
   return (
     <section

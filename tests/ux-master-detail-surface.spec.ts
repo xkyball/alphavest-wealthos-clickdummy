@@ -38,12 +38,12 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain('actionPolicy="route_handoff"');
     expect(source).toContain('masterDetailMode="inline_detail_rail"');
     expect(source).toContain("queueWorkbench");
-    expect(source).toContain('proofPlacement="proof_drawer"');
+    expect(source).toContain('proofPlacement="inline_summary"');
     expect(source).toContain("data-ux-queue-selected");
     expect(source).toContain('filterState={searchTerm.length > 0 ? "active_query" : "inactive"}');
     expect(source).toContain("<MasterDetailSurface");
-    expect(source).toContain("Advisor queue keeps list context");
-    expect(source).toContain("Compliance queue keeps list context");
+    expect(source).toContain("Advisor queue selection does not approve");
+    expect(source).toContain("Compliance queue rows cannot release");
     expect(source).toContain("s038-compliance-master-list");
     expect(source).toContain("s038-compliance-selected-detail");
     expect(source).toContain('governancePattern="queue_workbench"');
@@ -74,8 +74,8 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(adapter).toContain('data-testid="ux-master-detail-detail"');
     expect(adapter).toContain('data-testid="ux-master-detail-selected-summary"');
     expect(consumer).toContain('actionPolicy="route_handoff"');
-    expect(consumer).toContain('proofPlacement="proof_drawer"');
-    expect(consumer).toContain('selectedSummary={<span>Compliance queue keeps list context');
+    expect(consumer).toContain('proofPlacement="inline_summary"');
+    expect(consumer).not.toContain("Compliance proof drawer");
     expect(consumer).not.toContain("Compliance queue rows can release");
     expect(consumer).not.toContain("Compliance queue rows can export");
     expect(consumer).not.toContain("Compliance queue rows can expose client-visible content");
@@ -88,14 +88,13 @@ test.describe("E06 master-detail surface adoption", () => {
     expect(source).toContain("s034-client-master-list");
     expect(source).toContain("s034-client-selected-detail");
     expect(source).toContain("Internal workbench now keeps queue selection");
-    expect(source).toContain("data-ux-queue-proof-drawer");
     expect(source).toContain("uxStatusCommandAttributesFor");
     expect(source).toContain("function AdvisorQueuePage");
     expect(source).toContain("s036-advisor-master-list");
     expect(source).toContain("s036-advisor-selected-detail");
     expect(source).not.toContain('primary={<UxHubPage pageId="034" />}');
     expect(source).not.toContain("<QueueCard rows={clientQueue}");
-    expect(source).not.toContain("<DataTable");
+    expect(source).toContain("<DataTable");
   });
 
   test("marks S046 evidence vault as a queue workbench with selected evidence context", () => {

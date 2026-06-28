@@ -19,6 +19,17 @@ contract is stale and must be refactored.
 - Proof, reviewer, capture, debug or source-trace wording.
 - Visible contract names, methodology labels or implementation notes.
 - Internal process/runtime labels that exist only to prove implementation state.
+- Oversized operational hero, route-summary or status-banner blocks that repeat
+  the current route, stage, payload counters or gate labels without enabling the
+  user's immediate work.
+- Dense operations, scope, proof, preview or approval strips that expose
+  implementation choreography instead of the next product action.
+- Gate/scope/process explainer panels such as `selected/scoped/gated`,
+  `command spine`, `access request gate` or equivalent internal choreography.
+  These may exist as metadata or reports, not default product UI.
+- Badge clusters, status-chip clouds or repeated badges used as state guidance.
+  State must be expressed as product-native icon-plus-text status, object fields,
+  disabled-action reasons or real workflow controls.
 
 ## Allowed In Default Product UI
 
@@ -35,6 +46,26 @@ contract is stale and must be refactored.
 `pnpm guard:source` must fail when visible operational component copy contains
 internal proof/contract/state scaffolding. Focused surface-copy tests may add
 more examples, but the source guard is the hard non-negotiable gate.
+
+Visual audits for operational routes must also fail when a 1400x900 viewport
+shows a route-summary banner instead of the actual work surface, requires page
+scroll for the primary task, clips table text into vertical fragments, creates
+horizontal overflow, hides the primary action below the fold or exposes proof
+scaffolding as product UI.
+
+Every screenshot used as UI proof must be paired with this visual audit. The
+audit must record the viewport, scroll result, horizontal-overflow result,
+table-clipping result, summary-banner result, badge-cluster/proof-strip result,
+gate/scope/process-explainer result, internal-marker result and primary-action
+visibility. It must also record a substance result: the screen must not be
+artificially short, sparse or empty when the route represents real operational
+work. A route passes only when the screenshot shows meaningful service-backed
+object, decision, table, evidence or action content for the current task.
+Meaningful empty space should be filled when the workflow can truthfully provide
+useful work content; acceptable fill is real object context, decision context,
+evidence, history, checks or next actions. Decorative filler, explainer prose,
+methodology labels and internal contract text do not count. An unaudited
+screenshot is not proof and must not be used as acceptance evidence.
 
 Process-first implementation remains mandatory. The difference is placement:
 process/runtime truth belongs in DB/service/API/test metadata and reports; the

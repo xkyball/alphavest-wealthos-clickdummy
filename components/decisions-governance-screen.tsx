@@ -59,6 +59,7 @@ import { runAdviceReleaseHistoryCommand } from "@/lib/advice-release-history-com
 import { runTenantGovernanceCommand } from "@/lib/tenant-governance-command-client";
 import {
   accessPolicyChecks,
+  accessRequests,
   complianceAuditControls,
   complianceAuditMetrics,
   complianceAuditRows,
@@ -169,6 +170,26 @@ function IconTile({ children, tone = "gold" }: { children: React.ReactNode; tone
   };
 
   return <span className={cn("grid size-11 shrink-0 place-items-center rounded-md border", toneClass[tone])}>{children}</span>;
+}
+
+function InlineStatus({ tone, value }: { tone: BadgeTone; value: string }) {
+  const toneClass: Record<BadgeTone, string> = {
+    blue: "text-alphavest-blue",
+    gold: "text-alphavest-gold",
+    green: "text-alphavest-green",
+    muted: "text-alphavest-muted",
+    purple: "text-violet-200",
+    red: "text-alphavest-red",
+    teal: "text-teal-200"
+  };
+  const Icon = tone === "green" ? CheckCircle2 : tone === "red" ? AlertTriangle : tone === "purple" ? ShieldCheck : Bell;
+
+  return (
+    <span className={cn("inline-flex items-center gap-1.5 font-semibold", toneClass[tone])}>
+      <Icon aria-hidden="true" className="size-4 shrink-0" />
+      <span>{value}</span>
+    </span>
+  );
 }
 
 function ProgressBar({ tone = "gold", value }: { tone?: BadgeTone; value: number }) {
@@ -2095,6 +2116,8 @@ function CoreGovernanceStepSurface({
   processCurrentStep,
   processGateState,
   processBlockedReason,
+  requestRows = [],
+  variant = "standard",
 }: {
   actionLabel: string;
   actionTestId: string;
@@ -2109,7 +2132,100 @@ function CoreGovernanceStepSurface({
   processContract?: ReturnType<typeof processFirstUxContractForPageId>;
   processCurrentStep?: string;
   processGateState?: string;
+  requestRows?: typeof accessRequests;
+  variant?: "standard" | "compact_request_review";
 }) {
+  if (variant === "compact_request_review") {
+    const selectedRequest = requestRows[0];
+    const relatedRequests = requestRows.slice(0, 4);
+
+    return (
+      <section
+        className="rounded-md border border-alphavest-border/80 bg-alphavest-panel/60 p-4"
+        data-epic-06-core-surface="queue-detail-step"
+        data-testid={`epic-06-${actionTestId}-surface`}
+        data-ux-page-job={pageJob}
+        data-ux-process-acceptance-gates={processContract?.acceptanceIds.join(" ")}
+        data-ux-process-blocked-reason={processBlockedReason}
+        data-ux-process-business-processes={processContract?.businessProcessIds.join(" ")}
+        data-ux-process-current-step={processCurrentStep}
+        data-ux-process-first={processContract ? "true" : undefined}
+        data-ux-process-gate-ids={processContract?.gateIds.join(" ")}
+        data-ux-process-gate-state={processGateState}
+        data-ux-process-next-step={processContract?.nextPermittedAction}
+      >
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_18rem] xl:items-start">
+          <div className="min-w-0">
+            <h3 className="font-display text-2xl text-alphavest-ivory">{title}</h3>
+            <p className="mt-1 max-w-3xl text-sm leading-5 text-alphavest-muted">{subtitle}</p>
+          </div>
+          <button
+            className={primaryButtonClass}
+            data-testid={actionTestId}
+            data-ux-lifecycle-result={`opens-${lifecycleTrigger}`}
+            data-ux-lifecycle-trigger={lifecycleTrigger}
+            onClick={actionTrigger}
+            type="button"
+          >
+            {actionLabel} <ArrowRight aria-hidden="true" className="size-4" />
+          </button>
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          {stages.map((stage) => (
+            <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3" key={stage.label}>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">{stage.label}</p>
+              <p className="mt-2 text-sm leading-5 text-alphavest-muted">{stage.detail}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-3 rounded-md border border-red-400/35 bg-red-500/8 p-3">
+          <p className="text-sm font-semibold text-alphavest-ivory">{gate.label}</p>
+          <p className="mt-1 text-xs leading-5 text-alphavest-muted">{gate.detail}</p>
+        </div>
+        {selectedRequest ? (
+          <div className="mt-3 grid gap-3 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+            <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Selected Request</p>
+              <div className="mt-3 grid gap-2 text-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-alphavest-muted">Requester</span>
+                  <span className="font-semibold text-alphavest-ivory">{selectedRequest.requester}</span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-alphavest-muted">Access</span>
+                  <span className="font-semibold text-alphavest-ivory">{selectedRequest.access}</span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-alphavest-muted">Scope</span>
+                  <span className="font-semibold text-alphavest-ivory">{selectedRequest.scope}</span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-alphavest-muted">Status</span>
+                  <InlineStatus tone={toneFor(selectedRequest.status)} value={selectedRequest.status} />
+                </div>
+              </div>
+            </div>
+            <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Recent Requests</p>
+              <div className="mt-2 divide-y divide-alphavest-border/70">
+                {relatedRequests.map((request) => (
+                  <div className="grid gap-2 py-2 text-sm md:grid-cols-[minmax(0,1fr)_8rem_7rem]" key={`${request.requester}-${request.submitted}`}>
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-alphavest-ivory">{request.access}</p>
+                      <p className="truncate text-xs text-alphavest-muted">{request.requester} · {request.scope}</p>
+                    </div>
+                    <span className="text-alphavest-muted">{request.type}</span>
+                    <InlineStatus tone={toneFor(request.status)} value={request.status} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </section>
+    );
+  }
+
   return (
     <section
       className="rounded-md border border-alphavest-border/80 bg-alphavest-panel/60 p-4"
@@ -2759,16 +2875,17 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
     <Phase12Shell activePageId="050">
       <WorksurfaceShell
         className={drawerOpen ? "pr-0 xl:pr-[23rem]" : ""}
+        density="compact"
         description="Policy-checked access queue and selected request review with SOD, RBAC and audit constraints visible before action."
         eyebrow="Governance safety"
         primary={
           <CoreGovernanceStepSurface
-            actionLabel="Review policy-checked request"
+            actionLabel="Review request"
             actionTestId="j07-open-access-request-drawer"
             actionTrigger={openAccessRequestDrawer}
             gate={{
-              detail: "Approval remains blocked until scoped acknowledgement, SOD policy context and audit workflow proof are present.",
-              label: "Access request review is not access expansion",
+              detail: "Approval stays unavailable until policy, SOD and audit checks are reviewed in the request.",
+              label: "Access is not granted yet",
             }}
             lifecycleTrigger="access-request-drawer"
             pageJob="access_request_review"
@@ -2776,25 +2893,27 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
             processContract={processContract}
             processCurrentStep="access_request_review"
             processGateState="Scoped review"
+            requestRows={accessRequests}
             stages={[
               {
-                detail: "The queue points to one selected request instead of exposing a broad admin table.",
-                label: "Queue",
+                detail: "Sara Chen requests temporary access for Q2 marketing material review.",
+                label: "Request",
                 state: "Selected",
               },
               {
-                detail: "Drawer context separates requester, scope, policy checks and audit consequences.",
-                label: "Detail",
+                detail: "Marketing material only; no evidence release, export or client visibility permission.",
+                label: "Scope",
                 state: "Scoped",
               },
               {
-                detail: "Approve submits only the scoped review command; release, evidence and export stay separate.",
-                label: "Step",
+                detail: "SOD, policy checks and audit logging must pass before approval is available.",
+                label: "Checks",
                 state: "Gated",
               },
             ]}
-            subtitle="One access-request surface: select the request, review scoped policy context, then submit only through the governance command spine."
-            title="Access request gate"
+            subtitle="Review the selected request, confirm scope and open the policy-checked decision."
+            title="Access request review"
+            variant="compact_request_review"
           />
         }
         routeId="050"

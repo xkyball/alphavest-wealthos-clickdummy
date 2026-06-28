@@ -9,6 +9,7 @@ import {
   ChevronDown,
   ClipboardCheck,
   Clock3,
+  Circle,
   Download,
   LockKeyhole,
   MessageSquare,
@@ -391,6 +392,36 @@ function toneFor(value: string): BadgeTone {
   }
 
   return "muted";
+}
+
+function InlineStatus({ tone, value }: { tone: BadgeTone; value: string }) {
+  const Icon = tone === "red"
+    ? ShieldAlert
+    : tone === "green"
+      ? CheckCircle2
+      : tone === "gold"
+        ? Clock3
+        : tone === "blue"
+          ? Bell
+          : tone === "purple" || tone === "teal"
+            ? ShieldCheck
+            : Circle;
+  const toneClass: Record<BadgeTone, string> = {
+    blue: "text-alphavest-blue",
+    gold: "text-alphavest-gold",
+    green: "text-alphavest-green",
+    muted: "text-alphavest-muted",
+    purple: "text-violet-200",
+    red: "text-alphavest-red",
+    teal: "text-teal-200"
+  };
+
+  return (
+    <span className={cn("inline-flex min-w-0 items-center gap-1.5 font-semibold", toneClass[tone])}>
+      <Icon aria-hidden="true" className="size-4 shrink-0" />
+      <span className="truncate">{value}</span>
+    </span>
+  );
 }
 
 function handleStaticSortChange() {
@@ -1472,24 +1503,18 @@ function AdvisorQueuePage({ title }: { title: string }) {
     { key: "client", header: "Client", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.client}</span>, sortable: true },
     { key: "type", header: "Type", render: (row) => row.type, sortable: true },
     { key: "topic", header: "Topic", render: (row) => row.topic, sortable: true },
-    { key: "priority", header: "Priority", render: (row) => <Badge tone={toneFor(row.priority)}>{row.priority}</Badge>, sortable: true },
-    { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge>, sortable: true },
+    { key: "priority", header: "Priority", render: (row) => <InlineStatus tone={toneFor(row.priority)} value={row.priority} />, sortable: true },
+    { key: "status", header: "Status", render: (row) => <InlineStatus tone={toneFor(row.status)} value={row.status} />, sortable: true },
   ];
 
   return (
     <InternalShell activePageId="036">
       <WorksurfaceShell
+        density="compact"
         description="Advisor review is now a clear human-gate worksurface: queue triage, selected package context and explicit non-release boundary stay visible together."
         eyebrow="Advisor review"
         primary={
-          <div className="space-y-4">
-            <Phase5DetailSplitPanel decisionSupport="Advisor queue remains separate from advisor package detail." objectLabel="Advisor queue split" objectState="Advisor work awaiting selection" pageJob="Advisor queue selects packages; detail records review context separately." safetyBoundary="Queue rows cannot approve or release recommendations." splitTaskId="UX-PAGE-SPLIT-004" taskId="UX-PAGE-SPLIT-004" />
-            <PageHeading
-              action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Queue export is blocked; advisor package detail owns any package action." data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />Export held</span><span className={primaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Bulk actions remain blocked until typed command controls are available." data-ux-interactive="false">Bulk actions held</span></div>}
-              badge={<Badge tone="gold">36</Badge>}
-              subtitle="Select one advisor package and hand off to package detail without approving or releasing it from the queue."
-              title={title}
-            />
+          <div className="space-y-2">
             <MasterDetailSurface
               actionPolicy="route_handoff"
               actionRail="present"
@@ -1503,14 +1528,13 @@ function AdvisorQueuePage({ title }: { title: string }) {
                           <CardTitle>{selectedAdvisorRow.client}</CardTitle>
                           <p className="mt-1 text-sm text-alphavest-muted">{selectedAdvisorRow.structure}</p>
                         </div>
-                        <Badge tone={toneFor(selectedAdvisorRow.priority)}>{selectedAdvisorRow.priority}</Badge>
+                        <InlineStatus tone={toneFor(selectedAdvisorRow.priority)} value={selectedAdvisorRow.priority} />
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="grid gap-3">
                         <InfoRow label="Package type" value={selectedAdvisorRow.type} />
                         <InfoRow label="Topic" value={selectedAdvisorRow.topic} />
-                        <InfoRow label="Submitted" value={selectedAdvisorRow.submitted} />
                         <InfoRow label="Due" value={selectedAdvisorRow.due} />
                       </div>
                       <StatePanel
@@ -1535,7 +1559,7 @@ function AdvisorQueuePage({ title }: { title: string }) {
               family="queue"
               filterState={searchTerm.length > 0 ? "active_query" : "inactive"}
               master={
-                <div className="space-y-4" data-testid="s036-advisor-master-list">
+                <div className="max-h-[30rem] space-y-3 overflow-y-auto pr-1" data-testid="s036-advisor-master-list">
                   <FilterBar
                     activeFilterCount={4}
                     activeStateLabel={searchTerm.length > 0 ? `Advisor queue query active: ${searchTerm}. Static filters remain visible only.` : "Advisor queue filters are visible as disabled demo controls only."}
@@ -1571,53 +1595,17 @@ function AdvisorQueuePage({ title }: { title: string }) {
                     sortDirection="asc"
                     sortKey="client"
                   />
-                  <div className="space-y-2">
-                    {visibleRows.map((row) => {
-                      const selected = selectedAdvisorRow?.client === row.client;
-
-                      return (
-                        <button
-                          className={cn(
-                            "w-full rounded-md border p-3 text-left transition",
-                            selected ? "border-alphavest-gold bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35 hover:border-alphavest-gold/60",
-                          )}
-                          data-ux-field-priority="identity primary_status risk_due evidence_gate"
-                          data-ux-queue-row={row.client}
-                          data-ux-queue-selected={selected ? "true" : "false"}
-                          key={row.client}
-                          onClick={() => setSelectedAdvisorClient(row.client)}
-                          type="button"
-                        >
-                          <span className="flex items-start justify-between gap-3">
-                            <span className="min-w-0">
-                              <span className="block text-sm font-semibold text-alphavest-ivory">{row.client}</span>
-                              <span className="mt-1 block text-xs text-alphavest-muted">{row.structure} · {row.topic}</span>
-                            </span>
-                            <Badge tone={toneFor(row.status)}>{row.status}</Badge>
-                          </span>
-                          <span className="mt-2 grid gap-1 text-xs text-alphavest-muted">
-                            <span>Priority: {row.priority}</span>
-                            <span>Type: {row.type}</span>
-                            <span>Due: {row.due}</span>
-                          </span>
-                        </button>
-                      );
-                    })}
-                    {!visibleRows.length ? <StatePanel detail="No advisor queue rows match this search." state="empty" title="No matching advisor packages" /> : null}
-                  </div>
                 </div>
               }
               masterDetailMode="inline_detail_rail"
-              proofPlacement="proof_drawer"
+              proofPlacement="inline_summary"
               queueWorkbench
               selectedObjectId={selectedAdvisorRow?.client ?? "no-advisor-row"}
               selectedObjectState={selectedAdvisorRow?.status ?? "empty"}
-              selectedSummary={<span>Advisor queue keeps list context while selection exposes one package-detail handoff only; no advisor row approves, releases, exports or creates client visibility.</span>}
               stickyRail
             />
           </div>
         }
-        rail={<AdvisorSummaryPanel />}
         routeId="036"
         safetyNote="Advisor queue selection does not approve, release, export or create client visibility."
         statusItems={[
@@ -1626,29 +1614,6 @@ function AdvisorQueuePage({ title }: { title: string }) {
         ]}
         title={title}
         worksurfaceId="advisor-review-queue"
-        secondary={
-          <div className="grid gap-4">
-            <div className="grid gap-3 md:grid-cols-5">
-            {[
-              ["All Pending", "36"],
-              ["Overdue", "7"],
-              ["Due Today", "8"],
-              ["Due This Week", "21"],
-              ["Info Requested", "4"]
-            ].map(([label, value]) => (
-              <Card key={label}><p className="text-sm text-alphavest-muted">{label}</p><p className={cn("mt-2 text-3xl font-semibold", label === "Overdue" ? "text-alphavest-red" : "text-alphavest-gold")}>{value}</p></Card>
-            ))}
-            </div>
-            <Card data-ux-queue-proof-drawer="true">
-              <CardHeader><CardTitle>Advisor proof drawer</CardTitle></CardHeader>
-              <CardContent className="grid gap-3 md:grid-cols-3">
-                <InfoRow label="Advisor review" value="Package-detail handoff only" />
-                <InfoRow label="Compliance release" value="Still required" />
-                <InfoRow label="Client visibility" value="Blocked until compliance gate" />
-              </CardContent>
-            </Card>
-          </div>
-        }
       />
     </InternalShell>
   );
@@ -1917,24 +1882,18 @@ function ComplianceQueuePage({ title }: { title: string }) {
     { key: "id", header: "Review", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.id}</span>, sortable: true },
     { key: "item", header: "Item", render: (row) => row.item, sortable: true },
     { key: "classification", header: "Classification", render: (row) => row.classification, sortable: true },
-    { key: "risk", header: "Risk", render: (row) => <Badge tone={toneFor(row.risk)}>{row.risk}</Badge>, sortable: true },
-    { key: "publish", header: "Publish", render: (row) => <Badge tone={toneFor(row.publish)}>{row.publish}</Badge>, sortable: true },
+    { key: "risk", header: "Risk", render: (row) => <InlineStatus tone={toneFor(row.risk)} value={row.risk} />, sortable: true },
+    { key: "publish", header: "Publish", render: (row) => <InlineStatus tone={toneFor(row.publish)} value={row.publish} />, sortable: true },
   ];
 
   return (
     <InternalShell activePageId="038">
       <WorksurfaceShell
+        density="compact"
         description="Compliance review is organized as a release-control worksurface: intake queue, evidence status, policy posture and explicit non-release queue boundary stay visible."
         eyebrow="Compliance release"
         primary={
-          <div className="space-y-4">
-            <Phase5DetailSplitPanel decisionSupport="Compliance queue separates work intake from decision-room review." objectLabel="Compliance queue split" objectState="Compliance items pending selection" pageJob="Compliance queue prioritizes review work without hiding decision consequences." safetyBoundary="Queue context cannot release, block or request evidence by itself." splitTaskId="UX-PAGE-SPLIT-003" taskId="UX-PAGE-SPLIT-003" />
-            <PageHeading
-              action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Queue export is blocked; release-room audit owns any export-ready proof." data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />Export held</span><span className={primaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Refresh is static in the demo queue; decision-room state owns mutation." data-ux-interactive="false"><RefreshCw aria-hidden="true" className="size-4" />Refresh held</span></div>}
-              subtitle="Select one compliance review, inspect release blockers, then hand off to the decision room."
-              title={title}
-            />
-            <ScfP04P06FlowPanel mode="compliance" />
+          <div className="space-y-2">
             <MasterDetailSurface
               actionPolicy="route_handoff"
               actionRail="present"
@@ -1948,15 +1907,14 @@ function ComplianceQueuePage({ title }: { title: string }) {
                           <CardTitle>{selectedReview.item}</CardTitle>
                           <p className="mt-1 text-sm text-alphavest-muted">{selectedReview.sub}</p>
                         </div>
-                        <Badge tone={toneFor(selectedReview.risk)}>{selectedReview.risk}</Badge>
+                        <InlineStatus tone={toneFor(selectedReview.risk)} value={selectedReview.risk} />
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="grid gap-3">
                         <InfoRow label="Classification" value={selectedReview.classification} />
                         <InfoRow label="Responsible advisor" value={selectedReview.advisor} />
                         <InfoRow label="Evidence" value={selectedReview.evidence} />
-                        <InfoRow label="Publish state" value={selectedReview.publish} />
                       </div>
                       <StatePanel detail="Queue selection can open the release decision room only. It cannot release, block, export or create client visibility." state="restricted" title="Decision-room handoff only" />
                       <button className={primaryButtonClass + " w-full"} data-testid="s038-open-selected-review" onClick={() => router.push(`/compliance/reviews/${selectedReview.id}/decision-room`)} type="button">
@@ -1973,7 +1931,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
               governancePattern="queue_workbench"
               longScreenGovernance="resolved_by_shared_surface"
               master={
-                <div className="space-y-4" data-testid="s038-compliance-master-list">
+                <div className="max-h-[30rem] space-y-3 overflow-y-auto pr-1" data-testid="s038-compliance-master-list">
                   <FilterBar
                     activeFilterCount={4}
                     activeStateLabel={searchTerm.length > 0 ? `Compliance queue query active: ${searchTerm}. Static filters remain visible only.` : "Compliance queue filters are visible as disabled demo controls only."}
@@ -2011,89 +1969,20 @@ function ComplianceQueuePage({ title }: { title: string }) {
                     sortDirection="asc"
                     sortKey="id"
                   />
-                  <div className="space-y-2">
-                    {visibleRows.map((row) => {
-                      const selected = selectedReview?.id === row.id;
-
-                      return (
-                        <button
-                          className={cn(
-                            "w-full rounded-md border p-3 text-left transition",
-                            selected ? "border-alphavest-gold bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-navy/35 hover:border-alphavest-gold/60",
-                          )}
-                          data-ux-field-priority="identity primary_status risk_due evidence_gate"
-                          data-ux-queue-row={row.id}
-                          data-ux-queue-selected={selected ? "true" : "false"}
-                          key={row.id}
-                          onClick={() => setSelectedReviewId(row.id)}
-                          type="button"
-                        >
-                          <span className="flex items-start justify-between gap-3">
-                            <span className="min-w-0">
-                              <span className="block text-sm font-semibold text-alphavest-ivory">{row.item}</span>
-                              <span className="mt-1 block text-xs text-alphavest-muted">{row.id} · {row.sub}</span>
-                            </span>
-                            <Badge tone={toneFor(row.publish)}>{row.publish}</Badge>
-                          </span>
-                          <span className="mt-2 grid gap-2 text-xs text-alphavest-muted sm:grid-cols-3">
-                            <span>Risk: {row.risk}</span>
-                            <span>Evidence: {row.evidence}</span>
-                            <span>Due: {row.due}</span>
-                          </span>
-                        </button>
-                      );
-                    })}
-                    {!visibleRows.length ? <StatePanel detail="No compliance queue rows match this search." state="empty" title="No matching reviews" /> : null}
-                  </div>
                 </div>
               }
               masterDetailMode="inline_detail_rail"
-              proofPlacement="proof_drawer"
+              proofPlacement="inline_summary"
               queueWorkbench
               selectedObjectId={selectedReview?.id ?? "no-compliance-row"}
               selectedObjectState={selectedReview?.publish ?? "empty"}
-              selectedSummary={<span>Compliance queue keeps list context while selection exposes one decision-room handoff only; queue rows cannot release, block, export or expose client-visible content.</span>}
               stickyRail
               targetScreenId="S038"
             />
           </div>
         }
-        rail={
-          <WorksurfacePanel description="Queue-level visibility only prioritizes work. Release remains inside the gated review room." title="Release boundary">
-            <div className="space-y-3 text-sm">
-              <InfoRow label="Queue actions" value="Open review only" />
-              <InfoRow label="Advisor approval" value="Prerequisite only" />
-              <InfoRow label="Client visibility" value="Blocked" />
-            </div>
-          </WorksurfacePanel>
-        }
         routeId="038"
         safetyNote="Compliance queue rows cannot release, block, export or expose client-visible content."
-        secondary={
-          <div className="grid gap-4">
-            <div className="grid gap-3 md:grid-cols-5">
-              {complianceMetrics.map((metric) => (
-                <Card key={metric.label}>
-                  <div className="flex items-center gap-4">
-                    <IconTile tone={metric.label === "Overdue" ? "red" : "muted"}>{metric.label === "Overdue" ? <Calendar aria-hidden="true" className="size-5" /> : <ClipboardCheck aria-hidden="true" className="size-5" />}</IconTile>
-                    <div>
-                      <p className={cn("text-3xl font-semibold", metric.label === "Overdue" ? "text-alphavest-red" : "text-alphavest-ivory")}>{metric.value}</p>
-                      <p className="text-sm text-alphavest-muted">{metric.label}</p>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-            <Card data-ux-queue-proof-drawer="true">
-              <CardHeader><CardTitle>Compliance proof drawer</CardTitle></CardHeader>
-              <CardContent className="grid gap-3 md:grid-cols-3">
-                <InfoRow label="Advisor prerequisite" value="Required before release-room action" />
-                <InfoRow label="Evidence gate" value="Reviewed and scoped before client visibility" />
-                <InfoRow label="Audit handoff" value="Decision room records actor, target and gate state" />
-              </CardContent>
-            </Card>
-          </div>
-        }
         statusItems={[
           { label: "Queue", tone: "gold", value: `${complianceQueue.length} reviews` },
           { label: "Release", tone: "red", value: "Gated" },

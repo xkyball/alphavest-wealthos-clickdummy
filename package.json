@@ -58,6 +58,7 @@
     "test:offboarding-control": "playwright test tests/offboarding-control.spec.ts",
     "test:providerless-scope": "playwright test tests/providerless-scope.spec.ts",
     "test:route-smoke": "playwright test tests/route-smoke.spec.ts",
+    "visual:audit-operational": "playwright test tests/operational-visual-audit.spec.ts --workers=1",
     "test:source-reality": "playwright test tests/source-reality-gate.spec.ts",
     "test:v0-96-release-proof": "playwright test tests/v0-96-release-proof.spec.ts --workers=1",
     "test:v0-96-wp17-api-truth": "playwright test tests/true-ux-api-service-ui-truth.spec.ts tests/p0-api-contract.spec.ts --workers=1",

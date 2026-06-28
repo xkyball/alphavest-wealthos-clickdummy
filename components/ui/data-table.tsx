@@ -237,7 +237,7 @@ export function DataTable<T>({
 
   const cellPadding = densityClasses.cellPadding;
   const rowMinHeight = densityClasses.rowMinHeight;
-  const tablePadding = cn("w-full min-w-0", densityClasses.tableLayout);
+  const tablePadding = cn("w-full", responsiveMode === "table" ? "min-w-[44rem]" : "min-w-full", densityClasses.tableLayout);
 
   const table = (
     <div

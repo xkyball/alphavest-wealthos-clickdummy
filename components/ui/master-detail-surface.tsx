@@ -60,7 +60,7 @@ export function MasterDetailSurface({
   const hasStructuredSlots = Boolean(master || detail || empty || selectedSummary);
   const slotGridClass = detail
     ? queueWorkbench
-      ? "xl:grid-cols-[minmax(18rem,0.42fr)_minmax(0,1fr)]"
+      ? "xl:grid-cols-[minmax(40rem,1fr)_minmax(18rem,0.34fr)]"
       : "xl:grid-cols-[minmax(0,1fr)_minmax(20rem,0.42fr)]"
     : "";
 
