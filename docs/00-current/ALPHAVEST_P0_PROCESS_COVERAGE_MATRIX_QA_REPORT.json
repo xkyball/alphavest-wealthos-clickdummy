@@ -1,0 +1,504 @@
+{
+  "artifact_kind": "p0_process_coverage_matrix_qa_report",
+  "ticket_id": "EPIC-02-QA-01",
+  "ticket_title": "Coverage matrix integrity gate",
+  "generated_at": "2026-06-28",
+  "machine_readable": true,
+  "sources": {
+    "coverage_matrix": "docs/00-current/ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX.json",
+    "schema": "docs/00-current/ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX_SCHEMA.json"
+  },
+  "gate_outcome": {
+    "status": "PASS",
+    "interpretation": "integrity_gate_passed_closure_blocked",
+    "domain_epic_closure_allowed": false,
+    "route_navigation_completion_claim_allowed": false,
+    "completion_claim_allowed": false
+  },
+  "summary": {
+    "retained_p0_process_count": 84,
+    "retained_p0_step_count": 438,
+    "matrix_step_count": 438,
+    "unclassified_step_count": 0,
+    "implemented_step_count": 0,
+    "non_implemented_step_count": 438,
+    "blocked_domain_count": 12,
+    "blocked_area_count": 10,
+    "acceptance_state_counts": {
+      "partially_implemented": 296,
+      "specified_only": 142
+    }
+  },
+  "closure_rule_checks": [
+    {
+      "rule_id": "P0-COVERAGE-QA-001",
+      "severity": "error",
+      "pass": true,
+      "description": "Every retained P0 step must be classified with an allowed acceptance_state."
+    },
+    {
+      "rule_id": "P0-COVERAGE-QA-002",
+      "severity": "error",
+      "pass": true,
+      "description": "Global completion claims are allowed only when every retained P0 step is implemented."
+    },
+    {
+      "rule_id": "P0-COVERAGE-QA-003",
+      "severity": "error",
+      "pass": true,
+      "description": "Domain epic closure is blocked while any domain P0 step is not implemented."
+    },
+    {
+      "rule_id": "P0-COVERAGE-QA-004",
+      "severity": "error",
+      "pass": true,
+      "description": "App-area closure is blocked while any mapped P0 step is not implemented."
+    },
+    {
+      "rule_id": "P0-COVERAGE-QA-005",
+      "severity": "error",
+      "pass": true,
+      "description": "Completion credit must exactly match the acceptance-state contract."
+    },
+    {
+      "rule_id": "P0-COVERAGE-QA-006",
+      "severity": "error",
+      "pass": true,
+      "description": "Implemented steps require positive proof and safety-sensitive implemented steps require negative proof."
+    }
+  ],
+  "domain_closure_matrix": [
+    {
+      "subject_type": "domain",
+      "subject_id": "DOMAIN-A",
+      "subject_name": "Client and Family Office Context Processes",
+      "p0_step_count": 32,
+      "implemented_step_count": 0,
+      "non_implemented_step_count": 32,
+      "acceptance_state_counts": {
+        "partially_implemented": 24,
+        "specified_only": 8
+      },
+      "closure_allowed": false,
+      "closure_status": "blocked_by_incomplete_p0_steps",
+      "blocking_reason_codes": [
+        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
+        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
+      ]
+    },
+    {
+      "subject_type": "domain",
+      "subject_id": "DOMAIN-B",
+      "subject_name": "Identity, Access and Governance Processes",
+      "p0_step_count": 44,
+      "implemented_step_count": 0,
+      "non_implemented_step_count": 44,
+      "acceptance_state_counts": {
+        "partially_implemented": 32,
+        "specified_only": 12
+      },
+      "closure_allowed": false,
+      "closure_status": "blocked_by_incomplete_p0_steps",
+      "blocking_reason_codes": [
+        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
+        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
+      ]
+    },
+    {
+      "subject_type": "domain",
+      "subject_id": "DOMAIN-C",
+      "subject_name": "Evidence and Document Processes",
+      "p0_step_count": 77,
+      "implemented_step_count": 0,
+      "non_implemented_step_count": 77,
+      "acceptance_state_counts": {
+        "partially_implemented": 42,
+        "specified_only": 35
+      },
+      "closure_allowed": false,
+      "closure_status": "blocked_by_incomplete_p0_steps",
+      "blocking_reason_codes": [
+        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
+        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
+      ]
+    },
+    {
+      "subject_type": "domain",
+      "subject_id": "DOMAIN-D",
+      "subject_name": "Signal, Trigger and Workbench Processes",
+      "p0_step_count": 25,
+      "implemented_step_count": 0,
+      "non_implemented_step_count": 25,
+      "acceptance_state_counts": {
+        "partially_implemented": 20,
+        "specified_only": 5
+      },
+      "closure_allowed": false,
+      "closure_status": "blocked_by_incomplete_p0_steps",
+      "blocking_reason_codes": [
+        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
+        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
+      ]
+    },
+    {
+      "subject_type": "domain",
+      "subject_id": "DOMAIN-E",
+      "subject_name": "AI / Rules Draft Governance Processes",
+      "p0_step_count": 35,
+      "implemented_step_count": 0,
+      "non_implemented_step_count": 35,
+      "acceptance_state_counts": {
+        "partially_implemented": 10,
+        "specified_only": 25
+      },
+      "closure_allowed": false,
+      "closure_status": "blocked_by_incomplete_p0_steps",
+      "blocking_reason_codes": [
+        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
+        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
+      ]
+    },
+    {
+      "subject_type": "domain",
+      "subject_id": "DOMAIN-F",
+      "subject_name": "Advisor Review and Approval Processes",
+      "p0_step_count": 24,
+      "implemented_step_count": 0,
+      "non_implemented_step_count": 24,
+      "acceptance_state_counts": {
+        "partially_implemented": 16,
+        "specified_only": 8
+      },
+      "closure_allowed": false,
+      "closure_status": "blocked_by_incomplete_p0_steps",
+      "blocking_reason_codes": [
+        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
+        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
+      ]
+    },
+    {
+      "subject_type": "domain",
+      "subject_id": "DOMAIN-G",
+      "subject_name": "Compliance Review, Block and Release Processes",
+      "p0_step_count": 40,
+      "implemented_step_count": 0,
+      "non_implemented_step_count": 40,
+      "acceptance_state_counts": {
+        "partially_implemented": 20,
+        "specified_only": 20
+      },
+      "closure_allowed": false,
+      "closure_status": "blocked_by_incomplete_p0_steps",
+      "blocking_reason_codes": [
+        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
+        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
+      ]
+    },
+    {
+      "subject_type": "domain",
+      "subject_id": "DOMAIN-H",
+      "subject_name": "Client Visibility and Communication Processes",
+      "p0_step_count": 9,
+      "implemented_step_count": 0,
+      "non_implemented_step_count": 9,
+      "acceptance_state_counts": {
+        "partially_implemented": 6,
+        "specified_only": 3
+      },
+      "closure_allowed": false,
+      "closure_status": "blocked_by_incomplete_p0_steps",
+      "blocking_reason_codes": [
+        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
+        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
+      ]
+    },
+    {
+      "subject_type": "domain",
+      "subject_id": "DOMAIN-I",
+      "subject_name": "Decision Record and Evidence Vault Processes",
+      "p0_step_count": 35,
+      "implemented_step_count": 0,
+      "non_implemented_step_count": 35,
+      "acceptance_state_counts": {
+        "partially_implemented": 30,
+        "specified_only": 5
+      },
+      "closure_allowed": false,
+      "closure_status": "blocked_by_incomplete_p0_steps",
+      "blocking_reason_codes": [
+        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
+        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
+      ]
+    },
+    {
+      "subject_type": "domain",
+      "subject_id": "DOMAIN-J",
+      "subject_name": "Export, Redaction and Delivery Processes",
+      "p0_step_count": 72,
+      "implemented_step_count": 0,
+      "non_implemented_step_count": 72,
+      "acceptance_state_counts": {
+        "partially_implemented": 56,
+        "specified_only": 16
+      },
+      "closure_allowed": false,
+      "closure_status": "blocked_by_incomplete_p0_steps",
+      "blocking_reason_codes": [
+        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
+        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
+      ]
+    },
+    {
+      "subject_type": "domain",
+      "subject_id": "DOMAIN-K",
+      "subject_name": "Review Rhythm, Monitoring and Operations Processes",
+      "p0_step_count": 10,
+      "implemented_step_count": 0,
+      "non_implemented_step_count": 10,
+      "acceptance_state_counts": {
+        "partially_implemented": 10
+      },
+      "closure_allowed": false,
+      "closure_status": "blocked_by_incomplete_p0_steps",
+      "blocking_reason_codes": [
+        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
+        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
+      ]
+    },
+    {
+      "subject_type": "domain",
+      "subject_id": "DOMAIN-L",
+      "subject_name": "Platform, Tenant and Template Administration Processes",
+      "p0_step_count": 35,
+      "implemented_step_count": 0,
+      "non_implemented_step_count": 35,
+      "acceptance_state_counts": {
+        "partially_implemented": 30,
+        "specified_only": 5
+      },
+      "closure_allowed": false,
+      "closure_status": "blocked_by_incomplete_p0_steps",
+      "blocking_reason_codes": [
+        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
+        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
+      ]
+    }
+  ],
+  "area_closure_matrix": [
+    {
+      "subject_type": "area",
+      "subject_id": "AREA-00",
+      "subject_name": "Process Command Center",
+      "p0_step_count": 0,
+      "implemented_step_count": 0,
+      "non_implemented_step_count": 0,
+      "acceptance_state_counts": {},
+      "closure_allowed": false,
+      "closure_status": "not_applicable_no_p0_steps",
+      "blocking_reason_codes": [
+        "NO_P0_STEPS_IN_AREA"
+      ]
+    },
+    {
+      "subject_type": "area",
+      "subject_id": "AREA-01",
+      "subject_name": "Setup, Identity and Governance Foundation",
+      "p0_step_count": 79,
+      "implemented_step_count": 0,
+      "non_implemented_step_count": 79,
+      "acceptance_state_counts": {
+        "partially_implemented": 62,
+        "specified_only": 17
+      },
+      "closure_allowed": false,
+      "closure_status": "blocked_by_incomplete_p0_steps",
+      "blocking_reason_codes": [
+        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
+        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
+      ]
+    },
+    {
+      "subject_type": "area",
+      "subject_id": "AREA-02",
+      "subject_name": "Client and Family Context",
+      "p0_step_count": 32,
+      "implemented_step_count": 0,
+      "non_implemented_step_count": 32,
+      "acceptance_state_counts": {
+        "partially_implemented": 24,
+        "specified_only": 8
+      },
+      "closure_allowed": false,
+      "closure_status": "blocked_by_incomplete_p0_steps",
+      "blocking_reason_codes": [
+        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
+        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
+      ]
+    },
+    {
+      "subject_type": "area",
+      "subject_id": "AREA-03",
+      "subject_name": "Evidence Lifecycle",
+      "p0_step_count": 77,
+      "implemented_step_count": 0,
+      "non_implemented_step_count": 77,
+      "acceptance_state_counts": {
+        "partially_implemented": 42,
+        "specified_only": 35
+      },
+      "closure_allowed": false,
+      "closure_status": "blocked_by_incomplete_p0_steps",
+      "blocking_reason_codes": [
+        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
+        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
+      ]
+    },
+    {
+      "subject_type": "area",
+      "subject_id": "AREA-04",
+      "subject_name": "Signal and Analyst Workbench",
+      "p0_step_count": 60,
+      "implemented_step_count": 0,
+      "non_implemented_step_count": 60,
+      "acceptance_state_counts": {
+        "partially_implemented": 30,
+        "specified_only": 30
+      },
+      "closure_allowed": false,
+      "closure_status": "blocked_by_incomplete_p0_steps",
+      "blocking_reason_codes": [
+        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
+        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
+      ]
+    },
+    {
+      "subject_type": "area",
+      "subject_id": "AREA-05",
+      "subject_name": "Advisor Review",
+      "p0_step_count": 24,
+      "implemented_step_count": 0,
+      "non_implemented_step_count": 24,
+      "acceptance_state_counts": {
+        "partially_implemented": 16,
+        "specified_only": 8
+      },
+      "closure_allowed": false,
+      "closure_status": "blocked_by_incomplete_p0_steps",
+      "blocking_reason_codes": [
+        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
+        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
+      ]
+    },
+    {
+      "subject_type": "area",
+      "subject_id": "AREA-06",
+      "subject_name": "Compliance Release",
+      "p0_step_count": 40,
+      "implemented_step_count": 0,
+      "non_implemented_step_count": 40,
+      "acceptance_state_counts": {
+        "partially_implemented": 20,
+        "specified_only": 20
+      },
+      "closure_allowed": false,
+      "closure_status": "blocked_by_incomplete_p0_steps",
+      "blocking_reason_codes": [
+        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
+        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
+      ]
+    },
+    {
+      "subject_type": "area",
+      "subject_id": "AREA-07",
+      "subject_name": "Decision Record and Evidence Vault",
+      "p0_step_count": 35,
+      "implemented_step_count": 0,
+      "non_implemented_step_count": 35,
+      "acceptance_state_counts": {
+        "partially_implemented": 30,
+        "specified_only": 5
+      },
+      "closure_allowed": false,
+      "closure_status": "blocked_by_incomplete_p0_steps",
+      "blocking_reason_codes": [
+        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
+        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
+      ]
+    },
+    {
+      "subject_type": "area",
+      "subject_id": "AREA-08",
+      "subject_name": "Client Visibility",
+      "p0_step_count": 9,
+      "implemented_step_count": 0,
+      "non_implemented_step_count": 9,
+      "acceptance_state_counts": {
+        "partially_implemented": 6,
+        "specified_only": 3
+      },
+      "closure_allowed": false,
+      "closure_status": "blocked_by_incomplete_p0_steps",
+      "blocking_reason_codes": [
+        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
+        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
+      ]
+    },
+    {
+      "subject_type": "area",
+      "subject_id": "AREA-09",
+      "subject_name": "Export and Delivery",
+      "p0_step_count": 72,
+      "implemented_step_count": 0,
+      "non_implemented_step_count": 72,
+      "acceptance_state_counts": {
+        "partially_implemented": 56,
+        "specified_only": 16
+      },
+      "closure_allowed": false,
+      "closure_status": "blocked_by_incomplete_p0_steps",
+      "blocking_reason_codes": [
+        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
+        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
+      ]
+    },
+    {
+      "subject_type": "area",
+      "subject_id": "AREA-10",
+      "subject_name": "Operations and Data Quality",
+      "p0_step_count": 10,
+      "implemented_step_count": 0,
+      "non_implemented_step_count": 10,
+      "acceptance_state_counts": {
+        "partially_implemented": 10
+      },
+      "closure_allowed": false,
+      "closure_status": "blocked_by_incomplete_p0_steps",
+      "blocking_reason_codes": [
+        "P0_STEPS_NOT_FULLY_IMPLEMENTED",
+        "POSITIVE_AND_NEGATIVE_PROOF_NOT_COMPLETE"
+      ]
+    },
+    {
+      "subject_type": "area",
+      "subject_id": "AREA-11",
+      "subject_name": "Deferred, Elevated and Reference Work",
+      "p0_step_count": 0,
+      "implemented_step_count": 0,
+      "non_implemented_step_count": 0,
+      "acceptance_state_counts": {},
+      "closure_allowed": false,
+      "closure_status": "not_applicable_no_p0_steps",
+      "blocking_reason_codes": [
+        "NO_P0_STEPS_IN_AREA"
+      ]
+    }
+  ],
+  "errors": [],
+  "next_decision_gate": {
+    "required_decisions": [
+      "DEC-FINAL-NAVIGATION-BLUEPRINT",
+      "DEC-ROUTE-NAV-APPROVAL"
+    ],
+    "recommended_approval_token": "APPROVE_DEC-FINAL-NAVIGATION-BLUEPRINT_DEC-ROUTE-NAV-APPROVAL_CONTINUE_TO_EPIC-01-IMPL-01"
+  }
+}
