@@ -78,17 +78,17 @@ export function ProcessGateRail({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-base font-semibold text-alphavest-ivory">{title}</h2>
-            <Badge tone={tone === "ready" ? "green" : tone === "restricted" ? "gold" : "red"}>{gateState}</Badge>
+            <Badge className="whitespace-nowrap" tone={tone === "ready" ? "green" : tone === "restricted" ? "gold" : "red"}>{gateState}</Badge>
           </div>
           <p className="mt-2 text-sm leading-6 text-alphavest-muted">{actionState}</p>
         </div>
       </div>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      <div className="mt-4 grid gap-3 lg:grid-cols-2">
         {items.map((item) => (
           <div className="rounded-md border border-alphavest-border/65 bg-alphavest-charcoal/45 p-3" key={item.label}>
             <div className="flex items-start justify-between gap-3">
               <p className="text-sm font-semibold text-alphavest-ivory">{item.label}</p>
-              <Badge tone={item.tone}>{item.value}</Badge>
+              <Badge className="shrink-0 whitespace-nowrap" tone={item.tone}>{item.value}</Badge>
             </div>
             <p className="mt-2 text-xs leading-5 text-alphavest-muted">{item.detail}</p>
           </div>

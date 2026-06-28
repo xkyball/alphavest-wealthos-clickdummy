@@ -12,6 +12,7 @@ test.describe("P0 process-first UX burndown implementation", () => {
   test("ships a reusable process gate rail for dominant gate state and next permitted action", () => {
     const source = readSource("components", "ui", "process-gate-rail.tsx");
     const exports = readSource("components", "ui", "index.ts");
+    const scfFlow = readSource("components", "scf-p04-p06-flow-panel.tsx");
 
     expect(source).toContain("export function ProcessGateRail");
     expect(source).toContain("data-ux-process-first");
@@ -21,7 +22,11 @@ test.describe("P0 process-first UX burndown implementation", () => {
     expect(source).toContain("data-ux-process-gate-state");
     expect(source).toContain("data-ux-process-gate-ids");
     expect(source).toContain("data-ux-process-next-step");
+    expect(source).toContain("lg:grid-cols-2");
+    expect(source).toContain("shrink-0 whitespace-nowrap");
     expect(source).toContain("Next permitted action");
+    expect(scfFlow).toContain("2xl:grid-cols-3");
+    expect(scfFlow).toContain("shrink-0 whitespace-nowrap");
     expect(exports).toContain('export * from "@/components/ui/process-gate-rail"');
   });
 
