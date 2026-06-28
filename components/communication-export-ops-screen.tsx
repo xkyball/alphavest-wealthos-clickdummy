@@ -93,6 +93,9 @@ import type { ScreenRoute } from "@/lib/route-registry";
 import { runTenantGovernanceCommand } from "@/lib/tenant-governance-command-client";
 import type { VisualState } from "@/lib/visual-contract";
 
+type ExportWorkflowSnapshotData = NonNullable<ExportWorkflowSnapshot>;
+type ExportWorkflowTimelineEvent = ExportWorkflowSnapshotData["timeline"][number] | (typeof exportTimeline)[number];
+
 type CommunicationExportOpsScreenProps = {
   route: ScreenRoute;
   visualState?: VisualState;
@@ -120,6 +123,7 @@ const secondaryButtonClass = uxActionClassForPriority("secondary");
 
 
 type Phase5DetailSplitPanelProps = {
+  compact?: boolean;
   decisionSupport: string;
   objectLabel: string;
   objectState: string;
@@ -135,6 +139,7 @@ type Phase6DecisionRoomPanelProps = {
   audit: string;
   blocker: string;
   cancelLabel: string;
+  compact?: boolean;
   confirmLabel: string;
   decisionLabel: string;
   evidence: string;
@@ -143,7 +148,35 @@ type Phase6DecisionRoomPanelProps = {
   taskId: string;
 };
 
-function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, decisionLabel, evidence, preconditions, safetyNote, taskId }: Phase6DecisionRoomPanelProps) {
+function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, compact = false, confirmLabel, decisionLabel, evidence, preconditions, safetyNote, taskId }: Phase6DecisionRoomPanelProps) {
+  if (compact) {
+    return (
+      <section className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-4" data-testid="ux-phase6-decision-room" data-ux-decision-room-task={taskId} data-ux-layout-compression="compact_export_decision_gate">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <Badge tone="red">{taskId}</Badge>
+            <h2 className="mt-2 font-display text-xl text-alphavest-ivory">{decisionLabel}</h2>
+          </div>
+          <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason={blocker} data-ux-interactive="false">{confirmLabel} blocked</span>
+        </div>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          {[
+            ["Preconditions", preconditions],
+            ["Evidence", evidence],
+            ["Audit", audit],
+            ["Safety", safetyNote],
+          ].map(([label, value]) => (
+            <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" key={label}>
+              <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">{label}</p>
+              <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{value}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-sm text-alphavest-muted">{cancelLabel} remains available without generation, download, share, advice release or client acceptance.</p>
+      </section>
+    );
+  }
+
   return (
     <section className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-4" data-testid="ux-phase6-decision-room" data-ux-phase6-task={taskId}>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -323,7 +356,34 @@ function ExportPayloadBoundary({ className }: { className?: string }) {
   );
 }
 
-function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pageJob, safetyBoundary, splitTaskId, taskId }: Phase5DetailSplitPanelProps) {
+function Phase5DetailSplitPanel({ compact = false, decisionSupport, objectLabel, objectState, pageJob, safetyBoundary, splitTaskId, taskId }: Phase5DetailSplitPanelProps) {
+  if (compact) {
+    return (
+      <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-layout-compression="compact_export_boundary_strip" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Detail state</p>
+            <h2 className="mt-1 font-display text-xl text-alphavest-ivory">{objectLabel}</h2>
+          </div>
+          <Badge tone="gold">{taskId}</Badge>
+        </div>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          {[
+            ["Object state", objectState],
+            ["Decision support", decisionSupport],
+            ["Boundary", safetyBoundary],
+            ["Focus", pageJob],
+          ].map(([label, value]) => (
+            <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" key={label}>
+              <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">{label}</p>
+              <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{value}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -1421,6 +1481,78 @@ function RedactedDocumentPreview() {
   );
 }
 
+function ExportRedactionControlPanel({
+  redactionColumns,
+  redactionRows,
+}: {
+  redactionColumns: Array<DataTableColumn<(typeof redactionRows)[number]>>;
+  redactionRows: Array<{ id: string; label: string; state: string; visibility: string }>;
+}) {
+  return (
+    <section className="space-y-4" data-testid="bd11-export-redaction-control-panel" data-ux-layout-compression="bounded_export_redaction">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <Card>
+          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <CardTitle>Payload Redaction Operations</CardTitle>
+            <Badge tone="gold">{redactionRows.length} controls</Badge>
+          </CardHeader>
+          <CardContent>
+            <div className="max-h-80 overflow-y-auto pr-1">
+              <DataTable
+                columns={redactionColumns}
+                compact
+                getRowId={(row) => row.id}
+                onSortChange={handleStaticSortChange}
+                responsiveMode="table"
+                rows={redactionRows}
+                sortDirection="asc"
+                sortKey="label"
+              />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Redaction Summary</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            {redactionSummary.map((item) => (
+              <div className="flex items-center justify-between gap-3 text-sm" key={item.id}>
+                <span className="text-alphavest-muted">{item.label}</span>
+                <Badge tone={toneFor(item.severity)}>{item.count}</Badge>
+              </div>
+            ))}
+            <StatePanel detail="Redaction review can resolve forbidden payload exposure only. Preview, approval, download and share remain separate gates." state="restricted" title="Not approval" />
+          </CardContent>
+        </Card>
+      </div>
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <Card>
+          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <CardTitle>Redacted Client Preview</CardTitle>
+            <Badge tone="gold">Preview only</Badge>
+          </CardHeader>
+          <CardContent>
+            <div className="max-h-96 overflow-y-auto pr-1">
+              <RedactedDocumentPreview />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Forbidden Payload Checks</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            {exportForbiddenPayloadChecks.map((item) => (
+              <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-green/30 bg-alphavest-green/10 p-3 text-sm" key={item.label}>
+                <span className="text-alphavest-muted">{item.label}</span>
+                <Badge tone="green">{item.state}</Badge>
+              </div>
+            ))}
+            <StatePanel detail="Internal advisor memo, compliance notes and unreleased evidence cannot enter the client package." state="blocked" title="Forbidden payload blocked" />
+          </CardContent>
+        </Card>
+      </div>
+    </section>
+  );
+}
+
 function ExportRedactionPage({ title }: { title: string }) {
   const processContract = processFirstUxContractForPageId("056");
   const redactionRows = [
@@ -1469,10 +1601,10 @@ function ExportRedactionPage({ title }: { title: string }) {
             testId="bd11-export-redaction-gate"
             title="Export redaction gate"
           />
-          <Phase5DetailSplitPanel decisionSupport="Redaction detail shows field state, payload visibility and preview blockers." objectLabel="Export redaction object review" objectState="Forbidden payload checks active" pageJob="Redaction page resolves payload review separately from preview and approval." safetyBoundary="Redaction detail cannot approve, download or share the export." splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-DETAIL-004" />
+          <Phase5DetailSplitPanel compact decisionSupport="Field state, payload visibility and preview blockers" objectLabel="Export redaction object review" objectState="Forbidden payload checks active" pageJob="Redaction only" safetyBoundary="Cannot approve, generate, download or share" splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-DETAIL-004" />
           <ExportStageBoundary activeStage="redaction" />
           <ExportPayloadBoundary />
-          <ScfP07P09TrustPanel mode="export" />
+          <ExportRedactionControlPanel redactionColumns={redactionColumns} redactionRows={redactionRows} />
         </div>
       }
       routeId="056"
@@ -1484,143 +1616,116 @@ function ExportRedactionPage({ title }: { title: string }) {
       ]}
       title={title}
       worksurfaceId="export-redaction-redaction"
-    >
-      <div className="mt-5">
-        <UxCtaCluster
-          blockedReason="Preview, approval, download and share remain separate export lifecycle steps; redaction review does not release the package."
-          primary={{ label: "Review mandatory redactions" }}
-          recoveryAction={{ href: "/export/demo/redaction", label: "Resolve redaction blockers" }}
-          secondary={[
-            { label: "Inspect payload checks" },
-            {
-              disabled: true,
-              disabledReason: "Preview inspection must pass before approval can be recorded.",
-              label: "Approval blocked until preview",
-            },
-            {
-              disabled: true,
-              disabledReason: "Approval and generation must be recorded before download.",
-              label: "Download blocked until approval",
-            },
-          ]}
-        />
-      </div>
-      <UxComplexityPriorityPanel
-        className="mt-5"
-        actionLabel="Review mandatory redactions"
-        actionState="Preview and approval remain blocked until forbidden internal payload checks pass."
-        priorityItems={[
-          { detail: "Must be blocked from external package", label: "Internal advisor memo", value: "Blocked" },
-          { detail: "Needs reviewer confirmation", label: "Tax residency notes", value: "Pending" },
-          { detail: "External client redacted view selected", label: "Redaction profile", value: "Active" },
-        ]}
-        safetyNote="Redaction summary is not approval; preview, approval, download and share remain separate export steps."
-        routeId="056"
-        summaryItems={[
-          { detail: "Marked redactions in preview", label: "Redactions", value: "12" },
-          { detail: "Items visible after external redaction", label: "External visible", value: "16" },
-          { detail: "Forbidden payload checks", label: "Internal payload", value: "Blocked" },
-        ]}
-        title="Redaction status"
-      />
-      <UxDenseOperationsPanel
-        className="mt-5"
-        controls={["Payload field", "State", "Visibility", "Forbidden payload", "External visible", "Internal visible"]}
-        description="Redaction review is a dense payload-control table before document preview, approval or delivery can proceed."
-        pageId="056"
-        resultLabel={`${redactionRows.length} payload controls; 12 marked redactions`}
-        safetyNote="Redaction summary is not export approval; forbidden internal payload, preview, approval, download and share remain separate gates."
-        title="Payload redaction operations"
+    />
+  );
+}
+
+function ExportApprovalControlPanel({
+  currentExport,
+  onOpenApproval,
+  snapshot,
+  timeline,
+}: {
+  currentExport?: ExportWorkflowSnapshotData["current"];
+  onOpenApproval: () => void;
+  snapshot?: ExportWorkflowSnapshotData | null;
+  timeline: ExportWorkflowTimelineEvent[];
+}) {
+  return (
+    <section className="space-y-4" data-testid="bd11-export-approval-control-panel" data-ux-layout-compression="bounded_export_approval">
+      <div
+        className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4"
+        data-testid="uxp3-export-preview-step-separation"
+        data-ux-no-overclaim="true"
       >
-        <DataTable
-          columns={redactionColumns}
-          compact
-          getRowId={(row) => row.id}
-          onSortChange={handleStaticSortChange}
-          responsiveMode="table"
-          rows={redactionRows}
-          sortDirection="asc"
-          sortKey="label"
-        />
-      </UxDenseOperationsPanel>
-      <div className="mt-5 grid gap-5 2xl:grid-cols-[20rem_minmax(0,1fr)_24rem]">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <StatePanel
+            detail="Preview inspection is not approval. Approval can record only the approval and metadata-generation step; download, share, client acceptance and advice release remain separate controls."
+            state="restricted"
+            title="Preview separated from delivery"
+          />
+          <ActionZone placement="inline_cluster" testId="e05-export-approval-open-zone">
+            <ActionButton
+              lifecycleResult="opens-export-approval-modal"
+              lifecycleTrigger="export-approval-modal"
+              meaning="export_approval"
+              onClick={onOpenApproval}
+              priority="primary"
+              requiresAudit
+              requiresConfirmation
+              testId="j08-open-export-approval"
+            >
+              Review export approval
+            </ActionButton>
+          </ActionZone>
+        </div>
+      </div>
+      <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
         <Card>
-          <CardHeader>
-            <CardTitle>Redaction Configuration</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Export Package Summary</CardTitle></CardHeader>
           <CardContent>
-            <FieldPill label="Redaction profile" value="Client standard external" />
-            <div className="mt-5 space-y-3">
-              {["Internal full visibility", "External client redacted view"].map((item, index) => (
-                <div className={cn("rounded-md border p-4", index === 1 ? "border-alphavest-gold bg-alphavest-gold/10" : "border-alphavest-border bg-alphavest-charcoal/55")} key={item}>
-                  <p className="font-semibold text-alphavest-ivory">{item}</p>
-                  <p className="mt-1 text-sm text-alphavest-muted">{index === 1 ? "Selected view after redaction." : "Internal reviewer visibility only."}</p>
-                </div>
-              ))}
-            </div>
-            <StatePanel className="mt-4" detail="Review and confirm all redactions before preview or approval." state="restricted" title="External exports require redaction" />
+            <KeyValueList
+              items={[
+                { label: "Purpose", value: currentExport?.exportType ?? "Regulatory submission" },
+                { label: "Format", value: "Encrypted archive" },
+                { label: "Estimated size", value: currentExport?.generatedFileDocumentId ? "Manifest metadata stored" : "Pending generation" },
+                { label: "Record count", value: `${snapshot?.summary.included ?? 0} scoped objects` },
+                { label: "Binary status", value: <Badge tone="gold">{currentExport?.binaryStatus ?? "Metadata-only"}</Badge> },
+                { label: "Classification", value: <Badge tone="red">Confidential</Badge> },
+              ]}
+            />
+            <StatePanel className="mt-4" detail="Preview is not approval. Generation, download and share remain separate." state="restricted" title="Approval still required" />
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle>Document Preview</CardTitle>
-            <Badge tone="gold">12 redactions</Badge>
-          </CardHeader>
-          <CardContent>
-            <RedactedDocumentPreview />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Redaction Summary</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-[5rem_1fr] items-center gap-5">
-              <div className="grid size-20 place-items-center rounded-full border-8 border-alphavest-gold/70 text-center text-sm font-semibold text-alphavest-ivory">
-                12
+          <CardHeader><CardTitle>Included Items And Audit</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            {[
+              ["Selected objects", snapshot?.summary.included ?? 0],
+              ["Excluded objects", snapshot?.summary.blocked ?? 0],
+              ["Limited/redaction items", snapshot?.summary.limitedIncluded ?? 0],
+              ["Audit events", timeline.length],
+              ["Active request", snapshot?.summary.activeRequestCount ?? 0],
+            ].map(([item, count]) => (
+              <div className="flex items-center justify-between rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" key={item}>
+                <span className="text-sm font-semibold text-alphavest-ivory">{item}</span>
+                <span className="text-sm text-alphavest-muted">{count} records</span>
               </div>
-              <div className="space-y-3">
-                {redactionSummary.map((item) => (
-                  <div className="flex items-center justify-between gap-3 text-sm" key={item.id}>
-                    <span className="text-alphavest-muted">{item.label}</span>
-                    <Badge tone={toneFor(item.severity)}>{item.count}</Badge>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-md border border-alphavest-green/30 bg-alphavest-green/10 p-4">
-                <p className="text-2xl font-semibold text-alphavest-green">28</p>
-                <p className="text-sm text-alphavest-muted">Internal visible</p>
-              </div>
-              <div className="rounded-md border border-alphavest-gold/40 bg-alphavest-gold/10 p-4">
-                <p className="text-2xl font-semibold text-alphavest-gold">16</p>
-                <p className="text-sm text-alphavest-muted">External visible</p>
-              </div>
-            </div>
-            <div className="mt-5 space-y-3">
-              {exportForbiddenPayloadChecks.map((item) => (
-                <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-green/30 bg-alphavest-green/10 p-3 text-sm" key={item.label}>
-                  <span className="text-alphavest-muted">{item.label}</span>
-                  <Badge tone="green">{item.state}</Badge>
-                </div>
-              ))}
-              {[
-                ["Account identifiers", "Reviewed"],
-                ["Tax residency notes", "Pending"],
-                ["Internal advisor memo", "Blocked"],
-                ["Beneficial owner details", "Reviewed"]
-              ].map(([label, status]) => (
-                <div className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3 text-sm" key={label}>
-                  <span className="text-alphavest-muted">{label}</span>
-                  <Badge tone={toneFor(status)}>{status}</Badge>
-                </div>
-              ))}
-            </div>
+            ))}
           </CardContent>
         </Card>
       </div>
-    </WorksurfaceShell>
+      <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+        <Card>
+          <CardHeader><CardTitle>Policy And Compliance Check</CardTitle></CardHeader>
+          <CardContent className="max-h-80 space-y-3 overflow-y-auto pr-1">
+            {previewPolicyChecks.map((check) => (
+              <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" key={check.id}>
+                <div className="flex items-center justify-between gap-3">
+                  <p className="font-semibold text-alphavest-ivory">{check.policy}</p>
+                  <Badge tone={toneFor(check.state)}>{check.state}</Badge>
+                </div>
+                <p className="mt-1 text-sm text-alphavest-muted">{check.detail}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Package Controls</CardTitle></CardHeader>
+          <CardContent className="max-h-80 space-y-3 overflow-y-auto pr-1">
+            {exportPackageControls.map((control) => (
+              <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" key={control.label}>
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-semibold text-alphavest-ivory">{control.label}</p>
+                  <Badge tone={toneFor(control.state)}>{control.state}</Badge>
+                </div>
+                <p className="mt-2 text-xs leading-5 text-alphavest-muted">{control.detail}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+    </section>
   );
 }
 
@@ -1724,28 +1829,11 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
             title="Export approval gate"
             tone="restricted"
           />
-          <Phase5DetailSplitPanel decisionSupport="Preview detail distinguishes inspection, approval, generation and delivery." objectLabel="Export preview split" objectState="Preview inspection pending approval" pageJob="Preview page inspects one package without becoming download or share." safetyBoundary="Preview context cannot generate, download or share packages." splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-PAGE-SPLIT-005" />
+          <Phase5DetailSplitPanel compact decisionSupport="Inspection, approval, generation and delivery remain separate" objectLabel="Export preview split" objectState="Preview inspection pending approval" pageJob="Approval review only" safetyBoundary="Cannot generate, download, share, release advice or create client acceptance" splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-PAGE-SPLIT-005" />
           <ExportStageBoundary activeStage="approval" />
           <ExportWorkflowTruthPanel apiState={apiState} loadState={loadState} />
-          <Phase6DecisionRoomPanel audit="Approval audit must record scoped package, redaction state, actor and cancel or confirm outcome." blocker="Export approval remains blocked until redaction, policy and audit readiness are complete." cancelLabel="Cancel export approval" confirmLabel="Confirm export approval" decisionLabel="Export approval decision room" evidence="Package summary, forbidden payload checks, redaction review and policy checks are visible before decision." preconditions="Scoped package, forbidden payload pass, redaction review and audit readiness must all pass." safetyNote="No release, export or advice effect can occur until gate preconditions pass and an audit record exists." taskId="UX-DECISION-ROOM-002" />
-          <ScfP07P09TrustPanel mode="export" />
-          <UxDetailStandardPanel
-        actionLabel="Approve export package only"
-        actionState="Approval records the approval step only; generation, download, share and client acceptance remain separate."
-        evidenceItems={["Export package summary", "Included scoped objects", "Policy checks"]}
-        facts={[
-          { label: "Export", value: currentExport?.id.slice(0, 8) ?? "EXP-2025" },
-          { label: "Type", value: currentExport?.exportType ?? "Regulatory submission" },
-          { label: "Included", value: `${snapshot?.summary.included ?? 0} objects` },
-          { label: "Binary", value: currentExport?.binaryStatus ?? "Metadata-only" },
-        ]}
-        objectTitle={currentExport?.fileName ?? "Controlled export package"}
-        objectType="Export preview detail"
-        routeId="057"
-        safetyNote="Preview is inspection only; it is not approval, download, share or downstream advice execution."
-        status="Approval required"
-        timelineItems={timeline.slice(0, 3).map((item) => item.title)}
-      />
+          <Phase6DecisionRoomPanel compact audit="Approval audit must record scoped package, redaction state, actor and cancel or confirm outcome." blocker="Export approval remains blocked until redaction, policy and audit readiness are complete." cancelLabel="Cancel export approval" confirmLabel="Confirm export approval" decisionLabel="Export approval decision room" evidence="Package summary, forbidden payload checks, redaction review and policy checks are visible before decision." preconditions="Scoped package, forbidden payload pass, redaction review and audit readiness must all pass." safetyNote="No release, export or advice effect can occur until gate preconditions pass and an audit record exists." taskId="UX-DECISION-ROOM-002" />
+          <ExportApprovalControlPanel currentExport={currentExport} onOpenApproval={openExportApprovalModal} snapshot={snapshot} timeline={timeline} />
         </div>
       }
       routeId="057"
@@ -1757,126 +1845,6 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
       title={title}
       worksurfaceId="export-redaction-approval"
     >
-      <div
-        className="mb-5 rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4"
-        data-testid="uxp3-export-preview-step-separation"
-        data-ux-no-overclaim="true"
-      >
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <StatePanel
-            detail="Preview inspection is not approval. Approval can record only the approval and metadata-generation step; download, share, client acceptance and advice release remain separate controls."
-            state="restricted"
-            title="Preview separated from delivery"
-          />
-          <ActionZone placement="inline_cluster" testId="e05-export-approval-open-zone">
-            <ActionButton
-              lifecycleResult="opens-export-approval-modal"
-              lifecycleTrigger="export-approval-modal"
-              meaning="export_approval"
-              onClick={openExportApprovalModal}
-              priority="primary"
-              requiresAudit
-              requiresConfirmation
-              testId="j08-open-export-approval"
-            >
-              Review export approval
-            </ActionButton>
-          </ActionZone>
-        </div>
-      </div>
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1fr)]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Export Package Summary</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <KeyValueList
-              items={[
-                { label: "Purpose", value: currentExport?.exportType ?? "Regulatory submission" },
-                { label: "Format", value: "Encrypted archive" },
-                { label: "Estimated size", value: currentExport?.generatedFileDocumentId ? "Manifest metadata stored" : "Pending generation" },
-                { label: "Record count", value: `${snapshot?.summary.included ?? 0} scoped objects` },
-                { label: "Binary status", value: <Badge tone="gold">{currentExport?.binaryStatus ?? "Metadata-only"}</Badge> },
-                { label: "Classification", value: <Badge tone="red">Confidential</Badge> }
-              ]}
-            />
-            <StatePanel className="mt-5" detail="Preview is not approval. Generation, download and share remain separate." state="restricted" title="Approval still required" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Included Items</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {[
-                ["Selected objects", snapshot?.summary.included ?? 0],
-                ["Excluded objects", snapshot?.summary.blocked ?? 0],
-                ["Limited/redaction items", snapshot?.summary.limitedIncluded ?? 0],
-                ["Audit events", timeline.length],
-                ["Active request", snapshot?.summary.activeRequestCount ?? 0],
-              ].map(([item, count]) => (
-                <div className="flex items-center justify-between rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" key={item}>
-                  <span className="text-sm font-semibold text-alphavest-ivory">{item}</span>
-                  <span className="text-sm text-alphavest-muted">{count} records</span>
-                </div>
-              ))}
-            </div>
-            <AuditTimeline items={timeline.slice(0, 4)} />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Policy and Compliance Check</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {previewPolicyChecks.map((check) => (
-                <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" key={check.id}>
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="font-semibold text-alphavest-ivory">{check.policy}</p>
-                    <Badge tone={toneFor(check.state)}>{check.state}</Badge>
-                  </div>
-                  <p className="mt-1 text-sm text-alphavest-muted">{check.detail}</p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      <Card className="mt-5">
-        <CardHeader>
-          <CardTitle>Data Quality Release Gate</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-3 md:grid-cols-3">
-            {dataQualityReleaseControls.map((control) => (
-              <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-4" key={control.label}>
-                <div className="flex items-start justify-between gap-3">
-                  <p className="text-sm font-semibold text-alphavest-ivory">{control.label}</p>
-                  <Badge tone={toneFor(control.state)}>{control.state}</Badge>
-                </div>
-                <p className="mt-3 text-xl font-semibold text-alphavest-ivory">{control.value}</p>
-                <p className="mt-2 text-xs leading-5 text-alphavest-muted">{control.detail}</p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-      <Card className="mt-5">
-        <CardHeader><CardTitle>Package Controls</CardTitle></CardHeader>
-        <CardContent>
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
-            {exportPackageControls.map((control) => (
-              <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-4" key={control.label}>
-                <p className="text-sm font-semibold text-alphavest-ivory">{control.label}</p>
-                <Badge className="mt-3" tone={toneFor(control.state)}>{control.state}</Badge>
-                <p className="mt-3 text-xs leading-5 text-alphavest-muted">{control.detail}</p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
       <Modal
         context={
           <div className="grid gap-2 text-sm">
