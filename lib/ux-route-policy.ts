@@ -115,11 +115,11 @@ const workspaceByPageId = new Map<string, UxWorkspaceKey>(
   )
 );
 
-const detailPageIds = new Set(["035", "037", "039", "040", "041", "042", "044", "045", "047", "056", "057", "058", "065", "066", "067", "069", "071"]);
+const detailPageIds = new Set(["035", "037", "039", "040", "041", "042", "044", "045", "047", "056", "057", "065", "066", "067", "069", "071"]);
 const hubPageIds = new Set(["007", "015", "019", "020", "024", "031", "033", "034", "043", "046", "048", "052", "054", "059", "064", "068", "070"]);
 const modalPageIds = new Set(["002", "005", "009", "010", "040", "041", "045", "049", "057", "058"]);
 const d1PageIds = new Set(["019", "020", "061", "062", "063"]);
-const d2PageIds = new Set(["054"]);
+const d2PageIds = new Set(["054", "058"]);
 const d3PageIds = new Set(["042"]);
 const d4PageIds = detailPageIds;
 const d3Workspaces = new Set<UxWorkspaceKey>(["area_01_foundation", "area_09_export_delivery", "area_11_protected_work"]);

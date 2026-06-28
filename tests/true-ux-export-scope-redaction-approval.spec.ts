@@ -14,21 +14,23 @@ function readExportScreen() {
 }
 
 test.describe("V0.96 WP-10 export scope, redaction and approval UX", () => {
-  test("keeps export stage boundaries off the create-export start surface", () => {
+  test("keeps obsolete export lifecycle panels out of the route UI", () => {
     const source = readExportScreen();
 
-    expect(source).toContain("function ExportStageBoundary");
-    expect(source).toContain('data-testid="wp10-export-stage-boundary"');
-    expect(source).toContain("Export is a client-safe projection, not a raw data dump.");
-    expect(source).toContain("Scope is not redaction. Redaction is not preview. Preview is not approval. Approval is not download/share. Download/share is not client acceptance.");
-    expect(source).toContain("Preview generated; approval required.");
-    expect(source).toContain("Approval recorded; download/share remain separate.");
-    expect(source).toContain("Package downloaded; client acceptance not recorded.");
+    expect(source).not.toContain("function ExportStageBoundary");
+    expect(source).not.toContain('data-testid="wp10-export-stage-boundary"');
+    expect(source).not.toContain("Export lifecycle boundary");
+    expect(source).not.toContain("Scope is not redaction. Redaction is not preview.");
+    expect(source).not.toContain("Preview generated; approval required.");
+    expect(source).not.toContain("Package downloaded; client acceptance not recorded.");
     expect(source).toContain("function ExportPreviewPage");
     expect(source).toContain("Preview Package");
     expect(source).toContain("Approval Review");
     expect(source).not.toContain('<ExportStageBoundary activeStage="approval"');
-    expect(source).toContain('<ExportStageBoundary activeStage="package"');
+    expect(source).not.toContain('<ExportStageBoundary activeStage="package"');
+    expect(source).toContain("function ExportDownloadPage");
+    expect(source).toContain("Package Download");
+    expect(source).toContain("No Share Link");
     expect(source).toContain("function ExportNewPage");
     expect(source).toContain("Bennett Q2 report");
     expect(source).toContain("Select contents");
@@ -36,21 +38,19 @@ test.describe("V0.96 WP-10 export scope, redaction and approval UX", () => {
     expect(source).toContain("Choose permitted content, review recipients and continue to protection review.");
   });
 
-  test("renders forbidden payload boundaries without widening export permission", () => {
+  test("keeps forbidden export field protection in services instead of UI panels", () => {
     const source = readExportScreen();
 
-    expect(source).toContain("function ExportPayloadBoundary");
-    expect(source).toContain('data-testid="wp10-export-forbidden-payload-boundary"');
-    expect(source).toContain("Only scoped, redacted and client-safe content can enter the export package.");
-    expect(source).toContain("Admin access and advisor approval do not expand export payload permission");
-    expect(source).toContain("Released client-safe summaries");
-    expect(source).toContain("Approved/redacted manifest metadata");
-    expect(source).toContain("AI Draft");
-    expect(source).toContain("internal rationale");
-    expect(source).toContain("compliance notes");
-    expect(source).toContain("unreleased evidence");
-    expect(source).toContain("unreleased recommendations");
-    expect(source).toContain("hidden fields");
+    expect(source).not.toContain("function ExportPayloadBoundary");
+    expect(source).not.toContain('data-testid="wp10-export-forbidden-payload-boundary"');
+    expect(source).not.toContain("Forbidden payload boundary");
+    expect(source).not.toContain("Admin access and advisor approval do not expand export payload permission");
+    expect(source).not.toContain("AI Draft");
+    expect(source).not.toContain("internal rationale");
+    expect(source).not.toContain("compliance notes");
+    expect(source).not.toContain("unreleased evidence");
+    expect(source).not.toContain("unreleased recommendations");
+    expect(source).not.toContain("hidden fields");
   });
 
   test("keeps preview, approval, generation, download and share as separate service states", () => {

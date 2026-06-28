@@ -57,7 +57,7 @@ test.describe("E05 action meaning separation", () => {
     await expect(page.getByTestId("j08-share-export")).toHaveAttribute("data-ux-action-meaning", "share");
     await expect(page.getByTestId("j08-share-export")).toHaveAttribute("data-ux-action-availability", "disabled");
     await page.getByTestId("j08-open-download-confirmation").click();
-    await expect(page.getByRole("dialog", { name: "Confirm Export Download" })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Package Download" })).toBeVisible();
     await expect(page.getByTestId("j08-download-export")).toHaveAttribute("data-ux-action-meaning", "download");
     await expect(page.getByTestId("j08-download-export")).toHaveAttribute("data-ux-action-placement", "modal_footer");
     await expect(page.getByTestId("j08-download-export")).toHaveAttribute("data-ux-action-separation", /not share/i);

@@ -85,20 +85,20 @@ test.describe("UXP3-015 export download confirmation lifecycle", () => {
     });
 
     await page.goto("/export/demo/download?state=base");
-    await expect(page.getByRole("dialog", { name: "Confirm Export Download" })).toHaveCount(0);
+    await expect(page.getByRole("dialog", { name: "Package Download" })).toHaveCount(0);
 
     const trigger = page.getByTestId("j08-open-download-confirmation");
     await expect(trigger).toHaveAttribute("data-ux-lifecycle-trigger", "export-download-confirmation-modal");
     await expect(trigger).toHaveAttribute("data-ux-lifecycle-result", "opens-export-download-confirmation");
     await trigger.click();
 
-    const dialog = page.getByRole("dialog", { name: "Confirm Export Download" });
+    const dialog = page.getByRole("dialog", { name: "Package Download" });
     const lifecycle = page.getByTestId("uxp3-export-download-lifecycle");
     await expect(dialog).toBeVisible();
     await expect(dialog).toHaveAttribute("data-ux-interaction-lifecycle", "modal");
     await expect(dialog).toHaveAttribute("data-ux-lifecycle-cancel", "no-submit-no-mutation");
     await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-status", "idle");
-    await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-validation", "blocked-acknowledgement-required");
+    await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-validation", "download-review-required");
     await expect(lifecycle).toHaveAttribute("data-ux-no-overclaim", "true");
     await expect(page.getByTestId("j08-download-export")).toBeDisabled();
 
@@ -113,11 +113,11 @@ test.describe("UXP3-015 export download confirmation lifecycle", () => {
     await page.goto("/export/demo/download?state=base");
     await page.getByTestId("j08-open-download-confirmation").click();
 
-    const dialog = page.getByRole("dialog", { name: "Confirm Export Download" });
+    const dialog = page.getByRole("dialog", { name: "Package Download" });
     const lifecycle = page.getByTestId("uxp3-export-download-lifecycle");
     await expect(dialog).toBeVisible();
     await expect(page.getByTestId("j08-export-download-validation-state")).toContainText(
-      "Download remains blocked until the controlled-download acknowledgement is checked.",
+      "Tick the box to enable download.",
     );
 
     await dialog.locator("input[type='checkbox']").check();
@@ -156,14 +156,14 @@ test.describe("UXP3-015 export download confirmation lifecycle", () => {
     await page.goto("/export/demo/download?state=base");
     await page.getByTestId("j08-open-download-confirmation").click();
 
-    const dialog = page.getByRole("dialog", { name: "Confirm Export Download" });
+    const dialog = page.getByRole("dialog", { name: "Package Download" });
     const lifecycle = page.getByTestId("uxp3-export-download-lifecycle");
     await dialog.locator("input[type='checkbox']").check();
 
     await page.getByTestId("j08-download-export").click();
     await expect(lifecycle).toHaveAttribute("data-ux-lifecycle-status", "error");
     await expect(page.getByTestId("j08-export-download-error-state")).toContainText(
-      "No download, share, client acceptance or advice release change was completed.",
+      "No share or client response action was completed.",
     );
     await expect(page).toHaveURL(/\/export\/demo\/download\?state=base$/);
   });
@@ -179,7 +179,7 @@ test.describe("UXP3-015 export download confirmation lifecycle", () => {
     await page.goto("/export/demo/download?state=base");
     await page.getByTestId("j08-open-download-confirmation").click();
 
-    const dialog = page.getByRole("dialog", { name: "Confirm Export Download" });
+    const dialog = page.getByRole("dialog", { name: "Package Download" });
     await expect(dialog).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();

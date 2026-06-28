@@ -266,7 +266,7 @@ const guidanceOverrides: Record<string, GuidanceOverride> = {
     gateHint: "Governance controls access, but admin authority does not bypass release, evidence or export gates.",
     nextStep: linkForPageId("049", "Review scoped roles"),
     primaryAction: linkForPageId("049", "Review scoped roles"),
-    relatedRoutes: [linkForPageId("050", "Review policy-checked requests"), linkForPageId("051", "Open audit history")],
+    relatedRoutes: [linkForPageId("050", "Review access requests"), linkForPageId("051", "Open audit history")],
   },
   "049": {
     area: "Governance",

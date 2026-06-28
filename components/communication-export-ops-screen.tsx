@@ -29,7 +29,6 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import {
-  AuditTimeline,
   ActionButton,
   ActionZone,
   Badge,
@@ -37,11 +36,9 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  ClientSafeUiBoundary,
   DataTable,
   Drawer,
   Modal,
-  ProcessGateRail,
   StatePanel,
   type BadgeTone,
   type DataTableColumn
@@ -55,7 +52,6 @@ import { ScfP07P09TrustPanel } from "@/components/scf-p07-p09-trust-panel";
 import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { UxDenseOperationsPanel } from "@/components/ux-dense-operations-panel";
-import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
 import { UxCtaCluster } from "@/components/ux-cta-cluster";
 import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
 import { WorksurfaceShell } from "@/components/worksurface-shell";
@@ -75,8 +71,6 @@ import {
   exportScopeItems,
   exportScopeSummary,
   exportForbiddenPayloadChecks,
-  exportPackageControls,
-  exportTimeline,
   opsMetrics,
   previewPolicyChecks,
   queueRows,
@@ -95,7 +89,6 @@ import { runTenantGovernanceCommand } from "@/lib/tenant-governance-command-clie
 import type { VisualState } from "@/lib/visual-contract";
 
 type ExportWorkflowSnapshotData = NonNullable<ExportWorkflowSnapshot>;
-type ExportWorkflowTimelineEvent = ExportWorkflowSnapshotData["timeline"][number] | (typeof exportTimeline)[number];
 
 type CommunicationExportOpsScreenProps = {
   route: ScreenRoute;
@@ -133,229 +126,6 @@ type Phase5DetailSplitPanelProps = {
   splitTaskId?: string;
   taskId: string;
 };
-
-
-
-type Phase6DecisionRoomPanelProps = {
-  audit: string;
-  blocker: string;
-  cancelLabel: string;
-  compact?: boolean;
-  confirmLabel: string;
-  decisionLabel: string;
-  evidence: string;
-  preconditions: string;
-  safetyNote: string;
-  taskId: string;
-};
-
-function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, compact = false, confirmLabel, decisionLabel, evidence, preconditions, safetyNote, taskId }: Phase6DecisionRoomPanelProps) {
-  if (compact) {
-    return (
-      <section className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-4" data-testid="ux-phase6-decision-room" data-ux-decision-room-task={taskId} data-ux-layout-compression="compact_export_decision_gate">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-red">Decision gate</p>
-            <h2 className="mt-2 font-display text-xl text-alphavest-ivory">{decisionLabel}</h2>
-          </div>
-          <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason={blocker} data-ux-interactive="false">{confirmLabel} blocked</span>
-        </div>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          {[
-            ["Preconditions", preconditions],
-            ["Evidence", evidence],
-            ["Audit", audit],
-            ["Safety", safetyNote],
-          ].map(([label, value]) => (
-            <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" key={label}>
-              <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">{label}</p>
-              <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{value}</p>
-            </div>
-          ))}
-        </div>
-        <p className="mt-3 text-sm text-alphavest-muted">{cancelLabel} remains available without generation, download, share, advice release or client acceptance.</p>
-      </section>
-    );
-  }
-
-  return (
-    <section className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-4" data-testid="ux-phase6-decision-room" data-ux-phase6-task={taskId}>
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-red">Decision gate</p>
-          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{decisionLabel}</h2>
-          <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted" data-testid="ux-phase6-safety-note">{safetyNote}</p>
-        </div>
-        <Badge tone="red">Controlled action</Badge>
-      </div>
-      <div className="mt-4 grid gap-3 lg:grid-cols-4">
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase6-preconditions">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Preconditions</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{preconditions}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase6-evidence">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Evidence</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{evidence}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase6-audit">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Audit</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{audit}</p>
-        </div>
-        <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3" data-testid="ux-phase6-blocker">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-red">Blocker</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{blocker}</p>
-        </div>
-      </div>
-      <div className="mt-4 flex flex-wrap gap-3">
-        <button className={primaryButtonClass} data-testid="ux-phase6-confirm" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed workflow command is implemented." type="button">{confirmLabel} blocked</button>
-        <button className={secondaryButtonClass} data-testid="ux-phase6-cancel" data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false" disabled title="Blocked until a typed workflow command is implemented." type="button">{cancelLabel} blocked</button>
-      </div>
-    </section>
-  );
-}
-
-
-
-function ExportClientPackageProjectionPanel() {
-  return (
-    <ClientSafeUiBoundary family="export_client_package" pageId="058" testId="e07-export-client-package-boundary">
-      <section className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-4" data-testid="e07-export-client-package-projection">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-green">Client package projection</p>
-            <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">Package availability is based on released, redacted content.</h2>
-            <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted">
-              The package view shows availability, release status, redaction status and safe next steps only.
-            </p>
-          </div>
-          <Badge tone="green">Client safe</Badge>
-        </div>
-        <div className="mt-4 grid gap-3 lg:grid-cols-3">
-          <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="e07-export-package-safe-fields">
-            <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Shown in package view</p>
-            <p className="mt-2 text-sm font-semibold text-alphavest-ivory">Manifest id, redacted title, released status and watermark state.</p>
-          </div>
-          <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="e07-export-package-availability">
-            <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Availability</p>
-            <p className="mt-2 text-sm font-semibold text-alphavest-ivory">Download remains gated until package checks pass.</p>
-          </div>
-          <StatePanel
-            detail="If the package is not ready, the view shows an unavailable state and routes the user back to approval or redaction."
-            state="restricted"
-            testId="e07-export-package-fail-closed"
-            title="Package not ready until checks pass"
-          />
-        </div>
-      </section>
-    </ClientSafeUiBoundary>
-  );
-}
-
-type ExportLifecycleStageId = "scope" | "redaction" | "preview" | "approval" | "package" | "share";
-
-const exportLifecycleStages: Array<{
-  id: ExportLifecycleStageId;
-  label: string;
-  detail: string;
-}> = [
-  { id: "scope", label: "Scope selected", detail: "Permitted, released objects only." },
-  { id: "redaction", label: "Redaction checked", detail: "Forbidden internal payloads blocked." },
-  { id: "preview", label: "Preview inspected", detail: "Preview generated; approval required." },
-  { id: "approval", label: "Approval recorded", detail: "Approval recorded; download/share remain separate." },
-  { id: "package", label: "Manifest/download controlled", detail: "Package downloaded; client acceptance not recorded." },
-  { id: "share", label: "Share/client response separate", detail: "External share and client response are later events." },
-];
-
-function ExportStageBoundary({ activeStage, className }: { activeStage: ExportLifecycleStageId; className?: string }) {
-  const activeIndex = exportLifecycleStages.findIndex((stage) => stage.id === activeStage);
-
-  return (
-    <section
-      className={cn("rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4", className)}
-      data-testid="wp10-export-stage-boundary"
-      data-ux-no-overclaim="true"
-    >
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Export lifecycle boundary</p>
-          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">Export is a client-safe projection, not a raw data dump.</h2>
-          <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted">
-            Scope is not redaction. Redaction is not preview. Preview is not approval. Approval is not download/share. Download/share is not client acceptance.
-          </p>
-        </div>
-        <Badge tone="gold">Export control</Badge>
-      </div>
-      <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-6">
-        {exportLifecycleStages.map((stage, index) => {
-          const state = index < activeIndex ? "complete" : index === activeIndex ? "current" : "later";
-          const tone: BadgeTone = state === "complete" ? "green" : state === "current" ? "gold" : "muted";
-
-          return (
-            <div
-              className={cn(
-                "min-h-32 rounded-md border p-3",
-                state === "current"
-                  ? "border-alphavest-gold bg-alphavest-gold/10"
-                  : state === "complete"
-                    ? "border-alphavest-green/35 bg-alphavest-green/10"
-                    : "border-alphavest-border bg-alphavest-charcoal/45",
-              )}
-              data-export-stage={stage.id}
-              key={stage.id}
-            >
-              <div className="flex items-start justify-between gap-2">
-                <p className="text-sm font-semibold text-alphavest-ivory">{stage.label}</p>
-                <Badge tone={tone}>{state}</Badge>
-              </div>
-              <p className="mt-2 text-xs leading-5 text-alphavest-muted">{stage.detail}</p>
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
-function ExportPayloadBoundary({ className }: { className?: string }) {
-  const allowed = ["Released client-safe summaries", "Released evidence summaries", "Approved/redacted manifest metadata"];
-  const blocked = ["AI Draft", "internal rationale", "analyst notes", "compliance notes", "unreleased evidence", "unreleased recommendations", "hidden fields"];
-
-  return (
-    <section
-      className={cn("rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-4", className)}
-      data-testid="wp10-export-forbidden-payload-boundary"
-      data-ux-no-overclaim="true"
-    >
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-red">Forbidden payload boundary</p>
-          <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">Only scoped, redacted and client-safe content can enter the export package.</h2>
-          <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted">
-            Admin access and advisor approval do not expand export payload permission; service checks and audit references remain required.
-          </p>
-        </div>
-        <LockKeyhole aria-hidden="true" className="size-6 text-alphavest-red" />
-      </div>
-      <div className="mt-4 grid gap-3 lg:grid-cols-2">
-        <div className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-green">Allowed source</p>
-          <ul className="mt-3 space-y-2 text-sm text-alphavest-muted">
-            {allowed.map((item) => (
-              <li className="flex items-start gap-2" key={item}>
-                <CheckCircle2 aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-alphavest-green" />
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-red">Blocked source</p>
-          <p className="mt-3 text-sm leading-6 text-alphavest-muted">{blocked.join(", ")}.</p>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 function Phase5DetailSplitPanel({ compact = false, decisionSupport, objectLabel, objectState, pageJob, safetyBoundary, splitTaskId, taskId }: Phase5DetailSplitPanelProps) {
   if (compact) {
@@ -700,50 +470,6 @@ function useExportWorkflowSnapshot() {
   }, [session.role.key, session.tenant.slug]);
 
   return { apiState, loadState, snapshot };
-}
-
-function ExportWorkflowTruthPanel({
-  apiState,
-  className,
-  loadState,
-}: {
-  apiState: ExportWorkflowApiState | null;
-  className?: string;
-  loadState: "loading" | "ready" | "error";
-}) {
-  if (loadState === "loading") {
-    return (
-      <StatePanel
-        className={className}
-        detail="Export scope, redaction, approval and delivery state are loading from the export workflow API before controls can rely on them."
-        state="loading"
-        testId="wp13-export-api-truth-loading"
-        title="Export API truth loading"
-      />
-    );
-  }
-
-  if (loadState === "error") {
-    return (
-      <StatePanel
-        className={className}
-        detail={`${apiState?.error ?? "Export workflow API truth is unavailable."} The UI remains fail-closed: no export approval, download, share, client acceptance or advice release is completed.`}
-        state="export-failed"
-        testId="wp13-export-api-truth-fail-closed"
-        title="Export workflow API fail-closed"
-      />
-    );
-  }
-
-  return (
-    <StatePanel
-      className={className}
-      detail="Export scope, redaction, preview, approval and delivery state are sourced from the tenant-scoped export workflow read model; fallback demo data is not treated as a completion gate."
-      state="restricted"
-      testId="wp13-export-api-truth-ready"
-      title="Export API truth source"
-    />
-  );
 }
 
 function useOpsSlaSnapshot() {
@@ -1919,7 +1645,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
               data-ux-feedback-placement="modal_status"
               data-ux-feedback-subject="export_approval"
             >
-              {acknowledged ? "Ready to approve." : "Check the confirmation box to continue."}
+              {acknowledged ? "Ready to approve." : "Tick the box to enable approval."}
             </div>
           ) : null}
           {status === "submitting" ? (
@@ -1978,9 +1704,8 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
   const [message, setMessage] = useState<string | null>(null);
   const { apiState, loadState, snapshot } = useExportWorkflowSnapshot();
   const currentExport = snapshot?.current;
-  const timeline = loadState === "error" ? [] : snapshot?.timeline.length ? snapshot.timeline : exportTimeline;
   const lifecycleStatus = status === "submitting" ? "loading" : status;
-  const validationState = acknowledged ? "valid-export-download-review" : "blocked-acknowledgement-required";
+  const validationState = acknowledged ? "valid-export-download-review" : "download-review-required";
   const downloadSubmitDisabled = !acknowledged || status === "submitting" || status === "success";
   const downloadActionAvailability =
     status === "submitting"
@@ -1995,8 +1720,8 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
   const downloadDisabledReason =
     downloadSubmitDisabled
       ? acknowledged
-        ? "Download action is unavailable while the workflow is submitting or already recorded."
-        : "Download remains blocked until the controlled-download acknowledgement is checked."
+        ? "Download is unavailable while the file is being prepared."
+        : "Tick the box before downloading."
       : undefined;
 
   function openDownloadConfirmation() {
@@ -2019,13 +1744,13 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
     }
 
     setStatus("submitting");
-    setMessage("Recording the controlled export download. Close and cancel are blocked until the workflow returns.");
+    setMessage("Preparing download. Close and cancel are unavailable for a moment.");
 
     try {
       const body = await runExportWorkflowCommand({
         command: "DOWNLOAD",
         exportRequestId: currentExport?.id,
-        reason: "Record the controlled export download through the canonical export workflow API.",
+        reason: "Record the reviewed export package download.",
         roleKey: session.role.key,
         tenantSlug: session.tenant.slug,
       });
@@ -2035,105 +1760,60 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
       setStatus("error");
       setMessage(
         error instanceof Error
-          ? `${error.message} No download, share, client acceptance or advice release change was completed.`
-          : "Export download workflow failed without download, share, client acceptance or advice release change.",
+          ? `${error.message} No share or client response action was completed.`
+          : "Download could not be recorded. No share or client response action was completed.",
       );
     }
   }
 
   return (
     <WorksurfaceShell
-      description="Controlled download confirmation surface for approved export packages; secure share and client acceptance stay separate."
+      description="Download the watermarked package. Sharing stays separate."
       eyebrow="Export and redaction"
       primary={
-        <div className="space-y-4">
-          <PageLead badge="Delivery step" description="Download is the next controlled delivery event; share remains separate." icon={Download} title={title} />
-          <Phase5DetailSplitPanel decisionSupport="Delivery detail separates approved package, download event and share gate." objectLabel="Export delivery split" objectState="Approved package; share still blocked" pageJob="Download page handles controlled delivery without client acceptance overclaim." safetyBoundary="Delivery detail cannot mark share complete or client acceptance achieved." splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-PAGE-SPLIT-005" />
-          <ExportStageBoundary activeStage="package" />
-          <ExportWorkflowTruthPanel apiState={apiState} loadState={loadState} />
-          <ExportClientPackageProjectionPanel />
-          <UxDetailStandardPanel
-        actionLabel="Download package"
-        actionState="Download is available after approval; secure share remains blocked until download is recorded."
-        evidenceItems={["Security and compliance", "Download package", "Share blocked until download"]}
-        facts={[
-          { label: "Export", value: currentExport?.id.slice(0, 8) ?? "EXP-2025" },
-          { label: "Tenant", value: currentExport?.tenant ?? "Client Comms Portfolio Summary" },
-          { label: "Format", value: "ZIP manifest package" },
-          { label: "Binary", value: currentExport?.binaryStatus ?? "Metadata-only" },
-        ]}
-        objectTitle={currentExport?.fileName ?? "Watermarked export package"}
-        objectType="Export delivery detail"
-        routeId="058"
-        safetyNote="Download does not imply share or client acceptance and remains separated from preview and approval."
-        status="Approved, not downloaded"
-        timelineItems={timeline.slice(0, 3).map((item) => item.title)}
-      />
-        </div>
-      }
-      routeId="058"
-      safetyNote="Download confirmation records only the controlled download event; secure share, recipient access, client acceptance and advice release remain separate controls."
-      statusItems={[
-        { label: "Delivery", tone: "blue", value: "Controlled" },
-        { label: "Stage", tone: "green", value: "download" },
-        { label: "Share", tone: "red", value: "blocked" },
-      ]}
-      title={title}
-      worksurfaceId="export-redaction-download"
-    >
-      <StatePanel
-        className="mb-5"
-        detail="The metadata-only export package is approved. Download is the next controlled event; share and client acceptance remain separate."
-        state="restricted"
-        title="Export approved, download pending"
-      />
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <div className="space-y-5">
-          <Card>
-            <CardHeader>
-              <CardTitle>Export Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <KeyValueList
-                items={[
-                  { label: "Export", value: currentExport?.id.slice(0, 8) ?? "EXP-2025-05-21-0087" },
-                  { label: "Source", value: currentExport?.tenant ?? "Client Comms Portfolio Summary" },
-                  { label: "Requested by", value: "Export workflow actor" },
-                  { label: "Prepared", value: currentExport?.requestedAt.slice(0, 16).replace("T", " ") ?? "May 21, 2025 09:42" },
-                  { label: "Format", value: "ZIP manifest package" },
-                  { label: "Binary status", value: <Badge tone="gold">{currentExport?.binaryStatus ?? "Metadata-only"}</Badge> },
-                  { label: "Watermark", value: <Badge tone="green">Enabled</Badge> },
-                  { label: "Classification", value: <Badge tone="red">Confidential</Badge> }
-                ]}
-              />
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Security and Compliance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {["Data classified and watermarked", "Access check recorded for approved requester", "Forbidden internal payloads excluded", "Download action audited separately", "External sharing blocked until download"].map((item) => (
-                <div className="mb-2 flex items-center gap-3 text-sm text-alphavest-muted" key={item}>
-                  <CheckCircle2 aria-hidden="true" className="size-4 text-alphavest-green" />
-                  {item}
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-        <div className="space-y-5">
-          <Card>
-            <CardHeader>
-              <CardTitle>Download Package</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap items-center justify-between gap-4 rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-4">
-                <div>
-                  <p className="font-semibold text-alphavest-ivory">{currentExport?.fileName ?? "Watermarked export package"}</p>
-                  <p className="text-sm text-alphavest-muted">Download pending, delivery action controlled</p>
-                </div>
+        <div className="space-y-3">
+          <section
+            className="grid gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-panel/60 p-3 md:grid-cols-4"
+            data-ux-export-api-state={apiState?.status ?? "pending"}
+            data-ux-export-load-state={loadState}
+          >
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Package</p>
+              <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{currentExport?.id.slice(0, 8) ?? "EXP-2025"}</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Format</p>
+              <p className="mt-1 text-sm text-alphavest-muted">Encrypted archive</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Watermark</p>
+              <p className="mt-1 text-sm text-alphavest-muted">Applied</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Share</p>
+              <p className="mt-1 text-sm text-alphavest-muted">Later action</p>
+            </div>
+          </section>
+          <div className="grid gap-4 xl:grid-cols-[1fr_23rem]">
+            <Card>
+              <CardHeader className="p-4 pb-2">
+                <CardTitle className="text-xl">Download Package</CardTitle>
+                <p className="mt-1 text-sm text-alphavest-muted">Download the package. External sharing stays separate.</p>
+              </CardHeader>
+              <CardContent className="grid gap-3 p-4 pt-0 sm:grid-cols-2">
+                {[
+                  ["File", currentExport?.fileName ?? "Watermarked export package"],
+                  ["Prepared", currentExport?.requestedAt.slice(0, 10) ?? "May 21, 2025"],
+                  ["Protection", currentExport?.redactionProfile ?? "Client-safe cover"],
+                  ["Classification", "Confidential"],
+                ].map(([label, value]) => (
+                  <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3" key={label}>
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">{label}</p>
+                    <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{value}</p>
+                  </div>
+                ))}
                 <ActionButton
+                  className="sm:col-span-2"
                   lifecycleResult="opens-export-download-confirmation"
                   lifecycleTrigger="export-download-confirmation-modal"
                   meaning="download"
@@ -2146,68 +1826,53 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
                   <Download aria-hidden="true" className="size-4" />
                   Download package
                 </ActionButton>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Secure Share</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <KeyValueList
-                items={[
-                  { label: "Share status", value: "Blocked until download" },
-                  { label: "Required event", value: "Download action recorded" },
-                  { label: "Access", value: "No external link issued" },
-                  { label: "Watermark", value: <Badge tone="green">Prepared</Badge> }
-                ]}
-              />
-              <ActionButton
-                availability="disabled"
-                className="mt-4 w-full"
-                disabled
-                disabledReason="Secure share is blocked until the download event is recorded and audited."
-                meaning="share"
-                priority="secondary"
-                requiresAudit
-                requiresConfirmation
-                testId="j08-share-export"
-                visibleDisabledReason
-              >
-                Share after download
-              </ActionButton>
-              <StatePanel
-                className="mt-4"
-                detail="Record the package download before creating an external share."
-                feedback={{
-                  actionMeaning: "share",
-                  intent: "blocked",
-                  placement: "inline_cluster",
-                  subject: "share",
-                }}
-                state="blocked"
-                title="Share blocked"
-              />
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Export Status Timeline</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <AuditTimeline items={timeline} />
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="p-4 pb-2">
+                <CardTitle className="text-xl">No Share Link</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 p-4 pt-0">
+                <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3">
+                  <div className="flex items-start gap-3">
+                    <LockKeyhole aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-alphavest-gold" />
+                    <div>
+                      <p className="font-semibold text-alphavest-ivory">No external link yet</p>
+                      <p className="mt-1 text-sm leading-5 text-alphavest-muted">No external link exists for this package.</p>
+                    </div>
+                  </div>
+                </div>
+                <ActionButton
+                  availability="disabled"
+                  className="w-full"
+                  disabled
+                  disabledReason="Download the package before preparing a share link."
+                  meaning="share"
+                  priority="secondary"
+                  requiresAudit
+                  requiresConfirmation
+                  testId="j08-share-export"
+                >
+                  Share link off
+                </ActionButton>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </div>
+      }
+      routeId="058"
+      safetyNote="Download does not create share access or client response."
+      title={title}
+      worksurfaceId="export-redaction-download"
+    >
       <Modal
         context={
           <div className="grid gap-2 text-sm">
-            <p className="font-semibold text-alphavest-ivory">Watermarked export package</p>
-            <p className="text-alphavest-muted">Download requires explicit confirmation and audit recording before any share action can be considered.</p>
+            <p className="font-semibold text-alphavest-ivory">Watermarked package</p>
+            <p className="text-alphavest-muted">Download only. No sharing link is created here.</p>
           </div>
         }
-        description="You are about to record a controlled export download. Share and client acceptance remain separate."
+        description="Download the watermarked package."
         footer={
           <>
             <button className={secondaryButtonClass} disabled={status === "submitting"} onClick={closeDownloadConfirmation} type="button">Cancel</button>
@@ -2215,7 +1880,7 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
               availability={downloadActionAvailability}
               disabled={downloadSubmitDisabled}
               disabledReason={downloadDisabledReason}
-              lifecycleResult={acknowledged ? "submits-controlled-download-only" : "blocked-validation-required"}
+              lifecycleResult={acknowledged ? "submits-controlled-download-only" : "validation-required"}
               meaning="download"
               onClick={() => {
                 void submitExportDownload();
@@ -2226,13 +1891,13 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
               requiresConfirmation
               testId="j08-download-export"
             >
-              {status === "submitting" ? "Recording..." : "Confirm controlled download"}
+              {status === "submitting" ? "Preparing..." : "Download package"}
             </ActionButton>
           </>
         }
         onClose={status === "submitting" ? undefined : closeDownloadConfirmation}
         open={modalOpen}
-        title="Confirm Export Download"
+        title="Package Download"
       >
         <div
           className="space-y-4"
@@ -2241,17 +1906,15 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
           data-ux-lifecycle-validation={validationState}
           data-ux-no-overclaim="true"
         >
-          <StatePanel
-            detail="Download confirmation records only the controlled download event. It cannot create a share link, imply client acceptance or release advice."
-            feedback={{
-              actionMeaning: "download",
-              intent: "validation",
-              placement: "modal_body",
-              subject: "download",
-            }}
-            state="restricted"
-            title="Download confirmation"
-          />
+          <div className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3">
+            <div className="flex items-start gap-3">
+              <ShieldCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-alphavest-gold" />
+              <div>
+                <p className="font-semibold text-alphavest-ivory">Package file</p>
+                <p className="mt-1 text-sm leading-5 text-alphavest-muted">This download does not create a sharing link.</p>
+              </div>
+            </div>
+          </div>
           <label className="flex items-start gap-3 text-sm leading-6 text-alphavest-muted">
             <input
               checked={acknowledged}
@@ -2260,25 +1923,23 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
               onChange={(event) => setAcknowledged(event.target.checked)}
               type="checkbox"
             />
-            <span>I understand this records only the watermarked export download; secure share, recipient access, client acceptance and advice release remain separate controls.</span>
+            <span>I understand this download does not create a share link or client response.</span>
           </label>
           {status === "idle" ? (
-            <StatePanel
-              detail={acknowledged ? "Controlled download can be recorded through the canonical export workflow API." : "Download remains blocked until the controlled-download acknowledgement is checked."}
-              feedback={{
-                actionMeaning: "download",
-                intent: "validation",
-                placement: "modal_status",
-                subject: "download",
-              }}
-              state={acknowledged ? "validation" : "blocked"}
-              testId="j08-export-download-validation-state"
-              title={acknowledged ? "Download confirmation valid" : "Download confirmation blocked"}
-            />
+            <div
+              className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 text-sm text-alphavest-muted"
+              data-testid="j08-export-download-validation-state"
+              data-ux-feedback-action-meaning="download"
+              data-ux-feedback-intent="validation"
+              data-ux-feedback-placement="modal_status"
+              data-ux-feedback-subject="download"
+            >
+              {acknowledged ? "Ready to download." : "Tick the box to enable download."}
+            </div>
           ) : null}
           {status === "submitting" ? (
             <StatePanel
-              detail={message ?? "Recording the controlled export download."}
+              detail={message ?? "Preparing download."}
               feedback={{
                 actionMeaning: "download",
                 intent: "pending",
@@ -2287,7 +1948,7 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
               }}
               state="loading"
               testId="j08-export-download-loading-state"
-              title="Download recording"
+              title="Preparing download"
             />
           ) : null}
           {status === "success" ? (
@@ -2306,7 +1967,7 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
           ) : null}
           {status === "error" ? (
             <StatePanel
-              detail={message ?? "Export download workflow failed without download, share, client acceptance or advice release change."}
+              detail={message ?? "Download could not be recorded. No share or client response action was completed."}
               feedback={{
                 actionMeaning: "download",
                 intent: "fail_closed",
@@ -2315,7 +1976,7 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
               }}
               state="error"
               testId="j08-export-download-error-state"
-              title="Download failed closed"
+              title="Download failed"
             />
           ) : null}
         </div>

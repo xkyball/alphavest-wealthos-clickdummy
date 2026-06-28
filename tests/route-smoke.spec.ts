@@ -547,7 +547,6 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT phase 5 object review", () => {
     "/decisions/demo",
     "/decisions/demo/success",
     "/evidence/demo/review",
-    "/export/demo/download",
   ];
 
   for (const path of uxPage003Routes) {
@@ -776,7 +775,6 @@ test.describe("UX-DENSITY focused detail routes", () => {
     { pageId: "035", path: "/advisory/triggers/demo/review" },
     { pageId: "044", path: "/decisions/demo" },
     { pageId: "047", path: "/evidence/demo/review" },
-    { pageId: "058", path: "/export/demo/download" },
   ];
 
   for (const route of d4DetailRoutes) {
@@ -1091,7 +1089,7 @@ test.describe("UX-CTA export lifecycle separation", () => {
     { path: "/export/demo/scope", required: "Choose permitted content, review recipients and continue to protection review.", routeLanguage: /content|protection review/i },
     { path: "/export/demo/redaction", required: "Confirm which content areas need cover before inspection.", routeLanguage: /protection|preview|inspection/i },
     { path: "/export/demo/approval?state=approval", required: "Confirm review of this protected export package.", routeLanguage: /approval|delivery|sharing/i },
-    { path: "/export/demo/download", required: "Share after download", routeLanguage: /download|share/i },
+    { path: "/export/demo/download", required: "No Share Link", routeLanguage: /download|share/i },
   ];
 
   for (const { path, required, routeLanguage } of exportScreens) {
@@ -1113,9 +1111,9 @@ test.describe("UX-CTA export lifecycle separation", () => {
     await authenticateRouteSmokePage(page);
     await page.goto("/export/demo/download");
 
-    await expect(page.getByRole("button", { name: "Download package" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Share after download" })).toBeDisabled();
-    await expect(page.getByText("Secure share is blocked until the download event is recorded and audited.")).toBeVisible();
+    await expect(page.getByTestId("j08-open-download-confirmation")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Share link off" })).toBeDisabled();
+    await expect(page.getByText("No external link exists for this package.")).toBeVisible();
   });
 });
 
@@ -1149,13 +1147,6 @@ test.describe("UX-CTA disabled blocked recovery copy", () => {
         "Preview inspection must pass before approval can be recorded.",
         "Approval and generation must be recorded before download.",
         "Resolve redaction blockers",
-      ],
-    },
-    {
-      path: "/export/demo/download",
-      expected: [
-        "Share after download",
-        "Secure share is blocked until the download event is recorded and audited.",
       ],
     },
     {

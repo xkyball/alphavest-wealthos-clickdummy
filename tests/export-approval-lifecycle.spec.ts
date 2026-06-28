@@ -118,7 +118,7 @@ test.describe("UXP3-014 export approval lifecycle", () => {
     const lifecycle = page.getByTestId("uxp3-export-approval-lifecycle");
     await expect(dialog).toBeVisible();
     await expect(page.getByTestId("j08-export-approval-validation-state")).toContainText(
-      "Check the confirmation box to continue.",
+      "Tick the box to enable approval.",
     );
 
     await dialog.locator("input[type='checkbox']").check();

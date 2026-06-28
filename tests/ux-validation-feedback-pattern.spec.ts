@@ -77,7 +77,7 @@ test.describe("E06 validation feedback pattern", () => {
     await expect(page.getByTestId("j08-export-approval-validation-state")).toHaveAttribute("data-ux-feedback-placement", "modal_status");
 
     await page.goto("/export/demo/download?state=confirm");
-    await expect(page.getByRole("dialog", { name: "Confirm Export Download" })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Package Download" })).toBeVisible();
     await expect(page.getByTestId("j08-export-download-validation-state")).toHaveAttribute("data-ux-feedback-subject", "download");
     await expect(page.getByTestId("j08-export-download-validation-state")).toHaveAttribute("data-ux-feedback-placement", "modal_status");
   });
