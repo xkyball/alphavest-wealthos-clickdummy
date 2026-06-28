@@ -1,0 +1,381 @@
+{
+  "artifact_kind": "epic_07_client_family_context_foundation_contract",
+  "ticket_id": "EPIC-07-SPEC-01",
+  "title": "Process-first target contract for Client and Family Context Foundation",
+  "generated_at": "2026-06-28",
+  "source_epic": "EPIC-07",
+  "source_masterplan": "reports/process-first-refactoring-masterplan-2026-06-28/ALPHAVEST_PROCESS_FIRST_REFACTORING_MASTERPLAN_BOC_CTES.json",
+  "source_gap_report": "reports/process-first-refactoring-masterplan-2026-06-28/ALPHAVEST_BOC_CTES_EPIC_07_DOMAIN_GAP_REPORT.md",
+  "authority": {
+    "operative_source": "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md",
+    "route_evolution_policy": "No new route or screen split is authorized by this contract.",
+    "out_of_scope": [
+      "blind schema replacement",
+      "production IdP overbuild",
+      "new product scope outside True-UX route evolution authority",
+      "screen or image generation",
+      "client-visible unapproved advice",
+      "manual visibility override"
+    ]
+  },
+  "target_screen_contract": {
+    "primary_target_screens": [
+      "S019",
+      "S020",
+      "S021",
+      "S022",
+      "S023",
+      "S024",
+      "S025",
+      "S026",
+      "S031",
+      "S032"
+    ],
+    "representative_implementation_surfaces": [
+      {
+        "screen_id": "S019",
+        "route": "/client/home",
+        "role": "area_entry",
+        "reason": "Client and family context should begin from a compact entry surface, not isolated detail pages."
+      },
+      {
+        "screen_id": "S020",
+        "route": "/mobile",
+        "role": "client_safe_priority_entry",
+        "reason": "Existing screenshot audit flags this as long-screen debt and it is client-visibility-sensitive."
+      },
+      {
+        "screen_id": "S022",
+        "route": "/client/family-members",
+        "role": "core_family_queue_detail_surface",
+        "reason": "Family member context management has DB-backed service and negative proof seams."
+      },
+      {
+        "screen_id": "S024",
+        "route": "/entities",
+        "role": "core_entity_queue_surface",
+        "reason": "Entity context has DB-backed table proof and tenant/payload visibility boundaries."
+      },
+      {
+        "screen_id": "S025",
+        "route": "/entities/new",
+        "role": "core_entity_step_surface",
+        "reason": "Entity registration has wizard validation and no-partial-row proof seams."
+      },
+      {
+        "screen_id": "S031",
+        "route": "/wealth-map",
+        "role": "wealth_context_review_surface",
+        "reason": "Wealth context must remain context review, not readiness or release proof."
+      },
+      {
+        "screen_id": "S032",
+        "route": "/actions",
+        "role": "action_context_no_overclaim_surface",
+        "reason": "Existing screenshot audit flags this as long-screen debt and process-readiness overclaim risk."
+      }
+    ],
+    "supporting_surfaces_not_first_slice": [
+      {
+        "screen_id": "S021",
+        "route": "/client/profile",
+        "reason": "Profile save/reload proof exists; use as supporting source for area entry and QA rather than duplicating implementation in the first slice."
+      },
+      {
+        "screen_id": "S023",
+        "route": "/relationships",
+        "reason": "Relationship mapping route exists; deeper process mutation proof can remain a later focused slice."
+      },
+      {
+        "screen_id": "S026",
+        "route": "/entities/:id",
+        "reason": "Entity detail can project client-safe object context; primary implementation should first stabilize queue and step boundaries."
+      }
+    ]
+  },
+  "canonical_primitives": {
+    "ui_surface_spine": [
+      "components/client-intake-screen.tsx::ClientIntakeScreen",
+      "components/wealth-actions-screen.tsx::WealthActionsScreen",
+      "components/worksurface-shell.tsx::WorksurfaceShell",
+      "components/ux-hub-page.tsx::UxHubPage",
+      "components/ui/master-detail-surface.tsx::MasterDetailSurface",
+      "components/ui/state-panel.tsx::StatePanel"
+    ],
+    "service_boundary": [
+      "lib/client-context-visibility.ts::deriveClientContextVisibility",
+      "lib/visibility-engine.ts::visibilityEngine",
+      "lib/dbtf-table-service.ts::listDbtfFamilyMembersPage",
+      "lib/dbtf-table-service.ts::listDbtfEntitiesPage",
+      "lib/dbtf-form-service.ts::saveDbtfClientProfile",
+      "lib/dbtf-form-service.ts::updateDbtfFamilyMember",
+      "lib/dbtf-form-service.ts::saveDbtfEntityWizard"
+    ],
+    "api_boundary": [
+      "app/api/profile/route.ts",
+      "app/api/family-members/route.ts",
+      "app/api/entities/route.ts"
+    ],
+    "proof_spine": [
+      "tests/av27-client-context-closure.spec.ts",
+      "tests/dbtf-tables-api.spec.ts",
+      "tests/e11-backend-data-surface-truth.spec.ts",
+      "tests/route-smoke.spec.ts",
+      "tests/ux-master-detail-surface.spec.ts",
+      "tests/ux-route-shell-page-job-contract.spec.ts",
+      "tests/ux-page-template-adoption.spec.ts"
+    ]
+  },
+  "state_machine": {
+    "states": [
+      "route_shell_visible",
+      "demo_actor_resolved",
+      "tenant_scope_resolved",
+      "family_or_entity_object_scope_resolved",
+      "sensitivity_classified",
+      "payload_visibility_evaluated",
+      "client_safe_projection_available_or_blocked",
+      "draft_editable",
+      "validation_failed_closed",
+      "save_or_submit_requested",
+      "audit_required",
+      "audit_persisted",
+      "scoped_profile_family_or_entity_mutation_executed",
+      "denied_before_mutation",
+      "denied_attempt_audited",
+      "context_review_completed_without_readiness_overclaim"
+    ],
+    "allowed_transitions": [
+      "route_shell_visible -> demo_actor_resolved",
+      "demo_actor_resolved -> tenant_scope_resolved",
+      "tenant_scope_resolved -> family_or_entity_object_scope_resolved",
+      "family_or_entity_object_scope_resolved -> sensitivity_classified",
+      "sensitivity_classified -> payload_visibility_evaluated",
+      "payload_visibility_evaluated -> client_safe_projection_available_or_blocked",
+      "client_safe_projection_available_or_blocked -> draft_editable",
+      "draft_editable -> save_or_submit_requested",
+      "save_or_submit_requested -> audit_required",
+      "audit_required -> audit_persisted",
+      "audit_persisted -> scoped_profile_family_or_entity_mutation_executed",
+      "draft_editable -> validation_failed_closed",
+      "payload_visibility_evaluated -> denied_before_mutation",
+      "denied_before_mutation -> denied_attempt_audited",
+      "payload_visibility_evaluated -> context_review_completed_without_readiness_overclaim"
+    ],
+    "forbidden_transitions": [
+      "route_shell_visible -> scoped_profile_family_or_entity_mutation_executed",
+      "save_or_submit_requested -> client_visibility_release",
+      "entity_created -> evidence_sufficiency",
+      "family_member_saved -> client_acceptance",
+      "wealth_context_review_completed_without_readiness_overclaim -> advice_release",
+      "action_context_viewed -> workflow_gate_satisfied",
+      "sensitivity_classified -> manual_visibility_override",
+      "validation_failed_closed -> partial_row_persisted",
+      "wrong_tenant_actor -> payload_rendered",
+      "restricted_client_role -> internal_only_payload_rendered"
+    ]
+  },
+  "role_guard_contract": {
+    "route_shell_access": "Route visibility never grants mutation, payload or release authority.",
+    "principal_and_family_cfo": [
+      "may view client-safe family and entity context where sensitivity permits",
+      "may submit scoped profile, family-member and entity intake changes where the service allows it",
+      "must not see internal-only rows or hidden row counts",
+      "must not unlock advice, evidence sufficiency, export or client visibility by intake action"
+    ],
+    "advisor_and_compliance": [
+      "may inspect fuller context where role and tenant scope permit",
+      "must still respect sensitivity classification and payload projection",
+      "must not treat context review as compliance release or client acceptance"
+    ],
+    "restricted_client_roles": [
+      "must receive hidden payload mode for restricted or internal-only family/entity rows",
+      "must not infer hidden row names, counts or details"
+    ],
+    "cross_tenant_or_wrong_actor": [
+      "must be denied before payload render or mutation",
+      "sensitive denied mutation attempts should be auditable"
+    ]
+  },
+  "payload_visibility_contract": {
+    "client_visible_default": false,
+    "visibility_source_of_truth": "deriveClientContextVisibility plus visibilityEngine projection rules",
+    "required_response_flags": [
+      "hiddenRowsDisclosed: false",
+      "scoped: true when accepted",
+      "noClientRelease: true for mutations",
+      "mutated: false for denied or invalid requests"
+    ],
+    "forbidden_client_fields": [
+      "internal-only family member names",
+      "internal-only entity names",
+      "hidden row count for restricted client roles",
+      "internal rationale",
+      "compliance notes",
+      "manual visibility override",
+      "evidence sufficiency result from context-only action",
+      "release or export status from intake-only action"
+    ],
+    "acceptance": "Every UI/API proof must show whether the payload is full, redacted or hidden and must avoid client visibility overclaim."
+  },
+  "audit_evidence_contract": {
+    "sensitive_actions_require_audit": [
+      "profile submit for review",
+      "family member update",
+      "entity create or submit",
+      "wrong-tenant mutation attempt",
+      "wrong-object mutation attempt",
+      "sensitivity classification denial"
+    ],
+    "failure_mode": "Invalid or unauthorized profile, family or entity updates fail closed with no partial row and no client release.",
+    "proof_rule": "Every process moved beyond partial status must name positive and negative proof refs in the P0 matrix."
+  },
+  "process_contracts": [
+    {
+      "process_id": "BP-001",
+      "status_target": "make_area_entry_process_visible",
+      "target_surfaces": [
+        "S019",
+        "S020"
+      ],
+      "service_boundary": "client context route shell plus visibilityEngine projection",
+      "positive_acceptance": "Client/family area entry shows tenant, actor, next family-context action and client-safe projection status.",
+      "negative_acceptance": "Area entry does not imply profile completion, evidence sufficiency, advice release, export readiness or client acceptance.",
+      "test_boundary": [
+        "tests/route-smoke.spec.ts",
+        "tests/true-ux-client-projection.spec.ts"
+      ]
+    },
+    {
+      "process_id": "BP-002",
+      "status_target": "prove_dependency_context_not_new_tenant_scope",
+      "target_surfaces": [
+        "S019"
+      ],
+      "service_boundary": "demo tenant context and existing tenant setup seams",
+      "positive_acceptance": "Client context surfaces resolve tenant context and show it as precondition.",
+      "negative_acceptance": "EPIC-07 does not create production tenant onboarding, IdP or schema replacement.",
+      "test_boundary": [
+        "tests/providerless-scope.spec.ts",
+        "tests/route-smoke.spec.ts"
+      ]
+    },
+    {
+      "process_id": "BP-003",
+      "status_target": "prove_profile_draft_and_submit_boundary",
+      "target_surfaces": [
+        "S021",
+        "S019"
+      ],
+      "service_boundary": "app/api/profile/route.ts plus saveDbtfClientProfile",
+      "positive_acceptance": "Profile save or submit for review reloads from DB and returns noClientRelease.",
+      "negative_acceptance": "Invalid profile or wrong-tenant actor fails closed with no mutation success and no payload disclosure.",
+      "test_boundary": [
+        "tests/av27-client-context-closure.spec.ts",
+        "tests/dbtf-tables-api.spec.ts"
+      ]
+    },
+    {
+      "process_id": "BP-004",
+      "status_target": "prove_family_member_queue_detail_boundary",
+      "target_surfaces": [
+        "S022"
+      ],
+      "service_boundary": "app/api/family-members/route.ts plus listDbtfFamilyMembersPage and updateDbtfFamilyMember",
+      "positive_acceptance": "Family member rows are tenant-scoped, DB-backed and editable where role and object scope permit.",
+      "negative_acceptance": "Wrong object, wrong tenant or restricted role cannot mutate or infer hidden payload.",
+      "test_boundary": [
+        "tests/av27-client-context-closure.spec.ts",
+        "tests/dbtf-tables-api.spec.ts"
+      ]
+    },
+    {
+      "process_id": "BP-005",
+      "status_target": "keep_relationship_mapping_context_bounded",
+      "target_surfaces": [
+        "S023",
+        "S031"
+      ],
+      "service_boundary": "relationship route context and wealth map context",
+      "positive_acceptance": "Relationship map context supports family understanding and routes to next context action.",
+      "negative_acceptance": "Relationship mapping does not approve downstream action readiness, advice, release or export.",
+      "test_boundary": [
+        "tests/route-smoke.spec.ts",
+        "tests/ux-route-shell-page-job-contract.spec.ts"
+      ]
+    },
+    {
+      "process_id": "BP-006",
+      "status_target": "prove_entity_registration_queue_and_step",
+      "target_surfaces": [
+        "S024",
+        "S025",
+        "S026"
+      ],
+      "service_boundary": "app/api/entities/route.ts plus listDbtfEntitiesPage and saveDbtfEntityWizard",
+      "positive_acceptance": "Entity list and wizard are DB-backed, tenant-scoped and reloadable.",
+      "negative_acceptance": "Invalid submissions do not create partial rows; restricted roles cannot infer internal-only entities.",
+      "test_boundary": [
+        "tests/av27-client-context-closure.spec.ts",
+        "tests/dbtf-tables-api.spec.ts"
+      ]
+    },
+    {
+      "process_id": "BP-008",
+      "status_target": "prove_wealth_context_is_not_readiness",
+      "target_surfaces": [
+        "S031",
+        "S032"
+      ],
+      "service_boundary": "components/wealth-actions-screen.tsx and process-first action contract",
+      "positive_acceptance": "Wealth map and action board summarize context and one next step.",
+      "negative_acceptance": "Context review cannot mark readiness, evidence sufficiency, advice release, export approval or client visibility.",
+      "test_boundary": [
+        "tests/route-smoke.spec.ts",
+        "tests/process-first-ux-contract.spec.ts",
+        "tests/filter-affordance-pruning.spec.ts"
+      ]
+    },
+    {
+      "process_id": "BP-010",
+      "status_target": "prove_sensitivity_classification_visibility_boundary",
+      "target_surfaces": [
+        "S019",
+        "S020",
+        "S022",
+        "S024",
+        "S031",
+        "S032"
+      ],
+      "service_boundary": "lib/client-context-visibility.ts::deriveClientContextVisibility",
+      "positive_acceptance": "Sensitivity classification produces full, redacted or hidden payload modes for permitted roles.",
+      "negative_acceptance": "Restricted client roles cannot view or infer internal-only family/entity context and no manual override exists.",
+      "test_boundary": [
+        "tests/av27-client-context-closure.spec.ts",
+        "tests/providerless-scope.spec.ts"
+      ]
+    }
+  ],
+  "visual_acceptance": {
+    "primary_long_screen_targets": [
+      "S020",
+      "S032"
+    ],
+    "rule": "If a target screen is changed visually, capture a 1440x1000 screenshot and assert no incoherent overlap. Prefer no page scroll for compact entry surfaces; otherwise record an explicit exception with reason.",
+    "forbidden_visual_substitute": "No spec panels, route labels, annotation rails or report-only UI may be added to satisfy this contract."
+  },
+  "matrix_update_rule": {
+    "allowed_status_after_first_slice": "strong_partial_domain_representation",
+    "forbidden_overclaim": "Do not mark EPIC-07 complete unless every retained process step has route/source/API proof, positive proof, negative proof and audit/recovery proof.",
+    "required_process_ids": [
+      "BP-001",
+      "BP-002",
+      "BP-003",
+      "BP-004",
+      "BP-005",
+      "BP-006",
+      "BP-008",
+      "BP-010"
+    ]
+  }
+}
