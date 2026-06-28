@@ -1,0 +1,283 @@
+{
+  "schemaVersion": "1.0",
+  "instruction": "max",
+  "status": "IMPLEMENTATION_PLAN_READY_WITH_DECISION_GATES",
+  "created": "2026-06-28",
+  "targetBranch": "full-workflow",
+  "sources": {
+    "uploadPrompt": "/Users/chris/projects/tools/BOC_CTES_LOKALER_CODE_CAPABILITY_AUDIT_TICKETSTRUKTUR.md",
+    "auditJson": "artifacts/routes-and-modals/2026-06-28_05-32-44/audit-work/WEBAPP_LONG_SCREENSHOT_UX_LAYOUT_AUDIT_ENGINE_V2_V3.json",
+    "p0ProcessUniverse": "docs/00-current/ALPHAVEST_DETAILED_BUSINESS_PROCESS_SPECIFICATION_P0_ONLY.json",
+    "trueUxAuthority": "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md"
+  },
+  "preflight": {
+    "branch": "full-workflow",
+    "latestCommit": "c952cce docs: lock compliance decision room proof",
+    "guardSource": "PASS",
+    "dirtyTreePolicy": "preserve existing local changes; treat inspected dirty process-gate work as current workspace reality"
+  },
+  "auditEvidence": {
+    "captures": 88,
+    "captured": 88,
+    "longScreenRisks": 42,
+    "warnings": 77,
+    "highestRiskScreens": [
+      { "screenId": "S056", "pageId": "056", "route": "/export/:id/redaction", "title": "Export Redaction", "heightPx": 5921, "status": "EXCESSIVE_LENGTH" },
+      { "screenId": "S039", "pageId": "039", "route": "/compliance/reviews/:id/decision-room", "title": "Compliance Review Detail", "heightPx": 5531, "status": "EXCESSIVE_LENGTH" },
+      { "screenId": "S032", "pageId": "032", "route": "/actions", "title": "Action Board", "heightPx": 5443, "status": "EXCESSIVE_LENGTH" },
+      { "screenId": "S037", "pageId": "037", "route": "/advisor/reviews/:id", "title": "Advisor Approval Detail", "heightPx": 5147, "status": "EXCESSIVE_LENGTH" },
+      { "screenId": "S057", "pageId": "057", "route": "/export/:id/approval", "title": "Export Preview", "heightPx": 4353, "status": "APPEND_ONLY_PAGE_GROWTH" }
+    ]
+  },
+  "processBasis": {
+    "priorityDomains": [
+      "DOMAIN-C",
+      "DOMAIN-D",
+      "DOMAIN-F",
+      "DOMAIN-G",
+      "DOMAIN-H",
+      "DOMAIN-I",
+      "DOMAIN-J",
+      "DOMAIN-L"
+    ],
+    "priorityAcceptanceIds": ["ACC-002", "ACC-004", "ACC-005", "ACC-006", "ACC-007", "ACC-008"],
+    "lockedDecisions": ["DEC-001", "DEC-004", "DEC-005"]
+  },
+  "canonicalExistingComponents": [
+    "components/worksurface-shell.tsx",
+    "components/ui/page-template.tsx",
+    "components/ui/action-zone.tsx",
+    "components/ui/master-detail-surface.tsx",
+    "components/ui/process-gate-rail.tsx",
+    "components/ui/data-table.tsx",
+    "components/ui/state-panel.tsx",
+    "lib/ux-page-template-system.ts",
+    "lib/ux-data-surface-contract.ts",
+    "lib/ux-action-hierarchy-contract.ts"
+  ],
+  "criticalPath": [
+    "ANALYSIS-1",
+    "SPEC-1",
+    "IMPL-FOUNDATION-1",
+    "IMPL-FOUNDATION-2",
+    "IMPL-A",
+    "IMPL-B",
+    "IMPL-C",
+    "IMPL-D",
+    "IMPL-E",
+    "QA-1",
+    "QA-2",
+    "DECISION-1"
+  ],
+  "workItems": [
+    {
+      "id": "ANALYSIS-1",
+      "type": "Analysis / Research / Spike",
+      "ctes": 10,
+      "status": "EXECUTE_FIRST",
+      "goal": "Create process-to-screen traceability matrix from audit JSON, P0 process universe, route registry and current components.",
+      "outputs": ["PROCESS_FIRST_SCREEN_TRACEABILITY_MATRIX.json"],
+      "targetFiles": ["reports/process-first-ux-layout-implementation-plan-2026-06-28/PROCESS_FIRST_SCREEN_TRACEABILITY_MATRIX.json"],
+      "acceptance": [
+        "S032, S037, S039, S056 and S057 have complete traceability rows.",
+        "No row claims implementation readiness from screenshot evidence alone.",
+        "Matrix parses as JSON."
+      ],
+      "validation": ["pnpm guard:source", "node JSON.parse matrix file"]
+    },
+    {
+      "id": "SPEC-1",
+      "type": "Specification / Acceptance Criteria",
+      "ctes": 9,
+      "status": "EXECUTE_AFTER_ANALYSIS-1",
+      "goal": "Lock process-first UI contract before product UI structure changes.",
+      "outputs": ["ALPHAVEST_PROCESS_FIRST_UX_LAYOUT_CONTRACT.md"],
+      "targetFiles": ["docs/00-current/ALPHAVEST_PROCESS_FIRST_UX_LAYOUT_CONTRACT.md"],
+      "acceptance": [
+        "Contract states p0 business process universe is traceability reference only.",
+        "Contract maps P0 UI refactors to BP/ACC IDs.",
+        "Contract forbids cosmetic copy-only, accordion-only hiding, overlay-only fixes and route creation without record."
+      ],
+      "decisionGate": "APPROVE_PROCESS_FIRST_UX_CONTRACT_DOC"
+    },
+    {
+      "id": "IMPL-FOUNDATION-1",
+      "type": "Implementation / Foundation",
+      "ctes": 12,
+      "status": "EXECUTE_AFTER_SPEC-1",
+      "goal": "Add typed route/process/acceptance mapping for process-first UI.",
+      "targetFiles": ["lib/process-first-ux-contract.ts", "tests/process-first-ux-contract.spec.ts", "lib/p0-acceptance-proof.ts"],
+      "requiredInitialPageIds": ["032", "037", "039", "046", "047", "048", "050", "051", "056", "057"],
+      "acceptance": [
+        "Every initial P0 risk page has route contract.",
+        "Tests fail if P0 long-screen target lacks BP/ACC/gate mapping.",
+        "Contract does not authorize new behavior by itself."
+      ]
+    },
+    {
+      "id": "IMPL-FOUNDATION-2",
+      "type": "Implementation / Shared Component",
+      "ctes": 10,
+      "status": "EXECUTE_AFTER_IMPL-FOUNDATION-1",
+      "goal": "Harden ProcessGateRail with machine-readable business process metadata.",
+      "targetFiles": ["components/ui/process-gate-rail.tsx", "tests/p0-process-first-ux-burndown.spec.ts"],
+      "newOptionalProps": ["businessProcessIds", "acceptanceIds", "gateIds", "currentStep", "blockedReason"],
+      "acceptance": [
+        "Existing call sites continue to work.",
+        "Critical call sites pass explicit BP/ACC/gate IDs.",
+        "Tests assert metadata for S032, S037, S039, S056 and S057."
+      ]
+    },
+    {
+      "id": "IMPL-A",
+      "type": "Implementation / Route Family Refactor",
+      "ctes": 12,
+      "status": "EXECUTE_AFTER_FOUNDATION",
+      "title": "Action Board Master-Detail Compression",
+      "auditScreens": ["S032"],
+      "processDomains": ["DOMAIN-D"],
+      "acceptanceIds": ["ACC-002", "ACC-003"],
+      "targetFiles": ["components/wealth-actions-screen.tsx", "lib/wealth-actions-demo-data.ts", "tests/p0-process-first-ux-burndown.spec.ts", "tests/ux-master-detail-surface.spec.ts"],
+      "acceptance": [
+        "Selected action, missing evidence, owner/due date and next permitted action visible near top.",
+        "No copy implies readiness, advisor approval, compliance release, export or client visibility.",
+        "S032 capture height below 3400px or documented exception with section nav."
+      ]
+    },
+    {
+      "id": "IMPL-B",
+      "type": "Implementation / Safety-Critical Route Family Refactor",
+      "ctes": 14,
+      "status": "SPLIT_REQUIRED",
+      "title": "Advisor/Compliance Decision-Room Template Adoption",
+      "subtasks": ["IMPL-B1", "IMPL-B2"],
+      "auditScreens": ["S037", "S039", "S044"],
+      "processDomains": ["DOMAIN-F", "DOMAIN-G", "DOMAIN-I"],
+      "acceptanceIds": ["ACC-004", "ACC-005", "ACC-007"],
+      "targetFiles": ["components/internal-workflow-screen.tsx", "components/worksurface-shell.tsx", "tests/workflow-gate.spec.ts", "tests/client-visibility-proof.spec.ts", "tests/journey-api.spec.ts"],
+      "acceptance": [
+        "Advisor detail cannot imply release.",
+        "Compliance release action appears only with preconditions and blocked reasons.",
+        "S039 capture height below 3400px or approved decision-room exception."
+      ]
+    },
+    {
+      "id": "IMPL-C",
+      "type": "Implementation / Safety-Critical Flow Refactor",
+      "ctes": 14,
+      "status": "SPLIT_REQUIRED",
+      "title": "Export Stepper and Redaction/Approval Split",
+      "auditScreens": ["S056", "S057", "S058"],
+      "processDomains": ["DOMAIN-J"],
+      "acceptanceIds": ["ACC-008"],
+      "targetFiles": ["components/communication-export-ops-screen.tsx", "lib/communication-export-ops-demo-data.ts", "tests/export-workflow-api.spec.ts", "tests/export-command-spine-contract.spec.ts", "tests/true-ux-export-scope-redaction-approval.spec.ts", "tests/export-safety.spec.ts"],
+      "acceptance": [
+        "Redaction cannot approve, generate, download or share.",
+        "Approval cannot download/share or create advice release/client acceptance.",
+        "S056 and S057 capture heights below 3400px."
+      ],
+      "recommendedFirstWedge": true
+    },
+    {
+      "id": "IMPL-D",
+      "type": "Implementation / Route Family Refactor",
+      "ctes": 13,
+      "status": "SPLIT_REQUIRED",
+      "title": "Evidence/Document Sufficiency Structure",
+      "auditScreens": ["S027", "S028", "S029", "S030", "S046", "S047"],
+      "processDomains": ["DOMAIN-C", "DOMAIN-I"],
+      "acceptanceIds": ["ACC-002"],
+      "targetFiles": ["components/client-intake-screen.tsx", "components/decisions-governance-screen.tsx", "components/ui/evidence-list.tsx", "components/ui/audit-timeline.tsx", "tests/document-upload-api.spec.ts", "tests/document-upload-flow.spec.ts", "tests/evidence-review-api.spec.ts", "tests/pp002-evidence-sufficiency-canonical.spec.ts"],
+      "acceptance": [
+        "Upload success cannot imply evidence sufficiency, release, export or client visibility.",
+        "Evidence detail shows blocker and next permitted action.",
+        "S047 capture height below 3000px or approved evidence-detail exception."
+      ]
+    },
+    {
+      "id": "IMPL-E",
+      "type": "Implementation / Admin Route Family Refactor",
+      "ctes": 12,
+      "status": "EXECUTE_AFTER_FOUNDATION",
+      "title": "Governance/Admin Non-Bypass Structure",
+      "auditScreens": ["S007", "S048", "S051"],
+      "processDomains": ["DOMAIN-B", "DOMAIN-L"],
+      "acceptanceIds": ["ACC-001"],
+      "targetFiles": ["components/admin-tenant-setup-screen.tsx", "components/decisions-governance-screen.tsx", "tests/permission-engine.spec.ts", "tests/platform-admin-command-client-source.spec.ts", "tests/pp001-admin-audit-proof.spec.ts"],
+      "acceptance": [
+        "Admin screens state non-bypass boundaries.",
+        "No admin action can imply advice/compliance/evidence/export/client visibility bypass.",
+        "S007, S048 and S051 capture heights below 3400px or documented admin audit exception."
+      ]
+    },
+    {
+      "id": "IMPL-F",
+      "type": "Tooling / Proof Refactor",
+      "ctes": 8,
+      "status": "EXECUTE_AFTER_UI_SLICES_OR_IN_PARALLEL",
+      "title": "Capture Naming Traceability Fix",
+      "auditScreens": ["parameterized route captures"],
+      "targetFiles": ["scripts/capture-routes-and-modals.ts", "tests/capture-routes-and-modals-contract.spec.ts"],
+      "acceptance": [
+        "Parameterized route filenames preserve route contract id/tenantId.",
+        "Concrete demo substitutions remain in index metadata.",
+        "Capture QA naming warnings fall to zero."
+      ]
+    }
+  ],
+  "validationPlan": {
+    "sliceMinimum": [
+      "pnpm guard:source",
+      "pnpm playwright test <slice-specific tests> --workers=1",
+      "pnpm playwright test tests/route-smoke.spec.ts --workers=1"
+    ],
+    "fullPlan": [
+      "pnpm typecheck",
+      "pnpm lint",
+      "pnpm db:validate",
+      "pnpm playwright test tests/p0-process-first-ux-burndown.spec.ts tests/ux-page-template-long-page.spec.ts tests/ux-page-template-adoption.spec.ts tests/ux-master-detail-surface.spec.ts --workers=1",
+      "pnpm playwright test tests/workflow-gate.spec.ts tests/client-visibility-proof.spec.ts tests/export-safety.spec.ts tests/export-workflow-api.spec.ts --workers=1",
+      "AVS_BASE_URL=http://127.0.0.1:3020 pnpm visual:capture-routes:screens-only"
+    ],
+    "captureAcceptance": [
+      "captured=88/88",
+      "no failed captures",
+      "long-screen risk count lower than current 42",
+      "S032, S037, S039, S056 and S057 no longer EXCESSIVE_LENGTH unless signed exception exists",
+      "parameterized route naming warnings zero after IMPL-F"
+    ]
+  },
+  "decisionGates": [
+    {
+      "id": "DECISION-1",
+      "question": "Approve writing docs/00-current/ALPHAVEST_PROCESS_FIRST_UX_LAYOUT_CONTRACT.md as current repo contract?",
+      "recommendation": "approve",
+      "approvalToken": "APPROVE_PROCESS_FIRST_UX_CONTRACT_DOC"
+    },
+    {
+      "id": "DECISION-2",
+      "question": "Choose first implementation wedge.",
+      "recommendation": "foundation then export wedge",
+      "approvalToken": "APPROVE_FOUNDATION_THEN_EXPORT_WEDGE"
+    },
+    {
+      "id": "DECISION-3",
+      "question": "Confirm capture naming fix timing.",
+      "recommendation": "after structural UI slices unless QA noise blocks evidence review",
+      "approvalToken": "APPROVE_CAPTURE_NAMING_AFTER_UI_SLICES"
+    }
+  ],
+  "killedBranches": [
+    { "branch": "visual-only cleanup", "reason": "violates process-first requirement and risks hiding structural issues" },
+    { "branch": "big-bang route redesign", "reason": "too much route and safety blast radius; risks True-UX route-evolution violation" },
+    { "branch": "tooling-only capture fix", "reason": "useful as support slice but does not solve workflow structure" }
+  ],
+  "recommendedBranch": "process contract plus route-family slices",
+  "limitations": [
+    "This plan does not implement product code.",
+    "Screenshot height is a proxy for UX risk, not proof of runtime behavior.",
+    "P0 business process spec is current local workspace reality and appears uncommitted at inspection time.",
+    "Existing dirty worktree changes must be preserved and understood before implementation.",
+    "Route creation or split still requires True-UX route-evolution authorization."
+  ]
+}

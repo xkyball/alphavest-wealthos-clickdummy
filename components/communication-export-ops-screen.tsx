@@ -39,6 +39,7 @@ import {
   DataTable,
   Drawer,
   Modal,
+  ProcessGateRail,
   StatePanel,
   type BadgeTone,
   type DataTableColumn
@@ -58,6 +59,7 @@ import { UxCtaCluster } from "@/components/ux-cta-cluster";
 import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
 import { WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
+import { processFirstUxContractForPageId } from "@/lib/process-first-ux-contract";
 import { uxActionClassForPriority } from "@/lib/ux-action-hierarchy-contract";
 import { uxFeedbackSuccessMessageForSubject } from "@/lib/ux-feedback-message-contract";
 import {
@@ -1420,6 +1422,7 @@ function RedactedDocumentPreview() {
 }
 
 function ExportRedactionPage({ title }: { title: string }) {
+  const processContract = processFirstUxContractForPageId("056");
   const redactionRows = [
     ...redactionSummary.map((item) => ({
       id: item.id,
@@ -1447,10 +1450,28 @@ function ExportRedactionPage({ title }: { title: string }) {
       primary={
         <div className="space-y-4">
           <PageLead badge="Redaction step" description="Resolve forbidden payloads before preview inspection." icon={Eye} title={title} />
+          <ProcessGateRail
+            actionLabel="Review mandatory redactions"
+            actionState="Redaction can resolve forbidden payload exposure only; it cannot approve, generate, download or share the package."
+            acceptanceIds={processContract.acceptanceIds}
+            blockedReason="forbidden_payload_not_resolved"
+            businessProcessIds={processContract.businessProcessIds}
+            currentStep="redaction"
+            gateState="Redaction required"
+            gateIds={processContract.gateIds}
+            items={[
+              { detail: "Internal rationale, advisor memo and compliance notes remain forbidden for client package.", label: "Forbidden payload", tone: "red", value: "Blocked" },
+              { detail: "Preview inspection can begin only after redaction checks pass.", label: "Preview", tone: "gold", value: "Pending" },
+              { detail: "Approval is a later audited workflow command.", label: "Approval", tone: "red", value: "Not recorded" },
+              { detail: "Download and share stay unavailable until approval and generation are complete.", label: "Delivery", tone: "red", value: "Blocked" },
+            ]}
+            nextStep={processContract.nextPermittedAction}
+            testId="bd11-export-redaction-gate"
+            title="Export redaction gate"
+          />
           <Phase5DetailSplitPanel decisionSupport="Redaction detail shows field state, payload visibility and preview blockers." objectLabel="Export redaction object review" objectState="Forbidden payload checks active" pageJob="Redaction page resolves payload review separately from preview and approval." safetyBoundary="Redaction detail cannot approve, download or share the export." splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-DETAIL-004" />
           <ExportStageBoundary activeStage="redaction" />
           <ExportPayloadBoundary />
-          <StatePanel detail="All sensitive fields must be redacted before preview can move toward approval." state="blocked" title="Redaction blocks preview approval" />
           <ScfP07P09TrustPanel mode="export" />
         </div>
       }
@@ -1631,6 +1652,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
         ? "Export approval action is unavailable while the workflow is submitting or already recorded."
         : "Export approval remains blocked until the scoped approval acknowledgement is checked."
       : undefined;
+  const processContract = processFirstUxContractForPageId("057");
 
   function openExportApprovalModal() {
     setModalOpen(true);
@@ -1682,8 +1704,28 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
       primary={
         <div className="space-y-4">
           <PageLead badge="Approval step" description="Inspect preview and record approval before generation or delivery." icon={PackageCheck} title={title} />
+          <ProcessGateRail
+            actionLabel="Review export approval"
+            actionState="Approval can record only the approval step; generation, download, share, advice release and client acceptance remain separate gates."
+            acceptanceIds={processContract.acceptanceIds}
+            blockedReason={acknowledged ? "approval_ready_not_delivery" : "approval_acknowledgement_required"}
+            businessProcessIds={processContract.businessProcessIds}
+            currentStep="approval"
+            gateState={acknowledged ? "Approval form valid" : "Approval acknowledgement required"}
+            gateIds={processContract.gateIds}
+            items={[
+              { detail: "Package must remain scoped to permitted objects.", label: "Scope", tone: "green", value: `${snapshot?.summary.included ?? 0} included` },
+              { detail: "Forbidden internal payload checks must remain clean.", label: "Redaction", tone: "gold", value: currentExport?.redactionProfile ?? "Pending" },
+              { detail: "Approval writes audit-gated workflow state only.", label: "Approval", tone: acknowledged ? "green" : "gold", value: acknowledged ? "Ready" : "Blocked" },
+              { detail: "Delivery is blocked until approval and generation complete.", label: "Download/share", tone: "red", value: "Separate" },
+            ]}
+            nextStep={processContract.nextPermittedAction}
+            testId="bd11-export-approval-gate"
+            title="Export approval gate"
+            tone="restricted"
+          />
           <Phase5DetailSplitPanel decisionSupport="Preview detail distinguishes inspection, approval, generation and delivery." objectLabel="Export preview split" objectState="Preview inspection pending approval" pageJob="Preview page inspects one package without becoming download or share." safetyBoundary="Preview context cannot generate, download or share packages." splitTaskId="UX-PAGE-SPLIT-005" taskId="UX-PAGE-SPLIT-005" />
-          <ExportStageBoundary activeStage="preview" />
+          <ExportStageBoundary activeStage="approval" />
           <ExportWorkflowTruthPanel apiState={apiState} loadState={loadState} />
           <Phase6DecisionRoomPanel audit="Approval audit must record scoped package, redaction state, actor and cancel or confirm outcome." blocker="Export approval remains blocked until redaction, policy and audit readiness are complete." cancelLabel="Cancel export approval" confirmLabel="Confirm export approval" decisionLabel="Export approval decision room" evidence="Package summary, forbidden payload checks, redaction review and policy checks are visible before decision." preconditions="Scoped package, forbidden payload pass, redaction review and audit readiness must all pass." safetyNote="No release, export or advice effect can occur until gate preconditions pass and an audit record exists." taskId="UX-DECISION-ROOM-002" />
           <ScfP07P09TrustPanel mode="export" />

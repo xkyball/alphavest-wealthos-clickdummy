@@ -26,7 +26,7 @@ test.describe("V0.96 WP-10 export scope, redaction and approval UX", () => {
     expect(source).toContain("Package downloaded; client acceptance not recorded.");
     expect(source).toContain('<ExportStageBoundary activeStage="scope"');
     expect(source).toContain('<ExportStageBoundary activeStage="redaction"');
-    expect(source).toContain('<ExportStageBoundary activeStage="preview"');
+    expect(source).toContain('<ExportStageBoundary activeStage="approval"');
     expect(source).toContain('<ExportStageBoundary activeStage="package"');
   });
 

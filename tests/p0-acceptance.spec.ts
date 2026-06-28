@@ -13,6 +13,7 @@ import {
   p0AcceptanceProofGaps,
   p0AcceptanceProofMap,
   p0ApiRouteUniverse,
+  p0BusinessProcessUniverseReference,
   p0MappedJourneyIds,
   p0RouteUiStateObligations,
 } from "../lib/p0-acceptance-proof";
@@ -531,6 +532,35 @@ test.describe("PHASE-10 P0 acceptance assertions", () => {
       expect(entry.negativeProof.length, `${entry.journeyId} negative proof`).toBeGreaterThan(0);
       expect(entry.nonClaims.length, `${entry.journeyId} non-claims`).toBeGreaterThan(0);
     }
+  });
+
+  test("keeps the P0 business process specification referenceable through the source universe", () => {
+    const specification = JSON.parse(
+      readFileSync(path.join(process.cwd(), p0BusinessProcessUniverseReference.path), "utf8"),
+    ) as {
+      artifact_metadata?: {
+        artifact_name?: string;
+        implementation_authorized?: boolean;
+        retained_p0_process_count?: number;
+        retained_p0_step_count?: number;
+        screen_generation_authorized?: boolean;
+        target_codebase?: string;
+      };
+      executive_decision?: {
+        codex_status?: string;
+        process_detail_status?: string;
+      };
+    };
+
+    expect(p0BusinessProcessUniverseReference.referenceKey).toBe("universe:p0-business-process-specification");
+    expect(specification.artifact_metadata?.artifact_name).toBe(p0BusinessProcessUniverseReference.artifactName);
+    expect(specification.artifact_metadata?.target_codebase).toBe("full-workflow");
+    expect(specification.artifact_metadata?.implementation_authorized).toBe(false);
+    expect(specification.artifact_metadata?.screen_generation_authorized).toBe(false);
+    expect(specification.artifact_metadata?.retained_p0_process_count).toBe(84);
+    expect(specification.artifact_metadata?.retained_p0_step_count).toBe(438);
+    expect(specification.executive_decision?.process_detail_status).toBe(p0BusinessProcessUniverseReference.status);
+    expect(specification.executive_decision?.codex_status).toBe("CODEX_EXECUTION_NOT_AUTHORIZED");
   });
 
   test("AV-MVP-P10-T004/T005 keeps UI state obligations and proof report guarded against overclaim", () => {

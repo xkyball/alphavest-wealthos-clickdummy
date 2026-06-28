@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { GlobalSearchBox } from "@/components/global-search-box";
 import { ProcessSidebar } from "@/components/process-navigation";
-import { AuditTimeline, Badge, Card, CardContent, CardHeader, CardTitle, MasterDetailSurface, StatePanel, type BadgeTone } from "@/components/ui";
+import { AuditTimeline, Badge, Card, CardContent, CardHeader, CardTitle, MasterDetailSurface, ProcessGateRail, StatePanel, type BadgeTone } from "@/components/ui";
 import { DisabledControlReason, disabledControlReasonId } from "@/components/ui/disabled-control-reason";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
@@ -232,15 +232,6 @@ function PageHeading({ action, subtitle, title }: { action?: React.ReactNode; su
         <p className="mt-1 text-sm leading-6 text-alphavest-muted">{subtitle}</p>
       </div>
       {action}
-    </div>
-  );
-}
-
-function SafeGateBanner() {
-  return (
-    <div className="flex items-center gap-3 rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-3 text-sm text-alphavest-gold-soft">
-      <ShieldCheck aria-hidden="true" className="size-4 shrink-0" />
-      <span>No unapproved advice reaches the client. Action visibility stays blocked until advisor, compliance, evidence and permission gates pass.</span>
     </div>
   );
 }
@@ -472,13 +463,18 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
         eyebrow="WP02 Client Context"
         primary={<MasterDetailSurface
           actionPolicy="open_detail"
-          className={cn("grid gap-5", drawerOpen ? "2xl:grid-cols-[1fr_30rem]" : "")}
+          className={cn("grid gap-5", drawerOpen ? "2xl:grid-cols-[minmax(0,1fr)_30rem]" : "")}
           density="standard_review"
           family="board"
           filterState="disabled_static"
           masterDetailMode={drawerOpen ? "drawer_detail" : "inline_detail_rail"}
           selectedObjectId={selectedAction.id}
           selectedObjectState={selectedAction.evidenceState}
+          selectedSummary={
+            <span>
+              Selected work stays in view with its blocker and next permitted action. Board context does not create evidence sufficiency, advisor approval, compliance release or client visibility.
+            </span>
+          }
           stickyRail={drawerOpen}
         >
         <section className="min-w-0 space-y-5">
@@ -506,6 +502,20 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
             title={title}
           />
           <UxSupportDensityStrip pageId="032" />
+          <ProcessGateRail
+            actionLabel="Request missing evidence"
+            actionState="The selected action can be routed, but it cannot be marked ready while client approval evidence is missing."
+            gateState="Evidence blocked"
+            items={[
+              { detail: selectedAction.object, label: "Selected item", tone: "gold", value: selectedAction.priority },
+              { detail: selectedAction.evidenceState, label: "Evidence sufficiency", tone: "red", value: "Not sufficient" },
+              { detail: "Advisor and compliance gates have not started for this action.", label: "Release path", tone: "red", value: "Client blocked" },
+              { detail: selectedAction.due, label: "Owner and due date", tone: "gold", value: selectedAction.owner },
+            ]}
+            nextStep="Request client approval evidence before readiness, advisor review, compliance release, export or client visibility can progress."
+            testId="bd05-action-board-process-gate"
+            title="Current action process gate"
+          />
           <UxComplexityPriorityPanel
             actionLabel="Open selected action"
             actionState="Selected action review stays blocked until missing client approval evidence is resolved."
@@ -607,7 +617,6 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
             <span className="flex items-center gap-2"><CheckCircle2 aria-hidden="true" className="size-4 text-alphavest-green" />Complete</span>
             <span className="flex items-center gap-2"><AlertTriangle aria-hidden="true" className="size-4 text-alphavest-red" />Missing evidence</span>
           </div>
-          <SafeGateBanner />
         </section>
         {drawerOpen ? <ActionDrawer onClose={() => setDrawerOpen(false)} /> : null}
       </MasterDetailSurface>}

@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 
-import { p0ApiRouteUniverse } from "./p0-acceptance-proof";
+import { p0ApiRouteUniverse, p0BusinessProcessUniverseReference } from "./p0-acceptance-proof";
 import { routeRegistryCount, routeWorksetIntegrity, type RouteScopeLabel } from "./route-registry";
 
 export const phase0LockedRouteWorksetCounts: Record<RouteScopeLabel, number> = {
@@ -13,6 +13,8 @@ export const phase0LockedRouteWorksetCounts: Record<RouteScopeLabel, number> = {
 };
 
 export const phase0LockedApiRoutes = p0ApiRouteUniverse;
+
+export const phase0SourceUniverseReferences = [p0BusinessProcessUniverseReference] as const;
 
 export const phase0LockedPrismaShape = {
   enumCount: 31,
@@ -363,5 +365,6 @@ export function buildPhase0SourceRealitySnapshot(cwd = process.cwd()) {
     routeRegistryCount,
     routeWorksetIntegrity,
     specFiles: listSpecFiles(cwd),
+    sourceUniverseReferences: phase0SourceUniverseReferences,
   };
 }

@@ -37,6 +37,7 @@ import {
   Drawer,
   MetricCard,
   Modal,
+  ProcessGateRail,
   StatePanel,
   StatusChip,
   WizardStepper,
@@ -880,12 +881,12 @@ function SecurityPage({ onConfirm }: { onConfirm: () => void }) {
 function EvidenceTemplatesPage() {
   type EvidenceTemplate = (typeof evidenceTemplates)[number];
   const columns: Array<DataTableColumn<EvidenceTemplate>> = [
-    { key: "name", header: "Template", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}</span> },
-    { key: "category", header: "Category", render: (row) => <Badge tone="blue">{row.category}</Badge> },
-    { key: "type", header: "Evidence type", render: (row) => row.type },
-    { key: "required", header: "Items", render: (row) => row.required },
-    { key: "cycle", header: "Cycle", render: (row) => row.cycle },
-    { key: "status", header: "Status", render: (row) => <StatusBadge status={row.status} /> }
+    { key: "name", header: "Template", priority: "identity", className: "min-w-64", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}</span>, sortable: true },
+    { key: "category", header: "Category", priority: "evidence_gate", className: "min-w-36", render: (row) => <Badge tone="blue">{row.category}</Badge>, sortable: true },
+    { key: "type", header: "Evidence type", priority: "evidence_gate", className: "min-w-48", render: (row) => row.type, sortable: true },
+    { key: "required", header: "Items", priority: "secondary_metadata", className: "min-w-24", render: (row) => row.required, sortable: true },
+    { key: "cycle", header: "Cycle", priority: "secondary_metadata", className: "min-w-28", render: (row) => row.cycle, sortable: true },
+    { key: "status", header: "Status", priority: "primary_status", className: "min-w-32", render: (row) => <StatusBadge status={row.status} />, sortable: true }
   ];
 
   return (
@@ -899,10 +900,37 @@ function EvidenceTemplatesPage() {
         <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false"><Upload aria-hidden="true" className="size-4" />Import held</span>
         <span className={staticButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Blocked until a typed workflow command is implemented." data-ux-interactive="false"><Plus aria-hidden="true" className="size-4" />Template creation held</span>
       </ActionBar>
-      <section className="grid gap-5 xl:grid-cols-[1.3fr_0.7fr]">
+      <ProcessGateRail
+        actionLabel="Maintain evidence requirements"
+        actionState="Evidence templates define requested evidence only; upload, review, link, scope and sufficiency remain separate lifecycle states."
+        gateState="Governance controlled"
+        items={[
+          { detail: "Template changes cannot mark uploaded documents sufficient.", label: "Sufficiency", tone: "red", value: "Separate" },
+          { detail: "Admin can maintain requirements without bypassing review or release.", label: "Admin authority", tone: "gold", value: "Non-bypass" },
+          { detail: "Rows prioritize template, category, evidence type and status for scanning.", label: "Table density", tone: "green", value: "Readable" },
+          { detail: "Import and creation remain blocked until typed workflow commands exist.", label: "Mutations", tone: "gold", value: "Held" },
+        ]}
+        nextStep="Use templates to request evidence, then route uploaded documents through review, linking, scoping and sufficiency checks."
+        testId="bd04-evidence-template-process-gate"
+        title="Evidence lifecycle boundary"
+        tone="restricted"
+      />
+      <section className="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_minmax(24rem,0.44fr)]">
         <Card>
           <CardHeader><CardTitle>All Templates</CardTitle></CardHeader>
-          <CardContent><DataTable columns={columns} getRowId={(row) => row.id} rows={evidenceTemplates} /></CardContent>
+          <CardContent>
+            <DataTable
+              columns={columns}
+              compact
+              density="compact"
+              family="table"
+              getRowId={(row) => row.id}
+              mobileCardTitle={(row) => row.name}
+              responsiveMode="table"
+              rows={evidenceTemplates}
+              stickyHeader
+            />
+          </CardContent>
         </Card>
         <Card>
           <CardHeader>

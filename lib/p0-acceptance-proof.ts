@@ -10,6 +10,14 @@ export type P0AcceptanceProofEntry = {
   status: P0ProofStatus;
 };
 
+export const p0BusinessProcessUniverseReference = {
+  artifactName: "ALPHAVEST_DETAILED_BUSINESS_PROCESS_SPECIFICATION_P0_ONLY.json",
+  path: "docs/00-current/ALPHAVEST_DETAILED_BUSINESS_PROCESS_SPECIFICATION_P0_ONLY.json",
+  referenceKey: "universe:p0-business-process-specification",
+  status: "P0_PROCESS_DETAIL_SPECIFICATION_ACCEPTED_AS_FILTERED_VIEW",
+  use: "Planning and traceability reference only; not implementation authority.",
+} as const;
+
 export const p0ApiRouteUniverse = [
   "app/api/admin-tenants/route.ts",
   "app/api/advice-release-history/actions/route.ts",

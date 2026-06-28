@@ -1,0 +1,383 @@
+{
+  "schemaVersion": "1.0",
+  "artifact": "PROCESS_FIRST_SCREEN_TRACEABILITY_MATRIX",
+  "created": "2026-06-28",
+  "sourcePlan": "reports/process-first-ux-layout-implementation-plan-2026-06-28/ALPHAVEST_PROCESS_FIRST_UX_LAYOUT_IMPLEMENTATION_PLAN.json",
+  "auditSource": "artifacts/routes-and-modals/2026-06-28_05-32-44/audit-work/WEBAPP_LONG_SCREENSHOT_UX_LAYOUT_AUDIT_ENGINE_V2_V3.json",
+  "processUniverseReference": {
+    "referenceKey": "universe:p0-business-process-specification",
+    "path": "docs/00-current/ALPHAVEST_DETAILED_BUSINESS_PROCESS_SPECIFICATION_P0_ONLY.json",
+    "authority": "traceability_reference_only",
+    "implementationAuthority": "ALPHAVEST_TRUE_UX_IMPLEMENTATION_HANDOFF.md"
+  },
+  "globalRules": {
+    "screenshotEvidenceIsImplementationReadiness": false,
+    "routeCreationRequiresRouteEvolutionRecord": true,
+    "screenSplitRequiresDecisionRecord": true,
+    "processFirstRefactorRequired": true,
+    "forbiddenSubstitutes": [
+      "cosmetic_copy_only",
+      "accordion_only_hiding",
+      "overlay_only_fix",
+      "test_only_expectation_change",
+      "documentation_only_substitution"
+    ]
+  },
+  "rows": [
+    {
+      "screenId": "S032",
+      "pageId": "032",
+      "route": "/actions",
+      "title": "Action Board",
+      "audit": {
+        "filename": "032-route-actions-base-base.png",
+        "heightPx": 5443,
+        "longScreenStatus": "EXCESSIVE_LENGTH",
+        "risk": "Action board risks append-only queue, detail, evidence and next-action content in one long page."
+      },
+      "routeRegistry": {
+        "navigationGroup": "wealth_actions",
+        "pageflowId": "PF-C",
+        "workflowName": "Entity and Asset Intake",
+        "objectType": "ACTION_ITEM",
+        "permissionAction": "VIEW",
+        "clientVisibilitySensitive": true
+      },
+      "processTrace": {
+        "domains": ["DOMAIN-D", "DOMAIN-I"],
+        "businessProcessIds": ["BP-020", "BP-021", "BP-022"],
+        "acceptanceIds": ["ACC-002"],
+        "gateIds": ["P0_ACTION_BOARD_GATE"],
+        "primaryProcessJob": "Operational action triage without implying evidence sufficiency, advisor approval, compliance release or client visibility.",
+        "nextPermittedAction": "Select or triage an action item; keep downstream gates separate."
+      },
+      "currentComponentTargets": ["components/wealth-actions-screen.tsx", "lib/wealth-actions-demo-data.ts"],
+      "implementationReadiness": {
+        "fromScreenshotAlone": false,
+        "requiresRepoInspection": true,
+        "requiresSafetyTests": true
+      },
+      "recommendedTicket": "IMPL-A"
+    },
+    {
+      "screenId": "S037",
+      "pageId": "037",
+      "route": "/advisor/reviews/:id",
+      "title": "Advisor Approval Detail",
+      "audit": {
+        "filename": "037-route-advisor-reviews-demo-base-base.png",
+        "heightPx": 5147,
+        "longScreenStatus": "EXCESSIVE_LENGTH",
+        "risk": "Advisor detail risks visually collapsing advisor approval into downstream release semantics."
+      },
+      "routeRegistry": {
+        "navigationGroup": "advisory_workflow",
+        "pageflowId": "PF-E",
+        "workflowName": "Advisor Approval",
+        "objectType": "RECOMMENDATION",
+        "permissionAction": "APPROVE",
+        "clientVisibilitySensitive": true
+      },
+      "processTrace": {
+        "domains": ["DOMAIN-F", "DOMAIN-I"],
+        "businessProcessIds": ["BP-041", "BP-042", "BP-043"],
+        "acceptanceIds": ["ACC-004"],
+        "gateIds": ["P0_ADVISOR_APPROVAL_NOT_RELEASE_GATE"],
+        "primaryProcessJob": "Advisor candidate review that cannot release advice or unlock client visibility.",
+        "nextPermittedAction": "Record advisor review and route to compliance decision room."
+      },
+      "currentComponentTargets": ["components/internal-workflow-screen.tsx"],
+      "implementationReadiness": {
+        "fromScreenshotAlone": false,
+        "requiresRepoInspection": true,
+        "requiresSafetyTests": true
+      },
+      "recommendedTicket": "IMPL-B1"
+    },
+    {
+      "screenId": "S039",
+      "pageId": "039",
+      "route": "/compliance/reviews/:id/decision-room",
+      "title": "Compliance Review Detail",
+      "audit": {
+        "filename": "039-route-compliance-reviews-demo-decision-room-base-base.png",
+        "heightPx": 5531,
+        "longScreenStatus": "EXCESSIVE_LENGTH",
+        "risk": "Decision, evidence, status and audit content appear stacked rather than orchestrated into a decision-room architecture."
+      },
+      "routeRegistry": {
+        "navigationGroup": "advisory_workflow",
+        "pageflowId": "PF-F",
+        "workflowName": "Compliance Release or Block",
+        "objectType": "RECOMMENDATION",
+        "permissionAction": "REVIEW",
+        "clientVisibilitySensitive": true
+      },
+      "processTrace": {
+        "domains": ["DOMAIN-G", "DOMAIN-H", "DOMAIN-I"],
+        "businessProcessIds": ["BP-051", "BP-052", "BP-053", "BP-061", "BP-062"],
+        "acceptanceIds": ["ACC-005", "ACC-006", "ACC-007"],
+        "gateIds": ["P0_COMPLIANCE_RELEASE_GATE", "P0_CLIENT_VISIBILITY_GATE", "P0_AUDIT_PERSISTENCE_GATE"],
+        "primaryProcessJob": "Compliance block or release decision with evidence, policy, permission and audit preconditions visible before mutation.",
+        "nextPermittedAction": "Request evidence or keep release blocked until all release and audit gates pass."
+      },
+      "currentComponentTargets": ["components/internal-workflow-screen.tsx", "components/worksurface-shell.tsx"],
+      "implementationReadiness": {
+        "fromScreenshotAlone": false,
+        "requiresRepoInspection": true,
+        "requiresSafetyTests": true
+      },
+      "recommendedTicket": "IMPL-B2"
+    },
+    {
+      "screenId": "S046",
+      "pageId": "046",
+      "route": "/evidence",
+      "title": "Evidence Vault",
+      "audit": {
+        "filename": "046-route-evidence-base-base.png",
+        "heightPx": 2930,
+        "longScreenStatus": "LONG_WITH_STRUCTURE_RISK",
+        "risk": "Evidence vault can blur upload, review, lineage and sufficiency if not process-structured."
+      },
+      "routeRegistry": {
+        "navigationGroup": "decisions_evidence",
+        "pageflowId": "PF-I",
+        "workflowName": "Evidence Review and Export",
+        "objectType": "EVIDENCE_RECORD",
+        "permissionAction": "VIEW",
+        "clientVisibilitySensitive": true
+      },
+      "processTrace": {
+        "domains": ["DOMAIN-C", "DOMAIN-I"],
+        "businessProcessIds": ["BP-030", "BP-031", "BP-032"],
+        "acceptanceIds": ["ACC-002", "ACC-007"],
+        "gateIds": ["P0_EVIDENCE_SUFFICIENCY_GATE", "P0_AUDIT_PERSISTENCE_GATE"],
+        "primaryProcessJob": "Evidence vault review with lineage and sufficiency separated from upload existence.",
+        "nextPermittedAction": "Review evidence linkage and sufficiency before downstream release or export gates."
+      },
+      "currentComponentTargets": ["components/decisions-governance-screen.tsx", "components/ui/evidence-list.tsx"],
+      "implementationReadiness": {
+        "fromScreenshotAlone": false,
+        "requiresRepoInspection": true,
+        "requiresSafetyTests": true
+      },
+      "recommendedTicket": "IMPL-D"
+    },
+    {
+      "screenId": "S047",
+      "pageId": "047",
+      "route": "/evidence/:id/review",
+      "title": "Evidence Record Detail",
+      "audit": {
+        "filename": "047-route-evidence-demo-review-base-base.png",
+        "heightPx": 3440,
+        "longScreenStatus": "APPEND_ONLY_PAGE_GROWTH",
+        "risk": "Evidence detail risks treating document presence as sufficiency unless blockers and next permitted action are dominant."
+      },
+      "routeRegistry": {
+        "navigationGroup": "decisions_evidence",
+        "pageflowId": "PF-I",
+        "workflowName": "Evidence Review and Export",
+        "objectType": "EVIDENCE_RECORD",
+        "permissionAction": "VIEW",
+        "clientVisibilitySensitive": true
+      },
+      "processTrace": {
+        "domains": ["DOMAIN-C", "DOMAIN-I"],
+        "businessProcessIds": ["BP-030", "BP-031", "BP-032"],
+        "acceptanceIds": ["ACC-002", "ACC-007"],
+        "gateIds": ["P0_EVIDENCE_SUFFICIENCY_GATE", "P0_AUDIT_PERSISTENCE_GATE"],
+        "primaryProcessJob": "Evidence record detail that separates document presence from accepted, current, scoped evidence.",
+        "nextPermittedAction": "Review one evidence record and preserve its scope, lineage and sufficiency state."
+      },
+      "currentComponentTargets": ["components/decisions-governance-screen.tsx", "components/ui/evidence-list.tsx", "components/ui/audit-timeline.tsx"],
+      "implementationReadiness": {
+        "fromScreenshotAlone": false,
+        "requiresRepoInspection": true,
+        "requiresSafetyTests": true
+      },
+      "recommendedTicket": "IMPL-D"
+    },
+    {
+      "screenId": "S048",
+      "pageId": "048",
+      "route": "/governance",
+      "title": "Governance Users",
+      "audit": {
+        "filename": "048-route-governance-base-base.png",
+        "heightPx": 3822,
+        "longScreenStatus": "APPEND_ONLY_PAGE_GROWTH",
+        "risk": "Governance screens risk implying admin bypass if permission changes, audit and client visibility gates are not separated."
+      },
+      "routeRegistry": {
+        "navigationGroup": "decisions_evidence",
+        "pageflowId": "PF-G",
+        "workflowName": "Governance Access Change",
+        "objectType": "USER",
+        "permissionAction": "VIEW",
+        "clientVisibilitySensitive": false
+      },
+      "processTrace": {
+        "domains": ["DOMAIN-L", "DOMAIN-I"],
+        "businessProcessIds": ["BP-071", "BP-072", "BP-073"],
+        "acceptanceIds": ["ACC-007"],
+        "gateIds": ["P0_GOVERNANCE_CHANGE_GATE", "P0_AUDIT_PERSISTENCE_GATE"],
+        "primaryProcessJob": "Governance user administration without silent access changes or compliance bypass.",
+        "nextPermittedAction": "Inspect governance users and route permission changes through approval plus audit."
+      },
+      "currentComponentTargets": ["components/decisions-governance-screen.tsx", "components/admin-tenant-setup-screen.tsx"],
+      "implementationReadiness": {
+        "fromScreenshotAlone": false,
+        "requiresRepoInspection": true,
+        "requiresSafetyTests": true
+      },
+      "recommendedTicket": "IMPL-E"
+    },
+    {
+      "screenId": "S050",
+      "pageId": "050",
+      "route": "/governance/access-requests/:id",
+      "title": "Access Requests",
+      "audit": {
+        "filename": "050-route-governance-access-requests-demo-base-base.png",
+        "heightPx": 3024,
+        "longScreenStatus": "LONG_WITH_STRUCTURE_RISK",
+        "risk": "Access request approval can be confused with granted access unless approval and audit are explicit gates."
+      },
+      "routeRegistry": {
+        "navigationGroup": "decisions_evidence",
+        "pageflowId": "PF-G",
+        "workflowName": "Governance Access Change",
+        "objectType": "PERMISSION",
+        "permissionAction": "APPROVE",
+        "clientVisibilitySensitive": false
+      },
+      "processTrace": {
+        "domains": ["DOMAIN-L", "DOMAIN-I"],
+        "businessProcessIds": ["BP-071", "BP-072", "BP-073"],
+        "acceptanceIds": ["ACC-007"],
+        "gateIds": ["P0_GOVERNANCE_CHANGE_GATE", "P0_AUDIT_PERSISTENCE_GATE"],
+        "primaryProcessJob": "Access request decision surface with approval and audit as separate process gates.",
+        "nextPermittedAction": "Review access request and approve or reject through governed command path."
+      },
+      "currentComponentTargets": ["components/decisions-governance-screen.tsx"],
+      "implementationReadiness": {
+        "fromScreenshotAlone": false,
+        "requiresRepoInspection": true,
+        "requiresSafetyTests": true
+      },
+      "recommendedTicket": "IMPL-E"
+    },
+    {
+      "screenId": "S051",
+      "pageId": "051",
+      "route": "/governance",
+      "title": "Access Audit History",
+      "audit": {
+        "filename": "051-route-governance-base-base.png",
+        "heightPx": 3822,
+        "longScreenStatus": "APPEND_ONLY_PAGE_GROWTH",
+        "risk": "Audit history can be mistaken for approval or persistence proof unless it remains read/inspect-first."
+      },
+      "routeRegistry": {
+        "navigationGroup": "decisions_evidence",
+        "pageflowId": "PF-G",
+        "workflowName": "Evidence Review and Export",
+        "objectType": "AUDIT_EVENT",
+        "permissionAction": "VIEW",
+        "clientVisibilitySensitive": false
+      },
+      "processTrace": {
+        "domains": ["DOMAIN-I", "DOMAIN-L"],
+        "businessProcessIds": ["BP-073"],
+        "acceptanceIds": ["ACC-007"],
+        "gateIds": ["P0_AUDIT_PERSISTENCE_GATE"],
+        "primaryProcessJob": "Access audit history as proof, not as a state-changing approval surface.",
+        "nextPermittedAction": "Inspect immutable audit history and use governed routes for state-changing access actions."
+      },
+      "currentComponentTargets": ["components/decisions-governance-screen.tsx", "components/communication-export-ops-screen.tsx"],
+      "implementationReadiness": {
+        "fromScreenshotAlone": false,
+        "requiresRepoInspection": true,
+        "requiresSafetyTests": true
+      },
+      "recommendedTicket": "IMPL-E"
+    },
+    {
+      "screenId": "S056",
+      "pageId": "056",
+      "route": "/export/:id/redaction",
+      "title": "Export Redaction",
+      "audit": {
+        "filename": "056-route-export-demo-redaction-base-base.png",
+        "heightPx": 5921,
+        "longScreenStatus": "EXCESSIVE_LENGTH",
+        "risk": "Redaction combines review, configuration, warnings and controls in one long workflow page."
+      },
+      "routeRegistry": {
+        "navigationGroup": "export",
+        "pageflowId": "PF-I",
+        "workflowName": "Evidence Review and Export",
+        "objectType": "EXPORT_REQUEST",
+        "permissionAction": "REVIEW",
+        "clientVisibilitySensitive": true
+      },
+      "processTrace": {
+        "domains": ["DOMAIN-J", "DOMAIN-H", "DOMAIN-I"],
+        "businessProcessIds": ["BP-082", "BP-087"],
+        "acceptanceIds": ["ACC-008"],
+        "gateIds": ["P0_EXPORT_REDACTION_GATE"],
+        "primaryProcessJob": "Remove forbidden internal payloads before preview, approval, generation or delivery can continue.",
+        "nextPermittedAction": "Resolve mandatory redactions, then inspect preview before approval or delivery."
+      },
+      "currentComponentTargets": ["components/communication-export-ops-screen.tsx"],
+      "implementationReadiness": {
+        "fromScreenshotAlone": false,
+        "requiresRepoInspection": true,
+        "requiresSafetyTests": true
+      },
+      "recommendedTicket": "IMPL-C"
+    },
+    {
+      "screenId": "S057",
+      "pageId": "057",
+      "route": "/export/:id/approval",
+      "title": "Export Preview",
+      "audit": {
+        "filename": "057-route-export-demo-approval-base-base.png",
+        "heightPx": 4353,
+        "longScreenStatus": "APPEND_ONLY_PAGE_GROWTH",
+        "risk": "Approval risks collapsing preview, approval, generation, download and share into one implied release surface."
+      },
+      "routeRegistry": {
+        "navigationGroup": "export",
+        "pageflowId": "PF-I",
+        "workflowName": "Evidence Review and Export",
+        "objectType": "EXPORT_REQUEST",
+        "permissionAction": "APPROVE",
+        "clientVisibilitySensitive": true
+      },
+      "processTrace": {
+        "domains": ["DOMAIN-J", "DOMAIN-H", "DOMAIN-I"],
+        "businessProcessIds": ["BP-082", "BP-087"],
+        "acceptanceIds": ["ACC-008"],
+        "gateIds": ["P0_EXPORT_REDACTION_GATE"],
+        "primaryProcessJob": "Preview and approval decision surface that cannot generate, download, share or imply client acceptance.",
+        "nextPermittedAction": "Record scoped approval, then keep package generation, download and share on later gates."
+      },
+      "currentComponentTargets": ["components/communication-export-ops-screen.tsx", "lib/communication-export-ops-demo-data.ts"],
+      "implementationReadiness": {
+        "fromScreenshotAlone": false,
+        "requiresRepoInspection": true,
+        "requiresSafetyTests": true
+      },
+      "recommendedTicket": "IMPL-C"
+    }
+  ],
+  "acceptanceStatus": {
+    "requiredRowsPresent": ["S032", "S037", "S039", "S056", "S057"],
+    "noScreenshotOnlyReadinessClaims": true,
+    "jsonParseRequired": true
+  }
+}

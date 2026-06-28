@@ -33,6 +33,7 @@ import {
   FilterBar,
   MasterDetailSurface,
   Modal,
+  ProcessGateRail,
   StatePanel,
   StickyActionZone,
   FieldFeedback,
@@ -50,6 +51,7 @@ import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
 import { UxComplexityPriorityPanel } from "@/components/ux-complexity-priority-panel";
 import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
+import { processFirstUxContractForPageId } from "@/lib/process-first-ux-contract";
 import { uxActionAttributesFor, uxActionClassForPriority } from "@/lib/ux-action-hierarchy-contract";
 import { uxFeedbackSuccessMessageForSubject } from "@/lib/ux-feedback-message-contract";
 import { wp05ComplianceReleaseConfirmationPhrase } from "@/lib/advisory-workflow-contract";
@@ -628,6 +630,59 @@ function CompliancePreconditionChecklist() {
         ))}
       </CardContent>
     </Card>
+  );
+}
+
+function AdvisorNotReleaseGate() {
+  const processContract = processFirstUxContractForPageId("037");
+
+  return (
+    <ProcessGateRail
+      actionLabel="Approve for compliance review"
+      actionState="Advisor approval can create a compliance-pending candidate only; it cannot release content, export content or create client acceptance."
+      acceptanceIds={processContract.acceptanceIds}
+      blockedReason="advisor_approval_not_release"
+      businessProcessIds={processContract.businessProcessIds}
+      currentStep="advisor_review"
+      gateState="Compliance pending"
+      gateIds={processContract.gateIds}
+      items={[
+        { detail: "Advisor can approve the candidate wording for compliance review.", label: "Advisor authority", tone: "gold", value: "Review only" },
+        { detail: "Client-visible release remains blocked until compliance gates pass.", label: "Client visibility", tone: "red", value: "Blocked" },
+        { detail: "Unsupported claims must stay internal until evidence-backed rebuild.", label: "Internal draft", tone: "red", value: "Contained" },
+        { detail: "Release timestamp is not set by advisor approval.", label: "Release record", tone: "red", value: "Not set" },
+      ]}
+      nextStep={processContract.nextPermittedAction}
+      testId="bd07-advisor-not-release-gate"
+      title="Advisor approval is not release"
+      tone="restricted"
+    />
+  );
+}
+
+function ComplianceReleaseGate() {
+  const processContract = processFirstUxContractForPageId("039");
+
+  return (
+    <ProcessGateRail
+      actionLabel="Request evidence or keep release blocked"
+      actionState="Release remains unavailable until advisor approval, evidence sufficiency, client-safe payload, permission and audit persistence all pass."
+      acceptanceIds={processContract.acceptanceIds}
+      blockedReason="evidence_policy_audit_preconditions_not_satisfied"
+      businessProcessIds={processContract.businessProcessIds}
+      currentStep="compliance_release_decision"
+      gateState="Release blocked"
+      gateIds={processContract.gateIds}
+      items={[
+        { detail: "Advisor approval exists as prerequisite only.", label: "Advisor gate", tone: "green", value: "Satisfied" },
+        { detail: "Required evidence is incomplete; upload alone is not sufficiency.", label: "Evidence sufficiency", tone: "red", value: "Blocked" },
+        { detail: "Forbidden internal payload cannot become client visible.", label: "Client-safe payload", tone: "red", value: "Hidden" },
+        { detail: "Audit event must persist before a critical mutation.", label: "Audit persistence", tone: "gold", value: "Required" },
+      ]}
+      nextStep={processContract.nextPermittedAction}
+      testId="bd08-compliance-release-gate"
+      title="Compliance release gate"
+    />
   );
 }
 
@@ -1357,6 +1412,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
         primary={
           <div className="space-y-4">
             <Phase4WorkbenchPanel activeTask="Advisor review ADV-219 selected" blocker="Advisor approval is blocked from release until compliance, evidence and audit gates pass." context="Advisor can assess suitability wording, but cannot publish client-visible advice." primaryAction="Record advisor review" queueLabel="Advisor approval queue" safetyNote="UX-WORKBENCH-003: advisor approval does not set clientVisible and does not bypass compliance release." taskId="UX-WORKBENCH-003" />
+            <AdvisorNotReleaseGate />
             <Phase5DetailSplitPanel decisionSupport="Advisor detail shows suitability, rationale and release preconditions without acting as compliance." objectLabel="Advisor package detail" objectState="Advisor review internal; compliance release missing" pageJob="Advisor detail supports one package review without becoming release room." safetyBoundary="Advisor detail cannot set clientVisible or bypass compliance." splitTaskId="UX-PAGE-SPLIT-004" taskId="UX-PAGE-SPLIT-004" />
           </div>
         }
@@ -1632,6 +1688,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
         primary={
           <div className="space-y-4">
             <Phase5DetailSplitPanel decisionSupport="Compliance detail carries evidence, policy and audit state before later decision-room actions." objectLabel="Compliance object review" objectState="Release gates not satisfied" pageJob="Compliance detail reviews one object without becoming a hidden drawer decision." safetyBoundary="Detail context cannot release without explicit gated decision controls." splitTaskId="UX-PAGE-SPLIT-003" taskId="UX-PAGE-SPLIT-003" />
+            <ComplianceReleaseGate />
             <Phase6DecisionRoomPanel audit="Audit event must record actor, target, gate state and confirm or cancel outcome before any release mutation." blocker="Release remains blocked because evidence, policy, reviewer and approver gates are not all satisfied." cancelLabel="Cancel without mutation" confirmLabel="Confirm compliance release" decisionLabel="Compliance release decision room" evidence="Evidence checklist, policy exception state and audit references are visible before decision." preconditions="Evidence review complete, policy pass, human reviewer and compliance approver must all pass." safetyNote="No release, export or advice effect can occur until gate preconditions pass and an audit record exists." taskId="UX-DECISION-ROOM-001" />
           </div>
         }

@@ -8,6 +8,7 @@ import {
   phase0LockedPrismaShape,
   phase0LockedRouteWorksetCounts,
   phase0P0GateLabels,
+  phase0SourceUniverseReferences,
   oldSourceOfTruthPhrases,
   trueUxRequiredSupportArtifacts,
   trueUxSourceHierarchyMarkers,
@@ -56,6 +57,19 @@ test.describe("True UX source reality gate", () => {
 
     expect(specFiles).toContain("tests/source-reality-gate.spec.ts");
     expect(specFiles.length).toBeGreaterThanOrEqual(17);
+  });
+
+  test("keeps P0 business process specification available through source universe references", () => {
+    const { sourceUniverseReferences } = buildPhase0SourceRealitySnapshot();
+
+    expect(sourceUniverseReferences).toEqual(phase0SourceUniverseReferences);
+    expect(sourceUniverseReferences).toContainEqual(
+      expect.objectContaining({
+        path: "docs/00-current/ALPHAVEST_DETAILED_BUSINESS_PROCESS_SPECIFICATION_P0_ONLY.json",
+        referenceKey: "universe:p0-business-process-specification",
+        status: "P0_PROCESS_DETAIL_SPECIFICATION_ACCEPTED_AS_FILTERED_VIEW",
+      }),
+    );
   });
 
   test("keeps True UX support artifacts present and handoff-bounded", () => {
