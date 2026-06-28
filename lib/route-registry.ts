@@ -1122,8 +1122,8 @@ export const screenRoutes = [
   {
     pageId: "055",
     route: "/export/:id/scope",
-    title: "Export Scope Selection",
-    purpose: "Export scope selection",
+    title: "Export Content Selection",
+    purpose: "Export content selection",
     visualMode: "NORMAL_PAGE",
     visualAsset: "public/reference/page_ui_v3/clean_pages/PAGE-055-export-id-scope.png",
     navigationGroup: "export",

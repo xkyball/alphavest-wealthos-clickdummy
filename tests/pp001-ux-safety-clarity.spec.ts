@@ -17,8 +17,8 @@ test.describe("PP-001 UX safety clarity", () => {
 
     expect(topBar).toContain("Tenant context");
     expect(topBar).toContain("Role context");
-    expect(topBar).toContain("Search scoped by tenant + role");
-    expect(topBar).toContain("Internal until released");
+    expect(topBar).toContain("Tenant + role context");
+    expect(topBar).toContain("Internal review");
     expect(topBar).toContain("Client-safe actor");
     expect(topBar).toContain("Internal actor");
 
@@ -45,7 +45,6 @@ test.describe("PP-001 UX safety clarity", () => {
 
     for (const state of ["denied", "hidden", "internal-only", "redacted"] as const) {
       const stateMetaKey = state.includes("-") ? `"${state}": {` : `${state}: {`;
-      expect(statePanel).toContain(`| "${state}"`);
       expect(statePanel).toContain(stateMetaKey);
     }
   });

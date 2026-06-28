@@ -1434,92 +1434,94 @@ function ExportScopePage({ title }: { title: string }) {
         totalAvailable: 0,
       }
     : snapshot?.summary ?? exportScopeSummary;
-  const availableColumns: Array<DataTableColumn<(typeof scopeRows)[number]>> = [
-    { key: "name", header: "Name", render: (row) => <span className={cn("font-semibold", row.selected ? "text-alphavest-ivory" : "text-alphavest-muted")}>{row.name}</span>, sortable: true },
-    { key: "type", header: "Type", render: (row) => row.type, sortable: true },
-    { key: "access", header: "Access", render: (row) => <Badge tone={toneFor(row.access)}>{row.access}</Badge>, sortable: true }
-  ];
+  const visibleScopeRows = scopeRows.slice(0, 4);
+  const selectedScopeRows = scopeRows.filter((item) => item.selected).slice(0, 3);
 
   return (
     <WorksurfaceShell
-      description="Object-level export scope selection for permitted objects only before redaction and preview can proceed."
+      description="Choose the export content set and continue to protection review."
       eyebrow="Export and redaction"
       primary={
         <div className="space-y-4">
-          <PageLead description="Select permitted objects only. Preview, approval, download and share remain unavailable." icon={Folder} title={title} />
-          <ExportStageBoundary activeStage="scope" />
-          <ExportWorkflowTruthPanel apiState={apiState} loadState={loadState} />
+          <PageLead description="Choose permitted content, review recipients and continue to protection review." icon={Folder} title={title} />
+          <section
+            className="grid gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-panel/60 p-3 md:grid-cols-4"
+            data-ux-export-api-state={apiState}
+            data-ux-export-load-state={loadState}
+          >
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Available</p>
+              <p className="mt-1 text-lg font-semibold text-alphavest-ivory">{summary.totalAvailable}</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Included</p>
+              <p className="mt-1 text-lg font-semibold text-alphavest-ivory">{summary.included}</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Recipients</p>
+              <p className="mt-1 text-sm text-alphavest-muted">2 reviewers</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Review</p>
+              <p className="mt-1 text-sm text-alphavest-muted">{apiUnavailable ? "Retry required" : "Ready"}</p>
+            </div>
+          </section>
         </div>
       }
       routeId="055"
-      safetyNote="Scope selection is not preview, approval, download or share; restricted objects stay excluded until permission and redaction controls pass."
-      statusItems={[
-        { label: "Stage", tone: "blue", value: "Scope" },
-        { label: "Included", tone: "green", value: String(summary.included) },
-        { label: "Blocked", tone: "red", value: String(summary.blocked) },
-      ]}
+      safetyNote="Content selection prepares review context only; package preparation stays behind protection review."
       title={title}
       worksurfaceId="export-redaction-scope"
     >
-      <UxDenseOperationsPanel
-        className="mt-5"
-        controls={["Date range", "Recipients", "Object type", "Access", "Selected only", "Blocked excluded"]}
-        description="Object-level scope for the next redaction step."
-        pageId="055"
-        resultLabel={`${summary.included} included; ${summary.blocked} blocked; ${summary.invalidSelected} invalid selected`}
-        safetyNote="Scope selection is not preview, approval, download or share; restricted objects stay excluded until permission and redaction controls pass."
-        title="Export-scope operations"
-      >
-        <div className="grid gap-4 rounded-md border border-alphavest-border/70 bg-alphavest-panel/55 p-3 md:grid-cols-3">
-          <FieldPill label="Date range" value="May 1 - May 21, 2025" />
-          <FieldPill label="Recipients" value="2 selected" />
-          <FieldPill label="Object type" value="All types" />
-        </div>
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <div className="mt-3 grid gap-4 xl:grid-cols-[1fr_24rem]">
         <Card>
-          <CardHeader>
-            <CardTitle>Available Scope</CardTitle>
+          <CardHeader className="flex flex-col gap-3 p-4 pb-2 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <CardTitle className="text-xl">Available Content</CardTitle>
+              <p className="mt-1 text-sm text-alphavest-muted">Review the proposed content set before continuing.</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <FieldPill label="Date range" value="May 1 - May 21, 2025" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <DataTable compact columns={availableColumns} getRowId={(row) => row.id} onSortChange={handleStaticSortChange} responsiveMode="table" rows={scopeRows} sortDirection="asc" sortKey="name" />
+          <CardContent className="space-y-2 p-4 pt-0">
+            {visibleScopeRows.map((row) => (
+              <div className="grid gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 p-3 text-sm md:grid-cols-[1fr_9rem_8rem]" key={row.id}>
+                <span className="font-semibold text-alphavest-ivory">{row.name}</span>
+                <span className="text-alphavest-muted">{row.type}</span>
+                <InlineStatus tone={toneFor(row.access)} value={row.access} />
+              </div>
+            ))}
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <CardTitle>Selected Scope</CardTitle>
-              <p className="mt-1 text-sm text-alphavest-muted">{summary.included} included, {summary.invalidSelected} invalid selected.</p>
+          <CardHeader className="p-4 pb-2">
+            <CardTitle className="text-xl">Selected Content</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 p-4 pt-0">
+            <p className="text-sm text-alphavest-muted">{summary.included} included for the next review.</p>
+            <div className="space-y-2">
+              {selectedScopeRows.map((row) => (
+                <p className="flex items-center justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-navy/35 px-3 py-2 text-sm" key={row.id}>
+                  <span className="font-semibold text-alphavest-ivory">{row.name}</span>
+                  <span className="text-alphavest-muted">{row.type}</span>
+                </p>
+              ))}
             </div>
+            <a className={primaryButtonClass + " w-full"} href="/export/demo/redaction">
+              Review protection <ArrowRight aria-hidden="true" className="size-4" />
+            </a>
             <button
-              aria-describedby="j08-clear-scope-reason"
-              className={secondaryButtonClass}
+              className={secondaryButtonClass + " w-full"}
               data-testid="j08-clear-scope"
-              data-ux-action-state="blocked-until-typed-reset-command"
               disabled
+              title="Content reset is available after review tools load."
               type="button"
             >
-              Clear all blocked
+              <LockKeyhole aria-hidden="true" className="size-4" />Reset content
             </button>
-          </CardHeader>
-          <CardContent>
-            <DataTable compact columns={availableColumns} getRowId={(row) => `${row.id}-selected`} onSortChange={handleStaticSortChange} responsiveMode="table" rows={scopeRows.filter((item) => item.selected)} sortDirection="asc" sortKey="name" />
-            <StatePanel className="mt-4" detail={`${summary.blocked} restricted or not-permitted objects are excluded. Limited items remain in scope only after redaction review.`} state="restricted" title="Object-level permission checks" />
-            <p className="mt-2 text-xs leading-5 text-alphavest-muted" id="j08-clear-scope-reason">
-              Scope reset is blocked until it is implemented as a typed export workflow command; the retired generic action is no longer a product path.
-            </p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              <FieldPill label="Included" value={`${summary.included} objects`} />
-              <FieldPill label="Limited" value={`${summary.limitedIncluded} reviewed`} />
-              <FieldPill label="Blocked" value={`${summary.blocked} excluded`} />
-            </div>
           </CardContent>
         </Card>
-      </div>
-      </UxDenseOperationsPanel>
-      <ExportPayloadBoundary className="mt-5" />
-      <div className="mt-5 space-y-5">
-        <ScfP07P09TrustPanel mode="export" />
-        <ScfP10P14ClosurePanel mode="api" />
       </div>
     </WorksurfaceShell>
   );

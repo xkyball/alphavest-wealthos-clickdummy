@@ -30,11 +30,11 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
   const currentScope = currentRoute ? routeScopeForPageId(currentRoute.pageId) : null;
   const globalSearchDisabledReason =
     currentScope && currentScope !== "MVP" && currentScope !== "MVP_SUPPORT"
-      ? "Search is disabled on registered-only routes."
+      ? "Search is disabled for this registered page."
       : undefined;
   const routeIsClientVisibilitySensitive =
     currentRoute && "clientVisibilitySensitive" in currentRoute ? Boolean(currentRoute.clientVisibilitySensitive) : false;
-  const visibilityMode = routeIsClientVisibilitySensitive ? "Internal until released" : "Scoped context";
+  const visibilityMode = routeIsClientVisibilitySensitive ? "Internal review" : "Workspace context";
   const objectContext = currentRoute
     ? `${currentRoute.objectType.replaceAll("_", " ").toLowerCase()} · ${currentRoute.permissionAction.toLowerCase()}`
     : "workspace context";
@@ -89,7 +89,7 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
                 className="inline-flex h-10 items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/62 px-3 text-xs font-semibold text-alphavest-muted"
                 data-testid="ux-nav-visibility-mode"
               >
-                {visibilityMode} · {currentScope ? routeScopeLabels[currentScope] : "Scoped"}
+                {visibilityMode} · {currentScope ? routeScopeLabels[currentScope] : "Workspace"}
               </span>
             ) : null}
             <span className="inline-flex h-10 items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/62 px-3 text-xs font-semibold text-alphavest-muted">
@@ -100,7 +100,7 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
               className="inline-flex h-10 items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/62 px-3 text-xs font-semibold text-alphavest-muted"
               data-testid="topbar-search-scope"
             >
-              Search scoped by tenant + role
+              Tenant + role context
             </span>
             <span className="inline-flex h-10 items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/62 px-3 text-xs font-semibold text-alphavest-muted">
               {session.tenant.riskRating} risk · {session.tenant.jurisdiction}

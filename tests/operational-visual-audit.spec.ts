@@ -96,7 +96,7 @@ test.describe("operational visual audit non-negotiable", () => {
 
         return {
           badgeClusterCount,
-          forbiddenOperationalText: /Payload Redaction Operations|Payload:|Stage:|Redactions:|Approval blocked until preview|Approval blocked until|blocked until .*gates? pass|release gates? pass|visibility gates? pass|Scope\s+Scope|Dense operations safety gate|Workflow Badges|workflow proof|proof drawer|command spine|drawer handoff|Access request gate|Export redaction gate|Selected\s+Queue|Scoped\s+Detail|Gated\s+Step|Advisor approval is not release|Compliance pending|Client blocked|Draft contained|Release not set|Advisor candidate only|Not released/i.test(visibleText),
+          forbiddenOperationalText: /Process Runtime|Search scoped|Scoped context|Export Scope Selection|Select export scope|scope selection|Scope\s+Scope|Payload Redaction Operations|Payload:|Stage:|Redactions:|Approval blocked until preview|Approval blocked until|blocked until .*gates? pass|release gates? pass|visibility gates? pass|Dense operations safety gate|Workflow Badges|workflow proof|proof drawer|command spine|drawer handoff|Access request gate|Export redaction gate|Selected\s+Queue|Scoped\s+Detail|Gated\s+Step|Advisor approval is not release|Compliance pending|Client blocked|Draft contained|Release not set|Advisor candidate only|Not released/i.test(visibleText),
           horizontalOverflow: document.documentElement.scrollWidth > viewportWidth + 1,
           internalScrollContainers,
           narrowTableCells,

@@ -21,22 +21,22 @@ test.describe("UXP2-001 global search affordance", () => {
     await authenticate(page);
   });
 
-  test("keeps global search only as scoped DB-backed lifecycle on MVP routes", async ({ page }) => {
+  test("keeps global search DB-backed on MVP routes", async ({ page }) => {
     await page.goto("/client/home");
 
-    const search = page.getByRole("combobox", { name: "Tenant-scoped global search" }).first();
+    const search = page.getByRole("combobox", { name: "Global search" }).first();
     await expect(search).toBeEnabled();
 
     await search.fill("Bennett");
-    await expect(page.getByText(/Searching scoped DB rows|Bennett Family Office|No tenant-scoped rows found/).first()).toBeVisible();
+    await expect(page.getByText(/Searching demo DB rows|Bennett Family Office|No matching rows found/).first()).toBeVisible();
   });
 
   test("disables global search on registered-only reference routes", async ({ page }) => {
     await page.goto("/states");
 
-    const search = page.getByRole("combobox", { name: "Tenant-scoped global search" }).first();
+    const search = page.getByRole("combobox", { name: "Global search" }).first();
     await expect(search).toBeDisabled();
-    await expect(page.getByText("Search is disabled on registered-only routes.").first()).toBeVisible();
-    await expect(page.getByText(/Searching scoped DB rows|No tenant-scoped rows found/)).toHaveCount(0);
+    await expect(page.getByText("Search is disabled for this registered page.").first()).toBeVisible();
+    await expect(page.getByText(/Searching demo DB rows|No matching rows found/)).toHaveCount(0);
   });
 });

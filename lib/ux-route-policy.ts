@@ -261,7 +261,7 @@ const flowLabels: Record<string, string> = {
   "052": "Context",
   "053": "Trigger",
   "054": "Export",
-  "055": "Scope",
+  "055": "Content",
   "056": "Redact",
   "057": "Preview",
   "058": "Deliver",

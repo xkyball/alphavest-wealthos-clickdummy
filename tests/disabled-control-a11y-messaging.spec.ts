@@ -28,15 +28,15 @@ test.describe("UXP2-010 accessibility-safe disabled-control messaging", () => {
     const headerStatus = page
       .locator('[data-ux-primary-cta="true"][data-ux-interactive="false"]')
       .filter({ hasText: "Reference only" });
-    const search = page.getByRole("combobox", { name: "Tenant-scoped global search" }).first();
+    const search = page.getByRole("combobox", { name: "Global search" }).first();
 
     await expect(headerStatus).toHaveAttribute("data-ux-disabled-message", "accessible");
-    await expect(headerStatus).toHaveAttribute("data-ux-disabled-reason", /Payload visibility and audit gates remain separate from visible navigation/);
+    await expect(headerStatus).toHaveAttribute("data-ux-disabled-reason", /Protected routes remain deferred, reference-only or held until explicitly unlocked/);
     await expect(headerStatus).toHaveAttribute("aria-describedby", /page-header-reference-only-disabled-reason/);
     await expect(search).toBeDisabled();
     await expect(search).toHaveAttribute("data-ux-disabled-message", "visible");
-    await expect(search).toHaveAttribute("data-ux-disabled-reason", "Search is disabled on registered-only routes.");
-    await expect(page.getByTestId("ux-disabled-control-reason").filter({ hasText: "Search is disabled on registered-only routes." }).first()).toBeVisible();
+    await expect(search).toHaveAttribute("data-ux-disabled-reason", "Search is disabled for this registered page.");
+    await expect(page.getByTestId("ux-disabled-control-reason").filter({ hasText: "Search is disabled for this registered page." }).first()).toBeVisible();
   });
 
   test("removes action-board filter controls instead of exposing static unavailable controls", async ({ page }) => {

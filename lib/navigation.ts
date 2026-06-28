@@ -91,10 +91,10 @@ const navigationDefinitions: readonly NavigationGroupDefinition[] = [
     items: [
       {
         activeRoutePatterns: ["/tenants/demo/setup"],
-        description: "DB-backed process instances, state and audit history.",
+        description: "Demo operations setup, state history and audit foundations.",
         href: "/tenants/demo/setup",
         icon: Route,
-        label: "Process Runtime",
+        label: "Operations Setup",
         pageId: "command-center",
         routePattern: "/tenants/demo/setup",
         scope: "IMPLEMENTED_APP_ROUTE",

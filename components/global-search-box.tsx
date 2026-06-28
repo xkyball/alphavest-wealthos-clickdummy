@@ -22,7 +22,7 @@ type GlobalSearchBoxProps = {
   placeholder?: string;
 };
 
-export function GlobalSearchBox({ className, disabledReason, placeholder = "Search scoped workspace..." }: GlobalSearchBoxProps) {
+export function GlobalSearchBox({ className, disabledReason, placeholder = "Search workspace..." }: GlobalSearchBoxProps) {
   const { session } = useDemoSession();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<GlobalSearchResult[]>([]);
@@ -83,7 +83,7 @@ export function GlobalSearchBox({ className, disabledReason, placeholder = "Sear
   return (
     <div className={cn("relative min-w-0", className)}>
       <label className="block">
-        <span className="sr-only">Tenant-scoped global search</span>
+        <span className="sr-only">Global search</span>
         <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-5 size-4 -translate-y-1/2 text-alphavest-subtle" />
         <input
           aria-controls={resultPanelId}
@@ -110,13 +110,13 @@ export function GlobalSearchBox({ className, disabledReason, placeholder = "Sear
         <span
           className="pointer-events-none absolute right-3 top-5 hidden -translate-y-1/2 rounded border border-alphavest-border px-1.5 py-0.5 text-xs text-alphavest-subtle md:block"
           data-testid="global-search-scope-badge"
-          title="Tenant and role scoped search"
+          title="Tenant and role filtered search"
         >
-          Scoped
+          Workspace
         </span>
       </label>
       <p className="sr-only" id={descriptionId}>
-        {disabledReason ?? "Searches scoped demo database rows for the selected tenant and role."}
+        {disabledReason ?? "Searches demo database rows for the selected tenant and role."}
       </p>
       {disabledReason ? (
         <p className="mt-1 text-xs text-alphavest-muted" data-testid="ux-disabled-control-reason" data-ux-disabled-reason={disabledReason} id={disabledReasonId}>
@@ -125,9 +125,9 @@ export function GlobalSearchBox({ className, disabledReason, placeholder = "Sear
       ) : null}
       {hasPanel ? (
         <div className="absolute left-0 right-0 top-12 z-40 overflow-hidden rounded-md border border-alphavest-border bg-alphavest-panel shadow-2xl" id={resultPanelId}>
-          {visibleState === "loading" ? <p className="p-4 text-sm text-alphavest-muted">Searching scoped DB rows...</p> : null}
-          {visibleState === "error" ? <p className="p-4 text-sm text-alphavest-red">Search failed closed for this scope.</p> : null}
-          {visibleState === "ready" && visibleResults.length === 0 ? <p className="p-4 text-sm text-alphavest-muted">No tenant-scoped rows found.</p> : null}
+          {visibleState === "loading" ? <p className="p-4 text-sm text-alphavest-muted">Searching demo DB rows...</p> : null}
+          {visibleState === "error" ? <p className="p-4 text-sm text-alphavest-red">Search failed closed for this context.</p> : null}
+          {visibleState === "ready" && visibleResults.length === 0 ? <p className="p-4 text-sm text-alphavest-muted">No matching rows found.</p> : null}
           {visibleResults.map((result) => (
             <a
               className="block border-b border-alphavest-border/55 px-4 py-3 text-sm transition last:border-0 hover:bg-alphavest-charcoal/70"

@@ -60,9 +60,9 @@ export function ProcessRuntimeLink({ onNavigate }: { onNavigate?: () => void }) 
     >
       <Route aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
       <span className="min-w-0 flex-1">
-        <span className="block truncate font-semibold">Process Runtime</span>
+        <span className="block truncate font-semibold">Operations Setup</span>
         <span className="block line-clamp-2 text-[0.66rem] leading-4 text-alphavest-subtle">
-          DB-backed process instances, state and audit history.
+          Demo setup, state history and audit foundations.
         </span>
       </span>
     </Link>

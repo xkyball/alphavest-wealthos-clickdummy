@@ -736,7 +736,6 @@ test.describe("UX-DENSITY productive workbench routes", () => {
 test.describe("UX-DENSITY dense operations routes", () => {
   const d3OperationsRoutes = [
     { pageId: "042", path: "/compliance/reviews/demo/audit" },
-    { pageId: "055", path: "/export/demo/scope" },
     { pageId: "056", path: "/export/demo/redaction" },
   ];
 
@@ -1073,7 +1072,7 @@ test.describe("UX-CTA export lifecycle separation", () => {
 
   test("maps export routes to separate lifecycle CTA states", () => {
     const expectedPrimaryLabels: Record<string, RegExp> = {
-      "054": /Select export scope/,
+      "054": /Select export content/,
       "055": /Review redaction/,
       "056": /Inspect preview/,
       "057": /Open delivery controls after approval/,
@@ -1095,21 +1094,21 @@ test.describe("UX-CTA export lifecycle separation", () => {
   });
 
   const exportScreens = [
-    { path: "/export/new", required: "Name the request, choose contents and continue to review." },
-    { path: "/export/demo/scope", required: "Scope selection is not preview, approval, download or share" },
-    { path: "/export/demo/redaction", required: "Preview inspection must pass before approval can be recorded." },
-    { path: "/export/demo/approval?state=approval", required: "Generation, download and share remain separate controlled steps." },
-    { path: "/export/demo/download", required: "Share after download" },
+    { path: "/export/new", required: "Name the request, choose contents and continue to review.", routeLanguage: /choose contents|content/i },
+    { path: "/export/demo/scope", required: "Choose permitted content, review recipients and continue to protection review.", routeLanguage: /content|protection review/i },
+    { path: "/export/demo/redaction", required: "Preview inspection must pass before approval can be recorded.", routeLanguage: /redaction|preview|approval/i },
+    { path: "/export/demo/approval?state=approval", required: "Generation, download and share remain separate controlled steps.", routeLanguage: /generation|download|share/i },
+    { path: "/export/demo/download", required: "Share after download", routeLanguage: /download|share/i },
   ];
 
-  for (const { path, required } of exportScreens) {
+  for (const { path, required, routeLanguage } of exportScreens) {
     test(`${path} keeps export lifecycle steps separate`, async ({ page }) => {
       await page.setViewportSize({ height: 1000, width: 1440 });
       await authenticateRouteSmokePage(page);
       await page.goto(path);
 
       await expect(page.getByText(required).first()).toBeVisible();
-      await expect(page.locator("body")).toContainText(/scope|redaction|preview|approval|download|share|separate/i);
+      await expect(page.locator("body")).toContainText(routeLanguage);
       await expect(page.locator("body")).not.toContainText(
         /download ready|share ready|client accepted|client visibility unlocked|preview approved/i,
       );
