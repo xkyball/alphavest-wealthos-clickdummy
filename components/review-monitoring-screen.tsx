@@ -124,7 +124,7 @@ function ReadinessStrip() {
         {
           icon: CalendarClock,
           title: "Due state",
-          detail: "Derived from ReviewSchedule, QueueItem and ActionItem dates in the Phase D service.",
+          detail: "Derived from ReviewSchedule, QueueItem and ActionItem dates in the review monitoring service.",
         },
         {
           icon: ShieldAlert,
@@ -188,11 +188,11 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, de
     <section className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-4" data-testid="ux-phase6-decision-room" data-ux-phase6-task={taskId}>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-red">Phase 6 decision room safety recheck</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-red">Decision gate</p>
           <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{decisionLabel}</h2>
           <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted" data-testid="ux-phase6-safety-note">{safetyNote}</p>
         </div>
-        <Badge tone="red">{taskId}</Badge>
+        <Badge tone="red">Controlled action</Badge>
       </div>
       <div className="mt-4 grid gap-3 lg:grid-cols-4">
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase6-preconditions">
@@ -228,7 +228,7 @@ function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pag
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Detail review</p>
           <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectLabel}</h2>
         </div>
-        <Badge tone="gold">{taskId}</Badge>
+        <Badge tone="gold">Internal review</Badge>
       </div>
       <div className="mt-4 grid gap-3 lg:grid-cols-4">
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-object-state">
@@ -240,8 +240,8 @@ function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pag
           <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{decisionSupport}</p>
         </div>
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-drawer-boundary">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Drawer boundary</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">Drawer-only context cannot approve, release, delete, export or mutate payload visibility. {safetyBoundary}</p>
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Controls</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{safetyBoundary}</p>
         </div>
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-page-job">
           <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Focus</p>
@@ -273,8 +273,8 @@ function Phase4WorkbenchPanel({
     <section className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4" data-testid="ux-workbench-phase4" data-ux-workbench-task={taskId}>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <Badge tone="gold">{taskId}</Badge>
-          <h3 className="mt-3 font-display text-2xl text-alphavest-ivory">Active task workbench</h3>
+          <Badge tone="gold">Active work</Badge>
+          <h3 className="mt-3 font-display text-2xl text-alphavest-ivory">Active workbench</h3>
           <p className="mt-2 text-sm leading-6 text-alphavest-muted">One selected item, one guarded action rail and one explicit blocker. Queue visibility does not change release, export or client visibility state.</p>
         </div>
         <button className={primaryButtonClass} data-testid="ux-workbench-primary-cta" disabled type="button">{primaryAction}</button>
@@ -309,10 +309,10 @@ async function postPhaseDAction(actionId: string) {
 
   const body = (await response.json().catch(() => undefined)) as { error?: string; noClientRelease?: boolean; result?: { message?: string } } | undefined;
   if (!response.ok) {
-    throw new Error(body?.error ?? `Phase D action failed with HTTP ${response.status}.`);
+    throw new Error(body?.error ?? `Review monitoring action failed with HTTP ${response.status}.`);
   }
 
-  return body?.result?.message ?? "Phase D action recorded. No client release occurred.";
+  return body?.result?.message ?? "Review monitoring action recorded. No client release occurred.";
 }
 
 function ActionStatus({ value }: { value: string | null }) {
@@ -371,7 +371,7 @@ function ReviewCalendarPage({ title }: { title: string }) {
       <div className="space-y-6">
         <PageHeader
           description="Monitor review cadence, due dates and internal escalation readiness. Calendar state is operational only and does not release advice to clients."
-          eyebrow="Phase D · J16"
+          eyebrow="Review calendar"
           title={title}
         />
         <UxHubPage pageId="068" />
@@ -430,7 +430,7 @@ function ReviewCalendarPage({ title }: { title: string }) {
                   onClick={() => {
                     void postPhaseDAction("j16.escalateOverdueReview")
                       .then(setActionStatus)
-                      .catch((error: unknown) => setActionStatus(error instanceof Error ? error.message : "Phase D action failed."));
+                      .catch((error: unknown) => setActionStatus(error instanceof Error ? error.message : "Review monitoring action failed."));
                   }}
                   type="button"
                 >
@@ -443,7 +443,7 @@ function ReviewCalendarPage({ title }: { title: string }) {
                   onClick={() => {
                     void postPhaseDAction("j16.scheduleReview")
                       .then(setActionStatus)
-                      .catch((error: unknown) => setActionStatus(error instanceof Error ? error.message : "Phase D action failed."));
+                      .catch((error: unknown) => setActionStatus(error instanceof Error ? error.message : "Review monitoring action failed."));
                   }}
                   type="button"
                 >
@@ -505,10 +505,10 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
       <div className="space-y-6">
         <PageHeader
           description="Review rebalance drift and liquidity triggers as internal monitoring inputs. Trigger routing is not advice and remains blocked from client release."
-          eyebrow="Phase D · J17"
+          eyebrow="Rebalance monitoring"
           title={title}
         />
-        <Phase4WorkbenchPanel activeTask="Rebalance trigger RB-77 selected" blocker="Monitoring trigger is internal review state only and cannot execute advice automatically." context="Reviewer confirms stale evidence, drift and suitability prerequisites before advisory routing." primaryAction="Route to advisory review" queueLabel="Rebalance monitoring queue" safetyNote="UX-WORKBENCH-005: monitoring does not create client release, rebalance execution or advice approval." taskId="UX-WORKBENCH-005" />
+        <Phase4WorkbenchPanel activeTask="Rebalance trigger RB-77 selected" blocker="Monitoring trigger is internal review state only and cannot execute advice automatically." context="Reviewer confirms stale evidence, drift and suitability prerequisites before advisory routing." primaryAction="Route to advisory review" queueLabel="Rebalance monitoring queue" safetyNote="Monitoring does not create client release, rebalance execution or advice approval." taskId="UX-WORKBENCH-005" />
         <Phase5DetailSplitPanel decisionSupport="Monitoring detail separates rebalance trigger review from execution or client advice." objectLabel="Rebalance trigger split" objectState="Internal trigger blocked" pageJob="Monitoring detail reviews one trigger without becoming rebalance execution." safetyBoundary="Monitoring detail cannot execute trades, approve advice or release content." splitTaskId="UX-PAGE-SPLIT-008" taskId="UX-PAGE-SPLIT-008" />
         <Phase6DecisionRoomPanel audit="Monitoring audit must record trigger, due state, reviewer routing and cancel or confirm outcome." blocker="Rebalance review remains blocked because monitoring state cannot execute trades or publish client advice." cancelLabel="Cancel monitoring decision" confirmLabel="Confirm rebalance review route" decisionLabel="Rebalance review decision room" evidence="Trigger path, due state, client-safe visibility flag and audit action path are visible before decision." preconditions="Human review route, evidence freshness, suitability context and compliance boundary must all pass." safetyNote="No release, export or advice effect can occur until gate preconditions pass and audit is recorded." taskId="UX-DECISION-ROOM-005" />
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -623,7 +623,7 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
                   onClick={() => {
                     void postPhaseDAction("j17.blockRebalanceTrigger")
                       .then(setActionStatus)
-                      .catch((error: unknown) => setActionStatus(error instanceof Error ? error.message : "Phase D action failed."));
+                      .catch((error: unknown) => setActionStatus(error instanceof Error ? error.message : "Review monitoring action failed."));
                   }}
                   type="button"
                 >
@@ -636,7 +636,7 @@ function RebalanceMonitoringPage({ title }: { title: string }) {
                   onClick={() => {
                     void postPhaseDAction("j17.routeRebalanceReview")
                       .then(setActionStatus)
-                      .catch((error: unknown) => setActionStatus(error instanceof Error ? error.message : "Phase D action failed."));
+                      .catch((error: unknown) => setActionStatus(error instanceof Error ? error.message : "Review monitoring action failed."));
                   }}
                   type="button"
                 >
@@ -674,7 +674,7 @@ export function ReviewMonitoringScreen({ route }: ReviewMonitoringScreenProps) {
   if (!isReviewMonitoringPageId(route.pageId)) {
     return (
       <AppShell>
-        <StatePanel detail="This route is not part of Phase D review monitoring." state="error" title="Unknown Phase D route" />
+        <StatePanel detail="This route is not part of review monitoring." state="error" title="Unknown review route" />
       </AppShell>
     );
   }

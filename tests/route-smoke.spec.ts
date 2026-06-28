@@ -431,7 +431,8 @@ test.describe("UX-WORKBENCH phase 4 active task workbenches", () => {
       await expect(workbench.getByTestId("ux-workbench-active-context")).toHaveCount(1);
       await expect(workbench.getByTestId("ux-workbench-action-rail")).toHaveCount(1);
       await expect(workbench.getByTestId("ux-workbench-blocker")).toContainText(/blocked|cannot|requires|does not/i);
-      await expect(workbench.getByTestId("ux-workbench-safety-note")).toContainText(route.taskId);
+      await expect(workbench.getByTestId("ux-workbench-safety-note")).toContainText(/client|release|export|visibility|advice|compliance|evidence/i);
+      await expect(workbench).not.toContainText(/UX-WORKBENCH-\d{3}/);
       await expect(workbench.getByTestId("ux-workbench-primary-cta")).toHaveCount(1);
       await expect(workbench.getByTestId("ux-workbench-primary-cta")).toBeDisabled();
     });
@@ -524,10 +525,11 @@ test.describe("UX-DETAIL / UX-PAGE-SPLIT phase 5 object review", () => {
       const panel = page.locator('[data-testid="ux-phase5-detail-split"][data-ux-phase5-task="' + route.taskId + '"]').first();
       await expect(panel).toBeVisible();
       await expect(panel).toHaveAttribute("data-ux-phase5-split-task", route.splitTaskId);
+      await expect(panel).not.toContainText(/UX-(DETAIL|PAGE-SPLIT)-\d{3}/);
       await expect(panel.getByTestId("ux-phase5-object-state")).toContainText(/state|active|pending|blocked|verified|review|release|overview|package|breach|trigger|request|evidence/i);
-      await expect(panel.getByTestId("ux-phase5-decision-support")).toContainText(/separates|support|explains|shows|captures|distinguishes|routes/i);
-      await expect(panel.getByTestId("ux-phase5-drawer-boundary")).toContainText(/cannot approve, release, delete, export or mutate payload visibility/i);
-      await expect(panel.getByTestId("ux-phase5-page-job")).toContainText(/without|separate|one|routes|handles|reviews|supports/i);
+      await expect(panel.getByTestId("ux-phase5-decision-support")).toContainText(/separates|support|explains|shows|captures|distinguishes|routes|reviewed/i);
+      await expect(panel.getByTestId("ux-phase5-drawer-boundary")).toContainText(/cannot|No client-visible|release|export|payload|advice|visibility/i);
+      await expect(panel.getByTestId("ux-phase5-page-job")).toContainText(/without|separate|one|routes|handles|reviews|supports|choose/i);
     });
   }
 

@@ -154,7 +154,7 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, compact = false,
       <section className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-4" data-testid="ux-phase6-decision-room" data-ux-decision-room-task={taskId} data-ux-layout-compression="compact_export_decision_gate">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <Badge tone="red">{taskId}</Badge>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-red">Decision gate</p>
             <h2 className="mt-2 font-display text-xl text-alphavest-ivory">{decisionLabel}</h2>
           </div>
           <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason={blocker} data-ux-interactive="false">{confirmLabel} blocked</span>
@@ -185,7 +185,7 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, compact = false,
           <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{decisionLabel}</h2>
           <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted" data-testid="ux-phase6-safety-note">{safetyNote}</p>
         </div>
-        <Badge tone="red">{taskId}</Badge>
+        <Badge tone="red">Controlled action</Badge>
       </div>
       <div className="mt-4 grid gap-3 lg:grid-cols-4">
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase6-preconditions">
@@ -282,7 +282,7 @@ function ExportStageBoundary({ activeStage, className }: { activeStage: ExportLi
             Scope is not redaction. Redaction is not preview. Preview is not approval. Approval is not download/share. Download/share is not client acceptance.
           </p>
         </div>
-        <Badge tone="gold">WP-10</Badge>
+        <Badge tone="gold">Export control</Badge>
       </div>
       <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-6">
         {exportLifecycleStages.map((stage, index) => {
@@ -362,19 +362,19 @@ function Phase5DetailSplitPanel({ compact = false, decisionSupport, objectLabel,
       <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-layout-compression="compact_export_boundary_strip" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Detail state</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Review state</p>
             <h2 className="mt-1 font-display text-xl text-alphavest-ivory">{objectLabel}</h2>
           </div>
-          <Badge tone="gold">{taskId}</Badge>
+          <Badge tone="gold">Internal review</Badge>
         </div>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           {[
-            ["Object state", objectState],
-            ["Decision support", decisionSupport],
-            ["Boundary", safetyBoundary],
-            ["Focus", pageJob],
-          ].map(([label, value]) => (
-            <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" key={label}>
+            ["Status", objectState, "ux-phase5-object-state"],
+            ["Evidence", decisionSupport, "ux-phase5-decision-support"],
+            ["Controls", safetyBoundary, "ux-phase5-drawer-boundary"],
+            ["Next step", pageJob, "ux-phase5-page-job"],
+          ].map(([label, value, testId]) => (
+            <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid={testId} key={label}>
               <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">{label}</p>
               <p className="mt-1 text-sm font-semibold text-alphavest-ivory">{value}</p>
             </div>
@@ -388,10 +388,10 @@ function Phase5DetailSplitPanel({ compact = false, decisionSupport, objectLabel,
     <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Detail state</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Review state</p>
           <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectLabel}</h2>
         </div>
-        <Badge tone="gold">{taskId}</Badge>
+        <Badge tone="gold">Internal review</Badge>
       </div>
       <div className="mt-4 grid gap-3 lg:grid-cols-4">
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-object-state">
@@ -403,8 +403,8 @@ function Phase5DetailSplitPanel({ compact = false, decisionSupport, objectLabel,
           <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{decisionSupport}</p>
         </div>
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-drawer-boundary">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Drawer boundary</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">Drawer-only context cannot approve, release, delete, export or mutate payload visibility. {safetyBoundary}</p>
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Controls</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{safetyBoundary}</p>
         </div>
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-page-job">
           <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Focus</p>
@@ -436,8 +436,8 @@ function Phase4WorkbenchPanel({
     <section className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4" data-testid="ux-workbench-phase4" data-ux-workbench-task={taskId}>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <Badge tone="gold">{taskId}</Badge>
-          <h3 className="mt-3 font-display text-2xl text-alphavest-ivory">Active task workbench</h3>
+          <Badge tone="gold">Active work</Badge>
+          <h3 className="mt-3 font-display text-2xl text-alphavest-ivory">Active workbench</h3>
           <p className="mt-2 text-sm leading-6 text-alphavest-muted">One selected item, one guarded action rail and one explicit blocker. Queue visibility does not change release, export or client visibility state.</p>
         </div>
         <button className={primaryButtonClass} data-testid="ux-workbench-primary-cta" disabled type="button">{primaryAction}</button>
@@ -982,7 +982,7 @@ function AuditHistoryPage({ title, visualState }: { title: string; visualState?:
   return (
     <WorksurfaceShell
       description="Tenant-scoped audit event review with selected-event lineage and controlled audit export still held behind explicit gates."
-      eyebrow="WP02 Governance Safety"
+      eyebrow="Governance safety"
       primary={
         <div className="space-y-4">
           <PageLead description="Access-event review with filters, export controls and event lineage." icon={LockKeyhole} title={title} />
@@ -1330,7 +1330,7 @@ function ExportNewPage({ title }: { title: string }) {
   return (
     <WorksurfaceShell
       description="Export request start screen that captures scope intent before redaction, preview, approval or controlled delivery can occur."
-      eyebrow="WP02 Export/Redaction"
+      eyebrow="Export and redaction"
       primary={
         <div className="space-y-4">
           <PageLead badge="Scope first" description="Start export scope before redaction, preview, approval or delivery." icon={Download} title={title} />
@@ -1374,7 +1374,7 @@ function ExportScopePage({ title }: { title: string }) {
   return (
     <WorksurfaceShell
       description="Object-level export scope selection for permitted objects only before redaction and preview can proceed."
-      eyebrow="WP02 Export/Redaction"
+      eyebrow="Export and redaction"
       primary={
         <div className="space-y-4">
           <PageLead description="Select permitted objects only. Preview, approval, download and share remain unavailable." icon={Folder} title={title} />
@@ -1578,7 +1578,7 @@ function ExportRedactionPage({ title }: { title: string }) {
   return (
     <WorksurfaceShell
       description="Payload redaction review for forbidden internal fields before preview inspection or approval can continue."
-      eyebrow="WP02 Export/Redaction"
+      eyebrow="Export and redaction"
       primary={
         <div className="space-y-4">
           <PageLead badge="Redaction step" description="Resolve forbidden payloads before preview inspection." icon={Eye} title={title} />
@@ -1805,7 +1805,7 @@ function ExportPreviewPage({ title, visualState }: { title: string; visualState?
   return (
     <WorksurfaceShell
       description="Preview inspection and audit-gated export approval surface kept separate from generation, download, share and client acceptance."
-      eyebrow="WP02 Export/Redaction"
+      eyebrow="Export and redaction"
       primary={
         <div className="space-y-4">
           <PageLead badge="Approval step" description="Inspect preview and record approval before generation or delivery." icon={PackageCheck} title={title} />
@@ -2043,7 +2043,7 @@ function ExportDownloadPage({ title, visualState }: { title: string; visualState
   return (
     <WorksurfaceShell
       description="Controlled download confirmation surface for approved export packages; secure share and client acceptance stay separate."
-      eyebrow="WP02 Export/Redaction"
+      eyebrow="Export and redaction"
       primary={
         <div className="space-y-4">
           <PageLead badge="Delivery step" description="Download is the next controlled delivery event; share remains separate." icon={Download} title={title} />
@@ -2453,7 +2453,7 @@ function SlaEscalationPage({ title }: { title: string }) {
   return (
     <div>
       <PageLead description="Monitor service levels, manage breaches and drive timely resolution." icon={LineChart} title={title} />
-      <Phase4WorkbenchPanel activeTask="SLA breach OPS-14 selected" blocker="Operational escalation cannot approve advice, release content, export packages or client visibility." context="Support owner reviews breach cause, recovery plan and compliance blockers before escalation." primaryAction="Escalate recovery owner" queueLabel="Ops SLA queue" safetyNote="UX-WORKBENCH-006: ops recovery work routes blockers but never bypasses advice, compliance, evidence or export gates." taskId="UX-WORKBENCH-006" />
+      <Phase4WorkbenchPanel activeTask="SLA breach OPS-14 selected" blocker="Operational escalation cannot approve advice, release content, export packages or client visibility." context="Support owner reviews breach cause, recovery plan and compliance blockers before escalation." primaryAction="Escalate recovery owner" queueLabel="Ops SLA queue" safetyNote="Ops recovery work routes blockers but never bypasses advice, compliance, evidence or export gates." taskId="UX-WORKBENCH-006" />
       <Phase5DetailSplitPanel decisionSupport="SLA detail explains breach cause, owner and recovery plan without acting as decision gate." objectLabel="SLA breach object review" objectState="Breach active; recovery owner required" pageJob="Ops SLA detail handles one breach separately from ops queue and communication context." safetyBoundary="Ops detail cannot approve advice, release content or export packages." splitTaskId="UX-PAGE-SPLIT-008" taskId="UX-PAGE-SPLIT-008" />
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         {metrics.map((metric) => (
@@ -2537,7 +2537,7 @@ function ServiceBlueprintPage({ title }: { title: string }) {
                 <div className="rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/55 p-3" key={`${stage}-${row.lane}`}>
                   <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">{row.lane}</p>
                   <p className="mt-1 text-sm leading-5 text-alphavest-muted">{row.cells[stageIndex]}</p>
-                  {rowIndex > 0 ? <Badge className="mt-3" tone="gold">Handoff</Badge> : null}
+                  {rowIndex > 0 ? <Badge className="mt-3" tone="gold">Follow-up</Badge> : null}
                 </div>
               ))}
             </div>

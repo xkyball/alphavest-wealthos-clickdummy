@@ -1078,7 +1078,7 @@ function PortalPage({ title }: { title: string }) {
       <ScreenTitle>{title}</ScreenTitle>
       <WorksurfaceShell
         description="Process-first home context for the client-facing projection, with internal review and release gates kept separate."
-        eyebrow="WP02 Client Context"
+        eyebrow="Client context"
         primary={<Epic07ClientFamilyEntry />}
         routeId="019"
         safetyNote="Client context cannot expose internal payloads, mark evidence sufficient or bypass compliance release."
@@ -2529,9 +2529,9 @@ function EvidenceLifecycleAreaEntry() {
       <div className="grid gap-2 lg:grid-cols-[1fr_auto]">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge tone="gold">EPIC-08</Badge>
-            <Badge tone="blue">DOMAIN-C</Badge>
-            <Badge tone="muted">S027</Badge>
+            <Badge tone="gold">Evidence lifecycle</Badge>
+            <Badge tone="blue">Client safe</Badge>
+            <Badge tone="muted">Document intake</Badge>
             <Badge data-testid="p10-p14-documents-closure" tone="green">Closure-safe</Badge>
           </div>
           <h3 className="mt-1.5 text-sm font-semibold text-alphavest-ivory">Evidence lifecycle workload</h3>
@@ -2595,8 +2595,8 @@ function EvidenceLifecycleCoreSurface({
       <div className="grid gap-2 xl:grid-cols-[minmax(0,1fr)_auto]">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge tone="gold">EPIC-08</Badge>
-            <Badge tone="blue">{screenId}</Badge>
+            <Badge tone="gold">Evidence lifecycle</Badge>
+            <Badge tone="blue">Review surface</Badge>
             <Badge tone="muted">{surfaceKind}</Badge>
           </div>
           <p className="mt-1.5 text-sm font-semibold text-alphavest-ivory">{routeContract.primaryJob}</p>
@@ -2642,7 +2642,7 @@ function DocumentsPage({ title }: { title: string }) {
       <WorksurfaceShell
         density="compact"
         description="Document intake overview with upload, projection and review boundaries made explicit."
-        eyebrow="WP02 Evidence"
+        eyebrow="Evidence"
         primary={<DocumentsPageContent title={title} />}
         routeId="027"
         safetyNote="The document hub lists scoped intake state only; it cannot mark review complete, prove sufficiency or release content."
@@ -2934,7 +2934,7 @@ function DocumentUploadPage({ title }: { title: string }) {
       <WorksurfaceShell
         density="compact"
         description="Upload intake keeps file submission separate from extraction review, evidence sufficiency and release."
-        eyebrow="WP02 Evidence"
+        eyebrow="Evidence"
         primary={
           <div className="space-y-2">
             <EvidenceLifecycleCoreSurface screenId="S028" surfaceKind="step" />
@@ -3171,7 +3171,7 @@ function ExtractionReviewPage({ title }: { title: string }) {
       <WorksurfaceShell
         density="compact"
         description="Human review of extracted draft fields before any scoped evidence sufficiency check."
-        eyebrow="WP02 Evidence"
+        eyebrow="Evidence"
         primary={
           <div className="space-y-2">
             <EvidenceLifecycleCoreSurface screenId="S029" surfaceKind="queue" />
@@ -3201,7 +3201,7 @@ function VerificationPendingPage({ title }: { title: string }) {
       <WorksurfaceShell
         density="compact"
         description="Pending verification state for submitted evidence, review SLA and clarification work."
-        eyebrow="WP02 Evidence"
+        eyebrow="Evidence"
         primary={
           <div className="space-y-2">
             <EvidenceLifecycleCoreSurface screenId="S030" surfaceKind="detail" />

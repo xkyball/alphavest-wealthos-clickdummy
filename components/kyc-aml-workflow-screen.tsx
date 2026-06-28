@@ -245,7 +245,7 @@ function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pag
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Detail review</p>
           <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectLabel}</h2>
         </div>
-        <Badge tone="gold">{taskId}</Badge>
+        <Badge tone="gold">Internal review</Badge>
       </div>
       <div className="mt-4 grid gap-3 lg:grid-cols-4">
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-object-state">
@@ -257,8 +257,8 @@ function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pag
           <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{decisionSupport}</p>
         </div>
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-drawer-boundary">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Drawer boundary</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">Drawer-only context cannot approve, release, delete, export or mutate payload visibility. {safetyBoundary}</p>
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Controls</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{safetyBoundary}</p>
         </div>
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-page-job">
           <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Focus</p>

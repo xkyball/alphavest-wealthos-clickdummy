@@ -591,7 +591,7 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, compact = false,
       <section className="rounded-md border border-alphavest-red/35 bg-alphavest-red/10 p-4" data-testid="ux-phase6-decision-room" data-ux-decision-room-task={taskId} data-ux-layout-compression="compact_decision_gate">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <Badge tone="red">{taskId}</Badge>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-red">Decision gate</p>
             <h2 className="mt-2 font-display text-xl text-alphavest-ivory">{decisionLabel}</h2>
           </div>
           <span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason={blocker} data-ux-interactive="false">{confirmLabel} blocked</span>
@@ -622,7 +622,7 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, compact = false,
           <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{decisionLabel}</h2>
           <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted" data-testid="ux-phase6-safety-note">{safetyNote}</p>
         </div>
-        <Badge tone="red">{taskId}</Badge>
+        <Badge tone="red">Controlled action</Badge>
       </div>
       <div className="mt-4 grid gap-3 lg:grid-cols-4">
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase6-preconditions">
@@ -763,17 +763,17 @@ function Phase5DetailSplitPanel({ compact = false, decisionSupport, objectLabel,
       <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-2.5" data-testid="ux-phase5-detail-split" data-ux-layout-compression="compact_boundary_strip" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Detail state</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-gold">Review state</p>
             <h2 className="mt-0.5 font-display text-base text-alphavest-ivory">{objectLabel}</h2>
           </div>
-          <Badge tone="gold">{taskId}</Badge>
+          <Badge tone="gold">Internal review</Badge>
         </div>
         <div className="mt-2 grid gap-1.5 lg:grid-cols-4">
           {[
-            ["Object state", objectState, "ux-phase5-object-state"],
-            ["Decision support", decisionSupport, "ux-phase5-decision-support"],
-            ["Boundary", `Drawer-only context cannot approve, release, delete, export or mutate payload visibility. ${safetyBoundary}`, "ux-phase5-drawer-boundary"],
-            ["Focus", pageJob, "ux-phase5-page-job"],
+            ["Status", objectState, "ux-phase5-object-state"],
+            ["Evidence", decisionSupport, "ux-phase5-decision-support"],
+            ["Controls", safetyBoundary, "ux-phase5-drawer-boundary"],
+            ["Next step", pageJob, "ux-phase5-page-job"],
           ].map(([label, value, testId]) => (
             <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-2" data-testid={testId} key={label}>
               <p className="text-[11px] uppercase tracking-[0.08em] text-alphavest-muted">{label}</p>
@@ -789,26 +789,26 @@ function Phase5DetailSplitPanel({ compact = false, decisionSupport, objectLabel,
     <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Detail state</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Review state</p>
           <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectLabel}</h2>
         </div>
-        <Badge tone="gold">{taskId}</Badge>
+        <Badge tone="gold">Internal review</Badge>
       </div>
       <div className="mt-4 grid gap-3 xl:grid-cols-2 2xl:grid-cols-4">
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-object-state">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Object state</p>
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Status</p>
           <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{objectState}</p>
         </div>
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-decision-support">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Decision support</p>
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Evidence</p>
           <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{decisionSupport}</p>
         </div>
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-drawer-boundary">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Drawer boundary</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">Drawer-only context cannot approve, release, delete, export or mutate payload visibility. {safetyBoundary}</p>
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Controls</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{safetyBoundary}</p>
         </div>
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-page-job">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Focus</p>
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Next step</p>
           <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{pageJob}</p>
         </div>
       </div>
@@ -840,8 +840,8 @@ function Phase4WorkbenchPanel({
       <section className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-2.5" data-testid="ux-workbench-phase4" data-ux-layout-compression="compact_workbench_boundary" data-ux-workbench-task={taskId}>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="min-w-0">
-            <Badge tone="gold">{taskId}</Badge>
-            <h3 className="mt-1 font-display text-base text-alphavest-ivory">Active task workbench</h3>
+            <Badge tone="gold">Active work</Badge>
+            <h3 className="mt-1 font-display text-base text-alphavest-ivory">Active workbench</h3>
           </div>
           <button className={primaryButtonClass} data-testid="ux-workbench-primary-cta" disabled type="button">{primaryAction}</button>
         </div>
@@ -867,8 +867,8 @@ function Phase4WorkbenchPanel({
     <section className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4" data-testid="ux-workbench-phase4" data-ux-workbench-task={taskId}>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <Badge tone="gold">{taskId}</Badge>
-          <h3 className="mt-3 font-display text-2xl text-alphavest-ivory">Active task workbench</h3>
+          <Badge tone="gold">Active work</Badge>
+          <h3 className="mt-3 font-display text-2xl text-alphavest-ivory">Active workbench</h3>
           <p className="mt-2 text-sm leading-6 text-alphavest-muted">One selected item, one guarded action rail and one explicit blocker. Queue visibility does not change release, export or client visibility state.</p>
         </div>
         <button className={primaryButtonClass} data-testid="ux-workbench-primary-cta" disabled type="button">{primaryAction}</button>
@@ -902,10 +902,10 @@ function SignalsPage({ title }: { title: string }) {
       <WorksurfaceShell
         density="compact"
         description="Internal signal entry backed by the signal workbench and draft-governance contracts. It orients work only; mutation happens in governed downstream services."
-        eyebrow="EPIC-09 internal entry"
+        eyebrow="Internal entry"
         primary={<AnalystSignalAreaEntry />}
         routeId="033"
-        safetyNote="S033 is an internal area entry. It can navigate to analyst work; it cannot approve advice, release content, export content or expose drafts to clients."
+        safetyNote="This is an internal area entry. It can navigate to analyst work; it cannot approve advice, release content, export content or expose drafts to clients."
         statusItems={[
           { label: "Queue", tone: "gold", value: `${signalQueue.length} signals` },
           { label: "Visibility", tone: "red", value: "Internal only" },
@@ -1080,16 +1080,16 @@ function AnalystDraftStepSurface({
       >
         <CardHeader className="flex flex-row items-start justify-between gap-2 pb-1.5">
           <div className="min-w-0">
-            <CardTitle className="text-base">Draft gates</CardTitle>
+            <CardTitle className="text-base">Routing readiness</CardTitle>
           </div>
-          <Badge tone="gold">Contract-backed</Badge>
+          <Badge tone="gold">Internal only</Badge>
         </CardHeader>
         <CardContent className="grid gap-1.5">
           <p className="line-clamp-1 text-xs font-semibold leading-5 text-alphavest-red">
-            {criteria.map((criterion) => criterion.processId).join(" / ")}
+            Evidence and release checks remain open
           </p>
           <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 px-2 py-1 text-xs leading-5 text-alphavest-muted">
-            <strong className="text-alphavest-ivory">Selected:</strong> {selectedLabel}; <strong className="text-alphavest-ivory">internal fields:</strong> {analystDraftPayloadVisibility.internalOnlyFields.length} blocked; <strong className="text-alphavest-ivory">no-overclaim:</strong> no advice/release/export/client visibility.
+            <strong className="text-alphavest-ivory">Trigger:</strong> {selectedLabel}; <strong className="text-alphavest-ivory">internal fields:</strong> {analystDraftPayloadVisibility.internalOnlyFields.length} blocked; <strong className="text-alphavest-ivory">release:</strong> not available.
           </div>
         </CardContent>
       </Card>
@@ -1115,12 +1115,12 @@ function AnalystDraftStepSurface({
           <CardTitle className="text-base">{pageId === "034" ? "Queue step governance" : "Trigger draft governance"}</CardTitle>
           <p className="mt-1 line-clamp-2 text-xs leading-5 text-alphavest-muted">{routeOwnership?.primaryJob}</p>
         </div>
-        <Badge tone="gold">Contract-backed</Badge>
+        <Badge tone="gold">Internal only</Badge>
       </CardHeader>
       <CardContent className="grid gap-2">
         <div className="flex flex-wrap gap-1.5">
           {criteria.map((criterion) => (
-            <Badge key={criterion.processId} tone="red">{criterion.processId}</Badge>
+            <Badge key={criterion.processId} tone="red">Gate checked</Badge>
           ))}
         </div>
         <div className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-2.5 text-sm">
@@ -1171,7 +1171,7 @@ function WorkbenchPage({ title }: { title: string }) {
       <WorksurfaceShell
         density="compact"
         description="The analyst workbench combines operational status, active client queues, trigger work and draft readiness in one process-owned surface."
-        eyebrow="WP02 internal workbench"
+        eyebrow="Internal workbench"
         primary={
           <div className="space-y-2">
             <div className="flex flex-wrap items-start justify-between gap-2 rounded-md border border-alphavest-border/70 bg-alphavest-panel/58 p-2.5">
@@ -1278,7 +1278,7 @@ function WorkbenchPage({ title }: { title: string }) {
           </div>
         }
         routeId="034"
-        safetyNote="WP02 layout only: the workbench organizes analyst work but does not publish, release, export or alter client visibility."
+        safetyNote="The workbench organizes analyst work but does not publish, release, export or alter client visibility."
         statusItems={[
           { label: "Drafts", tone: "gold", value: `${draftRecommendations.length} active` },
           { label: "Attention", tone: "red", value: "18 items" },
@@ -1408,11 +1408,11 @@ function TriggerDetailPage({ title }: { title: string }) {
       <WorksurfaceShell
         density="compact"
         description="The trigger detail page is now the focused analyst object review surface: signal context, missing evidence, draft guardrail and handoff action are kept together."
-        eyebrow="WP02 internal workbench"
+        eyebrow="Internal workbench"
         primary={
           <div className="grid gap-2 xl:grid-cols-2" data-epic09-review-surface="trigger-draft">
-            <Phase4WorkbenchPanel compact activeTask="Trigger TRG-443 selected for analyst review" blocker="Missing beneficial-owner and purpose-of-wire evidence keeps advisor handoff blocked." context="AI draft remains internal; analyst must resolve unsupported claims before routing." primaryAction="Request missing evidence" queueLabel="Advisory trigger queue" safetyNote="UX-WORKBENCH-001: no client release, export or visibility mutation can happen from the analyst trigger workbench." taskId="UX-WORKBENCH-001" />
-            <Phase5DetailSplitPanel compact decisionSupport="Trigger detail separates object evidence from queue triage before advisor routing." objectLabel="Trigger object review" objectState="Blocked by missing evidence" pageJob="Trigger detail explains one selected trigger and safe next action." safetyBoundary="Trigger detail cannot create client-visible advice." splitTaskId="UX-PAGE-SPLIT-001" taskId="UX-DETAIL-003" />
+            <Phase4WorkbenchPanel compact activeTask="Trigger TRG-443 selected for analyst review" blocker="Missing beneficial-owner and purpose-of-wire evidence keeps advisor handoff blocked." context="AI draft remains internal; analyst must resolve unsupported claims before routing." primaryAction="Request missing evidence" queueLabel="Advisory trigger queue" safetyNote="No client release, export or visibility mutation can happen from the analyst trigger workbench." taskId="UX-WORKBENCH-001" />
+            <Phase5DetailSplitPanel compact decisionSupport="Missing evidence is reviewed before advisor routing." objectLabel="Trigger review" objectState="Blocked by missing evidence" pageJob="Review the selected trigger and choose the next safe action." safetyBoundary="No client-visible advice can be created here." splitTaskId="UX-PAGE-SPLIT-001" taskId="UX-DETAIL-003" />
             <div className="grid items-start gap-2 lg:grid-cols-2">
               <ScfP04P06FlowPanel compact mode="advisory" />
               <S035CompactDetailStandardPanel />
@@ -1432,7 +1432,7 @@ function TriggerDetailPage({ title }: { title: string }) {
           </div>
         }
         routeId="035"
-        safetyNote="WP02 layout only: analyst trigger review may request evidence or route work, but it cannot create client-visible advice, advisor approval or compliance release."
+        safetyNote="Analyst trigger review may request evidence or route work, but it cannot create client-visible advice, advisor approval or compliance release."
         statusItems={[
           { label: "Status", tone: "red", value: triggerDetail.status },
           { label: "Severity", tone: "red", value: triggerDetail.severity },
@@ -1468,12 +1468,12 @@ function AdvisorQueuePage({ title }: { title: string }) {
     <InternalShell activePageId="036">
       <WorksurfaceShell
         description="Advisor review is now a clear human-gate worksurface: queue triage, selected package context and explicit non-release boundary stay visible together."
-        eyebrow="WP02 advisor review"
+        eyebrow="Advisor review"
         primary={
           <div className="space-y-4">
             <Phase5DetailSplitPanel decisionSupport="Advisor queue remains separate from advisor package detail." objectLabel="Advisor queue split" objectState="Advisor work awaiting selection" pageJob="Advisor queue selects packages; detail records review context separately." safetyBoundary="Queue rows cannot approve or release recommendations." splitTaskId="UX-PAGE-SPLIT-004" taskId="UX-PAGE-SPLIT-004" />
             <PageHeading
-              action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Queue export is blocked; advisor package detail owns any package action." data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />Export held</span><span className={primaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Bulk actions remain blocked until EPIC-10 command hierarchy is implemented as typed commands." data-ux-interactive="false">Bulk actions held</span></div>}
+              action={<div className="flex gap-3"><span className={secondaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Queue export is blocked; advisor package detail owns any package action." data-ux-interactive="false"><Download aria-hidden="true" className="size-4" />Export held</span><span className={primaryButtonClass} data-ux-affordance="blocked-static-control" data-ux-disabled-message="explicit" data-ux-disabled-reason="Bulk actions remain blocked until typed command controls are available." data-ux-interactive="false">Bulk actions held</span></div>}
               badge={<Badge tone="gold">36</Badge>}
               subtitle="Select one advisor package and hand off to package detail without approving or releasing it from the queue."
               title={title}
@@ -1588,7 +1588,7 @@ function AdvisorQueuePage({ title }: { title: string }) {
         }
         rail={<AdvisorSummaryPanel />}
         routeId="036"
-        safetyNote="WP02 layout only: advisor queue selection does not approve, release, export or create client visibility."
+        safetyNote="Advisor queue selection does not approve, release, export or create client visibility."
         statusItems={[
           { label: "Queue", tone: "gold", value: `${advisorQueue.length} packages` },
           { label: "Release", tone: "red", value: "Compliance required" },
@@ -1805,10 +1805,10 @@ function AdvisorDetailPage({ title }: { title: string }) {
     <InternalShell activePageId="037">
       <WorksurfaceShell
         description="The advisor detail page now keeps recommendation evidence, rationale, advisor action and compliance handoff boundary inside one review desk."
-        eyebrow="WP02 advisor review"
+        eyebrow="Advisor review"
         primary={
           <div className="space-y-4">
-            <Phase4WorkbenchPanel activeTask="ADV-219 selected" blocker="Compliance, evidence and audit gates" compact context="Advisor can assess suitability wording, but cannot publish client-visible advice." primaryAction="Record advisor review" queueLabel="Advisor approval queue" safetyNote="UX-WORKBENCH-003: advisor approval does not set clientVisible and does not bypass compliance release." taskId="UX-WORKBENCH-003" />
+            <Phase4WorkbenchPanel activeTask="ADV-219 selected" blocker="Blocked by compliance, evidence and audit gates." compact context="Advisor can assess suitability wording, but cannot publish client-visible advice." primaryAction="Record advisor review" queueLabel="Advisor approval queue" safetyNote="Advisor approval does not set clientVisible and does not bypass compliance release." taskId="UX-WORKBENCH-003" />
             <AdvisorNotReleaseGate />
             <Phase5DetailSplitPanel compact decisionSupport="Suitability, rationale and evidence review" objectLabel="Advisor package detail" objectState="Internal advisor review; compliance release missing" pageJob="One package review" safetyBoundary="No clientVisible, release, export or compliance bypass" splitTaskId="UX-PAGE-SPLIT-004" taskId="UX-PAGE-SPLIT-004" />
             <AdvisorDecisionRoomPanel />
@@ -1861,7 +1861,7 @@ function AdvisorDetailPage({ title }: { title: string }) {
           </aside>
         }
         routeId="037"
-        safetyNote="WP02 layout only: advisor approval can create a compliance-pending state, but cannot release content, mark client acceptance or bypass compliance."
+        safetyNote="Advisor approval can create a compliance-pending state, but cannot release content, mark client acceptance or bypass compliance."
         statusItems={[
           { label: "Status", tone: "gold", value: selectedApproval.status },
           { label: "Visibility", tone: "red", value: "Client blocked" },
@@ -1888,7 +1888,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
     <InternalShell activePageId="038">
       <WorksurfaceShell
         description="Compliance review is organized as a release-control worksurface: intake queue, evidence status, policy posture and explicit non-release queue boundary stay visible."
-        eyebrow="WP02 compliance release"
+        eyebrow="Compliance release"
         primary={
           <div className="space-y-4">
             <Phase5DetailSplitPanel decisionSupport="Compliance queue separates work intake from decision-room review." objectLabel="Compliance queue split" objectState="Compliance items pending selection" pageJob="Compliance queue prioritizes review work without hiding decision consequences." safetyBoundary="Queue context cannot release, block or request evidence by itself." splitTaskId="UX-PAGE-SPLIT-003" taskId="UX-PAGE-SPLIT-003" />
@@ -2012,7 +2012,7 @@ function ComplianceQueuePage({ title }: { title: string }) {
           </WorksurfacePanel>
         }
         routeId="038"
-        safetyNote="WP02 layout only: compliance queue rows cannot release, block, export or expose client-visible content."
+        safetyNote="Compliance queue rows cannot release, block, export or expose client-visible content."
         secondary={
           <div className="grid gap-4">
             <div className="grid gap-3 md:grid-cols-5">
@@ -2158,7 +2158,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
     <InternalShell activePageId="039">
       <WorksurfaceShell
         description="The compliance decision room keeps evidence, policy, preconditions, request/block controls and audit context in one release-gated worksurface."
-        eyebrow="WP02 compliance release"
+        eyebrow="Compliance release"
         primary={
           <div
             className="space-y-4"
@@ -2255,7 +2255,7 @@ function ComplianceReviewPage({ title }: { title: string }) {
           </aside>
         }
         routeId="039"
-        safetyNote="WP02 layout only: compliance can request evidence or keep release blocked here; release, export and client acceptance remain separate gated actions."
+        safetyNote="Compliance can request evidence or keep release blocked here; release, export and client acceptance remain separate gated actions."
         statusItems={[
           { label: "Gate", tone: "red", value: "Blocked" },
           { label: "Evidence", tone: "red", value: "Incomplete" },
@@ -2279,10 +2279,10 @@ function ReleasePage({ title, visualState }: { title: string; visualState?: Visu
     <InternalShell activePageId="040">
       <WorksurfaceShell
         description="Compliance release confirmation is now the explicit release worksurface: checklist, client-safe preview candidate and audited confirmation remain visibly separated from export or acceptance."
-        eyebrow="WP02 compliance release"
+        eyebrow="Compliance release"
         primary={<StatePanel detail="Compliance release is still pending until the exact confirmation phrase is entered and the audited action succeeds." state="restricted" title="Release action required" />}
         routeId="040"
-        safetyNote="WP02 layout only: this surface organizes the release confirmation UI; export, download, share and client acceptance remain separate controls."
+        safetyNote="This surface organizes the release confirmation UI; export, download, share and client acceptance remain separate controls."
         statusItems={[
           { label: "Review", tone: "green", value: "Approved" },
           { label: "Release", tone: "gold", value: "Action pending" },

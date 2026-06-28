@@ -243,7 +243,7 @@ function WealthMapPage({ title }: { title: string; visualState?: VisualState }) 
       <ScreenTitle>{title}</ScreenTitle>
       <WorksurfaceShell
         description="Relationship and entity map context for wealth-structure work, with restricted objects and follow-up actions kept gated."
-        eyebrow="WP02 Client Context"
+        eyebrow="Client context"
         primary={
           <>
             <UxSupportDensityStrip className="mb-5" pageId="031" />
@@ -462,7 +462,7 @@ function ActionsPage({ title, visualState }: { title: string; visualState?: Visu
       <ScreenTitle>{title}</ScreenTitle>
       <WorksurfaceShell
         description="Action board for relationship and evidence-linked work, normalized into the shared process worksurface."
-        eyebrow="WP02 Client Context"
+        eyebrow="Client context"
         primary={<MasterDetailSurface
           actionPolicy="open_detail"
           density="standard_review"

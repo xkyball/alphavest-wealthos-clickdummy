@@ -365,7 +365,7 @@ function Phase6DecisionRoomPanel({ audit, blocker, cancelLabel, confirmLabel, de
           <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{decisionLabel}</h2>
           <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted" data-testid="ux-phase6-safety-note">{safetyNote}</p>
         </div>
-        <Badge tone="red">{taskId}</Badge>
+        <Badge tone="red">Controlled action</Badge>
       </div>
       <div className="mt-4 grid gap-3 lg:grid-cols-4">
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase6-preconditions">
@@ -414,7 +414,7 @@ function Phase7ClientProjectionPanel({ allowedFields, failClosed, forbiddenField
           <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{routeLabel}</h2>
           <p className="mt-2 max-w-4xl text-sm leading-6 text-alphavest-muted">Client view stays fail-closed and never exposes internal payloads.</p>
         </div>
-        <Badge tone="green">{taskId}</Badge>
+        <Badge tone="green">Client-safe view</Badge>
       </div>
       <div className="mt-4 grid gap-3 lg:grid-cols-4">
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase7-visibility-engine">
@@ -444,10 +444,10 @@ function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pag
     <section className="rounded-md border border-alphavest-border/70 bg-alphavest-panel/65 p-4" data-testid="ux-phase5-detail-split" data-ux-phase5-split-task={splitTaskId ?? "none"} data-ux-phase5-task={taskId}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Detail state</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-alphavest-gold">Review state</p>
           <h2 className="mt-2 font-display text-2xl text-alphavest-ivory">{objectLabel}</h2>
         </div>
-        <Badge tone="gold">{taskId}</Badge>
+        <Badge tone="gold">Internal review</Badge>
       </div>
       <div className="mt-4 grid gap-3 lg:grid-cols-4">
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-object-state">
@@ -459,8 +459,8 @@ function Phase5DetailSplitPanel({ decisionSupport, objectLabel, objectState, pag
           <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{decisionSupport}</p>
         </div>
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-drawer-boundary">
-          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Drawer boundary</p>
-          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">Drawer-only context cannot approve, release, delete, export or mutate payload visibility. {safetyBoundary}</p>
+          <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Controls</p>
+          <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{safetyBoundary}</p>
         </div>
         <div className="rounded-md border border-alphavest-border bg-alphavest-charcoal/55 p-3" data-testid="ux-phase5-page-job">
           <p className="text-xs uppercase tracking-[0.12em] text-alphavest-muted">Focus</p>
@@ -492,8 +492,8 @@ function Phase4WorkbenchPanel({
     <section className="rounded-md border border-alphavest-gold/35 bg-alphavest-gold/10 p-4" data-testid="ux-workbench-phase4" data-ux-workbench-task={taskId}>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <Badge tone="gold">{taskId}</Badge>
-          <h3 className="mt-3 font-display text-2xl text-alphavest-ivory">Active task workbench</h3>
+          <Badge tone="gold">Active work</Badge>
+          <h3 className="mt-3 font-display text-2xl text-alphavest-ivory">Active workbench</h3>
           <p className="mt-2 text-sm leading-6 text-alphavest-muted">One selected item, one guarded action rail and one explicit blocker. Queue visibility does not change release, export or client visibility state.</p>
         </div>
         <button className={primaryButtonClass} data-testid="ux-workbench-primary-cta" disabled type="button">{primaryAction}</button>
@@ -591,10 +591,10 @@ function ComplianceBlockPage({ title, visualState }: { title: string; visualStat
     <Phase12Shell activePageId="041">
       <WorksurfaceShell
         description="Compliance block handling is shown as a controlled release-stop surface: blocked state, missing evidence request and audit result stay separated from release."
-        eyebrow="WP02 compliance release"
+        eyebrow="Compliance release"
         primary={<StatePanel detail="Advice content is blocked from client visibility until requested evidence is received, reviewed and released." state="blocked" title="Compliance block active" />}
         routeId="041"
-        safetyNote="WP02 layout only: request-evidence controls do not create evidence sufficiency, release, export/download/share or client acceptance."
+        safetyNote="Request-evidence controls do not create evidence sufficiency, release, export/download/share or client acceptance."
         statusItems={[
           { label: "State", tone: "red", value: "Blocked" },
           { label: "Evidence", tone: "gold", value: "Requested" },
@@ -838,7 +838,7 @@ function ComplianceAuditPage({ title }: { title: string }) {
     <Phase12Shell activePageId="042">
       <WorksurfaceShell
         description="Compliance audit is a controlled review surface for actor, target, result, exception and export-control context. It does not itself prove persistence."
-        eyebrow="WP02 compliance release"
+        eyebrow="Compliance release"
         primary={<Phase5DetailSplitPanel decisionSupport="Audit detail exposes actor, target, result and exception context before controlled export." objectLabel="Audit object review" objectState="Audit exceptions open" pageJob="Audit detail supports review of persisted events without acting as permission approval." safetyBoundary="Audit drawer context cannot approve access, release advice or export packages." splitTaskId="UX-PAGE-SPLIT-006" taskId="UX-DETAIL-005" />}
         rail={
           <aside className="space-y-5">
@@ -879,7 +879,7 @@ function ComplianceAuditPage({ title }: { title: string }) {
           </aside>
         }
         routeId="042"
-        safetyNote="WP02 layout only: audit visibility is not audit persistence; export remains controlled and separate from release."
+        safetyNote="Audit visibility is not audit persistence; export remains controlled and separate from release."
         statusItems={[
           { label: "Exceptions", tone: "red", value: "27 open" },
           { label: "Export", tone: "red", value: "Controlled" },
@@ -982,7 +982,7 @@ function DecisionsListPage({ title }: { title: string }) {
     <Phase12Shell activePageId="043">
       <WorksurfaceShell
         description="Decision register for finding active decision records while release, evidence and export controls stay on their own governed surfaces."
-        eyebrow="WP02 Decision Record"
+        eyebrow="Decision record"
         primary={<UxHubPage pageId="043" />}
         routeId="043"
         safetyNote="The decision list is discovery and triage only; it cannot release advice, complete evidence sufficiency or export client material."
@@ -1002,7 +1002,7 @@ const wp07DecisionTraceabilityItems = [
   { label: "Evidence", value: "EVD-SUMMIT-2026-014", detail: "Linked and reviewed evidence package; raw source stays internal." },
   { label: "Advisor approval", value: "ADV-APPROVED", detail: "Advisor approval is prerequisite only, not release." },
   { label: "Compliance release", value: "COMPLIANCE-RELEASED", detail: "Compliance release controls client-safe visibility." },
-  { label: "Audit reference", value: "AUD-2026-WP07", detail: "Audit reference stored internally." },
+  { label: "Audit reference", value: "AUD-2026-0007", detail: "Audit reference stored internally." },
   { label: "Visibility status", value: "CLIENT_SAFE", detail: "Projection allowlist controls the client view." },
 ];
 
@@ -1152,7 +1152,7 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
     <Phase12Shell activePageId="044">
       <WorksurfaceShell
         description="Released decision context, projection boundary, traceability and audited client decision action in one governed work surface."
-        eyebrow="WP02 Decision Record"
+        eyebrow="Decision record"
         primary={
           <div className="space-y-4">
             <ScfP07P09TrustPanel mode="decision" />
@@ -1434,7 +1434,7 @@ function DecisionSuccessPage({ title }: { title: string }) {
     <Phase12Shell activePageId="045">
       <WorksurfaceShell
         description="Submitted decision confirmation with persisted audit context and downstream evidence review still explicitly separated."
-        eyebrow="WP02 Decision Record"
+        eyebrow="Decision record"
         primary={
           <section className="grid gap-6 lg:grid-cols-[14rem_1fr]">
             <div className="grid size-40 place-items-center rounded-full border border-alphavest-gold/45 bg-alphavest-green/10">
@@ -1580,7 +1580,7 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
       <WorksurfaceShell
         className={drawerOpen ? "pr-0 xl:pr-[23rem]" : ""}
         description="Evidence repository context with download, share and client visibility still gated."
-        eyebrow="WP02 Evidence"
+        eyebrow="Evidence"
         primary={
           <div className="space-y-5">
             <PageHeading
@@ -1816,7 +1816,7 @@ function EvidenceRecordDetailPage({ title }: { title: string }) {
       <ScreenTitle>{title}</ScreenTitle>
       <WorksurfaceShell
         description="Evidence record detail for provenance, linkage and access context, kept separate from sufficiency and release."
-        eyebrow="WP02 Evidence"
+        eyebrow="Evidence"
         primary={
           <>
             <Phase5DetailSplitPanel decisionSupport="Evidence detail explains provenance, linkage and visibility before any next action." objectLabel="Evidence object review" objectState="Verified record; sufficiency still contextual" pageJob="Evidence detail supports object understanding without overloading evidence hub or document queue." safetyBoundary="Evidence detail cannot imply upload sufficiency or client release." splitTaskId="UX-PAGE-SPLIT-002" taskId="UX-DETAIL-001" />
@@ -2214,7 +2214,7 @@ function GovernanceUsersPage({ title, visualState }: { title: string; visualStat
         }
         className={drawerOpen ? "pr-0 xl:pr-[23rem]" : ""}
         description="Scoped user governance console with role, MFA and entity-access context kept separate from release, evidence and export authority."
-        eyebrow="WP02 Governance Safety"
+        eyebrow="Governance safety"
         primary={
           <GovernanceProcessEntry onInvite={openGovernanceUserDrawer} />
         }
@@ -2483,7 +2483,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
       <WorksurfaceShell
         className={drawerOpen ? "pr-0 xl:pr-[23rem]" : ""}
         description="Role-permission comparison and sensitive-change confirmation surface for governed role changes."
-        eyebrow="WP02 Governance Safety"
+        eyebrow="Governance safety"
         primary={
           <CoreGovernanceStepSurface
             actionLabel="Create scoped role"
@@ -2733,7 +2733,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
       <WorksurfaceShell
         className={drawerOpen ? "pr-0 xl:pr-[23rem]" : ""}
         description="Policy-checked access queue and selected request review with SOD, RBAC and audit constraints visible before action."
-        eyebrow="WP02 Governance Safety"
+        eyebrow="Governance safety"
         primary={
           <CoreGovernanceStepSurface
             actionLabel="Review policy-checked request"
