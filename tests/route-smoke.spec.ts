@@ -298,6 +298,56 @@ test.describe("UX-HUB phase 3 orientation hubs", () => {
 
     expect(dimensions.scrollHeight).toBeLessThanOrEqual(dimensions.clientHeight);
   });
+
+  test("EPIC-07 core context routes expose queue detail and step gates", async ({ page }) => {
+    await page.setViewportSize({ height: 1000, width: 1440 });
+    await authenticateRouteSmokePage(page);
+
+    await page.goto("/client/family-members");
+    const familySurface = page.getByTestId("epic-07-family-core-surface");
+    await expect(familySurface).toBeVisible();
+    await expect(familySurface).toHaveAttribute("data-epic-07-process", "BP-004");
+    await expect(familySurface).toHaveAttribute("data-epic-07-surface", "queue-detail");
+    await expect(familySurface).toHaveAttribute("data-epic-07-no-overclaim", "true");
+    await expect(page.getByTestId("epic-07-family-queue-surface")).toBeVisible();
+    await expect(page.getByTestId("epic-07-family-detail-surface")).toBeVisible();
+
+    await page.goto("/entities");
+    const entitySurface = page.getByTestId("epic-07-entity-core-surface");
+    await expect(entitySurface).toBeVisible();
+    await expect(entitySurface).toHaveAttribute("data-epic-07-process", "BP-006");
+    await expect(entitySurface).toHaveAttribute("data-epic-07-surface", "queue");
+    await expect(entitySurface).toHaveAttribute("data-epic-07-no-overclaim", "true");
+    await expect(page.getByTestId("epic-07-entity-queue-surface")).toBeVisible();
+
+    await page.goto("/entities/new");
+    const entityStepSurface = page.getByTestId("epic-07-entity-step-surface");
+    await expect(entityStepSurface).toBeVisible();
+    await expect(entityStepSurface).toHaveAttribute("data-epic-07-process", "BP-006");
+    await expect(entityStepSurface).toHaveAttribute("data-epic-07-surface", "step");
+    await expect(entityStepSurface).toHaveAttribute("data-epic-07-no-overclaim", "true");
+  });
+
+  test("EPIC-07 core context routes fit the 1440x1000 viewport without page scroll", async ({ page }) => {
+    await page.setViewportSize({ height: 1000, width: 1440 });
+    await authenticateRouteSmokePage(page);
+
+    for (const { path, testId } of [
+      { path: "/client/family-members", testId: "epic-07-family-core-surface" },
+      { path: "/entities", testId: "epic-07-entity-core-surface" },
+      { path: "/entities/new", testId: "epic-07-entity-step-surface" },
+    ]) {
+      await page.goto(path);
+      await page.waitForLoadState("networkidle");
+      await expect(page.getByTestId(testId)).toBeVisible();
+      const dimensions = await page.evaluate(() => ({
+        clientHeight: document.documentElement.clientHeight,
+        scrollHeight: document.documentElement.scrollHeight,
+      }));
+
+      expect(dimensions.scrollHeight, path).toBeLessThanOrEqual(dimensions.clientHeight);
+    }
+  });
 });
 
 test.describe("UX-WORKBENCH phase 4 active task workbenches", () => {

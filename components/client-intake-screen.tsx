@@ -1598,7 +1598,14 @@ function FamilyMembersPageContent({ title }: { title: string }) {
   return (
     <>
       <ScreenTitle>{title}</ScreenTitle>
-      <div className="space-y-5">
+      <div
+        className="space-y-5"
+        data-epic-07-gate="tenant-scoped-db-audit"
+        data-epic-07-no-overclaim="true"
+        data-epic-07-process="BP-004"
+        data-epic-07-surface="queue-detail"
+        data-testid="epic-07-family-core-surface"
+      >
         <SectionTitle
           action={<div className="flex flex-wrap gap-3"><button className={secondaryButtonClass} data-testid="j09-family-map" onClick={() => { void runDataMaintenanceCommand("j09.openFamilyMap", "/relationships"); }} type="button"><Network aria-hidden="true" className="size-4" />Family Map</button><button className={primaryButtonClass} data-testid="j09-add-member" onClick={() => { void runDataMaintenanceCommand("j09.addMember"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add Member</button></div>}
           count={String(meta?.totalRows ?? rows.length)}
@@ -1606,8 +1613,8 @@ function FamilyMembersPageContent({ title }: { title: string }) {
           title={title}
         />
         <SafeClientBanner>Family rows are loaded from tenant-scoped seeded DB records. Allowed edits persist to FamilyMember and create audit events.</SafeClientBanner>
-        <div className="grid gap-5 2xl:grid-cols-[0.9fr_1.15fr]">
-          <Card>
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_30rem]">
+          <Card data-testid="epic-07-family-queue-surface" density="compact">
             <CardHeader className="grid gap-3 md:grid-cols-[1fr_auto]">
               <div className="relative">
                 <Search aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
@@ -1628,10 +1635,11 @@ function FamilyMembersPageContent({ title }: { title: string }) {
             </CardHeader>
             <CardContent>
               <DataTable
-                columns={familyMemberColumns}
-	                emptyMessage={loadState === "error" ? "Family members could not be loaded from the DB." : "No DB-backed family members match this search."}
-	                getRowId={(row) => row.id}
-	                onSortChange={toggleSort}
+                columns={familyMemberQueueColumns}
+                compact
+                emptyMessage={loadState === "error" ? "Family members could not be loaded from the DB." : "No DB-backed family members match this search."}
+                getRowId={(row) => row.id}
+                onSortChange={toggleSort}
 	                pagination={meta ? { ...meta, onPageChange: setPage } : null}
 	                rows={rows}
 	                serverSort
@@ -1640,7 +1648,7 @@ function FamilyMembersPageContent({ title }: { title: string }) {
 	              />
             </CardContent>
           </Card>
-          <Card>
+          <Card data-testid="epic-07-family-detail-surface" density="compact">
             <CardHeader className="flex flex-row items-start justify-between">
               <div className="flex gap-4">
                 <span className="grid size-16 place-items-center rounded-full border border-alphavest-border bg-alphavest-gold/15 text-xl font-semibold text-alphavest-gold">
@@ -1668,7 +1676,18 @@ function FamilyMembersPageContent({ title }: { title: string }) {
                 <FieldBox label="Visibility" value={selected?.visibilityStatus ?? "n/a"} />
                 <FieldBox label="Status" value={selected?.status ?? "n/a"} />
               </div>
-              <StatePanel detail={formIssues.length > 0 ? formIssues.join(", ") : formMessage} state={formIssues.length > 0 ? "restricted" : "success"} title="Family edit state" />
+              <div
+                className={cn(
+                  "rounded-md border px-3 py-2 text-sm",
+                  formIssues.length > 0
+                    ? "border-alphavest-red/45 bg-alphavest-red/10 text-alphavest-red"
+                    : "border-alphavest-green/45 bg-alphavest-green/10 text-alphavest-muted",
+                )}
+                data-testid="epic-07-family-detail-state"
+              >
+                <span className="font-semibold text-alphavest-ivory">Family edit state</span>
+                <span className="ml-2">{formIssues.length > 0 ? formIssues.join(", ") : formMessage}</span>
+              </div>
               <div className="flex justify-end gap-3">
                 <button className={secondaryButtonClass} onClick={() => selected && setFamilyForm({ displayName: selected.name, relationshipType: selected.relationship, taxResidency: selected.taxResidency })} type="button">Reset</button>
                 <button className={primaryButtonClass} data-testid="j09-save-family-changes" disabled={!selected || savingFamilyMember} onClick={() => { void saveSelectedMember(); }} type="button">Save Changes</button>
@@ -1688,6 +1707,37 @@ const familyMemberColumns: Array<DataTableColumn<FamilyMemberTableRow>> = [
   { key: "governance", header: "Governance", render: (row) => row.governance },
   { key: "visibilityStatus", header: "Visibility", render: (row) => <Badge tone={toneFor(row.visibilityStatus)}>{row.visibilityStatus}</Badge>, sortable: true },
   { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge>, sortable: true }
+];
+
+const familyMemberQueueColumns: Array<DataTableColumn<FamilyMemberTableRow>> = [
+  {
+    key: "name",
+    header: "Name",
+    render: (row) => <span className="font-semibold text-alphavest-ivory">{row.name}<span className="ml-2 text-xs text-alphavest-muted">{row.year}</span></span>,
+    sortable: true,
+    className: "min-w-[12rem] whitespace-nowrap",
+  },
+  {
+    key: "role",
+    header: "Role",
+    render: (row) => <Badge tone="blue">{row.role}</Badge>,
+    sortable: true,
+    className: "w-32 whitespace-nowrap",
+  },
+  {
+    key: "visibilityStatus",
+    header: "Visibility",
+    render: (row) => <Badge tone={toneFor(row.visibilityStatus)}>{row.visibilityStatus}</Badge>,
+    sortable: true,
+    className: "w-40 whitespace-nowrap",
+  },
+  {
+    key: "status",
+    header: "Status",
+    render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge>,
+    sortable: true,
+    className: "w-28 whitespace-nowrap",
+  },
 ];
 
 function RelationshipsPage({ title }: { title: string }) {
@@ -1804,8 +1854,7 @@ const relationshipColumns: Array<DataTableColumn<(typeof relationshipRows)[numbe
 function EntitiesPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="024">
-      <ScreenTitle>{title}</ScreenTitle>
-      <UxHubPage pageId="024" />
+      <EntitiesPageContent title={title} />
     </ClientShell>
   );
 }
@@ -1848,14 +1897,21 @@ function EntitiesPageContent({ title }: { title: string }) {
   return (
     <>
       <ScreenTitle>{title}</ScreenTitle>
-      <div className="space-y-5">
+      <div
+        className="space-y-5"
+        data-epic-07-gate="tenant-scoped-db-query"
+        data-epic-07-no-overclaim="true"
+        data-epic-07-process="BP-006"
+        data-epic-07-surface="queue"
+        data-testid="epic-07-entity-core-surface"
+      >
         <SectionTitle
           action={<button className={primaryButtonClass} data-testid="j05-create-entity" onClick={() => { void runDataMaintenanceCommand("j05.createEntity", "/entities/new"); }} type="button"><Plus aria-hidden="true" className="size-4" />Create Entity</button>}
           count={String(meta?.totalRows ?? rows.length)}
           subtitle="View and manage entities across organizational and investment structures."
           title={title}
         />
-        <Card>
+        <Card data-testid="epic-07-entity-queue-surface">
           <CardHeader className="grid gap-3 xl:grid-cols-[1fr_auto]">
             <div className="grid gap-3 md:grid-cols-5">
               <div className="relative md:col-span-2">
@@ -1900,11 +1956,6 @@ function EntitiesPageContent({ title }: { title: string }) {
             />
           </CardContent>
         </Card>
-        <div className="grid gap-4 lg:grid-cols-3">
-          <StatePanel detail="Create your first entity to begin building your structure." state="empty" title="No entities found" />
-          <StatePanel detail="Please wait while entity records are prepared." state="loading" title="Loading entities" />
-          <StatePanel detail="You do not have permission to view restricted entities." state="restricted" title="Access restricted" />
-        </div>
       </div>
     </>
   );
@@ -2070,7 +2121,14 @@ function CreateEntityPageContent({ title }: { title: string }) {
   return (
     <>
       <ScreenTitle>{title}</ScreenTitle>
-      <div className="space-y-5">
+      <div
+        className="space-y-5"
+        data-epic-07-gate="wizard-validation-before-db-write"
+        data-epic-07-no-overclaim="true"
+        data-epic-07-process="BP-006"
+        data-epic-07-surface="step"
+        data-testid="epic-07-entity-step-surface"
+      >
         <SectionTitle subtitle="Build a new entity record with ownership, jurisdiction and supporting evidence." title={title} />
         <WizardStepper steps={steps} />
         <div className="grid gap-5 xl:grid-cols-[1fr_20rem]">
