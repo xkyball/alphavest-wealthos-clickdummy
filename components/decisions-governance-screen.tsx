@@ -18,7 +18,6 @@ import {
   Search,
   Send,
   ShieldCheck,
-  SlidersHorizontal,
   X
 } from "lucide-react";
 import {
@@ -61,7 +60,6 @@ import { runTenantGovernanceCommand } from "@/lib/tenant-governance-command-clie
 import {
   accessPolicyChecks,
   complianceAuditControls,
-  accessRequests,
   complianceAuditMetrics,
   complianceAuditRows,
   complianceBlockReview,
@@ -78,8 +76,7 @@ import {
   exceptionSummary,
   missingEvidenceChecklist,
   requestedEvidenceItems,
-  rolePermissions,
-  roleRows
+  rolePermissions
 } from "@/lib/decisions-governance-demo-data";
 import { createDemoSession, demoPlatformTenantId, demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import type { ScreenRoute } from "@/lib/route-registry";
@@ -2067,6 +2064,67 @@ function GovernanceProcessEntry({ onInvite }: { onInvite: () => void }) {
   );
 }
 
+function CoreGovernanceStepSurface({
+  actionLabel,
+  actionTestId,
+  actionTrigger,
+  gate,
+  lifecycleTrigger,
+  pageJob,
+  stages,
+  subtitle,
+  title,
+}: {
+  actionLabel: string;
+  actionTestId: string;
+  actionTrigger: () => void;
+  gate: { detail: string; label: string };
+  lifecycleTrigger: string;
+  pageJob: string;
+  stages: Array<{ detail: string; label: string; state: string }>;
+  subtitle: string;
+  title: string;
+}) {
+  return (
+    <section
+      className="rounded-md border border-alphavest-border/80 bg-alphavest-panel/60 p-4"
+      data-epic-06-core-surface="queue-detail-step"
+      data-testid={`epic-06-${actionTestId}-surface`}
+      data-ux-page-job={pageJob}
+    >
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
+        <div className="min-w-0">
+          <h3 className="font-display text-2xl text-alphavest-ivory">{title}</h3>
+          <p className="mt-1 max-w-3xl text-sm leading-5 text-alphavest-muted">{subtitle}</p>
+        </div>
+        <button
+          className={primaryButtonClass}
+          data-testid={actionTestId}
+          data-ux-lifecycle-result={`opens-${lifecycleTrigger}`}
+          data-ux-lifecycle-trigger={lifecycleTrigger}
+          onClick={actionTrigger}
+          type="button"
+        >
+          {actionLabel} <ArrowRight aria-hidden="true" className="size-4" />
+        </button>
+      </div>
+      <div className="mt-3 grid gap-3 md:grid-cols-3">
+        {stages.map((stage) => (
+          <div className="min-h-24 rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3" key={stage.label}>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">{stage.state}</p>
+            <p className="mt-2 text-sm font-semibold text-alphavest-ivory">{stage.label}</p>
+            <p className="mt-1 text-xs leading-5 text-alphavest-muted">{stage.detail}</p>
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 rounded-md border border-red-400/35 bg-red-500/8 p-3">
+        <p className="text-sm font-semibold text-alphavest-ivory">{gate.label}</p>
+        <p className="mt-1 text-xs leading-5 text-alphavest-muted">{gate.detail}</p>
+      </div>
+    </section>
+  );
+}
+
 function GovernanceUsersPage({ title, visualState }: { title: string; visualState?: VisualState }) {
   const [drawerOpen, setDrawerOpen] = useState(visualState === "drawer" || visualState === "invite");
   const [acknowledged, setAcknowledged] = useState(false);
@@ -2401,21 +2459,35 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
         description="Role-permission comparison and sensitive-change confirmation surface for governed role changes."
         eyebrow="WP02 Governance Safety"
         primary={
-          <PageHeading
-            action={
-              <button
-                className={primaryButtonClass}
-                data-testid="j07-open-role-drawer"
-                data-ux-lifecycle-result="opens-role-drawer"
-                data-ux-lifecycle-trigger="role-drawer"
-                onClick={openRoleDrawer}
-                type="button"
-              >
-                <Plus aria-hidden="true" className="size-4" />Create scoped role
-              </button>
-            }
-            subtitle="Define roles and manage permissions across WealthOS."
-            title={title}
+          <CoreGovernanceStepSurface
+            actionLabel="Create scoped role"
+            actionTestId="j07-open-role-drawer"
+            actionTrigger={openRoleDrawer}
+            gate={{
+              detail: "Role creation is not activation; sensitive permission changes stay pending until acknowledgement, exact second confirmation and audit workflow proof pass.",
+              label: "Role review is not role activation",
+            }}
+            lifecycleTrigger="role-drawer"
+            pageJob="role_assignment_review"
+            stages={[
+              {
+                detail: "Compare the requested role against tenant scope and sensitive permission groups.",
+                label: "Queue",
+                state: "Review",
+              },
+              {
+                detail: "Open drawer context, acknowledge scoped impact and keep downstream gates separate.",
+                label: "Detail",
+                state: "Acknowledge",
+              },
+              {
+                detail: "Exact phrase confirmation is required before the command spine can run.",
+                label: "Step",
+                state: "Confirm",
+              },
+            ]}
+            subtitle="One role-change surface: compare scope, open drawer context, then require exact second confirmation before command execution."
+            title="Role assignment gate"
           />
         }
         routeId="049"
@@ -2426,31 +2498,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
         ]}
         title={title}
         worksurfaceId="governance-safety-roles"
-      >
-      <div className="mx-auto max-w-[104rem] space-y-5">
-        <div className="grid gap-3 md:grid-cols-4">
-          {[
-            ["Total Roles", "12", "Active roles"],
-            ["Custom Roles", "7", "Configured by you"],
-            ["Sensitive Permissions", "18", "Across 5 roles"],
-            ["Last Updated", "May 12, 2025", "By Sofia Shah"]
-          ].map(([label, value, detail]) => (
-            <Card key={label}><p className="text-sm text-alphavest-muted">{label}</p><p className="mt-2 text-2xl font-semibold text-alphavest-ivory">{value}</p><p className="text-xs text-alphavest-subtle">{detail}</p></Card>
-          ))}
-        </div>
-        <UxDenseOperationsPanel
-          controls={["Role", "Clients", "Accounts", "Investments", "Trading", "Reporting", "Billing", "Sensitive changes"]}
-          description="Role permissions remain a dense comparison table; confirmation and audit gates stay outside the matrix."
-          pageId="049"
-          resultLabel={`${roleRows.length} roles; 3 sensitive changes pending confirmation`}
-          safetyNote="Role edits cannot bypass scoped permissions, second confirmation or audit persistence."
-          title="Role-permission operations"
-        >
-          <RoleMatrix />
-        </UxDenseOperationsPanel>
-        <GovernanceCapabilityBoundary />
-      </div>
-      </WorksurfaceShell>
+      />
       <Drawer
         description="Custom role with sensitive permission changes."
         footer={
@@ -2606,70 +2654,6 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
   );
 }
 
-function RoleMatrix() {
-  return (
-    <div className="overflow-x-auto rounded-md border border-alphavest-border/70">
-      <table className="w-full min-w-[66rem] table-fixed border-collapse text-left text-sm" data-testid="ux-data-table">
-        <thead className="bg-alphavest-panel/75 text-xs font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">
-          <tr>
-            {["Role", "Clients", "Accounts", "Investments", "Trading", "Reporting", "Billing"].map((header) => (
-              <th className="h-10 border-b border-alphavest-border/70 px-4" key={header}>
-                <button
-                  aria-label={`Role matrix sorting by ${header} is held until governed role workflow is selected`}
-                  className="text-left uppercase disabled:cursor-not-allowed disabled:opacity-55"
-                  data-testid="ux-data-table-sort"
-                  data-ux-affordance="sort-control"
-                  data-ux-interactive="false"
-                  disabled
-                  title="Role matrix sorting is held until governed role workflow is selected."
-                  type="button"
-                >
-                  {header}
-                </button>
-              </th>
-            ))}
-            <th className="h-10 w-20 border-b border-alphavest-border/70 px-4">
-              <span className="sr-only">Actions</span>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {roleRows.map((row, index) => (
-            <tr className={cn("h-[var(--table-row-height)] border-b border-alphavest-border/55 last:border-0", index === 1 ? "bg-alphavest-gold/10" : "")} key={row.role}>
-              <td className="px-4 py-3 font-semibold text-alphavest-ivory">{row.role}<Badge className="ml-2" tone={toneFor(row.type)}>{row.type}</Badge></td>
-              {[row.clients, row.accounts, row.investments, row.trading, row.reporting, row.billing].map((value, valueIndex) => <td className="px-4 py-3" key={`${row.role}-${valueIndex}`}><Badge tone={toneFor(value)}>{value}</Badge></td>)}
-              <td className="px-4 py-3 text-right">
-                <button
-                  aria-label={`Role matrix actions for ${row.role} are held until governed role workflow is selected`}
-                  className="ml-auto grid size-8 place-items-center rounded-md border border-transparent text-alphavest-subtle transition disabled:cursor-not-allowed disabled:opacity-45 enabled:hover:border-alphavest-border enabled:hover:text-alphavest-ivory"
-                  data-testid="ux-data-table-row-action"
-                  data-ux-affordance="row-action"
-                  data-ux-interactive="false"
-                  data-ux-row-action-state="disabled"
-                  disabled
-                  title="Role matrix row actions are held until governed role workflow is selected."
-                  type="button"
-                >
-                  <SlidersHorizontal aria-hidden="true" className="size-4" />
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-const accessColumns: Array<DataTableColumn<(typeof accessRequests)[number]>> = [
-  { key: "access", header: "Request", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.access}<span className="block text-xs text-alphavest-muted">{row.type}</span></span>, sortable: true },
-  { key: "requester", header: "Requester", render: (row) => row.requester, sortable: true },
-  { key: "type", header: "Requested Access", render: (row) => row.type },
-  { key: "scope", header: "Affected Scope", render: (row) => row.scope },
-  { key: "status", header: "Status", render: (row) => <Badge tone={toneFor(row.status)}>{row.status}</Badge>, sortable: true },
-  { key: "submitted", header: "Requested", render: (row) => row.submitted, sortable: true }
-];
-
 function AccessRequestsPage({ title, visualState }: { title: string; visualState?: VisualState }) {
   const [drawerOpen, setDrawerOpen] = useState(visualState === "drawer" || visualState === "approval");
   const [acknowledged, setAcknowledged] = useState(false);
@@ -2725,12 +2709,36 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
         description="Policy-checked access queue and selected request review with SOD, RBAC and audit constraints visible before action."
         eyebrow="WP02 Governance Safety"
         primary={
-          <div className="space-y-4">
-            <Phase4WorkbenchPanel activeTask="Access request AR-204 selected" blocker="Permission change requires scoped confirmation and audit; route visibility is not mutation authority." context="Reviewer compares requested role, tenant scope and policy checks before approval." primaryAction="Approve scoped access" queueLabel="Governance access queue" safetyNote="UX-WORKBENCH-004: admin workbench cannot bypass RBAC, audit, evidence, release or export controls." taskId="UX-WORKBENCH-004" />
-            <Phase5DetailSplitPanel decisionSupport="Access request detail separates requester, scope, policy and audit consequences." objectLabel="Access request object review" objectState="Policy-checked request pending" pageJob="Access detail reviews one permission request without becoming global admin bypass." safetyBoundary="Access detail cannot expand payload, evidence, release or export authority." splitTaskId="UX-PAGE-SPLIT-006" taskId="UX-PAGE-SPLIT-006" />
-            <ScfP07P09TrustPanel mode="governance" />
-            <GovernanceCapabilityBoundary />
-          </div>
+          <CoreGovernanceStepSurface
+            actionLabel="Review policy-checked request"
+            actionTestId="j07-open-access-request-drawer"
+            actionTrigger={openAccessRequestDrawer}
+            gate={{
+              detail: "Approval remains blocked until scoped acknowledgement, SOD policy context and audit workflow proof are present.",
+              label: "Access request review is not access expansion",
+            }}
+            lifecycleTrigger="access-request-drawer"
+            pageJob="access_request_review"
+            stages={[
+              {
+                detail: "The queue points to one selected request instead of exposing a broad admin table.",
+                label: "Queue",
+                state: "Selected",
+              },
+              {
+                detail: "Drawer context separates requester, scope, policy checks and audit consequences.",
+                label: "Detail",
+                state: "Scoped",
+              },
+              {
+                detail: "Approve submits only the scoped review command; release, evidence and export stay separate.",
+                label: "Step",
+                state: "Gated",
+              },
+            ]}
+            subtitle="One access-request surface: select the request, review scoped policy context, then submit only through the governance command spine."
+            title="Access request gate"
+          />
         }
         routeId="050"
         safetyNote="Approval remains constrained by policy checks, segregation-of-duties checks and audit logging; admin users cannot bypass these gates."
@@ -2740,47 +2748,7 @@ function AccessRequestsPage({ title, visualState }: { title: string; visualState
         ]}
         title={title}
         worksurfaceId="governance-safety-access-requests"
-      >
-      <div className="mx-auto max-w-[104rem] space-y-5">
-        <PageHeading
-          action={
-            <button
-              className={primaryButtonClass}
-              data-testid="j07-open-access-request-drawer"
-              data-ux-lifecycle-result="opens-access-request-drawer"
-              data-ux-lifecycle-trigger="access-request-drawer"
-              onClick={openAccessRequestDrawer}
-              type="button"
-            >
-              Review policy-checked request
-            </button>
-          }
-          subtitle="Review and take action on access requests across the organization."
-          title={title}
-        />
-        <UxDenseOperationsPanel
-          controls={["All 24", "Pending 8", "Approved 11", "Denied 3", "Escalated 2", "SOD conflict"]}
-          description="Access requests stay in queue form with policy, scope and status visible before the selected request opens."
-          pageId="050"
-          resultLabel={`${accessRequests.length} visible access requests`}
-          safetyNote="Approval remains constrained by policy checks, segregation-of-duties checks and audit logging; admin users cannot bypass these gates."
-          title="Access-request operations"
-        >
-          <DataTable
-            columns={accessColumns}
-            compact
-            getRowId={(row) => `${row.requester}-${row.access}`}
-            onSortChange={handleStaticSortChange}
-            onRowAction={openAccessRequestDrawer}
-            responsiveMode="table"
-            rowActionLabel={(row) => `Review access request from ${row.requester}`}
-            rows={accessRequests}
-            sortDirection="desc"
-            sortKey="submitted"
-          />
-        </UxDenseOperationsPanel>
-      </div>
-      </WorksurfaceShell>
+      />
       <Drawer
         description="Review access request, policy checks and decision."
         footer={

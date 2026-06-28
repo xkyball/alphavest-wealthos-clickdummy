@@ -890,6 +890,39 @@ test.describe("UX-CTA governance admin non-bypass chain", () => {
     expect(pageExtent.scrollHeight).toBeLessThanOrEqual(pageExtent.clientHeight);
   });
 
+  const coreGovernanceSurfaces = [
+    {
+      action: "j07-open-role-drawer",
+      expectedText: "Role review is not role activation",
+      path: "/governance/roles/demo?state=base",
+    },
+    {
+      action: "j07-open-access-request-drawer",
+      expectedText: "Access request review is not access expansion",
+      path: "/governance/access-requests/demo?state=base",
+    },
+  ] as const;
+
+  for (const surface of coreGovernanceSurfaces) {
+    test(`${surface.path} keeps the EPIC-06 core surface viewport-fit`, async ({ page }) => {
+      await page.setViewportSize({ height: 1000, width: 1440 });
+      await authenticateRouteSmokePage(page);
+      await page.goto(surface.path);
+
+      const entry = page.getByTestId(`epic-06-${surface.action}-surface`);
+      await expect(entry).toBeVisible();
+      await expect(entry).toHaveAttribute("data-epic-06-core-surface", "queue-detail-step");
+      await expect(entry).toContainText(surface.expectedText);
+      await expect(page.getByTestId(surface.action)).toBeVisible();
+
+      const pageExtent = await page.evaluate(() => ({
+        clientHeight: document.documentElement.clientHeight,
+        scrollHeight: document.documentElement.scrollHeight,
+      }));
+      expect(pageExtent.scrollHeight).toBeLessThanOrEqual(pageExtent.clientHeight);
+    });
+  }
+
   const governanceScreens = [
     { path: "/admin/roles?state=permission", required: "Confirm scoped permission change" },
     { path: "/governance?state=invite", required: "Send scoped invitation" },
