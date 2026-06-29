@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { ObjectType } from "@prisma/client";
 
 import { failClosedJson } from "@/lib/control-layer/error-envelope";
 import {
@@ -30,6 +31,12 @@ function tenantSlug(value: unknown): DemoTenantSlug | undefined {
 function action(value: unknown): EvidenceReviewAction | undefined {
   return value === "mark_reviewed" || value === "request_clarification" || value === "accept_sufficiency"
     ? value
+    : undefined;
+}
+
+function objectType(value: unknown): ObjectType | undefined {
+  return typeof value === "string" && value in ObjectType
+    ? ObjectType[value as keyof typeof ObjectType]
     : undefined;
 }
 
@@ -99,6 +106,7 @@ export async function POST(request: Request) {
       notes: typeof payload.notes === "string" ? payload.notes : undefined,
       relevanceAccepted: booleanValue(payload.relevanceAccepted),
       requiredObjectId: typeof payload.requiredObjectId === "string" ? payload.requiredObjectId : undefined,
+      requiredObjectType: objectType(payload.requiredObjectType),
       roleKey: resolvedRoleKey,
       scopeAccepted: booleanValue(payload.scopeAccepted),
       tenantSlug: resolvedTenantSlug,

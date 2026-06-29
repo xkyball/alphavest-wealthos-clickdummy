@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { Sensitivity } from "@prisma/client";
+import { ObjectType, Sensitivity } from "@prisma/client";
 
 import { failClosedJson } from "@/lib/control-layer/error-envelope";
 import {
@@ -32,6 +32,14 @@ function sensitivity(value: string): Sensitivity {
   }
 
   return Sensitivity.CONFIDENTIAL;
+}
+
+function targetObjectType(value: string): ObjectType | undefined {
+  if (value in ObjectType) {
+    return ObjectType[value as keyof typeof ObjectType];
+  }
+
+  return undefined;
 }
 
 function booleanValue(formData: FormData, key: string) {
@@ -108,16 +116,21 @@ export async function POST(request: Request) {
       roleKey: resolvedRoleKey,
       sensitivity: sensitivity(stringValue(formData, "sensitivity")),
       subType: stringValue(formData, "subType"),
+      targetObjectId: stringValue(formData, "targetObjectId") || undefined,
+      targetObjectType: targetObjectType(stringValue(formData, "targetObjectType")),
       tenantSlug: resolvedTenantSlug,
     });
     const safeDocumentResult = {
       documentType: result.document.documentType,
       evidenceLifecycleStatus: result.document.evidenceLifecycleStatus,
+      evidenceRequestState: result.evidenceRequestState,
       fileName: result.document.fileName,
       fileSizeBytes: result.document.fileSizeBytes,
       id: result.document.id,
       latestVersionNumber: result.document.latestVersionNumber,
       status: result.document.status,
+      targetObjectId: result.document.targetObjectId,
+      targetObjectType: result.document.targetObjectType,
       title: result.document.title,
       uploadedAt: result.document.uploadedAt,
       versionCount: result.document.versionCount,
@@ -137,6 +150,7 @@ export async function POST(request: Request) {
       safety: {
         clientVisible: false,
         evidenceLifecycleStatus: result.document.evidenceLifecycleStatus,
+        evidenceRequestState: result.evidenceRequestState,
         evidenceStatus: "REVIEW_PENDING",
         releaseUnlocked: false,
         sufficiency: false,

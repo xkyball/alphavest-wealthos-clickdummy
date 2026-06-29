@@ -66,9 +66,7 @@ import {
   missingDocuments,
   mobilePriorityActions,
   portalActions,
-  portalDecisions,
-  relationshipNodes,
-  relationshipRows
+  portalDecisions
 } from "@/lib/client-intake-demo-data";
 import { createDemoSession, demoPlatformTenantId } from "@/lib/demo-session";
 import type { ScreenRoute } from "@/lib/route-registry";
@@ -141,6 +139,7 @@ type PersistedUploadDocument = {
   documentType: string;
   evidenceLifecycleStatus?: string | null;
   evidenceRecordId: string | null;
+  evidenceRequestState?: string | null;
   evidenceStatus: string | null;
   evidenceVisibilityStatus: string | null;
   extractionStatus?: string | null;
@@ -152,6 +151,8 @@ type PersistedUploadDocument = {
   sensitivity?: string;
   status: string;
   storageKey?: string;
+  targetObjectId?: string | null;
+  targetObjectType?: string | null;
   title: string;
   uploadedAt: string;
   versionCount?: number | null;
@@ -168,6 +169,8 @@ type DocumentTableRow = {
 };
 
 type FamilyMemberTableRow = {
+  contextReadinessReasons: string[];
+  contextReadinessState: "blocked" | "incomplete" | "ready";
   governance: string;
   id: string;
   name: string;
@@ -182,6 +185,8 @@ type FamilyMemberTableRow = {
 };
 
 type EntityTableRow = {
+  contextReadinessReasons: string[];
+  contextReadinessState: "blocked" | "incomplete" | "ready";
   id: string;
   jurisdiction: string;
   missingDocs: string;
@@ -212,6 +217,12 @@ type DbtfDashboardMetrics = {
   cards: Array<{ label: string; tone: BadgeTone; value: string }>;
   evidenceCoverage: number;
   readiness: number;
+};
+
+type EntityFacets = {
+  jurisdictions: string[];
+  risks: string[];
+  types: string[];
 };
 
 type ProfileFormState = {
@@ -619,6 +630,7 @@ function useDbtfEntities(queryState: {
   const tenantSlug = session.tenant.slug;
   const roleKey = session.role.key;
   const [rows, setRows] = useState<EntityTableRow[]>([]);
+  const [facets, setFacets] = useState<EntityFacets>({ jurisdictions: [], risks: [], types: [] });
   const [meta, setMeta] = useState<DataSurfaceMeta | null>(null);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
 
@@ -643,7 +655,7 @@ function useDbtfEntities(queryState: {
           tenantSlug,
         });
         const response = await fetch(`/api/entities?${params.toString()}`, { cache: "no-store" });
-        const body = (await response.json()) as { entities?: EntityTableRow[]; meta?: DataSurfaceMeta };
+        const body = (await response.json()) as { entities?: EntityTableRow[]; facets?: EntityFacets; meta?: DataSurfaceMeta };
 
         if (!response.ok) {
           throw new Error("Entity reload failed.");
@@ -651,12 +663,14 @@ function useDbtfEntities(queryState: {
 
         if (!cancelled) {
           setRows(body.entities ?? []);
+          setFacets(body.facets ?? { jurisdictions: [], risks: [], types: [] });
           setMeta(body.meta ?? null);
           setLoadState("ready");
         }
       } catch {
         if (!cancelled) {
           setRows([]);
+          setFacets({ jurisdictions: [], risks: [], types: [] });
           setMeta(null);
           setLoadState("error");
         }
@@ -670,7 +684,21 @@ function useDbtfEntities(queryState: {
     };
   }, [queryState.jurisdiction, queryState.page, queryState.q, queryState.risk, queryState.sortDirection, queryState.sortKey, queryState.type, roleKey, tenantSlug]);
 
-  return { loadState, meta, rows };
+  return { facets, loadState, meta, rows };
+}
+
+function readinessLabel(value: "blocked" | "incomplete" | "ready") {
+  if (value === "ready") return "Ready";
+  if (value === "blocked") return "Blocked";
+  return "Incomplete";
+}
+
+function readinessDetail(reasons: string[]) {
+  if (reasons.length === 0) {
+    return "Available for the next internal workflow step.";
+  }
+
+  return reasons.map(labelFromEnum).join(", ");
 }
 
 function toneFor(value: string): BadgeTone {
@@ -905,29 +933,6 @@ function SafeClientBanner({ children = "No unapproved advice reaches the client.
       <ShieldCheck aria-hidden="true" className="size-4 shrink-0" />
       <span>{children}</span>
     </div>
-  );
-}
-
-function Epic07ProofAuditDisclosure({
-  auditSource,
-  proofSource,
-}: {
-  auditSource: string;
-  processId: string;
-  proofSource: string;
-}) {
-  return (
-    <span
-      className="inline-flex h-11 items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm font-semibold text-alphavest-ivory"
-      data-epic-07-audit-source={auditSource}
-      data-epic-07-proof-source={proofSource}
-      data-epic-07-client-release="not_mutated"
-      data-epic-07-no-overclaim="true"
-      data-testid="epic-07-proof-audit-disclosure"
-    >
-      <ShieldCheck aria-hidden="true" className="size-4 text-alphavest-gold" />
-      Evidence tracked
-    </span>
   );
 }
 
@@ -1377,7 +1382,7 @@ function ClientProfilePageContent({ title }: { title: string }) {
     phone: "",
     relationshipLabel: "",
   });
-  const [message, setMessage] = useState("Loaded from UserProfile DB row.");
+  const [message, setMessage] = useState("Profile loaded.");
   const [issues, setIssues] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
@@ -1392,7 +1397,7 @@ function ClientProfilePageContent({ title }: { title: string }) {
           relationshipLabel: profile.relationshipLabel,
         });
         setIssues([]);
-        setMessage("Loaded from UserProfile DB row.");
+        setMessage("Profile loaded.");
       });
     }
   }, [profile]);
@@ -1474,7 +1479,7 @@ function ClientProfilePageContent({ title }: { title: string }) {
             <CardHeader><CardTitle>Review Summary</CardTitle></CardHeader>
             <CardContent className="space-y-3 text-sm">
               {[
-                ["Profile Status", loadState === "ready" ? "DB-backed draft" : loadState],
+                ["Profile Status", loadState === "ready" ? "Draft" : loadState],
                 ["Sections Completed", `${completedSections} / 4`],
                 ["Validation Issues", String(issues.length)],
                 ["Family Rows", String(family.rows.length)],
@@ -1550,17 +1555,11 @@ function FamilyMembersPageContent({ title }: { title: string }) {
     taxResidency: "",
   });
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
-  const [formMessage, setFormMessage] = useState("Select a DB-backed member to edit allowed fields.");
+  const [formMessage, setFormMessage] = useState("Select a family member to edit allowed fields.");
   const [formIssues, setFormIssues] = useState<string[]>([]);
   const [savingFamilyMember, setSavingFamilyMember] = useState(false);
   const selected = selectedMemberId ? rows.find((row) => row.id === selectedMemberId) : undefined;
-  const selectedContextState = selected
-    ? selected.visibilityStatus === "Internal Only"
-      ? "blocked_internal_only"
-      : selected.status.toLowerCase().includes("complete") || selected.status.toLowerCase().includes("ready")
-        ? "ready_for_downstream_context"
-        : "incomplete_context"
-    : "selection_required";
+  const selectedContextState = selected ? `context_${selected.contextReadinessState}` : "selection_required";
 
   useEffect(() => {
     if (selected) {
@@ -1571,7 +1570,7 @@ function FamilyMembersPageContent({ title }: { title: string }) {
           taxResidency: selected.taxResidency,
         });
         setFormIssues([]);
-        setFormMessage("Loaded from FamilyMember DB row.");
+        setFormMessage("Family member loaded.");
       });
       return;
     }
@@ -1617,7 +1616,24 @@ function FamilyMembersPageContent({ title }: { title: string }) {
       ),
       className: "w-16 whitespace-nowrap",
     },
-    ...familyMemberQueueColumns.filter((column) => column.key !== "role"),
+    {
+      key: "name",
+      header: "Name",
+      render: (row) => (
+        <span className="block min-w-0 truncate whitespace-nowrap font-semibold text-alphavest-ivory">
+          {row.name}
+          <span className="ml-2 text-xs text-alphavest-muted">{row.year}</span>
+        </span>
+      ),
+      sortable: true,
+      className: "min-w-[14rem]",
+    },
+    {
+      key: "contextReadinessState",
+      header: "Downstream",
+      render: (row) => <ClientStatePill tone={toneFor(row.contextReadinessState)}>{readinessLabel(row.contextReadinessState)}</ClientStatePill>,
+      className: "w-32 whitespace-nowrap",
+    },
   ];
 
   function toggleSort(key: string) {
@@ -1665,12 +1681,11 @@ function FamilyMembersPageContent({ title }: { title: string }) {
         data-testid="epic-07-family-core-surface"
       >
         <SectionTitle
-          action={<div className="flex flex-wrap gap-3"><Epic07ProofAuditDisclosure auditSource="DB audit" processId="BP-004" proofSource="visibility rules" /><button className={secondaryButtonClass} data-testid="j09-family-map" onClick={() => { void runDataMaintenanceCommand("j09.openFamilyMap", "/relationships"); }} type="button"><Network aria-hidden="true" className="size-4" />Family Map</button><button className={primaryButtonClass} data-testid="j09-add-member" onClick={() => { void runDataMaintenanceCommand("j09.addMember"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add Member</button></div>}
+          action={<div className="flex flex-wrap gap-3"><button className={secondaryButtonClass} data-testid="j09-family-map" onClick={() => { void runDataMaintenanceCommand("j09.openFamilyMap", "/relationships"); }} type="button"><Network aria-hidden="true" className="size-4" />Family Map</button><button className={primaryButtonClass} data-testid="j09-add-member" onClick={() => { void runDataMaintenanceCommand("j09.addMember"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add Member</button></div>}
           count={String(meta?.totalRows ?? rows.length)}
           subtitle="Maintain family member profiles, relationships and governance roles."
           title={title}
         />
-        <SafeClientBanner>Family rows are loaded from tenant-limited seeded DB records. Allowed edits persist to FamilyMember and create audit events.</SafeClientBanner>
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_30rem]">
           <Card data-testid="epic-07-family-queue-surface" density="compact">
             <CardHeader className="grid gap-3 md:grid-cols-[1fr_auto]">
@@ -1682,7 +1697,7 @@ function FamilyMembersPageContent({ title }: { title: string }) {
 	                    setSearchTerm(event.target.value);
 	                    setPage(1);
 	                  }}
-	                  placeholder="Search DB-backed members"
+                  placeholder="Search family members"
                   value={searchTerm}
                 />
               </div>
@@ -1695,7 +1710,7 @@ function FamilyMembersPageContent({ title }: { title: string }) {
               <DataTable
                 columns={familyMemberSelectableColumns}
                 compact
-                emptyMessage={loadState === "error" ? "Family members could not be loaded from the DB." : "No DB-backed family members match this search."}
+                emptyMessage={loadState === "error" ? "Family members could not be loaded." : "No family members match this search."}
                 getRowId={(row) => row.id}
                 onSortChange={toggleSort}
 	                pagination={meta ? { ...meta, onPageChange: setPage } : null}
@@ -1718,12 +1733,13 @@ function FamilyMembersPageContent({ title }: { title: string }) {
                   {(selected?.name ?? "DB").split(" ").map((part) => part.charAt(0)).slice(0, 2).join("")}
                 </span>
                 <div>
-                  <CardTitle>{selected?.name ?? "No DB-backed member selected"}</CardTitle>
+                  <CardTitle>{selected?.name ?? "No family member selected"}</CardTitle>
                   <CardDescription>{selected ? `${selected.year} · ${selected.relationship} · ${selected.role}` : "Tenant-limited family rows are empty."}</CardDescription>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {selected ? <ClientStatePill tone={toneFor(selected.status)}>{selected.status}</ClientStatePill> : null}
                     {selected ? <ClientStatePill tone="blue">{selected.sensitivity}</ClientStatePill> : null}
                     {selected ? <ClientStatePill tone="green">{selected.visibilityStatus}</ClientStatePill> : null}
+                    {selected ? <ClientStatePill tone={toneFor(selected.contextReadinessState)}>{readinessLabel(selected.contextReadinessState)}</ClientStatePill> : null}
                   </div>
                 </div>
               </div>
@@ -1734,10 +1750,11 @@ function FamilyMembersPageContent({ title }: { title: string }) {
                 <FormField label="Display Name" onChange={(value) => setFamilyForm((current) => ({ ...current, displayName: value }))} required value={familyForm.displayName} />
                 <FormField label="Relationship" onChange={(value) => setFamilyForm((current) => ({ ...current, relationshipType: value }))} required value={familyForm.relationshipType} />
                 <FormField label="Tax Residency" onChange={(value) => setFamilyForm((current) => ({ ...current, taxResidency: value }))} required value={familyForm.taxResidency} />
-                <FieldBox label="Source" value="FamilyMember DB row" />
+                <FieldBox label="Record" value={selected ? selected.id.slice(0, 8) : "n/a"} />
                 <FieldBox label="Sensitivity" value={selected?.sensitivity ?? "n/a"} />
                 <FieldBox label="Visibility" value={selected?.visibilityStatus ?? "n/a"} />
                 <FieldBox label="Status" value={selected?.status ?? "n/a"} />
+                <FieldBox label="Downstream use" value={selected ? readinessDetail(selected.contextReadinessReasons) : "Select a family member"} />
               </div>
               <div
                 className={cn(
@@ -1801,129 +1818,42 @@ const familyMemberQueueColumns: Array<DataTableColumn<FamilyMemberTableRow>> = [
     sortable: true,
     className: "w-28 whitespace-nowrap",
   },
+  {
+    key: "contextReadinessState",
+    header: "Downstream",
+    render: (row) => <ClientStatePill tone={toneFor(row.contextReadinessState)}>{readinessLabel(row.contextReadinessState)}</ClientStatePill>,
+    className: "w-32 whitespace-nowrap",
+  },
 ];
 
 function RelationshipsPage({ title }: { title: string }) {
   return (
     <ClientShell activePageId="023">
       <ScreenTitle>{title}</ScreenTitle>
-      <div
-        className="space-y-5"
-        data-epic-07-gate="relationship-db-audit"
-        data-epic-07-no-overclaim="true"
-        data-epic-07-process="BP-005"
-        data-epic-07-surface="relationship-depth"
-        data-testid="epic-07-relationship-depth-surface"
-      >
+      <div className="space-y-5" data-testid="epic-07-relationship-depth-surface">
         <SectionTitle
-          action={<div className="flex flex-wrap gap-3"><Epic07ProofAuditDisclosure auditSource="Relationship AuditEvent" processId="BP-005" proofSource="typed J09 command" /><button className={secondaryButtonClass} data-testid="j09-family-map" onClick={() => { void runDataMaintenanceCommand("j09.openFamilyMap"); }} type="button"><Network aria-hidden="true" className="size-4" />Open Map</button><button className={primaryButtonClass} data-testid="j09-add-relationship" onClick={() => { void runDataMaintenanceCommand("j09.addRelationship"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add Edge</button></div>}
-          subtitle="Validate relationship edges, evidence and conflicts across people, entities and advisors."
+          action={<button className={primaryButtonClass} data-testid="j09-add-relationship" onClick={() => { void runDataMaintenanceCommand("j09.addRelationship"); }} type="button"><Plus aria-hidden="true" className="size-4" />Add Edge</button>}
+          subtitle="Maintain relationship edges only when saved relationship state is available."
           title={title}
         />
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
-          <Card data-testid="epic-07-relationship-graph" density="compact">
-            <CardContent className="p-0">
-              <div className="hidden h-[18rem] overflow-hidden rounded-t-md border-b border-alphavest-border bg-[radial-gradient(circle_at_center,rgba(90,167,216,0.08),transparent_24rem)] md:relative md:block">
-                {relationshipNodes.map((node) => (
-                  <div
-                    className={cn(
-                      "absolute w-40 rounded-md border p-2.5 shadow-lg",
-                      node.state === "selected" && "border-alphavest-gold bg-alphavest-gold/12",
-                      node.state === "purple" && "border-violet-400/55 bg-violet-400/12",
-                      node.state === "green" && "border-alphavest-green/50 bg-alphavest-green/10",
-                      node.state === "red" && "border-alphavest-red/50 bg-alphavest-red/10",
-                      node.state === "blue" && "border-alphavest-blue/50 bg-alphavest-blue/10",
-                      node.state === "muted" && "border-alphavest-border bg-alphavest-charcoal/80"
-                    )}
-                    key={node.id}
-                    style={{ left: `${node.x}%`, top: `${node.y}%` }}
-                  >
-                    <p className="text-sm font-semibold text-alphavest-ivory">{node.label}</p>
-                    <p className="text-xs text-alphavest-muted">{node.detail}</p>
-                  </div>
-                ))}
-                <svg className="absolute inset-0 -z-0 size-full opacity-70" aria-hidden="true">
-                  <line x1="28%" y1="18%" x2="38%" y2="16%" stroke="#aeb8c4" />
-                  <line x1="50%" y1="16%" x2="62%" y2="16%" stroke="#d7a64b" />
-                  <line x1="46%" y1="23%" x2="44%" y2="42%" stroke="#aeb8c4" />
-                  <line x1="70%" y1="21%" x2="80%" y2="33%" stroke="#aeb8c4" strokeDasharray="4 4" />
-                  <line x1="28%" y1="45%" x2="17%" y2="71%" stroke="#ef5b5b" strokeDasharray="5 5" />
-                  <line x1="34%" y1="50%" x2="72%" y2="70%" stroke="#ef5b5b" strokeDasharray="5 5" />
-                </svg>
-              </div>
-              <div className="grid gap-3 border-b border-alphavest-border p-4 md:hidden">
-                {relationshipRows.slice(0, 5).map((row) => (
-                  <article className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4" key={`${row.from}-${row.to}-mobile`}>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <ClientStatePill tone={toneFor(row.status)}>{row.status}</ClientStatePill>
-                      <ClientStatePill tone="muted">{row.type}</ClientStatePill>
-                    </div>
-                    <p className="mt-3 text-sm font-semibold text-alphavest-ivory">{row.from}</p>
-                    <p className="mt-1 text-xs uppercase tracking-[0.12em] text-alphavest-subtle">{row.relationship}</p>
-                    <p className="mt-1 text-sm text-alphavest-muted">{row.to}</p>
-                    <p className="mt-3 text-xs text-alphavest-subtle">Evidence: {row.evidence}</p>
-                  </article>
-                ))}
-              </div>
-              <div className="p-3">
-                <DataTable columns={relationshipDepthColumns} compact getRowId={(row) => `${row.from}-${row.to}`} rows={relationshipRows} />
-              </div>
-            </CardContent>
-          </Card>
-          <Card data-testid="epic-07-relationship-step-proof" density="compact">
-            <CardHeader>
-              <CardTitle>Relationship checks</CardTitle>
-              <CardDescription>Edge changes stay blocked until storage and audit checks are available.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {relationshipDepthSteps.map((step) => (
-                <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5" data-testid="epic-07-relationship-depth-step" key={step.label}>
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="font-semibold text-alphavest-ivory">{step.label}</p>
-                    <ClientStatePill tone={step.tone}>{step.status}</ClientStatePill>
-                  </div>
-                  <p className="mt-2 text-sm leading-5 text-alphavest-muted">{step.detail}</p>
-                </div>
-              ))}
-              <div className="rounded-md border border-alphavest-red/45 bg-alphavest-red/10 p-2.5 text-sm text-alphavest-muted" data-testid="epic-07-relationship-audit-fail-closed">
-                <span className="font-semibold text-alphavest-ivory">Audit failure rule</span>
-                <span className="ml-2">If audit persistence is unavailable, the relationship edge is not created and client release remains unchanged.</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <Card data-testid="epic-07-relationship-graph" density="compact">
+          <CardHeader className="flex flex-row items-start justify-between gap-4">
+            <div>
+              <CardTitle>Relationship map unavailable</CardTitle>
+              <CardDescription>Saved relationship detail is required before relationship context can support downstream work.</CardDescription>
+            </div>
+            <ClientStatePill tone="red">Blocked</ClientStatePill>
+          </CardHeader>
+          <CardContent className="grid gap-3 md:grid-cols-3">
+            <FieldBox label="Selected edge" value="None" />
+            <FieldBox label="Downstream use" value="Relationship view required" />
+            <FieldBox label="Next action" value="Add or load a saved edge" />
+          </CardContent>
+        </Card>
       </div>
     </ClientShell>
   );
 }
-
-const relationshipDepthColumns: Array<DataTableColumn<(typeof relationshipRows)[number]>> = [
-  { key: "from", header: "From", render: (row) => <span className="font-semibold text-alphavest-ivory">{row.from}</span>, className: "min-w-[10rem]" },
-  { key: "relationship", header: "Edge", render: (row) => row.relationship, className: "w-36" },
-  { key: "to", header: "To", render: (row) => row.to, className: "min-w-[11rem]" },
-  { key: "status", header: "Status", render: (row) => <ClientStatePill tone={toneFor(row.status)}>{row.status}</ClientStatePill>, className: "w-32 whitespace-nowrap" }
-];
-
-const relationshipDepthSteps: Array<{ detail: string; label: string; status: string; tone: BadgeTone }> = [
-  {
-    detail: "Family map open is a typed J09 command and creates an audit trace without changing release state.",
-    label: "1. Map open audited",
-    status: "audit first",
-    tone: "blue",
-  },
-  {
-    detail: "Add Edge writes a Relationship row and an EvidenceItem only after the critical audit check is writable.",
-    label: "2. Edge mutation gated",
-    status: "DB backed",
-    tone: "green",
-  },
-  {
-    detail: "Missing audit persistence fails closed before mutation; no hidden relationship content is exposed.",
-    label: "3. Audit failure blocked",
-    status: "fail closed",
-    tone: "red",
-  },
-];
 
 function EntitiesPage({ title }: { title: string }) {
   return (
@@ -1941,7 +1871,7 @@ function EntitiesPageContent({ title }: { title: string }) {
   const [sortKey, setSortKey] = useState<keyof EntityTableRow>("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [page, setPage] = useState(1);
-  const { loadState, meta, rows } = useDbtfEntities({
+  const { facets, loadState, meta, rows } = useDbtfEntities({
     jurisdiction: jurisdictionFilter,
     page,
     q: searchTerm,
@@ -1950,9 +1880,9 @@ function EntitiesPageContent({ title }: { title: string }) {
     sortKey: String(sortKey),
     type: typeFilter,
   });
-  const typeOptions = Array.from(new Set(rows.map((row) => row.type))).sort();
-  const jurisdictionOptions = Array.from(new Set(rows.map((row) => row.jurisdiction))).sort();
-  const riskOptions = Array.from(new Set(rows.map((row) => row.risk))).sort();
+  const typeOptions = facets.types;
+  const jurisdictionOptions = facets.jurisdictions;
+  const riskOptions = facets.risks;
 
   function toggleSort(key: string) {
     const nextKey = key as keyof EntityTableRow;
@@ -1980,7 +1910,7 @@ function EntitiesPageContent({ title }: { title: string }) {
         data-testid="epic-07-entity-core-surface"
       >
         <SectionTitle
-          action={<div className="flex flex-wrap gap-3"><Epic07ProofAuditDisclosure auditSource="DB readmodel" processId="BP-006" proofSource="tenant query" /><button className={primaryButtonClass} data-testid="j05-create-entity" onClick={() => { void runDataMaintenanceCommand("j05.createEntity", "/entities/new"); }} type="button"><Plus aria-hidden="true" className="size-4" />Create Entity</button></div>}
+          action={<button className={primaryButtonClass} data-testid="j05-create-entity" onClick={() => { void runDataMaintenanceCommand("j05.createEntity", "/entities/new"); }} type="button"><Plus aria-hidden="true" className="size-4" />Create Entity</button>}
           count={String(meta?.totalRows ?? rows.length)}
           subtitle="View and manage entities across organizational and investment structures."
           title={title}
@@ -1996,7 +1926,7 @@ function EntitiesPageContent({ title }: { title: string }) {
 	                    setSearchTerm(event.target.value);
 	                    setPage(1);
 	                  }}
-	                  placeholder="Search DB-backed entities..."
+	                  placeholder="Search entities..."
                   value={searchTerm}
                 />
               </div>
@@ -2011,16 +1941,16 @@ function EntitiesPageContent({ title }: { title: string }) {
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="grid gap-3 md:grid-cols-5">
-	              <MetricCard detail="Tenant DB rows matching backend query" label="Entities" value={String(meta?.totalRows ?? rows.length)} />
-	              <MetricCard detail="Backend page rows returned" label="Visible" value={String(meta?.returnedRows ?? rows.length)} />
+	              <MetricCard detail="Matching permitted records" label="Entities" value={String(meta?.totalRows ?? rows.length)} />
+	              <MetricCard detail="Visible in this view" label="Visible" value={String(meta?.returnedRows ?? rows.length)} />
               <MetricCard detail="Seeded high-risk rows" label="High Risk" status="FAILED" value={String(rows.filter((row) => row.risk.toLowerCase().includes("high")).length)} />
               <MetricCard detail="Rows needing evidence" label="Evidence" status="PENDING" value={String(rows.filter((row) => row.missingDocs !== "All good").length)} />
-              <MetricCard detail="No static entity arrays" label="Source" status="ACTIVE" value="DB" />
+              <MetricCard detail="Ready for next internal workflow" label="Usable" status="ACTIVE" value={String(rows.filter((row) => row.contextReadinessState === "ready").length)} />
             </div>
             <DataTable
               actionPolicy="none"
               columns={entityColumns}
-              emptyMessage={loadState === "error" ? "Entities could not be loaded from the DB." : "No DB-backed entities match this search and filter set."}
+              emptyMessage={loadState === "error" ? "Entities could not be loaded." : "No entities match this search and filter set."}
 	              getRowId={(row) => row.id}
 	              onSortChange={toggleSort}
 	              pagination={meta ? { ...meta, onPageChange: setPage } : null}
@@ -2107,6 +2037,7 @@ const entityColumns: Array<DataTableColumn<EntityTableRow>> = [
   { key: "jurisdiction", header: "Jurisdiction", render: (row) => row.jurisdiction, sortable: true, className: "min-w-[8rem] whitespace-nowrap" },
   { key: "ownership", header: "Own. %", render: (row) => row.ownership, className: "w-24 whitespace-nowrap" },
   { key: "visibilityStatus", header: "Visibility", render: (row) => <ClientStatePill tone={toneFor(row.visibilityStatus)}>{row.visibilityStatus}</ClientStatePill>, sortable: true, className: "min-w-[9rem] whitespace-nowrap" },
+  { key: "contextReadinessState", header: "Downstream", render: (row) => <ClientStatePill tone={toneFor(row.contextReadinessState)}>{readinessLabel(row.contextReadinessState)}</ClientStatePill>, className: "w-32 whitespace-nowrap" },
   { key: "docs", header: "Docs", render: (row) => <ClientStatePill tone={toneFor(row.missingDocs)}>{row.missingDocs}</ClientStatePill>, className: "min-w-[9rem] whitespace-nowrap" },
   { key: "risk", header: "Risk", render: (row) => <ClientStatePill tone={toneFor(row.risk)}>{row.risk}</ClientStatePill>, sortable: true, className: "w-28 whitespace-nowrap" }
 ];
@@ -2165,7 +2096,7 @@ function CreateEntityPageContent({ title }: { title: string }) {
         throw new Error(body.issues?.join(", ") || "entity_wizard_save_failed");
       }
 
-      setMessage(`${body.result.entity.name} saved as ${body.result.entity.status}. Entity rows will reload from the DB on /entities.`);
+      setMessage(`${body.result.entity.name} saved as ${body.result.entity.status}. Entity rows will refresh on /entities.`);
       setWizardStep(action === "submit" ? 2 : Math.max(wizardStep, 1));
     } catch (error) {
       setIssues(error instanceof Error ? error.message.split(", ").filter(Boolean) : ["entity_wizard_save_failed"]);
@@ -2205,7 +2136,6 @@ function CreateEntityPageContent({ title }: { title: string }) {
         data-testid="epic-07-entity-step-surface"
       >
         <SectionTitle
-          action={<Epic07ProofAuditDisclosure auditSource="POST /api/entities" processId="BP-006" proofSource="wizard validation" />}
           subtitle="Build a new entity record with ownership, jurisdiction and supporting evidence."
           title={title}
         />
@@ -2662,16 +2592,32 @@ const documentColumns: Array<DataTableColumn<DocumentTableRow>> = [
 function DocumentUploadForm() {
   const { session } = useDemoSession();
   const { documents, loadState, refresh, rememberUploadedDocument } = usePersistedUploadDocuments();
+  const { rows: targetRows } = useDbtfEntities({
+    jurisdiction: "all",
+    page: 1,
+    q: "",
+    risk: "all",
+    sortDirection: "asc",
+    sortKey: "name",
+    type: "all",
+  });
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [documentType, setDocumentType] = useState("financial_statement");
   const [subType, setSubType] = useState("Quarterly Report");
-  const [linkedObjectLabel, setLinkedObjectLabel] = useState("AlphaVest Holdings, LLC");
+  const [selectedTargetId, setSelectedTargetId] = useState("");
   const [periodLabel, setPeriodLabel] = useState("Mar 31, 2024 (Q1 2024)");
   const [notes, setNotes] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [uploadState, setUploadState] = useState<"idle" | "uploading" | "success" | "error">("idle");
   const [message, setMessage] = useState("Select a file to start document intake.");
+  const selectedTarget = targetRows.find((row) => row.id === selectedTargetId) ?? targetRows[0];
+
+  useEffect(() => {
+    if (!selectedTargetId && targetRows[0]) {
+      setSelectedTargetId(targetRows[0].id);
+    }
+  }, [selectedTargetId, targetRows]);
 
   function selectFile(fileList: FileList | null) {
     const file = fileList?.item(0) ?? null;
@@ -2697,12 +2643,16 @@ function DocumentUploadForm() {
     const formData = new FormData();
     formData.append("documentType", documentType);
     formData.append("file", fileForUpload);
-    formData.append("linkedObjectLabel", linkedObjectLabel);
+    formData.append("linkedObjectLabel", selectedTarget?.name ?? "");
     formData.append("notes", notes);
     formData.append("periodLabel", periodLabel);
     formData.append("roleKey", session.role.key);
     formData.append("sensitivity", "CONFIDENTIAL");
     formData.append("subType", subType);
+    if (selectedTarget) {
+      formData.append("targetObjectId", selectedTarget.id);
+      formData.append("targetObjectType", "ENTITY");
+    }
     formData.append("tenantSlug", session.tenant.slug);
 
     setUploadState("uploading");
@@ -2726,7 +2676,7 @@ function DocumentUploadForm() {
       await refresh();
       rememberUploadedDocument(body.result.document);
       setUploadState("success");
-      setMessage(`${body.result.document.fileName} upload completed. Upload complete - evidence review pending. Evidence sufficiency, release, export and client visibility remain locked. Lifecycle: ${labelFromEnum(body.result.document.evidenceLifecycleStatus ?? "extraction_pending")}. ${uxFeedbackSuccessMessageForSubject("upload")}`);
+      setMessage(`${body.result.document.fileName} upload completed. Evidence request recorded and review is pending. Evidence sufficiency, release, export and client visibility remain locked. ${uxFeedbackSuccessMessageForSubject("upload")}`);
     } catch (error) {
       setUploadState("error");
       setMessage(error instanceof Error ? error.message : "Upload failed.");
@@ -2737,10 +2687,12 @@ function DocumentUploadForm() {
   const hasSelectedFile = Boolean(selectedFile);
   const uploadLifecycleStatus = uploadState === "uploading" ? "loading" : uploadState;
   const uploadValidationState = hasSelectedFile ? "valid-file-selected" : "blocked-file-required";
-  const uploadValidationMessage = hasSelectedFile
+  const uploadValidationMessage = hasSelectedFile && selectedTarget
     ? "Ready to upload this source document for extraction review. Upload creates pending internal evidence and audit only; upload complete means evidence review pending."
+    : hasSelectedFile
+      ? "Select an evidence target before upload can start."
     : "Upload remains blocked until a source file is selected. No evidence, audit, release, export or client visibility changes occur.";
-  const canUpload = hasSelectedFile && uploadState !== "uploading";
+  const canUpload = hasSelectedFile && Boolean(selectedTarget) && uploadState !== "uploading";
 
   return (
     <div
@@ -2753,7 +2705,7 @@ function DocumentUploadForm() {
       <Card density="compact">
         <CardHeader className="pb-2"><CardTitle className="text-lg">Upload Source</CardTitle></CardHeader>
         <CardContent className="mt-2 space-y-2">
-          <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2">
             {["My Device", "Email Import", "Cloud Storage", "Scanner"].map((item, index) => (
               <button className={cn("h-9 rounded-md border text-xs", index === 0 ? "border-alphavest-gold bg-alphavest-gold/12 text-alphavest-gold" : "border-alphavest-border text-alphavest-muted")} disabled={index !== 0} key={item} type="button">{item}</button>
             ))}
@@ -2838,8 +2790,17 @@ function DocumentUploadForm() {
             <input className="h-9 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold" onChange={(event) => setSubType(event.target.value)} value={subType} />
           </label>
           <label className="grid gap-1 text-xs">
-            <span className="text-alphavest-muted">Link to Entity / Asset</span>
-            <input className="h-9 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold" onChange={(event) => setLinkedObjectLabel(event.target.value)} value={linkedObjectLabel} />
+            <span className="text-alphavest-muted">Evidence Target</span>
+            <select
+              className="h-9 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold"
+              data-testid="document-upload-target-object"
+              onChange={(event) => setSelectedTargetId(event.target.value)}
+              value={selectedTarget?.id ?? ""}
+            >
+              {targetRows.map((row) => (
+                <option key={row.id} value={row.id}>{row.name}</option>
+              ))}
+            </select>
           </label>
           <label className="grid gap-1 text-xs">
             <span className="text-alphavest-muted">Period</span>
@@ -2849,13 +2810,13 @@ function DocumentUploadForm() {
             <span className="text-alphavest-muted">Notes</span>
             <textarea className="min-h-14 rounded-md border border-alphavest-border bg-alphavest-navy/35 px-3 py-2 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold" maxLength={500} onChange={(event) => setNotes(event.target.value)} placeholder="Add any notes about this document..." value={notes} />
           </label>
-          <ActionZone className="md:col-span-2 md:grid-cols-3" layout="stack" placement="inline_cluster" testId="e05-document-upload-action-zone">
+          <ActionZone className="md:col-span-2 md:grid-cols-2" layout="stack" placement="inline_cluster" testId="e05-document-upload-action-zone">
             <ActionButton
               availability={canUpload ? "enabled" : "disabled"}
               className="w-full"
               describedBy="document-upload-validation"
               disabled={!canUpload}
-              disabledReason={!canUpload ? "Select a supported source file before upload can start." : undefined}
+              disabledReason={!canUpload ? (selectedTarget ? "Select a supported source file before upload can start." : "Select an evidence target before upload can start.") : undefined}
               lifecycleResult={canUpload ? "submits-upload-for-review" : "blocked-validation-required"}
               meaning="submit_review"
               onClick={() => { void submitUpload(); }}
@@ -2903,9 +2864,10 @@ function DocumentUploadForm() {
             </button>
           ) : null}
           {latestDocument ? (
-            <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4" data-testid="document-upload-latest-card">
+          <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-4" data-testid="document-upload-latest-card">
               <p className="text-sm font-semibold text-alphavest-ivory">{latestDocument.fileName ?? latestDocument.title}</p>
               <p className="mt-1 text-xs text-alphavest-muted">{latestDocument.fileSizeBytes ? formatBytes(latestDocument.fileSizeBytes) : "Size hidden"} · {labelFromEnum(latestDocument.status)}</p>
+              <p className="mt-2 text-xs text-alphavest-muted">Target: {latestDocument.targetObjectType ? labelFromEnum(latestDocument.targetObjectType) : "Document"} {latestDocument.targetObjectId ? latestDocument.targetObjectId.slice(0, 8) : latestDocument.id.slice(0, 8)}</p>
               <p className="mt-2 text-xs text-alphavest-muted">Version: v{latestDocument.latestVersionNumber ?? 1} of {latestDocument.versionCount ?? 1} · checksum evidence stored internally</p>
               <p className="mt-2 text-xs text-alphavest-muted">Lifecycle: {labelFromEnum(latestDocument.evidenceLifecycleStatus ?? "review_pending")}</p>
               <p className="mt-2 text-xs text-alphavest-muted">Extraction: {latestDocument.extractionStatus ?? "pending"}</p>
@@ -2929,10 +2891,7 @@ function DocumentUploadPage({ title }: { title: string }) {
         description="Upload intake keeps file submission separate from extraction review, evidence sufficiency and release."
         eyebrow="Evidence"
         primary={
-          <div className="space-y-2">
-            <EvidenceLifecycleCoreSurface screenId="S028" surfaceKind="step" />
-            <DocumentUploadForm />
-          </div>
+          <DocumentUploadForm />
         }
         routeId="028"
         safetyNote="Upload can create a pending review item only. It cannot complete evidence review, export approval or client visibility."
@@ -2978,6 +2937,8 @@ function ExtractionReviewActionPanel() {
           documentId: latestDocument.id,
           notes,
           relevanceAccepted: action === "accept_sufficiency",
+          requiredObjectId: latestDocument.targetObjectId ?? latestDocument.id,
+          requiredObjectType: latestDocument.targetObjectType ?? "DOCUMENT",
           roleKey: session.role.key,
           scopeAccepted: action === "accept_sufficiency",
           tenantSlug: session.tenant.slug,
@@ -3015,6 +2976,9 @@ function ExtractionReviewActionPanel() {
             <p className="text-sm font-semibold text-alphavest-ivory">Selected upload</p>
             <p className="mt-0.5 text-xs text-alphavest-muted">
               Document: {labelFromEnum(latestDocument.status)} · Evidence: {latestDocument.evidenceStatus ? labelFromEnum(latestDocument.evidenceStatus) : "Created"}
+            </p>
+            <p className="mt-0.5 text-xs text-alphavest-muted">
+              Target: {latestDocument.targetObjectType ? labelFromEnum(latestDocument.targetObjectType) : "Document"} {latestDocument.targetObjectId ? latestDocument.targetObjectId.slice(0, 8) : latestDocument.id.slice(0, 8)}
             </p>
             <p className="mt-0.5 text-xs text-alphavest-muted">Version: v{latestDocument.latestVersionNumber ?? 1} of {latestDocument.versionCount ?? 1} · checksum evidence stored internally</p>
             <p className="mt-0.5 text-xs text-alphavest-muted">Lifecycle: {labelFromEnum(latestDocument.evidenceLifecycleStatus ?? "review_pending")} · Visibility: Redacted</p>
@@ -3166,12 +3130,9 @@ function ExtractionReviewPage({ title }: { title: string }) {
         description="Human review of extracted draft fields before any permitted evidence sufficiency check."
         eyebrow="Evidence"
         primary={
-          <div className="space-y-2">
-            <EvidenceLifecycleCoreSurface screenId="S029" surfaceKind="queue" />
-            <div className="grid items-start gap-2 xl:grid-cols-[minmax(0,1fr)_22rem]">
-              <ExtractionReviewWorkbench />
-              <ExtractionReviewActionPanel />
-            </div>
+          <div className="grid items-start gap-2 xl:grid-cols-[minmax(0,1fr)_22rem]">
+            <ExtractionReviewWorkbench />
+            <ExtractionReviewActionPanel />
           </div>
         }
         routeId="029"

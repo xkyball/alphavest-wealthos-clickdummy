@@ -1,7 +1,35 @@
 import { execFileSync } from "node:child_process";
 import "dotenv/config";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { demoAuthSessionCookieName } from "../lib/demo/demo-auth-session";
+
+const demoSessionStorageKey = "alphavest.demoSession.v1";
+
+async function setDemoSession(page: Page, tenantSlug: string, roleKey: string) {
+  await page.addInitScript(
+    ([storageKey, tenant, role]) => {
+      window.localStorage.setItem(storageKey, JSON.stringify({ roleKey: role, tenantSlug: tenant }));
+    },
+    [demoSessionStorageKey, tenantSlug, roleKey],
+  );
+  await page.evaluate(
+    ([storageKey, tenant, role]) => {
+      window.localStorage.setItem(storageKey, JSON.stringify({ roleKey: role, tenantSlug: tenant }));
+    },
+    [demoSessionStorageKey, tenantSlug, roleKey],
+  ).catch(() => undefined);
+}
+
+async function setUploadFile(page: Page, input: { buffer: Buffer; mimeType: string; name: string }) {
+  await page.waitForLoadState("networkidle");
+  await expect(page.getByTestId("document-upload-target-object")).toBeVisible();
+  await page.getByTestId("document-upload-file-input").setInputFiles(input);
+
+  if (input.mimeType === "application/pdf") {
+    await expect(page.getByTestId("document-upload-validation-state")).toContainText("Ready to upload");
+    await expect(page.getByTestId("real-upload-document")).toBeEnabled();
+  }
+}
 
 test.describe("document upload browser flow", () => {
   test.beforeAll(() => {
@@ -24,10 +52,9 @@ test.describe("document upload browser flow", () => {
   test("uploads a file through the picker and survives reload", async ({ page }) => {
     const fileName = "playwright-upload-reload-proof.pdf";
 
+    await setDemoSession(page, "morgan", "family_cfo");
     await page.goto("/documents/upload");
-    await page.getByLabel("Tenant context").last().selectOption("morgan");
-    await page.getByLabel("Role context").last().selectOption("family_cfo");
-    await page.getByTestId("document-upload-file-input").setInputFiles({
+    await setUploadFile(page, {
       buffer: Buffer.from("%PDF-1.4\nPlaywright reload proof\n%%EOF"),
       mimeType: "application/pdf",
       name: fileName,
@@ -51,10 +78,9 @@ test.describe("document upload browser flow", () => {
   test("reloads persisted uploads from the selected tenant context", async ({ page }) => {
     const fileName = "playwright-summit-tenant-reload-proof.pdf";
 
+    await setDemoSession(page, "summit", "family_cfo");
     await page.goto("/documents/upload");
-    await page.getByLabel("Tenant context").last().selectOption("summit");
-    await page.getByLabel("Role context").last().selectOption("family_cfo");
-    await page.getByTestId("document-upload-file-input").setInputFiles({
+    await setUploadFile(page, {
       buffer: Buffer.from("%PDF-1.4\nPlaywright summit tenant proof\n%%EOF"),
       mimeType: "application/pdf",
       name: fileName,
@@ -75,17 +101,17 @@ test.describe("document upload browser flow", () => {
     await expect(page.locator("p:visible, span:visible, td:visible, article:visible", { hasText: fileName }).first()).toBeVisible();
     await expect(page.locator("td:visible", { hasText: "Summit Ridge Capital" }).first()).toBeVisible();
 
-    await page.getByLabel("Tenant context").last().selectOption("morgan");
+    await setDemoSession(page, "morgan", "family_cfo");
+    await page.goto("/documents");
     await expect(page.locator("p:visible, span:visible, td:visible, article:visible", { hasText: fileName })).toHaveCount(0);
   });
 
   test("shows retry affordance after a blocked upload without creating sufficiency", async ({ page }) => {
     const fileName = "playwright-blocked-retry-proof.exe";
 
+    await setDemoSession(page, "morgan", "family_cfo");
     await page.goto("/documents/upload");
-    await page.getByLabel("Tenant context").last().selectOption("morgan");
-    await page.getByLabel("Role context").last().selectOption("family_cfo");
-    await page.getByTestId("document-upload-file-input").setInputFiles({
+    await setUploadFile(page, {
       buffer: Buffer.from("unsupported executable payload"),
       mimeType: "application/x-msdownload",
       name: fileName,
@@ -101,10 +127,9 @@ test.describe("document upload browser flow", () => {
   test("accepts scoped evidence from extraction review without client release", async ({ page }) => {
     const fileName = "playwright-phase3-evidence-review-proof.pdf";
 
+    await setDemoSession(page, "morgan", "family_cfo");
     await page.goto("/documents/upload");
-    await page.getByLabel("Tenant context").last().selectOption("morgan");
-    await page.getByLabel("Role context").last().selectOption("family_cfo");
-    await page.getByTestId("document-upload-file-input").setInputFiles({
+    await setUploadFile(page, {
       buffer: Buffer.from("%PDF-1.4\nPlaywright phase 3 review proof\n%%EOF"),
       mimeType: "application/pdf",
       name: fileName,
@@ -113,9 +138,8 @@ test.describe("document upload browser flow", () => {
     await page.getByTestId("real-upload-document").click();
     await expect(page.getByText(`${fileName} upload completed.`)).toBeVisible();
 
+    await setDemoSession(page, "morgan", "compliance_officer");
     await page.goto("/documents/review-queue");
-    await page.getByLabel("Tenant context").last().selectOption("morgan");
-    await page.getByLabel("Role context").last().selectOption("compliance_officer");
     await expect(page.getByText(fileName)).toBeVisible();
     await expect(page.getByTestId("document-review-latest-card")).toContainText("Version: v1 of 1");
     await expect(page.getByTestId("document-review-latest-card")).toContainText("checksum evidence stored internally");
@@ -130,10 +154,9 @@ test.describe("document upload browser flow", () => {
   test("renders clarification as insufficient without client release", async ({ page }) => {
     const fileName = "playwright-phase3-clarification-proof.pdf";
 
+    await setDemoSession(page, "morgan", "family_cfo");
     await page.goto("/documents/upload");
-    await page.getByLabel("Tenant context").last().selectOption("morgan");
-    await page.getByLabel("Role context").last().selectOption("family_cfo");
-    await page.getByTestId("document-upload-file-input").setInputFiles({
+    await setUploadFile(page, {
       buffer: Buffer.from("%PDF-1.4\nPlaywright phase 3 clarification proof\n%%EOF"),
       mimeType: "application/pdf",
       name: fileName,
@@ -142,9 +165,8 @@ test.describe("document upload browser flow", () => {
     await page.getByTestId("real-upload-document").click();
     await expect(page.getByText(`${fileName} upload completed.`)).toBeVisible();
 
+    await setDemoSession(page, "morgan", "analyst");
     await page.goto("/documents/review-queue");
-    await page.getByLabel("Tenant context").last().selectOption("morgan");
-    await page.getByLabel("Role context").last().selectOption("analyst");
     await expect(page.getByText(fileName)).toBeVisible();
 
     await page.getByTestId("phase3-request-clarification").click();

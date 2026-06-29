@@ -70,6 +70,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       entities: page.entities,
+      facets: page.facets,
       meta: page.meta,
       ok: true,
       safety: {

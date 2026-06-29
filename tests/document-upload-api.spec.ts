@@ -33,6 +33,9 @@ test.describe("document upload multipart API", () => {
   test("stores multipart document bytes, domain rows, extraction, evidence and audit", async ({ request }) => {
     const fileName = "scf-p04-upload-proof.pdf";
     const morganSession = createDemoSession({ roleKey: "family_cfo", tenantSlug: "morgan" });
+    const targetEntity = await prisma.entity.findFirstOrThrow({
+      where: { clientTenantId: morganSession.tenant.id },
+    });
     const exportCountBefore = await prisma.exportRequest.count({
       where: { clientTenantId: morganSession.tenant.id },
     });
@@ -50,6 +53,8 @@ test.describe("document upload multipart API", () => {
         roleKey: "family_cfo",
         sensitivity: "CONFIDENTIAL",
         subType: "Monthly Statement",
+        targetObjectId: targetEntity.id,
+        targetObjectType: "ENTITY",
         tenantSlug: "morgan",
       },
     });
@@ -57,6 +62,9 @@ test.describe("document upload multipart API", () => {
 
     expect(response.ok(), JSON.stringify(body)).toBe(true);
     expect(body.result.document.fileName).toBe(fileName);
+    expect(body.result.document.evidenceRequestState).toBe("requested_upload_received");
+    expect(body.result.document.targetObjectId).toBe(targetEntity.id);
+    expect(body.result.document.targetObjectType).toBe("ENTITY");
     expect(body.result.versionId).toBeTruthy();
     expect(body.result.extractionId).toBeTruthy();
     expect(body.result.evidenceRecordId).toBeTruthy();
@@ -65,12 +73,14 @@ test.describe("document upload multipart API", () => {
     expect(body.result.document.versionCount).toBe(1);
     expect(body.result).not.toHaveProperty("auditEvidenceItemId");
     expect(body.result).not.toHaveProperty("documentEvidenceItemId");
+    expect(body.result).not.toHaveProperty("evidenceRequestItemId");
     expect(body.result).not.toHaveProperty("storageKey");
     expect(body.result.document).not.toHaveProperty("checksum");
     expect(body.result.document).not.toHaveProperty("storageKey");
     expect(body.safety).toEqual({
       clientVisible: false,
       evidenceLifecycleStatus: "extraction_pending",
+      evidenceRequestState: "requested_upload_received",
       evidenceStatus: "REVIEW_PENDING",
       releaseUnlocked: false,
       sufficiency: false,
@@ -102,12 +112,22 @@ test.describe("document upload multipart API", () => {
     expect(document.versions[0]?.checksum).toHaveLength(64);
     expect(document.versions[0]?.versionNumber).toBe(1);
     expect(document.extractions[0]?.extractionStatus).toBe("pending");
-    expect(evidenceRecord.relatedObjectId).toBe(document.id);
+    expect(evidenceRecord.relatedObjectId).toBe(targetEntity.id);
+    expect(evidenceRecord.relatedObjectType).toBe(ObjectType.ENTITY);
     expect(evidenceRecord.status).toBe(EvidenceStatus.CREATED);
     expect(evidenceRecord.visibilityStatus).toBe("INTERNAL_ONLY");
     expect(document.clientVisible).toBe(false);
     expect(document.status).toBe("UPLOADED");
-    expect(evidenceRecord.items.map((item) => item.itemType).sort()).toEqual(["audit_event", "document"]);
+    expect(evidenceRecord.items.map((item) => item.itemType).sort()).toEqual(["audit_event", "document", "evidence_request"]);
+    await expect(
+      prisma.documentLink.findFirstOrThrow({
+        where: {
+          documentId: document.id,
+          targetId: targetEntity.id,
+          targetType: ObjectType.ENTITY,
+        },
+      }),
+    ).resolves.toBeTruthy();
     expect(audit.result).toBe(AuditResult.SUCCESS);
     expect(audit.targetType).toBe(ObjectType.DOCUMENT);
     expect(audit.targetId).toBe(document.id);
@@ -317,6 +337,7 @@ test.describe("document upload multipart API", () => {
     expect(body.safety).toEqual({
       clientVisible: false,
       evidenceLifecycleStatus: "extraction_pending",
+      evidenceRequestState: "requested_upload_received",
       evidenceStatus: "REVIEW_PENDING",
       releaseUnlocked: false,
       sufficiency: false,

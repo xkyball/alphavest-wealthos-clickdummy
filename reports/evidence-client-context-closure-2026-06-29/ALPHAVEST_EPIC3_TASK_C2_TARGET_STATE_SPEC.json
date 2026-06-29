@@ -1,0 +1,284 @@
+{
+  "id": "ALPHAVEST_EPIC3_TASK_C2_TARGET_STATE_SPEC",
+  "created_at": "2026-06-29",
+  "source_ticket": {
+    "epic_id": "AV-PFUI-E03",
+    "task_id": "TASK-C2",
+    "title": "Specify client context and evidence lifecycle target states",
+    "source_path": "/Users/chris/projects/alphavest-wealthos-clickdummy/reports/process-first-ui-io-gap-audit-2026-06-29/ALPHAVEST_PROCESS_FIRST_UI_GAP_TICKET_ARCHITECTURE.json"
+  },
+  "input_analysis": {
+    "task_c1_report": "/Users/chris/projects/alphavest-wealthos-clickdummy/reports/evidence-client-context-closure-2026-06-29/ALPHAVEST_EPIC3_TASK_C1_CLIENT_EVIDENCE_GAP_ANALYSIS.md",
+    "critical_findings": [
+      "Evidence upload and review are service, DB and audit-backed.",
+      "Evidence request creation is not first-class.",
+      "Target object selection is label-only in upload and document-scoped in review.",
+      "Relationship and entity detail surfaces still contain display-only data.",
+      "Vault behavior is only partially backend-backed and can fall back to static evidence rows.",
+      "Client-safe summary lacks a traceable readmodel to accepted evidence, review and audit.",
+      "Operational UI must not render process, proof, gate, contract or meta explainer boards."
+    ],
+    "stale_source_corrections": [
+      {
+        "stale_path": "/Users/chris/projects/alphavest-wealthos-clickdummy/app/api/client-profile/route.ts",
+        "actual_path": "/Users/chris/projects/alphavest-wealthos-clickdummy/app/api/profile/route.ts"
+      }
+    ]
+  },
+  "non_negotiable_ui_rule": {
+    "rule": "No process, gate, proof, contract, source-trace or meta explainer tables/panels/boards in operational UI.",
+    "allowed_ui_evidence": [
+      "product-native object fields",
+      "workflow-backed status text",
+      "disabled controls with concrete recovery reason",
+      "tenant/role scoped rows",
+      "real object detail, history, evidence or next action content"
+    ],
+    "forbidden_ui_evidence": [
+      "process IDs or BP IDs",
+      "proof strips",
+      "gate/scope/process explainer panels",
+      "contract names",
+      "reviewer scaffolding",
+      "route or task summary banners",
+      "implementation/source labels used as product guidance"
+    ]
+  },
+  "target_states": [
+    {
+      "scope": "wealth_map_workflow",
+      "target_behavior": "Entity, relationship and wealth context must expose downstream readiness as service-backed object state. Display-only static relationship/entity detail must not count as closure.",
+      "ui_acceptance": [
+        "The user can inspect the selected object and see whether downstream use is available, incomplete or blocked.",
+        "The UI uses product-native fields, selected-object detail and disabled action reasons, not process/proof panels.",
+        "Display-only fallback content is removed from completion claims or replaced by an honest blocked empty state."
+      ],
+      "service_acceptance": [
+        "Family, entity and relationship context readiness is derived from service/readmodel data.",
+        "The readiness output contains object id, object type, visibility, sensitivity and missing prerequisites.",
+        "Backend scope and visibility filtering stay tenant/role aware."
+      ],
+      "out_of_scope": [
+        "Compliance release",
+        "export delivery",
+        "real client data"
+      ]
+    },
+    {
+      "scope": "sensitivity_classification_workflow",
+      "target_behavior": "Sensitivity must be an operative classification output that can block or permit downstream evidence/advice use without implying release readiness.",
+      "ui_acceptance": [
+        "Sensitivity state is visible as product-native classification on the relevant object.",
+        "Restricted or hidden context is shown as unavailable or blocked without leaking hidden rows.",
+        "Copy must not imply advice readiness or client visibility."
+      ],
+      "service_acceptance": [
+        "Classification is derived from persisted sensitivity and visibility projection.",
+        "Downstream state includes `ready`, `incomplete` or `blocked` plus missing reasons.",
+        "Hidden rows remain undisclosed for restricted roles."
+      ],
+      "out_of_scope": [
+        "New final sensitivity taxonomy unless already present in Prisma enum."
+      ]
+    },
+    {
+      "scope": "evidence_request_creation",
+      "target_behavior": "The app must distinguish requested evidence from uploaded candidate evidence.",
+      "ui_acceptance": [
+        "Evidence can be requested or the absence of request support is product-natively blocked.",
+        "Upload does not masquerade as request creation.",
+        "The user sees the requested target object and required document type before upload/review."
+      ],
+      "service_acceptance": [
+        "The request state has an object id, object type, requested document type, status and audit/evidence trail.",
+        "Implementation should first reuse existing `EvidenceRecord`, `EvidenceItem`, `DocumentLink`, `AuditEvent` and `ObjectType` models.",
+        "If a new `EvidenceRequest` table is unavoidable, stop before migration and request explicit approval."
+      ],
+      "out_of_scope": [
+        "New DB migration without approval"
+      ]
+    },
+    {
+      "scope": "robust_target_object_selection",
+      "target_behavior": "Target object references must use object identity where sufficiency depends on scope.",
+      "ui_acceptance": [
+        "Target selection is a controlled object selection, not a free label, for sufficiency-relevant uploads/reviews.",
+        "If no eligible target object exists, upload/review actions are disabled with a concrete product reason.",
+        "The selected target object is preserved through upload, review and vault detail."
+      ],
+      "service_acceptance": [
+        "Upload and review accept and validate `targetObjectType` and `targetObjectId` for allowed object types.",
+        "Evidence sufficiency compares related object type/id against the required target.",
+        "Ambiguous labels are kept only as optional human-readable context, not as sufficiency truth."
+      ],
+      "allowed_object_types": [
+        "DOCUMENT",
+        "ENTITY",
+        "FAMILY_MEMBER",
+        "RELATIONSHIP",
+        "ASSET"
+      ],
+      "out_of_scope": [
+        "Unbounded polymorphic target creation"
+      ]
+    },
+    {
+      "scope": "vault_backend_query_behavior",
+      "target_behavior": "Vault rows and detail must be backend-backed or honestly blocked; static fallback rows cannot be counted as lifecycle closure.",
+      "ui_acceptance": [
+        "Search, filters and selected detail are backed by APIs/readmodels or show a product-native unavailable state.",
+        "No static evidenceRows fallback is used as proof of completion.",
+        "Details show document/evidence/review/summary state only when backed by service data."
+      ],
+      "service_acceptance": [
+        "`/api/documents` remains backend-backed for document list state.",
+        "Evidence detail must include EvidenceRecord, EvidenceItem, Review and Audit/decision summary where available.",
+        "Projection and redaction rules remain active."
+      ],
+      "out_of_scope": [
+        "Client release",
+        "export authority"
+      ]
+    },
+    {
+      "scope": "client_safe_summary_traceability",
+      "target_behavior": "Client-safe summaries must trace to accepted, scoped, current and client-safe evidence, without claiming release.",
+      "ui_acceptance": [
+        "The summary is shown only as review output or blocked/unavailable, never as client release.",
+        "The UI can show the source document/review/evidence state product-natively.",
+        "Summary absence blocks downstream use with a clear reason."
+      ],
+      "service_acceptance": [
+        "Sufficiency review persists or exposes a traceable decision/readmodel.",
+        "Review summary links to EvidenceRecord, DocumentReview and AuditEvent/decision where possible.",
+        "`clientVisible` and release/export flags remain false in this epic."
+      ],
+      "out_of_scope": [
+        "Compliance release implementation",
+        "client acceptance implementation"
+      ]
+    }
+  ],
+  "implementation_slices": [
+    {
+      "id": "SUBTASK-C3-1",
+      "title": "Implement client context classification outputs",
+      "ctes_decision": "execute",
+      "split_status": "bounded",
+      "target_files": [
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/lib/dbtf-table-service.ts",
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/components/client-intake-screen.tsx",
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/tests/av27-client-context-closure.spec.ts"
+      ],
+      "required_outputs": [
+        "contextReadinessState",
+        "contextReadinessReasons",
+        "service-derived entity/family readiness",
+        "relationship/entity display-only surfaces downgraded or backed"
+      ],
+      "blockers": [
+        "No new schema migration in this slice."
+      ]
+    },
+    {
+      "id": "SUBTASK-C3-2A",
+      "title": "Implement evidence request state with existing models",
+      "ctes_decision": "split from SUBTASK-C3-2",
+      "split_status": "bounded",
+      "target_files": [
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/lib/document-upload-service.ts",
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/lib/evidence-review-service.ts",
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/app/api/documents/upload/route.ts",
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/app/api/documents/review/route.ts",
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/tests/document-upload-api.spec.ts",
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/tests/evidence-review-api.spec.ts"
+      ],
+      "required_outputs": [
+        "request state distinct from upload",
+        "audit-backed request/update state or explicit no-migration blocker",
+        "no release/export/client visibility claim"
+      ],
+      "blockers": [
+        "Stop before adding a new EvidenceRequest table."
+      ]
+    },
+    {
+      "id": "SUBTASK-C3-2B",
+      "title": "Implement target object identity for upload/review",
+      "ctes_decision": "split from SUBTASK-C3-2",
+      "split_status": "bounded",
+      "target_files": [
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/lib/document-upload-service.ts",
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/lib/evidence-review-service.ts",
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/app/api/documents/upload/route.ts",
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/app/api/documents/review/route.ts",
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/components/client-intake-screen.tsx",
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/tests/document-upload-api.spec.ts",
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/tests/document-upload-flow.spec.ts"
+      ],
+      "required_outputs": [
+        "targetObjectType",
+        "targetObjectId",
+        "target object validation",
+        "sufficiency scope check uses selected object identity"
+      ],
+      "blockers": [
+        "No free-label sufficiency truth."
+      ]
+    },
+    {
+      "id": "SUBTASK-C3-3A",
+      "title": "Implement vault readmodel closure",
+      "ctes_decision": "split from SUBTASK-C3-3",
+      "split_status": "bounded",
+      "target_files": [
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/lib/document-upload-service.ts",
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/components/decisions-governance-screen.tsx",
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/tests/document-upload-api.spec.ts"
+      ],
+      "required_outputs": [
+        "no static vault completion fallback",
+        "backend-backed evidence detail fields or blocked state",
+        "projection/redaction preserved"
+      ],
+      "blockers": [
+        "Stop if a new read API is required and cannot be implemented within existing routes."
+      ]
+    },
+    {
+      "id": "SUBTASK-C3-3B",
+      "title": "Implement client-safe summary traceability",
+      "ctes_decision": "split from SUBTASK-C3-3",
+      "split_status": "bounded",
+      "target_files": [
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/lib/evidence-review-service.ts",
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/lib/document-upload-service.ts",
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/components/client-intake-screen.tsx",
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/tests/evidence-review-api.spec.ts",
+        "/Users/chris/projects/alphavest-wealthos-clickdummy/tests/document-upload-flow.spec.ts"
+      ],
+      "required_outputs": [
+        "traceable summary source",
+        "summary unavailable/blocker state",
+        "release/export/client visibility remain locked"
+      ],
+      "blockers": [
+        "Do not claim compliance release."
+      ]
+    }
+  ],
+  "qa_expectations": [
+    "pnpm playwright test tests/av27-client-context-closure.spec.ts",
+    "pnpm playwright test tests/document-upload-api.spec.ts",
+    "pnpm playwright test tests/evidence-review-api.spec.ts",
+    "pnpm playwright test tests/document-upload-flow.spec.ts",
+    "manual UI overclaim review for changed screens",
+    "screenshot when operational UI changes"
+  ],
+  "task_c2_definition_of_done": {
+    "target_states_and_acceptance_criteria_clear": true,
+    "implementation_slices_below_ctes_threshold_or_split": true,
+    "downstream_safety_dependencies_explicit": true,
+    "new_read_models_allowed": "Allowed only through existing models/routes in this execution. New schema migration requires explicit human approval."
+  }
+}

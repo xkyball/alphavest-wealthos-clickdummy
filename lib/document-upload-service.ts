@@ -54,10 +54,16 @@ export type UploadedDocumentListItem = {
   checksum: string;
   latestVersionChecksum: string;
   latestVersionNumber: number;
+  latestReviewId: string | null;
+  latestReviewStatus: string | null;
   storageKey: string;
+  clientSafeSummary: string | null;
+  targetObjectId: string | null;
+  targetObjectType: string | null;
   uploadedAt: string;
   versionCount: number;
   evidenceRecordId: string | null;
+  evidenceRequestState?: "requested_upload_received" | null;
   evidenceLifecycleStatus: EvidenceLifecycleStatus;
   evidenceStatus: string | null;
   evidenceVisibilityStatus: string | null;
@@ -99,6 +105,8 @@ export type UploadDocumentInput = {
   roleKey: DemoRoleKey;
   sensitivity?: Sensitivity;
   subType?: string | null;
+  targetObjectId?: string | null;
+  targetObjectType?: ObjectType | null;
   tenantSlug: DemoTenantSlug;
 };
 
@@ -154,11 +162,59 @@ function validateUploadInput(input: UploadDocumentInput) {
     issues.push("supported_file_type_required");
   }
 
+  if (Boolean(input.targetObjectId) !== Boolean(input.targetObjectType)) {
+    issues.push("target_object_identity_required");
+  }
+
   if (issues.length > 0) {
     throw new DocumentUploadValidationError(issues);
   }
 
   return fileName;
+}
+
+async function resolveEvidenceTarget(
+  prisma: PrismaClient,
+  clientTenantId: string,
+  input: Pick<UploadDocumentInput, "targetObjectId" | "targetObjectType">,
+) {
+  if (!input.targetObjectId || !input.targetObjectType) {
+    return null;
+  }
+
+  const targetObjectId = input.targetObjectId;
+  const targetObjectType = input.targetObjectType;
+  const target =
+    targetObjectType === ObjectType.ENTITY
+      ? await prisma.entity.findFirst({ select: { id: true, name: true }, where: { clientTenantId, id: targetObjectId } })
+      : targetObjectType === ObjectType.FAMILY_MEMBER
+        ? await prisma.familyMember.findFirst({ select: { displayName: true, id: true }, where: { clientTenantId, id: targetObjectId } })
+        : targetObjectType === ObjectType.RELATIONSHIP
+          ? await prisma.relationship.findFirst({ select: { id: true, relationshipType: true }, where: { clientTenantId, id: targetObjectId } })
+          : targetObjectType === ObjectType.ASSET
+            ? await prisma.asset.findFirst({ select: { id: true, name: true }, where: { clientTenantId, id: targetObjectId } })
+            : targetObjectType === ObjectType.DOCUMENT
+              ? await prisma.document.findFirst({ select: { id: true, title: true }, where: { clientTenantId, id: targetObjectId } })
+              : null;
+
+  if (!target) {
+    throw new DocumentUploadValidationError(["target_object_not_available"]);
+  }
+
+  return {
+    id: targetObjectId,
+    label:
+      "name" in target
+        ? target.name
+        : "displayName" in target
+          ? target.displayName
+          : "relationshipType" in target
+            ? target.relationshipType
+            : "title" in target
+              ? target.title
+              : targetObjectId,
+    type: targetObjectType,
+  };
 }
 
 function mapDocument(document: {
@@ -168,6 +224,8 @@ function mapDocument(document: {
   createdAt: Date;
   documentType: string;
   evidenceRecords?: Array<{ id: string }>;
+  evidenceRelatedObjectId?: string | null;
+  evidenceRelatedObjectType?: string | null;
   evidenceStatus?: string | null;
   evidenceVisibilityStatus?: string | null;
   extractions?: Array<{ extractionStatus: string }>;
@@ -175,6 +233,7 @@ function mapDocument(document: {
   fileSizeBytes: number | null;
   id: string;
   mimeType: string | null;
+  reviews?: Array<{ clientVisibleSummary: string | null; id: string; status: string }>;
   sensitivity: Sensitivity;
   status: DocumentStatus;
   storageKey: string | null;
@@ -202,10 +261,15 @@ function mapDocument(document: {
     id: document.id,
     latestVersionChecksum: latestVersion?.checksum ?? document.checksum ?? "",
     latestVersionNumber: latestVersion?.versionNumber ?? 1,
+    latestReviewId: document.reviews?.[0]?.id ?? null,
+    latestReviewStatus: document.reviews?.[0]?.status ?? null,
     mimeType: document.mimeType ?? "",
+    clientSafeSummary: document.reviews?.[0]?.clientVisibleSummary ?? null,
     sensitivity: document.sensitivity,
     status: document.status,
     storageKey: document.storageKey ?? "",
+    targetObjectId: document.evidenceRelatedObjectId ?? null,
+    targetObjectType: document.evidenceRelatedObjectType ?? null,
     title: document.title,
     uploadedAt: document.createdAt.toISOString(),
     versionCount: document.versions?.length ?? 0,
@@ -247,6 +311,7 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
   const actorContext = requireActorContext({ roleKey, tenantSlug });
   const session = actorContext.session;
   const clientTenantId = session.tenant.id;
+  const evidenceTarget = await resolveEvidenceTarget(prisma, clientTenantId, input);
   const uploadAttemptId = stableId(`document-upload-attempt:${tenantSlug}:${roleKey}:${fileName}`);
   const uploadSubject = {
     clientTenantId,
@@ -421,6 +486,8 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
           notes: input.notes ?? null,
           periodLabel: input.periodLabel ?? null,
           subType: input.subType ?? null,
+          targetObjectId: evidenceTarget?.id ?? null,
+          targetObjectType: evidenceTarget?.type ?? null,
         },
         extractionStatus: "pending",
         isClientVisible: false,
@@ -434,12 +501,22 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
       data: {
         clientTenantId,
         createdByUserId: session.actor.id,
-        relatedObjectId: document.id,
-        relatedObjectType: ObjectType.DOCUMENT,
+        relatedObjectId: evidenceTarget?.id ?? document.id,
+        relatedObjectType: evidenceTarget?.type ?? ObjectType.DOCUMENT,
         retentionPolicy: "document_upload_records_7y",
         status: EvidenceStatus.CREATED,
         summary: `Multipart upload received, stored locally and queued for extraction review. SHA-256 ${checksum}.`,
         title: `${document.title} upload evidence`,
+        visibilityStatus: VisibilityStatus.INTERNAL_ONLY,
+      },
+    });
+    const evidenceRequestItem = await tx.evidenceItem.create({
+      data: {
+        evidenceRecordId: evidenceRecord.id,
+        itemType: "evidence_request",
+        sourceObjectId: document.id,
+        sourceObjectType: ObjectType.DOCUMENT,
+        title: `${document.title} evidence request`,
         visibilityStatus: VisibilityStatus.INTERNAL_ONLY,
       },
     });
@@ -454,6 +531,26 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
         visibilityStatus: VisibilityStatus.INTERNAL_ONLY,
       },
     });
+    const evidenceRecordLink = await tx.documentLink.create({
+      data: {
+        createdByUserId: session.actor.id,
+        documentId: document.id,
+        relationship: "upload_evidence_record",
+        targetId: evidenceRecord.id,
+        targetType: ObjectType.EVIDENCE_RECORD,
+      },
+    });
+    const targetObjectLink = evidenceTarget
+      ? await tx.documentLink.create({
+          data: {
+            createdByUserId: session.actor.id,
+            documentId: document.id,
+            relationship: "evidence_target",
+            targetId: evidenceTarget.id,
+            targetType: evidenceTarget.type,
+          },
+        })
+      : null;
     const audit = await tx.auditEvent.create({
       data: {
         actorRoleKey: session.role.key,
@@ -487,6 +584,10 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
           permission,
           scopeResolution,
           storageKey: storedObject.storageKey,
+          evidenceRequestItemId: evidenceRequestItem.id,
+          evidenceRecordLinkId: evidenceRecordLink.id,
+          targetObject: evidenceTarget,
+          targetObjectLinkId: targetObjectLink?.id ?? null,
           versionId: version.id,
         },
         nextState: DocumentStatus.UPLOADED,
@@ -515,6 +616,8 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
       document: mapDocument({
         ...document,
         evidenceRecords: [{ id: evidenceRecord.id }],
+        evidenceRelatedObjectId: evidenceRecord.relatedObjectId,
+        evidenceRelatedObjectType: evidenceRecord.relatedObjectType,
         evidenceStatus: evidenceRecord.status,
         evidenceVisibilityStatus: evidenceRecord.visibilityStatus,
         extractions: [{ extractionStatus: extraction.extractionStatus }],
@@ -522,6 +625,9 @@ export async function uploadDocument(prisma: PrismaClient, input: UploadDocument
       }),
       documentEvidenceItemId: documentEvidenceItem.id,
       evidenceRecordId: evidenceRecord.id,
+      evidenceRequestItemId: evidenceRequestItem.id,
+      evidenceRequestState: "requested_upload_received" as const,
+      targetObject: evidenceTarget,
       extractionId: extraction.id,
       storageKey: storedObject.storageKey,
       versionId: version.id,
@@ -543,6 +649,11 @@ async function buildUploadedDocumentRows(
       extractions: {
         orderBy: { createdAt: "desc" },
         select: { extractionStatus: true },
+        take: 1,
+      },
+      reviews: {
+        orderBy: { createdAt: "desc" },
+        select: { clientVisibleSummary: true, id: true, status: true },
         take: 1,
       },
       versions: {
@@ -568,27 +679,51 @@ async function buildUploadedDocumentRows(
       ...(options.type && options.type !== "all" ? { documentType: options.type } : {}),
     },
   });
-  const evidenceRecords = await prisma.evidenceRecord.findMany({
-    orderBy: { createdAt: "desc" },
-    select: { id: true, relatedObjectId: true, status: true, visibilityStatus: true },
+  const evidenceRecordLinks = await prisma.documentLink.findMany({
+    select: { documentId: true, targetId: true },
     where: {
-      clientTenantId: session.tenant.id,
-      relatedObjectId: { in: documents.map((document) => document.id) },
-      relatedObjectType: ObjectType.DOCUMENT,
+      documentId: { in: documents.map((document) => document.id) },
+      targetType: ObjectType.EVIDENCE_RECORD,
     },
   });
+  const evidenceRecordIdByDocumentId = new Map(
+    evidenceRecordLinks.map((link) => [link.documentId, link.targetId]),
+  );
+  const evidenceRecords = await prisma.evidenceRecord.findMany({
+    orderBy: { createdAt: "desc" },
+    select: { id: true, relatedObjectId: true, relatedObjectType: true, status: true, visibilityStatus: true },
+    where: {
+      clientTenantId: session.tenant.id,
+      OR: [
+        {
+          relatedObjectId: { in: documents.map((document) => document.id) },
+          relatedObjectType: ObjectType.DOCUMENT,
+        },
+        {
+          id: { in: [...evidenceRecordIdByDocumentId.values()] },
+        },
+      ],
+    },
+  });
+  const evidenceRecordById = new Map(evidenceRecords.map((record) => [record.id, record]));
   const evidenceRecordByDocumentId = new Map(
-    evidenceRecords.map((record) => [record.relatedObjectId, record]),
+    evidenceRecords
+      .filter((record) => record.relatedObjectType === ObjectType.DOCUMENT)
+      .map((record) => [record.relatedObjectId, record]),
   );
 
   return documents.map((document) => {
+    const evidenceRecord =
+      evidenceRecordById.get(evidenceRecordIdByDocumentId.get(document.id) ?? "") ??
+      evidenceRecordByDocumentId.get(document.id) ??
+      null;
     const mappedDocument = mapDocument({
       ...document,
-      evidenceRecords: evidenceRecordByDocumentId.has(document.id)
-        ? [{ id: evidenceRecordByDocumentId.get(document.id)?.id ?? "" }]
-        : [],
-      evidenceStatus: evidenceRecordByDocumentId.get(document.id)?.status ?? null,
-      evidenceVisibilityStatus: evidenceRecordByDocumentId.get(document.id)?.visibilityStatus ?? null,
+      evidenceRecords: evidenceRecord ? [{ id: evidenceRecord.id }] : [],
+      evidenceRelatedObjectId: evidenceRecord?.relatedObjectId ?? null,
+      evidenceRelatedObjectType: evidenceRecord?.relatedObjectType ?? null,
+      evidenceStatus: evidenceRecord?.status ?? null,
+      evidenceVisibilityStatus: evidenceRecord?.visibilityStatus ?? null,
     });
 
     return projectDocumentForRole(mappedDocument, roleKey, tenantSlug);

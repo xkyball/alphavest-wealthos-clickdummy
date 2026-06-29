@@ -98,8 +98,18 @@ test.describe("AV27 Phase 2 client context closure", () => {
   test("P2-T02 persists family member edits and denies outside-object scope without payload", async ({ request }) => {
     const morganList = await request.get("/api/family-members?tenantSlug=morgan&roleKey=family_cfo");
     const morganBody = await morganList.json();
-    const target = morganBody.familyMembers[0] as { id: string; name: string; relationship: string; taxResidency: string };
+    const target = morganBody.familyMembers[0] as {
+      contextReadinessReasons: string[];
+      contextReadinessState: string;
+      id: string;
+      name: string;
+      relationship: string;
+      taxResidency: string;
+    };
     const nextName = `${target.name} AV27`;
+
+    expect(["ready", "incomplete", "blocked"]).toContain(target.contextReadinessState);
+    expect(Array.isArray(target.contextReadinessReasons)).toBe(true);
 
     const saveResponse = await request.patch("/api/family-members", {
       data: {
@@ -122,6 +132,7 @@ test.describe("AV27 Phase 2 client context closure", () => {
 
     expect(reloadResponse.ok(), JSON.stringify(reloadBody)).toBe(true);
     expect(reloadBody.familyMembers.some((row: { name: string }) => row.name === nextName)).toBe(true);
+    expect(reloadBody.familyMembers[0].contextReadinessState).toBeTruthy();
 
     const wrongObjectResponse = await request.patch("/api/family-members", {
       data: {
@@ -229,6 +240,9 @@ test.describe("AV27 Phase 2 client context closure", () => {
     expect(listBody.entities[0].name).toBe(entityName);
     expect(listBody.entities[0].visibilityStatus).toBeTruthy();
     expect(listBody.entities[0].sensitivity).toBeTruthy();
+    expect(["ready", "incomplete", "blocked"]).toContain(listBody.entities[0].contextReadinessState);
+    expect(Array.isArray(listBody.entities[0].contextReadinessReasons)).toBe(true);
+    expect(Array.isArray(listBody.facets.types)).toBe(true);
   });
 
   test("P2-T03B relationship edge command persists audit and fails closed before mutation when audit is unavailable", async ({ request }) => {
@@ -335,5 +349,6 @@ test.describe("AV27 Phase 2 client context closure", () => {
     expect(internalFamilyBody.familyMembers).toHaveLength(1);
     expect(internalFamilyBody.familyMembers[0].visibilityStatus).toBe("Internal Only");
     expect(internalFamilyBody.familyMembers[0].payloadMode).toBe("full");
+    expect(internalFamilyBody.familyMembers[0].contextReadinessState).toBe("blocked");
   });
 });

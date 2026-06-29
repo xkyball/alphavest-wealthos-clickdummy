@@ -12,8 +12,11 @@ import {
 type SortDirection = "asc" | "desc";
 export type DbtfFamilyMemberSortKey = "governance" | "name" | "relationship" | "role" | "status" | "taxResidency" | "visibilityStatus" | "year";
 export type DbtfEntitySortKey = "jurisdiction" | "missingDocs" | "name" | "ownership" | "risk" | "status" | "type" | "visibilityStatus";
+export type DbtfContextReadinessState = "blocked" | "incomplete" | "ready";
 
 export type DbtfFamilyMemberRow = {
+  contextReadinessReasons: string[];
+  contextReadinessState: DbtfContextReadinessState;
   governance: string;
   id: string;
   name: string;
@@ -28,6 +31,8 @@ export type DbtfFamilyMemberRow = {
 };
 
 export type DbtfEntityRow = {
+  contextReadinessReasons: string[];
+  contextReadinessState: DbtfContextReadinessState;
   id: string;
   jurisdiction: string;
   missingDocs: string;
@@ -64,6 +69,11 @@ export type DbtfFamilyMembersPage = {
 
 export type DbtfEntitiesPage = {
   entities: DbtfEntityRow[];
+  facets: {
+    jurisdictions: string[];
+    risks: string[];
+    types: string[];
+  };
   meta: BackendDataSurfaceMeta<DbtfEntitySortKey>;
 };
 
@@ -117,6 +127,42 @@ function entityTypeFromFilter(value: string | undefined) {
   return Object.values(EntityType).find((entityType) => entityType === normalized);
 }
 
+function contextReadinessFromVisibility(input: {
+  missingReasons?: string[];
+  payloadMode: string;
+  visibilityStatus: string;
+}): { contextReadinessReasons: string[]; contextReadinessState: DbtfContextReadinessState } {
+  const reasons = [...(input.missingReasons ?? [])];
+
+  if (input.payloadMode === "hidden" || input.visibilityStatus === "INTERNAL_ONLY" || input.visibilityStatus === "RESTRICTED") {
+    reasons.unshift("visibility_blocks_downstream_use");
+    return {
+      contextReadinessReasons: [...new Set(reasons)],
+      contextReadinessState: "blocked",
+    };
+  }
+
+  if (input.visibilityStatus === "REDACTED") {
+    reasons.unshift("redacted_context_needs_internal_review");
+    return {
+      contextReadinessReasons: [...new Set(reasons)],
+      contextReadinessState: "blocked",
+    };
+  }
+
+  if (reasons.length > 0) {
+    return {
+      contextReadinessReasons: [...new Set(reasons)],
+      contextReadinessState: "incomplete",
+    };
+  }
+
+  return {
+    contextReadinessReasons: [],
+    contextReadinessState: "ready",
+  };
+}
+
 async function buildDbtfFamilyMemberRows(
   prisma: PrismaClient,
   tenantSlug: DemoTenantSlug,
@@ -148,7 +194,18 @@ async function buildDbtfFamilyMemberRows(
       return [];
     }
 
+    const readiness = contextReadinessFromVisibility({
+      missingReasons: [
+        ...(row.relationshipType ? [] : ["relationship_required"]),
+        ...(row.taxResidency ? [] : ["tax_residency_required"]),
+        ...(row.dateOfBirth || row.isPrincipal ? [] : ["birth_year_required"]),
+      ],
+      payloadMode: visibility.payloadMode,
+      visibilityStatus: visibility.visibilityStatus,
+    });
+
     return [{
+      ...readiness,
       governance: row.isPrincipal ? "Principal" : row.sensitivity === "RESTRICTED" ? "Restricted" : "Family record",
       id: row.id,
       name: row.displayName,
@@ -260,8 +317,19 @@ async function buildDbtfEntityRows(
       return total + Number(participant.ownershipPercent ?? 0);
     }, 0);
     const linkedDocumentCount = documentCountByEntity.get(entity.id) ?? 0;
+    const readiness = contextReadinessFromVisibility({
+      missingReasons: [
+        ...(entity.jurisdiction ? [] : ["jurisdiction_required"]),
+        ...(entity.riskRating ? [] : ["risk_rating_required"]),
+        ...(ownershipTotal > 0 ? [] : ["ownership_required"]),
+        ...(linkedDocumentCount > 0 ? [] : ["supporting_evidence_required"]),
+      ],
+      payloadMode: visibility.payloadMode,
+      visibilityStatus: visibility.visibilityStatus,
+    });
 
     return [{
+      ...readiness,
       id: entity.id,
       jurisdiction: entity.jurisdiction ?? "Unspecified",
       missingDocs: linkedDocumentCount > 0 ? "All good" : "Evidence needed",
@@ -319,7 +387,15 @@ export async function listDbtfEntitiesPage(
   const sortedRows = sortDataSurfaceRows(rows, query, (row, sortKey) => row[sortKey]);
   const page = paginateDataSurfaceRows(sortedRows, query);
 
-  return { entities: page.rows, meta: page.meta };
+  return {
+    entities: page.rows,
+    facets: {
+      jurisdictions: Array.from(new Set(rows.map((row) => row.jurisdiction).filter(Boolean))).sort(),
+      risks: Array.from(new Set(rows.map((row) => row.risk).filter(Boolean))).sort(),
+      types: Array.from(new Set(rows.map((row) => row.type).filter(Boolean))).sort(),
+    },
+    meta: page.meta,
+  };
 }
 
 export async function listDbtfAuditEvents(

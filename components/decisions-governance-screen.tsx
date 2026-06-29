@@ -78,7 +78,6 @@ import {
   decisionsGovernancePageIds,
   decisionsMetrics,
   evidenceRecord,
-  evidenceRows,
   evidenceTimeline,
   exceptionSummary,
   governanceUsers,
@@ -1653,10 +1652,14 @@ function DecisionSuccessPage({ title }: { title: string }) {
 type EvidenceVaultRow = {
   category: string;
   client: string;
+  clientSafeSummary: string | null;
   fileName: string;
   id: string;
+  reviewStatus: string | null;
   sourceState: "backend_readmodel" | "display_only_fallback";
   status: string;
+  targetObjectId: string | null;
+  targetObjectType: string | null;
   title: string;
   type: string;
   updated: string;
@@ -1667,9 +1670,13 @@ type EvidenceVaultReadModelDocument = {
   documentType?: unknown;
   evidenceLifecycleStatus?: unknown;
   evidenceStatus?: unknown;
+  clientSafeSummary?: unknown;
   fileName?: unknown;
   id?: unknown;
+  latestReviewStatus?: unknown;
   status?: unknown;
+  targetObjectId?: unknown;
+  targetObjectType?: unknown;
   title?: unknown;
   uploadedAt?: unknown;
   visibilityState?: unknown;
@@ -1692,31 +1699,20 @@ function evidenceVaultRowsFromDocuments(documents: EvidenceVaultReadModelDocumen
     return [{
       category: readableEvidenceValue(document.evidenceLifecycleStatus ?? document.evidenceStatus, "Review context"),
       client: readableEvidenceValue(document.visibilityState, "Tenant-scoped document"),
+      clientSafeSummary: typeof document.clientSafeSummary === "string" && document.clientSafeSummary.trim() ? document.clientSafeSummary : null,
       fileName: typeof document.fileName === "string" ? document.fileName : "Document file",
       id: document.id,
+      reviewStatus: typeof document.latestReviewStatus === "string" ? readableEvidenceValue(document.latestReviewStatus, "Review pending") : null,
       sourceState: "backend_readmodel",
       status: readableEvidenceValue(document.status, "Review pending"),
+      targetObjectId: typeof document.targetObjectId === "string" ? document.targetObjectId : null,
+      targetObjectType: typeof document.targetObjectType === "string" ? readableEvidenceValue(document.targetObjectType, "Document") : null,
       title: typeof document.title === "string" ? document.title : typeof document.fileName === "string" ? document.fileName : "Evidence document",
       type: readableEvidenceValue(document.documentType, "Document"),
       updated: typeof document.uploadedAt === "string" ? document.uploadedAt.slice(0, 10) : "Reloaded from document list",
       visibilityGate: readableEvidenceValue(document.visibilityState, "Role scoped"),
     }];
   });
-}
-
-function fallbackEvidenceVaultRows(): EvidenceVaultRow[] {
-  return evidenceRows.map((row) => ({
-    category: row.category,
-    client: row.client,
-    fileName: row.title,
-    id: row.title,
-    sourceState: "display_only_fallback",
-    status: row.status,
-    title: row.title,
-    type: row.type,
-    updated: row.updated,
-    visibilityGate: "Review context only",
-  }));
 }
 
 function useEvidenceVaultReadModel() {
@@ -1778,12 +1774,12 @@ function useEvidenceVaultReadModel() {
 function EvidenceVaultPage({ title, visualState }: { title: string; visualState?: VisualState }) {
   const readModel = useEvidenceVaultReadModel();
   const backendRows = evidenceVaultRowsFromDocuments(readModel.documents);
-  const vaultRows = backendRows.length > 0 ? backendRows : fallbackEvidenceVaultRows();
+  const vaultRows = backendRows;
   const [selectedEvidenceId, setSelectedEvidenceId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(visualState === "drawer");
   const [drawerStatus, setDrawerStatus] = useState<"closed" | "loading" | "ready">(visualState === "drawer" ? "ready" : "closed");
   const selectedEvidence = vaultRows.find((row) => row.id === selectedEvidenceId) ?? vaultRows[0];
-  const readModelSourceState = backendRows.length > 0 ? "backend_readmodel" : "display_only_fallback";
+  const readModelSourceState = backendRows.length > 0 ? "backend_readmodel" : "empty_backend_readmodel";
   const drawerLifecycleStatus = drawerStatus === "ready" ? "success" : drawerStatus;
   const drawerValidation = drawerOpen ? "blocked-client-visibility-gates" : "closed";
 
@@ -1812,7 +1808,7 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
     <Phase12Shell activePageId="046">
       <ScreenTitle>{title}</ScreenTitle>
       <WorksurfaceShell
-        description="Review source records, owners and related decisions from one evidence library."
+        description="Review evidence records, owners and related decisions from one library."
         density="compact"
         eyebrow="Evidence"
         primary={
@@ -1829,7 +1825,7 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
                   <h2 className="font-display text-xl leading-tight text-alphavest-ivory">{title}</h2>
                   <ShieldCheck aria-hidden="true" className="size-5 text-alphavest-gold" />
                 </div>
-                <p className="mt-1 text-sm leading-5 text-alphavest-muted">Select a backend evidence record, inspect source context and continue from the release workspace.</p>
+                <p className="mt-1 text-sm leading-5 text-alphavest-muted">Select an evidence record, inspect review context and continue from the release workspace.</p>
               </div>
               <div className="shrink-0">
                 <button
@@ -1865,12 +1861,9 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
                         <InfoRow label="Category" value={selectedEvidence.category} />
                         <InfoRow label="Updated" value={selectedEvidence.updated} />
                         <InfoRow label="Visibility" value={selectedEvidence.visibilityGate} />
-                        <div className="border-b border-alphavest-border/45 pb-2 text-sm last:border-0">
-                          <span className="block text-alphavest-muted">Source</span>
-                          <span className="mt-1 block font-semibold text-alphavest-ivory">
-                            {selectedEvidence.sourceState === "backend_readmodel" ? "Tenant document list" : "Review context only"}
-                          </span>
-                        </div>
+                        <InfoRow label="Target" value={selectedEvidence.targetObjectType ? `${selectedEvidence.targetObjectType} ${selectedEvidence.targetObjectId?.slice(0, 8) ?? ""}` : "Document scoped"} />
+                        <InfoRow label="Review" value={selectedEvidence.reviewStatus ?? "Pending"} />
+                        <InfoRow label="Client-safe summary" value={selectedEvidence.clientSafeSummary ?? "Unavailable until scoped review accepts a summary."} />
                       </div>
                       <StatePanel
                         className="p-2"
@@ -1907,7 +1900,7 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
                     {[
                       ["Records", String(readModel.meta?.totalRows ?? vaultRows.length)],
                       ["Selected", selectedEvidence?.category ?? "None"],
-                      ["Source", readModelSourceState === "backend_readmodel" ? "Tenant document list" : "Review context only"],
+                      ["Summaries", String(vaultRows.filter((row) => row.clientSafeSummary).length)],
                     ].map(([label, value]) => (
                       <div className="min-w-0 rounded-md border border-alphavest-border/45 bg-alphavest-panel/45 px-2 py-1.5 text-sm" key={label}>
                         <span className="block text-alphavest-muted">{label}</span>
@@ -1922,7 +1915,13 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
                     data-ux-e10-filter-exception-id="DSF-004"
                   />
                   <div className="space-y-2">
-                    {vaultRows.slice(0, 2).map((row) => {
+                    {vaultRows.length === 0 ? (
+                      <StatePanel
+                        detail={readModel.loadState === "error" ? "Evidence records could not be loaded." : "No permitted evidence records are available for this view."}
+                        state={readModel.loadState === "error" ? "error" : "empty"}
+                        title="No evidence records"
+                      />
+                    ) : vaultRows.slice(0, 2).map((row) => {
                       const selected = selectedEvidence?.id === row.id;
 
                       return (
@@ -1949,6 +1948,7 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
                           <span className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-alphavest-muted">
                             <span>{row.category}</span>
                             <span>{row.updated}</span>
+                            <span>{row.clientSafeSummary ? "Summary available" : "Summary unavailable"}</span>
                           </span>
                         </button>
                       );
@@ -1957,7 +1957,6 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
                 </div>
               }
               masterDetailMode="inline_detail_rail"
-              proofPlacement="secondary_tab"
               selectedObjectId={selectedEvidence?.id ?? "no-evidence-row"}
               selectedObjectState={selectedEvidence?.status ?? "empty"}
               stickyRail
@@ -2003,7 +2002,7 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
           {drawerStatus === "loading" ? (
             <div className="rounded-md border border-alphavest-blue/35 bg-alphavest-blue/10 p-3 text-sm" data-testid="j03-evidence-loading-state">
               <p className="flex items-center gap-2 font-semibold text-alphavest-blue"><Bell aria-hidden="true" className="size-4" />Loading record</p>
-              <p className="mt-1 text-alphavest-muted">Retrieving source context for review.</p>
+              <p className="mt-1 text-alphavest-muted">Retrieving review context.</p>
             </div>
           ) : null}
           {drawerStatus === "ready" ? (
@@ -2023,15 +2022,15 @@ function EvidenceVaultPage({ title, visualState }: { title: string; visualState?
               <InfoRow label="Category" value={selectedEvidence?.category ?? "No category"} />
               <InfoRow label="Evidence Type" value={selectedEvidence?.type ?? "No type"} />
               <InfoRow label="Updated" value={selectedEvidence?.updated ?? "No update date"} />
-              <InfoRow label="Source" value={selectedEvidence?.sourceState === "backend_readmodel" ? "Tenant document list" : "Review context only"} />
+              <InfoRow label="Target" value={selectedEvidence?.targetObjectType ? `${selectedEvidence.targetObjectType} ${selectedEvidence.targetObjectId?.slice(0, 8) ?? ""}` : "Document scoped"} />
+              <InfoRow label="Review" value={selectedEvidence?.reviewStatus ?? "Pending"} />
+              <InfoRow label="Client-safe summary" value={selectedEvidence?.clientSafeSummary ?? "Unavailable until scoped review accepts a summary."} />
             </div>
           </section>
           <section className="rounded-md border border-alphavest-border/70 bg-alphavest-navy/30 p-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">Linked records</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-alphavest-gold">Selected file</p>
             <div className="mt-3 grid gap-2 text-sm text-alphavest-muted">
-              {["Investment policy statement", "Client profile - Johnson Family"].map((item) => (
-                <span className="flex items-center gap-2" key={item}><FileCheck2 aria-hidden="true" className="size-4 text-alphavest-green" />{item}</span>
-              ))}
+              <span className="flex items-center gap-2"><FileCheck2 aria-hidden="true" className="size-4 text-alphavest-green" />{selectedEvidence?.fileName ?? "No selected file"}</span>
             </div>
           </section>
         </div>

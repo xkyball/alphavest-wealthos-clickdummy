@@ -12,6 +12,7 @@ import { demoPlatformTenantId, requireDemoSession, type DemoRoleKey, type DemoTe
 import { auditService, AuditPersistenceRequiredError } from "@/lib/audit-service";
 import { evidenceService, type EvidenceSufficiencyDecision } from "@/lib/evidence-service";
 import { permissionEngine } from "@/lib/permission-engine";
+import type { ObjectType as DomainObjectType } from "@/lib/domain-types";
 
 const reviewerRoleAllowlist = new Set<DemoRoleKey>(["analyst", "senior_wealth_advisor", "compliance_officer"]);
 const sufficiencyDecisionRoleAllowlist = new Set<DemoRoleKey>(["compliance_officer"]);
@@ -27,6 +28,7 @@ export type ReviewDocumentEvidenceInput = {
   notes?: string;
   relevanceAccepted?: boolean;
   requiredObjectId?: string;
+  requiredObjectType?: ObjectType;
   roleKey: DemoRoleKey;
   scopeAccepted?: boolean;
   tenantSlug: DemoTenantSlug;
@@ -142,13 +144,31 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
     throw new EvidenceReviewNotFoundError();
   }
 
-  const evidenceRecord = await prisma.evidenceRecord.findFirst({
+  let evidenceRecord = await prisma.evidenceRecord.findFirst({
     where: {
       clientTenantId: session.tenant.id,
       relatedObjectId: document.id,
       relatedObjectType: ObjectType.DOCUMENT,
     },
   });
+
+  if (!evidenceRecord) {
+    const evidenceRecordLink = await prisma.documentLink.findFirst({
+      where: {
+        documentId: document.id,
+        targetType: ObjectType.EVIDENCE_RECORD,
+      },
+    });
+
+    evidenceRecord = evidenceRecordLink
+      ? await prisma.evidenceRecord.findFirst({
+          where: {
+            clientTenantId: session.tenant.id,
+            id: evidenceRecordLink.targetId,
+          },
+        })
+      : null;
+  }
 
   if (!evidenceRecord) {
     throw new EvidenceReviewValidationError(["evidence_record_required"]);
@@ -213,14 +233,16 @@ export async function reviewDocumentEvidence(prisma: PrismaClient, input: Review
         : DocumentStatus.VERIFIED;
   const nextEvidenceStatus = input.action === "accept_sufficiency" ? EvidenceStatus.VALIDATED : EvidenceStatus.LINKED;
   const visibilityStatus = input.action === "accept_sufficiency" ? VisibilityStatus.REDACTED : VisibilityStatus.INTERNAL_ONLY;
-  const relatedObjectId = input.requiredObjectId ?? document.id;
+  const relatedObjectType = evidenceRecord.relatedObjectType as DomainObjectType;
+  const requiredObjectId = input.requiredObjectId ?? evidenceRecord.relatedObjectId;
+  const requiredObjectType = (input.requiredObjectType ?? evidenceRecord.relatedObjectType) as DomainObjectType;
   const sufficiencyDecision = evidenceService.evaluateEvidenceSufficiency({
     accepted: input.action === "accept_sufficiency",
     current: input.currentAccepted,
-    relatedObjectId: document.id,
-    relatedObjectType: "DOCUMENT",
-    requiredObjectId: relatedObjectId,
-    requiredObjectType: "DOCUMENT",
+    relatedObjectId: evidenceRecord.relatedObjectId,
+    relatedObjectType,
+    requiredObjectId,
+    requiredObjectType,
     reviewed: input.action !== "request_clarification",
     status: nextEvidenceStatus,
     visibilityStatus,

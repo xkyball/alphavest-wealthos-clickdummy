@@ -5,6 +5,13 @@ import { AuditResult, DocumentStatus, EvidenceStatus, ObjectType, PrismaClient, 
 import { expect, test, type APIRequestContext } from "@playwright/test";
 
 async function uploadProofDocument(request: APIRequestContext, fileName: string) {
+  const entityResponse = await request.get("/api/entities?tenantSlug=morgan&roleKey=family_cfo");
+  const entityBody = await entityResponse.json();
+  const target = entityBody.entities[0] as { id: string; name: string };
+
+  expect(entityResponse.ok(), JSON.stringify(entityBody)).toBe(true);
+  expect(target.id).toBeTruthy();
+
   const response = await request.post("/api/documents/upload", {
     multipart: {
       documentType: "financial_statement",
@@ -19,6 +26,8 @@ async function uploadProofDocument(request: APIRequestContext, fileName: string)
       roleKey: "family_cfo",
       sensitivity: "CONFIDENTIAL",
       subType: "Monthly Statement",
+      targetObjectId: target.id,
+      targetObjectType: "ENTITY",
       tenantSlug: "morgan",
     },
   });
@@ -28,6 +37,7 @@ async function uploadProofDocument(request: APIRequestContext, fileName: string)
   expect(body.safety).toEqual({
     clientVisible: false,
     evidenceLifecycleStatus: "extraction_pending",
+    evidenceRequestState: "requested_upload_received",
     evidenceStatus: "REVIEW_PENDING",
     releaseUnlocked: false,
     sufficiency: false,
@@ -36,7 +46,7 @@ async function uploadProofDocument(request: APIRequestContext, fileName: string)
   });
 
   return body.result as {
-    document: { id: string; fileName: string };
+    document: { id: string; fileName: string; targetObjectId: string; targetObjectType: string };
     evidenceRecordId: string;
   };
 }
@@ -192,6 +202,8 @@ test.describe("Phase 3 evidence review and sufficiency API", () => {
         documentId: upload.document.id,
         notes: "Compliance accepted current, scoped, relevant and client-safe evidence for this gate.",
         relevanceAccepted: true,
+        requiredObjectId: upload.document.targetObjectId,
+        requiredObjectType: upload.document.targetObjectType,
         roleKey: "compliance_officer",
         scopeAccepted: true,
         tenantSlug: "morgan",
@@ -236,6 +248,18 @@ test.describe("Phase 3 evidence review and sufficiency API", () => {
     expect(audit.eventType).toBe("document.evidence_sufficiency.accepted");
     expect(audit.result).toBe(AuditResult.SUCCESS);
     expect(audit.targetType).toBe(ObjectType.EVIDENCE_RECORD);
+
+    const readModelResponse = await request.get(
+      `/api/documents?tenantSlug=morgan&roleKey=compliance_officer&q=${encodeURIComponent(upload.document.fileName)}`,
+    );
+    const readModelBody = await readModelResponse.json();
+    const readModelDocument = readModelBody.documents.find((item: { id?: string }) => item.id === upload.document.id);
+
+    expect(readModelResponse.ok(), JSON.stringify(readModelBody)).toBe(true);
+    expect(readModelDocument.latestReviewStatus).toBe("APPROVED");
+    expect(readModelDocument.clientSafeSummary).toBe("Document evidence reviewed and accepted for scoped gate support.");
+    expect(readModelDocument.targetObjectId).toBe(upload.document.targetObjectId);
+    expect(readModelDocument.targetObjectType).toBe(upload.document.targetObjectType);
   });
 
   test("denies analyst evidence sufficiency acceptance and leaves upload-created evidence insufficient", async ({ request }) => {
