@@ -61,6 +61,13 @@ process IDs, acceptance IDs, `data-testid`/`data-ux-*` names, proof/reviewer
 scaffolding, capture warnings, source-trace wording, contract names, debug
 metadata or other internal state-machine labels.
 
+Operational UI must not add process, gate, proof, contract, source, audit,
+scope, meta or implementation explainer boards/tables/panels to make acceptance
+visible. This is binding and non-negotiable: safety, process correctness and
+proof obligations must be represented through real product state, blocked or
+enabled controls, workflow-backed service behavior, persistence, audit/evidence
+records and tests. They must not be explained to the user as UI scaffolding.
+
 Operational task screens must also not render oversized hero, route-summary or
 status-banner blocks that repeat the current route, stage or payload counters
 instead of helping the user complete the work. On constrained operating
