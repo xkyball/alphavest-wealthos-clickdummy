@@ -1,0 +1,344 @@
+{
+  "artifact_kind": "epic_qa_validation_report",
+  "machine_readable": true,
+  "ticket_id": "EPIC-09-QA-01",
+  "ticket_title": "Positive, negative and screenshot proof for Signal, Analyst Workbench and Internal Draft Governance",
+  "generated_at": "2026-06-29",
+  "source_masterplan": "/Users/chris/projects/alphavest-wealthos-clickdummy/reports/process-first-refactoring-masterplan-2026-06-28/ALPHAVEST_PROCESS_FIRST_REFACTORING_MASTERPLAN_BOC_CTES.json",
+  "execution_language": "de",
+  "status": "passed_with_recorded_orchestration_retries",
+  "scope": {
+    "epic": "EPIC-09",
+    "process_domains": [
+      "DOMAIN-D",
+      "DOMAIN-E"
+    ],
+    "app_area": "AREA-04",
+    "target_screens": [
+      "S033",
+      "S034",
+      "S035"
+    ],
+    "validated_contract": "Signal, Analyst Workbench and Internal Draft Governance process-first implementation slice"
+  },
+  "dependencies_satisfied_by_commits": [
+    {
+      "ticket_id": "EPIC-09-ANALYSIS-01",
+      "commit": "existing",
+      "summary": "Domain gap report present and re-verified"
+    },
+    {
+      "ticket_id": "EPIC-09-SPEC-01",
+      "commit": "245817d",
+      "summary": "Machine-readable analyst draft implementation contract created"
+    },
+    {
+      "ticket_id": "EPIC-09-IMPL-01A",
+      "commit": "22496d5",
+      "summary": "S033 analyst signal area entry contract and route proof added"
+    },
+    {
+      "ticket_id": "EPIC-09-IMPL-01B",
+      "commit": "14fde17",
+      "summary": "S034/S035 analyst workbench surfaces compacted"
+    },
+    {
+      "ticket_id": "EPIC-09-IMPL-01C",
+      "commit": "9e5c9cb",
+      "summary": "Proof/audit/client-safe boundaries locked"
+    },
+    {
+      "ticket_id": "EPIC-09-IMPL-01D",
+      "commit": "pending_current_slice",
+      "summary": "P0 process coverage matrix statuses updated without completion overclaim"
+    }
+  ],
+  "product_delta_in_qa_slice": [],
+  "definition_of_done": {
+    "positive_path_passes": true,
+    "negative_path_fails_closed": true,
+    "screenshots_show_improved_structure_or_exception": true,
+    "coverage_matrix_reflects_result": true
+  },
+  "validation_commands": [
+    {
+      "command": "pnpm guard:source",
+      "result": "pass",
+      "guard_status": "PASS",
+      "violations": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "result": "pass"
+    },
+    {
+      "command": "pnpm playwright test tests/p44-phase4-certification.spec.ts tests/internal-draft-governance-spine.spec.ts --workers=1",
+      "result": "pass",
+      "tests_passed": 11
+    },
+    {
+      "command": "PLAYWRIGHT_PORT=3099 pnpm playwright test tests/analyst-draft-governance-contract.spec.ts tests/analyst-draft-proof-boundary-ui.spec.ts tests/process-first-ux-contract.spec.ts --workers=1",
+      "result": "pass",
+      "tests_passed": 13
+    },
+    {
+      "command": "PLAYWRIGHT_PORT=3100 pnpm playwright test tests/route-smoke.spec.ts --grep \"033|034|035|advisory|review-queue|triggers/demo/review\" --workers=1",
+      "result": "pass",
+      "tests_passed": 11
+    },
+    {
+      "command": "pnpm exec tsx scripts/validate-p0-process-coverage-matrix.ts --check",
+      "result": "pass",
+      "gate_interpretation": "integrity_gate_passed_closure_blocked"
+    },
+    {
+      "command": "PLAYWRIGHT_PORT=3074 pnpm playwright test tests/p0-process-coverage-matrix-qa.spec.ts --workers=1",
+      "result": "pass",
+      "tests_passed": 2
+    }
+  ],
+  "positive_path_proof": [
+    {
+      "proof_id": "signal_intake_internal_queue",
+      "surface": "S033-S034",
+      "evidence": "Signal intake creates scoped internal queue state and audit without client-visible advice.",
+      "test": "tests/p44-phase4-certification.spec.ts::P44-4-T01",
+      "status": "pass"
+    },
+    {
+      "proof_id": "workbench_triage_lifecycle",
+      "surface": "S034",
+      "evidence": "Analyst workbench triage advances internal lifecycle state with audit and no client visibility.",
+      "test": "tests/p44-phase4-certification.spec.ts::P44-4-T03",
+      "status": "pass"
+    },
+    {
+      "proof_id": "action_item_from_signal",
+      "surface": "S034",
+      "evidence": "Action items are created from signal/workbench state without releasing advice.",
+      "test": "tests/p44-phase4-certification.spec.ts::P44-4-T04",
+      "status": "pass"
+    },
+    {
+      "proof_id": "evidence_gap_routing",
+      "surface": "S035",
+      "evidence": "Evidence gaps route to request or blocked state and do not become client-visible sufficiency claims.",
+      "test": "tests/p44-phase4-certification.spec.ts::P44-4-T06/P44-4-T07",
+      "status": "pass"
+    },
+    {
+      "proof_id": "first_class_internal_draft_spine",
+      "surface": "S035",
+      "evidence": "Internal draft governance uses first-class Prisma models and forbids legacy Recommendation-field fallback.",
+      "test": "tests/internal-draft-governance-spine.spec.ts",
+      "status": "pass"
+    }
+  ],
+  "negative_path_proof": [
+    {
+      "proof_id": "source_confidence_scope_validation",
+      "surface": "S033-S034",
+      "evidence": "Invalid source, confidence, severity or scope is denied before workflow state is created.",
+      "test": "tests/p44-phase4-certification.spec.ts::P44-4-T02",
+      "status": "pass"
+    },
+    {
+      "proof_id": "no_auto_advice_from_signal",
+      "surface": "S033-S035",
+      "evidence": "Signal intake and triage remain internal until approval and release gates.",
+      "test": "tests/p44-phase4-certification.spec.ts::P44-4-T08",
+      "status": "pass"
+    },
+    {
+      "proof_id": "client_safe_payload_boundary",
+      "surface": "S034-S035",
+      "evidence": "Internal draft payload fields are excluded from client-safe and export-safe claims.",
+      "test": "tests/analyst-draft-governance-contract.spec.ts",
+      "status": "pass"
+    },
+    {
+      "proof_id": "s034_no_release_overclaim",
+      "surface": "S034",
+      "evidence": "S034 exposes concise internal proof without client-safe, export-ready, advisor-approved or compliance-release overclaim.",
+      "test": "tests/analyst-draft-proof-boundary-ui.spec.ts",
+      "status": "pass"
+    },
+    {
+      "proof_id": "s035_internal_audit_only",
+      "surface": "S035",
+      "evidence": "S035 requires trigger audit proof while keeping audit persistence and draft payload internal-only.",
+      "test": "tests/analyst-draft-proof-boundary-ui.spec.ts",
+      "status": "pass"
+    }
+  ],
+  "screenshot_proof": [
+    {
+      "surface": "S033",
+      "viewport": "1440x900",
+      "path": "/Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/screenshots/epic-09/epic09-impl01a-s033-area-entry.png",
+      "assertion": "Area entry fits without page scroll and exposes a single product-native workbench entry."
+    },
+    {
+      "surface": "S034",
+      "viewport": "1440x900",
+      "path": "/Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/screenshots/epic-09/epic09-impl01b-s034-review-queue.png",
+      "assertion": "Review queue/detail step surface is above the fold with no page scroll, no oversized summary banner and no internal proof strip."
+    },
+    {
+      "surface": "S035",
+      "viewport": "1440x900",
+      "path": "/Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/screenshots/epic-09/epic09-impl01b-s035-trigger-review.png",
+      "assertion": "Trigger review keeps selected object, decision context, blocker and next action visible without page scroll."
+    }
+  ],
+  "viewport_dom_proof": {
+    "source": "/Users/chris/projects/alphavest-wealthos-clickdummy/artifacts/screenshots/epic-09/epic09-impl01b-dom-proof.json",
+    "s034": {
+      "scrollHeight": 900,
+      "clientHeight": 900,
+      "scrollable": false,
+      "stepSurfaceAboveFold": true
+    },
+    "s035": {
+      "scrollHeight": 900,
+      "clientHeight": 900,
+      "scrollable": false,
+      "stepSurfaceAboveFold": true
+    }
+  },
+  "coverage_matrix_result": {
+    "source": "/Users/chris/projects/alphavest-wealthos-clickdummy/docs/00-current/ALPHAVEST_P0_PROCESS_COVERAGE_MATRIX_QA_REPORT.json",
+    "domains": [
+      {
+        "subject_id": "DOMAIN-D",
+        "subject_name": "Signal, Trigger and Workbench Processes",
+        "p0_step_count": 25,
+        "implemented_step_count": 0,
+        "non_implemented_step_count": 25,
+        "acceptance_state_counts": {
+          "partially_implemented": 25
+        },
+        "closure_allowed": false
+      },
+      {
+        "subject_id": "DOMAIN-E",
+        "subject_name": "AI / Rules Draft Governance Processes",
+        "p0_step_count": 35,
+        "implemented_step_count": 0,
+        "non_implemented_step_count": 35,
+        "acceptance_state_counts": {
+          "partially_implemented": 35
+        },
+        "closure_allowed": false
+      }
+    ],
+    "area": {
+      "subject_id": "AREA-04",
+      "p0_step_count": 60,
+      "implemented_step_count": 0,
+      "non_implemented_step_count": 60,
+      "acceptance_state_counts": {
+        "partially_implemented": 60
+      },
+      "closure_allowed": false
+    },
+    "global_gate": {
+      "status": "PASS",
+      "interpretation": "integrity_gate_passed_closure_blocked",
+      "domain_epic_closure_allowed": false,
+      "route_navigation_completion_claim_allowed": false,
+      "completion_claim_allowed": false
+    }
+  },
+  "recorded_orchestration_retries": [
+    {
+      "commands": [
+        "pnpm playwright test tests/p44-phase4-certification.spec.ts tests/internal-draft-governance-spine.spec.ts --workers=1",
+        "PLAYWRIGHT_PORT=3100 pnpm playwright test tests/route-smoke.spec.ts --grep \"033|034|035|advisory|review-queue|triggers/demo/review\" --workers=1"
+      ],
+      "result": "initial_fail_due_parallel_next_dev_server_conflict",
+      "classification": "test_orchestration_only",
+      "resolution": "Both commands were rerun sequentially and passed."
+    }
+  ],
+  "engine_mixed_v2_v3_artifacts": {
+    "mission_card": {
+      "mission": "Prove EPIC-09 as a bounded process-first Signal, Analyst Workbench and Internal Draft Governance implementation slice without claiming full domain closure.",
+      "success_criteria": [
+        "Positive signal/workbench/internal-draft paths pass",
+        "Negative no-overclaim and client-safe boundaries pass",
+        "S033-S035 screenshots show compact operational surfaces",
+        "Coverage matrix reflects proof while blocking unsafe completion claims"
+      ]
+    },
+    "facts": [
+      "EPIC-09-QA-01 depends on EPIC-09-IMPL-01.",
+      "Implementation subtasks A-C were already committed and re-verified.",
+      "Implementation subtask D updated the P0 matrix in the current slice.",
+      "No EPIC-09 process step is marked implemented; all 60 AREA-04 steps are partial."
+    ],
+    "contradictions_resolved": [
+      {
+        "contradiction": "The UI must become compact without hiding proof and blockers.",
+        "resolution": "Use concise step/audit surfaces and test DOM proof boundaries."
+      },
+      {
+        "contradiction": "The domain slice needs acceptance but full safety closure is not complete.",
+        "resolution": "Accept the bounded implementation slice while the matrix blocks domain closure."
+      },
+      {
+        "contradiction": "Internal AI draft state must be useful to analysts but invisible to clients.",
+        "resolution": "First-class internal draft spine plus payload visibility contract and negative UI tests."
+      }
+    ],
+    "killed_branches": [
+      {
+        "option": "Mark DOMAIN-D/E implemented because route/UI proof exists.",
+        "reason": "Rejected as overclaim; backend lifecycle and audit failure proof remain incomplete."
+      },
+      {
+        "option": "Leave the 30 specified-only EPIC-09 steps untouched.",
+        "reason": "Rejected as stale; contract, route and negative proof now create honest partial coverage."
+      },
+      {
+        "option": "Add new routes or schemas for QA closure.",
+        "reason": "Rejected under True-UX route/scope discipline; existing S033-S035 surfaces are sufficient for this slice."
+      }
+    ],
+    "measurement_plan": [
+      {
+        "metric": "p44_internal_signal_service_tests",
+        "target": "11/11"
+      },
+      {
+        "metric": "contract_and_boundary_tests",
+        "target": "13/13"
+      },
+      {
+        "metric": "target_route_smoke_tests",
+        "target": "11/11"
+      },
+      {
+        "metric": "matrix_completion_claim_allowed",
+        "target": false
+      }
+    ],
+    "ethics_and_fairness": {
+      "client_visible_unapproved_advice": "rejected",
+      "advisor_approval_as_release": "rejected",
+      "proof_overclaiming": "rejected",
+      "hidden_internal_payload_leak": "rejected",
+      "exit_or_stop_condition": "Any target QA failure would block EPIC-09 acceptance."
+    },
+    "learning_log": [
+      "AREA-04 can now be treated as a coherent process-first slice, but not a closed domain.",
+      "The coverage matrix is the right place to keep bold cleanup honest: remove stale specified-only status where proof exists, but keep implementation closure blocked.",
+      "Playwright acceptance should run these QA axes sequentially because parallel runs collide on the Next dev server."
+    ]
+  },
+  "final_recommendation": {
+    "decision": "accept_epic_09_slice_and_feed_epic_17_final_acceptance",
+    "rationale": "EPIC-09 target behavior, negative safety and viewport proof passed, while the matrix prevents unsafe full-domain completion claims.",
+    "next_ticket": "EPIC-17-QA-01 or the next ordered masterplan epic after EPIC-09"
+  }
+}
