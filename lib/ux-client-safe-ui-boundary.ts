@@ -4,6 +4,7 @@ import { uxPageTemplateForRoute } from "@/lib/ux-page-template-system";
 
 export type UxClientSafeUiFamily =
   | "client_portal"
+  | "decision_client_summary"
   | "mobile_client"
   | "export_client_package";
 
@@ -99,6 +100,8 @@ const clientSafeFamiliesByPageId = new Map<string, UxClientSafeUiFamily>([
   ["030", "client_portal"],
   ["031", "client_portal"],
   ["032", "client_portal"],
+  ["044", "decision_client_summary"],
+  ["045", "decision_client_summary"],
   ["058", "export_client_package"],
 ]);
 
@@ -158,7 +161,7 @@ export const uxClientSafeUiBoundaryRecords = Array.from(clientSafeFamiliesByPage
 );
 
 export const uxClientSafeUiBoundaryIntegrity = {
-  missingFamilyPageIds: ["019", "020", "027", "058"].filter((pageId) => !clientSafeFamiliesByPageId.has(pageId)),
+  missingFamilyPageIds: ["019", "020", "027", "044", "045", "058"].filter((pageId) => !clientSafeFamiliesByPageId.has(pageId)),
   missingSuppressionClasses: uxClientSafeUiBoundaryRecords
     .filter((record) => record.suppressedClasses.length !== uxClientSafeSuppressedClasses.length)
     .map((record) => record.pageId),

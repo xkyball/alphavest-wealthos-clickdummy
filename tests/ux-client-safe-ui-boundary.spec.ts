@@ -35,11 +35,15 @@ test.describe("E07 client-safe UI boundary contract", () => {
   test("materializes representative client and export package boundaries", () => {
     const clientHome = uxClientSafeUiBoundaryForPageId("019");
     const mobile = uxClientSafeUiBoundaryForPageId("020");
+    const decisionRoom = uxClientSafeUiBoundaryForPageId("044");
+    const decisionSuccess = uxClientSafeUiBoundaryForPageId("045");
     const documents = uxClientSafeUiBoundaryForPageId("027");
     const exportPackage = uxClientSafeUiBoundaryForPageId("058");
 
     expect(clientHome.family).toBe("client_portal");
     expect(mobile.family).toBe("mobile_client");
+    expect(decisionRoom.family).toBe("decision_client_summary");
+    expect(decisionSuccess.family).toBe("decision_client_summary");
     expect(documents.family).toBe("client_portal");
     expect(exportPackage.family).toBe("export_client_package");
     expect(exportPackage.backendSecurityScope).toBe("ui_projection_only_not_rbac");

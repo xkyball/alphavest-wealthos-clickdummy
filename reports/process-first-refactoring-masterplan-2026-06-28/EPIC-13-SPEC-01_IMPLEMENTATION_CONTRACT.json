@@ -1,0 +1,293 @@
+{
+  "artifact_kind": "epic_13_client_visibility_released_projection_implementation_contract",
+  "generated_at": "2026-06-29",
+  "epic_id": "EPIC-13",
+  "task_id": "EPIC-13-SPEC-01",
+  "status": "completed_specification",
+  "source_masterplan": "reports/process-first-refactoring-masterplan-2026-06-28/ALPHAVEST_PROCESS_FIRST_REFACTORING_MASTERPLAN_BOC_CTES.json",
+  "analysis_source": "reports/process-first-refactoring-masterplan-2026-06-28/EPIC-13-ANALYSIS-01_DOMAIN_GAP_REPORT.md",
+  "domain": {
+    "domain_id": "DOMAIN-H",
+    "domain_name": "Client Visibility and Communication Processes",
+    "area_id": "AREA-08",
+    "area_name": "Client Visibility",
+    "process_ids": [
+      "BP-067",
+      "BP-068",
+      "BP-069"
+    ],
+    "target_screens": [
+      "S019",
+      "S020",
+      "S043",
+      "S044",
+      "S045",
+      "S058"
+    ]
+  },
+  "target_contract": {
+    "contract_id": "DOMAIN_H_RELEASED_PROJECTION_CONTRACT",
+    "purpose": "Bind released client portal projection, mobile safe view and client-safe summary projection to one process-first state model without exposing internal workflow payloads in operational UI.",
+    "non_negotiables": [
+      "Client visibility is released-only and fail-closed by default.",
+      "Advisor approval, evidence upload, evidence sufficiency, decision submission, export approval and download/share never equal client visibility.",
+      "Internal fields remain hidden from client roles unless explicitly classified as client-safe released payload.",
+      "AREA-08 proof belongs in typed readmodels, tests and explicit proof artifacts, not explanatory UI panels.",
+      "Operational UI may show object state, blocker and next action, but not process IDs, proof scaffolding or route-only claims."
+    ]
+  },
+  "process_state_machine": {
+    "states": [
+      {
+        "id": "NO_RELEASED_CONTENT",
+        "client_visible": false,
+        "meaning": "No released client-safe object is available for the actor, tenant and object scope.",
+        "allowed_payload": [],
+        "required_blockers": [
+          "released_decision_or_recommendation_missing",
+          "client_visible_flag_missing_or_false",
+          "visibility_status_not_client_visible"
+        ]
+      },
+      {
+        "id": "CLIENT_SAFE_SUMMARY_READY",
+        "client_visible": true,
+        "meaning": "A released object has a client-safe summary projection and no forbidden payload fields.",
+        "allowed_payload": [
+          "id",
+          "title",
+          "decisionState",
+          "clientSummary",
+          "releasedAt",
+          "documentType",
+          "status",
+          "uploadedAt",
+          "latestVersionNumber",
+          "versionCount"
+        ],
+        "required_checks": [
+          "permission_allowed",
+          "tenant_scope_matches",
+          "visibility_status_client_visible_or_redacted",
+          "released_state_matches_payload_type",
+          "projection_safety_clean"
+        ]
+      },
+      {
+        "id": "CLIENT_SAFE_REDACTED",
+        "client_visible": true,
+        "meaning": "Only redacted client-safe metadata may be projected; internal payload remains hidden.",
+        "allowed_payload": [
+          "id",
+          "title",
+          "documentType",
+          "status",
+          "uploadedAt",
+          "redacted_metadata"
+        ],
+        "required_checks": [
+          "permission_allowed",
+          "tenant_scope_matches",
+          "redaction_policy_applied",
+          "projection_safety_clean"
+        ]
+      },
+      {
+        "id": "PERMISSION_DENIED_OR_WRONG_SCOPE",
+        "client_visible": false,
+        "meaning": "The actor cannot view the target object or tenant scope.",
+        "allowed_payload": [],
+        "required_blockers": [
+          "permission_denied",
+          "cross_tenant_denied",
+          "object_scope_denied"
+        ]
+      },
+      {
+        "id": "INTERNAL_ONLY_PROJECTION",
+        "client_visible": false,
+        "meaning": "Internal roles may inspect scoped internal payload; this state cannot be rendered to client-role surfaces.",
+        "allowed_audience": [
+          "advisor",
+          "analyst",
+          "compliance"
+        ],
+        "forbidden_for_client_roles": true
+      }
+    ],
+    "transitions": [
+      {
+        "from": "NO_RELEASED_CONTENT",
+        "to": "CLIENT_SAFE_SUMMARY_READY",
+        "requires": [
+          "compliance_release_or_equivalent_released_record",
+          "client_visible_true",
+          "visibility_status_client_visible",
+          "projection_safety_clean"
+        ],
+        "must_not_require": [
+          "advisor_approval_only",
+          "evidence_upload_only",
+          "export_approval_only",
+          "decision_submission_only"
+        ]
+      },
+      {
+        "from": "CLIENT_SAFE_SUMMARY_READY",
+        "to": "CLIENT_SAFE_REDACTED",
+        "requires": [
+          "redaction_policy_or_document_visibility_requires_redacted_metadata"
+        ]
+      },
+      {
+        "from": "any",
+        "to": "PERMISSION_DENIED_OR_WRONG_SCOPE",
+        "requires": [
+          "permission_denied_or_tenant_scope_mismatch"
+        ]
+      }
+    ]
+  },
+  "step_contracts": [
+    {
+      "step_id": "BP-067-S01",
+      "process": "Released client portal projection",
+      "required_ui_surface": "S019 portal projection summary",
+      "service_boundary": "visibilityEngine.projectRecommendationPayload/projectDecisionPayload/projectDocumentPayload",
+      "positive_acceptance": "Released client-visible payload projects only client-safe fields.",
+      "negative_acceptance": "Unreleased, advisor-only, compliance-only or wrong-tenant payload projects no client payload."
+    },
+    {
+      "step_id": "BP-067-S02",
+      "process": "Released client portal projection",
+      "required_ui_surface": "S019 portal projection hidden/internal-state blocker",
+      "service_boundary": "visibilityEngine.assertClientProjectionClean",
+      "positive_acceptance": "Hidden/internal fields are listed as hidden in projection proof and absent from client payload.",
+      "negative_acceptance": "Payload containing internal rationale, compliance notes, draft summary, audit metadata or storage/checksum fields fails the client-safe check."
+    },
+    {
+      "step_id": "BP-067-S03",
+      "process": "Released client portal projection",
+      "required_ui_surface": "S019 released update next action",
+      "service_boundary": "released projection readmodel",
+      "positive_acceptance": "Client communication/update action is available only when a safe projection is visible.",
+      "negative_acceptance": "Pending or fail-closed projection does not display approved/released communication language."
+    },
+    {
+      "step_id": "BP-068-S01",
+      "process": "Mobile safe view",
+      "required_ui_surface": "S020 mobile projection summary",
+      "service_boundary": "visibilityEngine.projectDecisionPayload",
+      "positive_acceptance": "Mobile view renders only released client-safe summary state.",
+      "negative_acceptance": "Mobile view hides unreleased internal decision/evidence payload."
+    },
+    {
+      "step_id": "BP-068-S02",
+      "process": "Mobile safe view",
+      "required_ui_surface": "S020 mobile blocker/empty state",
+      "service_boundary": "visibilityEngine.assertClientProjectionClean",
+      "positive_acceptance": "Mobile fail-closed state is explicit and non-leaky.",
+      "negative_acceptance": "Internal notes, draft fields, audit metadata and evidence internals are absent from mobile client role UI."
+    },
+    {
+      "step_id": "BP-068-S03",
+      "process": "Mobile safe view",
+      "required_ui_surface": "S020 mobile next-step action",
+      "service_boundary": "released projection readmodel",
+      "positive_acceptance": "Mobile next-step copy reflects released-safe status only.",
+      "negative_acceptance": "Mobile next-step cannot imply advice release, export approval or client acceptance."
+    },
+    {
+      "step_id": "BP-069-S01",
+      "process": "Client-safe summary projection",
+      "required_ui_surface": "S019/S044/S045 client-safe summary block",
+      "service_boundary": "new DOMAIN-H released projection readmodel wrapping visibilityEngine",
+      "positive_acceptance": "Summary is derived from released safe payload only.",
+      "negative_acceptance": "Summary does not render from internal draft, submitted-only decision or export preview-only state."
+    },
+    {
+      "step_id": "BP-069-S02",
+      "process": "Client-safe summary projection",
+      "required_ui_surface": "S019/S044/S045 hidden-field summary",
+      "service_boundary": "new DOMAIN-H hidden-field proof adapter",
+      "positive_acceptance": "Internal fields are hidden/redacted and the hidden-field list is testable outside operational UI.",
+      "negative_acceptance": "Any forbidden client field produces a failed proof state and no client-visible summary."
+    },
+    {
+      "step_id": "BP-069-S03",
+      "process": "Client-safe summary projection",
+      "required_ui_surface": "S019/S020 communication/next-action state",
+      "service_boundary": "released projection readmodel",
+      "positive_acceptance": "Approved client-safe summary can be communicated only when safe projection is visible.",
+      "negative_acceptance": "Approved/communicated language is absent for fail-closed, pending, internal or wrong-scope projections."
+    }
+  ],
+  "ui_boundaries": {
+    "visible_ui_may_show": [
+      "released object title",
+      "safe summary",
+      "released timestamp",
+      "fail-closed blocker",
+      "redacted/hidden state in product language",
+      "next permitted client action"
+    ],
+    "visible_ui_must_not_show": [
+      "process IDs",
+      "proof IDs",
+      "route IDs",
+      "audit metadata",
+      "internal rationale",
+      "compliance notes",
+      "AI draft",
+      "storage/checksum fields",
+      "implementation or source-trace language"
+    ]
+  },
+  "service_boundaries": {
+    "existing_services_to_reuse": [
+      "lib/visibility-engine.ts",
+      "lib/control-layer/visibility-projection.ts",
+      "lib/export-service.ts",
+      "lib/permission-engine.ts"
+    ],
+    "new_or_refactored_contract_allowed": [
+      "A small DOMAIN-H released projection readmodel/contract module may be added if it wraps existing visibilityEngine behavior and only records proof mapping.",
+      "No schema migration is authorized by this spec.",
+      "No new API route is authorized unless implementation finds a real UI/service boundary that cannot be represented with existing route data."
+    ]
+  },
+  "test_boundaries": {
+    "required_positive_tests": [
+      "Released decision projects client-safe fields for portal.",
+      "Released decision projects client-safe fields for mobile.",
+      "Client-safe summary readmodel maps BP-067/BP-068/BP-069 steps to proof refs."
+    ],
+    "required_negative_tests": [
+      "Unreleased decision fails closed.",
+      "Wrong-tenant client access fails closed.",
+      "Internal fields fail projection safety.",
+      "Advisor approval/evidence upload/export approval alone does not create client visibility.",
+      "Operational UI does not expose internal proof/process scaffolding."
+    ],
+    "candidate_test_files": [
+      "tests/client-visibility-proof.spec.ts",
+      "tests/true-ux-p0-safety.spec.ts",
+      "tests/operational-visual-audit.spec.ts",
+      "tests/ux-client-safe-ui-boundary.spec.ts"
+    ]
+  },
+  "implementation_split": {
+    "EPIC-13-IMPL-01A": "Refactor/create AREA-08 entry behavior around released projection next work without explanatory cards.",
+    "EPIC-13-IMPL-01B": "Create DOMAIN-H readmodel/contract and bind core surfaces to BP step ownership.",
+    "EPIC-13-IMPL-01C": "Wire proof/audit/client-safe boundaries into non-operational proof artifacts and tests, not visible proof panels.",
+    "EPIC-13-IMPL-01D": "Update matrix/status artifacts for completed DOMAIN-H steps."
+  },
+  "definition_of_done": {
+    "positive_and_negative_paths": "Covered by named tests or explicit implementation proof.",
+    "ui_boundaries_named": true,
+    "service_boundaries_named": true,
+    "test_boundaries_named": true,
+    "no_schema_change": true,
+    "no_client_visible_unapproved_advice": true
+  }
+}

@@ -26,6 +26,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  ClientSafeUiBoundary,
   DataTable,
   Drawer,
   FilterBar,
@@ -62,6 +63,7 @@ import {
   decisionRecordEvidenceAuditRouteOwnershipForPageId,
 } from "@/lib/decision-record-evidence-audit-contract";
 import { runAdviceReleaseHistoryCommand } from "@/lib/advice-release-history-command-client";
+import { buildDomainHReleasedDecisionReadModel } from "@/lib/domain-h-released-projection-contract";
 import { runTenantGovernanceCommand } from "@/lib/tenant-governance-command-client";
 import {
   accessPolicyChecks,
@@ -892,7 +894,7 @@ function DecisionRecordAreaEntry({ title }: { title: string }) {
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h3 className="font-display text-xl text-alphavest-ivory">Decision register</h3>
-                <p className="text-sm text-alphavest-muted">Open records that need scoped review.</p>
+                <p className="text-sm text-alphavest-muted">Open records that need focused review.</p>
               </div>
               <Badge tone="blue">{decisionRows.length} records</Badge>
             </div>
@@ -936,7 +938,7 @@ function DecisionRecordAreaEntry({ title }: { title: string }) {
               ))}
             </div>
             <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5" data-testid="epic12-step-pendant-output">
-              <p className="text-sm font-semibold text-alphavest-ivory">Scoped record ready</p>
+              <p className="text-sm font-semibold text-alphavest-ivory">Selected record ready</p>
               <p className="mt-1 text-sm leading-5 text-alphavest-muted">Ready for rationale, evidence context and decision review.</p>
             </div>
             <div className="rounded-md border border-alphavest-gold/40 bg-alphavest-gold/10 p-2.5" data-testid="epic12-step-pendant-blocker">
@@ -952,7 +954,7 @@ function DecisionRecordAreaEntry({ title }: { title: string }) {
 }
 
 function DecisionRoomCoreSurface({ title }: { title: string }) {
-  const stepPendants = decisionRecordEvidenceAuditRouteOwnershipForPageId("044")?.stepPendants ?? [];
+  const releasedProjection = buildDomainHReleasedDecisionReadModel();
   const checks = [
     { label: "Evidence link", value: "Linked package visible", tone: "green" as BadgeTone },
     { label: "Rationale", value: "Status reason required", tone: "gold" as BadgeTone },
@@ -1035,9 +1037,16 @@ function DecisionRoomCoreSurface({ title }: { title: string }) {
             <p className="text-sm font-semibold text-alphavest-ivory">Decision action can be prepared</p>
             <p className="mt-1 text-sm leading-5 text-alphavest-muted">The action still requires acknowledgement, exact phrase and audit persistence.</p>
           </div>
-          <div className="rounded-md border border-alphavest-gold/40 bg-alphavest-gold/10 p-2.5" data-testid="epic12-s044-blocker">
-            <p className="text-sm font-semibold text-alphavest-ivory">No shortcut path</p>
-            <p className="mt-1 text-sm leading-5 text-alphavest-muted">If {stepPendants.length} required review steps are incomplete, submit remains blocked and no client visibility changes.</p>
+          <ClientSafeUiBoundary family="decision_client_summary" pageId="044" testId="domain-h-s044-client-safe-boundary">
+            <div className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-2.5" data-testid="domain-h-s044-client-safe-summary">
+              <p className="text-sm font-semibold text-alphavest-ivory">{releasedProjection.ui.title}</p>
+              <p className="mt-1 text-sm leading-5 text-alphavest-muted">{releasedProjection.ui.summary}</p>
+              <p className="mt-1 text-xs text-alphavest-muted">{releasedProjection.ui.releasedAt}</p>
+            </div>
+          </ClientSafeUiBoundary>
+          <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-2.5 lg:col-span-2" data-testid="epic12-s044-blocker">
+            <p className="text-sm font-semibold text-alphavest-ivory">Protected material stays hidden</p>
+            <p className="mt-1 text-sm leading-5 text-alphavest-muted">{releasedProjection.ui.blockerCopy}</p>
           </div>
         </div>
       </div>
@@ -1348,6 +1357,8 @@ function DecisionRoomPage({ title, visualState }: { title: string; visualState?:
 }
 
 function DecisionSuccessPage({ title }: { title: string }) {
+  const releasedProjection = buildDomainHReleasedDecisionReadModel();
+
   return (
     <Phase12Shell activePageId="045">
       <WorksurfaceShell
@@ -1379,6 +1390,18 @@ function DecisionSuccessPage({ title }: { title: string }) {
                 </div>
               ))}
             </div>
+            <ClientSafeUiBoundary family="decision_client_summary" pageId="045" testId="domain-h-s045-client-safe-boundary">
+              <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_18rem]" data-testid="domain-h-s045-client-safe-summary">
+                <div className="rounded-md border border-alphavest-green/35 bg-alphavest-green/10 p-2.5">
+                  <p className="text-sm font-semibold text-alphavest-ivory">{releasedProjection.ui.title}</p>
+                  <p className="mt-1 text-sm leading-5 text-alphavest-muted">{releasedProjection.ui.summary}</p>
+                </div>
+                <div className="rounded-md border border-alphavest-border/60 bg-alphavest-navy/30 p-2.5">
+                  <p className="text-sm font-semibold text-alphavest-ivory">Client material</p>
+                  <p className="mt-1 text-sm leading-5 text-alphavest-muted">{releasedProjection.ui.hiddenMaterialCopy}</p>
+                </div>
+              </div>
+            </ClientSafeUiBoundary>
           </section>
         }
         rail={
@@ -2544,7 +2567,7 @@ function RoleManagementPage({ title, visualState }: { title: string; visualState
             <Card>
               <CardHeader className="pb-3"><CardTitle>Role checks</CardTitle></CardHeader>
               <CardContent className="space-y-2">
-                <InfoRow label="Scope" value="Tenant role" />
+                <InfoRow label="Tenant role" value="Limited" />
                 <InfoRow label="Confirmation" value="Required" />
                 <InfoRow label="Audit" value="Pending write" />
                 <button

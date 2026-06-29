@@ -6,7 +6,6 @@ import {
   AlertTriangle,
   Bell,
   Building2,
-  Calendar,
   CheckCircle2,
   ChevronDown,
   ChevronRight,
@@ -52,9 +51,6 @@ import {
 } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import {
-  clientPortalProjectionState,
-} from "@/lib/client-portal-projection-state";
-import {
   clientWorkspace,
   entityDetail,
   entityDocuments,
@@ -64,12 +60,11 @@ import {
   governancePreferences,
   keyFamilyMembers,
   missingDocuments,
-  mobilePriorityActions,
   portalActions,
   portalDecisions,
   relationshipRows
 } from "@/lib/client-intake-demo-data";
-import { createDemoSession, demoPlatformTenantId } from "@/lib/demo-session";
+import { createDemoSession } from "@/lib/demo-session";
 import type { ScreenRoute } from "@/lib/route-registry";
 import { runDataMaintenanceCommand } from "@/lib/data-maintenance-command-client";
 import type { BackendDataSurfaceMeta, DataSurfaceSortDirection } from "@/lib/data-surface-query-contract";
@@ -82,7 +77,10 @@ import {
 } from "@/lib/evidence-lifecycle-contract";
 import { uxActionClassForPriority } from "@/lib/ux-action-hierarchy-contract";
 import { uxFeedbackSuccessMessageForSubject } from "@/lib/ux-feedback-message-contract";
-import { visibilityEngine, type DecisionVisibilityPayload } from "@/lib/visibility-engine";
+import {
+  buildDomainHReleasedDecisionReadModel,
+  domainHUnreleasedDecisionPayload,
+} from "@/lib/domain-h-released-projection-contract";
 
 type ClientIntakeScreenProps = {
   route: ScreenRoute;
@@ -96,42 +94,6 @@ type DataSurfaceMeta = BackendDataSurfaceMeta<string>;
 type DocumentFilterOption = {
   label: string;
   value: string;
-};
-
-const mobileQuickActions: Array<{ icon: LucideIcon; label: string }> = [
-  { icon: Upload, label: "Upload" },
-  { icon: MessageSquare, label: "Message" },
-  { icon: Calendar, label: "Schedule" },
-  { icon: ShieldCheck, label: "Security" }
-];
-
-const wp07ClientProjectionSession = createDemoSession({ roleKey: "principal", tenantSlug: "bennett" });
-
-const wp07ReleasedDecisionPayload: DecisionVisibilityPayload = {
-  aiDraft: "Internal draft text remains outside the client projection.",
-  assumptionsJson: { source: "wp07-internal-model" },
-  clientSummary: "Reviewed governance update available for client view.",
-  clientTenantId: wp07ClientProjectionSession.tenant.id,
-  clientVisible: true,
-  complianceNotes: "Compliance-only release notes remain internal.",
-  decisionState: "RELEASED",
-  id: "decision:bennett:wp07-client-safe",
-  internalRationale: "Internal rationale remains hidden.",
-  evidenceRecordId: "evidence:bennett:wp07-client-safe",
-  releasedAt: "2026-06-23T09:15:00.000Z",
-  sensitivity: "RESTRICTED",
-  submittedAt: "2026-06-23T08:30:00.000Z",
-  title: "Governance update decision",
-  visibilityStatus: "CLIENT_VISIBLE",
-};
-
-const wp07UnreleasedDecisionPayload: DecisionVisibilityPayload = {
-  ...wp07ReleasedDecisionPayload,
-  clientSummary: "Draft summary not available to the client.",
-  clientVisible: false,
-  decisionState: "SUBMITTED",
-  releasedAt: null,
-  visibilityStatus: "COMPLIANCE_VISIBLE",
 };
 
 type PersistedUploadDocument = {
@@ -986,61 +948,43 @@ function SafeClientBanner({ children = "No unapproved advice reaches the client.
 }
 
 function ClientSafeProjectionCard({ density = "desktop" }: { density?: "desktop" | "mobile" }) {
-  const releasedProjection = visibilityEngine.projectDecisionPayload(
-    wp07ClientProjectionSession.actor,
-    wp07ClientProjectionSession.role,
-    wp07ReleasedDecisionPayload,
-    demoPlatformTenantId,
-    wp07ClientProjectionSession.tenant.id,
-  );
-  const blockedProjection = visibilityEngine.projectDecisionPayload(
-    wp07ClientProjectionSession.actor,
-    wp07ClientProjectionSession.role,
-    wp07UnreleasedDecisionPayload,
-    demoPlatformTenantId,
-    wp07ClientProjectionSession.tenant.id,
-  );
-  const releasedState = clientPortalProjectionState("decision", releasedProjection);
-  const blockedState = clientPortalProjectionState("decision", blockedProjection);
-  const releasedPayload = releasedState.visible ? releasedState.payload : {};
-  const releasedTitle = String(releasedPayload.title ?? "Governance update decision");
-  const releasedAt = String(releasedPayload.releasedAt ?? "Pending");
-  const releasedSummary = String(releasedPayload.clientSummary ?? "No released summary available.");
+  const releasedReadModel = buildDomainHReleasedDecisionReadModel();
+  const blockedReadModel = buildDomainHReleasedDecisionReadModel(domainHUnreleasedDecisionPayload);
 
   return (
     <Card
       data-testid="wp07-client-safe-projection-card"
-      data-wp03-blocked-state={blockedState.state}
-      data-wp03-released-state={releasedState.state}
+      data-wp03-blocked-state={blockedReadModel.ui.state}
+      data-wp03-released-state={releasedReadModel.ui.state}
       data-wp07-mobile-parity={density === "mobile" ? "true" : "false"}
-      data-wp07-projection-source="visibility-engine"
-      data-wp07-projection-state={releasedState.reasonCode}
-      data-wp07-safe-clean={String(releasedState.safe)}
+      data-wp07-projection-source={releasedReadModel.contractId}
+      data-wp07-projection-state={releasedReadModel.ui.state}
+      data-wp07-safe-clean={String(releasedReadModel.ui.safe)}
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <CardTitle>Released update</CardTitle>
-            <CardDescription>{releasedTitle}</CardDescription>
+            <CardDescription>{releasedReadModel.ui.title}</CardDescription>
           </div>
-          <ClientStatePill tone={releasedState.visible ? "green" : "gold"}>{releasedState.visible ? "Available" : "Pending"}</ClientStatePill>
+          <ClientStatePill tone={releasedReadModel.ui.nextActionEnabled ? "green" : "gold"}>{releasedReadModel.ui.statusLabel}</ClientStatePill>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3" data-testid="wp07-client-safe-summary">
-          <p className="text-sm font-semibold leading-5 text-alphavest-ivory">{releasedSummary}</p>
-          <p className="mt-2 text-xs text-alphavest-muted">{releasedAt}</p>
+          <p className="text-sm font-semibold leading-5 text-alphavest-ivory">{releasedReadModel.ui.summary}</p>
+          <p className="mt-2 text-xs text-alphavest-muted">{releasedReadModel.ui.releasedAt}</p>
         </div>
         <div
           className="flex items-start justify-between gap-3 rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-3"
           data-testid="wp07-client-fail-closed-state"
-          data-wp03-blocked-state={blockedState.state}
+          data-wp03-blocked-state={blockedReadModel.ui.state}
         >
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-alphavest-ivory">Retirement income plan</p>
-            <p className="mt-1 text-xs text-alphavest-muted">No released content is available yet</p>
+            <p className="text-sm font-semibold text-alphavest-ivory">{blockedReadModel.ui.title}</p>
+            <p className="mt-1 text-xs text-alphavest-muted">{blockedReadModel.ui.summary}</p>
           </div>
-          <ClientStatePill tone="gold">Not ready</ClientStatePill>
+          <ClientStatePill tone="gold">{blockedReadModel.ui.statusLabel}</ClientStatePill>
         </div>
       </CardContent>
     </Card>
@@ -1174,7 +1118,7 @@ function Epic07ClientFamilyEntry() {
 
                 return (
                   <Link
-                    className="flex items-center gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 transition hover:border-alphavest-gold/60"
+                    className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3 transition hover:border-alphavest-gold/60"
                     data-epic-07-process-card="true"
                     href={row.href}
                     key={row.label}
@@ -1184,9 +1128,11 @@ function Epic07ClientFamilyEntry() {
                     </IconTile>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-semibold leading-5 text-alphavest-ivory">{row.label}</p>
-                      <p className="mt-1 text-xs text-alphavest-muted">{row.count} · {row.meta}</p>
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <p className="text-xs text-alphavest-muted">{row.count} · {row.meta}</p>
+                        <ClientStatePill tone={row.tone}>{row.status}</ClientStatePill>
+                      </div>
                     </div>
-                    <ClientStatePill tone={row.tone}>{row.status}</ClientStatePill>
                   </Link>
                 );
               })}
@@ -1400,20 +1346,27 @@ function MobileHomePage({ title }: { title: string }) {
     <DemoSessionProvider>
       <main className="av-surface av-surface-mobile px-4 py-5">
         <ScreenTitle>{title}</ScreenTitle>
-        <div className="mx-auto min-h-[calc(100vh-2.5rem)] w-full max-w-[58rem] border-x border-alphavest-border/60 bg-alphavest-midnight/84 px-5 py-5 shadow-2xl sm:px-6">
+        <div className="mx-auto min-h-[23rem] w-full max-w-[58rem] border-x border-alphavest-border/60 bg-alphavest-midnight/84 px-5 py-5 shadow-2xl sm:px-6">
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
             <ClientSafeProjectionCard density="mobile" />
-            <div className="grid gap-3">
-              {mobilePriorityActions.map((action) => (
-                <div className="rounded-md border border-alphavest-border bg-alphavest-navy/35 p-3" key={action.label}>
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-semibold text-alphavest-ivory">{action.label}</p>
-                    <ClientStatePill tone="gold">{action.badge}</ClientStatePill>
+            <aside className="grid content-start gap-3">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle>Next permitted action</CardTitle>
+                  <CardDescription>Continue with the same released client-safe update in the full portal.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Link className={cn(primaryButtonClass, "w-full justify-center")} href="/client/home">
+                    {buildDomainHReleasedDecisionReadModel().ui.nextActionLabel}
+                    <ChevronRight aria-hidden="true" className="size-4" />
+                  </Link>
+                  <div className="rounded-md border border-alphavest-border/70 bg-alphavest-charcoal/45 p-3">
+                    <p className="text-sm font-semibold text-alphavest-ivory">Draft material stays hidden</p>
+                    <p className="mt-1 text-xs leading-5 text-alphavest-muted">Only released summaries and client actions are available here.</p>
                   </div>
-                  <p className="mt-1 text-xs text-alphavest-muted">{action.detail}</p>
-                </div>
-              ))}
-            </div>
+                </CardContent>
+              </Card>
+            </aside>
           </div>
         </div>
       </main>
@@ -2057,7 +2010,7 @@ function EntitiesPageContent({ title }: { title: string }) {
 	              <MetricCard detail="Visible in this view" label="Visible" value={String(meta?.returnedRows ?? rows.length)} />
               <MetricCard detail="Seeded high-risk rows" label="High Risk" status="FAILED" value={String(rows.filter((row) => row.risk.toLowerCase().includes("high")).length)} />
               <MetricCard detail="Rows needing evidence" label="Evidence" status="PENDING" value={String(rows.filter((row) => row.missingDocs !== "All good").length)} />
-              <MetricCard detail="Ready for next internal workflow" label="Usable" status="ACTIVE" value={String(rows.filter((row) => row.contextReadinessState === "ready").length)} />
+              <MetricCard detail="Ready for next private review" label="Usable" status="ACTIVE" value={String(rows.filter((row) => row.contextReadinessState === "ready").length)} />
             </div>
             <DataTable
               actionPolicy="none"

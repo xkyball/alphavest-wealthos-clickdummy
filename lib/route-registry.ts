@@ -416,8 +416,8 @@ export const screenRoutes = [
   {
     pageId: "020",
     route: "/mobile",
-    title: "Mobile Home",
-    purpose: "Mobile home / next step today",
+    title: "Client Visibility",
+    purpose: "Released client visibility entry",
     visualMode: "NORMAL_PAGE",
     visualAsset: "public/reference/page_ui_v3/clean_pages/PAGE-020-mobile.png",
     navigationGroup: "client_workspace",

@@ -989,7 +989,7 @@ function ExportTemplatesPage() {
           <Card>
             <CardHeader><CardTitle>Compliance and Audit</CardTitle></CardHeader>
             <CardContent className="space-y-3">
-              {["Watermark defaults", "Redaction required", "Export workflow audit"].map((item) => (
+              {["Watermark defaults", "Redaction required", "Export activity record"].map((item) => (
                 <div className="flex items-center gap-2 text-sm text-alphavest-gold-soft" key={item}>
                   <Check aria-hidden="true" className="size-4" />
                   {item}

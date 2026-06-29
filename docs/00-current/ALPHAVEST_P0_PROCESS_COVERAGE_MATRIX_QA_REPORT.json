@@ -26,8 +26,8 @@
     "blocked_area_count": 8,
     "acceptance_state_counts": {
       "implemented": 64,
-      "partially_implemented": 322,
-      "specified_only": 52
+      "partially_implemented": 325,
+      "specified_only": 49
     }
   },
   "closure_rule_checks": [
@@ -193,8 +193,7 @@
       "implemented_step_count": 0,
       "non_implemented_step_count": 9,
       "acceptance_state_counts": {
-        "partially_implemented": 6,
-        "specified_only": 3
+        "partially_implemented": 9
       },
       "closure_allowed": false,
       "closure_status": "blocked_by_incomplete_p0_steps",
@@ -415,8 +414,7 @@
       "implemented_step_count": 0,
       "non_implemented_step_count": 9,
       "acceptance_state_counts": {
-        "partially_implemented": 6,
-        "specified_only": 3
+        "partially_implemented": 9
       },
       "closure_allowed": false,
       "closure_status": "blocked_by_incomplete_p0_steps",
