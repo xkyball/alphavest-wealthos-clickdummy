@@ -26,7 +26,6 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
-import { DemoActorHandoffBar } from "@/components/demo-actor-handoff-bar";
 import { GlobalSearchBox } from "@/components/global-search-box";
 import { ProcessSidebar } from "@/components/process-navigation";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
@@ -71,7 +70,7 @@ import {
   relationshipNodes,
   relationshipRows
 } from "@/lib/client-intake-demo-data";
-import { createDemoSession, demoPlatformTenantId, demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { createDemoSession, demoPlatformTenantId } from "@/lib/demo-session";
 import type { ScreenRoute } from "@/lib/route-registry";
 import { runDataMaintenanceCommand } from "@/lib/data-maintenance-command-client";
 import type { BackendDataSurfaceMeta, DataSurfaceSortDirection } from "@/lib/data-surface-query-contract";
@@ -813,49 +812,13 @@ function ClientSidebar() {
 }
 
 function ClientTopBar() {
-  const { session, setRole, setTenant } = useDemoSession();
+  const { session } = useDemoSession();
 
   return (
     <header className="av-topbar sticky top-0 z-20 px-4 py-3 md:px-6">
       <div className="flex min-h-12 flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <GlobalSearchBox className="xl:w-[28rem]" />
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-          <label className="grid gap-1 text-[0.66rem] font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">
-            <span>Tenant context</span>
-            <span className="relative block">
-              <select
-                aria-label="Tenant context"
-                className="h-10 w-full appearance-none rounded-md border border-alphavest-border bg-alphavest-charcoal/70 py-0 pl-3 pr-8 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold sm:w-64"
-                onChange={(event) => setTenant(event.target.value as DemoTenantSlug)}
-                value={session.tenant.slug}
-              >
-                {demoTenants.map((item) => (
-                  <option key={item.slug} value={item.slug}>
-                    {item.displayName}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-            </span>
-          </label>
-          <label className="grid gap-1 text-[0.66rem] font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">
-            <span>Role context</span>
-            <span className="relative block">
-              <select
-                aria-label="Role context"
-                className="h-10 w-full appearance-none rounded-md border border-alphavest-border bg-alphavest-charcoal/70 py-0 pl-3 pr-8 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold sm:w-56"
-                onChange={(event) => setRole(event.target.value as DemoRoleKey)}
-                value={session.role.key}
-              >
-                {demoRoles.map((item) => (
-                  <option key={item.key} value={item.key}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-            </span>
-          </label>
           <span
             aria-label="Client notifications are informational in this release"
             className="relative grid size-10 place-items-center rounded-full border border-alphavest-border text-alphavest-muted opacity-65"
@@ -883,7 +846,6 @@ function ClientShell({ activePageId, children }: { activePageId: string; childre
         <ClientSidebar />
         <div className="min-w-0">
           <ClientTopBar />
-          <DemoActorHandoffBar />
           <main className="px-4 py-6 md:px-6">
             <OperationalDefaultSurface>
               <ClientSafeUiBoundary family={activePageId === "020" ? "mobile_client" : undefined} pageId={activePageId}>

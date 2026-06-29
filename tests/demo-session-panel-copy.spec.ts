@@ -28,14 +28,15 @@ test.describe("UXP1-004 demo session copy compression", () => {
     expect(source).not.toMatch(/Scenario context|Controlled scenario|Permission mode|Audit draft|Evidence draft/);
   });
 
-  test("client topbar exposes tenant and role controls without scenario explanation", async ({ page }) => {
+  test("client topbar hides tenant and role switchers after login", async ({ page }) => {
     await authenticate(page);
     await page.goto("/client/home");
 
     const topbar = page.getByRole("banner");
-    await expect(topbar.getByLabel("Tenant context")).toBeVisible();
-    await expect(topbar.getByLabel("Role context")).toBeVisible();
-    await expect(topbar.getByText("Role context", { exact: true })).toBeVisible();
+    await expect(topbar.getByLabel("Tenant context")).toHaveCount(0);
+    await expect(topbar.getByLabel("Role context")).toHaveCount(0);
+    await expect(topbar.getByText("Tenant context", { exact: true })).toHaveCount(0);
+    await expect(topbar.getByText("Role context", { exact: true })).toHaveCount(0);
     await expect(topbar.getByText(/Controlled scenario context|production auth|Scenario role/i)).toHaveCount(0);
   });
 });

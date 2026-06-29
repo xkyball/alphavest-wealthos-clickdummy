@@ -47,7 +47,6 @@ import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-p
 import { GlobalSearchBox } from "@/components/global-search-box";
 import { ProcessSidebar } from "@/components/process-navigation";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
-import { RouteContextChip } from "@/components/route-context-chip";
 import { ScfP10P14ClosurePanel } from "@/components/scf-p10-p14-closure-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { UxDenseOperationsPanel } from "@/components/ux-dense-operations-panel";
@@ -80,7 +79,7 @@ import {
   stateChips,
   workflowBadges
 } from "@/lib/communication-export-ops-demo-data";
-import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import type { DemoRoleKey, DemoTenantSlug } from "@/lib/demo-session";
 import type { ExportWorkflowSnapshot } from "@/lib/export-workflow-readmodel-service";
 import type { OpsSlaSnapshot } from "@/lib/ops-sla-readmodel-service";
 import type { ScreenRoute } from "@/lib/route-registry";
@@ -587,44 +586,13 @@ function Phase13Sidebar() {
 }
 
 function Phase13TopBar() {
-  const { session, setRole, setTenant } = useDemoSession();
+  const { session } = useDemoSession();
 
   return (
     <header className="av-topbar sticky top-0 z-20 px-4 py-3 md:px-6">
       <div className="flex min-h-12 flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <GlobalSearchBox className="xl:w-[34rem]" />
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-          <RouteContextChip />
-          <label className="relative">
-            <span className="sr-only">Tenant context</span>
-            <select
-              className="h-10 w-full appearance-none rounded-md border border-alphavest-border bg-alphavest-charcoal/70 py-0 pl-3 pr-8 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold sm:w-64"
-              onChange={(event) => setTenant(event.target.value as DemoTenantSlug)}
-              value={session.tenant.slug}
-            >
-              {demoTenants.map((item) => (
-                <option key={item.slug} value={item.slug}>
-                  {item.displayName}
-                </option>
-              ))}
-            </select>
-            <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-          </label>
-          <label className="relative">
-            <span className="sr-only">Role context</span>
-            <select
-              className="h-10 w-full appearance-none rounded-md border border-alphavest-border bg-alphavest-charcoal/70 py-0 pl-3 pr-8 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold sm:w-56"
-              onChange={(event) => setRole(event.target.value as DemoRoleKey)}
-              value={session.role.key}
-            >
-              {demoRoles.map((item) => (
-                <option key={item.key} value={item.key}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
-            <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-          </label>
           <div className="flex items-center justify-between gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-3 py-2 sm:justify-start">
             <Bell aria-hidden="true" className="size-4 text-alphavest-gold" />
             <span className="text-sm text-alphavest-muted">{session.actor.initials}</span>

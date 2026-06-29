@@ -45,7 +45,6 @@ import {
   sourceOfWealthTrail,
   sourceRiskFindings,
 } from "@/lib/kyc-aml-demo-data";
-import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import { runPhaseBCProcessCommand, type PhaseBCDemoActionId } from "@/lib/phase-b-c-process-command-client";
 import type { ScreenRoute } from "@/lib/route-registry";
 
@@ -118,7 +117,7 @@ function KycSidebar() {
 }
 
 function KycTopBar() {
-  const { session, setRole, setTenant } = useDemoSession();
+  const { session } = useDemoSession();
 
   return (
     <header className="av-topbar sticky top-0 z-20 px-4 py-3 md:px-6">
@@ -133,30 +132,6 @@ function KycTopBar() {
           />
         </label>
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-          <select
-            aria-label="Tenant context"
-            className="h-10 rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-3 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold sm:w-64"
-            onChange={(event) => setTenant(event.target.value as DemoTenantSlug)}
-            value={session.tenant.slug}
-          >
-            {demoTenants.map((item) => (
-              <option key={item.slug} value={item.slug}>
-                {item.displayName}
-              </option>
-            ))}
-          </select>
-          <select
-            aria-label="Role context"
-            className="h-10 rounded-md border border-alphavest-border bg-alphavest-charcoal/70 px-3 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold sm:w-56"
-            onChange={(event) => setRole(event.target.value as DemoRoleKey)}
-            value={session.role.key}
-          >
-            {demoRoles.map((item) => (
-              <option key={item.key} value={item.key}>
-                {item.label}
-              </option>
-            ))}
-          </select>
           <Badge tone="gold">Internal only</Badge>
         </div>
       </div>

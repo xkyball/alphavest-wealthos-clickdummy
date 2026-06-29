@@ -1,13 +1,10 @@
 "use client";
 
-import { Bell, ChevronDown, KeyRound, Menu, RotateCcw, ShieldCheck, UserRound } from "lucide-react";
+import { Bell, Menu, ShieldCheck } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useDemoSession } from "@/components/demo-session-provider";
 import { GlobalSearchBox } from "@/components/global-search-box";
-import { RouteContextChip } from "@/components/route-context-chip";
-import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import { matchRouteBySegments, routeScopeForPageId } from "@/lib/route-registry";
-import { uxRoutePolicyForRoute, uxWorkspaceLabels } from "@/lib/ux-route-policy";
 
 function routeForPathname(pathname: string) {
   const cleanPath = pathname.split("?")[0]?.split("#")[0] ?? "/";
@@ -23,21 +20,14 @@ type TopBarProps = {
 };
 
 export function TopBar({ onOpenNavigation }: TopBarProps) {
-  const { session, setRole, setTenant, resetSession } = useDemoSession();
+  const { session } = useDemoSession();
   const pathname = usePathname();
   const currentRoute = routeForPathname(pathname);
-  const currentPolicy = currentRoute ? uxRoutePolicyForRoute(currentRoute) : null;
   const currentScope = currentRoute ? routeScopeForPageId(currentRoute.pageId) : null;
   const globalSearchDisabledReason =
     currentScope && currentScope !== "MVP" && currentScope !== "MVP_SUPPORT"
       ? "Search is disabled for this registered page."
       : undefined;
-  const routeIsClientVisibilitySensitive =
-    currentRoute && "clientVisibilitySensitive" in currentRoute ? Boolean(currentRoute.clientVisibilitySensitive) : false;
-  const visibilityMode = routeIsClientVisibilitySensitive ? "Review required" : "Workspace ready";
-  const objectContext = currentRoute
-    ? `${currentRoute.objectType.replaceAll("_", " ").toLowerCase()} · ${currentRoute.permissionAction.toLowerCase()}`
-    : "workspace context";
 
   return (
     <header className="av-topbar sticky top-0 z-40 px-4 py-3 md:px-6">
@@ -72,92 +62,6 @@ export function TopBar({ onOpenNavigation }: TopBarProps) {
 
         <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center lg:justify-end">
           <GlobalSearchBox className="hidden min-w-56 sm:block" disabledReason={globalSearchDisabledReason} />
-
-          <div className="hidden items-center gap-2 xl:flex">
-            <RouteContextChip />
-            {currentRoute && currentPolicy ? (
-              <span
-                className="inline-flex h-10 max-w-72 items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/62 px-3 text-xs font-semibold text-alphavest-muted"
-                data-testid="ux-nav-object-context"
-                title={`${uxWorkspaceLabels[currentPolicy.workspace]} · ${objectContext}`}
-              >
-                <span className="truncate">{uxWorkspaceLabels[currentPolicy.workspace]} · {objectContext}</span>
-              </span>
-            ) : null}
-            {currentRoute ? (
-              <span
-                className="inline-flex h-10 items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/62 px-3 text-xs font-semibold text-alphavest-muted"
-                data-testid="ux-nav-visibility-mode"
-              >
-                {visibilityMode}
-              </span>
-            ) : null}
-            <span className="inline-flex h-10 items-center gap-2 rounded-md border border-alphavest-border bg-alphavest-charcoal/62 px-3 text-xs font-semibold text-alphavest-muted">
-              <KeyRound aria-hidden="true" className="size-3.5 text-alphavest-gold" />
-              {session.role.internal ? "Internal actor" : "Client-safe actor"}
-            </span>
-            <span
-              className="inline-flex h-10 items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/62 px-3 text-xs font-semibold text-alphavest-muted"
-              data-testid="topbar-search-scope"
-            >
-              Tenant + role context
-            </span>
-            <span className="inline-flex h-10 items-center rounded-md border border-alphavest-border bg-alphavest-charcoal/62 px-3 text-xs font-semibold text-alphavest-muted">
-              {session.tenant.riskRating} risk · {session.tenant.jurisdiction}
-            </span>
-          </div>
-
-          <div className="grid gap-2 sm:grid-cols-2 lg:flex">
-            <label className="grid gap-1 text-[0.66rem] font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">
-              <span>Tenant context</span>
-              <span className="relative block">
-              <UserRound aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-gold" />
-              <select
-                aria-label="Tenant context"
-                className="h-10 w-full appearance-none rounded-md border border-alphavest-border bg-alphavest-charcoal/70 py-0 pl-9 pr-8 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold lg:w-60"
-                onChange={(event) => setTenant(event.target.value as DemoTenantSlug)}
-                value={session.tenant.slug}
-              >
-                {demoTenants.map((item) => (
-                  <option key={item.slug} value={item.slug}>
-                    {item.displayName}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-              </span>
-            </label>
-
-            <label className="grid gap-1 text-[0.66rem] font-semibold uppercase tracking-[0.12em] text-alphavest-subtle">
-              <span>Role context</span>
-              <span className="relative block">
-              <ShieldCheck aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-gold" />
-              <select
-                aria-label="Role context"
-                className="h-10 w-full appearance-none rounded-md border border-alphavest-border bg-alphavest-charcoal/70 py-0 pl-9 pr-8 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold lg:w-52"
-                onChange={(event) => setRole(event.target.value as DemoRoleKey)}
-                value={session.role.key}
-              >
-                {demoRoles.map((item) => (
-                  <option key={item.key} value={item.key}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-              </span>
-            </label>
-          </div>
-
-          <button
-            className="grid size-10 place-items-center rounded-full border border-alphavest-border bg-alphavest-charcoal/70 text-alphavest-muted transition hover:border-alphavest-gold hover:text-alphavest-gold"
-            onClick={resetSession}
-            title="Reset role and tenant context"
-            type="button"
-          >
-            <RotateCcw aria-hidden="true" className="size-4" />
-            <span className="sr-only">Reset role and tenant context</span>
-          </button>
 
           <span
             aria-label="Notifications are informational in this release"

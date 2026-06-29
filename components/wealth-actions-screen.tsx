@@ -7,7 +7,6 @@ import {
   Building2,
   Calendar,
   CheckCircle2,
-  ChevronDown,
   ClipboardCheck,
   Home,
   Landmark,
@@ -23,13 +22,11 @@ import { ProcessSidebar } from "@/components/process-navigation";
 import { Badge, Card, CardContent, CardHeader, CardTitle, MasterDetailSurface, StatePanel, type BadgeTone } from "@/components/ui";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
-import { RouteContextChip } from "@/components/route-context-chip";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { UxSecondaryContextTabs } from "@/components/ux-secondary-context-tabs";
 import { UxSupportDensityStrip } from "@/components/ux-support-density-strip";
 import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
 import { cn } from "@/lib/cn";
-import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import { processFirstUxContractForPageId } from "@/lib/process-first-ux-contract";
 import type { ScreenRoute } from "@/lib/route-registry";
 import { runDataMaintenanceCommand } from "@/lib/data-maintenance-command-client";
@@ -173,44 +170,13 @@ function WealthSidebar() {
 }
 
 function WealthTopBar() {
-  const { session, setRole, setTenant } = useDemoSession();
+  const { session } = useDemoSession();
 
   return (
     <header className="av-topbar sticky top-0 z-20 px-4 py-3 md:px-6">
       <div className="flex min-h-12 flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <GlobalSearchBox className="xl:w-[34rem]" />
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-          <RouteContextChip />
-          <label className="relative">
-            <span className="sr-only">Tenant context</span>
-            <select
-              className="h-10 w-full appearance-none rounded-md border border-alphavest-border bg-alphavest-charcoal/70 py-0 pl-3 pr-8 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold sm:w-64"
-              onChange={(event) => setTenant(event.target.value as DemoTenantSlug)}
-              value={session.tenant.slug}
-            >
-              {demoTenants.map((item) => (
-                <option key={item.slug} value={item.slug}>
-                  {item.displayName}
-                </option>
-              ))}
-            </select>
-            <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-          </label>
-          <label className="relative">
-            <span className="sr-only">Role context</span>
-            <select
-              className="h-10 w-full appearance-none rounded-md border border-alphavest-border bg-alphavest-charcoal/70 py-0 pl-3 pr-8 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold sm:w-56"
-              onChange={(event) => setRole(event.target.value as DemoRoleKey)}
-              value={session.role.key}
-            >
-              {demoRoles.map((item) => (
-                <option key={item.key} value={item.key}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
-            <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-          </label>
           <span className="relative grid size-10 place-items-center rounded-full border border-alphavest-border text-alphavest-muted opacity-65" data-ux-affordance="static-notification-indicator" data-ux-interactive="false" role="status">
             <Bell aria-hidden="true" className="size-4" />
             <span className="absolute -right-1 -top-1 rounded-full bg-alphavest-gold px-1.5 text-[0.65rem] font-bold text-alphavest-navy">7</span>

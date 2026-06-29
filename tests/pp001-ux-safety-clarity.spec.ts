@@ -11,20 +11,20 @@ function readSource(...segments: string[]) {
 }
 
 test.describe("PP-001 UX safety clarity", () => {
-  test("shell and session context expose tenant, role and client-visibility scope without overclaim", () => {
+  test("shell hides tenant and role switchers while session context keeps client-visibility scope honest", () => {
     const topBar = readSource("components", "top-bar.tsx");
     const demoSessionPanel = readSource("components", "demo-session-panel.tsx");
 
-    expect(topBar).toContain("Tenant context");
-    expect(topBar).toContain("Role context");
-    expect(topBar).toContain("Tenant + role context");
-    expect(topBar).toContain("Internal review");
-    expect(topBar).toContain("Client-safe actor");
-    expect(topBar).toContain("Internal actor");
+    expect(topBar).not.toContain("Tenant context");
+    expect(topBar).not.toContain("Role context");
+    expect(topBar).not.toContain("Tenant + role context");
+    expect(topBar).not.toContain("Client-safe actor");
+    expect(topBar).not.toContain("Internal actor");
+    expect(topBar).toContain("Notifications are informational in this release");
 
     expect(demoSessionPanel).toContain("Session context");
     expect(demoSessionPanel).toContain("Access state");
-    expect(demoSessionPanel).toContain("Visibility gate");
+    expect(demoSessionPanel).toContain("Visibility check");
     expect(demoSessionPanel).toContain("No unapproved advice reaches the client");
     expect(demoSessionPanel).toContain("Client-safe available");
     expect(demoSessionPanel).toContain("Client-safe blocked");
@@ -37,11 +37,11 @@ test.describe("PP-001 UX safety clarity", () => {
     expect(dataTable).toContain('denied: { title: "Permission denied"');
     expect(dataTable).toContain("The current actor cannot view this table or perform this action.");
     expect(dataTable).toContain('hidden: { title: "Hidden"');
-    expect(dataTable).toContain("Payload is hidden until route, role and visibility gates allow it.");
+    expect(dataTable).toContain("Content is hidden until route, role and visibility checks allow it.");
     expect(dataTable).toContain('"internal-only": { title: "Internal only"');
     expect(dataTable).toContain("does not create client visibility");
     expect(dataTable).toContain('redacted: { title: "Redacted"');
-    expect(dataTable).toContain("Sensitive fields are redacted for this actor and workflow state.");
+    expect(dataTable).toContain("Sensitive fields are redacted for this actor and review state.");
 
     for (const state of ["denied", "hidden", "internal-only", "redacted"] as const) {
       const stateMetaKey = state.includes("-") ? `"${state}": {` : `${state}: {`;

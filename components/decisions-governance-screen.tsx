@@ -8,7 +8,6 @@ import {
   Calendar,
   Check,
   CheckCircle2,
-  ChevronDown,
   Download,
   FileCheck2,
   FileText,
@@ -38,10 +37,8 @@ import {
   type DataTableColumn
 } from "@/components/ui";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
-import { DemoActorHandoffBar } from "@/components/demo-actor-handoff-bar";
 import { ProcessSidebar } from "@/components/process-navigation";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
-import { RouteContextChip } from "@/components/route-context-chip";
 import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
 import { UxHubPage } from "@/components/ux-hub-page";
 import { UxDenseOperationsPanel } from "@/components/ux-dense-operations-panel";
@@ -80,7 +77,7 @@ import {
   requestedEvidenceItems,
   rolePermissions
 } from "@/lib/decisions-governance-demo-data";
-import { createDemoSession, demoPlatformTenantId, demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
+import { createDemoSession, demoPlatformTenantId } from "@/lib/demo-session";
 import type { ScreenRoute } from "@/lib/route-registry";
 import type { VisualState } from "@/lib/visual-contract";
 import { processFirstUxContractForPageId } from "@/lib/process-first-ux-contract";
@@ -228,7 +225,7 @@ function Phase12Sidebar() {
 }
 
 function Phase12TopBar() {
-  const { session, setRole, setTenant } = useDemoSession();
+  const { session } = useDemoSession();
 
   return (
     <header className="av-topbar sticky top-0 z-20 px-4 py-3 md:px-6">
@@ -244,37 +241,6 @@ function Phase12TopBar() {
           <span className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-alphavest-border px-1.5 py-0.5 text-xs text-alphavest-subtle md:block">cmd K</span>
         </label>
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-          <RouteContextChip />
-          <label className="relative">
-            <span className="sr-only">Tenant context</span>
-            <select
-              className="h-10 w-full appearance-none rounded-md border border-alphavest-border bg-alphavest-charcoal/70 py-0 pl-3 pr-8 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold sm:w-64"
-              onChange={(event) => setTenant(event.target.value as DemoTenantSlug)}
-              value={session.tenant.slug}
-            >
-              {demoTenants.map((item) => (
-                <option key={item.slug} value={item.slug}>
-                  {item.displayName}
-                </option>
-              ))}
-            </select>
-            <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-          </label>
-          <label className="relative">
-            <span className="sr-only">Role context</span>
-            <select
-              className="h-10 w-full appearance-none rounded-md border border-alphavest-border bg-alphavest-charcoal/70 py-0 pl-3 pr-8 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold sm:w-56"
-              onChange={(event) => setRole(event.target.value as DemoRoleKey)}
-              value={session.role.key}
-            >
-              {demoRoles.map((item) => (
-                <option key={item.key} value={item.key}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
-            <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-          </label>
           <span aria-label="Decision workspace notifications are informational in this release" className="relative grid size-10 place-items-center rounded-full border border-alphavest-border text-alphavest-muted opacity-65" data-ux-affordance="static-notification-indicator" data-ux-interactive="false" role="status">
             <Bell aria-hidden="true" className="size-4" />
             <span className="absolute -right-1 -top-1 rounded-full bg-alphavest-gold px-1.5 text-[0.65rem] font-bold text-alphavest-navy">7</span>
@@ -296,7 +262,6 @@ function Phase12Shell({ children }: { activePageId: string; children: React.Reac
         <Phase12Sidebar />
         <div className="min-w-0">
           <Phase12TopBar />
-          <DemoActorHandoffBar />
           <main className="px-4 py-6 md:px-6">
             <OperationalDefaultSurface>{children}</OperationalDefaultSurface>
           </main>

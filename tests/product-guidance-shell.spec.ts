@@ -20,37 +20,24 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe("AlphaVest product guidance shell", () => {
-  test("topbar exposes controlled tenant and role scenario context without clickdummy wording", async ({ page }) => {
+  test("topbar hides tenant and role switchers after login", async ({ page }) => {
     await page.setViewportSize({ width: 1600, height: 1000 });
     await page.goto("/client/home");
 
     const topbar = page.getByRole("banner");
-    await expect(topbar.getByText("Tenant context", { exact: true })).toBeVisible();
+    await expect(topbar.getByText("Tenant context", { exact: true })).toHaveCount(0);
     await expect(topbar.getByText("Controlled scenario context; production auth is not claimed")).toHaveCount(0);
-    await expect(topbar.getByLabel("Tenant context")).toBeVisible();
-    await expect(topbar.getByLabel("Role context")).toBeVisible();
+    await expect(topbar.getByLabel("Tenant context")).toHaveCount(0);
+    await expect(topbar.getByLabel("Role context")).toHaveCount(0);
     await expect(topbar.getByText(/clickdummy|prototype|screen catalogue/i)).toHaveCount(0);
   });
 
-  test("demo actor handoff makes role changes visible in the app chrome", async ({ page }) => {
-    await page.addInitScript(() => {
-      window.localStorage.removeItem("alphavest.demoSession.v1");
-    });
+  test("demo actor handoff is not rendered as in-app session switching chrome", async ({ page }) => {
     await page.goto("/documents");
 
-    const handoff = page.getByTestId("demo-actor-handoff");
-    await expect(handoff).toContainText("Active actor");
-    await expect(page.getByTestId("demo-actor-handoff-current")).toContainText("Compliance Officer");
-
-    await page.getByLabel("Role context").last().selectOption("analyst");
-    await expect(handoff).toContainText("Role handoff");
-    await expect(handoff).toContainText("Analyst");
-    await expect(page.getByTestId("demo-actor-handoff-current")).toContainText("Analyst");
-
-    await page.getByLabel("Role context").last().selectOption("principal");
-    await expect(handoff).toContainText("Role handoff");
-    await expect(handoff).toContainText("Principal");
-    await expect(page.getByTestId("demo-actor-handoff-current")).toContainText("Principal");
+    await expect(page.getByTestId("demo-actor-handoff")).toHaveCount(0);
+    await expect(page.getByTestId("demo-actor-handoff-current")).toHaveCount(0);
+    await expect(page.getByRole("banner").getByLabel("Role context")).toHaveCount(0);
   });
 
   test("default operational shell suppresses retired guidance and reviewer surfaces", async ({ page }) => {
@@ -87,16 +74,15 @@ test.describe("AlphaVest product guidance shell", () => {
     }
   });
 
-  test("topbar keeps only operational route context in the default workflow", async ({ page }) => {
+  test("topbar hides operational route context chips in the default workflow", async ({ page }) => {
     await page.setViewportSize({ width: 1600, height: 1000 });
-    await page.goto("/advisory/review-queue");
+    await page.goto("/compliance/reviews");
 
-    const routeContext = page.getByTestId("ux-nav-route-context").first();
-    await expect(routeContext).toBeVisible();
-    await expect(routeContext).toHaveAttribute("data-ux-proof-mode", "operational_default");
-    await expect(routeContext).toHaveAttribute("data-ux-proof-content-class", "route_context");
-    await expect(routeContext).toContainText("Workbench");
-    await expect(routeContext).not.toContainText(/034|route id|ux proof|debug|capture/i);
+    const topbar = page.getByRole("banner");
+    await expect(topbar.getByTestId("ux-nav-route-context")).toHaveCount(0);
+    await expect(topbar.getByText("Compliance queue")).toHaveCount(0);
+    await expect(topbar.getByText("Bennett Family Office")).toHaveCount(0);
+    await expect(topbar.getByText("Compliance Officer")).toHaveCount(0);
   });
 
   test("client portal default workflow stays free of reviewer-only metadata", async ({ page }) => {

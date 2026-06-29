@@ -6,7 +6,6 @@ import {
   Calendar,
   Check,
   CheckCircle2,
-  ChevronDown,
   ClipboardCheck,
   Clock3,
   Circle,
@@ -42,10 +41,8 @@ import {
   type DataTableColumn
 } from "@/components/ui";
 import { DemoSessionProvider, useDemoSession } from "@/components/demo-session-provider";
-import { DemoActorHandoffBar } from "@/components/demo-actor-handoff-bar";
 import { ProcessSidebar } from "@/components/process-navigation";
 import { OperationalDefaultSurface } from "@/components/operational-default-surface";
-import { RouteContextChip } from "@/components/route-context-chip";
 import { ScfP04P06FlowPanel } from "@/components/scf-p04-p06-flow-panel";
 import { UxDetailStandardPanel } from "@/components/ux-detail-standard-panel";
 import { WorksurfacePanel, WorksurfaceShell } from "@/components/worksurface-shell";
@@ -75,7 +72,6 @@ import {
   advisorApprovalDemoTargets,
   runAdvisorApprovalWorkflowAction,
 } from "@/lib/recommendation-review-workflow-client";
-import { demoRoles, demoTenants, type DemoRoleKey, type DemoTenantSlug } from "@/lib/demo-session";
 import {
   advisorQueue,
   auditReferences,
@@ -470,44 +466,13 @@ function InternalSidebar() {
 }
 
 function InternalTopBar() {
-  const { session, setRole, setTenant } = useDemoSession();
+  const { session } = useDemoSession();
 
   return (
     <header className="av-topbar sticky top-0 z-20 px-4 py-3 md:px-6">
       <div className="flex min-h-12 flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <GlobalSearchBox className="xl:w-[34rem]" placeholder="Search internal workspace..." />
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-          <RouteContextChip />
-          <label className="relative">
-            <span className="sr-only">Tenant context</span>
-            <select
-              className="h-10 w-full appearance-none rounded-md border border-alphavest-border bg-alphavest-charcoal/70 py-0 pl-3 pr-8 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold sm:w-64"
-              onChange={(event) => setTenant(event.target.value as DemoTenantSlug)}
-              value={session.tenant.slug}
-            >
-              {demoTenants.map((item) => (
-                <option key={item.slug} value={item.slug}>
-                  {item.displayName}
-                </option>
-              ))}
-            </select>
-            <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-          </label>
-          <label className="relative">
-            <span className="sr-only">Role context</span>
-            <select
-              className="h-10 w-full appearance-none rounded-md border border-alphavest-border bg-alphavest-charcoal/70 py-0 pl-3 pr-8 text-sm text-alphavest-ivory outline-none focus:border-alphavest-gold sm:w-56"
-              onChange={(event) => setRole(event.target.value as DemoRoleKey)}
-              value={session.role.key}
-            >
-              {demoRoles.map((item) => (
-                <option key={item.key} value={item.key}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
-            <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-alphavest-subtle" />
-          </label>
           <Badge tone="gold">Internal only</Badge>
           <span
             aria-label="Internal notifications are informational in this release"
@@ -536,7 +501,6 @@ function InternalShell({ children }: { activePageId: string; children: React.Rea
         <InternalSidebar />
         <div className="min-w-0">
           <InternalTopBar />
-          <DemoActorHandoffBar />
           <main className="px-4 py-6 md:px-6">
             <OperationalDefaultSurface>{children}</OperationalDefaultSurface>
           </main>
