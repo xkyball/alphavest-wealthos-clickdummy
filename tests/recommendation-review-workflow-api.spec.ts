@@ -889,6 +889,137 @@ test.describe("recommendation review workflow API", () => {
       expect(complianceReview.releaseNotes).toBe(reason);
     });
 
+    test("request evidence fails closed without audit persistence and does not mutate state", async ({ request }) => {
+      const beforeRecommendation = await prisma.recommendation.findUniqueOrThrow({
+        where: { id: demoTargets.morgan.recommendationId },
+      });
+      const beforeComplianceReview = await prisma.complianceReview.findFirstOrThrow({
+        where: {
+          targetId: demoTargets.morgan.recommendationId,
+          targetType: ObjectType.RECOMMENDATION,
+        },
+      });
+      const beforeEvidence = await prisma.evidenceRecord.findUniqueOrThrow({
+        where: { id: demoTargets.morgan.evidenceId },
+      });
+      const auditCountBefore = await prisma.auditEvent.count({
+        where: {
+          eventType: "advisor_approval.request_evidence",
+          targetId: demoTargets.morgan.recommendationId,
+        },
+      });
+
+      const response = await request.post("/api/recommendation-review-workflow", {
+        data: {
+          action: "request_evidence",
+          actorRole: "compliance_officer",
+          confirmationText: "REQUEST EVIDENCE",
+          evidenceIds: [demoTargets.morgan.evidenceId],
+          reason: "Audit persistence failure must block evidence request mutation.",
+          simulateAuditPersistenceFailure: true,
+          targetId: demoTargets.morgan.recommendationId,
+          workflowType: "advisor-approval",
+        },
+      });
+      const body = await response.json();
+
+      expect(response.status(), JSON.stringify(body)).toBe(409);
+      expect(body.ok).toBe(false);
+      expect(body.mutated).toBe(false);
+      expect(body.noClientRelease).toBe(true);
+      expect(body.gateMissing).toContain("audit_persistence");
+
+      const afterRecommendation = await prisma.recommendation.findUniqueOrThrow({
+        where: { id: demoTargets.morgan.recommendationId },
+      });
+      const afterComplianceReview = await prisma.complianceReview.findFirstOrThrow({
+        where: {
+          targetId: demoTargets.morgan.recommendationId,
+          targetType: ObjectType.RECOMMENDATION,
+        },
+      });
+      const afterEvidence = await prisma.evidenceRecord.findUniqueOrThrow({
+        where: { id: demoTargets.morgan.evidenceId },
+      });
+
+      expect(afterRecommendation.status).toBe(beforeRecommendation.status);
+      expect(afterRecommendation.clientVisible).toBe(beforeRecommendation.clientVisible);
+      expect(afterComplianceReview.status).toBe(beforeComplianceReview.status);
+      expect(afterComplianceReview.releaseNotes).toBe(beforeComplianceReview.releaseNotes);
+      expect(afterEvidence.status).toBe(beforeEvidence.status);
+      expect(afterEvidence.visibilityStatus).toBe(beforeEvidence.visibilityStatus);
+      await expect(
+        prisma.auditEvent.count({
+          where: {
+            eventType: "advisor_approval.request_evidence",
+            targetId: demoTargets.morgan.recommendationId,
+          },
+        }),
+      ).resolves.toBe(auditCountBefore);
+    });
+
+    test("compliance block fails closed without audit persistence and does not mutate state", async ({ request }) => {
+      const beforeRecommendation = await prisma.recommendation.findUniqueOrThrow({
+        where: { id: demoTargets.morgan.recommendationId },
+      });
+      const beforeComplianceReview = await prisma.complianceReview.findFirstOrThrow({
+        where: {
+          targetId: demoTargets.morgan.recommendationId,
+          targetType: ObjectType.RECOMMENDATION,
+        },
+      });
+      const auditCountBefore = await prisma.auditEvent.count({
+        where: {
+          eventType: "advisor_approval.compliance_block",
+          targetId: demoTargets.morgan.recommendationId,
+        },
+      });
+
+      const response = await request.post("/api/recommendation-review-workflow", {
+        data: {
+          action: "compliance_block",
+          actorRole: "compliance_officer",
+          confirmationText: "BLOCK RELEASE",
+          evidenceIds: [demoTargets.morgan.evidenceId],
+          reason: "Audit persistence failure must block compliance block mutation.",
+          simulateAuditPersistenceFailure: true,
+          targetId: demoTargets.morgan.recommendationId,
+          workflowType: "advisor-approval",
+        },
+      });
+      const body = await response.json();
+
+      expect(response.status(), JSON.stringify(body)).toBe(409);
+      expect(body.ok).toBe(false);
+      expect(body.mutated).toBe(false);
+      expect(body.noClientRelease).toBe(true);
+      expect(body.gateMissing).toContain("audit_persistence");
+
+      const afterRecommendation = await prisma.recommendation.findUniqueOrThrow({
+        where: { id: demoTargets.morgan.recommendationId },
+      });
+      const afterComplianceReview = await prisma.complianceReview.findFirstOrThrow({
+        where: {
+          targetId: demoTargets.morgan.recommendationId,
+          targetType: ObjectType.RECOMMENDATION,
+        },
+      });
+
+      expect(afterRecommendation.status).toBe(beforeRecommendation.status);
+      expect(afterRecommendation.clientVisible).toBe(beforeRecommendation.clientVisible);
+      expect(afterComplianceReview.status).toBe(beforeComplianceReview.status);
+      expect(afterComplianceReview.blockedAt?.toISOString() ?? null).toBe(beforeComplianceReview.blockedAt?.toISOString() ?? null);
+      expect(afterComplianceReview.releaseNotes).toBe(beforeComplianceReview.releaseNotes);
+      await expect(
+        prisma.auditEvent.count({
+          where: {
+            eventType: "advisor_approval.compliance_block",
+            targetId: demoTargets.morgan.recommendationId,
+          },
+        }),
+      ).resolves.toBe(auditCountBefore);
+    });
+
     test("wrong role, action and object fail closed", async ({ request }) => {
       const wrongRoleResponse = await request.post("/api/recommendation-review-workflow", {
         data: {

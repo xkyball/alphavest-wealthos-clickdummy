@@ -97,6 +97,12 @@ export const processRuntimeDefinitionById = new Map(
   processRuntimeDefinitions.map((definition) => [definition.processId, definition]),
 );
 
+export const genericRuntimeDomainSpineRequiredDomains = new Set(["DOMAIN-G", "DOMAIN-H", "DOMAIN-J"]);
+
+export function requiresDomainSpineForGenericCompletion(definition: ProcessDefinition) {
+  return genericRuntimeDomainSpineRequiredDomains.has(definition.domainId);
+}
+
 export function requireProcessDefinition(processId: string) {
   const definition = processRuntimeDefinitionById.get(processId);
   if (!definition) {

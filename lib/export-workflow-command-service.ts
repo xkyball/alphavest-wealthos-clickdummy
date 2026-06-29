@@ -12,6 +12,7 @@ import { av27Phase6AllowedExportPayloadFields, isAv27Phase6PayloadClassification
 import { exportPackageService } from "@/lib/export-package-service";
 import { exportService, type ExportPayloadClassification, type ExportScopeCandidate } from "@/lib/export-service";
 import { fileMetadataService } from "@/lib/file-metadata-service";
+import { permissionEngine } from "@/lib/permission-engine";
 import { stableId } from "@/lib/stable-id";
 
 export const exportRedactionAllowlist = av27Phase6AllowedExportPayloadFields;
@@ -194,6 +195,7 @@ export type ExportWorkflowCommandRequest = {
   reason?: string;
   redactionProfile?: string;
   scopeItems?: ExportScopeCandidate[];
+  simulateAuditPersistenceFailure?: boolean;
   tenantSlug: DemoTenantSlug;
   roleKey: DemoRoleKey;
 };
@@ -206,7 +208,12 @@ export class ExportWorkflowCommandError extends Error {
   constructor(
     message: string,
     readonly status: number,
-    readonly reasonCode: "INVALID_REQUEST" | "PERMISSION_DENIED" | "SAFE_ERROR" | "SCOPE_DENIED",
+    readonly reasonCode:
+      | "AUDIT_PERSISTENCE_UNAVAILABLE"
+      | "INVALID_REQUEST"
+      | "PERMISSION_DENIED"
+      | "SAFE_ERROR"
+      | "SCOPE_DENIED",
     readonly issues: string[] = [],
   ) {
     super(message);
@@ -278,6 +285,9 @@ export function parseExportWorkflowCommandRequest(body: unknown):
   if (body.scopeItems !== undefined && !scopeItems) issues.push("scope_items_must_be_array");
   if (body.payload !== undefined && !isRecord(body.payload)) issues.push("payload_must_be_object");
   if (body.externalShare !== undefined && typeof body.externalShare !== "boolean") issues.push("external_share_must_be_boolean");
+  if (body.simulateAuditPersistenceFailure !== undefined && typeof body.simulateAuditPersistenceFailure !== "boolean") {
+    issues.push("simulate_audit_persistence_failure_must_be_boolean");
+  }
   if (body.command === "SET_SCOPE" && (!scopeItems || scopeItems.length === 0)) issues.push("scope_items_required");
   if (["VALIDATE_REDACTION", "PREVIEW", "APPROVE", "GENERATE"].includes(String(body.command)) && !stringValue(body.exportRequestId)) {
     issues.push("export_request_id_required");
@@ -303,6 +313,7 @@ export function parseExportWorkflowCommandRequest(body: unknown):
       ...(stringValue(body.exportRequestId) ? { exportRequestId: stringValue(body.exportRequestId) } : {}),
       ...(stringValue(body.reason) ? { reason: stringValue(body.reason) } : {}),
       ...(stringValue(body.redactionProfile) ? { redactionProfile: stringValue(body.redactionProfile) } : {}),
+      ...(body.simulateAuditPersistenceFailure === true ? { simulateAuditPersistenceFailure: true } : {}),
       roleKey: body.roleKey as DemoRoleKey,
       tenantSlug: body.tenantSlug as DemoTenantSlug,
     },
@@ -382,6 +393,37 @@ async function writeExportAudit(
 
 function permissionGate(input: ExportWorkflowCommandInput & { clientTenantId: string; exportRequestId: string }) {
   const session = createDemoSession({ roleKey: input.roleKey, tenantSlug: input.tenantSlug });
+  if (input.command === "APPROVE") {
+    const approvalPermission = permissionEngine.can(
+      session.actor,
+      "APPROVE",
+      {
+        clientTenantId: input.clientTenantId,
+        objectId: input.exportRequestId,
+        objectType: "EXPORT_REQUEST",
+        sensitivity: "RESTRICTED",
+      },
+      {
+        clientTenantId: input.clientTenantId,
+        objectScope: {
+          clientTenantId: input.clientTenantId,
+          objectIds: [input.exportRequestId],
+          objectType: "EXPORT_REQUEST",
+        },
+        platformTenantId: demoPlatformTenantId,
+        sensitivity: "RESTRICTED",
+      },
+      session.role,
+    );
+
+    if (!approvalPermission.allowed) {
+      throw new ExportWorkflowCommandError("Export approval requires compliance authority.", 403, "PERMISSION_DENIED", [
+        "permission",
+        approvalPermission.reasonCode,
+      ]);
+    }
+  }
+
   const permission = exportService.canGenerateExport({
     actor: session.actor,
     approvalComplete: input.command === "GENERATE" || input.command === "DOWNLOAD" || input.command === "SHARE",
@@ -642,6 +684,15 @@ export async function executeExportWorkflowCommand(prisma: PrismaClient, request
       nextStatus = ExportStatus.DOWNLOADED;
       lifecyclePatch.stage = "shared";
       lifecyclePatch.sharedAt = new Date().toISOString();
+    }
+
+    if ((input.command === "APPROVE" || input.command === "GENERATE") && input.simulateAuditPersistenceFailure === true) {
+      throw new ExportWorkflowCommandError(
+        "Required audit persistence is unavailable; safety action was not applied.",
+        409,
+        "AUDIT_PERSISTENCE_UNAVAILABLE",
+        ["audit_persistence"],
+      );
     }
 
     const packageStage = lifecyclePatch.stage === "shared" ? "shared" : lifecyclePatch.stage === "downloaded" ? "downloaded" : "generated";

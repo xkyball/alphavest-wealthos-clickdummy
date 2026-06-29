@@ -5,7 +5,12 @@ import path from "node:path";
 
 import { expect, test } from "@playwright/test";
 
-import { processRuntimeDefinitions, processRuntimeIntegrity } from "../lib/process-runtime/process-registry";
+import {
+  processRuntimeDefinitions,
+  processRuntimeIntegrity,
+  requireProcessDefinition,
+  requiresDomainSpineForGenericCompletion,
+} from "../lib/process-runtime/process-registry";
 import { createProcessRuntime, transitionProcess } from "../lib/process-runtime/process-state-machine";
 
 const schema = readFileSync(path.join(process.cwd(), "prisma/schema.prisma"), "utf8");
@@ -63,6 +68,13 @@ test.describe("Process Runtime Backbone", () => {
     expect(blocked.status).toBe("BLOCKED");
     expect(blocked.blockerReason).toBe("Evidence scope mismatch.");
     expect(blocked.steps[1]?.status).toBe("BLOCKED");
+  });
+
+  test("keeps safety-critical domains behind domain command spines for generic completion", () => {
+    expect(requiresDomainSpineForGenericCompletion(requireProcessDefinition("BP-024"))).toBe(false);
+    expect(requiresDomainSpineForGenericCompletion(requireProcessDefinition("BP-063"))).toBe(true);
+    expect(requiresDomainSpineForGenericCompletion(requireProcessDefinition("BP-067"))).toBe(true);
+    expect(requiresDomainSpineForGenericCompletion(requireProcessDefinition("BP-084"))).toBe(true);
   });
 
   test("schema exposes process definitions, instances, command history and process-backed sufficiency", () => {

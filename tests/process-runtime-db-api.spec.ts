@@ -95,6 +95,7 @@ test.describe("Process Runtime Backbone DB and API", () => {
   });
 
   test("process API is scoped, backed by persisted instances and writes fail-closed command history", async ({ request }) => {
+    if (!prisma) throw new Error("Prisma client was not initialized.");
     const denied = await request.get("/api/processes");
     const deniedBody = await denied.json();
 
@@ -185,5 +186,45 @@ test.describe("Process Runtime Backbone DB and API", () => {
     expect(unsupportedBody.ok).toBe(false);
     expect(unsupportedBody.safety.commandExecuted).toBe(false);
     expect(unsupportedBody.safety.processMutated).toBe(false);
+
+    const complianceJwt = await jwtFor(request, "naledi.compliance@alphavest.demo");
+    const safetyCriticalCreateResponse = await request.post("/api/processes", {
+      data: { clientTenantId: listBody.processes[0].clientTenantId, processId: "BP-063" },
+      headers: bearer(complianceJwt),
+    });
+    const safetyCriticalCreatedBody = await safetyCriticalCreateResponse.json();
+    expect(safetyCriticalCreateResponse.ok(), JSON.stringify(safetyCriticalCreatedBody)).toBe(true);
+    expect(safetyCriticalCreatedBody.detail.processId).toBe("BP-063");
+
+    const completeRunCountBefore = await prisma.processCommandRun.count({
+      where: {
+        commandKey: "COMPLETE_STEP",
+        processInstanceId: safetyCriticalCreatedBody.detail.id,
+      },
+    });
+    const safetyCriticalCompleteResponse = await request.post(
+      `/api/processes/${safetyCriticalCreatedBody.detail.id}/commands`,
+      {
+        data: {
+          command: "COMPLETE_STEP",
+        },
+        headers: bearer(complianceJwt),
+      },
+    );
+    const safetyCriticalCompleteBody = await safetyCriticalCompleteResponse.json();
+
+    expect(safetyCriticalCompleteResponse.status(), JSON.stringify(safetyCriticalCompleteBody)).toBe(403);
+    expect(safetyCriticalCompleteBody.ok).toBe(false);
+    expect(safetyCriticalCompleteBody.safety.commandExecuted).toBe(false);
+    expect(safetyCriticalCompleteBody.safety.processMutated).toBe(false);
+    expect(safetyCriticalCompleteBody.issues).toContain("domain_spine_authorization_required");
+    await expect(
+      prisma.processCommandRun.count({
+        where: {
+          commandKey: "COMPLETE_STEP",
+          processInstanceId: safetyCriticalCreatedBody.detail.id,
+        },
+      }),
+    ).resolves.toBe(completeRunCountBefore);
   });
 });

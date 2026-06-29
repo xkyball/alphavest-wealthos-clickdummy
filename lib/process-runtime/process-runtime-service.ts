@@ -2,7 +2,11 @@ import { AuditResult, ObjectType, ProcessInstanceStatus, ProcessStepStatus, type
 
 import type { CurrentUserContext } from "@/lib/auth/current-user";
 import type { FailClosedReasonCode } from "@/lib/control-layer/error-envelope";
-import { requireProcessDefinition, type ProcessCommandKey } from "@/lib/process-runtime/process-registry";
+import {
+  requireProcessDefinition,
+  requiresDomainSpineForGenericCompletion,
+  type ProcessCommandKey,
+} from "@/lib/process-runtime/process-registry";
 import { transitionProcess, type ProcessRuntime } from "@/lib/process-runtime/process-state-machine";
 
 type ProcessInstanceWithGraph = Prisma.ProcessInstanceGetPayload<{
@@ -339,6 +343,15 @@ export async function executeProcessCommandForCurrentUser(
 
   const instance = await loadScopedProcessInstance(prisma, currentUser, input.processInstanceId);
   const previousProcess = runtimeFromInstance(instance);
+  if (input.command === "COMPLETE_STEP" && requiresDomainSpineForGenericCompletion(previousProcess.definition)) {
+    throw new ProcessRuntimeError(
+      "Safety-critical process steps require the domain command spine; generic process runtime cannot complete this step.",
+      403,
+      "SCOPE_DENIED",
+      ["domain_spine_authorization_required"],
+    );
+  }
+
   const transitionedProcess = (() => {
     try {
       return transitionProcess({

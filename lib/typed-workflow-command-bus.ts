@@ -1336,6 +1336,19 @@ export async function runAdvisorApprovalWorkflowMutation(
     let releasePayload: Awaited<ReturnType<typeof getReleaseReadyInternalDraftPayload>> | null = null;
     let processRuntimeMutation: Awaited<ReturnType<typeof completeAdvisorWorkflowProcessStep>> | null = null;
 
+    if (
+      (input.action === "request_evidence" || input.action === "compliance_block") &&
+      input.auditPersistenceAvailable === false
+    ) {
+      throw new AdvisorApprovalWorkflowError(
+        "Required audit persistence is unavailable; safety action was not applied.",
+        409,
+        {
+          gateMissing: ["audit_persistence"],
+        },
+      );
+    }
+
     if (input.action === "reject_unsupported_claim") {
       await tx.recommendation.update({
         data: {

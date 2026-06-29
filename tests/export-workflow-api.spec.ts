@@ -3,7 +3,7 @@ import "dotenv/config";
 import { execFileSync } from "node:child_process";
 
 import { PrismaPg } from "@prisma/adapter-pg";
-import { ObjectType, PrismaClient, WorkflowStatus } from "@prisma/client";
+import { ExportStatus, ObjectType, PrismaClient, WorkflowStatus } from "@prisma/client";
 import { expect, test, type APIRequestContext } from "@playwright/test";
 
 import { demoTenants } from "../lib/demo-session";
@@ -49,6 +49,33 @@ async function createExportRequest(request: APIRequestContext, label: string) {
   expect(body.noClientRelease).toBe(true);
 
   return body.exportRequestId as string;
+}
+
+async function createPreviewedExportRequest(request: APIRequestContext, label: string) {
+  const exportRequestId = await createExportRequest(request, label);
+  const redaction = await exportCommand(request, {
+    command: "VALIDATE_REDACTION",
+    exportRequestId,
+    payload: safePayload,
+    reason: "Validate allowlisted fields before preview.",
+    redactionProfile: "client-safe-redacted",
+    roleKey: "compliance_officer",
+    tenantSlug: "summit",
+  });
+  expect(redaction.ok(), await redaction.text()).toBe(true);
+
+  const preview = await exportCommand(request, {
+    command: "PREVIEW",
+    exportRequestId,
+    payload: safePayload,
+    reason: "Preview client-safe export package before safety action.",
+    redactionProfile: "client-safe-redacted",
+    roleKey: "compliance_officer",
+    tenantSlug: "summit",
+  });
+  expect(preview.ok(), await preview.text()).toBe(true);
+
+  return exportRequestId;
 }
 
 test.describe.serial("Epic 6 export workflow API", () => {
@@ -192,6 +219,148 @@ test.describe.serial("Epic 6 export workflow API", () => {
     expect(snapshot.ok(), JSON.stringify(snapshotBody)).toBe(true);
     expect(snapshotBody.snapshot.current.realFileGenerated).toBe(false);
     expect(snapshotBody.snapshot.current.noOverclaimDetail).toContain("client acceptance");
+  });
+
+  test("requires compliance authority before export approval or downstream delivery", async ({ request }) => {
+    if (!prisma) throw new Error("Prisma client was not initialized.");
+    const exportRequestId = await createPreviewedExportRequest(request, "approval-authority-denied");
+
+    const approval = await exportCommand(request, {
+      command: "APPROVE",
+      exportRequestId,
+      payload: safePayload,
+      reason: "Family CFO must not approve restricted export packages.",
+      redactionProfile: "client-safe-redacted",
+      roleKey: "family_cfo",
+      tenantSlug: "summit",
+    });
+    const approvalBody = await approval.json();
+
+    expect(approval.status(), JSON.stringify(approvalBody)).toBe(403);
+    expect(approvalBody.mutated).toBe(false);
+    expect(approvalBody.reasonCode).toBe("PERMISSION_DENIED");
+    expect(approvalBody.issues).toEqual(expect.arrayContaining(["permission", "DEMO_DENY_EXPORT_APPROVAL_REQUIRED"]));
+
+    const afterDeniedApproval = await prisma.exportRequest.findUniqueOrThrow({ where: { id: exportRequestId } });
+    expect(afterDeniedApproval.status).toBe(ExportStatus.APPROVAL_REQUIRED);
+    expect(afterDeniedApproval.approvedByUserId).toBeNull();
+    expect(afterDeniedApproval.generatedFileDocumentId).toBeNull();
+
+    const generate = await exportCommand(request, {
+      command: "GENERATE",
+      exportRequestId,
+      payload: safePayload,
+      reason: "Generation remains blocked without compliance approval.",
+      redactionProfile: "client-safe-redacted",
+      roleKey: "family_cfo",
+      tenantSlug: "summit",
+    });
+    const generateBody = await generate.json();
+    expect(generate.status(), JSON.stringify(generateBody)).toBe(400);
+    expect(generateBody.issues).toContain("approval_required_before_generation");
+
+    const download = await exportCommand(request, {
+      command: "DOWNLOAD",
+      exportRequestId,
+      payload: safePayload,
+      reason: "Download remains blocked without generated package metadata.",
+      roleKey: "family_cfo",
+      tenantSlug: "summit",
+    });
+    const downloadBody = await download.json();
+    expect(download.status(), JSON.stringify(downloadBody)).toBe(400);
+    expect(downloadBody.issues).toContain("generation_required_before_download");
+
+    const share = await exportCommand(request, {
+      command: "SHARE",
+      exportRequestId,
+      externalShare: true,
+      payload: safePayload,
+      reason: "Share remains blocked without download.",
+      roleKey: "family_cfo",
+      tenantSlug: "summit",
+    });
+    const shareBody = await share.json();
+    expect(share.status(), JSON.stringify(shareBody)).toBe(400);
+    expect(shareBody.issues).toContain("download_required_before_share");
+
+    const afterDownstreamAttempts = await prisma.exportRequest.findUniqueOrThrow({ where: { id: exportRequestId } });
+    expect(afterDownstreamAttempts.status).toBe(ExportStatus.APPROVAL_REQUIRED);
+    expect(afterDownstreamAttempts.approvedByUserId).toBeNull();
+    expect(afterDownstreamAttempts.generatedFileDocumentId).toBeNull();
+  });
+
+  test("fails closed when export approval or generation audit persistence is unavailable", async ({ request }) => {
+    if (!prisma) throw new Error("Prisma client was not initialized.");
+    const approvalAuditFailureId = await createPreviewedExportRequest(request, "approval-audit-failure");
+    const approvalAuditCountBefore = await prisma.auditEvent.count({
+      where: { eventType: "export.workflow.approve", targetId: approvalAuditFailureId },
+    });
+
+    const auditBlockedApproval = await exportCommand(request, {
+      command: "APPROVE",
+      exportRequestId: approvalAuditFailureId,
+      payload: safePayload,
+      reason: "Simulate missing audit persistence before approval.",
+      redactionProfile: "client-safe-redacted",
+      roleKey: "compliance_officer",
+      simulateAuditPersistenceFailure: true,
+      tenantSlug: "summit",
+    });
+    const auditBlockedApprovalBody = await auditBlockedApproval.json();
+
+    expect(auditBlockedApproval.status(), JSON.stringify(auditBlockedApprovalBody)).toBe(409);
+    expect(auditBlockedApprovalBody.mutated).toBe(false);
+    expect(auditBlockedApprovalBody.reasonCode).toBe("AUDIT_PERSISTENCE_UNAVAILABLE");
+    expect(auditBlockedApprovalBody.issues).toContain("audit_persistence");
+
+    const approvalAuditFailureRecord = await prisma.exportRequest.findUniqueOrThrow({ where: { id: approvalAuditFailureId } });
+    expect(approvalAuditFailureRecord.status).toBe(ExportStatus.APPROVAL_REQUIRED);
+    expect(approvalAuditFailureRecord.approvedByUserId).toBeNull();
+    await expect(
+      prisma.auditEvent.count({ where: { eventType: "export.workflow.approve", targetId: approvalAuditFailureId } }),
+    ).resolves.toBe(approvalAuditCountBefore);
+
+    const generationAuditFailureId = await createPreviewedExportRequest(request, "generation-audit-failure");
+    const approval = await exportCommand(request, {
+      command: "APPROVE",
+      exportRequestId: generationAuditFailureId,
+      payload: safePayload,
+      reason: "Compliance approval before generation audit failure proof.",
+      redactionProfile: "client-safe-redacted",
+      roleKey: "compliance_officer",
+      tenantSlug: "summit",
+    });
+    expect(approval.ok(), await approval.text()).toBe(true);
+    const approvedRecord = await prisma.exportRequest.findUniqueOrThrow({ where: { id: generationAuditFailureId } });
+    const generateAuditCountBefore = await prisma.auditEvent.count({
+      where: { eventType: "export.workflow.generate", targetId: generationAuditFailureId },
+    });
+
+    const auditBlockedGeneration = await exportCommand(request, {
+      command: "GENERATE",
+      exportRequestId: generationAuditFailureId,
+      payload: safePayload,
+      reason: "Simulate missing audit persistence before generation.",
+      redactionProfile: "client-safe-redacted",
+      roleKey: "compliance_officer",
+      simulateAuditPersistenceFailure: true,
+      tenantSlug: "summit",
+    });
+    const auditBlockedGenerationBody = await auditBlockedGeneration.json();
+
+    expect(auditBlockedGeneration.status(), JSON.stringify(auditBlockedGenerationBody)).toBe(409);
+    expect(auditBlockedGenerationBody.mutated).toBe(false);
+    expect(auditBlockedGenerationBody.reasonCode).toBe("AUDIT_PERSISTENCE_UNAVAILABLE");
+    expect(auditBlockedGenerationBody.issues).toContain("audit_persistence");
+
+    const generationAuditFailureRecord = await prisma.exportRequest.findUniqueOrThrow({ where: { id: generationAuditFailureId } });
+    expect(generationAuditFailureRecord.status).toBe(ExportStatus.APPROVED);
+    expect(generationAuditFailureRecord.approvedByUserId).toBe(approvedRecord.approvedByUserId);
+    expect(generationAuditFailureRecord.generatedFileDocumentId).toBeNull();
+    await expect(
+      prisma.auditEvent.count({ where: { eventType: "export.workflow.generate", targetId: generationAuditFailureId } }),
+    ).resolves.toBe(generateAuditCountBefore);
   });
 
   test("blocks forbidden internal payload fields before preview or approval", async ({ request }) => {
